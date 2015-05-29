@@ -114,6 +114,7 @@
               <pElem>.</pElem>
             </incDir>
             <preprocessorList>
+              <Elem>NS_ENABLE_SSL</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__WXGTK__</Elem>
@@ -159,11 +160,6 @@
         </cTool>
       </item>
       <item path="../../common/net_skeleton.c" ex="false" tool="0" flavor2="2">
-        <cTool>
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-          </preprocessorList>
-        </cTool>
       </item>
       <item path="../common/canalsuperwrapper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
@@ -207,6 +203,9 @@
       </item>
       <item path="bootdevice_vscp.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="devicebootloaderwizard.cpp" ex="false" tool="1" flavor2="4">
@@ -274,6 +273,9 @@
           <incDir>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
         </ccTool>
       </folder>
       <item path="frmdaemondecisionmartrixeditor.cpp" ex="false" tool="1" flavor2="4">
@@ -309,6 +311,9 @@
       </item>
       <item path="frmvscpsession.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="gridtable.cpp" ex="false" tool="1" flavor2="4">

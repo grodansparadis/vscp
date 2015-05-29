@@ -546,12 +546,12 @@ CWrkReadThread::Entry()
 	char errbuf[ PCAP_ERRBUF_SIZE ];
 	
 	// Open the adapter 
-	if ( ( fp = pcap_open_live( (const char *)m_pObj->m_interface.mb_str(), // name of the device
+	if ( NULL == ( fp = pcap_open_live( (const char *)m_pObj->m_interface.mb_str(), // name of the device
 									65536,	// portion of the packet to capture. It doesn't matter in this case 
 									1,		// promiscuous mode (nonzero means promiscuous)
 									1000,	// read timeout
 									errbuf	// error buffer
-								) ) == NULL) {
+								) ) ) {
 		syslog(LOG_ERR,
 				"RawEthDrv: Unable to open the adapter or %s is not supported by pcap. Err=%s",
 				(const char *)m_pObj->m_interface.mb_str(), errbuf );

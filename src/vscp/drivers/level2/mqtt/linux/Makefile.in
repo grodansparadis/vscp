@@ -35,7 +35,7 @@ DLLPREFIX = lib
 WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-MQTT_OBJECTS = mqtt.o\
+MQTT_OBJECTS = ../common/mqttobj.o\
 	../../../../common/vscpremotetcpif.o\
 	../../../../common/vscphelper.o\
 	../../../../common/guid.o\
@@ -44,7 +44,7 @@ MQTT_OBJECTS = mqtt.o\
 	../../../../../common/fossa.o\
 
 	
-PROJOBJS =  mqtt.o\
+PROJOBJS =  ../common/mqttobj.o\
 	../../../../common/vscpremotetcpif.o\
 	../../../../common/vscphelper.o\
 	../../../../common/guid.o\

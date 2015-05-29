@@ -53,6 +53,8 @@
 #include <wx/tokenzr.h>
 #include <wx/datetime.h>
 
+#include <mosquitto.h>
+
 #include <vscphelper.h>
 #include <vscpremotetcpif.h>
 #include <vscp_type.h>
@@ -67,7 +69,7 @@
 //////////////////////////////////////////////////////////////////////
 // mqtt_subscribe - Constructor
 //
-
+/*
 mqtt_subscribe::mqtt_subscribe( const char *id,
                                     const char *topic,
                                     const char *host,
@@ -94,7 +96,7 @@ void mqtt_subscribe::on_connect(int rc)
 {
 	if (0 == rc) {
 		// Only attempt to subscribe on a successful connect. 
-		subscribe(NULL, m_pObj->m_topic.ToAscii() );
+		subscribe(NULL, (const char *)m_pObj->m_topic.mbc_str() );
 	}
 }
 
@@ -106,7 +108,7 @@ void mqtt_subscribe::on_message(const struct mosquitto_message *message)
 {
 	vscpEventEx eventEx;
 
-	if ( !strcmp( message->topic, m_pObj->m_topic.ToAscii() ) ) {
+	if ( !strcmp( message->topic, (const char*)m_pObj->m_topic.mbc_str() ) ) {
         
 		wxString str = wxString::FromAscii((const char *) message->payload);
 		if (vscp_setVscpEventExFromString(&eventEx, str)) {
@@ -183,7 +185,7 @@ void mqtt_publish::on_connect(int rc)
 	//printf("Connected with code %d.\n", rc);
 	if (rc == 0) {
 		// Only attempt to subscribe on a successful connect. 
-		//subscribe( NULL, m_pObj->m_topic.ToAscii() );
+		//subscribe( NULL, (const char*)m_pObj->m_topic.mbc_str() );
 	}
 }
 
@@ -193,21 +195,19 @@ void mqtt_publish::on_connect(int rc)
 
 void mqtt_publish::on_message(const struct mosquitto_message *message)
 {
-    /*
-	double temp_celsius, temp_farenheit;
-	char buf[51];
-
-	if (!strcmp(message->topic, "temperature/celsius")) {
-		memset(buf, 0, 51 * sizeof(char));
-		// Copy N-1 bytes to ensure always 0 terminated. 
-		memcpy(buf, message->payload, 50 * sizeof(char));
-		temp_celsius = atof(buf);
-		temp_farenheit = temp_celsius * 9.0 / 5.0 + 32.0;
-		snprintf(buf, 50, "%f", temp_farenheit);
-		publish(NULL, "temperature/farenheit", strlen(buf), buf);
-	}
-    */
     
+	//double temp_celsius, temp_farenheit;
+	//char buf[51];
+
+	//if (!strcmp(message->topic, "temperature/celsius")) {
+	//	memset(buf, 0, 51 * sizeof(char));
+	//	// Copy N-1 bytes to ensure always 0 terminated. 
+	//	memcpy(buf, message->payload, 50 * sizeof(char));
+	//	temp_celsius = atof(buf);
+	//	temp_farenheit = temp_celsius * 9.0 / 5.0 + 32.0;
+	//	snprintf(buf, 50, "%f", temp_farenheit);
+	//	publish(NULL, "temperature/farenheit", strlen(buf), buf);
+	//}    
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -218,12 +218,13 @@ void mqtt_publish::on_subscribe(int mid, int qos_count, const int *granted_qos)
 {
 	printf("Subscription succeeded.\n");
 }
+*/
 
 //////////////////////////////////////////////////////////////////////
-// Cmqtt
+// Cvscpmqtt
 //
 
-Cmqtt::Cmqtt()
+Cvscpmqtt::Cvscpmqtt()
 {
 	m_bQuit = false;
 	m_pthreadWork = NULL;
@@ -240,10 +241,10 @@ Cmqtt::Cmqtt()
 }
 
 //////////////////////////////////////////////////////////////////////
-// ~Cmqtt
+// ~Cvscpmqtt
 //
 
-Cmqtt::~Cmqtt()
+Cvscpmqtt::~Cvscpmqtt()
 {
 	close();
 	::wxUninitialize();
@@ -256,12 +257,12 @@ Cmqtt::~Cmqtt()
 //
 
 bool
-Cmqtt::open(const char *pUsername,
-                const char *pPassword,
-                const char *pHost,
-                short port,
-                const char *pPrefix,
-                const char *pConfig)
+Cvscpmqtt::open(const char *pUsername,
+                    const char *pPassword,
+                    const char *pHost,
+                    short port,
+                    const char *pPrefix,
+                    const char *pConfig)
 {
 	bool rv = true;
 	wxString str;
@@ -378,6 +379,8 @@ Cmqtt::open(const char *pUsername,
 	//				the mqtt interface. If not give all events 
 	//				are received. 
 	//
+    //	 _simplify - Used to simplify publishing.
+    //
 
 	wxString strName = m_prefix +
 			wxString::FromAscii("_type");
@@ -468,10 +471,8 @@ Cmqtt::open(const char *pUsername,
         m_bSimplify = false;
     }
     
-    
 	// Close the channel
 	m_srv.doCmdClose();
-
 
 	// start the worker thread
 	m_pthreadWork = new CWrkThread();
@@ -493,7 +494,7 @@ Cmqtt::open(const char *pUsername,
 //
 
 void
-Cmqtt::close(void)
+Cvscpmqtt::close(void)
 {
 	// Do nothing if already terminated
 	if (m_bQuit) return;
@@ -507,7 +508,7 @@ Cmqtt::close(void)
 //
 
 bool 
-Cmqtt::addEvent2SendQueue(const vscpEvent *pEvent)
+Cvscpmqtt::addEvent2SendQueue(const vscpEvent *pEvent)
 {
     m_mutexSendQueue.Lock();
     m_sendList.push_back((vscpEvent *)pEvent);
@@ -538,19 +539,27 @@ CWrkThread::~CWrkThread()
 void *
 CWrkThread::Entry()
 {
+    MQTTClient client;
+    MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
+    MQTTClient_message pubmsg = MQTTClient_message_initializer;
+    MQTTClient_deliveryToken token;
+    int rc;
+    
     bool bActivity;
     wxString str;
     int rv;
-
-    mosqpp::lib_init();
+    
+    // Init the lib.
+    mosquitto_lib_init();
+    //mosqpp::lib_init();
 
 	if (m_pObj->m_bSubscribe) {
 
 		// S u b s c r i b e
 		mqtt_subscribe *pSubscribe =
-			new mqtt_subscribe("vscpdriver",
-								m_pObj->m_topic.ToAscii(),
-								m_pObj->m_hostMQTT.ToAscii(),
+			new mqtt_subscribe( "vscpdriver",
+								(const char *)m_pObj->m_topic.mbc_str(),
+								(const char *)m_pObj->m_hostMQTT.mbc_str(),
 								m_pObj->m_portMQTT,
 								m_pObj->m_keepalive);
         
@@ -574,8 +583,8 @@ CWrkThread::Entry()
         // P u b l i s h
         mqtt_publish *pPublish = 
                 new mqtt_publish( "vscpdriver",
-                                    m_pObj->m_topic.ToAscii(),
-                                    m_pObj->m_hostMQTT.ToAscii(),
+                                    (const char *)m_pObj->m_topic.mbc_str(),
+                                    (const char *)m_pObj->m_hostMQTT.mbc_str(),
                                     m_pObj->m_portMQTT,
                                     m_pObj->m_keepalive);
 
@@ -598,14 +607,16 @@ CWrkThread::Entry()
                 }
                 else {
                     vscp_writeVscpEventToString( pEvent, str );
+          
                     pPublish->publish( NULL, 
-                                        m_pObj->m_topic.ToAscii(), 
-                                        strlen( str.mb_str() ), 
-                                        str.mb_str() );
+                                        (const char *)m_pObj->m_topic.mb_str(), 
+                                        str.Length(), 
+                                        (const char *)str.mb_str() );
+             
                 }
                 
                 // We are done with the event - remove data if any
-                if (NULL != pEvent->pdata) {
+                if ( NULL != pEvent->pdata ) {
                     delete [] pEvent->pdata;
                     pEvent->pdata = NULL;
                 }

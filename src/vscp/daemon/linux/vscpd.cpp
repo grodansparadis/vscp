@@ -177,7 +177,7 @@ int main(int argc, char **argv)
 
 BOOL VSCPApp::init(wxString& strcfgfile)
 {
-
+   
 	if (!gbDontRunAsDaemon) {
 
 		pid_t pid, sid;

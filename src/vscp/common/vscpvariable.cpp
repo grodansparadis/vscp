@@ -282,7 +282,7 @@ bool CVSCPVariable::writeValueToString( wxString& strValueOut )
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_INTEGER:
-            strValueOut.Printf(_("%d"), (int)m_longValue );
+            strValueOut.Printf(_("%d"), ((int)m_longValue) );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_LONG:
