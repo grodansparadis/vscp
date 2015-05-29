@@ -3685,7 +3685,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 
 					memset( buf, 0, sizeof( buf ));
 					sprintf( wrkbuf, 
-								"%ld events requested of %lu available (unfiltered) %lu will be retrived\r\n", 
+								"%zd events requested of %lu available (unfiltered) %lu will be retrived\r\n", 
 								count, 
 								pSession->pClientItem->m_clientInputQueue.GetCount(),
 								MIN((unsigned long)count,pSession->pClientItem->m_clientInputQueue.GetCount()) );

@@ -20,10 +20,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: peakobj.cpp,v $                                       
-// $Date: 2005/09/26 21:57:52 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.8 $ 
 
 #include <stdio.h>
 #include <canal.h>
