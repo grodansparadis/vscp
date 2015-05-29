@@ -87,7 +87,7 @@ actionThreadURL::actionThreadURL( CControlObject *pCtrlObject,
 
 actionThreadURL::~actionThreadURL()
 {
-
+    ;
 }
 
 
@@ -1327,6 +1327,33 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             // Check for timestamp escape
             else if ( str.StartsWith( wxT("%event.timestamp"), &str ) ) {
                 strResult +=  wxString::Format( wxT("%d"), pEvent->timestamp );	
+            }
+            // Check for event index escape
+            else if ( str.StartsWith( wxT( "%event.index" ), &str ) ) {
+                if ( pEvent->sizeData && ( NULL != pEvent->pdata ) ) {
+                    strResult += wxString::Format( wxT( "%d" ), pEvent->pdata[ 0 ] );
+                }
+                else {
+                    strResult += wxT( "empty" );		// No data
+                }
+            }
+            // Check for event zone escape
+            else if ( str.StartsWith( wxT( "%event.zone" ), &str ) ) {
+                if ( pEvent->sizeData && ( NULL != pEvent->pdata ) ) {
+                    strResult += wxString::Format( wxT( "%d" ), pEvent->pdata[ 1 ] );
+                }
+                else {
+                    strResult += wxT( "empty" );		// No data
+                }
+            }
+            // Check for event subzone escape
+            else if ( str.StartsWith( wxT( "%event.subzone" ), &str ) ) {
+                if ( pEvent->sizeData && ( NULL != pEvent->pdata ) ) {
+                    strResult += wxString::Format( wxT( "%d" ), pEvent->pdata[ 2 ] );
+                }
+                else {
+                    strResult += wxT( "empty" );		// No data
+                }
             }
             // Check for event escape
             else if ( str.StartsWith( wxT("%event"), &str ) ) {
