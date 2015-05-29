@@ -58,7 +58,7 @@ class VscpTcpIf;
 
 // This is the vendor string - Change to your own value
 #define VSCP_DLL_VENDOR "Grodans Paradis AB, Sweden, http://www.grodansparadis.com"
-							
+
 // Driver information.
 #define VSCP_MQTT_DRIVERINFO "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>" \
 "<!-- Version 0.0.1    2011-01-20   -->" \
@@ -74,59 +74,57 @@ class VscpTcpIf;
 // CVSCPDrvApp
 //
 
-class CVSCPDrvApp
-{
-
+class CVSCPDrvApp {
 public:
 
-	/// Constructor
-	CVSCPDrvApp();
-	
-	/// Destructor
-	~CVSCPDrvApp();
+    /// Constructor
+    CVSCPDrvApp();
 
-	/*!
-		Add a driver object
+    /// Destructor
+    ~CVSCPDrvApp();
 
-		@parm plog Object to add
-		@return handle or 0 for error
-	*/
-	long addDriverObject( Cmqttobj *pObj );
+    /*!
+        Add a driver object
 
-	/*!
-		Get a driver object from its handle
+        @parm plog Object to add
+        @return handle or 0 for error
+     */
+    long addDriverObject(Cmqttobj *pObj);
 
-		@param handle for object
-		@return pointer to object or NULL if invalid
-				handle.
-	*/
-    Cmqttobj *getDriverObject( long h );
+    /*!
+        Get a driver object from its handle
 
-	/*!
-		Remove a driver object
+        @param handle for object
+        @return pointer to object or NULL if invalid
+                handle.
+     */
+    Cmqttobj *getDriverObject(long h);
 
-		@parm handle for object.
-	*/
-	void removeDriverObject( long h );
-	
-	/*!
-		The log file object
-		This is the array with driver objects 
-	*/
-	Cmqttobj *m_drvObjArray[ VSCP_MQTT_DRIVER_MAX_OPEN ];
+    /*!
+        Remove a driver object
 
-	/// Mutex for open/close
+        @parm handle for object.
+     */
+    void removeDriverObject(long h);
+
+    /*!
+        The log file object
+        This is the array with driver objects 
+     */
+    Cmqttobj *m_drvObjArray[ VSCP_MQTT_DRIVER_MAX_OPEN ];
+
+    /// Mutex for open/close
 #ifdef WIN32	
-	HANDLE m_objMutex;
+    HANDLE m_objMutex;
 #else
-	pthread_mutex_t m_objMutex;
+    pthread_mutex_t m_objMutex;
 #endif
 
-	/// Counter for users of the interface
-	unsigned long m_instanceCounter;
+    /// Counter for users of the interface
+    unsigned long m_instanceCounter;
 
 public:
-	BOOL InitInstance();
+    BOOL InitInstance();
 
 };
 

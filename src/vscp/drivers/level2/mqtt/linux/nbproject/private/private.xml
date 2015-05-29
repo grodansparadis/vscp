@@ -10,9 +10,8 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/akhe/vscp_software/src/vscp/drivers/level2/mqtt/linux/vscpl2drv_mqtt.h</file>
-            <file>file:/home/akhe/vscp_software/src/vscp/drivers/level2/mqtt/linux/mqtt.cpp</file>
-            <file>file:/home/akhe/vscp_software/src/vscp/drivers/level2/mqtt/linux/mqtt.h</file>
+            <file>file:/home/akhe/vscp_software/src/vscp/drivers/level2/mqtt/linux/Makefile</file>
+            <file>file:/home/akhe/vscp_software/src/vscp/drivers/level2/mqtt/linux/Makefile.in</file>
             <file>file:/home/akhe/vscp_software/src/vscp/drivers/level2/mqtt/linux/vscpl2drv_mqtt.cpp</file>
         </group>
     </open-files>

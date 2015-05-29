@@ -46,7 +46,7 @@
 #include "stdlib.h"
 
 #include "vscpl2drv_mqtt.h"
-#include "mqtt.h"
+#include "../common/mqttobj.h"
 
 void _init() __attribute__((constructor));
 void _fini() __attribute__((destructor));
@@ -87,7 +87,7 @@ CVSCPDrvApp::~CVSCPDrvApp()
 
         if (NULL != m_pmqttArray[ i ]) {
 
-            Cvscpmqtt *pmqtt = getDriverObject(i);
+            Cmqttobj *pmqtt = getDriverObject(i);
             if (NULL != pmqtt) {
                 pmqtt->close();
                 delete m_pmqttArray[ i ];
@@ -116,7 +116,7 @@ CVSCPDrvApp theApp;
 // addDriverObject
 //
 
-long CVSCPDrvApp::addDriverObject(Cvscpmqtt *pmqtt)
+long CVSCPDrvApp::addDriverObject(Cmqttobj *pmqtt)
 {
     long h = 0;
 
@@ -143,7 +143,7 @@ long CVSCPDrvApp::addDriverObject(Cvscpmqtt *pmqtt)
 // getDriverObject
 //
 
-Cvscpmqtt *CVSCPDrvApp::getDriverObject(long h)
+Cmqttobj *CVSCPDrvApp::getDriverObject(long h)
 {
     long idx = h - 1681;
 
@@ -200,17 +200,16 @@ VSCPOpen(const char *pUsername,
 {
     long h = 0;
 
-    Cvscpmqtt *pdrvObj = new Cvscpmqtt();
+    Cmqttobj *pdrvObj = new Cmqttobj();
     if (NULL != pdrvObj) {
 
-        if (pdrvObj->open(pUsername,
+        if (pdrvObj->open( pUsername,
                             pPassword,
                             pHost,
-                            port,
                             pPrefix,
-                            pParameter)) {
+                            pParameter ) ) {
 
-            if (!(h = theApp.addDriverObject(pdrvObj))) {
+            if ( !( h = theApp.addDriverObject( pdrvObj ) ) ) {
                 delete pdrvObj;
             }
 
@@ -233,7 +232,7 @@ VSCPClose(long handle)
 {
     int rv = 0;
 
-    Cvscpmqtt *pdrvObj = theApp.getDriverObject(handle);
+    Cmqttobj *pdrvObj = theApp.getDriverObject(handle);
     if (NULL == pdrvObj) return 0;
     pdrvObj->close();
     theApp.removeDriverObject(handle);
@@ -250,7 +249,7 @@ VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
 {
     int rv = 0;
 
-    Cvscpmqtt *pdrvObj = theApp.getDriverObject(handle);
+    Cmqttobj *pdrvObj = theApp.getDriverObject(handle);
     if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
     pdrvObj->addEvent2SendQueue(pEvent);
 
@@ -264,12 +263,12 @@ VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
 extern "C" int
 VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
 {
-    int rv = 0;
+   int rv = 0;
 
     // Check pointer
     if (NULL == pEvent) return CANAL_ERROR_PARAMETER;
 
-    Cvscpmqtt *pdrvObj = theApp.getDriverObject(handle);
+    Cmqttobj *pdrvObj = theApp.getDriverObject(handle);
     if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
 
     if (wxSEMA_TIMEOUT == pdrvObj->m_semReceiveQueue.WaitTimeout(timeout)) {

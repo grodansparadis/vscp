@@ -18,6 +18,8 @@
       <itemPath>../../../../common/guid.cpp</itemPath>
       <itemPath>../../../../common/guid.h</itemPath>
       <itemPath>../../../../common/mdf.h</itemPath>
+      <itemPath>../common/mqttobj.cpp</itemPath>
+      <itemPath>../common/mqttobj.h</itemPath>
       <itemPath>../../../../../common/net_skeleton.c</itemPath>
       <itemPath>../../../../../common/net_skeleton.h</itemPath>
       <itemPath>../../../../common/vscp.h</itemPath>
@@ -33,7 +35,6 @@
     <df root="." name="0">
       <in>mqtt.cpp</in>
       <in>test.c</in>
-      <in>vscp2drv_mqtt.cpp</in>
       <in>vscpl2drv_mqtt.cpp</in>
     </df>
     <logicalFolder name="ExternalFiles"
@@ -186,6 +187,23 @@
           </preprocessorList>
         </ccTool>
       </item>
+      <item path="../common/mqttobj.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../../../common</pElem>
+            <pElem>../../../../../common</pElem>
+            <pElem>include</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>USE_FOSSA</Elem>
+            <Elem>WXUSINGDLL</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
       <folder path="0">
         <cTool>
           <preprocessorList>
@@ -201,6 +219,7 @@
             <pElem>/usr/local/include/wx-3.0</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>USE_FOSSA</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
@@ -215,22 +234,14 @@
       </folder>
       <item path="mqtt.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-          </preprocessorList>
         </ccTool>
       </item>
       <item path="test.c" ex="false" tool="0" flavor2="2">
         <cTool flags="1">
         </cTool>
       </item>
-      <item path="vscp2drv_mqtt.cpp" ex="false" tool="1" flavor2="4">
-      </item>
       <item path="vscpl2drv_mqtt.cpp" ex="false" tool="1" flavor2="0">
         <ccTool flags="0">
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-          </preprocessorList>
         </ccTool>
       </item>
     </conf>

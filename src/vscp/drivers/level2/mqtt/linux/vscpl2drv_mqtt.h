@@ -37,7 +37,7 @@
 #include "../../../../common/vscpremotetcpif.h"
 #include "../../../../common/canal_macro.h"
 
-#include "mqtt.h"
+#include "../common/mqttobj.h"
 
 #ifndef BOOL
 typedef int BOOL;
@@ -89,7 +89,7 @@ public:
         @parm plog Object to add
         @return handle or 0 for error
      */
-    long addDriverObject(Cvscpmqtt *psockcan);
+    long addDriverObject(Cmqttobj *pmqtt);
 
     /*!
         Get a driver object from its handle
@@ -98,7 +98,7 @@ public:
         @return pointer to object or NULL if invalid
                 handle.
      */
-    Cvscpmqtt *getDriverObject(long h);
+    Cmqttobj *getDriverObject(long h);
 
     /*!
         Remove a driver object
@@ -111,7 +111,7 @@ public:
         The log file object
         This is the array with driver objects (max 256 objects
      */
-    Cvscpmqtt *m_pmqttArray[ VSCP_MQTT_DRIVER_MAX_OPEN ];
+    Cmqttobj *m_pmqttArray[ VSCP_MQTT_DRIVER_MAX_OPEN ];
 
 
     /// Mutex for open/close
