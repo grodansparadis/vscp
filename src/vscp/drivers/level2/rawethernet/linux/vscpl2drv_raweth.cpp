@@ -551,7 +551,7 @@ CWrkReadThread::Entry()
 									1,		// promiscuous mode (nonzero means promiscuous)
 									1000,	// read timeout
 									errbuf	// error buffer
-i								) ) == NULL) {
+i								) ) ) == NULL) {
 		syslog(LOG_ERR,
 				"RawEthDrv: Unable to open the adapter or %s is not supported by pcap. Err=%s",
 				(const char *)m_pObj->m_interface.mb_str(), errbuf );
