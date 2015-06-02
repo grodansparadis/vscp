@@ -20,10 +20,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: vectorobj.cpp,v $                                       
-// $Date: 2005/08/26 07:49:52 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.4 $ 
 
 #include "stdio.h"
 #include "vectorobj.h"

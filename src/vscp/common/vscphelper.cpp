@@ -3477,8 +3477,9 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 		break;
 
 		}
-	}
-		break;
+	} // measurement
+    str += "\n";
+	break;
 
 		// **** CLASS ****
 	case VSCP_CLASS1_DATA:
@@ -3538,7 +3539,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 		case VSCP_TYPE_INFORMATION_TERMINATING:
 		case VSCP_TYPE_INFORMATION_OPENED:
 		case VSCP_TYPE_INFORMATION_CLOSED:
-		case VSCP_TYPE_INFORMATION_NODE_HEARTBEAT:
+        case VSCP_TYPE_INFORMATION_NODE_HEARTBEAT:
 		case VSCP_TYPE_INFORMATION_BELOW_LIMIT:
 		case VSCP_TYPE_INFORMATION_ABOVE_LIMIT:
 		case VSCP_TYPE_INFORMATION_PULSE:
@@ -3569,12 +3570,12 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 		case VSCP_TYPE_INFORMATION_SUNSET:
 		case VSCP_TYPE_INFORMATION_DETECT:
 		case VSCP_TYPE_INFORMATION_OVERFLOW:
-
 			if ((pEvent->sizeData-offset) >= 3) {
-				str = wxString::Format(_("Index=%d Zone=%d Subzone=%d\n"),
+				str = wxString::Format(_("Index=%d Zone=%d Subzone=%d\nNickname=%d\n"),
 						pEvent->pdata[ 0+offset ],
 						pEvent->pdata[ 1+offset ],
-						pEvent->pdata[ 2+offset ]);
+						pEvent->pdata[ 2+offset ],
+                        pEvent ->GUID[15] );
 			}
 			break;
 
