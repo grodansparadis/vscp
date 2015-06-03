@@ -35,7 +35,7 @@ DLLPREFIX = lib
 WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-CAN4VSCP_OBJECTS = vscpl1drv_can4vscp.o\
+CAN4VSCP_OBJECTS = vscpl1_can4vscpdrv.o\
 	../common/can4vscpobj.o\
 	../../../../common/guid.o\
 	../../../../../common/dllist.o\
@@ -53,10 +53,10 @@ ALWAYS_BUILD = ../../../../common/guid.o\
 
 ### Targets: ###
 
-all: vscpl1drv_can4vscp.so test
+all: vscpl1_can4vscpdrv.so test
 
 install: all
-	$(INSTALL_PROGRAM) vscpl1_socketcandrv.so $(libdir)
+	$(INSTALL_PROGRAM) vscpl1_can4vscpdrv.so $(libdir)
 
 uninstall: 
 
