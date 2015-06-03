@@ -1511,7 +1511,7 @@ void frmVSCPSession::fillRxHtmlInfo(VscpRXObj *pRecord)
     str += _("<b>Data count:</b> ");
     str += _("<color color=\"rgb(0, 0, 153);\"><tt>");
     str += wxString::Format(_("%d"), pRecord->m_pEvent->sizeData);
-    ;
+    
     str += _("</tt></font><br>");
     str += _("<font color=\"rgb(0, 0, 153);\"><tt>");
     vscp_writeVscpDataToString(pRecord->m_pEvent, wrkstr, true);
@@ -1521,7 +1521,8 @@ void frmVSCPSession::fillRxHtmlInfo(VscpRXObj *pRecord)
     wrkstr = vscp_getRealTextData(pRecord->m_pEvent);
     vscp_makeHtml(wrkstr);
     str += wrkstr;
-    str += _("</font><br><br>");
+    str += _("</font><br>");
+
     str += _("<b>From GUID:</b><br>");
     str += _("<font color=\"rgb(0, 0, 153);\"><tt>");
     vscp_writeGuidToString4Rows(pRecord->m_pEvent, wrkstr);

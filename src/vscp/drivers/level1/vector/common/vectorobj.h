@@ -20,10 +20,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: vectorobj.h,v $                                       
-// $Date: 2005/03/01 22:44:47 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.4 $ 
 
 #if !defined(AFX_VECTOROBJ_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)
 #define AFX_VECTOROBJ_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_

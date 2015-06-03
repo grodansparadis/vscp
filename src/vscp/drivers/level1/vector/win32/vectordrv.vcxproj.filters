@@ -44,9 +44,6 @@
     <ClInclude Include="..\..\..\..\common\dllist.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\Vector\include\VCanD.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\common\vectorobj.h">
       <Filter>Header Files</Filter>
     </ClInclude>
