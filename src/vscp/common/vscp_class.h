@@ -35,8 +35,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- *	This file is part of VSCP - Very Simple Control Protocol
- *	http://www.vscp.org
+ *  This file is part of VSCP - Very Simple Control Protocol
+ *  http://www.vscp.org
  *
  * ******************************************************************************
  */
@@ -91,10 +91,10 @@
 #define VSCP_CLASS2_LEVEL1_CONTROL                      ( 512 + 30 )
 #define VSCP_CLASS2_LEVEL1_MULTIMEDIA                   ( 512 + 40 )
 #define VSCP_CLASS2_LEVEL1_AOL                          ( 512 + 50 )
-#define VSCP_CLASS2_MEASUREMENT64						( 512 + 60 )
-#define VSCP_CLASS2_MEASUREZONE							( 512 + 65 )
-#define VSCP_CLASS2_MEASUREMENT32						( 512 + 70 )
-#define VSCP_CLASS2_SETVALUEZONE						( 512 + 85 )
+#define VSCP_CLASS2_MEASUREMENT64                       ( 512 + 60 )
+#define VSCP_CLASS2_MEASUREZONE                         ( 512 + 65 )
+#define VSCP_CLASS2_MEASUREMENT32                       ( 512 + 70 )
+#define VSCP_CLASS2_SETVALUEZONE                        ( 512 + 85 )
 #define VSCP_CLASS2_LEVEL1_PHONE                        ( 512 + 100 )
 #define VSCP_CLASS2_LEVEL1_LIN                          ( 512 + 101 )
 #define VSCP_CLASS2_LEVEL1_REMOTE                       ( 512 + 110 )
