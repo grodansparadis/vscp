@@ -456,7 +456,7 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 
     for ( int i=0; i<3; i++ ) {
 
-        saveseq = m_sequencyno;         // Save the sequency ordinal
+        saveseq = m_sequencyno;         // Save the sequence ordinal
         if ( sendCommandWait( VSCP_SERIAL_DRIVER_COMMAND_NOOP,
                                 NULL, 
                                 0,

@@ -34,7 +34,7 @@ VSCP Project (complete)
 
 This is the "original" project and includes all sub-projects.
 
-- to build the Vector CANAL driver the proprietary Vector libs/includes is needed.
+- to build the vectorxl CANAL driver the proprietary vectorxl libs/includes is needed.
 - to build the Peak CANAL driver the proprietary PEAK libs/includes is needed.
 - to build the CSS CANAL driver the proprietary CCS libs/includes is needed.
 - to build the IXXAT CANAL driver the proprietary IXXAT libs/includes is needed.
@@ -82,10 +82,10 @@ This is the "original" project and includes all sub-projects.
     libexpat root folder. Expat is available here http://sourceforge.net/projects/expat/  
 	Expat is also needed for the level I lirc driver which interfaces http://winlirc.sourceforge.net/ 
         
-11.) To build the vector driver (vectordrv)  and environment variable VECTORDRV must be defined so it points to the dll folder
-    of the installation. The low level driver from Vector must be installed for 
+11.) To build the vectorxl driver (vectorxldrv) and environment variable vectorxl must be defined so it points to the dll folder
+    of the installation. The low level driver from vectorxl must be installed for 
     the CANAL driver to work. Current the old driver is used which can be found here 
-    http://www.vector.com/downloads/drivers/canlib43.zip
+	http://download.vectorxl.com/drivers/xl_lib90.zip
 
 12.) To build the rawethernet driver the wpcap library and include files need to be installed on the system. A
 	environment variable named "pcap" should point to folder of the project (where the include and lib folders are).
