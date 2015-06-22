@@ -727,8 +727,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
                 return MG_TRUE;
             }
 
-
-            // Get variable value
+            // Set variable value
             if (tkz.HasMoreTokens()) {
                 strTok = tkz.GetNextToken();
                 if (!pvar->setValueFromString(pvar->getType(), strTok)) {
