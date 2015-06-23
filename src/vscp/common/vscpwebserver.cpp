@@ -687,6 +687,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 
         CVSCPVariable *pvar;
         wxString strvalue;
+        uint8_t type;
 
 		// Must be authorized to do this
 		if ( !pSession->bAuthenticated ) {
@@ -758,7 +759,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         }
 
         pvar->writeValueToString( strvalue );
-        uint8_t type = pvar->getType();
+        type = pvar->getType();
 
         wxString resultstr = _( "+;WRITEVAR;" );
         resultstr += strTok;
@@ -924,6 +925,8 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
     else if (0 == strTok.Find(_("RESETVAR"))) {
 
         CVSCPVariable *pvar;
+        wxString strvalue;
+        uint8_t type;
 
 		// Must be authorized to do this
 		if ( !pSession->bAuthenticated ) {
@@ -965,9 +968,17 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 
         pvar->Reset();
 
-		wxString strResult = _("+;RESETVAR;");
-        strResult += strTok;
-		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)strResult.mbc_str() );
+        pvar->writeValueToString( strvalue );
+        type = pvar->getType();
+
+        wxString resultstr = _( "+;RESETVAR;" );
+        resultstr += strTok;
+        resultstr += _( ";" );
+        resultstr += wxString::Format( _( "%d" ), type );
+        resultstr += _( ";" );
+        resultstr += strvalue;
+
+        mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, ( const char * )resultstr.mbc_str() );
 
     }
     // ------------------------------------------------------------------------
