@@ -685,6 +685,9 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
     //-------------------------------------------------------------------------
 	else if (0 == strTok.Find(_("WRITEVAR"))) {
 
+        CVSCPVariable *pvar;
+        wxString strvalue;
+
 		// Must be authorized to do this
 		if ( !pSession->bAuthenticated ) {
 			mg_websocket_printf( conn, 
@@ -717,7 +720,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         // Get variablename
         if (tkz.HasMoreTokens()) {
 
-            CVSCPVariable *pvar;
+            
             strTok = tkz.GetNextToken();
             if (NULL == (pvar = pCtrlObject->m_VSCP_Variables.find(strTok))) {
                 mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, 
@@ -754,8 +757,15 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
             return MG_TRUE;
         }
 
-        wxString resultstr = _("+;WRITEVAR;");
+        pvar->writeValueToString( strvalue );
+        uint8_t type = pvar->getType();
+
+        wxString resultstr = _( "+;WRITEVAR;" );
         resultstr += strTok;
+        resultstr += _( ";" );
+        resultstr += wxString::Format( _( "%d" ), type );
+        resultstr += _( ";" );
+        resultstr += strvalue;
 
         // Positive reply
         mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;WRITEVAR" );
