@@ -1116,6 +1116,8 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         pvar->writeValueToString(strvalue);
 
         wxString resultstr = _("+;LASTCHANGEVAR;");
+        resultstr += strTok;
+        resultstr += _( ";" );
         resultstr +=  pvar->getLastChange().FormatISODate() + _(" ") +  pvar->getLastChange().FormatISOTime();
 		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)resultstr.mbc_str() );
 
