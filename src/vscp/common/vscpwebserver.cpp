@@ -769,7 +769,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         resultstr += strvalue;
 
         // Positive reply
-        mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;WRITEVAR" );
+        mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)resultstr.mbc_str() );
 
     } 
     // ------------------------------------------------------------------------
