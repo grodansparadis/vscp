@@ -719,11 +719,12 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         }
 
         // Get variablename
+        wxString strVarName;
         if (tkz.HasMoreTokens()) {
 
             
-            strTok = tkz.GetNextToken();
-            if (NULL == (pvar = pCtrlObject->m_VSCP_Variables.find(strTok))) {
+            strVarName = tkz.GetNextToken();
+            if (NULL == (pvar = pCtrlObject->m_VSCP_Variables.find(strVarName))) {
                 mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, 
 									"-;WRITEVAR;%d;%s", 
 									WEBSOCK_ERROR_VARIABLE_UNKNOWN, 
@@ -762,7 +763,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         type = pvar->getType();
 
         wxString resultstr = _( "+;WRITEVAR;" );
-        resultstr += strTok;
+        resultstr += strVarName;
         resultstr += _( ";" );
         resultstr += wxString::Format( _( "%d" ), type );
         resultstr += _( ";" );
