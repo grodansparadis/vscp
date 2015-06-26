@@ -5006,6 +5006,9 @@ void frmDeviceConfig::updateAbstractionGrid(void)
 
         CMDF_Abstraction *pAbstraction = *iter; 
 
+        // Add a row
+        m_gridAbstractions->AppendRows( 1 );
+
         wxColour fgcolor( pAbstraction->m_fgcolor );
         wxColour bgcolor( pAbstraction->m_bgcolor );
 
@@ -5015,8 +5018,7 @@ void frmDeviceConfig::updateAbstractionGrid(void)
             m_gridAbstractions->SetCellBackgroundColour( m_gridAbstractions->GetNumberRows() - 1, i, bgcolor );
         }
 
-        // Add a row
-        m_gridAbstractions->AppendRows(1);
+        
 
         // Name
         m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows()-1, 
@@ -5111,6 +5113,9 @@ void frmDeviceConfig::updateDmGrid(void)
     uint8_t buf[ 512 ];
     uint8_t *prow = buf;
 
+    wxColour oddcolor( 0xe0, 0xe0, 0xff );
+    wxColour evencolor( 0xf0, 0xf0, 0xff );
+
     cguid destGUID;
     destGUID.getFromString( m_comboNodeID->GetValue() );
 
@@ -5121,6 +5126,18 @@ void frmDeviceConfig::updateDmGrid(void)
 
         // Add a row
         if ( !m_gridDM->AppendRows(1) ) continue;
+
+        // Set foreground and background colors.
+        if ( i % 2 ) {
+            for ( int j = 0; j < 8; j++ ) {
+                m_gridDM->SetCellBackgroundColour( m_gridDM->GetNumberRows() - 1, j, oddcolor );
+            }
+        }
+        else {
+            for ( int j = 0; j < 8; j++ ) {
+                m_gridDM->SetCellBackgroundColour( m_gridDM->GetNumberRows() - 1, j, evencolor );
+            }
+        }
 
         // Get the row in the grid
         CMDF_Register *pRegDM = m_mdf.getMDFRegister( m_mdf.m_dmInfo.m_nStartOffset, m_mdf.m_dmInfo.m_nStartPage );

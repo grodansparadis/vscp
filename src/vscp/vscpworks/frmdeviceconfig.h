@@ -438,7 +438,7 @@ public:
 	};
 
 	enum {
-		m_constGridAbstractionNameDefaultWidth = 170
+		m_constGridAbstractionNameDefaultWidth = 230
 	};
 
 	enum {
