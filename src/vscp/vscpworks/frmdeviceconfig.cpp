@@ -3360,7 +3360,6 @@ read_pageregs1_again:
                 m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2 );
                 m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows() - 1, 2, fontBold );
 
-                //str.Printf(reg->m_strName + _("\n") + reg->m_strDescription);
                 str = pReg->m_strName + _( "\n" ) + pReg->m_strDescription;
                 m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows() - 1,
                                                3,
@@ -5012,8 +5011,8 @@ void frmDeviceConfig::updateAbstractionGrid(void)
 
         // Set foreground and background colors.
         for ( int i = 0; i < 5; i++ ) {
-            m_gridRegisters->SetCellTextColour( m_gridAbstractions->GetNumberRows() - 1, i, fgcolor );
-            m_gridRegisters->SetCellBackgroundColour( m_gridAbstractions->GetNumberRows() - 1, i, bgcolor );
+            m_gridAbstractions->SetCellTextColour( m_gridAbstractions->GetNumberRows() - 1, i, fgcolor );
+            m_gridAbstractions->SetCellBackgroundColour( m_gridAbstractions->GetNumberRows() - 1, i, bgcolor );
         }
 
         // Add a row
