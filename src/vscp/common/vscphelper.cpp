@@ -3081,6 +3081,10 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				str += _("J");
 				break;
 			}
+            case 0x01: // KWh
+				str += _("KWh");
+				break;
+			}
 		}
 		break;
 
@@ -3518,6 +3522,12 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 		break;
 
 		case VSCP_TYPE_DATA_SIGNAL_QUALITY:
+		{
+
+		}
+		break;
+        
+        case VSCP_TYPE_DATA_SIGNAL_COUNT:
 		{
 
 		}

@@ -275,6 +275,7 @@ VSCPInformation::VSCPInformation( void )
 	m_hashType[ MAKE_CLASSTYPE_LONG(15, 4) ] = _("RELATIVE_STRENGTH");
 	m_hashType[ MAKE_CLASSTYPE_LONG(15, 5) ] = _("SIGNAL_LEVEL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(15, 6) ] = _("SIGNAL_QUALITY");
+    m_hashType[ MAKE_CLASSTYPE_LONG(15, 7) ] = _("COUNT");
 
 	// class 20 (0x14) -- INFORMATION
 	m_hashType[ MAKE_CLASSTYPE_LONG(20, 0) ] = _("INFORMATION_GENERAL");

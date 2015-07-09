@@ -195,6 +195,7 @@
 #define VSCP_TYPE_DATA_RELATIVE_STRENGTH                    4
 #define VSCP_TYPE_DATA_SIGNAL_LEVEL                         5
 #define VSCP_TYPE_DATA_SIGNAL_QUALITY                       6
+#define VSCP_TYPE_DATA_COUNT                                7
 
 // class 20 (0x14) -- INFORMATION
 #define VSCP_TYPE_INFORMATION_GENERAL                       0
