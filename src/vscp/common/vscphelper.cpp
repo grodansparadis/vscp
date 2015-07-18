@@ -3080,7 +3080,6 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 			case 0x00: // default unit = joule
 				str += _("J");
 				break;
-			}
             case 0x01: // KWh
 				str += _("KWh");
 				break;
