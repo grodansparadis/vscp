@@ -3526,7 +3526,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 		}
 		break;
         
-        case VSCP_TYPE_DATA_SIGNAL_COUNT:
+        case VSCP_TYPE_DATA_COUNT:
 		{
 
 		}
