@@ -583,9 +583,9 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
     }
 
     // Segment Controller Heartbeat
-    wxTimeSpan SegmetnControllerHeartBeatPeriod( 0, 0, m_intervalSegmentControllerHeartbeat );
+    wxTimeSpan SegmentControllerHeartBeatPeriod( 0, 0, m_intervalSegmentControllerHeartbeat );
     if ( m_bSegmentControllerHeartbeat && 
-         ( ( wxDateTime::Now() - m_SegmentHeartbeat_sent ) > SegmetnControllerHeartBeatPeriod ) ) {
+         ( ( wxDateTime::Now() - m_SegmentHeartbeat_sent ) > SegmentControllerHeartBeatPeriod ) ) {
 
         m_SegmentHeartbeat_sent = wxDateTime::Now();
 
@@ -602,10 +602,10 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
 
         wxUINT32_SWAP_ON_BE( time32 );
         pEventEx->data[ 0 ] = 0;  // 8 - bit crc for VSCP daemon GUID
-        pEventEx->data[ 1 ] = (uint8_t)((time32>>24) & 0x0f);    // Time since epoch MSB
-        pEventEx->data[ 2 ] = (uint8_t)((time32>>16) & 0x0f);    
-        pEventEx->data[ 3 ] = (uint8_t)((time32>>9)  & 0x0f);
-        pEventEx->data[ 4 ] = (uint8_t)((time32) & 0x0f);       // Time since epoch LSB
+        pEventEx->data[ 1 ] = (uint8_t)((time32>>24) & 0xff);    // Time since epoch MSB
+        pEventEx->data[ 2 ] = (uint8_t)((time32>>16) & 0xff);    
+        pEventEx->data[ 3 ] = (uint8_t)((time32>>9)  & 0xff);
+        pEventEx->data[ 4 ] = (uint8_t)((time32) & 0xff);       // Time since epoch LSB
 
         return true;
     }
