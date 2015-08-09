@@ -3481,7 +3481,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 
 		}
 	} // measurement
-    str += "\n";
+    str += _("\n");
 	break;
 
 		// **** CLASS ****
