@@ -2130,12 +2130,12 @@ bool vscp_writeVscpEventToString( const vscpEvent *pEvent, wxString& str)
 	// Check pointer
 	if (NULL == pEvent) return false;
 
-	str.Printf(_("%d,%d,%d,%d,%d,"),
-			pEvent->head,
-			pEvent->vscp_class,
-			pEvent->vscp_type,
-            pEvent->obid,
-            pEvent->timestamp );
+	str.Printf(_("%u,%u,%u,%u,%u,"),
+        pEvent->head,
+        pEvent->vscp_class,
+        pEvent->vscp_type,
+        pEvent->obid,
+        pEvent->timestamp );
 
 	wxString strGUID;
 	vscp_writeGuidToString(pEvent, strGUID);
