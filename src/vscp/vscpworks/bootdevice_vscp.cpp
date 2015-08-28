@@ -1088,7 +1088,7 @@ bool CBootDevice_VSCP::sendVSCPBootCommand( uint8_t index )
 {
     uint16_t vscpclass;
     uint8_t vscptype;
-    uint8_t nodeid;
+    //uint8_t nodeid;
     uint8_t priority = 0;
 
     if ( USE_DLL_INTERFACE == m_type ) {
@@ -1139,9 +1139,7 @@ bool CBootDevice_VSCP::sendVSCPBootCommand( uint8_t index )
         if ( CANAL_ERROR_SUCCESS == m_pdll->doCmdSend( &msg ) ) {
 
             //bRun = true;
-
             wxMilliSleep(1);
-
             return true;
 
         }

@@ -1124,7 +1124,7 @@ void VSCPClientThread::handleClientDataAvailable ( struct ns_connection *conn, C
     }
 
     sprintf ( outbuf,
-        "%ld\r\n%s",
+        "%zd\r\n%s",
         pClientItem->m_clientInputQueue.GetCount(),
         MSG_OK );
 	ns_send( conn,  outbuf, strlen ( outbuf ) );

@@ -143,6 +143,9 @@
     <ClInclude Include="..\..\common\register.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\common\v7.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\common\clientlist.cpp">
@@ -205,9 +208,6 @@
     <ClCompile Include="..\..\..\common\frozen.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\common\slre.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\common\vscpwebserver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -233,6 +233,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\common\register.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\common\v7.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

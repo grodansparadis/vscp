@@ -59,7 +59,7 @@ This is the "original" project and includes all sub-projects.
     Download and install. Make a environment variable EXPAT that points to the folder. 
 
 6.) Install OpenSLL from http://slproweb.com/products/Win32OpenSSL.html  Set an environment variable to the 
-    location you install the file to with the name OPENSSL. 	
+    location you install the file to with the name OPENSSL32 for 32-bit version ad OPENSSL64 for 64-bit version. 	
 
 6.) To build the APOX driver and the tellstick driver the dxx driver which is available from ftdi 
     (http://www.ftdichip.com) is needed. Make an environment variable named "ftdi" that points on 

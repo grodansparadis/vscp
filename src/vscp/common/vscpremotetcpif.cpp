@@ -91,12 +91,20 @@ void clientTcpIpWorkerThread::ev_handler(struct ns_connection *conn, enum ns_eve
 {
     char rbuf[ 2048 ];
     int pos4lf = 0;
+#ifdef USE_FOSSA
+    struct mbuf *io = NULL;
+#else
     struct iobuf *io = NULL;
+#endif
     VscpRemoteTcpIf *pTcpIfSession = NULL;
     
     if ( NULL == conn ) return;
 
+#ifdef USE_FOSSA
+    io = &conn->recv_mbuf;
+#else
     io = &conn->recv_iobuf;
+#endif
     pTcpIfSession = ( VscpRemoteTcpIf * )conn->mgr->user_data;
 
     if ( NULL == pTcpIfSession ) return;
@@ -137,7 +145,11 @@ void clientTcpIpWorkerThread::ev_handler(struct ns_connection *conn, enum ns_eve
                 // Protect rbuf for out of bounce access
                 if ( sizeof( rbuf ) < io->len ) return;
 			    memcpy( rbuf, io->buf, io->len );
-			    iobuf_remove(io, io->len); 
+#ifdef USE_FOSSA
+			    mbuf_remove(io, io->len); 
+#else
+                iobuf_remove( io, io->len );
+#endif
                 pTcpIfSession->m_readBuffer += wxString::FromUTF8( rbuf );
 				wxLogDebug( wxString::FromUTF8( rbuf ) );
 				

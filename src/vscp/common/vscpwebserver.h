@@ -323,7 +323,7 @@ public:
 	webserv_rest_doReceiveEvent( struct mg_connection *conn, 
 											struct websrv_rest_session *pSession, 
 											int format,
-											long count=1 );
+											size_t count=1 );
 
 	/*!
 		webserv_rest_doSendEvent - Send VSCP event
