@@ -3109,16 +3109,16 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
         const char *p;
 
         // user
-        p = mg_get_header( conn, "VSCP_User" );
-        keypairs[_("USER")] = wxString::FromAscii( p );
+        p = mg_get_header( conn, "vscpuser" );
+        keypairs[_("VSCPUSER")] = wxString::FromAscii( p );
 
         // password
-        p = mg_get_header( conn, "VSCP_Password" );
-        keypairs[_("PASSWORD")] = wxString::FromAscii( p );
+        p = mg_get_header( conn, "vscpsecret" );
+        keypairs[_("VSCPSECRET")] = wxString::FromAscii( p );
 
         // session
-        p = mg_get_header( conn, "VSCP_Session" );
-        keypairs[_("SESSION")] = wxString::FromAscii( p );
+        p = mg_get_header( conn, "vscpsession" );
+        keypairs[_("VSCPSESSION")] = wxString::FromAscii( p );
 
         // format
         mg_get_var(conn, "format", buf, sizeof(buf) );
@@ -3185,22 +3185,22 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
     }
 
     // If we have a session key we try to get the session
-	if ( _("") != keypairs[_("SESSION")] ) {
-		pSession = websrv_get_rest_session( conn, keypairs[_("SESSION")] );
+	if ( _("") != keypairs[_("VSCPSESSION")] ) {
+		pSession = websrv_get_rest_session( conn, keypairs[_("VSCPSESSION")] );
         if ( NULL != pSession )  pUser = pSession->pUserItem;
 	}
 
     if ( NULL == pSession ) {
 
         // Get user
-        pUser = pObject->m_userList.getUser( keypairs[_("USER")] ); 
+        pUser = pObject->m_userList.getUser( keypairs[_("VSCPUSER")] ); 
 
 	    // Check if user is valid	
 	    if ( NULL == pUser ) {
             wxString strErr = 
             wxString::Format( _("[REST Client] Host [%s] Invalid user [%s]\n"), 
                                 wxString::FromAscii( (const char *)conn->remote_ip ).wx_str(), 
-                                keypairs[_("USER")].wx_str() );
+                                keypairs[_("VSCPUSER")].wx_str() );
 	        pObject->logMsg( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
             return MG_FALSE;
         }
@@ -3214,17 +3214,17 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
             wxString strErr = 
             wxString::Format( _("[REST Client] Host [%s] NOT allowed to connect. User [%s]\n"), 
                                 wxString::FromAscii( (const char *)conn->remote_ip ).wx_str(), 
-                                keypairs[_("USER")].wx_str() );
+                                keypairs[_("VSCPUSER")].wx_str() );
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
             return MG_FALSE;
         }
 
 	    // Is this an authorized user?
-	    wxString str3 = keypairs[_("PASSWORD")];
-	    if ( keypairs[_("PASSWORD")] != pUser->m_md5Password ) {
+	    wxString str3 = keypairs[_("VSCPSECRET")];
+	    if ( keypairs[_("VSCPSECRET")] != pUser->m_md5Password ) {
             wxString strErr = 
             wxString::Format( _("[REST Client] User [%s] NOT allowed to connect. Client [%s]\n"), 
-                                keypairs[_("USER")].wx_str(), 
+                                keypairs[_("VSCPUSER")].wx_str(), 
                                 wxString::FromAscii( (const char *)conn->remote_ip ).wx_str() );
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
             return MG_FALSE;
@@ -3242,7 +3242,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
             wxString strErr = 
             wxString::Format( _("[REST Client] Host [%s] NOT allowed to connect. User [%s]\n"), 
                                 wxString::FromAscii( (const char *)conn->remote_ip ).wx_str(), 
-                                keypairs[_("USER")].wx_str() );
+                                keypairs[_("VSCPUSER")].wx_str() );
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
             return MG_FALSE;
         }
@@ -3254,7 +3254,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 
     wxString strErr = 
         wxString::Format( _("[REST Client] User [%s] Host [%s] allowed to connect. \n"), 
-                            keypairs[_("USER")].wx_str() , 
+                            keypairs[_("VSCPUSER")].wx_str() , 
                             wxString::FromAscii( (const char *)conn->remote_ip ).wx_str() );
 	    pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
 
