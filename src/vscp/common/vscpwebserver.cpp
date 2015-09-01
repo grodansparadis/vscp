@@ -4694,11 +4694,11 @@ VSCPWebServerThread::webserv_rest_doStatus( struct mg_connection *conn,
 
 			memset( buf, 0, sizeof( buf ));
 #ifdef WIN32
-			int n = _snprintf( wrkbuf, sizeof(wrkbuf), "Session_id=%s nEvents=%zd", pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
+			int n = _snprintf( wrkbuf, sizeof(wrkbuf), "vscpsession=%s nEvents=%zd", pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #else
 			int n = snprintf( wrkbuf, 
 								sizeof(wrkbuf), 
-								"1 1 Success Session_id=%s nEvents=%lu", 
+								"1 1 Success vscpsession=%s nEvents=%lu", 
 								pSession->sid, 
 								pSession->pClientItem->m_clientInputQueue.GetCount() );
 #endif
@@ -4717,13 +4717,13 @@ VSCPWebServerThread::webserv_rest_doStatus( struct mg_connection *conn,
 #ifdef WIN32
 			int n = _snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"success-code,error-code,message,description,session_id,nEvents\r\n1,1,Success,Success. 1,1,Success,Sucess,%s,%zd", 
+					"success-code,error-code,message,description,vscpsession,nEvents\r\n1,1,Success,Success. 1,1,Success,Sucess,%s,%zd", 
 					pSession->sid,
                     pSession->pClientItem->m_clientInputQueue.GetCount() );
 #else
 			int n = snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"success-code,error-code,message,description,session_id,nEvents\r\n1,1,Success,Success. 1,1,Success,Sucess,%s,%lu", 
+					"success-code,error-code,message,description,vscpsession,nEvents\r\n1,1,Success,Success. 1,1,Success,Sucess,%s,%lu", 
 					pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #endif
 			webserv_util_make_chunk( buf, wrkbuf, n );
@@ -4741,13 +4741,13 @@ VSCPWebServerThread::webserv_rest_doStatus( struct mg_connection *conn,
 #ifdef WIN32
 			int n = _snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"<vscp-rest success = \"true\" code = \"1\" massage = \"Success.\" description = \"Success.\" ><session_id>%s</session_id><nEvents>%zd</nEvents></vscp-rest>", 
+					"<vscp-rest success = \"true\" code = \"1\" massage = \"Success.\" description = \"Success.\" ><vscpsession>%s</vscpsession><nEvents>%zd</nEvents></vscp-rest>", 
 					pSession->sid,
                     pSession->pClientItem->m_clientInputQueue.GetCount() );
 #else
 			int n = snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"<vscp-rest success = \"true\" code = \"1\" massage = \"Success.\" description = \"Success.\" ><session_id>%s</session_id><nEvents>%lu</nEvents></vscp-rest>", 
+					"<vscp-rest success = \"true\" code = \"1\" massage = \"Success.\" description = \"Success.\" ><vscpsession>%s</vscpsession><nEvents>%lu</nEvents></vscp-rest>", 
 					pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #endif
 			webserv_util_make_chunk( buf, wrkbuf, n );
@@ -4765,13 +4765,13 @@ VSCPWebServerThread::webserv_rest_doStatus( struct mg_connection *conn,
 #ifdef WIN32
 			int n = _snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session_id\":\"%s\",\"nEvents\":%zd}", 
+					"{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"vscpsession\":\"%s\",\"nEvents\":%zd}", 
 					pSession->sid, 
                     pSession->pClientItem->m_clientInputQueue.GetCount() );
 #else
 			int n = snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session_id\":\"%s\",\"nEvents\":%lu}", 
+					"{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"vscpsession\":\"%s\",\"nEvents\":%lu}", 
 					pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #endif
 			webserv_util_make_chunk( buf, wrkbuf, n );
@@ -4789,13 +4789,13 @@ VSCPWebServerThread::webserv_rest_doStatus( struct mg_connection *conn,
 #ifdef WIN32
 			int n = _snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"typeof handler === 'function' && handler([{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session_id\":\"%s\",\"nEvents\":%zd}]);",
+					"typeof handler === 'function' && handler([{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"vscpsession\":\"%s\",\"nEvents\":%zd}]);",
 					pSession->sid, 
                     pSession->pClientItem->m_clientInputQueue.GetCount() );
 #else
 			int n = snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"typeof handler === 'function' && handler([{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session_id\":\"%s\",\"nEvents\":%lu}]);",
+					"typeof handler === 'function' && handler([{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"vscpsession\":\"%s\",\"nEvents\":%lu}]);",
 					pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #endif
 			webserv_util_make_chunk( buf, wrkbuf, n );
@@ -4855,9 +4855,9 @@ VSCPWebServerThread::webserv_rest_doOpen( struct mg_connection *conn,
 
 			memset( buf, 0, sizeof( buf ));
 #ifdef WIN32
-			int n = _snprintf( wrkbuf, sizeof(wrkbuf), "1 1 Success Session_id=%s nEvents=%zd", pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
+			int n = _snprintf( wrkbuf, sizeof(wrkbuf), "1 1 Success vscpsession=%s nEvents=%zd", pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #else
-			int n = snprintf( wrkbuf, sizeof(wrkbuf), "1 1 Success Session_id=%s nEvents=%lu", pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
+			int n = snprintf( wrkbuf, sizeof(wrkbuf), "1 1 Success vscpsession=%s nEvents=%lu", pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #endif
 			webserv_util_make_chunk( buf, wrkbuf, n );
 			mg_write( conn, buf, strlen( buf ) );
@@ -4874,12 +4874,12 @@ VSCPWebServerThread::webserv_rest_doOpen( struct mg_connection *conn,
 #ifdef WIN32
 			int n = _snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"success-code,error-code,message,description,session_id,nEvents\r\n1,1,Success,Success. 1,1,Success,Success,%s,%zd", 
+					"success-code,error-code,message,description,vscpsession,nEvents\r\n1,1,Success,Success. 1,1,Success,Success,%s,%zd", 
 					pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #else
 			int n = snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"success-code,error-code,message,description,session_id,nEvents\r\n1,1,Success,Success. 1,1,Success,Success,%s,%lu", 
+					"success-code,error-code,message,description,vscpsession,nEvents\r\n1,1,Success,Success. 1,1,Success,Success,%s,%lu", 
 					pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #endif
 			webserv_util_make_chunk( buf, wrkbuf, n );
@@ -4897,12 +4897,12 @@ VSCPWebServerThread::webserv_rest_doOpen( struct mg_connection *conn,
 #ifdef WIN32
 			int n = _snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"<vscp-rest success = \"true\" code = \"1\" massage = \"Success.\" description = \"Success.\" ><session_id>%s</session_id><nEvents>%zd</nEvents></vscp-rest>", 
+					"<vscp-rest success = \"true\" code = \"1\" massage = \"Success.\" description = \"Success.\" ><vscpsession>%s</vscpsession><nEvents>%zd</nEvents></vscp-rest>", 
 					pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #else
 			int n = snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"<vscp-rest success = \"true\" code = \"1\" massage = \"Success.\" description = \"Success.\" ><session_id>%s</session_id><nEvents>%lu</nEvents></vscp-rest>", 
+					"<vscp-rest success = \"true\" code = \"1\" massage = \"Success.\" description = \"Success.\" ><vscpsession>%s</vscpsession><nEvents>%lu</nEvents></vscp-rest>", 
 					pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #endif
 			webserv_util_make_chunk( buf, wrkbuf, n );
@@ -4920,13 +4920,13 @@ VSCPWebServerThread::webserv_rest_doOpen( struct mg_connection *conn,
 #ifdef WIN32
 			int n = _snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session_id\":\"%s\",\"nEvents\":%zd}", 
+					"{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"vscpsession\":\"%s\",\"nEvents\":%zd}", 
 					pSession->sid, 
                     pSession->pClientItem->m_clientInputQueue.GetCount() );
 #else
 			int n = snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session_id\":\"%s\",\"nEvents\":%lu}", 
+					"{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"vscpsession\":\"%s\",\"nEvents\":%lu}", 
 					pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #endif
 			webserv_util_make_chunk( buf, wrkbuf, n );
@@ -4944,12 +4944,12 @@ VSCPWebServerThread::webserv_rest_doOpen( struct mg_connection *conn,
 #ifdef WIN32
 			int n = _snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"typeof handler === 'function' && handler([{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session_id\":\"%s\",\"nEvents\":%zd}]);", 
+					"typeof handler === 'function' && handler([{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"vscpsession\":\"%s\",\"nEvents\":%zd}]);", 
 					pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #else
 			int n = snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"typeof handler === 'function' && handler([{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session_id\":\"%s\",\"nEvents\":%lu}]);", 
+					"typeof handler === 'function' && handler([{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"vscpsession\":\"%s\",\"nEvents\":%lu}]);", 
 					pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #endif
 			webserv_util_make_chunk( buf, wrkbuf, n );
