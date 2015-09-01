@@ -358,15 +358,15 @@ enum {
 #define REST_JSON_ERROR_VARIABLE_NOT_FOUND		"{\"success\":false,\"code\":-7,\"message\":\"Variable not found\",\"description\":\"Variable could not be found.\"}"
 #define REST_JSON_ERROR_VARIABLE_NOT_CREATED	"{\"success\":false,\"code\":-7,\"message\":\"Variable could not be created\",\"description\":\"Variable could not be created.\"}"
 
-#define REST_JSONP_ERROR_SUCCESS				"func("REST_JSON_ERROR_SUCCESS");"
-#define REST_JSONP_ERROR_GENERAL_FAILURE		"func("REST_JSON_ERROR_GENERAL_FAILURE");"
-#define REST_JSONP_ERROR_INVALID_SESSION		"func("REST_JSON_ERROR_INVALID_SESSION");"
-#define REST_JSONP_ERROR_UNSUPPORTED_FORMAT		"func("REST_JSON_ERROR_UNSUPPORTED_FORMAT");"
-#define REST_JSONP_ERROR_COULD_NOT_OPEN_SESSION "func("REST_JSON_ERROR_COULD_NOT_OPEN_SESSION");"
-#define REST_JSONP_ERROR_MISSING_DATA			"func("REST_JSON_ERROR_MISSING_DATA");"
-#define REST_JSONP_ERROR_INPUT_QUEUE_EMPTY		"func("REST_JSON_ERROR_INPUT_QUEUE_EMPTY");"
-#define REST_JSONP_ERROR_VARIABLE_NOT_FOUND		"func("REST_JSON_ERROR_VARIABLE_NOT_FOUND");"
-#define REST_JSONP_ERROR_VARIABLE_NOT_CREATED	"func("REST_JSON_ERROR_VARIABLE_NOT_CREATED");"
+#define REST_JSONP_ERROR_SUCCESS				"typeof handler === 'function' && handler([{"REST_JSON_ERROR_SUCCESS"}]);"
+#define REST_JSONP_ERROR_GENERAL_FAILURE		"typeof handler === 'function' && handler([{"REST_JSON_ERROR_GENERAL_FAILURE"}]);"
+#define REST_JSONP_ERROR_INVALID_SESSION		"typeof handler === 'function' && handler([{"REST_JSON_ERROR_INVALID_SESSION"}]);"
+#define REST_JSONP_ERROR_UNSUPPORTED_FORMAT		"typeof handler === 'function' && handler([{"REST_JSON_ERROR_UNSUPPORTED_FORMAT"}]);"
+#define REST_JSONP_ERROR_COULD_NOT_OPEN_SESSION "typeof handler === 'function' && handler([{"REST_JSON_ERROR_COULD_NOT_OPEN_SESSION"}]);"
+#define REST_JSONP_ERROR_MISSING_DATA			"typeof handler === 'function' && handler([{"REST_JSON_ERROR_MISSING_DATA"}]);"
+#define REST_JSONP_ERROR_INPUT_QUEUE_EMPTY		"typeof handler === 'function' && handler([{"REST_JSON_ERROR_INPUT_QUEUE_EMPTY"}]);"
+#define REST_JSONP_ERROR_VARIABLE_NOT_FOUND		"typeof handler === 'function' && handler([{"REST_JSON_ERROR_VARIABLE_NOT_FOUND"}]);"
+#define REST_JSONP_ERROR_VARIABLE_NOT_CREATED	"typeof handler === 'function' && handler([{"REST_JSON_ERROR_VARIABLE_NOT_CREATED"}]);"
 
 const char* rest_errors[][REST_FORMAT_COUNT+1] = {
 	{REST_PLAIN_ERROR_SUCCESS, REST_CSV_ERROR_SUCCESS,REST_XML_ERROR_SUCCESS,REST_JSON_ERROR_SUCCESS,REST_JSONP_ERROR_SUCCESS,REST_JSONP_ERROR_SUCCESS},
