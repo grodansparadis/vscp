@@ -194,3 +194,4 @@ src/vscp/drivers/level1/can4vscp/linux/test
 src/vscp/drivers/level2/sim/linux/nbproject/
 src/vscp/drivers/level2/sim/linux/test
 /src/vscp/daemon/win32/service/vscpsrv.sdf
+/src/vscp/.vs/vscp_project/v14/*.suo
