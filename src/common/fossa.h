@@ -31,14 +31,14 @@
 #define NS_DISABLE_FILESYSTEM
 #endif
 
-#undef UNICODE                  /* Use ANSI WinAPI functions */
-#undef _UNICODE                 /* Use multibyte encoding on Windows */
-#define _MBCS                   /* Use multibyte encoding on Windows */
-#define _INTEGRAL_MAX_BITS 64   /* Enable _stati64() on Windows */
+#undef UNICODE                /* Use ANSI WinAPI functions */
+#undef _UNICODE               /* Use multibyte encoding on Windows */
+#define _MBCS                 /* Use multibyte encoding on Windows */
+#define _INTEGRAL_MAX_BITS 64 /* Enable _stati64() on Windows */
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS /* Disable deprecation warning in VS2005+ */
 #endif
-#undef WIN32_LEAN_AND_MEAN      /* Let windows.h always include winsock2.h */
+#undef WIN32_LEAN_AND_MEAN /* Let windows.h always include winsock2.h */
 #undef _XOPEN_SOURCE
 #define _XOPEN_SOURCE 600    /* For flockfile() on Linux */
 #define __STDC_FORMAT_MACROS /* <inttypes.h> wants this for C++ */
@@ -173,8 +173,15 @@ DIR *opendir(const char *name);
 int closedir(DIR *dir);
 struct dirent *readdir(DIR *dir);
 
-#else /* not _WIN32 */
-#ifndef NO_LIBC
+#elif /* not _WIN32 */ defined(NS_CC3200)
+
+#include <fcntl.h>
+#include <unistd.h>
+#include <cc3200_libc.h>
+#include <cc3200_socket.h>
+
+#elif /* not CC3200 */ !defined(NO_LIBC) && !defined(NO_BSD_SOCKETS)
+
 #include <dirent.h>
 #include <fcntl.h>
 #include <netdb.h>
@@ -185,25 +192,30 @@ struct dirent *readdir(DIR *dir);
 #include <sys/socket.h>
 #include <sys/select.h>
 #endif
+
+#ifndef _WIN32
 #include <errno.h>
 #include <inttypes.h>
 #include <stdarg.h>
+
 #ifndef AVR_LIBC
 #define closesocket(x) close(x)
 #ifndef __cdecl
 #define __cdecl
 #endif
+
 #define INVALID_SOCKET (-1)
 #define INT64_FMT PRId64
 #define to64(x) strtoll(x, NULL, 10)
 typedef int sock_t;
 typedef struct stat ns_stat_t;
 #define DIRSEP '/'
-#endif
+#endif /* !AVR_LIBC */
+
 #ifdef __APPLE__
 int64_t strtoll(const char *str, char **endptr, int base);
 #endif
-#endif /* _WIN32 */
+#endif /* !_WIN32 */
 
 #ifdef NS_ENABLE_DEBUG
 #define DBG(x)                  \
@@ -219,39 +231,6 @@ int64_t strtoll(const char *str, char **endptr, int base);
 
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(array) (sizeof(array) / sizeof(array[0]))
-#endif
-
-#if !defined(NO_LIBC) && !defined(NS_DISABLE_FILESYSTEM)
-typedef FILE *c_file_t;
-/*
- * Cannot use fopen & Co directly and
- * override them with -D because
- * these overrides conflicts with
- * functions in stdio.h
- */
-#define c_fopen fopen
-#define c_fread fread
-#define c_fwrite fwrite
-#define c_fclose fclose
-#define c_rename rename
-#define c_remove remove
-#define c_fseek fseek
-#define c_ftell ftell
-#define c_rewind rewind
-#define c_ferror ferror
-#define INVALID_FILE NULL
-#else
-/*
- * TODO(alashkin): move to .h file (v7.h?)
- */
-c_file_t c_fopen(const char *filename, const char *mode);
-size_t c_fread(void *ptr, size_t size, size_t count, c_file_t fd);
-size_t c_fwrite(const void *ptr, size_t size, size_t count, c_file_t fd);
-int c_fclose(c_file_t fd);
-int c_rename(const char *oldname, const char *newname);
-int c_remove(const char *filename);
-void c_rewind(c_file_t fd);
-int c_ferror(c_file_t fd);
 #endif
 
 #endif /* OSDEP_HEADER_INCLUDED */

@@ -56,10 +56,13 @@ This is the "original" project and includes all sub-projects.
     This is not needed on Visual Studio 2010 as it looks.
 
 5.) expat(http://expat.sourceforge.net/) is needed to build the daemon and other applications in the suit.
-    Download and install. Make a environment variable EXPAT that points to the folder. 
+    Download and install. Make a environment variable EXPAT32 that points to the 32-bit folder (
+	C:\Program Files (x86)\Expat 2.1.0) and EXPAT64 that points to the 64-bit folder
+	(C:\Users\grodansparadis\development\expat-2.1.0\win64). 
 
 6.) Install OpenSLL from http://slproweb.com/products/Win32OpenSSL.html  Set an environment variable to the 
-    location you install the file to with the name OPENSSL32 for 32-bit version ad OPENSSL64 for 64-bit version. 	
+    location you install the file to with the name OPENSSL32 ((C:\OpenSSL-Win32\lib\VC)) for 32-bit version and OPENSSL64 
+	(C:\OpenSSL-Win64\lib\VC)for 64-bit version. 	
 
 6.) To build the APOX driver and the tellstick driver the dxx driver which is available from ftdi 
     (http://www.ftdichip.com) is needed. Make an environment variable named "ftdi" that points on 

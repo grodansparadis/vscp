@@ -102,7 +102,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>USE_FOSSA;NS_DISABLE_PFS;NS_ENABLE_THREADS;NS_ENABLE_SSL;_CRT_SECURE_NO_WARNINGS;NOPCH;WIN32;__WXMSW__;_WINDOWS;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_FOSSA;NS_DISABLE_PFS;NS_ENABLE_THREADS;NS_ENABLE_SSL;WINVER=0x0601;_CRT_SECURE_NO_WARNINGS;NOPCH;WIN32;__WXMSW__;_WINDOWS;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>.\;$(OPENSSL32)\include;$(WXWIN)/lib/vc_lib/mswu;$(WXWIN)/include;$(WXWIN)/contrib/include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -137,7 +137,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>USE_FOSSA;NS_DISABLE_PFS;NS_ENABLE_THREADS;NS_ENABLE_SSL;_CRT_SECURE_NO_WARNINGS;NOPCH;WIN32;__WXMSW__;_WINDOWS;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_FOSSA;NS_DISABLE_PFS;NS_ENABLE_THREADS;NS_ENABLE_SSL;WINVER=0x0601;_CRT_SECURE_NO_WARNINGS;NOPCH;WIN32;__WXMSW__;_WINDOWS;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>.\;$(OPENSSL64)\include;$(WXWIN)/lib/vc_x64_lib/mswu;$(WXWIN)/include;$(WXWIN)/contrib/include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -169,7 +169,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>USE_FOSSA;NS_DISABLE_PFS;NS_ENABLE_SSL;NS_ENABLE_THREADS;_CRT_SECURE_NO_WARNINGS;NOPCH;WIN32;__WXMSW__;_WINDOWS;__WXDEBUG__;_DEBUG;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_FOSSA;NS_DISABLE_PFS;NS_ENABLE_SSL;NS_ENABLE_THREADS;WINVER=0x0601;_CRT_SECURE_NO_WARNINGS;NOPCH;WIN32;__WXMSW__;_WINDOWS;__WXDEBUG__;_DEBUG;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>.\;$(OPENSSL32)\include;$(WXWIN)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -201,7 +201,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>USE_FOSSA;NS_DISABLE_PFS;NS_ENABLE_SSL;NS_ENABLE_THREADS;_CRT_SECURE_NO_WARNINGS;NOPCH;WIN32;__WXMSW__;_WINDOWS;__WXDEBUG__;_DEBUG;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_FOSSA;NS_DISABLE_PFS;NS_ENABLE_SSL;NS_ENABLE_THREADS;WINVER=0x0601;_CRT_SECURE_NO_WARNINGS;NOPCH;WIN32;__WXMSW__;_WINDOWS;__WXDEBUG__;_DEBUG;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>.\;$(OPENSSL64)\include;$(WXWIN)/lib/vc_x64_lib/mswud;$(WXWIN)/include;$(WXWIN)/contrib/include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>

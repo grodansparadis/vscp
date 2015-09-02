@@ -81,7 +81,13 @@ struct v7 *v7_create_opt(struct v7_create_opts);
 /* Destroy V7 instance */
 void v7_destroy(struct v7 *);
 
-enum v7_err { V7_OK, V7_SYNTAX_ERROR, V7_EXEC_EXCEPTION, V7_STACK_OVERFLOW };
+enum v7_err {
+  V7_OK,
+  V7_SYNTAX_ERROR,
+  V7_EXEC_EXCEPTION,
+  V7_STACK_OVERFLOW,
+  V7_AST_TOO_LARGE
+};
 
 /*
  * Execute JavaScript `js_code`, store result in `result` variable.
@@ -156,6 +162,7 @@ v7_val_t v7_create_undefined(void);
 /*
  * Create string primitive value.
  * `str` must point to the utf8 string of length `len`.
+ * If `len` is ~0, `str` is assumed to be NUL-terminated and strlen(str) is used
  */
 v7_val_t v7_create_string(struct v7 *, const char *str, size_t len, int copy);
 
@@ -274,7 +281,8 @@ int v7_is_true(struct v7 *v7, v7_val_t v);
  * Call function `func` with arguments `args`, using `this_obj` as `this`.
  * `args` could be either undefined value, or be an array with arguments.
  */
-v7_val_t v7_apply(struct v7 *, v7_val_t func, v7_val_t this_obj, v7_val_t args);
+enum v7_err v7_apply(struct v7 *, v7_val_t *result, v7_val_t func,
+                     v7_val_t this_obj, v7_val_t args);
 
 /* Throw an exception (Error object) with given formatted message. */
 void v7_throw(struct v7 *, const char *msg_fmt, ...);
@@ -362,7 +370,7 @@ void v7_interrupt(struct v7 *v7);
 /*
  * Tells the GC about a JS value variable/field owned
  * by C code.
- * *
+ *
  * User C code should own v7_val_t variables
  * if the value's lifetime crosses any invocation
  * to the v7 runtime that creates new objects or new
@@ -392,7 +400,11 @@ void v7_own(struct v7 *v7, v7_val_t *v);
  */
 int v7_disown(struct v7 *v7, v7_val_t *v);
 
-int v7_main(int argc, char *argv[], void (*init_func)(struct v7 *));
+/* Prints stack trace recorded in the exception `e` to file `f` */
+void v7_fprint_stack_trace(FILE *f, struct v7 *v7, v7_val_t e);
+
+int v7_main(int argc, char *argv[], void (*init_func)(struct v7 *),
+            void (*fini_func)(struct v7 *));
 
 #ifdef __cplusplus
 }

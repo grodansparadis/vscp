@@ -111,7 +111,8 @@
       <ProgramDataBaseFileName>.\BaseRelease\</ProgramDataBaseFileName>
     </ClCompile>
     <PostBuildEvent>
-      <Command>copy release\*.exe ..\delivery</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
     <Midl>
       <TypeLibraryName>.\BaseRelease\mkpasswd.tlb</TypeLibraryName>
@@ -151,7 +152,8 @@
       <ProgramDataBaseFileName>.\BaseRelease\</ProgramDataBaseFileName>
     </ClCompile>
     <PostBuildEvent>
-      <Command>copy release\*.exe ..\delivery</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
     <Midl>
       <TypeLibraryName>.\BaseRelease\mkpasswd.tlb</TypeLibraryName>

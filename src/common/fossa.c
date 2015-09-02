@@ -1077,9 +1077,7 @@ struct dirent *readdir(DIR *dir) {
  * license, as set out in <https://www.cesanta.com/license>.
  */
 
-#ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS /* Disable deprecation warning in VS2005+ */
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1584,9 +1582,9 @@ int json_emit(char *buf, int buf_len, const char *fmt, ...) {
 #endif
 
 #define NS_CTL_MSG_MESSAGE_SIZE 8192
-#define NS_READ_BUFFER_SIZE 2048
-#define NS_UDP_RECEIVE_BUFFER_SIZE 2000
-#define NS_VPRINTF_BUFFER_SIZE 500
+#define NS_READ_BUFFER_SIZE 1024
+#define NS_UDP_RECEIVE_BUFFER_SIZE 1500
+#define NS_VPRINTF_BUFFER_SIZE 100
 #define NS_MAX_HOST_LEN 200
 
 #define NS_COPY_COMMON_CONNECTION_OPTIONS(dst, src) \
@@ -1600,7 +1598,7 @@ int json_emit(char *buf, int buf_len, const char *fmt, ...) {
 #define _NS_CALLBACK_MODIFIABLE_FLAGS_MASK                                     \
   (NSF_USER_1 | NSF_USER_2 | NSF_USER_3 | NSF_USER_4 | NSF_USER_5 |            \
    NSF_USER_6 | NSF_WEBSOCKET_NO_DEFRAG | NSF_SEND_AND_CLOSE | NSF_DONT_SEND | \
-   NSF_CLOSE_IMMEDIATELY)
+   NSF_CLOSE_IMMEDIATELY | NSF_IS_WEBSOCKET)
 
 #ifndef intptr_t
 #define intptr_t long
@@ -1661,6 +1659,7 @@ NS_INTERNAL void ns_call(struct ns_connection *nc, int ev, void *ev_data) {
                   (nc->flags & _NS_CALLBACK_MODIFIABLE_FLAGS_MASK);
     }
   }
+  DBG(("call done, flags %d", nc->flags));
 }
 
 static size_t ns_out(struct ns_connection *nc, const void *buf, size_t len) {
@@ -1791,6 +1790,8 @@ static void ns_set_non_blocking_mode(sock_t sock) {
 #ifdef _WIN32
   unsigned long on = 1;
   ioctlsocket(sock, FIONBIO, &on);
+#elif defined(NS_CC3200)
+  cc3200_set_non_blocking_mode(sock);
 #else
   int flags = fcntl(sock, F_GETFL, 0);
   fcntl(sock, F_SETFL, flags | O_NONBLOCK);
@@ -1809,7 +1810,7 @@ int ns_socketpair(sock_t sp[2], int sock_type) {
   (void) memset(&sa, 0, sizeof(sa));
   sa.sin.sin_family = AF_INET;
   sa.sin.sin_port = htons(0);
-  sa.sin.sin_addr.s_addr = htonl(0x7f000001);
+  sa.sin.sin_addr.s_addr = htonl(0x7f000001); /* 127.0.0.1 */
 
   if ((sock = socket(AF_INET, sock_type, 0)) == INVALID_SOCKET) {
   } else if (bind(sock, &sa.sa, len) != 0) {
@@ -1869,7 +1870,7 @@ static int ns_resolve2(const char *host, struct in_addr *ina) {
     return 1;
   }
   return 0;
-#endif
+#endif /* NS_ENABLE_GETADDRINFO */
 }
 
 int ns_resolve(const char *host, char *buf, size_t n) {
@@ -1903,7 +1904,12 @@ NS_INTERNAL struct ns_connection *ns_create_connection(
 
 /* Associate a socket to a connection and and add to the manager. */
 NS_INTERNAL void ns_set_sock(struct ns_connection *nc, sock_t sock) {
+#ifndef NS_CC3200
+  /* Can't get non-blocking connect to work.
+   * TODO(rojer): Figure out why it fails where blocking succeeds.
+   */
   ns_set_non_blocking_mode(sock);
+#endif
   ns_set_close_on_exec(sock);
   nc->sock = sock;
   ns_add_conn(nc->mgr, nc);
@@ -1988,6 +1994,7 @@ static sock_t ns_open_listening_socket(union socket_address *sa, int proto) {
   int on = 1;
 
   if ((sock = socket(sa->sa.sa_family, proto, 0)) != INVALID_SOCKET &&
+#ifndef NS_CC3200 /* CC3200 doesn't support either */
 #if defined(_WIN32) && defined(SO_EXCLUSIVEADDRUSE)
       /* "Using SO_REUSEADDR and SO_EXCLUSIVEADDRUSE" http://goo.gl/RmrFTm */
       !setsockopt(sock, SOL_SOCKET, SO_EXCLUSIVEADDRUSE, (void *) &on,
@@ -2006,12 +2013,15 @@ static sock_t ns_open_listening_socket(union socket_address *sa, int proto) {
        */
       !setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (void *) &on, sizeof(on)) &&
 #endif
+#endif /* !NS_CC3200 */
 
       !bind(sock, &sa->sa, sa_len) &&
       (proto == SOCK_DGRAM || listen(sock, SOMAXCONN) == 0)) {
+#ifndef NS_CC3200 /* TODO(rojer): Fix this. */
     ns_set_non_blocking_mode(sock);
     /* In case port was set to 0, get the real port number */
     (void) getsockname(sock, &sa->sa, &sa_len);
+#endif
   } else if (sock != INVALID_SOCKET) {
     closesocket(sock);
     sock = INVALID_SOCKET;
@@ -2222,8 +2232,15 @@ static struct ns_connection *accept_conn(struct ns_connection *ls) {
 }
 
 static int ns_is_error(int n) {
+#ifdef NS_CC3200
+  DBG(("n = %d, errno = %d", n, errno));
+  if (n < 0) errno = n;
+#endif
   return n == 0 || (n < 0 && errno != EINTR && errno != EINPROGRESS &&
                     errno != EAGAIN && errno != EWOULDBLOCK
+#ifdef NS_CC3200
+                    && errno != SL_EALREADY
+#endif
 #ifdef _WIN32
                     && WSAGetLastError() != WSAEINTR &&
                     WSAGetLastError() != WSAEWOULDBLOCK
@@ -2272,7 +2289,16 @@ static void ns_read_from_socket(struct ns_connection *conn) {
     socklen_t len = sizeof(ok);
 
     (void) ret;
+#ifdef NS_CC3200
+    /* On CC3200 we use blocking connect. If we got as far as this,
+     * this means connect() was successful.
+     * TODO(rojer): Figure out why it fails where blocking succeeds.
+     */
+    ns_set_non_blocking_mode(conn->sock);
+    ret = ok = 0;
+#else
     ret = getsockopt(conn->sock, SOL_SOCKET, SO_ERROR, (char *) &ok, &len);
+#endif
 #ifdef NS_ENABLE_SSL
     if (ret == 0 && ok == 0 && conn->ssl != NULL) {
       ns_ssl_begin(conn);
@@ -2313,6 +2339,7 @@ static void ns_read_from_socket(struct ns_connection *conn) {
       mbuf_append(&conn->recv_mbuf, buf, n);
       ns_call(conn, NS_RECV, &n);
     }
+    DBG(("recv returns %d", n));
   }
 
   if (ns_is_error(n)) {
@@ -2631,7 +2658,7 @@ time_t ns_mgr_poll(struct ns_mgr *mgr, int milli) {
   struct timeval tv;
   fd_set read_set, write_set, err_set;
   sock_t max_fd = INVALID_SOCKET;
-  int num_selected, fd_flags;
+  int num_selected;
 
   FD_ZERO(&read_set);
   FD_ZERO(&write_set);
@@ -2666,13 +2693,20 @@ time_t ns_mgr_poll(struct ns_mgr *mgr, int milli) {
     ns_mgr_handle_ctl_sock(mgr);
   }
 
-  fd_flags = 0;
   for (nc = mgr->active_connections; nc != NULL; nc = tmp) {
+    int fd_flags = 0;
     if (num_selected > 0) {
       fd_flags = (FD_ISSET(nc->sock, &read_set) ? _NSF_FD_CAN_READ : 0) |
                  (FD_ISSET(nc->sock, &write_set) ? _NSF_FD_CAN_WRITE : 0) |
                  (FD_ISSET(nc->sock, &err_set) ? _NSF_FD_ERROR : 0);
     }
+#ifdef NS_CC3200
+    // CC3200 does not report UDP sockets as writeable.
+    if (nc->flags & NSF_UDP &&
+        (nc->send_mbuf.len > 0 || nc->flags & NSF_CONNECTING)) {
+      fd_flags |= _NSF_FD_CAN_WRITE;
+    }
+#endif
     tmp = nc->next;
     ns_mgr_handle_connection(nc, fd_flags, now);
   }
@@ -2716,7 +2750,9 @@ NS_INTERNAL struct ns_connection *ns_finish_connect(struct ns_connection *nc,
     return NULL;
   }
 
+#ifndef NS_CC3200
   ns_set_non_blocking_mode(sock);
+#endif
   rc = (proto == SOCK_DGRAM) ? 0 : connect(sock, &sa->sa, sizeof(sa->sin));
 
   if (rc != 0 && ns_is_error(rc)) {
@@ -3334,7 +3370,39 @@ static int deliver_websocket_data(struct ns_connection *nc) {
   return ok;
 }
 
-static void ns_send_ws_header(struct ns_connection *nc, int op, size_t len) {
+struct ws_mask_ctx {
+  size_t pos; /* zero means unmasked */
+  uint32_t mask;
+};
+
+static uint32_t ws_random_mask() {
+/*
+ * The spec requires WS client to generate hard to
+ * guess mask keys. From RFC6455, Section 5.3:
+ *
+ * The unpredictability of the masking key is essential to prevent
+ * authors of malicious applications from selecting the bytes that appear on
+ * the wire.
+ *
+ * Hence this feature is essential when the actual end user of this API
+ * is untrusted code that wouldn't have access to a lower level net API
+ * anyway (e.g. web browsers). Hence this feature is low prio for most
+ * fossa use cases and thus can be disabled, e.g. when porting to a platform
+ * that lacks random().
+ */
+#if NS_DISABLE_WS_RANDOM_MASK
+  return 0xefbeadde; /* generated with a random number generator, I swear */
+#else
+  if (sizeof(long) >= 4) {
+    return (uint32_t) random();
+  } else if (sizeof(long) == 2) {
+    return (uint32_t) random() << 16 | (uint32_t) random();
+  }
+#endif
+}
+
+static void ns_send_ws_header(struct ns_connection *nc, int op, size_t len,
+                              struct ws_mask_ctx *ctx) {
   int header_len;
   unsigned char header[10];
 
@@ -3356,13 +3424,35 @@ static void ns_send_ws_header(struct ns_connection *nc, int op, size_t len) {
     memcpy(&header[6], &tmp, sizeof(tmp));
     header_len = 10;
   }
-  ns_send(nc, header, header_len);
+
+  /* client connections enable masking */
+  if (nc->listener == NULL) {
+    header[1] |= 1 << 7; /* set masking flag */
+    ns_send(nc, header, header_len);
+    ctx->mask = ws_random_mask();
+    ns_send(nc, &ctx->mask, sizeof(ctx->mask));
+    ctx->pos = nc->send_mbuf.len;
+  } else {
+    ns_send(nc, header, header_len);
+    ctx->pos = 0;
+  }
+}
+
+static void ws_mask_frame(struct mbuf *mbuf, struct ws_mask_ctx *ctx) {
+  size_t i;
+  if (ctx->pos == 0) return;
+  for (i = 0; i < (mbuf->len - ctx->pos); i++) {
+    mbuf->buf[ctx->pos + i] ^= ((char *) &ctx->mask)[i % 4];
+  }
 }
 
 void ns_send_websocket_frame(struct ns_connection *nc, int op, const void *data,
                              size_t len) {
-  ns_send_ws_header(nc, op, len);
+  struct ws_mask_ctx ctx;
+  ns_send_ws_header(nc, op, len, &ctx);
   ns_send(nc, data, len);
+
+  ws_mask_frame(&nc->send_mbuf, &ctx);
 
   if (op == WEBSOCKET_OP_CLOSE) {
     nc->flags |= NSF_SEND_AND_CLOSE;
@@ -3371,17 +3461,20 @@ void ns_send_websocket_frame(struct ns_connection *nc, int op, const void *data,
 
 void ns_send_websocket_framev(struct ns_connection *nc, int op,
                               const struct ns_str *strv, int strvcnt) {
+  struct ws_mask_ctx ctx;
   int i;
   int len = 0;
   for (i = 0; i < strvcnt; i++) {
     len += strv[i].len;
   }
 
-  ns_send_ws_header(nc, op, len);
+  ns_send_ws_header(nc, op, len, &ctx);
 
   for (i = 0; i < strvcnt; i++) {
     ns_send(nc, strv[i].p, strv[i].len);
   }
+
+  ws_mask_frame(&nc->send_mbuf, &ctx);
 
   if (op == WEBSOCKET_OP_CLOSE) {
     nc->flags |= NSF_SEND_AND_CLOSE;
@@ -5533,12 +5626,13 @@ void ns_sock_to_str(sock_t sock, char *buf, size_t len, int flags) {
   socklen_t slen = sizeof(sa);
 
   memset(&sa, 0, sizeof(sa));
+#ifndef NS_CC3200
   if (flags & NS_SOCK_STRINGIFY_REMOTE) {
     getpeername(sock, &sa.sa, &slen);
   } else {
     getsockname(sock, &sa.sa, &slen);
   }
-
+#endif
   ns_sock_addr_to_str(&sa, buf, len, flags);
 }
 
@@ -6549,6 +6643,8 @@ void ns_send_dns_query(struct ns_connection *nc, const char *name,
   struct mbuf pkt;
   struct ns_dns_resource_record *rr = &msg.questions[0];
 
+  DBG(("%s %d", name, query_type));
+
   mbuf_init(&pkt, MAX_DNS_PACKET_LEN);
   memset(&msg, 0, sizeof(msg));
 
@@ -6961,6 +7057,8 @@ static void ns_resolve_async_eh(struct ns_connection *nc, int ev, void *data) {
   struct ns_resolve_async_request *req;
   struct ns_dns_message msg;
 
+  DBG(("ev=%d", ev));
+
   req = (struct ns_resolve_async_request *) nc->user_data;
 
   switch (ev) {
@@ -7003,6 +7101,8 @@ int ns_resolve_async_opt(struct ns_mgr *mgr, const char *name, int query,
   struct ns_resolve_async_request *req;
   struct ns_connection *dns_nc;
   const char *nameserver = opts.nameserver_url;
+
+  DBG(("%s %d", name, query));
 
   /* resolve with DNS */
   req = (struct ns_resolve_async_request *) NS_CALLOC(1, sizeof(*req));
