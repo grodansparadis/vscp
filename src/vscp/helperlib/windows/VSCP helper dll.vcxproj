@@ -125,13 +125,16 @@
     <Link>
       <AdditionalOptions>/verbose:lib %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>ssleay32MDd.lib;MSVCRTD.lib;libcmtd.lib;comctl32.lib;rpcrt4.lib;winmm.lib;advapi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>.\$(Configuration)/vscphelper.dll</OutputFile>
+      <OutputFile>$(OutDir)$(PlatformTarget)\$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;$(OPENSSL32)\lib\VC;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libcmtd.lib;MSVCRTD.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>.\vscphelper.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
+      <ImportLibrary>$(OutDir)$(PlatformTarget)\$(TargetName).lib</ImportLibrary>
+      <ProgramDatabaseFile>$(OutDir)$(PlatformTarget)\$(TargetName).pdb</ProgramDatabaseFile>
+      <ProfileGuidedDatabase>$(OutDir)$(PlatformTarget)\$(TargetName).pgd</ProfileGuidedDatabase>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -163,12 +166,16 @@
     <Link>
       <AdditionalOptions>/verbose:lib %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>ssleay32MTd.lib;MSVCRTD.lib;libcmtd.lib;comctl32.lib;rpcrt4.lib;winmm.lib;advapi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>.\$(Configuration)/vscphelper.dll</OutputFile>
+      <OutputFile>$(OutDir)$(PlatformTarget)\$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_x64_lib;$(OPENSSL64)\lib\VC;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libcmtd.lib;MSVCRTD.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>.\vscphelper.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
+      <ManifestFile>$(IntDir)$(TargetName)$(TargetExt).intermediate.manifest</ManifestFile>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <ProfileGuidedDatabase>$(OutDir)$(TargetName).pgd</ProfileGuidedDatabase>
+      <ImportLibrary>$(OutDir)$(PlatformTarget)\$(TargetName).lib</ImportLibrary>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -201,7 +208,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>ssleay32MTd.lib;MSVCRT.lib;libcmt.lib;comctl32.lib;rpcrt4.lib;winmm.lib;advapi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)/$(TargetName)$(TargetExt)</OutputFile>
+      <OutputFile>$(OutDir)$(PlatformTarget)\$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;$(OPENSSL32)\lib\VC;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libcmt.lib;MSVCRT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>.\vscphelper.def</ModuleDefinitionFile>
@@ -210,6 +217,8 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
+      <ImportLibrary>$(OutDir)$(PlatformTarget)\$(TargetName).lib</ImportLibrary>
+      <ProgramDatabaseFile>$(OutDir)$(PlatformTarget)\$(TargetName).pdb</ProgramDatabaseFile>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -237,6 +246,12 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
+      <BrowseInformationFile>$(IntDir)</BrowseInformationFile>
+      <XMLDocumentationFileName>$(IntDir)</XMLDocumentationFileName>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -245,7 +260,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>ssleay32MT.lib;MSVCRT.lib;libcmt.lib;comctl32.lib;rpcrt4.lib;winmm.lib;advapi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)/$(TargetName)$(TargetExt)</OutputFile>
+      <OutputFile>$(OutDir)$(PlatformTarget)\$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_x64_lib;$(OPENSSL64)\lib\VC;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libcmt.lib;MSVCRT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>.\vscphelper.def</ModuleDefinitionFile>
@@ -253,6 +268,10 @@
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <ManifestFile>$(IntDir)$(TargetName)$(TargetExt).intermediate.manifest</ManifestFile>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <ProfileGuidedDatabase>$(OutDir)$(TargetName).pgd</ProfileGuidedDatabase>
+      <ImportLibrary>$(OutDir)$(PlatformTarget)\$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
       <Command>
