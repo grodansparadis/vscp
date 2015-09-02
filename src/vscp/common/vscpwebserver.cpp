@@ -3308,7 +3308,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	//   * * * * * * * * close session  * * * * * * * *
 	//   **********************************************
 	else if ( ( _("2") == keypairs[_("OP")] ) || ( _("CLOSE") == keypairs[_("OP")].Upper() ) ) {
-		rv = webserv_rest_doClose( conn, pSession, pUser, format );
+		rv = webserv_rest_doClose( conn, pSession, format );
 	}
 
 	//  ********************************************
