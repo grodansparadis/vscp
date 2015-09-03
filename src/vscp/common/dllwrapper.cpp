@@ -506,8 +506,6 @@ int CDllWrapper::readLevel1Register( unsigned char nodeid,
 								        unsigned char *val )
 {
 	int rv = CANAL_ERROR_SUCCESS;
-	unsigned long errors = 0;
-	//bool bResend;
 	wxString strBuf;
     unsigned long resendTime = m_registerReadResendTimeout;
 	canalMsg canalSendEvent;
@@ -526,7 +524,6 @@ int CDllWrapper::readLevel1Register( unsigned char nodeid,
     canalSendEvent.data[ 3 ] = reg;                     // Register to write
     canalSendEvent.data[ 4 ] = 1;                       // Read one register
 
-	//bResend = false;
     doCmdSend( &canalSendEvent );
 
 	wxLongLong startTime = ::wxGetLocalTimeMillis();
@@ -681,8 +678,6 @@ int CDllWrapper::writeLevel1Register( unsigned char nodeid,
                                         unsigned char *pval )
 {
 	int rv = CANAL_ERROR_SUCCESS;
-	unsigned long errors = 0;
-	bool bResend;
 	wxString strBuf;
     unsigned long resendTime = m_registerReadResendTimeout;
     canalMsg canalSendEvent;
@@ -698,7 +693,6 @@ int CDllWrapper::writeLevel1Register( unsigned char nodeid,
     canalSendEvent.data[ 3 ] = reg;                     // Register to write
     canalSendEvent.data[ 4 ] = *pval;                   // Value
 
-	bResend = false;
     doCmdSend( &canalSendEvent );
 
 	wxLongLong startTime = ::wxGetLocalTimeMillis();
