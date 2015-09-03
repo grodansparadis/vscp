@@ -779,7 +779,7 @@ int CTellstickWrkTread::createNexaString( const char *pHouseStr,
 {
 	*pTxStr = '\0'; // Make sure tx string is empty 
 	uint8_t houseCode;
-	uint8_t on_offCode;
+	//uint8_t on_offCode;
 	int txCode = 0;
 	const int unknownCode = 0x6;
 	int bit;

@@ -51,7 +51,7 @@
 #include <canal_macro.h>
 #include <dllist.h>
 
-#define CANAL_DLL_LOGGER_OBJ_MUTEX	"___CANAL__DLL_LOGGER_OBJ_MUTEX____"
+#define CANAL_DLL_LOGGER_OBJ_MUTEX	TEXT("___CANAL__DLL_LOGGER_OBJ_MUTEX____")
 
 #define CANAL_LOG_LIST_MAX_MSG		2048
 

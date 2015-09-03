@@ -346,11 +346,11 @@ extern "C" const char * CanalGetReceiveHandle( void )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// CanalGetReceiveHandle
+// getReceiveHandle
 //
 
 #ifdef WIN32
-extern "C" HANDLE WINAPI EXPORT CanalGetReceiveHandle( long handle )
+extern "C" HANDLE WINAPI EXPORT getReceiveHandle( long handle )
 #else
 extern "C" HANDLE CanalGetReceiveHandle( long handle )
 #endif

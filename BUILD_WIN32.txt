@@ -41,7 +41,8 @@ This is the "original" project and includes all sub-projects.
 
 1.) Define environment variable VSCP_HOME that points to the VSCP base folder (c:\development\vscp_software).
     define environment variable VSCP_FIRMWARE that points to VSCP firmware base folder 
-    (c:\development\vscp_firmware)
+    (c:\development\vscp_firmware). If you want to build install file structure an environment
+	variable called VSCP_INSTALL should be created (C:\Users\grodansparadis\development\vscp_install_win32)
 
 2.) Install and build wxWidgets 3.0.2 or higher but others will probably 
     do to. You find the build files in the build folder of the wxWidgets project. 

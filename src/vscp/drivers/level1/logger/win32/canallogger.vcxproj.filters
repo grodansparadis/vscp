@@ -44,16 +44,7 @@
     <ClInclude Include="..\..\..\..\common\dllist.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\ixxobj.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\common\log.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\ixxatlib\include\Vci2.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\ixxatlib\include\XatXXReg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -24,7 +24,6 @@
 #include <expat.h>
 #include "lircobj.h"
 
-
 WX_DEFINE_LIST(EventList);
 WX_DEFINE_LIST(ReceiveQueue);
 WX_DEFINE_LIST(TransmitQueue);
