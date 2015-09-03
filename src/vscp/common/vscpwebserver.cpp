@@ -3663,6 +3663,10 @@ VSCPWebServerThread::webserv_rest_doSendEvent( struct mg_connection *conn,
 		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_INVALID_SESSION );
 		bSent = false;
 	}
+    
+    if ( false == bSent ) {
+        return MG_FALSE;
+    }
 
 	return MG_TRUE;
 }
