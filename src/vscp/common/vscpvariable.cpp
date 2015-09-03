@@ -764,7 +764,6 @@ CVSCPVariable * CVariableStorage::find( const wxString& name )
     wxString strName = name.Upper();
     strName.Trim( true );
     strName.Trim( false );
-    CVariableStorage *pVariable = NULL;
 
     // Check if it is a persistent variable
     if ( strName[ 0 ] == VSCP_DAEMON_VARIABLE_PREFIX_PERSISTENT ) {
