@@ -1141,7 +1141,6 @@ void VSCPInformation::fillTypeDescriptions( wxArrayString& strArray,
 		                                        VSCPInformationFormat format)
 {
 	wxString str;
-	int idx;
 
 	VSCPHashType::iterator it;
 	for (it = m_hashType.begin(); it != m_hashType.end(); ++it) {
@@ -1154,27 +1153,27 @@ void VSCPInformation::fillTypeDescriptions( wxArrayString& strArray,
 
 			case WITH_DECIMAL_PREFIX:
 				str = _("(") + str.Format(_("%lu"), key) + _(") ") + value;
-				strArray.Add(str);
+				(void)strArray.Add(str);
 				break;
 
 			case WITH_HEX_PREFIX:
 				str = _("(") + str.Format(_("%04lX"), key) + _(") ") + value;
-				idx = strArray.Add(str);
+				(void)strArray.Add(str);
 				break;
 
 			case WITH_DECIMAL_SUFFIX:
 				str = value + _(" (") + str.Format(_("%lu"), (key & 0xffff)) + _(")");
-				strArray.Add(str);
+				(void)strArray.Add(str);
 				break;
 
 			case WITH_HEX_SUFFIX:
 				str = value + _(" (") + str.Format(_("%04lX"), (key & 0xffff)) + _(")");
-				idx = strArray.Add(str);
+				(void)strArray.Add(str);
 				break;
 
 			default:
 			case DEFAULT:
-				idx = strArray.Add(value);
+				(void)strArray.Add(value);
 				break;
 
 			}
