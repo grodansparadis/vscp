@@ -211,7 +211,7 @@ public:
 	/*!
 		Handle websocket message
 		@param conn Webserver connection handle
-		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+		@return MG_TRUE on success or MG_FALSE on failure.
 	*/
 	int 
 	websrv_websocket_message( struct mg_connection *conn );
@@ -220,7 +220,7 @@ public:
 		Web server event handler
 		@param conn Webserver connection handle
 		@param ev Weberserver event
-		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+		@return MG_TRUE on success or MG_FALSE on failure.
 	*/
 	static int 
 	websrv_event_handler( struct mg_connection *conn, enum mg_event ev );
@@ -259,7 +259,7 @@ public:
 	/**
 		websrv_restapi - REST interface main handler
 		@param conn Webserver connection handle.
-		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+		@return MG_TRUE on success or MG_FALSE on failure.
 	*/
 	int
 	websrv_restapi( struct mg_connection *conn );
@@ -269,7 +269,7 @@ public:
 		@param conn Webserver connection handle.
 		@param pSession Active session or NULL if no session active
 		@param format The format output should be formated in, plain, csv, xml, json, jsonp
-		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+		@return MG_TRUE on success or MG_FALSE on failure.
 	*/
 	int
 	webserv_rest_doStatus( struct mg_connection *conn, struct websrv_rest_session *pSession, int format );
@@ -279,7 +279,7 @@ public:
 		@param conn Webserver connection handle.
 		@param pSession Active session or NULL if no session active
 		@param format The format output should be formated in, plain, csv, xml, json, jsonp
-		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+		@return MG_TRUE on success or MG_FALSE on failure.
 	*/
 	int
 	webserv_rest_doOpen( struct mg_connection *conn, struct websrv_rest_session *pSession, CUserItem *pUser, int format );
@@ -290,7 +290,7 @@ public:
 		@param conn Webserver connection handle.
 		@param pSession Active session or NULL if no session active
 		@param format The format output should be formated in, plain, csv, xml, json, jsonp
-		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+		@return MG_TRUE on success or MG_FALSE on failure.
 	*/
 	int
 	webserv_rest_doClose( struct mg_connection *conn, struct websrv_rest_session *pSession, int format );
@@ -303,7 +303,7 @@ public:
 		@param format The format output should be formated in, plain, csv, xml, json, jsonp
 		@param pEvent Pointer to VSCP event to send. The framework handels deletion of
 						this pointer.
-		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+		@return MG_TRUE on success or MG_FALSE on failure.
 	*/
 	int
 	webserv_rest_doSendEvent( struct mg_connection *conn, 
@@ -317,7 +317,7 @@ public:
 		@param pSession Active session or NULL if no session active
 		@param format The format output should be formated in, plain, csv, xml, json, jsonp
 		@param count Number of events to read.
-		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+		@return MG_TRUE on success or MG_FALSE on failure.
 	*/
 	int
 	webserv_rest_doReceiveEvent( struct mg_connection *conn, 
@@ -331,7 +331,7 @@ public:
 		@param pSession Active session or NULL if no session active
 		@param format The format output should be formated in, plain, csv, xml, json, jsonp
 		@param vscpfilter Filter to set.
-		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+		@return MG_TRUE on success or MG_FALSE on failure.
 	*/
 	int
 	webserv_rest_doSetFilter( struct mg_connection *conn, 
@@ -344,7 +344,7 @@ public:
 		@param conn Webserver connection handle.
 		@param pSession Active session or NULL if no session active
 		@param format The format output should be formated in, plain, csv, xml, json, jsonp
-		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+		@return MG_TRUE on success or MG_FALSE on failure.
 	*/
 	int
 	webserv_rest_doClearQueue( struct mg_connection *conn, 
@@ -357,7 +357,7 @@ public:
 		@param pSession Active session or NULL if no session active
 		@param format The format output should be formated in, plain, csv, xml, json, jsonp
 		@param strVariableName Name of variable to read
-		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+		@return MG_TRUE on success or MG_FALSE on failure.
 	*/
 	int
 	webserv_rest_doReadVariable( struct mg_connection *conn, 
@@ -371,7 +371,7 @@ public:
 		@param pSession Active session or NULL if no session active
 		@param format The format output should be formated in, plain, csv, xml, json, jsonp
         @param bCreate Set to true to create variable if not existing
-		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+		@return MG_TRUE on success or MG_FALSE on failure.
 	*/
 	int
 	webserv_rest_doWriteVariable( struct mg_connection *conn, 
@@ -385,7 +385,7 @@ public:
 		@param pSession Active session or NULL if no session active
 		@param format The format output should be formated in, plain, csv, xml, json, jsonp
         @param bCreate Set to true to create variable if not existing
-		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+		@return MG_TRUE on success or MG_FALSE on failure.
 	*/
 	int
 	webserv_rest_doCreateVariable( struct mg_connection *conn, 
@@ -402,7 +402,7 @@ public:
 		@param strMeasurement Measurement value (integer/long/float)
 		@param strUnit Measurement unit
 		@param strSensorIdx Sensor Index 
-		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+		@return MG_TRUE on success or MG_FALSE on failure.
 	*/
 	int
 	webserv_rest_doWriteMeasurement( struct mg_connection *conn, 
@@ -421,7 +421,7 @@ public:
 		@param name Name of table
 		@param from Date/time from which data should be collected
 		@param to Date/time to which data should be collected
-		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+		@return MG_TRUE on success or MG_FALSE on failure.
 	*/
 	int
 	webserv_rest_doGetTableData( struct mg_connection *conn, 
@@ -456,7 +456,7 @@ public:
         @param conn Webserver connection handle.
         @param file File to display
         @param textHeader Headtext to display
-	    @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	    @return MG_TRUE on success or MG_FALSE on failure.
     */
     int websrv_listFile( struct mg_connection *conn, wxFileName& logfile, wxString& textHeader );
 
@@ -464,7 +464,7 @@ public:
 	/*!
 		websrv_mainpage - Web server main page renderer.
 		@param conn Webserver connection handle.
-		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+		@return MG_TRUE on success or MG_FALSE on failure.
 	*/
 	int
 	websrv_mainpage( struct mg_connection *conn );
@@ -473,7 +473,7 @@ public:
 	 * websrv_interfaces -  that displays the available interfaces.
 	 *
 	 * @param conn Webserver connection handle.
-	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 * @return MG_TRUE on success or MG_FALSE on failure.
 	 */
 	int
 	websrv_interfaces( struct mg_connection *conn );	
@@ -482,7 +482,7 @@ public:
 	 * websrv_dmlist -  that displays the decision matrix list 
 	 *
 	 * @param conn Webserver connection handle.
-	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 * @return MG_TRUE on success or MG_FALSE on failure.
 	 */
 	int
 	websrv_dmlist( struct mg_connection *conn );
@@ -491,7 +491,7 @@ public:
 	 * websrv_dmedit - edit of one decision matrix entry 
 	 *
 	 * @param conn Webserver connection handle.
-	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 * @return MG_TRUE on success or MG_FALSE on failure.
 	 */
 	int
 	websrv_dmedit( struct mg_connection *conn );
@@ -500,7 +500,7 @@ public:
 	 * websrv_dmpost - post of one decision matrix entry 
 	 *
 	 * @param conn Webserver connection handle.
-	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 * @return MG_TRUE on success or MG_FALSE on failure.
 	 */
 	int 
 	websrv_dmpost( struct mg_connection *conn );
@@ -509,7 +509,7 @@ public:
 	 * websrv_dmdelete - Delete DMe entries 
 	 *
 	 * @param conn Webserver connection handle.
-	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 * @return MG_TRUE on success or MG_FALSE on failure.
 	 */
 	int 
 	websrv_dmdelete( struct mg_connection *conn );
@@ -518,7 +518,7 @@ public:
 	 * websrv_variables_list - that displays the variable list 
 	 *
 	 * @param conn Webserver connection handle.
-	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 * @return MG_TRUE on success or MG_FALSE on failure.
 	 */
 	int
 	websrv_variables_list( struct mg_connection *conn );
@@ -527,7 +527,7 @@ public:
 	 * websrv_variables_edit -  edit of one variable entry 
 	 *
 	 * @param conn Webserver connection handle.
-	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 * @return MG_TRUE on success or MG_FALSE on failure.
 	 */
 	int
 	websrv_variables_edit( struct mg_connection *conn );
@@ -536,7 +536,7 @@ public:
 	 * websrv_variables_post -  post of one variable entry 
 	 *
 	 * @param conn Webserver connection handle.
-	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 * @return MG_TRUE on success or MG_FALSE on failure.
 	 */
 	int 
 	websrv_variables_post( struct mg_connection *conn );
@@ -545,7 +545,7 @@ public:
 	 * websrv_variables_new - New variable initial type selection state 
 	 *
 	 * @param conn Webserver connection handle.
-	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 * @return MG_TRUE on success or MG_FALSE on failure.
 	 */
 	int 
 	websrv_variables_new( struct mg_connection *conn );
@@ -554,7 +554,7 @@ public:
 	 * websrv_variables_delete - Delete DMe entries 
 	 *
 	 * @param conn Webserver connection handle.
-	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 * @return MG_TRUE on success or MG_FALSE on failure.
 	 */
 	int 
 	websrv_variables_delete( struct mg_connection *conn );
@@ -563,7 +563,7 @@ public:
 	 * websrv_render_variables_delete - Discover nodes 
 	 *
 	 * @param conn Webserver connection handle.
-	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 * @return MG_TRUE on success or MG_FALSE on failure.
 	 */
 	int 
 	websrv_discovery( struct mg_connection *conn );
@@ -572,7 +572,7 @@ public:
 	 * websrv_session - Communication session
 	 *
 	 * @param conn Webserver connection handle.
-	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 * @return MG_TRUE on success or MG_FALSE on failure.
 	 */
 	int 
 	websrv_session( struct mg_connection *conn );
@@ -581,7 +581,7 @@ public:
 	 * websrv_configure - Server configuration
 	 *
 	 * @param conn Webserver connection handle.
-	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 * @return MG_TRUE on success or MG_FALSE on failure.
 	 */
 	int 
 	websrv_configure( struct mg_connection *conn );
@@ -590,7 +590,7 @@ public:
 	 * websrv_bootload - Device bootload
 	 *
 	 * @param conn Webserver connection handle.
-	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 * @return MG_TRUE on success or MG_FALSE on failure.
 	 */
 	int 
 	websrv_bootload( struct mg_connection *conn );
@@ -599,7 +599,7 @@ public:
 	 * websrv_table - View infor about defined tables
 	 *
 	 * @param conn Webserver connection handle.
-	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 * @return MG_TRUE on success or MG_FALSE on failure.
 	 */
     int
     websrv_table( struct mg_connection *conn );
@@ -609,7 +609,7 @@ public:
 	 * websrv_tablelist - List table
 	 *
 	 * @param conn Webserver connection handle.
-	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 * @return MG_TRUE on success or MG_FALSE on failure.
 	 */
     int
     websrv_tablelist( struct mg_connection *conn );
