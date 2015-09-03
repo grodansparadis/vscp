@@ -894,13 +894,10 @@ void *deviceReceiveThread::Entry()
     // Blocking receive method must have been found
     if ( NULL == m_pMainThreadObj->m_pCtrlObject->m_proc_CanalBlockingReceive ) return NULL;
 
-    int rv;
 	while ( !TestDestroy() && !m_bQuit )
 	{
 
-		if ( CANAL_ERROR_SUCCESS == 
-        ( rv = m_pMainThreadObj->m_pCtrlObject->m_proc_CanalBlockingReceive ( 
-                              m_pMainThreadObj->m_pCtrlObject->m_openHandle, &msg, 500 ) ) )
+		if ( CANAL_ERROR_SUCCESS == m_pMainThreadObj->m_pCtrlObject->m_proc_CanalBlockingReceive( m_pMainThreadObj->m_pCtrlObject->m_openHandle, &msg, 500 ) )
 		{
 
 		    vscpEvent *pEvent = new vscpEvent;
