@@ -8,6 +8,7 @@
  * All rights reserved
  */
 
+
 #ifndef NS_INTERNAL_HEADER_INCLUDED
 #define NS_INTERNAL_HEADER_INCLUDED
 
@@ -3394,9 +3395,9 @@ static uint32_t ws_random_mask() {
   return 0xefbeadde; /* generated with a random number generator, I swear */
 #else
   if (sizeof(long) >= 4) {
-    return (uint32_t) random();
+    return (uint32_t) rand();
   } else if (sizeof(long) == 2) {
-    return (uint32_t) random() << 16 | (uint32_t) random();
+    return (uint32_t) rand() << 16 | (uint32_t) rand();
   }
 #endif
 }

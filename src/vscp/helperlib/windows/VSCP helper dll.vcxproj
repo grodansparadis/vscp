@@ -151,7 +151,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.\;C:\OpenSSL-Win32\include;$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NS_DISABLE_PFS;NS_DISABLE_WS_RANDOM_MASK;NS_DISABLE_WS_RANDOM_MASK;USE_FOSSA;NS_ENABLE_THREADS;NS_ENABLE_SSL;WINVER=0x0601;WIN32;__WXMSW__;_DEBUG;_WINDOWS;__WXDEBUG__;wxUSE_GUI=0;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NS_DISABLE_WS_RANDOM_MASK;USE_FOSSA;NS_ENABLE_THREADS;NS_ENABLE_SSL;WINVER=0x0601;WIN32;__WXMSW__;_DEBUG;_WINDOWS;__WXDEBUG__;wxUSE_GUI=0;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -166,7 +166,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/verbose:lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>ssleay32MDd.lib;MSVCRTD.lib;libcmtd.lib;comctl32.lib;rpcrt4.lib;winmm.lib;advapi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ssleay32MT.lib;libeay32MT.lib;MSVCRTD.lib;libcmtd.lib;comctl32.lib;rpcrt4.lib;winmm.lib;advapi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;$(OPENSSL32)\lib\VC;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libcmtd.lib;MSVCRTD.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -192,7 +192,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.\;$(OPENSSL64)\include;$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NS_DISABLE_PFS;NS_DISABLE_WS_RANDOM_MASK;USE_FOSSA;NS_ENABLE_THREADS;NS_ENABLE_SSL;WINVER=0x0601;_CRT_SECURE_NO_WARNINGS;_USRDLL;WIN32;__WXMSW__;_DEBUG;_WINDOWS;__WXDEBUG__;wxUSE_GUI=0;_AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_FOSSA;NS_ENABLE_THREADS;NS_ENABLE_SSL;WINVER=0x0601;_CRT_SECURE_NO_WARNINGS;_USRDLL;WIN32;__WXMSW__;_DEBUG;_WINDOWS;__WXDEBUG__;wxUSE_GUI=0;_AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>
@@ -207,7 +207,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/verbose:lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>ssleay32MTd.lib;MSVCRTD.lib;libcmtd.lib;comctl32.lib;rpcrt4.lib;winmm.lib;advapi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ssleay32MT.lib;libeay32MT.lib;MSVCRTD.lib;libcmtd.lib;comctl32.lib;rpcrt4.lib;winmm.lib;advapi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_x64_lib;$(OPENSSL64)\lib\VC;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libcmtd.lib;MSVCRTD.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -276,7 +276,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>.\;C:\OpenSSL-Win32\include;$(WXWIN)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NS_DISABLE_PFS;NS_DISABLE_WS_RANDOM_MASK;USE_FOSSA;NS_ENABLE_THREADS;NS_ENABLE_SSL;WINVER=0x0601;_CRT_SECURE_NO_WARNINGS;WIN32;__WXMSW__;_WINDOWS;wxUSE_GUI=0;_AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_FOSSA;NS_ENABLE_THREADS;NS_ENABLE_SSL;WINVER=0x0601;_CRT_SECURE_NO_WARNINGS;WIN32;__WXMSW__;_WINDOWS;wxUSE_GUI=0;_AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>
@@ -290,7 +290,7 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>ssleay32MTd.lib;MSVCRT.lib;libcmt.lib;comctl32.lib;rpcrt4.lib;winmm.lib;advapi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ssleay32MT.lib;libeay32MT.lib;MSVCRT.lib;libcmt.lib;comctl32.lib;rpcrt4.lib;winmm.lib;advapi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;$(OPENSSL32)\lib\VC;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libcmt.lib;MSVCRT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -322,7 +322,7 @@ copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\$(PlatformTarget)"
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>.\;$(OPENSSL64)\include;$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NS_DISABLE_PFS;NS_DISABLE_WS_RANDOM_MASK;USE_FOSSA;NS_ENABLE_THREADS;NS_ENABLE_SSL;WINVER=0x0601;_CRT_SECURE_NO_WARNINGS;WIN32;__WXMSW__;_WINDOWS;wxUSE_GUI=0;_AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_FOSSA;NS_ENABLE_THREADS;NS_ENABLE_SSL;WINVER=0x0601;_CRT_SECURE_NO_WARNINGS;WIN32;__WXMSW__;_WINDOWS;wxUSE_GUI=0;_AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>
@@ -342,7 +342,7 @@ copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\$(PlatformTarget)"
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>ssleay32MT.lib;MSVCRT.lib;libcmt.lib;comctl32.lib;rpcrt4.lib;winmm.lib;advapi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ssleay32MT.lib;libeay32MT.lib;MSVCRT.lib;libcmt.lib;comctl32.lib;rpcrt4.lib;winmm.lib;advapi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_x64_lib;$(OPENSSL64)\lib\VC;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libcmt.lib;MSVCRT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>

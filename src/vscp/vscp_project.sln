@@ -38,8 +38,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscphelpertest", "helperlib
 		{5B1BB19C-F27B-481E-8A70-EE83B1F6F896} = {5B1BB19C-F27B-481E-8A70-EE83B1F6F896}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpl1_xapdrv", "drivers\level1\xap\win32\xapdrv.vcxproj", "{9B3C42D2-B352-3866-7187-742C1B5DAAE9}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpl2_btproximitydrv", "drivers\level2\btdetect\win32\vscpbtdetect.vcxproj", "{1F600DAB-F705-4DF5-A07C-96B1495D7102}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpl1_can4vscpdrv", "drivers\level1\can4vscp\win32\can4vscpdrv.vcxproj", "{051AA1B3-0E96-040D-01AE-BC780A84D0AA}"
@@ -297,20 +295,6 @@ Global
 		{B3D80145-C3E7-4A87-9CA2-B308F4437716}.Template|Win32.ActiveCfg = Debug|Win32
 		{B3D80145-C3E7-4A87-9CA2-B308F4437716}.Template|Win32.Build.0 = Debug|Win32
 		{B3D80145-C3E7-4A87-9CA2-B308F4437716}.Template|x64.ActiveCfg = Release|Win32
-		{9B3C42D2-B352-3866-7187-742C1B5DAAE9}.Debug|ARM.ActiveCfg = Debug|Win32
-		{9B3C42D2-B352-3866-7187-742C1B5DAAE9}.Debug|Win32.ActiveCfg = Debug|Win32
-		{9B3C42D2-B352-3866-7187-742C1B5DAAE9}.Debug|Win32.Build.0 = Debug|Win32
-		{9B3C42D2-B352-3866-7187-742C1B5DAAE9}.Debug|x64.ActiveCfg = Debug|x64
-		{9B3C42D2-B352-3866-7187-742C1B5DAAE9}.Debug|x64.Build.0 = Debug|x64
-		{9B3C42D2-B352-3866-7187-742C1B5DAAE9}.Release|ARM.ActiveCfg = Release|Win32
-		{9B3C42D2-B352-3866-7187-742C1B5DAAE9}.Release|Win32.ActiveCfg = Release|Win32
-		{9B3C42D2-B352-3866-7187-742C1B5DAAE9}.Release|Win32.Build.0 = Release|Win32
-		{9B3C42D2-B352-3866-7187-742C1B5DAAE9}.Release|x64.ActiveCfg = Release|x64
-		{9B3C42D2-B352-3866-7187-742C1B5DAAE9}.Release|x64.Build.0 = Release|x64
-		{9B3C42D2-B352-3866-7187-742C1B5DAAE9}.Template|ARM.ActiveCfg = Release|Win32
-		{9B3C42D2-B352-3866-7187-742C1B5DAAE9}.Template|Win32.ActiveCfg = Debug|Win32
-		{9B3C42D2-B352-3866-7187-742C1B5DAAE9}.Template|Win32.Build.0 = Debug|Win32
-		{9B3C42D2-B352-3866-7187-742C1B5DAAE9}.Template|x64.ActiveCfg = Release|Win32
 		{1F600DAB-F705-4DF5-A07C-96B1495D7102}.Debug|ARM.ActiveCfg = Debug|Win32
 		{1F600DAB-F705-4DF5-A07C-96B1495D7102}.Debug|Win32.ActiveCfg = Debug|Win32
 		{1F600DAB-F705-4DF5-A07C-96B1495D7102}.Debug|Win32.Build.0 = Debug|Win32
