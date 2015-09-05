@@ -3822,6 +3822,8 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 								wxString str;
 								if (vscp_writeVscpEventToString(pEvent, str)) {
 
+                                    memset( buf, 0, sizeof( buf ) );
+
 									// Write it out
 									memset((char *) wrkbuf, 0, sizeof( wrkbuf ));
 									strcpy((char *) wrkbuf, (const char*) "1,3,Data,Event.,");
@@ -3907,6 +3909,8 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 							if (vscp_doLevel2Filter(pEvent, &pSession->pClientItem->m_filterVSCP)) {
 
 								wxString str;
+
+                                memset( buf, 0, sizeof( buf ) );
 
 								// Write it out
 								memset((char *) wrkbuf, 0, sizeof( wrkbuf ));
@@ -4051,6 +4055,8 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 						if (NULL != pEvent) {
 
 							if (vscp_doLevel2Filter(pEvent, &pSession->pClientItem->m_filterVSCP)) {
+
+                                memset( buf, 0, sizeof( buf ) );
 
 								wxString str;
 								p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, "{", 1 );
