@@ -1,0 +1,1 @@
+curl -X POST "http://demo.vscp.org:8080/vscp/rest" -H "vscpsession: %1"  -d "op=readevent&format=plain&count=%2"
