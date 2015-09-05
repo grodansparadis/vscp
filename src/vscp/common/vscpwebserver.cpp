@@ -3737,6 +3737,8 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 								wxString str;
 								if (vscp_writeVscpEventToString(pEvent, str)) {
 
+                                    memset( buf, 0, sizeof( buf ) );
+
 									// Write it out
 									memset((char *) wrkbuf, 0, sizeof( wrkbuf ));
 									strcpy((char *) wrkbuf, (const char*) "- ");
