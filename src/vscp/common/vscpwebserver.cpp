@@ -3703,7 +3703,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 				mg_write( conn, "\r\n", 2 );		// head/body Separator
 
 				if ( pSession->pClientItem->m_bOpen &&
-					pSession->pClientItem->m_clientInputQueue.GetCount()) {
+					pSession->pClientItem->m_clientInputQueue.GetCount() ) {
 
 					memset( buf, 0, sizeof( buf ));
 					sprintf( wrkbuf, "1 1 Success \r\n");
@@ -3712,7 +3712,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 
 					memset( buf, 0, sizeof( buf ));
 					sprintf( wrkbuf, 
-								"%zd events requested of %zu available (unfiltered) %zd will be retrived\r\n", 
+								"%zd events requested of %zu available (unfiltered) %zd will be retrieved\r\n", 
 								count, 
 								pSession->pClientItem->m_clientInputQueue.GetCount(),
 								MIN(count,pSession->pClientItem->m_clientInputQueue.GetCount()) );
@@ -3741,21 +3741,21 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 									memset((char *) wrkbuf, 0, sizeof( wrkbuf ));
 									strcpy((char *) wrkbuf, (const char*) "- ");
 									strcat((char *) wrkbuf, (const char*) str.mb_str(wxConvUTF8));
-									strcat((char *) wrkbuf, "/r/n" );
+									strcat((char *) wrkbuf, "\r\n" );
 									webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 									mg_write( conn, buf, strlen( buf ) );
 							
 								}	
 								else {
 									memset( buf, 0, sizeof( buf ) );
-									strcpy((char *) wrkbuf, "- Malformed event (intenal error)/r/n" );
+									strcpy((char *) wrkbuf, "- Malformed event (intenal error)\r\n" );
 									webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 									mg_write( conn, buf, strlen( buf ) );
 								}
 							}
 							else {
 								memset( buf, 0, sizeof( buf ) );
-								strcpy((char *) wrkbuf, "- Event filtered out/r/n" );
+								strcpy((char *) wrkbuf, "- Event filtered out\r\n" );
 								webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 								mg_write( conn, buf, strlen( buf ) );
 							}
@@ -3766,7 +3766,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 						} // Valid pEvent pointer
 						else {
 							memset( buf, 0, sizeof( buf ) );
-							strcpy((char *) wrkbuf, "- Event could not be fetched (intenal error)/r/n" );
+							strcpy((char *) wrkbuf, "- Event could not be fetched (intenal error)\r\n" );
 							webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 							mg_write( conn, buf, strlen( buf ) );
 						}
@@ -3795,7 +3795,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 
 					memset( buf, 0, sizeof( buf ));
 					sprintf( wrkbuf, 
-								"1,2,Info,%zd events requested of %zu available (unfiltered) %zu will be retrived,NULL\r\n", 
+								"1,2,Info,%zd events requested of %zu available (unfiltered) %zu will be retrieved,NULL\r\n", 
 								count, 
 								pSession->pClientItem->m_clientInputQueue.GetCount(),
 								MIN(count,pSession->pClientItem->m_clientInputQueue.GetCount()) );
@@ -3824,21 +3824,21 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 									memset((char *) wrkbuf, 0, sizeof( wrkbuf ));
 									strcpy((char *) wrkbuf, (const char*) "1,3,Data,Event.,");
 									strcat((char *) wrkbuf, (const char*) str.mb_str(wxConvUTF8));
-									strcat((char *) wrkbuf, "/r/n" );
+									strcat((char *) wrkbuf, "\r\n" );
 									webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 									mg_write( conn, buf, strlen( buf ) );
 							
 								}	
 								else {
 									memset( buf, 0, sizeof( buf ) );
-									strcpy((char *) wrkbuf, "1,2,Info,Malformed event (intenal error)/r/n" );
+									strcpy((char *) wrkbuf, "1,2,Info,Malformed event (intenal error)\r\n" );
 									webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 									mg_write( conn, buf, strlen( buf ) );
 								}
 							}
 							else {
 								memset( buf, 0, sizeof( buf ) );
-								strcpy((char *) wrkbuf, "1,2,Info,Event filtered out/r/n" );
+								strcpy((char *) wrkbuf, "1,2,Info,Event filtered out\r\n" );
 								webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 								mg_write( conn, buf, strlen( buf ) );
 							}
@@ -3849,7 +3849,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 						} // Valid pEvent pointer
 						else {
 							memset( buf, 0, sizeof( buf ) );
-							strcpy((char *) wrkbuf, "1,2,Info,Event could not be fetched (intenal error)/r/n" );
+							strcpy((char *) wrkbuf, "1,2,Info,Event could not be fetched (intenal error)\r\n" );
 							webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 							mg_write( conn, buf, strlen( buf ) );
 						}
@@ -3882,7 +3882,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 
 					memset( buf, 0, sizeof( buf ));
 					sprintf( wrkbuf, 
-								"<info>%zd events requested of %zd available (unfiltered) %zd will be retrived</info>", 
+								"<info>%zd events requested of %zd available (unfiltered) %zd will be retrieved</info>", 
 								count, 
 								pSession->pClientItem->m_clientInputQueue.GetCount(),
 								MIN(count,pSession->pClientItem->m_clientInputQueue.GetCount()) );
@@ -4021,7 +4021,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 					p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "info", 4 );
 					p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );					
 					sprintf( wrkbuf, 
-								"%zd events requested of %zu available (unfiltered) %zu will be retrived", 
+								"%zd events requested of %zu available (unfiltered) %zu will be retrieved", 
 								count, 
 								pSession->pClientItem->m_clientInputQueue.GetCount(),
 								MIN(count,pSession->pClientItem->m_clientInputQueue.GetCount()) );
