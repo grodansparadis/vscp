@@ -1320,6 +1320,10 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                 vscp_writeGuidToString ( pEvent, strGUID );
                 strResult +=  strGUID;
             }
+            // Check for nickname escape
+            else if ( str.StartsWith( wxT( "%event.nickname" ), &str ) ) {
+                strResult += wxString::Format( wxT( "%d" ), pEvent->GUID[ VSCP_GUID_LSB ] );
+            }
             // Check for obid escape
             else if ( str.StartsWith( wxT("%event.obid"), &str ) ) {
                 strResult +=  wxString::Format( wxT("%d"), pEvent->obid );
