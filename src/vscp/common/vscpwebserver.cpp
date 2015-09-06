@@ -3880,7 +3880,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 					pSession->pClientItem->m_clientInputQueue.GetCount()) {
 
 					memset( buf, 0, sizeof( buf ));
-					sprintf( wrkbuf, XML_HEADER"<vscp-rest success = \"true\" code = \"1\" massage = \"Success\" description = \"Success.\" >");
+					sprintf( wrkbuf, XML_HEADER"<vscp-rest success = \"true\" code = \"1\" message = \"Success\" description = \"Success.\" >");
 					webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 					mg_write( conn, buf, strlen( buf ) );
 
@@ -4331,7 +4331,7 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
 
 			memset( buf, 0, sizeof( buf ));
-			sprintf( wrkbuf, XML_HEADER"<vscp-rest success = \"true\" code = \"1\" massage = \"Success\" description = \"Success.\" >");
+			sprintf( wrkbuf, XML_HEADER"<vscp-rest success = \"true\" code = \"1\" message = \"Success\" description = \"Success.\" >");
 			webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 			mg_write( conn, buf, strlen( buf ) );
 
@@ -4753,13 +4753,13 @@ VSCPWebServerThread::webserv_rest_doStatus( struct mg_connection *conn,
 #ifdef WIN32
 			int n = _snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"<vscp-rest success = \"true\" code = \"1\" massage = \"Success.\" description = \"Success.\" ><vscpsession>%s</vscpsession><nEvents>%zd</nEvents></vscp-rest>", 
+					"<vscp-rest success = \"true\" code = \"1\" message = \"Success.\" description = \"Success.\" ><vscpsession>%s</vscpsession><nEvents>%zd</nEvents></vscp-rest>", 
 					pSession->sid,
                     pSession->pClientItem->m_clientInputQueue.GetCount() );
 #else
 			int n = snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"<vscp-rest success = \"true\" code = \"1\" massage = \"Success.\" description = \"Success.\" ><vscpsession>%s</vscpsession><nEvents>%lu</nEvents></vscp-rest>", 
+					"<vscp-rest success = \"true\" code = \"1\" message = \"Success.\" description = \"Success.\" ><vscpsession>%s</vscpsession><nEvents>%lu</nEvents></vscp-rest>", 
 					pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #endif
 			webserv_util_make_chunk( buf, wrkbuf, n );
@@ -4909,12 +4909,12 @@ VSCPWebServerThread::webserv_rest_doOpen( struct mg_connection *conn,
 #ifdef WIN32
 			int n = _snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"<vscp-rest success = \"true\" code = \"1\" massage = \"Success.\" description = \"Success.\" ><vscpsession>%s</vscpsession><nEvents>%zd</nEvents></vscp-rest>", 
+					"<vscp-rest success = \"true\" code = \"1\" message = \"Success.\" description = \"Success.\" ><vscpsession>%s</vscpsession><nEvents>%zd</nEvents></vscp-rest>", 
 					pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #else
 			int n = snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"<vscp-rest success = \"true\" code = \"1\" massage = \"Success.\" description = \"Success.\" ><vscpsession>%s</vscpsession><nEvents>%lu</nEvents></vscp-rest>", 
+					"<vscp-rest success = \"true\" code = \"1\" message = \"Success.\" description = \"Success.\" ><vscpsession>%s</vscpsession><nEvents>%lu</nEvents></vscp-rest>", 
 					pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #endif
 			webserv_util_make_chunk( buf, wrkbuf, n );
