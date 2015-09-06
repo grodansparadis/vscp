@@ -993,7 +993,7 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
 
 void VSCPClientThread::handleClientReceive ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-    unsigned short cnt = 1;	// # of messages to read
+    unsigned short cnt = 0;	// # of messages to read
 	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
@@ -1005,7 +1005,7 @@ void VSCPClientThread::handleClientReceive ( struct ns_connection *conn, CContro
     wxString str = pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length() - 4 );
     cnt = vscp_readStringValue( str );
 
-    if ( !cnt ) cnt++;	// No arg is "read one"
+    if ( !cnt ) cnt = 1;	// No arg is "read one"
 
 
     // Read cnt messages
