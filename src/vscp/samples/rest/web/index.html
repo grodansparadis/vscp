@@ -133,7 +133,7 @@
 			}
 		};
 		
-		var do_readevedo_readEventOne = function() {
+		var do_readEventOne = function() {
 			
 			if ( VscpSessionKey.length > 0 ) {	
 				$.ajax({
@@ -150,10 +150,24 @@
 					console.log("Code = " + response.code );
 					console.log("Message = " + response.message );
 					console.log("Description = " + response.description );					
-					console.log("Number of events = " + response.nEvents );
+					console.log("Info = " + response.info );
 					
 					if (  response.success ) {
-						$("#nevents").html("<b>Number of events in queue</b>: " + response.nEvents );
+						var eventtxt = "<b>Event</b>: <b>Head</b>:" + 
+							response.event[0].head +
+							" <b>Timestamp</b>:" + response.event[0].timestamp +
+							" <b>Class</b>:" + response.event[0].vscpclass +
+							" <b>Type</b>:" + response.event[0].vscptype +
+							" <b>SizeData</b>:" + response.event[0].sizedata + " <b>Data</b>: ";
+						if ( 0 == response.event[0].sizedata ) {
+							for ( var i=0; i<response.event[0].sizedata; i++ ) {
+								eventtxt += response.event[0].data[i] + " ";
+							}							
+						}
+						else {
+							eventtxt += "none";
+						}
+						$("#nevents").html( eventtxt );
 					}					
 					
 				},
