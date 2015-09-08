@@ -1,12 +1,21 @@
 
+Open - jsonp response
 http://localhost:8080/vscp/rest?vscpuser=admin&vscpsecret=d50c3180375c27927c22e42a379c3f67&format=jsonp&op=1
 
+Close - jsonp response
 http://localhost:8080/vscp/rest?vscpsession=c15277c280e94e142a642d7862cce882&format=4&op=close
 
+Status -  jsonp response
 http://localhost:8080/vscp/rest?vscpsession=c15277c280e94e142a642d7862cce882&format=4&op=status
 
+Read 10 events - Plain response
 http://localhost:8080/vscp/rest?vscpsession=5931252da81e025c7849d4c19eeee252&format=plain&op=readevent&count=10
 
+Read 10 events - XML response
 http://localhost:8080/vscp/rest?vscpsession=6dcefee6a2f844b57d6764f0db13a746&format=2&op=readevent&count=10
 
+Read 10 events - jsonp response
 http://localhost:8080/vscp/rest?vscpsession=5931252da81e025c7849d4c19eeee252&format=4&op=readevent&count=10
+
+Send event - jsonp response
+http://localhost:8080/vscp/rest?vscpsession=a64327cafda5e91c708b0f697fe5aa6c&format=4&op=sendevent&vscpevent="0,10,6,0,0,-,138,0,255%22"

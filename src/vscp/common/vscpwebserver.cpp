@@ -4117,17 +4117,24 @@ VSCPWebServerThread::webserv_rest_doSendEvent( struct mg_connection *conn,
 					else {
 						bSent = false;
 					}
+
+                    webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_SUCCESS );
+
 				}
 				else {
 					vscp_deleteVSCPevent( pEvent );
 					bSent = false;
 				}
 
+                webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_INVALID_SESSION );
+
 			}
 			else {
 				vscp_deleteVSCPevent( pEvent );
 				bSent = false;
 			}
+
+            webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_NO_ROOM );
 
 		}
 	}
