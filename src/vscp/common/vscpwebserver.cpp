@@ -4424,13 +4424,13 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
                                 strcat((char *)wrkbuf, wxString::Format( _("%d"), pEvent->head ).mbc_str() );
                                 strcat((char *)wrkbuf, (const char*) "</head>");
 
-                                strcat((char *)wrkbuf, (const char*) "<class>");
+                                strcat((char *)wrkbuf, (const char*) "<vscpclass>");
                                 strcat((char *)wrkbuf, wxString::Format( _("%d"), pEvent->vscp_class ).mbc_str() );
-                                strcat((char *)wrkbuf, (const char*) "</class>");
+                                strcat((char *)wrkbuf, (const char*) "</vscpclass>");
 
-                                strcat((char *)wrkbuf, (const char*) "<type>");
+                                strcat((char *)wrkbuf, (const char*) "<vscptype>");
                                 strcat((char *)wrkbuf, wxString::Format( _("%d"), pEvent->vscp_type ).mbc_str() );
-                                strcat((char *)wrkbuf, (const char*) "</type>");
+                                strcat((char *)wrkbuf, (const char*) "</vscptype>");
 
                                 strcat((char *)wrkbuf, (const char*) "<obid>");
                                 strcat((char *)wrkbuf, wxString::Format( _("%lu"), pEvent->obid ).mbc_str() );
