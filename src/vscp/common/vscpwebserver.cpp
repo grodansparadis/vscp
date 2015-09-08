@@ -4540,7 +4540,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 					if ( REST_FORMAT_JSONP == format ) {
 						p += json_emit_unquoted_str( p, 
                                                        &wrkbuf[ sizeof( wrkbuf ) ] - p,
-                                                       "handler(", 
+                                                       "typeof handler === 'function' && handler(",
                                                        strlen( "typeof handler === 'function' && handler(" ) );
 					}
 
@@ -4594,13 +4594,13 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 								p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
 								
 								// class
-								p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "class", 5 );
+								p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "vscpclass", 9 );
 								p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
 								p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, pEvent->vscp_class );
 								p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
 								
 								// type
-								p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "type", 4);
+								p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "vscptype", 8);
 								p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
 								p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, pEvent->vscp_type );
 								p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
@@ -4610,6 +4610,13 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 								p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
 								p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, pEvent->timestamp );
 								p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
+
+                                // obid
+                                p += json_emit_quoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "obid", 4 );
+                                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
+                                p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, pEvent->
+                                                     );
+                                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
 								
 								// GUID
 								vscp_writeGuidToString( pEvent, str);
