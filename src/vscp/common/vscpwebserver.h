@@ -444,7 +444,16 @@ public:
 										int format,
 										int errorcode);
 
-
+    /*!
+    webserv_rest_sendHeader - Send HTML header
+    @param conn Webserver connection handle.
+    @param format The format output should be formated in, plain, csv, xml, json, jsonp
+    @param returncode HTML return code
+    */
+    void
+        webserv_rest_sendHeader( struct mg_connection *conn,
+                                 int format,
+                                 int returncode );
 	
 
 	//////////////////////////////////////////////////////////////////////////////

@@ -305,16 +305,17 @@ enum {
 };
 
 enum {
-	REST_SUCCESS_CODE_SUCCESS = 1,	// All is OK		message="succss"
-	REST_SUCCESS_CODE_INFO,			// This is info		message="info"
-	REST_SUCCESS_CODE_DATA			// This is data		message="data"
+	REST_SUCCESS_CODE_SUCCESS = 1,	// All is OK		        message="succss"
+	REST_SUCCESS_CODE_INFO,			// This is info		        message="info"
+	REST_SUCCESS_CODE_DATA,			// This is data		        message="data"
+    REST_SUCCESS_CODE_EVENT_COUNT,	// This is event count		message="count"
 };
 
 #define REST_MIME_TYPE_PLAIN		"text/plain"
 #define REST_MIME_TYPE_CSV			"text/csv"
 #define REST_MIME_TYPE_XML			"application/xml"
 #define REST_MIME_TYPE_JSON			"application/json"
-#define REST_MIME_TYPE_JSONP		"text/javascript"
+#define REST_MIME_TYPE_JSONP		"application/javascript"
 
 // Clear text Error messages
 #define REST_PLAIN_ERROR_SUCCESS				"1 1 Success \r\n\r\nEverything is fine.\r\n"
@@ -358,15 +359,15 @@ enum {
 #define REST_JSON_ERROR_VARIABLE_NOT_FOUND		"{\"success\":false,\"code\":-7,\"message\":\"Variable not found\",\"description\":\"Variable could not be found.\"}"
 #define REST_JSON_ERROR_VARIABLE_NOT_CREATED	"{\"success\":false,\"code\":-7,\"message\":\"Variable could not be created\",\"description\":\"Variable could not be created.\"}"
 
-#define REST_JSONP_ERROR_SUCCESS				"typeof handler === 'function' && handler([{"REST_JSON_ERROR_SUCCESS"}]);"
-#define REST_JSONP_ERROR_GENERAL_FAILURE		"typeof handler === 'function' && handler([{"REST_JSON_ERROR_GENERAL_FAILURE"}]);"
-#define REST_JSONP_ERROR_INVALID_SESSION		"typeof handler === 'function' && handler([{"REST_JSON_ERROR_INVALID_SESSION"}]);"
-#define REST_JSONP_ERROR_UNSUPPORTED_FORMAT		"typeof handler === 'function' && handler([{"REST_JSON_ERROR_UNSUPPORTED_FORMAT"}]);"
-#define REST_JSONP_ERROR_COULD_NOT_OPEN_SESSION "typeof handler === 'function' && handler([{"REST_JSON_ERROR_COULD_NOT_OPEN_SESSION"}]);"
-#define REST_JSONP_ERROR_MISSING_DATA			"typeof handler === 'function' && handler([{"REST_JSON_ERROR_MISSING_DATA"}]);"
-#define REST_JSONP_ERROR_INPUT_QUEUE_EMPTY		"typeof handler === 'function' && handler([{"REST_JSON_ERROR_INPUT_QUEUE_EMPTY"}]);"
-#define REST_JSONP_ERROR_VARIABLE_NOT_FOUND		"typeof handler === 'function' && handler([{"REST_JSON_ERROR_VARIABLE_NOT_FOUND"}]);"
-#define REST_JSONP_ERROR_VARIABLE_NOT_CREATED	"typeof handler === 'function' && handler([{"REST_JSON_ERROR_VARIABLE_NOT_CREATED"}]);"
+#define REST_JSONP_ERROR_SUCCESS				"typeof handler === 'function' && handler(" REST_JSON_ERROR_SUCCESS ");"
+#define REST_JSONP_ERROR_GENERAL_FAILURE		"typeof handler === 'function' && handler(" REST_JSON_ERROR_GENERAL_FAILURE ");"
+#define REST_JSONP_ERROR_INVALID_SESSION		"typeof handler === 'function' && handler(" REST_JSON_ERROR_INVALID_SESSION ");"
+#define REST_JSONP_ERROR_UNSUPPORTED_FORMAT		"typeof handler === 'function' && handler(" REST_JSON_ERROR_UNSUPPORTED_FORMAT ");"
+#define REST_JSONP_ERROR_COULD_NOT_OPEN_SESSION "typeof handler === 'function' && handler(" REST_JSON_ERROR_COULD_NOT_OPEN_SESSION ");"
+#define REST_JSONP_ERROR_MISSING_DATA			"typeof handler === 'function' && handler(" REST_JSON_ERROR_MISSING_DATA ");"
+#define REST_JSONP_ERROR_INPUT_QUEUE_EMPTY		"typeof handler === 'function' && handler(" REST_JSON_ERROR_INPUT_QUEUE_EMPTY ");"
+#define REST_JSONP_ERROR_VARIABLE_NOT_FOUND		"typeof handler === 'function' && handler(" REST_JSON_ERROR_VARIABLE_NOT_FOUND ");"
+#define REST_JSONP_ERROR_VARIABLE_NOT_CREATED	"typeof handler === 'function' && handler(" REST_JSON_ERROR_VARIABLE_NOT_CREATED ");"
 
 const char* rest_errors[][REST_FORMAT_COUNT+1] = {
 	{REST_PLAIN_ERROR_SUCCESS, REST_CSV_ERROR_SUCCESS,REST_XML_ERROR_SUCCESS,REST_JSON_ERROR_SUCCESS,REST_JSONP_ERROR_SUCCESS,REST_JSONP_ERROR_SUCCESS},

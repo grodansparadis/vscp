@@ -962,7 +962,7 @@ wxString& vscp_replaceBackslash(wxString& wxstr)
 
 uint32_t vscp_readStringValue(const wxString& strval)
 {
-	static unsigned long val;
+    unsigned long val=0;
 	wxString str = strval;
 	
 	str.Trim();

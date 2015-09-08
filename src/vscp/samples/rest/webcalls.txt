@@ -1,0 +1,12 @@
+
+http://localhost:8080/vscp/rest?vscpuser=admin&vscpsecret=d50c3180375c27927c22e42a379c3f67&format=jsonp&op=1
+
+http://localhost:8080/vscp/rest?vscpsession=c15277c280e94e142a642d7862cce882&format=4&op=close
+
+http://localhost:8080/vscp/rest?vscpsession=c15277c280e94e142a642d7862cce882&format=4&op=status
+
+http://localhost:8080/vscp/rest?vscpsession=5931252da81e025c7849d4c19eeee252&format=plain&op=readevent&count=10
+
+http://localhost:8080/vscp/rest?vscpsession=6dcefee6a2f844b57d6764f0db13a746&format=2&op=readevent&count=10
+
+http://localhost:8080/vscp/rest?vscpsession=5931252da81e025c7849d4c19eeee252&format=4&op=readevent&count=10
