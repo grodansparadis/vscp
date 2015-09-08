@@ -18,6 +18,7 @@
 		
 		var VscpSessionKey = "";
 		var VscpServer = "http://localhost:8080";
+		var VscpEventCount = 0;
 		
 		$( document ).ready(function() {
 			$("#host").html("<b>Host</b>: " + VscpServer );
@@ -31,6 +32,26 @@
 		var test = function() {
 			alert( VscpSessionKey );
 		};
+		
+		var printEventData = function( event ) {
+			var eventtxt = "<b>Event</b>: <b>Head</b>:" + 
+				event.head +
+				" <b>Timestamp</b>:" + event.timestamp +
+				" <b>Obid</b>:" + event.obid +
+				" <b>Class</b>:" + event.vscpclass +
+				" <b>Type</b>:" + event.vscptype +
+				" <b>SizeData</b>:" + event.sizedata + " <b>Data</b>: ";
+			if ( 0 != event.sizedata ) {
+				for ( var i=0; i<event.sizedata; i++ ) {
+					eventtxt += event.data[i] + " ";
+				}							
+			}
+			else {
+				eventtxt += "none";
+			} 
+			
+			return eventtxt;
+		}
 		
 		var do_open = function() {
 			$.ajax({
@@ -119,6 +140,7 @@
 					console.log("Number of events = " + response.nEvents );
 					
 					if (  response.success ) {
+						VscpEventCount = response.nEvents;
 						$("#nevents").html("<b>Number of events in queue</b>: " + response.nEvents );
 					}					
 					
@@ -153,21 +175,22 @@
 					console.log("Info = " + response.info );
 					
 					if (  response.success ) {
-						var eventtxt = "<b>Event</b>: <b>Head</b>:" + 
+						/*var eventtxt = "<b>Event</b>: <b>Head</b>:" + 
 							response.event[0].head +
 							" <b>Timestamp</b>:" + response.event[0].timestamp +
+							" <b>Obid</b>:" + response.event[0].obid +
 							" <b>Class</b>:" + response.event[0].vscpclass +
 							" <b>Type</b>:" + response.event[0].vscptype +
 							" <b>SizeData</b>:" + response.event[0].sizedata + " <b>Data</b>: ";
-						if ( 0 == response.event[0].sizedata ) {
+						if ( 0 != response.event[0].sizedata ) {
 							for ( var i=0; i<response.event[0].sizedata; i++ ) {
 								eventtxt += response.event[0].data[i] + " ";
 							}							
 						}
 						else {
 							eventtxt += "none";
-						}
-						$("#nevents").html( eventtxt );
+						}*/
+						$("#nevents").html( printEventData( response.event[0] ) );
 					}					
 					
 				},
@@ -179,6 +202,52 @@
 			else {
 				alert("Interface is not open!");
 			}
+		};
+		
+		var do_readEventAll = function() {
+		
+			//VscpEventCount = 0;
+			//do_status();
+			
+			if ( VscpEventCount > 0 ) {
+				if ( VscpSessionKey.length > 0 ) {	
+					$.ajax({
+						url: VscpServer + '/vscp/rest?vscpsession=' + VscpSessionKey + '&format=jsonp&op=readevent&count=' + VscpEventCount,
+						type : "GET",
+						jsonpCallback: 'handler',
+						cache: true,
+						dataType: 'jsonp',
+						success: function(response) {
+							// response will be a javascript
+							// array of objects
+							console.log("-----------------------------------------------------------");
+							console.log("Success = " + response.success );
+							console.log("Code = " + response.code );
+							console.log("Message = " + response.message );
+							console.log("Description = " + response.description );					
+							console.log("Info = " + response.info );
+					
+							if ( response.success ) {
+								var eventtxt = "";
+								for (var i=0; i<VscpEventCount; i++ ) {
+									eventtxt += printEventData( response.event[i] ) + "<br>";
+								}
+								$("#nevents").html( eventtxt );
+							}					
+					
+						},
+						error: function( xhr, status, error ) {
+							console.log( "Close:" + error + " Status:" + status );
+						}
+					});
+				}
+				else {
+					alert("Interface is not open!");
+				}
+			}
+			else {
+				$("#nevents").html( "There are no events to read" );
+			};
 		};
 		
 		function getQueryParams(qs) {

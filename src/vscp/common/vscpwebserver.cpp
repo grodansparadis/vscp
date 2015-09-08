@@ -4614,8 +4614,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
                                 // obid
                                 p += json_emit_quoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "obid", 4 );
                                 p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
-                                p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, pEvent->
-                                                     );
+                                p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, pEvent->obid );
                                 p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
 								
 								// GUID
