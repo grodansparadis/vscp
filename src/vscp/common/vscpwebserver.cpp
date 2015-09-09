@@ -4915,11 +4915,11 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 
 			memset( buf, 0, sizeof( buf ));
 			sprintf( wrkbuf, 
-				"success-code,error-code,message,description,Variable,Type, Value,Persistent,Note\r\n1,1,Success,Success.,%s,%d,%s,%s,%s\r\n",
+				"success-code,error-code,message,description,Variable,Type,Persistent,Value,Note\r\n1,1,Success,Success.,%s,%d,%s,'%s','%s'\r\n",
 				(const char *)strVariableName.mbc_str(), 
 				pvar->getType(),
-				(const char *)strVariableValue.mbc_str(),
-				pvar->isPersistent() ? "true" : "false", 
+                pvar->isPersistent() ? "true" : "false",
+				(const char *)strVariableValue.mbc_str(),				
 				(const char *)pvar->getNote().mbc_str() );
 			webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
 			mg_write( conn, buf, strlen( buf ) );
@@ -4938,7 +4938,7 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 
 			memset( buf, 0, sizeof( buf ));
 			sprintf( wrkbuf, 
-						XML_HEADER"<variable type=%d(%s) persistent=%s >",
+						"<variable type=\"%d(%s)\" persistent=\"%s\" >",
 						pvar->getType(),
 						pvar->getVariableTypeAsString( pvar->getType() ),
 						pvar->isPersistent() ? "true" : "false" );
