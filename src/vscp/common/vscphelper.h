@@ -616,10 +616,12 @@ extern "C" {
 
     /*!
         Read a filter from a string
+        If strFilter is an empty string all elements in filter will be set to zero. Arguments is
+        priority,class,type,GUID and all is optional but if given must be given in order.
         \param pFilter Filter structure to write filter to.
         \param strFilter Filter in string form 
                 filter-priority, filter-class, filter-type, filter-GUID
-        \return true on success, fals eon failure.
+        \return true on success, false on failure.
      */
  
     bool vscp_readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter);
@@ -627,6 +629,8 @@ extern "C" {
 
     /*!
         Read a mask from a string
+        If strMask is an empty string elements in mask will be set to zero. Arguments is
+        priority,class,type,GUID and all is optional but if given must be given in order.
         \param pFilter Filter structure to write mask to.
         \param strMask Mask in string form 
                 mask-priority, mask-class, mask-type, mask-GUID
