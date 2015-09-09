@@ -1717,6 +1717,11 @@ bool vscp_readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter)
 	// Check pointer
 	if (NULL == pFilter) return false;
 
+    pFilter->filter_priority = 0;
+    pFilter->filter_class = 0;
+    pFilter->filter_type = 0;
+    memset( pFilter->filter_GUID, 16, 0 );
+
 	wxStringTokenizer tkz(strFilter, _(","));
 
 	// Get filter priority
@@ -1725,7 +1730,7 @@ bool vscp_readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter)
 		pFilter->filter_priority = vscp_readStringValue(strTok);
 	} 
     else {
-		return false;
+		return true;
 	}
 
 	// Get filter class
@@ -1734,7 +1739,7 @@ bool vscp_readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter)
 		pFilter->filter_class = vscp_readStringValue(strTok);
 	} 
     else {
-		return false;
+		return true;
 	}
 
 	// Get filter type
@@ -1743,7 +1748,7 @@ bool vscp_readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter)
 		pFilter->filter_type = vscp_readStringValue(strTok);
 	} 
     else {
-		return false;
+		return true;
 	}
 
 	// Get filter GUID
@@ -1752,9 +1757,6 @@ bool vscp_readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter)
 		vscp_getGuidFromStringToArray(pFilter->filter_GUID,
 				strTok);
 	} 
-    else {
-		return false;
-	}
 
 	return true;
 }
@@ -1770,6 +1772,11 @@ bool vscp_readMaskFromString(vscpEventFilter *pFilter, wxString& strMask)
 	// Check pointer
 	if (NULL == pFilter) return false;
 
+    pFilter->mask_priority = 0;
+    pFilter->mask_class = 0;
+    pFilter->mask_type = 0;
+    memset( pFilter->mask_GUID, 16, 0 );
+
 	wxStringTokenizer tkz( strMask, _(","));
 
 	// Get filter priority
@@ -1778,7 +1785,7 @@ bool vscp_readMaskFromString(vscpEventFilter *pFilter, wxString& strMask)
 		pFilter->mask_priority = vscp_readStringValue(strTok);
 	} 
     else {
-		return false;
+		return true;
 	}
 
 	// Get filter class
@@ -1787,7 +1794,7 @@ bool vscp_readMaskFromString(vscpEventFilter *pFilter, wxString& strMask)
 		pFilter->mask_class = vscp_readStringValue(strTok);
 	} 
     else {
-		return false;
+		return true;
 	}
 
 	// Get filter type
@@ -1796,7 +1803,7 @@ bool vscp_readMaskFromString(vscpEventFilter *pFilter, wxString& strMask)
 		pFilter->mask_type = vscp_readStringValue(strTok);
 	} 
     else {
-		return false;
+		return true;
 	}
 
 	// Get filter GUID
@@ -1805,9 +1812,6 @@ bool vscp_readMaskFromString(vscpEventFilter *pFilter, wxString& strMask)
 		vscp_getGuidFromStringToArray(pFilter->mask_GUID,
 				strTok);
 	} 
-    else {
-		return false;
-	}
 
 	return true;
 }

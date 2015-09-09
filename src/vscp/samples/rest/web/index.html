@@ -56,6 +56,10 @@
 		var VscpServer = "http://localhost:8080";		// Host
 		var VscpEventCount = 0;							// Events in inqueue
 		var txtSendEvent = "0,10,6,0,0,-,138,0,255";	// Event sent by send event 
+		// Filter/Mask to filter just to receive heart beats CLAS1.INFORMATION, Type=9 Node heartbeat
+		// both are "priority,class,type,guid"
+		var txtVscpFilter = "0x0000,0x0020,0x0009,00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00";
+		var txtVscpMask = "0x0000,0xffff,0xffff,00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00";
 		
 		$( document ).ready(function() {
 			$("#host").html("<b>Host</b>: " + VscpServer );
@@ -385,8 +389,8 @@
 				tokens,
 				re = /[?&]?([^=]+)=([^&]*)/g;
 
-			while (tokens = re.exec(qs)) {
-				params[decodeURIComponent(tokens[1])] = decodeURIComponent(tokens[2]);
+			while ( tokens = re.exec( qs ) ) {
+				params[ decodeURIComponent( tokens[ 1 ] ) ] = decodeURIComponent( tokens[ 2 ] );
 			}
 
 			return params;
@@ -396,6 +400,8 @@
 
 		if ( query.host.length > 0 ) {
 			VscpServer = query.host;
+			txtVscpFilter = query.filter;
+			txtVscpMask = query.mask;
 		}
 
 		
