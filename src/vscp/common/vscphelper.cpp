@@ -468,7 +468,8 @@ bool vscp_getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue
 
 				if (pEvent->pdata[ i+offset ] & (1<<j)) {		
 					strValue += wxT("1");				
-				} else {
+				} 
+                else {
 					strValue += wxT("0");
 				}
 
@@ -1291,7 +1292,8 @@ bool vscp_getGuidFromStringEx(vscpEventEx *pEvent, const wxString& strGUID)
 
 	if (0 == strGUID.Find(_("-"))) {
 		memset(pEvent->GUID, 0, 16);
-	} else {
+	} 
+    else {
 		wxStringTokenizer tkz(strGUID, wxT(":"));
 		for (int i = 0; i < 16; i++) {
 			tkz.GetNextToken().ToULong(&val, 16);
@@ -1522,7 +1524,8 @@ bool vscp_convertVSCPfromEx(vscpEvent *pEvent, const vscpEventEx *pEventEx)
 		// Allocate memory for data
 		if (NULL == (pEvent->pdata = new uint8_t[pEventEx->sizeData])) return false;
 		memcpy(pEvent->pdata, pEventEx->data, pEventEx->sizeData);
-	} else {
+	} 
+    else {
 		// No data
 		pEvent->pdata = NULL;
 	}
@@ -1720,7 +1723,8 @@ bool vscp_readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter)
 	if (tkz.HasMoreTokens()) {
 		strTok = tkz.GetNextToken();
 		pFilter->filter_priority = vscp_readStringValue(strTok);
-	} else {
+	} 
+    else {
 		return false;
 	}
 
@@ -1728,7 +1732,8 @@ bool vscp_readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter)
 	if (tkz.HasMoreTokens()) {
 		strTok = tkz.GetNextToken();
 		pFilter->filter_class = vscp_readStringValue(strTok);
-	} else {
+	} 
+    else {
 		return false;
 	}
 
@@ -1736,7 +1741,8 @@ bool vscp_readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter)
 	if (tkz.HasMoreTokens()) {
 		strTok = tkz.GetNextToken();
 		pFilter->filter_type = vscp_readStringValue(strTok);
-	} else {
+	} 
+    else {
 		return false;
 	}
 
@@ -1745,7 +1751,8 @@ bool vscp_readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter)
 		strTok = tkz.GetNextToken();
 		vscp_getGuidFromStringToArray(pFilter->filter_GUID,
 				strTok);
-	} else {
+	} 
+    else {
 		return false;
 	}
 
@@ -1756,20 +1763,21 @@ bool vscp_readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter)
 // readMaskFromString
 //
 
-bool vscp_readMaskFromString(vscpEventFilter *pFilter, wxString& strFilter)
+bool vscp_readMaskFromString(vscpEventFilter *pFilter, wxString& strMask)
 {
 	wxString strTok;
 
 	// Check pointer
 	if (NULL == pFilter) return false;
 
-	wxStringTokenizer tkz(strFilter, _(","));
+	wxStringTokenizer tkz( strMask, _(","));
 
 	// Get filter priority
 	if (tkz.HasMoreTokens()) {
 		strTok = tkz.GetNextToken();
 		pFilter->mask_priority = vscp_readStringValue(strTok);
-	} else {
+	} 
+    else {
 		return false;
 	}
 
@@ -1777,7 +1785,8 @@ bool vscp_readMaskFromString(vscpEventFilter *pFilter, wxString& strFilter)
 	if (tkz.HasMoreTokens()) {
 		strTok = tkz.GetNextToken();
 		pFilter->mask_class = vscp_readStringValue(strTok);
-	} else {
+	} 
+    else {
 		return false;
 	}
 
@@ -1785,7 +1794,8 @@ bool vscp_readMaskFromString(vscpEventFilter *pFilter, wxString& strFilter)
 	if (tkz.HasMoreTokens()) {
 		strTok = tkz.GetNextToken();
 		pFilter->mask_type = vscp_readStringValue(strTok);
-	} else {
+	} 
+    else {
 		return false;
 	}
 
@@ -1794,7 +1804,8 @@ bool vscp_readMaskFromString(vscpEventFilter *pFilter, wxString& strFilter)
 		strTok = tkz.GetNextToken();
 		vscp_getGuidFromStringToArray(pFilter->mask_GUID,
 				strTok);
-	} else {
+	} 
+    else {
 		return false;
 	}
 
@@ -1916,7 +1927,8 @@ bool vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pvscpEvent)
 
 	if (sizeData <= 8) {
 		pcanalMsg->sizeData = (unsigned char) sizeData;
-	} else {
+	} 
+    else {
 		pcanalMsg->sizeData = 8;
 	}
 
@@ -1984,7 +1996,8 @@ bool vscp_writeVscpDataToString(const vscpEvent *pEvent, wxString& str, bool bUs
 
 	if (bUseHtmlBreak) {
 		strBreak = _("<br>");
-	} else {
+	} 
+    else {
 		strBreak = _("\r\n");
 	}
 
@@ -2022,7 +2035,8 @@ bool vscp_writeVscpDataWithSizeToString(const uint16_t sizeData,
 
 	if (bUseHtmlBreak) {
 		strBreak = _("<br>");
-	} else {
+	} 
+    else {
 		strBreak = _("\r\n");
 	}
 
@@ -2071,7 +2085,8 @@ bool vscp_setVscpDataFromString(vscpEvent *pEvent, const wxString& str)
 		if (NULL != pEvent->pdata) {
 			memcpy(pEvent->pdata, &data, pEvent->sizeData);
 		}
-	} else {
+	} 
+    else {
 		pEvent->pdata = NULL;
 	}
 
@@ -2359,7 +2374,8 @@ wxString &vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
     strHTML += _("Alarm: ");
     if (registers[0x80]) {
         strHTML += _("Yes");
-    } else {
+    } 
+    else {
         strHTML += _("No");
     }
     strHTML += _("<br>");
@@ -2368,7 +2384,8 @@ wxString &vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
     strHTML += _("Node Control Flags: ");
     if (registers[0x83] & 0x10) {
         strHTML += _("[Register Write Protect] ");
-    } else {
+    } 
+    else {
         strHTML += _("[Register Read/Write] ");
     }
     switch ((registers[0x83] & 0xC0) >> 6) {
@@ -3594,9 +3611,11 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				// Key type code
 				if (0 == (pEvent->pdata[ 0 + offset ] & 0x03)) {
 					str = _("Button released.");
-				} else if (1 == (pEvent->pdata[ 0 + offset ] & 0x03)) {
+				} 
+                else if (1 == (pEvent->pdata[ 0 + offset ] & 0x03)) {
 					str = _("Button pressed.");
-				} else if (2 == (pEvent->pdata[ 0 + offset ] & 0x03)) {
+				} 
+                else if (2 == (pEvent->pdata[ 0 + offset ] & 0x03)) {
 					str = _("Keycode.");
 				}
 				else {
@@ -3632,9 +3651,11 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 
 				if (0 == pEvent->pdata[ 0+offset ]) {
 					str += _("Absolute coordinates.\n");
-				} else if (1 == pEvent->pdata[ 0+offset ]) {
+				} 
+                else if (1 == pEvent->pdata[ 0+offset ]) {
 					str += _("Relative coordinates.\n");
-				} else {
+				} 
+                else {
 					str += _("Unknown coordinates.\n");
 				}
 
@@ -3642,7 +3663,8 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 						((pEvent->pdata[ 3+offset ] << 8) + pEvent->pdata[ 4+offset ]),
 						((pEvent->pdata[ 5+offset ] << 8) + pEvent->pdata[ 6+offset ]));
 
-			} else {
+			} 
+            else {
 				str = _("Wrong number of databytes.");
 			}
 			break;
@@ -3754,7 +3776,8 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 						pEvent->pdata[ 2+offset ],
 						pEvent->pdata[ 3+offset ]);
 				str += wrkstr1;
-			} else {
+			} 
+            else {
 				str = _("Invalid data!");
 			}
 		} // Token activity

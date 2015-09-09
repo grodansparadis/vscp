@@ -221,23 +221,9 @@
 					console.log("Message = " + response.message );
 					console.log("Description = " + response.description );					
 					console.log("Info = " + response.info );
+					console.log("Count = " + response.count );
 					
-					if (  response.success ) {
-						/*var eventtxt = "<b>Event</b>: <b>Head</b>:" + 
-							response.event[0].head +
-							" <b>Timestamp</b>:" + response.event[0].timestamp +
-							" <b>Obid</b>:" + response.event[0].obid +
-							" <b>Class</b>:" + response.event[0].vscpclass +
-							" <b>Type</b>:" + response.event[0].vscptype +
-							" <b>SizeData</b>:" + response.event[0].sizedata + " <b>Data</b>: ";
-						if ( 0 != response.event[0].sizedata ) {
-							for ( var i=0; i<response.event[0].sizedata; i++ ) {
-								eventtxt += response.event[0].data[i] + " ";
-							}							
-						}
-						else {
-							eventtxt += "none";
-						}*/
+					if (  response.success && ( 1 == response.count ) ) {
 						$("#events").html( printEventData( response.event[0] ) );
 					}					
 					
@@ -258,10 +244,60 @@
 		
 		var do_readEventAll = function() {
 			
+			if ( VscpSessionKey.length > 0 ) {	
+				$.ajax({
+					url: VscpServer + '/vscp/rest?vscpsession=' + VscpSessionKey + '&format=jsonp&op=readevent&count=10000',
+					type : "GET",
+					jsonpCallback: 'handler',
+					cache: true,
+					dataType: 'jsonp',
+					success: function(response) {
+						// response will be a javascript
+						// array of objects
+						console.log("-----------------------------------------------------------");
+						console.log("Success = " + response.success );
+						console.log("Code = " + response.code );
+						console.log("Message = " + response.message );
+						console.log("Description = " + response.description );					
+						console.log("Info = " + response.info );
+						console.log("Count = " + response.count );
+					
+						if ( response.success ) {
+							if ( response.count > 0 ) {
+								var eventtxt = "";
+								for (var i=0; i<response.count; i++ ) {
+									eventtxt += printEventData( response.event[i] ) + "<br>";
+								}
+								$("#events").html( eventtxt );
+							}
+							else {
+								$("#events").html( " " );
+								$("#nevents").html( "It looks like there are no events to read." );
+							};
+						}					
+					
+					},
+					error: function( xhr, status, error ) {
+						console.log( "Close:" + error + " Status:" + status );
+					}
+				});
+			}
+			else {
+				alert("Interface is not open!");
+			}	
+
+		};
+		
+		///////////////////////////////////////////////////////////////////////
+		// do_sendEvent
+		//
+		
+		var do_sendEvent = function() {
+			
 			if ( VscpEventCount > 0 ) {
 				if ( VscpSessionKey.length > 0 ) {	
 					$.ajax({
-						url: VscpServer + '/vscp/rest?vscpsession=' + VscpSessionKey + '&format=jsonp&op=readevent&count=' + VscpEventCount,
+						url: VscpServer + '/vscp/rest?vscpsession=' + VscpSessionKey + '&format=jsonp&op=sendevent&vscpevent=' + txtSendEvent,
 						type : "GET",
 						jsonpCallback: 'handler',
 						cache: true,
@@ -277,11 +313,7 @@
 							console.log("Info = " + response.info );
 					
 							if ( response.success ) {
-								var eventtxt = "";
-								for (var i=0; i<VscpEventCount; i++ ) {
-									eventtxt += printEventData( response.event[i] ) + "<br>";
-								}
-								$("#events").html( eventtxt );
+								$("#events").html( "event sent" );
 							}					
 					
 						},
@@ -301,15 +333,15 @@
 		};
 		
 		///////////////////////////////////////////////////////////////////////
-		// do_sendEvent
+		// do_setFilter
 		//
 		
-		var do_sendEvent = function() {
+		var do_setFilter = function() {
 			
 			if ( VscpEventCount > 0 ) {
 				if ( VscpSessionKey.length > 0 ) {	
 					$.ajax({
-						url: VscpServer + '/vscp/rest?vscpsession=' + VscpSessionKey + '&format=jsonp&op=sendevent&vscpevent=' + txtSendEvent,
+						url: VscpServer + '/vscp/rest?vscpsession=' + VscpSessionKey + '&format=jsonp&op=sentfilter&vscpevent=' + txtSendEvent,
 						type : "GET",
 						jsonpCallback: 'handler',
 						cache: true,
@@ -379,6 +411,7 @@
 		<a href="#" onclick="do_readEventOne();" >Read One Event</a> |
 		<a href="#" onclick="do_readEventAll();" >Read All Events</a> |
 		<a href="#" onclick="do_sendEvent();" >Send Event</a> |
+		<a href="#" onclick="do_setFilter();" >Set Filter</a> |
 		
 		<p>You should open the console log window of your browser to see status from this demo<p>
         <hr>

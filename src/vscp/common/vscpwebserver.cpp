@@ -3140,6 +3140,10 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
         mg_get_var(conn, "vscpfilter", buf, sizeof(buf) );
         keypairs[_("VSCPFILTER")] = wxString::FromAscii( buf );
 
+        // vscpmask
+        mg_get_var( conn, "vscpmask", buf, sizeof( buf ) );
+        keypairs[ _( "VSCPMASK" ) ] = wxString::FromAscii( buf );
+
         // variable
         mg_get_var(conn, "variable", buf, sizeof(buf) );
         keypairs[_("VARIABLE")] = wxString::FromAscii( buf );
@@ -3338,19 +3342,26 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	}
 
 	//   **************************************************
-	//   * * * * * * * * Set (read) filter  * * * * * * * *
+	//   * * * * * * * *      Set filter    * * * * * * * *
 	//   **************************************************
 	else if ( ( _("5") == keypairs[_("OP")] ) || ( _("SETFILTER") == keypairs[_("OP")].Upper() ) ) {
 		
 		vscpEventFilter vscpfilter;
 		if ( _("") != keypairs[_("VSCPFILTER")] ) {
-			;
 			vscp_readFilterFromString( &vscpfilter, keypairs[_("VSCPFILTER")] ); 
 			rv = webserv_rest_doSetFilter( conn, pSession, format, vscpfilter );
 		}
 		else {
 			webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
 		}
+
+        if ( _( "" ) != keypairs[ _( "VSCPMASK" ) ] ) {
+            vscp_readMaskFromString( &vscpfilter, keypairs[ _( "VSCPMASK" ) ] );
+            rv = webserv_rest_doSetFilter( conn, pSession, format, vscpfilter );
+        }
+        else {
+            webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
+        }
 	}
 
 	//   ****************************************************
@@ -4753,13 +4764,19 @@ VSCPWebServerThread::webserv_rest_doSetFilter( struct mg_connection *conn,
 											        vscpEventFilter& vscpfilter )
 {
 	if ( NULL != pSession ) {
+        
+        webserv_rest_sendHeader( conn, format, 200 );
+
 		pSession->pClientItem->m_mutexClientInputQueue.Lock();
 		memcpy( &pSession->pClientItem->m_filterVSCP, &vscpfilter, sizeof( vscpEventFilter ) );
 		pSession->pClientItem->m_mutexClientInputQueue.Unlock();
 		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_SUCCESS );
 	}
 	else {
-		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_INVALID_SESSION );
+        
+        webserv_rest_sendHeader( conn, format, 200 );
+		
+        webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_INVALID_SESSION );
 	}
 
 	return MG_TRUE;
