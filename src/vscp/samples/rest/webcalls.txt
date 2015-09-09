@@ -19,3 +19,7 @@ http://localhost:8080/vscp/rest?vscpsession=5931252da81e025c7849d4c19eeee252&for
 
 Send event - jsonp response
 http://localhost:8080/vscp/rest?vscpsession=a64327cafda5e91c708b0f697fe5aa6c&format=4&op=sendevent&vscpevent="0,10,6,0,0,-,138,0,255%22"
+
+Read variable value
+http://localhost:8080/vscp/rest?vscpsession=f64f51f01ef24edfc03a7f10229dbb97&format=4&op=readvar&variable=%22test%22
+

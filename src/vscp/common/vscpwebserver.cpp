@@ -4881,7 +4881,7 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 
 				memset( buf, 0, sizeof( buf ));
 				sprintf( wrkbuf, 
-								"variable=%s type=%d persistent=%s value=%s note=%s\r\n", 
+								"variable=%s type=%d persistent=%s value='%s' note='%s'\r\n", 
 								(const char *)pvar->getName().mbc_str(), 
 								pvar->getType(),
 								pvar->isPersistent() ? "true" : "false", 
@@ -4895,7 +4895,7 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 		}
 		else if ( REST_FORMAT_CSV == format ) {
 			
-			webserv_util_sendheader( conn, 400, REST_MIME_TYPE_CSV );
+			webserv_util_sendheader( conn, 200, REST_MIME_TYPE_CSV );
 				
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
 
@@ -4913,7 +4913,7 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 		}
 		else if ( REST_FORMAT_XML == format ) {
 
-			webserv_util_sendheader( conn, 400, REST_MIME_TYPE_XML );
+			webserv_util_sendheader( conn, 200, REST_MIME_TYPE_XML );
 				
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
 
@@ -4956,7 +4956,7 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 		else if ( ( REST_FORMAT_JSON == format ) && ( REST_FORMAT_JSONP == format ) ) {
 				
 			char *p = buf;
-			webserv_util_sendheader( conn, 400, REST_MIME_TYPE_JSON );
+			webserv_util_sendheader( conn, 200, REST_MIME_TYPE_JSON );
 				
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
 
