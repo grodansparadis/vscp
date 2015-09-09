@@ -453,7 +453,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 
 	//mg_websocket_write( conn, WEBSOCKET_OPCODE_PING, NULL, 0 );
 
-    wxStringTokenizer tkz( strCmd, _(";") );
+    wxStringTokenizer tkz( strCmd, _(";"), wxTOKEN_RET_EMPTY_ALL );
 
     // Get command
     if (tkz.HasMoreTokens()) {
