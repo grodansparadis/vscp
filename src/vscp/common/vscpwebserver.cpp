@@ -453,7 +453,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 
 	//mg_websocket_write( conn, WEBSOCKET_OPCODE_PING, NULL, 0 );
 
-    wxStringTokenizer tkz( strCmd, _(";") );
+    wxStringTokenizer tkz( strCmd, _(";"), wxTOKEN_RET_EMPTY_ALL );
 
     // Get command
     if (tkz.HasMoreTokens()) {
@@ -832,6 +832,20 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         // Get variable Persistence
         if (tkz.HasMoreTokens()) {
             int val = vscp_readStringValue(tkz.GetNextToken());
+            
+            if ( 0 == val ) {
+                bPersistent = false;
+            }
+            else if ( 1 == val ) {
+                bPersistent = true;
+            }
+            else {
+                mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, 
+                                        "-;CREATEVAR;%d;%s", 
+                                        WEBSOCK_ERROR_SYNTAX_ERROR, 
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+                return MG_TRUE;
+            }
         }
 
         // Get variable value
