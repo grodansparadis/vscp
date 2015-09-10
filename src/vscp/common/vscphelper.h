@@ -248,7 +248,7 @@ extern "C" {
 	/*!
 	  Convert a floating point measurement value into VSCP data as a
       single precision float (32-bit) for
-	  CLASS1.MEASUREMENT, CLASS2_LEVEL1.MEASUREMENT
+	  VSCP_CLASS1_MEASUREMENT, VSCP_CLASS2_LEVEL1.MEASUREMENT
       \param value Floating point value to convert.
       \param pdata Pointer to beginning of VSCP returned event data.
 	  \param psize Pointer to size for returned data.

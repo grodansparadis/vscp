@@ -406,20 +406,26 @@ public:
 		@param conn Webserver connection handle.
 		@param pSession Active session or NULL if no session active
 		@param format The format output should be formated in, plain, csv, xml, json, jsonp
+        @param strLevel VSCP Level event to send (1 or 2)
 		@param strType Measurement type
 		@param strMeasurement Measurement value (integer/long/float)
 		@param strUnit Measurement unit
 		@param strSensorIdx Sensor Index 
+        @param strZone Zone to use
+        @param strSubZone SubZone to use
 		@return MG_TRUE on success or MG_FALSE on failure.
 	*/
 	int
 	webserv_rest_doWriteMeasurement( struct mg_connection *conn, 
 												struct websrv_rest_session *pSession, 
 												int format,
+                                                wxString& strLevel,
 												wxString& strType,
 												wxString& strMeasurement,
 												wxString& strUnit,
-												wxString& strSensorIdx );
+												wxString& strSensorIdx,
+                                                wxString& strZone,
+                                                wxString& strSubZone );
 
 	/*!
 		webserv_rest_doWriteVariable - Write a variable value

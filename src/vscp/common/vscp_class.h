@@ -112,6 +112,7 @@
 #define VSCP_CLASS2_CUSTOM                              ( 1029 )
 #define VSCP_CLASS2_DISPLAY                             ( 1030 )
 #define VSCP_CLASS2_MEASUREMENT_STR                     ( 1040 )
+#define VSCP_CLASS2_MEASUREMENT_FLOAT                   ( 1060 )
 #define VSCP_CLASS2_VSCPD                               ( 65535 )
 
 #endif

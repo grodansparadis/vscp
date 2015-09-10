@@ -3184,7 +3184,19 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 
         // sensoridx
         mg_get_var(conn, "sensoridx", buf, sizeof(buf) );
-        keypairs[_("SENSORIDX")] = wxString::FromAscii( buf );
+        keypairs[_("SENSORINDEX")] = wxString::FromAscii( buf );
+
+        // level  ( VSCP level 1 or 2 )
+        mg_get_var( conn, "level", buf, sizeof( buf ) );
+        keypairs[ _( "LEVEL" ) ] = wxString::FromAscii( buf );
+
+        // zone
+        mg_get_var( conn, "zone", buf, sizeof( buf ) );
+        keypairs[ _( "ZONE" ) ] = wxString::FromAscii( buf );
+
+        // subzone
+        mg_get_var( conn, "subzone", buf, sizeof( buf ) );
+        keypairs[ _( "SUBZONE" ) ] = wxString::FromAscii( buf );
 
         // name
         mg_get_var(conn, "name", buf, sizeof(buf) );
@@ -3461,11 +3473,14 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 
 		if ( ( _("") != keypairs[_("MEASUREMENT")] ) && (_("") != keypairs[_("TYPE")]) ) {
 			
-			rv = webserv_rest_doWriteMeasurement( conn, pSession, format, 
-													keypairs[_("TYPE")],
-													keypairs[_("MEASUREMENT")],
-													keypairs[_("UNIT")],
-													keypairs[_("SENSORIDX")] );
+			rv = webserv_rest_doWriteMeasurement( conn, pSession, format,
+                                                    keypairs[ _("LEVEL") ],
+													keypairs[ _("TYPE") ],
+													keypairs[ _("MEASUREMENT") ],
+													keypairs[ _("UNIT") ],
+													keypairs[ _("SENSORIDX") ],
+                                                    keypairs[ _( "ZONE" ) ],
+                                                    keypairs[ _( "SUBZONE" ) ] );
 		}
 		else {
 			webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
@@ -4698,7 +4713,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 								// Data
 								p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "data", 4);
 								p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":[", 2 );
-								for ( unsigned int j=0; j<pEvent->sizeData; j++ ) {
+								for ( uint16_t j=0; j<pEvent->sizeData; j++ ) {
 									p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, pEvent->pdata[j] );
                                     if (j < ( pEvent->sizeData-1 ) ) {
                                         p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
@@ -5184,30 +5199,92 @@ int
 VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *conn, 
 													    struct websrv_rest_session *pSession, 
 													    int format,
+                                                        wxString& strLevel,
 													    wxString& strType,
 													    wxString& strMeasurement,
 													    wxString& strUnit,
-													    wxString& strSensorIdx )
+													    wxString& strSensorIdx,
+                                                        wxString& strZone,
+                                                        wxString& strSubZone )
 {
     if ( NULL != pSession ) {
-        
+
         double value = 0;
+        long level = 2;
         long unit;
+        long vscptype;
         long sensoridx;
-        uint8_t data[8];
+        long zone;
+        long subzone;
+        uint8_t data[ VSCP_MAX_DATA ];
         uint16_t sizeData;
 
-        strMeasurement.ToDouble( &value );
-        strUnit.ToLong( &unit );
-        strSensorIdx.ToLong( &sensoridx );
+        strMeasurement.ToDouble( &value );  // Measurement value
+        strUnit.ToLong( &unit );            // Measurement unit
+        strSensorIdx.ToLong( &sensoridx );  // Sensor indes
+        strType.ToLong( &vscptype );        // VSCP event type
+        strZone.ToLong( &zone );            // VSCP event type
+        zone &= 0xff;
+        strSubZone.ToLong( &subzone );      // VSCP event type
+        subzone &= 0xff;
 
-        if ( vscp_convertFloatToFloatEventData( data,
+        strLevel.ToLong( &level );          // Level I or Level II (default) 
+        if ( ( level > 2 ) || ( level < 1 ) ) {
+            level = 2;
+        }
+
+        // Range checks
+        if ( 1 == level ) {
+            if ( unit > 3 ) unit = 0;
+            if ( sensoridx > 7 ) unit = 0;
+            if ( vscptype > 512 ) vscptype -= 512;
+        }
+        else if ( 2 == level ) {
+            if ( unit > 255 ) unit &= 0xff;
+            if ( sensoridx > 255 ) sensoridx &= 0xff;
+        }
+
+        if ( 1 == level ) {
+            if ( vscp_convertFloatToFloatEventData( data,
                                                     &sizeData,
-                                                    value, 
+                                                    value,
                                                     unit,
                                                     sensoridx ) ) {
+                if ( sizeData > 8 ) sizeData = 8;
+              
+                vscpEvent *pEvent = new vscpEvent;
+                pEvent->timestamp = 0; // Let interface fill in
+                pEvent->sizeData = sizeData;
+                if ( sizeData > 0 ) {
+                    memcpy( pEvent->pdata, data, sizeData );
+                }
+                else {
+                    pEvent->pdata = NULL;
+                }
+                pEvent->vscp_class = VSCP_CLASS1_MEASUREMENT;
+                pEvent->vscp_type = vscptype;
+
+                webserv_rest_doSendEvent( conn, pSession, format, pEvent );
+
+            }
+        }
+        else {
             vscpEvent *pEvent = new vscpEvent;
-            webserv_rest_doSendEvent( conn, pSession, format, pEvent );    
+            pEvent->timestamp = 0; // Let interface fill in
+            pEvent->head = 0;
+            pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
+            pEvent->vscp_type = vscptype;
+            pEvent->timestamp = 0; 
+
+            data[ 0 ] = sensoridx;
+            data[ 1 ] = zone;
+            data[ 2 ] = subzone;
+            data[ 3 ] = unit;
+            data[ 4 ] = sensoridx;
+            memcpy( data + 5, (char *)&value, 8 ); // copy in double
+            wxUINT64_SWAP_ON_LE( data + 5 );
+            
+            webserv_rest_doSendEvent( conn, pSession, format, pEvent );
         }
 
         webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_SUCCESS );
