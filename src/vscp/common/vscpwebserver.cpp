@@ -3162,9 +3162,17 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
         mg_get_var(conn, "variable", buf, sizeof(buf) );
         keypairs[_("VARIABLE")] = wxString::FromAscii( buf );
 
+        // value
+        mg_get_var( conn, "value", buf, sizeof( buf ) );
+        keypairs[ _( "VALUE" ) ] = wxString::FromAscii( buf );
+
         // type
         mg_get_var(conn, "type", buf, sizeof(buf) );
         keypairs[_("TYPE")] = wxString::FromAscii( buf );
+
+        // persistent
+        mg_get_var( conn, "persistent", buf, sizeof( buf ) );
+        keypairs[ _( "PERSISTENT" ) ] = wxString::FromAscii( buf );
 
         // measurement
         mg_get_var(conn, "measurement", buf, sizeof(buf) );
@@ -3197,7 +3205,15 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 		    int pos;
 		    str = tkz.GetNextToken();
 		    if ( wxNOT_FOUND != ( pos = str.Find('=') ) ) {
-			    keypairs[ str.Left(pos).Upper() ] = str.Right( str.Length()-pos-1 ); 
+                char wrkbuf[ 10000 ];
+
+                mg_url_decode( str.Right( str.Length() - pos - 1 ).mbc_str(),
+                               str.Right( str.Length() - pos - 1 ).length(),
+                               wrkbuf,
+                               sizeof( wrkbuf ),
+                               0 );
+
+			    keypairs[ str.Left(pos).Upper() ] = wrkbuf;
 		    }
 	    }
     }
@@ -3406,7 +3422,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	else if ( ( _("8") == keypairs[_("OP")] ) || ( _("WRITEVAR") == keypairs[_("OP")].Upper() ) ) {
 
 		if ( _("") != keypairs[_("VARIABLE")] ) {
-			rv = webserv_rest_doWriteVariable( conn, pSession, format, keypairs[_("VARIABLE")] );
+			rv = webserv_rest_doWriteVariable( conn, pSession, format, keypairs[_("VARIABLE")], keypairs[ _( "VALUE" ) ] );
 		}
 		else {
 			webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
@@ -3422,7 +3438,13 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 
 
 		if ( _("") != keypairs[_("VARIABLE")] ) {
-			rv = webserv_rest_doWriteVariable( conn, pSession, format, keypairs[_("VARIABLE")] );
+			rv = webserv_rest_doCreateVariable( conn, 
+                                                    pSession, 
+                                                    format, 
+                                                    keypairs[_("VARIABLE")], 
+                                                    keypairs[ _( "TYPE" ) ],
+                                                    keypairs[ _( "VALUE" ) ],
+                                                    keypairs[ _( "PERISTENT" ) ] );
 		}
 		else {
 			webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
@@ -3975,6 +3997,7 @@ struct websrv_rest_session *pSession,
             return MG_TRUE;
         }
         else if ( REST_FORMAT_JSON == format ) {
+
             webserv_util_sendheader( conn, 200, REST_MIME_TYPE_JSON );
 
             mg_write( conn, "\r\n", 2 );		// head/body Separator
@@ -3999,6 +4022,7 @@ struct websrv_rest_session *pSession,
             return MG_TRUE;
         }
         else if ( REST_FORMAT_JSONP == format ) {
+
             webserv_util_sendheader( conn, 200, REST_MIME_TYPE_JSONP );
 
             mg_write( conn, "\r\n", 2 );		// head/body Separator
@@ -4796,9 +4820,6 @@ VSCPWebServerThread::webserv_rest_doSetFilter( struct mg_connection *conn,
 		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_SUCCESS );
 	}
 	else {
-        
-        webserv_rest_sendHeader( conn, format, 200 );
-		
         webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_INVALID_SESSION );
 	}
 
@@ -4884,8 +4905,7 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 		
 		if ( REST_FORMAT_PLAIN == format ) {
 
-				webserv_util_sendheader( conn, 200, REST_MIME_TYPE_PLAIN );
-				
+				webserv_util_sendheader( conn, 200, REST_MIME_TYPE_PLAIN );			
 				mg_write( conn, "\r\n", 2 );		// head/body Separator
 
 				memset( buf, 0, sizeof( buf ));
@@ -4909,8 +4929,7 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 		}
 		else if ( REST_FORMAT_CSV == format ) {
 			
-			webserv_util_sendheader( conn, 200, REST_MIME_TYPE_CSV );
-				
+			webserv_util_sendheader( conn, 200, REST_MIME_TYPE_CSV );			
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
 
 			memset( buf, 0, sizeof( buf ));
@@ -4927,8 +4946,7 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 		}
 		else if ( REST_FORMAT_XML == format ) {
 
-			webserv_util_sendheader( conn, 200, REST_MIME_TYPE_XML );
-				
+			webserv_util_sendheader( conn, 200, REST_MIME_TYPE_XML );				
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
 
 			memset( buf, 0, sizeof( buf ));
@@ -4967,15 +4985,20 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 			mg_write( conn, buf, strlen( buf ) );
 
 		}
-		else if ( ( REST_FORMAT_JSON == format ) && ( REST_FORMAT_JSONP == format ) ) {
+		else if ( ( REST_FORMAT_JSON == format ) || ( REST_FORMAT_JSONP == format ) ) {
 				
 			char *p = buf;
-			webserv_util_sendheader( conn, 200, REST_MIME_TYPE_JSON );
-				
+            if ( REST_FORMAT_JSONP == format ) {
+                webserv_util_sendheader( conn, 200, REST_MIME_TYPE_JSONP );
+            }
+            else {
+                webserv_util_sendheader( conn, 200, REST_MIME_TYPE_JSON );
+            }
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
 
-			if ( pSession->pClientItem->m_bOpen &&
-				pSession->pClientItem->m_clientInputQueue.GetCount() ) {
+			if ( pSession->pClientItem->m_bOpen  ) {
+
+                memset( buf, 0, sizeof( buf ) );
 
 				if ( REST_FORMAT_JSONP == format ) {
 					p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, "typeof handler === 'function' && handler(", 41 );
@@ -4985,29 +5008,29 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 					"{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",",
 					strlen( "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\"," ) );
 					
-				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-name", 13 );
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varname", 7 );
 				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );					
 				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, pvar->getName().mbc_str(), pvar->getName().Length() );
 				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 
-				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-type", 13 );
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "vartype", 7 );
 				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );			
 				wxString wxstr = wxString::FromAscii( pvar->getVariableTypeAsString( pvar->getType() ) );
 				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wxstr.mbc_str(), wxstr.Length() );
 				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 
-				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-type-code", 18 );
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "vartypecode", 11 );
 				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
 				p += json_emit_long( p, &buf[sizeof(buf)] - p, pvar->getType() );
 				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 
-				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-persistence", 20 );
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varpersistence", 14 );
 				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
 				wxstr = pvar->isPersistent() ? _("true") : _("false");
 				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wxstr.mbc_str(), wxstr.Length() );
 				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 
-				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-value", 14 );
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varvalue", 8 );
 				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );					
 				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, strVariableValue.mbc_str(), strVariableValue.Length() );
 				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
@@ -5016,11 +5039,13 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, "}", 1 );
 
 				if ( REST_FORMAT_JSONP == format ) {
-					p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ");", 1 );
+					p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ");", 2 );
 				}
 
-				webserv_util_make_chunk( wrkbuf, buf, strlen( buf) );
-				mg_write( conn, buf, strlen( wrkbuf ) );
+                memset( wrkbuf, 0, sizeof( wrkbuf ) );
+                webserv_util_make_chunk( wrkbuf, buf, strlen( buf) );
+                mg_write( conn, wrkbuf, strlen( wrkbuf ) );
+				
 
 			}	 					
 		}
@@ -5036,6 +5061,7 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 }
 
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // webserv_rest_doWriteVariable
 //
@@ -5044,11 +5070,10 @@ int
 VSCPWebServerThread::webserv_rest_doWriteVariable( struct mg_connection *conn, 
 												        struct websrv_rest_session *pSession, 
 													    int format,
-													    wxString& strVariable )
+													    wxString& strVariableName,
+                                                        wxString& strValue )
 {
 	wxString strName;
-    wxString strValue;
-	wxStringTokenizer tkz( strVariable, _(";") );
 
     // Check pointer
     if (NULL == conn) {
@@ -5062,29 +5087,19 @@ VSCPWebServerThread::webserv_rest_doWriteVariable( struct mg_connection *conn,
     }
 
     if ( NULL != pSession ) {
+
         // Get variablename
-        if ( tkz.HasMoreTokens() ) {
+        CVSCPVariable *pvar;
+        if ( NULL == (pvar = pObject->m_VSCP_Variables.find( strVariableName ) ) ) {
+            webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_FOUND );
+		    return MG_TRUE;
+        }
 
-            CVSCPVariable *pvar;
-            strName = tkz.GetNextToken();
-            if ( NULL == (pvar = pObject->m_VSCP_Variables.find( strName ) ) ) {
-                webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_FOUND );
-				return MG_TRUE;
-            }
-
-            // Get variable value
-            if (tkz.HasMoreTokens()) {
-                strValue = tkz.GetNextToken();
-                if (!pvar->setValueFromString( pvar->getType(), strValue ) ) {
-                   webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
-                   return MG_TRUE;
-                }
-            } 
-			else {
-                webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
-                return MG_TRUE;
-            }
-		}
+        // Set variable value
+        if (!pvar->setValueFromString( pvar->getType(), strValue ) ) {
+            webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
+            return MG_TRUE;
+        }
 
 		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_SUCCESS );
 
@@ -5105,12 +5120,11 @@ int
 VSCPWebServerThread::webserv_rest_doCreateVariable( struct mg_connection *conn, 
 												        struct websrv_rest_session *pSession, 
 													    int format,
-													    wxString& strVariable )
+                                                        wxString& strVariable,
+                                                        wxString& strType,
+                                                        wxString& strValue,
+                                                        wxString& strPersistent )
 {
-	wxString strName;
-    wxString strType;
-    wxString strPersistence;
-    wxString strValue;
     int type = VSCP_DAEMON_VARIABLE_CODE_STRING;
     bool bPersistence = false;
 	wxStringTokenizer tkz( strVariable, _(";") );
@@ -5120,61 +5134,33 @@ VSCPWebServerThread::webserv_rest_doCreateVariable( struct mg_connection *conn,
         return MG_FALSE;
     }
 
+    // Get type
+    if ( strType.IsNumber() ) {
+        type = vscp_readStringValue( strType );
+    }
+    else {
+        type = CVSCPVariable::getVariableTypeFromString( strType  );
+    }
+
+    // Get persistence
+    strPersistent.Trim();
+    strPersistent.Trim( false );
+    strPersistent.MakeUpper();
+    if ( wxNOT_FOUND != strPersistent.Find( _( "TRUE" ) ) ) {
+        bPersistence = true;
+    }
+
     CControlObject *pObject = (CControlObject *)conn->server_param;
     
     if (NULL == pObject) {
-        return MG_FALSE;
+        webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_CREATED ); 
+        return MG_TRUE;
     }
 
     if ( NULL != pSession ) {
 
-        // Get variablename
-        if ( tkz.HasMoreTokens() ) {
-            strName = tkz.GetNextToken();
-        }
-        else {
-            webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
-            return MG_TRUE;
-        }
-
-        // Get type
-        if ( tkz.HasMoreTokens() ) {
-            strType = tkz.GetNextToken();
-            strType.Trim();
-            strType.Trim( false );
-            if ( strType.Length() ) {
-                type = vscp_readStringValue( strType );
-            }
-        }
-        else {
-            webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
-            return MG_TRUE;
-        }
-
-        // Get persistence
-        if ( tkz.HasMoreTokens() ) {
-            strPersistence = tkz.GetNextToken();
-            strPersistence.MakeUpper();
-            if ( strPersistence.Find( _("TRUE") ) ) {
-                bPersistence = true;		
-            }
-        }
-        else {
-            webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
-            return MG_TRUE;
-        }
-
-        // Get value
-        if ( tkz.HasMoreTokens() ) {
-            strValue = tkz.GetNextToken();
-        }
-        else {
-            webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
-            return MG_TRUE;
-        }
-
         // Add the variable
-        if ( !pObject->m_VSCP_Variables.add( strName, strValue, type, bPersistence ) ) {
+        if ( !pObject->m_VSCP_Variables.add( strVariable, strValue, type, bPersistence ) ) {
             webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_CREATED );
             return MG_TRUE;
         }

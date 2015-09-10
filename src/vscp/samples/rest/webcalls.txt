@@ -23,3 +23,9 @@ http://localhost:8080/vscp/rest?vscpsession=a64327cafda5e91c708b0f697fe5aa6c&for
 Read variable value
 http://localhost:8080/vscp/rest?vscpsession=f64f51f01ef24edfc03a7f10229dbb97&format=4&op=readvar&variable=%22test%22
 
+Write variable value
+http://localhost:8080/vscp/rest?vscpsession=f102115ea5f8653aad7df012d1d9cb07&format=3&op=writevar&variable=test&value=Super
+
+Create variable
+http://localhost:8080/vscp/rest?vscpsession=1a9dc644fc5cb09b00702ae421bc5055&format=3&op=createvar&variable=test01&value=this%20is%20a%20test&type=1&persistent=false
+http://localhost:8080/vscp/rest?vscpsession=1a9dc644fc5cb09b00702ae421bc5055&format=3&op=createvar&variable=test02&value=this%20is%20a%20test&type=STRING&persistent=false

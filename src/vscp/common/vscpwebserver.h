@@ -370,28 +370,36 @@ public:
 		@param conn Webserver connection handle.
 		@param pSession Active session or NULL if no session active
 		@param format The format output should be formated in, plain, csv, xml, json, jsonp
-        @param bCreate Set to true to create variable if not existing
+        @param strVariableName Name of variable to write new value to.
+        @param strValue Value for variable variable
 		@return MG_TRUE on success or MG_FALSE on failure.
 	*/
 	int
 	webserv_rest_doWriteVariable( struct mg_connection *conn, 
 												struct websrv_rest_session *pSession, 
 												int format,
-												wxString& strVariable );
+												wxString& strVariableName,
+                                                wxString& strValue );
 
     /*!
 		webserv_rest_doCreateVariable - Create a variable of a specified type
 		@param conn Webserver connection handle.
 		@param pSession Active session or NULL if no session active
 		@param format The format output should be formated in, plain, csv, xml, json, jsonp
-        @param bCreate Set to true to create variable if not existing
+        @param strVariable Name of variable to create
+        @param strType Type of variable to create. Can be given on text or numerical form.
+        @param strValue Value of variable to create
+        @param strPersistent Should be set to "true" if variable should be persistent
 		@return MG_TRUE on success or MG_FALSE on failure.
 	*/
 	int
 	webserv_rest_doCreateVariable( struct mg_connection *conn, 
 												struct websrv_rest_session *pSession, 
 												int format,
-												wxString& strVariable );
+												wxString& strVariable,
+                                                wxString& strType,
+                                                wxString& strValue,
+                                                wxString& strPersistent );
 
 	/*!
 		webserv_rest_doWriteVariable - Write a variable value
