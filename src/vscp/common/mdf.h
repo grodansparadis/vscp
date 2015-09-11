@@ -31,7 +31,6 @@
 
 #include "wx/wx.h"
 
-
 #include <vscp.h>
 #include <vscp_class.h>
 #include <vscp_type.h>
@@ -703,9 +702,17 @@ public:
 	*/
 	CMDF_Register *getMDFRegister( uint8_t reg, uint16_t page );
 
+    /*
+        Return temporary file path
+        @return path
+    */
+    wxString getTempFilePath( void ) { return m_tempFileName; };
+
 
     wxString m_strLocale;                       // ISO code for requested language
                                                 // defaults to "en"
+
+    wxString m_tempFileName;                  // Local downloaded file path
 
     wxString m_strModule_Name;                  // Module name
     wxString m_strModule_Model;                 // Module Model

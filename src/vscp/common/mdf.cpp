@@ -803,6 +803,8 @@ bool CMDF::downLoadMDF( wxString& remoteFile, wxString &tempFileName )
         return false;
     }
 
+    m_tempFileName = tempFileName;
+
     // Create and open http stream
     wxURL url( remoteFile );	
     if ( wxURL_NOERR != url.GetError() ) {
@@ -2622,3 +2624,5 @@ CMDF_Register * CMDF::getMDFRegister( uint8_t reg, uint16_t page )
 
 	return NULL;
 }
+
+

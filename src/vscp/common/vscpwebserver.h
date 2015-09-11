@@ -447,6 +447,20 @@ public:
 												wxString& strFrom,
 												wxString& strTo );
 
+    /*!
+        webserv_rest_doFetchMDF - Fetch MDF
+        @param conn Webserver connection handle.
+        @param pSession Active session or NULL if no session active
+        @param format The format output should be formated in, plain, csv, xml, json, jsonp
+        @param strURL URL for MDF.
+        @return MG_TRUE on success or MG_FALSE on failure.
+    */
+    int
+    webserv_rest_doFetchMDF( struct mg_connection *conn,
+                                struct websrv_rest_session *pSession,
+                                int format,
+                                wxString& strURL );
+
 	/*!
 		webserv_rest_error - Display error
 		@param conn Webserver connection handle.
