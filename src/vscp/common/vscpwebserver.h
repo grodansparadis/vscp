@@ -406,6 +406,7 @@ public:
 		@param conn Webserver connection handle.
 		@param pSession Active session or NULL if no session active
 		@param format The format output should be formated in, plain, csv, xml, json, jsonp
+        @param GUID GUID to use. Can be left blank for interface GUID to be used.
         @param strLevel VSCP Level event to send (1 or 2)
 		@param strType Measurement type
 		@param strMeasurement Measurement value (integer/long/float)
@@ -419,6 +420,7 @@ public:
 	webserv_rest_doWriteMeasurement( struct mg_connection *conn, 
 												struct websrv_rest_session *pSession, 
 												int format,
+                                                wxString& strGuid,
                                                 wxString& strLevel,
 												wxString& strType,
 												wxString& strMeasurement,

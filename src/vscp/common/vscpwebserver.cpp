@@ -113,6 +113,7 @@
 #include <configfile.h>
 #include <crc.h>
 #include <md5.h>
+#include <xml2json.hpp>
 #include <randpassword.h>
 #include <version.h>
 #include <variablecodes.h>
@@ -3174,10 +3175,6 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
         mg_get_var( conn, "persistent", buf, sizeof( buf ) );
         keypairs[ _( "PERSISTENT" ) ] = wxString::FromAscii( buf );
 
-        // measurement
-        mg_get_var(conn, "measurement", buf, sizeof(buf) );
-        keypairs[_("MEASUREMENT")] = wxString::FromAscii( buf );
-
         // unit
         mg_get_var(conn, "unit", buf, sizeof(buf) );
         keypairs[_("UNIT")] = wxString::FromAscii( buf );
@@ -3197,6 +3194,10 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
         // subzone
         mg_get_var( conn, "subzone", buf, sizeof( buf ) );
         keypairs[ _( "SUBZONE" ) ] = wxString::FromAscii( buf );
+
+        // guid
+        mg_get_var( conn, "guid", buf, sizeof( buf ) );
+        keypairs[ _( "GUID" ) ] = wxString::FromAscii( buf );
 
         // name
         mg_get_var(conn, "name", buf, sizeof(buf) );
@@ -3471,12 +3472,13 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	//
 	else if ( ( _("10") == keypairs[_("OP")] ) || ( _("MEASUREMENT") == keypairs[_("OP")].Upper() ) ) {
 
-		if ( ( _("") != keypairs[_("MEASUREMENT")] ) && (_("") != keypairs[_("TYPE")]) ) {
+		if ( ( _("") != keypairs[_("VALUE")] ) && (_("") != keypairs[_("TYPE")]) ) {
 			
 			rv = webserv_rest_doWriteMeasurement( conn, pSession, format,
+                                                    keypairs[ _("GUID" ) ],
                                                     keypairs[ _("LEVEL") ],
 													keypairs[ _("TYPE") ],
-													keypairs[ _("MEASUREMENT") ],
+													keypairs[ _("VALUE") ],
 													keypairs[ _("UNIT") ],
 													keypairs[ _("SENSORIDX") ],
                                                     keypairs[ _( "ZONE" ) ],
@@ -5199,9 +5201,10 @@ int
 VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *conn, 
 													    struct websrv_rest_session *pSession, 
 													    int format,
+                                                        wxString& strGuid,
                                                         wxString& strLevel,
 													    wxString& strType,
-													    wxString& strMeasurement,
+													    wxString& strValue,
 													    wxString& strUnit,
 													    wxString& strSensorIdx,
                                                         wxString& strZone,
@@ -5210,6 +5213,7 @@ VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *conn
     if ( NULL != pSession ) {
 
         double value = 0;
+        uint8_t guid[ 16 ];
         long level = 2;
         long unit;
         long vscptype;
@@ -5219,7 +5223,10 @@ VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *conn
         uint8_t data[ VSCP_MAX_DATA ];
         uint16_t sizeData;
 
-        strMeasurement.ToDouble( &value );  // Measurement value
+        memset( guid, 0, 16 );
+        vscp_getGuidFromStringToArray( guid, strGuid );
+
+        strValue.ToDouble( &value );        // Measurement value
         strUnit.ToLong( &unit );            // Measurement unit
         strSensorIdx.ToLong( &sensoridx );  // Sensor indes
         strType.ToLong( &vscptype );        // VSCP event type
@@ -5253,13 +5260,15 @@ VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *conn
                 if ( sizeData > 8 ) sizeData = 8;
               
                 vscpEvent *pEvent = new vscpEvent;
+                pEvent->pdata = NULL;
+
+                pEvent->head = VSCP_PRIORITY_NORMAL;
                 pEvent->timestamp = 0; // Let interface fill in
+                memcpy( pEvent->GUID, guid, 16 );
                 pEvent->sizeData = sizeData;
                 if ( sizeData > 0 ) {
+                    pEvent->pdata = new uint8_t[ sizeData ];
                     memcpy( pEvent->pdata, data, sizeData );
-                }
-                else {
-                    pEvent->pdata = NULL;
                 }
                 pEvent->vscp_class = VSCP_CLASS1_MEASUREMENT;
                 pEvent->vscp_type = vscptype;
@@ -5269,12 +5278,18 @@ VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *conn
             }
         }
         else {
+            
             vscpEvent *pEvent = new vscpEvent;
+            pEvent->pdata = NULL;
+
+            pEvent->head = VSCP_PRIORITY_NORMAL;
             pEvent->timestamp = 0; // Let interface fill in
+            memcpy( pEvent->GUID, guid, 16 );
             pEvent->head = 0;
             pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
             pEvent->vscp_type = vscptype;
             pEvent->timestamp = 0; 
+            pEvent->sizeData = 13;
 
             data[ 0 ] = sensoridx;
             data[ 1 ] = zone;
@@ -5283,6 +5298,9 @@ VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *conn
             data[ 4 ] = sensoridx;
             memcpy( data + 5, (char *)&value, 8 ); // copy in double
             wxUINT64_SWAP_ON_LE( data + 5 );
+            // Copy in data
+            pEvent->pdata = new uint8_t[5+8];
+            memcpy( pEvent->pdata, data, 5 + 8 );
             
             webserv_rest_doSendEvent( conn, pSession, format, pEvent );
         }
