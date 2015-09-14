@@ -57,6 +57,7 @@
 
 #define DEBUG
 
+
 // Globals for the daemon
 int gbStopDaemon;
 int gnDebugLevel = 0;
@@ -95,7 +96,7 @@ int main(int argc, char **argv)
 	int arg = 0;
 	wxString strcfgfile;
 
-	wxSocketBase::Initialize();
+	
 	crcInit();
 	/*	
 	  unsigned char ttt[ 50 ];
@@ -127,6 +128,8 @@ int main(int argc, char **argv)
 
 	VSCPApp theApp;
 	//IMPLEMENT_APP(theApp)
+    
+    wxSocketBase::Initialize();
 
 	while ((arg = getopt(argc, argv, "d:c:hgs")) != EOF) {
 
