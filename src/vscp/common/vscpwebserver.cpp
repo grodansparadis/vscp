@@ -5775,11 +5775,12 @@ int VSCPWebServerThread::webserv_rest_doFetchMDF( struct mg_connection *conn,
 {
     CMDF mdf;
     
-    printf("1");
+    webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_GENERAL_FAILURE );
+    return MG_TRUE;
+
     if ( mdf.load( strURL, false, true ) )  {
         
         // Loaded OK
-        printf("2");
 
         // Send header
         webserv_util_sendheader( conn, 200, REST_MIME_TYPE_XML );
