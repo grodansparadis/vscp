@@ -159,14 +159,16 @@ int CVSCPTable::init()
 	    m_number_of_records = ( fdGetFileSize( m_path.mbc_str() ) - sizeof( m_vscpFileHead ))/sizeof(_vscpFileRecord);
 	    if ( m_number_of_records ) {
 
+            size_t nRead;  // just to get rid of warnings
+            
 		    // Go to last pos - Read last timestamp
 		    fseek( m_ft, sizeof( m_vscpFileHead ) + (m_number_of_records-1) * sizeof(_vscpFileRecord) , SEEK_SET );							
-		    (void)fread( &record, 1, sizeof(record), m_ft );
+		    nRead = fread( &record, 1, sizeof(record), m_ft );
 		    m_timestamp_last = record.timestamp;
 
 		    // Go to first pos - read first timestamp
 		    fseek( m_ft, sizeof( m_vscpFileHead ), SEEK_SET );							
-		    (void)fread( &record, 1, sizeof(record), m_ft );
+		    nRead = fread( &record, 1, sizeof(record), m_ft );
 		    m_timestamp_first = record.timestamp;
 
 	    }

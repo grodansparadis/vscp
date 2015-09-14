@@ -4287,7 +4287,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 
 					memset( buf, 0, sizeof( buf ) );
 					sprintf( wrkbuf, 
-								"%zd events requested of %zu available (unfiltered) %zd will be retrieved\r\n", 
+								"%zd events requested of %ud available (unfiltered) %zd will be retrieved\r\n", 
 								count, 
 								pSession->pClientItem->m_clientInputQueue.GetCount(),
 								MIN( count, cntAvailable ) );
@@ -4374,7 +4374,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 					mg_write( conn, buf, strlen( buf ) );
                     memset( buf, 0, sizeof( buf ) );
 					sprintf( wrkbuf, 
-								"1,2,Info,%zd events requested of %zu available (unfiltered) %ud will be retrieved,NULL\r\n", 
+								"1,2,Info,%zd events requested of %ul available (unfiltered) %ul will be retrieved,NULL\r\n", 
 								count, 
                                 cntAvailable,					
                                 MIN( count, cntAvailable ) );
@@ -4484,7 +4484,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
                     memset( buf, 0, sizeof( buf ) );
 
 					sprintf( wrkbuf, 
-								"<info>%zd events requested of %zd available (unfiltered) %ud will be retrieved</info>", 
+								"<info>%zd events requested of %ul available (unfiltered) %ul will be retrieved</info>", 
 								count, 
                                 cntAvailable,
                                 MIN(count, cntAvailable ) );
@@ -4652,7 +4652,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
                     {
                         char buf2[200];
                         sprintf( buf2,
-                                 "\"%zd events requested of %zu available (unfiltered) %ud will be retrieved\"",
+                                 "\"%zd events requested of %ul available (unfiltered) %ul will be retrieved\"",
                                  count,
                                  cntAvailable,
                                  MIN( count, cntAvailable ) );
