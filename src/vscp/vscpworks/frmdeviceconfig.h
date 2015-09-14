@@ -504,7 +504,7 @@ public:
     /// Control identifiers
     enum {
         ID_FRMDEVICECONFIG = 19000,
-        ID_MENUITEM_SAVE_REGSITERS = 19001,
+        ID_MENUITEM_SAVE_REGISTERS = 19001,
         ID_MENUITEM = 19002,
         ID_MENUITEM_LOAD_REGISTES = 19003,
         ID_MENUITEM_ADD_GUIDS = 19004,

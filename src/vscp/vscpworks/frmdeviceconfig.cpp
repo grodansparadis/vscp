@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////
 //  Name:        frmdeviceconfig.cpp
 //  Purpose:     
-//  Author:      Ake Hedman
+//  Author:      Ake Hedman, <akhe@grodansparadis.com>
 //  Modified by: 
 //  Created:     Sun 04 May 2007 17:28:12 CEST
 //  RCS-ID:      
@@ -103,7 +103,7 @@ BEGIN_EVENT_TABLE(frmDeviceConfig, wxFrame)
 
     EVT_CLOSE( frmDeviceConfig::OnCloseWindow )
     EVT_SIZE( frmDeviceConfig::OnResizeWindow )
-    EVT_MENU( ID_MENUITEM_SAVE_REGSITERS, frmDeviceConfig::OnMenuitemSaveRegistersClick )
+    EVT_MENU( ID_MENUITEM_SAVE_REGISTERS, frmDeviceConfig::OnMenuitemSaveRegistersClick )
     EVT_MENU( ID_MENUITEM, frmDeviceConfig::OnMenuitemSaveSelectedRegistersClick )
     EVT_MENU( ID_MENUITEM_LOAD_REGISTES, frmDeviceConfig::OnMenuitemLoadRegistersClick )
     EVT_MENU( ID_MENUITEM_ADD_GUIDS, frmDeviceConfig::OnMenuitemAddGuidsClick )
@@ -246,7 +246,7 @@ void frmDeviceConfig::CreateControls() {
     wxMenuBar* menuBar = new wxMenuBar;
     
     wxMenu* itemMenu3 = new wxMenu;
-    itemMenu3->Append(ID_MENUITEM_SAVE_REGSITERS, _("Save registers to file.."), wxEmptyString, wxITEM_NORMAL);
+    itemMenu3->Append( ID_MENUITEM_SAVE_REGISTERS, _("Save registers to file.."), wxEmptyString, wxITEM_NORMAL);
     itemMenu3->Append(ID_MENUITEM, _("Save selected registers to file.."), wxEmptyString, wxITEM_NORMAL);
     itemMenu3->Append(ID_MENUITEM_LOAD_REGISTES, _("Load Registers from file..."), wxEmptyString, wxITEM_NORMAL);
     itemMenu3->AppendSeparator();
@@ -5574,12 +5574,13 @@ void frmDeviceConfig::OnMenuitemLoadRegistersClick(wxCommandEvent& event)
     fontBold.SetStyle(wxFONTSTYLE_NORMAL);
     fontBold.SetWeight(wxFONTWEIGHT_BOLD);
 
-    // First find a path to save register set data to
+    // First find a path to load registers from
     wxFileDialog dlg( this,
                         _("Choose file to load register set from "),
                         wxStandardPaths::Get().GetUserDataDir(),
                         _("registerset"),
                         _("Register set Files (*.reg)|*.reg|XML Files (*.xml)|*.xml|All files (*.*)|*.*"));
+
     if (wxID_OK == dlg.ShowModal()) {
 
         if (!doc.Load(dlg.GetPath())) {
@@ -5651,10 +5652,13 @@ void frmDeviceConfig::OnMenuitemLoadRegistersClick(wxCommandEvent& event)
                     continue;
                 }
                 
-                pReg->m_value = value;  // Set value in registers
-                m_gridRegisters->SetCellValue( pReg->m_rowInGrid, GRID_COLUMN_VALUE, strValue );
-                if (strValue != strSaveValue) {
-                    m_gridRegisters->SetCellTextColour( pReg->m_rowInGrid, GRID_COLUMN_VALUE, *wxRED );
+                // No idea to write in values to read-only registers
+                if ( pReg->m_nAccess & MDF_ACCESS_WRITE ) {
+                    pReg->m_value = value;  // Set value in registers
+                    m_gridRegisters->SetCellValue( pReg->m_rowInGrid, GRID_COLUMN_VALUE, strValue );
+                    if ( strValue != strSaveValue ) {
+                        m_gridRegisters->SetCellTextColour( pReg->m_rowInGrid, GRID_COLUMN_VALUE, *wxRED );
+                    }
                 }
                 
             }
