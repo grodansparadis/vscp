@@ -1720,7 +1720,7 @@ bool vscp_readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter)
     pFilter->filter_priority = 0;
     pFilter->filter_class = 0;
     pFilter->filter_type = 0;
-    memset( pFilter->filter_GUID, 16, 0 );
+    memset( pFilter->filter_GUID, 0, 16 );
 
 	wxStringTokenizer tkz(strFilter, _(","));
 
@@ -1775,7 +1775,7 @@ bool vscp_readMaskFromString(vscpEventFilter *pFilter, wxString& strMask)
     pFilter->mask_priority = 0;
     pFilter->mask_class = 0;
     pFilter->mask_type = 0;
-    memset( pFilter->mask_GUID, 16, 0 );
+    memset( pFilter->mask_GUID, 0, 16 );
 
 	wxStringTokenizer tkz( strMask, _(","));
 

@@ -4372,13 +4372,12 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
                     sprintf( wrkbuf, "success-code,error-code,message,description,Event\r\n1,1,Success,Success.,NULL\r\n");
 					webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 					mg_write( conn, buf, strlen( buf ) );
-
                     memset( buf, 0, sizeof( buf ) );
 					sprintf( wrkbuf, 
-								"1,2,Info,%zd events requested of %zu available (unfiltered) %zu will be retrieved,NULL\r\n", 
+								"1,2,Info,%zd events requested of %zu available (unfiltered) %ud will be retrieved,NULL\r\n", 
 								count, 
-                                cntAvailable,
-								MIN( count, cntAvailable ) );
+                                cntAvailable,					
+                                MIN( count, cntAvailable ) );
 					webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
 					mg_write( conn, buf, strlen( buf ) );
 
@@ -4485,10 +4484,10 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
                     memset( buf, 0, sizeof( buf ) );
 
 					sprintf( wrkbuf, 
-								"<info>%zd events requested of %zd available (unfiltered) %zd will be retrieved</info>", 
+								"<info>%zd events requested of %zd available (unfiltered) %ud will be retrieved</info>", 
 								count, 
                                 cntAvailable,
-								MIN(count, cntAvailable ) );
+                                MIN(count, cntAvailable ) );
 					webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 					mg_write( conn, buf, strlen( buf ) );
 
@@ -4653,7 +4652,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
                     {
                         char buf2[200];
                         sprintf( buf2,
-                                 "\"%zd events requested of %zu available (unfiltered) %zu will be retrieved\"",
+                                 "\"%zd events requested of %zu available (unfiltered) %ud will be retrieved\"",
                                  count,
                                  cntAvailable,
                                  MIN( count, cntAvailable ) );
