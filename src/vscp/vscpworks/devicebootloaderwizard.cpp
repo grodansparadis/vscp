@@ -641,7 +641,7 @@ void WizardPageSelecInterface::OnButtonSelectInterfaceClick( wxCommandEvent& eve
 
                     // Write all id values
                     wxArrayString strArray;
-                    for ( int i = 1; i < 256; i++ ) {
+                    for ( int i = 1; i < 255; i++ ) {
                         strArray.Add( wxString::Format( _( "0x%02x" ), i ) );
                     }
 
@@ -785,7 +785,7 @@ void WizardPageSelecInterface::OnWizardPageChanging( wxWizardEvent& event )
             // Fill the combo
             wxString str;
             wxArrayString strings;
-            for ( int i = 1; i < 256; i++ ) {
+            for ( int i = 1; i < 255; i++ ) {
                 pblw->m_guid.setLSB( i );
                 pblw->m_guid.toString( str );
                 strings.Add( str );
@@ -900,7 +900,7 @@ void WizardPageSetGUID::CreateControls()
     wxStaticText* itemStaticText16 = new wxStaticText;
     itemStaticText16->Create( itemWizardPageSimple14,
                               wxID_STATIC,
-                              _( "Select device to bootload" ),
+                              _( "Select device to load firmware to" ),
                               wxDefaultPosition,
                               wxDefaultSize,
                               0 );
@@ -909,7 +909,7 @@ void WizardPageSetGUID::CreateControls()
     wxStaticText* itemStaticText17 = new wxStaticText;
     itemStaticText17->Create( itemWizardPageSimple14,
                               wxID_STATIC,
-                              _( "Enter the nickname or the full GUID for the device you want to work with" ),
+                              _( "Enter the nickname or the full GUID for the device you want to work with. \n\nA node that is newly loaded with a bootloader is usually at 0xfe, in most other cases a node \nstay at the same id (use scan if unsure of which id a node is at)." ),
                               wxDefaultPosition,
                               wxDefaultSize,
                               0 );
@@ -1006,7 +1006,7 @@ void WizardPageSetGUID::OnWizardPageChanging( wxWizardEvent& event )
             else {
                 strTitle = BOOT_LOADER_WIZARD_TITLE;
                 strTitle += _( " - Unknown device" );
-                wxMessageBox( _( "Device was not found! Check nodeid.\nThis may be no problem if the node is in bootloader mode already." ) );
+                wxMessageBox( _( "Device was not found! Check nodeid.\nThis is not a problem if the node is in bootloader mode already." ) );
                 pblw->SetTitle( strTitle );
             }
 

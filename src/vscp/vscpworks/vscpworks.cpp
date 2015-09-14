@@ -2565,11 +2565,11 @@ bool VscpworksApp::writeConfiguration( void )
         pFileStream->Write( "<translate ", strlen( "<translate " ) );
 
         pFileStream->Write( "from=\"", strlen( "from=\"" ) );
-        pFileStream->Write( key, key.Length() );
+        pFileStream->Write( key.mbc_str(), strlen( key.mbc_str() ) );
         pFileStream->Write( "\" ", strlen( "\" " ) );
 
         pFileStream->Write( "to=\"", strlen( "to=\"" ) );
-        pFileStream->Write( value, value.Length() );
+        pFileStream->Write( value.mbc_str(), strlen( value.mbc_str() ) );
         pFileStream->Write( "\" ", strlen( "\" " ) );
 
         pFileStream->Write( "/>\n", strlen( "/>\n" ) );
