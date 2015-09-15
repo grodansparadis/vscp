@@ -5191,7 +5191,7 @@ VSCPWebServerThread::webserv_rest_doCreateVariable( struct mg_connection *conn,
     if ( NULL != pSession ) {
 
         // Add the variable
-        if ( !pObject->m_VSCP_Variables.add( strVariable, strValue, type, bPersistence ) ) {
+        if ( !pObject->m_VSCP_Variables.add( strVariable, strValue, type, bPersistence  ) ) {
             webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_CREATED );
             return MG_TRUE;
         }

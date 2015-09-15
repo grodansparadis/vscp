@@ -20,6 +20,14 @@ http://localhost:8080/vscp/rest?vscpsession=5931252da81e025c7849d4c19eeee252&for
 Send event - jsonp response
 http://localhost:8080/vscp/rest?vscpsession=a64327cafda5e91c708b0f697fe5aa6c&format=4&op=sendevent&vscpevent="0,10,6,0,0,-,138,0,255%22"
 
+Set filter
+// Filter/Mask to filter just to receive heart beats CLASS1.INFORMATION, Type=9 Node heartbeat
+// both are "priority,class,type,guid"
+http://localhost:8080/vscp/rest?vscpsession=be5d98870030680a78f900f4d2448923&format=0&op=setfilter&vscpfilter=0x0000,0x14,0x09,00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00&vscpmask=0x0000,0xffff,0xffff,00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00
+
+Clear queue
+http://localhost:8080/vscp/rest?vscpsession=a850f1de7e73cab48eb4ec396e5f4897&format=4&op=clearqueue
+
 Read variable value
 http://localhost:8080/vscp/rest?vscpsession=f64f51f01ef24edfc03a7f10229dbb97&format=4&op=readvar&variable=%22test%22
 

@@ -109,7 +109,7 @@
 					console.log("Success = " + response.success );
 					console.log("Code = " + response.code );
 					console.log("Message = " + response.message );
-					console.log("Description = " + response.description );					
+					console.log("Description = " + response.description );
 					console.log("Sessionkey = " + response.vscpsession );
 					console.log("nEvents = " + response.nEvents );
 					
@@ -148,7 +148,7 @@
 					console.log("Success = " + response.success );
 					console.log("Code = " + response.code );
 					console.log("Message = " + response.message );
-					console.log("Description = " + response.description );					
+					console.log("Description = " + response.description );
 					
 					if (  response.success ) {
 						console.log("Sessionkey cleared"  );
@@ -190,7 +190,7 @@
 					console.log("Success = " + response.success );
 					console.log("Code = " + response.code );
 					console.log("Message = " + response.message );
-					console.log("Description = " + response.description );					
+					console.log("Description = " + response.description );
 					console.log("Number of events = " + response.nEvents );
 					
 					if (  response.success ) {
@@ -231,7 +231,7 @@
 					console.log("Success = " + response.success );
 					console.log("Code = " + response.code );
 					console.log("Message = " + response.message );
-					console.log("Description = " + response.description );					
+					console.log("Description = " + response.description );
 					console.log("Info = " + response.info );
 					console.log("Count = " + response.count );
 					console.log("Filtered = " + response.filtered );
@@ -274,7 +274,7 @@
 						console.log("Success = " + response.success );
 						console.log("Code = " + response.code );
 						console.log("Message = " + response.message );
-						console.log("Description = " + response.description );					
+						console.log("Description = " + response.description );
 						console.log("Info = " + response.info );
 						console.log("Count = " + response.count );
 						console.log("Filtered = " + response.filtered );
@@ -328,7 +328,7 @@
 						console.log("Success = " + response.success );
 						console.log("Code = " + response.code );
 						console.log("Message = " + response.message );
-						console.log("Description = " + response.description );					
+						console.log("Description = " + response.description );
 						console.log("Info = " + response.info );
 					
 						if ( response.success ) {
@@ -369,7 +369,7 @@
 						console.log("Success = " + response.success );
 						console.log("Code = " + response.code );
 						console.log("Message = " + response.message );
-						console.log("Description = " + response.description );					
+						console.log("Description = " + response.description );
 						console.log("Info = " + response.info );
 					
 						if ( response.success ) {
@@ -414,7 +414,7 @@
 						console.log("Success = " + response.success );
 						console.log("Code = " + response.code );
 						console.log("Message = " + response.message );
-						console.log("Description = " + response.description );					
+						console.log("Description = " + response.description );
 						console.log("Info = " + response.info );
 					
 						if ( response.success ) {
@@ -456,7 +456,7 @@
 						console.log("Success = " + response.success );
 						console.log("Code = " + response.code );
 						console.log("Message = " + response.message );
-						console.log("Description = " + response.description );					
+						console.log("Description = " + response.description );
 						console.log("Info = " + response.info );
 					
 						if ( response.success ) {
@@ -481,7 +481,7 @@
 		
 		var do_readVariable = function() {
 			
-			window.prompt("Name of variable to read:","test");
+			var txtVariableName = window.prompt("Name of variable to read:","test");
 			
 			if ( VscpSessionKey.length > 0 ) {	
 				$.ajax({
@@ -500,11 +500,112 @@
 						console.log("Success = " + response.success );
 						console.log("Code = " + response.code );
 						console.log("Message = " + response.message );
-						console.log("Description = " + response.description );					
+						console.log("Description = " + response.description );
+						console.log("Info = " + response.info );
+						console.log("Variable name = " + response.varname );
+						console.log("Variable value = " + response.varvalue );
+						console.log("Variable type = " + response.vartype );
+						console.log("Variable type code = " + response.vartypecode );
+						console.log("Variable percistence = " + response.varpersistence );
+					
+						if ( response.success ) {
+							$("#events").html( response.varname + " = " + response.varvalue + ", type = " +
+									response.vartype + ", typecode = " + response.vartypecode + 
+									", peristence = " + response.varpersistence );
+						}					
+					
+					},
+					error: function( xhr, status, error ) {
+						console.log( "Close:" + error + " Status:" + status );
+					}
+				});
+			}
+			else {
+				alert("Interface is not open!");
+			}
+
+		};
+		
+		///////////////////////////////////////////////////////////////////////
+		// do_writeVariable
+		//
+		
+		var do_writeVariable = function() {
+			
+			var txtVariableName = window.prompt("Name of variable to write:","test");
+			var txtVariableValue = window.prompt("New value:","");
+			
+			if ( VscpSessionKey.length > 0 ) {	
+				$.ajax({
+					url: VscpServer + '/vscp/rest?vscpsession=' + VscpSessionKey + 
+							'&format=jsonp&op=writevar&variable=' + txtVariableName +
+							'&value=' + txtVariableValue,
+					type : "GET",
+					jsonpCallback: 'handler',
+					cache: true,
+					dataType: 'jsonp',
+					success: function(response) {
+						// response will be a javascript
+						// array of objects
+						console.log("-----------------------------------------------------------");
+						console.log("                     do_writeVariable");
+						console.log("-----------------------------------------------------------");
+						console.log("Success = " + response.success );
+						console.log("Code = " + response.code );
+						console.log("Message = " + response.message );
+						console.log("Description = " + response.description );
 						console.log("Info = " + response.info );
 					
 						if ( response.success ) {
-							$("#events").html( "Mask set" );
+							$("#events").html( "OK Variable written" );
+						}					
+					
+					},
+					error: function( xhr, status, error ) {
+						console.log( "Close:" + error + " Status:" + status );
+					}
+				});
+			}
+			else {
+				alert("Interface is not open!");
+			}
+
+		};
+		
+		///////////////////////////////////////////////////////////////////////
+		// do_createVariable
+		//
+		
+		var do_createVariable = function() {
+			
+			var txtVariableName = window.prompt("Name of variable to create:","newvar");
+			var txtVariableValue = window.prompt("Value:","This is a new string");
+			var txtVariableValue = window.prompt("Type:","string");
+			var txtVariableValue = window.prompt("Persistent (true/false):","false");
+			
+			if ( VscpSessionKey.length > 0 ) {	
+				$.ajax({
+					url: VscpServer + '/vscp/rest?vscpsession=' + VscpSessionKey + 
+							'&format=jsonp&op=writevar&variable=' + txtVariableName +
+							'&value=' + txtVariableValue,
+					type : "GET",
+					jsonpCallback: 'handler',
+					cache: true,
+					dataType: 'jsonp',
+					success: function(response) {
+						// response will be a javascript
+						// array of objects
+						console.log("-----------------------------------------------------------");
+						console.log("                     do_createVariable");
+						console.log("-----------------------------------------------------------");
+						console.log("Success = " + response.success );
+						console.log("Code = " + response.code );
+						console.log("Message = " + response.message );
+						console.log("Description = " + response.description );
+						console.log("Info = " + response.info );
+					
+						if ( response.success ) {
+							$("#events").html( "OK Variable written" );
 						}					
 					
 					},
