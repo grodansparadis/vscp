@@ -5769,6 +5769,10 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn,
     return MG_TRUE;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// XML to JSON convert
+//
+
 auto convert( const istream &input, string &path  ) -> void
 {
     ostringstream oss;
@@ -5842,7 +5846,8 @@ int VSCPWebServerThread::webserv_rest_doFetchMDF( struct mg_connection *conn,
 
             char buf[ 5000 ], wrkbuf[ 2000 ];
             ssize_t ss;
-            wxFile file( path );
+            wxString wxpath( path.c_str(), wxConvUTF8 ); // Needed for 2.8.12
+            wxFile file( wxpath );
 
             while ( !file.Eof() ) {
                 ss = file.Read( wrkbuf, sizeof( wrkbuf ) );
