@@ -3850,6 +3850,7 @@ struct websrv_rest_session *pSession,
 
             mg_write( conn, "0\r\n\r\n", 5 );	// Terminator
             return MG_TRUE;
+
         }
         else if ( REST_FORMAT_CSV == format ) {
 
@@ -4213,30 +4214,24 @@ VSCPWebServerThread::webserv_rest_doSendEvent( struct mg_connection *conn,
 
 				}
 				else {
+                    webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_NO_ROOM );
 					vscp_deleteVSCPevent( pEvent );
 					bSent = false;
-				}
-
-                webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_INVALID_SESSION );
+				} 
 
 			}
 			else {
+                webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_GENERAL_FAILURE );
 				vscp_deleteVSCPevent( pEvent );
 				bSent = false;
-			}
+			}            
 
-            webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_NO_ROOM );
-
-		}
+		} // not sent
 	}
 	else {
 		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_INVALID_SESSION );
 		bSent = false;
 	}
-    
-    if ( false == bSent ) {
-        return MG_FALSE;
-    }
 
 	return MG_TRUE;
 }
