@@ -423,7 +423,7 @@ CWrkTread::~CWrkTread()
 // readLevel1Register
 //
 
-bool CWrkTread::readLevel1Register( uint8_t reg )
+uint8_t CWrkTread::readLevel1Register( uint8_t reg )
 {
     uint8_t rv;
     if ( reg >= 0x80 ) {
@@ -433,16 +433,14 @@ bool CWrkTread::readLevel1Register( uint8_t reg )
         rv = readUserReg( reg );
     }
 
-
-
-    return true;
+    return rv;
 }
 
 //////////////////////////////////////////////////////////////////////
 // writeLevel1Register
 //
 
-bool CWrkTread::writeLevel1Register( uint8_t reg, uint8_t val )
+uint8_t CWrkTread::writeLevel1Register( uint8_t reg, uint8_t val )
 {
     uint8_t rv;
     if ( reg >= 0x80 ) {
@@ -452,9 +450,7 @@ bool CWrkTread::writeLevel1Register( uint8_t reg, uint8_t val )
         rv = writeUserReg( reg, val );
     }
 
-
-
-    return true;
+    return rv;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -492,7 +488,7 @@ uint8_t CWrkTread::readUserReg( uint8_t reg )
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// readStandardReg
+// writeUserReg
 //
 
 uint8_t CWrkTread::writeUserReg( uint8_t reg, uint8_t value )
@@ -994,8 +990,10 @@ dumb_fill_data:
                 if ( VSCP_CLASS1_MEASUREMENT == m_measurementClass ) {
 
                     vscpEvent *pEvent = new vscpEvent();
-                    pEvent->pdata = NULL;
+                    
                     if ( NULL != pEvent ) {
+                    
+                        pEvent->pdata = NULL;
                         
                         if ( SIM_CODING_NORMALIZED == m_registers[ SIM_USER_REG_CODING ] ) {
 

@@ -342,17 +342,17 @@ public:
     /*!
         readLevel1Register
         @param reg Register to read 0-255
-        @return True on success
+        @return Register value
     */
-    bool readLevel1Register( uint8_t reg );
+    uint8_t readLevel1Register( uint8_t reg );
 
     /*!
         writeLevel1Register
         @param reg Register to read 0-255
         @param val Value to write
-        @return True on success
+        @return Register value
     */
-    bool writeLevel1Register( uint8_t reg, uint8_t val );
+    uint8_t writeLevel1Register( uint8_t reg, uint8_t val );
 
     /*!
         readLevel1Register
