@@ -3237,7 +3237,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
                                sizeof( wrkbuf ),
                                0 );
 
-			    keypairs[ str.Left(pos).Upper() ] = wrkbuf;
+			    keypairs[ str.Left(pos).Upper() ] = wxString::FromUTF8( wrkbuf );
 		    }
 	    }
     }
