@@ -4839,8 +4839,6 @@ VSCPWebServerThread::webserv_rest_doSetFilter( struct mg_connection *conn,
 {
 	if ( NULL != pSession ) {
         
-        webserv_rest_sendHeader( conn, format, 200 );
-
 		pSession->pClientItem->m_mutexClientInputQueue.Lock();
 		memcpy( &pSession->pClientItem->m_filterVSCP, &vscpfilter, sizeof( vscpEventFilter ) );
 		pSession->pClientItem->m_mutexClientInputQueue.Unlock();
