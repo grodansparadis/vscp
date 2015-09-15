@@ -47,6 +47,11 @@
 #include <wx/xml/xml.h>
 #include <wx/txtstrm.h>
 #include <wx/platinfo.h>
+#include <wx/filename.h>
+
+#include <iostream>
+#include <sstream>
+#include <fstream>
 
 #ifdef WIN32
 
@@ -127,6 +132,7 @@
 #include <controlobject.h>
 #include <webserver.h>
 
+using namespace std;
 
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
@@ -5763,6 +5769,18 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn,
     return MG_TRUE;
 }
 
+auto convert( const istream &input, string &path  ) -> void
+{
+    ostringstream oss;
+    oss << input.rdbuf();
+
+    const auto json_str = xml2json( oss.str().data() );
+
+    ofstream myfile;
+    myfile.open( path );
+    myfile << json_str << endl;
+    myfile.close();
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // websrv_mainpage
@@ -5779,25 +5797,68 @@ int VSCPWebServerThread::webserv_rest_doFetchMDF( struct mg_connection *conn,
         
         // Loaded OK
 
-        // Send header
-        webserv_util_sendheader( conn, 200, REST_MIME_TYPE_XML );
-        mg_write( conn, "\r\n", 2 );		// head/body Separator
-
-        //mg_send_file( conn, mdf.getTempFilePath().mbc_str() );
-        char buf[ 5000 ], wrkbuf[ 2000 ];
-        ssize_t ss;
-        wxFile file( mdf.getTempFilePath() );
-        
-        while ( !file.Eof() ) {
-            ss = file.Read( wrkbuf, sizeof( wrkbuf ) );
-            memset( buf, 0, sizeof( buf ) );
-            webserv_util_make_chunk( buf, wrkbuf, ss );
-            mg_write( conn, buf, strlen( buf ) );
+        if ( REST_FORMAT_PLAIN == format ) {
+            webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_GENERAL_FAILURE );
         }
+        else if ( REST_FORMAT_CSV == format ) {
+            webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_GENERAL_FAILURE );
+        }
+        else if ( REST_FORMAT_XML == format ) {
 
-        file.Close();
+            // Send header
+            webserv_util_sendheader( conn, 200, REST_MIME_TYPE_XML );
+            mg_write( conn, "\r\n", 2 );		// head/body Separator
 
-        mg_write( conn, "0\r\n\r\n", 5 );	// Terminator
+            char buf[ 5000 ], wrkbuf[ 2000 ];
+            ssize_t ss;
+            wxFile file( mdf.getTempFilePath() );
+
+            while ( !file.Eof() ) {
+                ss = file.Read( wrkbuf, sizeof( wrkbuf ) );
+                memset( buf, 0, sizeof( buf ) );
+                webserv_util_make_chunk( buf, wrkbuf, ss );
+                mg_write( conn, buf, strlen( buf ) );
+            }
+
+            file.Close();
+
+            mg_write( conn, "0\r\n\r\n", 5 );	// Terminator
+        }
+        else if ( REST_FORMAT_JSON == format ) {
+
+            wxString tempFileName = wxFileName::CreateTempFileName( _("__vscp__xml__") );
+            if ( 0 == tempFileName.Length() ) {
+                webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_GENERAL_FAILURE );
+            }
+
+            std::string path = std::string( tempFileName.mb_str() );
+
+            // Convert to JSON
+            convert( ifstream( mdf.getTempFilePath().mbc_str() ), path );
+
+            // Send header
+            webserv_util_sendheader( conn, 200, REST_MIME_TYPE_JSON );
+            mg_write( conn, "\r\n", 2 );		// head/body Separator
+
+            char buf[ 5000 ], wrkbuf[ 2000 ];
+            ssize_t ss;
+            wxFile file( path );
+
+            while ( !file.Eof() ) {
+                ss = file.Read( wrkbuf, sizeof( wrkbuf ) );
+                memset( buf, 0, sizeof( buf ) );
+                webserv_util_make_chunk( buf, wrkbuf, ss );
+                mg_write( conn, buf, strlen( buf ) );
+            }
+
+            file.Close();
+
+            mg_write( conn, "0\r\n\r\n", 5 );	// Terminator
+
+        }
+        else if ( REST_FORMAT_JSONP == format ) {
+        
+        }
     }
     else {
         // Failed to load
