@@ -994,8 +994,10 @@ dumb_fill_data:
                 if ( VSCP_CLASS1_MEASUREMENT == m_measurementClass ) {
 
                     vscpEvent *pEvent = new vscpEvent();
-                    pEvent->pdata = NULL;
+                    
                     if ( NULL != pEvent ) {
+                    
+                        pEvent->pdata = NULL;
                         
                         if ( SIM_CODING_NORMALIZED == m_registers[ SIM_USER_REG_CODING ] ) {
 
