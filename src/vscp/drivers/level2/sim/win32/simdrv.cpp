@@ -259,13 +259,11 @@ VSCPOpen(const char *pUsername,
 extern "C" int
 VSCPClose(long handle)
 {
-	int rv = 0;
-
 	CSim *pdrvObj = theApp->getDriverObject(handle);
-	if (NULL == pdrvObj) return 0;
+	if (NULL == pdrvObj) return CANAL_ERROR_SUCCESS;
 	pdrvObj->close();
 	theApp->removeDriverObject(handle);
-	rv = 1;
+
 	return CANAL_ERROR_SUCCESS;
 }
 
@@ -276,8 +274,6 @@ VSCPClose(long handle)
 extern "C" int
 VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
 {
-	int rv = 0;
-
 	CSim *pdrvObj = theApp->getDriverObject(handle);
 	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
     
@@ -300,8 +296,6 @@ VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
 extern "C" int
 VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
 {
-	int rv = 0;
- 
     // Check pointer
     if ( NULL == pEvent) return CANAL_ERROR_PARAMETER;
     
