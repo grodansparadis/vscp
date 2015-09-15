@@ -3182,6 +3182,10 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
         mg_get_var( conn, "persistent", buf, sizeof( buf ) );
         keypairs[ _( "PERSISTENT" ) ] = wxString::FromAscii( buf );
 
+        // note
+        mg_get_var( conn, "note", buf, sizeof( buf ) );
+        keypairs[ _( "NOTE" ) ] = wxString::FromAscii( buf );
+
         // unit
         mg_get_var(conn, "unit", buf, sizeof(buf) );
         keypairs[_("UNIT")] = wxString::FromAscii( buf );
@@ -3468,7 +3472,8 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
                                                     keypairs[_("VARIABLE")], 
                                                     keypairs[ _( "TYPE" ) ],
                                                     keypairs[ _( "VALUE" ) ],
-                                                    keypairs[ _( "PERISTENT" ) ] );
+                                                    keypairs[ _( "PERISTENT" ) ],
+                                                    keypairs[ _( "NOTE" ) ] );
 		}
 		else {
 			webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
@@ -5148,7 +5153,8 @@ VSCPWebServerThread::webserv_rest_doCreateVariable( struct mg_connection *conn,
                                                         wxString& strVariable,
                                                         wxString& strType,
                                                         wxString& strValue,
-                                                        wxString& strPersistent )
+                                                        wxString& strPersistent,
+                                                        wxString& strNote )
 {
     int type = VSCP_DAEMON_VARIABLE_CODE_STRING;
     bool bPersistence = false;
