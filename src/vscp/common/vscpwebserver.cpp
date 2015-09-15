@@ -3848,15 +3848,6 @@ struct websrv_rest_session *pSession,
             webserv_util_make_chunk( buf, REST_PLAIN_ERROR_SUCCESS, strlen( REST_PLAIN_ERROR_SUCCESS ) );
             mg_write( conn, buf, strlen( buf ) );
 
-            memset( buf, 0, sizeof( buf ) );
-#ifdef WIN32
-            int n = _snprintf( wrkbuf, sizeof( wrkbuf ), REST_PLAIN_ERROR_SUCCESS );
-#else
-            int n = snprintf( wrkbuf, sizeof( wrkbuf ), REST_PLAIN_ERROR_SUCCESS );
-#endif
-            webserv_util_make_chunk( buf, wrkbuf, n );
-            mg_write( conn, buf, strlen( buf ) );
-
             mg_write( conn, "0\r\n\r\n", 5 );	// Terminator
             return MG_TRUE;
         }
@@ -5828,8 +5819,9 @@ int VSCPWebServerThread::webserv_rest_doFetchMDF( struct mg_connection *conn,
 
             mg_write( conn, "0\r\n\r\n", 5 );	// Terminator
         }
-        else if ( REST_FORMAT_JSON == format ) {
+        else if ( ( REST_FORMAT_JSON == format ) || ( REST_FORMAT_JSONP == format ) ) {
 
+            char buf[ 5000 ], wrkbuf[ 2000 ];
             wxString tempFileName = wxFileName::CreateTempFileName( _("__vscp__xml__") );
             if ( 0 == tempFileName.Length() ) {
                 webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_GENERAL_FAILURE );
@@ -5841,10 +5833,20 @@ int VSCPWebServerThread::webserv_rest_doFetchMDF( struct mg_connection *conn,
             convert( ifstream( mdf.getTempFilePath().mbc_str() ), path );
 
             // Send header
-            webserv_util_sendheader( conn, 200, REST_MIME_TYPE_JSON );
+            if ( REST_FORMAT_JSON == format ) {
+                webserv_util_sendheader( conn, 200, REST_MIME_TYPE_JSON );
+            }
+            else {
+                webserv_util_sendheader( conn, 200, REST_MIME_TYPE_JSONP );
+            }
             mg_write( conn, "\r\n", 2 );		// head/body Separator
 
-            char buf[ 5000 ], wrkbuf[ 2000 ];
+            if ( REST_FORMAT_JSONP == format ) {
+                memset( buf, 0, sizeof( buf ) );
+                webserv_util_make_chunk( buf, "typeof handler === 'function' && handler(", 41 );
+                mg_write( conn, buf, strlen( buf ) );
+            }
+
             ssize_t ss;
             wxString wxpath( path.c_str(), wxConvUTF8 ); // Needed for 2.8.12
             wxFile file( wxpath );
@@ -5858,19 +5860,23 @@ int VSCPWebServerThread::webserv_rest_doFetchMDF( struct mg_connection *conn,
 
             file.Close();
 
+            if ( REST_FORMAT_JSONP == format ) {
+                memset( buf, 0, sizeof( buf ) );
+                webserv_util_make_chunk( buf, ");", 2 );
+                mg_write( conn, buf, strlen( buf ) );
+            }
+
             mg_write( conn, "0\r\n\r\n", 5 );	// Terminator
 
         }
-        else if ( REST_FORMAT_JSONP == format ) {
-        
-        }
+
     }
     else {
         // Failed to load
         webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_GENERAL_FAILURE );
     }
 
-    return MG_FALSE;
+    return MG_TRUE;
 }
 
 
