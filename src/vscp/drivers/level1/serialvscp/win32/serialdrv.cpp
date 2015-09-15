@@ -1415,9 +1415,6 @@ int canwriteMsg( ChannelObj *pchannelObj, CANHANDLE channel, canalMsg *pMsg, BOO
     // Must be open
     if ( !pchannelObj->m_bOpen ) return CANAL_ERROR_NOT_OPEN;
 
-    // Must be a channel to work on
-    if ( NULL == pchannelObj) return CANAL_ERROR_PARAMETER;
-
     // Must be a message pointer
     if ( NULL == pMsg) return CANAL_ERROR_PARAMETER;
 
