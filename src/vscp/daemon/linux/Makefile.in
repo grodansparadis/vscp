@@ -10,7 +10,7 @@ top_wxsrcdir = @top_wxsrcdir@
 top_builddir = @top_builddir@
 top_wxbuilddir = @top_wxbuilddir@
 CXX = @CXX@
-CXXFLAGS =  @CXXFLAGS@
+CXXFLAGS =  @CXXFLAGS@ -std=c++11
 CPPFLAGS = -DNOEMBED_NET_SKELETON @CPPFLAGS@ -I../../common -I../../../common
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
