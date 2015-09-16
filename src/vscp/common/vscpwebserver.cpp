@@ -3553,11 +3553,7 @@ VSCPWebServerThread::webserv_rest_error( struct mg_connection *conn,
 {
 	char buf[2048];
 
-    int returncode = 400;
-
-    if ( REST_ERROR_CODE_SUCCESS == errorcode ) {
-        returncode = 200;
-    }
+    int returncode = 200;
 
 	if ( REST_FORMAT_PLAIN == format ) {
 
