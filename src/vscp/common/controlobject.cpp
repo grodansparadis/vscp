@@ -226,7 +226,7 @@ CControlObject::CControlObject()
     m_logSecurityFileName.SetName( _("/srv/vscp/logs/vscp_log_security") );
 #endif
 
-        // Access logfile is enabled by default
+    // Access logfile is enabled by default
     m_bLogAccessEnable = true;
 
 #ifdef WIN32

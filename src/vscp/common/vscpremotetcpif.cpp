@@ -118,6 +118,7 @@ void clientTcpIpWorkerThread::ev_handler(struct ns_connection *conn, enum ns_eve
                 connect_status = *( int * )pUser;
 
                 if (connect_status == 0) {
+				
                     wxLogDebug( _("ev_handler: TCP/IP connect OK.") );
                     if ( 2 != ns_send( conn, "\r\n", 2 ) ) {
                         wxLogDebug( _("ev_handler: ns_send failed.") );
@@ -138,12 +139,16 @@ void clientTcpIpWorkerThread::ev_handler(struct ns_connection *conn, enum ns_eve
             break;
 
         case NS_RECV:
+			
 			wxLogDebug( _("ev_handler: TCP/IP receive.") );
+			
 			// Read new data
 			memset( rbuf, 0, sizeof( rbuf ) );
             if ( 0 < io->len ) {
+				
                 // Protect rbuf for out of bounce access
                 if ( sizeof( rbuf ) < io->len ) return;
+			    
 			    memcpy( rbuf, io->buf, io->len );
 #ifdef USE_FOSSA
 			    mbuf_remove(io, io->len); 
@@ -286,6 +291,7 @@ bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
             m_mutexArray.Lock();
             strReply = m_inputStrArray[ i ];
             m_mutexArray.Unlock();
+            
             wxLogDebug(strReply);
 
             if ( wxNOT_FOUND != strReply.Find(_("+OK")) ) {
@@ -309,7 +315,7 @@ bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// doCommand
+//  doCommand
 //
 
 int VscpRemoteTcpIf::doCommand( wxString& cmd )
@@ -317,14 +323,17 @@ int VscpRemoteTcpIf::doCommand( wxString& cmd )
     int status = VSCP_ERROR_SUCCESS;
 
     wxLogDebug( _("doCommand: ") + cmd );
-    
+        
     if ( cmd.Length() != ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
                                   cmd.mbc_str(),
                                   cmd.Length() ) ) {
         wxLogDebug( _("doCommand: failed to send command") );
         status = VSCP_ERROR_ERROR;
     }
-    else if ( !checkReturnValue( true ) ) {
+    
+    wxMilliSleep( 10 );
+    
+    if ( !checkReturnValue( true ) ) {
         wxLogDebug( _("doCommand: checkReturnValue failed") );
         status = VSCP_ERROR_ERROR;
     }
@@ -531,6 +540,8 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
     wxLogDebug( _("Password OK") );
     
     wxLogDebug( _("Successful log in to VSCP server") );
+    
+    wxSleep( 1 );
   
     return VSCP_ERROR_SUCCESS;  
 }
@@ -918,6 +929,7 @@ int VscpRemoteTcpIf::doCmdReceive( vscpEvent *pEvent )
     m_mutexArray.Lock();
     strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
     m_mutexArray.Unlock();
+    
     strLine.Trim();
     strLine.Trim(false);
   
@@ -1520,9 +1532,9 @@ int VscpRemoteTcpIf::doCmdVersion( uint8_t *pMajorVer,
     long val;
     wxString strLine;
     wxStringTokenizer strTokens;
-
+      
     if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
-  
+  	
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
         
@@ -1531,10 +1543,22 @@ int VscpRemoteTcpIf::doCmdVersion( uint8_t *pMajorVer,
         return VSCP_ERROR_ERROR;
     }
     
+    /*
+    for ( uint16_t i=0; i<getInputQueueCount(); i++) {
+		wxLogDebug( "[" + m_inputStrArray[ i ] + "]");
+	}
+	
+	for ( uint16_t i=0; i<m_inputStrArray.Count(); i++) {
+		wxLogDebug( "{" + m_inputStrArray[ i ] + "}" );
+	}*/
+    
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
     m_mutexArray.Lock();
     strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
     m_mutexArray.Unlock();
+    
+    strLine.Trim();
+    strLine.Trim(false);
    
     strTokens.SetString( strLine, _(",\r\n"));
 
@@ -1564,8 +1588,6 @@ int VscpRemoteTcpIf::doCmdVersion( uint8_t *pMajorVer,
     else {
         return VSCP_ERROR_ERROR;
     }
-
-    //return ( version[0] << 16 ) + ( version[1] << 8 ) + version[2];
 
     return VSCP_ERROR_SUCCESS;
 }
