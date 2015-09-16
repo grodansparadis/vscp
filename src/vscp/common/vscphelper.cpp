@@ -2661,6 +2661,573 @@ wxString &vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
     return strHTML;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// writeMeasurementValue
+//
+//
+
+wxString& writeMeasurementValue( uint16_t vscptype,
+                                    uint8_t unit,  
+                                    uint8_t sensoridx,  
+                                    wxString& strValue )
+{
+    static wxString strOutput;
+
+    strOutput.Empty();
+
+    // The unit can be 0..3 for Level I and equals bits 3,4 of the
+    // data coding byte. For Level II unit can be 0..255
+    strOutput += wxString::Format( _( "Unit = %d \n" ), unit );
+
+    // The sensor index/number can be 0..7 for Level I and equals 
+    // bits 2,1,0 of datacoding byte. For Level II unit can be 0..255
+    strOutput += wxString::Format( _( "Sensor %d " ), sensoridx  );
+    
+    // Add the value
+    strOutput += strValue;
+
+    switch ( vscptype ) {
+
+        case VSCP_TYPE_MEASUREMENT_COUNT:
+        {
+
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_LENGTH:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = meter
+                    strOutput += _( "m" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_MASS:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = kilogram
+                    strOutput += _( "Kg" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_TIME:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = millisecond
+                    strOutput += _( "ms" );
+                    break;
+                case 0x01: // unit = second
+                    strOutput += _( "s" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_ELECTRIC_CURRENT:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = ampere
+                    strOutput += _( "A" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_TEMPERATURE:
+        {
+
+            switch ( unit ) {
+
+                case 0x00: // default unit = kelvin
+                    strOutput += _( "K" );
+                    break;
+
+                case 0x01: // Celsius
+                    strOutput += _( "C" );
+                    break;
+
+                case 0x02: // Farenheit
+                    strOutput += _( "F" );
+                    break;
+            }
+
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_AMOUNT_OF_SUBSTANCE:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = mole
+                    strOutput += _( "mol" );
+                    break;
+            }
+
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_INTENSITY_OF_LIGHT:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = candela
+                    strOutput += _( "cd" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_FREQUENCY:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = hertz
+                    strOutput += _( "Hz" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_RADIOACTIVITY:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = bequerel
+                    strOutput += _( "Bq" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_FORCE:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = newton
+                    strOutput += _( "N" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_PRESSURE:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = pascal
+                    strOutput += _( "pa" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_ENERGY:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = joule
+                    strOutput += _( "J" );
+                    break;
+                case 0x01: // KWh
+                    strOutput += _( "KWh" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_POWER:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = watt
+                    strOutput += _( "W" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_ELECTRICAL_CHARGE:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = Coulomb
+                    strOutput += _( "C" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_ELECTRICAL_POTENTIAL:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = volt
+                    strOutput += _( "V" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_ELECTRICAL_CAPACITANCE:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = Farad
+                    strOutput += _( "F" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_ELECTRICAL_RECISTANCE:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = ohms
+                    strOutput += _( "Ohm" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_ELECTRICAL_CONDUCTANCE:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = siemens
+                    strOutput += _( "S" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_MAGNETIC_FIELD_STRENGTH:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = ampere meters
+                    strOutput += _( "Am" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_MAGNETIC_FLUX:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = weber
+                    strOutput += _( "Wb" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_MAGNETIC_FLUX_DENSITY:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = tesla
+                    strOutput += _( "T" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_INDUCTANCE:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = henry
+                    strOutput += _( "H" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_FLUX_OF_LIGHT:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = lumen
+                    strOutput += _( "lm" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_ILLUMINANCE:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = lux
+                    strOutput += _( "lx" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_RADIATION_DOSE:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = gray
+                    strOutput += _( "Gy" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_CATALYTIC_ACITIVITY:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = katal
+                    strOutput += _( "kat" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_VOLUME:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = qubic meters
+                    strOutput += _( "qm" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_SOUND_INTENSITY:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = bel
+                    strOutput += _( "bel" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_ANGLE:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = radian
+                    strOutput += _( "rad" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_POSITION:
+        {
+
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_SPEED:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = meters / second
+                    strOutput += _( "m/s" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_ACCELERATION:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = meters / sqaresecond
+                    strOutput += _( "m/s^2" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_TENSION:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = newton / meter
+                    strOutput += _( "N/m" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_HUMIDITY:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = relative humity
+                    strOutput += _( "%" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_FLOW:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = qubicmeter / second
+                    strOutput += _( "m^3/s" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_THERMAL_RESISTANCE:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = kelvin / watt
+                    strOutput += _( "K/W" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_REFRACTIVE_POWER:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = diopter
+                    strOutput += _( "dpt" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_DYNAMIC_VISCOSITY:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = Pascal seconds
+                    strOutput += _( "Pa*s" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_SOUND_IMPEDANCE:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = Newton * second / qubicmeter
+                    strOutput += _( "N*s/m^3" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_SOUND_RESISTANCE:
+        {
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_ELECTRIC_ELASTANCE:
+        {
+
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_LUMINOUS_ENERGY:
+        {
+
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_LUMINANCE:
+        {
+
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_CHEMICAL_CONCENTRATION:
+        {
+
+        }
+        break;
+
+        /* // this type (= 46) has become "reserved"
+        case VSCP_TYPE_MEASUREMENT_ABSORBED_DOSE:
+        {
+
+        }
+        break;
+        */
+
+        case VSCP_TYPE_MEASUREMENT_DOSE_EQVIVALENT:
+        {
+
+        }
+        break;
+
+
+        case VSCP_TYPE_MEASUREMENT_DEWPOINT:
+        {
+
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_RELATIVE_LEVEL:
+        {
+
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_ALTITUDE:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = meter
+                    strOutput += _( "m" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_AREA:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = squaremeter
+                    strOutput += _( "m^2" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_RADIANT_INTENSITY:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = watt per steradian
+                    strOutput += _( "W/sr" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_RADIANCE:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = W/(sr*m^2)
+                    strOutput += _( "W/(sr*m^2)" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_IRRADIANCE:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = Watt per squaremeter
+                    strOutput += _( "W/m^2)" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_SPECTRAL_RADIANCE:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = W/(sr*m^2*nm)
+                    strOutput += _( "W/(sr*m^2*nm)" );
+                    break;
+            }
+        }
+        break;
+
+        case VSCP_TYPE_MEASUREMENT_SPECTRAL_IRRADIANCE:
+        {
+            switch ( unit ) {
+                case 0x00: // default unit = W/(m^2*nm)
+                    strOutput += _( "W/(m^2*nm)" );
+                    break;
+            }
+        }
+        break;
+
+    }
+
+    return strOutput;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // getRealTextData
@@ -2670,14 +3237,15 @@ wxString &vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
 wxString& vscp_getRealTextData(vscpEvent *pEvent)
 {
 	int offset=0;
-	static wxString str;
+	static wxString strOutput;
 	wxString wrkstr1, wrkstr2, wrkstr3;
 	int i;
+    wxString value;
 
-	str.Empty();
+    strOutput.Empty();
 
 	// Check pointer
-	if (NULL == pEvent) return str;
+	if (NULL == pEvent) return strOutput;
 	
 	// If class >= 512 and class <1024 we
 	// have GUID in front of data. 
@@ -2686,32 +3254,44 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 		offset = 16;
 	}
 
-	switch (pEvent->vscp_class-(offset?512:0)) {
+	switch ( pEvent->vscp_class-( offset ? 512 : 0 ) ) {
 
-		// **** CLASS ****
-	case VSCP_CLASS1_PROTOCOL:
-	{
-		switch (pEvent->vscp_type) {
+	// **** CLASS ****
+	case VSCP_CLASS1_PROTOCOL: 
+    {
+		switch ( pEvent->vscp_type ) {
 
         case VSCP_TYPE_UNDEFINED:
-            str = _("This event is reserved and should not be seen here.");
+            strOutput = _("This event is reserved and should not be seen here.");
 			break;
 
 		case VSCP_TYPE_PROTOCOL_NEW_NODE_ONLINE:
-            if ( 0xff != pEvent->GUID[ 15 ]) {
-                str = wxString::Format( _("New node with nickname=0x%02X"), pEvent->GUID[ 15 ] );
+            if ( 0xff != pEvent->GUID[ 15 ] ) {
+                strOutput = wxString::Format( _("New node with nickname=0x%02X"), 
+                                                pEvent->GUID[ 15 ] );
             }
             else {
-                str = wxString::Format( _("Probe for nickname=0x%02X"),
-                                            pEvent->pdata[ 0 ] );
+                strOutput = wxString::Format( _("Probe for nickname=0x%02X"),
+                                                pEvent->pdata[ 0+offset ] );
+                if ( 0 == pEvent->pdata[ 0+offset ] ) {
+                    strOutput += _( "\n(Check if there is a server that shoudl supply a nickname.)" );
+                }
             }
 			break;
 
 		case VSCP_TYPE_PROTOCOL_PROBE_ACK:
-            str = wxString::Format( _("The nickname=0x%02X is in use"), pEvent->GUID[ 15 ] );
+            strOutput = wxString::Format( _("The nickname=0x%02X is in use"), 
+                                                pEvent->GUID[ 15 ] );
+            if ( 0 == pEvent->pdata[ 15 ] ) {
+                strOutput += _( "\n(Server will suppy nickname.)");
+            }
 			break;
 
 		case VSCP_TYPE_PROTOCOL_SET_NICKNAME:
+            strOutput = wxString::Format( _( "Set/change nickname for node 0x%02X from 0x%02X to 0x%02X." ),
+                                          pEvent->GUID[ 15 ],
+                                          pEvent->pdata[ 0+offset ],
+                                          pEvent->pdata[ 1+offset ] );
 			break;
 
 		case VSCP_TYPE_PROTOCOL_NICKNAME_ACCEPTED:
@@ -2721,23 +3301,23 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 			break;
 
 		case VSCP_TYPE_PROTOCOL_READ_REGISTER:
-            str = wxString::Format( _("node=0x%02X register=0x%02X"),
-                                        pEvent->pdata[ 0 ],
-                                        pEvent->pdata[ 1 ] );
+            strOutput = wxString::Format( _("node=0x%02X register=0x%02X"),
+                                        pEvent->pdata[ 0+offset ],
+                                        pEvent->pdata[ 1+offset ] );
 			break;
 
 		case VSCP_TYPE_PROTOCOL_RW_RESPONSE:
-            str = wxString::Format( _("node=0x%02X register=0x%02X content=0x%02X "),
+            strOutput = wxString::Format( _("node=0x%02X register=0x%02X content=0x%02X "),
                                         pEvent->GUID[ 15 ],
-                                        pEvent->pdata[ 0 ],
-                                        pEvent->pdata[ 1 ] );
+                                        pEvent->pdata[ 0+offset ],
+                                        pEvent->pdata[ 1+offset ] );
 			break;
 
 		case VSCP_TYPE_PROTOCOL_WRITE_REGISTER:
-            str = wxString::Format( _("node=0x%02X register=0x%02X content=0x%02X "),
+            strOutput = wxString::Format( _("node=0x%02X register=0x%02X content=0x%02X "),
                                         pEvent->GUID[ 0 ],
-                                        pEvent->pdata[ 1 ],
-                                        pEvent->pdata[ 2 ] );
+                                        pEvent->pdata[ 1+offset ],
+                                        pEvent->pdata[ 2+offset ] );
 			break;
 
 		case VSCP_TYPE_PROTOCOL_ENTER_BOOT_LOADER:
@@ -2843,13 +3423,13 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 			break;
 		}
 	}
-		break;
+	break;
 
-		// **** CLASS ****
+	// **** CLASS ****
 	case VSCP_CLASS1_ALARM:
 	{
 
-		switch (pEvent->vscp_type) {
+		switch ( pEvent->vscp_type ) {
 
 		case VSCP_TYPE_ALARM_WARNING:
 			break;
@@ -2893,11 +3473,14 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 	}
     break;
 
-		// **** CLASS ****
+    ///////////////////////////////////////////////////////////////////////////
+    //                        LEVEL I MEASUREMENT CLASSES
+    ///////////////////////////////////////////////////////////////////////////
+
+	// **** CLASS ****
 	case VSCP_CLASS1_MEASUREMENT:
 	{
-		// the sensor number can be 0...7 and equals bits 2,1,0 of datacoding byte
-		str = wxString::Format(_("Sensor %d "), VSCP_DATACODING_INDEX(*(pEvent->pdata+offset)));
+        wxString strValue;
 
 		// disassemble the data bytes to clear text depending on the datacoding
 		// this is the same for all CLASS1_MEASUREMENT events. The only thing thats
@@ -2905,13 +3488,12 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 		// for debugging we put out in [] the type of data, and its value
 		// after the =
 		// this works on bits 7,6,5 of the datacoding byte
-		switch (VSCP_DATACODING_TYPE(*(pEvent->pdata+offset)) & 0xE0) {
+		switch ( VSCP_DATACODING_TYPE( *( pEvent->pdata+offset ) ) & 0xE0 ) {
 
 		case 0x00: // bit format
 		{
-			str += _("[bit] = ");
-			//char sth[8];
-			str += wxString::Format(wxT("%X"), 
+            strValue = _("[bit] = ");
+            strValue += wxString::Format(wxT("%X"),
 					(long) vscp_getDataCodingBitArray(pEvent->pdata+offset, 
 					pEvent->sizeData-offset));
 		}
@@ -2919,25 +3501,25 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 
 		case 0x20: // byte format
             vscp_getVSCPMeasurementAsString( pEvent, wrkstr1 );
-			str += _("[byte] = ?");
-            str += wrkstr1;
+            strValue = _("[byte] = ?");
+            strValue += wrkstr1;
 			break;
 
 		case 0x40: // string format
 		{
-			str += _("[string] = ");
+            strValue = _("[string] = ");
             wxString wxstr;
 			vscp_getDataCodingString(pEvent->pdata+offset, 
 										pEvent->sizeData-offset,
                                         wxstr );
-            str += wxstr;
+            strValue += wxstr;
 		}
 		break;
 
 		case 0x60: // int format
             vscp_getVSCPMeasurementAsString( pEvent, wrkstr1 );
-			str += _("[int] = ");
-            str += wrkstr1;
+            strValue = _("[int] = ");
+            strValue += wrkstr1;
 			break;
 
 		case 0x80: // normalized int format
@@ -2945,7 +3527,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 			double temp = 
 				vscp_getDataCodingNormalizedInteger( pEvent->pdata+offset, 
 												        pEvent->sizeData-offset );
-			str += wxString::Format(_("[nint] = %f "), temp);
+            strValue = wxString::Format(_("[nint] = %f "), temp);
 		}
 		break;
 
@@ -2953,556 +3535,25 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 			if ( (pEvent->sizeData-offset) >= 5 ) {
 				float msrmt = vscp_getMeasurementAsFloat(pEvent->pdata+offset, 
 						pEvent->sizeData-offset);
-				str += wxString::Format(_("[float] = %g "), msrmt);
+                strValue = wxString::Format(_("[float] = %g "), msrmt);
 			}
 			else {
-				str += _("[float] = invalid event format ");
+                strValue = _("[float] = invalid event format ");
 			}
 			break;
 		}
 
-		// here we put out the unit depending on each measurement type's own
-		// definition which unit to use (this is bits 4,3 of datacoding byte)
-		switch (pEvent->vscp_type) {
-
-		case VSCP_TYPE_MEASUREMENT_COUNT:
-		{
-		}
-			break;
-
-		case VSCP_TYPE_MEASUREMENT_LENGTH:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = meter
-				str += _("m");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_MASS:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = kilogram
-				str += _("Kg");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_TIME:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = millisecond
-				str += _("ms");
-				break;
-			case 0x01: // unit = second
-				str += _("s");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_ELECTRIC_CURRENT:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = ampere
-				str += _("A");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_TEMPERATURE:
-		{
-
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-
-			case 0x00: // default unit = kelvin
-				str += _("K");
-				break;
-
-			case 0x01: // Celsius
-				str += _("C");
-				break;
-
-			case 0x02: // Farenheit
-				str += _("F");
-				break;
-			}
-
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_AMOUNT_OF_SUBSTANCE:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = mole
-				str += _("mol");
-				break;
-			}
-
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_INTENSITY_OF_LIGHT:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = candela
-				str += _("cd");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_FREQUENCY:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = hertz
-				str += _("Hz");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_RADIOACTIVITY:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = bequerel
-				str += _("Bq");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_FORCE:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = newton
-				str += _("N");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_PRESSURE:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = pascal
-				str += _("pa");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_ENERGY:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = joule
-				str += _("J");
-				break;
-            case 0x01: // KWh
-				str += _("KWh");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_POWER:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = watt
-				str += _("W");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_ELECTRICAL_CHARGE:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = Coulomb
-				str += _("C");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_ELECTRICAL_POTENTIAL:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = volt
-				str += _("V");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_ELECTRICAL_CAPACITANCE:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = Fahrad
-				str += _("F");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_ELECTRICAL_RECISTANCE:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = ohms
-				str += _("Ohm");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_ELECTRICAL_CONDUCTANCE:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = siemens
-				str += _("S");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_MAGNETIC_FIELD_STRENGTH:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = ampere meters
-				str += _("Am");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_MAGNETIC_FLUX:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = weber
-				str += _("Wb");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_MAGNETIC_FLUX_DENSITY:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = tesla
-				str += _("T");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_INDUCTANCE:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = henry
-				str += _("H");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_FLUX_OF_LIGHT:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = lumen
-				str += _("lm");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_ILLUMINANCE:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = lux
-				str += _("lx");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_RADIATION_DOSE:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = gray
-				str += _("Gy");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_CATALYTIC_ACITIVITY:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = katal
-				str += _("kat");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_VOLUME:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = qubic meters
-				str += _("qm");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_SOUND_INTENSITY:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = bel
-				str += _("bel");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_ANGLE:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = radian
-				str += _("rad");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_POSITION:
-		{
-
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_SPEED:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = meters / second
-				str += _("m/s");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_ACCELERATION:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = meters / sqaresecond
-				str += _("m/s^2");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_TENSION:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = newton / meter
-				str += _("N/m");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_HUMIDITY:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = relative humity
-				str += _("%");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_FLOW:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = qubicmeter / second
-				str += _("m^3/s");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_THERMAL_RESISTANCE:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = kelvin / watt
-				str += _("K/W");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_REFRACTIVE_POWER:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = diopter
-				str += _("dpt");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_DYNAMIC_VISCOSITY:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = Pascal seconds
-				str += _("Pa*s");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_SOUND_IMPEDANCE:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = Newton * second / qubicmeter
-				str += _("N*s/m^3");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_SOUND_RESISTANCE:
-		{
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_ELECTRIC_ELASTANCE:
-		{
-
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_LUMINOUS_ENERGY:
-		{
-
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_LUMINANCE:
-		{
-
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_CHEMICAL_CONCENTRATION:
-		{
-
-		}
-		break;
-
-			/* // this type (= 46) has become "reserved"
-			case VSCP_TYPE_MEASUREMENT_ABSORBED_DOSE:
-			{
-
-			}
-			break;
-			 */
-
-		case VSCP_TYPE_MEASUREMENT_DOSE_EQVIVALENT:
-		{
-
-		}
-		break;
-
-
-		case VSCP_TYPE_MEASUREMENT_DEWPOINT:
-		{
-
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_RELATIVE_LEVEL:
-		{
-
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_ALTITUDE:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = meter
-				str += _("m");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_AREA:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = squaremeter
-				str += _("m^2");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_RADIANT_INTENSITY:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = watt per steradian
-				str += _("W/sr");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_RADIANCE:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = W/(sr*m^2)
-				str += _("W/(sr*m^2)");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_IRRADIANCE:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = Watt per squaremeter
-				str += _("W/m^2)");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_SPECTRAL_RADIANCE:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = W/(sr*m^2*nm)
-				str += _("W/(sr*m^2*nm)");
-				break;
-			}
-		}
-		break;
-
-		case VSCP_TYPE_MEASUREMENT_SPECTRAL_IRRADIANCE:
-		{
-			switch (VSCP_DATACODING_UNIT(*(pEvent->pdata+offset))) {
-			case 0x00: // default unit = W/(m^2*nm)
-				str += _("W/(m^2*nm)");
-				break;
-			}
-		}
-		break;
-
-		}
-	} // measurement
-    str += _("\n");
+        // here we put out the unit depending on each measurement type's own
+        // definition which unit to use (this is bits 4,3 of datacoding byte)
+
+        strOutput += writeMeasurementValue( pEvent->vscp_type,
+                                                VSCP_DATACODING_UNIT( *( pEvent->pdata + offset ) ),
+                                                VSCP_DATACODING_INDEX( *( pEvent->pdata + offset ) ),
+                                                strValue );
+		
+	} // measurement Class 1
+
+    strOutput += _("\n");
 	break;
 
 		// **** CLASS ****
@@ -3601,7 +3652,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 		case VSCP_TYPE_INFORMATION_DETECT:
 		case VSCP_TYPE_INFORMATION_OVERFLOW:
 			if ((pEvent->sizeData-offset) >= 3) {
-				str = wxString::Format(_("Index=%d Zone=%d Subzone=%d\nNickname=%d\n"),
+                strOutput = wxString::Format(_("Index=%d Zone=%d Subzone=%d\nNickname=%d\n"),
 						pEvent->pdata[ 0+offset ],
 						pEvent->pdata[ 1+offset ],
 						pEvent->pdata[ 2+offset ],
@@ -3613,35 +3664,35 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 			if ((pEvent->sizeData - offset) >= 5) {
 
 				// Key type code
-				if (0 == (pEvent->pdata[ 0 + offset ] & 0x03)) {
-					str = _("Button released.");
+				if (0 == (pEvent->pdata[ 0+offset ] & 0x03)) {
+                    strOutput = _("Button released.");
 				} 
-                else if (1 == (pEvent->pdata[ 0 + offset ] & 0x03)) {
-					str = _("Button pressed.");
+                else if (1 == (pEvent->pdata[ 0+offset ] & 0x03)) {
+                    strOutput = _("Button pressed.");
 				} 
-                else if (2 == (pEvent->pdata[ 0 + offset ] & 0x03)) {
-					str = _("Keycode.");
+                else if (2 == (pEvent->pdata[ 0+offset ] & 0x03)) {
+                    strOutput = _("Keycode.");
 				}
 				else {
-					str = _("Unknown key type code.");
+                    strOutput = _("Unknown key type code.");
 				}
 
-				str += wxString::Format(_("Repeat count = %d\n"), 
-						(pEvent->pdata[ 0 + offset ] >> 3 & 0x01f));
+                strOutput += wxString::Format(_("Repeat count = %d\n"),
+						(pEvent->pdata[ 0+offset ] >> 3 & 0x01f));
 
-				str += wxString::Format(_("Zone=%d Subzone=%d\n"),
-						pEvent->pdata[ 1 + offset ],
-						pEvent->pdata[ 2 + offset ]);
+                strOutput += wxString::Format(_("Zone=%d Subzone=%d\n"),
+						pEvent->pdata[ 1+offset ],
+						pEvent->pdata[ 2+offset ]);
 
-				str += wxString::Format(_("Button Code=%d\n"),
-						((pEvent->pdata[ 3 + offset ] << 8) + pEvent->pdata[ 4 + offset ]));
+                strOutput += wxString::Format(_("Button Code=%d\n"),
+						((pEvent->pdata[ 3+offset ] << 8) + pEvent->pdata[ 4 + offset ]));
 
                 if ((pEvent->sizeData - offset) > 5) {
-                    str += wxString::Format(_("Code Page=%d\n"),
-                            ((pEvent->pdata[ 5 + offset ] << 8) + pEvent->pdata[ 6 + offset ]));
+                    strOutput += wxString::Format(_("Code Page=%d\n"),
+                            ((pEvent->pdata[ 5+offset ] << 8) + pEvent->pdata[ 6 + offset ]));
                 }
                 else {
-                    str += _("No code page.");
+                    strOutput += _("No code page.");
                 }
 			}
 			break;
@@ -3649,27 +3700,27 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 		case VSCP_TYPE_INFORMATION_MOUSE:
 			if ((pEvent->sizeData-offset) == 7) {
 
-				str += wxString::Format(_("Zone=%d Subzone=%d\n"),
+                strOutput += wxString::Format(_("Zone=%d Subzone=%d\n"),
 						pEvent->pdata[ 1+offset ],
 						pEvent->pdata[ 2+offset ]);
 
 				if (0 == pEvent->pdata[ 0+offset ]) {
-					str += _("Absolute coordinates.\n");
+                    strOutput += _("Absolute coordinates.\n");
 				} 
                 else if (1 == pEvent->pdata[ 0+offset ]) {
-					str += _("Relative coordinates.\n");
+                    strOutput += _("Relative coordinates.\n");
 				} 
                 else {
-					str += _("Unknown coordinates.\n");
+                    strOutput += _("Unknown coordinates.\n");
 				}
 
-				str += wxString::Format(_("x=%d y=%d\n"),
+                strOutput += wxString::Format(_("x=%d y=%d\n"),
 						((pEvent->pdata[ 3+offset ] << 8) + pEvent->pdata[ 4+offset ]),
 						((pEvent->pdata[ 5+offset ] << 8) + pEvent->pdata[ 6+offset ]));
 
 			} 
             else {
-				str = _("Wrong number of databytes.");
+                strOutput = _("Wrong number of databytes.");
 			}
 			break;
 
@@ -3678,111 +3729,111 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 		{
 			if ((pEvent->sizeData-offset) >= 5) {
 
-				str = wxString::Format(_("Token activity.\n Event Code=%d ["), 
+                strOutput = wxString::Format(_("Token activity.\n Event Code=%d ["),
 						(*(pEvent->pdata+offset) & 0x03));
 
 				// Event Code
 				switch (*(pEvent->pdata+offset) & 0x03) {
 
 				case 0:
-					str += _("Touched and released] ");
+                    strOutput += _("Touched and released] ");
 					break;
 
 				case 1:
-					str += _("Touched] ");
+                    strOutput += _("Touched] ");
 					break;
 
 				case 2:
-					str += _("Released] ");
+                    strOutput += _("Released] ");
 					break;
 
 				case 3:
-					str += _("Reserved code] ");
+                    strOutput += _("Reserved code] ");
 					break;
 
 				}
 
 				// Token code
-				str += wxString::Format(_("\nToken Code=%d ["),
+                strOutput += wxString::Format(_("\nToken Code=%d ["),
 						(*(pEvent->pdata+offset) >> 2) & 0x3f);
 				switch ((*(pEvent->pdata+offset) >> 2) & 0x3f) {
 
 				case 0:
-					str += _("Unknown token. 128-bits.] ");
+                    strOutput += _("Unknown token. 128-bits.] ");
 					break;
 
 				case 1:
-					str += _("iButton token. 64-bits.] ");
+                    strOutput += _("iButton token. 64-bits.] ");
 					break;
 
 				case 2:
-					str += _("RFID Token. 64-bits.] ");
+                    strOutput += _("RFID Token. 64-bits.] ");
 					break;
 
 				case 3:
-					str += _("RFID Token. 128-bits.] ");
+                    strOutput += _("RFID Token. 128-bits.] ");
 					break;
 
 				case 4:
-					str += _("RFID Token. 256-bits.] ");
+                    strOutput += _("RFID Token. 256-bits.] ");
 					break;
 
 				case 9:
-					str += _("ID/Credit card. 128-bits.] ");
+                    strOutput += _("ID/Credit card. 128-bits.] ");
 					break;
 
 				case 16:
-					str += _("Biometri device. 256-bits.] ");
+                    strOutput += _("Biometri device. 256-bits.] ");
 					break;
 
 				case 17:
-					str += _("Biometri device. 64-bits.] ");
+                    strOutput += _("Biometri device. 64-bits.] ");
 					break;
 
 				case 18:
-					str += _("Bluetooth device. 48-bits.] ");
+                    strOutput += _("Bluetooth device. 48-bits.] ");
 					break;
 
 				case 19:
-					str += _("GSM IMEI Code. 64-bits.] ");
+                    strOutput += _("GSM IMEI Code. 64-bits.] ");
 					break;
 
 				case 20:
-					str += _("GSM IMSI code. 64-bits.] ");
+                    strOutput += _("GSM IMSI code. 64-bits.] ");
 					break;
 
 				case 21:
-					str += _("RFID Token. 40-bits.] ");
+                    strOutput += _("RFID Token. 40-bits.] ");
 					break;
 
 				case 22:
-					str += _("RFID Token. 32-bits.] ");
+                    strOutput += _("RFID Token. 32-bits.] ");
 					break;
 
 				case 23:
-					str += _("RFID Token. 24-bits.] ");
+                    strOutput += _("RFID Token. 24-bits.] ");
 					break;
 
 				case 24:
-					str += _("RFID Token. 16-bits.] ");
+                    strOutput += _("RFID Token. 16-bits.] ");
 					break;
 
 				case 25:
-					str += _("RFID Token. 8-bits.] ");
+                    strOutput += _("RFID Token. 8-bits.] ");
 					break;
 
 				default:
-					str += _("Reserved token. ] ");
+                    strOutput += _("Reserved token. ] ");
 				}
 
 				wrkstr1 = wxString::Format(_("\nZone=%d\n Subzone=%d\n Index=%d\n"),
 						pEvent->pdata[ 1+offset ],
 						pEvent->pdata[ 2+offset ],
 						pEvent->pdata[ 3+offset ]);
-				str += wrkstr1;
+                strOutput += wrkstr1;
 			} 
             else {
-				str = _("Invalid data!");
+                strOutput = _("Invalid data!");
 			}
 		} // Token activity
 			break;
@@ -3790,58 +3841,58 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 
 		case VSCP_TYPE_INFORMATION_STREAM_DATA:
 		{
-			str = wxString::Format(_("sequence index=%d\n"),
+            strOutput = wxString::Format(_("sequence index=%d\n"),
 					pEvent->pdata[ 0+offset ]);
-			str += _("steam data = ");
+            strOutput += _("steam data = ");
 			for (i = 1; i < (pEvent->sizeData-offset); i++) {
-				str += wxString::Format(_("%02X(%c) "),
+                strOutput += wxString::Format(_("%02X(%c) "),
 						pEvent->pdata[ i+offset ],
 						pEvent->pdata[ i+offset ]);
 			}
-			str += _("\n");
+            strOutput += _("\n");
 		}
 			break;
 
 		case VSCP_TYPE_INFORMATION_STREAM_DATA_WITH_ZONE:
 		{
 
-			str = wxString::Format(_("\nZone=%d\n Subzone=%d\n"),
+            strOutput = wxString::Format(_("\nZone=%d\n Subzone=%d\n"),
 					pEvent->pdata[ 0+offset ],
 					pEvent->pdata[ 1+offset ]);
 
-			str += wxString::Format(_("sequence index=%d\n"),
+            strOutput += wxString::Format(_("sequence index=%d\n"),
 					pEvent->pdata[ 2+offset ]);
-			str += _("steam data = ");
+            strOutput += _("steam data = ");
 			for (i = 3; i < (pEvent->sizeData-offset); i++) {
-				str += wxString::Format(_("%02X(%c) "),
+                strOutput += wxString::Format(_("%02X(%c) "),
 						pEvent->pdata[ i+offset ],
 						pEvent->pdata[ i+offset ]);
 			}
-			str += _("\n");
+            strOutput += _("\n");
 		}
 			break;
 
 		case VSCP_TYPE_INFORMATION_CONFIRM:
 		{
-			str = wxString::Format(_("\nZone=%d\n Subzone=%d\n Sequence index=%d\n"),
+            strOutput = wxString::Format(_("\nZone=%d\n Subzone=%d\n Sequence index=%d\n"),
 					pEvent->pdata[ 0+offset ],
 					pEvent->pdata[ 1+offset ],
 					pEvent->pdata[ 2+offset ]);
-			str += wxString::Format(_("Class=%d\n"),
+            strOutput += wxString::Format(_("Class=%d\n"),
 					((pEvent->pdata[ 3+offset ] << 8) + pEvent->pdata[ 4+offset ]));
 
-			str += wxString::Format(_("Type=%d\n"),
+            strOutput += wxString::Format(_("Type=%d\n"),
 					((pEvent->pdata[ 5+offset ] << 8) + pEvent->pdata[ 6+offset ]));
 		}
 			break;
 
 		case VSCP_TYPE_INFORMATION_STATE:
 		{
-			str = wxString::Format(_("Zone=%d\n Subzone=%d\n User byte=%d\n"),
+            strOutput = wxString::Format(_("Zone=%d\n Subzone=%d\n User byte=%d\n"),
 					pEvent->pdata[ 1+offset ],
 					pEvent->pdata[ 2+offset ],
 					pEvent->pdata[ 0+offset ]);
-			str += wxString::Format(_("Current state=%d\n Previous state=%d\n"),
+            strOutput += wxString::Format(_("Current state=%d\n Previous state=%d\n"),
 					pEvent->pdata[ 3+offset ],
 					pEvent->pdata[ 3+offset ]);
 		}
@@ -3849,7 +3900,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 
 		case VSCP_TYPE_INFORMATION_ACTION_TRIGGER:
 		{
-			str = wxString::Format(_("Zone=%d\n Subzone=%d\n Action Trigger=%d\n"),
+            strOutput = wxString::Format(_("Zone=%d\n Subzone=%d\n Action Trigger=%d\n"),
 					pEvent->pdata[ 1+offset ],
 					pEvent->pdata[ 2+offset ],
 					pEvent->pdata[ 0+offset ]);
@@ -3858,7 +3909,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 
 		case VSCP_TYPE_INFORMATION_START_OF_RECORD:
 		{
-			str = wxString::Format(_("Zone=%d\n Subzone=%d\n Record=%d\n Count=%d\n"),
+            strOutput = wxString::Format(_("Zone=%d\n Subzone=%d\n Record=%d\n Count=%d\n"),
 					pEvent->pdata[ 1+offset ],
 					pEvent->pdata[ 2+offset ],
 					pEvent->pdata[ 0+offset ],
@@ -3868,7 +3919,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 
 		case VSCP_TYPE_INFORMATION_END_OF_RECORD:
 		{
-			str = wxString::Format(_("Zone=%d\n Subzone=%d\n Record=%d\n"),
+            strOutput = wxString::Format(_("Zone=%d\n Subzone=%d\n Record=%d\n"),
 					pEvent->pdata[ 1+offset ],
 					pEvent->pdata[ 2+offset ],
 					pEvent->pdata[ 0+offset ]);
@@ -3877,7 +3928,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 
 		case VSCP_TYPE_INFORMATION_PRESET_ACTIVE:
 		{
-			str = wxString::Format(_("Zone=%d\n Subzone=%d\n Preset code=%d\n"),
+            strOutput = wxString::Format(_("Zone=%d\n Subzone=%d\n Preset code=%d\n"),
 					pEvent->pdata[ 1+offset ],
 					pEvent->pdata[ 2+offset ],
 					pEvent->pdata[ 3+offset ]);
@@ -3889,7 +3940,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 
 	} // switch class
 
-	return str;
+	return strOutput;
 
 }
 
