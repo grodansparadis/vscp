@@ -21,10 +21,7 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: zanthicobj.cpp,v $                                       
-// $Date: 2005/01/05 12:16:19 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.6 $ 
+
 
 #include "stdio.h"
 #include <windows.h>
@@ -189,13 +186,16 @@ bool CZanthicObj::open( const char *szFileName, unsigned long flags )
 	// if open we have noting to do
 	if ( m_bRun ) return true;
 
+
+
 	// Bus-Speed
+    
 #ifdef WIN32
+    strcpy_s( szDrvParams, MAX_PATH, szFileName );
 	p = strtok_s( szDrvParams, ";", &next_token );
-	strcpy_s( szDrvParams, MAX_PATH, szFileName );
 #else
-	p = strtok( szDrvParams, ";" );
-	strcpy( szDrvParams, szFileName );
+    strcpy( szDrvParams, szFileName );
+	p = strtok( szDrvParams, ";" );	
 #endif
 	
 	if ( NULL != p ) {		
