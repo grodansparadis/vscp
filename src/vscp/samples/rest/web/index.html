@@ -90,6 +90,15 @@
 		}
 		
 		///////////////////////////////////////////////////////////////////////
+		// do_setServer
+		//
+		
+		var do_setServer = function() {
+			VscpServer = window.prompt("Name of variable to create:","http://demo.vscp.org:8080");
+			$("#host").html("<b>Host</b>: " + VscpServer );
+		}
+		
+		///////////////////////////////////////////////////////////////////////
 		// do_open
 		//
 		
@@ -512,11 +521,14 @@
 							$("#events").html( response.varname + " = " + response.varvalue + ", type = " +
 									response.vartype + ", typecode = " + response.vartypecode + 
 									", peristence = " + response.varpersistence );
-						}					
+						}
+						else {
+							$("#events").html( "Unable top read variable" );
+						}
 					
 					},
 					error: function( xhr, status, error ) {
-						console.log( "Close:" + error + " Status:" + status );
+						console.log( "do_readVariable:" + error + " Status:" + status );
 					}
 				});
 			}
@@ -580,14 +592,16 @@
 			
 			var txtVariableName = window.prompt("Name of variable to create:","newvar");
 			var txtVariableValue = window.prompt("Value:","This is a new string");
-			var txtVariableValue = window.prompt("Type:","string");
+			var txtVariableType = window.prompt("Type:","string");
 			var txtVariableValue = window.prompt("Persistent (true/false):","false");
+			var txtVariableNote = window.prompt("Note:","");
 			
 			if ( VscpSessionKey.length > 0 ) {	
 				$.ajax({
 					url: VscpServer + '/vscp/rest?vscpsession=' + VscpSessionKey + 
 							'&format=jsonp&op=writevar&variable=' + txtVariableName +
-							'&value=' + txtVariableValue,
+							'&value=' + txtVariableValue +
+							'&type=' + txtVariableValue,
 					type : "GET",
 					jsonpCallback: 'handler',
 					cache: true,
@@ -651,6 +665,7 @@
 <body>
     <div class="container-fluid">
         <h1>VSCP REST interface demo code</h1>
+		<a href="#" onclick="do_setServer();" >Set server</a> |
 		<a href="#" onclick="do_open();" >Open</a> | 
 		<a href="#" onclick="do_close();" >Close</a> | 
 		<a href="#" onclick="do_status();" >Status</a> | 
