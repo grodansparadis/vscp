@@ -784,6 +784,16 @@ extern "C" {
  
     bool vscp_setVscpEventExFromString( vscpEventEx *pEventEx, const wxString& str);
 
+    /*!
+        Write in measurement data into realtext string
+        \param vscptype VSCP type
+        \param unit Measurment unit, 0-3 for Level I, 0-255 for Level II.
+        \param sensoridx Index for sensor, 0-7 for Level I, 0-255 for Level II.
+    */
+    wxString& writeMeasurementValue( uint16_t vscptype,
+                                     uint8_t unit,
+                                     uint8_t sensoridx,
+                                     wxString& strValue );
 
     /*!
       Get Data in real text.

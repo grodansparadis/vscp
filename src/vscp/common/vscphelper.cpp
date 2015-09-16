@@ -3608,7 +3608,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 	}
 	break;
 
-		// **** CLASS ****
+	// **** CLASS ****
 	case VSCP_CLASS1_INFORMATION:
 
 		switch (pEvent->vscp_type) {
@@ -3933,13 +3933,59 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 					pEvent->pdata[ 2+offset ],
 					pEvent->pdata[ 3+offset ]);
 		}
-			break;
-
-		} // switch type
 		break;
 
-	} // switch class
+   } // switch type  // VSCP_CLASS1_INFORMATION
+   break;
 
+    ///////////////////////////////////////////////////////////////////////////
+    //                        LEVEL II MEASUREMENT CLASSES
+    ///////////////////////////////////////////////////////////////////////////
+
+    // **** CLASS ****
+	case VSCP_CLASS2_MEASUREMENT_STR:
+    {
+        wxString strValue;
+        char buf[ 512 ];
+        
+        memset( buf, 0, sizeof( buf ) );
+        memcpy( buf, pEvent->pdata + 3, pEvent->sizeData-3 );
+        strValue = wxString::FromUTF8( buf );
+
+        strOutput += writeMeasurementValue( pEvent->vscp_type,
+                                            pEvent->pdata[ 3 ],
+                                            pEvent->pdata[ 0 ],
+                                            strValue );
+
+    } // measurement Class 1
+
+    strOutput += _( "\n" );
+    break;
+
+    // **** CLASS ****
+    case VSCP_CLASS2_MEASUREMENT_FLOAT:
+    {
+        wxString strValue;
+        char buf[ 512 ];
+
+        memset( buf, 0, sizeof( buf ) );
+        memcpy( buf, pEvent->pdata + 4, 8 );    // Double
+        wxUINT64_SWAP_ON_LE( buf );             // Take care of byte order
+        strValue = wxString::FromDouble( *( ( double * )buf ) );
+        strValue = _("[double] = ") + strValue;
+
+        strOutput += writeMeasurementValue( pEvent->vscp_type,
+                                            pEvent->pdata[ 3 ],
+                                            pEvent->pdata[ 0 ],
+                                            strValue );
+
+    } // measurement Class 1
+
+    strOutput += _( "\n" );
+    break;
+
+    } // class switch
+    
 	return strOutput;
 
 }

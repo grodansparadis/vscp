@@ -3472,8 +3472,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
                                                     keypairs[_("VARIABLE")], 
                                                     keypairs[ _( "TYPE" ) ],
                                                     keypairs[ _( "VALUE" ) ],
-                                                    keypairs[ _( "PERISTENT" ) ],
-                                                    keypairs[ _( "NOTE" ) ] );
+                                                    keypairs[ _( "PERISTENT" ) ]  );
 		}
 		else {
 			webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
@@ -5149,8 +5148,7 @@ VSCPWebServerThread::webserv_rest_doCreateVariable( struct mg_connection *conn,
                                                         wxString& strVariable,
                                                         wxString& strType,
                                                         wxString& strValue,
-                                                        wxString& strPersistent,
-                                                        wxString& strNote )
+                                                        wxString& strPersistent )
 {
     int type = VSCP_DAEMON_VARIABLE_CODE_STRING;
     bool bPersistence = false;
@@ -5299,14 +5297,14 @@ VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *conn
             pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
             pEvent->vscp_type = vscptype;
             pEvent->timestamp = 0; 
-            pEvent->sizeData = 13;
+            pEvent->sizeData = 12;
 
             data[ 0 ] = sensoridx;
             data[ 1 ] = zone;
             data[ 2 ] = subzone;
             data[ 3 ] = unit;
-            data[ 4 ] = sensoridx;
-            memcpy( data + 5, (char *)&value, 8 ); // copy in double
+            
+            memcpy( data + 4, (uint8_t *)&value, 8 ); // copy in double
             wxUINT64_SWAP_ON_LE( data + 5 );
             // Copy in data
             pEvent->pdata = new uint8_t[5+8];

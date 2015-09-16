@@ -194,10 +194,9 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
 
 				// Send welcome message
 				wxString str = _(MSG_WELCOME);
-				str += _("+OK Version: ");
+				str += _("Version: ");
 				str += _(VSCPD_DISPLAY_VERSION);
 				str += _("\r\n");
-				str += _("+OK ");
 				str += _(VSCPD_COPYRIGHT);
 				str += _("\r\n");
 				str += _(MSG_OK);

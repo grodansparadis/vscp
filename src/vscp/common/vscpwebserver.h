@@ -390,7 +390,6 @@ public:
         @param strType Type of variable to create. Can be given on text or numerical form.
         @param strValue Value of variable to create
         @param strPersistent Should be set to "true" if variable should be persistent
-        @param strNote Note for variable
 		@return MG_TRUE on success or MG_FALSE on failure.
 	*/
 	int
@@ -400,8 +399,7 @@ public:
 												wxString& strVariable,
                                                 wxString& strType,
                                                 wxString& strValue,
-                                                wxString& strPersistent,
-                                                wxString& strNote );
+                                                wxString& strPersistent );
 
 	/*!
 		webserv_rest_doWriteVariable - Write a variable value

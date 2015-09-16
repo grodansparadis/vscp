@@ -1465,10 +1465,10 @@ void frmVSCPSession::fillRxHtmlInfo(VscpRXObj *pRecord)
 
     // Class
     wrkstr = _("");
-    if (g_Config.m_UseSymbolicNames) {
+    if ( g_Config.m_UseSymbolicNames ) {
         wxString strClass =
                 g_vscpinfo.getClassDescription(pRecord->m_pEvent->vscp_class);
-        if (0 == strClass.Length()) strClass = _("Unknown class");
+        if ( 0 == strClass.Length() ) strClass = _("Unknown class");
         wrkstr = wxString::Format(_("%s <br><tt>0x%04X, %d</tt>"),
                 strClass.c_str(),
                 pRecord->m_pEvent->vscp_class,

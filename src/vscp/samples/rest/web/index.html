@@ -594,14 +594,64 @@
 			var txtVariableValue = window.prompt("Value:","This is a new string");
 			var txtVariableType = window.prompt("Type:","string");
 			var txtVariableValue = window.prompt("Persistent (true/false):","false");
-			var txtVariableNote = window.prompt("Note:","");
 			
 			if ( VscpSessionKey.length > 0 ) {	
 				$.ajax({
 					url: VscpServer + '/vscp/rest?vscpsession=' + VscpSessionKey + 
-							'&format=jsonp&op=writevar&variable=' + txtVariableName +
+							'&format=jsonp&op=createvar&variable=' + txtVariableName +
 							'&value=' + txtVariableValue +
 							'&type=' + txtVariableValue,
+					type : "GET",
+					jsonpCallback: 'handler',
+					cache: true,
+					dataType: 'jsonp',
+					success: function(response) {
+						// response will be a javascript
+						// array of objects
+						console.log("-----------------------------------------------------------");
+						console.log("                     do_createVariable");
+						console.log("-----------------------------------------------------------");
+						console.log("Success = " + response.success );
+						console.log("Code = " + response.code );
+						console.log("Message = " + response.message );
+						console.log("Description = " + response.description );
+						console.log("Info = " + response.info );
+					
+						if ( response.success ) {
+							$("#events").html( "OK Variable written" );
+						}					
+					
+					},
+					error: function( xhr, status, error ) {
+						console.log( "Close:" + error + " Status:" + status );
+					}
+				});
+			}
+			else {
+				alert("Interface is not open!");
+			}
+
+		};
+		
+		///////////////////////////////////////////////////////////////////////
+		// do_sendMeasurement
+		//
+		
+		var do_sendMeasurement = function() {
+			
+			var txtValue = window.prompt("Send CLASS2.MEASUREMENT_FLOAT. Type=6 (temperature) i degrees Celsius:","23.98");
+			
+			if ( VscpSessionKey.length > 0 ) {	
+				$.ajax({
+					url: VscpServer + '/vscp/rest?vscpsession=' + VscpSessionKey + 
+							'&format=jsonp&op=measurement&value=' + txtValue +
+							'&guid=""' + 		// GUID (use GUID of interface)
+							'&type=6' + 		// Temperature
+							'&level=2' +		// Level II
+							'&sensoridx=2' +	// Sensor number 2
+							'&unit=1' +			// Unit = 1 Degrees Celsius
+							'&zone=22' +		// Zone = 22
+							'&subzone=33',		// Sub Zone = 33
 					type : "GET",
 					jsonpCallback: 'handler',
 					cache: true,
@@ -679,6 +729,7 @@
 		<a href="#" onclick="do_createVariable();" >Create variable</a> |
 		<a href="#" onclick="do_readVariable();" >Read variable</a> |
 		<a href="#" onclick="do_writeVariable();" >Write variable</a> |
+		<a href="#" onclick="do_createVariable();" >Create variable</a> |
 		<a href="#" onclick="do_sendMeasurement();" >Send measurement</a> |
 		<a href="#" onclick="do_getTable();" >Get table</a>
 		

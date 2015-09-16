@@ -541,7 +541,7 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
     
     wxLogDebug( _("Successful log in to VSCP server") );
     
-    wxSleep( 1 );
+    //wxSleep( 1 );
   
     return VSCP_ERROR_SUCCESS;  
 }
