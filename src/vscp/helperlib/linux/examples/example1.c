@@ -2,7 +2,7 @@
 //
 
 #include "stdio.h"
-#include "../../vscphelperlib.h"
+#include "vscphelperlib.h"
 
 
 int main(int argc, char* argv[])
