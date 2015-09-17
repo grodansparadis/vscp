@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
 		if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_getVersion( handle, &v1, &v2, &v3 ) ) ) {
 			printf( "----------------------------------------------------------------\n" );
 			printf( "Command success: vscphlp_getVersion\n" );
-			printf( "Version for VSCP daemon is %d.%d.%d\n\n", v1,v2,v3 );
+			printf( "Version for VSCP daemon is %d.%d.%d\n", v1,v2,v3 );
 			printf( "----------------------------------------------------------------\n" );
 		}
 		else {
