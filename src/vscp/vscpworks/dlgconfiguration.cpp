@@ -372,11 +372,11 @@ void dlgConfiguration::CreateControls()
 
     m_SpinCtrlsleepAfterCommand = new wxSpinCtrl;
     m_SpinCtrlsleepAfterCommand->Create( itemPanelCommunication, ID_SPINCTRL, wxT( "1" ), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 10, 3 );
-    itemGridSizerCommunication->Add( m_SpinCtrlsleepAfterCommand, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
+    itemBoxSizerTextSleepAfterCommand->Add( m_SpinCtrlsleepAfterCommand, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
 
 
 
-    // -- Numer of retries
+    // -- Number of retries
 
     wxStaticText* itemStaticTextTCPIPRetries = new wxStaticText;
     itemStaticTextTCPIPRetries->Create( itemPanelCommunication, wxID_STATIC, _("Max number of register read/write retries :"), wxDefaultPosition, wxDefaultSize, 0 );

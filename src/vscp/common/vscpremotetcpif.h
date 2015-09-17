@@ -64,9 +64,9 @@
         Default response timeout for communication with the
         tcp/ip interface of the daemon in seconds
  */
-#define TCPIP_DEFAULT_RESPONSE_TIMEOUT		        3
+#define TCPIP_DEFAULT_RESPONSE_TIMEOUT		    3
 
-#define TCPIP_DEFAULT_AFTER_COMMAND_SLEEP               200
+#define TCPIP_DEFAULT_AFTER_COMMAND_SLEEP       200
 
 // Default values for read/write register functions
 // used in device config and scan.
@@ -78,14 +78,14 @@
         \def TCPIP_DLL_VERSION
         Pseudo version string
  */
-#define TCPIP_DLL_VERSION				0x00000004
+#define TCPIP_DLL_VERSION				        0x00000005
 /*! 
         \def TCPIP_VENDOR_STRING
         Pseudo vendor string
  */
-#define TCPIP_VENDOR_STRING	  			"Paradise of the Frog AB, Sweden"
+#define TCPIP_VENDOR_STRING	  			        "Paradise of the Frog AB, Sweden"
 
-#define DRIVER_INFO_STRING	  			""
+#define DRIVER_INFO_STRING	  			        ""
 
 /*!
     Use this macro for unused function parameters.

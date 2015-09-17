@@ -126,6 +126,25 @@ extern "C" int vscphlp_setResponseTimeout(long handle,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// vscphlp_setAfterCommandSleep
+//
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_setAfterCommandSleep( long handle,
+                                                         unsigned short sleeptime )
+#else
+extern "C" int vscphlp_setAfterCommandSleep( long handle,
+                                           unsigned short timeout )
+#endif
+{
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+
+    pvscpif->setAfterCommandSleep( sleeptime );
+
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // vscphlp_isConnected
 //
 #ifdef WIN32
