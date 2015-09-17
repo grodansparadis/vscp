@@ -483,29 +483,7 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
 		wxMilliSleep( 500 );
 		return VSCP_ERROR_TIMEOUT;
 	}
-	
-	// Wake up 
-	//ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
-    //            "\r\n",
-    //            2 ); 
-	
-    // Wait for connection
-    /*long start = wxGetUTCTime();
-    while ( !(m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections->flags & NSF_USER_1 ) ) {
-        //if ( checkReturnValue() ) break;
-        if ( ( wxGetUTCTime() - start ) > (30 * m_responseTimeOut) ) {
-            m_pClientTcpIpWorkerThread->m_bRun = false;
-            wxLogDebug( _("Timout: No response from ") + strHostname );
-			wxString strLog = wxString::Format(_("diff = %ld"), ( wxGetUTCTime() - start ) );
-			wxLogDebug( strLog );
-            m_pClientTcpIpWorkerThread->m_bRun = false;
-            return VSCP_ERROR_TIMEOUT;
-        }
-		
-        wxMilliSleep( 50 );
-
-    }*/
-    
+	    
     wxLogDebug( _("Checking server response") );
 	
 	bool bFound = false;
@@ -515,25 +493,10 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
 			bFound = true;
 			break;
 		}
-		//ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
-        //        "\r\n",
-        //        2 ); 
+
 		wxLogDebug( _("Still waiting... %d"), i );
 	}
 	
-    // The server should reply "+OK - Success"
-/*    bool bFound = false;
-    m_mutexArray.Lock();
-    for ( uint32_t i=0; i<m_inputStrArray.Count(); i++ ) {
-        if ( wxNOT_FOUND != m_inputStrArray[i].Find(_("+OK - Success")) ) {
-            wxLogDebug( _("Successfully connected to ") + strHostname );
-            bFound = true;
-            break;
-        }
-    }
-    m_inputStrArray.Clear();
-    m_mutexArray.Unlock();
-*/
     if ( !bFound ) {
         m_pClientTcpIpWorkerThread->m_bRun = false;
         wxLogDebug( _("No +OK found ") + strHostname );
@@ -560,8 +523,6 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
     wxLogDebug( _("Password OK") );
     
     wxLogDebug( _("Successful log in to VSCP server") );
-    
-    //wxMilliSleep( 200 );
   
     return VSCP_ERROR_SUCCESS;  
 }
