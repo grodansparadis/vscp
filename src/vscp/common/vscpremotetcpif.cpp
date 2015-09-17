@@ -221,12 +221,12 @@ void *clientTcpIpWorkerThread::Entry()
     }
 	
 	wxLogDebug( _("clientTcpIpWorkerThread: Before loop.") );
-	//wxSleep( 1 );
 		
     // Event loop
     while ( !TestDestroy() && m_bRun ) {
-        ns_mgr_poll( &m_mgrTcpIpConnection, 50 );
-		Yield();
+        ns_mgr_poll( &m_mgrTcpIpConnection, 10 );
+		//Yield();
+        wxMilliSleep( 10 );
     }
 
     // Free resources
@@ -257,6 +257,7 @@ VscpRemoteTcpIf::VscpRemoteTcpIf()
     m_pClientTcpIpWorkerThread = NULL;
     m_bModeReceiveLoop = false;
     m_responseTimeOut = TCPIP_DEFAULT_RESPONSE_TIMEOUT;
+    m_afterCommandSleep = TCPIP_DEFAULT_AFTER_COMMAND_SLEEP;
     m_psemInputArray = new wxSemaphore( 0, 1 ); // not signaled, max=1
 
     // Init. register read parameters
@@ -280,6 +281,14 @@ bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
 {
     int last = 0;   // last read pos in array
     wxString strReply;
+    
+    /*
+    wxLogDebug( _("------------------------------------------------------------") );
+    wxLogDebug( _("checkReturnValue:  Queue before  %u"), m_responseTimeOut );
+    for ( uint16_t i=0; i<m_inputStrArray.Count(); i++) {
+		wxLogDebug( "***** {" + m_inputStrArray[ i ] + "} *****" );
+	}
+    wxLogDebug( _("------------------------------------------------------------") );*/
 
     if ( bClear ) doClrInputQueue();
 
@@ -307,7 +316,8 @@ bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
 
         }
 
-        wxMilliSleep( 50 );
+        // Give the server some time to deliver the data
+        wxMilliSleep( m_afterCommandSleep );
 
     }
 
@@ -324,6 +334,7 @@ int VscpRemoteTcpIf::doCommand( wxString& cmd )
 
     wxLogDebug( _("doCommand: ") + cmd );
         
+    doClrInputQueue();    
     if ( cmd.Length() != ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
                                   cmd.mbc_str(),
                                   cmd.Length() ) ) {
@@ -331,9 +342,18 @@ int VscpRemoteTcpIf::doCommand( wxString& cmd )
         status = VSCP_ERROR_ERROR;
     }
     
-    wxMilliSleep( 10 );
+    // Give the server some time to deliver data
+    //wxMilliSleep( m_afterCommandSleep  );
     
-    if ( !checkReturnValue( true ) ) {
+    /*
+    wxLogDebug( _("------------------------------------------------------------") );
+    wxLogDebug( _("After command  %u"), m_responseTimeOut );
+    for ( uint16_t i=0; i<m_inputStrArray.Count(); i++) {
+		wxLogDebug( "***** {" + m_inputStrArray[ i ] + "} *****" );
+	}
+    wxLogDebug( _("------------------------------------------------------------") );*/
+    
+    if ( !checkReturnValue( false ) ) {
         wxLogDebug( _("doCommand: checkReturnValue failed") );
         status = VSCP_ERROR_ERROR;
     }
@@ -541,7 +561,7 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
     
     wxLogDebug( _("Successful log in to VSCP server") );
     
-    //wxSleep( 1 );
+    //wxMilliSleep( 200 );
   
     return VSCP_ERROR_SUCCESS;  
 }
