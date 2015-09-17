@@ -3977,7 +3977,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 #if ( wxMAJOR_VERSION >= 3 )
         strValue = wxString::FromDouble( *( ( double * )buf ) );
 #else
-        strvalue = wxString::Fromat(_("%f"), *( ( double * )buf ) );
+        strValue = wxString::Format(_("%f"), *( ( double * )buf ) );
 #endif
         strValue = _("[double] = ") + strValue;
 
