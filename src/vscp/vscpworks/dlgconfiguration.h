@@ -150,14 +150,15 @@ public:
     wxCheckBox* m_checkConfirmDeletes;
     wxChoice* m_comboNumericalBase;
     
-    wxSpinCtrl* m_maxRetries;
-    wxSpinCtrl* m_readTimeout;
-    wxSpinCtrl* m_totalTimeout;
+    wxSpinCtrl* m_SpinCtrlmaxRetries;
+    wxSpinCtrl* m_SpinCtrlreadTimeout;
+    wxSpinCtrl* m_SpinCtrltotalTimeout;
     
-    wxSpinCtrl* m_maxTCPIPResponse;
-    wxSpinCtrl* m_maxTCPIPRetries;
-    wxSpinCtrl* m_tcpipReadTimeout;
-    wxSpinCtrl* m_tcpipTotalTimeout;
+    wxSpinCtrl* m_SpinCtrlResponseTimeout;
+    wxSpinCtrl* m_SpinCtrlsleepAfterCommand;
+    wxSpinCtrl* m_SpinCtrlmaxTCPIPRetries;
+    wxSpinCtrl* m_SpinCtrltcpipReadTimeout;
+    wxSpinCtrl* m_SpinCtrltcpipTotalTimeout;
 
     wxCheckBox* m_ChkAutoScroll;
     wxCheckBox* m_chkPyjamasLook;

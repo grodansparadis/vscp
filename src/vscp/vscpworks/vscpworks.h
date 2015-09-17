@@ -123,6 +123,7 @@
 #define VSCP_CANAL_MAX_TRIES                                3
 
 #define VSCPWORKS_TCPIP_DEFAULT_RESPONSE_TIMEOUT		    3
+#define VSCPWORKS_TCPIP_DEFAULT_SLEEP_AFTER_COMMAND         200
 #define VSCPWORKS_TCPIP_REGISTER_READ_RESEND_TIMEOUT		2000
 #define VSCPWORKS_TCPIP_REGISTER_READ_ERROR_TIMEOUT		    6000
 #define VSCPWORKS_TCPIP_REGISTER_READ_MAX_TRIES			    3
@@ -264,7 +265,8 @@ typedef struct {
     uint32_t m_CANALRegErrorTimeout;	        // Timeout before register read is considered and error
 
     // TCP/IP communication settings
-    uint32_t m_TCPIPResponseTimeout;            // General repons time in seconds (for all communiction)
+    uint32_t m_TCPIP_ResponseTimeout;           // General repons time in seconds (for all communiction)
+    uint32_t m_TCPIP_SleepAfterCommand;         // Wait after a command has been sent
     uint8_t	m_TCPIPRegMaxRetries;		        // Max number of retries to read a register.
     uint32_t m_TCPIPRegResendTimeout;	        // Timeout before register read retries
     uint32_t m_TCPIPRegErrorTimeout;	        // Timeout before register read is considered and error

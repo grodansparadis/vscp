@@ -145,8 +145,8 @@ void dlgConfiguration::Init()
     m_comboLogLevel = NULL;
     m_checkConfirmDeletes = NULL;
     m_comboNumericalBase = NULL;
-    m_maxRetries = NULL;
-    m_readTimeout = NULL;
+    m_SpinCtrlmaxRetries = NULL;
+    m_SpinCtrlreadTimeout = NULL;
     m_ChkAutoScroll = NULL;
     m_chkPyjamasLook = NULL;
     m_chkUseSymbols = NULL;
@@ -301,9 +301,9 @@ void dlgConfiguration::CreateControls()
     wxBoxSizer* itemBoxSizerRetries = new wxBoxSizer(wxHORIZONTAL);
     itemGridSizerCommunication->Add(itemBoxSizerRetries, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-    m_maxRetries = new wxSpinCtrl;
-    m_maxRetries->Create( itemPanelCommunication, ID_SPINCTRL, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 10, 1 );
-    itemBoxSizerRetries->Add( m_maxRetries, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    m_SpinCtrlmaxRetries = new wxSpinCtrl;
+    m_SpinCtrlmaxRetries->Create( itemPanelCommunication, ID_SPINCTRL, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 10, 1 );
+    itemBoxSizerRetries->Add( m_SpinCtrlmaxRetries, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     // -- Resend timeout
 
@@ -314,9 +314,9 @@ void dlgConfiguration::CreateControls()
     wxBoxSizer* itemBoxSizerResend = new wxBoxSizer(wxHORIZONTAL);
     itemGridSizerCommunication->Add(itemBoxSizerResend, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-    m_readTimeout = new wxSpinCtrl;
-    m_readTimeout->Create( itemPanelCommunication, ID_SPINCTRL1, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 100, 10000, 1000 );
-    itemBoxSizerResend->Add(m_readTimeout, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    m_SpinCtrlreadTimeout = new wxSpinCtrl;
+    m_SpinCtrlreadTimeout->Create( itemPanelCommunication, ID_SPINCTRL1, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 100, 10000, 1000 );
+    itemBoxSizerResend->Add(m_SpinCtrlreadTimeout, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     // -- Total timeout
 
@@ -327,9 +327,9 @@ void dlgConfiguration::CreateControls()
     wxBoxSizer* itemBoxSizerTotal = new wxBoxSizer(wxHORIZONTAL);
     itemGridSizerCommunication->Add(itemBoxSizerTotal, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
     
-    m_totalTimeout = new wxSpinCtrl;
-    m_totalTimeout->Create( itemPanelCommunication, ID_SPINCTRL1, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1000, 20000, 1000 );
-    itemBoxSizerTotal->Add(m_totalTimeout, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    m_SpinCtrltotalTimeout = new wxSpinCtrl;
+    m_SpinCtrltotalTimeout->Create( itemPanelCommunication, ID_SPINCTRL1, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1000, 20000, 1000 );
+    itemBoxSizerTotal->Add(m_SpinCtrltotalTimeout, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     // -------------------------------------------------------------------------
 
@@ -350,7 +350,6 @@ void dlgConfiguration::CreateControls()
 
 
     // -- TCP/IP - General resend timout in seconds
-
     wxStaticText* itemStaticTextTCPIPResponse = new wxStaticText;
     itemStaticTextTCPIPResponse->Create( itemPanelCommunication, wxID_STATIC, _("Command respons timout in seconds :"), wxDefaultPosition, wxDefaultSize, 0 );
     itemGridSizerCommunication->Add( itemStaticTextTCPIPResponse, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
@@ -358,9 +357,24 @@ void dlgConfiguration::CreateControls()
     wxBoxSizer* itemBoxSizerTCPIPResponse = new wxBoxSizer(wxHORIZONTAL);
     itemGridSizerCommunication->Add( itemBoxSizerTCPIPResponse, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
     
-    m_maxTCPIPResponse = new wxSpinCtrl;
-    m_maxTCPIPResponse->Create( itemPanelCommunication, ID_SPINCTRL, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 10, 3 );
-    itemBoxSizerTCPIPResponse->Add( m_maxTCPIPResponse, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+    m_SpinCtrlResponseTimeout = new wxSpinCtrl;
+    m_SpinCtrlResponseTimeout->Create( itemPanelCommunication, ID_SPINCTRL, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 10, 3 );
+    itemBoxSizerTCPIPResponse->Add( m_SpinCtrlResponseTimeout, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+
+
+    // -- TCP/IP - Sleep after command in milliseconds
+    wxStaticText* itemStaticTextSleepAfterCommand = new wxStaticText;
+    itemStaticTextSleepAfterCommand->Create( itemPanelCommunication, wxID_STATIC, _( "Sleep after command (milliseconds) :" ), wxDefaultPosition, wxDefaultSize, 0 );
+    itemGridSizerCommunication->Add( itemStaticTextSleepAfterCommand, 0, wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL | wxALL, 1 );
+
+    wxBoxSizer* itemBoxSizerTextSleepAfterCommand = new wxBoxSizer( wxHORIZONTAL );
+    itemGridSizerCommunication->Add( itemBoxSizerTextSleepAfterCommand, 0, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxALL, 1 );
+
+    m_SpinCtrlsleepAfterCommand = new wxSpinCtrl;
+    m_SpinCtrlsleepAfterCommand->Create( itemPanelCommunication, ID_SPINCTRL, wxT( "1" ), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 10, 3 );
+    itemGridSizerCommunication->Add( m_SpinCtrlsleepAfterCommand, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
+
+
 
     // -- Numer of retries
 
@@ -371,9 +385,9 @@ void dlgConfiguration::CreateControls()
     wxBoxSizer* itemBoxSizerTCPIPRetries = new wxBoxSizer(wxHORIZONTAL);
     itemGridSizerCommunication->Add(itemBoxSizerTCPIPRetries, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-    m_maxTCPIPRetries = new wxSpinCtrl;
-    m_maxTCPIPRetries->Create( itemPanelCommunication, ID_SPINCTRL, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 10, 3 );
-    itemBoxSizerTCPIPRetries->Add(m_maxTCPIPRetries, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    m_SpinCtrlmaxTCPIPRetries = new wxSpinCtrl;
+    m_SpinCtrlmaxTCPIPRetries->Create( itemPanelCommunication, ID_SPINCTRL, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 10, 3 );
+    itemBoxSizerTCPIPRetries->Add(m_SpinCtrlmaxTCPIPRetries, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     // -- Resend timeout
 
@@ -384,9 +398,9 @@ void dlgConfiguration::CreateControls()
     wxBoxSizer* itemBoxSizerTCPIPResend = new wxBoxSizer(wxHORIZONTAL);
     itemGridSizerCommunication->Add(itemBoxSizerTCPIPResend, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-    m_tcpipReadTimeout = new wxSpinCtrl;
-    m_tcpipReadTimeout->Create( itemPanelCommunication, ID_SPINCTRL1, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 100, 10000, 10000 );
-    itemBoxSizerTCPIPResend->Add(m_tcpipReadTimeout, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    m_SpinCtrltcpipReadTimeout = new wxSpinCtrl;
+    m_SpinCtrltcpipReadTimeout->Create( itemPanelCommunication, ID_SPINCTRL1, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 100, 10000, 10000 );
+    itemBoxSizerTCPIPResend->Add(m_SpinCtrltcpipReadTimeout, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     // -- Total timeout
 
@@ -397,9 +411,9 @@ void dlgConfiguration::CreateControls()
     wxBoxSizer* itemBoxSizertcpipTotal = new wxBoxSizer(wxHORIZONTAL);
     itemGridSizerCommunication->Add(itemBoxSizertcpipTotal, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
     
-    m_tcpipTotalTimeout = new wxSpinCtrl;
-    m_tcpipTotalTimeout->Create( itemPanelCommunication, ID_SPINCTRL1, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1000, 20000, 3000 );
-    itemBoxSizertcpipTotal->Add(m_tcpipTotalTimeout, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    m_SpinCtrltcpipTotalTimeout = new wxSpinCtrl;
+    m_SpinCtrltcpipTotalTimeout->Create( itemPanelCommunication, ID_SPINCTRL1, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1000, 20000, 3000 );
+    itemBoxSizertcpipTotal->Add(m_SpinCtrltcpipTotalTimeout, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     // ------------------------------------------------------------------------
 
@@ -775,15 +789,16 @@ void dlgConfiguration::CreateControls()
         g_Config.m_VscpRcvFrameTxBgColour.Blue()));
 
     // CANAL Communication parameters
-	m_maxRetries->SetValue( g_Config.m_CANALRegMaxRetries );
-	m_readTimeout->SetValue( g_Config.m_CANALRegResendTimeout );
-    m_totalTimeout->SetValue( g_Config.m_CANALRegErrorTimeout );
+	m_SpinCtrlmaxRetries->SetValue( g_Config.m_CANALRegMaxRetries );
+	m_SpinCtrlreadTimeout->SetValue( g_Config.m_CANALRegResendTimeout );
+    m_SpinCtrltotalTimeout->SetValue( g_Config.m_CANALRegErrorTimeout );
 
     // TCP(P communication parameters
-    m_maxTCPIPResponse->SetValue( g_Config.m_TCPIPResponseTimeout );
-    m_maxTCPIPRetries->SetValue( g_Config.m_TCPIPRegMaxRetries );
-	m_tcpipReadTimeout->SetValue( g_Config.m_TCPIPRegResendTimeout );
-    m_tcpipTotalTimeout->SetValue( g_Config.m_TCPIPRegErrorTimeout );
+    m_SpinCtrlResponseTimeout->SetValue( g_Config.m_TCPIP_ResponseTimeout );
+    m_SpinCtrlsleepAfterCommand->SetValue( g_Config.m_TCPIP_SleepAfterCommand );
+    m_SpinCtrlmaxTCPIPRetries->SetValue( g_Config.m_TCPIPRegMaxRetries );
+	m_SpinCtrltcpipReadTimeout->SetValue( g_Config.m_TCPIPRegResendTimeout );
+    m_SpinCtrltcpipTotalTimeout->SetValue( g_Config.m_TCPIPRegErrorTimeout );
 
 	m_labelLogFile->SetLabel( g_Config.m_strPathLogFile );
 	m_checkEnableLogging->SetValue( g_Config.m_bEnableLog );
@@ -805,14 +820,15 @@ bool dlgConfiguration::getDialogData( bool bWriteToConfigFile )
     g_Config.m_VscpRcvFrameRxbPyamas = m_chkPyjamasLook->GetValue();	
     g_Config.m_UseSymbolicNames = m_chkUseSymbols->GetValue();
 	
-    g_Config.m_CANALRegMaxRetries = m_maxRetries->GetValue();
-    g_Config.m_CANALRegResendTimeout = m_readTimeout->GetValue();
-	g_Config.m_CANALRegErrorTimeout = m_totalTimeout->GetValue();
+    g_Config.m_CANALRegMaxRetries = m_SpinCtrlmaxRetries->GetValue();
+    g_Config.m_CANALRegResendTimeout = m_SpinCtrlreadTimeout->GetValue();
+	g_Config.m_CANALRegErrorTimeout = m_SpinCtrltotalTimeout->GetValue();
 
-    g_Config.m_TCPIPResponseTimeout = m_maxTCPIPResponse->GetValue();
-    g_Config.m_TCPIPRegMaxRetries = m_maxTCPIPRetries->GetValue();
-    g_Config.m_TCPIPRegResendTimeout = m_tcpipReadTimeout->GetValue();	       
-    g_Config.m_TCPIPRegErrorTimeout = m_tcpipTotalTimeout->GetValue();
+    g_Config.m_TCPIP_ResponseTimeout = m_SpinCtrlResponseTimeout->GetValue();
+    g_Config.m_TCPIP_SleepAfterCommand = m_SpinCtrlsleepAfterCommand->GetValue();
+    g_Config.m_TCPIPRegMaxRetries = m_SpinCtrlmaxTCPIPRetries->GetValue();
+    g_Config.m_TCPIPRegResendTimeout = m_SpinCtrltcpipReadTimeout->GetValue();
+    g_Config.m_TCPIPRegErrorTimeout = m_SpinCtrltcpipTotalTimeout->GetValue();
 
 	g_Config.m_logLevel = m_comboLogLevel->GetSelection();
 	g_Config.m_bEnableLog = m_checkEnableLogging->GetValue();

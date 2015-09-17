@@ -614,7 +614,8 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
                         subframe->m_csw.getTcpIpInterface()->setRegisterOperationTiming( g_Config.m_TCPIPRegMaxRetries,
                                                                                          g_Config.m_TCPIPRegResendTimeout,
                                                                                          g_Config.m_TCPIPRegErrorTimeout );
-                        subframe->m_csw.getTcpIpInterface()->setResponseTimeout( g_Config.m_TCPIPResponseTimeout );
+                        subframe->m_csw.getTcpIpInterface()->setResponseTimeout( g_Config.m_TCPIP_ResponseTimeout );
+                        subframe->m_csw.getTcpIpInterface()->setAfterCommandSleep( g_Config.m_TCPIP_SleepAfterCommand );
 
                         subframe->m_csw.setInterface( pBoth->m_pvscpif->m_strHost,
                                                         pBoth->m_pvscpif->m_strUser,
@@ -763,8 +764,8 @@ void frmMain::OnMenuitemScanClick( wxCommandEvent& event )
                         subframe->m_csw.getTcpIpInterface()->setRegisterOperationTiming( g_Config.m_TCPIPRegMaxRetries,
                                                                           g_Config.m_TCPIPRegResendTimeout,
                                                                           g_Config.m_TCPIPRegErrorTimeout );
-                        subframe->m_csw.getTcpIpInterface()->setResponseTimeout( g_Config.m_TCPIPResponseTimeout );
-
+                        subframe->m_csw.getTcpIpInterface()->setResponseTimeout( g_Config.m_TCPIP_ResponseTimeout );
+                        subframe->m_csw.getTcpIpInterface()->setAfterCommandSleep( g_Config.m_TCPIP_SleepAfterCommand );
                         
                         // Set information about interface we search on
                         str = _("Searching on interface: ");
@@ -819,7 +820,8 @@ void frmMain::OnMenuitemBootloaderWizardClick( wxCommandEvent& event )
     wizard->m_tcpip.setRegisterOperationTiming( g_Config.m_TCPIPRegMaxRetries,
                                                       g_Config.m_TCPIPRegResendTimeout,
                                                       g_Config.m_TCPIPRegErrorTimeout );
-    wizard->m_tcpip.setResponseTimeout( g_Config.m_TCPIPResponseTimeout );
+    wizard->m_tcpip.setResponseTimeout( g_Config.m_TCPIP_ResponseTimeout );
+    wizard->m_tcpip.setAfterCommandSleep( g_Config.m_TCPIP_SleepAfterCommand );
     
     // Go
     wizard->Run();

@@ -304,7 +304,8 @@ void VscpworksApp::Init()
     g_Config.m_CANALRegErrorTimeout = VSCP_CANAL_ERROR_TIMEOUT;
     g_Config.m_CANALRegMaxRetries = VSCP_CANAL_MAX_TRIES;
 
-    g_Config.m_TCPIPResponseTimeout = VSCPWORKS_TCPIP_DEFAULT_RESPONSE_TIMEOUT;
+    g_Config.m_TCPIP_ResponseTimeout = VSCPWORKS_TCPIP_DEFAULT_RESPONSE_TIMEOUT;
+    g_Config.m_TCPIP_SleepAfterCommand = VSCPWORKS_TCPIP_DEFAULT_SLEEP_AFTER_COMMAND;
     g_Config.m_TCPIPRegMaxRetries = VSCPWORKS_TCPIP_REGISTER_READ_MAX_TRIES;
     g_Config.m_TCPIPRegResendTimeout = VSCPWORKS_TCPIP_REGISTER_READ_RESEND_TIMEOUT;
     g_Config.m_TCPIPRegErrorTimeout = VSCPWORKS_TCPIP_REGISTER_READ_ERROR_TIMEOUT;
@@ -1691,9 +1692,18 @@ bool VscpworksApp::readConfiguration( void )
                 else if (subchild->GetName() == _("TCPIPResponseTimeout")) {
 
                     unsigned long val;
-                    g_Config.m_TCPIPResponseTimeout = VSCPWORKS_TCPIP_DEFAULT_RESPONSE_TIMEOUT;
+                    g_Config.m_TCPIP_ResponseTimeout = VSCPWORKS_TCPIP_DEFAULT_RESPONSE_TIMEOUT;
                     if ( subchild->GetNodeContent().ToULong( &val, 10 ) ) {
-                        g_Config.m_TCPIPResponseTimeout = val;
+                        g_Config.m_TCPIP_ResponseTimeout = val;
+                    }
+
+                }
+                else if ( subchild->GetName() == _( "TCPIPSleepAfterCommand" ) ) {
+
+                    unsigned long val;
+                    g_Config.m_TCPIP_SleepAfterCommand = VSCPWORKS_TCPIP_DEFAULT_SLEEP_AFTER_COMMAND;
+                    if ( subchild->GetNodeContent().ToULong( &val, 10 ) ) {
+                        g_Config.m_TCPIP_SleepAfterCommand = val;
                     }
 
                 }
@@ -2469,9 +2479,15 @@ bool VscpworksApp::writeConfiguration( void )
 
     // TCPIPResponseTimeout
     pFileStream->Write( "<TCPIPResponseTimeout>", strlen( "<TCPIPResponseTimeout>" ) );
-    buf.Printf( _( "%d" ), g_Config.m_TCPIPResponseTimeout );
+    buf.Printf( _( "%d" ), g_Config.m_TCPIP_ResponseTimeout );
     pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
     pFileStream->Write( "</TCPIPResponseTimeout>\n", strlen( "</TCPIPResponseTimeout>\n" ) );
+
+    // TCPIPResponseTimeout
+    pFileStream->Write( "<TCPIPSleepAfterCommand>", strlen( "<TCPIPSleepAfterCommand>" ) );
+    buf.Printf( _( "%d" ), g_Config.m_TCPIP_SleepAfterCommand );
+    pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+    pFileStream->Write( "</TCPIPSleepAfterCommand>\n", strlen( "</TCPIPSleepAfterCommand>\n" ) );
 
     // TCPIPReadMaxRetries
     pFileStream->Write( "<TCPIPReadMaxRetries>", strlen( "<TCPIPReadMaxRetries>" ) );
