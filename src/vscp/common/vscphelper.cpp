@@ -3974,7 +3974,11 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
         memset( buf, 0, sizeof( buf ) );
         memcpy( buf, pEvent->pdata + 4, 8 );    // Double
         wxUINT64_SWAP_ON_LE( buf );             // Take care of byte order
+#if ( wxMAJOR_VERSION >= 3 )
         strValue = wxString::FromDouble( *( ( double * )buf ) );
+#else
+        strvalue = wxString::Fromat(_("%f"), *( ( double * )buf ) );
+#endif
         strValue = _("[double] = ") + strValue;
 
         strOutput += writeMeasurementValue( pEvent->vscp_type,
