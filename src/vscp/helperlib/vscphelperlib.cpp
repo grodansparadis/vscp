@@ -133,7 +133,7 @@ extern "C" int WINAPI EXPORT vscphlp_setAfterCommandSleep( long handle,
                                                          unsigned short sleeptime )
 #else
 extern "C" int vscphlp_setAfterCommandSleep( long handle,
-                                           unsigned short timeout )
+                                           unsigned short sleeptime )
 #endif
 {
     VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );

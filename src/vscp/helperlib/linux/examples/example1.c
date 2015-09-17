@@ -15,6 +15,7 @@ int main(int argc, char* argv[])
     
     // New session
     handle = vscphlp_newSession();
+    vscphlp_setAfterCommandSleep( handle, 200 );
 
     if ( VSCP_ERROR_SUCCESS == vscphlp_open( handle, 
                  				"demo.vscp.org:9598",

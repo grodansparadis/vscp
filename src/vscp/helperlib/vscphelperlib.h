@@ -273,7 +273,6 @@ int vscphlp_receiveEventEx( long handle, vscpEventEx *pEvent );
 int vscphlp_blockingReceiveEvent( long handle, vscpEvent *pEvent );
 int vscphlp_blockingReceiveEventEx( long handle, vscpEventEx *pEvent );
 int vscphlp_enterReceiveLoop(const long handle);
-int vscphlp_quitReceiveLoop(const long handle);
 int vscphlp_isDataAvailable( long handle, unsigned int *pCount );
 int vscphlp_getStatus( long handle, VSCPStatus *pStatus );
 int vscphlp_getStatistics( long handle, VSCPStatistics *pStatistics );
