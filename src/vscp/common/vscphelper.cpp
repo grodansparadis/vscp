@@ -3957,6 +3957,9 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
                                             pEvent->pdata[ 0 ],
                                             strValue );
 
+        strOutput += _( "\n" ) + strOutput;
+        strOutput += wxString::Format( _( " Zone=%d Subzone=%d\n" ), pEvent->pdata[ 1 ], pEvent->pdata[ 2 ] );
+
     } // measurement Class 1
 
     strOutput += _( "\n" );
@@ -3978,6 +3981,8 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
                                             pEvent->pdata[ 3 ],
                                             pEvent->pdata[ 0 ],
                                             strValue );
+        strOutput += _("\n") + strOutput;
+        strOutput += wxString::Format( _(" Zone=%d Subzone=%d\n"), pEvent->pdata[ 1 ], pEvent->pdata[ 2 ] );
 
     } // measurement Class 1
 

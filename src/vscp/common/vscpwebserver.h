@@ -414,6 +414,7 @@ public:
 		@param strSensorIdx Sensor Index 
         @param strZone Zone to use
         @param strSubZone SubZone to use
+        @param eventFormat Can be string or float
 		@return MG_TRUE on success or MG_FALSE on failure.
 	*/
 	int
@@ -427,7 +428,8 @@ public:
 												wxString& strUnit,
 												wxString& strSensorIdx,
                                                 wxString& strZone,
-                                                wxString& strSubZone );
+                                                wxString& strSubZone,
+                                                wxString& strEventFormat );
 
 	/*!
 		webserv_rest_doWriteVariable - Write a variable value

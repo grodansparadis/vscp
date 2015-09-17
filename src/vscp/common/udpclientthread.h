@@ -33,8 +33,6 @@
 #include "controlobject.h"
 
 #define VSCP_TCP_MAX_CLIENTS                1024
-#define MSG_COPYRIGHT                       "+OK Copyright (c) 2000-2015, Grodans Paradis AB, http://www.grodansparadis.com\r\n"
-#define MSG_WELCOME                         "+OK Welcome to the VSCP daemon.\r\n"
 #define MSG_OK                              "+OK - Success.\r\n"
 #define MSG_GOODBY                          "+OK - Connection closed by client.\r\n"
 #define MSG_GOODBY2                         "+OK - Connection closed.\r\n"
