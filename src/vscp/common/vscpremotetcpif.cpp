@@ -317,7 +317,7 @@ bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
         }
 
         // Give the server some time to deliver the data
-        wxMilliSleep( m_afterCommandSleep );
+        wxMilliSleep( 200 + m_afterCommandSleep );
 
     }
 

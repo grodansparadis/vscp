@@ -66,7 +66,7 @@
  */
 #define TCPIP_DEFAULT_RESPONSE_TIMEOUT		    3
 
-#define TCPIP_DEFAULT_AFTER_COMMAND_SLEEP       200
+#define TCPIP_DEFAULT_AFTER_COMMAND_SLEEP       0
 
 // Default values for read/write register functions
 // used in device config and scan.
