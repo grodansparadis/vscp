@@ -79,7 +79,6 @@ uint8_t gdefaultGUID[] = {
 uint8_t gdeviceURL[] = "www.eurosource.se/vscpsim_001.xml";
 
 uint8_t gdefaultDM[] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
@@ -379,6 +378,8 @@ CSim::addEvent2SendQueue(const vscpEvent *pEvent)
 
 CWrkTread::CWrkTread()
 {
+    uint32_t index = 0;
+
 	m_pObj = NULL;
 
     vscp_clearVSCPFilter( &m_vscpfilter );  // Accept all events
@@ -400,7 +401,10 @@ CWrkTread::CWrkTread()
     m_registers[ SIM_USER_REG_CODING ] = SIM_DEFAULT_CODING;
     m_measurementClass = VSCP_CLASS1_MEASUREMENT;
     m_measurementType = VSCP_TYPE_MEASUREMENT_TEMPERATURE;
-    memcpy( m_registers + SIM_USER_REG_DECISION_MATRIX, gdefaultDM, 8 * SIM_DECISION_MATRIX_ROWS );
+    
+    for( index = 0; index < SIM_DECISION_MATRIX_ROWS; ++index ) {
+        memcpy( &m_registers[ SIM_USER_REG_DECISION_MATRIX + index * sizeof(gdefaultDM) ], gdefaultDM, sizeof(gdefaultDM) );
+    }
 
     // init standard regs
     m_registers[ VSCP_REG_FIRMWARE_MAJOR_VERSION ] = VSCP_DLL_VERSION_MAJOR;
