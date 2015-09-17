@@ -3225,6 +3225,10 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
         // url
         mg_get_var( conn, "url", buf, sizeof( buf ) );
         keypairs[ _( "URL" ) ] = wxString::FromAscii( buf );
+
+        // eventformat
+        mg_get_var( conn, "eventformat", buf, sizeof( buf ) );
+        keypairs[ _( "EVENTFORMAT" ) ] = wxString::FromAscii( buf );
     }
     else {
         // get parameters for get
@@ -3497,6 +3501,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 													keypairs[ _("UNIT") ],
 													keypairs[ _("SENSORIDX") ],
                                                     keypairs[ _( "ZONE" ) ],
+                                                    keypairs[ _( "SUBZONE" ) ],
                                                     keypairs[ _( "SUBZONE" ) ] );
 		}
 		else {
@@ -5216,7 +5221,8 @@ VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *conn
 													    wxString& strUnit,
 													    wxString& strSensorIdx,
                                                         wxString& strZone,
-                                                        wxString& strSubZone )
+                                                        wxString& strSubZone,
+                                                        wxString& strEventFormat )
 {
     if ( NULL != pSession ) {
 
@@ -5228,12 +5234,15 @@ VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *conn
         long sensoridx;
         long zone;
         long subzone;
+        long eventFormat = 0;    // float
         uint8_t data[ VSCP_MAX_DATA ];
         uint16_t sizeData;
 
         memset( guid, 0, 16 );
         vscp_getGuidFromStringToArray( guid, strGuid );
 
+        strValue.Trim();
+        strValue.Trim(false);
         strValue.ToDouble( &value );        // Measurement value
         strUnit.ToLong( &unit );            // Measurement unit
         strSensorIdx.ToLong( &sensoridx );  // Sensor indes
@@ -5248,6 +5257,13 @@ VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *conn
             level = 2;
         }
 
+        strEventFormat.Trim();
+        strEventFormat.Trim( false );
+        strEventFormat.MakeUpper();
+        if ( wxNOT_FOUND != strEventFormat.Find( _( "STRING" ) ) ) {
+            eventFormat = 1;
+        }
+
         // Range checks
         if ( 1 == level ) {
             if ( unit > 3 ) unit = 0;
@@ -5260,57 +5276,132 @@ VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *conn
         }
 
         if ( 1 == level ) {
-            if ( vscp_convertFloatToFloatEventData( data,
-                                                    &sizeData,
-                                                    value,
-                                                    unit,
-                                                    sensoridx ) ) {
-                if ( sizeData > 8 ) sizeData = 8;
-              
+            
+            if ( 0 == eventFormat ) {
+
+                // Floating point
+                if ( vscp_convertFloatToFloatEventData( data,
+                                                            &sizeData,
+                                                            value,
+                                                            unit,
+                                                            sensoridx ) ) {
+                    if ( sizeData > 8 ) sizeData = 8;
+
+                    vscpEvent *pEvent = new vscpEvent;
+                    if ( NULL == pEvent ) {
+                        webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_GENERAL_FAILURE );
+                        return MG_TRUE;
+                    }
+                    pEvent->pdata = NULL;
+
+                    pEvent->head = VSCP_PRIORITY_NORMAL;
+                    pEvent->timestamp = 0; // Let interface fill in
+                    memcpy( pEvent->GUID, guid, 16 );
+                    pEvent->sizeData = sizeData;
+                    if ( sizeData > 0 ) {
+                        pEvent->pdata = new uint8_t[ sizeData ];
+                        memcpy( pEvent->pdata, data, sizeData );
+                    }
+                    pEvent->vscp_class = VSCP_CLASS1_MEASUREMENT;
+                    pEvent->vscp_type = vscptype;
+
+                    webserv_rest_doSendEvent( conn, pSession, format, pEvent );
+
+                }
+                else {
+                    webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_GENERAL_FAILURE );
+                }
+            }
+            else {
+                // String
                 vscpEvent *pEvent = new vscpEvent;
+                if ( NULL == pEvent ) {
+                    webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_GENERAL_FAILURE );
+                    return MG_TRUE;
+                }
                 pEvent->pdata = NULL;
 
+                if ( vscp_makeStringMeasurementEvent( pEvent,
+                                                        value,
+                                                        unit,
+                                                        sensoridx ) ) {
+
+                }
+                else {
+                    webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_GENERAL_FAILURE );
+                }
+            }
+        }
+        else {  // Level II
+            if ( 0 == eventFormat ) {
+
+                // Floating point
+                vscpEvent *pEvent = new vscpEvent;
+                if ( NULL == pEvent ) {
+                    webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_GENERAL_FAILURE );
+                    return MG_TRUE;
+                }
+
+                pEvent->pdata = NULL;
+
+                pEvent->obid = 0;
                 pEvent->head = VSCP_PRIORITY_NORMAL;
                 pEvent->timestamp = 0; // Let interface fill in
                 memcpy( pEvent->GUID, guid, 16 );
-                pEvent->sizeData = sizeData;
-                if ( sizeData > 0 ) {
-                    pEvent->pdata = new uint8_t[ sizeData ];
-                    memcpy( pEvent->pdata, data, sizeData );
-                }
-                pEvent->vscp_class = VSCP_CLASS1_MEASUREMENT;
+                pEvent->head = 0;
+                pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
                 pEvent->vscp_type = vscptype;
+                pEvent->timestamp = 0;
+                pEvent->sizeData = 12;
+
+                data[ 0 ] = sensoridx;
+                data[ 1 ] = zone;
+                data[ 2 ] = subzone;
+                data[ 3 ] = unit;
+
+                memcpy( data + 4, ( uint8_t * )&value, 8 ); // copy in double
+                wxUINT64_SWAP_ON_LE( data + 4 );
+                // Copy in data
+                pEvent->pdata = new uint8_t[ 4 + 8 ];
+                if ( NULL == pEvent->pdata ) {
+                    webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_GENERAL_FAILURE );
+                    delete pEvent;
+                    return MG_TRUE;
+                }
+                memcpy( pEvent->pdata, data, 4 + 8 );
 
                 webserv_rest_doSendEvent( conn, pSession, format, pEvent );
-
             }
-        }
-        else {
-            
-            vscpEvent *pEvent = new vscpEvent;
-            pEvent->pdata = NULL;
+            else {
+                // String
+                vscpEvent *pEvent = new vscpEvent;
+                pEvent->pdata = NULL;
 
-            pEvent->head = VSCP_PRIORITY_NORMAL;
-            pEvent->timestamp = 0; // Let interface fill in
-            memcpy( pEvent->GUID, guid, 16 );
-            pEvent->head = 0;
-            pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
-            pEvent->vscp_type = vscptype;
-            pEvent->timestamp = 0; 
-            pEvent->sizeData = 12;
+                pEvent->obid = 0;
+                pEvent->head = VSCP_PRIORITY_NORMAL;
+                pEvent->timestamp = 0; // Let interface fill in
+                memcpy( pEvent->GUID, guid, 16 );
+                pEvent->head = 0;                
+                pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
+                pEvent->vscp_type = vscptype;
+                pEvent->timestamp = 0;
+                pEvent->sizeData = 12;
 
-            data[ 0 ] = sensoridx;
-            data[ 1 ] = zone;
-            data[ 2 ] = subzone;
-            data[ 3 ] = unit;
-            
-            memcpy( data + 4, (uint8_t *)&value, 8 ); // copy in double
-            wxUINT64_SWAP_ON_LE( data + 5 );
-            // Copy in data
-            pEvent->pdata = new uint8_t[5+8];
-            memcpy( pEvent->pdata, data, 5 + 8 );
-            
-            webserv_rest_doSendEvent( conn, pSession, format, pEvent );
+                data[ 0 ] = sensoridx;
+                data[ 1 ] = zone;
+                data[ 2 ] = subzone;
+                data[ 3 ] = unit;
+
+                pEvent->pdata = new uint8_t[ 4 + strValue.Length() ];
+                if ( NULL == pEvent->pdata ) {
+                    webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_GENERAL_FAILURE );
+                    delete pEvent;
+                    return MG_TRUE;
+                }
+                memcpy( data + 4, strValue.mbc_str(), strValue.Length() ); // copy in double
+
+                webserv_rest_doSendEvent( conn, pSession, format, pEvent );
+            }
         }
 
         webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_SUCCESS );
