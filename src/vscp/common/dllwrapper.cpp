@@ -521,7 +521,7 @@ int CDllWrapper::readLevel1Register( unsigned char nodeid,
     canalSendEvent.data[ 0 ] = nodeid;                  // Node to read from
     canalSendEvent.data[ 1 ] = ( page >> 8 ) & 0xff;    // MSB of page
     canalSendEvent.data[ 2 ] = page & 0xff;             // LSB of page
-    canalSendEvent.data[ 3 ] = reg;                     // Register to write
+    canalSendEvent.data[ 3 ] = reg;                     // Register to read
     canalSendEvent.data[ 4 ] = 1;                       // Read one register
 
     doCmdSend( &canalSendEvent );
