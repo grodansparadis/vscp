@@ -292,6 +292,9 @@ enum {
 	REST_ERROR_CODE_VARIABLE_NOT_FOUND,
     REST_ERROR_CODE_VARIABLE_NOT_CREATED,
     REST_ERROR_CODE_NO_ROOM,
+    REST_ERROR_CODE_TABLE_NOT_FOUND,
+    REST_ERROR_CODE_TABLE_NO_DATA,
+    REST_ERROR_CODE_TABLE_RANGE,
 };
 
 // REST formats
@@ -328,6 +331,9 @@ enum {
 #define REST_PLAIN_ERROR_VARIABLE_NOT_FOUND		"0 -7 Variable not found \r\n\r\nVariable could not be found.\r\n"
 #define REST_PLAIN_ERROR_VARIABLE_NOT_CREATED	"0 -8 Variable could not be created \r\n\r\nVariable could not be created.\r\n"
 #define REST_PLAIN_ERROR_NO_ROOM	            "0 -9 No room in queue \r\n\r\nNo room in queue.\r\n"
+#define REST_PLAIN_ERROR_TABLE_NOT_FOUND	    "0 -10 Table does not exist \r\n\r\nA table with that name does not exist.\r\n"
+#define REST_PLAIN_ERROR_TABLE_NO_DATA	        "0 -11 No data \r\n\r\nThe table exist but contains no data (in that range).\r\n"
+#define REST_PLAIN_ERROR_TABLE_RANGE	        "0 -12 Range error \r\n\r\nThe end date must be later than the start date.\r\n"
 
 #define REST_CSV_ERROR_SUCCESS					"success-code,error-code,message,description\r\n1,1,Success,Success."
 #define REST_CSV_ERROR_GENERAL_FAILURE			"success-code,error-code,message,description\r\n0,-1,Failure,General failure."
@@ -338,7 +344,10 @@ enum {
 #define REST_CSV_ERROR_INPUT_QUEUE_EMPTY		"success-code,error-code,message,description\r\n0,-6,Input queue empty,The input queue is empty."
 #define REST_CSV_ERROR_VARIABLE_NOT_FOUND		"success-code,error-code,message,description\r\n0,-7,Variable not found,Variable could not be found."
 #define REST_CSV_ERROR_VARIABLE_NOT_CREATED		"success-code,error-code,message,description\r\n0,-8,Variable could not be created,Variable could not be created."
-#define REST_CSV_ERROR_NO_ROOM		                "success-code,error-code,message,description\r\n0,-9,No room in queue,No room in queue."
+#define REST_CSV_ERROR_NO_ROOM		            "success-code,error-code,message,description\r\n0,-9,No room in queue,No room in queue."
+#define REST_CSV_ERROR_TABLE_NOT_FOUND		    "success-code,error-code,message,description\r\n0,-10,Table does not exist,A table with that name does not exist."
+#define REST_CSV_ERROR_TABLE_NO_DATA		    "success-code,error-code,message,description\r\n0,-11,No data ,The table exist but contains no data (in that range)."
+#define REST_CSV_ERROR_TABLE_RANGE		        "success-code,error-code,message,description\r\n0,-12,Range error ,The end date must be later than the start date."
 
 #define XML_HEADER	"<?xml version = \"1.0\" encoding = \"UTF-8\" ?>"
 #define REST_XML_ERROR_SUCCESS					"<vscp-rest success = \"true\" code = \"1\" message = \"Success\" description = \"Success.\" />"
@@ -350,7 +359,10 @@ enum {
 #define REST_XML_ERROR_INPUT_QUEUE_EMPTY		"<vscp-rest success = \"false\" code = \"-6\" message = \"Input queue empty\" description = \"The input queue is empty.\" />"
 #define REST_XML_ERROR_VARIABLE_NOT_FOUND		"<vscp-rest success = \"false\" code = \"-7\" message = \"Variable not found\" description = \"Variable could not be found.\" />"
 #define REST_XML_ERROR_VARIABLE_NOT_CREATED		"<vscp-rest success = \"false\" code = \"-8\" message = \"Variable could not be created\" description = \"Variable could not be created.\" />"
-#define REST_XML_ERROR_NO_ROOM		            "<vscp-rest success = \"false\" code = \"-8\" message = \"No room in queue\" description = \"No room in queue.\" />"
+#define REST_XML_ERROR_NO_ROOM		            "<vscp-rest success = \"false\" code = \"-9\" message = \"No room in queue\" description = \"No room in queue.\" />"
+#define REST_XML_ERROR_TABLE_NOT_FOUND		    "<vscp-rest success = \"false\" code = \"-10\" message = \"Table does not exist\" description = \"A table with that name does not exist.\" />"
+#define REST_XML_ERROR_TABLE_NO_DATA		    "<vscp-rest success = \"false\" code = \"-11\" message = \"No data\" description = \"The table exist but contains no data (in that range).\" />"
+#define REST_XML_ERROR_TABLE_RANGE  	        "<vscp-rest success = \"false\" code = \"-12\" message = \"Range error\" description = \"The end date must be later than the start date.\" />"
 
 #define REST_JSON_ERROR_SUCCESS					"{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\"}"
 #define REST_JSON_ERROR_GENERAL_FAILURE			"{\"success\":false,\"code\":-1,\"message\":\"Failure\",\"description\":\"General failure.\"}"
@@ -360,8 +372,11 @@ enum {
 #define REST_JSON_ERROR_MISSING_DATA			"{\"success\":false,\"code\":-5,\"message\":\"Missing data/parameter\",\"description\":\"A needed parameter or data is missing to be able to perform operation.\"}"
 #define REST_JSON_ERROR_INPUT_QUEUE_EMPTY		"{\"success\":false,\"code\":-6,\"message\":\"Input queue empty\",\"description\":\"The input queue is empty.\"}"
 #define REST_JSON_ERROR_VARIABLE_NOT_FOUND		"{\"success\":false,\"code\":-7,\"message\":\"Variable not found\",\"description\":\"Variable could not be found.\"}"
-#define REST_JSON_ERROR_VARIABLE_NOT_CREATED	"{\"success\":false,\"code\":-7,\"message\":\"Variable could not be created\",\"description\":\"Variable could not be created.\"}"
-#define REST_JSON_ERROR_NO_ROOM	                "{\"success\":false,\"code\":-7,\"message\":\"No room in queue\",\"description\":\"No room in queue.\"}"
+#define REST_JSON_ERROR_VARIABLE_NOT_CREATED	"{\"success\":false,\"code\":-8,\"message\":\"Variable could not be created\",\"description\":\"Variable could not be created.\"}"
+#define REST_JSON_ERROR_NO_ROOM	                "{\"success\":false,\"code\":-9,\"message\":\"No room in queue\",\"description\":\"No room in queue.\"}"
+#define REST_JSON_ERROR_TABLE_NOT_FOUND	        "{\"success\":false,\"code\":-10,\"message\":\"Table does not exist\",\"description\":\"A table with that name does not exist.\"}"
+#define REST_JSON_ERROR_TABLE_NO_DATA	        "{\"success\":false,\"code\":-11,\"message\":\"No data\",\"description\":\"The table exist but contains no data (in that range).\"}"
+#define REST_JSON_ERROR_TABLE_RANGE	            "{\"success\":false,\"code\":-12,\"message\":\"Range error\",\"description\":\"The end date must be later than the start date.\"}"
 
 #define REST_JSONP_ERROR_SUCCESS				"typeof handler === 'function' && handler(" REST_JSON_ERROR_SUCCESS ");"
 #define REST_JSONP_ERROR_GENERAL_FAILURE		"typeof handler === 'function' && handler(" REST_JSON_ERROR_GENERAL_FAILURE ");"
@@ -373,6 +388,9 @@ enum {
 #define REST_JSONP_ERROR_VARIABLE_NOT_FOUND		"typeof handler === 'function' && handler(" REST_JSON_ERROR_VARIABLE_NOT_FOUND ");"
 #define REST_JSONP_ERROR_VARIABLE_NOT_CREATED	"typeof handler === 'function' && handler(" REST_JSON_ERROR_VARIABLE_NOT_CREATED ");"
 #define REST_JSONP_ERROR_NO_ROOM	            "typeof handler === 'function' && handler(" REST_JSON_ERROR_NO_ROOM ");"
+#define REST_JSONP_ERROR_TABLE_NOT_FOUND	    "typeof handler === 'function' && handler(" REST_JSON_ERROR_TABLE_NOT_FOUND ");"
+#define REST_JSONP_ERROR_TABLE_NO_DATA	        "typeof handler === 'function' && handler(" REST_JSON_ERROR_TABLE_NO_DATA ");"
+#define REST_JSONP_ERROR_TABLE_RANGE	        "typeof handler === 'function' && handler(" REST_JSON_ERROR_TABLE_RANGE ");"
 
 const char* rest_errors[][REST_FORMAT_COUNT+1] = {
 	{REST_PLAIN_ERROR_SUCCESS, REST_CSV_ERROR_SUCCESS,REST_XML_ERROR_SUCCESS,REST_JSON_ERROR_SUCCESS,REST_JSONP_ERROR_SUCCESS,REST_JSONP_ERROR_SUCCESS},
@@ -384,7 +402,10 @@ const char* rest_errors[][REST_FORMAT_COUNT+1] = {
 	{REST_PLAIN_ERROR_INPUT_QUEUE_EMPTY,REST_CSV_ERROR_INPUT_QUEUE_EMPTY,REST_XML_ERROR_INPUT_QUEUE_EMPTY,REST_JSON_ERROR_INPUT_QUEUE_EMPTY,REST_JSONP_ERROR_INPUT_QUEUE_EMPTY,REST_JSONP_ERROR_INPUT_QUEUE_EMPTY},
     {REST_PLAIN_ERROR_VARIABLE_NOT_FOUND,REST_CSV_ERROR_VARIABLE_NOT_FOUND,REST_XML_ERROR_VARIABLE_NOT_FOUND,REST_JSON_ERROR_VARIABLE_NOT_FOUND,REST_JSONP_ERROR_VARIABLE_NOT_FOUND },
     {REST_PLAIN_ERROR_VARIABLE_NOT_CREATED,REST_CSV_ERROR_VARIABLE_NOT_CREATED,REST_XML_ERROR_VARIABLE_NOT_CREATED,REST_JSON_ERROR_VARIABLE_NOT_CREATED,REST_JSONP_ERROR_VARIABLE_NOT_CREATED },
-    {REST_PLAIN_ERROR_NO_ROOM,REST_CSV_ERROR_NO_ROOM,REST_XML_ERROR_NO_ROOM,REST_JSON_ERROR_NO_ROOM,REST_JSONP_ERROR_NO_ROOM,REST_JSONP_ERROR_NO_ROOM }
+    {REST_PLAIN_ERROR_NO_ROOM,REST_CSV_ERROR_NO_ROOM,REST_XML_ERROR_NO_ROOM,REST_JSON_ERROR_NO_ROOM,REST_JSONP_ERROR_NO_ROOM,REST_JSONP_ERROR_NO_ROOM },
+    {REST_PLAIN_ERROR_TABLE_NOT_FOUND,REST_CSV_ERROR_TABLE_NOT_FOUND,REST_XML_ERROR_TABLE_NOT_FOUND,REST_JSON_ERROR_TABLE_NOT_FOUND,REST_JSONP_ERROR_TABLE_NOT_FOUND,REST_JSONP_ERROR_TABLE_NOT_FOUND },
+    {REST_PLAIN_ERROR_TABLE_NO_DATA,REST_CSV_ERROR_TABLE_NO_DATA,REST_XML_ERROR_TABLE_NO_DATA,REST_JSON_ERROR_TABLE_NO_DATA,REST_JSONP_ERROR_TABLE_NO_DATA,REST_JSONP_ERROR_TABLE_NO_DATA },
+    {REST_PLAIN_ERROR_TABLE_RANGE,REST_CSV_ERROR_TABLE_RANGE,REST_XML_ERROR_TABLE_RANGE,REST_JSON_ERROR_TABLE_RANGE,REST_JSONP_ERROR_TABLE_RANGE,REST_JSONP_ERROR_TABLE_RANGE }
 };	
 			
 

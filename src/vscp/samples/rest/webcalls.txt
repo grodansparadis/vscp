@@ -41,5 +41,8 @@ http://localhost:8080/vscp/rest?vscpsession=1a9dc644fc5cb09b00702ae421bc5055&for
 measurement
 http://localhost:8080/vscp/rest?vscpsession=0283bec06a9518c80b98d73259da17da&format=3&op=measurement&value=24.5&type=6&level=2&sensoridx=1&unit=1&zone=11&subzone=22
 
+table
+http://localhost:8080/vscp/rest?vscpsession=2fc14da6ebcd069e8140c6b4692bf35d&format=plain&op=11&name=outsidetemp
+
 mdf
 http://localhost:8080/vscp/rest?vscpsession=55d9e417f89001f71362bb8dc9aa2f39&format=3&op=measurement&url=http://www.eurosource.se/beijing_2.xml

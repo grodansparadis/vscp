@@ -3516,7 +3516,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	//   *******************************************
 	//   * * * * * * * * Table read  * * * * * * * *
 	//   *******************************************
-	else if ( ( _("11") == keypairs[_("op")] ) || ( _("TABLE") == keypairs[_("op")].Upper() ) ) {
+	else if ( ( _("11") == keypairs[_("OP")] ) || ( _("TABLE") == keypairs[_("OP")].Upper() ) ) {
 
 		if ( _("") != keypairs[_("NAME")] ) {
 			
@@ -5422,25 +5422,16 @@ VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *conn
 //
 
 int
-VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn, 
-												    struct websrv_rest_session *pSession, 
-												    int format,
-												    wxString& strName,
-												    wxString& strFrom,
-												    wxString& strTo )
+VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn,
+                                                        struct websrv_rest_session *pSession,
+                                                        int format,
+                                                        wxString& strName,
+                                                        wxString& strFrom,
+                                                        wxString& strTo )
 {
-    char buf[ 512 ];
-    char wrkbuf[ 512 ];
-
-    // Head
-    webserv_util_sendheader( conn, 200, REST_MIME_TYPE_PLAIN );
-    mg_write( conn, "\r\n", 2 );		// head/body Separator
-
-    memset( buf, 0, sizeof( buf ) );
-    sprintf( wrkbuf, "Made it to getTableData.\r\n" );
-
-    webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
-    mg_write( conn, buf, strlen( buf ) );
+    char buf[ 2048 ];
+    char wrkbuf[ 2048 ];
+    long nRecords = 0;
 
     // Check pointer
     if ( NULL == conn ) return MG_FALSE;
@@ -5450,403 +5441,186 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn,
 
     if ( NULL != pSession ) {
 
-        //WIP - Should do same thing as websock_command() on line 1360.
+        // We need 'tablename' and optionally 'from' and 'to'
 
-        // We need 'tablename' and optinally 'from' and 'to'
-
-        CVSCPTable *pTable = NULL;
+        CVSCPTable *ptblItem = NULL;
         pObject->m_mutexTableList.Lock();
         listVSCPTables::iterator iter;
 
         for ( iter = pObject->m_listTables.begin(); iter != pObject->m_listTables.end(); ++iter ) {
-            pTable = *iter;
-            if ( 0 == strcmp( pTable->m_vscpFileHead.nameTable, ( const char * )strName.mbc_str() ) ) {
-                //	pTable->logData( timestamp, value );
+            ptblItem = *iter;
+            if ( 0 == strcmp( ptblItem->m_vscpFileHead.nameTable, ( const char * )strName.mbc_str() ) ) {
                 break;
             }
-            pTable = NULL;
+            ptblItem = NULL;
         }
+
         pObject->m_mutexTableList.Unlock();
 
         // If found pTable should not be NULL
-        if ( NULL == pTable ) {
-
-            // return error
-            webserv_util_sendheader( conn, 400, REST_MIME_TYPE_PLAIN );
-            mg_write( conn, "\r\n", 2 );		// head/body Separator
-
-            memset( buf, 0, sizeof( buf ) );
-            sprintf( wrkbuf, "4 4 Table not found. \r\n" );
-
-            webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
-            mg_write( conn, buf, strlen( buf ) );
-
+        if ( NULL == ptblItem ) {
+            webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_TABLE_NOT_FOUND );
             return MG_TRUE;
         }
-        if ( REST_FORMAT_PLAIN == format ) {
 
-            webserv_util_sendheader( conn, 400, REST_MIME_TYPE_PLAIN );
-            mg_write( conn, "\r\n", 2 );		// head/body Separator
+        // Get data from table
+        int nRange = 0;     // 2 if to + from, 1 if from, 0 if non of them
+        wxDateTime timeFrom = wxDateTime::Now();
+        wxDateTime timeTo = wxDateTime::Now();
 
-            memset( buf, 0, sizeof( buf ) );
-            sprintf( wrkbuf, "1 1 Success \r\n" );
-            webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
-            mg_write( conn, buf, strlen( buf ) );
+        // Get from-date for range
+        strFrom.Trim();
+        if ( strFrom.Length() ) {
+            timeFrom.ParseDateTime( strFrom );
+            //wxstr = timeFrom.FormatISODate() + _( " " ) + timeFrom.FormatISOTime();
+            nRange++; // Start date entered
+        }
 
-            ////////////////////////////////////////////
+        // Get to-date for range
+        strTo.Trim();
+        if ( strTo.Length() ) {
+            timeTo.ParseDateTime( strTo );
+            //wxstr = timeTo.FormatISODate() + _( " " ) + timeTo.FormatISOTime();
+            nRange++; // End date entered
+        }
 
-            wxString tblName;
-            wxDateTime timeFrom = wxDateTime::Now();
-            wxDateTime timeTo = wxDateTime::Now();
+        // Check range
+        if ( ( nRange > 1 ) && timeTo.IsEarlierThan( timeFrom ) ) {
+            webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_TABLE_RANGE );
+            return MG_TRUE;
+        }
 
-            /* TODO: move this later */
-            int nRange = 0;
+        if ( VSCP_TABLE_DYNAMIC == ptblItem->m_vscpFileHead.type ) {
 
-            if ( VSCP_TABLE_DYNAMIC == pTable->m_vscpFileHead.type ) {
-
-                uint64_t start, end;
-                if ( 0 == nRange ) {
-
-                    // Neither 'from' or 'to' given 
-                    // Use value from header
-                    start = pTable->getTimeStampStart();
-                    end = pTable->getTimeStampStart();
-                }
-                else if ( 1 == nRange ) {
-                    // From given but no end
-                    start = timeFrom.GetTicks();
-                    end = pTable->getTimeStampStart();
-                }
-                else {
-                    // range given
-                    start = timeFrom.GetTicks();
-                    end = timeTo.GetTicks();
-                }
-
-                // Fetch number of records in set 
-                pTable->m_mutexThisTable.Lock();
-                long nRecords = pTable->getRangeOfData( start, end );
-                pTable->m_mutexThisTable.Unlock();
-
-                if ( nRecords > 0 ) {
-
-                    struct _vscpFileRecord *pRecords = new struct _vscpFileRecord[ nRecords ];
-
-                    if ( NULL == pRecords ) {
-
-                        // return error
-                        webserv_util_sendheader( conn, 400, REST_MIME_TYPE_PLAIN );
-                        mg_write( conn, "\r\n", 2 );		// head/body Separator
-
-                        memset( buf, 0, sizeof( buf ) );
-                        sprintf( wrkbuf, "5 5 Cannot allocate memory pRecord. \r\n" );
-                        webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
-                        mg_write( conn, buf, strlen( buf ) );
-
-                        /*
-                        mg_websocket_printf( conn,
-                        WEBSOCKET_OPCODE_TEXT,
-                        "-;GT;%d;%s",
-                        WEBSOCK_ERROR_MEMORY_ALLOCATION,
-                        WEBSOCK_STR_ERROR_MEMORY_ALLOCATION );
-                        wxString strErr =
-                        wxString::Format( _("[Websocket] Having problems to allocate memory. [name=%s]\n"), tblName.wx_str() );
-
-                        */
-                        //pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
-                        return MG_TRUE;
-                    }
-
-                    pTable->m_mutexThisTable.Lock();
-                    long nfetchedRecords = pTable->getRangeOfData( start, end, ( void * )pRecords, nRecords* sizeof( struct _vscpFileRecord ) );
-                    pTable->m_mutexThisTable.Unlock();
-
-                    if ( 0 == nfetchedRecords ) {
-
-                        // return error
-                        webserv_util_sendheader( conn, 400, REST_MIME_TYPE_PLAIN );
-                        mg_write( conn, "\r\n", 2 );		// head/body Separator
-
-                        memset( buf, 0, sizeof( buf ) );
-                        //sprintf( wrkbuf, WEBSOCKET_OPCODE_TEXT" Error reading table. \r\n");
-                        sprintf( wrkbuf, "Error reading table. \r\n" );
-                        webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
-                        mg_write( conn, buf, strlen( buf ) );
-
-                        /*
-                        mg_websocket_printf( conn,
-                        WEBSOCKET_OPCODE_TEXT,
-                        "-;GT;%d;%s",
-                        WEBSOCK_ERROR_TABLE_ERROR_READING,
-                        WEBSOCK_STR_ERROR_TABLE_ERROR_READING );
-                        wxString strErr =
-                        wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), tblName.wx_str() );
-                        */
-
-                        //pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
-                        return MG_TRUE;
-                    }
-                    else {
-
-                        wxDateTime dtStart;
-                        dtStart.Set( ( time_t )pTable->getTimeStampStart() );
-                        wxString strDateTimeStart = dtStart.FormatISODate() + _( "T" ) + dtStart.FormatISOTime();
-
-                        wxDateTime dtEnd;
-                        dtEnd.Set( ( time_t )pTable->getTimeStampEnd() );
-                        wxString strDateTimeEnd = dtEnd.FormatISODate() + _( "T" ) + dtEnd.FormatISOTime();
-
-                        // return Success
-                        webserv_util_sendheader( conn, 400, REST_MIME_TYPE_PLAIN );
-                        mg_write( conn, "\r\n", 2 );		// head/body Separator
-
-                        memset( buf, 0, sizeof( buf ) );
-                        sprintf( wrkbuf, "Found %ld records. \r\n", pTable->getNumberOfRecords() );
-
-                        /*
-                        "variable=%s type=%d persistent=%s value=%s note=%s\r\n",
-                        (const char *)pvar->getName().mbc_str(),
-                        pvar->getType(),
-                        pvar->isPersistent() ? "true" : "false",
-                        (const char *)strVariableValue.mbc_str(),
-                        (const char *)pvar->getNote().mbc_str() );
-
-                        */
-
-                        webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
-                        mg_write( conn, buf, strlen( buf ) );
-
-                        /*
-                        // First send start post with number if records
-                        wxString wxstr = wxString::Format(_("+;GT;START;%d;%d;%s;%s"),
-                        nfetchedRecords,
-                        ptblItem->getNumberOfRecords(),
-                        strDateTimeStart.wx_str(),
-                        strDateTimeEnd.wx_str() );
-                        mg_websocket_printf( conn,
-                        WEBSOCKET_OPCODE_TEXT,
-                        (const char *)wxstr.mbc_str() );
-
-                        */
-
-                        webserv_util_sendheader( conn, 400, REST_MIME_TYPE_PLAIN );
-                        mg_write( conn, "\r\n", 2 );		// head/body Separator
-
-                                                            // Then send measurement records
-                        for ( long i = 0; i<nfetchedRecords; i++ ) {
-
-                            wxDateTime dt;
-                            dt.Set( ( time_t )pRecords[ i ].timestamp );
-                            wxString strDateTime = dt.FormatISODate() + _( " " ) + dt.FormatISOTime();
-                            wxString wxstr = wxString::Format( _( "Record=;%d;%s;%f" ),
-                                                               i,
-                                                               strDateTime.wx_str(),
-                                                               pRecords[ i ].measurement );
-
-                            memset( buf, 0, sizeof( buf ) );
-                            sprintf( wrkbuf, "%s\r\n", ( const char * )wxstr.mbc_str() );
-
-                            webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
-                            mg_write( conn, buf, strlen( buf ) );
-
-                            //OLD WEBSOCKETS
-                            /*
-                            wxDateTime dt;
-                            dt.Set( (time_t)pRecords[i].timestamp );
-                            wxString strDateTime = dt.FormatISODate() + _(" ") + dt.FormatISOTime();
-                            wxString wxstr = wxString::Format(_("+;GT;%d;%s;%f"),
-                            i,
-                            strDateTime.wx_str(),
-                            pRecords[i].measurement );
-                            mg_websocket_printf( conn,
-                            WEBSOCKET_OPCODE_TEXT,
-                            wxstr.mbc_str() );
-                            */
-
-                        }
-
-                        // Last send end post with number if records
-                        /*mg_websocket_printf( conn,
-                        WEBSOCKET_OPCODE_TEXT,
-                        "+;GT;END;%d",
-                        nfetchedRecords );*/
-                    }
-
-                    // Deallocate storage
-                    delete[] pRecords;
-
-                }
-                else {
-                    if ( 0 == nRecords ) {
-
-                        // return error
-                        webserv_util_sendheader( conn, 400, REST_MIME_TYPE_PLAIN );
-                        mg_write( conn, "\r\n", 2 );		// head/body Separator
-
-                        memset( buf, 0, sizeof( buf ) );
-                        sprintf( wrkbuf, "No data in table %s, nRecords = 0\r\n", pTable->m_vscpFileHead.nameTable );
-                        webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
-                        mg_write( conn, buf, strlen( buf ) );
-
-                        return MG_TRUE;
-                    }
-                    else {
-
-                        // return error
-                        webserv_util_sendheader( conn, 400, REST_MIME_TYPE_PLAIN );
-                        mg_write( conn, "\r\n", 2 );		// head/body Separator
-
-                        memset( buf, 0, sizeof( buf ) );
-                        sprintf( wrkbuf, "Problem reading table. \r\n" );
-                        webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
-                        mg_write( conn, buf, strlen( buf ) );
-                        /*
-                        mg_websocket_printf( conn,
-                        WEBSOCKET_OPCODE_TEXT,
-                        "-;GT;%d;%s",
-                        WEBSOCK_ERROR_TABLE_ERROR_READING,
-                        WEBSOCK_STR_ERROR_TABLE_ERROR_READING );
-                        wxString strErr =
-                        wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), tblName.wx_str() );
-                        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
-                        */
-                        return MG_TRUE;
-                    }
-                }
+            uint64_t start, end;
+            if ( 0 == nRange ) {
+                // Neither 'from' or 'to' given 
+                // Use value from header
+                start = ptblItem->getTimeStampStart();
+                end = ptblItem->getTimeStampEnd();
             }
-            // OK STATIC table
+            else if ( 1 == nRange ) {
+                // From given but no end
+                start = timeFrom.GetTicks();
+                end = ptblItem->getTimeStampEnd();
+            }
             else {
+                // range given
+                start = timeFrom.GetTicks();
+                end = timeTo.GetTicks();
+            }
 
-                webserv_util_sendheader( conn, 400, REST_MIME_TYPE_PLAIN );
+            // Fetch number of records in set 
+            ptblItem->m_mutexThisTable.Lock();
+            long nRecords = ptblItem->getRangeOfData( start, end );
+            ptblItem->m_mutexThisTable.Unlock();
+
+            if ( 0 == nRecords ) {
+                webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_TABLE_NO_DATA );
+                return MG_TRUE;
+            }
+
+            struct _vscpFileRecord *pRecords = new struct _vscpFileRecord[ nRecords ];
+
+            if ( NULL == pRecords ) {
+                webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_GENERAL_FAILURE );
+                return MG_TRUE;
+            }
+
+            ptblItem->m_mutexThisTable.Lock();
+            long nfetchedRecords = ptblItem->getRangeOfData( start,
+                                                             end,
+                                                             ( void * )pRecords,
+                                                             nRecords* sizeof( struct _vscpFileRecord ) );
+            ptblItem->m_mutexThisTable.Unlock();
+
+            if ( 0 == nfetchedRecords ) {
+                delete[] pRecords;
+                webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_TABLE_NO_DATA );
+                return MG_TRUE;
+            }
+
+            wxDateTime dtStart;
+            dtStart.Set( ( time_t )ptblItem->getTimeStampStart() );
+            wxString strDateTimeStart = dtStart.FormatISODate() + _( "T" ) + dtStart.FormatISOTime();
+
+            wxDateTime dtEnd;
+            dtEnd.Set( ( time_t )ptblItem->getTimeStampEnd() );
+            wxString strDateTimeEnd = dtEnd.FormatISODate() + _( "T" ) + dtEnd.FormatISOTime();
+
+            if ( REST_FORMAT_PLAIN == format ) {
+
+                // Send header
+                webserv_util_sendheader( conn, 200, REST_MIME_TYPE_PLAIN );
                 mg_write( conn, "\r\n", 2 );		// head/body Separator
 
                 memset( buf, 0, sizeof( buf ) );
-                sprintf( wrkbuf, "Problem reading table. \r\n" );
+                sprintf( wrkbuf,
+                         "1 1 Success\r\n%d records will be returned from table %s.\r\n",
+                         nfetchedRecords,
+                         (const char *)strName.mbc_str() );
                 webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
                 mg_write( conn, buf, strlen( buf ) );
 
-                /*
-                // Fetch number of records in set
-                ptblItem->m_mutexThisTable.Lock();
-                long nRecords = ptblItem->getStaticRequiredBuffSize();
-                ptblItem->m_mutexThisTable.Unlock();
+                for ( long i = 0; i < nfetchedRecords; i++ ) {
 
-                if ( nRecords > 0 ) {
+                    wxDateTime dt;
+                    dt.Set( ( time_t )pRecords[ i ].timestamp );
+                    wxString strDateTime = dt.FormatISODate() + _( " " ) + dt.FormatISOTime();
 
-                ptblItem->m_mutexThisTable.Lock();
-                long nfetchedRecords = ptblItem->getStaticRequiredBuffSize();
-                ptblItem->m_mutexThisTable.Unlock();
-
-                if ( 0 == nfetchedRecords ) {
-                mg_websocket_printf( conn,
-                WEBSOCKET_OPCODE_TEXT,
-                "-;GT;%d;%s",
-                WEBSOCK_ERROR_TABLE_ERROR_READING,
-                WEBSOCK_STR_ERROR_TABLE_ERROR_READING );
-                wxString strErr =
-                wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), tblName.wx_str() );
-                pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
-                return MG_TRUE;
-                }
-                else {
-
-                struct _vscpFileRecord *pRecords = new struct _vscpFileRecord[nfetchedRecords];
-
-                if ( NULL == pRecords ) {
-                mg_websocket_printf( conn,
-                WEBSOCKET_OPCODE_TEXT,
-                "-;GT;%d;%s",
-                WEBSOCK_ERROR_MEMORY_ALLOCATION,
-                WEBSOCK_STR_ERROR_MEMORY_ALLOCATION );
-                wxString strErr =
-                wxString::Format( _("[Websocket] Having problems to allocate memory. [name=%s]\n"), tblName.wx_str() );
-                pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
-                return MG_TRUE;
-                }
-
-                // First send start post with number if records
-                mg_websocket_printf( conn,
-                WEBSOCKET_OPCODE_TEXT,
-                "+;GT;START;%d",
-                nfetchedRecords );
-
-                // Then send measurement records
-                for ( long i=0; i<nfetchedRecords; i++ ) {
-                mg_websocket_printf( conn,
-                WEBSOCKET_OPCODE_TEXT,
-                "+;GT;%d;%d;%f",
-                i, pRecords[i].timestamp, pRecords[i].measurement );
-                }
-
-                // Last send end post with number if records
-                mg_websocket_printf( conn,
-                WEBSOCKET_OPCODE_TEXT,
-                "+;GT;END;%d",
-                nfetchedRecords );
-
-                // Deallocate storage
-                delete[] pRecords;
+                    memset( buf, 0, sizeof( buf ) );
+                    sprintf( wrkbuf,
+                             "%d - Date=%s,Value=%f\r\n",
+                             i,
+                             (const char *)strDateTime.mbc_str(),
+                             pRecords->measurement );
+                    webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+                    mg_write( conn, buf, strlen( buf ) );
 
                 }
 
-                }
-                else {
-                if ( 0 == nRecords ) {
-                mg_websocket_printf( conn,
-                WEBSOCKET_OPCODE_TEXT,
-                "-;GT;%d;%s",
-                WEBSOCK_ERROR_TABLE_NO_DATA,
-                WEBSOCK_STR_ERROR_TABLE_NO_DATA );
-                wxString strErr =
-                wxString::Format( _("[Websocket] No data in table. [name=%s]\n"), tblName.wx_str() );
-                pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_GENERAL );
-                return MG_TRUE;
-                }
-                else {
-                mg_websocket_printf( conn,
-                WEBSOCKET_OPCODE_TEXT,
-                "-;GT;%d;%s",
-                WEBSOCK_ERROR_TABLE_ERROR_READING,
-                WEBSOCK_STR_ERROR_TABLE_ERROR_READING );
-                wxString strErr =
-                wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), tblName.wx_str() );
-                pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
-                return MG_TRUE;
-                }
-                }*/
+                mg_write( conn, "0\r\n\r\n", 5 );	// Terminator
+
+            }
+            else if ( REST_FORMAT_CSV == format ) {
+
+                // Send header
+                webserv_util_sendheader( conn, 200, REST_MIME_TYPE_CSV );
+                mg_write( conn, "\r\n", 2 );		// head/body Separator
+
+            }
+            else if ( REST_FORMAT_XML == format ) {
+
+                // Send header
+                webserv_util_sendheader( conn, 200, REST_MIME_TYPE_XML );
+                mg_write( conn, "\r\n", 2 );		// head/body Separator
+
+            }
+            else if ( REST_FORMAT_JSON == format ) {
+
+                // Send header
+                webserv_util_sendheader( conn, 200, REST_MIME_TYPE_JSON );
+                mg_write( conn, "\r\n", 2 );		// head/body Separator
+
+            }
+            else if ( REST_FORMAT_JSONP == format ) {
+
+                // Send header
+                webserv_util_sendheader( conn, 200, REST_MIME_TYPE_JSONP );
+                mg_write( conn, "\r\n", 2 );		// head/body Separator
+
             }
 
-            ///////////////////////////////////////////
-
-            /*
-            memset( buf, 0, sizeof( buf ));
-            sprintf( wrkbuf,
-
-
-
-            "variable=%s type=%d persistent=%s value=%s note=%s\r\n",
-            (const char *)pvar->getName().mbc_str(),
-            pvar->getType(),
-            pvar->isPersistent() ? "true" : "false",
-            (const char *)strVariableValue.mbc_str(),
-            (const char *)pvar->getNote().mbc_str() );
-
-
-            webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
-            mg_write( conn, buf, strlen( buf ) );
-            */
-        }
-        if ( REST_FORMAT_CSV == format ) {
+            // Deallocate storage
+            delete[] pRecords;
 
         }
-        webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_SUCCESS );
-    }
-    else {
-        webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_INVALID_SESSION );
+
     }
 
     return MG_TRUE;
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // XML to JSON convert
@@ -5966,6 +5740,11 @@ int VSCPWebServerThread::webserv_rest_doFetchMDF( struct mg_connection *conn,
 
     return MG_TRUE;
 }
+
+
+
+
+
 
 
 
