@@ -627,7 +627,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
             if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
 
                 if ( CANAL_ERROR_SUCCESS == 
-                    m_csw.getDllInterface()->readLevel1Register( 0, i, 0xd0, &val ) ) {
+                    m_csw.getDllInterface()->readLevel1Register( i, 0, 0xd0, &val ) ) {
 
                     newitem = m_DeviceTree->AppendItem(rootItem, wxString::Format(_("Node with nickname=%d"), i));
                     m_DeviceTree->ExpandAll();

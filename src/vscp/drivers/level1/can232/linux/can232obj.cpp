@@ -816,7 +816,7 @@ void *workThread(void *pObject)
 
 bool can232ToCanal(char * p, PCANALMSG pMsg)
 {
-    bool rv = false;
+    bool rv = true;
     int val;
     short data_offset; // Offset to dlc byte
     char save;

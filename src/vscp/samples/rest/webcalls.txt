@@ -29,14 +29,14 @@ Clear queue
 http://localhost:8080/vscp/rest?vscpsession=a850f1de7e73cab48eb4ec396e5f4897&format=4&op=clearqueue
 
 Read variable value
-http://localhost:8080/vscp/rest?vscpsession=f64f51f01ef24edfc03a7f10229dbb97&format=4&op=readvar&variable=%22test%22
+http://localhost:8080/vscp/rest?vscpsession=f64f51f01ef24edfc03a7f10229dbb97&format=4&op=readvar&variable=test
 
 Write variable value
 http://localhost:8080/vscp/rest?vscpsession=f102115ea5f8653aad7df012d1d9cb07&format=3&op=writevar&variable=test&value=Super
 
 Create variable
-http://localhost:8080/vscp/rest?vscpsession=1a9dc644fc5cb09b00702ae421bc5055&format=3&op=createvar&variable=test01&value=this%20is%20a%20test&type=1&persistent=false
-http://localhost:8080/vscp/rest?vscpsession=1a9dc644fc5cb09b00702ae421bc5055&format=3&op=createvar&variable=test02&value=this%20is%20a%20test&type=STRING&persistent=false
+http://localhost:8080/vscp/rest?vscpsession=1a9dc644fc5cb09b00702ae421bc5055&format=3&op=createvar&variable=test01&value=this%20is%20a%20test&type=1&persistent=false&note&This is a new variable
+http://localhost:8080/vscp/rest?vscpsession=1a9dc644fc5cb09b00702ae421bc5055&format=3&op=createvar&variable=test02&value=this%20is%20a%20test&type=STRING&persistent=false&This is also a new variable
 
 measurement
 http://localhost:8080/vscp/rest?vscpsession=0283bec06a9518c80b98d73259da17da&format=3&op=measurement&value=24.5&type=6&level=2&sensoridx=1&unit=1&zone=11&subzone=22
