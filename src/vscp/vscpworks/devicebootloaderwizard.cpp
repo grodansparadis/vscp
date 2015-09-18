@@ -980,6 +980,9 @@ void WizardPageSetGUID::OnWizardPageChanging( wxWizardEvent& event )
     // An node must be there to be allowed to continue
     if ( event.GetDirection() ) {  // Forward
         
+        // Deault bootloader algorithm
+        pblw->m_pgSelecAlgorithm->selectBootLoader( BOOTLOADER_VSCP );
+
         if ( USE_DLL_INTERFACE == pblw->m_iftype ) {
 
             // Get Interface id
@@ -995,8 +998,7 @@ void WizardPageSetGUID::OnWizardPageChanging( wxWizardEvent& event )
             wxString strTitle;
 
             if ( CANAL_ERROR_SUCCESS == 
-                 pblw->m_dll.readLevel1Register( nodeid, 0, 0xd0, &val ) ) {
-                //wxMessageBox( _( "Device found!" ) );
+                pblw->m_dll.readLevel1Register( nodeid, 0, 0xd0, &val ) ) {
                 pblw->m_bDeviceFound = true;
                 strTitle = BOOT_LOADER_WIZARD_TITLE;
                 strTitle += _( " - Device found!" );
@@ -1392,6 +1394,11 @@ void WizardPageSelectBootloader::OnWizardPageChanging( wxWizardEvent& event )
     DeviceBootloaderwizard *pblw = ( DeviceBootloaderwizard * )GetParent();
 
     if ( event.GetDirection() ) {  // Forward
+
+        if ( NULL == ( ( DeviceBootloaderwizard * )GetParent() )->m_pBootCtrl ) {
+            wxMessageBox( _( "You must select a bootloader algorithm before you can continue!" ) );
+            event.Veto();
+        }
 
         if ( USE_DLL_INTERFACE == pblw->m_iftype ) {
             ;
