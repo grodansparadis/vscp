@@ -1208,6 +1208,10 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         wxString strWork;
         m_pCtrlObject->m_variableMutex.Lock();
 
+        // Send count
+        resultstr = wxString::Format( _( "+;LISTVAR;%zu" ), m_pCtrlObject->m_VSCP_Variables.m_listVariable.GetCount() );
+        mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, ( const char * )resultstr.mbc_str() );
+
         listVscpVariable::iterator it;
         for( it = m_pCtrlObject->m_VSCP_Variables.m_listVariable.begin(); 
                     it != m_pCtrlObject->m_VSCP_Variables.m_listVariable.end(); 
@@ -1215,7 +1219,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 
             if ( NULL == ( pvar = *it ) ) continue;
 
-            wxString resultstr = _("+;LISTVAR;");
+            resultstr = _("+;LISTVAR;");
             resultstr += wxString::Format( _("%d;"), i++ );
             resultstr += pvar->getName();
             resultstr += _(";");
