@@ -5579,15 +5579,57 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn,
 
                 }
 
-                mg_write( conn, "0\r\n\r\n", 5 );	// Terminator
-
             }
             else if ( REST_FORMAT_CSV == format ) {
 
                 // Send header
                 webserv_util_sendheader( conn, 200, REST_MIME_TYPE_CSV );
                 mg_write( conn, "\r\n", 2 );		// head/body Separator
+                /*
+                memset( buf, 0, sizeof( buf ) );
+                sprintf( wrkbuf,
+                         "1 1 Success\r\n%d records will be returned from table %s.\r\n",
+                         nfetchedRecords,
+                         ( const char * )strName.mbc_str() );
+                webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+                mg_write( conn, buf, strlen( buf ) );
 
+                for ( long i = 0; i < nfetchedRecords; i++ ) {
+
+                    wxDateTime dt;
+                    dt.Set( ( time_t )pRecords[ i ].timestamp );
+                    wxString strDateTime = dt.FormatISODate() + _( " " ) + dt.FormatISOTime();
+
+                    memset( buf, 0, sizeof( buf ) );
+                    sprintf( wrkbuf,
+                             "%d - Date=%s,Value=%f\r\n",
+                             i,
+                             ( const char * )strDateTime.mbc_str(),
+                             pRecords->measurement );
+                    webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+                    mg_write( conn, buf, strlen( buf ) );
+
+                    sprintf( wrkbuf, "success-code,error-code,message,description,Event\r\n1,1,Success,Success.,NULL\r\n" );
+                    webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+                    mg_write( conn, buf, strlen( buf ) );
+                    memset( buf, 0, sizeof( buf ) );
+                    sprintf( wrkbuf,
+                             "1,2,Info,%zd events requested of %ul available (unfiltered) %lu will be retrieved,NULL\r\n",
+                             count,
+                             cntAvailable,
+                             MIN( count, cntAvailable ) );
+                    webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+                    mg_write( conn, buf, strlen( buf ) );
+
+                    memset( buf, 0, sizeof( buf ) );
+                    sprintf( wrkbuf,
+                             "1,4,Count,%zu,NULL\r\n",
+                             MIN( count, cntAvailable ) );
+                    webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+                    mg_write( conn, buf, strlen( buf ) );
+
+                }
+                */
             }
             else if ( REST_FORMAT_XML == format ) {
 
@@ -5611,6 +5653,8 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn,
 
             }
 
+            mg_write( conn, "0\r\n\r\n", 5 );	// Terminator
+
             // Deallocate storage
             delete[] pRecords;
 
@@ -5626,12 +5670,12 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn,
 // XML to JSON convert
 //
 
-auto convert( const istream &input, string &path  ) -> void
+void convert( const istream &input, string &path  ) 
 {
     ostringstream oss;
     oss << input.rdbuf();
 
-    const auto json_str = xml2json( oss.str().data() );
+    std:string json_str = xml2json( oss.str().data() );
 
     ofstream myfile;
     myfile.open( path );
