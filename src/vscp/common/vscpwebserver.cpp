@@ -5556,7 +5556,7 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn,
 
                 memset( buf, 0, sizeof( buf ) );
                 sprintf( wrkbuf,
-                         "1 1 Success\r\n%d records will be returned from table %s.\r\n",
+                         "1 1 Success\r\n%ld records will be returned from table %s.\r\n",
                          nfetchedRecords,
                          (const char *)strName.mbc_str() );
                 webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
@@ -5570,7 +5570,7 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn,
 
                     memset( buf, 0, sizeof( buf ) );
                     sprintf( wrkbuf,
-                             "%d - Date=%s,Value=%f\r\n",
+                             "%ld - Date=%s,Value=%f\r\n",
                              i,
                              (const char *)strDateTime.mbc_str(),
                              pRecords->measurement );
@@ -5670,15 +5670,16 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn,
 // XML to JSON convert
 //
 
-void convert( const istream &input, string &path  ) 
+void convert( const char *input, const char *output  ) 
 {
+    ifstream is( input );
     ostringstream oss;
-    oss << input.rdbuf();
+    oss << is.rdbuf();
 
     std:string json_str = xml2json( oss.str().data() );
 
     ofstream myfile;
-    myfile.open( path );
+    myfile.open( output );
     myfile << json_str << endl;
     myfile.close();
 }
@@ -5733,10 +5734,11 @@ int VSCPWebServerThread::webserv_rest_doFetchMDF( struct mg_connection *conn,
                 webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_GENERAL_FAILURE );
             }
 
-            std::string path = std::string( tempFileName.mb_str() );
+            std::string tempfile_out = std::string( tempFileName.mb_str() );
+            std::string tempfile_mdf = std::string( mdf.getTempFilePath().mb_str() );
 
             // Convert to JSON
-            convert( ifstream( mdf.getTempFilePath().mbc_str() ), path );
+            convert( (const char *)tempFileName.mbc_str(), (const char *)mdf.getTempFilePath().mbc_str() );
 
             // Send header
             if ( REST_FORMAT_JSON == format ) {
@@ -5754,7 +5756,7 @@ int VSCPWebServerThread::webserv_rest_doFetchMDF( struct mg_connection *conn,
             }
 
             ssize_t ss;
-            wxString wxpath( path.c_str(), wxConvUTF8 ); // Needed for 2.8.12
+            wxString wxpath( tempfile_out.c_str(), wxConvUTF8 ); // Needed for 2.8.12
             wxFile file( wxpath );
 
             while ( !file.Eof() ) {
