@@ -9,14 +9,15 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <time.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 
 
 #define HELLO_PORT 12345
-#define HELLO_GROUP "225.0.0.37"
+#define HELLO_GROUP "224.0.23.158"
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
      struct sockaddr_in addr;
      int fd, cnt;
@@ -37,7 +38,7 @@ main(int argc, char *argv[])
      
      /* now just sendto() our destination! */
      while (1) {
-	  if (sendto(fd,message,sizeof(message),0,(struct sockaddr *) &addr,
+	  if ( sendto( fd, message,strlen(message)+1,0,(struct sockaddr *) &addr,
 		     sizeof(addr)) < 0) {
 	       perror("sendto");
 	       exit(1);

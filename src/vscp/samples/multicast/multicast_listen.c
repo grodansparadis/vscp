@@ -13,11 +13,12 @@
 #include <arpa/inet.h>
 #include <time.h>
 #include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
 
 
 #define HELLO_PORT 12345
-#define HELLO_GROUP "225.0.0.37"
+#define HELLO_GROUP "224.0.23.158"
 #define MSGBUFSIZE 256
 
 main(int argc, char *argv[])
@@ -67,11 +68,12 @@ main(int argc, char *argv[])
      /* now just enter a read-print loop */
      while (1) {
 	  addrlen=sizeof(addr);
+      memset( msgbuf, 0, sizeof( msgbuf ) );
 	  if ((nbytes=recvfrom(fd,msgbuf,MSGBUFSIZE,0,
 			       (struct sockaddr *) &addr,&addrlen)) < 0) {
 	       perror("recvfrom");
 	       exit(1);
 	  }
-	  puts(message);
+	  puts(msgbuf);
      }
 }
