@@ -57,6 +57,13 @@ ifneq ("$(wildcard /srv/vscp/dm.xml)","")
 else
 	$(INSTALL_PROGRAM) -b -m744 config_examples/dm.xml_distro /srv/vscp/dm.xml
 endif	
+
+# simulation data
+ifneq ("$(wildcard /srv/vscp/dm.xml)","")
+        @read -p "Shall the simulation data file be copied (y/n)? " RESP; if [ "y" = $$RESP -o "Y" = $$RESP  ]; then $(INSTALL_PROGRAM) -b -m744 config_examples/simulation/simtempdata.txt /srv/vscp/simtempdata.txt; fi;
+else
+        $(INSTALL_PROGRAM) -b -m744 config_examples/simulation/simtempdata.txt /srv/vscp/simtempdata.txt
+endif
 # Web content
 	@read -p "Shall default web content be copied (y/n)? " RESP; if [ "y" = $$RESP -o "Y" = $$RESP  ]; then cp -r config_examples/web/* /srv/vscp/web/; fi;
 	@echo
