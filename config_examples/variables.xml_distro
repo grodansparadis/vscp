@@ -46,7 +46,7 @@
   <variable type="string">
     <name>SIM1_PATH0</name>
     <note>Path to simulation data. Leave blank to use internal values.</note>
-    <value>c:/srv/vscp/simtempdata.txt</value>
+    <value>/srv/vscp/simtempdata.txt</value>
   </variable>
 
   <variable type="integer">
