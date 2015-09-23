@@ -1541,27 +1541,10 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
             ptblItem->m_mutexThisTable.Unlock();
             
             if ( nRecords > 0 ) {
-            
-                ptblItem->m_mutexThisTable.Lock();
-                long nfetchedRecords = ptblItem->getStaticRequiredBuffSize();
-                ptblItem->m_mutexThisTable.Unlock();
 
-                if ( 0 == nfetchedRecords ) {
-                    mg_websocket_printf( conn, 
-									WEBSOCKET_OPCODE_TEXT, 
-									"-;GT;%d;%s",
-									WEBSOCK_ERROR_TABLE_ERROR_READING,
-									WEBSOCK_STR_ERROR_TABLE_ERROR_READING );
-			        wxString strErr = 
-                         wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), tblName.wx_str() );					
-	                pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
-                    return MG_TRUE;
-                }
-                else {
+                struct _vscpFileRecord *pRecords = new struct _vscpFileRecord[nRecords];
 
-                    struct _vscpFileRecord *pRecords = new struct _vscpFileRecord[nfetchedRecords];
-
-                    if ( NULL == pRecords ) {
+                if ( NULL == pRecords ) {
                         mg_websocket_printf( conn, 
 									WEBSOCKET_OPCODE_TEXT, 
 									"-;GT;%d;%s",
@@ -1571,32 +1554,33 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
                              wxString::Format( _("[Websocket] Having problems to allocate memory. [name=%s]\n"), tblName.wx_str() );					
 	                    pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
                         return MG_TRUE;
-                    }
+                }
 
-                    // First send start post with number if records
-                    mg_websocket_printf( conn, 
+                // Fetch data
+                long nfetchedRecords = ptblItem->getStaticData( pRecords, sizeof( pRecords ) );
+
+                // First send start post with number if records
+                mg_websocket_printf( conn, 
 									WEBSOCKET_OPCODE_TEXT, 
 									"+;GT;START;%d",
                                     nfetchedRecords );
 
-                    // Then send measurement records
-                    for ( long i=0; i<nfetchedRecords; i++ ) {
-                        mg_websocket_printf( conn, 
+                // Then send measurement records
+                for ( long i=0; i<nfetchedRecords; i++ ) {
+                    mg_websocket_printf( conn, 
 									WEBSOCKET_OPCODE_TEXT, 
 									"+;GT;%d;%d;%f",
                                     i, pRecords[i].timestamp, pRecords[i].measurement );
-                    }
+                }
 
-                    // Last send end post with number if records
-                    mg_websocket_printf( conn, 
+                // Last send end post with number if records
+                mg_websocket_printf( conn, 
 									WEBSOCKET_OPCODE_TEXT, 
 									"+;GT;END;%d",
                                     nfetchedRecords );
 
-                    // Deallocate storage
-                    delete[] pRecords;
-
-                }
+               // Deallocate storage
+               delete[] pRecords;
 
             }
             else {
@@ -5417,6 +5401,245 @@ VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *conn
 	return MG_TRUE;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// webserv_rest_doGetTableData
+//
+
+void VSCPWebServerThread::websrc_rest_renderTableData( struct mg_connection *conn,
+                                                        struct websrv_rest_session *pSession,
+                                                        int format,
+                                                        wxString& strName,
+                                                        struct _vscpFileRecord *pRecords,
+                                                        long nfetchedRecords )
+{
+    char buf[ 2048 ];
+    char wrkbuf[ 2048 ];
+    long nRecords = 0;
+
+    if ( REST_FORMAT_PLAIN == format ) {
+
+        // Send header
+        webserv_util_sendheader( conn, 200, REST_MIME_TYPE_PLAIN );
+        mg_write( conn, "\r\n", 2 );		// head/body Separator
+
+        memset( buf, 0, sizeof( buf ) );
+        sprintf( wrkbuf,
+                 "1 1 Success\r\n%ld records will be returned from table %s.\r\n",
+                 nfetchedRecords,
+                 ( const char * )strName.mbc_str() );
+        webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+        mg_write( conn, buf, strlen( buf ) );
+
+        for ( long i = 0; i < nfetchedRecords; i++ ) {
+
+            wxDateTime dt;
+            dt.Set( ( time_t )pRecords[ i ].timestamp );
+            wxString strDateTime = dt.FormatISODate() + _( " " ) + dt.FormatISOTime();
+
+            memset( buf, 0, sizeof( buf ) );
+            sprintf( wrkbuf,
+                     "%ld - Date=%s,Value=%f\r\n",
+                     i,
+                     ( const char * )strDateTime.mbc_str(),
+                     pRecords->measurement );
+            webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+            mg_write( conn, buf, strlen( buf ) );
+
+        }
+
+    }
+    else if ( REST_FORMAT_CSV == format ) {
+
+        // Send header
+        webserv_util_sendheader( conn, 200, REST_MIME_TYPE_CSV );
+        mg_write( conn, "\r\n", 2 );		// head/body Separator
+
+        memset( buf, 0, sizeof( buf ) );
+        sprintf( wrkbuf,
+                 "success-code, error-code, message, description, EvenL\r\n1, 1, Success, Success., NULL\r\n" );
+        webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+        mg_write( conn, buf, strlen( buf ) );
+
+        memset( buf, 0, sizeof( buf ) );
+        sprintf( wrkbuf,
+                 "1, 2, Info, Success %d records will be returned from table %s.,NULL\r\n",
+                 nfetchedRecords,
+                 ( const char * )strName.mbc_str() );
+        webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+        mg_write( conn, buf, strlen( buf ) );
+
+        memset( buf, 0, sizeof( buf ) );
+        sprintf( wrkbuf,
+                 "1, 4, Count, %d, NULL\r\n",
+                 nfetchedRecords );
+        webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+        mg_write( conn, buf, strlen( buf ) );
+
+        for ( long i = 0; i < nfetchedRecords; i++ ) {
+
+            wxDateTime dt;
+            dt.Set( ( time_t )pRecords[ i ].timestamp );
+            wxString strDateTime = dt.FormatISODate() + _( " " ) + dt.FormatISOTime();
+
+            memset( buf, 0, sizeof( buf ) );
+            sprintf( wrkbuf,
+                     "1,3,Data,Table,%d - Date=%s,Value=%f\r\n",
+                     i,
+                     ( const char * )strDateTime.mbc_str(),
+                     pRecords->measurement );
+            webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+            mg_write( conn, buf, strlen( buf ) );
+
+        }
+
+    }
+    else if ( REST_FORMAT_XML == format ) {
+
+        // Send header
+        webserv_util_sendheader( conn, 200, REST_MIME_TYPE_XML );
+        mg_write( conn, "\r\n", 2 );		// head/body Separator
+
+        memset( buf, 0, sizeof( buf ) );
+        sprintf( wrkbuf,
+                 "<vscp-rest success=\"true\" code=\"1\" message=\"Success\" description=\"Success.\">\r\n" );
+        webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+        mg_write( conn, buf, strlen( buf ) );
+
+        memset( buf, 0, sizeof( buf ) );
+        sprintf( wrkbuf,
+                 "<count>%d</count>\r\n<info>Fetched %d elements of table %s</info>\r\n",
+                 nfetchedRecords,
+                 nfetchedRecords,
+                 ( const char * )strName.mbc_str() );
+        webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+        mg_write( conn, buf, strlen( buf ) );
+
+        for ( long i = 0; i < nfetchedRecords; i++ ) {
+
+            wxDateTime dt;
+            dt.Set( ( time_t )pRecords[ i ].timestamp );
+            wxString strDateTime = dt.FormatISODate() + _( " " ) + dt.FormatISOTime();
+
+            memset( buf, 0, sizeof( buf ) );
+            sprintf( wrkbuf,
+                     "<data id=\"%d\" date=\"%s\" value=\"%f\"></data>\r\n",
+                     i,
+                     ( const char * )strDateTime.mbc_str(),
+                     pRecords->measurement );
+            webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+            mg_write( conn, buf, strlen( buf ) );
+
+        }
+
+        memset( buf, 0, sizeof( buf ) );
+        sprintf( wrkbuf,
+                 "</vscp-rest>\r\n" );
+        webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+        mg_write( conn, buf, strlen( buf ) );
+
+    }
+    else if ( ( REST_FORMAT_JSON == format ) || ( REST_FORMAT_JSONP == format ) ) {
+
+        if ( REST_FORMAT_JSON == format ) {
+            // Send header
+            webserv_util_sendheader( conn, 200, REST_MIME_TYPE_JSON );
+            mg_write( conn, "\r\n", 2 );		// head/body Separator
+        }
+        else {                                    // Send header
+            webserv_util_sendheader( conn, 200, REST_MIME_TYPE_JSONP );
+            mg_write( conn, "\r\n", 2 );		// head/body Separator
+        }
+
+        memset( buf, 0, sizeof( buf ) );
+        char *p = wrkbuf;
+
+        if ( REST_FORMAT_JSONP == format ) {
+            p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "typeof handler === 'function' && handler(", 41 );
+        }
+
+        p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p,
+                                     "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",",
+                                     strlen( "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\"," ) );
+
+        p += json_emit_quoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "info", 4 );
+        p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
+        {
+            char buf2[ 200 ];
+            sprintf( buf2,
+                     "\"%d rows will be retreived from table %s\"",
+                     nfetchedRecords,
+                     ( const char * )strName.mbc_str() );
+            p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, buf2, strlen( buf2 ) );
+        }
+        p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
+        p += json_emit_quoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "table", 5 );
+        p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":[", 2 );
+
+        memset( buf, 0, sizeof( buf ) );
+        webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+        mg_write( conn, buf, strlen( buf ) );
+        p = wrkbuf;
+
+        for ( long i = 0; i < nfetchedRecords; i++ ) {
+
+            wxDateTime dt;
+            dt.Set( ( time_t )pRecords[ i ].timestamp );
+            wxString strDateTime = dt.FormatISOCombined();
+
+            memset( wrkbuf, 0, sizeof( wrkbuf ) );
+            p = wrkbuf;
+
+            sprintf( buf,
+                     "{\"id\":%d,\"date\":\"%s\",\"value\":%f}",
+                     i,
+                     ( const char * )strDateTime.mbc_str(),
+                     pRecords->measurement );
+
+            p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, buf, strlen( buf ) );
+
+            if ( i < ( nfetchedRecords - 1 ) ) {
+                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
+            }
+
+            memset( buf, 0, sizeof( buf ) );
+            webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+            mg_write( conn, buf, strlen( buf ) );
+
+        }
+
+        memset( wrkbuf, 0, sizeof( wrkbuf ) );
+        p = wrkbuf;
+
+        // Mark end
+        p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "],", 2 );
+        p += json_emit_quoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "count", 5 );
+        p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
+        p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, nfetchedRecords );
+        p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
+        p += json_emit_quoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "filtered", 8 );
+        p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
+        p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, 0 );
+        p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
+        p += json_emit_quoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "errors", 6 );
+        p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
+        p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, 0 );
+        p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "}", 1 );
+
+        if ( REST_FORMAT_JSONP == format ) {
+            p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ");", 2 );
+        }
+
+        memset( buf, 0, sizeof( buf ) );
+        webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+        mg_write( conn, buf, strlen( buf ) );
+
+    }
+
+    mg_write( conn, "0\r\n\r\n", 5 );	// Terminator
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // webserv_rest_doGetTableData
 //
@@ -5490,6 +5713,9 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn,
             return MG_TRUE;
         }
 
+        ///////////////////////////////////////////////////////////////////////
+        //                          Dynamic table
+        ///////////////////////////////////////////////////////////////////////
         if ( VSCP_TABLE_DYNAMIC == ptblItem->m_vscpFileHead.type ) {
 
             uint64_t start, end;
@@ -5548,7 +5774,15 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn,
             dtEnd.Set( ( time_t )ptblItem->getTimeStampEnd() );
             wxString strDateTimeEnd = dtEnd.FormatISODate() + _( "T" ) + dtEnd.FormatISOTime();
 
-            if ( REST_FORMAT_PLAIN == format ) {
+            // Output table data
+            websrc_rest_renderTableData( conn,
+                                            pSession,
+                                            format,
+                                            strName,
+                                            pRecords,
+                                            nfetchedRecords );
+
+            /*if ( REST_FORMAT_PLAIN == format ) {
 
                 // Send header
                 webserv_util_sendheader( conn, 200, REST_MIME_TYPE_PLAIN );
@@ -5711,11 +5945,7 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn,
                 webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
                 mg_write( conn, buf, strlen( buf ) );
                 p = wrkbuf;
-
-                /*
-                {"success":true, "code" : 1, "message" : "success", "description" : "Success", "info" : "100 events requested of 7l available (unfiltered) 7 will be retrieved", "table" : [{"id":96, "date" : 10, "value" : 6, }, { "head":0,"vscpclass" : 20,"vscptype" : 9,"timestamp" : 3180410024,"obid" : 2,"guid" : "FF:FF:FF:FF:FF:FF:FF:FE:04:01:3C:64:00:02:00:00","sizedata" : 3,"data" : [0,0,0] }, { "head":0,"vscpclass" : 0,"vscptype" : 1,"timestamp" : 3180410024,"obid" : 2,"guid" : "FF:FF:FF:FF:FF:FF:FF:FE:04:01:3C:64:00:02:00:00","sizedata" : 5,"data" : [172,86,2,49,158] }, { "head":96,"vscpclass" : 20,"vscptype" : 9,"timestamp" : 2070558049,"obid" : 3,"guid" : "FF:FF:FF:FF:FF:FF:FF:F7:03:00:00:00:00:00:00:00","sizedata" : 3,"data" : [0,1,2] }, { "head":96,"vscpclass" : 10,"vscptype" : 6,"timestamp" : 2070558099,"obid" : 3,"guid" : "FF:FF:FF:FF:FF:FF:FF:F7:03:00:00:00:00:00:00:00","sizedata" : 4,"data" : [138,130,11,223] }, { "head":96,"vscpclass" : 10,"vscptype" : 6,"timestamp" : 2070558349,"obid" : 3,"guid" : "FF:FF:FF:FF:FF:FF:FF:F7:03:00:00:00:00:00:00:00","sizedata" : 4,"data" : [138,129,1,46] }, { "head":96,"vscpclass" : 10,"vscptype" : 6,"timestamp" : 2070558599,"obid" : 3,"guid" : "FF:FF:FF:FF:FF:FF:FF:F7:03:00:00:00:00:00:00:00","sizedata" : 4,"data" : [138,130,11,176] }], "count" : 7, "filtered" : 0, "errors" : 0}
-                */
-                
+               
                 for ( long i = 0; i < nfetchedRecords; i++ ) {
 
                     wxDateTime dt;
@@ -5769,16 +5999,82 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn,
                 webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
                 mg_write( conn, buf, strlen( buf ) );
 
-            }
+            }*/
 
             mg_write( conn, "0\r\n\r\n", 5 );	// Terminator
 
-            // Deallocate storage
+            // De allocate storage
             delete[] pRecords;
 
         }
+        ///////////////////////////////////////////////////////////////////////
+        //                          Static table
+        ///////////////////////////////////////////////////////////////////////
+        else if ( VSCP_TABLE_STATIC == ptblItem->m_vscpFileHead.type ) {
 
-    }
+            // Fetch number of records in set 
+            ptblItem->m_mutexThisTable.Lock();
+            long nRecords = ptblItem->getStaticRequiredBuffSize();
+            ptblItem->m_mutexThisTable.Unlock();
+
+            if ( nRecords > 0 ) {
+
+                struct _vscpFileRecord *pRecords = new struct _vscpFileRecord[ nRecords ];
+
+                if ( NULL == pRecords ) {
+                    webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_GENERAL_FAILURE );
+                    return MG_TRUE;
+                }
+
+                // Fetch data
+                long nfetchedRecords = ptblItem->getStaticData( pRecords, sizeof( pRecords ) );
+
+                // Output table data
+                websrc_rest_renderTableData( conn,
+                                             pSession,
+                                             format,
+                                             strName,
+                                             pRecords,
+                                             nfetchedRecords );
+
+                    /*// First send start post with number if records
+                    mg_websocket_printf( conn,
+                                         WEBSOCKET_OPCODE_TEXT,
+                                         "+;GT;START;%d",
+                                         nfetchedRecords );
+
+                    // Then send measurement records
+                    for ( long i = 0; i<nfetchedRecords; i++ ) {
+                        mg_websocket_printf( conn,
+                                             WEBSOCKET_OPCODE_TEXT,
+                                             "+;GT;%d;%d;%f",
+                                             i, pRecords[ i ].timestamp, pRecords[ i ].measurement );
+                    }
+
+                    // Last send end post with number if records
+                    mg_websocket_printf( conn,
+                                         WEBSOCKET_OPCODE_TEXT,
+                                         "+;GT;END;%d",
+                                         nfetchedRecords );*/
+
+                    // Deallocate storage
+                    delete[] pRecords;
+
+                    mg_write( conn, "0\r\n\r\n", 5 );	// Terminator
+
+                }
+
+            }
+            // No records
+            else {
+                webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_TABLE_NO_DATA );
+                return MG_TRUE;
+            }
+
+            
+
+        }
+
 
     return MG_TRUE;
 }
