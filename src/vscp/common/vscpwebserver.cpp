@@ -5529,9 +5529,9 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn,
 
             ptblItem->m_mutexThisTable.Lock();
             long nfetchedRecords = ptblItem->getRangeOfData( start,
-                                                             end,
-                                                             ( void * )pRecords,
-                                                             nRecords* sizeof( struct _vscpFileRecord ) );
+                                                                end,
+                                                                ( void * )pRecords,
+                                                                nRecords* sizeof( struct _vscpFileRecord ) );
             ptblItem->m_mutexThisTable.Unlock();
 
             if ( 0 == nfetchedRecords ) {
@@ -5585,12 +5585,25 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn,
                 // Send header
                 webserv_util_sendheader( conn, 200, REST_MIME_TYPE_CSV );
                 mg_write( conn, "\r\n", 2 );		// head/body Separator
-                /*
+                
                 memset( buf, 0, sizeof( buf ) );
                 sprintf( wrkbuf,
-                         "1 1 Success\r\n%d records will be returned from table %s.\r\n",
+                         "success-code, error-code, message, description, EvenL\r\n1, 1, Success, Success., NULL\r\n" );
+                webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+                mg_write( conn, buf, strlen( buf ) );
+
+                memset( buf, 0, sizeof( buf ) );
+                sprintf( wrkbuf,
+                         "1, 2, Info, Success %d records will be returned from table %s.,NULL\r\n",
                          nfetchedRecords,
                          ( const char * )strName.mbc_str() );
+                webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+                mg_write( conn, buf, strlen( buf ) );
+
+                memset( buf, 0, sizeof( buf ) );
+                sprintf( wrkbuf,
+                         "1, 4, Count, %d, NULL\r\n",
+                         nfetchedRecords );
                 webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
                 mg_write( conn, buf, strlen( buf ) );
 
@@ -5602,34 +5615,15 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn,
 
                     memset( buf, 0, sizeof( buf ) );
                     sprintf( wrkbuf,
-                             "%d - Date=%s,Value=%f\r\n",
+                             "1,3,Data,Table,%d - Date=%s,Value=%f\r\n",
                              i,
                              ( const char * )strDateTime.mbc_str(),
                              pRecords->measurement );
                     webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
                     mg_write( conn, buf, strlen( buf ) );
 
-                    sprintf( wrkbuf, "success-code,error-code,message,description,Event\r\n1,1,Success,Success.,NULL\r\n" );
-                    webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
-                    mg_write( conn, buf, strlen( buf ) );
-                    memset( buf, 0, sizeof( buf ) );
-                    sprintf( wrkbuf,
-                             "1,2,Info,%zd events requested of %ul available (unfiltered) %lu will be retrieved,NULL\r\n",
-                             count,
-                             cntAvailable,
-                             MIN( count, cntAvailable ) );
-                    webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
-                    mg_write( conn, buf, strlen( buf ) );
-
-                    memset( buf, 0, sizeof( buf ) );
-                    sprintf( wrkbuf,
-                             "1,4,Count,%zu,NULL\r\n",
-                             MIN( count, cntAvailable ) );
-                    webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
-                    mg_write( conn, buf, strlen( buf ) );
-
                 }
-                */
+                
             }
             else if ( REST_FORMAT_XML == format ) {
 
@@ -5637,19 +5631,143 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn,
                 webserv_util_sendheader( conn, 200, REST_MIME_TYPE_XML );
                 mg_write( conn, "\r\n", 2 );		// head/body Separator
 
+                memset( buf, 0, sizeof( buf ) );
+                sprintf( wrkbuf,
+                         "<vscp-rest success=\"true\" code=\"1\" message=\"Success\" description=\"Success.\">\r\n" );
+                webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+                mg_write( conn, buf, strlen( buf ) );
+
+                memset( buf, 0, sizeof( buf ) );
+                sprintf( wrkbuf,
+                            "<count>%d</count>\r\n<info>Fetched %d elements of table %s</info>\r\n",
+                            nfetchedRecords,
+                            nfetchedRecords,
+                            ( const char * )strName.mbc_str() );
+                webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+                mg_write( conn, buf, strlen( buf ) );
+
+                for ( long i = 0; i < nfetchedRecords; i++ ) {
+
+                    wxDateTime dt;
+                    dt.Set( ( time_t )pRecords[ i ].timestamp );
+                    wxString strDateTime = dt.FormatISODate() + _( " " ) + dt.FormatISOTime();
+
+                    memset( buf, 0, sizeof( buf ) );
+                    sprintf( wrkbuf,
+                             "<data id=\"%d\" date=\"%s\" value=\"%f\"></data>\r\n",
+                             i,
+                             ( const char * )strDateTime.mbc_str(),
+                             pRecords->measurement );
+                    webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+                    mg_write( conn, buf, strlen( buf ) );
+
+                }
+
+                memset( buf, 0, sizeof( buf ) );
+                sprintf( wrkbuf,
+                         "</vscp-rest>\r\n" );
+                webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+                mg_write( conn, buf, strlen( buf ) );
+
             }
-            else if ( REST_FORMAT_JSON == format ) {
+            else if ( ( REST_FORMAT_JSON == format ) || ( REST_FORMAT_JSONP == format ) ) {
 
-                // Send header
-                webserv_util_sendheader( conn, 200, REST_MIME_TYPE_JSON );
-                mg_write( conn, "\r\n", 2 );		// head/body Separator
+                if ( REST_FORMAT_JSON == format ) {
+                    // Send header
+                    webserv_util_sendheader( conn, 200, REST_MIME_TYPE_JSON );
+                    mg_write( conn, "\r\n", 2 );		// head/body Separator
+                }
+                else {                                    // Send header
+                    webserv_util_sendheader( conn, 200, REST_MIME_TYPE_JSONP );
+                    mg_write( conn, "\r\n", 2 );		// head/body Separator
+                }
 
-            }
-            else if ( REST_FORMAT_JSONP == format ) {
+                memset( buf, 0, sizeof( buf ) );
+                char *p = wrkbuf;
 
-                // Send header
-                webserv_util_sendheader( conn, 200, REST_MIME_TYPE_JSONP );
-                mg_write( conn, "\r\n", 2 );		// head/body Separator
+                if ( REST_FORMAT_JSONP == format ) {
+                    p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "typeof handler === 'function' && handler(", 41 );
+                }
+
+                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p,
+                                             "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",",
+                                             strlen( "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\"," ) );
+
+                p += json_emit_quoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "info", 4 );
+                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
+                {
+                    char buf2[ 200 ];
+                    sprintf( buf2,
+                             "\"%d rows will be retreived from table %s\"",
+                             nfetchedRecords,
+                             ( const char * )strName.mbc_str() );
+                    p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, buf2, strlen( buf2 ) );
+                }
+                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
+                p += json_emit_quoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "table", 5 );
+                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":[", 2 );
+
+                memset( buf, 0, sizeof( buf ) );
+                webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+                mg_write( conn, buf, strlen( buf ) );
+                p = wrkbuf;
+
+                /*
+                {"success":true, "code" : 1, "message" : "success", "description" : "Success", "info" : "100 events requested of 7l available (unfiltered) 7 will be retrieved", "table" : [{"id":96, "date" : 10, "value" : 6, }, { "head":0,"vscpclass" : 20,"vscptype" : 9,"timestamp" : 3180410024,"obid" : 2,"guid" : "FF:FF:FF:FF:FF:FF:FF:FE:04:01:3C:64:00:02:00:00","sizedata" : 3,"data" : [0,0,0] }, { "head":0,"vscpclass" : 0,"vscptype" : 1,"timestamp" : 3180410024,"obid" : 2,"guid" : "FF:FF:FF:FF:FF:FF:FF:FE:04:01:3C:64:00:02:00:00","sizedata" : 5,"data" : [172,86,2,49,158] }, { "head":96,"vscpclass" : 20,"vscptype" : 9,"timestamp" : 2070558049,"obid" : 3,"guid" : "FF:FF:FF:FF:FF:FF:FF:F7:03:00:00:00:00:00:00:00","sizedata" : 3,"data" : [0,1,2] }, { "head":96,"vscpclass" : 10,"vscptype" : 6,"timestamp" : 2070558099,"obid" : 3,"guid" : "FF:FF:FF:FF:FF:FF:FF:F7:03:00:00:00:00:00:00:00","sizedata" : 4,"data" : [138,130,11,223] }, { "head":96,"vscpclass" : 10,"vscptype" : 6,"timestamp" : 2070558349,"obid" : 3,"guid" : "FF:FF:FF:FF:FF:FF:FF:F7:03:00:00:00:00:00:00:00","sizedata" : 4,"data" : [138,129,1,46] }, { "head":96,"vscpclass" : 10,"vscptype" : 6,"timestamp" : 2070558599,"obid" : 3,"guid" : "FF:FF:FF:FF:FF:FF:FF:F7:03:00:00:00:00:00:00:00","sizedata" : 4,"data" : [138,130,11,176] }], "count" : 7, "filtered" : 0, "errors" : 0}
+                */
+                
+                for ( long i = 0; i < nfetchedRecords; i++ ) {
+
+                    wxDateTime dt;
+                    dt.Set( ( time_t )pRecords[ i ].timestamp );
+                    wxString strDateTime = dt.FormatISOCombined();
+
+                    memset( wrkbuf, 0, sizeof( wrkbuf ) );
+                    p = wrkbuf;
+
+                    sprintf( buf,
+                             "{\"id\":%d,\"date\":\"%s\",\"value\":%f}",
+                             i,
+                             ( const char * )strDateTime.mbc_str(),
+                             pRecords->measurement );
+
+                    p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, buf, strlen( buf ) );
+
+                    if ( i < ( nfetchedRecords - 1 ) ) {
+                        p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
+                    }                
+
+                    memset( buf, 0, sizeof( buf ) );
+                    webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+                    mg_write( conn, buf, strlen( buf ) );
+
+                }
+                
+                memset( wrkbuf, 0, sizeof( wrkbuf ) );
+                p = wrkbuf;
+
+                // Mark end
+                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "],", 2 );
+                p += json_emit_quoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "count", 5 );
+                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
+                p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, nfetchedRecords );
+                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
+                p += json_emit_quoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "filtered", 8 );
+                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
+                p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, 0 );
+                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
+                p += json_emit_quoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "errors", 6 );
+                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
+                p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, 0 );
+                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "}", 1 );
+
+                if ( REST_FORMAT_JSONP == format ) {
+                    p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ");", 2 );
+                }
+
+                memset( buf, 0, sizeof( buf ) );
+                webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+                mg_write( conn, buf, strlen( buf ) );
 
             }
 
@@ -5676,7 +5794,7 @@ void convert( const char *input, const char *output  )
     ostringstream oss;
     oss << is.rdbuf();
 
-    std:string json_str = xml2json( oss.str().data() );
+    string json_str = xml2json( oss.str().data() );
 
     ofstream myfile;
     myfile.open( output );

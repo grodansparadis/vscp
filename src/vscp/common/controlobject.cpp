@@ -502,7 +502,8 @@ bool CControlObject::init(wxString& strcfgfile)
     //wxLog::AddTraceMask(_("wxTRACE_vscpd_LevelII"));
     //wxLog::AddTraceMask( _( "wxTRACE_vscpd_dm" ) );
 
-    
+    // Change locale to get the correct decimal point
+    setlocale( LC_NUMERIC, "English_United States.1252" );  // Why not!
 
     // A configuration file must be available
     if (!wxFile::Exists(strcfgfile)) {
