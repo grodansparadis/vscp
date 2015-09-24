@@ -278,37 +278,39 @@ void frmDeviceConfig::CreateControls() {
     menuBar->Append(itemMenu14, _("Help"));
     itemFrame1->SetMenuBar(menuBar);
 
-    wxToolBar* itemToolBar25 = CreateToolBar( wxTB_FLAT|wxTB_HORIZONTAL, ID_TOOLBAR_DEVICE_CONFIG );
+    wxToolBar* itemToolBar = CreateToolBar( wxTB_FLAT|wxTB_HORIZONTAL, ID_TOOLBAR_DEVICE_CONFIG );
     wxBitmap itemtool26Bitmap(itemFrame1->GetBitmapResource(wxT("open.xpm")));
     wxBitmap itemtool26BitmapDisabled;
-    itemToolBar25->AddTool(ID_TOOL6, wxEmptyString, itemtool26Bitmap, itemtool26BitmapDisabled, wxITEM_NORMAL, _("Fetch data from file"), wxEmptyString);
+    itemToolBar->AddTool(ID_TOOL6, wxEmptyString, itemtool26Bitmap, itemtool26BitmapDisabled, wxITEM_NORMAL, _("Fetch data from file"), wxEmptyString);
     wxBitmap itemtool27Bitmap(itemFrame1->GetBitmapResource(wxT("save.xpm")));
     wxBitmap itemtool27BitmapDisabled;
-    itemToolBar25->AddTool(ID_TOOL7, wxEmptyString, itemtool27Bitmap, itemtool27BitmapDisabled, wxITEM_NORMAL, _("Save data to file"), wxEmptyString);
-    itemToolBar25->AddSeparator();
+    itemToolBar->AddTool(ID_TOOL7, wxEmptyString, itemtool27Bitmap, itemtool27BitmapDisabled, wxITEM_NORMAL, _("Save data to file"), wxEmptyString);
+    itemToolBar->AddSeparator();
     wxBitmap itemtool29Bitmap(itemFrame1->GetBitmapResource(wxT("cut.xpm")));
     wxBitmap itemtool29BitmapDisabled;
-    itemToolBar25->AddTool(ID_TOOL8, wxEmptyString, itemtool29Bitmap, itemtool29BitmapDisabled, wxITEM_NORMAL, _("Remove selected row(s)"), wxEmptyString);
+    itemToolBar->AddTool(ID_TOOL8, wxEmptyString, itemtool29Bitmap, itemtool29BitmapDisabled, wxITEM_NORMAL, _("Remove selected row(s)"), wxEmptyString);
     wxBitmap itemtool30Bitmap(itemFrame1->GetBitmapResource(wxT("copy.xpm")));
     wxBitmap itemtool30BitmapDisabled;
-    itemToolBar25->AddTool(ID_TOOL9, wxEmptyString, itemtool30Bitmap, itemtool30BitmapDisabled, wxITEM_NORMAL, _("Copy selected row(s) \nto the clipboard"), wxEmptyString);
+    itemToolBar->AddTool(ID_TOOL9, wxEmptyString, itemtool30Bitmap, itemtool30BitmapDisabled, wxITEM_NORMAL, _("Copy selected row(s) \nto the clipboard"), wxEmptyString);
     wxBitmap itemtool31Bitmap(itemFrame1->GetBitmapResource(wxT("paste.xpm")));
     wxBitmap itemtool31BitmapDisabled;
-    itemToolBar25->AddTool(ID_TOOL10, wxEmptyString, itemtool31Bitmap, itemtool31BitmapDisabled, wxITEM_NORMAL, _("Paste row(s) from clipboard"), wxEmptyString);
-    itemToolBar25->AddSeparator();
+    itemToolBar->AddTool(ID_TOOL10, wxEmptyString, itemtool31Bitmap, itemtool31BitmapDisabled, wxITEM_NORMAL, _("Paste row(s) from clipboard"), wxEmptyString);
+    itemToolBar->AddSeparator();
     wxBitmap itemtool33Bitmap(itemFrame1->GetBitmapResource(wxT("Print.xpm")));
     wxBitmap itemtool33BitmapDisabled;
-    itemToolBar25->AddTool(ID_TOOL11, wxEmptyString, itemtool33Bitmap, itemtool33BitmapDisabled, wxITEM_NORMAL, _("Print selected or all row(s)"), wxEmptyString);
-    itemToolBar25->AddSeparator();
-    wxStaticText* itemStaticText35 = new wxStaticText;
-    itemStaticText35->Create( itemToolBar25, wxID_STATIC, _("Node id: "), wxDefaultPosition, wxDefaultSize, 0 );
-    itemStaticText35->SetFont(wxFont(8, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
-    itemToolBar25->AddControl(itemStaticText35);
+    itemToolBar->AddTool(ID_TOOL11, wxEmptyString, itemtool33Bitmap, itemtool33BitmapDisabled, wxITEM_NORMAL, _("Print selected or all row(s)"), wxEmptyString);
+    itemToolBar->AddSeparator();
+
+    wxStaticText* itemStaticNodeID = new wxStaticText;
+    itemStaticNodeID->Create( itemToolBar, wxID_STATIC, _("Node id: "), wxDefaultPosition, wxDefaultSize, 0 );
+    itemStaticNodeID->SetFont(wxFont(8, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+    itemToolBar->AddControl( itemStaticNodeID );
+
     wxArrayString m_comboNodeIDStrings;
-    
+
     // Nodeid/guid combobox
     m_comboNodeID = new wxComboBox;
-    m_comboNodeID->Create( itemToolBar25, 
+    m_comboNodeID->Create( itemToolBar, 
                                 ID_COMBOBOX4, 
                                 wxEmptyString, 
                                 wxDefaultPosition, 
@@ -318,32 +320,34 @@ void frmDeviceConfig::CreateControls() {
     if ( frmDeviceConfig::ShowToolTips() ) {
         m_comboNodeID->SetToolTip( _("Set nickname or GUID for node here") );
     }
-    m_comboNodeID->SetBackgroundColour(wxColour(255, 255, 210));
-    itemToolBar25->AddControl(m_comboNodeID);
+    m_comboNodeID->SetBackgroundColour(wxColour(255, 255, 0));
+    itemToolBar->AddControl(m_comboNodeID);
+
+    itemToolBar->AddSeparator();
 
     // Button for connection test
-    wxBitmapButton* itemBitmapButton37 = new wxBitmapButton;
-    itemBitmapButton37->Create( itemToolBar25, ID_CHECK_LEVEL2, itemFrame1->GetBitmapResource(wxT("find.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
+    wxBitmapButton* itemBitmapButtonTest = new wxBitmapButton;
+    itemBitmapButtonTest->Create( itemToolBar, ID_CHECK_LEVEL2, itemFrame1->GetBitmapResource(wxT("find.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
     if ( frmDeviceConfig::ShowToolTips() ) {
-        itemBitmapButton37->SetToolTip( _("Test if device is present.") );
+        itemBitmapButtonTest->SetToolTip( _("Test if device is present.") );
     }
-    itemToolBar25->AddControl(itemBitmapButton37);
+    itemToolBar->AddControl( itemBitmapButtonTest );
 
-    itemToolBar25->AddSeparator();
+    itemToolBar->AddSeparator();
     
     // Level II Checkbox
     m_bLevel2 = new wxCheckBox;
-    m_bLevel2->Create( itemToolBar25, ID_CHECKBOX_LEVEL22, _("Level II"), wxDefaultPosition, wxDefaultSize, 0 );
+    m_bLevel2->Create( itemToolBar, ID_CHECKBOX_LEVEL22, _("Level II"), wxDefaultPosition, wxDefaultSize, 0 );
     m_bLevel2->SetValue(false);
     if ( frmDeviceConfig::ShowToolTips() ) {
         m_bLevel2->SetToolTip( _("Mark this interface as a full Level II interface") );
     }
 
-    itemToolBar25->AddControl(m_bLevel2);
-    itemToolBar25->AddSeparator();
+    itemToolBar->AddControl(m_bLevel2);
+    itemToolBar->AddSeparator();
 
     m_BtnActivateInterface = new wxToggleButton;
-    m_BtnActivateInterface->Create( itemToolBar25, ID_TOGGLEBUTTON1, _("Connected"), wxDefaultPosition, wxSize(120, -1), 0 );
+    m_BtnActivateInterface->Create( itemToolBar, ID_TOGGLEBUTTON1, _("Connected"), wxDefaultPosition, wxSize(120, -1), 0 );
     m_BtnActivateInterface->SetValue(true);
     if ( frmDeviceConfig::ShowToolTips() ) {
         m_BtnActivateInterface->SetToolTip( _("Acticate/Deactivate the interface") );
@@ -352,9 +356,9 @@ void frmDeviceConfig::CreateControls() {
     //m_BtnActivateInterface->SetBackgroundColour(wxColour(165, 42, 42));
     //m_BtnActivateInterface->SetFont(wxFont(10, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Sans")));
 
-    itemToolBar25->AddControl(m_BtnActivateInterface);
-    itemToolBar25->Realize();
-    itemFrame1->SetToolBar(itemToolBar25);
+    itemToolBar->AddControl(m_BtnActivateInterface);
+    itemToolBar->Realize();
+    itemFrame1->SetToolBar(itemToolBar);
 
     wxPanel* itemPanel44 = new wxPanel;
     itemPanel44->Create( itemFrame1, ID_PANEL_DEVICE_CONFIG, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );

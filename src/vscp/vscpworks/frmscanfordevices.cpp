@@ -1050,6 +1050,9 @@ void frmScanforDevices::openConfiguration( wxCommandEvent& event )
 {
     wxBusyCursor wait;
     
+    scanElement *pElement =
+        ( scanElement * )m_DeviceTree->GetItemData( m_DeviceTree->GetSelection() );
+
     frmDeviceConfig *subframe = new frmDeviceConfig(this, 2000, _("VSCP Configuration window"));
 
     if (INTERFACE_CANAL == m_interfaceType) {
@@ -1059,7 +1062,11 @@ void frmScanforDevices::openConfiguration( wxCommandEvent& event )
 
         // Init node id combo
         wxRect rc = subframe->m_comboNodeID->GetRect();
-        rc.SetWidth(60);
+#ifdef WIN32						
+        rc.SetWidth( 60 );
+#else
+        rc.SetWidth( 80 );
+#endif	
         subframe->m_comboNodeID->SetSize(rc);
 
         for (int i = 1; i < 256; i++) {
@@ -1078,9 +1085,9 @@ void frmScanforDevices::openConfiguration( wxCommandEvent& event )
                                         0 );
 
         scanElement *pElement =
-                (scanElement *) m_DeviceTree->GetItemData(m_DeviceTree->GetSelection());
+                (scanElement *) m_DeviceTree->GetItemData( m_DeviceTree->GetSelection() );
         if ( NULL != pElement ) {
-            subframe->m_comboNodeID->SetSelection(pElement->m_nodeid - 1);
+            subframe->m_comboNodeID->SetSelection( pElement->m_nodeid - 1 );
         }
 
         // Close our interface
@@ -1106,18 +1113,21 @@ void frmScanforDevices::openConfiguration( wxCommandEvent& event )
     else if ( INTERFACE_VSCP == m_interfaceType ) {
 
         wxString str;
-        unsigned char GUID[16];
-        memcpy(GUID, m_vscpif.m_GUID, 16);
+        cguid destguid;
+        destguid = m_ifguid;
+        destguid.setNicknameID( pElement->m_nodeid );
 
         // Fill the combo
         for (int i = 1; i < 256; i++) {
-            GUID[0] = i;
-            vscp_writeGuidArrayToString( GUID, str );
+            cguid guid;
+
+            guid = m_ifguid;
+            guid.setNicknameID( i );
+            guid.toString( str );
             subframe->m_comboNodeID->Append( str );
         }
 
-        GUID[0] = 0x01;
-        vscp_writeGuidArrayToString(GUID, str);
+        destguid.toString( str );
         subframe->m_comboNodeID->SetValue(str);
 
         subframe->SetTitle( _("VSCP Registers (TCP/IP)- ") +
@@ -1131,19 +1141,42 @@ void frmScanforDevices::openConfiguration( wxCommandEvent& event )
                     _("Connection Test"));
         }
 
+        // Init node id combo
+        wxRect rc = subframe->m_comboNodeID->GetRect();
+#ifdef WIN32						
+        rc.SetWidth( 410 );
+#else
+        rc.SetWidth( 410 );
+#endif						
+        subframe->m_comboNodeID->SetSize( rc );
+
         //subframe->m_csw = m_interfaceType;
         subframe->m_csw.setInterface( m_vscpif.m_strHost,
                                         m_vscpif.m_strUser,
                                         m_vscpif.m_strPassword );
+        subframe->m_ifguid = m_ifguid;        
+
+        // Close our interface
+        m_csw.doCmdClose();
 
         // Connect to host
         subframe->enableInterface();
 
-        // Show the VSCP configuration windows
-        subframe->Show(true);
+        subframe->m_comboNodeID->SetSelection( pElement->m_nodeid - 1 );
+
+        // subframe->OnInterfaceActivate( ev );
+        wxCommandEvent ev;
+        subframe->OnButtonUpdateClick( ev );
+
 
         // Move window on top
         subframe->Raise();
+
+        // Show the VSCP configuration windows
+        subframe->Show( true );
+
+        // Close the scan window
+        Show( false );
 
     }
 
