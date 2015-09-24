@@ -161,6 +161,7 @@ public:
         \param to Timeout value in seconds. 
      */
     void setResponseTimeout(uint32_t to) {
+        if ( to < 100 ) to = 3000;          // To be backward compatible
         if (to) m_responseTimeOut = to;        
     };
     

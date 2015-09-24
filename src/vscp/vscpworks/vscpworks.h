@@ -68,53 +68,53 @@
 
 #define VSCPWORKS_CONFIG_FILE_NAME   _("vscpworks.conf")
 
-#define VSCPWORKS_MAIN_WINDOW_DEFAULT_WIDTH     640
-#define VSCPWORKS_MAIN_WINDOW_DEFAULT_HEGHT     311
+#define VSCPWORKS_MAIN_WINDOW_DEFAULT_WIDTH                 700
+#define VSCPWORKS_MAIN_WINDOW_DEFAULT_HEGHT                 400
 
-#define MAX_NUMBER_OF_NODES             256
+#define MAX_NUMBER_OF_NODES                                 256
 
-#define VSCPWORKS_LOGMSG_DEBUG          0
-#define VSCPWORKS_LOGMSG_INFO           1
-#define VSCPWORKS_LOGMSG_NOTICE         2
-#define VSCPWORKS_LOGMSG_WARNING        3
-#define VSCPWORKS_LOGMSG_ERROR          4
-#define VSCPWORKS_LOGMSG_CRITICAL       5
-#define VSCPWORKS_LOGMSG_ALERT          6
-#define VSCPWORKS_LOGMSG_EMERGENCY      7
+#define VSCPWORKS_LOGMSG_DEBUG                              0
+#define VSCPWORKS_LOGMSG_INFO                               1
+#define VSCPWORKS_LOGMSG_NOTICE                             2
+#define VSCPWORKS_LOGMSG_WARNING                            3
+#define VSCPWORKS_LOGMSG_ERROR                              4
+#define VSCPWORKS_LOGMSG_CRITICAL                           5
+#define VSCPWORKS_LOGMSG_ALERT                              6
+#define VSCPWORKS_LOGMSG_EMERGENCY                          7
 
-#define VCSP_TRMIT_FIELD_COUNT          6
+#define VCSP_TRMIT_FIELD_COUNT                              6
 
-#define VCSP_TRMIT_FIELD_WIDTH_0        30
-#define VCSP_TRMIT_FIELD_WIDTH_1        200
-#define VCSP_TRMIT_FIELD_WIDTH_2        60
-#define VCSP_TRMIT_FIELD_WIDTH_3        60
-#define VCSP_TRMIT_FIELD_WIDTH_4        120
-#define VCSP_TRMIT_FIELD_WIDTH_5        900
+#define VCSP_TRMIT_FIELD_WIDTH_0                            30
+#define VCSP_TRMIT_FIELD_WIDTH_1                            200
+#define VCSP_TRMIT_FIELD_WIDTH_2                            60
+#define VCSP_TRMIT_FIELD_WIDTH_3                            60
+#define VCSP_TRMIT_FIELD_WIDTH_4                            120
+#define VCSP_TRMIT_FIELD_WIDTH_5                            900
 
-#define VCSP_TRMIT_FIELD_TEXT_0  _("x")
-#define VCSP_TRMIT_FIELD_TEXT_1  _("Name")
-#define VCSP_TRMIT_FIELD_TEXT_2  _("Period")
-#define VCSP_TRMIT_FIELD_TEXT_3  _("Count")
-#define VCSP_TRMIT_FIELD_TEXT_4  _("Trigger")
-#define VCSP_TRMIT_FIELD_TEXT_5  _("Event")
+#define VCSP_TRMIT_FIELD_TEXT_0                             _("x")
+#define VCSP_TRMIT_FIELD_TEXT_1                             _("Name")
+#define VCSP_TRMIT_FIELD_TEXT_2                             _("Period")
+#define VCSP_TRMIT_FIELD_TEXT_3                             _("Count")
+#define VCSP_TRMIT_FIELD_TEXT_4                             _("Trigger")
+#define VCSP_TRMIT_FIELD_TEXT_5                             _("Event")
 
-#define VCSP_RSCV_FIELD_COUNT     4
+#define VCSP_RSCV_FIELD_COUNT                               4
 
 #ifdef WIN32
-#define VCSP_RSCV_FIELD_DEFAULT_HEIGHT   20
-#else
-#define VCSP_RSCV_FIELD_DEFAULT_HEIGHT   20
+#define VCSP_RSCV_FIELD_DEFAULT_HEIGHT                      20
+#else   
+#define VCSP_RSCV_FIELD_DEFAULT_HEIGHT                      20
 #endif
 
-#define VCSP_RSCV_FIELD_WIDTH_0   30
-#define VCSP_RSCV_FIELD_WIDTH_1   170
-#define VCSP_RSCV_FIELD_WIDTH_2   170
-#define VCSP_RSCV_FIELD_WIDTH_3   700
+#define VCSP_RSCV_FIELD_WIDTH_0                             30
+#define VCSP_RSCV_FIELD_WIDTH_1                             170
+#define VCSP_RSCV_FIELD_WIDTH_2                             170
+#define VCSP_RSCV_FIELD_WIDTH_3                             700
 
-#define VCSP_RSCV_FIELD_TEXT_0    _("Dir")
-#define VCSP_RSCV_FIELD_TEXT_1    _("Class")
-#define VCSP_RSCV_FIELD_TEXT_2    _("Type")
-#define VCSP_RSCV_FIELD_TEXT_3    _("Note")
+#define VCSP_RSCV_FIELD_TEXT_0                              _("Dir")
+#define VCSP_RSCV_FIELD_TEXT_1                              _("Class")
+#define VCSP_RSCV_FIELD_TEXT_2                              _("Type")
+#define VCSP_RSCV_FIELD_TEXT_3                              _("Note")
 
 // Default values for read/write register functions
 // used in device config and scan.
@@ -193,12 +193,12 @@ typedef struct {
     int m_xpos;         		    // Initial main frame x position
     int m_ypos;         		    // Initial main frame y position
     
-    wxString m_strPathTemp;     // Path to temporary storage
+    wxString m_strPathTemp;         // Path to temporary storage
     
     // Logfile
-    bool m_bEnableLog;          // True for writes to logfile
-    wxString m_strPathLogFile;  // Path to logfile
-	uint8_t m_logLevel;			// Log level
+    bool m_bEnableLog;              // True for writes to logfile
+    wxString m_strPathLogFile;      // Path to logfile
+	uint8_t m_logLevel;			    // Log level
     
     
 /*

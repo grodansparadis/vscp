@@ -595,6 +595,8 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
     }
 
     m_DeviceTree->DeleteAllItems();
+    m_htmlWnd->SetPage( "<html><body></body></html>" );
+    m_htmlWnd->Update();
 
     wxProgressDialog progressDlg(_("Scanning for VSCP devices"),
             _("Reading Registers"),
@@ -654,7 +656,9 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
             else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
 
                 cguid destguid;
+                destguid = m_ifguid;
                 destguid.setLSB(i);
+
                 if ( CANAL_ERROR_SUCCESS ==  
                     m_csw.getTcpIpInterface()->readLevel2Register( 0xd0,
                                                                     0,
@@ -944,7 +948,6 @@ void frmScanforDevices::OnTreeDeviceItemRightClick(wxTreeEvent& event)
 
 void frmScanforDevices::OnLeftDClick( wxMouseEvent& event )
 {
-
     event.Skip(false);
 }
 
@@ -1002,7 +1005,8 @@ void frmScanforDevices::getNodeInfo( wxCommandEvent& event )
         else if (INTERFACE_VSCP == m_interfaceType) {
         
 			cguid destguid;
-			destguid.setLSB( pElement->m_nodeid );
+            destguid = m_ifguid;
+			destguid.setNicknameID( pElement->m_nodeid );
 
             if ( CANAL_ERROR_SUCCESS == 
                     m_csw.getTcpIpInterface()->readLevel2Registers( 0x80,       // reg

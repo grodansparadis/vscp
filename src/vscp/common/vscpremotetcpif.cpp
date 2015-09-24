@@ -2792,7 +2792,7 @@ int VscpRemoteTcpIf::readLevel2Register( uint32_t reg,
 //
 
 int VscpRemoteTcpIf::readLevel2Registers( uint32_t reg,
-											uint16_t page,
+								                uint16_t page,
 												uint8_t count,
                                                 uint8_t *pval,
                                                 cguid& ifGUID,
