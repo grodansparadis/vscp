@@ -98,7 +98,6 @@ BEGIN_EVENT_TABLE(frmScanforDevices, wxFrame)
     EVT_MENU( ID_MENUITEM_HELP_ABOUT, frmScanforDevices::OnMenuitemHelpAboutClick )
     EVT_TREE_SEL_CHANGED( ID_TREE_DEVICE, frmScanforDevices::OnTreeDeviceSelChanged )
     EVT_TREE_ITEM_RIGHT_CLICK( ID_TREE_DEVICE, frmScanforDevices::OnTreeDeviceItemRightClick )
-    //EVT_TREE_ITEM_ACTIVATED( ID_TREE_DEVICE, frmScanforDevices::openConfiguration )
     EVT_HTML_LINK_CLICKED( ID_HTMLWINDOW3, frmScanforDevices::OnHtmlwindow3LinkClicked )
     EVT_BUTTON( ID_BUTTON_SCAN, frmScanforDevices::OnButtonScanClick )
 
@@ -635,13 +634,6 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
                     newitem = m_DeviceTree->AppendItem(rootItem, wxString::Format(_("Node with nickname=%d"), i));
                     m_DeviceTree->ExpandAll();
                     memset(reg, 0, sizeof(reg));
-                    //m_csw.readLevel2Registers(this,
-                    //                            reg,
-                    //                            sizeof(reg) );
-                    //::wxGetApp().readAllLevel1Registers(this, &m_csw, reg, i);
-                    //::wxGetApp().loadMDF( this, &m_csw, &mdf, url, &i );
-                    //wxString str = ::wxGetApp().getHtmlStatusInfo(&m_csw, reg);
-                    //m_htmlWnd->SetPage(str);
 
                     scanElement *pElement = new scanElement;
                     if (NULL != pElement) {
@@ -669,10 +661,6 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 
                     newitem = m_DeviceTree->AppendItem(rootItem, wxString::Format(_("Node with nickname=%d"), i));
                     m_DeviceTree->ExpandAll();
-                    //::wxGetApp().readAllLevel2Registers(this, &m_csw, reg, interfaceGUID);
-                    //::wxGetApp().loadMDF( this, &m_csw, &mdf, url, &i );
-                    //wxString str = ::wxGetApp().getHtmlStatusInfo(&m_csw, reg);
-                    //m_htmlWnd->SetPage(str);
                     
                     scanElement *pElement = new scanElement;
                     if (NULL != pElement) {
@@ -854,6 +842,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 							//if ( pdestGUID->isSameGUID( event.GUID ) ) {
 							// Reg we requested?
 							if (0xd0 == eventex.data[ 16 ] ) {
+                            
 								// Add nickname to list 
 								found_list.push_back( eventex.GUID[ 15 ] );
 							}
@@ -898,9 +887,9 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 						if (NULL != pElement) {
 							pElement->m_bLoaded = false;
 							pElement->m_nodeid = *list_iter;
-							pElement->m_html = _("Right click on item to load info about node."); 
+							pElement->m_html = _("Right click on item to load info about node. Double click to open configuration window."); 
 							memset(pElement->m_reg, 0, 256);
-							m_DeviceTree->SetItemData(newitem, pElement);
+							m_DeviceTree->SetItemData( newitem, pElement );
 						}
 					}
 					break;
@@ -914,8 +903,8 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
         
     }  // fast
 
-    if (m_DeviceTree->GetCount()) {
-        m_DeviceTree->SelectItem(m_DeviceTree->GetRootItem());
+    if ( m_DeviceTree->GetCount() ) {
+        m_DeviceTree->SelectItem( m_DeviceTree->GetRootItem() );
     }
 
 error:
@@ -1045,16 +1034,6 @@ void frmScanforDevices::getNodeInfo( wxCommandEvent& event )
     event.Skip(false);
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// openConfigurationDClick
-//
-
-/*void frmScanforDevices::openConfigurationDClick( wxCommandEvent& event )
-{
-    wxCommandEvent event;
-
-    openConfiguration();
-}*/
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // openConfiguration

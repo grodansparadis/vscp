@@ -222,7 +222,15 @@ wxString BigGridTable::GetValue(int row, int col)
 		}
 
 	case VSCP_RCVGRID_COLUMN_NOTE:
-		return pRecord->m_wxStrNote;
+        if ( pRecord->m_wxStrNote.Length() ) {
+            return pRecord->m_wxStrNote;
+        }
+        else {
+            // Use field for info
+            wxString strGUID;
+            vscp_writeGuidArrayToString( pRecord->m_pEvent->GUID, strGUID );
+            return str.Format(_("Nodeid=%d GUID=%s"), ((pRecord->m_pEvent->GUID[ 15 ]<<8) + pRecord->m_pEvent->GUID[15]), (const char *)strGUID.mbc_str() );
+        }
 
 	default:
 		str = _("Invalid column");
