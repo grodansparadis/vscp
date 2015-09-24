@@ -98,6 +98,7 @@ BEGIN_EVENT_TABLE(frmScanforDevices, wxFrame)
     EVT_MENU( ID_MENUITEM_HELP_ABOUT, frmScanforDevices::OnMenuitemHelpAboutClick )
     EVT_TREE_SEL_CHANGED( ID_TREE_DEVICE, frmScanforDevices::OnTreeDeviceSelChanged )
     EVT_TREE_ITEM_RIGHT_CLICK( ID_TREE_DEVICE, frmScanforDevices::OnTreeDeviceItemRightClick )
+    //EVT_TREE_ITEM_ACTIVATED( ID_TREE_DEVICE, frmScanforDevices::openConfiguration )
     EVT_HTML_LINK_CLICKED( ID_HTMLWINDOW3, frmScanforDevices::OnHtmlwindow3LinkClicked )
     EVT_BUTTON( ID_BUTTON_SCAN, frmScanforDevices::OnButtonScanClick )
 
@@ -948,6 +949,8 @@ void frmScanforDevices::OnTreeDeviceItemRightClick(wxTreeEvent& event)
 
 void frmScanforDevices::OnLeftDClick( wxMouseEvent& event )
 {
+    wxCommandEvent eventDummy;
+    openConfiguration( eventDummy );
     event.Skip(false);
 }
 
@@ -1041,6 +1044,17 @@ void frmScanforDevices::getNodeInfo( wxCommandEvent& event )
 
     event.Skip(false);
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// openConfigurationDClick
+//
+
+/*void frmScanforDevices::openConfigurationDClick( wxCommandEvent& event )
+{
+    wxCommandEvent event;
+
+    openConfiguration();
+}*/
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // openConfiguration
