@@ -1694,6 +1694,7 @@ bool VscpworksApp::readConfiguration( void )
                     unsigned long val;
                     g_Config.m_TCPIP_ResponseTimeout = VSCPWORKS_TCPIP_DEFAULT_RESPONSE_TIMEOUT;
                     if ( subchild->GetNodeContent().ToULong( &val, 10 ) ) {
+                        if ( val < 1000 ) val = VSCPWORKS_TCPIP_DEFAULT_RESPONSE_TIMEOUT;
                         g_Config.m_TCPIP_ResponseTimeout = val;
                     }
 

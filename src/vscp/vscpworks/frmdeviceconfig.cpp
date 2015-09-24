@@ -3219,7 +3219,7 @@ void frmDeviceConfig::doUpdate( void )
         if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
 
             // Read standard registers           
-            progressDlg.Update( 10, _( "Reading standard registers of device 1/8." ) );
+            progressDlg.Update( 10, _( "Reading standard registers of device. [1/8]" ) );
 
 read_stdregs1_again:
 
@@ -3242,7 +3242,7 @@ read_stdregs1_again:
             if ( !m_chkMdfFromFile->GetValue() ) {
 
                 // Get MDF from device
-                progressDlg.Update( 15, _( "Fetching MDF path from device. 2/8." ) );
+                progressDlg.Update( 15, _( "Fetching MDF path from device. [2/8]" ) );
 
                 // We need it to continue
                 m_stdRegisters.getMDF( strPath );
@@ -3266,7 +3266,7 @@ read_stdregs1_again:
             }
 
             // Load and parse the MDF
-            progressDlg.Update( 20, _( "Loading and parsing MDF. 2/8." ) );
+            progressDlg.Update( 20, _( "Loading and parsing MDF. [2/8]" ) );
             if ( !m_mdf.load( strPath, m_chkMdfFromFile->GetValue() ) ) {
 				// We try to continue anyway
                 wxMessageBox( _( "Failed to load MDF but will try to continue anyway." ) );
@@ -3289,7 +3289,7 @@ read_stdregs1_again:
             for ( uint32_t i = 0; i<nPages; i++ ) {
 
                 long currpage = pageArray.Item( i );
-                wxString str = wxString::Format( _( "Fetching user registers for page %ld 3/8" ), currpage );
+                wxString str = wxString::Format( _( "Fetching user registers for page %ld. [3/8]" ), currpage );
                 progressDlg.Update( 25, str );
 
 read_pageregs1_again:
@@ -3315,7 +3315,7 @@ read_pageregs1_again:
             wxString strBuf;
             wxString str;
 
-            progressDlg.Update( 30, _( "Filling in register information 2/8." ) );
+            progressDlg.Update( 30, _( "Filling in register information. [2/8]" ) );
             wxFont defaultFont = m_gridRegisters->GetDefaultCellFont();
             wxFont fontBold = defaultFont;
             fontBold.SetStyle( wxFONTSTYLE_NORMAL );
@@ -3390,11 +3390,11 @@ read_pageregs1_again:
             }
 
             // Fill grid with standard registers
-            progressDlg.Update( 40, _( "Filling in standard register information 4/8." ) );
+            progressDlg.Update( 40, _( "Filling in standard register information. 4/8" ) );
             fillStandardRegisters();
 
             // Write status
-            progressDlg.Update( 50, _( "Filling in status information 5/8." ) );
+            progressDlg.Update( 50, _( "Filling in status information. [5/8]" ) );
             writeStatusInfo();
 
             m_bFirstRead = false;
@@ -3404,15 +3404,15 @@ read_pageregs1_again:
         else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
 
             // Read standard registers           
-            progressDlg.Update( 10, _( "Reading standard registers of device 1/8." ) );
+            progressDlg.Update( 10, _( "Reading standard registers of device. [1/8]" ) );
             if ( VSCP_ERROR_SUCCESS !=
                  m_csw.getTcpIpInterface()->readLevel2Registers( m_bLevel2->GetValue() ? 0xFFFFFF80 : 0x80,
-                 0,      // page
-                 128,    // count
-                 m_stdRegisters.getRegs(),
-                 m_ifguid,
-                 &destGUID,
-                 m_bLevel2->GetValue() ) ) {
+                                                                    0,      // page
+                                                                    128,    // count
+                                                                    m_stdRegisters.getRegs(),
+                                                                    m_ifguid,
+                                                                    &destGUID,
+                                                                    m_bLevel2->GetValue() ) ) {
                 ::wxMessageBox( _( "Failed to read standard registers of device." ), _( "VSCP Works" ), wxICON_ERROR );
                 return;
             }
@@ -3421,7 +3421,7 @@ read_pageregs1_again:
             if ( !m_chkMdfFromFile->GetValue() ) {
 
                 // Get MDF from device
-                progressDlg.Update( 10, _( "Fetching MDF path from device 2/8." ) );
+                progressDlg.Update( 10, _( "Fetching MDF path from device. [2/8]" ) );
 
                 // We need it to continue
                 m_stdRegisters.getMDF( strPath );
@@ -3444,7 +3444,7 @@ read_pageregs1_again:
 
 
             // Load and parse the MDF
-            progressDlg.Update( 20, _( "Loading and parsing MDF 2/8." ) );
+            progressDlg.Update( 20, _( "Loading and parsing MDF. [2/8]" ) );
 
             if ( !m_mdf.load( strPath, m_chkMdfFromFile->GetValue() ) ) {
                 // We try to continue anyway
@@ -3452,7 +3452,7 @@ read_pageregs1_again:
             }
 
             // Get the application registers
-            progressDlg.Update( 40, _( "Reading application registers 3/8." ) );
+            progressDlg.Update( 40, _( "Reading application registers. [3/8]" ) );
 
             wxArrayLong pageArray;
             uint32_t nPage = m_mdf.getPages( pageArray );
@@ -3472,7 +3472,7 @@ read_pageregs1_again:
 
             for ( uint32_t i = 0; i<nPage; i++ ) {
 
-                wxString str = wxString::Format( _( "Fetching user registers for page %d 4/8" ), pageArray[ i ] );
+                wxString str = wxString::Format( _( "Fetching user registers for page %d. [4/8]" ), pageArray[ i ] );
                 progressDlg.Update( 30, str );
 
                 if ( VSCP_ERROR_SUCCESS !=
@@ -3574,22 +3574,22 @@ read_pageregs1_again:
             }
 
             // Fill grid with standard registers
-            progressDlg.Update( 50, _( "Fill standard register information 5/8." ) );
+            progressDlg.Update( 50, _( "Fill standard register information. [5/8]" ) );
             fillStandardRegisters();
 
             // Write status
-            progressDlg.Update( 60, _( "Fill standard status information 6/8." ) );
+            progressDlg.Update( 60, _( "Fill standard status information. [6/8]" ) );
             writeStatusInfo();
 
             m_bFirstRead = false;
         }
 
         // Update the DM grid   
-        progressDlg.Update( 70, _( "Update DM grid 7/8." ) );
+        progressDlg.Update( 70, _( "Update DM grid. [7/8]" ) );
         updateDmGrid();
 
         // Update abstractions
-        progressDlg.Update( 90, _( "Update Abstraction grid 8/8." ) );
+        progressDlg.Update( 90, _( "Update Abstraction grid. [8/8]" ) );
         updateAbstractionGrid();
 
         // Enable load defaults buttons

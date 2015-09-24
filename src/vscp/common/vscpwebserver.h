@@ -431,6 +431,19 @@ public:
                                                 wxString& strSubZone,
                                                 wxString& strEventFormat );
 
+    /*!
+        Render REST table
+        @param conn Webserver connection handle.
+        @param pSession Active session or NULL if no session active
+        @param format The format output should be formated in, plain, csv, xml, json, jsonp
+    */
+    void websrc_rest_renderTableData( struct mg_connection *conn,
+                                        struct websrv_rest_session *pSession,
+                                        int format,
+                                        wxString& strName,
+                                        struct _vscpFileRecord *pRecords,
+                                        long nfetchedRecords );
+
 	/*!
 		webserv_rest_doWriteVariable - Write a variable value
 		@param conn Webserver connection handle.

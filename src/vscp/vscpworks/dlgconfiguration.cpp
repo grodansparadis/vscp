@@ -351,14 +351,14 @@ void dlgConfiguration::CreateControls()
 
     // -- TCP/IP - General resend timout in seconds
     wxStaticText* itemStaticTextTCPIPResponse = new wxStaticText;
-    itemStaticTextTCPIPResponse->Create( itemPanelCommunication, wxID_STATIC, _("Command respons timout in seconds :"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemStaticTextTCPIPResponse->Create( itemPanelCommunication, wxID_STATIC, _("Command respons timout in milliseconds :"), wxDefaultPosition, wxDefaultSize, 0 );
     itemGridSizerCommunication->Add( itemStaticTextTCPIPResponse, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxBoxSizer* itemBoxSizerTCPIPResponse = new wxBoxSizer(wxHORIZONTAL);
     itemGridSizerCommunication->Add( itemBoxSizerTCPIPResponse, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
     
     m_SpinCtrlResponseTimeout = new wxSpinCtrl;
-    m_SpinCtrlResponseTimeout->Create( itemPanelCommunication, ID_SPINCTRL, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 10, 3 );
+    m_SpinCtrlResponseTimeout->Create( itemPanelCommunication, ID_SPINCTRL, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1000, 60000, 3000 );
     itemBoxSizerTCPIPResponse->Add( m_SpinCtrlResponseTimeout, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
 
@@ -371,13 +371,12 @@ void dlgConfiguration::CreateControls()
     itemGridSizerCommunication->Add( itemBoxSizerTextSleepAfterCommand, 0, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxALL, 1 );
 
     m_SpinCtrlsleepAfterCommand = new wxSpinCtrl;
-    m_SpinCtrlsleepAfterCommand->Create( itemPanelCommunication, ID_SPINCTRL, wxT( "1" ), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 10, 3 );
+    m_SpinCtrlsleepAfterCommand->Create( itemPanelCommunication, ID_SPINCTRL, wxT( "1" ), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 2000, 200 );
     itemBoxSizerTextSleepAfterCommand->Add( m_SpinCtrlsleepAfterCommand, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
 
 
 
     // -- Number of retries
-
     wxStaticText* itemStaticTextTCPIPRetries = new wxStaticText;
     itemStaticTextTCPIPRetries->Create( itemPanelCommunication, wxID_STATIC, _("Max number of register read/write retries :"), wxDefaultPosition, wxDefaultSize, 0 );
     itemGridSizerCommunication->Add(itemStaticTextTCPIPRetries, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
@@ -793,7 +792,7 @@ void dlgConfiguration::CreateControls()
 	m_SpinCtrlreadTimeout->SetValue( g_Config.m_CANALRegResendTimeout );
     m_SpinCtrltotalTimeout->SetValue( g_Config.m_CANALRegErrorTimeout );
 
-    // TCP(P communication parameters
+    // TCPIP communication parameters
     m_SpinCtrlResponseTimeout->SetValue( g_Config.m_TCPIP_ResponseTimeout );
     m_SpinCtrlsleepAfterCommand->SetValue( g_Config.m_TCPIP_SleepAfterCommand );
     m_SpinCtrlmaxTCPIPRetries->SetValue( g_Config.m_TCPIPRegMaxRetries );

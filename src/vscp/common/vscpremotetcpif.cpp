@@ -282,18 +282,18 @@ bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
     int last = 0;   // last read pos in array
     wxString strReply;
     
-    /*
+    
     wxLogDebug( _("------------------------------------------------------------") );
-    wxLogDebug( _("checkReturnValue:  Queue before  %u"), m_responseTimeOut );
+    wxLogDebug( _("checkReturnValue:  Queue before. Responsetime = %u. "), m_responseTimeOut );
     for ( uint16_t i=0; i<m_inputStrArray.Count(); i++) {
 		wxLogDebug( "***** {" + m_inputStrArray[ i ] + "} *****" );
 	}
-    wxLogDebug( _("------------------------------------------------------------") );*/
+    wxLogDebug( _("------------------------------------------------------------") );
 
     if ( bClear ) doClrInputQueue();
 
-    long start = wxGetUTCTime();
-    while ( ( wxGetUTCTime() - start ) < m_responseTimeOut ) {
+    wxLongLong start = wxGetLocalTimeMillis();
+    while ( ( wxGetLocalTimeMillis() - start ) < m_responseTimeOut ) {
 
         for ( uint16_t i=last; i<getInputQueueCount(); i++) {
 
@@ -317,7 +317,7 @@ bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
         }
 
         // Give the server some time to deliver the data
-        wxMilliSleep( 200 + m_afterCommandSleep );
+        //wxMilliSleep( 200 + m_afterCommandSleep );
 
     }
 
@@ -330,8 +330,6 @@ bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
 
 int VscpRemoteTcpIf::doCommand( wxString& cmd )
 {	
-    int status = VSCP_ERROR_SUCCESS;
-
     wxLogDebug( _("doCommand: ") + cmd );
         
     doClrInputQueue();    
@@ -339,7 +337,7 @@ int VscpRemoteTcpIf::doCommand( wxString& cmd )
                                   cmd.mbc_str(),
                                   cmd.Length() ) ) {
         wxLogDebug( _("doCommand: failed to send command") );
-        status = VSCP_ERROR_ERROR;
+        return VSCP_ERROR_ERROR;
     }
     
     // Give the server some time to deliver data
@@ -355,10 +353,10 @@ int VscpRemoteTcpIf::doCommand( wxString& cmd )
     
     if ( !checkReturnValue( false ) ) {
         wxLogDebug( _("doCommand: checkReturnValue failed") );
-        status = VSCP_ERROR_ERROR;
+        return VSCP_ERROR_ERROR;
     }
     
-    return status;
+    return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -485,6 +483,7 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
 	}
 	    
     wxLogDebug( _("Checking server response") );
+    wxMilliSleep( 200 + m_afterCommandSleep );
 	
 	bool bFound = false;
 	for ( int i=0; i<1; i++ ) {	
@@ -944,14 +943,16 @@ int VscpRemoteTcpIf::doCmdReceiveEx( vscpEventEx *pEventEx )
         return VSCP_ERROR_ERROR;
     }
 
+    
     // Handle the data (if any)
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;
     m_mutexArray.Lock();
     strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
     m_mutexArray.Unlock();
+
     strLine.Trim();
     strLine.Trim(false);
-  
+
     vscpEvent *pEvent = new vscpEvent;
     if ( NULL == pEvent) return VSCP_ERROR_PARAMETER;
   
@@ -1179,9 +1180,7 @@ int VscpRemoteTcpIf::doCmdDataAvailable( void )
         nMsg = (uint16_t)val;
     }
     
-
-    return nMsg;
-    
+    return nMsg;   
 }
 
 
@@ -2805,7 +2804,7 @@ int VscpRemoteTcpIf::readLevel2Registers( uint32_t reg,
 	vscpEventEx e;
     uint8_t data[256];    // This makes range checking simpler
 
-    // Max 128 bytes can be read
+    // Max 128 bytes can be read in one go
     if ( count > 128 ) return CANAL_ERROR_PARAMETER;
 
 	// Check pointers
@@ -2885,7 +2884,7 @@ int VscpRemoteTcpIf::readLevel2Registers( uint32_t reg,
 	e.timestamp = 0;
 	doCmdSendEx( &e );
 
-    // We should get eight response frames back
+    // We should get thirtytwo response frames back
     unsigned long receive_flags = 0;
     unsigned char nPages = count/4;
     unsigned char lastpageCnt = count%4;
@@ -2922,7 +2921,7 @@ int VscpRemoteTcpIf::readLevel2Registers( uint32_t reg,
                     if ( pdestGUID->isSameGUID( e.GUID ) ) {            // From correct node?
                     
                         if ( ( (page>>8) == e.data[ 1 ] ) && 
-                                ( (page&0x0ff) == e.data[ 2 ] )  ) {    // Requested register?
+                                ( (page&0x0ff) == e.data[ 2 ] )  ) {    // Requested page?
 						
                             // Mark frame as received
                             receive_flags |= ( 1 << e.data[ 0 ] );
@@ -3002,9 +3001,8 @@ int VscpRemoteTcpIf::readLevel2Registers( uint32_t reg,
 				}
 
 			} // valid event
-            
-            
-		}
+                        
+		} // Data available
 
         if ( ( ::wxGetLocalTimeMillis() - startTime ) >  m_registerOpErrorTimeout ) {
             rv = CANAL_ERROR_TIMEOUT;
@@ -3016,7 +3014,7 @@ int VscpRemoteTcpIf::readLevel2Registers( uint32_t reg,
             resendTime += m_registerOpResendTimeout;
         }
         
-        wxMilliSleep( 2 );
+        wxMilliSleep( 20 );
 
 	} // while
 
