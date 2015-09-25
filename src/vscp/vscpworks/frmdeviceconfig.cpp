@@ -299,6 +299,7 @@ void frmDeviceConfig::CreateControls() {
     wxBitmap itemtool33Bitmap(itemFrame1->GetBitmapResource(wxT("Print.xpm")));
     wxBitmap itemtool33BitmapDisabled;
     itemToolBar->AddTool(ID_TOOL11, wxEmptyString, itemtool33Bitmap, itemtool33BitmapDisabled, wxITEM_NORMAL, _("Print selected or all row(s)"), wxEmptyString);
+    
     itemToolBar->AddSeparator();
 
     wxStaticText* itemStaticNodeID = new wxStaticText;

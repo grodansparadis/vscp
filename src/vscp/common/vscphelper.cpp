@@ -3282,7 +3282,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 		case VSCP_TYPE_PROTOCOL_PROBE_ACK:
             strOutput = wxString::Format( _("The nickname=0x%02X is in use"), 
                                                 pEvent->GUID[ 15 ] );
-            if ( 0 == pEvent->pdata[ 15 ] ) {
+            if ( 0 == pEvent->GUID[ 15 ] ) {
                 strOutput += _( "\n(Server will suppy nickname.)");
             }
 			break;
