@@ -148,6 +148,7 @@ public:
     wxCheckBox* m_checkEnableLogging;
     wxChoice* m_comboLogLevel;
     wxCheckBox* m_checkConfirmDeletes;
+    wxCheckBox* m_checkManufacturerInfo;
     wxChoice* m_comboNumericalBase;
     
     wxSpinCtrl* m_SpinCtrlmaxRetries;
@@ -213,7 +214,8 @@ public:
         ID_CHECKLISTBOX2 = 15031,
         ID_BUTTON14 = 15032,
         ID_BUTTON15 = 15033,
-        ID_CHECKLISTBOX3 = 15034
+        ID_CHECKLISTBOX3 = 15034,
+        ID_CHECKBOX_MANUFACTURER = 15050
     };
     
 };

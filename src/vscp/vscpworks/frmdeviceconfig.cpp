@@ -4422,7 +4422,7 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 
                     // Update registers
                     m_csw.writeAbstraction8bitinteger( this,
-                            vscp_readStringValue(m_comboNodeID->GetValue()),
+                            vscp_readStringValue( m_comboNodeID->GetValue() ),
                             m_mdf.m_list_abstraction[ event.GetRow() ],
                             val,
                             &m_ifguid,
@@ -5010,6 +5010,7 @@ void frmDeviceConfig::updateAbstractionGrid(void)
 
         CMDF_Abstraction *pAbstraction = *iter; 
 
+
         // Add a row
         m_gridAbstractions->AppendRows( 1 );
 
@@ -5022,7 +5023,7 @@ void frmDeviceConfig::updateAbstractionGrid(void)
             m_gridAbstractions->SetCellBackgroundColour( m_gridAbstractions->GetNumberRows() - 1, i, bgcolor );
         }
 
-        
+
 
         // Name
         m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows()-1, 
@@ -5032,6 +5033,7 @@ void frmDeviceConfig::updateAbstractionGrid(void)
                                                 m_gridAbstractions->GetNumberRows()-1,
                                                 0 );
         m_gridAbstractions->SetReadOnly(m_gridAbstractions->GetNumberRows() - 1, 0);
+
 
 
         // Type
@@ -5062,6 +5064,8 @@ void frmDeviceConfig::updateAbstractionGrid(void)
                                                 2 );
         m_gridAbstractions->SetReadOnly( m_gridAbstractions->GetNumberRows()-1, 2);
 
+
+
         
         // Description
         m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows()-1,
@@ -5074,12 +5078,18 @@ void frmDeviceConfig::updateAbstractionGrid(void)
         m_gridAbstractions->SetReadOnly(m_gridAbstractions->GetNumberRows()-1, 4);
         m_gridRegisters->AutoSizeRow(m_gridAbstractions->GetNumberRows()-1);
 
+
+
         wxString strValue;
         wxString strType;
         int pos = 0;        // Current character
 
         strType = pAbstraction->getAbstractionValueType();
-        m_userRegisters.getAbstractionValueAsString( pAbstraction, strValue );
+        m_userRegisters.getAbstractionValueAsString( pAbstraction, 
+                                                        strValue,
+                                                        ( VSCP_DEVCONFIG_NUMBERBASE_DECIMAL == g_Config.m_Numberbase ) ? FORMAT_ABSTRACTION_DECIMAL : FORMAT_ABSTRACTION_HEX );
+
+
         
         // Value
         m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows()-1,
@@ -5091,6 +5101,7 @@ void frmDeviceConfig::updateAbstractionGrid(void)
                                                 3 );
         m_gridAbstractions->SetCellFont( m_gridAbstractions->GetNumberRows()-1, 3, fontBold );
         m_gridAbstractions->SetReadOnly( m_gridAbstractions->GetNumberRows()-1, 3 );
+
 
 
 

@@ -229,7 +229,7 @@ wxString BigGridTable::GetValue(int row, int col)
             // Use field for info
             wxString strGUID;
             vscp_writeGuidArrayToString( pRecord->m_pEvent->GUID, strGUID );
-            return str.Format(_("Nodeid=%d GUID=%s"), ((pRecord->m_pEvent->GUID[ 15 ]<<8) + pRecord->m_pEvent->GUID[15]), (const char *)strGUID.mbc_str() );
+            return str.Format(_("Nodeid=%d GUID=%s"), ((pRecord->m_pEvent->GUID[ 14 ]<<8) + pRecord->m_pEvent->GUID[15]), (const char *)strGUID.mbc_str() );
         }
 
 	default:

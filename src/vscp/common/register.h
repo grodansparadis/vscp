@@ -28,6 +28,9 @@
 #include <canal.h>
 #include <guid.h>
 
+#define FORMAT_ABSTRACTION_DECIMAL      0
+#define FORMAT_ABSTRACTION_HEX          1
+
 /*!
     \class CDecisionMatrix
     \brief Encapsulates the decision matrix of a device
@@ -229,7 +232,9 @@ public:
         @param strValue Abstraction value in string form on return if call successful
         @return true on success
     */
-    bool getAbstractionValueAsString( CMDF_Abstraction *pAbstraction, wxString &strValue );
+    bool getAbstractionValueAsString( CMDF_Abstraction *pAbstraction, 
+                                        wxString &strValue,
+                                        uint8_t format = FORMAT_ABSTRACTION_DECIMAL  );
 
 private:
 

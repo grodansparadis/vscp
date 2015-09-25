@@ -249,7 +249,9 @@ uint8_t CUserRegisters::setValue( uint16_t page, uint8_t offset, uint8_t value )
 //  getAbstractionValueAsString
 //
 
-bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction, wxString &strValue )
+bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction, 
+                                                    wxString &strValue,
+                                                    uint8_t format )
 {
 	bool rv = false;
     uint8_t *pReg;
@@ -296,13 +298,23 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
 
 	case type_int8_t:
 		{
-			strValue.Printf( _("0x%02x"), *(pReg + pAbstraction->m_nOffset ) );
+            if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
+                strValue.Printf( _( "%d" ), *( pReg + pAbstraction->m_nOffset ) );
+            }
+            else {
+                strValue.Printf( _( "0x%02x" ), *( pReg + pAbstraction->m_nOffset ) );
+            }
 		}
 		break;
 
 	case type_uint8_t:
 		{
-			strValue.Printf( _("0x%02x"), *(pReg + pAbstraction->m_nOffset ) );
+            if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
+                strValue.Printf( _( "%ud" ), *( pReg + pAbstraction->m_nOffset ) );
+            }
+            else {
+                strValue.Printf( _( "0x%02x" ), *( pReg + pAbstraction->m_nOffset ) );
+            }
 		}
 		break;
 
@@ -310,7 +322,13 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
 		{
             uint8_t *p = pReg + pAbstraction->m_nOffset;
             int16_t val = ( p[0] << 8 ) + p[1];
-			strValue.Printf( _("0x%04x"), val );
+
+            if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
+                strValue.Printf( _( "%d" ), val );
+            }
+            else {
+                strValue.Printf( _( "0x%04x" ), val );
+            }
 		}
 		break;
 
@@ -318,7 +336,13 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
 		{
             uint8_t *p = pReg + pAbstraction->m_nOffset;
             uint16_t val = ( p[0] << 8 ) + p[1];
-			strValue.Printf( _("0x%04x"), val );
+
+            if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
+                strValue.Printf( _( "%ud" ), val );
+            }
+            else {
+                strValue.Printf( _( "%d 0x%04x" ), val );
+            }
 		}
 		break;
 
@@ -326,7 +350,12 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
 		{
             uint8_t *p = pReg + pAbstraction->m_nOffset;
             int32_t val = ( p[0] << 24 ) + ( p[1] << 16 ) + ( p[2] << 8 ) + p[3];
-			strValue.Printf( _("0x%08lx"), *(pReg + pAbstraction->m_nOffset ) );
+            if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
+                strValue.Printf( _( "%ld" ), *( pReg + pAbstraction->m_nOffset ) );
+            }
+            else {
+                strValue.Printf( _( "0x%08lx" ), *( pReg + pAbstraction->m_nOffset ) );
+            }
 		}
 		break;
 
@@ -334,7 +363,13 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
 		{
             uint8_t *p = pReg + pAbstraction->m_nOffset;
             uint32_t val = ( p[0] << 24 ) + ( p[1] << 16 ) + ( p[2] << 8 ) + p[3];
-			strValue.Printf( _("0x%08lx"), val );
+
+            if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
+                strValue.Printf( _( "%uld" ), val );
+            }
+            else {
+                strValue.Printf( _( "0x%08lx" ), val );
+            }
 		}
 		break;
 
@@ -342,7 +377,13 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
 		{
             uint8_t *p = pReg + pAbstraction->m_nOffset;
             wxUINT64_SWAP_ON_LE( p );
-			strValue.Printf( _("0x%llx"), *p );
+
+            if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
+                strValue.Printf( _( "%lld" ), *p );
+            }
+            else {
+                strValue.Printf( _( "0x%llx" ), *p );
+            }
 		}
 		break;
 
@@ -350,7 +391,12 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
 		{
             uint8_t *p = pReg + pAbstraction->m_nOffset;
             wxUINT64_SWAP_ON_LE( p );
-			strValue.Printf( _("0x%ullx"), *p );
+            if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
+                strValue.Printf( _( "%ulld" ), *p );
+            }
+            else {
+                strValue.Printf( _( "0x%ullx" ), *p );
+            }
 		}
 		break;
 

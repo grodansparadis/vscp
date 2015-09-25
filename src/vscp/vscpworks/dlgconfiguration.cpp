@@ -144,6 +144,7 @@ void dlgConfiguration::Init()
     m_checkEnableLogging = NULL;
     m_comboLogLevel = NULL;
     m_checkConfirmDeletes = NULL;
+    m_checkManufacturerInfo = NULL;
     m_comboNumericalBase = NULL;
     m_SpinCtrlmaxRetries = NULL;
     m_SpinCtrlreadTimeout = NULL;
@@ -260,6 +261,17 @@ void dlgConfiguration::CreateControls()
     m_comboNumericalBase = new wxChoice;
     m_comboNumericalBase->Create( itemPanel2, ID_CHOICE, wxDefaultPosition, wxDefaultSize, m_comboNumericalBaseStrings, 0 );
     itemBoxSizer20->Add(m_comboNumericalBase, 0, wxALIGN_CENTER_VERTICAL|wxALL, 0);
+
+    wxStaticText* itemStaticTextManufacturerInfo = new wxStaticText;
+    itemStaticTextManufacturerInfo->Create( itemPanel2, wxID_STATIC, _( "Enable manufacturer functionality :" ), wxDefaultPosition, wxDefaultSize, 0 );
+    itemGridSizerGeneral->Add( itemStaticTextManufacturerInfo, 0, wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL | wxALL, 1 );
+
+    wxBoxSizer* itemBoxSizerManufacturer = new wxBoxSizer( wxHORIZONTAL );
+    itemGridSizerGeneral->Add( itemBoxSizerManufacturer, 0, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxALL, 1 );
+    m_checkManufacturerInfo = new wxCheckBox;
+    m_checkManufacturerInfo->Create( itemPanel2, ID_CHECKBOX_MANUFACTURER, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+    m_checkManufacturerInfo->SetValue( false );
+    itemBoxSizerManufacturer->Add( m_checkConfirmDeletes, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
 
     GetBookCtrl()->AddPage(itemPanel2, _("General"), false, 0);
 
@@ -804,6 +816,7 @@ void dlgConfiguration::CreateControls()
 	m_comboLogLevel->Select( g_Config.m_logLevel );
 
 	m_checkConfirmDeletes->SetValue( g_Config.m_bConfirmDelete );
+    m_checkManufacturerInfo->SetValue( g_Config.bGuidWritable );
 
 	m_comboNumericalBase->Select( g_Config.m_Numberbase );
 
@@ -832,7 +845,9 @@ bool dlgConfiguration::getDialogData( bool bWriteToConfigFile )
 	g_Config.m_logLevel = m_comboLogLevel->GetSelection();
 	g_Config.m_bEnableLog = m_checkEnableLogging->GetValue();
 	g_Config.m_bConfirmDelete = m_checkConfirmDeletes->GetValue();
-	g_Config.m_Numberbase = m_comboNumericalBase->GetSelection();
+    g_Config.bGuidWritable = m_checkManufacturerInfo->GetValue();
+    g_Config.m_Numberbase = m_comboNumericalBase->GetSelection();
+
 
     if ( bWriteToConfigFile ) {
         wxGetApp().writeConfiguration();
