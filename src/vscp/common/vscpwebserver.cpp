@@ -5585,7 +5585,7 @@ void VSCPWebServerThread::websrc_rest_renderTableData( struct mg_connection *con
 
             wxDateTime dt;
             dt.Set( ( time_t )pRecords[ i ].timestamp );
-            wxString strDateTime = dt.FormatISODate() + _("T") + dt.FormatISODate(); //dt.FormatISOCombined();
+            wxString strDateTime = dt.FormatISODate() + _("T") + dt.FormatISODate(); //dt.git pull();
 
             memset( wrkbuf, 0, sizeof( wrkbuf ) );
             p = wrkbuf;

@@ -614,7 +614,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 
     if ( bSlowAlgorithm ) {
 
-        for ( uint8_t i = scanFrom; i < scanTo; i++ ) {
+        for ( uint8_t i = scanFrom; i <= scanTo; i++ ) {
 
             if (!progressDlg.Update(i, wxString::Format(_("Checking for device %d"), i))) {
                 if (m_DeviceTree->GetCount()) {
@@ -627,6 +627,12 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
             }
 
             if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
+
+                // Empty input queue
+                canalMsg canalmsg;
+                while ( m_csw.getDllInterface()->doCmdDataAvailable() ) {
+                    if ( CANAL_ERROR_SUCCESS != m_csw.getDllInterface()->doCmdReceive( &canalmsg ) ) break;
+                }
 
                 if ( CANAL_ERROR_SUCCESS == 
                     m_csw.getDllInterface()->readLevel1Register( i, 0, 0xd0, &val ) ) {
@@ -651,6 +657,9 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
                 cguid destguid;
                 destguid = m_ifguid;
                 destguid.setLSB(i);
+
+                // Empty input queue
+                m_csw.getTcpIpInterface()->doCmdClear();
 
                 if ( CANAL_ERROR_SUCCESS ==  
                     m_csw.getTcpIpInterface()->readLevel2Register( 0xd0,
@@ -685,8 +694,14 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 
 		if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
 
+            // Empty input queue
+            canalMsg canalmsg;
+            while ( m_csw.getDllInterface()->doCmdDataAvailable() ) {
+                if ( CANAL_ERROR_SUCCESS != m_csw.getDllInterface()->doCmdReceive( &canalmsg ) ) break;
+            }
+
 			// Send read register to all nodes.
-			for ( uint8_t i = scanFrom; i < scanTo; i++ ) {
+			for ( uint8_t i = scanFrom; i <= scanTo; i++ ) {
 
 #ifdef WIN32				
 				progressDlg.Update(i, wxString::Format(_("Checking for device %d"), i));
@@ -766,9 +781,12 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 		
 		} // TCP/IP
 		else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
+
+            // Empty input queue
+            m_csw.getTcpIpInterface()->doCmdClear();
            
 			// Read register at all nodes.
-			for ( uint8_t i = scanFrom; i < scanTo; i++ ) {
+			for ( uint8_t i = scanFrom; i <= scanTo; i++ ) {
             
 				cguid destguid;
 				destguid.setLSB(i);

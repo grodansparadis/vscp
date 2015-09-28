@@ -3058,8 +3058,8 @@ int VscpRemoteTcpIf::writeLevel2Register( uint32_t reg,
 
 		pdestGUID->writeGUID( e.data );		// Destination GUID
 		e.data[16] = pdestGUID->getLSB();	// nodeid
-        e.data[17] = page>>8;
-        e.data[18] = page&0xff;
+        e.data[17] = (page >> 8);
+        e.data[18] = (page & 0xff);
 		e.data[19] = reg;				    // Register to write
 		e.data[20] = *pval;			        // value to write
         

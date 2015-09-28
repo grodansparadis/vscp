@@ -431,7 +431,6 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 #endif        
 	}
 
-
         // Create the log write thread.
         if ( pthread_create( &m_threadId,
 								&thread_attr,
@@ -446,7 +445,7 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 #endif        
 	}
 		
-        // We are open
+    // We are open
 	m_bOpen = true;
 
 	// Release the mutex

@@ -284,7 +284,7 @@ int CanalBlockingReceive( long handle, PCANALMSG pCanalMsg, unsigned long timeou
 	Check a CANAL channel for message availability. 
 
 	@param handle - Handle to open physical CANAL channel.
-	@return Zero if no message is available or the number of messages is
+	@return Zero if no message is available or the number of messages if
 	there are messages waiting to be received.
 */
 #ifdef WIN32

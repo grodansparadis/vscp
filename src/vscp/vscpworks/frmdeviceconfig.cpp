@@ -3169,9 +3169,20 @@ void frmDeviceConfig::doUpdate( void )
 
     // Get nickname
     if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
+
+        // Empty input queue
+        canalMsg canalmsg;
+        while ( m_csw.getDllInterface()->doCmdDataAvailable() ) {
+            if ( CANAL_ERROR_SUCCESS != m_csw.getDllInterface()->doCmdReceive( &canalmsg ) ) break;
+        }
+
         nodeid = vscp_readStringValue( m_comboNodeID->GetValue() );
     }
     else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
+
+        // Empty input queue
+        m_csw.getTcpIpInterface()->doCmdClear();
+
         destGUID.getFromString( m_comboNodeID->GetValue() );
     }
 
@@ -3783,6 +3794,12 @@ void frmDeviceConfig::readValueSelectedRow( wxCommandEvent& WXUNUSED( event ) )
 
                 if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
 
+                    // Empty input queue
+                    canalMsg canalmsg;
+                    while ( m_csw.getDllInterface()->doCmdDataAvailable() ) {
+                        if ( CANAL_ERROR_SUCCESS != m_csw.getDllInterface()->doCmdReceive( &canalmsg ) ) break;
+                    }
+
                     if ( CANAL_ERROR_SUCCESS == m_csw.getDllInterface()->readLevel1Register( nodeid, page, reg, &val)) {
 
                         // Set value
@@ -3808,6 +3825,9 @@ void frmDeviceConfig::readValueSelectedRow( wxCommandEvent& WXUNUSED( event ) )
                     // Get the destination GUID
                     cguid destGUID;
                     destGUID.getFromString(m_comboNodeID->GetValue());
+
+                    // Empty input queue
+                    m_csw.getTcpIpInterface()->doCmdClear();
 
                     if ( VSCP_ERROR_SUCCESS == 
                         m_csw.getTcpIpInterface()->readLevel2Registers( reg,
@@ -3867,11 +3887,20 @@ void frmDeviceConfig::writeValueSelectedRow(wxCommandEvent& WXUNUSED(event))
         // Get Interface id
         nodeid = vscp_readStringValue(m_comboNodeID->GetValue());
 
+        // Empty input queue
+        canalMsg canalmsg;
+        while ( m_csw.getDllInterface()->doCmdDataAvailable() ) {
+            if ( CANAL_ERROR_SUCCESS != m_csw.getDllInterface()->doCmdReceive( &canalmsg ) ) break;
+        }
+
     }
     else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
 
         // Get Interface GUID
         destGUID.getFromString(m_comboNodeID->GetValue());
+
+        // Empty input queue
+        m_csw.getTcpIpInterface()->doCmdClear();
 
     }
 
@@ -3998,6 +4027,7 @@ void frmDeviceConfig::undoValueSelectedRow(wxCommandEvent& WXUNUSED(event))
     if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
         // Get Interface id
         nodeid = vscp_readStringValue( m_comboNodeID->GetValue() );
+
     }
 
     if ( m_gridRegisters->GetNumberRows() ) {
@@ -4039,6 +4069,12 @@ void frmDeviceConfig::undoValueSelectedRow(wxCommandEvent& WXUNUSED(event))
 
                     if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
 
+                        // Empty input queue
+                        canalMsg canalmsg;
+                        while ( m_csw.getDllInterface()->doCmdDataAvailable() ) {
+                            if ( CANAL_ERROR_SUCCESS != m_csw.getDllInterface()->doCmdReceive( &canalmsg ) ) break;
+                        }
+
                         // We don't test for errors here as some registers have reserved bits
                         // etc and therefore will not read the same as written
                         m_csw.getDllInterface()->writeLevel1Register( nodeid, page, reg, &val );
@@ -4057,6 +4093,9 @@ void frmDeviceConfig::undoValueSelectedRow(wxCommandEvent& WXUNUSED(event))
 
                     } 
                     else {
+
+                        // Empty input queue
+                        m_csw.getTcpIpInterface()->doCmdClear();
 
                         // We don't test for errors here as some registers have reserved bits
                         // etc and therefore will not read the same as written
@@ -4153,6 +4192,12 @@ void frmDeviceConfig::defaultValueSelectedRow(wxCommandEvent& WXUNUSED(event))
 
                     if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
 
+                        // Empty input queue
+                        canalMsg canalmsg;
+                        while ( m_csw.getDllInterface()->doCmdDataAvailable() ) {
+                            if ( CANAL_ERROR_SUCCESS != m_csw.getDllInterface()->doCmdReceive( &canalmsg ) ) break;
+                        }
+
                         // We don't test for errors here as some registers have reserved bits
                         // etc and therefore will not read the same as written
                         if ( CANAL_ERROR_SUCCESS == m_csw.getDllInterface()->writeLevel1Register( nodeid, page, reg, &val ) ) {
@@ -4179,6 +4224,9 @@ void frmDeviceConfig::defaultValueSelectedRow(wxCommandEvent& WXUNUSED(event))
 
                     } 
                     else {
+
+                        // Empty input queue
+                        m_csw.getTcpIpInterface()->doCmdClear();
 
                         // We don't test for errors here as some registers have reserved bits
                         // etc and therefore will not read the same as written
@@ -5973,12 +6021,22 @@ void frmDeviceConfig::OnMenuitemSetManufacturerInfoClick( wxCommandEvent& event 
 
     // Get nickname
     if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
+
+        // Empty input queue
+        canalMsg canalmsg;
+        while ( m_csw.getDllInterface()->doCmdDataAvailable() ) {
+            if ( CANAL_ERROR_SUCCESS != m_csw.getDllInterface()->doCmdReceive( &canalmsg ) ) break;
+        }
+
         nodeid = vscp_readStringValue( m_comboNodeID->GetValue() );
     }
     else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
+        
+        // Empty input queue
+        m_csw.getTcpIpInterface()->doCmdClear();
+
         destGUID.getFromString( m_comboNodeID->GetValue() );
     }
-
 
     g_Config.m_manufacturerGuid.toString( wxstr );
     dlg.m_pctrlGUID->SetValue( wxstr );
@@ -6048,7 +6106,7 @@ void frmDeviceConfig::OnMenuitemSetManufacturerInfoClick( wxCommandEvent& event 
             for ( int i = 0; i<16; i++ ) {
 
                 val = g_Config.m_manufacturerGuid.getAt( i );
-                if ( CANAL_ERROR_SUCCESS != m_csw.getTcpIpInterface()->writeLevel2Register( 0xd0,
+                if ( CANAL_ERROR_SUCCESS != m_csw.getTcpIpInterface()->writeLevel2Register( 0xd0 + i,
                                                                                                 0xffff,
                                                                                                 &val,
                                                                                                 m_ifguid,
@@ -6063,7 +6121,7 @@ void frmDeviceConfig::OnMenuitemSetManufacturerInfoClick( wxCommandEvent& event 
             // Manufacturer id
             for ( int i = 0; i < 4; i++ ) {
                 val = ( ( g_Config.m_manufacturerId ) >> ( 24 - ( i * 8 ) ) ) & 0xff;
-                if ( CANAL_ERROR_SUCCESS != m_csw.getTcpIpInterface()->writeLevel2Register( 0x89,
+                if ( CANAL_ERROR_SUCCESS != m_csw.getTcpIpInterface()->writeLevel2Register( 0x89 + i,
                                                                                                 0xffff,
                                                                                                 &val,
                                                                                                 m_ifguid,
@@ -6077,7 +6135,7 @@ void frmDeviceConfig::OnMenuitemSetManufacturerInfoClick( wxCommandEvent& event 
             // Manufacturer Subid
             for ( int i = 0; i < 4; i++ ) {
                 val = ( ( g_Config.m_manufacturerSubId ) >> ( 24 - ( i * 8 ) ) ) & 0xff;
-                if ( CANAL_ERROR_SUCCESS != m_csw.getTcpIpInterface()->writeLevel2Register( 0x8d,
+                if ( CANAL_ERROR_SUCCESS != m_csw.getTcpIpInterface()->writeLevel2Register( 0x8d + i,
                                                                                                 0xffff,
                                                                                                 &val,
                                                                                                 m_ifguid,
