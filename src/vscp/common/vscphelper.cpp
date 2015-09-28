@@ -3274,7 +3274,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
                 strOutput = wxString::Format( _("Probe for nickname=0x%02X"),
                                                 pEvent->pdata[ 0+offset ] );
                 if ( 0 == pEvent->pdata[ 0+offset ] ) {
-                    strOutput += _( "\n(Check if there is a server that shoudl supply a nickname.)" );
+                    strOutput += _( "\n(Check if there is a server that should supply a nickname.)" );
                 }
             }
 			break;
