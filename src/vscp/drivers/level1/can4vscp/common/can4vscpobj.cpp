@@ -838,8 +838,9 @@ int CCan4VSCPObj::readMsgBlocking( canalMsg *pMsg, uint32_t timeout )
 #endif    
 
     // Must be a message pointer
-    if ( NULL == pMsg)
-        return CANAL_ERROR_PARAMETER;	
+    if ( NULL == pMsg ) {
+        return CANAL_ERROR_PARAMETER;
+    }
 
     // Must be open
     if ( !m_bOpen ) {
@@ -1776,11 +1777,11 @@ void CCan4VSCPObj::readSerialData( void )
 				addToResponseQueue();
 			}
 			// Check for ACK frame
-            else if ( VSCP_SERIAL_DRIVER_OPERATION_SENT_ACK == ( m_bufferMsgRcv[ 0 ] ) ) {
+            else if ( VSCP_SERIAL_DRIVER_OPERATION_ACK == ( m_bufferMsgRcv[ 0 ] ) ) {
 			    addToResponseQueue();
 			}
 			// Check for NACK frame
-            else if ( VSCP_SERIAL_DRIVER_OPERATION_SENT_NACK == ( m_bufferMsgRcv[ 0 ] ) ) {
+            else if ( VSCP_SERIAL_DRIVER_OPERATION_NACK == ( m_bufferMsgRcv[ 0 ] ) ) {
 			    addToResponseQueue();
 			}
 			// Check for ERROR frame
