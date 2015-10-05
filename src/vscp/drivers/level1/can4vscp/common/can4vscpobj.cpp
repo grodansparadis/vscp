@@ -2001,7 +2001,7 @@ void *workThreadTransmit( void *pObject )
             res = sem_timedwait( &pobj->m_transmitAckNackSem, &to );
             if ( res == EAGAIN ) {
                 // We did not get a ACK/NACK in time - resend frame
-                transmitMessage( pobj );
+                transmitMessage( pobj, &seq );
                 continue;
             }
 #endif 

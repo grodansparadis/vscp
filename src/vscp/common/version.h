@@ -29,9 +29,9 @@
 #define VSCPD_SUB_VERSION   	1
 
 
-#define VSCPD_SUB_SUB_VERSION   69
+#define VSCPD_SUB_SUB_VERSION   70
 
-#define VSCPD_DISPLAY_VERSION "1.0.1.69 Neon"
+#define VSCPD_DISPLAY_VERSION "1.0.1.70 Neon"
 
 #define VSCPD_COPYRIGHT "Copyright (C) 2000-2015, Paradise of the Frog AB, http://www.paradiseofthefrog.com"
 #define VSCPD_COPYRIGHT_HTML "Copyright (C) 2000-2015, <a href=\"mailto:info@paradiseofthefrog.com\">Paradise of the Frog</a>, <a href=\"http://www.paradiseofthefrog.com\">http://www.paradiseofthefrog.com</a>"
