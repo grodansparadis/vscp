@@ -535,7 +535,7 @@ const char * CanalGetDriverInfo( void );
 
 // * * * TCP/IP FAST mode interface constants
 
-// FAST mode primary states
+// FAST mode primary states (deprecated)
 #define CANAL_BINARY_FRAME_TYPE_VSCP        0       // VSCP event
 #define CANAL_BINARY_FRAME_TYPE_ERROR       1       // ACK/NACK/errors
 #define CANAL_BINARY_FRAME_TYPE_COMMAND     2       // Command frame
@@ -545,7 +545,7 @@ const char * CanalGetDriverInfo( void );
 #define CANAL_BINARY_COMMAND_READ           1       // Read one frame
 #define CANAL_BINARY_COMMAND_CLOSE          2       // Close communication channel
 
-// FAST error codes
+// FAST error codes (deprecated)
 #define CANAL_BINARY_ERROR_NONE             0       // OK
 #define CANAL_BINARY_ERROR_GENERAL          1       // General error
 #define CANAL_BINARY_ERROR_TO_SMALL         2       // Packet smaller then min. packet

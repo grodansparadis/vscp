@@ -558,7 +558,7 @@ bool CCAN232Obj::getStatus( PCANALSTATUS pCanalStatus )
 ///////////////////////////////////////////////////////////////////////////////
 // workThread
 //
-// The workThread do most of the acual work such as send and receive.
+// The workThread do most of the acual work such as send and receive messages.
 //
 //
 
@@ -688,6 +688,8 @@ void workThread( void *pThreadObject )
 			if ( !( msg.flags & CANAL_IDFLAG_EXTENDED ) && ( msg.id > 0x7ff ) ) {
 				msg.id &= 0x7ff;	
 			};
+
+            // OR
 
 			// Must be a valid extended id
 			if ( ( msg.flags & CANAL_IDFLAG_EXTENDED ) && ( msg.id > 0x1fffffff ) ) {

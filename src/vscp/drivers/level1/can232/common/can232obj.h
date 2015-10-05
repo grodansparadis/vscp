@@ -40,8 +40,8 @@
 #define CAN232_STATE_NONE	0	// 
 #define CAN232_STATE_MSG	1	// Message is beeing read
 
-#define CAN232_MAX_RCVMSG	512	// Maximum number of received messages
-#define CAN232_MAX_SNDMSG	512	// Maximum number of received messages
+#define CAN232_MAX_RCVMSG	10000	// Maximum number of received messages
+#define CAN232_MAX_SNDMSG	2048	// Maximum number of received messages
 
 #define CAN232_OBJ_MUTEX	TEXT("___CAN232_OBJ_MUTEX___")
 

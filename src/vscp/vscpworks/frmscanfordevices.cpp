@@ -362,7 +362,7 @@ bool frmScanforDevices::enableInterface(void)
 
     progressDlg.Pulse(_("opening interface..."));
 
-    if (0 != m_csw.doCmdOpen() ) {
+    if ( 0 != m_csw.doCmdOpen() ) {
 
         progressDlg.Pulse(_("Interface is open."));
 
@@ -389,7 +389,7 @@ bool frmScanforDevices::enableInterface(void)
             }
 
         } 
-        else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
+        else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
 
             //m_staticComboText->SetLabel(_("Interface"));
 
@@ -432,24 +432,20 @@ bool frmScanforDevices::enableInterface(void)
                     strLine += _(" - ");
                     strLine += strDescription;
 
-                    //m_comboNodeID->Append(strLine);
                 }
 
-                // Select the first item
-                //m_comboNodeID->SetSelection(0);
-
-            } else {
+            } 
+            else {
                 wxMessageBox(_("No interfaces found!"));
             }
 
         } // TCP/IP interface
 
-    } else {
+    } 
+    else {
         progressDlg.Pulse(_("Failed to open Interface."));
         wxMessageBox(_("Failed to Open Interface."));
 
-        //m_BtnActivateInterface->SetValue(false);
-        //m_BtnActivateInterface->SetLabel(_("Disconnected"));
         return false;
     }
 
@@ -600,7 +596,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 
     wxProgressDialog progressDlg(_("Scanning for VSCP devices"),
             _("Reading Registers"),
-            scanTo-scanFrom+1,
+            2*(scanTo-scanFrom+1),
             this,
             wxPD_ELAPSED_TIME | wxPD_AUTO_HIDE  | wxPD_CAN_ABORT);
 
@@ -614,7 +610,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 
     if ( bSlowAlgorithm ) {
 
-        for ( uint8_t i = scanFrom; i <= scanTo; i++ ) {
+        for ( int i = scanFrom; i <= scanTo; i++ ) {
 
             if (!progressDlg.Update(i, wxString::Format(_("Checking for device %d"), i))) {
                 if (m_DeviceTree->GetCount()) {
@@ -701,7 +697,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
             }
 
 			// Send read register to all nodes.
-			for ( uint8_t i = scanFrom; i <= scanTo; i++ ) {
+			for ( int i = scanFrom; i <= scanTo; i++ ) {
 
 #ifdef WIN32				
 				progressDlg.Update(i, wxString::Format(_("Checking for device %d"), i));
@@ -713,6 +709,8 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 				eventex.data[ 0 ] = i;		// nodeid
 				eventex.data[ 1 ] = 0xd0;	// Register to read
 				m_csw.doCmdSend( &eventex );
+                wxMilliSleep( 20 );
+
 			}
 
 
@@ -726,32 +724,36 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
             
 				progressDlg.Pulse( wxString::Format(_("Found %d"), found_list.size()));
 
-				if (m_csw.doCmdDataAvailable()) { // Message available
+				while ( m_csw.doCmdDataAvailable() ) {           // Message available
 
-					if (CANAL_ERROR_SUCCESS == m_csw.doCmdReceive(&eventex)) { // Valid event
-                    
+					if ( CANAL_ERROR_SUCCESS == m_csw.doCmdReceive( &eventex ) ) { // Valid event                
 #if 0                    
 							{
-							wxString str;
-								str = wxString::Format(_("Received Event: class=%d type=%d size=%d data=%d %d"), 
-									eventex.vscp_class, eventex.vscp_type, eventex.sizeData, eventex.data[15], eventex.data[16] );
+                                wxString str;
+                                str = wxString::Format(_("Received Event: class=%d type=%d size=%d data= "), 
+                                                            eventex.vscp_class, 
+                                                            eventex.vscp_type, 
+                                                            eventex.sizeData );
+                                for ( int ii = 0; ii < eventex.sizeData; ii++ ) {
+                                    str += wxString::Format(_("%02X "), eventex.data[ii] );
+                                }
 								wxLogDebug(str);
 							}
 #endif                    
 							// Level I Read reply?
-							if ((VSCP_CLASS1_PROTOCOL == eventex.vscp_class) &&
-									(VSCP_TYPE_PROTOCOL_RW_RESPONSE == eventex.vscp_type)) {
+							if ( ( VSCP_CLASS1_PROTOCOL == eventex.vscp_class ) &&
+									( VSCP_TYPE_PROTOCOL_RW_RESPONSE == eventex.vscp_type ) ) {
 								if ( 0xd0 == eventex.data[ 0 ] ) { // Requested register?
 									// Add nickname to list 
 									found_list.push_back( eventex.GUID[15] );
-								}	// Check for correct node
-							}		// Level II 512 Read reply?
+								}
+							}
 
 						} // valid event
 
-					} //Event is available
+					} // Event is available
 
-					if ((::wxGetLocalTimeMillis() - resendTime) > 1000 ) {
+					if ((::wxGetLocalTimeMillis() - resendTime) > 3000 ) {
 
 						// Take away duplicates
 						found_list.unique();
@@ -786,7 +788,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
             m_csw.getTcpIpInterface()->doCmdClear();
            
 			// Read register at all nodes.
-			for ( uint8_t i = scanFrom; i <= scanTo; i++ ) {
+			for ( int i=scanFrom; i<=scanTo; i++ ) {
             
 				cguid destguid;
 				destguid.setLSB(i);
@@ -812,6 +814,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 					eventex.data[ 17 ] = 0xd0;  // Register to read
 
 					m_csw.doCmdSend( &eventex );
+                    wxMilliSleep( 10 );
 
 				}
                 else {
@@ -832,7 +835,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
             
 				progressDlg.Pulse( wxString::Format(_("Found %d"), found_list.size()));
 
-				if ( m_csw.doCmdDataAvailable() ) { // Message available
+                while ( m_csw.doCmdDataAvailable() ) {      // Message available
 
 					if ( CANAL_ERROR_SUCCESS == m_csw.doCmdReceive( &eventex ) ) { // Valid event
                     

@@ -677,19 +677,8 @@ void frmMain::OnMenuitemScanClick( wxCommandEvent& event )
 
                 if ( NULL != pBoth ) {  
 
-					// set type so session window is aware of it
-                    subframe->m_interfaceType = pBoth->m_type;
-
                     if ( INTERFACE_CANAL == pBoth->m_type ) {
 
-                        // Init node id combo
-                        //wxRect rc = subframe->m_comboNodeID->GetRect();
-                        //rc.SetWidth( 60 );
-                        //subframe->m_comboNodeID->SetSize( rc );
-                        //for ( int i=1; i<256; i++ ) {
-                        //    subframe->m_comboNodeID->Append( wxString::Format(_("0x%02x"), i));
-                        //}
-                        
 						//subframe->m_comboNodeID->SetValue(_("0x01"));
                         subframe->SetTitle(_("VSCP Registers (CANAL) - ") +  pBoth->m_pcanalif->m_strDescription );
 
@@ -711,7 +700,13 @@ void frmMain::OnMenuitemScanClick( wxCommandEvent& event )
                         subframe->m_csw.getDllInterface()->setReadTimeout( g_Config.m_CANALRegErrorTimeout );
 
                         // Connect to device bus
-                        subframe->enableInterface();
+                        if ( !subframe->enableInterface() ) {
+                            // Failed to connect - terminate
+                            dlg.cleanupListbox();
+                            subframe->m_csw.doCmdClose();
+                            subframe->Close( true );
+                            return;
+                        }
 
                         // Move window on top
                         subframe->Raise();

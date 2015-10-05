@@ -60,7 +60,7 @@ static uint8_t addWithEscape( uint8_t *p, char c, uint8_t *pcrc )
 		*p = DLE;
         if ( NULL != pcrc ) crc8( pcrc, DLE );
 		*(p+1) = DLE;
-        if ( NULL != pcrc ) crc8( pcrc, DLE );
+        // !!! CRC only calculated over one DLE !!!
 		return 2;
 	}
 	else {
@@ -117,6 +117,7 @@ CCan4VSCPObj::CCan4VSCPObj()
 
     m_sequencyno = 0;   // No frames sent yet
 	
+    memset( &msgResponseInfo, 0, sizeof( msgResponseInfo ) );
 
 #ifdef WIN32
 	
@@ -128,6 +129,8 @@ CCan4VSCPObj::CCan4VSCPObj()
     m_transmitDataPutEvent = NULL;
 	m_transmitDataGetEvent = NULL;
 
+    m_transmitAckNackEvent = NULL;
+
 	// Create the device AND LIST access mutexes
     m_can4vscpMutex = CreateMutex( NULL, true, CANAL_DLL_CAN4VSCPDRV_OBJ_MUTEX );
     m_receiveMutex = CreateMutex( NULL, true, CANAL_DLL_CAN4VSCPDRV_RECEIVE_MUTEX );
@@ -138,7 +141,7 @@ CCan4VSCPObj::CCan4VSCPObj()
 	m_receiveDataEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
 	m_transmitDataPutEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
 	m_transmitDataGetEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
-
+    m_transmitAckNackEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
 #else
 	
     //m_flog = NULL;
@@ -150,6 +153,7 @@ CCan4VSCPObj::CCan4VSCPObj()
     sem_init( &m_receiveDataSem, 0, 0 );
     sem_init( &m_transmitDataPutSem, 0, 0 );
     sem_init( &m_transmitDataGetSem, 0, 0 );
+    sem_init( &m_transmitAckNackSem, 0, 0 );
 
 #endif
 
@@ -189,12 +193,14 @@ CCan4VSCPObj::~CCan4VSCPObj()
     if ( NULL != m_receiveDataEvent ) CloseHandle( m_receiveDataEvent );
 	if ( NULL != m_transmitDataPutEvent ) CloseHandle( m_transmitDataPutEvent );
 	if ( NULL != m_transmitDataGetEvent ) CloseHandle( m_transmitDataGetEvent );
+    if ( NULL != m_transmitAckNackEvent ) CloseHandle( m_transmitAckNackEvent );
 
 #else
 	
 	sem_destroy( &m_receiveDataSem );
     sem_destroy( &m_transmitDataPutSem );
     sem_destroy( &m_transmitDataGetSem );
+    sem_destroy( &m_transmitAckNackSem );
 
 	pthread_mutex_destroy( &m_can4vscpMutex );
 	pthread_mutex_destroy( &m_receiveMutex );
@@ -354,9 +360,9 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
     // Set CAN4VSCP mode in case of device in verbose mode
     if ( !( flags & CAN4VSCP_FLAG_NO_SWITCH_TO_NEW_MODE ) ) {  
 #ifdef WIN32        
-        m_com.writebuf( (unsigned char *)"SET MODE VSCP\r\n", 19 );     // In case of garbage in queue
+        BOOL rw = m_com.writebuf( (unsigned char *)"SET MODE VSCP\r\n", 19 );     // In case of garbage in queue
         SLEEP( 200 );
-        m_com.writebuf( (unsigned char *)"SET MODE VSCP\r\n", 19 );     // set CAN4VSCP mode twice
+        rw = m_com.writebuf( (unsigned char *)"SET MODE VSCP\r\n", 19 );     // we set CAN4VSCP mode twice
 #else
         m_com.comm_puts( (char*)"SET MODE VSCP\r\n", 19 );              // In case of garbage in queue
         SLEEP( 200 );
@@ -566,8 +572,11 @@ int CCan4VSCPObj::close( void )
     SetEvent( m_receiveDataEvent );
     SetEvent( m_transmitDataPutEvent );
     SetEvent( m_transmitDataGetEvent );
+    ResetEvent( m_transmitAckNackEvent );
 #else
-	
+    sem_post( &m_receiveDataSem );
+    sem_post( &m_transmitDataPutSem );
+    sem_post( &m_transmitDataGetSem );
 #endif    
 	
     // terminate the worker thread 
@@ -951,8 +960,8 @@ bool CCan4VSCPObj::getDeviceCapabilities( void )
     sendData[ pos++ ] = STX;
 
     // Frame type
-    sendData[ pos++ ] = VSCP_SERIAL_DRIVER_OPERATION_CAPS_REQUEST;
-    crc8( &crc, VSCP_SERIAL_DRIVER_OPERATION_CAPS_REQUEST );
+    sendData[ pos++ ] = VSCP_SERIAL_DRIVER_FRAME_TYPE_CAPS_REQUEST;
+    crc8( &crc, VSCP_SERIAL_DRIVER_FRAME_TYPE_CAPS_REQUEST );
 
     // Channel
     sendData[ pos++ ] = 0;
@@ -1001,7 +1010,7 @@ bool CCan4VSCPObj::getDeviceCapabilities( void )
 
             if ( ( VSCP_SERIAL_DRIVER_CAPS_SIZE == msgResponse.sizePayload ) &&
                  ( saveseq == msgResponse.seq ) &&
-                 ( VSCP_SERIAL_DRIVER_OPERATION_CAPS_RESPONSE == msgResponse.op )  ) {
+                 ( VSCP_SERIAL_DRIVER_FRAME_TYPE_CAPS_RESPONSE == msgResponse.op )  ) {
                 
                 m_caps.maxVscpFrames = (((uint16_t)msgResponse.payload[ 0 ]) << 8) + msgResponse.payload[ 1 ];
                 if ( !m_caps.maxVscpFrames ) m_caps.maxVscpFrames = 1;      // Zero not allowed
@@ -1037,6 +1046,8 @@ bool CCan4VSCPObj::sendMsg( uint8_t *buffer, short size )
 			rv = true;
 		}
 		else {
+            // Put message back in ququq
+
 			rv = false;
 		}
 #else   
@@ -1071,8 +1082,8 @@ bool CCan4VSCPObj::sendCommand( uint8_t cmdcode, uint8_t *pParam, uint8_t size )
 	sendData[ pos++ ] = STX;
 			
 	// Frame type
-    sendData[ pos++ ] = VSCP_SERIAL_DRIVER_OPERATION_COMMAND;
-    crc8( &crc, VSCP_SERIAL_DRIVER_OPERATION_COMMAND );
+    sendData[ pos++ ] = VSCP_SERIAL_DRIVER_FRAME_TYPE_COMMAND;
+    crc8( &crc, VSCP_SERIAL_DRIVER_FRAME_TYPE_COMMAND );
 			
 	// Channel
 	sendData[ pos++ ] = 0;
@@ -1133,7 +1144,7 @@ bool CCan4VSCPObj::waitCommandResponse( cmdResponseMsg *pMsg, uint8_t cmdcode, u
 
             if ( (2 == pMsg->sizePayload) &&  
                         ( saveseq == pMsg->seq ) && 
-                        ( VSCP_SERIAL_DRIVER_OPERATION_COMMAND_REPLY == pMsg->op ) &&
+                        ( VSCP_SERIAL_DRIVER_FRAME_TYPE_COMMAND_REPLY == pMsg->op ) &&
                         ( 0 == pMsg->payload[ 0 ] ) &&
                         ( cmdcode == pMsg->payload[ 1 ] ) ) {
                         return true;
@@ -1197,8 +1208,8 @@ void CCan4VSCPObj::sendACK( uint8_t seq )
 	sendData[ pos++ ] = STX;
 			
 	// Frame type
-    sendData[ pos++ ] = VSCP_SERIAL_DRIVER_OPERATION_ACK;
-    crc8( &crc, VSCP_SERIAL_DRIVER_OPERATION_ACK );
+    sendData[ pos++ ] = VSCP_SERIAL_DRIVER_FRAME_TYPE_ACK;
+    crc8( &crc, VSCP_SERIAL_DRIVER_FRAME_TYPE_ACK );
 			
 	// Channel
 	sendData[ pos++ ] = 0;
@@ -1236,43 +1247,43 @@ void CCan4VSCPObj::sendACK( uint8_t seq )
 
 void CCan4VSCPObj::sendNACK( uint8_t seq )
 {
-	uint8_t crc = 0;
-	uint8_t pos = 0;
-	uint8_t sendData[ 10 ];  // No Level II events in this driver
+    uint8_t crc = 0;
+    uint8_t pos = 0;
+    uint8_t sendData[ 10 ];  // No Level II events in this driver
 
-	sendData[ pos++ ] = DLE;
-	sendData[ pos++ ] = STX;
-			
-	// Frame type
-    sendData[ pos++ ] = VSCP_SERIAL_DRIVER_OPERATION_NACK;
-    crc8( &crc, VSCP_SERIAL_DRIVER_OPERATION_NACK );
-			
-	// Channel
-	sendData[ pos++ ] = 0;
-	crc8( &crc, 0 );
-			
-	// Sequency number
-	pos += addWithEscape( sendData + pos, seq, &crc ); 
-			
-	// Size of payload  
-	sendData[ pos++ ] = 0;
-	crc8( &crc, 0 ); 
-	sendData[ pos++ ] = 0;
-	crc8( &crc, 0 ); 
+    sendData[ pos++ ] = DLE;
+    sendData[ pos++ ] = STX;
+
+    // Frame type
+    sendData[ pos++ ] = VSCP_SERIAL_DRIVER_FRAME_TYPE_NACK;
+    crc8( &crc, VSCP_SERIAL_DRIVER_FRAME_TYPE_NACK );
+
+    // Channel
+    sendData[ pos++ ] = 0;
+    crc8( &crc, 0 );
+
+    // Sequency number
+    pos += addWithEscape( sendData + pos, seq, &crc );
+
+    // Size of payload  
+    sendData[ pos++ ] = 0;
+    crc8( &crc, 0 );
+    sendData[ pos++ ] = 0;
+    crc8( &crc, 0 );
 
     // Checksum
-    pos += addWithEscape( sendData + pos, crc, NULL ); 
+    pos += addWithEscape( sendData + pos, crc, NULL );
 
     // End of frame
     sendData[ pos++ ] = DLE;
-	sendData[ pos++ ] = ETX;
+    sendData[ pos++ ] = ETX;
 
-	LOCK_MUTEX( m_can4vscpMutex );
+    LOCK_MUTEX( m_can4vscpMutex );
 
-	// Send the event
-	sendMsg( sendData, pos );
+    // Send the event
+    sendMsg( sendData, pos );
 
-	UNLOCK_MUTEX( m_can4vscpMutex );
+    UNLOCK_MUTEX( m_can4vscpMutex );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1283,42 +1294,42 @@ void CCan4VSCPObj::sendNACK( uint8_t seq )
 void CCan4VSCPObj::sendNoopFrame( void )
 {
     uint8_t crc = 0;
-	uint8_t pos = 0;
-	uint8_t sendData[ 10 ];  // No Level II events in this driver
+    uint8_t pos = 0;
+    uint8_t sendData[ 10 ];  // No Level II events in this driver
 
-	sendData[ pos++ ] = DLE;
-	sendData[ pos++ ] = STX;
-			
-	// Frame type
-    sendData[ pos++ ] = VSCP_SERIAL_DRIVER_OPERATION_NOOP;
-    crc8( &crc, VSCP_SERIAL_DRIVER_OPERATION_NOOP );
-			
-	// Channel
-	sendData[ pos++ ] = 0;
-	crc8( &crc, 0 );
-			
-	// Sequency number
-	pos += addWithEscape( sendData + pos, m_sequencyno++, &crc ); 
-			
-	// Size of payload  
-	sendData[ pos++ ] = 0;
-	crc8( &crc, 0 ); 
-	sendData[ pos++ ] = 0;
-	crc8( &crc, 0 ); 
+    sendData[ pos++ ] = DLE;
+    sendData[ pos++ ] = STX;
+
+    // Frame type
+    sendData[ pos++ ] = VSCP_SERIAL_DRIVER_FRAME_TYPE_NOOP;
+    crc8( &crc, VSCP_SERIAL_DRIVER_FRAME_TYPE_NOOP );
+
+    // Channel
+    sendData[ pos++ ] = 0;
+    crc8( &crc, 0 );
+
+    // Sequency number
+    pos += addWithEscape( sendData + pos, m_sequencyno++, &crc );
+
+    // Size of payload  
+    sendData[ pos++ ] = 0;
+    crc8( &crc, 0 );
+    sendData[ pos++ ] = 0;
+    crc8( &crc, 0 );
 
     // Checksum
-    pos += addWithEscape( sendData + pos, crc, NULL ); 
+    pos += addWithEscape( sendData + pos, crc, NULL );
 
     // End of frame
     sendData[ pos++ ] = DLE;
-	sendData[ pos++ ] = ETX;
+    sendData[ pos++ ] = ETX;
 
-	LOCK_MUTEX( m_can4vscpMutex );
+    LOCK_MUTEX( m_can4vscpMutex );
 
-	// Send the event
-	sendMsg( sendData, pos );
+    // Send the event
+    sendMsg( sendData, pos );
 
-	UNLOCK_MUTEX( m_can4vscpMutex );
+    UNLOCK_MUTEX( m_can4vscpMutex );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1326,17 +1337,48 @@ void CCan4VSCPObj::sendNoopFrame( void )
 //
 //
 
-bool CCan4VSCPObj::addToResponseQueue( void ) 
+bool CCan4VSCPObj::addToResponseQueue( void )
 {
+    if ( msgResponseInfo.bWaitingForAckNack ) {
+
+        bool t1 = ( msgResponseInfo.channel == m_bufferMsgRcv[ VSCP_CAN4VSCP_DRIVER_POS_FRAME_CHANNEL ] );
+        bool t2 = ( msgResponseInfo.seq == m_bufferMsgRcv[ VSCP_CAN4VSCP_DRIVER_POS_FRAME_SEQUENCY ] );
+        bool t3 = ( t1 && t2 );
+        if ( msgResponseInfo.channel == m_bufferMsgRcv[ VSCP_CAN4VSCP_DRIVER_POS_FRAME_CHANNEL ] )  {
+
+             if ( msgResponseInfo.seq == m_bufferMsgRcv[ VSCP_CAN4VSCP_DRIVER_POS_FRAME_SEQUENCY ] )  {
+
+                if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_ACK == m_bufferMsgRcv[ VSCP_CAN4VSCP_DRIVER_POS_FRAME_TYPE ] ) {
+                    //  Positive things happen
+                    msgResponseInfo.bAck = true;
+#ifdef WIN32
+                    SetEvent( m_transmitAckNackEvent  );
+#else
+                    sem_post( &m_transmitAckNackSem  );
+#endif
+                }
+                else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_ACK == m_bufferMsgRcv[ VSCP_CAN4VSCP_DRIVER_POS_FRAME_TYPE ] ) {
+                    //  Negative things happen to, sometimes
+                    msgResponseInfo.bAck = false;
+#ifdef WIN32
+                    SetEvent( m_transmitAckNackEvent );
+#else
+                    sem_post( &m_transmitAckNackSem );
+#endif
+                }
+            }
+        }
+    }
+
     cmdResponseMsg *pMsg = new cmdResponseMsg;
     if ( NULL != pMsg ) {
 								
         dllnode *pNode = new dllnode; 
 	    if ( NULL != pNode ) {
 
-            pMsg->op = m_bufferMsgRcv[ 0 ];
-            pMsg->channel = m_bufferMsgRcv[ 1 ];
-            pMsg->seq = m_bufferMsgRcv[ 2 ];
+            pMsg->op = m_bufferMsgRcv[ VSCP_CAN4VSCP_DRIVER_POS_FRAME_TYPE ];
+            pMsg->channel = m_bufferMsgRcv[ VSCP_CAN4VSCP_DRIVER_POS_FRAME_CHANNEL ];
+            pMsg->seq = m_bufferMsgRcv[ VSCP_CAN4VSCP_DRIVER_POS_FRAME_SEQUENCY ];
             pMsg->sizePayload = ( (uint16_t)m_bufferMsgRcv[ 3 ] << 8 ) + m_bufferMsgRcv[ 4 ];
 
             if ( pMsg->sizePayload ) {
@@ -1461,7 +1503,7 @@ bool CCan4VSCPObj::serialData2StateMachine(void)
 				}
 				else {
 					// This packet has wrong format as it have
-					// to many databytes - start over!
+					// to many databytes - start all over!
 #ifdef DEBUG_CAN4VSCP_RECEIVE
 					fprintf(m_flog, " STATE_NONE/SUBSTATE_NONE\n");
 #endif
@@ -1553,11 +1595,11 @@ void CCan4VSCPObj::readSerialData( void )
             }
 
             // Check if NOOP frame
-            if ( VSCP_SERIAL_DRIVER_OPERATION_NOOP == ( m_bufferMsgRcv[ 0 ] ) ) {
+            if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_NOOP == ( m_bufferMsgRcv[ 0 ] ) ) {
                 sendACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );
 			}
             // Check for CANAL message frame
-            else if ( VSCP_SERIAL_DRIVER_OPERATION_CANAL == ( m_bufferMsgRcv[ 0 ] ) ) {
+            else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_CANAL == ( m_bufferMsgRcv[ 0 ] ) ) {
 			
                 // CANAL message
                 // -------------
@@ -1644,27 +1686,27 @@ void CCan4VSCPObj::readSerialData( void )
                 }
             }
             // Check for VSCP event frame
-            else if ( VSCP_SERIAL_DRIVER_OPERATION_VSCP_EVENT == ( m_bufferMsgRcv[ 0 ] ) ) {
+            else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_VSCP_EVENT == ( m_bufferMsgRcv[ 0 ] ) ) {
                 sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle VSCP events
             }
             // Check for configure frame
-            else if ( VSCP_SERIAL_DRIVER_OPERATION_CONFIGURE == ( m_bufferMsgRcv[ 0 ] ) ) {
+            else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_CONFIGURE == ( m_bufferMsgRcv[ 0 ] ) ) {
                 sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle configure
             }
             // Check for poll frame
-            else if ( VSCP_SERIAL_DRIVER_OPERATION_POLL == ( m_bufferMsgRcv[ 0 ] ) ) {
+            else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_POLL == ( m_bufferMsgRcv[ 0 ] ) ) {
                 sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle poll
             }
             // Check for no event frame
-            else if ( VSCP_SERIAL_DRIVER_OPERATION_NO_EVENT == ( m_bufferMsgRcv[ 0 ] ) ) {
+            else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_NO_EVENT == ( m_bufferMsgRcv[ 0 ] ) ) {
                 sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle no event
             }
             // Check for multiframe VSCP message frame
-            else if ( VSCP_SERIAL_DRIVER_OPERATION_MULTI_FRAME_VSCP == ( m_bufferMsgRcv[ 0 ] ) ) {
+            else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_MULTI_FRAME_VSCP == ( m_bufferMsgRcv[ 0 ] ) ) {
                 sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle vscp multi frame
             }
             // Check for multiframe CANAL message frame
-            else if ( VSCP_SERIAL_DRIVER_OPERATION_MULTI_FRAME_CANAL == ( m_bufferMsgRcv[ 0 ] ) ) {
+            else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_MULTI_FRAME_CANAL == ( m_bufferMsgRcv[ 0 ] ) ) {
 
                 // CANAL message
                 // -------------
@@ -1769,31 +1811,31 @@ void CCan4VSCPObj::readSerialData( void )
                 } // while
             }
 			// Check for sent ACK frame
-            else if ( VSCP_SERIAL_DRIVER_OPERATION_SENT_ACK == ( m_bufferMsgRcv[ 0 ] ) ) {
+            else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_SENT_ACK == ( m_bufferMsgRcv[ 0 ] ) ) {
 				addToResponseQueue();
 			}
 			// Check for sent NACK frame
-            else if ( VSCP_SERIAL_DRIVER_OPERATION_SENT_NACK == ( m_bufferMsgRcv[ 0 ] ) ) {
+            else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_SENT_NACK == ( m_bufferMsgRcv[ 0 ] ) ) {
 				addToResponseQueue();
 			}
 			// Check for ACK frame
-            else if ( VSCP_SERIAL_DRIVER_OPERATION_ACK == ( m_bufferMsgRcv[ 0 ] ) ) {
+            else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_ACK == ( m_bufferMsgRcv[ 0 ] ) ) {
 			    addToResponseQueue();
 			}
 			// Check for NACK frame
-            else if ( VSCP_SERIAL_DRIVER_OPERATION_NACK == ( m_bufferMsgRcv[ 0 ] ) ) {
+            else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_NACK == ( m_bufferMsgRcv[ 0 ] ) ) {
 			    addToResponseQueue();
 			}
 			// Check for ERROR frame
-            else if ( VSCP_SERIAL_DRIVER_OPERATION_ERROR == ( m_bufferMsgRcv[ 0 ] ) ) {
+            else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_ERROR == ( m_bufferMsgRcv[ 0 ] ) ) {
 			    addToResponseQueue();
 			}
 			// Check for command reply frame
-            else if ( VSCP_SERIAL_DRIVER_OPERATION_COMMAND_REPLY == ( m_bufferMsgRcv[ 0 ] ) ) {
+            else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_COMMAND_REPLY == ( m_bufferMsgRcv[ 0 ] ) ) {
 			    addToResponseQueue();
 			}
 			// Check if command frame
-            else if ( VSCP_SERIAL_DRIVER_OPERATION_COMMAND == ( m_bufferMsgRcv[ 0 ] ) ) {
+            else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_COMMAND == ( m_bufferMsgRcv[ 0 ] ) ) {
                 addToResponseQueue();
 			} 
 
@@ -1806,7 +1848,101 @@ void CCan4VSCPObj::readSerialData( void )
 							
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// transmitMessage
+//
+//
 
+static bool transmitMessage( CCan4VSCPObj * pobj, uint8_t *pseq )
+{
+    canalMsg msg;
+
+    // Must be a message to transmit
+    if ( 0 == pobj->m_transmitList.nCount ) return false;
+
+    // Fetch a copy of the message
+    memcpy( &msg, pobj->m_transmitList.pHead->pObject, sizeof( canalMsg ) );
+
+    // CANAL message
+    // -------------
+    // [0]      DLE
+    // [1]      STX
+    // [2]      Frame type (2 - CANAL message.)
+    // [3]      Channel (always zero)
+    // [4]      Sequence number 
+    // [5/6]    Size of payload ( 12 + sizeData )
+    // [7]      CAN id (MSB)
+    // [8]      CAN id
+    // [9]      CAN id
+    // [10]     CAN id (LSB)
+    // [11-n]   CAN data (0-8 bytes) 
+    // [len-3]  CRC
+    // [len-2]  DLE
+    // [len-1]  ETX
+
+    uint8_t crc = 0;
+    uint8_t pos = 0;
+    uint8_t sendData[ 128 ];  // No Level II events in this driver
+
+    sendData[ pos++ ] = DLE;
+    sendData[ pos++ ] = STX;
+
+    // Frame type
+    sendData[ pos++ ] = VSCP_SERIAL_DRIVER_FRAME_TYPE_CANAL;
+    crc8( &crc, VSCP_SERIAL_DRIVER_FRAME_TYPE_CANAL );
+
+    // Channel
+    sendData[ pos++ ] = 0;
+    crc8( &crc, 0 );
+
+    // Sequency number
+
+    pos += addWithEscape( sendData + pos, (*pseq)++, &crc );
+
+    // Size of payload  6 + datalen
+    sendData[ pos++ ] = 0;
+    crc8( &crc, 0 );
+    pos += addWithEscape( sendData + pos, 4 + msg.sizeData, &crc );
+
+    // id
+    pos += addWithEscape( sendData + pos, ( msg.id >> 24 ) & 0xff, &crc );
+    pos += addWithEscape( sendData + pos, ( msg.id >> 16 ) & 0xff, &crc );
+    pos += addWithEscape( sendData + pos, ( msg.id >> 8 ) & 0xff, &crc );
+    pos += addWithEscape( sendData + pos, msg.id & 0xff, &crc );
+
+    // Data
+    for ( int i = 0; i<msg.sizeData; i++ ) {
+        pos += addWithEscape( sendData + pos, msg.data[ i ], &crc );
+    }
+
+    // Checksum
+    pos += addWithEscape( sendData + pos, crc, NULL );
+
+    // End of frame
+    sendData[ pos++ ] = DLE;
+    sendData[ pos++ ] = ETX;
+    
+    // Clear ACK/NACK structure
+    pobj->msgResponseInfo.bAck = false;     // We start out being pessimistic
+    pobj->msgResponseInfo.channel = 0;      // Well it is alread but what the heck - to be clear about it
+    pobj->msgResponseInfo.seq = *pseq - 1;  // Sequency for frame
+
+    // Send the event
+    if ( !pobj->sendMsg( sendData, pos ) ) {        
+        return false;
+    }
+
+#ifdef WIN32
+    ResetEvent( pobj->m_transmitAckNackEvent ); 
+#else
+
+#endif
+
+    // Arm the ACK/NACK mechanism
+    pobj->msgResponseInfo.bWaitingForAckNack = true;
+
+    return true;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1825,11 +1961,13 @@ void *workThreadTransmit( void *pObject )
 #else
 	int rv = 0;
     int res;
+
+    // Timeout for receive
     struct timespec to = { 0, 0 };
-    clock_gettime( CLOCK_REALTIME, &to );
-    to.tv_nsec +=  500000;
 #endif
-	uint8_t sequencyno = 0;
+   
+    bool bTransmissionInProgress = false;   // True while waiting for ACK/NACK
+	uint8_t seq = 0;                        // Increased by one for every frame sent
 
 	CCan4VSCPObj * pobj = ( CCan4VSCPObj *)pObject;
 	if ( NULL == pobj ) {
@@ -1843,139 +1981,119 @@ void *workThreadTransmit( void *pObject )
 	// Init CRC table
 	init_crc8();
 	
-	while ( pobj->m_bRun ) {
-		
-		// Noting to do if we should end...
-		if ( !pobj->m_bRun ) continue;
+    // Clear ACK/NACK response structure
+    memset( &pobj->msgResponseInfo, 0, sizeof( pobj->msgResponseInfo ) );
 
-        if ( 0 == pobj->m_transmitList.nCount ) {
+    while ( pobj->m_bRun ) {
+
+        // Are we in transmission
+        if ( 0 && bTransmissionInProgress ) {
 #ifdef WIN32            
-            ResetEvent( pobj->m_transmitDataGetEvent );
-            if ( WAIT_OBJECT_0 != WaitForSingleObject( pobj->m_transmitDataGetEvent, 100 ) ) {		 
+            if ( WAIT_OBJECT_0 != WaitForSingleObject( pobj->m_transmitAckNackEvent, 500 ) ) {
+                // We did not get a ACK/NACK in time - resend frame
+                transmitMessage( pobj, &seq );
+                bTransmissionInProgress = true;
                 continue;
             }
 #else 
+            clock_gettime( CLOCK_REALTIME, &to );
+            to.tv_nsec += 20000000;     // 20 ms
+            res = sem_timedwait( &pobj->m_transmitAckNackSem, &to );
+            if ( res == EAGAIN ) {
+                // We did not get a ACK/NACK in time - resend frame
+                transmitMessage( pobj );
+                continue;
+            }
+#endif 
+
+            if ( pobj->msgResponseInfo.bAck ) {
+                
+                // ACK - Message sent successfully
+
+                canalMsg msg;
+
+                if ( 0 == pobj->m_transmitList.nCount && 
+                     ( NULL != pobj->m_transmitList.pHead->pObject ) ) {
+                    // Should not happen but if it does anyway... ;-/
+                    bTransmissionInProgress = false;
+                    continue;
+                }
+
+                memcpy( &msg, pobj->m_transmitList.pHead->pObject, sizeof( canalMsg ) );
+
+                // Update statistics
+                pobj->m_stat.cntTransmitData += msg.sizeData;
+                pobj->m_stat.cntTransmitFrames += 1;
+
+                // If ACK remove the event from the queue
+                LOCK_MUTEX( pobj->m_transmitMutex );
+                dll_removeNode( &pobj->m_transmitList, pobj->m_transmitList.pHead );
+                UNLOCK_MUTEX( pobj->m_transmitMutex );
+
+                bTransmissionInProgress = false;
+            }
+            else {
+                // NACK - Message send failed - Retransmit
+                transmitMessage( pobj, &seq );
+                continue;
+            }
+            
+        }
+
+        // If there is noting in the queue we wait until there is
+        // something there
+        if ( 0 == pobj->m_transmitList.nCount ) {
+#ifdef WIN32            
+            if ( WAIT_OBJECT_0 != WaitForSingleObject( pobj->m_transmitDataGetEvent, 100 ) ) {
+                continue;
+            }
+#else 
+            clock_gettime( CLOCK_REALTIME, &to );
+            to.tv_nsec += 100000;
             res = sem_timedwait( &pobj->m_transmitDataGetSem, &to );
             if ( res == EAGAIN ) {
-			    continue;			
+                continue;
             }
 #endif            
         }
 
-		while( pobj->m_transmitList.nCount > 0 ) {
+        // If there is something to transmit, well, then transmit it
+        if ( pobj->m_transmitList.nCount > 0 ) {
 
-            canalMsg msg;
-            memcpy( &msg, pobj->m_transmitList.pHead->pObject, sizeof( canalMsg ) ); 
-			LOCK_MUTEX( pobj->m_transmitMutex );
-			dll_removeNode( &pobj->m_transmitList, pobj->m_transmitList.pHead );
-			UNLOCK_MUTEX( pobj->m_transmitMutex );
+            bool rvtx = transmitMessage( pobj, &seq );
+            bTransmissionInProgress = true;
 
-            // CANAL message
-            // -------------
-            // [0]      DLE
-            // [1]      STX
-            // [2]      Frame type (2 - CANAL message.)
-            // [3]      Channel (always zero)
-            // [4]      Sequence number 
-            // [5/6]    Size of payload ( 12 + sizeData )
-            // [7]     CAN id (MSB)
-            // [8]     CAN id
-            // [9]     CAN id
-            // [10]     CAN id (LSB)
-            // [11-n]   CAN data (0-8 bytes) 
-            // [len-3]  CRC
-            // [len-2]  DLE
-            // [len-1]  ETX
+            if ( rvtx ) {
 
-			uint8_t crc = 0;
-			uint8_t pos = 0;
-			uint8_t sendData[ 128 ];  // No Level II events in this driver
+                canalMsg msg;
 
-			sendData[ pos++ ] = DLE;
-			sendData[ pos++ ] = STX;
-			
-			// Frame type
-            sendData[ pos++ ] = VSCP_SERIAL_DRIVER_OPERATION_CANAL;
-            crc8( &crc, VSCP_SERIAL_DRIVER_OPERATION_CANAL );
-			
-			// Channel
-			sendData[ pos++ ] = 0;
-			crc8( &crc, 0 );
-			
-			// Sequency number
-            pos += addWithEscape( sendData + pos, pobj->m_sequencyno++, &crc ); 
-			
-			// Size of payload  6 + datalen
-			sendData[ pos++ ] = 0;
-			crc8( &crc, 0 );
-			pos += addWithEscape( sendData + pos, 4 + msg.sizeData, &crc  );
+                if ( 0 == pobj->m_transmitList.nCount &&
+                     ( NULL != pobj->m_transmitList.pHead->pObject ) ) {
+                    // Should not happen but if it does anyway... ;-/
+                    bTransmissionInProgress = false;
+                    continue;
+                }
 
-            // id
-            pos += addWithEscape( sendData + pos, (msg.id>>24) & 0xff, &crc );
-            pos += addWithEscape( sendData + pos, (msg.id>>16) & 0xff, &crc );
-            pos += addWithEscape( sendData + pos, (msg.id>>8) & 0xff, &crc );
-            pos += addWithEscape( sendData + pos, msg.id & 0xff, &crc );
+                memcpy( &msg, pobj->m_transmitList.pHead->pObject, sizeof( canalMsg ) );
 
-			// Data
-			for ( int i=0; i<msg.sizeData; i++ ) {
-				pos += addWithEscape( sendData + pos, msg.data[i], &crc  ); 
-			}
+                // Update statistics
+                pobj->m_stat.cntTransmitData += msg.sizeData;
+                pobj->m_stat.cntTransmitFrames += 1;
 
-			// Checksum
-			pos += addWithEscape( sendData + pos, crc, NULL );
+                // Remove the event from the queue
+                LOCK_MUTEX( pobj->m_transmitMutex );
+                dll_removeNode( &pobj->m_transmitList, pobj->m_transmitList.pHead );
+                UNLOCK_MUTEX( pobj->m_transmitMutex );
 
-            // End of frame
-            sendData[ pos++ ] = DLE;
-			sendData[ pos++ ] = ETX;
+            }
 
-			//LOCK_MUTEX( pobj->m_can4vscpMutex );
+        }
+        else {
+            // No data to write
+            SLEEP( 10 );
+        }
 
-			// Send the event
-			if ( pobj->sendMsg( sendData, pos ) ) {
-	
-				// Message sent successfully
-				// Update statistics
-				pobj->m_stat.cntTransmitData += msg.sizeData;
-				pobj->m_stat.cntTransmitFrames += 1;
-
-			}
-			else {
-					
-				// Failed - put message back in queue front
-				PCANALMSG pMsg	= new canalMsg;
-				if ( NULL != pMsg ) {
-						
-					// Copy in data
-					memcpy ( pMsg, &msg, sizeof( canalMsg ) );
-
-					dllnode *pNode = new dllnode; 
-					if ( NULL != pNode ) {
-																
-						pNode->pObject = pMsg;
-						LOCK_MUTEX( pobj->m_transmitMutex );
-						dll_addNodeHead( &pobj->m_transmitList, pNode );
-						UNLOCK_MUTEX( pobj->m_transmitMutex );
-
-					}
-					else {
-						delete pMsg;
-					}
-
-				}
-
-			}
-
-			//UNLOCK_MUTEX( pobj->m_can4vscpMutex );
-										
-		} // if event to send
-
-
-		// No data to write
-		SLEEP( 100 );
-
-	
-	} // while 	 
-
+    } // while
 
 #ifdef WIN32
 	ExitThread( errorCode );
@@ -2018,7 +2136,7 @@ void *workThreadReceive( void *pObject )
         pobj->readSerialData();
         UNLOCK_MUTEX( pobj->m_can4vscpMutex );
 	
-		SLEEP( 100 );
+		SLEEP( 10 );
 		
     } // while 	 
 

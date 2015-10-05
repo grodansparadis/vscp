@@ -57,22 +57,22 @@
 // stat machine data for debugging
 //#define DEBUG_CAN4VSCP_RECEIVE
 
-#define CANAL_DLL_CAN4VSCPDRV_OBJ_MUTEX	        TEXT("___CANAL__DLL_CAN4VSCPDRV_OBJ_MUTEX____")
-#define CANAL_DLL_CAN4VSCPDRV_RECEIVE_MUTEX     TEXT("___CANAL__DLL_CAN4VSCPDRV_RECEIVE_MUTEX____")
-#define CANAL_DLL_CAN4VSCPDRV_TRANSMIT_MUTEX    TEXT("___CANAL__DLL_CAN4VSCPDRV_TRANSMIT_MUTEX____")
-#define CANAL_DLL_CAN4VSCPDRV_RESPONSE_MUTEX    TEXT("___CANAL__DLL_CAN4VSCPDRV_RESPONSE_MUTEX____")
+#define CANAL_DLL_CAN4VSCPDRV_OBJ_MUTEX	            TEXT("___CANAL__DLL_CAN4VSCPDRV_OBJ_MUTEX____")
+#define CANAL_DLL_CAN4VSCPDRV_RECEIVE_MUTEX         TEXT("___CANAL__DLL_CAN4VSCPDRV_RECEIVE_MUTEX____")
+#define CANAL_DLL_CAN4VSCPDRV_TRANSMIT_MUTEX        TEXT("___CANAL__DLL_CAN4VSCPDRV_TRANSMIT_MUTEX____")
+#define CANAL_DLL_CAN4VSCPDRV_RESPONSE_MUTEX        TEXT("___CANAL__DLL_CAN4VSCPDRV_RESPONSE_MUTEX____")
 
 // Flags
 #define CAN4VSCP_FLAG_NO_SWITCH_TO_NEW_MODE         4
 
 // Max messages in input queue
-#define CAN4VSCP_MAX_RCVMSG                         1024
+#define CAN4VSCP_MAX_RCVMSG                         4096
 
 // Max messages in output queue
 #define CAN4VSCP_MAX_SNDMSG                         1024
 
 // Max number of response messages in respnse queue
-#define CAN4VSCP_MAX_RESPONSEMSG	            32
+#define CAN4VSCP_MAX_RESPONSEMSG	                32
 
 // Byte stuffing start and end characters
 #define DLE                                         0x10
@@ -80,35 +80,34 @@
 #define ETX                                         0x03
 
 // RX State machine
-#define INCOMING_STATE_NONE			    0	// Waiting for <STX>
-#define INCOMING_STATE_STX			    1	// Reading data
-#define INCOMING_STATE_ETX			    2	// <ETX> has been received
-#define INCOMING_STATE_COMPLETE		            3	// Frame received
+#define INCOMING_STATE_NONE			                0	// Waiting for <STX>
+#define INCOMING_STATE_STX			                1	// Reading data
+#define INCOMING_STATE_ETX			                2	// <ETX> has been received
+#define INCOMING_STATE_COMPLETE		                3	// Frame received
 
-#define INCOMING_SUBSTATE_NONE		            0	// Idle
-#define INCOMING_SUBSTATE_DLE		            1	// <DLE> received
+#define INCOMING_SUBSTATE_NONE		                0	// Idle
+#define INCOMING_SUBSTATE_DLE		                1	// <DLE> received
 
 
-// Can4VSCP Commands
+// CAN4VSCP Commands
 #define RESET_NOOP                                  0x00	// No Operation
-#define	GET_TX_ERR_CNT			            0x02	// Get TX error count
-#define	GET_RX_ERR_CNT			            0x03	// Get RX error count
-#define	GET_CANSTAT				    0x04	// Get CAN statistics
-#define	GET_COMSTAT				    0x05
-#define	GET_MSGFILTER1			            0x06	// Get message filter 1
-#define	GET_MSGFILTER2			            0x07	// Get message filter 2
-#define	SET_MSGFILTER1			            0x08	// Set message filter 1
-#define	SET_MSGFILTER2			            0x09	// Set message filter 2
-
+#define	GET_TX_ERR_CNT			                    0x02	// Get TX error count
+#define	GET_RX_ERR_CNT			                    0x03	// Get RX error count
+#define	GET_CANSTAT				                    0x04	// Get CAN statistics
+#define	GET_COMSTAT				                    0x05
+#define	GET_MSGFILTER1			                    0x06	// Get message filter 1
+#define	GET_MSGFILTER2			                    0x07	// Get message filter 2
+#define	SET_MSGFILTER1			                    0x08	// Set message filter 1
+#define	SET_MSGFILTER2			                    0x09	// Set message filter 2
 
 
 // Emergency flags
-#define EMERGENCY_OVERFLOW		            0x01
+#define EMERGENCY_OVERFLOW		                    0x01
 #define EMERGENCY_RCV_WARNING                       0x02
 #define EMERGENCY_TX_WARNING                        0x04
 #define EMERGENCY_TXBUS_PASSIVE                     0x08
 #define EMERGENCY_RXBUS_PASSIVE                     0x10
-#define EMERGENCY_BUS_OFF		            0x20
+#define EMERGENCY_BUS_OFF		                    0x20
 
 // VSCP Driver positions in frame
 #define VSCP_CAN4VSCP_DRIVER_POS_FRAME_TYPE                 0
@@ -119,28 +118,35 @@
 #define VSCP_CAN4VSCP_DRIVER_POS_FRAME_PAYLOAD              5
 
 // VSCP driver commands
-#define VSCP_CAN4VSCP_DRIVER_COMMAND_NOOP           0
-#define VSCP_CAN4VSCP_DRIVER_COMMAND_OPEN           1
-#define VSCP_CAN4VSCP_DRIVER_COMMAND_LISTEN         2
-#define VSCP_CAN4VSCP_DRIVER_COMMAND_LOOPBACK       3
-#define VSCP_CAN4VSCP_DRIVER_COMMAND_CLOSE          4
-#define VSCP_CAN4VSCP_DRIVER_COMMAND_SET_FILTER     5
+#define VSCP_CAN4VSCP_DRIVER_COMMAND_NOOP                   0
+#define VSCP_CAN4VSCP_DRIVER_COMMAND_OPEN                   1
+#define VSCP_CAN4VSCP_DRIVER_COMMAND_LISTEN                 2
+#define VSCP_CAN4VSCP_DRIVER_COMMAND_LOOPBACK               3
+#define VSCP_CAN4VSCP_DRIVER_COMMAND_CLOSE                  4
+#define VSCP_CAN4VSCP_DRIVER_COMMAND_SET_FILTER             5
 
 
 // Capabilities for this driver
-#define CAN4VSCP_DRIVER_MAX_VSCP_FRAMES             2
-#define CAN4VSCP_DRIVER_MAX_CANAL_FRAMES            10
+#define CAN4VSCP_DRIVER_MAX_VSCP_FRAMES                     2
+#define CAN4VSCP_DRIVER_MAX_CANAL_FRAMES                    10
+
+typedef struct {
+    bool bWaitingForAckNack;    // True if message is sent and waiting for ACK or NACK
+    bool bAck;                  // true if ACK is received, false if NACK
+    uint8_t seq;                // Sequency number for frame
+    uint8_t channel;            // Channel
+} msgResponseInfoStruct;
 
 //
 // The command response structure
 //
 
 typedef struct {
-    uint8_t op; // Operation == framtype
-    uint8_t seq; // Sequency number
-    uint8_t channel; // Channel
-    uint16_t sizePayload; // Size of payload
-    uint8_t payload[ 512 ];
+    uint8_t op;             // Operation == framtype
+    uint8_t seq;            // Sequency number
+    uint8_t channel;        // Channel
+    uint16_t sizePayload;   // Size of payload
+    uint8_t payload[ 512 ]; // Message payload
 } cmdResponseMsg;
 
 class CCan4VSCPObj {
@@ -472,6 +478,13 @@ public:
 
 
     /*!
+        Holds info about the message that is in transmit and
+        is awaiting a response from a remote board.
+    */
+    msgResponseInfoStruct msgResponseInfo;
+
+
+    /*!
         Tread id Receive
      */
 #ifdef WIN32
@@ -499,13 +512,15 @@ public:
 #endif
 
 #ifdef WIN32	
-    HANDLE m_receiveDataEvent; // GS
-    HANDLE m_transmitDataPutEvent; // GS
-    HANDLE m_transmitDataGetEvent; // GS
+    HANDLE m_receiveDataEvent;      // GS
+    HANDLE m_transmitDataPutEvent;  // GS
+    HANDLE m_transmitDataGetEvent;  // GS
+    HANDLE m_transmitAckNackEvent;  // Set when ACK/NACK is received for message
 #else
     sem_t m_receiveDataSem;
     sem_t m_transmitDataPutSem;
     sem_t m_transmitDataGetSem;
+    sem_t m_transmitAckNackSem;     // Set when ACK/NACK is received for message
 #endif
 
     /*!
