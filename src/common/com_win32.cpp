@@ -213,7 +213,8 @@ void CComm::write( char* String, bool bCRLF, bool bNoLF )
 BOOL CComm::writebuf( unsigned char * p, unsigned short cnt )
 {
 	DWORD dwCount;
-	return WriteFile( m_hCommPort, p, cnt, &dwCount, NULL ); 
+	bool rv =  WriteFile( m_hCommPort, p, cnt, &dwCount, NULL ); 
+    return  ( rv && ( cnt == dwCount ) );
 }
 
 
