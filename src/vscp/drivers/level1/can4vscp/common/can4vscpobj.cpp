@@ -87,6 +87,21 @@ static uint32_t getClockMilliseconds()
 #endif	
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// getClockMilliseconds
+//
+//
+
+static uint32_t getClockMicroSeconds()
+{
+#ifdef WIN32	
+    return (uint32_t)( ( 1000000*(float)clock() ) / CLOCKS_PER_SEC);
+#else
+    timeval curTime;
+	gettimeofday(&curTime, NULL);
+	return  1000000 * curTime.tv_sec + curTime.tv_usec;
+#endif	
+}
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -1630,7 +1645,7 @@ void CCan4VSCPObj::readSerialData( void )
                         if ( NULL != pNode ) {
 							
                             pMsg->flags = 0;
-                            pMsg->timestamp = getClockMilliseconds();
+                            pMsg->timestamp = getClockMicroSeconds();
                             pMsg->obid = 0;
 				
                             pMsg->id = 
