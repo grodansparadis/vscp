@@ -7,6 +7,7 @@ EXPORTS
     vscphlp_newSession
     vscphlp_closeSession
     vscphlp_setResponseTimeout
+    vscphlp_setAfterCommandSleep
     vscphlp_isConnected
     vscphlp_doCommand
     vscphlp_checkReply
