@@ -111,10 +111,10 @@ extern "C" void vscphlp_closeSession(long handle)
 //
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_setResponseTimeout(long handle, 
-                                                    unsigned char timeout )
+                                                    unsigned long timeout )
 #else
 extern "C" int vscphlp_setResponseTimeout(long handle, 
-                                                    unsigned char timeout )
+                                                    unsigned long timeout )
 #endif
 {
     VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );

@@ -45,7 +45,7 @@ extern "C" {
 long WINAPI EXPORT vscphlp_newSession(void);
 void WINAPI EXPORT vscphlp_closeSession(long handle);
 int WINAPI EXPORT vscphlp_setResponseTimeout(long handle, unsigned long timeout );
-int WINAPI EXPORT vscphlp_setAfterCommandSleep(long handle, unsigned short timeout );
+int WINAPI EXPORT vscphlp_setAfterCommandSleep(long handle, unsigned short sleeptime );
 int WINAPI EXPORT vscphlp_isConnected(const long handle);
 int WINAPI EXPORT vscphlp_doCommand( long handle, const char * cmd );
 int WINAPI EXPORT vscphlp_checkReply( long handle, int bClear );
@@ -256,7 +256,7 @@ void WINAPI EXPORT vscphlp_setVscpPriorityEx( vscpEventEx *pEvent, unsigned char
 long vscphlp_newSession(void);
 void vscphlp_closeSession(long handle);
 int vscphlp_setResponseTimeout(long handle, unsigned long timeout );
-int vscphlp_setAfterCommandSleep(long handle, unsigned short timeout );
+int vscphlp_setAfterCommandSleep(long handle, unsigned short sleeptime );
 int vscphlp_isConnected(const long handle);
 int vscphlp_doCommand( long handle, const char * cmd );
 int vscphlp_checkReply( long handle, int bClear );
