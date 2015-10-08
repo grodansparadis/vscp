@@ -76,7 +76,7 @@ static uint8_t addWithEscape( uint8_t *p, char c, uint8_t *pcrc )
 //
 //
 
-static uint32_t getClockMilliseconds()
+static uint32_t getClockMilliSeconds()
 {
 #ifdef WIN32	
     return (uint32_t)( ( 1000*(float)clock() ) / CLOCKS_PER_SEC);
@@ -1011,9 +1011,9 @@ bool CCan4VSCPObj::getDeviceCapabilities( void )
 
     uint8_t saveseq = m_sequencyno;         // Save the sequency ordinal
     cmdResponseMsg msgResponse;
-    uint32_t start = getClockMilliseconds();
+    uint32_t start = getClockMilliSeconds();
 	
-    while ( getClockMilliseconds() < ( start + 500 ) ) {
+    while ( getClockMilliSeconds() < ( start + 500 ) ) {
 
         if ( ( NULL != m_responseList.pHead ) &&
              ( NULL != m_responseList.pHead->pObject ) ) {
@@ -1145,9 +1145,9 @@ bool CCan4VSCPObj::sendCommand( uint8_t cmdcode, uint8_t *pParam, uint8_t size )
 bool CCan4VSCPObj::waitCommandResponse( cmdResponseMsg *pMsg, uint8_t cmdcode, uint8_t saveseq, uint32_t timeout )
 {
 	//uint32_t start = GetTickCount();
-    uint32_t start = getClockMilliseconds();
+    uint32_t start = getClockMilliSeconds();
 
-	while (  getClockMilliseconds() < ( start + timeout ) ) {
+	while (  getClockMilliSeconds() < ( start + timeout ) ) {
 	
 		if ( ( NULL != m_responseList.pHead ) && 
 				( NULL != m_responseList.pHead->pObject ) ) {
@@ -1654,7 +1654,7 @@ void CCan4VSCPObj::readSerialData( void )
                                 (((uint32_t)m_bufferMsgRcv[7]<<8 ) & 0x0000ff00) |
                                 (((uint32_t)m_bufferMsgRcv[8]    ) & 0x000000ff) ;
 											
-                            pMsg->sizeData = m_bufferMsgRcv[9];	
+                            pMsg->sizeData = m_bufferMsgRcv[ 9 ];	
                             if ( pMsg->sizeData > 8 ) pMsg->sizeData = 8;   // Something is very wrong - Save the world
 									
                             if ( pMsg->sizeData ) {
@@ -1700,8 +1700,108 @@ void CCan4VSCPObj::readSerialData( void )
                     m_stat.cntOverruns++;
                 }
             }
+            // Check for CANAL message frame
+            else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_CANAL_TIMESTAMP == ( m_bufferMsgRcv[ 0 ] ) ) {
+
+                // CANAL message
+                // -------------
+                // [0]      -    DLE  - Not in buffer!!!!
+                // [1]      -    STX  - Not in buffer!!!!
+                // [2]      0    Frame type (2 - CANAL message.) - First in buffer
+                // [3]      1    Channel (always zero)
+                // [4]      2    Sequence number 
+                // [5/6]    3/4  Size of payload ( 12 + sizeData )
+                // [7]      5    CAN id (MSB)
+                // [8]      6    CAN id
+                // [9]      7    CAN id
+                // [10]     8    CAN id (LSB)
+                // [11]     9    Timestamp (MSB)
+                // [12]     10   Timestamp
+                // [13]     11   Timestamp
+                // [14]     12   Timestamp (LSB)
+                // [15]     13   dlc
+                // [16-n]   14   CAN data (0-8 bytes) 
+                // [len-3]  -    CRC
+                // [len-2]  -    DLE
+                // [len-1]  -    ETX
+
+                if ( m_receiveList.nCount < CAN4VSCP_MAX_RCVMSG ) {
+
+                    PCANALMSG pMsg = new canalMsg;
+
+                    if ( NULL != pMsg ) {
+
+                        pMsg->flags = 0;
+                        dllnode *pNode = new dllnode;
+                        if ( NULL != pNode ) {
+
+                            pMsg->flags = 0;
+                            pMsg->obid = 0;
+
+                            pMsg->id =
+                                ( ( ( uint32_t )m_bufferMsgRcv[ 5 ] << 24 ) & 0x1f000000 ) |
+                                ( ( ( uint32_t )m_bufferMsgRcv[ 6 ] << 16 ) & 0x00ff0000 ) |
+                                ( ( ( uint32_t )m_bufferMsgRcv[ 7 ] << 8 ) & 0x0000ff00 ) |
+                                ( ( ( uint32_t )m_bufferMsgRcv[ 8 ] ) & 0x000000ff );
+
+                            pMsg->timestamp =
+                                ( ( ( uint32_t )m_bufferMsgRcv[ 9 ] << 24 ) & 0x1f000000 ) |
+                                ( ( ( uint32_t )m_bufferMsgRcv[ 10 ] << 16 ) & 0x00ff0000 ) |
+                                ( ( ( uint32_t )m_bufferMsgRcv[ 11 ] << 8 ) & 0x0000ff00 ) |
+                                ( ( ( uint32_t )m_bufferMsgRcv[ 12 ] ) & 0x000000ff );
+
+                            pMsg->sizeData = m_bufferMsgRcv[ 13 ];
+                            if ( pMsg->sizeData > 8 ) pMsg->sizeData = 8;   // Something is very wrong - Save the world
+
+                            if ( pMsg->sizeData ) {
+                                memcpy( ( void * )pMsg->data,
+                                        ( m_bufferMsgRcv + 14 ),
+                                        pMsg->sizeData );
+                            }
+
+                            // Always extended so set extended flag
+                            pMsg->flags |= CANAL_IDFLAG_EXTENDED;
+
+                            if ( doFilter( pMsg ) ) {
+                                pNode->pObject = pMsg;
+                                LOCK_MUTEX( m_receiveMutex );
+                                dll_addNode( &m_receiveList, pNode );
+#ifdef WIN32                                
+                                SetEvent( m_receiveDataEvent ); // Signal frame in queue
+#else
+                                sem_post( &m_receiveDataSem );  // Signal frame in queue
+#endif                                
+                                UNLOCK_MUTEX( m_receiveMutex );
+
+                                // Update statistics
+                                m_stat.cntReceiveData += pMsg->sizeData;
+                                m_stat.cntReceiveFrames += 1;
+                            }
+                            else {
+                                // Message was filtered
+                                delete pMsg;
+                                delete pNode;
+                            }
+
+                        } // No pNode
+                        else {
+                            delete pMsg;
+                        }
+
+                    }  // No pMsg 
+                }
+                // No room in receive queue
+                else {
+                    // Full buffer
+                    m_stat.cntOverruns++;
+                }
+            }
             // Check for VSCP event frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_VSCP_EVENT == ( m_bufferMsgRcv[ 0 ] ) ) {
+                sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle VSCP events
+            }
+            // Check for VSCP event frame
+            else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_VSCP_EVENT_TIMESTAMP == ( m_bufferMsgRcv[ 0 ] ) ) {
                 sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle VSCP events
             }
             // Check for configure frame
@@ -1718,6 +1818,10 @@ void CCan4VSCPObj::readSerialData( void )
             }
             // Check for multiframe VSCP message frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_MULTI_FRAME_VSCP == ( m_bufferMsgRcv[ 0 ] ) ) {
+                sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle vscp multi frame
+            }
+            // Check for multiframe VSCP message frame
+            else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_MULTI_FRAME_VSCP_TIMESTAMP == ( m_bufferMsgRcv[ 0 ] ) ) {
                 sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle vscp multi frame
             }
             // Check for multiframe CANAL message frame
@@ -1764,7 +1868,7 @@ void CCan4VSCPObj::readSerialData( void )
                             if ( NULL != pNode ) {
 
                                 pMsg->flags = 0;
-                                pMsg->timestamp = getClockMilliseconds();
+                                pMsg->timestamp = getClockMicroSeconds();
                                 pMsg->obid = 0;
 
                                 pMsg->id =
@@ -1818,6 +1922,120 @@ void CCan4VSCPObj::readSerialData( void )
 
                         }  // No pMsg 
                     } 
+                    // No room in receive queue
+                    else {
+                        // Full buffer
+                        m_stat.cntOverruns++;
+                    }
+                } // while
+            }
+            // Check for multiframe CANAL message frame
+            else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_MULTI_FRAME_CANAL_TIMESTAMP == ( m_bufferMsgRcv[ 0 ] ) ) {
+
+                // CANAL message
+                // -------------
+                // [0]      DLE  - Not in buffer!!!!
+                // [1]      STX  - Not in bugger!!!!
+                // [2]      Frame type (2 - CANAL message.) - First in buffer
+                // [3]      Channel (always zero)
+                // [4]      Sequence number 
+                // [5/6]    Size of payload ( 5 + sizeData ) * number of frames
+                // ---------------------------------------------
+                // [7]      CAN id (MSB)
+                // [8]      CAN id
+                // [9]      CAN id
+                // [10]     CAN id (LSB)
+                // [11]     Timestamp (MSB)
+                // [12]     Timestamp
+                // [13]     Timestamp
+                // [14]     Timestamp (LSB)
+                // [15]     dlc
+                // [16-n]   CAN data (0-8 bytes) 
+                // ---------------------------------------------
+                // [n+1]    Possible other CANAL frame
+                // ---------------------------------------------
+                // [len-3]  CRC
+                // [len-2]  DLE
+                // [len-1]  ETX
+
+                // Payload size
+                long sizePayload = ( ( uint16_t )m_bufferMsgRcv[ 3 ] << 8 ) + m_bufferMsgRcv[ 4 ];
+
+                // Save pos for payload
+                uint8_t *posFrame = m_bufferMsgRcv + 5;
+
+                while ( sizePayload > 0 ) {
+
+                    if ( m_receiveList.nCount < CAN4VSCP_MAX_RCVMSG ) {
+
+                        PCANALMSG pMsg = new canalMsg;
+
+                        if ( NULL != pMsg ) {
+
+                            pMsg->flags = 0;
+                            dllnode *pNode = new dllnode;
+                            if ( NULL != pNode ) {
+
+                                pMsg->flags = 0;
+                                pMsg->obid = 0;
+
+                                pMsg->id =
+                                    ( ( ( uint32_t )posFrame[ 0 ] << 24 ) & 0x1f000000 ) |
+                                    ( ( ( uint32_t )posFrame[ 1 ] << 16 ) & 0x00ff0000 ) |
+                                    ( ( ( uint32_t )posFrame[ 2 ] << 8 ) & 0x0000ff00 ) |
+                                    ( ( ( uint32_t )posFrame[ 3 ] ) & 0x000000ff );
+
+                                pMsg->timestamp =
+                                    ( ( ( uint32_t )posFrame[ 4 ] << 24 ) & 0x1f000000 ) |
+                                    ( ( ( uint32_t )posFrame[ 5 ] << 16 ) & 0x00ff0000 ) |
+                                    ( ( ( uint32_t )posFrame[ 6 ] << 8 ) & 0x0000ff00 ) |
+                                    ( ( ( uint32_t )posFrame[ 7 ] ) & 0x000000ff );
+
+                                pMsg->sizeData = posFrame[ 8 ];
+                                if ( pMsg->sizeData > 8 ) pMsg->sizeData = 8;   // Something is very wrong - Save the world
+
+                                if ( pMsg->sizeData ) {
+                                    memcpy( ( void * )pMsg->data,
+                                            ( posFrame + 9 ),
+                                            pMsg->sizeData );
+                                }
+
+                                // Always extended so set extended flag
+                                pMsg->flags |= CANAL_IDFLAG_EXTENDED;
+
+                                if ( doFilter( pMsg ) ) {
+                                    pNode->pObject = pMsg;
+                                    LOCK_MUTEX( m_receiveMutex );
+                                    dll_addNode( &m_receiveList, pNode );
+#ifdef WIN32                                    
+                                    SetEvent( m_receiveDataEvent ); // Signal frame in queue
+#else
+                                    sem_post( &m_receiveDataSem );   // Signal frame in queue    
+#endif                                    
+                                    UNLOCK_MUTEX( m_receiveMutex );
+
+                                    // Update statistics
+                                    m_stat.cntReceiveData += pMsg->sizeData;
+                                    m_stat.cntReceiveFrames += 1;
+                                }
+                                else {
+                                    // Message was filtered
+                                    delete pMsg;
+                                    delete pNode;
+                                }
+
+                                // Get ready for next payload frame
+                                sizePayload -= ( 5 + posFrame[ 4 ] );
+                                posFrame += ( 5 + posFrame[ 4 ] );
+
+
+                            } // No pNode
+                            else {
+                                delete pMsg;
+                            }
+
+                        }  // No pMsg 
+                    }
                     // No room in receive queue
                     else {
                         // Full buffer
