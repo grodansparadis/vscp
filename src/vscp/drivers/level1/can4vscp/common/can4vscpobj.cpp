@@ -324,6 +324,7 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 	}
     
 	// Open the com port  CBR_128000 CBR_256000
+    // 230400 / 460800 / 921600
 #ifdef WIN32    
 	if ( !m_com.init( nComPort,
 						CBR_115200,
@@ -373,7 +374,7 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 #endif    
 
     // Set CAN4VSCP mode in case of device in verbose mode
-    if ( !( flags & CAN4VSCP_FLAG_NO_SWITCH_TO_NEW_MODE ) ) {  
+    if ( !( flags & CAN4VSCP_FLAG_ENABLE_NO_SWITCH_TO_NEW_MODE ) ) {  
 #ifdef WIN32        
         BOOL rw = m_com.writebuf( (unsigned char *)"SET MODE VSCP\r\n", 19 );     // In case of garbage in queue
         SLEEP( 200 );
@@ -1147,7 +1148,7 @@ bool CCan4VSCPObj::waitCommandResponse( cmdResponseMsg *pMsg, uint8_t cmdcode, u
 	//uint32_t start = GetTickCount();
     uint32_t start = getClockMilliSeconds();
 
-	while (  getClockMilliSeconds() < ( start + timeout ) ) {
+	while ( getClockMilliSeconds() < ( start + timeout ) ) {
 	
 		if ( ( NULL != m_responseList.pHead ) && 
 				( NULL != m_responseList.pHead->pObject ) ) {
