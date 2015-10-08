@@ -630,12 +630,6 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
                         // Connect to host
                         if ( subframe->enableInterface() ) {
 
-                            // Failed to connect - terminate
-                            dlg.cleanupListbox();
-                            subframe->m_csw.doCmdClose();
-                            subframe->Close( true );
-                            return;
-
 							// Show the VSCP configuration windows
 							subframe->Show( true );
 
@@ -643,6 +637,13 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
 							subframe->Raise();
 						
 						}
+                        else {
+                            // Failed to connect - terminate
+                            dlg.cleanupListbox();
+                            subframe->m_csw.doCmdClose();
+                            subframe->Close( true );
+                            return;
+                        }
 
                     }
 
