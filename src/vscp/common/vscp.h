@@ -24,10 +24,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// HISTORY:
-//		021107 - AKHE Started this file
-//		120328 - AKHE All CAN references removed.
-//
+//            !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
+// This file may be a copy of the original file. This is because the file is
+// copied to other projects as a convinience. Thus editing the copy will not make
+// it to the original and will be overwritten.
+// The original file can be foud in the vscp_softare source tree under 
+// src/vscp/common 
 
 #ifndef _VSCP_H_
 #define _VSCP_H_

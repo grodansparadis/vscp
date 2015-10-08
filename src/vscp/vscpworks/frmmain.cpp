@@ -567,19 +567,19 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
                         // Connect to device bus
                         if ( subframe->enableInterface() ) {
 
-                            // Failed to connect - terminate
-                            dlg.cleanupListbox();
-                            subframe->m_csw.doCmdClose();
-                            subframe->Close( true );
-                            return;
-
                             // Move window on top
                             subframe->Raise();
 
                             // Show the VSCP configuration windows
                             subframe->Show( true );
                         }
-                        
+                        else {
+                            // Failed to connect - terminate
+                            dlg.cleanupListbox();
+                            subframe->m_csw.doCmdClose();
+                            subframe->Close( true );
+                            return;
+                        }
 
                     }
                     else if ( INTERFACE_VSCP == pBoth->m_type ) {

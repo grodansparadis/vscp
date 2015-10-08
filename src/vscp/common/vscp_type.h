@@ -42,6 +42,13 @@
  * ******************************************************************************
  */
 
+ //            !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
+ // This file may be a copy of the original file. This is because the file is
+ // copied to other projects as a convinience. Thus editing the copy will not make
+ // it to the original and will be overwritten.
+ // The original file can be foud in the vscp_softare source tree under 
+ // src/vscp/common 
+
 #ifndef VSCP_TYPE_H
 #define VSCP_TYPE_H
 

@@ -26,6 +26,14 @@
 // is described here http://www.vscp.org/docs/vscpspec/doku.php?id=physical_level_lower_level_protocols#vscp_over_a_serial_channel_rs-232
 //
 
+
+//            !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
+// This file may be a copy of the original file. This is because the file is
+// copied to other projects as a convinience. Thus editing the copy will not make
+// it to the original and will be overwritten.
+// The original file can be foud in the vscp_softare source tree under 
+// src/vscp/common 
+
 #ifndef _VSCP_SERIAL_H_
 #define _VSCP_SERIAL_H_
 

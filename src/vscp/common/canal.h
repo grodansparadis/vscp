@@ -25,12 +25,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// History
-// =======
-//
-// 2007-10-31 AKHE - Blocking and driver properties added
-// 2006-05-16 AKHE - Added fastmode defines.
-// 2005-08-09 AKHE - Added error info to canalStatus structure.
+//            !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
+// This file may be a copy of the original file. This is because the file is
+// copied to other projects as a convinience. Thus editing the copy will not make
+// it to the original and will be overwritten.
+// The original file can be foud in the vscp_softare source tree under 
+// src/vscp/common 
 
 #ifndef ___CANAL_H___
 #define ___CANAL_H___
