@@ -31,51 +31,6 @@
 
 #include <vscp.h>
 
-// Outgoing VSCP event
-// -------------------
-// [0]		DLE
-// [1]		STX
-// [2]		Frame type (1 - VSCP event to/from node.)
-// [3]		Channel (always zero)
-// [4]		Sequence number 
-// [5/6]	Size of payload 
-// [7]		VSCP head
-// [8]   	VSCP Priority
-// [9]  	MSB of VSCP class
-// [10]  	LSB of VSCP class
-// [11]  	MSB of VSCP type
-// [12]  	LSB of VSCP type
-// [13-28]	GUID MSB - LSB
-// [29-n]  	VSCP data (0-487 bytes/Max 8 byte for Level I) 
-// [len-3]	CRC
-// [len-2]	STX
-// [len-1]	ETX
-
-// CANAL message
-// -------------
-// [0]      DLE
-// [1]      STX
-// [2]      Frame type (2 - CANAL message.)
-// [3]      Channel (always zero)
-// [4]      Sequence number 
-// [5/6]    Size of payload ( 12 + sizeData )
-// [7]      CANAL flags (MSB)
-// [8]      CANAL flags
-// [9]      CANAL flags
-// [10]     CANAL flags (LSB)
-// [11]     CANAL timestamp (MSB)
-// [12]     CANAL timestamp
-// [13]     CANAL timestamp
-// [14]     CANAL timestamp (LSB)
-// [15]     CAN id (MSB)
-// [26]     CAN id
-// [27]     CAN id
-// [28]     CAN id (LSB)
-// [29-n]   CAN data (0-8 bytes) 
-// [len-3]  CRC
-// [len-2]  DLE
-// [len-1]  ETX
-
 
 // VSCP Driver special character codes
 #define DLE     0x10
@@ -98,23 +53,27 @@
 #define VSCP_SERIAL_DRIVER_POS_FRAME_PAYLOAD                5
 
 // // Frame types
-#define VSCP_SERIAL_DRIVER_FRAME_TYPE_NOOP                   0
-#define VSCP_SERIAL_DRIVER_FRAME_TYPE_VSCP_EVENT             1
-#define VSCP_SERIAL_DRIVER_FRAME_TYPE_CANAL                  2
-#define VSCP_SERIAL_DRIVER_FRAME_TYPE_CONFIGURE              3
-#define VSCP_SERIAL_DRIVER_FRAME_TYPE_POLL                   4
-#define VSCP_SERIAL_DRIVER_FRAME_TYPE_NO_EVENT               5
-#define VSCP_SERIAL_DRIVER_FRAME_TYPE_MULTI_FRAME_CANAL      6
-#define VSCP_SERIAL_DRIVER_FRAME_TYPE_MULTI_FRAME_VSCP       7
-#define VSCP_SERIAL_DRIVER_FRAME_TYPE_CAPS_REQUEST           8
-#define VSCP_SERIAL_DRIVER_FRAME_TYPE_CAPS_RESPONSE          9
-#define VSCP_SERIAL_DRIVER_FRAME_TYPE_SENT_ACK               249
-#define VSCP_SERIAL_DRIVER_FRAME_TYPE_SENT_NACK              250
-#define VSCP_SERIAL_DRIVER_FRAME_TYPE_ACK                    251
-#define VSCP_SERIAL_DRIVER_FRAME_TYPE_NACK                   252
-#define VSCP_SERIAL_DRIVER_FRAME_TYPE_ERROR                  253
-#define VSCP_SERIAL_DRIVER_FRAME_TYPE_COMMAND_REPLY          254
-#define VSCP_SERIAL_DRIVER_FRAME_TYPE_COMMAND                255
+#define VSCP_SERIAL_DRIVER_FRAME_TYPE_NOOP                          0
+#define VSCP_SERIAL_DRIVER_FRAME_TYPE_VSCP_EVENT                    1
+#define VSCP_SERIAL_DRIVER_FRAME_TYPE_CANAL                         2
+#define VSCP_SERIAL_DRIVER_FRAME_TYPE_CONFIGURE                     3
+#define VSCP_SERIAL_DRIVER_FRAME_TYPE_POLL                          4
+#define VSCP_SERIAL_DRIVER_FRAME_TYPE_NO_EVENT                      5
+#define VSCP_SERIAL_DRIVER_FRAME_TYPE_MULTI_FRAME_CANAL             6
+#define VSCP_SERIAL_DRIVER_FRAME_TYPE_MULTI_FRAME_VSCP              7
+#define VSCP_SERIAL_DRIVER_FRAME_TYPE_CAPS_REQUEST                  8
+#define VSCP_SERIAL_DRIVER_FRAME_TYPE_CAPS_RESPONSE                 9
+#define VSCP_SERIAL_DRIVER_FRAME_TYPE_VSCP_EVENT_TIMESTAMP          10
+#define VSCP_SERIAL_DRIVER_FRAME_TYPE_CANAL_TIMESTAMP               11
+#define VSCP_SERIAL_DRIVER_FRAME_TYPE_MULTI_FRAME_CANAL_TIMESTAMP   12
+#define VSCP_SERIAL_DRIVER_FRAME_TYPE_MULTI_FRAME_VSCP_TIMESTAMP    13
+#define VSCP_SERIAL_DRIVER_FRAME_TYPE_SENT_ACK                      249
+#define VSCP_SERIAL_DRIVER_FRAME_TYPE_SENT_NACK                     250
+#define VSCP_SERIAL_DRIVER_FRAME_TYPE_ACK                           251
+#define VSCP_SERIAL_DRIVER_FRAME_TYPE_NACK                          252
+#define VSCP_SERIAL_DRIVER_FRAME_TYPE_ERROR                         253
+#define VSCP_SERIAL_DRIVER_FRAME_TYPE_COMMAND_REPLY                 254
+#define VSCP_SERIAL_DRIVER_FRAME_TYPE_COMMAND                       255
 
 // VSCP Driver errors
 #define VSCP_SERIAL_DRIVER_ERROR_CHECKSUM                   1
