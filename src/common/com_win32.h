@@ -30,9 +30,9 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#define HANDSHAKE_NONE		  0
-#define HANDSHAKE_HARDWARE	1
-#define HANDSHAKE_SOFTWARE	2
+#define HANDSHAKE_NONE          0
+#define HANDSHAKE_HARDWARE	    1
+#define HANDSHAKE_SOFTWARE	    2
 
 #ifdef WIN32
 #include <windows.h>

@@ -236,7 +236,7 @@ CCan4VSCPObj::~CCan4VSCPObj()
 //-----------------------------------------------------------------------------
 // Parameters for the driver as a string on the following form
 //		
-// "comport"
+// "comport[;nBaud]"
 //
 //
 // comport
@@ -244,7 +244,7 @@ CCan4VSCPObj::~CCan4VSCPObj()
 //	WIN32: 1 for COM1, 2 for COM2 etc
 //	LINUX: /dev/ttyS1, /dev/ttyS2 etc
 //
-// Baudrate is always 115200
+// Baudrate is always 115200. Not true anymore. Can be changed temprarily with baudrate code.
 // 
 // flags 
 //-----------------------------------------------------------------------------
@@ -260,17 +260,33 @@ CCan4VSCPObj::~CCan4VSCPObj()
 // =====
 //  0  - Switch to CAN4VSCP mode is carried out on startup
 //  1  - No switch to CAN4VSCP mode
+//
+// bit 4
+// =====
+//  0  - Timestamp is set by driver.
+//  1  - Timestamp is set by hardware.
+//
+// bit 5
+// =====
+//  0  - No hardware handshake.
+//  1  - Enable hardware handshake.
+//
+//
 
 int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 {
 #ifdef WIN32   
 	char szDrvParams[ MAX_PATH ];
+    DWORD baud = 115200;
 #else
     char szDrvParams[ PATH_MAX ];
     char *pDeviceName;
+    char sxBaud[ PATH_MAX ];
+    strcpy( szBaud, "115200" );
 #endif    
 	char *p;
 	int nComPort = 1;	// COM1 is default
+    int nBaud = SET_BAUDRATE_115200;
     uint8_t saveseq;
     cmdResponseMsg Msg;
 
@@ -322,16 +338,139 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
        pDeviceName = p;
 #endif        
 	}
+
+    p = strtok( NULL, ";" );
+    if ( NULL != p ) {
+        nBaud = atoi( p );
+        // Check if a valid code
+        if ( nBaud > ( SET_BAUDRATE_MAX - 1 ) ) {
+            nBaud = SET_BAUDRATE_115200;
+        }
+    }
+
+#ifdef WIN32
+    switch ( nBaud ) {
+
+        case SET_BAUDRATE_128000:
+            baud = 128000;
+            break;
+
+        case SET_BAUDRATE_230400:
+            baud = 230400;
+            break;
+
+        case SET_BAUDRATE_256000:
+            baud = 256000;
+            break;
+
+        case SET_BAUDRATE_460800:
+            baud = 460800;
+            break;
+
+        case SET_BAUDRATE_500000:
+            baud = 500000;
+            break;
+
+        case SET_BAUDRATE_625000:
+            baud = 625000;
+            break;
+
+        case SET_BAUDRATE_921600:
+            baud = 921600;
+            break;
+
+        case SET_BAUDRATE_1000000:
+            baud = 1000000;
+            break;
+
+        case SET_BAUDRATE_9600:
+            baud = 9600;
+            break;
+
+        case SET_BAUDRATE_19200:
+            baud = 19200;
+            break;
+
+        case SET_BAUDRATE_38400:
+            baud = 38400;
+            break;
+
+        case SET_BAUDRATE_57600:
+            baud = 57600;
+            break;
+
+        case SET_BAUDRATE_115200:
+        default:
+            baud = 115200;
+            break;
+    }
+#else
+    switch ( nBaud ) {
+
+        case SET_BAUDRATE_128000:
+            strcpy( szBaud, "128000" );
+            break;
+
+        case SET_BAUDRATE_230400:
+            strcpy( szBaud, "230400" );
+            break;
+
+        case SET_BAUDRATE_256000:
+            strcpy( szBaud, "256000" );
+            break;
+
+        case SET_BAUDRATE_460800:
+            strcpy( szBaud, "460800" );
+            break;
+
+        case SET_BAUDRATE_500000:
+            strcpy( szBaud, "500000;
+            break;
+
+        case SET_BAUDRATE_625000:
+            strcpy( szBaud, "625000" );
+            break;
+
+        case SET_BAUDRATE_921600:
+            strcpy( szBaud, "921600" );
+            break;
+
+        case SET_BAUDRATE_1000000:
+            strcpy( szBaud, "1000000" );
+            break;
+
+        case SET_BAUDRATE_9600:
+            strcpy( szBaud, "9600" );
+            break;
+
+        case SET_BAUDRATE_19200:
+            strcpy( szBaud, "19200" );
+            break;
+
+        case SET_BAUDRATE_38400:
+            strcpy( szBaud, "38400" );
+            break;
+
+        case SET_BAUDRATE_57600:
+            strcpy( szBaud, "57600" );
+            break;
+
+        case SET_BAUDRATE_115200:
+        default:
+            strcpy( szBaud, "115200");
+            break;
+    }
+#endif
+
     
-	// Open the com port  CBR_128000 CBR_256000
-    // 230400 / 460800 / 921600
+	// Open the com port  
 #ifdef WIN32    
 	if ( !m_com.init( nComPort,
 						CBR_115200,
 						8,
 						NOPARITY,
 						ONESTOPBIT,
-						HANDSHAKE_NONE ) ) {
+						(flags & CAN4VSCP_FLAGS_HANDSHAKE) ? HANDSHAKE_HARDWARE : HANDSHAKE_NONE ) ) {
 		return CANAL_ERROR_INIT_FAIL;
 	}
 #else
@@ -353,7 +492,11 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
     //----------------------------------------------------------------------
     // Com::setParam( char *baud, char *parity, char *bits, int HWFlow, int SWFlow )
     //----------------------------------------------------------------------
-    m_com.setParam( (char*)"115200", (char*)"N", (char*)"8", 0, 0);
+    m_com.setParam( (char*)"115200", 
+                        (char*)"N", 
+                        (char*)"8", 
+                        ( flags & CAN4VSCP_FLAGS_HANDSHAKE ) ? 1 : 0, 
+                        0);
 
     //----------------------------------------------------------------------
     //
@@ -385,6 +528,12 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
         m_com.comm_puts( (char*)"SET MODE VSCP\r\n", 19 );              // set CAN4VSCP mode twice
 #endif        
     }
+
+    // If handshake needs to be set we set it here
+
+    // If timestamp needs to be anabled we enabled it here
+
+    // If non standard baudrate we change it here
 
     // Check that we have a CAN4VSCP device at the other end 
     // ( give it four tries before giving up )

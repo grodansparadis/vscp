@@ -1,0 +1,24 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<config>
+   <description>CAN4VSCP standard serial driver<description>
+   <level>1</level>
+   <blocking>yes</blocking>
+   <item pos="0" type="string" description="Serial port (COM1, COM2...)"/>
+   <item pos="1" type="choice" optional="true" description="Baudrate code" >
+       <choice value="0" description"0 - 115200" />
+       <choice value="1" description"1 - 128000" />
+       <choice value="3" description"2 - 230400" />
+       <choice value="4" description"3 - 256000" />
+	   <choice value="5" description"4 - 460800" />
+	   <choice value="6" description"5 - 500000" />
+	   <choice value="7" description"6 - 625000" />
+	   <choice value="8" description"7 - 921600" />
+	   <choice value="9" description"8 - 1000000" />
+	   <choice value="0" description"9 - 9600" />
+	   <choice value="10" description"10 - 19200" />
+	   <choice value="11" description"11 - 38400" />
+	   <choice value="12" description"12 - 57600" />
+	   <choice value="13" description"13 - 256000" />
+   </item>
+</config>
+

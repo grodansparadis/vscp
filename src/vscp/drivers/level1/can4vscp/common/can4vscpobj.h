@@ -57,6 +57,13 @@
 // stat machine data for debugging
 //#define DEBUG_CAN4VSCP_RECEIVE
 
+// Flags
+#define CAN4VSCP_FLAGS_NO_MODE_SWITCH       0x0004
+#define CAN4VSCP_FLAGS_WAIT_FOR_ACK         0x0008
+#define CAN4VSCP_FLAGS_TIMESTAMP            0x0010
+#define CAN4VSCP_FLAGS_HANDSHAKE            0x0020
+
+// Mutexes
 #define CANAL_DLL_CAN4VSCPDRV_OBJ_MUTEX	            TEXT("___CANAL__DLL_CAN4VSCPDRV_OBJ_MUTEX____")
 #define CANAL_DLL_CAN4VSCPDRV_RECEIVE_MUTEX         TEXT("___CANAL__DLL_CAN4VSCPDRV_RECEIVE_MUTEX____")
 #define CANAL_DLL_CAN4VSCPDRV_TRANSMIT_MUTEX        TEXT("___CANAL__DLL_CAN4VSCPDRV_TRANSMIT_MUTEX____")
@@ -104,12 +111,12 @@
 
 
 // Emergency flags
-#define EMERGENCY_OVERFLOW		                    0x01
-#define EMERGENCY_RCV_WARNING                       0x02
-#define EMERGENCY_TX_WARNING                        0x04
-#define EMERGENCY_TXBUS_PASSIVE                     0x08
-#define EMERGENCY_RXBUS_PASSIVE                     0x10
-#define EMERGENCY_BUS_OFF		                    0x20
+#define EMERGENCY_OVERFLOW		                            0x01
+#define EMERGENCY_RCV_WARNING                               0x02
+#define EMERGENCY_TX_WARNING                                0x04
+#define EMERGENCY_TXBUS_PASSIVE                             0x08
+#define EMERGENCY_RXBUS_PASSIVE                             0x10
+#define EMERGENCY_BUS_OFF		                            0x20
 
 // VSCP Driver positions in frame
 #define VSCP_CAN4VSCP_DRIVER_POS_FRAME_TYPE                 0
@@ -131,6 +138,22 @@
 // Capabilities for this driver
 #define CAN4VSCP_DRIVER_MAX_VSCP_FRAMES                     2
 #define CAN4VSCP_DRIVER_MAX_CANAL_FRAMES                    10
+
+// Baudrate codes
+#define SET_BAUDRATE_115200                                 0
+#define SET_BAUDRATE_128000                                 1
+#define SET_BAUDRATE_230400                                 2
+#define SET_BAUDRATE_256000                                 3
+#define SET_BAUDRATE_460800                                 4
+#define SET_BAUDRATE_500000                                 5
+#define SET_BAUDRATE_625000                                 6
+#define SET_BAUDRATE_921600                                 7
+#define SET_BAUDRATE_1000000                                8
+#define SET_BAUDRATE_9600                                   9
+#define SET_BAUDRATE_19200                                  10
+#define SET_BAUDRATE_38400                                  11
+#define SET_BAUDRATE_57600                                  12
+#define SET_BAUDRATE_MAX                                    13
 
 typedef struct {
     bool bWaitingForAckNack;    // True if message is sent and waiting for ACK or NACK
