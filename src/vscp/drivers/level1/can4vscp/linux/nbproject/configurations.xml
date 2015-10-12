@@ -13,6 +13,7 @@
     </logicalFolder>
     <df root="." name="0">
       <in>test.cpp</in>
+      <in>vscpl1_can4vscpdrv.cpp</in>
       <in>vscpl1drv_can4vscp.cpp</in>
     </df>
     <logicalFolder name="src" displayName="src" projectFiles="true" root="../../..">
@@ -67,7 +68,8 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0" commonFlags="-fPIC"/>
+        <element flagsID="0" commonFlags="-O2 -fPIC"/>
+        <element flagsID="1" commonFlags="-g -O2 -fPIC"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -87,6 +89,7 @@
               <pElem>.</pElem>
             </incDir>
             <preprocessorList>
+              <Elem>NS_ENABLE_SSL</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__WXGTK__</Elem>
@@ -110,6 +113,11 @@
         </makeTool>
       </makefileType>
       <item path="../../../../../common/com.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="../../../../../common/com_linux.cpp"
             ex="false"
@@ -117,16 +125,25 @@
             flavor2="4">
       </item>
       <item path="../../../../../common/crc8.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="1">
+        </cTool>
       </item>
       <item path="../../../../../common/dllist.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="1">
+        </cTool>
       </item>
       <item path="../../../../common/guid.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../common/can4vscpobj.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="../common/dlldrvobj.cpp" ex="false" tool="1" flavor2="4">
@@ -138,7 +155,26 @@
           </incDir>
         </ccTool>
       </folder>
+      <folder path="src/vscp">
+        <ccTool>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
       <item path="test.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="vscpl1_can4vscpdrv.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="vscpl1drv_can4vscp.cpp" ex="false" tool="1" flavor2="4">
       </item>

@@ -226,6 +226,9 @@
       </item>
       <item path="dlgconfiguration.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="dlgeditlevel1dmrow.cpp" ex="false" tool="1" flavor2="4">
@@ -288,10 +291,16 @@
       </item>
       <item path="frmdeviceconfig.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="frmmain.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="frmmdfeditor.cpp" ex="false" tool="1" flavor2="4">
@@ -300,6 +309,9 @@
       </item>
       <item path="frmscanfordevices.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="frmsimpleuserinterfacegenerator.cpp"
@@ -318,6 +330,9 @@
       </item>
       <item path="gridtable.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="merlin.cpp" ex="false" tool="1" flavor2="4">

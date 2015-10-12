@@ -83,10 +83,25 @@
         </makeTool>
       </makefileType>
       <item path="../../../../../common/crc.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="1">
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
       <item path="../../../../../common/crc8.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="1">
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
       <item path="../../../../../common/fossa.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="1">
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
       <item path="../../../../../common/net_skeleton.c"
             ex="false"
@@ -104,6 +119,7 @@
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>USE_FOSSA</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
@@ -120,6 +136,7 @@
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>USE_FOSSA</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
@@ -139,6 +156,7 @@
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>USE_FOSSA</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
@@ -170,6 +188,7 @@
             <pElem>/usr/local/include/wx-3.0</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>USE_FOSSA</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
@@ -205,6 +224,8 @@
         </cTool>
       </item>
       <item path="socketcan.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="test.c" ex="false" tool="0" flavor2="2">
         <cTool flags="1">
@@ -216,12 +237,15 @@
             <pElem>/usr/local/include/wx-3.0</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>USE_FOSSA</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </cTool>
       </item>
       <item path="vscpl2drv_socketcan.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
       </item>
     </conf>
   </confs>

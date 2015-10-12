@@ -279,9 +279,11 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 	char szDrvParams[ MAX_PATH ];
     DWORD baud = 115200;
 #else
+    
     char szDrvParams[ PATH_MAX ];
     char *pDeviceName;
-    char sxBaud[ PATH_MAX ];
+    char szBaud[ PATH_MAX ];
+    
     strcpy( szBaud, "115200" );
 #endif    
 	char *p;
@@ -424,7 +426,7 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
             break;
 
         case SET_BAUDRATE_500000:
-            strcpy( szBaud, "500000;
+            strcpy( szBaud, "500000");
             break;
 
         case SET_BAUDRATE_625000:
