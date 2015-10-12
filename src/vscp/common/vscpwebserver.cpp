@@ -5463,7 +5463,7 @@ void VSCPWebServerThread::websrc_rest_renderTableData( struct mg_connection *con
 
         memset( buf, 0, sizeof( buf ) );
         sprintf( wrkbuf,
-                 "1, 2, Info, Success %d records will be returned from table %s.,NULL\r\n",
+                 "1, 2, Info, Success %ld records will be returned from table %s.,NULL\r\n",
                  nfetchedRecords,
                  ( const char * )strName.mbc_str() );
         webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
@@ -5471,7 +5471,7 @@ void VSCPWebServerThread::websrc_rest_renderTableData( struct mg_connection *con
 
         memset( buf, 0, sizeof( buf ) );
         sprintf( wrkbuf,
-                 "1, 4, Count, %d, NULL\r\n",
+                 "1, 4, Count, %ld, NULL\r\n",
                  nfetchedRecords );
         webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
         mg_write( conn, buf, strlen( buf ) );
@@ -5484,7 +5484,7 @@ void VSCPWebServerThread::websrc_rest_renderTableData( struct mg_connection *con
 
             memset( buf, 0, sizeof( buf ) );
             sprintf( wrkbuf,
-                     "1,3,Data,Table,%d - Date=%s,Value=%f\r\n",
+                     "1,3,Data,Table,%ld - Date=%s,Value=%f\r\n",
                      i,
                      ( const char * )strDateTime.mbc_str(),
                      pRecords->measurement );
@@ -5523,7 +5523,7 @@ void VSCPWebServerThread::websrc_rest_renderTableData( struct mg_connection *con
 
             memset( buf, 0, sizeof( buf ) );
             sprintf( wrkbuf,
-                     "<data id=\"%d\" date=\"%s\" value=\"%f\"></data>\r\n",
+                     "<data id=\"%ld\" date=\"%s\" value=\"%f\"></data>\r\n",
                      i,
                      ( const char * )strDateTime.mbc_str(),
                      pRecords->measurement );
@@ -5567,7 +5567,7 @@ void VSCPWebServerThread::websrc_rest_renderTableData( struct mg_connection *con
         {
             char buf2[ 200 ];
             sprintf( buf2,
-                     "\"%d rows will be retreived from table %s\"",
+                     "\"%ld rows will be retreived from table %s\"",
                      nfetchedRecords,
                      ( const char * )strName.mbc_str() );
             p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, buf2, strlen( buf2 ) );
@@ -5591,7 +5591,7 @@ void VSCPWebServerThread::websrc_rest_renderTableData( struct mg_connection *con
             p = wrkbuf;
 
             sprintf( buf,
-                     "{\"id\":%d,\"date\":\"%s\",\"value\":%f}",
+                     "{\"id\":%ld,\"date\":\"%s\",\"value\":%f}",
                      i,
                      ( const char * )strDateTime.mbc_str(),
                      pRecords->measurement );
