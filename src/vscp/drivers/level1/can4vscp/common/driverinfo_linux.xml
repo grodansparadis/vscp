@@ -19,7 +19,6 @@
 		<choice value="10" description = "10 - 19200" />
 		<choice value="11" description = "11 - 38400" />
 		<choice value="12" description = "12 - 57600" />
-		<choice value="13" description = "13 - 256000" />
 	</item>
 	
 	<flags>

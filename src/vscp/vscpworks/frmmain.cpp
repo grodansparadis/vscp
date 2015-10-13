@@ -697,6 +697,7 @@ void frmMain::OnMenuitemScanClick( wxCommandEvent& event )
 
 						// Transfer some parameters so the configuration window can be
 						// opened from the scan window.
+                        subframe->m_interfaceType = INTERFACE_CANAL;
 						subframe->m_canalif.m_strDescription = pBoth->m_pcanalif->m_strDescription;
 						subframe->m_canalif.m_strPath =  pBoth->m_pcanalif->m_strPath;
 						subframe->m_canalif.m_strConfig = pBoth->m_pcanalif->m_strConfig;
@@ -758,6 +759,7 @@ void frmMain::OnMenuitemScanClick( wxCommandEvent& event )
                         }
 
                         // Save interface parameters
+                        subframe->m_interfaceType = INTERFACE_VSCP;
 						subframe->m_vscpif.m_strDescription = pBoth->m_pvscpif->m_strDescription;
 						subframe->m_vscpif.m_strHost = pBoth->m_pvscpif->m_strHost;
 						subframe->m_vscpif.m_strUser = pBoth->m_pvscpif->m_strUser;

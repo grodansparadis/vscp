@@ -472,7 +472,7 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 						8,
 						NOPARITY,
 						ONESTOPBIT,
-						(flags & CAN4VSCP_FLAGS_HANDSHAKE) ? HANDSHAKE_HARDWARE : HANDSHAKE_NONE ) ) {
+						( m_initFlag & CAN4VSCP_FLAG_ENABLE_HARDWARE_HANDSHAKE ) ? HANDSHAKE_HARDWARE : HANDSHAKE_NONE ) ) {
 		return CANAL_ERROR_INIT_FAIL;
 	}
 #else
@@ -497,7 +497,7 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
     m_com.setParam( (char*)"115200", 
                         (char*)"N", 
                         (char*)"8", 
-                        ( flags & CAN4VSCP_FLAGS_HANDSHAKE ) ? 1 : 0, 
+                        ( m_initFlag & CAN4VSCP_FLAG_ENABLE_HARDWARE_HANDSHAKE ) ? 1 : 0,
                         0);
 
     //----------------------------------------------------------------------
@@ -519,7 +519,7 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 #endif    
 
     // Set CAN4VSCP mode in case of device in verbose mode
-    if ( !( flags & CAN4VSCP_FLAG_ENABLE_NO_SWITCH_TO_NEW_MODE ) ) {  
+    if ( !( m_initFlag & CAN4VSCP_FLAG_ENABLE_NO_SWITCH_TO_NEW_MODE ) ) {
 #ifdef WIN32        
         BOOL rw = m_com.writebuf( (unsigned char *)"SET MODE VSCP\r\n", 19 );     // In case of garbage in queue
         SLEEP( 200 );
@@ -530,12 +530,6 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
         m_com.comm_puts( (char*)"SET MODE VSCP\r\n", 19 );              // set CAN4VSCP mode twice
 #endif        
     }
-
-    // If handshake needs to be set we set it here
-
-    // If timestamp needs to be anabled we enabled it here
-
-    // If non standard baudrate we change it here
 
     // Check that we have a CAN4VSCP device at the other end 
     // ( give it four tries before giving up )
@@ -629,7 +623,7 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
     for ( int i=0; i<3; i++ ) {
 
         saveseq = m_sequencyno;         // Save the sequence ordinal
-        if ( sendCommandWait( VSCP_SERIAL_DRIVER_COMMAND_NOOP,
+        if ( sendCommandWait( VSCP_CAN4VSCP_DRIVER_COMMAND_NOOP,
                                 NULL, 
                                 0,
                                 &Msg, 
@@ -657,11 +651,48 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
     // We skip response and use defaults if call is not successful
     getDeviceCapabilities();
 
+    // If timestamp needs to be enabled we enabled it here
+    if ( m_initFlag & CAN4VSCP_FLAG_ENABLE_TIMESTAMP ) {
+
+        uint8_t conf = 1;
+        if ( !sendConfigWait( VSCP_DRIVER_CONFIG_TIMESTAMP,
+                                &conf,
+                                1,
+                                &Msg,
+                                500 ) ) {
+            // Failure
+            close();
+            return CANAL_ERROR_INIT_FAIL;
+        }
+
+    }
+
+    // If non standard baudrate we change it here
+    if ( SET_BAUDRATE_115200 != nBaud ) {
+
+        uint8_t conf = nBaud;
+        if ( !sendConfigWait( VSCP_DRIVER_CONFIG_BAUDRATE,
+                                &conf,
+                                1,
+                                &Msg,
+                                500 ) ) {
+            // Failure
+            close();
+            return CANAL_ERROR_INIT_FAIL;
+        }
+
+    }
+
+    // Wait for ACK
+    if ( m_initFlag & CAN4VSCP_FLAG_ENABLE_WAIT_FOR_ACK ) {
+
+    }
+
 	// Set interface in requested mode.
-	switch (flags & 3) {
+	switch ( m_initFlag & 0x03) {
 
 	case 1:
-		if (!sendCommandWait(VSCP_SERIAL_DRIVER_COMMAND_LISTEN,
+		if (!sendCommandWait( VSCP_CAN4VSCP_DRIVER_COMMAND_LISTEN,
 								NULL,
 								0,
 								&Msg,
@@ -673,7 +704,7 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 		break;
 
 	case 2:
-		if (!sendCommandWait(VSCP_SERIAL_DRIVER_COMMAND_LOOPBACK,
+		if (!sendCommandWait( VSCP_CAN4VSCP_DRIVER_COMMAND_LOOPBACK,
 								NULL,
 								0,
 								&Msg,
@@ -686,11 +717,11 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 
 	case 0:
 	default:
-		if (!sendCommandWait(VSCP_SERIAL_DRIVER_COMMAND_OPEN,
+		if (!sendCommandWait( VSCP_CAN4VSCP_DRIVER_COMMAND_OPEN,
 								NULL,
 								0,
 								&Msg,
-								1000)) {
+								1000 ) ) {
 			// Failure
 			close();
 			return CANAL_ERROR_INIT_FAIL;
@@ -713,7 +744,7 @@ int CCan4VSCPObj::close( void )
 	// Do nothing if already terminated
     if ( !m_bRun ) return CANAL_ERROR_SUCCESS;
 	
-    sendCommandWait( VSCP_SERIAL_DRIVER_COMMAND_CLOSE,
+    sendCommandWait( VSCP_CAN4VSCP_DRIVER_COMMAND_CLOSE,
                                         NULL, 
                                         0, 
                                         &Msg, 
@@ -1290,11 +1321,11 @@ bool CCan4VSCPObj::sendCommand( uint8_t cmdcode, uint8_t *pParam, uint8_t size )
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// waitCommandResponse
+// waitCommand4Response
 //
 //
 
-bool CCan4VSCPObj::waitCommandResponse( cmdResponseMsg *pMsg, uint8_t cmdcode, uint8_t saveseq, uint32_t timeout )
+bool CCan4VSCPObj::wait4CommandResponse( cmdResponseMsg *pMsg, uint8_t cmdcode, uint8_t saveseq, uint32_t timeout )
 {
 	//uint32_t start = GetTickCount();
     uint32_t start = getClockMilliSeconds();
@@ -1342,8 +1373,127 @@ bool CCan4VSCPObj::sendCommandWait( uint8_t cmdcode,
 	// Send the command
 	if ( !sendCommand( cmdcode, pParam, size ) ) return false;	
 
-	return waitCommandResponse( pMsg, cmdcode, saveseq, timeout );
+	return wait4CommandResponse( pMsg, cmdcode, saveseq, timeout );
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// sendConfig
+//
+//
+
+bool CCan4VSCPObj::sendConfig( uint8_t codeConfig, uint8_t *pParam, uint8_t size )
+{
+    uint8_t crc = 0;
+    uint8_t pos = 0;
+    uint8_t sendData[ 512 ];
+
+    sendData[ pos++ ] = DLE;
+    sendData[ pos++ ] = STX;
+
+    // Frame type
+    sendData[ pos++ ] = VSCP_SERIAL_DRIVER_FRAME_TYPE_CONFIGURE;
+    crc8( &crc, VSCP_SERIAL_DRIVER_FRAME_TYPE_CONFIGURE );
+
+    // Channel
+    sendData[ pos++ ] = 0;
+    crc8( &crc, 0 );
+
+    // Sequency number
+    pos += addWithEscape( sendData + pos, m_sequencyno++, &crc );
+
+    // Size of payload  
+    sendData[ pos++ ] = 0;
+    crc8( &crc, 0 );
+    pos += addWithEscape( sendData + pos, ( size & 0xff ), &crc );
+
+    // Command code
+    pos += addWithEscape( sendData + pos, codeConfig, &crc );
+
+    if ( size ) {
+        for ( int i = 0; i<size; i++ ) {
+            pos += addWithEscape( sendData + pos, pParam[ i ], &crc );
+        }
+    }
+
+    // Checksum
+    pos += addWithEscape( sendData + pos, crc, NULL );
+
+    // End of frame
+    sendData[ pos++ ] = DLE;
+    sendData[ pos++ ] = ETX;
+
+    // Empty reply list
+    LOCK_MUTEX( m_responseMutex );
+    dll_removeAllNodes( &m_responseList );
+    UNLOCK_MUTEX( m_responseMutex );
+
+    return sendMsg( sendData, pos );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// wait4ConfigResponse
+//
+//
+
+bool CCan4VSCPObj::wait4ConfigResponse( cmdResponseMsg *pMsg, uint8_t codeConfig, uint8_t saveseq, uint32_t timeout )
+{
+    //uint32_t start = GetTickCount();
+    uint32_t start = getClockMilliSeconds();
+
+    while ( getClockMilliSeconds() < ( start + timeout ) ) {
+
+        if ( ( NULL != m_responseList.pHead ) &&
+             ( NULL != m_responseList.pHead->pObject ) ) {
+
+            memcpy( pMsg, m_responseList.pHead->pObject, sizeof( cmdResponseMsg ) );
+            LOCK_MUTEX( m_responseMutex );
+            dll_removeNode( &m_responseList, m_responseList.pHead );
+            UNLOCK_MUTEX( m_responseMutex );
+
+            if ( ( 2 == pMsg->sizePayload ) &&
+                 ( saveseq == pMsg->seq ) &&
+                 ( VSCP_SERIAL_DRIVER_FRAME_TYPE_ACK == pMsg->op ) &&
+                 ( 0 == pMsg->payload[ 0 ] ) &&
+                 ( codeConfig == pMsg->payload[ 1 ] ) ) {
+                return true;
+            }
+
+            if ( ( 2 == pMsg->sizePayload ) &&
+                 ( saveseq == pMsg->seq ) &&
+                 ( VSCP_SERIAL_DRIVER_FRAME_TYPE_NACK == pMsg->op ) &&
+                 ( 0 == pMsg->payload[ 0 ] ) &&
+                 ( codeConfig == pMsg->payload[ 1 ] ) ) {
+                return false;
+            }
+
+        }
+
+        SLEEP( 10 );
+    }
+
+    return false;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// sendConfigWait
+//
+
+bool CCan4VSCPObj::sendConfigWait( uint8_t codeConfig,
+                                    uint8_t *pParam,
+                                    uint8_t size,
+                                    cmdResponseMsg *pMsg,
+                                    uint32_t timeout )
+{
+    // Save sequence number
+    uint8_t saveseq = m_sequencyno;
+
+    // Send the command
+    if ( !sendCommand( codeConfig, pParam, size ) ) return false;
+
+    return wait4CommandResponse( pMsg, codeConfig, saveseq, timeout );
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // checkCRC
@@ -1506,7 +1656,7 @@ void CCan4VSCPObj::sendNoopFrame( void )
 
 bool CCan4VSCPObj::addToResponseQueue( void )
 {
-    if ( msgResponseInfo.bWaitingForAckNack ) {
+    if ( ( m_initFlag & CAN4VSCP_FLAG_ENABLE_WAIT_FOR_ACK ) && msgResponseInfo.bWaitingForAckNack ) {
 
         bool t1 = ( msgResponseInfo.channel == m_bufferMsgRcv[ VSCP_CAN4VSCP_DRIVER_POS_FRAME_CHANNEL ] );
         bool t2 = ( msgResponseInfo.seq == m_bufferMsgRcv[ VSCP_CAN4VSCP_DRIVER_POS_FRAME_SEQUENCY ] );
@@ -2081,7 +2231,7 @@ void CCan4VSCPObj::readSerialData( void )
                     }
                 } // while
             }
-            // Check for multiframe CANAL message frame
+            // Check for multiframe CANAL message frame with timestamp
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_MULTI_FRAME_CANAL_TIMESTAMP == ( m_bufferMsgRcv[ 0 ] ) ) {
 
                 // CANAL message
@@ -2372,7 +2522,7 @@ void *workThreadTransmit( void *pObject )
     while ( pobj->m_bRun ) {
 
         // Are we in transmission
-        if ( 0 && bTransmissionInProgress ) {
+        if ( ( pobj->m_initFlag & CAN4VSCP_FLAG_ENABLE_WAIT_FOR_ACK ) && bTransmissionInProgress ) {
 #ifdef WIN32            
             if ( WAIT_OBJECT_0 != WaitForSingleObject( pobj->m_transmitAckNackEvent, 500 ) ) {
                 // We did not get a ACK/NACK in time - resend frame
@@ -2423,7 +2573,7 @@ void *workThreadTransmit( void *pObject )
                 continue;
             }
             
-        }
+        } // Transmission in progress
 
         // If there is noting in the queue we wait until there is
         // something there

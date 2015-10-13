@@ -48,17 +48,17 @@
 // Serial protocol defines
 
 // VSCP Driver states
-#define STATE_VSCP_SERIAL_DRIVER_WAIT_FOR_FRAME_START       0
-#define STATE_VSCP_SERIAL_DRIVER_WAIT_FOR_FRAME_END         1
-#define STATE_VSCP_SERIAL_DRIVER_FRAME_RECEIVED             2
+#define STATE_VSCP_SERIAL_DRIVER_WAIT_FOR_FRAME_START               0
+#define STATE_VSCP_SERIAL_DRIVER_WAIT_FOR_FRAME_END                 1
+#define STATE_VSCP_SERIAL_DRIVER_FRAME_RECEIVED                     2
 
 // VSCP Driver positions in frame
-#define VSCP_SERIAL_DRIVER_POS_FRAME_TYPE                   0
-#define VSCP_SERIAL_DRIVER_POS_FRAME_CHANNEL                1
-#define VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY               2
-#define VSCP_SERIAL_DRIVER_POS_FRAME_SIZE_PAYLOAD_MSB       3
-#define VSCP_SERIAL_DRIVER_POS_FRAME_SIZE_PAYLOAD_LSB       4
-#define VSCP_SERIAL_DRIVER_POS_FRAME_PAYLOAD                5
+#define VSCP_SERIAL_DRIVER_POS_FRAME_TYPE                           0
+#define VSCP_SERIAL_DRIVER_POS_FRAME_CHANNEL                        1
+#define VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY                       2
+#define VSCP_SERIAL_DRIVER_POS_FRAME_SIZE_PAYLOAD_MSB               3
+#define VSCP_SERIAL_DRIVER_POS_FRAME_SIZE_PAYLOAD_LSB               4
+#define VSCP_SERIAL_DRIVER_POS_FRAME_PAYLOAD                        5
 
 // // Frame types
 #define VSCP_SERIAL_DRIVER_FRAME_TYPE_NOOP                          0
@@ -84,19 +84,15 @@
 #define VSCP_SERIAL_DRIVER_FRAME_TYPE_COMMAND                       255
 
 // VSCP Driver errors
-#define VSCP_SERIAL_DRIVER_ERROR_CHECKSUM                   1
-#define VSCP_SERIAL_DRIVER_ERROR_UNKNOWN_OPERATION          2
+#define VSCP_SERIAL_DRIVER_ERROR_CHECKSUM                           1
+#define VSCP_SERIAL_DRIVER_ERROR_UNKNOWN_OPERATION                  2
 
 // VSCP driver commands
-#define VSCP_SERIAL_DRIVER_COMMAND_NOOP                     0
-#define VSCP_SERIAL_DRIVER_COMMAND_OPEN                     1
-#define VSCP_SERIAL_DRIVER_COMMAND_LISTEN                   2
-#define VSCP_SERIAL_DRIVER_COMMAND_LOOPBACK                 3
-#define VSCP_SERIAL_DRIVER_COMMAND_CLOSE                    4
-#define VSCP_SERIAL_DRIVER_COMMAND_SET_FILTER               5
+#define VSCP_SERIAL_DRIVER_COMMAND_NOOP                             0  // Should always be at zero. 
+                                                                       // The rest of the commands are user defined.
 
 // Packed size for capabilities structure
-#define VSCP_SERIAL_DRIVER_CAPS_SIZE                        4   
+#define VSCP_SERIAL_DRIVER_CAPS_SIZE                                4   
 
 // Capabilities structure
 typedef struct {

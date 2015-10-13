@@ -58,56 +58,51 @@
 //#define DEBUG_CAN4VSCP_RECEIVE
 
 // Flags
-#define CAN4VSCP_FLAGS_NO_MODE_SWITCH       0x0004
-#define CAN4VSCP_FLAGS_WAIT_FOR_ACK         0x0008
-#define CAN4VSCP_FLAGS_TIMESTAMP            0x0010
-#define CAN4VSCP_FLAGS_HANDSHAKE            0x0020
+#define CAN4VSCP_FLAG_ENABLE_NO_SWITCH_TO_NEW_MODE          0x0004
+#define CAN4VSCP_FLAG_ENABLE_WAIT_FOR_ACK                   0x0008
+#define CAN4VSCP_FLAG_ENABLE_TIMESTAMP                      0x0010
+#define CAN4VSCP_FLAG_ENABLE_HARDWARE_HANDSHAKE             0x0020
 
 // Mutexes
-#define CANAL_DLL_CAN4VSCPDRV_OBJ_MUTEX	            TEXT("___CANAL__DLL_CAN4VSCPDRV_OBJ_MUTEX____")
-#define CANAL_DLL_CAN4VSCPDRV_RECEIVE_MUTEX         TEXT("___CANAL__DLL_CAN4VSCPDRV_RECEIVE_MUTEX____")
-#define CANAL_DLL_CAN4VSCPDRV_TRANSMIT_MUTEX        TEXT("___CANAL__DLL_CAN4VSCPDRV_TRANSMIT_MUTEX____")
-#define CANAL_DLL_CAN4VSCPDRV_RESPONSE_MUTEX        TEXT("___CANAL__DLL_CAN4VSCPDRV_RESPONSE_MUTEX____")
-
-// Flags
-#define CAN4VSCP_FLAG_ENABLE_NO_SWITCH_TO_NEW_MODE  0x0004
-#define CAN4VSCP_FLAG_ENABLE_WAIT_FOR_ACK           0x0008
-#define CAN4VSCP_FLAG_ENABLE_TIMESTAMP              0x0010
+#define CANAL_DLL_CAN4VSCPDRV_OBJ_MUTEX	                    TEXT("___CANAL__DLL_CAN4VSCPDRV_OBJ_MUTEX____")
+#define CANAL_DLL_CAN4VSCPDRV_RECEIVE_MUTEX                 TEXT("___CANAL__DLL_CAN4VSCPDRV_RECEIVE_MUTEX____")
+#define CANAL_DLL_CAN4VSCPDRV_TRANSMIT_MUTEX                TEXT("___CANAL__DLL_CAN4VSCPDRV_TRANSMIT_MUTEX____")
+#define CANAL_DLL_CAN4VSCPDRV_RESPONSE_MUTEX                TEXT("___CANAL__DLL_CAN4VSCPDRV_RESPONSE_MUTEX____")
 
 // Max messages in input queue
-#define CAN4VSCP_MAX_RCVMSG                         4096
+#define CAN4VSCP_MAX_RCVMSG                                 4096
 
 // Max messages in output queue
-#define CAN4VSCP_MAX_SNDMSG                         1024
+#define CAN4VSCP_MAX_SNDMSG                                 4096
 
 // Max number of response messages in respnse queue
-#define CAN4VSCP_MAX_RESPONSEMSG	                32
+#define CAN4VSCP_MAX_RESPONSEMSG	                        32
 
 // Byte stuffing start and end characters
-#define DLE                                         0x10
-#define STX                                         0x02
-#define ETX                                         0x03
+#define DLE                                                 0x10
+#define STX                                                 0x02
+#define ETX                                                 0x03
 
 // RX State machine
-#define INCOMING_STATE_NONE			                0	// Waiting for <STX>
-#define INCOMING_STATE_STX			                1	// Reading data
-#define INCOMING_STATE_ETX			                2	// <ETX> has been received
-#define INCOMING_STATE_COMPLETE		                3	// Frame received
+#define INCOMING_STATE_NONE			                        0	// Waiting for <STX>
+#define INCOMING_STATE_STX			                        1	// Reading data
+#define INCOMING_STATE_ETX			                        2	// <ETX> has been received
+#define INCOMING_STATE_COMPLETE		                        3	// Frame received
 
-#define INCOMING_SUBSTATE_NONE		                0	// Idle
-#define INCOMING_SUBSTATE_DLE		                1	// <DLE> received
+#define INCOMING_SUBSTATE_NONE		                        0	// Idle
+#define INCOMING_SUBSTATE_DLE		                        1	// <DLE> received
 
 
 // CAN4VSCP Commands
-#define RESET_NOOP                                  0x00	// No Operation
-#define	GET_TX_ERR_CNT			                    0x02	// Get TX error count
-#define	GET_RX_ERR_CNT			                    0x03	// Get RX error count
-#define	GET_CANSTAT				                    0x04	// Get CAN statistics
-#define	GET_COMSTAT				                    0x05
-#define	GET_MSGFILTER1			                    0x06	// Get message filter 1
-#define	GET_MSGFILTER2			                    0x07	// Get message filter 2
-#define	SET_MSGFILTER1			                    0x08	// Set message filter 1
-#define	SET_MSGFILTER2			                    0x09	// Set message filter 2
+#define RESET_NOOP                                          0x00	// No Operation
+#define	GET_TX_ERR_CNT			                            0x02	// Get TX error count
+#define	GET_RX_ERR_CNT			                            0x03	// Get RX error count
+#define	GET_CANSTAT				                            0x04	// Get CAN statistics
+#define	GET_COMSTAT				                            0x05
+#define	GET_MSGFILTER1			                            0x06	// Get message filter 1
+#define	GET_MSGFILTER2			                            0x07	// Get message filter 2
+#define	SET_MSGFILTER1			                            0x08	// Set message filter 1
+#define	SET_MSGFILTER2			                            0x09	// Set message filter 2
 
 
 // Emergency flags
@@ -133,6 +128,13 @@
 #define VSCP_CAN4VSCP_DRIVER_COMMAND_LOOPBACK               3
 #define VSCP_CAN4VSCP_DRIVER_COMMAND_CLOSE                  4
 #define VSCP_CAN4VSCP_DRIVER_COMMAND_SET_FILTER             5
+#define VSCP_CAN4VSCP_DRIVER_COMMAND_SET_MASK               6
+
+// VSCP driver configuration
+#define VSCP_DRIVER_CONFIG_NOOP                             0
+#define VSCP_DRIVER_CONFIG_MODE                             1
+#define VSCP_DRIVER_CONFIG_TIMESTAMP                        2
+#define VSCP_DRIVER_CONFIG_BAUDRATE                         3
 
 
 // Capabilities for this driver
@@ -167,11 +169,11 @@ typedef struct {
 //
 
 typedef struct {
-    uint8_t op;             // Operation == framtype
-    uint8_t seq;            // Sequency number
-    uint8_t channel;        // Channel
-    uint16_t sizePayload;   // Size of payload
-    uint8_t payload[ 512 ]; // Message payload
+    uint8_t op;                 // Operation == framtype
+    uint8_t seq;                // Sequency number
+    uint8_t channel;            // Channel
+    uint16_t sizePayload;       // Size of payload
+    uint8_t payload[ 512 ];     // Message payload
 } cmdResponseMsg;
 
 class CCan4VSCPObj {
@@ -287,13 +289,13 @@ public:
         @param pCanalStatus Pointer to CANAL status structure
         @return True on success.
      */
-    int getStatus(PCANALSTATUS pCanalStatus);
+    int getStatus( PCANALSTATUS pCanalStatus );
 
     /*!
         Get device capabilities
         Device capabilities are set in member variables
      */
-    bool getDeviceCapabilities(void);
+    bool getDeviceCapabilities( void );
 
     /*!
         Send a command
@@ -303,9 +305,9 @@ public:
         @param dataSize Size for datablock
         @return True on success.
      */
-    bool sendCommand(uint8_t cmdcode,
-            uint8_t *pParam = NULL,
-            uint8_t size = 0);
+    bool sendCommand( uint8_t cmdcode,
+                        uint8_t *pParam = NULL,
+                        uint8_t size = 0 );
 
 
     /*!
@@ -317,10 +319,10 @@ public:
         @param timeout Timeout in milliseconds
         @return True on success
      */
-    bool waitCommandResponse(cmdResponseMsg *pMsg,
-            uint8_t cmdcode,
-            uint8_t saveseq,
-            uint32_t timeout);
+    bool wait4CommandResponse( cmdResponseMsg *pMsg,
+                                uint8_t cmdcode,
+                                uint8_t saveseq,
+                                uint32_t timeout );
 
     /*!
         Send command and wait for a response message
@@ -330,11 +332,46 @@ public:
         @param timeout Timeout in milliseconds
         @return True on success
      */
-    bool sendCommandWait(uint8_t cmdcode,
-            uint8_t *pParam,
-            uint8_t size,
-            cmdResponseMsg *pMsg,
-            uint32_t timeout);
+    bool sendCommandWait( uint8_t cmdcode,
+                            uint8_t *pParam,
+                            uint8_t size,
+                            cmdResponseMsg *pMsg,
+                            uint32_t timeout );
+
+    /*!
+        Sent a configuration parameter in the device
+
+        @param cmdcode Code for coonfiguration parameter to set
+        @param data Pointer to data to send
+        @param dataSize Size for datablock
+        @return True on success.
+    */
+    bool sendConfig( uint8_t codeConfig, uint8_t *pParam, uint8_t size );
+
+    /*!
+        Wait for a configuration response message
+
+        @param pMsg Pointer to response message
+        @param codeConfig Configuration code to wait for reply from
+        @param saveseq Squency number when frame was sent.
+        @param timeout Timeout in milliseconds
+        @return True on success
+    */
+    bool wait4ConfigResponse( cmdResponseMsg *pMsg, uint8_t codeConfig, uint8_t saveseq, uint32_t timeout );
+
+    /*!
+    Send command and wait for a response message
+
+    @param codeConfig Code for configuration parameter
+    @param pMsg Pointer to response message
+    @param timeout Timeout in milliseconds
+    @return True on success
+    */
+    bool sendConfigWait( uint8_t codeConfig,
+                          uint8_t *pParam,
+                          uint8_t size,
+                          cmdResponseMsg *pMsg,
+                          uint32_t timeout );
 
     /*!
         Send command on the serial channel
@@ -597,7 +634,7 @@ public:
 
 
     ///////////////////////////////////////////////////////////////////////////
-    //				 * * * * *  Can4VSCP specific * * * * *
+    //				 * * * * *  CAN4VSCP specific * * * * *
     ///////////////////////////////////////////////////////////////////////////
 
 
