@@ -1316,7 +1316,11 @@ bool vscp_getGuidFromStringToArray(unsigned char *pGUID, const wxString& strGUID
 {
 	unsigned long val;
     
-    // If GUID is empty or "-" set all to zeror
+    if ( NULL == pGUID ) {
+        return false;
+    }
+    
+    // If GUID is empty or "-" set all to zero
     if ( ( 0 == strGUID.Length() ) || ( _("-") == strGUID ) ) {
         memset( pGUID, 0, 16 );
         return true;
