@@ -47,6 +47,28 @@
 #define DLL_REGISTER_READ_ERROR_TIMEOUT		2000
 #define DLL_REGISTER_READ_MAX_TRIES			3
 
+// This structure holds info about found methods
+typedef struct structFoundMetods {
+    BOOL bCanalOpen;
+    BOOL bCanalClose;
+    BOOL bCanalGetLevel;
+    BOOL bCanalSend;
+    BOOL bCanalReceive;
+    BOOL bCanalDataAvailable;
+    BOOL bCanalGetStatus;
+    BOOL bCanalGetStatistics;
+    BOOL bCanalSetFilter;
+    BOOL bCanalSetMask;
+    BOOL bCanalSetBaudrate;
+    BOOL bCanalGetVersion;
+    BOOL bCanalGetDllVersion;
+    BOOL bCanalGetVendorString;
+    // Generation 2
+    BOOL bCanalBlockingSend;
+    BOOL bCanalBlockingReceive;
+    BOOL bCanalGetdriverInfo;
+
+} foundMetods;
 
 /*!
 	\class CDllWrapper
@@ -77,6 +99,16 @@ public:
         @return	CANAL_ERROR_SUCCESS on success
     */
     int initialize( const wxString& strPath ); 
+
+    /*!
+        Get driver info if available
+
+        @param strPath to the canal dll
+        @param strDrvInfo Returned driver XML info
+        @param pFoundMethods Pointer to structure that get info about found methods.
+        @return	CANAL_ERROR_SUCCESS on success
+    */
+    int loadGetDriverInfo( const wxString& strPath, wxString& strDrvInfo, foundMetods *pFoundMethods );
   
     /*!
         Open communication channel.

@@ -342,7 +342,7 @@ extern "C" const char * WINAPI EXPORT CanalGetDriverInfo( void )
 extern "C" const char * CanalGetReceiveHandle( void )
 #endif
 {
-	return NULL;
+	return DRIVERINFO;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

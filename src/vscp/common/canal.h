@@ -41,8 +41,6 @@
 #define EXPORT
 #endif
 
-
-
 #ifdef WIN32
 #ifndef WINAPI
 #define WINAPI __stdcall

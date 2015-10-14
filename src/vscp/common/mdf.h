@@ -107,7 +107,6 @@ public:
     wxString m_strHelp;             // Item help text or url
     wxString m_strValue;            // The abstraction tells the type
 
-  
 };
 
 WX_DECLARE_LIST( CMDF_ValueListValue, MDF_VALUE_LIST );

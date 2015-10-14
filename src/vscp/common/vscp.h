@@ -482,9 +482,13 @@ struct myNode {
 // used by CLASS1.PROTOCOL, HIGH END SERVER RESPONSE
 #define VSCP_SERVER_CAPABILITY_TCPIP            (1<<15)
 #define VSCP_SERVER_CAPABILITY_UDP              (1<<14)
-#define VSCP_SERVER_CAPABILITY_WEB              (1<<13)
-#define VSCP_SERVER_CAPABILITY_WEBSOCKET        (1<<12)
-#define VSCP_SERVER_CAPABILITY_REST             (1<<11)
+#define VSCP_SERVER_CAPABILITY_MULTICAST        (1<<13)
+#define VSCP_SERVER_CAPABILITY_RAWETH           (1<<12)
+#define VSCP_SERVER_CAPABILITY_WEB              (1<<11)
+#define VSCP_SERVER_CAPABILITY_WEBSOCKET        (1<<10)
+#define VSCP_SERVER_CAPABILITY_REST             (1<<9)
+#define VSCP_SERVER_CAPABILITY_MQTT             (1<<7)
+#define VSCP_SERVER_CAPABILITY_COAP             (1<<7)
 #define VSCP_SERVER_CAPABILITY_IP6              (1<<6)
 #define VSCP_SERVER_CAPABILITY_IP4              (1<<5)
 #define VSCP_SERVER_CAPABILITY_SSL              (1<<4)
@@ -492,38 +496,38 @@ struct myNode {
 
 
 /// Error Codes
-#define VSCP_ERROR_SUCCESS                 0       // All is OK
-#define VSCP_ERROR_ERROR                  -1       // Error
-#define VSCP_ERROR_CHANNEL                 7       // Invalid channel
-#define VSCP_ERROR_FIFO_EMPTY              8       // FIFO is empty
-#define VSCP_ERROR_FIFO_FULL               9       // FIFI is full
-#define VSCP_ERROR_FIFO_SIZE               10      // FIFO size error
-#define VSCP_ERROR_FIFO_WAIT               11      
-#define VSCP_ERROR_GENERIC                 12      // Generic error
-#define VSCP_ERROR_HARDWARE                13      // Hardware error
-#define VSCP_ERROR_INIT_FAIL               14      // Initialization failed
-#define VSCP_ERROR_INIT_MISSING            15		
-#define VSCP_ERROR_INIT_READY              16
-#define VSCP_ERROR_NOT_SUPPORTED           17      // Not supported
-#define VSCP_ERROR_OVERRUN                 18      // Overrun
-#define VSCP_ERROR_RCV_EMPTY               19      // Receive buffer empty
-#define VSCP_ERROR_REGISTER                20      // Register value error
-#define VSCP_ERROR_TRM_FULL                21      // Transmit buffer full
-#define VSCP_ERROR_LIBRARY                 28      // Unable to load library
-#define VSCP_ERROR_PROCADDRESS             29      // Unable get library proc. address
-#define VSCP_ERROR_ONLY_ONE_INSTANCE       30      // Only one instance allowed
-#define VSCP_ERROR_SUB_DRIVER              31      // Problem with sub driver call
-#define VSCP_ERROR_TIMEOUT                 32      // Time-out
-#define VSCP_ERROR_NOT_OPEN                33      // The device is not open.
-#define VSCP_ERROR_PARAMETER               34      // A parameter is invalid.
-#define VSCP_ERROR_MEMORY                  35      // Memory exhausted.
-#define VSCP_ERROR_INTERNAL                36      // Some kind of internal program error
-#define VSCP_ERROR_COMMUNICATION           37      // Some kind of communication error
-#define VSCP_ERROR_USER                    38      // Login error user name
-#define VSCP_ERROR_PASSWORD                39      // Login error password
-#define VSCP_ERROR_CONNECTION              40      // Could not connect   
-#define VSCP_ERROR_INVALID_HANDLE          41      // The handle is not valid
-#define VSCP_ERROR_OPERATION_FAILED        42      // Operation failed for some reason
+#define VSCP_ERROR_SUCCESS                      0       // All is OK
+#define VSCP_ERROR_ERROR                        -1       // Error
+#define VSCP_ERROR_CHANNEL                      7       // Invalid channel
+#define VSCP_ERROR_FIFO_EMPTY                   8       // FIFO is empty
+#define VSCP_ERROR_FIFO_FULL                    9       // FIFI is full
+#define VSCP_ERROR_FIFO_SIZE                    10      // FIFO size error
+#define VSCP_ERROR_FIFO_WAIT                    11      
+#define VSCP_ERROR_GENERIC                      12      // Generic error
+#define VSCP_ERROR_HARDWARE                     13      // Hardware error
+#define VSCP_ERROR_INIT_FAIL                    14      // Initialization failed
+#define VSCP_ERROR_INIT_MISSING                 15		
+#define VSCP_ERROR_INIT_READY                   16
+#define VSCP_ERROR_NOT_SUPPORTED                17      // Not supported
+#define VSCP_ERROR_OVERRUN                      18      // Overrun
+#define VSCP_ERROR_RCV_EMPTY                    19      // Receive buffer empty
+#define VSCP_ERROR_REGISTER                     20      // Register value error
+#define VSCP_ERROR_TRM_FULL                     21      // Transmit buffer full
+#define VSCP_ERROR_LIBRARY                      28      // Unable to load library
+#define VSCP_ERROR_PROCADDRESS                  29      // Unable get library proc. address
+#define VSCP_ERROR_ONLY_ONE_INSTANCE            30      // Only one instance allowed
+#define VSCP_ERROR_SUB_DRIVER                   31      // Problem with sub driver call
+#define VSCP_ERROR_TIMEOUT                      32      // Time-out
+#define VSCP_ERROR_NOT_OPEN                     33      // The device is not open.
+#define VSCP_ERROR_PARAMETER                    34      // A parameter is invalid.
+#define VSCP_ERROR_MEMORY                       35      // Memory exhausted.
+#define VSCP_ERROR_INTERNAL                     36      // Some kind of internal program error
+#define VSCP_ERROR_COMMUNICATION                37      // Some kind of communication error
+#define VSCP_ERROR_USER                         38      // Login error user name
+#define VSCP_ERROR_PASSWORD                     39      // Login error password
+#define VSCP_ERROR_CONNECTION                   40      // Could not connect   
+#define VSCP_ERROR_INVALID_HANDLE               41      // The handle is not valid
+#define VSCP_ERROR_OPERATION_FAILED             42      // Operation failed for some reason
 
 
 #ifdef __cplusplus

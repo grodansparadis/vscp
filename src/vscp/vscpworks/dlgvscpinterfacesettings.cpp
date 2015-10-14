@@ -62,14 +62,12 @@
 #include <wx/tokenzr.h>
 #include <wx/progdlg.h>
 
+#include <vscpremotetcpif.h>
+#include <dllwrapper.h>
+#include <canalobj.h>
 #include "dlgvscpinterfacesettings.h"
 #include "dlgselectdaemoninterface.h"
 #include "dlgvscpfilter.h"
-#include <vscpremotetcpif.h>
-
-////@begin XPM images
-////@end XPM images
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // dlgVscpInterfaceSettings type definition
@@ -419,7 +417,57 @@ void dlgVscpInterfaceSettings::OnButtonVscpDriverSetPathClick( wxCommandEvent& e
 
 void dlgVscpInterfaceSettings::OnButtonVscpSetConfigurationClick( wxCommandEvent& event )
 {
-	wxMessageBox(_("Sorry! This driver does not have a stored description of its configuration."));
+    CDllWrapper dll;
+    CCanalObj_Item conf;
+    foundMetods meth;
+    wxString strDrvInfo;
+    wxString path = m_PathToDriver->GetValue();
+
+    if ( 0 == path.Length() ) {
+        wxMessageBox( _( "Must have a valid path to the driver." ) );
+        return;
+    }
+
+    // Check that the file exists
+    if ( !( ::wxFileExists( path ) ) ) {
+        wxMessageBox( _( "The path does not point to a valid file." ) );
+        return;
+    }
+
+    if ( CANAL_ERROR_SUCCESS != dll.loadGetDriverInfo( path, strDrvInfo, &meth ) ) {
+        wxMessageBox( _( "Sorry! This driver does not appears to have a stored description of how it should be configurartied. Ask the maker to include one!" ) );
+        return;
+    }
+
+    char buf[ 64000 ];
+    wxCharBuffer wxbuf = strDrvInfo.ToUTF8();
+
+    int baselen = strlen( wxbuf.data() );
+    int len = ns_base64_decode( (const unsigned char *)wxbuf.data(), baselen, buf );
+	
+    if ( len != baselen ) {
+        wxMessageBox( _( "The configurationdata was either in the wromg form (should have been base54 encoded xml) or it was absent." ) );
+        return;
+    }
+
+    // OK we have valid data - Parse it
+    wxString driverinfo = wxString::FromUTF8( buf );
+    if ( !conf.parseDriverInfo( driverinfo ) ) {
+        wxMessageBox( _( "Failed to parse the configuration data." ) );
+        return;
+    }
+
+    // Start the wizzard
+    wxString resultConfstring;
+    wxString resultFlags;
+    if ( !conf.runWizard( this, resultConfstring, resultFlags ) ) {
+        wxMessageBox( _( "Failed to parse the configuration data." ) );
+        return;
+    }
+
+    m_DriverConfigurationString->SetValue( resultConfstring );
+    m_DriverFlags->SetValue( resultFlags );
+
 	event.Skip(); 
 }
 

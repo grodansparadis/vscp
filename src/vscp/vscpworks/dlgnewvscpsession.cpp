@@ -158,7 +158,6 @@ dlgNewVSCPSession::~dlgNewVSCPSession()
 void dlgNewVSCPSession::Init()
 {
     m_ctrlListInterfaces = NULL;
-
     m_bShowUnconnectedMode = true;
 }
 

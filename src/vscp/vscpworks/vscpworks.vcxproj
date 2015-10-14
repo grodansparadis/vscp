@@ -245,6 +245,7 @@
     <ClInclude Include="..\..\common\fossa.h" />
     <ClInclude Include="..\common\canal.h" />
     <ClInclude Include="..\common\canaldlldef.h" />
+    <ClInclude Include="..\common\canalobj.h" />
     <ClInclude Include="..\common\canalsuperwrapper.h" />
     <ClInclude Include="..\common\devicelist.h" />
     <ClInclude Include="..\common\devitem.h" />
@@ -298,9 +299,11 @@
     <ClInclude Include="writeregister.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\common\base64-decode.c" />
     <ClCompile Include="..\..\common\crc.c" />
     <ClCompile Include="..\..\common\crc8.c" />
     <ClCompile Include="..\..\common\fossa.c" />
+    <ClCompile Include="..\common\canalobj.cpp" />
     <ClCompile Include="..\common\canalsuperwrapper.cpp" />
     <ClCompile Include="..\common\dllwrapper.cpp" />
     <ClCompile Include="..\common\guid.cpp" />
