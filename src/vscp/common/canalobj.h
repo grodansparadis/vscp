@@ -32,6 +32,8 @@
 
 #include "wx/wx.h"
 #include <wx/window.h>
+#include "wx/wizard.h"
+#include "wx/html/htmlwin.h"
 
 #include <vscp.h>
 #include <vscp_class.h>
@@ -40,6 +42,8 @@
 #include <canaldlldef.h>
 #include <dllwrapper.h>
 #include <crc.h>
+
+#define MAX_PARAMETERS 32
 
 enum canalobj_type {
     type_unknown,
@@ -69,6 +73,9 @@ enum flagtype {
     flagtype_choice
 };
 
+// Forward declarations
+class WizardCanalConfigPageStart;
+class WizardPageCanalConfig;
 
 /*!
     CCanalObj_Choice
@@ -144,29 +151,32 @@ public:
 WX_DECLARE_LIST( CCanalObj_FlagBit, CANALOBJ_FLAGBIT_LIST );
 
 /*!
-    CCanalObj_Item
+    CCanalObj
 */
 
-class CCanalObj_Item
+class CCanalObj
 {
 
 public:
 
-    CCanalObj_Item();
-    ~CCanalObj_Item();
+    CCanalObj();
+    ~CCanalObj();
 
     /*!
         Parse drver info
         @param  info Driver info fetched from file
         @return true if the parsing went well.
     */
-    bool parseDriverInfo( wxString& path );
+    bool parseDriverInfo( wxString& xmldata );
 
     /*!
         Run the graphical wizard that assist the user in setting the parameters.
+        @param parent Pointer to parent window.
+        @param resultConfigString Configuration  result string.
+        @param resultConfigFlags Resulting flag value
         @return true if the parsing went well.
     */
-    bool runWizard( wxWindow *pwnd, wxString& resultConfigString, wxString& resultConfigFlags );
+    bool runWizard( wxWindow* parent, wxString& resultConfigString, wxString& resultConfigFlags );
 
     wxString m_strDecription;           // Description of DLL
     typeDescription m_TypeDescription;  // Format for description (text or html)
@@ -177,9 +187,200 @@ public:
 
     CDllWrapper m_dll;
 
-    CANALOBJ_ITEM_LIST m_listItem;
-    CANALOBJ_FLAGBIT_LIST m_listFlagBits;
+    CANALOBJ_ITEM_LIST m_listItem;          // List with configuration item definitions
+    CANALOBJ_FLAGBIT_LIST m_listFlagBits;   // List with flag bit definitions
 };
+
+
+#define CANAL_CONFIG_WIZARD_TITLE _( "CANAL Configurator Wizard" )
+
+
+///////////////////////////////////////////////////////////////////////////////
+// CanalConfigWizard class declaration
+//
+
+class CanalConfigWizard : public wxWizard
+{
+    DECLARE_DYNAMIC_CLASS( CanalConfigWizard )
+    DECLARE_EVENT_TABLE()
+
+public:
+    /// Constructors
+    CanalConfigWizard();
+    CanalConfigWizard( wxWindow* parent,
+                            wxWindowID id = ID_CANALCONFIGRWIZARD,
+                            const wxPoint& pos = wxDefaultPosition );
+
+    /// Creation
+    bool Create( wxWindow* parent,
+                    wxWindowID id = ID_CANALCONFIGRWIZARD,
+                    const wxPoint& pos = wxDefaultPosition );
+
+    /// Destructor
+    ~CanalConfigWizard();
+
+    /// Initialises member variables
+    void Init();
+
+    /// Creates the controls and sizers
+    void CreateControls( CANALOBJ_ITEM_LIST *plistItem  );
+
+    /// Runs the wizard
+    bool Run();
+
+    /// Retrieves bitmap resources
+    wxBitmap GetBitmapResource( const wxString& name );
+
+    /// Retrieves icon resources
+    wxIcon GetIconResource( const wxString& name );
+
+    /// Should we show tooltips?
+    static bool ShowToolTips();
+
+    WizardCanalConfigPageStart* m_pgStart;
+    WizardPageCanalConfig  *m_pgConfig[ MAX_PARAMETERS ];
+
+    /// Control identifiers
+    enum {
+        ID_CANALCONFIGRWIZARD = 32000
+    };
+
+    CANALOBJ_ITEM_LIST *m_plistItem;
+    // The configuration object
+    //CCanalObj  m_configObj;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// WizardCanalConfigPageStart
+//
+
+class WizardCanalConfigPageStart : public wxWizardPageSimple
+{
+    DECLARE_DYNAMIC_CLASS( WizardCanalConfigPageStart )
+    DECLARE_EVENT_TABLE()
+
+public:
+    /// Constructors
+    WizardCanalConfigPageStart();
+
+    WizardCanalConfigPageStart( wxWizard* parent );
+
+    /// Creation
+    bool Create( wxWizard* parent );
+
+    /// Destructor
+    ~WizardCanalConfigPageStart();
+
+    /// Initialises member variables
+    void Init();
+
+    /// Creates the controls and sizers
+    void CreateControls();
+
+
+    /// Retrieves bitmap resources
+    wxBitmap GetBitmapResource( const wxString& name );
+
+    /// Retrieves icon resources
+    wxIcon GetIconResource( const wxString& name );
+
+    /// Should we show tooltips?
+    static bool ShowToolTips();
+
+    /// Control identifiers
+    enum {
+        ID_WIZARDPAGE = 32001
+    };
+
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// WizardPageCanalConfig
+//
+
+class WizardPageCanalConfig : public wxWizardPageSimple
+{
+    DECLARE_DYNAMIC_CLASS( WizardPageCanalConfig )
+    DECLARE_EVENT_TABLE()
+
+public:
+    /// Constructors
+    WizardPageCanalConfig();
+
+    WizardPageCanalConfig( wxWizard* parent );
+
+    /// Creation
+    bool Create( wxWizard* parent );
+
+    /// Destructor
+    ~WizardPageCanalConfig();
+
+    /// Initialises member variables
+    void Init();
+
+    /// Creates the controls and sizers
+    void CreateControls();
+
+    /// Retrieves bitmap resources
+    wxBitmap GetBitmapResource( const wxString& name );
+
+    /// Retrieves icon resources
+    wxIcon GetIconResource( const wxString& name );
+
+    /// Should we show tooltips?
+    static bool ShowToolTips();
+
+    /// wxEVT_WIZARD_PAGE_CHANGING event handler for ID_WIZARDPAGE_SELECT_INTERFACE
+    void OnWizardPageChanging( wxWizardEvent& event );
+
+    // Id to use for creating controls. Icrease by one for every control created.
+    int m_windowsID;
+
+    // Text for head  "Parameter 0", "Parameter 1"  etc 
+    wxString m_strHead;
+
+    // Parameter item associated with this wizard page
+    CCanalObj_OneItem *m_pItem;
+
+    // Text for description
+    //wxString m_strDescription;
+
+    // This is the type
+    //canalobj_type m_type;
+
+    // True if this parametr is optional
+    bool m_bOptional;
+
+    // This is the string value for the configuration string
+    wxString  strValue;
+
+    // Choices for strings are here
+    wxArrayString m_listBoxStrings;
+
+    wxTextCtrl* m_textField;    // Used for most things
+    wxListBox* m_listBox;       // Used for items with a choice
+    wxChoice* m_boolChoice;     // Used for single options
+
+    /// Control identifiers
+    enum {
+        ID_WIZARDPAGE_BASE= 32011
+    };
+
+};
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -260,7 +260,7 @@ public:
 
 class WizardPageSelecInterface : public wxWizardPageSimple
 {
-    DECLARE_DYNAMIC_CLASS( WizardPage1 )
+    DECLARE_DYNAMIC_CLASS( WizardPage )
     DECLARE_EVENT_TABLE()
 
 public:

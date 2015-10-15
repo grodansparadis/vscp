@@ -166,7 +166,6 @@ void dlgVscpInterfaceSettings::Init()
 
 	// Init filter
 	vscp_clearVSCPFilter( &m_vscpfilter );
-
 }
 
 
@@ -418,7 +417,7 @@ void dlgVscpInterfaceSettings::OnButtonVscpDriverSetPathClick( wxCommandEvent& e
 void dlgVscpInterfaceSettings::OnButtonVscpSetConfigurationClick( wxCommandEvent& event )
 {
     CDllWrapper dll;
-    CCanalObj_Item conf;
+    CCanalObj conf;
     foundMetods meth;
     wxString strDrvInfo;
     wxString path = m_PathToDriver->GetValue();
@@ -461,7 +460,7 @@ void dlgVscpInterfaceSettings::OnButtonVscpSetConfigurationClick( wxCommandEvent
     wxString resultConfstring;
     wxString resultFlags;
     if ( !conf.runWizard( this, resultConfstring, resultFlags ) ) {
-        wxMessageBox( _( "Failed to parse the configuration data." ) );
+        wxMessageBox( _( "Failed to run configuration wizard." ) );
         return;
     }
 

@@ -57,9 +57,11 @@
 #include <wx/wfstream.h>
 #include <wx/url.h>
 #include <wx/listimpl.cpp>
+#include <wx/sstream.h>
 
 #include <canal.h>
 #include <vscphelper.h>
+#include "vscp_images.h"
 #include <canalobj.h>
 
 WX_DEFINE_LIST( CANALOBJ_CHOICE_LIST );
@@ -123,12 +125,12 @@ CCanalObj_FlagBit::~CCanalObj_FlagBit()
 //  Constructor/Destructor
 // 
 
-CCanalObj_Item::CCanalObj_Item()
+CCanalObj::CCanalObj()
 {
     ;
 }
 
-CCanalObj_Item::~CCanalObj_Item()
+CCanalObj::~CCanalObj()
 {
     // Clear up item list
     CANALOBJ_ITEM_LIST::iterator iterValueItem;
@@ -157,15 +159,16 @@ CCanalObj_Item::~CCanalObj_Item()
 //  parseDriverInfo
 // 
 
-bool CCanalObj_Item::parseDriverInfo( wxString& path )
+bool CCanalObj::parseDriverInfo( wxString& xmldata )
 {
     bool rv = true;
+    wxStringInputStream xmlstream( xmldata );
     wxXmlDocument doc;
 
     // Empty old MDF information
     //clearStorage();
 
-    if ( !doc.Load( path ) ) {
+    if ( !doc.Load( xmlstream ) ) {
         return false;
     }
 
@@ -288,8 +291,8 @@ bool CCanalObj_Item::parseDriverInfo( wxString& path )
                             wxASSERT( NULL != pChoice );
                             pOneItem->m_listChoice.Append( pChoice );
 
-                            pChoice->m_description = child2->GetAttribute( _( "description" ), _( "" ) );
-                            pChoice->m_value = child2->GetAttribute( _( "value" ), _( "" ) );
+                            pChoice->m_description = child3->GetAttribute( _( "description" ), _( "" ) );
+                            pChoice->m_value = child3->GetAttribute( _( "value" ), _( "" ) );
 
                         } // choice
 
@@ -365,7 +368,563 @@ bool CCanalObj_Item::parseDriverInfo( wxString& path )
 //  runWizard
 // 
 
-bool CCanalObj_Item::runWizard( wxWindow *pwnd, wxString& resultConfigString, wxString& resultConfigFlags )
+bool CCanalObj::runWizard( wxWindow* parent,
+                                    wxString& resultConfigString, 
+                                    wxString& resultConfigFlags )
+{
+    // Clear configuration data
+    resultConfigString.Empty();
+    resultConfigFlags.Empty();
+
+    CanalConfigWizard wizard( parent );
+    wizard.CreateControls( &m_listItem );
+    wizard.Run(); 
+    return true;
+}
+
+
+
+//=============================================================================
+//                            CANAL CONFIG WIZARD
+//=============================================================================
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CanalConfigWizard type definition
+//
+
+IMPLEMENT_DYNAMIC_CLASS( CanalConfigWizard, wxWizard )
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CanalConfigWizard event table definition
+//
+
+BEGIN_EVENT_TABLE( CanalConfigWizard, wxWizard )
+
+END_EVENT_TABLE()
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CanalConfigWizard constructors
+//
+
+CanalConfigWizard::CanalConfigWizard()
+{
+    Init();
+}
+
+CanalConfigWizard::CanalConfigWizard( wxWindow* parent, wxWindowID id, const wxPoint& pos )
+{
+    Init();
+    Create( parent, id, pos );
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CanalConfigWizard creator
+//
+
+bool CanalConfigWizard::Create( wxWindow* parent, wxWindowID id, const wxPoint& pos )
+{
+    SetExtraStyle( wxWS_EX_BLOCK_EVENTS | wxWIZARD_EX_HELPBUTTON );
+    wxBitmap wizardBitmap( GetBitmapResource( wxT( "vscp_logo.jpg" ) ) );
+    wxWizard::Create( parent,
+                      id,
+                      CANAL_CONFIG_WIZARD_TITLE,
+                      wizardBitmap,
+                      pos,
+                      wxDEFAULT_DIALOG_STYLE | wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX );
+
+    //CreateControls();
+
+    return true;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CanalConfigWizard destructor
+//
+
+CanalConfigWizard::~CanalConfigWizard()
+{
+
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Member initialisation
+//
+
+void CanalConfigWizard::Init()
+{
+    m_pgStart = NULL;
+    for ( int i = 0; i < MAX_PARAMETERS; i++ ) {
+        m_pgConfig[ i ] = NULL;
+    }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Control creation for CanalConfigWizard
+//
+
+void CanalConfigWizard::CreateControls( CANALOBJ_ITEM_LIST *plistItem  )
+{
+    wxASSERT( NULL != plistItem );
+    m_plistItem = plistItem;
+    CanalConfigWizard* pWizard = this;
+
+    // Create the start page
+    WizardCanalConfigPageStart* itemWizardStartPage = new WizardCanalConfigPageStart;
+    itemWizardStartPage->Create( pWizard );
+    pWizard->GetPageAreaSizer()->Add( itemWizardStartPage );
+
+    wxWizardPageSimple* lastPage = NULL;
+
+    // Chain the pages
+    if ( lastPage ) {
+        wxWizardPageSimple::Chain( lastPage, itemWizardStartPage );
+    }
+    lastPage = itemWizardStartPage;
+
+    // Create the config parameter pages
+    for ( unsigned int i = 0; i < m_plistItem->GetCount(); i++ ) {
+
+        m_pgConfig[ i ] = new WizardPageCanalConfig;
+        m_pgConfig[ i ]->m_strHead = wxString::Format(_("Parameter %d"), i+1 );
+        m_pgConfig[ i ]->m_pItem = m_plistItem->Item( i )->GetData();
+        m_pgConfig[ i ]->Create( pWizard );
+        pWizard->GetPageAreaSizer()->Add( m_pgConfig[ i ] );
+
+        // Chain the page
+        if ( lastPage ) {
+            wxWizardPageSimple::Chain( lastPage, m_pgConfig[ i ] );
+        }
+        lastPage = m_pgConfig[ i ];
+    }
+
+    if ( NULL != m_pgConfig[ m_plistItem->GetCount() ] ) {
+        lastPage = m_pgConfig[ m_plistItem->GetCount() - 1 ];
+    }
+    else {
+        lastPage = itemWizardStartPage;
+    }
+
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Runs the wizard.
+//
+
+bool CanalConfigWizard::Run()
+{
+    wxWindowList::compatibility_iterator node = GetChildren().GetFirst();
+    while ( node ) {
+        wxWizardPage* startPage = wxDynamicCast( node->GetData(), wxWizardPage );
+        if ( startPage ) return RunWizard( startPage );
+        node = node->GetNext();
+    }
+    return false;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Should we show tooltips?
+//
+
+bool CanalConfigWizard::ShowToolTips()
 {
     return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Get bitmap resources
+//
+
+wxBitmap CanalConfigWizard::GetBitmapResource( const wxString& name )
+{
+    // Bitmap retrieval
+    wxUnusedVar( name );
+    if ( name == wxT( "vscp_logo.jpg" ) ) {
+        wxBitmap bitmap( vscp_logo_xpm );
+        return bitmap;
+    }
+
+    return wxNullBitmap;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Get icon resources
+//
+
+wxIcon CanalConfigWizard::GetIconResource( const wxString& name )
+{
+    // Icon retrieval
+    wxUnusedVar( name );
+    return wxNullIcon;
+}
+
+
+
+
+
+//*******************************************************************************************************************
+//                                              WizardCanalConfigPageStart
+//*******************************************************************************************************************
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardCanalConfigPageStart type definition
+//
+
+IMPLEMENT_DYNAMIC_CLASS( WizardCanalConfigPageStart, wxWizardPageSimple )
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPage event table definition
+//
+
+BEGIN_EVENT_TABLE( WizardCanalConfigPageStart, wxWizardPageSimple )
+
+END_EVENT_TABLE()
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPage constructors
+//
+
+WizardCanalConfigPageStart::WizardCanalConfigPageStart()
+{
+    Init();
+}
+
+WizardCanalConfigPageStart::WizardCanalConfigPageStart( wxWizard* parent )
+{
+    Init();
+    Create( parent );
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardCanalConfigPageStart creator
+//
+
+bool WizardCanalConfigPageStart::Create( wxWizard* parent )
+{
+    wxBitmap wizardBitmap( wxNullBitmap );
+    wxWizardPageSimple::Create( parent, NULL, NULL, wizardBitmap );
+
+    CreateControls();
+    if ( GetSizer() ) {
+        GetSizer()->Fit( this );
+    }
+
+    return true;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPage destructor
+//
+
+WizardCanalConfigPageStart::~WizardCanalConfigPageStart()
+{
+
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Member initialisation
+//
+
+void WizardCanalConfigPageStart::Init()
+{
+
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Control creation for WizardCanalConfigPageStart
+//
+
+void WizardCanalConfigPageStart::CreateControls()
+{
+    WizardCanalConfigPageStart* itemWizardPage = this;
+
+    wxBoxSizer* itemBoxSizer = new wxBoxSizer( wxVERTICAL );
+    itemWizardPage->SetSizer( itemBoxSizer );
+
+    wxStaticText* itemStaticTextTop = new wxStaticText;
+    itemStaticTextTop->Create( itemWizardPage,
+                             wxID_STATIC,
+                             _( "The CANAL configuration wizard will walk you true the configuration needed\nto use and setup any CANAL driver without any need to look up things in a \nmanual. Setup becomes as easy as it can be." ),
+                             wxDefaultPosition,
+                             wxDefaultSize,
+                             0 );
+    itemBoxSizer->Add( itemStaticTextTop, 0, wxALIGN_LEFT | wxALL, 5 );
+
+    wxStaticText* itemStaticTextMiddle = new wxStaticText;
+    itemStaticTextMiddle->Create( itemWizardPage,
+                             wxID_STATIC,
+                             _( "All CANAL drivers have two configuration values. First the configuration string \nwhich is a list of semicolon separated values and secondly there is an array of \n32 bit-flags which each have logical values. Individual flags can also be put in \ngroups that span several bits and then can hold other information pieces." ),
+                             wxDefaultPosition,
+                             wxDefaultSize,
+                             0 );
+    itemBoxSizer->Add( itemStaticTextMiddle, 0, wxALIGN_LEFT | wxALL, 5 );
+
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Should we show tooltips?
+//
+
+bool WizardCanalConfigPageStart::ShowToolTips()
+{
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Get bitmap resources
+//
+
+wxBitmap WizardCanalConfigPageStart::GetBitmapResource( const wxString& name )
+{
+    // Bitmap retrieval
+    wxUnusedVar( name );
+    return wxNullBitmap;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Get icon resources
+//
+
+wxIcon WizardCanalConfigPageStart::GetIconResource( const wxString& name )
+{
+    // Icon retrieval
+    wxUnusedVar( name );
+    return wxNullIcon;
+}
+
+
+
+
+
+//*******************************************************************************************************************
+//                                               WizardPageCanalConfig
+//*******************************************************************************************************************
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageCanalConfig type definition
+//
+
+IMPLEMENT_DYNAMIC_CLASS( WizardPageCanalConfig, wxWizardPageSimple )
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageCanalConfig event table definition
+//
+
+BEGIN_EVENT_TABLE( WizardPageCanalConfig, wxWizardPageSimple )
+EVT_WIZARD_PAGE_CHANGING( -1, WizardPageCanalConfig::OnWizardPageChanging )
+END_EVENT_TABLE()
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageCanalConfig constructors
+//
+
+WizardPageCanalConfig::WizardPageCanalConfig()
+{
+    Init();
+}
+
+WizardPageCanalConfig::WizardPageCanalConfig( wxWizard* parent )
+{
+    Init();
+    Create( parent );
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageCanalConfig creator
+//
+
+bool WizardPageCanalConfig::Create( wxWizard* parent )
+{
+    wxBitmap wizardBitmap( wxNullBitmap );
+    wxWizardPageSimple::Create( parent, NULL, NULL, wizardBitmap );
+
+    CreateControls();
+    if ( GetSizer() ) {
+        GetSizer()->Fit( this );
+    }
+
+    return true;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageCanalConfig destructor
+//
+
+WizardPageCanalConfig::~WizardPageCanalConfig()
+{
+
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Member initialisation
+//
+
+void WizardPageCanalConfig::Init()
+{
+    m_listBox = NULL;
+    m_textField = NULL;
+    m_boolChoice = NULL;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Control creation for WizardPageCanalConfig
+//
+
+void WizardPageCanalConfig::CreateControls()
+{
+    WizardPageCanalConfig* itemWizardPage = this;
+
+    wxBoxSizer* itemBoxSizer = new wxBoxSizer( wxVERTICAL );
+    itemWizardPage->SetSizer( itemBoxSizer );
+
+    wxStaticText* itemStaticTextHeader = new wxStaticText;
+    itemStaticTextHeader->Create( itemWizardPage,
+                                    wxID_STATIC,
+                                    m_strHead,
+                                    wxDefaultPosition,
+                                    wxDefaultSize,
+                                    0 );
+    itemStaticTextHeader->SetFont( wxFont( 16, wxSWISS, wxNORMAL, wxBOLD, false, wxT( "Tahoma" ) ) );
+    itemBoxSizer->Add( itemStaticTextHeader, 0, wxALIGN_LEFT | wxALL, 5 );
+
+    wxStaticText* itemStaticTextDescription = new wxStaticText;
+    itemStaticTextDescription->Create( itemWizardPage,
+                                            wxID_STATIC,
+                                            m_pItem->m_description,
+                                            wxDefaultPosition,
+                                            wxDefaultSize,
+                                            0 );
+    itemBoxSizer->Add( itemStaticTextDescription, 0, wxALIGN_LEFT | wxALL, 5 );
+    itemBoxSizer->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    if ( type_choice == m_pItem->m_type ) {
+        
+        wxArrayString wxstrings;
+        for ( unsigned int i = 0; i < m_pItem->m_listChoice.GetCount(); i++ ) {
+            wxstrings.Add( m_pItem->m_listChoice[ i ]->m_description );
+        }
+
+        m_listBox = new wxListBox;
+        
+        m_listBox->Create( itemWizardPage,
+                             m_windowsID++,
+                             wxDefaultPosition,
+                             wxSize( 370, -1 ),
+                             wxstrings );
+       
+        if ( WizardPageCanalConfig::ShowToolTips() ) {
+            m_listBox->SetToolTip( _( "Set value for parameter" ) );
+        }
+        
+        m_listBox->SetBackgroundColour( wxColour( 255, 255, 210 ) );
+        itemBoxSizer->Add( m_listBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    }
+    else if ( type_boolean == m_pItem->m_type ) {
+        
+        m_boolChoice = new wxChoice;
+        
+        m_boolChoice->Create( itemWizardPage,
+                                m_windowsID++,
+                                wxDefaultPosition,
+                                wxSize( 370, -1 )  );
+        if ( WizardPageCanalConfig::ShowToolTips() ) {
+            m_boolChoice->SetToolTip( _( "Set to enable" ) );
+        }
+
+        m_boolChoice->SetBackgroundColour( wxColour( 255, 255, 210 ) );
+        itemBoxSizer->Add( m_boolChoice, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    }
+    else {
+
+        m_textField = new wxTextCtrl;
+
+        m_textField->Create( itemWizardPage,
+                                m_windowsID++,
+                                wxEmptyString,
+                                wxDefaultPosition,
+                                wxSize( 370, -1 ) );
+
+        if ( WizardPageCanalConfig::ShowToolTips() ) {
+            m_textField->SetToolTip( _( "Set value for parameter" ) );
+        }
+
+        m_textField->SetBackgroundColour( wxColour( 255, 255, 210 ) );
+        itemBoxSizer->Add( m_textField, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    }
+
+    itemBoxSizer->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Should we show tooltips?
+//
+
+bool WizardPageCanalConfig::ShowToolTips()
+{
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Get bitmap resources
+//
+
+wxBitmap WizardPageCanalConfig::GetBitmapResource( const wxString& name )
+{
+    // Bitmap retrieval
+    wxUnusedVar( name );
+    return wxNullBitmap;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Get icon resources
+//
+
+wxIcon WizardPageCanalConfig::GetIconResource( const wxString& name )
+{
+    // Icon retrieval
+    wxUnusedVar( name );
+    return wxNullIcon;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OnWizardPageChanging
+//
+
+void WizardPageCanalConfig::OnWizardPageChanging( wxWizardEvent& event )
+{
+   
+
 }
