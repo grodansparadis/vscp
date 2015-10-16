@@ -58,6 +58,7 @@
 #include <wx/url.h>
 #include <wx/listimpl.cpp>
 #include <wx/sstream.h>
+#include <wx/hyperlink.h>
 
 #include <canal.h>
 #include <vscphelper.h>
@@ -181,7 +182,7 @@ bool CCanalObj::parseDriverInfo( wxString& xmldata )
     while ( child1 ) {
         if ( child1->GetName() == wxT( "description" ) ) {  
             
-            m_strDecription = child1->GetNodeContent();
+            m_decription = child1->GetNodeContent();
 
             wxString str = child1->GetAttribute( _( "type" ), _( "text" ) );
             str.Trim();
@@ -198,7 +199,7 @@ bool CCanalObj::parseDriverInfo( wxString& xmldata )
         }
         else if ( child1->GetName() == wxT( "blocking" ) ) {
 
-            m_strDecription = child1->GetNodeContent();
+            m_decription = child1->GetNodeContent();
 
             wxString str = child1->GetAttribute( _( "type" ), _( "YES" ) );
             str.Trim();
@@ -211,7 +212,7 @@ bool CCanalObj::parseDriverInfo( wxString& xmldata )
             }
         }
         else if ( child1->GetName() == wxT( "infourl" ) ) {
-            m_strInfoUrl = child1->GetNodeContent();
+            m_infourl = child1->GetNodeContent();
         }
         else if ( child1->GetName() == wxT( "items" ) ) {
             
@@ -310,7 +311,7 @@ bool CCanalObj::parseDriverInfo( wxString& xmldata )
             wxXmlNode *child2 = child1->GetChildren();
             while ( child2 ) {
 
-                if ( ( child1->GetName() == wxT( "bit" )  ) || ( child1->GetName() == wxT( "flag" ) ) ) {
+                if ( ( child2->GetName() == wxT( "bit" )  ) || ( child2->GetName() == wxT( "flag" ) ) ) {
 
                     wxString str;
 
@@ -318,9 +319,9 @@ bool CCanalObj::parseDriverInfo( wxString& xmldata )
                     wxASSERT( NULL != pFlagBit );
                     m_listFlagBits.Append( pFlagBit );
 
-                    pFlagBit->m_pos = vscp_readStringValue( child1->GetAttribute( _( "pos" ), _( "0" ) ) );
-                    pFlagBit->m_width = vscp_readStringValue( child1->GetAttribute( _( "width" ), _( "1" ) ) );
-                    pFlagBit->m_defaultVal = vscp_readStringValue( child1->GetAttribute( _( "default" ), _( "0" ) ) );
+                    pFlagBit->m_pos = vscp_readStringValue( child2->GetAttribute( _( "pos" ), _( "0" ) ) );
+                    pFlagBit->m_width = vscp_readStringValue( child2->GetAttribute( _( "width" ), _( "1" ) ) );
+                    pFlagBit->m_defaultVal = vscp_readStringValue( child2->GetAttribute( _( "default" ), _( "0" ) ) );
                     pFlagBit->m_description = child2->GetAttribute( _( "description" ), _( "" ) );
                     pFlagBit->m_infourl = child2->GetAttribute( _( "infourl" ), _( "" ) );
 
@@ -343,8 +344,8 @@ bool CCanalObj::parseDriverInfo( wxString& xmldata )
                             wxASSERT( NULL != pChoice );
                             pFlagBit->m_listChoice.Append( pChoice );
 
-                            pChoice->m_description = child2->GetAttribute( _( "description" ), _( "" ) );
-                            pChoice->m_value = child2->GetAttribute( _( "value" ), _( "" ) );
+                            pChoice->m_description = child3->GetAttribute( _( "description" ), _( "" ) );
+                            pChoice->m_value = child3->GetAttribute( _( "value" ), _( "" ) );
 
                         } // choice
 
@@ -377,7 +378,7 @@ bool CCanalObj::runWizard( wxWindow* parent,
     resultConfigFlags.Empty();
 
     CanalConfigWizard wizard( parent );
-    wizard.CreateControls( &m_listItem );
+    wizard.CreateControls( this );
     wizard.Run(); 
     return true;
 }
@@ -468,17 +469,18 @@ void CanalConfigWizard::Init()
 // Control creation for CanalConfigWizard
 //
 
-void CanalConfigWizard::CreateControls( CANALOBJ_ITEM_LIST *plistItem  )
+void CanalConfigWizard::CreateControls( CCanalObj *pObj )
 {
-    wxASSERT( NULL != plistItem );
-    m_plistItem = plistItem;
+    wxASSERT( NULL != pObj );
+    m_pconfigObj = pObj;
     CanalConfigWizard* pWizard = this;
 
     // Create the start page
     WizardCanalConfigPageStart* itemWizardStartPage = new WizardCanalConfigPageStart;
+    itemWizardStartPage->m_pconfigObj = pObj;
     itemWizardStartPage->Create( pWizard );
     pWizard->GetPageAreaSizer()->Add( itemWizardStartPage );
-
+    
     wxWizardPageSimple* lastPage = NULL;
 
     // Chain the pages
@@ -488,11 +490,11 @@ void CanalConfigWizard::CreateControls( CANALOBJ_ITEM_LIST *plistItem  )
     lastPage = itemWizardStartPage;
 
     // Create the config parameter pages
-    for ( unsigned int i = 0; i < m_plistItem->GetCount(); i++ ) {
+    for ( unsigned int i = 0; i < m_pconfigObj->m_listItem.GetCount(); i++ ) {
 
         m_pgConfig[ i ] = new WizardPageCanalConfig;
         m_pgConfig[ i ]->m_strHead = wxString::Format(_("Parameter %d"), i+1 );
-        m_pgConfig[ i ]->m_pItem = m_plistItem->Item( i )->GetData();
+        m_pgConfig[ i ]->m_pItem = m_pconfigObj->m_listItem.Item( i )->GetData();
         m_pgConfig[ i ]->Create( pWizard );
         pWizard->GetPageAreaSizer()->Add( m_pgConfig[ i ] );
 
@@ -503,12 +505,31 @@ void CanalConfigWizard::CreateControls( CANALOBJ_ITEM_LIST *plistItem  )
         lastPage = m_pgConfig[ i ];
     }
 
-    if ( NULL != m_pgConfig[ m_plistItem->GetCount() ] ) {
+    // * * * Flags * * *
+
+    // Construct the flag parameter pages
+    for ( unsigned int i = 0; i < m_pconfigObj->m_listFlagBits.GetCount(); i++ ) {
+
+        m_pgConfigFlags[ i ] = new WizardPageFlagsConfig;
+        m_pgConfigFlags[ i ]->m_strHead = wxString::Format( _( "Flags %d" ), i + 1 );
+        m_pgConfigFlags[ i ]->m_pItem = m_pconfigObj->m_listFlagBits.Item( i )->GetData();
+        m_pgConfigFlags[ i ]->Create( pWizard );
+        pWizard->GetPageAreaSizer()->Add( m_pgConfigFlags[ i ] );
+
+        // Chain the page
+        if ( lastPage ) {
+            wxWizardPageSimple::Chain( lastPage, m_pgConfigFlags[ i ] );
+        }
+        lastPage = m_pgConfigFlags[ i ];
+    }
+
+
+    /*if ( NULL != m_pgConfig[ m_plistItem->GetCount() ] ) {
         lastPage = m_pgConfig[ m_plistItem->GetCount() - 1 ];
     }
     else {
         lastPage = itemWizardStartPage;
-    }
+    }*/
 
 }
 
@@ -676,6 +697,50 @@ void WizardCanalConfigPageStart::CreateControls()
                              0 );
     itemBoxSizer->Add( itemStaticTextMiddle, 0, wxALIGN_LEFT | wxALL, 5 );
 
+    wxASSERT( NULL != m_pconfigObj );
+    if ( m_pconfigObj->m_infourl.Length() ) {
+
+        wxHyperlinkCtrl* intenHyperLink = new wxHyperlinkCtrl;
+        intenHyperLink->Create( itemWizardPage,
+                                wxID_STATIC,
+                                _( "Click for more information about the driver" ),
+                                m_pconfigObj->m_infourl );
+        itemBoxSizer->Add( intenHyperLink, 0, wxALIGN_LEFT | wxALL, 5 );
+
+        itemBoxSizer->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    }
+
+    // Description
+    wxStaticText* itemStaticTextDescription = new wxStaticText;
+    itemStaticTextDescription->Create( itemWizardPage,
+                                       wxID_STATIC,
+                                       m_pconfigObj->m_decription,
+                                       wxDefaultPosition,
+                                       /*wxDefaultSize*/wxSize( DEFAULT_STOCK_TEXT_WIDTH, -1 ),
+                                       0 );
+    itemStaticTextDescription->Wrap( DEFAULT_STOCK_TEXT_WIDTH );
+    itemBoxSizer->Add( itemStaticTextDescription, 0, wxALIGN_LEFT | wxALL, 5 );
+
+    // Level
+    wxString strBlocking;
+    if ( m_pconfigObj->m_bBlocking ) {
+        strBlocking = "blocking";
+    }
+    else {
+        strBlocking = "non blocking";
+    }
+    wxString strInfo = wxString::Format( _( "This is a %s level %d driver." ), (const char *)strBlocking.mbc_str(), m_pconfigObj->m_level );
+    wxStaticText* itemStaticTextInfo = new wxStaticText;
+    itemStaticTextInfo->Create( itemWizardPage,
+                                       wxID_STATIC,
+                                       strInfo,
+                                       wxDefaultPosition,
+                                       /*wxDefaultSize*/wxSize( DEFAULT_STOCK_TEXT_WIDTH, -1 ),
+                                       0 );
+    itemStaticTextInfo->Wrap( DEFAULT_STOCK_TEXT_WIDTH );
+    itemBoxSizer->Add( itemStaticTextInfo, 0, wxALIGN_LEFT | wxALL, 5 );
+
 }
 
 
@@ -810,7 +875,7 @@ void WizardPageCanalConfig::CreateControls()
                                     wxID_STATIC,
                                     m_strHead,
                                     wxDefaultPosition,
-                                    wxDefaultSize,
+                                    /*wxDefaultSize*/wxSize( DEFAULT_STOCK_TEXT_WIDTH, -1 ),
                                     0 );
     itemStaticTextHeader->SetFont( wxFont( 16, wxSWISS, wxNORMAL, wxBOLD, false, wxT( "Tahoma" ) ) );
     itemBoxSizer->Add( itemStaticTextHeader, 0, wxALIGN_LEFT | wxALL, 5 );
@@ -820,9 +885,23 @@ void WizardPageCanalConfig::CreateControls()
                                             wxID_STATIC,
                                             m_pItem->m_description,
                                             wxDefaultPosition,
-                                            wxDefaultSize,
+                                            /*wxDefaultSize*/wxSize( DEFAULT_STOCK_TEXT_WIDTH, -1 ),
                                             0 );
     itemBoxSizer->Add( itemStaticTextDescription, 0, wxALIGN_LEFT | wxALL, 5 );
+
+    if ( m_pItem->m_infourl.Length() ) {
+
+        wxHyperlinkCtrl* intenHyperLink = new wxHyperlinkCtrl;
+        intenHyperLink->Create( itemWizardPage,
+                                wxID_STATIC,
+                                _( "Click for more information" ),
+                                m_pItem->m_infourl );
+        itemBoxSizer->Add( intenHyperLink, 0, wxALIGN_LEFT | wxALL, 5 );
+
+        itemBoxSizer->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    }
+
     itemBoxSizer->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
 
     if ( type_choice == m_pItem->m_type ) {
@@ -926,5 +1005,235 @@ wxIcon WizardPageCanalConfig::GetIconResource( const wxString& name )
 void WizardPageCanalConfig::OnWizardPageChanging( wxWizardEvent& event )
 {
    
+}
+
+
+
+
+
+//*******************************************************************************************************************
+//                                               WizardPageFlagsConfig
+//*******************************************************************************************************************
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageCanalConfig type definition
+//
+
+IMPLEMENT_DYNAMIC_CLASS( WizardPageFlagsConfig, wxWizardPageSimple )
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageFlagsConfig event table definition
+//
+
+BEGIN_EVENT_TABLE( WizardPageFlagsConfig, wxWizardPageSimple )
+EVT_WIZARD_PAGE_CHANGING( -1, WizardPageFlagsConfig::OnWizardPageChanging )
+END_EVENT_TABLE()
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageFlagsConfig constructors
+//
+
+WizardPageFlagsConfig::WizardPageFlagsConfig()
+{
+    Init();
+}
+
+WizardPageFlagsConfig::WizardPageFlagsConfig( wxWizard* parent )
+{
+    Init();
+    Create( parent );
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageFlagsConfig creator
+//
+
+bool WizardPageFlagsConfig::Create( wxWizard* parent )
+{
+    wxBitmap wizardBitmap( wxNullBitmap );
+    wxWizardPageSimple::Create( parent, NULL, NULL, wizardBitmap );
+
+    CreateControls();
+    if ( GetSizer() ) {
+        GetSizer()->Fit( this );
+    }
+
+    return true;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageFlagsConfig destructor
+//
+
+WizardPageFlagsConfig::~WizardPageFlagsConfig()
+{
+
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Member initialisation
+//
+
+void WizardPageFlagsConfig::Init()
+{
+    m_listBox = NULL;
+    m_textField = NULL;
+    m_boolChoice = NULL;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Control creation for WizardPageCanalConfig
+//
+
+void WizardPageFlagsConfig::CreateControls()
+{
+    WizardPageFlagsConfig* itemWizardPage = this;
+
+    wxBoxSizer* itemBoxSizer = new wxBoxSizer( wxVERTICAL );
+    itemWizardPage->SetSizer( itemBoxSizer );
+
+    wxStaticText* itemStaticTextHeader = new wxStaticText;
+    itemStaticTextHeader->Create( itemWizardPage,
+                                  wxID_STATIC,
+                                  m_strHead,
+                                  wxDefaultPosition,
+                                  /*wxDefaultSize*/wxSize( DEFAULT_STOCK_TEXT_WIDTH, -1 ),
+                                  0 );
+    itemStaticTextHeader->SetFont( wxFont( 16, wxSWISS, wxNORMAL, wxBOLD, false, wxT( "Tahoma" ) ) );
+    itemBoxSizer->Add( itemStaticTextHeader, 0, wxALIGN_LEFT | wxALL, 5 );
+
+    wxStaticText* itemStaticTextDescription = new wxStaticText;
+    itemStaticTextDescription->Create( itemWizardPage,
+                                       wxID_STATIC,
+                                       m_pItem->m_description,
+                                       wxDefaultPosition,
+                                       /*wxDefaultSize*/wxSize( DEFAULT_STOCK_TEXT_WIDTH, -1 ),
+                                       0 );
+    itemStaticTextDescription->Wrap( DEFAULT_STOCK_TEXT_WIDTH );
+    itemBoxSizer->Add( itemStaticTextDescription, 0, wxALIGN_LEFT | wxALL, 5 );
+
+    if ( m_pItem->m_infourl.Length() ) {
+
+        wxHyperlinkCtrl* intenHyperLink = new wxHyperlinkCtrl;
+        intenHyperLink->Create( itemWizardPage,
+                                wxID_STATIC,
+                                _( "Click for more information" ),
+                                m_pItem->m_infourl );
+        itemBoxSizer->Add( intenHyperLink, 0, wxALIGN_LEFT | wxALL, 5 );
+
+        itemBoxSizer->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    }
+
+    if ( flagtype_choice == m_pItem->m_type ) {
+
+        wxArrayString wxstrings;
+        for ( unsigned int i = 0; i < m_pItem->m_listChoice.GetCount(); i++ ) {
+            wxstrings.Add( m_pItem->m_listChoice[ i ]->m_description );
+        }
+
+        m_listBox = new wxListBox;
+
+        m_listBox->Create( itemWizardPage,
+                           m_windowsID++,
+                           wxDefaultPosition,
+                           wxSize( 370, -1 ),
+                           wxstrings );
+
+        if ( WizardPageCanalConfig::ShowToolTips() ) {
+            m_listBox->SetToolTip( _( "Set value for flag" ) );
+        }
+
+        m_listBox->SetBackgroundColour( wxColour( 255, 255, 210 ) );
+        itemBoxSizer->Add( m_listBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    }
+    else if ( type_boolean == m_pItem->m_type ) {
+
+        m_boolChoice = new wxChoice;
+
+        m_boolChoice->Create( itemWizardPage,
+                              m_windowsID++,
+                              wxDefaultPosition,
+                              wxSize( 370, -1 ) );
+        if ( WizardPageCanalConfig::ShowToolTips() ) {
+            m_boolChoice->SetToolTip( _( "Set to enable" ) );
+        }
+
+        m_boolChoice->SetBackgroundColour( wxColour( 255, 255, 210 ) );
+        itemBoxSizer->Add( m_boolChoice, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    }
+    else {  // number
+
+        m_textField = new wxTextCtrl;
+
+        m_textField->Create( itemWizardPage,
+                             m_windowsID++,
+                             wxEmptyString,
+                             wxDefaultPosition,
+                             wxSize( 370, -1 ) );
+
+        if ( WizardPageCanalConfig::ShowToolTips() ) {
+            m_textField->SetToolTip( _( "Set value for parameter" ) );
+        }
+
+        m_textField->SetBackgroundColour( wxColour( 255, 255, 210 ) );
+        itemBoxSizer->Add( m_textField, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    }
+
+    itemBoxSizer->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Should we show tooltips?
+//
+
+bool WizardPageFlagsConfig::ShowToolTips()
+{
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Get bitmap resources
+//
+
+wxBitmap WizardPageFlagsConfig::GetBitmapResource( const wxString& name )
+{
+    // Bitmap retrieval
+    wxUnusedVar( name );
+    return wxNullBitmap;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Get icon resources
+//
+
+wxIcon WizardPageFlagsConfig::GetIconResource( const wxString& name )
+{
+    // Icon retrieval
+    wxUnusedVar( name );
+    return wxNullIcon;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OnWizardPageChanging
+//
+
+void WizardPageFlagsConfig::OnWizardPageChanging( wxWizardEvent& event )
+{
 
 }

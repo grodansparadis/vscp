@@ -43,7 +43,10 @@
 #include <dllwrapper.h>
 #include <crc.h>
 
-#define MAX_PARAMETERS 32
+#define MAX_PARAMETERS 128
+#define MAX_FLAGS 32
+
+#define DEFAULT_STOCK_TEXT_WIDTH    400     // Max width for descriptionsa, headers etc
 
 enum canalobj_type {
     type_unknown,
@@ -76,6 +79,7 @@ enum flagtype {
 // Forward declarations
 class WizardCanalConfigPageStart;
 class WizardPageCanalConfig;
+class WizardPageFlagsConfig;
 
 /*!
     CCanalObj_Choice
@@ -178,9 +182,9 @@ public:
     */
     bool runWizard( wxWindow* parent, wxString& resultConfigString, wxString& resultConfigFlags );
 
-    wxString m_strDecription;           // Description of DLL
+    wxString m_decription;              // Description of DLL
     typeDescription m_TypeDescription;  // Format for description (text or html)
-    wxString m_strInfoUrl;              // Pointer to site with info about driver
+    wxString m_infourl;                 // Pointer to site with info about driver
 
     int m_level;                        // Level for driver
     bool m_bBlocking;                   // True if driver is blocking
@@ -223,7 +227,7 @@ public:
     void Init();
 
     /// Creates the controls and sizers
-    void CreateControls( CANALOBJ_ITEM_LIST *plistItem  );
+    void CreateControls( CCanalObj  *pObj );
 
     /// Runs the wizard
     bool Run();
@@ -239,15 +243,15 @@ public:
 
     WizardCanalConfigPageStart* m_pgStart;
     WizardPageCanalConfig  *m_pgConfig[ MAX_PARAMETERS ];
+    WizardPageFlagsConfig  *m_pgConfigFlags[ MAX_FLAGS ];
 
     /// Control identifiers
     enum {
         ID_CANALCONFIGRWIZARD = 32000
     };
 
-    CANALOBJ_ITEM_LIST *m_plistItem;
     // The configuration object
-    //CCanalObj  m_configObj;
+    CCanalObj  *m_pconfigObj;
 };
 
 
@@ -292,6 +296,9 @@ public:
     enum {
         ID_WIZARDPAGE = 32001
     };
+
+    // The configuration object
+    CCanalObj  *m_pconfigObj;
 
 };
 
@@ -371,7 +378,71 @@ public:
 };
 
 
+///////////////////////////////////////////////////////////////////////////////
+// WizardPageFlagsConfig
+//
 
+class WizardPageFlagsConfig : public wxWizardPageSimple
+{
+    DECLARE_DYNAMIC_CLASS( WizardPageCanalConfig )
+    DECLARE_EVENT_TABLE()
+
+public:
+    /// Constructors
+    WizardPageFlagsConfig();
+
+    WizardPageFlagsConfig( wxWizard* parent );
+
+    /// Creation
+    bool Create( wxWizard* parent );
+
+    /// Destructor
+    ~WizardPageFlagsConfig();
+
+    /// Initialises member variables
+    void Init();
+
+    /// Creates the controls and sizers
+    void CreateControls();
+
+    /// Retrieves bitmap resources
+    wxBitmap GetBitmapResource( const wxString& name );
+
+    /// Retrieves icon resources
+    wxIcon GetIconResource( const wxString& name );
+
+    /// Should we show tooltips?
+    static bool ShowToolTips();
+
+    /// wxEVT_WIZARD_PAGE_CHANGING event handler for ID_WIZARDPAGE_SELECT_INTERFACE
+    void OnWizardPageChanging( wxWizardEvent& event );
+
+    // Id to use for creating controls. Icrease by one for every control created.
+    int m_windowsID;
+
+    // Text for head  "Flags setting 0", "Flags setting 1"  etc 
+    wxString m_strHead;
+
+    // Parameter flag item associated with this wizard page
+    CCanalObj_FlagBit *m_pItem;
+
+    // This is the value for the bit or the bit combination. Values from different
+    // flag config values are ored together forming the ned result flag value.
+    uint32_t m_value;
+
+    // Choices for strings are here
+    wxArrayString m_listBoxStrings;
+
+    wxTextCtrl* m_textField;    // Used for most things
+    wxListBox* m_listBox;       // Used for items with a choice
+    wxChoice* m_boolChoice;     // Used for single options
+
+    /// Control identifiers
+    enum {
+        ID_WIZARDPAGE_BASE = 37011
+    };
+
+};
 
 
 
