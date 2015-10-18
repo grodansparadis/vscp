@@ -368,7 +368,7 @@ public:
 
     wxTextCtrl* m_textField;    // Used for most things
     wxListBox* m_listBox;       // Used for items with a choice
-    wxChoice* m_boolChoice;     // Used for single options
+    wxCheckBox* m_boolChoice;     // Used for single options
 
     /// Control identifiers
     enum {
@@ -435,7 +435,7 @@ public:
 
     wxTextCtrl* m_textField;    // Used for most things
     wxListBox* m_listBox;       // Used for items with a choice
-    wxChoice* m_boolChoice;     // Used for single options
+    wxCheckBox* m_boolChoice;     // Used for single options
 
     /// Control identifiers
     enum {

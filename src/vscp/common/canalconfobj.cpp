@@ -199,9 +199,7 @@ bool CCanalObj::parseDriverInfo( wxString& xmldata )
         }
         else if ( child1->GetName() == wxT( "blocking" ) ) {
 
-            m_decription = child1->GetNodeContent();
-
-            wxString str = child1->GetAttribute( _( "type" ), _( "YES" ) );
+            wxString str = child1->GetNodeContent();
             str.Trim();
             str.Trim( false );
             str.MakeUpper();
@@ -698,28 +696,17 @@ void WizardCanalConfigPageStart::CreateControls()
     itemBoxSizer->Add( itemStaticTextMiddle, 0, wxALIGN_LEFT | wxALL, 5 );
 
     wxASSERT( NULL != m_pconfigObj );
-    if ( m_pconfigObj->m_infourl.Length() ) {
-
-        wxHyperlinkCtrl* intenHyperLink = new wxHyperlinkCtrl;
-        intenHyperLink->Create( itemWizardPage,
-                                wxID_STATIC,
-                                _( "Click for more information about the driver" ),
-                                m_pconfigObj->m_infourl );
-        itemBoxSizer->Add( intenHyperLink, 0, wxALIGN_LEFT | wxALL, 5 );
-
-        itemBoxSizer->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-
-    }
 
     // Description
     wxStaticText* itemStaticTextDescription = new wxStaticText;
     itemStaticTextDescription->Create( itemWizardPage,
-                                       wxID_STATIC,
-                                       m_pconfigObj->m_decription,
-                                       wxDefaultPosition,
-                                       /*wxDefaultSize*/wxSize( DEFAULT_STOCK_TEXT_WIDTH, -1 ),
-                                       0 );
+                                            wxID_STATIC,
+                                            m_pconfigObj->m_decription,
+                                            wxDefaultPosition,
+                                            /*wxDefaultSize*/wxSize( DEFAULT_STOCK_TEXT_WIDTH, -1 ),
+                                            0 );
     itemStaticTextDescription->Wrap( DEFAULT_STOCK_TEXT_WIDTH );
+    itemStaticTextDescription->SetForegroundColour( wxColour(0x00, 0x80, 0x00 ) );
     itemBoxSizer->Add( itemStaticTextDescription, 0, wxALIGN_LEFT | wxALL, 5 );
 
     // Level
@@ -740,6 +727,18 @@ void WizardCanalConfigPageStart::CreateControls()
                                        0 );
     itemStaticTextInfo->Wrap( DEFAULT_STOCK_TEXT_WIDTH );
     itemBoxSizer->Add( itemStaticTextInfo, 0, wxALIGN_LEFT | wxALL, 5 );
+
+    if ( m_pconfigObj->m_infourl.Length() ) {
+
+        wxHyperlinkCtrl* intenHyperLink = new wxHyperlinkCtrl;
+        intenHyperLink->Create( itemWizardPage,
+                                wxID_STATIC,
+                                _( "Click for more information about the driver" ),
+                                m_pconfigObj->m_infourl );
+        itemBoxSizer->Add( intenHyperLink, 0, wxALIGN_LEFT | wxALL, 5 );
+        itemBoxSizer->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    }
 
 }
 
@@ -929,12 +928,13 @@ void WizardPageCanalConfig::CreateControls()
     }
     else if ( type_boolean == m_pItem->m_type ) {
         
-        m_boolChoice = new wxChoice;
+        m_boolChoice = new wxCheckBox;
         
         m_boolChoice->Create( itemWizardPage,
                                 m_windowsID++,
+                                _("Value for flag"),
                                 wxDefaultPosition,
-                                wxSize( 370, -1 )  );
+                                wxSize( 370, -1 ) );
         if ( WizardPageCanalConfig::ShowToolTips() ) {
             m_boolChoice->SetToolTip( _( "Set to enable" ) );
         }
@@ -1158,12 +1158,13 @@ void WizardPageFlagsConfig::CreateControls()
         itemBoxSizer->Add( m_listBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
 
     }
-    else if ( type_boolean == m_pItem->m_type ) {
+    else if ( flagtype_bool == m_pItem->m_type ) {
 
-        m_boolChoice = new wxChoice;
+        m_boolChoice = new wxCheckBox;
 
         m_boolChoice->Create( itemWizardPage,
                               m_windowsID++,
+                              _( "Value for flag" ),
                               wxDefaultPosition,
                               wxSize( 370, -1 ) );
         if ( WizardPageCanalConfig::ShowToolTips() ) {
