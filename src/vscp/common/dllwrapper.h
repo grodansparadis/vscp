@@ -49,25 +49,24 @@
 
 // This structure holds info about found methods
 typedef struct structFoundMetods {
-    BOOL bCanalOpen;
-    BOOL bCanalClose;
-    BOOL bCanalGetLevel;
-    BOOL bCanalSend;
-    BOOL bCanalReceive;
-    BOOL bCanalDataAvailable;
-    BOOL bCanalGetStatus;
-    BOOL bCanalGetStatistics;
-    BOOL bCanalSetFilter;
-    BOOL bCanalSetMask;
-    BOOL bCanalSetBaudrate;
-    BOOL bCanalGetVersion;
-    BOOL bCanalGetDllVersion;
-    BOOL bCanalGetVendorString;
+    int bCanalOpen;
+    int bCanalClose;
+    int bCanalGetLevel;
+    int bCanalSend;
+    int bCanalReceive;
+    int bCanalDataAvailable;
+    int bCanalGetStatus;
+    int bCanalGetStatistics;
+    int bCanalSetFilter;
+    int bCanalSetMask;
+    int bCanalSetBaudrate;
+    int bCanalGetVersion;
+    int bCanalGetDllVersion;
+    int bCanalGetVendorString;
     // Generation 2
-    BOOL bCanalBlockingSend;
-    BOOL bCanalBlockingReceive;
-    BOOL bCanalGetdriverInfo;
-
+    int bCanalBlockingSend;
+    int bCanalBlockingReceive;
+    int bCanalGetdriverInfo;
 } foundMetods;
 
 /*!
@@ -157,16 +156,16 @@ public:
     */
     int doCmdSend( canalMsg *pMsg );
   
-	/*!
-		Send a CAN message and block if it can't
-		be sent right away.
-		@param pMsg Pointer to CAN message to send
-		@param timeout Time to wait in milliseconds or zero to wait forever.
-		@return CANAL_ERROR_SUCCESS on success or CANAL error if failure.
-					Return CANAL_ERROR_NOT_SUPPORTED if blocking operations is not
-					supported.
-	*/
-	int doCmdBlockingSend( canalMsg *pMsg, unsigned long timeout );
+    /*!
+        Send a CAN message and block if it can't
+        be sent right away.
+        @param pMsg Pointer to CAN message to send
+        @param timeout Time to wait in milliseconds or zero to wait forever.
+        @return CANAL_ERROR_SUCCESS on success or CANAL error if failure.
+                    Return CANAL_ERROR_NOT_SUPPORTED if blocking operations is not
+                    supported.
+    */
+   int doCmdBlockingSend( canalMsg *pMsg, unsigned long timeout );
   
     /*!
         Receive a CAN message. 

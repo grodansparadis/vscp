@@ -64,7 +64,7 @@
 
 #include <vscpremotetcpif.h>
 #include <dllwrapper.h>
-#include <canalobj.h>
+#include <canalconfobj.h>
 #include "dlgvscpinterfacesettings.h"
 #include "dlgselectdaemoninterface.h"
 #include "dlgvscpfilter.h"
