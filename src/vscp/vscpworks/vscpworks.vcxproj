@@ -244,8 +244,8 @@
     <ClInclude Include="..\..\common\crc.h" />
     <ClInclude Include="..\..\common\fossa.h" />
     <ClInclude Include="..\common\canal.h" />
+    <ClInclude Include="..\common\canalconfobj.h" />
     <ClInclude Include="..\common\canaldlldef.h" />
-    <ClInclude Include="..\common\canalobj.h" />
     <ClInclude Include="..\common\canalsuperwrapper.h" />
     <ClInclude Include="..\common\devicelist.h" />
     <ClInclude Include="..\common\devitem.h" />
@@ -303,7 +303,7 @@
     <ClCompile Include="..\..\common\crc.c" />
     <ClCompile Include="..\..\common\crc8.c" />
     <ClCompile Include="..\..\common\fossa.c" />
-    <ClCompile Include="..\common\canalobj.cpp" />
+    <ClCompile Include="..\common\canalconfobj.cpp" />
     <ClCompile Include="..\common\canalsuperwrapper.cpp" />
     <ClCompile Include="..\common\dllwrapper.cpp" />
     <ClCompile Include="..\common\guid.cpp" />

@@ -383,7 +383,8 @@ void dlgNewVSCPSession::OnButtonEditClick(wxCommandEvent& event)
 
         if ((0 == selidx) && m_bShowUnconnectedMode) {
             wxMessageBox(_("Can't edit this line."));
-        } else {
+        } 
+        else {
 
             both_interface *pBoth = (both_interface *) m_ctrlListInterfaces->GetClientData(selidx);
             if (NULL != pBoth) {
@@ -400,7 +401,8 @@ void dlgNewVSCPSession::OnButtonEditClick(wxCommandEvent& event)
                     dlg.GetBookCtrl()->SetSelection(0);
                     dlg.GetBookCtrl()->RemovePage(1);
 
-                } else if (INTERFACE_VSCP == pBoth->m_type) {
+                } 
+                else if (INTERFACE_VSCP == pBoth->m_type) {
 
                     dlg.m_RemoteServerDescription->SetValue(pBoth->m_pvscpif->m_strDescription);
                     dlg.m_RemoteServerURL->SetValue(pBoth->m_pvscpif->m_strHost);
@@ -411,7 +413,8 @@ void dlgNewVSCPSession::OnButtonEditClick(wxCommandEvent& event)
 
                     dlg.GetBookCtrl()->SetSelection(1);
                     dlg.GetBookCtrl()->RemovePage(0);
-                } else {
+                } 
+                else {
                     wxMessageBox(_("Unknown interface type!"), _("Edit Interface"), wxICON_STOP);
                     return;
                 }
@@ -426,7 +429,8 @@ void dlgNewVSCPSession::OnButtonEditClick(wxCommandEvent& event)
                         pBoth->m_pcanalif->m_strConfig = dlg.m_DriverConfigurationString->GetValue();
                         dlg.m_DriverFlags->GetValue().ToULong(&pBoth->m_pcanalif->m_flags);
 
-                    } else if (INTERFACE_VSCP == pBoth->m_type) {
+                    } 
+                    else if (INTERFACE_VSCP == pBoth->m_type) {
 
                         pBoth->m_pvscpif->m_strDescription = dlg.m_RemoteServerDescription->GetValue();
                         pBoth->m_pvscpif->m_strHost = dlg.m_RemoteServerURL->GetValue();
@@ -472,7 +476,8 @@ void dlgNewVSCPSession::OnButtonRemoveClick(wxCommandEvent& event)
 
         if ((0 == selidx) && m_bShowUnconnectedMode) {
             wxMessageBox(_("Can't remove this line."));
-        } else {
+        } 
+        else {
             if (wxYES == wxMessageBox(_("Do you really want to remove interface?"),
                     _("Confirm"),
                     wxYES_NO | wxCANCEL)) {
@@ -484,7 +489,8 @@ void dlgNewVSCPSession::OnButtonRemoveClick(wxCommandEvent& event)
                             fillListBox(wxString(_("")));
                             ::wxGetApp().writeConfiguration();
                         }
-                    } else if ((INTERFACE_VSCP == pBoth->m_type) && (NULL != pBoth->m_pvscpif)) {
+                    } 
+                    else if ((INTERFACE_VSCP == pBoth->m_type) && (NULL != pBoth->m_pvscpif)) {
                         if (g_Config.m_vscpIfList.DeleteObject(pBoth->m_pvscpif)) {
                             delete pBoth->m_pvscpif;
                             fillListBox(wxString(_("")));
@@ -569,7 +575,8 @@ void dlgNewVSCPSession::OnButtonCloneClick(wxCommandEvent& event)
 
         if ((0 == selidx) && m_bShowUnconnectedMode) {
             wxMessageBox(_("Can't edit this line."));
-        } else {
+        } 
+        else {
 
             both_interface *pBoth = (both_interface *) m_ctrlListInterfaces->GetClientData(selidx);
             if (NULL != pBoth) {
@@ -617,7 +624,8 @@ void dlgNewVSCPSession::OnButtonCloneClick(wxCommandEvent& event)
 
                 m_ctrlListInterfaces->SetSelection(selidx);
 
-            } else {
+            } 
+            else {
                 wxMessageBox(_("No data associated with listbox line"), _("Edit Interface"), wxICON_STOP);
             }
         } // 0 == selidx

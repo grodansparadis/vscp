@@ -64,7 +64,7 @@
 
 #include <vscpremotetcpif.h>
 #include <dllwrapper.h>
-#include <canalobj.h>
+#include <canalconfobj.h>
 #include "dlgvscpinterfacesettings.h"
 #include "dlgselectdaemoninterface.h"
 #include "dlgvscpfilter.h"
@@ -417,7 +417,7 @@ void dlgVscpInterfaceSettings::OnButtonVscpDriverSetPathClick( wxCommandEvent& e
 void dlgVscpInterfaceSettings::OnButtonVscpSetConfigurationClick( wxCommandEvent& event )
 {
     CDllWrapper dll;
-    CCanalObj conf;
+    CCanalConfObj conf;
     foundMetods meth;
     wxString strDrvInfo;
     wxString path = m_PathToDriver->GetValue();
@@ -434,18 +434,18 @@ void dlgVscpInterfaceSettings::OnButtonVscpSetConfigurationClick( wxCommandEvent
     }
 
     if ( CANAL_ERROR_SUCCESS != dll.loadGetDriverInfo( path, strDrvInfo, &meth ) ) {
-        wxMessageBox( _( "Sorry! This driver does not appears to have a stored description of how it should be configurartied. Ask the maker to include one!" ) );
+        wxMessageBox( _( "Sorry! This driver does not appears to have a stored description of how it should be configurated. Ask the driver maker to include one!" ) );
         return;
     }
 
-    char buf[ 64000 ];
+    char buf[ 256000 ];
     wxCharBuffer wxbuf = strDrvInfo.ToUTF8();
 
     int baselen = strlen( wxbuf.data() );
     int len = ns_base64_decode( (const unsigned char *)wxbuf.data(), baselen, buf );
 	
     if ( len != baselen ) {
-        wxMessageBox( _( "The configurationdata was either in the wromg form (should have been base54 encoded xml) or it was absent." ) );
+        wxMessageBox( _( "The configurationd ata was either in the wrong form (should have been base64 encoded xml) or it was absent." ) );
         return;
     }
 
@@ -457,15 +457,22 @@ void dlgVscpInterfaceSettings::OnButtonVscpSetConfigurationClick( wxCommandEvent
     }
 
     // Start the wizzard
-    wxString resultConfstring;
-    wxString resultFlags;
-    if ( !conf.runWizard( this, resultConfstring, resultFlags ) ) {
+    wxString resultConfString;
+    uint32_t resultFlags = 0;
+    if ( !conf.runWizard( this,
+                            m_DriverConfigurationString->GetValue(),
+                            vscp_readStringValue( m_DriverFlags->GetValue() ),
+                            resultConfString, 
+                            &resultFlags ) ) {
         wxMessageBox( _( "Failed to run configuration wizard." ) );
         return;
     }
 
-    m_DriverConfigurationString->SetValue( resultConfstring );
-    m_DriverFlags->SetValue( resultFlags );
+
+
+    m_DriverConfigurationString->SetValue( resultConfString );
+    wxString strWrk = wxString::Format( _( "%lu" ), resultFlags );
+    m_DriverFlags->SetValue( strWrk );
 
 	event.Skip(); 
 }

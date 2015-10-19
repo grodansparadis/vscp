@@ -121,7 +121,7 @@ public:
     wxString m_infourl;         // Pointer to web-based help page
 
     CANALOBJ_CHOICE_LIST m_listChoice;  // List with choices if type = choice
-    wxString m_strValue;                // Value (always in string from)
+    wxString m_strValue;                // Value (always in string form)
 
 };
 
@@ -141,8 +141,8 @@ public:
     CCanalObj_FlagBit();
     ~CCanalObj_FlagBit();
 
-    uint16_t m_pos;             // Position in configuration string (base = 0)
-    uint8_t m_width;            // Bitwidth
+    uint16_t m_pos;             // Position in flags (base = 0)
+    uint8_t m_width;            // Width in number of bits
     wxString m_description;     // User description of item
     wxString m_infourl;         // Pointer to web-based help page
     flagtype m_type;            // Type for flag bool, value or choice
@@ -155,16 +155,16 @@ public:
 WX_DECLARE_LIST( CCanalObj_FlagBit, CANALOBJ_FLAGBIT_LIST );
 
 /*!
-    CCanalObj
+    CCanalConfObj
 */
 
-class CCanalObj
+class CCanalConfObj
 {
 
 public:
 
-    CCanalObj();
-    ~CCanalObj();
+    CCanalConfObj();
+    ~CCanalConfObj();
 
     /*!
         Parse drver info
@@ -176,11 +176,17 @@ public:
     /*!
         Run the graphical wizard that assist the user in setting the parameters.
         @param parent Pointer to parent window.
+        @param inputConfigString Original cnfiguration string
+        @param inputConfigFlags Original confiuration flags
         @param resultConfigString Configuration  result string.
         @param resultConfigFlags Resulting flag value
         @return true if the parsing went well.
     */
-    bool runWizard( wxWindow* parent, wxString& resultConfigString, wxString& resultConfigFlags );
+    bool runWizard( wxWindow* parent,
+                        wxString& inputConfigString,
+                        uint32_t inputConfigFlags,
+                        wxString& resultConfigString, 
+                        uint32_t *presultConfigFlags );
 
     wxString m_decription;              // Description of DLL
     typeDescription m_TypeDescription;  // Format for description (text or html)
@@ -226,8 +232,13 @@ public:
     /// Initialises member variables
     void Init();
 
-    /// Creates the controls and sizers
-    void CreateControls( CCanalObj  *pObj );
+    /*! 
+        Creates the controls and sizers
+        @param pObj Ponter to the canal config object
+        @param inputConfigString Original configuration string.
+        @param inputConfigFlags Original configuration flags.
+    */
+    void CreateControls( CCanalConfObj  *pObj, wxString& inputConfigString, uint32_t inputConfigFlags );
 
     /// Runs the wizard
     bool Run();
@@ -251,7 +262,7 @@ public:
     };
 
     // The configuration object
-    CCanalObj  *m_pconfigObj;
+    CCanalConfObj  *m_pconfigObj;
 };
 
 
@@ -298,7 +309,7 @@ public:
     };
 
     // The configuration object
-    CCanalObj  *m_pconfigObj;
+    CCanalConfObj  *m_pconfigObj;
 
 };
 
@@ -351,17 +362,11 @@ public:
     // Parameter item associated with this wizard page
     CCanalObj_OneItem *m_pItem;
 
-    // Text for description
-    //wxString m_strDescription;
-
-    // This is the type
-    //canalobj_type m_type;
-
     // True if this parametr is optional
     bool m_bOptional;
 
     // This is the string value for the configuration string
-    wxString  strValue;
+    wxString  m_strValue;
 
     // Choices for strings are here
     wxArrayString m_listBoxStrings;
@@ -417,6 +422,11 @@ public:
     /// wxEVT_WIZARD_PAGE_CHANGING event handler for ID_WIZARDPAGE_SELECT_INTERFACE
     void OnWizardPageChanging( wxWizardEvent& event );
 
+    /*!
+        Get the flags data
+    */
+    uint32_t getData( uint8_t pos, uint8_t width );
+
     // Id to use for creating controls. Icrease by one for every control created.
     int m_windowsID;
 
@@ -427,8 +437,11 @@ public:
     CCanalObj_FlagBit *m_pItem;
 
     // This is the value for the bit or the bit combination. Values from different
-    // flag config values are ored together forming the ned result flag value.
+    // flag config values are ored together forming the end result flag value.
     uint32_t m_value;
+
+    // This is the original flags value
+    uint32_t m_flags;
 
     // Choices for strings are here
     wxArrayString m_listBoxStrings;

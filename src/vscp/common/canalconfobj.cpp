@@ -63,9 +63,9 @@
 #include <canal.h>
 #include <vscphelper.h>
 #include "vscp_images.h"
-#include <canalobj.h>
+#include <canalconfobj.h>
 
-WX_DEFINE_LIST( CANALOBJ_CHOICE_LIST );
+WX_DEFINE_LIST( CANALOBJ_CHOICE_LIST ); 
 WX_DEFINE_LIST( CANALOBJ_ITEM_LIST );
 WX_DEFINE_LIST( CANALOBJ_FLAGBIT_LIST );
 
@@ -119,19 +119,28 @@ CCanalObj_FlagBit::CCanalObj_FlagBit()
 
 CCanalObj_FlagBit::~CCanalObj_FlagBit()
 {
-    ;
+    // Clear up choice list
+    CANALOBJ_CHOICE_LIST::iterator iterValueFlag;
+    for ( iterValueFlag = m_listChoice.begin();
+    iterValueFlag != m_listChoice.end();
+        ++iterValueFlag ) {
+        CCanalObj_Choice *pRecordValue = *iterValueFlag;
+        if ( NULL != pRecordValue ) {
+            delete pRecordValue;
+        }
+    };
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //  Constructor/Destructor
 // 
 
-CCanalObj::CCanalObj()
+CCanalConfObj::CCanalConfObj()
 {
     ;
 }
 
-CCanalObj::~CCanalObj()
+CCanalConfObj::~CCanalConfObj()
 {
     // Clear up item list
     CANALOBJ_ITEM_LIST::iterator iterValueItem;
@@ -160,7 +169,7 @@ CCanalObj::~CCanalObj()
 //  parseDriverInfo
 // 
 
-bool CCanalObj::parseDriverInfo( wxString& xmldata )
+bool CCanalConfObj::parseDriverInfo( wxString& xmldata )
 {
     bool rv = true;
     wxStringInputStream xmlstream( xmldata );
@@ -367,17 +376,33 @@ bool CCanalObj::parseDriverInfo( wxString& xmldata )
 //  runWizard
 // 
 
-bool CCanalObj::runWizard( wxWindow* parent,
+bool CCanalConfObj::runWizard( wxWindow* parent,
+                                    wxString& inputConfigString,
+                                    uint32_t inputConfigFlags,
                                     wxString& resultConfigString, 
-                                    wxString& resultConfigFlags )
+                                    uint32_t *presultConfigFlags )
 {
     // Clear configuration data
     resultConfigString.Empty();
-    resultConfigFlags.Empty();
 
     CanalConfigWizard wizard( parent );
-    wizard.CreateControls( this );
+    wizard.CreateControls( this, inputConfigString, inputConfigFlags );
     wizard.Run(); 
+
+    int pos = 0;
+    while ( ( NULL != wizard.m_pgConfig[ pos ] ) && ( pos < MAX_PARAMETERS ) ) {
+        resultConfigString += wizard.m_pgConfig[ pos ]->m_strValue;
+        pos++;
+        if ( ( NULL != wizard.m_pgConfig[ pos ] ) )  resultConfigString += _( ";" );
+    }
+
+    pos = 0;
+    while ( ( NULL != wizard.m_pgConfigFlags[ pos ] ) && ( pos < MAX_FLAGS ) ) {
+        *presultConfigFlags |= wizard.m_pgConfigFlags[ pos ]->m_value;
+        pos++;
+    }
+
+    wizard.Destroy();
     return true;
 }
 
@@ -386,6 +411,9 @@ bool CCanalObj::runWizard( wxWindow* parent,
 //=============================================================================
 //                            CANAL CONFIG WIZARD
 //=============================================================================
+
+
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CanalConfigWizard type definition
@@ -425,6 +453,14 @@ CanalConfigWizard::CanalConfigWizard( wxWindow* parent, wxWindowID id, const wxP
 
 bool CanalConfigWizard::Create( wxWindow* parent, wxWindowID id, const wxPoint& pos )
 {
+    for ( int i = 0; i < MAX_PARAMETERS; i++ ) {
+        m_pgConfig[ i ] = NULL;
+    }
+    
+    for ( int i = 0; i < MAX_FLAGS; i++ ) {
+        m_pgConfigFlags[ i ] = NULL;
+    }
+
     SetExtraStyle( wxWS_EX_BLOCK_EVENTS | wxWIZARD_EX_HELPBUTTON );
     wxBitmap wizardBitmap( GetBitmapResource( wxT( "vscp_logo.jpg" ) ) );
     wxWizard::Create( parent,
@@ -433,8 +469,6 @@ bool CanalConfigWizard::Create( wxWindow* parent, wxWindowID id, const wxPoint& 
                       wizardBitmap,
                       pos,
                       wxDEFAULT_DIALOG_STYLE | wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX );
-
-    //CreateControls();
 
     return true;
 }
@@ -446,7 +480,7 @@ bool CanalConfigWizard::Create( wxWindow* parent, wxWindowID id, const wxPoint& 
 
 CanalConfigWizard::~CanalConfigWizard()
 {
-
+    ;
 }
 
 
@@ -467,11 +501,18 @@ void CanalConfigWizard::Init()
 // Control creation for CanalConfigWizard
 //
 
-void CanalConfigWizard::CreateControls( CCanalObj *pObj )
+void CanalConfigWizard::CreateControls( CCanalConfObj *pObj, wxString& inputConfigString, uint32_t inputConfigFlags )
 {
     wxASSERT( NULL != pObj );
     m_pconfigObj = pObj;
     CanalConfigWizard* pWizard = this;
+
+    // Split up configuration values
+    wxArrayString params;
+    wxStringTokenizer tkz( inputConfigString, _( ";" ) );
+    while ( tkz.HasMoreTokens() ) {
+        params.Add( tkz.GetNextToken() );
+    }
 
     // Create the start page
     WizardCanalConfigPageStart* itemWizardStartPage = new WizardCanalConfigPageStart;
@@ -485,6 +526,7 @@ void CanalConfigWizard::CreateControls( CCanalObj *pObj )
     if ( lastPage ) {
         wxWizardPageSimple::Chain( lastPage, itemWizardStartPage );
     }
+
     lastPage = itemWizardStartPage;
 
     // Create the config parameter pages
@@ -493,6 +535,9 @@ void CanalConfigWizard::CreateControls( CCanalObj *pObj )
         m_pgConfig[ i ] = new WizardPageCanalConfig;
         m_pgConfig[ i ]->m_strHead = wxString::Format(_("Parameter %d"), i+1 );
         m_pgConfig[ i ]->m_pItem = m_pconfigObj->m_listItem.Item( i )->GetData();
+        if ( i < params.GetCount() ) {
+            m_pgConfig[ i ]->m_strValue = params[ i ];
+        }
         m_pgConfig[ i ]->Create( pWizard );
         pWizard->GetPageAreaSizer()->Add( m_pgConfig[ i ] );
 
@@ -500,7 +545,9 @@ void CanalConfigWizard::CreateControls( CCanalObj *pObj )
         if ( lastPage ) {
             wxWizardPageSimple::Chain( lastPage, m_pgConfig[ i ] );
         }
+
         lastPage = m_pgConfig[ i ];
+
     }
 
     // * * * Flags * * *
@@ -511,6 +558,7 @@ void CanalConfigWizard::CreateControls( CCanalObj *pObj )
         m_pgConfigFlags[ i ] = new WizardPageFlagsConfig;
         m_pgConfigFlags[ i ]->m_strHead = wxString::Format( _( "Flags %d" ), i + 1 );
         m_pgConfigFlags[ i ]->m_pItem = m_pconfigObj->m_listFlagBits.Item( i )->GetData();
+        m_pgConfigFlags[ i ]->m_flags = inputConfigFlags;
         m_pgConfigFlags[ i ]->Create( pWizard );
         pWizard->GetPageAreaSizer()->Add( m_pgConfigFlags[ i ] );
 
@@ -518,16 +566,10 @@ void CanalConfigWizard::CreateControls( CCanalObj *pObj )
         if ( lastPage ) {
             wxWizardPageSimple::Chain( lastPage, m_pgConfigFlags[ i ] );
         }
+
         lastPage = m_pgConfigFlags[ i ];
-    }
 
-
-    /*if ( NULL != m_pgConfig[ m_plistItem->GetCount() ] ) {
-        lastPage = m_pgConfig[ m_plistItem->GetCount() - 1 ];
     }
-    else {
-        lastPage = itemWizardStartPage;
-    }*/
 
 }
 
@@ -544,7 +586,9 @@ bool CanalConfigWizard::Run()
         if ( startPage ) return RunWizard( startPage );
         node = node->GetNext();
     }
+
     return false;
+
 }
 
 
@@ -652,7 +696,7 @@ bool WizardCanalConfigPageStart::Create( wxWizard* parent )
 
 WizardCanalConfigPageStart::~WizardCanalConfigPageStart()
 {
-
+    ;
 }
 
 
@@ -662,7 +706,7 @@ WizardCanalConfigPageStart::~WizardCanalConfigPageStart()
 
 void WizardCanalConfigPageStart::Init()
 {
-
+    ;
 }
 
 
@@ -842,7 +886,7 @@ bool WizardPageCanalConfig::Create( wxWizard* parent )
 
 WizardPageCanalConfig::~WizardPageCanalConfig()
 {
-
+    ;
 }
 
 
@@ -923,6 +967,9 @@ void WizardPageCanalConfig::CreateControls()
         }
         
         m_listBox->SetBackgroundColour( wxColour( 255, 255, 210 ) );
+        unsigned long sel = 0;
+        m_strValue.ToCULong( &sel );
+        m_listBox->Select( sel );
         itemBoxSizer->Add( m_listBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
 
     }
@@ -940,6 +987,18 @@ void WizardPageCanalConfig::CreateControls()
         }
 
         m_boolChoice->SetBackgroundColour( wxColour( 255, 255, 210 ) );
+        if ( m_strValue.IsNumber() ) {
+            unsigned long val = 0;
+            m_strValue.ToCULong( &val );
+            if ( val ) m_boolChoice->SetValue( true );
+        }
+        else {
+            m_strValue.MakeUpper();
+            if ( m_strValue.Find( _( "TRUE" ) ) ) {
+                m_boolChoice->SetValue( true );
+            }
+        }
+
         itemBoxSizer->Add( m_boolChoice, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
 
     }
@@ -958,6 +1017,7 @@ void WizardPageCanalConfig::CreateControls()
         }
 
         m_textField->SetBackgroundColour( wxColour( 255, 255, 210 ) );
+        m_textField->SetValue( m_strValue );
         itemBoxSizer->Add( m_textField, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
 
     }
@@ -1004,7 +1064,60 @@ wxIcon WizardPageCanalConfig::GetIconResource( const wxString& name )
 
 void WizardPageCanalConfig::OnWizardPageChanging( wxWizardEvent& event )
 {
-   
+    if ( event.GetDirection() ) {  // Forward
+        
+        if ( type_choice == m_pItem->m_type ) {
+            int sel = m_listBox->GetSelection();
+            if ( -1 != sel ) {
+                if ( !m_bOptional ) {
+                    wxMessageBox("This value is not optional. Please select a value!");
+                    event.Veto();
+                }
+                else {
+                    m_strValue = wxString::Format( _( "%d" ), sel );
+                }
+            }
+        }
+        else if ( type_boolean == m_pItem->m_type ) {
+            m_strValue = ( m_boolChoice->GetValue() ? _( "true" ) : _("false") );
+        }
+        else if ( type_string == m_pItem->m_type ) {
+            m_strValue = m_textField->GetValue();
+        }
+        else if ( type_int32 == m_pItem->m_type ) {
+            m_strValue = m_textField->GetValue();
+        }
+        else if ( type_uint32 == m_pItem->m_type ) {
+            m_strValue = m_textField->GetValue();
+        }
+        else if ( type_float == m_pItem->m_type ) {
+            m_strValue = m_textField->GetValue();
+        }
+        else if ( type_isotime == m_pItem->m_type ) {
+            m_strValue = m_textField->GetValue();
+        }
+        else if ( type_isodate == m_pItem->m_type ) {
+            m_strValue = m_textField->GetValue();
+        }
+        else if ( type_isodatetime == m_pItem->m_type ) {
+            m_strValue = m_textField->GetValue();
+        }
+        else if ( type_guid == m_pItem->m_type ) {
+            m_strValue = m_textField->GetValue();
+        }
+        else if ( type_event == m_pItem->m_type ) {
+        
+        }
+        else if ( type_filter == m_pItem->m_type ) {
+        
+        }
+        else if ( type_mask == m_pItem->m_type ) {
+        
+        }
+    }
+    else { // Backward
+
+    }
 }
 
 
@@ -1114,11 +1227,11 @@ void WizardPageFlagsConfig::CreateControls()
 
     wxStaticText* itemStaticTextDescription = new wxStaticText;
     itemStaticTextDescription->Create( itemWizardPage,
-                                       wxID_STATIC,
-                                       m_pItem->m_description,
-                                       wxDefaultPosition,
-                                       /*wxDefaultSize*/wxSize( DEFAULT_STOCK_TEXT_WIDTH, -1 ),
-                                       0 );
+                                            wxID_STATIC,
+                                            m_pItem->m_description,
+                                            wxDefaultPosition,
+                                            /*wxDefaultSize*/wxSize( DEFAULT_STOCK_TEXT_WIDTH, -1 ),
+                                            0 );
     itemStaticTextDescription->Wrap( DEFAULT_STOCK_TEXT_WIDTH );
     itemBoxSizer->Add( itemStaticTextDescription, 0, wxALIGN_LEFT | wxALL, 5 );
 
@@ -1155,27 +1268,11 @@ void WizardPageFlagsConfig::CreateControls()
         }
 
         m_listBox->SetBackgroundColour( wxColour( 255, 255, 210 ) );
+        m_listBox->Select( getData( m_pItem->m_pos, m_pItem->m_width ) );
         itemBoxSizer->Add( m_listBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
 
     }
-    else if ( flagtype_bool == m_pItem->m_type ) {
-
-        m_boolChoice = new wxCheckBox;
-
-        m_boolChoice->Create( itemWizardPage,
-                              m_windowsID++,
-                              _( "Value for flag" ),
-                              wxDefaultPosition,
-                              wxSize( 370, -1 ) );
-        if ( WizardPageCanalConfig::ShowToolTips() ) {
-            m_boolChoice->SetToolTip( _( "Set to enable" ) );
-        }
-
-        m_boolChoice->SetBackgroundColour( wxColour( 255, 255, 210 ) );
-        itemBoxSizer->Add( m_boolChoice, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-
-    }
-    else {  // number
+    else if ( flagtype_value == m_pItem->m_type ) {
 
         m_textField = new wxTextCtrl;
 
@@ -1190,7 +1287,26 @@ void WizardPageFlagsConfig::CreateControls()
         }
 
         m_textField->SetBackgroundColour( wxColour( 255, 255, 210 ) );
-        itemBoxSizer->Add( m_textField, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+        m_textField->SetValue( wxString::Format( _( "%d" ), getData( m_pItem->m_pos, m_pItem->m_width ) ) );
+        itemBoxSizer->Add( m_textField, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 ); 
+
+    }
+    else {  // Boolean
+
+        m_boolChoice = new wxCheckBox;
+
+        m_boolChoice->Create( itemWizardPage,
+                              m_windowsID++,
+                              _( "Select to set bit" ),
+                              wxDefaultPosition,
+                              wxSize( 370, -1 ) );
+        if ( WizardPageCanalConfig::ShowToolTips() ) {
+            m_boolChoice->SetToolTip( _( "Set to enable" ) );
+        }
+
+        m_boolChoice->SetBackgroundColour( wxColour( 255, 255, 210 ) );
+        if ( getData( m_pItem->m_pos, m_pItem->m_width ) ) m_boolChoice->SetValue( true );
+        itemBoxSizer->Add( m_boolChoice, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
 
     }
 
@@ -1236,5 +1352,46 @@ wxIcon WizardPageFlagsConfig::GetIconResource( const wxString& name )
 
 void WizardPageFlagsConfig::OnWizardPageChanging( wxWizardEvent& event )
 {
+    uint32_t mask = ( 1 << m_pItem->m_width ) - 1;
+    mask = mask << m_pItem->m_pos;
 
+    if ( event.GetDirection() ) {  // Forward
+
+        if ( flagtype_value == m_pItem->m_type ) {
+            wxString str = m_textField->GetValue();
+            if ( !str.IsNumber() ) {
+                event.Veto();
+            }
+            else {
+                m_value = vscp_readStringValue( str );
+                m_value = ( m_value << m_pItem->m_pos ) & mask;
+            }
+        }
+        else if ( flagtype_choice == m_pItem->m_type ) {
+            m_value = m_listBox->GetSelection();
+            m_value = ( m_value << m_pItem->m_pos ) & mask;
+        }
+        else {  // Boolean
+            m_value = ( m_boolChoice->GetValue() ? 1 : 0 );
+            m_value = ( m_value << m_pItem->m_pos ) & mask;
+        }
+
+    }
+    else { // Backward
+
+    }
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// getData
+//
+
+uint32_t WizardPageFlagsConfig::getData( uint8_t pos, uint8_t width )
+{
+    // Create the mask
+    uint32_t mask = (1 << width) - 1;
+    mask = mask << pos;
+
+    return ( ( m_flags & mask ) >> pos );
+}
+
