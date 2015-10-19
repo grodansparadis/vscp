@@ -54,6 +54,8 @@
 #include "wx/frame.h"
 #include "wx/statusbr.h"
 #include "wx/toolbar.h"
+#include "wx/treectrl.h"
+#include "wx/html/htmlwin.h"
 
 #include <canal.h>
 
@@ -175,9 +177,28 @@ public:
     /// Retrieves icon resources
     wxIcon GetIconResource( const wxString& name );
 
+    /*!
+        Fill default contents
+    */
+    void frmMain::addDefaultContent( void );
+
+    /// wxEVT_COMMAND_TREE_SEL_CHANGED event handler for ID_TREECTRL
+    void OnTreectrlSelChanged( wxTreeEvent& event );
+
+    /// wxEVT_LEFT_DOWN event handler for ID_TREECTRL
+    void OnLeftDown( wxMouseEvent& event );
+
+    /// wxEVT_LEFT_DCLICK event handler for ID_TREECTRL
+    void OnLeftDClick( wxMouseEvent& event );
 
     /// Should we show tooltips?
     static bool ShowToolTips();
+
+    /// Root item of the list
+    wxTreeItemId m_rootItem;
+
+    /// Module item of the list
+    wxTreeItemId m_moduleItem;
 
   /// Control identifiers
   enum {
@@ -203,7 +224,9 @@ public:
     ID_STATUSBAR = 12025,
     ID_TOOLBAR = 12026,
     ID_TOOL = 12027,
-    ID_PANEL1 = 10031
+    ID_PANEL1 = 10031,
+    ID_TREECTRL = 10032,
+    ID_HTMLWINDOW2 = 10033
   };
 
 
@@ -211,8 +234,9 @@ public:
     Bitmap for VSCP Logo
   */
   wxStaticBitmap* m_pStaticBitmapLogo;
-
   wxStatusBar* m_pitemStatusBar;
+  wxTreeCtrl* m_mdfTree;
+  wxHtmlWindow* m_htmlInfoWnd;
 
 };
 

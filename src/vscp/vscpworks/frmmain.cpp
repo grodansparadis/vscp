@@ -102,6 +102,7 @@ BEGIN_EVENT_TABLE( frmMain, wxFrame )
 	EVT_MENU( ID_MENUITEM_CREDITS, frmMain::OnMenuitemCrediitsClick )
 	EVT_MENU( ID_MENUITEM_VSCP_SITE, frmMain::OnMenuitemVSCPSiteClick )
 	EVT_MENU( ID_MENUITEM_ABOUT, frmMain::OnMenuitemAboutClick )
+    EVT_TREE_SEL_CHANGED( ID_TREECTRL, frmMDFEditor::OnTreectrlSelChanged )
 END_EVENT_TABLE()
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -176,7 +177,7 @@ void frmMain::Init()
 
 void frmMain::CreateControls()
 {    
-    frmMain* itemFrame1 = this;
+    frmMain* itemMainFrame = this;
 
     wxMenuBar* menuBar = new wxMenuBar;
     wxMenu* itemMenu3 = new wxMenu;
@@ -261,20 +262,20 @@ void frmMain::CreateControls()
     
     menuBar->Append (itemMenu21, _("Help") );
 
-    itemFrame1->SetMenuBar( menuBar );
+    itemMainFrame->SetMenuBar( menuBar );
 
     // Statusbar
     m_pitemStatusBar = new wxStatusBar;
-    m_pitemStatusBar->Create( itemFrame1,
+    m_pitemStatusBar->Create( itemMainFrame,
                                 ID_STATUSBAR, 
                                 wxST_SIZEGRIP|wxNO_BORDER );
     //m_pitemStatusBar->SetFieldsCount( 2 );
-    itemFrame1->SetStatusBar( m_pitemStatusBar );
+    itemMainFrame->SetStatusBar( m_pitemStatusBar );
 
     // Toolbar
     wxToolBar* itemToolBar = CreateToolBar( wxTB_FLAT | wxTB_HORIZONTAL | wxTB_NODIVIDER, 
                                                 ID_TOOLBAR );
-    wxBitmap itemtool34Bitmap( itemFrame1->GetBitmapResource( wxT("open.xpm") ) );
+    wxBitmap itemtool34Bitmap( itemMainFrame->GetBitmapResource( wxT("open.xpm") ) );
     wxBitmap itemtool34BitmapDisabled;
     itemToolBar->AddTool( ID_TOOL,
                                 wxEmptyString, 
@@ -284,33 +285,78 @@ void frmMain::CreateControls()
                                 wxEmptyString, 
                                 wxEmptyString );
     itemToolBar->Realize();
-    itemFrame1->SetToolBar( itemToolBar );
+    itemMainFrame->SetToolBar( itemToolBar );
 
 
     wxPanel* itemPanel = new wxPanel;
-    itemPanel->Create( itemFrame1,
+    itemPanel->Create( itemMainFrame,
                             ID_PANEL1, 
                             wxDefaultPosition, 
                             wxDefaultSize, 
                             wxSUNKEN_BORDER | wxTAB_TRAVERSAL );
     itemPanel->SetBackgroundColour( wxColour( 255, 255, 255 ) );
 
-    wxBoxSizer* itemBoxSizerPanel = new wxBoxSizer( wxVERTICAL );
-    itemPanel->SetSizer( itemBoxSizerPanel );
+    wxBoxSizer* itemSizerVertical = new wxBoxSizer( wxVERTICAL );
+    itemPanel->SetSizer( itemSizerVertical );
 
+    // Header for servers
+    wxStaticText* itemStaticTextTop = new wxStaticText;
+    itemStaticTextTop->Create( itemPanel,
+                               wxID_STATIC,
+                               _( "Discovered servers and nodes" ),
+                               wxDefaultPosition,
+                               wxDefaultSize,0 );
+    itemStaticTextTop->SetForegroundColour( wxColour( 0, 128, 0 ) );
+    itemStaticTextTop->SetFont( wxFont( 10, wxSWISS, wxNORMAL, wxBOLD, false, wxT( "Tahoma" ) ) );
+    itemSizerVertical->Add( itemStaticTextTop, 0, wxALIGN_LEFT | wxALL, 5 );
+
+
+    m_mdfTree = new wxTreeCtrl;
+    m_mdfTree->Create( itemPanel, ID_TREECTRL, wxDefaultPosition, wxDefaultSize, wxTR_HAS_BUTTONS | wxTR_FULL_ROW_HIGHLIGHT | wxTR_LINES_AT_ROOT | wxTR_ROW_LINES | wxTR_SINGLE );
+    itemSizerVertical->Add( m_mdfTree, 10, wxGROW | wxALL, 2 );
+
+    m_htmlInfoWnd = new wxHtmlWindow;
+    m_htmlInfoWnd->Create( itemPanel, ID_HTMLWINDOW2, wxDefaultPosition, wxSize( -1, 150 ), wxHW_SCROLLBAR_AUTO | wxSUNKEN_BORDER | wxHSCROLL | wxVSCROLL );
+    m_htmlInfoWnd->SetPage( _( "<html><h4>No data</h4></html>" ) );
+    itemSizerVertical->Add( m_htmlInfoWnd, 0, wxGROW | wxALL, 5 );
+    
+    // Connect events and objects
+    m_mdfTree->Connect( ID_TREECTRL, wxEVT_LEFT_DOWN, wxMouseEventHandler( frmMDFEditor::OnLeftDown ), NULL, this );
+    m_mdfTree->Connect( ID_TREECTRL, wxEVT_LEFT_DCLICK, wxMouseEventHandler( frmMDFEditor::OnLeftDClick ), NULL, this );
+
+    wxImageList* itemImageList = new wxImageList( 16, 16, true, 5 );
+    {
+        wxIcon Icon0( Home_xpm );
+        itemImageList->Add( Icon0 );
+        wxIcon Icon1( Folder_Add_xpm );
+        itemImageList->Add( Icon1 );
+        wxIcon Icon2( Info_xpm );
+        itemImageList->Add( Icon2 );
+        wxIcon Icon3( copy_xpm );
+        itemImageList->Add( Icon3 );
+        wxIcon Icon4( copy_xpm );
+        itemImageList->Add( Icon4 );
+    }
+
+    m_mdfTree->AssignImageList( itemImageList );
+
+    addDefaultContent();
+    
+    // Create Logo
+    /*
     m_pStaticBitmapLogo = new wxStaticBitmap;
     m_pStaticBitmapLogo->Create( itemPanel,
                                     wxID_STATIC, 
-                                    itemFrame1->GetBitmapResource( wxT("../../../docs/vscp/logo/vscp_logo.jpg") ), 
+                                    itemMainFrame->GetBitmapResource( wxT("../../../docs/vscp/logo/vscp_logo.jpg") ),
                                     wxDefaultPosition, 
                                     wxSize(151, 212),
                                     0 );
     m_pStaticBitmapLogo->SetBackgroundColour( wxColour( 255, 255, 255 ) );
-    itemBoxSizerPanel->Add( m_pStaticBitmapLogo,
+    itemSizerVertical->Add( m_pStaticBitmapLogo,
                             0, 
                             wxALIGN_CENTER_HORIZONTAL | wxALL, 
-                            0 );
-
+                            0 );*/
+    
     wxString strVersion = _( VSCPD_COPYRIGHT );
     strVersion += _( " - " );
     strVersion += _( VSCPD_DISPLAY_VERSION );
@@ -386,27 +432,95 @@ void frmMain::OnCloseWindow( wxCloseEvent& event )
 
 void frmMain::OnPaint( wxPaintEvent& event )
 {
-    /*
-    wxPaintDC dc( m_pStaticBitmapLogo );
-
-	dc.DrawText(wxT("Version: "), 40, 60); 
-
-	// draw a circle
-	dc.SetBrush(*wxGREEN_BRUSH);                    // green filling
-	dc.SetPen( wxPen( wxColor(255,0,0), 5 ) );      // 5-pixels-thick red outline
-	dc.DrawCircle( wxPoint(200,100), 25 );
-
-	// draw a rectangle
-	dc.SetBrush(*wxBLUE_BRUSH); // blue filling
-	dc.SetPen( wxPen( wxColor(255,175,175), 10 ) ); // 10-pixels-thick pink outline
-	dc.DrawRectangle( 300, 100, 400, 200 );
-
-	// draw a line
-	dc.SetPen( wxPen( wxColor(0,0,0), 3 ) );	    // black line, 3 pixels thick
-	dc.DrawLine( 300, 100, 700, 300 );			    // draw line across the rectangle
-    */
-
 	event.Skip( false );
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OnTreectrlSelChanged
+//
+
+void frmMain::OnTreectrlSelChanged( wxTreeEvent& event )
+{
+    /*wxString strPage;
+    strPage = _( "<html><body><h3>" );
+    wxTreeItemId itemID = event.GetItem();
+    //MyTreeItemData *item = itemId.IsOk() ? (MyTreeItemData *)GetItemData(itemId)
+    //                                     : NULL;
+    if ( itemID.IsOk() ) {
+        strPage += m_mdfTree->GetItemText( itemID );
+        strPage += event.GetLabel();
+    }
+    else {
+        strPage += _( "????" );
+    }
+    strPage += _( "</h3></body></html>" );
+    m_htmlInfoWnd->SetPage( strPage );*/
+    event.Skip();
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OnLeftDown
+//
+
+void frmMain::OnLeftDown( wxMouseEvent& event )
+{
+
+    event.Skip();
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OnLeftDClick
+//
+
+void frmMain::OnLeftDClick( wxMouseEvent& event )
+{
+
+    event.Skip();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// addDefaultContent
+//
+
+void frmMain::addDefaultContent( void )
+{
+    m_rootItem = m_mdfTree->AddRoot( _( "VSCP Network neighbourhood" ), MDF_EDITOR_TOP_ITEM );
+    m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "Daemon TCP/IP Interfaces" ), MDF_EDITOR_MAIN_ITEM );
+    m_mdfTree->AppendItem( m_moduleItem, _( "Node" ), MDF_EDITOR_SUB_ITEM );
+
+    m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "WEB interface" ), MDF_EDITOR_MAIN_ITEM );
+
+    m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "Level II node" ), MDF_EDITOR_MAIN_ITEM );
+
+    m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "Websocket interface" ), MDF_EDITOR_MAIN_ITEM );
+
+    m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "REST interface" ), MDF_EDITOR_MAIN_ITEM );
+
+    m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "MQTT interface" ), MDF_EDITOR_MAIN_ITEM );
+
+    m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "CoAP interface" ), MDF_EDITOR_MAIN_ITEM );
+
+    /*
+    m_mdfTree->AppendItem( m_moduleItem, _( "Model" ), MDF_EDITOR_SUB_ITEM );
+    m_mdfTree->AppendItem( m_moduleItem, _( "Version" ), MDF_EDITOR_SUB_ITEM );
+    m_mdfTree->AppendItem( m_moduleItem, _( "Description" ), MDF_EDITOR_SUB_ITEM );
+    m_mdfTree->AppendItem( m_moduleItem, _( "URL for full module information" ), MDF_EDITOR_SUB_ITEM );
+    m_mdfTree->AppendItem( m_moduleItem, _( "Last date changed" ), MDF_EDITOR_SUB_ITEM );
+    m_mdfTree->AppendItem( m_moduleItem, _( "Buffersize" ), MDF_EDITOR_SUB_ITEM );
+    m_mdfTree->AppendItem( m_moduleItem, _( "Location of MDF file" ), MDF_EDITOR_SUB_ITEM );
+
+    m_mdfTree->AppendItem( m_moduleItem, _( "Manufacturer" ), MDF_EDITOR_MAIN_ITEM );
+    m_mdfTree->AppendItem( m_moduleItem, _( "Driver" ), MDF_EDITOR_MAIN_ITEM );
+    m_mdfTree->AppendItem( m_moduleItem, _( "Abstractions" ), MDF_EDITOR_MAIN_ITEM );
+    m_mdfTree->AppendItem( m_moduleItem, _( "Registers" ), MDF_EDITOR_MAIN_ITEM );
+    m_mdfTree->AppendItem( m_moduleItem, _( "Decision Matrix" ), MDF_EDITOR_MAIN_ITEM );
+    m_mdfTree->AppendItem( m_moduleItem, _( "Events" ), MDF_EDITOR_MAIN_ITEM );
+    m_mdfTree->AppendItem( m_moduleItem, _( "Alarm" ), MDF_EDITOR_MAIN_ITEM );
+    m_mdfTree->AppendItem( m_moduleItem, _( "Boot" ), MDF_EDITOR_MAIN_ITEM );
+    */
 }
 
 

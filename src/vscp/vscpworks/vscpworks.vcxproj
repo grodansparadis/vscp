@@ -282,6 +282,7 @@
     <ClInclude Include="frmdaemonvariableeditor.h" />
     <ClInclude Include="frmdeviceconfig.h" />
     <ClInclude Include="frmmain.h" />
+    <ClInclude Include="frmmain_images.h" />
     <ClInclude Include="frmmdfeditor.h" />
     <ClInclude Include="frmscanfordevices.h" />
     <ClInclude Include="frmsimpleuserinterfacegenerator.h" />

@@ -49,22 +49,18 @@
 /*!
  * Includes
  */
-
-////@begin includes
 #include "wx/frame.h"
 #include "wx/toolbar.h"
 #include "wx/treectrl.h"
 #include "wx/html/htmlwin.h"
-////@end includes
-
 #include <wx/imaglist.h>
 
 #include <mdf.h>
 
 
-// Picture types for the tree control
-enum { 
-    MDF_EDITOR_TOP_ITEM = 0, 
+ // Picture types for the tree control
+enum {
+    MDF_EDITOR_TOP_ITEM = 0,
     MDF_EDITOR_MAIN_ITEM,
     MDF_EDITOR_SUB_ITEM
 };
@@ -74,135 +70,129 @@ enum {
  * Forward declarations
  */
 
-////@begin forward declarations
 class wxTreeCtrl;
 class wxHtmlWindow;
-////@end forward declarations
 
 /*!
  * Control identifiers
  */
 
-////@begin control identifiers
 #define SYMBOL_FRMMDFEDITOR_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX
 #define SYMBOL_FRMMDFEDITOR_TITLE _("MDF Editor")
 #define SYMBOL_FRMMDFEDITOR_IDNAME ID_FRMMDFEDITOR
 #define SYMBOL_FRMMDFEDITOR_SIZE wxSize(500, 560)
 #define SYMBOL_FRMMDFEDITOR_POSITION wxDefaultPosition
-////@end control identifiers
 
 
 /*!
  * frmMDFEditor class declaration
  */
 
-class frmMDFEditor: public wxFrame
-{    
-  DECLARE_CLASS( frmMDFEditor )
-  DECLARE_EVENT_TABLE()
+class frmMDFEditor : public wxFrame
+{
+    DECLARE_CLASS( frmMDFEditor )
+    DECLARE_EVENT_TABLE()
 
 public:
-  /// Constructors
-  frmMDFEditor();
-  frmMDFEditor( wxWindow* parent, wxWindowID id = SYMBOL_FRMMDFEDITOR_IDNAME, const wxString& caption = SYMBOL_FRMMDFEDITOR_TITLE, const wxPoint& pos = SYMBOL_FRMMDFEDITOR_POSITION, const wxSize& size = SYMBOL_FRMMDFEDITOR_SIZE, long style = SYMBOL_FRMMDFEDITOR_STYLE );
+    /// Constructors
+    frmMDFEditor();
+    frmMDFEditor( wxWindow* parent, wxWindowID id = SYMBOL_FRMMDFEDITOR_IDNAME, const wxString& caption = SYMBOL_FRMMDFEDITOR_TITLE, const wxPoint& pos = SYMBOL_FRMMDFEDITOR_POSITION, const wxSize& size = SYMBOL_FRMMDFEDITOR_SIZE, long style = SYMBOL_FRMMDFEDITOR_STYLE );
 
-  bool Create( wxWindow* parent, wxWindowID id = SYMBOL_FRMMDFEDITOR_IDNAME, const wxString& caption = SYMBOL_FRMMDFEDITOR_TITLE, const wxPoint& pos = SYMBOL_FRMMDFEDITOR_POSITION, const wxSize& size = SYMBOL_FRMMDFEDITOR_SIZE, long style = SYMBOL_FRMMDFEDITOR_STYLE );
+    bool Create( wxWindow* parent, wxWindowID id = SYMBOL_FRMMDFEDITOR_IDNAME, const wxString& caption = SYMBOL_FRMMDFEDITOR_TITLE, const wxPoint& pos = SYMBOL_FRMMDFEDITOR_POSITION, const wxSize& size = SYMBOL_FRMMDFEDITOR_SIZE, long style = SYMBOL_FRMMDFEDITOR_STYLE );
 
-  /// Destructor
-  ~frmMDFEditor();
+    /// Destructor
+    ~frmMDFEditor();
 
-  /// Initialises member variables
-  void Init();
+    /// Initialises member variables
+    void Init();
 
-  /// Creates the controls and sizers
-  void CreateControls();
-  
+    /// Creates the controls and sizers
+    void CreateControls();
+
     /*!
         Add the default content to the dialog
     */
     void addDefaultContent( void );
 
-////@begin frmMDFEditor event handler declarations
+      /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_EXIT
+    void OnMenuitemExitClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_EXIT
-  void OnMenuitemExitClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_NEW
+    void OnToolNewClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_NEW
-  void OnToolNewClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_LOAD
+    void OnToolLoadClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_LOAD
-  void OnToolLoadClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_SAVE
+    void OnToolSaveClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_SAVE
-  void OnToolSaveClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_DOWNLOAD
+    void OnToolDownloadClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_DOWNLOAD
-  void OnToolDownloadClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_REMOVE_ITEM
+    void OnToolRemoveItemClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_REMOVE_ITEM
-  void OnToolRemoveItemClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_TREE_SEL_CHANGED event handler for ID_TREECTRL
+    void OnTreectrlSelChanged( wxTreeEvent& event );
 
-  /// wxEVT_COMMAND_TREE_SEL_CHANGED event handler for ID_TREECTRL
-  void OnTreectrlSelChanged( wxTreeEvent& event );
+    /// wxEVT_LEFT_DOWN event handler for ID_TREECTRL
+    void OnLeftDown( wxMouseEvent& event );
 
-  /// wxEVT_LEFT_DOWN event handler for ID_TREECTRL
-  void OnLeftDown( wxMouseEvent& event );
+    /// wxEVT_LEFT_DCLICK event handler for ID_TREECTRL
+    void OnLeftDClick( wxMouseEvent& event );
 
-  /// wxEVT_LEFT_DCLICK event handler for ID_TREECTRL
-  void OnLeftDClick( wxMouseEvent& event );
+    ////@end frmMDFEditor event handler declarations
 
-////@end frmMDFEditor event handler declarations
+    ////@begin frmMDFEditor member function declarations
 
-////@begin frmMDFEditor member function declarations
+      /// Retrieves bitmap resources
+    wxBitmap GetBitmapResource( const wxString& name );
 
-  /// Retrieves bitmap resources
-  wxBitmap GetBitmapResource( const wxString& name );
+    /// Retrieves icon resources
+    wxIcon GetIconResource( const wxString& name );
+    ////@end frmMDFEditor member function declarations
 
-  /// Retrieves icon resources
-  wxIcon GetIconResource( const wxString& name );
-////@end frmMDFEditor member function declarations
+      /// Should we show tooltips?
+    static bool ShowToolTips();
 
-  /// Should we show tooltips?
-  static bool ShowToolTips();
-  
     /// Root item of the list
-    wxTreeItemId m_rootItem; 
-    
+    wxTreeItemId m_rootItem;
+
     /// Module item of the list
     wxTreeItemId m_moduleItem;
-    
+
     /// Module description file functionality
     CMDF m_mdf;
 
-////@begin frmMDFEditor member variables
-  wxTreeCtrl* m_mdfTree;
-  wxHtmlWindow* m_htmlInfoWnd;
-  /// Control identifiers
-  enum {
-    ID_FRMMDFEDITOR = 10036,
-    ID_MENUITEM_NEW = 10006,
-    ID_MENUITEM_OPEN = 10039,
-    ID_MENUITEM_SAVE = 10007,
-    ID_MENUITEM_DOWNLOAD = 10008,
-    ID_MENUITEM_UPLOAD = 10009,
-    ID_MENUITEM_EXIT = 10010,
-    ID_MENU_ITEMS = 10040,
-    ID_MENUITEM_ADD = 10041,
-    ID_MENUITEM_REMOVE = 10011,
-    ID_PANEL = 10037,
-    ID_TOOLBAR3 = 10034,
-    ID_TOOL_NEW = 10035,
-    ID_TOOL_LOAD = 10002,
-    ID_TOOL_SAVE = 10001,
-    ID_TOOL_UPLOAD = 10003,
-    ID_TOOL_DOWNLOAD = 10000,
-    ID_TOOL_ADD_ITEM = 10004,
-    ID_TOOL_REMOVE_ITEM = 10005,
-    ID_TREECTRL = 10032,
-    ID_HTMLWINDOW2 = 10033
-  };
-////@end frmMDFEditor member variables
+    wxTreeCtrl* m_mdfTree;
+    wxHtmlWindow* m_htmlInfoWnd;
+
+    /// Control identifiers
+    enum {
+        ID_FRMMDFEDITOR = 10036,
+        ID_MENUITEM_NEW = 10006,
+        ID_MENUITEM_OPEN = 10039,
+        ID_MENUITEM_SAVE = 10007,
+        ID_MENUITEM_DOWNLOAD = 10008,
+        ID_MENUITEM_UPLOAD = 10009,
+        ID_MENUITEM_EXIT = 10010,
+        ID_MENU_ITEMS = 10040,
+        ID_MENUITEM_ADD = 10041,
+        ID_MENUITEM_REMOVE = 10011,
+        ID_PANEL = 10037,
+        ID_TOOLBAR3 = 10034,
+        ID_TOOL_NEW = 10035,
+        ID_TOOL_LOAD = 10002,
+        ID_TOOL_SAVE = 10001,
+        ID_TOOL_UPLOAD = 10003,
+        ID_TOOL_DOWNLOAD = 10000,
+        ID_TOOL_ADD_ITEM = 10004,
+        ID_TOOL_REMOVE_ITEM = 10005,
+        ID_TREECTRL = 10032,
+        ID_HTMLWINDOW2 = 10033
+    };
+
 };
 
 #endif
-  // _FRMMDFEDITOR_H_
+// _FRMMDFEDITOR_H_
