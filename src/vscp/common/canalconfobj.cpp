@@ -62,7 +62,7 @@
 
 #include <canal.h>
 #include <vscphelper.h>
-#include "vscp_images.h"
+#include <vscp_images.h>
 #include <canalconfobj.h>
 
 WX_DEFINE_LIST( CANALOBJ_CHOICE_LIST ); 

@@ -16,6 +16,8 @@
       <logicalFolder name="vscp" displayName="vscp" projectFiles="true">
         <logicalFolder name="common" displayName="common" projectFiles="true">
           <itemPath>../common/canal.h</itemPath>
+          <itemPath>../common/canalconfobj.cpp</itemPath>
+          <itemPath>../common/canalconfobj.h</itemPath>
           <itemPath>../common/canaldlldef.h</itemPath>
           <itemPath>../common/canalsuperwrapper.cpp</itemPath>
           <itemPath>../common/canalsuperwrapper.h</itemPath>
@@ -129,6 +131,7 @@
               <pElem>../../common</pElem>
             </incDir>
             <preprocessorList>
+              <Elem>NS_ENABLE_SSL</Elem>
               <Elem>USE_FOSSA</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
@@ -160,6 +163,10 @@
         </cTool>
       </item>
       <item path="../../common/net_skeleton.c" ex="false" tool="0" flavor2="2">
+      </item>
+      <item path="../common/canalconfobj.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../common/canalsuperwrapper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
@@ -203,9 +210,6 @@
       </item>
       <item path="bootdevice_vscp.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-          </preprocessorList>
         </ccTool>
       </item>
       <item path="devicebootloaderwizard.cpp" ex="false" tool="1" flavor2="4">
@@ -226,9 +230,6 @@
       </item>
       <item path="dlgconfiguration.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-          </preprocessorList>
         </ccTool>
       </item>
       <item path="dlgeditlevel1dmrow.cpp" ex="false" tool="1" flavor2="4">
@@ -276,9 +277,6 @@
           <incDir>
             <pElem>.</pElem>
           </incDir>
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-          </preprocessorList>
         </ccTool>
       </folder>
       <item path="frmdaemondecisionmartrixeditor.cpp" ex="false" tool="1" flavor2="4">
@@ -291,16 +289,10 @@
       </item>
       <item path="frmdeviceconfig.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-          </preprocessorList>
         </ccTool>
       </item>
       <item path="frmmain.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-          </preprocessorList>
         </ccTool>
       </item>
       <item path="frmmdfeditor.cpp" ex="false" tool="1" flavor2="4">
@@ -309,9 +301,6 @@
       </item>
       <item path="frmscanfordevices.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-          </preprocessorList>
         </ccTool>
       </item>
       <item path="frmsimpleuserinterfacegenerator.cpp"
@@ -323,16 +312,10 @@
       </item>
       <item path="frmvscpsession.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-          </preprocessorList>
         </ccTool>
       </item>
       <item path="gridtable.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-          </preprocessorList>
         </ccTool>
       </item>
       <item path="merlin.cpp" ex="false" tool="1" flavor2="4">

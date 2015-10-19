@@ -165,6 +165,7 @@
       <in>readregister_symbols.h</in>
       <in>threadvscpwork.cpp</in>
       <in>threadvscpwork.h</in>
+      <in>vscp_images.h</in>
       <in>vscpbootloader.cpp</in>
       <in>vscpbootloader.h</in>
       <in>vscpbootloader_symbols.h</in>

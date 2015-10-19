@@ -11,7 +11,7 @@ top_builddir = @top_builddir@
 top_wxbuilddir = @top_wxbuilddir@
 CXX = @CXX@
 CXXFLAGS = @CXXFLAGS@
-CPPFLAGS = @CPPFLAGS@ -DwxUSE_GUI=1 -DUSE_FOSSA -I../common -I../../common
+CPPFLAGS = @CPPFLAGS@ -DwxUSE_GUI=1 -DUSE_FOSSA -I. -I../common -I../../common
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
 STRIP = strip
@@ -75,6 +75,7 @@ VSCPWORKS_OBJECTS =  vscpworks.o dlgvscpmsg.o \
 	../common/vscpremotetcpif.o \
 	../common/mdf.o \
 	../common/register.o \
+	../common/canalconfobj.o \
 	$(RESOURCEOBJECT)
 
 ALWAYS_BUILD = ../../common/crc.o \
