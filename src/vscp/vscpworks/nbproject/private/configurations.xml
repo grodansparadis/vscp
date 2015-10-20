@@ -136,6 +136,7 @@
       <in>frmmdfeditor.cpp</in>
       <in>frmmdfeditor.h</in>
       <in>frmmdfeditor_symbols.h</in>
+      <in>frmmdfheader_images.h</in>
       <in>frmscanfordevices.cpp</in>
       <in>frmscanfordevices.h</in>
       <in>frmscanfordevices_images.h</in>

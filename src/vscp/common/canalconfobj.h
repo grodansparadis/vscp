@@ -167,7 +167,7 @@ public:
     ~CCanalConfObj();
 
     /*!
-        Parse drver info
+        Parse driver info
         @param  info Driver info fetched from file
         @return true if the parsing went well.
     */
@@ -176,8 +176,8 @@ public:
     /*!
         Run the graphical wizard that assist the user in setting the parameters.
         @param parent Pointer to parent window.
-        @param inputConfigString Original cnfiguration string
-        @param inputConfigFlags Original confiuration flags
+        @param inputConfigString Original configuration string
+        @param inputConfigFlags Original configuration flags
         @param resultConfigString Configuration  result string.
         @param resultConfigFlags Resulting flag value
         @return true if the parsing went well.

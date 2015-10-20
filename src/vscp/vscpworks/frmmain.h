@@ -180,7 +180,7 @@ public:
     /*!
         Fill default contents
     */
-    void frmMain::addDefaultContent( void );
+    void addDefaultContent( void );
 
     /// wxEVT_COMMAND_TREE_SEL_CHANGED event handler for ID_TREECTRL
     void OnTreectrlSelChanged( wxTreeEvent& event );

@@ -456,19 +456,18 @@ void dlgVscpInterfaceSettings::OnButtonVscpSetConfigurationClick( wxCommandEvent
         return;
     }
 
-    // Start the wizzard
+    // Start the wizard
     wxString resultConfString;
+    wxString str = m_DriverConfigurationString->GetValue();
     uint32_t resultFlags = 0;
     if ( !conf.runWizard( this,
-                            m_DriverConfigurationString->GetValue(),
+                            str,
                             vscp_readStringValue( m_DriverFlags->GetValue() ),
                             resultConfString, 
                             &resultFlags ) ) {
         wxMessageBox( _( "Failed to run configuration wizard." ) );
         return;
     }
-
-
 
     m_DriverConfigurationString->SetValue( resultConfString );
     wxString strWrk = wxString::Format( _( "%lu" ), resultFlags );
