@@ -310,7 +310,6 @@ void frmMain::CreateControls()
     itemStaticTextTop->SetFont( wxFont( 10, wxSWISS, wxNORMAL, wxBOLD, false, wxT( "Tahoma" ) ) );
     itemSizerVertical->Add( itemStaticTextTop, 0, wxALIGN_LEFT | wxALL, 5 );
 
-
     m_mdfTree = new wxTreeCtrl;
     m_mdfTree->Create( itemPanel, ID_TREECTRL, wxDefaultPosition, wxDefaultSize, wxTR_HAS_BUTTONS | wxTR_FULL_ROW_HIGHLIGHT | wxTR_LINES_AT_ROOT | wxTR_ROW_LINES | wxTR_SINGLE );
     itemSizerVertical->Add( m_mdfTree, 10, wxGROW | wxALL, 2 );

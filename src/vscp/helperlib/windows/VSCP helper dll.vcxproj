@@ -304,8 +304,11 @@
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
     </Link>
     <PostBuildEvent>
-      <Command>copy  /Y "$(TargetPath)" "$(VSCP_INSTALL)\files\$(PlatformTarget)"
-copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\$(PlatformTarget)"</Command>
+      <Command>copy  /Y "$(TargetPath)" "$(VSCP_INSTALL)\files\lib\$(PlatformTarget)"
+copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\lib\$(PlatformTarget)"
+copy  /Y "$(ProjectDir)..\vscphelperlib.h" "$(VSCP_INSTALL)\files\lib\$(PlatformTarget)"
+copy  /Y "$(ProjectDir)..\vscphelperlib.h" "$(VSCP_INSTALL)\files\include"
+copy  /Y "$(TargetPath)" "$(VSCP_INSTALL)\files\system\$(PlatformTarget)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -357,8 +360,11 @@ copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\$(PlatformTarget)"
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>copy  /Y "$(TargetPath)" "$(VSCP_INSTALL)\files\$(PlatformTarget)"
-copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\$(PlatformTarget)"</Command>
+      <Command>copy  /Y "$(TargetPath)" "$(VSCP_INSTALL)\files\lib\$(PlatformTarget)"
+copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\lib\$(PlatformTarget)"
+copy  /Y "$(ProjectDir)..\vscphelperlib.h" "$(VSCP_INSTALL)\files\lib\$(PlatformTarget)"
+copy  /Y "$(ProjectDir)..\vscphelperlib.h" "$(VSCP_INSTALL)\files\include"
+copy  /Y "$(TargetPath)" "$(VSCP_INSTALL)\files\system\$(PlatformTarget)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">

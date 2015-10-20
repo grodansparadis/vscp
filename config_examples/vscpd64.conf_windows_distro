@@ -160,8 +160,6 @@
         <!-- Settings for 2014 (Sweden)                              -->
         <!-- Not needed on systems that is dayligt saving time aware -->
 		<timezone>1</timezone>
-        <daylightsavingtime-start>2014-03-30 02:00:00</daylightsavingtime-start>
-        <daylightsavingtime-end>2014-10-26 02:00:00</daylightsavingtime-end>
         <segmentcontoller-event enable="true" interval="60" />
         <heartbeat-event enable="true" interval="60" />
     </automation>
@@ -175,7 +173,7 @@
         <driver enable="false">
             <name>logger</name>
             <config>/tmp/canallog.txt</config>
-            <path>C:\Users\grodansparadis\development\vscp_software\src\vscp\drivers\level1\logger\win32\Release/canallogger.dll</path>
+            <path>C:\Program Files\VSCP\drivers\x64\vscpl1_loggerdrv.dll</path>
             <flags>1</flags>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
@@ -183,26 +181,17 @@
         <!-- The can232 driver  -->
         <driver enable="false" >
             <name>can232</name>
-            <config>/dev/ttyS0;19200;0;0;125</config>
-            <path>/usr/local/lib/can232drv.so</path>
+            <config>COM1;19200;0;0;125</config>
+            <path>C:\Program Files\VSCP\drivers\x64\vscpl1_can232drv.dll</path>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
             <flags>0</flags>
         </driver>
-
-        <!-- The xap driver  -->
-        <driver enable="false" >
-            <name>xap</name>
-            <config>9598;3639</config>
-            <path>/usr/local/lib/xapdrv.so</path>
-            <flags>0</flags>
-            <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
-        </driver>
-        
+       
         <!-- PEAK driver -->
         <driver enable="false" >
             <name>peak</name>
             <config>CANUSB;125</config>
-            <path>C:\Users\grodansparadis\development\vscp_software\src\vscp\drivers\level1\peak\win32\Debug\vscpl1_peakdrv.dll</path>
+            <path>C:\Program Files\VSCP\drivers\x64\vscpl1_peakdrv.dll</path>
             <flags>1</flags>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
@@ -216,31 +205,15 @@
         <!-- Level II Logger  -->
         <driver enable="false" >
             <name>VSCPLoggerDriver1</name>	
-            <path>/usr/local/lib/vscpl2drv_logger.dll</path>
+            <path>C:\Program Files\VSCP\drivers\x64\vscpl2drv_logger.dll</path>
             <config>C:\tmp/vscp_level2.log</config> 		
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
- 	
-        <!-- Level II lmsensors  -->
-        <driver enable="false" >
-            <name>lmsensors</name>
-            <path>/usr/local/lib/vscpl2drv_lmsensors.so</path>
-            <config>2</config>
-            <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
-        </driver>
-
-        <!-- Level II mqtt  -->
-        <driver enable="false" >
-            <name>VSCPMQTTDriver1</name>
-            <path>/usr/local/lib/vscpl2drv_mqtt.so</path>
-            <config>subscribe;vscp;localhost;1883;;60</config>
-            <guid>08:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
-        </driver>	
 
         <!-- Level II tcp/ip link  -->
         <driver enable="false" >                 
             <name>tcpiplink1</name>
-            <path>/usr/local/lib/vscpl2drv_tcpiplink.so</path>
+            <path>C:\Program Files\VSCP\drivers\x64\vscpl2_tcpiplinkdrv.dll</path>
             <config>192.168.1.2;9598;admin;secret</config>                 
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
@@ -249,7 +222,7 @@
         <driver enable="false"> 		   	 			
             <name>rawethernet1</name> 		   	 		
             <config>eth0</config>
-            <path>/usr/local/lib/vscpl2drv_raweth.so</path>
+            <path>C:\Program Files\VSCP\drivers\x64\vscpl2_rawethernetdrv.dll</path>
         </driver>
 		
 	<!-- Level II simulation  -->
@@ -257,10 +230,9 @@
             <name>sim1</name> 		   	 		
             <config>1</config>
 			<guid>FF:FF:FF:FF:FF:FF:FF:F7:03:00:00:00:00:00:00:00</guid>
-            <path>C:\Program Files (x86)\VSCP\drivers\level2\vscpl2_simdrv.dll</path>
+            <path>C:\Program Files\VSCP\drivers\x64\vscpl2_simdrv.dll</path>
         </driver>
  
-
     </level2driver>	
     
     <!-- Collect data in tables -->
