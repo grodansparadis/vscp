@@ -450,8 +450,7 @@ bool vscp_getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue
 
 	// If class >= 512 and class < 1024 we
 	// have GUID in front of data. 
-	if ( ( pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL) && 
-			(pEvent->vscp_class < VSCP_CLASS2_PROTOCOL) ) {
+	if ( ( pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL)  ) {
 		offset = 16;
 	}
 	
@@ -628,8 +627,7 @@ bool vscp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, wxString& s
     
     // If class >= 512 and class <1024 we
 	// have GUID in front of data. 
-	if ( ( pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL) && 
-			(pEvent->vscp_class < VSCP_CLASS2_PROTOCOL) ) {
+	if ( ( pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL)  ) {
 		offset = 16;
 	}
     
@@ -653,8 +651,7 @@ bool vscp_getVSCPMeasurementWithZoneAsString(const vscpEvent *pEvent, wxString& 
     
     // If class >= 512 and class <1024 we
 	// have GUID in front of data. 
-	if ( ( pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL) && 
-			(pEvent->vscp_class < VSCP_CLASS2_PROTOCOL) ) {
+	if ( ( pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL)  ) {
 		offset = 16;
 	}
     
@@ -3253,8 +3250,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 	
 	// If class >= 512 and class <1024 we
 	// have GUID in front of data. 
-	if ( ( pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL) && 
-			(pEvent->vscp_class < VSCP_CLASS2_PROTOCOL) ) {
+	if ( ( pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL ) )  {
 		offset = 16;
 	}
 
@@ -3940,6 +3936,40 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 		break;
 
    } // switch type  // VSCP_CLASS1_INFORMATION
+   break;
+
+   ///////////////////////////////////////////////////////////////////////////
+   //                          LEVEL II PROTOCOL
+   ///////////////////////////////////////////////////////////////////////////
+   case VSCP_CLASS2_PROTOCOL:
+   {
+       switch ( pEvent->vscp_type ) {
+
+           case VSCP2_TYPE_PROTOCOL_GENERAL:
+               strOutput += _("CLASS2 PROTOCOL - General event.\n");
+               break;
+
+           case VSCP2_TYPE_PROTOCOL_READ_REGISTER:
+               strOutput += _( "CLASS2 PROTOCOL - Read register.\n");
+               break;
+
+           case VSCP2_TYPE_PROTOCOL_WRITE_REGISTER:
+               strOutput += _( "CLASS2 PROTOCOL - Write register.\n" );
+               break;
+
+           case VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE:
+               strOutput += _( "CLASS2 PROTOCOL - Read/write response.\n" );
+               break;
+
+           case VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS:
+               strOutput += _( "CLASS2 PROTOCOL - High End Server Capabilities.\n" );
+               break;
+
+           default:
+               break;
+       }
+   }
+   strOutput += _( "\n" );
    break;
 
     ///////////////////////////////////////////////////////////////////////////

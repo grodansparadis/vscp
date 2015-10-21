@@ -28,7 +28,7 @@
 // This file may be a copy of the original file. This is because the file is
 // copied to other projects as a convinience. Thus editing the copy will not make
 // it to the original and will be overwritten.
-// The original file can be foud in the vscp_softare source tree under 
+// The original file can be found in the vscp_softare source tree under 
 // src/vscp/common 
 
 #ifndef _VSCP_H_
@@ -189,23 +189,23 @@ extern "C" {
     //
 
     typedef struct {
-        uint16_t crc;       // crc checksum - currently only used for UDP and RF
-        uint8_t *pdata;     // Pointer to data. Max 487 (512- 25) bytes
+        uint16_t crc;           // crc checksum - currently only used for UDP and RF
+        uint8_t *pdata;         // Pointer to data. Max 487 (512- 25) bytes
         // Following two are for daemon internal use
-        uint32_t obid;      // Used by driver for channel info etc.
-        uint32_t timestamp; // Relative time stamp for package in microseconds
+        uint32_t obid;          // Used by driver for channel info etc.
+        uint32_t timestamp;     // Relative time stamp for package in microseconds
         // ----- CRC should be calculated from here to end + data block ----
-        uint16_t head;      // Bit 16   GUID is IP v.6 address.
-                            // bit 765  priority, Priority 0-7 where 0 is highest.
-                            // bit 4 = hard coded, true for a hard coded device.
-                            // bit 3 = Don't calculate CRC, false for CRC usage.
-                            // bit 2 = Reserved.
-                            // bit 1 = Reserved.
-                            // bit 0 = Reserved.
-        uint16_t vscp_class;// VSCP class
-        uint16_t vscp_type; // VSCP type
-        uint8_t GUID[ 16 ]; // Node globally unique id MSB(0) -> LSB(15)
-        uint16_t sizeData;  // Number of valid data bytes
+        uint16_t head;          // Bit 16   GUID is IP v.6 address.
+                                // bit 765  priority, Priority 0-7 where 0 is highest.
+                                // bit 4 = hard coded, true for a hard coded device.
+                                // bit 3 = Don't calculate CRC, false for CRC usage.
+                                // bit 2 = Reserved.
+                                // bit 1 = Reserved.
+                                // bit 0 = Reserved.
+        uint16_t vscp_class;    // VSCP class
+        uint16_t vscp_type;     // VSCP type
+        uint8_t GUID[ 16 ];     // Node globally unique id MSB(0) -> LSB(15)
+        uint16_t sizeData;      // Number of valid data bytes
     } /*__attribute__((packed, aligned(1)))*/ vscpEvent;
 
 
@@ -294,7 +294,7 @@ typedef struct  {
 	uint16_t mask_type;
 
 	uint8_t filter_GUID[ 16 ];      // Node address MSB -> LSB, LSB is node nickname id
-	uint8_t mask_GUID[ 16 ];        //		when interfacing the VSCP daemon.
+	uint8_t mask_GUID[ 16 ];        // when interfacing the VSCP daemon.
 	
 } /*__attribute__((packed, aligned(1)))*/ vscpEventFilter;
 
@@ -331,10 +331,10 @@ typedef  VSCPStatistics * PVSCPSTATISTICS;
 #define VSCP_STATUS_ERROR_STRING_SIZE   80
 
 typedef struct structVSCPStatus {
-    unsigned long channel_status;           // Current state for channel
-    unsigned long lasterrorcode;            // Last error code
-    unsigned long lasterrorsubcode;         // Last error sub code
-    char lasterrorstr[VSCP_STATUS_ERROR_STRING_SIZE]; // Last error string
+    unsigned long channel_status;                       // Current state for channel
+    unsigned long lasterrorcode;                        // Last error code
+    unsigned long lasterrorsubcode;                     // Last error sub code
+    char lasterrorstr[VSCP_STATUS_ERROR_STRING_SIZE];   // Last error string
 } /*__attribute__((packed, aligned(1)))*/ VSCPStatus;
 
 
@@ -480,6 +480,8 @@ struct myNode {
 
 // Bits for VSCP server 16-bit capability code
 // used by CLASS1.PROTOCOL, HIGH END SERVER RESPONSE
+// and low end 15-bits for
+// CLASS2.PROTOCOL, HIGH END SERVER HEART BEAT
 #define VSCP_SERVER_CAPABILITY_TCPIP            (1<<15)
 #define VSCP_SERVER_CAPABILITY_UDP              (1<<14)
 #define VSCP_SERVER_CAPABILITY_MULTICAST        (1<<13)
