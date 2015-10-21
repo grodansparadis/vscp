@@ -260,6 +260,13 @@ public:
     void addClient(CClientItem *pClientItem, uint32_t id = 0);
 
     /*!
+        Add a known node
+        @param guid Real GUID for node
+        @param name Symbolic name for node.
+    */
+    void addKnowNode( cguid& guid, wxString& name );
+
+    /*!
         Remove a new client from the clinet list
 
         @param pClientItem Pointer to client that should be added.
@@ -361,12 +368,15 @@ public:
      */
     uint32_t m_maxItemsInClientReceiveQueue;
 
+    /*!
+        Name of this server
+    */
+    wxString strServerName;
 
     /*!
         Server GUID
         This is the GUID for the server
      */
-    //uint8_t m_GUID[ 16 ];
 	cguid m_guid;
 
     /*!
@@ -426,6 +436,11 @@ public:
 	*/
 	bool m_bUDPInterface;
 
+    /*!
+        Multicast announce interface
+    */
+    bool m_bMulticastAnnounce;
+
 	/*!
         Enable DM functionality
      */
@@ -462,8 +477,13 @@ public:
     /// Interface(s) used for TCP/IP connection
     wxString m_strTcpInterfaceAddress;
 
+    /// Interface(s) used for multicast announce
+    wxString m_strMulticastAnnounceAddress;
+
 	/// INterface(s) to use for UDP
 	wxString m_strUDPInterfaceAddress;
+
+    
 
 
 	/////////////////////////////////////////////////////////

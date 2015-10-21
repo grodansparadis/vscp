@@ -274,3 +274,23 @@ bool CDeviceList::removeItem(unsigned long id)
 
     return true;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// getDeviceItemFromGUID
+//
+
+CDeviceItem *CDeviceList::getDeviceItemFromGUID( cguid& guid )
+{
+    CDeviceItem *returnItem = NULL;
+
+    VSCPDEVICELIST::iterator iter;
+    for ( iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter ) {
+        CDeviceItem *pItem = *iter;
+        if ( pItem->m_guid == guid ) {
+            returnItem = pItem;
+            break;
+        }
+    }
+
+    return returnItem;
+}

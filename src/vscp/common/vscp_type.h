@@ -910,6 +910,7 @@
 #define VSCP2_TYPE_INFORMATION_GENERAL                      0
 #define VSCP2_TYPE_INFORMATION_TOKEN_ACTIVITY               1
 #define VSCP2_TYPE_INFORMATION_HEART_BEAT                   2
+#define VSCP2_TYPE_INFORMATION_PROXY_HEART_BEAT             3
 
 // Level II Text to speech functionality Class=1028 (0x404)
 #define VSCP2_TYPE_TEXT2SPEECH_GENERAL                      0

@@ -94,18 +94,23 @@ public:
     CControlObject *m_pCtrlObject;
 };
 
+// This structure holds information about nodes that need to have
+// information collected from them.
 
 struct discoveredNodeInfo {
-    int bStatus;        // 0 = working, -1=failed, 777=succes.
-    discoveryVSCPThread *pThread;  // Discover thread
-    uint8_t nodeid;     // nodeid for the node to investigate
-    uint32_t clientId;  // Clientid for node to investigate
-    cguid guid;         // GUID for node.
-    wxString mdfPath;   // MDF path for node.
+    int bStatus;                    // 0 = working, -1=failed, 777=succes.
+    discoveryVSCPThread *pThread;   // Discover thread
+    uint8_t nodeid;                 // nodeid for the node to investigate
+    uint32_t clientId;              // Clientid for node to investigate
+    cguid guid;                     // GUID for node.
+    wxString mdfPath;               // MDF path for node.
 };
 
 WX_DECLARE_LIST ( discoveredNodeInfo, DISCOVERYLIST );
 
+// This class holds information about a known node. This can be 
+// either a node that is assigned as known from the configuration
+// file or a node that is discovered.
 
 class cnodeInformation 
 {
@@ -129,9 +134,15 @@ private:
     // MDF path for node
     wxString m_mdfPath;
 
-    /// Last haertbeat from this node
+    // Last heartbeat from this node
     wxDateTime m_lastHeartBeat;
 
+    // Standard registers
+    uint8_t m_reg[ 0x80 ];
+
+    // This is the name of the node if any.
+    // Will be truncated to 64 byte when sent out or reported
+    wxString strName;
 };
 
 
@@ -192,7 +203,7 @@ public:
 
     // This array holds guid's for nodes that
     // we have received a heartbeat from. The GUID
-    // is not aleays the nodes actual GUID but oftebn 
+    // is not always the nodes actual GUID but often 
     // the interface GUID plus nickname.
     wxArrayString m_knownGUIDs;
 

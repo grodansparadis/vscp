@@ -238,11 +238,17 @@ CControlObject::CControlObject()
     // Control TCP/IP Interface
     m_bTCPInterface = true;
 
+    // Multicast annouce 
+    m_bMulticastAnnounce = true;
+
 	// Control UDP INterface
 	m_bUDPInterface = false;
 
     // Default TCP/IP interface
     m_strTcpInterfaceAddress = _("9598");
+
+    // Default multicast announce port
+    m_strMulticastAnnounceAddress = _( "33333" );
 
 	// Default UDP interface
     m_strUDPInterfaceAddress = _("udp://:9598");
@@ -596,7 +602,7 @@ bool CControlObject::init(wxString& strcfgfile)
 
     // Get GUID
     if ( m_guid.isNULL() ) {
-        if (!getMacAddress(m_guid)) {
+        if ( !getMacAddress(m_guid ) ) {
             // We failed to create GUID from MAC address use
             // 'localhost' IP instead as the base.
             getIPAddress(m_guid);
@@ -604,7 +610,7 @@ bool CControlObject::init(wxString& strcfgfile)
     }
 
     // Load decision matrix if mechanism is enabled
-    if (m_bDM) {
+    if ( m_bDM ) {
         logMsg(_("DM enabled.\n"), DAEMON_LOGMSG_INFO);
         m_dm.init();
         m_dm.load();
@@ -614,7 +620,7 @@ bool CControlObject::init(wxString& strcfgfile)
     }
 
     // Load variables if mechanism is enabled
-    if (m_bVariables) {
+    if ( m_bVariables ) {
         logMsg(_("Variables enabled.\n"), DAEMON_LOGMSG_INFO);
         m_VSCP_Variables.load();
     }
@@ -626,7 +632,7 @@ bool CControlObject::init(wxString& strcfgfile)
     startClientWorkerThread();
 
     // Start TCP/IP interface if enabled
-    if (m_bTCPInterface) {
+    if ( m_bTCPInterface ) {
         logMsg(_("TCP/IP interface enabled.\n"), DAEMON_LOGMSG_INFO);
         startTcpWorkerThread();
     }
@@ -693,8 +699,7 @@ bool CControlObject::run(void)
 	// Init table files
 	m_mutexTableList.Lock();
 	listVSCPTables::iterator iter;
-	for (iter = m_listTables.begin(); iter != m_listTables.end(); ++iter)
-	{
+	for ( iter = m_listTables.begin(); iter != m_listTables.end(); ++iter ) {
 		CVSCPTable *pTable = *iter;
         pTable->m_mutexThisTable.Lock();
 		pTable->init();
@@ -704,7 +709,7 @@ bool CControlObject::run(void)
 
     // We need to create a clientItem and add this object to the list
     CClientItem *pClientItem = new CClientItem;
-    if (NULL == pClientItem) {
+    if ( NULL == pClientItem ) {
         wxLogDebug(_("ControlObject: Unable to allocate Client item, Ending"));
         logMsg(_("Unable to allocate Client item, Ending."), DAEMON_LOGMSG_CRITICAL);
         return false;
@@ -760,29 +765,6 @@ bool CControlObject::run(void)
             logMsg(_("Autosaved variables.\n"), DAEMON_LOGMSG_INFO);
         }
         m_variableMutex.Unlock();
-
-        // tcp/ip clients uses joinable treads and therefor does not
-        // delete themseves.  This is a garbage collect for unterminated 
-        // tcp/ip connection threads.
-		/*
-        TCPCLIENTS::iterator iter;
-        for (iter = m_pVSCPClientThread->m_tcpclients.begin();
-                iter != m_pVSCPClientThread->m_tcpclients.end(); ++iter) {
-
-            TcpClientThread *pThread = *iter;
-            if ((NULL != pThread)) {
-                if (pThread->m_bQuit) {
-                    pThread->Wait();
-                    m_pVSCPClientThread->m_tcpclients.remove(pThread);
-                    delete pThread;
-                    break;
-                }
-            }
-        }
-		*/
-
-
-
 
         // Wait for event
         if (wxSEMA_TIMEOUT == pClientItem->m_semClientInputQueue.WaitTimeout(10)) {
@@ -1382,6 +1364,15 @@ void CControlObject::removeClient(CClientItem *pClientItem)
     m_clientList.removeClient(pClientItem);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+// addKnowNode
+//
+
+void CControlObject::addKnowNode( cguid& guid, wxString& name )
+{
+
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //  getMacAddress
 //
@@ -1705,6 +1696,20 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     m_strTcpInterfaceAddress = subchild->GetAttribute(wxT("interface"), wxT(""));
 
 				} 
+                else if ( subchild->GetName() == wxT( "multicast-announce" ) ) {
+
+                    wxString attribute = subchild->GetAttribute( wxT( "enable" ), wxT( "true" ) );
+                    attribute.MakeLower();
+                    if ( attribute.IsSameAs( _( "false" ), false ) ) {
+                        m_bMulticastAnnounce = false;
+                    }
+                    else {
+                        m_bMulticastAnnounce = true;
+                    }
+
+                    m_strMulticastAnnounceAddress = subchild->GetAttribute( wxT( "interface" ), wxT( "" ) );
+
+                }
 				else if (subchild->GetName() == wxT("udp")) {
                     wxString attribut = subchild->GetAttribute(wxT("enable"), wxT("true")); 
                     attribut.MakeLower();
@@ -1810,6 +1815,9 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     wxString str = subchild->GetNodeContent();
                     m_guid.getFromString(str);
                 } 
+                else if ( subchild->GetName() == wxT( "servername" ) ) {
+                    strServerName = subchild->GetNodeContent();
+                }
 				else if (subchild->GetName() == wxT("clientbuffersize")) {
                     wxString str = subchild->GetNodeContent();
                     m_maxItemsInClientReceiveQueue = vscp_readStringValue(str);
@@ -2080,6 +2088,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     }
                     
                     while (subsubchild) {
+
                         if (subsubchild->GetName() == wxT("name")) {
                             strName = subsubchild->GetNodeContent();
                             strName.Trim();
@@ -2111,11 +2120,32 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             strGUID.Trim();
                             strGUID.Trim(false);
                         }
+                        else if ( subsubchild->GetName() == wxT( "known-nodes" ) ) {
+                        
+                            wxXmlNode *subsubsubchild = subchild->GetChildren();
+
+                            while ( subsubsubchild ) {
+
+                                if ( subsubsubchild->GetName() == wxT( "node" ) ) {
+                                    cguid guid;
+                                    
+                                    guid.getFromString( subchild->GetAttribute( wxT( "guid" ), wxT( "-" ) ) );
+                                    wxString name = subchild->GetAttribute( wxT( "name" ), wxT( "" )  ) ;
+                                    addKnowNode( guid, name );
+                                }
+                            
+                                // Next driver item
+                                subsubsubchild = subsubsubchild->GetNext();
+
+                            } // while
+
+                        }
+
 
                         // Next driver item
                         subsubchild = subsubchild->GetNext();
 
-                    }
+                    } // while
 
                 }
 
@@ -2219,6 +2249,26 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             strGUID = subsubchild->GetNodeContent();
                             strGUID.Trim();
                             strGUID.Trim(false);
+                        }
+                        else if ( subsubchild->GetName() == wxT( "known-nodes" ) ) {
+
+                            wxXmlNode *subsubsubchild = subchild->GetChildren();
+
+                            while ( subsubsubchild ) {
+
+                                if ( subsubsubchild->GetName() == wxT( "node" ) ) {
+                                    cguid guid;
+
+                                    guid.getFromString( subchild->GetAttribute( wxT( "guid" ), wxT( "-" ) ) );
+                                    wxString name = subchild->GetAttribute( wxT( "name" ), wxT( "" ) );
+                                    addKnowNode( guid, name );
+                                }
+
+                                // Next driver item
+                                subsubsubchild = subsubsubchild->GetNext();
+
+                            } // while
+
                         }
 
                         // Next driver item

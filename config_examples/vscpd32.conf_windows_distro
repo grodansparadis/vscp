@@ -88,6 +88,9 @@
         <guid>
             00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00
         </guid>
+		
+		<!-- Set symbolic server name for daemon -->
+		<servername>Windows 32 VSCP Server</servername>
 
         <!-- This is the default buffer size (number of events) for all  -->
         <!-- clients in the system. Everything from a driver to a TCP/IP -->

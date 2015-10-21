@@ -207,6 +207,13 @@ public:
 	*/
  	bool removeItem( unsigned long id );
 
+    /*!
+        Get device item from GUID
+        @param guid for device to look for
+        @return Pointer to device item or NULL if not found
+    */
+    CDeviceItem *getDeviceItemFromGUID( cguid& guid );
+
 public:
 	
   /*!

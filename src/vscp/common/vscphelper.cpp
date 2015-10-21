@@ -3972,6 +3972,36 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
    strOutput += _( "\n" );
    break;
 
+   ///////////////////////////////////////////////////////////////////////////
+   //                          LEVEL II PROTOCOL
+   ///////////////////////////////////////////////////////////////////////////
+   case VSCP_CLASS2_INFORMATION:
+   {
+       switch ( pEvent->vscp_type ) {
+
+           case VSCP2_TYPE_INFORMATION_GENERAL:
+               strOutput += _( "VSCP_CLASS2_INFORMATION - General event.\n" );
+               break;
+
+           case VSCP2_TYPE_INFORMATION_TOKEN_ACTIVITY:
+               strOutput += _( "VSCP_CLASS2_INFORMATION - Read register.\n" );
+               break;
+
+           case VSCP2_TYPE_INFORMATION_HEART_BEAT:
+               strOutput += _( "VSCP_CLASS2_INFORMATION - Write register.\n" );
+               break;
+
+           case VSCP2_TYPE_INFORMATION_PROXY_HEART_BEAT:
+               strOutput += _( "VSCP_CLASS2_INFORMATION - Read/write response.\n" );
+               break;
+
+           default:
+               break;
+       }
+   }
+   strOutput += _( "\n" );
+   break;
+
     ///////////////////////////////////////////////////////////////////////////
     //                        LEVEL II MEASUREMENT CLASSES
     ///////////////////////////////////////////////////////////////////////////

@@ -367,13 +367,28 @@ typedef struct structVSCPChannelInfo {
 
 typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 
+// * * * Multicast on VSCP reserved IP 224.0.23.158
+
+#define VSCP_MULTICAST_DEFAULT_ANNNOUNCE_PORT   33333
+
+// Packet format type = 0
+#define VSCP_MULTICAST_PACKET0_POS_PKTTYPE      0
+#define VSCP_MULTICAST_PACKET0_POS_HEAD         1
+#define VSCP_MULTICAST_PACKET0_POS_TIMESTAMP    2
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS   6
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE    8
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_GUID    10
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE    26
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_DATA    28
+
 // Bootloaders
-#define VSCP_BOOTLOADER_VSCP            0x00	// VSCP boot loader algorithm
-#define VSCP_BOOTLOADER_PIC1            0x01	// PIC algorithm 0
-#define VSCP_BOOTLOADER_AVR1            0x10	// AVR algorithm 0
-#define VSCP_BOOTLOADER_LPC1            0x20	// NXP/Philips LPC algorithm 0
-#define VSCP_BOOTLOADER_ST              0x30	// ST STR algorithm 0
-#define VSCP_BOOTLOADER_NONE            0xff
+#define VSCP_BOOTLOADER_VSCP                    0x00	// VSCP boot loader algorithm
+#define VSCP_BOOTLOADER_PIC1                    0x01	// PIC algorithm 0
+#define VSCP_BOOTLOADER_AVR1                    0x10	// AVR algorithm 0
+#define VSCP_BOOTLOADER_LPC1                    0x20	// NXP/Philips LPC algorithm 0
+#define VSCP_BOOTLOADER_ST                      0x30	// ST STR algorithm 0
+#define VSCP_BOOTLOADER_FREESCALE               0x40	// Freescale Kinetics algorithm 0
+#define VSCP_BOOTLOADER_NONE                    0xff
 
 
 //			* * * Data Coding for VSCP packets * * *
