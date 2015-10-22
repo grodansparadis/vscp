@@ -143,8 +143,8 @@
     <ClInclude Include="..\..\common\register.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\common\v7.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="..\..\common\knownnodes.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -235,7 +235,7 @@
     <ClCompile Include="..\..\common\register.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\common\v7.c">
+    <ClCompile Include="..\..\common\knownnodes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -108,45 +108,7 @@ struct discoveredNodeInfo {
 
 WX_DECLARE_LIST ( discoveredNodeInfo, DISCOVERYLIST );
 
-// This class holds information about a known node. This can be 
-// either a node that is assigned as known from the configuration
-// file or a node that is discovered.
 
-class cnodeInformation 
-{
-
-public:
-
-    cnodeInformation();
-    ~cnodeInformation();
-
-private:
-
-    /*!
-        Client originating this 
-        Event
-    */
-    CClientItem *m_pClientItem;
-
-    // Full GUID for node
-    cguid m_guid;
-
-    // MDF path for node
-    wxString m_mdfPath;
-
-    // Last heartbeat from this node
-    wxDateTime m_lastHeartBeat;
-
-    // Standard registers
-    uint8_t m_reg[ 0x80 ];
-
-    // This is the name of the node if any.
-    // Will be truncated to 64 byte when sent out or reported
-    wxString strName;
-};
-
-
-WX_DECLARE_LIST( cnodeInformation, VSCP_KNOWN_NODES_LIST );
 
 /*!
     This class implement a one of thread that look
@@ -178,39 +140,11 @@ public:
     virtual void OnExit();
 
     /*!
-        Find node
-    */
-    cnodeInformation *findKnownNode( cguid& guid );
-
-    /*!
-        Save the list of known nodes
-    */
-    void saveKnownNodes( void );
-
-
-    /*!
-        Load the list of known nodes
-    */
-    void loadKnownNodes( void );
-
-
-    /*!
         Termination control
     */
     bool m_bQuit;
 
     CControlObject *m_pCtrlObject;
-
-    // This array holds guid's for nodes that
-    // we have received a heartbeat from. The GUID
-    // is not always the nodes actual GUID but often 
-    // the interface GUID plus nickname.
-    wxArrayString m_knownGUIDs;
-
-    // This list holds information about each discovered
-    // node in the system and the content in the list
-    // is preserved in the filesystem over time
-    VSCP_KNOWN_NODES_LIST m_knownNodes;
 
     // This list contains items (nodes) that are under discovery
     DISCOVERYLIST m_discoverList;

@@ -22,7 +22,9 @@
 //
 
 #ifdef WIN32
+#include <sys/types.h>   // for type definitions 
 #include <winsock2.h>
+#include <ws2tcpip.h>    // for win socket structs 
 #endif
 
 #include "wx/wxprec.h"
@@ -68,26 +70,9 @@
 
 
 WX_DEFINE_LIST(DISCOVERYLIST);
-WX_DEFINE_LIST(VSCP_KNOWN_NODES_LIST);
 
 
-///////////////////////////////////////////////////////////////////////////////
-// cnodeInformation CTOR
-//
 
-cnodeInformation::cnodeInformation()
-{
-    m_pClientItem = NULL;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// cnodeInforamtion DTOR
-//
-
-cnodeInformation::~cnodeInformation()
-{
-    ;
-}
 
 
 
@@ -118,6 +103,71 @@ daemonVSCPThread::~daemonVSCPThread()
 
 void *daemonVSCPThread::Entry()
 {
+    int sock_mc;                // socket descriptor 
+    char sendBuf[ 1024 ];       // string to send 
+    struct sockaddr_in mc_addr; // socket address structure 
+    unsigned int send_len;      // length of string to send 
+    unsigned short mc_port = vscp_readStringValue( m_pCtrlObject->m_strMulticastAnnounceAddress ) ; // multicast port 
+    unsigned char mc_ttl = m_pCtrlObject->m_ttlMultiCastAnnounce;   // time to live (hop count) 
+
+#ifdef WIN32
+
+    WSADATA wsaData;            // Windows socket DLL structure 
+
+    // Load Winsock 2.0 DLL
+    if ( WSAStartup( MAKEWORD( 2, 0 ), &wsaData ) != 0 ) {
+        fprintf( stderr, "WSAStartup() failed" );
+        m_pCtrlObject->logMsg( _( "Automation multicast announce WSAStartup() failed\r\n" ), DAEMON_LOGMSG_CRITICAL, DAEMON_LOGTYPE_GENERAL );
+        return NULL;
+    }
+
+    // create a socket for sending to the multicast address 
+    if ( ( sock_mc = socket( PF_INET, SOCK_DGRAM, IPPROTO_UDP ) ) < 0 ) {
+        perror( "socket() failed" );
+        m_pCtrlObject->logMsg( _( "Automation multicast announce sock() failed\r\n" ), DAEMON_LOGMSG_CRITICAL, DAEMON_LOGTYPE_GENERAL );
+        return NULL;
+    }
+
+
+    // set the TTL (time to live/hop count) for the send 
+    if ( ( setsockopt( sock_mc, IPPROTO_IP, IP_MULTICAST_TTL,
+                       ( const char* )&mc_ttl, sizeof( mc_ttl ) ) ) < 0 ) {
+        perror( "setsockopt() failed" );
+        m_pCtrlObject->logMsg(  _( "Automation multicast announce setsockopt() failed\r\n" ), DAEMON_LOGMSG_CRITICAL, DAEMON_LOGTYPE_GENERAL );
+        return NULL;
+    }
+
+    // construct a multicast address structure 
+    memset( &mc_addr, 0, sizeof( mc_addr ) );
+    mc_addr.sin_family = AF_INET;
+    mc_addr.sin_addr.s_addr = inet_addr( "224.0.23.158" );
+    mc_addr.sin_port = htons( mc_port );
+
+    sendto( sock_mc, "LETS GO!\n", 9, 0, ( struct sockaddr * ) &mc_addr, sizeof( mc_addr ) );
+
+#else
+
+    // create a socket for sending to the multicast address 
+    if ( ( sock = socket( PF_INET, SOCK_DGRAM, IPPROTO_UDP ) ) < 0 ) {
+        perror( "socket() failed" );
+        return NULL;
+    }
+
+    // set the TTL (time to live/hop count) for the send 
+    if ( ( setsockopt( sock, IPPROTO_IP, IP_MULTICAST_TTL,
+                       ( void* )&mc_ttl, sizeof( mc_ttl ) ) ) < 0 ) {
+        perror( "setsockopt() failed" );
+        return NULL;
+    }
+
+    // construct a multicast address structure 
+    memset( &mc_addr, 0, sizeof( mc_addr ) );
+    mc_addr.sin_family = AF_INET;
+    mc_addr.sin_addr.s_addr = inet_addr( "224.0.23.158" );
+    mc_addr.sin_port = htons( mc_port );
+
+#endif
+
     // Must have a valid pointer to the control object
     if ( NULL == m_pCtrlObject ) return NULL;
 
@@ -136,8 +186,11 @@ void *daemonVSCPThread::Entry()
 
     // Add the client to the Client List
     m_pCtrlObject->m_wxClientMutex.Lock();
-    m_pCtrlObject->addClient ( pClientItem );
+    m_pCtrlObject->addClient( pClientItem );
     m_pCtrlObject->m_wxClientMutex.Unlock();
+
+    // Clear the filter (Allow everything )
+    vscp_clearVSCPFilter( &pClientItem->m_filterVSCP );
 
     char szName[ 128 ];
 #ifdef WIN32
@@ -174,9 +227,9 @@ void *daemonVSCPThread::Entry()
             if ( m_pCtrlObject->m_automation.doWork( &eventEx ) ) {
 
                 m_pCtrlObject->logMsg( wxString::Format( _( "Automation event sent: Class=%d Type=%d\r\n" ),
-                    eventEx.vscp_class, eventEx.vscp_type ),
-                    DAEMON_LOGMSG_INFO,
-                    DAEMON_LOGTYPE_GENERAL );
+                                        eventEx.vscp_class, eventEx.vscp_type ),
+                                        DAEMON_LOGMSG_INFO,
+                                        DAEMON_LOGTYPE_GENERAL );
             
                 // Yes event should be sent
                 eventEx.obid = pClientItem->m_clientID;
@@ -184,8 +237,7 @@ void *daemonVSCPThread::Entry()
 
                 if ( VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT == eventEx.vscp_type ) {
                     // crc8 of VSCP daemon GUID should be indata byte 0
-                    eventEx.data[ 0 ] = 
-					    vscp_calcCRC4GUIDArray( m_pCtrlObject->m_guid.getGUID() );
+                    eventEx.data[ 0 ] = vscp_calcCRC4GUIDArray( m_pCtrlObject->m_guid.getGUID() );
                 }
 
                 vscpEvent *pnewEvent = new vscpEvent;
@@ -210,8 +262,9 @@ void *daemonVSCPThread::Entry()
             }
         }
 
+        int rv = pClientItem->m_clientInputQueue.GetCount();
         // Wait for incoming event
-        if ( wxSEMA_TIMEOUT == pClientItem->m_semClientInputQueue.WaitTimeout( 500 ) ) continue;
+        if ( wxSEMA_TIMEOUT == pClientItem->m_semClientInputQueue.WaitTimeout( 100 ) ) continue;
 	
         if ( pClientItem->m_clientInputQueue.GetCount() ) {
 
@@ -232,7 +285,7 @@ void *daemonVSCPThread::Entry()
             if ( ( VSCP_CLASS1_PROTOCOL == pEvent->vscp_class ) && 
                     ( VSCP_TYPE_PROTOCOL_HIGH_END_SERVER_PROBE == pEvent->vscp_type ) ) {
 
-                for ( int i=0;i<cntAddr; i++ ) {
+                for ( int i=0; i<cntAddr; i++ ) {
 
                     // Yes this is a "HIGH END SERVER PROBE"
                     // We should send a "HIGH END SERVER RESPONSE"
@@ -280,7 +333,7 @@ void *daemonVSCPThread::Entry()
             else if ( ( VSCP_CLASS1_PROTOCOL == pEvent->vscp_class ) && 
                 ( VSCP_TYPE_PROTOCOL_NEW_NODE_ONLINE == pEvent->vscp_type ) ) {
                 
-                cguid guid;
+                /*cguid guid;
                 guid.getFromArray( pEvent->GUID );
                 wxString str;
                 guid.toString( str );
@@ -289,7 +342,9 @@ void *daemonVSCPThread::Entry()
                     // We have not seen this node before and we will
                     // try to collect information from it
 
-                }
+                }*/
+
+                sendto( sock_mc, "New node online\n", 16, 0, ( struct sockaddr * ) &mc_addr, sizeof( mc_addr ) );
 
             }
 
@@ -297,9 +352,9 @@ void *daemonVSCPThread::Entry()
             else if ( ( VSCP_CLASS1_INFORMATION == pEvent->vscp_class ) && 
                 ( VSCP_TYPE_INFORMATION_NODE_HEARTBEAT == pEvent->vscp_type ) ) {
                 
-                cguid guid;
-                guid.getFromArray( pEvent->GUID );
+                /*cguid guid;
                 wxString str;
+                guid.getFromArray( pEvent->GUID );                
                 guid.toString( str );
                 if ( wxNOT_FOUND != m_knownGUIDs.Index( str, false ) ) {
 
@@ -331,7 +386,9 @@ void *daemonVSCPThread::Entry()
                         }
                     }
 
-                }
+                }*/
+
+                sendto( sock_mc, "Node Heart Beat Level 1\n", 24, 0, ( struct sockaddr * ) &mc_addr, sizeof( mc_addr ) );
 
             }
 
@@ -339,7 +396,7 @@ void *daemonVSCPThread::Entry()
             else if ( ( VSCP_CLASS2_INFORMATION == pEvent->vscp_class ) && 
                 ( VSCP_TYPE_INFORMATION_NODE_HEARTBEAT == pEvent->vscp_type ) ) {
                 
-                
+                sendto( sock_mc, "Node Heart Beat Level 2\n", 24, 0, ( struct sockaddr * ) &mc_addr, sizeof( mc_addr ) );
 
             }
 
@@ -355,8 +412,10 @@ void *daemonVSCPThread::Entry()
     m_pCtrlObject->removeClient( pClientItem );
     m_pCtrlObject->m_wxClientMutex.Unlock();
 
-    return NULL;
+    // Close the multicast socket
+    closesocket( sock_mc );
 
+    return NULL;
 }
 
 

@@ -147,7 +147,7 @@ void *actionThreadURL::Entry()
         sock.Write( wxstr, wxstr.Length() );
         if ( sock.Error() ) {
             // There was an error
-            m_pCtrlObject->logMsg ( _T ( "actionThreadURL: Error writing request: " ) +
+            m_pCtrlObject->logMsg( _T ( "actionThreadURL: Error writing request: " ) +
                 m_url.GetServer() + 
                 wxT(",") + 
                 m_url.GetPort() +

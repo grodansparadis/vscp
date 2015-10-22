@@ -250,6 +250,9 @@ CControlObject::CControlObject()
     // Default multicast announce port
     m_strMulticastAnnounceAddress = _( "33333" );
 
+    // default multicast announce ttl
+    m_ttlMultiCastAnnounce = IP_MULTICAST_DEFAULT_TTL;
+
 	// Default UDP interface
     m_strUDPInterfaceAddress = _("udp://:9598");
 
@@ -1708,6 +1711,8 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     }
 
                     m_strMulticastAnnounceAddress = subchild->GetAttribute( wxT( "interface" ), wxT( "" ) );
+
+                    m_ttlMultiCastAnnounce = vscp_readStringValue( subchild->GetAttribute( wxT( "ttl" ), wxT( "1" ) ) );
 
                 }
 				else if (subchild->GetName() == wxT("udp")) {
