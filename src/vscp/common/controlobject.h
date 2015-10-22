@@ -52,6 +52,7 @@
 #include <udpthread.h>
 #include <daemonvscp.h>
 #include <dm.h>
+#include <knownnodes.h>
 #include <vscp.h>
 
 // Forward declarations
@@ -274,7 +275,7 @@ public:
         @param guid Real GUID for node
         @param name Symbolic name for node.
     */
-    void addKnowNode( cguid& guid, wxString& name );
+    void addKnownNode( cguid& guid, cguid& ifguid, wxString& name );
 
     /*!
         Remove a new client from the clinet list
@@ -642,6 +643,11 @@ public:
 	listVSCPTables m_listTables;
 	wxMutex m_mutexTableList;
 
+    /*!
+        This is the list with knwon nodes in the system
+    */
+    CKnownNodes m_knownNodes;
+    wxMutex m_mutexKnownNodes;
 
     // *************************************************************************
 

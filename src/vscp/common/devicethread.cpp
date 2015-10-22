@@ -67,8 +67,7 @@
 // deviceThread
 //
 
-deviceThread::deviceThread()
-: wxThread(wxTHREAD_JOINABLE)
+deviceThread::deviceThread() : wxThread(wxTHREAD_JOINABLE)
 {
 	m_pDeviceItem = NULL;
 	m_pCtrlObject = NULL;
@@ -125,7 +124,6 @@ void *deviceThread::Entry()
 	m_pCtrlObject->m_wxClientMutex.Lock();
 	m_pCtrlObject->addClient(m_pDeviceItem->m_pClientItem);
 	m_pCtrlObject->m_wxClientMutex.Unlock();
-
 
 	// Load dynamic library
 	if (!m_wxdll.Load(m_pDeviceItem->m_strPath, wxDL_LAZY)) {

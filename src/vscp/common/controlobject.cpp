@@ -1371,9 +1371,9 @@ void CControlObject::removeClient(CClientItem *pClientItem)
 // addKnowNode
 //
 
-void CControlObject::addKnowNode( cguid& guid, wxString& name )
+void CControlObject::addKnownNode( cguid& guid, cguid& ifguid, wxString& name )
 {
-
+    ;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2078,7 +2078,8 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 wxString strConfig;
                 wxString strPath;
                 unsigned long flags;
-                wxString strGUID;
+                //wxString strGUID;
+                cguid guid;
                 bool bEnabled = true;
                 bool bCanalDriver = false;
 
@@ -2121,9 +2122,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             flags = vscp_readStringValue(str);
                         } 
                         else if (subsubchild->GetName() == wxT("guid")) {
-                            strGUID = subsubchild->GetNodeContent();
-                            strGUID.Trim();
-                            strGUID.Trim(false);
+                            guid.getFromString( subsubchild->GetNodeContent() );                            
                         }
                         else if ( subsubchild->GetName() == wxT( "known-nodes" ) ) {
                         
@@ -2132,11 +2131,11 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             while ( subsubsubchild ) {
 
                                 if ( subsubsubchild->GetName() == wxT( "node" ) ) {
-                                    cguid guid;
+                                    cguid knownguid;
                                     
-                                    guid.getFromString( subchild->GetAttribute( wxT( "guid" ), wxT( "-" ) ) );
+                                    knownguid.getFromString( subchild->GetAttribute( wxT( "guid" ), wxT( "-" ) ) );
                                     wxString name = subchild->GetAttribute( wxT( "name" ), wxT( "" )  ) ;
-                                    addKnowNode( guid, name );
+                                    addKnownNode( knownguid, guid, name );
                                 }
                             
                                 // Next driver item
@@ -2154,16 +2153,6 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
                 }
 
-                // Configuration data for one driver loaded
-                uint8_t GUID[ 16 ];
-
-                // Nill the GUID
-                memset(GUID, 0, 16);
-
-                if (strGUID.Length()) {
-                    vscp_getGuidFromStringToArray(GUID, strGUID);
-                }
-
                 // Add the device
                 if (bCanalDriver && bEnabled ) {
 
@@ -2171,7 +2160,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                                                 strConfig,
                                                 strPath,
                                                 flags,
-                                                GUID,
+                                                guid,
                                                 VSCP_DRIVER_LEVEL1,
                                                 bEnabled ) ) {
                         wxString errMsg = _("Driver not added. Path does not exist. - [ ") +
@@ -2213,7 +2202,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 wxString strName;
                 wxString strConfig;
                 wxString strPath;
-                wxString strGUID;
+                cguid guid;
                 bool bEnabled = true;
                 bool bLevel2Driver = false;
 
@@ -2227,7 +2216,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                         bEnabled = false;
                     }
                     
-                    while (subsubchild) {
+                    while ( subsubchild ) {
                         if (subsubchild->GetName() == wxT("name")) {
                             strName = subsubchild->GetNodeContent();
                             strName.Trim();
@@ -2251,9 +2240,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             strPath.Trim(false);
                         } 
                         else if (subsubchild->GetName() == wxT("guid")) {
-                            strGUID = subsubchild->GetNodeContent();
-                            strGUID.Trim();
-                            strGUID.Trim(false);
+                            guid.getFromString( subsubchild->GetNodeContent() );
                         }
                         else if ( subsubchild->GetName() == wxT( "known-nodes" ) ) {
 
@@ -2262,11 +2249,11 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             while ( subsubsubchild ) {
 
                                 if ( subsubsubchild->GetName() == wxT( "node" ) ) {
-                                    cguid guid;
+                                    cguid knownguid;
 
-                                    guid.getFromString( subchild->GetAttribute( wxT( "guid" ), wxT( "-" ) ) );
+                                    knownguid.getFromString( subchild->GetAttribute( wxT( "guid" ), wxT( "-" ) ) );
                                     wxString name = subchild->GetAttribute( wxT( "name" ), wxT( "" ) );
-                                    addKnowNode( guid, name );
+                                    addKnownNode( knownguid, guid, name );
                                 }
 
                                 // Next driver item
@@ -2283,34 +2270,24 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
                 }
 
-                // Configuration data for one driver loaded
-                uint8_t GUID[ 16 ];
-
-                // Nill the GUID
-                memset(GUID, 0, 16);
-
-                if (strGUID.Length()) {
-                    vscp_getGuidFromStringToArray(GUID, strGUID);
-                }
-
                 // Add the device
-                if (bLevel2Driver && bEnabled) {
+                if ( bLevel2Driver && bEnabled ) {
 
                     if (!m_deviceList.addItem(strName,
                                                 strConfig,
                                                 strPath,
                                                 0,
-                                                GUID,
+                                                guid,
                                                 VSCP_DRIVER_LEVEL2,
                                                 bEnabled )) {
                         wxString errMsg = _("Driver not added. Path does not exist. - [ ") +
-                                strPath + _(" ]\n");
+                                    strPath + _(" ]\n");
                         logMsg(errMsg, DAEMON_LOGMSG_INFO);
                     
                     } 
 					else {
                         wxString errMsg = _("Level II driver added. - [ ") +
-                                strPath + _(" ]\n");
+                                    strPath + _(" ]\n");
                         logMsg(errMsg, DAEMON_LOGMSG_INFO);
                     }
 

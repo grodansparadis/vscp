@@ -65,9 +65,7 @@
 #include <crc8.h>
 #include "controlobject.h"
 #include "guid.h"
-
-
-WX_DEFINE_LIST( VSCP_KNOWN_NODES_LIST );
+#include "knownnodes.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // CNodeInformation CTOR
@@ -75,7 +73,13 @@ WX_DEFINE_LIST( VSCP_KNOWN_NODES_LIST );
 
 CNodeInformation::CNodeInformation()
 {
-    m_pClientItem = NULL;
+    m_bInvestigated = false;
+    m_realguid.clear();
+    m_proxyguid.clear();
+    m_mdfPath.Empty();
+    m_lastHeartBeat = wxDateTime::Now();
+    memset( m_stdreg, 0, 0x80 );
+    strName.Empty();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -98,7 +102,7 @@ CNodeInformation::~CNodeInformation()
 
 CKnownNodes::CKnownNodes()
 {
-    m_pClientItem = NULL;
+    
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -107,5 +111,86 @@ CKnownNodes::CKnownNodes()
 
 CKnownNodes::~CKnownNodes()
 {
-    ;
+    // Remove hash content
+    VSCP_HASH_KNOWN_NODES::iterator it;
+    for ( it = m_knownNodes.begin(); it != m_knownNodes.end(); ++it )
+    {
+        wxString key = it->first;
+        CNodeInformation *pNode = it->second;
+        if ( NULL != pNode ) delete pNode;
+        pNode = NULL;
+    }
+    // Clear the map
+    m_knownNodes.clear();
+
+
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// findNode
+//
+
+CNodeInformation *CKnownNodes::findNode( cguid& guid )
+{
+    wxString strGUID;
+
+    guid.toString( strGUID  );
+    return m_knownNodes[ strGUID ];
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// addNode
+//
+
+CNodeInformation *CKnownNodes::addNode( cguid& guid )
+{
+    CNodeInformation *pNode = findNode( guid );
+    if ( NULL == pNode ) {
+        pNode = new CNodeInformation;
+        if ( NULL != pNode ) {
+            wxString strGUID;
+            guid.toString( strGUID );
+            m_knownNodes[ strGUID ] = pNode;    // Assign the node
+        }
+    }
+
+    return pNode;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// addNode
+//
+
+bool CKnownNodes::removeNode( cguid& guid )
+{
+    wxString strGUID;
+    bool rv = false;
+    CNodeInformation *pNode = findNode( guid );
+    if ( NULL != pNode ) delete pNode;
+    pNode = NULL;
+    
+    guid.toString( strGUID );
+    m_knownNodes[ strGUID ] = NULL;
+    m_knownNodes.erase( strGUID );
+
+    return rv;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// saveNodes
+//
+
+void CKnownNodes::saveNodes( void )
+{
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// loadNodes
+//
+
+void CKnownNodes::loadNodes( void )
+{
+
+}
+
