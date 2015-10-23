@@ -184,3 +184,43 @@ bool CClientList::removeClient( CClientItem *pClientItem )
 
     return true;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// getClientFromId
+//
+
+CClientItem *CClientList::getClientFromId( uint32_t id )
+{
+    CClientItem *returnItem = NULL;
+
+    VSCPCLIENTLIST::iterator iter;
+    for ( iter = m_clientItemList.begin(); iter != m_clientItemList.end(); ++iter ) {
+        CClientItem *pItem = *iter;
+        if ( pItem->m_clientID == id ) {
+            returnItem = pItem;
+            break;
+        }
+    }
+
+    return returnItem;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getClientFromId
+//
+
+CClientItem *CClientList::getClientFromGUID( cguid& guid )
+{
+    CClientItem *returnItem = NULL;
+
+    VSCPCLIENTLIST::iterator iter;
+    for ( iter = m_clientItemList.begin(); iter != m_clientItemList.end(); ++iter ) {
+        CClientItem *pItem = *iter;
+        if ( pItem->m_guid == guid ) {
+            returnItem = pItem;
+            break;
+        }
+    }
+
+    return returnItem;
+}

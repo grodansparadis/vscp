@@ -116,7 +116,7 @@ public:
 	/*!
 		GUID to use for driver interface if set
 	 */
-	cguid m_guid;
+	cguid m_interface_guid;
 
 	/*!
 		Worker thread for device

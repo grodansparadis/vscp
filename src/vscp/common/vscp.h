@@ -196,6 +196,7 @@ extern "C" {
         uint32_t timestamp;     // Relative time stamp for package in microseconds
         // ----- CRC should be calculated from here to end + data block ----
         uint16_t head;          // Bit 16   GUID is IP v.6 address.
+                                // Bit 8-15 = Reserved
                                 // bit 765  priority, Priority 0-7 where 0 is highest.
                                 // bit 4 = hard coded, true for a hard coded device.
                                 // bit 3 = Don't calculate CRC, false for CRC usage.
@@ -235,7 +236,7 @@ typedef struct {
 	uint8_t  GUID[ 16 ];            // Node globally unique id MSB(0) -> LSB(15)
 	uint16_t sizeData;              // Number of valid data bytes		
 
-    uint8_t  data[VSCP_MAX_DATA];   // Pointer to data. Max. 487 (512- 25) bytes
+    uint8_t  data[VSCP_MAX_DATA];   // Pointer to data. Max. 487 (512-25) bytes
 
 } /*__attribute__((packed, aligned(1)))*/ vscpEventEx;
 
@@ -374,12 +375,22 @@ typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 // Packet format type = 0
 #define VSCP_MULTICAST_PACKET0_POS_PKTTYPE      0
 #define VSCP_MULTICAST_PACKET0_POS_HEAD         1
-#define VSCP_MULTICAST_PACKET0_POS_TIMESTAMP    2
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS   6
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE    8
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_GUID    10
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE    26
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_DATA    28
+#define VSCP_MULTICAST_PACKET0_POS_HEAD_MSB     1
+#define VSCP_MULTICAST_PACKET0_POS_HEAD_LSB     2
+#define VSCP_MULTICAST_PACKET0_POS_TIMESTAMP    3
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS   7
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE    9
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_GUID    11
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE    27
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_DATA    29
+
+// VSCP multicast packet types
+#define VSCP_MULTICAST_TYPE_EVENT               0
+
+// VSCP multicast Encryption types
+#define VSCP_MULTICAST_ENCRYPTION_NONE          0
+
+#define SET_VSCP_MULTICAST_TYPE( type, encryption )  ( (type<<8) + encryption )
 
 // Bootloaders
 #define VSCP_BOOTLOADER_VSCP                    0x00	// VSCP boot loader algorithm

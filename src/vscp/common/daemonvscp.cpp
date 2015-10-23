@@ -103,12 +103,10 @@ daemonVSCPThread::~daemonVSCPThread()
 
 void *daemonVSCPThread::Entry()
 {
-    int sock_mc;                // socket descriptor 
-    char sendBuf[ 1024 ];       // string to send 
-    struct sockaddr_in mc_addr; // socket address structure 
-    unsigned int send_len;      // length of string to send 
+    int sock_mc;                    // socket descriptor 
+    struct sockaddr_in mc_addr;     // socket address structure  
     unsigned short mc_port = vscp_readStringValue( m_pCtrlObject->m_strMulticastAnnounceAddress ) ; // multicast port 
-    unsigned char mc_ttl = m_pCtrlObject->m_ttlMultiCastAnnounce;   // time to live (hop count) 
+    unsigned char mc_ttl = m_pCtrlObject->m_ttlMultiCastAnnounce;                                   // time to live (hop count) 
 
 #ifdef WIN32
 
@@ -127,7 +125,6 @@ void *daemonVSCPThread::Entry()
         m_pCtrlObject->logMsg( _( "Automation multicast announce sock() failed\r\n" ), DAEMON_LOGMSG_CRITICAL, DAEMON_LOGTYPE_GENERAL );
         return NULL;
     }
-
 
     // set the TTL (time to live/hop count) for the send 
     if ( ( setsockopt( sock_mc, IPPROTO_IP, IP_MULTICAST_TTL,
@@ -333,18 +330,16 @@ void *daemonVSCPThread::Entry()
             else if ( ( VSCP_CLASS1_PROTOCOL == pEvent->vscp_class ) && 
                 ( VSCP_TYPE_PROTOCOL_NEW_NODE_ONLINE == pEvent->vscp_type ) ) {
                 
-                /*cguid guid;
-                guid.getFromArray( pEvent->GUID );
-                wxString str;
-                guid.toString( str );
-                if ( wxNOT_FOUND != m_knownGUIDs.Index( str, false ) ) {
+                // Add node to knows nodes
+                CNodeInformation *pNode = addNodeIfNotKnown( pEvent );
+                
+                if ( NULL != pNode ) {
 
-                    // We have not seen this node before and we will
-                    // try to collect information from it
+                    // Send multi cast information
+                    sendMulticastInformationEvent( sock_mc, pNode );
 
-                }*/
-
-                sendto( sock_mc, "New node online\n", 16, 0, ( struct sockaddr * ) &mc_addr, sizeof( mc_addr ) );
+                    sendto( sock_mc, "New node online\n", 16, 0, ( struct sockaddr * ) &mc_addr, sizeof( mc_addr ) );
+                }
 
             }
 
@@ -428,11 +423,151 @@ void daemonVSCPThread::OnExit()
 
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// addNodeIfNotKnown
+//
+
+CNodeInformation * daemonVSCPThread::addNodeIfNotKnown( vscpEvent *pEvent )
+{
+    CNodeInformation *pNode;
+    wxString strGUID;
+    cguid guid;
+
+    // Check pointer
+    if ( NULL == pEvent ) return false;
+
+    guid.getFromArray( pEvent->GUID );
+    guid.toString( strGUID );
+
+    m_pCtrlObject->m_mutexKnownNodes.Lock();
+    pNode = m_pCtrlObject->m_knownNodes.m_nodes[ strGUID ];
+    m_pCtrlObject->m_mutexKnownNodes.Unlock();
+
+    if ( NULL == pNode ) {
+
+        // We have not seen this node before and we will
+        // try to collect information from it
+        pNode = new CNodeInformation;
+        if ( NULL != pNode ) {
+
+            // Add the node to known nodes
+            m_pCtrlObject->m_mutexKnownNodes.Lock();
+            m_pCtrlObject->m_knownNodes.m_nodes[ strGUID ] = pNode;
+            m_pCtrlObject->m_mutexKnownNodes.Unlock();
+
+            // Is there a device realted to this node
+            m_pCtrlObject->m_mutexDeviceList.Lock();
+            CDeviceItem *pDeviceItem =
+                m_pCtrlObject->m_deviceList.getDeviceItemFromClientId( pEvent->obid );
+            if ( NULL != pDeviceItem ) {
+
+                // Construct a name if no name set
+                // 'device.nickname'
+                if ( pNode->m_strNodeName.IsEmpty() ) {
+                    pNode->m_strNodeName = pDeviceItem->m_strName;
+                    pNode->m_strNodeName += _( "." );
+                    pNode->m_strNodeName += wxString::Format( _( "%lu" ), pDeviceItem->m_pClientItem->m_clientID );
+                }
+
+                // Save interface
+                pNode->m_interfaceguid = pDeviceItem->m_interface_guid;
+
+                // Save Client ID
+                pNode->m_clientID = pEvent->obid;
+
+                // We set name fron client id
+                // 'client|clientid|.nickname'
+                if ( pNode->m_strNodeName.IsEmpty() ) {
+                    pNode->m_strNodeName = _( "client" );
+                    pNode->m_strNodeName += wxString::Format( _( "%lu" ), pDeviceItem->m_pClientItem->m_clientID );
+                    pNode->m_strNodeName += _( "." );
+                    pNode->m_strNodeName += wxString::Format( _( "%u" ), ( pEvent->GUID[ 14 ] << 8 ) + pEvent->GUID[ 15 ] );
+                }
+
+                // Now let the discovery thread do the rest of the work
+
+            }
+            else {
+
+                // No device associated with this event - but there must be a client
+
+                // Save Client ID
+                pNode->m_clientID = pEvent->obid;
+
+                m_pCtrlObject->m_mutexDeviceList.Lock();
+                CClientItem *pClientItem =
+                    m_pCtrlObject->m_clientList.getClientFromId( pEvent->obid );
+                if ( NULL != pClientItem ) {
+                    // Save interface
+                    pNode->m_interfaceguid = pClientItem->m_guid;
+                }
+                m_pCtrlObject->m_mutexDeviceList.Unlock();
+
+                // We set name fron client id
+                // 'client|clientid|.nickname'
+                if ( pNode->m_strNodeName.IsEmpty() ) {
+                    pNode->m_strNodeName = _( "client" );
+                    pNode->m_strNodeName += wxString::Format( _( "%lu" ), pClientItem->m_clientID );
+                    pNode->m_strNodeName += _( "." );
+                    pNode->m_strNodeName += wxString::Format( _( "%u" ), ( pEvent->GUID[ 14 ] << 8 ) + pEvent->GUID[ 15 ] );
+                }
 
 
+            }
+            m_pCtrlObject->m_mutexDeviceList.Unlock();
+        }
+
+    }
+    else {
+
+        // This node is known so we don't need to do a thing. Hurray!
+
+    }
+
+    return pNode;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// sendMulticastInformationEvent
+//
+
+bool daemonVSCPThread::sendMulticastInformationEvent( int sock_mc, CNodeInformation *pNode )
+{
+    char mcsendBuf[ 1024 ];         // string to send 
+
+    // Check pointer
+    if ( NULL == pNode ) return false;
+
+    //  0 	Packet type & encryption setings
+    //  1 	HEAD
+    //  2 	Timestamp microseconds MSB
+    //  3 	Timestamp microseconds
+    //  4 	Timestamp microseconds
+    //  5 	Timestamp microseconds LSB
+    //  6 	CLASS MSB
+    //  7 	CLASS LSB
+    //  8 	TYPE MSB
+    //  9 	TYPE LSB
+    //  10 - 24 	ORIGINATING GUID MSB
+    //  25 	ORIGINATING GUID LSB
+    //  26 	DATA SIZE MSB
+    //  27 	DATA SIZE LSB
+    //  28 - n 	data … limited to max 512 - 25 = 487 bytes
+    //  len - 2 	CRC MSB( Calculated on HEAD + CLASS + TYPE + ADDRESS + SIZE + DATA… )
+    //  len - 1 	CRC LSB
+
+    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = SET_VSCP_MULTICAST_TYPE( VSCP_MULTICAST_TYPE_EVENT , VSCP_MULTICAST_ENCRYPTION_NONE );
+    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_HEAD_MSB ] = 0;
+    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] = VSCP_PRIORITY_NORMAL;
+    uint8_t timestamp = vscp_makeTimeStamp();
+
+    return true;
+}
 
 
-
+///////////////////////////////////////////////////////////////////////////////
+//                              Discovery
+///////////////////////////////////////////////////////////////////////////////
 
 
 

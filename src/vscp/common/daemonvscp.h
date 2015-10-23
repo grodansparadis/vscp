@@ -35,7 +35,7 @@
 
 class CControlObject;
 class CClientItem;
-
+class CNodeInformation;
 
 // This thread is used for node discovery
 
@@ -138,6 +138,21 @@ public:
         stopped with Delete() (but not when it is Kill()ed!)
     */
     virtual void OnExit();
+
+    /*!
+        Add a known node if it is not already known
+        @param pEvent Event that initiated the add
+        @return Pointer to new or old information object or NULL if failure.
+    */
+    CNodeInformation *addNodeIfNotKnown( vscpEvent *pEvent );
+
+    /*!
+        Send multicast information event
+        @param sock_mc Multicast socket to send on
+        @param pNode Pointer to information node.
+        @return true on success, false on failure
+    */
+    bool sendMulticastInformationEvent( int sock_mc, CNodeInformation *pNode );
 
     /*!
         Termination control

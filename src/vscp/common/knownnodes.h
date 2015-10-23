@@ -78,8 +78,11 @@ public:
     // Full GUID for node (real GUID)
     cguid m_realguid;
 
-    // Full GUID for interface + nickname the node is on
-    cguid m_proxyguid;
+    // Full GUID for interface 
+    cguid m_interfaceguid;
+
+    // Client id
+    uint32_t m_clientID;
 
     // MDF path for node
     wxString m_mdfPath;
@@ -92,7 +95,10 @@ public:
 
     // This is the name of the node if any.
     // Will be truncated to 64 byte when sent out or reported
-    wxString strName;
+    wxString m_strNodeName;
+
+    // If a driver is associated with the 
+    wxString m_deviceName;
 };
 
 
@@ -142,15 +148,13 @@ public:
     */
     void loadNodes( void );
 
-private:
-
     // Protect the lists
-    wxMutex m_mutexKnownNodes;
+    //wxMutex m_mutexKnownNodes;
 
     // This list holds information about each discovered
     // node in the system and the content in the list
     // is preserved in the filesystem over time
-    VSCP_HASH_KNOWN_NODES m_knownNodes;
+    VSCP_HASH_KNOWN_NODES m_nodes;
 
 };
 

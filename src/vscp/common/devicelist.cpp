@@ -248,7 +248,7 @@ bool CDeviceList::addItem(wxString strName,
             pDeviceItem->m_strName = strName;
             pDeviceItem->m_strParameter = strParameter;
             pDeviceItem->m_strPath = strPath;
-            pDeviceItem->m_guid = guid;
+            pDeviceItem->m_interface_guid = guid;
 
             // Set buffer sizes and flags
             pDeviceItem->m_DeviceFlags = flags;
@@ -286,7 +286,7 @@ CDeviceItem *CDeviceList::getDeviceItemFromGUID( cguid& guid )
     VSCPDEVICELIST::iterator iter;
     for ( iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter ) {
         CDeviceItem *pItem = *iter;
-        if ( pItem->m_guid == guid ) {
+        if ( pItem->m_interface_guid == guid ) {
             returnItem = pItem;
             break;
         }

@@ -75,11 +75,13 @@ CNodeInformation::CNodeInformation()
 {
     m_bInvestigated = false;
     m_realguid.clear();
-    m_proxyguid.clear();
+    m_interfaceguid.clear();
     m_mdfPath.Empty();
     m_lastHeartBeat = wxDateTime::Now();
     memset( m_stdreg, 0, 0x80 );
-    strName.Empty();
+    m_strNodeName.Empty();
+    m_deviceName.Empty();
+    m_clientID = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -113,7 +115,7 @@ CKnownNodes::~CKnownNodes()
 {
     // Remove hash content
     VSCP_HASH_KNOWN_NODES::iterator it;
-    for ( it = m_knownNodes.begin(); it != m_knownNodes.end(); ++it )
+    for ( it = m_nodes.begin(); it != m_nodes.end(); ++it )
     {
         wxString key = it->first;
         CNodeInformation *pNode = it->second;
@@ -121,7 +123,7 @@ CKnownNodes::~CKnownNodes()
         pNode = NULL;
     }
     // Clear the map
-    m_knownNodes.clear();
+    m_nodes.clear();
 
 
 }
@@ -135,7 +137,7 @@ CNodeInformation *CKnownNodes::findNode( cguid& guid )
     wxString strGUID;
 
     guid.toString( strGUID  );
-    return m_knownNodes[ strGUID ];
+    return m_nodes[ strGUID ];
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -150,7 +152,7 @@ CNodeInformation *CKnownNodes::addNode( cguid& guid )
         if ( NULL != pNode ) {
             wxString strGUID;
             guid.toString( strGUID );
-            m_knownNodes[ strGUID ] = pNode;    // Assign the node
+            m_nodes[ strGUID ] = pNode;    // Assign the node
         }
     }
 
@@ -170,8 +172,8 @@ bool CKnownNodes::removeNode( cguid& guid )
     pNode = NULL;
     
     guid.toString( strGUID );
-    m_knownNodes[ strGUID ] = NULL;
-    m_knownNodes.erase( strGUID );
+    m_nodes[ strGUID ] = NULL;
+    m_nodes.erase( strGUID );
 
     return rv;
 }
