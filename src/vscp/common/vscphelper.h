@@ -668,8 +668,8 @@ extern "C" {
 
 
     /*!
-      Make a timestamp for events etc 
-      \return Event timestamp as an unigned long
+        Make a timestamp for events etc 
+        \return Event timestamp as an unigned long
      */
     unsigned long vscp_makeTimeStamp(void);
 

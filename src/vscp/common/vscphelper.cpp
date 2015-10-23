@@ -2129,7 +2129,7 @@ bool vscp_setVscpDataArrayFromString(uint8_t *pData,
 // makeTimeStamp
 //
 
-unsigned long vscp_makeTimeStamp(void)
+unsigned long vscp_makeTimeStamp( void )
 {
 #ifdef WIN32	
     return ( uint32_t )( ( 1000 * ( float )clock() ) / CLOCKS_PER_SEC );
@@ -2148,6 +2148,7 @@ unsigned long vscp_makeTimeStamp(void)
 #endif
 */
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////
 // writeVscpEventToString

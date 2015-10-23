@@ -150,9 +150,12 @@ public:
         Send multicast information event
         @param sock_mc Multicast socket to send on
         @param pNode Pointer to information node.
+        @param pmc_addr Pointer to Multicast socket address
         @return true on success, false on failure
     */
-    bool sendMulticastInformationEvent( int sock_mc, CNodeInformation *pNode );
+    bool sendMulticastInformationEvent( int sock_mc, 
+                                            CNodeInformation *pNode,
+                                            struct sockaddr_in *mc_addr );
 
     /*!
         Termination control

@@ -55,6 +55,7 @@
 #define DWORD unsigned long
 #endif
 
+#include <crc.h>
 #include "daemonvscp.h"
 #include "canal_win32_ipc.h"
 #include "canal_macro.h"
@@ -336,7 +337,7 @@ void *daemonVSCPThread::Entry()
                 if ( NULL != pNode ) {
 
                     // Send multi cast information
-                    sendMulticastInformationEvent( sock_mc, pNode );
+                    sendMulticastInformationEvent( sock_mc, pNode, &mc_addr );
 
                     sendto( sock_mc, "New node online\n", 16, 0, ( struct sockaddr * ) &mc_addr, sizeof( mc_addr ) );
                 }
@@ -531,9 +532,11 @@ CNodeInformation * daemonVSCPThread::addNodeIfNotKnown( vscpEvent *pEvent )
 // sendMulticastInformationEvent
 //
 
-bool daemonVSCPThread::sendMulticastInformationEvent( int sock_mc, CNodeInformation *pNode )
+bool daemonVSCPThread::sendMulticastInformationEvent( int sock_mc, 
+                                                        CNodeInformation *pNode,
+                                                        struct sockaddr_in *pmc_addr )
 {
-    char mcsendBuf[ 1024 ];         // string to send 
+    uint8_t mcsendBuf[ 1024 ];         // string to send 
 
     // Check pointer
     if ( NULL == pNode ) return false;
@@ -556,12 +559,67 @@ bool daemonVSCPThread::sendMulticastInformationEvent( int sock_mc, CNodeInformat
     //  len - 2 	CRC MSB( Calculated on HEAD + CLASS + TYPE + ADDRESS + SIZE + DATA… )
     //  len - 1 	CRC LSB
 
+    // Packe type
     mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = SET_VSCP_MULTICAST_TYPE( VSCP_MULTICAST_TYPE_EVENT , VSCP_MULTICAST_ENCRYPTION_NONE );
+    
+    // VSCP header
     mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_HEAD_MSB ] = 0;
     mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] = VSCP_PRIORITY_NORMAL;
-    uint8_t timestamp = vscp_makeTimeStamp();
+    
+    // Timestamp
+    uint32_t timestamp = vscp_makeTimeStamp();
+    wxUINT32_SWAP_ON_LE( timestamp );
+    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 0 ] = ( timestamp >> 24 ) & 0xff;
+    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 1 ] = ( timestamp >> 16 ) & 0xff;
+    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] = ( timestamp >> 8 ) & 0xff;
+    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ] = timestamp & 0xff;
 
-    return true;
+    // VSCP class
+    uint16_t vscp_class = VSCP_CLASS2_INFORMATION;
+    wxUINT32_SWAP_ON_LE( vscp_class );
+    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS + 0 ] = ( vscp_class >> 8 ) & 0xff;
+    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS + 1 ] = vscp_class & 0xff;
+
+    // VSCP Type
+    uint16_t vscp_type = VSCP2_TYPE_INFORMATION_PROXY_HEART_BEAT;
+    wxUINT32_SWAP_ON_LE( vscp_type );
+    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE + 0 ] = ( vscp_type >> 8 ) & 0xff;
+    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE + 1 ] = vscp_type & 0xff;
+
+    // Originating GUID 
+    memcpy( mcsendBuf + VSCP_MULTICAST_PACKET0_POS_VSCP_GUID, m_pCtrlObject->m_guid.m_id, 16 );
+
+    // Size of payload =  128 bytes
+    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE + 0 ] = 0x00;
+    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE + 1 ] = 0x80;
+
+    // Clear data
+    memset( mcsendBuf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA, 0, 128 );
+
+    // Real GUID of node 
+    memcpy( mcsendBuf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA, pNode->m_realguid.getGUID(), 16 );
+
+    // Interface GUID of node 
+    memcpy( mcsendBuf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 32, pNode->m_interfaceguid.getGUID(), 16 );
+
+    // Name of node
+    memcpy( mcsendBuf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 64, 
+                pNode->m_deviceName.mbc_str(), 
+                MIN( 64, strlen( pNode->m_deviceName.mbc_str() ) ) );
+
+    // CRC
+    crcInit();
+    uint16_t crc = crcFast( mcsendBuf, VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 );
+    wxUINT32_SWAP_ON_LE( crc );
+    mcsendBuf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 0 ] = ( crc >> 8 ) & 0xff;
+    mcsendBuf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 1 ] = crc & 0xff;
+
+    return ( ( VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 1 ) == sendto( sock_mc,
+                        (const char *)mcsendBuf, 
+                        VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 1,
+                        0, 
+                        ( struct sockaddr * )pmc_addr,
+                        sizeof( *pmc_addr ) ) );
 }
 
 
