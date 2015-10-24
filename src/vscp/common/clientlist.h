@@ -67,6 +67,9 @@ enum {
 	CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEB,          // WEB interface
 	CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET,    // Websocket interface
     CLIENT_ITEM_INTERFACE_TYPE_CLIENT_REST,         // REST interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MULTICAST,    // Multicast interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MQTT,         // MQTT interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_COAP,         // COAP interface
     CLIENT_ITEM_INTERFACE_TYPE_CLIENT_DISCOVERY,    // Discovery interface
 };
 
@@ -237,7 +240,19 @@ public:
     */
     bool removeClient( CClientItem *pClientItem );
 
+    /*!
+        Get client form client id
+        @param id Numeric id for the client
+        @return A pointer to a cientitem on success or NULL on failure.
+    */
+    CClientItem *getClientFromId( uint32_t id );
 
+    /*!
+        Get Client from GUID
+        @param guid Guid for the client
+        @return A pointer to a cientitem on success or NULL on failure.
+    */
+    CClientItem *getClientFromGUID( cguid& guid );
 
 public:
 

@@ -116,7 +116,7 @@ public:
 	/*!
 		GUID to use for driver interface if set
 	 */
-	cguid m_guid;
+	cguid m_interface_guid;
 
 	/*!
 		Worker thread for device
@@ -190,12 +190,19 @@ public:
 
 	/*!
 		Add one driver item
+        @strName Driver name
+        @strParameters Driver configuration string
+        @flags Driver flags
+        @guid Interface GUID
+        @level Mark as Level I or Level II driver
+        @bEnable True to enable driver
+        @return True is returned if the driver was successfully added.
 	*/
 	bool addItem( wxString strName,
 					        wxString strParameters, 
 					        wxString strPath, 
 					        uint32_t flags,
-					        uint8_t *pGUID,
+                            cguid& guid,
                             uint8_t level = VSCP_DRIVER_LEVEL1,
 							bool bEnable = true );
 
@@ -213,6 +220,13 @@ public:
         @return Pointer to device item or NULL if not found
     */
     CDeviceItem *getDeviceItemFromGUID( cguid& guid );
+
+    /*!
+        Get device item from the client id
+        @param guid for device to look for
+        @return Pointer to device item or NULL if not found
+    */
+    CDeviceItem *CDeviceList::getDeviceItemFromClientId( uint32_t id );
 
 public:
 	

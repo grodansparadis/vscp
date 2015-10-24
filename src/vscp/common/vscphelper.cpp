@@ -1831,7 +1831,7 @@ bool vscp_convertCanalToEvent(vscpEvent *pvscpEvent,
 	if (NULL == pvscpEvent) return false;
 
 	// Copy in i/f GUID
-	memcpy(pvscpEvent->GUID, pGUID, 16);
+	memcpy( pvscpEvent->GUID, pGUID, 16 );
 
 	pvscpEvent->head = 0;
 
@@ -2129,15 +2129,26 @@ bool vscp_setVscpDataArrayFromString(uint8_t *pData,
 // makeTimeStamp
 //
 
-unsigned long vscp_makeTimeStamp(void)
+unsigned long vscp_makeTimeStamp( void )
 {
+#ifdef WIN32	
+    return ( uint32_t )( ( 1000 * ( float )clock() ) / CLOCKS_PER_SEC );
+#else
+    timeval curTime;
+    gettimeofday( &curTime, NULL );
+    return  1000 * curTime.tv_sec + curTime.tv_usec / 1000;
+#endif
+// This is the old millisecodn timestamp
+/*
 #ifdef WIN32
 	return GetTickCount();
 #else
 	tms tm;
 	return times(&tm);
 #endif
+*/
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////
 // writeVscpEventToString

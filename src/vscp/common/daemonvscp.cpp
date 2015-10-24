@@ -22,7 +22,9 @@
 //
 
 #ifdef WIN32
+#include <sys/types.h>   // for type definitions 
 #include <winsock2.h>
+#include <ws2tcpip.h>    // for win socket structs 
 #endif
 
 #include "wx/wxprec.h"
@@ -53,6 +55,7 @@
 #define DWORD unsigned long
 #endif
 
+#include <crc.h>
 #include "daemonvscp.h"
 #include "canal_win32_ipc.h"
 #include "canal_macro.h"
@@ -68,26 +71,9 @@
 
 
 WX_DEFINE_LIST(DISCOVERYLIST);
-WX_DEFINE_LIST(VSCP_KNOWN_NODES_LIST);
 
 
-///////////////////////////////////////////////////////////////////////////////
-// cnodeInformation CTOR
-//
 
-cnodeInformation::cnodeInformation()
-{
-    m_pClientItem = NULL;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// cnodeInforamtion DTOR
-//
-
-cnodeInformation::~cnodeInformation()
-{
-    ;
-}
 
 
 
@@ -118,6 +104,68 @@ daemonVSCPThread::~daemonVSCPThread()
 
 void *daemonVSCPThread::Entry()
 {
+    int sock_mc;                    // socket descriptor 
+    struct sockaddr_in mc_addr;     // socket address structure  
+    unsigned short mc_port = vscp_readStringValue( m_pCtrlObject->m_strMulticastAnnounceAddress ) ; // multicast port 
+    unsigned char mc_ttl = m_pCtrlObject->m_ttlMultiCastAnnounce;                                   // time to live (hop count) 
+
+#ifdef WIN32
+
+    WSADATA wsaData;            // Windows socket DLL structure 
+
+    // Load Winsock 2.0 DLL
+    if ( WSAStartup( MAKEWORD( 2, 0 ), &wsaData ) != 0 ) {
+        fprintf( stderr, "WSAStartup() failed" );
+        m_pCtrlObject->logMsg( _( "Automation multicast announce WSAStartup() failed\r\n" ), DAEMON_LOGMSG_CRITICAL, DAEMON_LOGTYPE_GENERAL );
+        return NULL;
+    }
+
+    // create a socket for sending to the multicast address 
+    if ( ( sock_mc = socket( PF_INET, SOCK_DGRAM, IPPROTO_UDP ) ) < 0 ) {
+        perror( "socket() failed" );
+        m_pCtrlObject->logMsg( _( "Automation multicast announce sock() failed\r\n" ), DAEMON_LOGMSG_CRITICAL, DAEMON_LOGTYPE_GENERAL );
+        return NULL;
+    }
+
+    // set the TTL (time to live/hop count) for the send 
+    if ( ( setsockopt( sock_mc, IPPROTO_IP, IP_MULTICAST_TTL,
+                       ( const char* )&mc_ttl, sizeof( mc_ttl ) ) ) < 0 ) {
+        perror( "setsockopt() failed" );
+        m_pCtrlObject->logMsg(  _( "Automation multicast announce setsockopt() failed\r\n" ), DAEMON_LOGMSG_CRITICAL, DAEMON_LOGTYPE_GENERAL );
+        return NULL;
+    }
+
+    // construct a multicast address structure 
+    memset( &mc_addr, 0, sizeof( mc_addr ) );
+    mc_addr.sin_family = AF_INET;
+    mc_addr.sin_addr.s_addr = inet_addr( "224.0.23.158" );
+    mc_addr.sin_port = htons( mc_port );
+
+    sendto( sock_mc, "LETS GO!\n", 9, 0, ( struct sockaddr * ) &mc_addr, sizeof( mc_addr ) );
+
+#else
+
+    // create a socket for sending to the multicast address 
+    if ( ( sock = socket( PF_INET, SOCK_DGRAM, IPPROTO_UDP ) ) < 0 ) {
+        perror( "socket() failed" );
+        return NULL;
+    }
+
+    // set the TTL (time to live/hop count) for the send 
+    if ( ( setsockopt( sock, IPPROTO_IP, IP_MULTICAST_TTL,
+                       ( void* )&mc_ttl, sizeof( mc_ttl ) ) ) < 0 ) {
+        perror( "setsockopt() failed" );
+        return NULL;
+    }
+
+    // construct a multicast address structure 
+    memset( &mc_addr, 0, sizeof( mc_addr ) );
+    mc_addr.sin_family = AF_INET;
+    mc_addr.sin_addr.s_addr = inet_addr( "224.0.23.158" );
+    mc_addr.sin_port = htons( mc_port );
+
+#endif
+
     // Must have a valid pointer to the control object
     if ( NULL == m_pCtrlObject ) return NULL;
 
@@ -136,8 +184,11 @@ void *daemonVSCPThread::Entry()
 
     // Add the client to the Client List
     m_pCtrlObject->m_wxClientMutex.Lock();
-    m_pCtrlObject->addClient ( pClientItem );
+    m_pCtrlObject->addClient( pClientItem );
     m_pCtrlObject->m_wxClientMutex.Unlock();
+
+    // Clear the filter (Allow everything )
+    vscp_clearVSCPFilter( &pClientItem->m_filterVSCP );
 
     char szName[ 128 ];
 #ifdef WIN32
@@ -174,9 +225,9 @@ void *daemonVSCPThread::Entry()
             if ( m_pCtrlObject->m_automation.doWork( &eventEx ) ) {
 
                 m_pCtrlObject->logMsg( wxString::Format( _( "Automation event sent: Class=%d Type=%d\r\n" ),
-                    eventEx.vscp_class, eventEx.vscp_type ),
-                    DAEMON_LOGMSG_INFO,
-                    DAEMON_LOGTYPE_GENERAL );
+                                        eventEx.vscp_class, eventEx.vscp_type ),
+                                        DAEMON_LOGMSG_INFO,
+                                        DAEMON_LOGTYPE_GENERAL );
             
                 // Yes event should be sent
                 eventEx.obid = pClientItem->m_clientID;
@@ -184,8 +235,7 @@ void *daemonVSCPThread::Entry()
 
                 if ( VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT == eventEx.vscp_type ) {
                     // crc8 of VSCP daemon GUID should be indata byte 0
-                    eventEx.data[ 0 ] = 
-					    vscp_calcCRC4GUIDArray( m_pCtrlObject->m_guid.getGUID() );
+                    eventEx.data[ 0 ] = vscp_calcCRC4GUIDArray( m_pCtrlObject->m_guid.getGUID() );
                 }
 
                 vscpEvent *pnewEvent = new vscpEvent;
@@ -210,8 +260,9 @@ void *daemonVSCPThread::Entry()
             }
         }
 
+        int rv = pClientItem->m_clientInputQueue.GetCount();
         // Wait for incoming event
-        if ( wxSEMA_TIMEOUT == pClientItem->m_semClientInputQueue.WaitTimeout( 500 ) ) continue;
+        if ( wxSEMA_TIMEOUT == pClientItem->m_semClientInputQueue.WaitTimeout( 100 ) ) continue;
 	
         if ( pClientItem->m_clientInputQueue.GetCount() ) {
 
@@ -232,7 +283,7 @@ void *daemonVSCPThread::Entry()
             if ( ( VSCP_CLASS1_PROTOCOL == pEvent->vscp_class ) && 
                     ( VSCP_TYPE_PROTOCOL_HIGH_END_SERVER_PROBE == pEvent->vscp_type ) ) {
 
-                for ( int i=0;i<cntAddr; i++ ) {
+                for ( int i=0; i<cntAddr; i++ ) {
 
                     // Yes this is a "HIGH END SERVER PROBE"
                     // We should send a "HIGH END SERVER RESPONSE"
@@ -280,15 +331,15 @@ void *daemonVSCPThread::Entry()
             else if ( ( VSCP_CLASS1_PROTOCOL == pEvent->vscp_class ) && 
                 ( VSCP_TYPE_PROTOCOL_NEW_NODE_ONLINE == pEvent->vscp_type ) ) {
                 
-                cguid guid;
-                guid.getFromArray( pEvent->GUID );
-                wxString str;
-                guid.toString( str );
-                if ( wxNOT_FOUND != m_knownGUIDs.Index( str, false ) ) {
+                // Add node to knows nodes
+                CNodeInformation *pNode = addNodeIfNotKnown( pEvent );
+                
+                if ( NULL != pNode ) {
 
-                    // We have not seen this node before and we will
-                    // try to collect information from it
+                    // Send multi cast information
+                    sendMulticastInformationEvent( sock_mc, pNode, &mc_addr );
 
+                    sendto( sock_mc, "New node online\n", 16, 0, ( struct sockaddr * ) &mc_addr, sizeof( mc_addr ) );
                 }
 
             }
@@ -297,9 +348,9 @@ void *daemonVSCPThread::Entry()
             else if ( ( VSCP_CLASS1_INFORMATION == pEvent->vscp_class ) && 
                 ( VSCP_TYPE_INFORMATION_NODE_HEARTBEAT == pEvent->vscp_type ) ) {
                 
-                cguid guid;
-                guid.getFromArray( pEvent->GUID );
+                /*cguid guid;
                 wxString str;
+                guid.getFromArray( pEvent->GUID );                
                 guid.toString( str );
                 if ( wxNOT_FOUND != m_knownGUIDs.Index( str, false ) ) {
 
@@ -331,7 +382,9 @@ void *daemonVSCPThread::Entry()
                         }
                     }
 
-                }
+                }*/
+
+                sendto( sock_mc, "Node Heart Beat Level 1\n", 24, 0, ( struct sockaddr * ) &mc_addr, sizeof( mc_addr ) );
 
             }
 
@@ -339,7 +392,7 @@ void *daemonVSCPThread::Entry()
             else if ( ( VSCP_CLASS2_INFORMATION == pEvent->vscp_class ) && 
                 ( VSCP_TYPE_INFORMATION_NODE_HEARTBEAT == pEvent->vscp_type ) ) {
                 
-                
+                sendto( sock_mc, "Node Heart Beat Level 2\n", 24, 0, ( struct sockaddr * ) &mc_addr, sizeof( mc_addr ) );
 
             }
 
@@ -355,8 +408,10 @@ void *daemonVSCPThread::Entry()
     m_pCtrlObject->removeClient( pClientItem );
     m_pCtrlObject->m_wxClientMutex.Unlock();
 
-    return NULL;
+    // Close the multicast socket
+    closesocket( sock_mc );
 
+    return NULL;
 }
 
 
@@ -369,11 +424,208 @@ void daemonVSCPThread::OnExit()
 
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// addNodeIfNotKnown
+//
+
+CNodeInformation * daemonVSCPThread::addNodeIfNotKnown( vscpEvent *pEvent )
+{
+    CNodeInformation *pNode;
+    wxString strGUID;
+    cguid guid;
+
+    // Check pointer
+    if ( NULL == pEvent ) return false;
+
+    guid.getFromArray( pEvent->GUID );
+    guid.toString( strGUID );
+
+    m_pCtrlObject->m_mutexKnownNodes.Lock();
+    pNode = m_pCtrlObject->m_knownNodes.m_nodes[ strGUID ];
+    m_pCtrlObject->m_mutexKnownNodes.Unlock();
+
+    if ( NULL == pNode ) {
+
+        // We have not seen this node before and we will
+        // try to collect information from it
+        pNode = new CNodeInformation;
+        if ( NULL != pNode ) {
+
+            // Add the node to known nodes
+            m_pCtrlObject->m_mutexKnownNodes.Lock();
+            m_pCtrlObject->m_knownNodes.m_nodes[ strGUID ] = pNode;
+            m_pCtrlObject->m_mutexKnownNodes.Unlock();
+
+            // Is there a device realted to this node
+            m_pCtrlObject->m_mutexDeviceList.Lock();
+            CDeviceItem *pDeviceItem =
+                m_pCtrlObject->m_deviceList.getDeviceItemFromClientId( pEvent->obid );
+            if ( NULL != pDeviceItem ) {
+
+                // Construct a name if no name set
+                // 'device.nickname'
+                if ( pNode->m_strNodeName.IsEmpty() ) {
+                    pNode->m_strNodeName = pDeviceItem->m_strName;
+                    pNode->m_strNodeName += _( "." );
+                    pNode->m_strNodeName += wxString::Format( _( "%lu" ), pDeviceItem->m_pClientItem->m_clientID );
+                }
+
+                // Save interface
+                pNode->m_interfaceguid = pDeviceItem->m_interface_guid;
+
+                // Save Client ID
+                pNode->m_clientID = pEvent->obid;
+
+                // We set name fron client id
+                // 'client|clientid|.nickname'
+                if ( pNode->m_strNodeName.IsEmpty() ) {
+                    pNode->m_strNodeName = _( "client" );
+                    pNode->m_strNodeName += wxString::Format( _( "%lu" ), pDeviceItem->m_pClientItem->m_clientID );
+                    pNode->m_strNodeName += _( "." );
+                    pNode->m_strNodeName += wxString::Format( _( "%u" ), ( pEvent->GUID[ 14 ] << 8 ) + pEvent->GUID[ 15 ] );
+                }
+
+                // Now let the discovery thread do the rest of the work
+
+            }
+            else {
+
+                // No device associated with this event - but there must be a client
+
+                // Save Client ID
+                pNode->m_clientID = pEvent->obid;
+
+                m_pCtrlObject->m_mutexDeviceList.Lock();
+                CClientItem *pClientItem =
+                    m_pCtrlObject->m_clientList.getClientFromId( pEvent->obid );
+                if ( NULL != pClientItem ) {
+                    // Save interface
+                    pNode->m_interfaceguid = pClientItem->m_guid;
+                }
+                m_pCtrlObject->m_mutexDeviceList.Unlock();
+
+                // We set name fron client id
+                // 'client|clientid|.nickname'
+                if ( pNode->m_strNodeName.IsEmpty() ) {
+                    pNode->m_strNodeName = _( "client" );
+                    pNode->m_strNodeName += wxString::Format( _( "%lu" ), pClientItem->m_clientID );
+                    pNode->m_strNodeName += _( "." );
+                    pNode->m_strNodeName += wxString::Format( _( "%u" ), ( pEvent->GUID[ 14 ] << 8 ) + pEvent->GUID[ 15 ] );
+                }
 
 
+            }
+            m_pCtrlObject->m_mutexDeviceList.Unlock();
+        }
+
+    }
+    else {
+
+        // This node is known so we don't need to do a thing. Hurray!
+
+    }
+
+    return pNode;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// sendMulticastInformationEvent
+//
+
+bool daemonVSCPThread::sendMulticastInformationEvent( int sock_mc, 
+                                                        CNodeInformation *pNode,
+                                                        struct sockaddr_in *pmc_addr )
+{
+    uint8_t mcsendBuf[ 1024 ];         // string to send 
+
+    // Check pointer
+    if ( NULL == pNode ) return false;
+
+    //  0 	Packet type & encryption setings
+    //  1 	HEAD
+    //  2 	Timestamp microseconds MSB
+    //  3 	Timestamp microseconds
+    //  4 	Timestamp microseconds
+    //  5 	Timestamp microseconds LSB
+    //  6 	CLASS MSB
+    //  7 	CLASS LSB
+    //  8 	TYPE MSB
+    //  9 	TYPE LSB
+    //  10 - 24 	ORIGINATING GUID MSB
+    //  25 	ORIGINATING GUID LSB
+    //  26 	DATA SIZE MSB
+    //  27 	DATA SIZE LSB
+    //  28 - n 	data … limited to max 512 - 25 = 487 bytes
+    //  len - 2 	CRC MSB( Calculated on HEAD + CLASS + TYPE + ADDRESS + SIZE + DATA… )
+    //  len - 1 	CRC LSB
+
+    // Packe type
+    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = SET_VSCP_MULTICAST_TYPE( VSCP_MULTICAST_TYPE_EVENT , VSCP_MULTICAST_ENCRYPTION_NONE );
+    
+    // VSCP header
+    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_HEAD_MSB ] = 0;
+    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] = VSCP_PRIORITY_NORMAL;
+    
+    // Timestamp
+    uint32_t timestamp = vscp_makeTimeStamp();
+    wxUINT32_SWAP_ON_LE( timestamp );
+    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 0 ] = ( timestamp >> 24 ) & 0xff;
+    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 1 ] = ( timestamp >> 16 ) & 0xff;
+    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] = ( timestamp >> 8 ) & 0xff;
+    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ] = timestamp & 0xff;
+
+    // VSCP class
+    uint16_t vscp_class = VSCP_CLASS2_INFORMATION;
+    wxUINT32_SWAP_ON_LE( vscp_class );
+    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS + 0 ] = ( vscp_class >> 8 ) & 0xff;
+    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS + 1 ] = vscp_class & 0xff;
+
+    // VSCP Type
+    uint16_t vscp_type = VSCP2_TYPE_INFORMATION_PROXY_HEART_BEAT;
+    wxUINT32_SWAP_ON_LE( vscp_type );
+    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE + 0 ] = ( vscp_type >> 8 ) & 0xff;
+    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE + 1 ] = vscp_type & 0xff;
+
+    // Originating GUID 
+    memcpy( mcsendBuf + VSCP_MULTICAST_PACKET0_POS_VSCP_GUID, m_pCtrlObject->m_guid.m_id, 16 );
+
+    // Size of payload =  128 bytes
+    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE + 0 ] = 0x00;
+    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE + 1 ] = 0x80;
+
+    // Clear data
+    memset( mcsendBuf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA, 0, 128 );
+
+    // Real GUID of node 
+    memcpy( mcsendBuf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA, pNode->m_realguid.getGUID(), 16 );
+
+    // Interface GUID of node 
+    memcpy( mcsendBuf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 32, pNode->m_interfaceguid.getGUID(), 16 );
+
+    // Name of node
+    memcpy( mcsendBuf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 64, 
+                pNode->m_deviceName.mbc_str(), 
+                MIN( 64, strlen( pNode->m_deviceName.mbc_str() ) ) );
+
+    // CRC
+    crcInit();
+    uint16_t crc = crcFast( mcsendBuf, VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 );
+    wxUINT32_SWAP_ON_LE( crc );
+    mcsendBuf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 0 ] = ( crc >> 8 ) & 0xff;
+    mcsendBuf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 1 ] = crc & 0xff;
+
+    return ( ( VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 1 ) == sendto( sock_mc,
+                        (const char *)mcsendBuf, 
+                        VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 1,
+                        0, 
+                        ( struct sockaddr * )pmc_addr,
+                        sizeof( *pmc_addr ) ) );
+}
 
 
-
+///////////////////////////////////////////////////////////////////////////////
+//                              Discovery
+///////////////////////////////////////////////////////////////////////////////
 
 
 

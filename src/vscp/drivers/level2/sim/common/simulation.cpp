@@ -1162,7 +1162,7 @@ dumb_fill_data:
                 pEvent->pdata = NULL;
             }
 			
-			// Yes there are data to handle
+			// Yes there is data to handle
             if ( m_bLevel2 ) {
 
             }

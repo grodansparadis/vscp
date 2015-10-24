@@ -250,6 +250,9 @@ CControlObject::CControlObject()
     // Default multicast announce port
     m_strMulticastAnnounceAddress = _( "33333" );
 
+    // default multicast announce ttl
+    m_ttlMultiCastAnnounce = IP_MULTICAST_DEFAULT_TTL;
+
 	// Default UDP interface
     m_strUDPInterfaceAddress = _("udp://:9598");
 
@@ -1368,9 +1371,9 @@ void CControlObject::removeClient(CClientItem *pClientItem)
 // addKnowNode
 //
 
-void CControlObject::addKnowNode( cguid& guid, wxString& name )
+void CControlObject::addKnownNode( cguid& guid, cguid& ifguid, wxString& name )
 {
-
+    ;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1709,6 +1712,8 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
                     m_strMulticastAnnounceAddress = subchild->GetAttribute( wxT( "interface" ), wxT( "" ) );
 
+                    m_ttlMultiCastAnnounce = vscp_readStringValue( subchild->GetAttribute( wxT( "ttl" ), wxT( "1" ) ) );
+
                 }
 				else if (subchild->GetName() == wxT("udp")) {
                     wxString attribut = subchild->GetAttribute(wxT("enable"), wxT("true")); 
@@ -1761,7 +1766,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     if ( str.IsSameAs(_("NONE"), false)) {
 						m_dm.m_logLevel = LOG_DM_NONE;
 					}
-                    if ( str.IsSameAs(_("0"), false)) {
+                    else if ( str.IsSameAs(_("0"), false)) {
 						m_dm.m_logLevel = LOG_DM_NONE;
 					}
                     else if ( str.IsSameAs(_("DEBUG"), false)) {
@@ -1802,7 +1807,8 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     long autosave = vscp_readStringValue( subchild->GetAttribute(wxT("autosave"), wxT("5")) );
                     m_VSCP_Variables.setAutoSaveInterval( autosave );
 
-                } else if (subchild->GetName() == wxT("vscp")) {
+                } 
+                else if (subchild->GetName() == wxT("vscp")) {
                    
                     wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
                   
@@ -1938,10 +1944,10 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
             wxString content = child->GetNodeContent();
 
         } 
-        else if (child->GetName() == wxT("remoteuser")) {
+        else if ( child->GetName() == wxT("remoteuser") ) {
 
             wxXmlNode *subchild = child->GetChildren();
-            while (subchild) {
+            while ( subchild ) {
 
                 vscpEventFilter VSCPFilter;
                 bool bFilterPresent = false;
@@ -1955,7 +1961,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
                 vscp_clearVSCPFilter(&VSCPFilter); // Allow all frames
 
-                if (subchild->GetName() == wxT("user")) {
+                if ( subchild->GetName() == wxT("user") ) {
 
                     wxXmlNode *subsubchild = subchild->GetChildren();
 
@@ -1995,7 +2001,9 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             wxString str_vscp_guid = subchild->GetAttribute(wxT("guid"),                                 
 														wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"));
                             vscp_getGuidFromStringToArray(VSCPFilter.filter_GUID, str_vscp_guid);
-                        } else if (subsubchild->GetName() == wxT("mask")) {
+                        } 
+                        else if (subsubchild->GetName() == wxT("mask")) {
+
                             bMaskPresent = true;
                            
                             wxString str_vscp_priority = subchild->GetAttribute(wxT("priority"), wxT("0"));
@@ -2034,7 +2042,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 }
 
                 // Add user
-                if (bUser) {
+                if ( bUser ) {
 
                     if (bFilterPresent && bMaskPresent) {
                         m_userList.addUser(name, md5, privilege, &VSCPFilter, allowfrom, allowevent);
@@ -2069,15 +2077,16 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
+
                 wxString strName;
                 wxString strConfig;
                 wxString strPath;
                 unsigned long flags;
-                wxString strGUID;
+                cguid guid;
                 bool bEnabled = true;
                 bool bCanalDriver = false;
 
-                if (subchild->GetName() == wxT("driver")) {
+                if ( subchild->GetName() == wxT("driver") ) {
                     
                     wxXmlNode *subsubchild = subchild->GetChildren();
                                        
@@ -2089,36 +2098,35 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     
                     while (subsubchild) {
 
-                        if (subsubchild->GetName() == wxT("name")) {
+                        if ( subsubchild->GetName() == wxT("name") ) {
                             strName = subsubchild->GetNodeContent();
                             strName.Trim();
                             strName.Trim(false);
+
                             // Replace spaces in name with underscore
                             int pos;
-                            while (wxNOT_FOUND != (pos = strName.Find(_(" ")))) {
+                            while ( wxNOT_FOUND != (pos = strName.Find(_(" ") ) ) ) {
                                 strName.SetChar(pos, wxChar('_'));
                             }
                             bCanalDriver = true;
                         } 
-                        else if (subsubchild->GetName() == wxT("config") ||
-                                subsubchild->GetName() == wxT("parameter")) {
+                        else if ( subsubchild->GetName() == wxT("config") ||
+                                subsubchild->GetName() == wxT("parameter") ) {
                             strConfig = subsubchild->GetNodeContent();
                             strConfig.Trim();
                             strConfig.Trim(false);
                         } 
-                        else if (subsubchild->GetName() == wxT("path")) {
+                        else if ( subsubchild->GetName() == wxT("path") ) {
                             strPath = subsubchild->GetNodeContent();
                             strPath.Trim();
                             strPath.Trim(false);
                         } 
-                        else if (subsubchild->GetName() == wxT("flags")) {
+                        else if ( subsubchild->GetName() == wxT("flags") ) {
                             wxString str = subsubchild->GetNodeContent();
                             flags = vscp_readStringValue(str);
                         } 
-                        else if (subsubchild->GetName() == wxT("guid")) {
-                            strGUID = subsubchild->GetNodeContent();
-                            strGUID.Trim();
-                            strGUID.Trim(false);
+                        else if ( subsubchild->GetName() == wxT("guid") ) {
+                            guid.getFromString( subsubchild->GetNodeContent() );                            
                         }
                         else if ( subsubchild->GetName() == wxT( "known-nodes" ) ) {
                         
@@ -2127,11 +2135,11 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             while ( subsubsubchild ) {
 
                                 if ( subsubsubchild->GetName() == wxT( "node" ) ) {
-                                    cguid guid;
+                                    cguid knownguid;
                                     
-                                    guid.getFromString( subchild->GetAttribute( wxT( "guid" ), wxT( "-" ) ) );
+                                    knownguid.getFromString( subchild->GetAttribute( wxT( "guid" ), wxT( "-" ) ) );
                                     wxString name = subchild->GetAttribute( wxT( "name" ), wxT( "" )  ) ;
-                                    addKnowNode( guid, name );
+                                    addKnownNode( knownguid, guid, name );
                                 }
                             
                                 // Next driver item
@@ -2141,22 +2149,11 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
                         }
 
-
                         // Next driver item
                         subsubchild = subsubchild->GetNext();
 
                     } // while
 
-                }
-
-                // Configuration data for one driver loaded
-                uint8_t GUID[ 16 ];
-
-                // Nill the GUID
-                memset(GUID, 0, 16);
-
-                if (strGUID.Length()) {
-                    vscp_getGuidFromStringToArray(GUID, strGUID);
                 }
 
                 // Add the device
@@ -2166,7 +2163,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                                                 strConfig,
                                                 strPath,
                                                 flags,
-                                                GUID,
+                                                guid,
                                                 VSCP_DRIVER_LEVEL1,
                                                 bEnabled ) ) {
                         wxString errMsg = _("Driver not added. Path does not exist. - [ ") +
@@ -2197,7 +2194,8 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
             attribut.MakeLower();
             if (attribut.IsSameAs(_("false"), false)) {
                 m_bEnableLevel2Drivers = false;
-            } else {
+            } 
+            else {
                 m_bEnableLevel2Drivers = true;
             }
 
@@ -2208,7 +2206,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 wxString strName;
                 wxString strConfig;
                 wxString strPath;
-                wxString strGUID;
+                cguid guid;
                 bool bEnabled = true;
                 bool bLevel2Driver = false;
 
@@ -2222,7 +2220,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                         bEnabled = false;
                     }
                     
-                    while (subsubchild) {
+                    while ( subsubchild ) {
                         if (subsubchild->GetName() == wxT("name")) {
                             strName = subsubchild->GetNodeContent();
                             strName.Trim();
@@ -2246,9 +2244,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             strPath.Trim(false);
                         } 
                         else if (subsubchild->GetName() == wxT("guid")) {
-                            strGUID = subsubchild->GetNodeContent();
-                            strGUID.Trim();
-                            strGUID.Trim(false);
+                            guid.getFromString( subsubchild->GetNodeContent() );
                         }
                         else if ( subsubchild->GetName() == wxT( "known-nodes" ) ) {
 
@@ -2257,11 +2253,11 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             while ( subsubsubchild ) {
 
                                 if ( subsubsubchild->GetName() == wxT( "node" ) ) {
-                                    cguid guid;
+                                    cguid knownguid;
 
-                                    guid.getFromString( subchild->GetAttribute( wxT( "guid" ), wxT( "-" ) ) );
+                                    knownguid.getFromString( subchild->GetAttribute( wxT( "guid" ), wxT( "-" ) ) );
                                     wxString name = subchild->GetAttribute( wxT( "name" ), wxT( "" ) );
-                                    addKnowNode( guid, name );
+                                    addKnownNode( knownguid, guid, name );
                                 }
 
                                 // Next driver item
@@ -2278,37 +2274,26 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
                 }
 
-                // Configuration data for one driver loaded
-                uint8_t GUID[ 16 ];
-
-                // Nill the GUID
-                memset(GUID, 0, 16);
-
-                if (strGUID.Length()) {
-                    vscp_getGuidFromStringToArray(GUID, strGUID);
-                }
-
                 // Add the device
-                if (bLevel2Driver && bEnabled) {
+                if ( bLevel2Driver && bEnabled ) {
 
                     if (!m_deviceList.addItem(strName,
                                                 strConfig,
                                                 strPath,
                                                 0,
-                                                GUID,
+                                                guid,
                                                 VSCP_DRIVER_LEVEL2,
                                                 bEnabled )) {
                         wxString errMsg = _("Driver not added. Path does not exist. - [ ") +
-                                strPath + _(" ]\n");
+                                    strPath + _(" ]\n");
                         logMsg(errMsg, DAEMON_LOGMSG_INFO);
                     
                     } 
 					else {
                         wxString errMsg = _("Level II driver added. - [ ") +
-                                strPath + _(" ]\n");
+                                    strPath + _(" ]\n");
                         logMsg(errMsg, DAEMON_LOGMSG_INFO);
                     }
-
 
                     bLevel2Driver = false;
 
@@ -2364,15 +2349,15 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
             } // while
 
-        }
-        
-        else if (child->GetName() == wxT("automation")) {
+        } 
+        else if ( child->GetName() == wxT("automation") ) {
             
             wxString attribut = child->GetAttribute(wxT("enable"), wxT("true"));
             attribut.MakeLower();
             if (attribut.IsSameAs(_("false"), false)) {
                 m_automation.disableAutomation();
-            } else {
+            } 
+            else {
                 m_automation.enableAutomation();
             }
 

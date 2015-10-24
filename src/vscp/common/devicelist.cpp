@@ -228,7 +228,7 @@ bool CDeviceList::addItem(wxString strName,
                             wxString strParameter,
                             wxString strPath,
                             uint32_t flags,
-                            uint8_t *pGUID,
+                            cguid& guid,
                             uint8_t level,
                             bool bEnable )
 {
@@ -236,11 +236,11 @@ bool CDeviceList::addItem(wxString strName,
     CDeviceItem *pDeviceItem = new CDeviceItem();
     if (NULL == pDeviceItem) return false;
 
-    if (NULL != pDeviceItem) {
+    if ( NULL != pDeviceItem ) {
 
-        if (wxFile::Exists(strPath)) {
+        if  ( wxFile::Exists( strPath ) ) {
 
-            m_devItemList.Append(pDeviceItem);
+            m_devItemList.Append( pDeviceItem );
 
             pDeviceItem->m_bEnable = bEnable;
             
@@ -248,7 +248,7 @@ bool CDeviceList::addItem(wxString strName,
             pDeviceItem->m_strName = strName;
             pDeviceItem->m_strParameter = strParameter;
             pDeviceItem->m_strPath = strPath;
-            pDeviceItem->m_guid.getFromArray(pGUID);
+            pDeviceItem->m_interface_guid = guid;
 
             // Set buffer sizes and flags
             pDeviceItem->m_DeviceFlags = flags;
@@ -286,7 +286,27 @@ CDeviceItem *CDeviceList::getDeviceItemFromGUID( cguid& guid )
     VSCPDEVICELIST::iterator iter;
     for ( iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter ) {
         CDeviceItem *pItem = *iter;
-        if ( pItem->m_guid == guid ) {
+        if ( pItem->m_interface_guid == guid ) {
+            returnItem = pItem;
+            break;
+        }
+    }
+
+    return returnItem;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getDeviceItemFromClientId
+//
+
+CDeviceItem *CDeviceList::getDeviceItemFromClientId( uint32_t id)
+{
+    CDeviceItem *returnItem = NULL;
+
+    VSCPDEVICELIST::iterator iter;
+    for ( iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter ) {
+        CDeviceItem *pItem = *iter;
+        if ( ( NULL != pItem->m_pClientItem  ) && ( pItem->m_pClientItem->m_clientID == id ) ) {
             returnItem = pItem;
             break;
         }

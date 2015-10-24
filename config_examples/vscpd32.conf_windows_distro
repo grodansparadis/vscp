@@ -88,9 +88,6 @@
         <guid>
             00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00
         </guid>
-		
-		<!-- Set symbolic server name for daemon -->
-		<servername>Windows 32 VSCP Server</servername>
 
         <!-- This is the default buffer size (number of events) for all  -->
         <!-- clients in the system. Everything from a driver to a TCP/IP -->
@@ -175,7 +172,7 @@
         <!-- The canallog driver  -->
         <driver enable="false">
             <name>logger</name>
-            <config>/tmp/canallog.txt</config>
+            <config>c:\programdata\vscp\canallog.txt</config>
             <path>C:\Program Files\VSCP\drivers\x86\canallogger.dll</path>
             <flags>1</flags>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
@@ -218,7 +215,7 @@
         <driver enable="false" >
             <name>VSCPLoggerDriver1</name>	
             <path>C:\Program Files (x86)\VSCP\drivers\x86\vscpl1_loggerdrv.dll</path>
-            <config>C:\tmp\vscp_level2.log</config> 		
+            <config>C:\programdata\vscp\vscp_level2.log</config> 		
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
  	
@@ -259,7 +256,7 @@
     <!-- Collect data in tables -->
     <tables>
     
-        <table path="c:/programdata/vscp/tables/temperature_outside.table" 
+        <table path="c:\programdata\vscp\tables\temperature_outside.table" 
                   type="dynamic"
                   name="outsidetemp"
                   description="The temperature in the greens"
@@ -271,7 +268,7 @@
                   vscpunit="1"
         />
         
-        <table path="c:/programdata/vscp/tables/temperature_office.table" 
+        <table path="c:\programdata\vscp\tables\temperature_office.table" 
                   type="dynamic"
                   name="officetemp"
                   description="The temperature in the office"
@@ -283,7 +280,7 @@
                   vscpunit="1"
         />
         
-        <table path="c:/programdata/vscp/tables/temperature_south.table" 
+        <table path="c:\programdata\vscp\tables\temperature_south.table" 
                   type="static"
                   name="southtemp"
                   description="The temperature in the office"

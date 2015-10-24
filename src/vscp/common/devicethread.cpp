@@ -67,8 +67,7 @@
 // deviceThread
 //
 
-deviceThread::deviceThread()
-: wxThread(wxTHREAD_JOINABLE)
+deviceThread::deviceThread() : wxThread(wxTHREAD_JOINABLE)
 {
 	m_pDeviceItem = NULL;
 	m_pCtrlObject = NULL;
@@ -125,7 +124,6 @@ void *deviceThread::Entry()
 	m_pCtrlObject->m_wxClientMutex.Lock();
 	m_pCtrlObject->addClient(m_pDeviceItem->m_pClientItem);
 	m_pCtrlObject->m_wxClientMutex.Unlock();
-
 
 	// Load dynamic library
 	if (!m_wxdll.Load(m_pDeviceItem->m_strPath, wxDL_LAZY)) {
@@ -401,9 +399,9 @@ void *deviceThread::Entry()
 							if (NULL != pvscpEvent) {
 
 								// Convert CANAL message to VSCP event
-								vscp_convertCanalToEvent(pvscpEvent,
-									&msg,
-									m_pDeviceItem->m_pClientItem->m_guid.m_id );
+								vscp_convertCanalToEvent( pvscpEvent,
+									                        &msg,
+									                        m_pDeviceItem->m_pClientItem->m_guid.m_id );
 
 								pvscpEvent->obid = m_pDeviceItem->m_pClientItem->m_clientID;
 
@@ -781,7 +779,7 @@ void *deviceCanalReceiveThread::Entry()
 
         if (CANAL_ERROR_SUCCESS ==
                 m_pMainThreadObj->m_pDeviceItem->m_proc_CanalBlockingReceive(
-                m_pMainThreadObj->m_pDeviceItem->m_openHandle, &msg, 500)) {
+                                                            m_pMainThreadObj->m_pDeviceItem->m_openHandle, &msg, 500 ) ) {
 
             // There must be room in the receive queue
             if (m_pMainThreadObj->m_pCtrlObject->m_maxItemsInClientReceiveQueue >
@@ -790,16 +788,18 @@ void *deviceCanalReceiveThread::Entry()
                 vscpEvent *pvscpEvent = new vscpEvent;
                 if (NULL != pvscpEvent) {
 
+                    memset( pvscpEvent, 0, sizeof( vscpEvent ) );
+
                     // Convert CANAL message to VSCP event
-                    vscp_convertCanalToEvent(pvscpEvent,
-                            &msg,
-                            m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_guid.m_id);
+                    vscp_convertCanalToEvent( pvscpEvent,
+                                                &msg,
+                                                m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_guid.m_id );
 
                     pvscpEvent->obid = m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_clientID;
 
                     // If no GUID is set,
-                    //      - Set driver GUID if define
-                    //      - Set interface GUID if no driver GUID defined.
+                    //      - Set driver GUID if it is defined
+                    //      - Set to interface GUID if not.
 
                     uint8_t ifguid[16];
 
@@ -807,20 +807,20 @@ void *deviceCanalReceiveThread::Entry()
                     uint8_t nickname_lsb = pvscpEvent->GUID[15];
 
                     // Set if to use
-                    memcpy(ifguid, pvscpEvent->GUID, 16);
+                    memcpy( ifguid, pvscpEvent->GUID, 16 );
                     ifguid[14] = 0;
                     ifguid[15] = 0;
 
                     // If if is set to zero use interface id
-                    if (vscp_isGUIDEmpty(ifguid)) {
+                    if ( vscp_isGUIDEmpty( ifguid ) ) {
 
                         // Set driver GUID if set
-                        if (!m_pMainThreadObj->m_pDeviceItem->m_guid.isNULL()) {
-                            m_pMainThreadObj->m_pDeviceItem->m_guid.writeGUID(pvscpEvent->GUID);
+                        if ( !m_pMainThreadObj->m_pDeviceItem->m_interface_guid.isNULL() ) {
+                            m_pMainThreadObj->m_pDeviceItem->m_interface_guid.writeGUID( pvscpEvent->GUID );
                         } 
                         else {
                             // If no driver GUID set use interface GUID
-                            m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_guid.writeGUID(pvscpEvent->GUID);
+                            m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_guid.writeGUID( pvscpEvent->GUID );
                         }
 
                         // Preserve nickname
@@ -888,6 +888,7 @@ void *deviceCanalWriteThread::Entry()
 	if (NULL == m_pMainThreadObj->m_pDeviceItem->m_proc_CanalBlockingSend) return NULL;
 
 	while (!TestDestroy() && !m_bQuit) {
+
 		// Wait until there is something to send
 		if (wxSEMA_TIMEOUT ==
 			m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_semClientInputQueue.WaitTimeout(500)) {
@@ -910,7 +911,8 @@ void *deviceCanalWriteThread::Entry()
 				// Remove the node
 				vscp_deleteVSCPevent(pqueueEvent);
 				m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
-			} else {
+			} 
+            else {
 				// Give it another try
 				m_pMainThreadObj->m_pCtrlObject->m_semClientOutputQueue.Post();
 			}
@@ -1008,8 +1010,8 @@ void *deviceLevel2ReceiveThread::Entry()
         if ( vscp_isGUIDEmpty( ifguid ) ) {
             
             // Set driver GUID if set
-            if ( !m_pMainThreadObj->m_pDeviceItem->m_guid.isNULL() ) {
-                m_pMainThreadObj->m_pDeviceItem->m_guid.writeGUID( pEvent->GUID );
+            if ( !m_pMainThreadObj->m_pDeviceItem->m_interface_guid.isNULL() ) {
+                m_pMainThreadObj->m_pDeviceItem->m_interface_guid.writeGUID( pEvent->GUID );
             }
             else {
                 // If no driver GUID set use interface GUID

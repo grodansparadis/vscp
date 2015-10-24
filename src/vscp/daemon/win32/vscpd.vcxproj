@@ -494,7 +494,6 @@
     <ClInclude Include="..\..\..\common\net_skeleton.h" />
     <ClInclude Include="..\..\..\common\slre.h" />
     <ClInclude Include="..\..\..\common\strtokenizer.h" />
-    <ClInclude Include="..\..\..\common\v7.h" />
     <ClInclude Include="..\..\common\actioncodes.h" />
     <ClInclude Include="..\..\common\canal.h" />
     <ClInclude Include="..\..\common\canal_macro.h" />
@@ -511,6 +510,7 @@
     <ClInclude Include="..\..\common\guid.h" />
     <ClInclude Include="..\..\common\interfacelist.h" />
     <ClInclude Include="..\..\..\common\md5.h" />
+    <ClInclude Include="..\..\common\knownnodes.h" />
     <ClInclude Include="..\..\common\mdf.h" />
     <ClInclude Include="..\..\common\register.h" />
     <ClInclude Include="..\..\common\tables.h" />
@@ -539,7 +539,6 @@
     <ClCompile Include="..\..\..\common\mongoose.c" />
     <ClCompile Include="..\..\..\common\net_skeleton.c" />
     <ClCompile Include="..\..\..\common\randpassword.cpp" />
-    <ClCompile Include="..\..\..\common\v7.c" />
     <ClCompile Include="..\..\common\clientlist.cpp" />
     <ClCompile Include="..\..\common\controlobject.cpp" />
     <ClCompile Include="..\..\..\common\crc.c" />
@@ -551,6 +550,7 @@
     <ClCompile Include="..\..\common\guid.cpp" />
     <ClCompile Include="..\..\common\interfacelist.cpp" />
     <ClCompile Include="..\..\..\common\md5.cpp" />
+    <ClCompile Include="..\..\common\knownnodes.cpp" />
     <ClCompile Include="..\..\common\mdf.cpp" />
     <ClCompile Include="..\..\common\register.cpp" />
     <ClCompile Include="..\..\common\tables.cpp" />

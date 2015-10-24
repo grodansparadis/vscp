@@ -4272,7 +4272,11 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 
 					memset( buf, 0, sizeof( buf ) );
 					sprintf( wrkbuf,
+#if WIN32
+                                "%zd events requested of %zd available (unfiltered) %zu will be retrieved\r\n",
+#else
 								"%zd events requested of %zd available (unfiltered) %lu will be retrieved\r\n",
+#endif
 								count,
 								pSession->pClientItem->m_clientInputQueue.GetCount(),
 								MIN( count, cntAvailable ) );
@@ -4359,7 +4363,11 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 					mg_write( conn, buf, strlen( buf ) );
                     memset( buf, 0, sizeof( buf ) );
 					sprintf( wrkbuf,
+#if WIN32
+                             "1,2,Info,%zd events requested of %zd available (unfiltered) %lu will be retrieved,NULL\r\n",
+#else
 								"1,2,Info,%zd events requested of %ul available (unfiltered) %lu will be retrieved,NULL\r\n",
+#endif
 								count,
                                 cntAvailable,
                                 MIN( count, cntAvailable ) );

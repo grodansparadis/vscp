@@ -52,6 +52,7 @@
 #include <udpthread.h>
 #include <daemonvscp.h>
 #include <dm.h>
+#include <knownnodes.h>
 #include <vscp.h>
 
 // Forward declarations
@@ -76,6 +77,16 @@ enum {
     DAEMON_LOGTYPE_SECURITY,
     DAEMON_LOGTYPE_ACCESS
 };
+
+// TTL     Scope
+// ----------------------------------------------------------------------
+// 0       Restricted to the same host.Won't be output by any interface.
+// 1       Restricted to the same subnet.Won't be forwarded by a router.
+// <32     Restricted to the same site, organization or department.
+// <64     Restricted to the same region.
+// <128    Restricted to the same continent.
+// <255    Unrestricted in scope.Global.
+#define IP_MULTICAST_DEFAULT_TTL    1
 
 // Needed on Linux
 #ifndef VSCPMIN
@@ -264,7 +275,7 @@ public:
         @param guid Real GUID for node
         @param name Symbolic name for node.
     */
-    void addKnowNode( cguid& guid, wxString& name );
+    void addKnownNode( cguid& guid, cguid& ifguid, wxString& name );
 
     /*!
         Remove a new client from the clinet list
@@ -480,6 +491,9 @@ public:
     /// Interface(s) used for multicast announce
     wxString m_strMulticastAnnounceAddress;
 
+    // ttl for multicast announce
+    uint8_t m_ttlMultiCastAnnounce;
+
 	/// INterface(s) to use for UDP
 	wxString m_strUDPInterfaceAddress;
 
@@ -629,6 +643,11 @@ public:
 	listVSCPTables m_listTables;
 	wxMutex m_mutexTableList;
 
+    /*!
+        This is the list with knwon nodes in the system
+    */
+    CKnownNodes m_knownNodes;
+    wxMutex m_mutexKnownNodes;
 
     // *************************************************************************
 
