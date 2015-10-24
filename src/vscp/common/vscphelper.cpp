@@ -55,6 +55,7 @@
 
 
 #ifndef WIN32
+#include <sys/time.h>
 #include <sys/times.h>
 #include <sys/types.h>
 #endif
