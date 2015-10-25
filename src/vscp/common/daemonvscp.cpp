@@ -146,13 +146,13 @@ void *daemonVSCPThread::Entry()
 #else
 
     // create a socket for sending to the multicast address 
-    if ( ( sock = socket( PF_INET, SOCK_DGRAM, IPPROTO_UDP ) ) < 0 ) {
+    if ( ( sock_mc = socket( PF_INET, SOCK_DGRAM, IPPROTO_UDP ) ) < 0 ) {
         perror( "socket() failed" );
         return NULL;
     }
 
     // set the TTL (time to live/hop count) for the send 
-    if ( ( setsockopt( sock, IPPROTO_IP, IP_MULTICAST_TTL,
+    if ( ( setsockopt( sock_mc, IPPROTO_IP, IP_MULTICAST_TTL,
                        ( void* )&mc_ttl, sizeof( mc_ttl ) ) ) < 0 ) {
         perror( "setsockopt() failed" );
         return NULL;
@@ -435,7 +435,7 @@ CNodeInformation * daemonVSCPThread::addNodeIfNotKnown( vscpEvent *pEvent )
     cguid guid;
 
     // Check pointer
-    if ( NULL == pEvent ) return false;
+    if ( NULL == pEvent ) return NULL;
 
     guid.getFromArray( pEvent->GUID );
     guid.toString( strGUID );
@@ -555,8 +555,8 @@ bool daemonVSCPThread::sendMulticastInformationEvent( int sock_mc,
     //  25 	ORIGINATING GUID LSB
     //  26 	DATA SIZE MSB
     //  27 	DATA SIZE LSB
-    //  28 - n 	data … limited to max 512 - 25 = 487 bytes
-    //  len - 2 	CRC MSB( Calculated on HEAD + CLASS + TYPE + ADDRESS + SIZE + DATA… )
+    //  28 - n 	data ï¿½ limited to max 512 - 25 = 487 bytes
+    //  len - 2 	CRC MSB( Calculated on HEAD + CLASS + TYPE + ADDRESS + SIZE + DATAï¿½ )
     //  len - 1 	CRC LSB
 
     // Packe type

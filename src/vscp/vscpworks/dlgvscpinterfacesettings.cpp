@@ -458,10 +458,10 @@ void dlgVscpInterfaceSettings::OnButtonVscpSetConfigurationClick( wxCommandEvent
 
     // Start the wizard
     wxString resultConfString;
-    wxString str = m_DriverConfigurationString->GetValue();
+    wxString strDrvConf = m_DriverConfigurationString->GetValue();
     uint32_t resultFlags = 0;
     if ( !conf.runWizard( this,
-                            str,
+                            strDrvConf,
                             vscp_readStringValue( m_DriverFlags->GetValue() ),
                             resultConfString, 
                             &resultFlags ) ) {

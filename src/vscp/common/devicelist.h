@@ -226,7 +226,7 @@ public:
         @param guid for device to look for
         @return Pointer to device item or NULL if not found
     */
-    CDeviceItem *CDeviceList::getDeviceItemFromClientId( uint32_t id );
+    CDeviceItem *getDeviceItemFromClientId( uint32_t id );
 
 public:
 	

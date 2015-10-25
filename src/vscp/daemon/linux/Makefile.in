@@ -54,6 +54,7 @@ VSCPD_OBJECTS =  vscpd.o \
 	../../common/vscpautomation.o \
 	../../common/mdf.o \
 	../../common/register.o \
+	../../common/knownnodes.o \
 	../../../common/dllist.o \
 	../../../common/configfile.o \
 	../../../common/crc.o \

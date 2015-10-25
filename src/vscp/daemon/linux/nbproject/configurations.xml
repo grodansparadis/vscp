@@ -5,6 +5,40 @@
                    displayName="common"
                    projectFiles="true"
                    root="../../common">
+      <logicalFolder name="rapidjson" displayName="rapidjson" projectFiles="true">
+        <logicalFolder name="error" displayName="error" projectFiles="true">
+          <itemPath>../../../common/rapidjson/error/en.h</itemPath>
+          <itemPath>../../../common/rapidjson/error/error.h</itemPath>
+        </logicalFolder>
+        <logicalFolder name="internal" displayName="internal" projectFiles="true">
+          <itemPath>../../../common/rapidjson/internal/biginteger.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/diyfp.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/dtoa.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/ieee754.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/itoa.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/meta.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/pow10.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/stack.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/strfunc.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/strtod.h</itemPath>
+        </logicalFolder>
+        <itemPath>../../../common/rapidjson/allocators.h</itemPath>
+        <itemPath>../../../common/rapidjson/document.h</itemPath>
+        <itemPath>../../../common/rapidjson/encodedstream.h</itemPath>
+        <itemPath>../../../common/rapidjson/encodings.h</itemPath>
+        <itemPath>../../../common/rapidjson/filereadstream.h</itemPath>
+        <itemPath>../../../common/rapidjson/filewritestream.h</itemPath>
+        <itemPath>../../../common/rapidjson/prettywriter.h</itemPath>
+        <itemPath>../../../common/rapidjson/rapidjson.h</itemPath>
+        <itemPath>../../../common/rapidjson/reader.h</itemPath>
+        <itemPath>../../../common/rapidjson/stringbuffer.h</itemPath>
+        <itemPath>../../../common/rapidjson/writer.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="rapidxml" displayName="rapidxml" projectFiles="true">
+        <itemPath>../../../common/rapidxml/rapidxml.hpp</itemPath>
+        <itemPath>../../../common/rapidxml/rapidxml_print.hpp</itemPath>
+        <itemPath>../../../common/rapidxml/rapidxml_utils.hpp</itemPath>
+      </logicalFolder>
       <itemPath>../../common/actioncodes.h</itemPath>
       <itemPath>../../common/canal.h</itemPath>
       <itemPath>../../common/canal_macro.h</itemPath>
@@ -39,6 +73,8 @@
       <itemPath>../../common/guid.h</itemPath>
       <itemPath>../../common/interfacelist.cpp</itemPath>
       <itemPath>../../common/interfacelist.h</itemPath>
+      <itemPath>../../common/knownnodes.cpp</itemPath>
+      <itemPath>../../common/knownnodes.h</itemPath>
       <itemPath>../../../common/md5.cpp</itemPath>
       <itemPath>../../../common/md5.h</itemPath>
       <itemPath>../../common/mdf.cpp</itemPath>
@@ -92,6 +128,7 @@
       <itemPath>../../common/web_js.h</itemPath>
       <itemPath>../../common/web_template.h</itemPath>
       <itemPath>../../common/webserver.h</itemPath>
+      <itemPath>../../../common/xml2json.hpp</itemPath>
     </logicalFolder>
     <df root="." name="0">
       <in>vscpd.cpp</in>
@@ -390,6 +427,22 @@
         </ccTool>
       </item>
       <item path="../../common/interfacelist.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>../../common</pElem>
+            <pElem>../../../common</pElem>
+            <pElem>.</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>NOEMBED_NET_SKELETON</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>WXUSINGDLL</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="../../common/knownnodes.cpp" ex="false" tool="1" flavor2="0">
         <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
