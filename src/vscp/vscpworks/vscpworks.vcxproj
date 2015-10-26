@@ -251,10 +251,12 @@
     <ClInclude Include="..\common\devitem.h" />
     <ClInclude Include="..\common\dllwrapper.h" />
     <ClInclude Include="..\common\guid.h" />
+    <ClInclude Include="..\common\knownnodes.h" />
     <ClInclude Include="..\common\mdf.h" />
     <ClInclude Include="..\common\register.h" />
     <ClInclude Include="..\common\version.h" />
     <ClInclude Include="..\common\vscp.h" />
+    <ClInclude Include="..\common\vscpmulticast.h" />
     <ClInclude Include="..\common\vscp_class.h" />
     <ClInclude Include="..\common\vscp_type.h" />
     <ClInclude Include="..\common\vscphelper.h" />
@@ -308,10 +310,12 @@
     <ClCompile Include="..\common\canalsuperwrapper.cpp" />
     <ClCompile Include="..\common\dllwrapper.cpp" />
     <ClCompile Include="..\common\guid.cpp" />
+    <ClCompile Include="..\common\knownnodes.cpp" />
     <ClCompile Include="..\common\mdf.cpp" />
     <ClCompile Include="..\common\register.cpp" />
     <ClCompile Include="..\common\vscpeventhelper.cpp" />
     <ClCompile Include="..\common\vscphelper.cpp" />
+    <ClCompile Include="..\common\vscpmulticast.cpp" />
     <ClCompile Include="..\common\vscpremotetcpif.cpp" />
     <ClCompile Include="bootdevice.cpp" />
     <ClCompile Include="bootdevice_pic1.cpp" />

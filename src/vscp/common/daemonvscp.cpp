@@ -73,10 +73,6 @@
 WX_DEFINE_LIST(DISCOVERYLIST);
 
 
-
-
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // daemonVSCPThread
 //
@@ -138,10 +134,8 @@ void *daemonVSCPThread::Entry()
     // construct a multicast address structure 
     memset( &mc_addr, 0, sizeof( mc_addr ) );
     mc_addr.sin_family = AF_INET;
-    mc_addr.sin_addr.s_addr = inet_addr( "224.0.23.158" );
+    mc_addr.sin_addr.s_addr = inet_addr( VSCP_MULTICAST_IPV4_ADDRESS_STR );
     mc_addr.sin_port = htons( mc_port );
-
-    sendto( sock_mc, "LETS GO!\n", 9, 0, ( struct sockaddr * ) &mc_addr, sizeof( mc_addr ) );
 
 #else
 
@@ -234,8 +228,13 @@ void *daemonVSCPThread::Entry()
                 pClientItem->m_guid.writeGUID( eventEx.GUID );
 
                 if ( VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT == eventEx.vscp_type ) {
+
                     // crc8 of VSCP daemon GUID should be indata byte 0
                     eventEx.data[ 0 ] = vscp_calcCRC4GUIDArray( m_pCtrlObject->m_guid.getGUID() );
+
+                    // Send event on multicast information channel
+                    sendMulticastEventEx( sock_mc, &eventEx, mc_port );
+
                 }
 
                 vscpEvent *pnewEvent = new vscpEvent;
@@ -331,15 +330,14 @@ void *daemonVSCPThread::Entry()
             else if ( ( VSCP_CLASS1_PROTOCOL == pEvent->vscp_class ) && 
                 ( VSCP_TYPE_PROTOCOL_NEW_NODE_ONLINE == pEvent->vscp_type ) ) {
                 
-                // Add node to knows nodes
+                // Add node to knows nodes or return info if known
                 CNodeInformation *pNode = addNodeIfNotKnown( pEvent );
                 
                 if ( NULL != pNode ) {
 
                     // Send multi cast information
-                    sendMulticastInformationEvent( sock_mc, pNode, &mc_addr );
+                    sendMulticastInformationProxyEvent( sock_mc, pNode, mc_port );
 
-                    sendto( sock_mc, "New node online\n", 16, 0, ( struct sockaddr * ) &mc_addr, sizeof( mc_addr ) );
                 }
 
             }
@@ -348,6 +346,16 @@ void *daemonVSCPThread::Entry()
             else if ( ( VSCP_CLASS1_INFORMATION == pEvent->vscp_class ) && 
                 ( VSCP_TYPE_INFORMATION_NODE_HEARTBEAT == pEvent->vscp_type ) ) {
                 
+                // Add node to knows nodes or return info if known
+                CNodeInformation *pNode = addNodeIfNotKnown( pEvent );
+
+                if ( NULL != pNode ) {
+
+                    // Send multi cast information
+                    sendMulticastInformationProxyEvent( sock_mc, pNode, mc_port );
+
+                }
+
                 /*cguid guid;
                 wxString str;
                 guid.getFromArray( pEvent->GUID );                
@@ -384,15 +392,24 @@ void *daemonVSCPThread::Entry()
 
                 }*/
 
-                sendto( sock_mc, "Node Heart Beat Level 1\n", 24, 0, ( struct sockaddr * ) &mc_addr, sizeof( mc_addr ) );
-
             }
 
             // Level II node heart beat   - collect 
             else if ( ( VSCP_CLASS2_INFORMATION == pEvent->vscp_class ) && 
                 ( VSCP_TYPE_INFORMATION_NODE_HEARTBEAT == pEvent->vscp_type ) ) {
                 
-                sendto( sock_mc, "Node Heart Beat Level 2\n", 24, 0, ( struct sockaddr * ) &mc_addr, sizeof( mc_addr ) );
+                // Send event on multicast information channel
+                sendMulticastEvent( sock_mc, pEvent, mc_port );
+
+                // Add node to knows nodes or return info if known
+                CNodeInformation *pNode = addNodeIfNotKnown( pEvent );
+
+                if ( NULL != pNode ) {
+
+                    // Send multi cast information
+                    sendMulticastInformationProxyEvent( sock_mc, pNode, mc_port );
+
+                }
 
             }
 
@@ -528,18 +545,148 @@ CNodeInformation * daemonVSCPThread::addNodeIfNotKnown( vscpEvent *pEvent )
     return pNode;
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
-// sendMulticastInformationEvent
+// sendMulticastEvent
 //
 
-bool daemonVSCPThread::sendMulticastInformationEvent( int sock_mc, 
-                                                        CNodeInformation *pNode,
-                                                        struct sockaddr_in *pmc_addr )
+bool daemonVSCPThread::sendMulticastEvent( int sock_mc,
+                                            vscpEvent *pEvent,
+                                            int port )
 {
-    uint8_t mcsendBuf[ 1024 ];         // string to send 
+    struct sockaddr_in mc_addr;     // socket address structure 
+    uint8_t buf[ 1024 ];            // frame to send 
+
+    // Check pointer
+    if ( NULL == pEvent ) return false;
+
+    // construct a multicast address structure 
+    memset( &mc_addr, 0, sizeof( mc_addr ) );
+    mc_addr.sin_family = AF_INET;
+    mc_addr.sin_addr.s_addr = inet_addr( VSCP_MULTICAST_IPV4_ADDRESS_STR );
+    mc_addr.sin_port = htons( port );
+
+    // Clear buffer
+    memset( buf, 0, sizeof( buf ) );
+
+    //  0           Packet type & encryption setings
+    //  1           HEAD
+    //  2           Timestamp microseconds MSB
+    //  3           Timestamp microseconds
+    //  4           Timestamp microseconds
+    //  5           Timestamp microseconds LSB
+    //  6           CLASS MSB
+    //  7           CLASS LSB
+    //  8           TYPE MSB
+    //  9           TYPE LSB
+    //  10 - 25     ORIGINATING GUID
+    //  26      	DATA SIZE MSB
+    //  27 	        DATA SIZE LSB
+    //  28 - n 	    data limited to max 512 - 25 = 487 bytes
+    //  len - 2 	CRC MSB( Calculated on HEAD + CLASS + TYPE + ADDRESS + SIZE + DATA� )
+    //  len - 1 	CRC LSB
+
+    // Packe type
+    buf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = SET_VSCP_MULTICAST_TYPE( VSCP_MULTICAST_TYPE_EVENT, VSCP_MULTICAST_ENCRYPTION_NONE );
+
+    // VSCP header
+    buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_MSB ] = 0;
+    buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] = VSCP_PRIORITY_NORMAL;
+
+    // Timestamp
+    uint32_t timestamp = pEvent->timestamp;
+    wxUINT32_SWAP_ON_LE( timestamp );
+    buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 0 ] = ( pEvent->timestamp >> 24 ) & 0xff;
+    buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 1 ] = ( timestamp >> 16 ) & 0xff;
+    buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] = ( timestamp >> 8 ) & 0xff;
+    buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ] = timestamp & 0xff;
+
+    // VSCP class
+    uint16_t vscp_class = pEvent->vscp_class;
+    wxUINT32_SWAP_ON_LE( vscp_class );
+    buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS + 0 ] = ( vscp_class >> 8 ) & 0xff;
+    buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS + 1 ] = vscp_class & 0xff;
+
+    // VSCP Type
+    uint16_t vscp_type = pEvent->vscp_type;
+    wxUINT32_SWAP_ON_LE( vscp_type );
+    buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE + 0 ] = ( vscp_type >> 8 ) & 0xff;
+    buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE + 1 ] = vscp_type & 0xff;
+
+    // Originating GUID 
+    memcpy( buf + VSCP_MULTICAST_PACKET0_POS_VSCP_GUID, pEvent->GUID, 16 );
+
+    // Size of payload =  128 bytes
+    uint16_t size = pEvent->sizeData;
+    wxUINT32_SWAP_ON_LE( size );
+    buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE + 0 ] = ( size >> 8 ) & 0xff;
+    buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE + 1 ] = size & 0xff;
+
+    // Copy in data 
+    if ( pEvent->sizeData ) {
+        memcpy( buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA, pEvent->pdata, pEvent->sizeData );
+    }
+
+    // CRC
+    crcInit();
+    uint16_t crc = crcFast( buf, VSCP_MULTICATS_PACKET0_HEADER_LENGTH + pEvent->sizeData );
+    wxUINT32_SWAP_ON_LE( crc );
+    buf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH + pEvent->sizeData + 0 ] = ( crc >> 8 ) & 0xff;
+    buf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH + pEvent->sizeData + 1 ] = crc & 0xff;
+
+    return ( ( VSCP_MULTICATS_PACKET0_HEADER_LENGTH + pEvent->sizeData + 1 ) ==
+             sendto( sock_mc,
+                     ( const char * )buf,
+                     VSCP_MULTICATS_PACKET0_HEADER_LENGTH + pEvent->sizeData + 1,
+                     0,
+                     ( struct sockaddr * )&mc_addr,
+                     sizeof( mc_addr ) ) );
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// sendMulticastEventEx
+//
+
+bool daemonVSCPThread::sendMulticastEventEx( int sock,
+                                                vscpEventEx *pEventEx,
+                                                int port )
+{
+    bool rv;
+    vscpEvent *pEvent = new vscpEvent;
+
+    if ( NULL == pEvent ) return false;
+
+    vscp_convertVSCPfromEx( pEvent, pEventEx );
+    rv = sendMulticastEvent( sock,
+                                pEvent,
+                                port );
+    vscp_deleteVSCPevent( pEvent );
+    return rv;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// sendMulticastInformationProxyEvent
+//
+
+bool daemonVSCPThread::sendMulticastInformationProxyEvent( int sock,
+                                                            CNodeInformation *pNode,
+                                                            int port )
+{
+    struct sockaddr_in mc_addr;     // socket address structure 
+    uint8_t buf[ 1024 ];  // frame to send 
 
     // Check pointer
     if ( NULL == pNode ) return false;
+
+    // construct a multicast address structure 
+    memset( &mc_addr, 0, sizeof( mc_addr ) );
+    mc_addr.sin_family = AF_INET;
+    mc_addr.sin_addr.s_addr = inet_addr( VSCP_MULTICAST_IPV4_ADDRESS_STR );
+    mc_addr.sin_port = htons( port );
+
+    // Clear buffer
+    memset( buf, 0, sizeof( buf ) );
 
     //  0 	Packet type & encryption setings
     //  1 	HEAD
@@ -555,77 +702,79 @@ bool daemonVSCPThread::sendMulticastInformationEvent( int sock_mc,
     //  25 	ORIGINATING GUID LSB
     //  26 	DATA SIZE MSB
     //  27 	DATA SIZE LSB
-    //  28 - n 	data � limited to max 512 - 25 = 487 bytes
+    //  28 - n 	data limited to max 512 - 25 = 487 bytes
     //  len - 2 	CRC MSB( Calculated on HEAD + CLASS + TYPE + ADDRESS + SIZE + DATA� )
     //  len - 1 	CRC LSB
 
     // Packe type
-    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = SET_VSCP_MULTICAST_TYPE( VSCP_MULTICAST_TYPE_EVENT , VSCP_MULTICAST_ENCRYPTION_NONE );
+    buf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = SET_VSCP_MULTICAST_TYPE( VSCP_MULTICAST_TYPE_EVENT , VSCP_MULTICAST_ENCRYPTION_NONE );
     
     // VSCP header
-    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_HEAD_MSB ] = 0;
-    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] = VSCP_PRIORITY_NORMAL;
+    buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_MSB ] = 0;
+    buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] = VSCP_PRIORITY_NORMAL;
     
     // Timestamp
     uint32_t timestamp = vscp_makeTimeStamp();
     wxUINT32_SWAP_ON_LE( timestamp );
-    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 0 ] = ( timestamp >> 24 ) & 0xff;
-    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 1 ] = ( timestamp >> 16 ) & 0xff;
-    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] = ( timestamp >> 8 ) & 0xff;
-    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ] = timestamp & 0xff;
+    buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 0 ] = ( timestamp >> 24 ) & 0xff;
+    buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 1 ] = ( timestamp >> 16 ) & 0xff;
+    buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] = ( timestamp >> 8 ) & 0xff;
+    buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ] = timestamp & 0xff;
 
     // VSCP class
     uint16_t vscp_class = VSCP_CLASS2_INFORMATION;
     wxUINT32_SWAP_ON_LE( vscp_class );
-    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS + 0 ] = ( vscp_class >> 8 ) & 0xff;
-    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS + 1 ] = vscp_class & 0xff;
+    buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS + 0 ] = ( vscp_class >> 8 ) & 0xff;
+    buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS + 1 ] = vscp_class & 0xff;
 
     // VSCP Type
     uint16_t vscp_type = VSCP2_TYPE_INFORMATION_PROXY_HEART_BEAT;
     wxUINT32_SWAP_ON_LE( vscp_type );
-    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE + 0 ] = ( vscp_type >> 8 ) & 0xff;
-    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE + 1 ] = vscp_type & 0xff;
+    buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE + 0 ] = ( vscp_type >> 8 ) & 0xff;
+    buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE + 1 ] = vscp_type & 0xff;
 
     // Originating GUID 
-    memcpy( mcsendBuf + VSCP_MULTICAST_PACKET0_POS_VSCP_GUID, m_pCtrlObject->m_guid.m_id, 16 );
+    memcpy( buf + VSCP_MULTICAST_PACKET0_POS_VSCP_GUID, m_pCtrlObject->m_guid.m_id, 16 );
 
     // Size of payload =  128 bytes
-    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE + 0 ] = 0x00;
-    mcsendBuf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE + 1 ] = 0x80;
-
-    // Clear data
-    memset( mcsendBuf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA, 0, 128 );
+    buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE + 0 ] = 0x00;
+    buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE + 1 ] = 0x80;
 
     // Real GUID of node 
-    memcpy( mcsendBuf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA, pNode->m_realguid.getGUID(), 16 );
+    memcpy( buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA, pNode->m_realguid.getGUID(), 16 );
 
     // Interface GUID of node 
-    memcpy( mcsendBuf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 32, pNode->m_interfaceguid.getGUID(), 16 );
+    memcpy( buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 32, pNode->m_interfaceguid.getGUID(), 16 );
 
     // Name of node
-    memcpy( mcsendBuf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 64, 
+    memcpy( buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 64,
                 pNode->m_deviceName.mbc_str(), 
                 MIN( 64, strlen( pNode->m_deviceName.mbc_str() ) ) );
 
     // CRC
     crcInit();
-    uint16_t crc = crcFast( mcsendBuf, VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 );
+    uint16_t crc = crcFast( buf, VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 );
     wxUINT32_SWAP_ON_LE( crc );
-    mcsendBuf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 0 ] = ( crc >> 8 ) & 0xff;
-    mcsendBuf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 1 ] = crc & 0xff;
+    buf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 0 ] = ( crc >> 8 ) & 0xff;
+    buf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 1 ] = crc & 0xff;
 
-    return ( ( VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 1 ) == sendto( sock_mc,
-                        (const char *)mcsendBuf, 
+    return ( ( VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 1 ) == 
+             sendto( sock,
+                        (const char *)buf,
                         VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 1,
                         0, 
-                        ( struct sockaddr * )pmc_addr,
-                        sizeof( *pmc_addr ) ) );
+                        ( struct sockaddr * )&mc_addr,
+                        sizeof( mc_addr ) ) );
 }
+
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
 //                              Discovery
 ///////////////////////////////////////////////////////////////////////////////
+
 
 
 

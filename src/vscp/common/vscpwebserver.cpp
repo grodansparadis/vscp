@@ -4366,7 +4366,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 #if WIN32
                              "1,2,Info,%zd events requested of %zd available (unfiltered) %lu will be retrieved,NULL\r\n",
 #else
-								"1,2,Info,%zd events requested of %ul available (unfiltered) %lu will be retrieved,NULL\r\n", 
+							 "1,2,Info,%zd events requested of %ul available (unfiltered) %lu will be retrieved,NULL\r\n", 
 #endif
 								count, 
                                 cntAvailable,					

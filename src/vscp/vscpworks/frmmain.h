@@ -74,6 +74,9 @@
 #endif
 
 
+
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // frmMain
 //
@@ -105,6 +108,9 @@ public:
 
     /// Initialises member variables
     void Init();
+
+    /// Idle handling
+    void onIdle( wxIdleEvent& event );
 
     /// Creates the controls and sizers
     void CreateControls();
@@ -199,6 +205,7 @@ public:
 
     /// Module item of the list
     wxTreeItemId m_moduleItem;
+
 
   /// Control identifiers
   enum {

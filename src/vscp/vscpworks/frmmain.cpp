@@ -51,6 +51,14 @@
 #include "wx/wx.h"
 #endif
 
+#include "wx/socket.h"
+
+#ifdef WIN32
+//#include <sys/types.h>   // for type definitions 
+//#include <winsock2.h>
+//#include <ws2tcpip.h>    // for win socket structs 
+#endif
+
 #include "merlin.h"
 
 #include <wx/stdpaths.h>
@@ -74,6 +82,7 @@
 #include "frmdaemonvariableeditor.h"
 #include "frmsimpleuserinterfacegenerator.h"
 #include "frmmain_images.h"
+
 
 extern appConfiguration g_Config;
 
@@ -102,7 +111,8 @@ BEGIN_EVENT_TABLE( frmMain, wxFrame )
 	EVT_MENU( ID_MENUITEM_CREDITS, frmMain::OnMenuitemCrediitsClick )
 	EVT_MENU( ID_MENUITEM_VSCP_SITE, frmMain::OnMenuitemVSCPSiteClick )
 	EVT_MENU( ID_MENUITEM_ABOUT, frmMain::OnMenuitemAboutClick )
-    EVT_TREE_SEL_CHANGED( ID_TREECTRL, frmMDFEditor::OnTreectrlSelChanged )
+    EVT_TREE_SEL_CHANGED( ID_TREECTRL, frmMain::OnTreectrlSelChanged )
+    EVT_IDLE( frmMain::onIdle )
 END_EVENT_TABLE()
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -167,6 +177,8 @@ void frmMain::Init()
             wxMessageBox(_("Failed to create directory. ") + wxStandardPaths::Get().GetUserDataDir() );
         }
     }
+
+    
 
 }
 
@@ -414,6 +426,8 @@ wxIcon frmMain::GetIconResource( const wxString& name )
 
 void frmMain::OnCloseWindow( wxCloseEvent& event )
 {
+    
+
     // Save frame size and position
     wxRect rc = GetRect();
     g_Config.m_xpos = rc.x;  
@@ -1134,5 +1148,12 @@ void frmMain::OnMenuitemOpenDaemonVariableEditorClick( wxCommandEvent& event )
 }
 
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// onIdle
+//
 
-
+void frmMain::onIdle( wxIdleEvent& event )
+{
+    
+    event.Skip( false );
+}

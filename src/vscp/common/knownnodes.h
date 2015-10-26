@@ -33,8 +33,39 @@
 #include <wx/listimpl.cpp>
 #include "guid.h"
 
-class CControlObject;
-class CClientItem;
+///////////////////////////////////////////////////////////////////////////////
+// CVSCPServerInformation
+//
+// This class holds information about a known server in the system.
+//
+
+class CVSCPServerInformation
+{
+
+public:
+
+    CVSCPServerInformation();
+    ~CVSCPServerInformation();
+
+    // Capabilities for this server
+    uint64_t m_capabilities;    
+
+    // GUID for server
+    cguid m_guid;
+
+    // Name of server
+    wxString m_nameOfServer;
+
+    // Address for server (IPv4 or IPv6)
+    wxString m_ipaddress;
+
+    // Ports related to services.
+    int m_ports[ 64 ];
+
+};
+
+// GUID -> Server info
+WX_DECLARE_STRING_HASH_MAP( CVSCPServerInformation*, VSCP_HASH_KNOWN_SERVERS );
 
 ///////////////////////////////////////////////////////////////////////////////
 // CNodeInformation
@@ -101,7 +132,7 @@ public:
     wxString m_deviceName;
 };
 
-
+// GUID -> Node info
 WX_DECLARE_STRING_HASH_MAP( CNodeInformation*, VSCP_HASH_KNOWN_NODES );
 
 
@@ -125,11 +156,25 @@ public:
     CNodeInformation *findNode( cguid& guid );
 
     /*!
+        Find server
+        @param guid GUID for server.
+        @return Return CServerInformation class if found, NULL if not.
+    */
+    CVSCPServerInformation *findServer( cguid& guid );
+
+    /*!
         Add node
         @param guid GUID for node.
         @return Return CNodeInformation class if added, NULL if not.
     */
     CNodeInformation *addNode( cguid& guid );
+
+    /*!
+        Add server
+        @param guid GUID for server.
+        @return Return CVSCPServerInformation class if added, NULL if not.
+    */
+    CVSCPServerInformation *addServer( cguid& guid );
 
     /*!
         Remove node
@@ -139,22 +184,38 @@ public:
     bool removeNode( cguid& guid );
 
     /*!
+        Remove server
+        @param guid GUID for node.
+        @return Return true on success, false on failure.
+    */
+    bool removeServer( cguid& guid );
+
+    /*!
         Save the list of known nodes
     */
-    void saveNodes( void );
+    void save( wxString& path );
 
     /*!
         Load the list of known nodes
     */
-    void loadNodes( void );
+    void load( wxString& path );
+
 
     // Protect the lists
-    //wxMutex m_mutexKnownNodes;
+    wxMutex m_mutexKnownNodes;
 
     // This list holds information about each discovered
-    // node in the system and the content in the list
-    // is preserved in the filesystem over time
+    // node in the system and. 
+    // The content of the list can be
+    // preserved in the filesystem over time
     VSCP_HASH_KNOWN_NODES m_nodes;
+
+    // This list holds information about each discovered
+    // "server" in the system. A server is defines as 
+    // a high level node with at least one connectable interface.
+    // The content of the list can be
+    // preserved in the filesystem over time
+    VSCP_HASH_KNOWN_SERVERS m_servers;
 
 };
 
