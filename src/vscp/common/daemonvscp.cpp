@@ -634,10 +634,10 @@ bool daemonVSCPThread::sendMulticastEvent( int sock_mc,
     buf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH + pEvent->sizeData + 0 ] = ( crc >> 8 ) & 0xff;
     buf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH + pEvent->sizeData + 1 ] = crc & 0xff;
 
-    return ( ( VSCP_MULTICATS_PACKET0_HEADER_LENGTH + pEvent->sizeData + 1 ) ==
+    return ( ( VSCP_MULTICATS_PACKET0_HEADER_LENGTH + pEvent->sizeData + 2 ) ==
              sendto( sock_mc,
                      ( const char * )buf,
-                     VSCP_MULTICATS_PACKET0_HEADER_LENGTH + pEvent->sizeData + 1,
+                     VSCP_MULTICATS_PACKET0_HEADER_LENGTH + pEvent->sizeData + 2,
                      0,
                      ( struct sockaddr * )&mc_addr,
                      sizeof( mc_addr ) ) );
@@ -753,15 +753,15 @@ bool daemonVSCPThread::sendMulticastInformationProxyEvent( int sock,
 
     // CRC
     crcInit();
-    uint16_t crc = crcFast( buf, VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 );
-    wxUINT32_SWAP_ON_LE( crc );
-    buf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 0 ] = ( crc >> 8 ) & 0xff;
-    buf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 1 ] = crc & 0xff;
+    crc chksum = crcFast( buf, VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 );
+    wxUINT32_SWAP_ON_LE( chksum );
+    buf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 0 ] = ( chksum >> 8 ) & 0xff;
+    buf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 1 ] = chksum & 0xff;
 
-    return ( ( VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 1 ) == 
+    return ( ( VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 2 ) == 
              sendto( sock,
                         (const char *)buf,
-                        VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 1,
+                        VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 2,
                         0, 
                         ( struct sockaddr * )&mc_addr,
                         sizeof( mc_addr ) ) );

@@ -395,7 +395,9 @@ typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 // VSCP multicast Encryption types
 #define VSCP_MULTICAST_ENCRYPTION_NONE          0
 
-#define SET_VSCP_MULTICAST_TYPE( type, encryption )  ( (type<<8) + encryption )
+#define SET_VSCP_MULTICAST_TYPE( type, encryption )  ( (type<<4) + encryption )
+#define GET_VSCP_MULTICAST_PACKET_TYPE( type)        ( (type>>4) & 0x0f)
+#define GET_VSCP_MULTICAST_PACKET_ENCRYPTION( type)  ( (type) & 0x0f)
 
 // Bootloaders
 #define VSCP_BOOTLOADER_VSCP                    0x00	// VSCP boot loader algorithm
