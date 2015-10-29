@@ -20,11 +20,7 @@
 // along with this file see the file COPYING.  If not, write to
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
-//
-// $RCSfile: can232drv.h,v $                                       
-// $Date: 2011/07/28 19:40:16 $                                  
-// $Author: ice $                                              
-// $Revision: 1.2 $ 
+// 
 
 #if !defined(AFX_LOGGERDLL_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_)
 #define AFX_LOGGERDLL_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_
