@@ -80,7 +80,7 @@ void *worksMulticastThread::Entry()
     int sock;                           // socket descriptor 
     struct ip_mreq mc_req;              // multicast request structure 
     struct sockaddr_in mc_addr;         // socket address structure  
-    unsigned short port = 33333;        // multicast port 
+    unsigned short port = VSCP_MULTICAST_ANNNOUNCE_PORT;        // multicast port 
     unsigned char ttl = 1;              // time to live (hop count) 
     int flag_on = 1;                    // socket option flag 
 
@@ -310,7 +310,7 @@ void *worksMulticastThread::Entry()
                     // If a node name supplied. save it
                     if ( size ) {
 
-                        // Name can be 64 byte max. We must make sure it is null terminates
+                        // Name can be 64 byte max. We must make sure it is null terminated
                         unsigned char wrkbuf[ 65 ];
                         memset( wrkbuf, 0, sizeof( wrkbuf ) );
                         memcpy( wrkbuf, ( unsigned const char * )buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA, MIN( size, 64 ) );
@@ -319,6 +319,7 @@ void *worksMulticastThread::Entry()
                     }
 
                     // Save the servers address
+
                     pNode->m_address = originatingAddress;
 
                 }

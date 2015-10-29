@@ -248,7 +248,7 @@ CControlObject::CControlObject()
     m_strTcpInterfaceAddress = _("9598");
 
     // Default multicast announce port
-    m_strMulticastAnnounceAddress = _( "33333" );
+    m_strMulticastAnnounceAddress = _( "9598" );
 
     // default multicast announce ttl
     m_ttlMultiCastAnnounce = IP_MULTICAST_DEFAULT_TTL;
