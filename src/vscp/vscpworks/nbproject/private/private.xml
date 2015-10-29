@@ -13,7 +13,7 @@
             <file>file:/home/akhe/vscp_software/src/vscp/common/canalconfobj.h</file>
             <file>file:/home/akhe/vscp_software/src/vscp/vscpworks/dlgvscpinterfacesettings.cpp</file>
             <file>file:/home/akhe/vscp_software/src/vscp/common/canalconfobj.cpp</file>
-            <file>file:/home/akhe/vscp_software/src/vscp/vscpworks/dlgvscpinterfacesettings.h</file>
+            <file>file:/home/akhe/vscp_software/src/vscp/common/dllwrapper.h</file>
             <file>file:/home/akhe/vscp_software/src/vscp/vscpworks/dlgsetfiltermask.cpp</file>
         </group>
     </open-files>
