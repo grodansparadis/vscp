@@ -77,6 +77,7 @@ VSCPWORKS_OBJECTS =  vscpworks.o dlgvscpmsg.o \
 	../common/register.o \
 	../common/canalconfobj.o \
 	../common/vscpmulticast.o \
+	../common/knownnodes.o \
 	$(RESOURCEOBJECT)
 
 ALWAYS_BUILD = ../../common/crc.o \

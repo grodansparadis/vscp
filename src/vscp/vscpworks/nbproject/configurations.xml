@@ -16,6 +16,7 @@
       <logicalFolder name="vscp" displayName="vscp" projectFiles="true">
         <logicalFolder name="common" displayName="common" projectFiles="true">
           <itemPath>../common/canal.h</itemPath>
+          <itemPath>../common/canal_macro.h</itemPath>
           <itemPath>../common/canalconfobj.cpp</itemPath>
           <itemPath>../common/canalconfobj.h</itemPath>
           <itemPath>../common/canaldlldef.h</itemPath>
@@ -26,6 +27,7 @@
           <itemPath>../common/dllwrapper.h</itemPath>
           <itemPath>../common/guid.cpp</itemPath>
           <itemPath>../common/guid.h</itemPath>
+          <itemPath>../common/knownnodes.h</itemPath>
           <itemPath>../common/mdf.cpp</itemPath>
           <itemPath>../common/mdf.h</itemPath>
           <itemPath>../common/register.cpp</itemPath>
@@ -38,6 +40,8 @@
           <itemPath>../common/vscpeventhelper.h</itemPath>
           <itemPath>../common/vscphelper.cpp</itemPath>
           <itemPath>../common/vscphelper.h</itemPath>
+          <itemPath>../common/vscpmulticast.cpp</itemPath>
+          <itemPath>../common/vscpmulticast.h</itemPath>
           <itemPath>../common/vscpremotetcpif.cpp</itemPath>
           <itemPath>../common/vscpremotetcpif.h</itemPath>
         </logicalFolder>
@@ -220,18 +224,18 @@
       <item path="../common/mdf.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
+            <pElem>.</pElem>
             <pElem>../common</pElem>
             <pElem>../../common</pElem>
-            <pElem>.</pElem>
           </incDir>
         </ccTool>
       </item>
       <item path="../common/register.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
+            <pElem>.</pElem>
             <pElem>../common</pElem>
             <pElem>../../common</pElem>
-            <pElem>.</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -245,6 +249,15 @@
         </ccTool>
       </item>
       <item path="../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>.</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="../common/vscpmulticast.cpp" ex="false" tool="1" flavor2="0">
         <ccTool flags="0">
           <incDir>
             <pElem>.</pElem>

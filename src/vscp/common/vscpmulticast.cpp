@@ -37,6 +37,19 @@
 #include <wx/socket.h>
 #include <wx/listimpl.cpp>
 
+#ifdef WIN32
+#else
+
+#include <sys/types.h>   
+#include <sys/socket.h>  
+#include <netinet/in.h>  
+#include <arpa/inet.h>   
+#include <stdio.h>       
+#include <stdlib.h>     
+#include <string.h>      
+#include <unistd.h>     
+
+#endif
 
 
 #include <crc.h>
@@ -78,7 +91,6 @@ void *worksMulticastThread::Entry()
     //*************************************************************************
 
     int sock;                           // socket descriptor 
-    struct ip_mreq mc_req;              // multicast request structure 
     struct sockaddr_in mc_addr;         // socket address structure  
     unsigned short port = VSCP_MULTICAST_ANNNOUNCE_PORT;        // multicast port 
     unsigned char ttl = 1;              // time to live (hop count) 
@@ -87,6 +99,7 @@ void *worksMulticastThread::Entry()
 #ifdef WIN32
 
     WSADATA wsaData;                    // Windows socket DLL structure 
+    struct ip_mreq mc_req;              // multicast request structure 
 
     // Load Winsock 2.0 DLL
     if ( WSAStartup( MAKEWORD( 2, 0 ), &wsaData ) != 0 ) {
@@ -141,14 +154,14 @@ void *worksMulticastThread::Entry()
 #else
 
     // create a socket for sending to the multicast address 
-    if ( ( sock_mc = socket( PF_INET, SOCK_DGRAM, IPPROTO_UDP ) ) < 0 ) {
+    if ( ( sock = socket( PF_INET, SOCK_DGRAM, IPPROTO_UDP ) ) < 0 ) {
         perror( "socket() failed" );
         return NULL;
     }
 
     // set the TTL (time to live/hop count) for the send 
-    if ( ( setsockopt( sock_mc, IPPROTO_IP, IP_MULTICAST_TTL,
-                       ( void* )&mc_ttl, sizeof( mc_ttl ) ) ) < 0 ) {
+    if ( ( setsockopt( sock, IPPROTO_IP, IP_MULTICAST_TTL,
+                       ( void* )&ttl, sizeof( ttl ) ) ) < 0 ) {
         perror( "setsockopt() failed" );
         return NULL;
     }
@@ -156,8 +169,8 @@ void *worksMulticastThread::Entry()
     // construct a multicast address structure 
     memset( &mc_addr, 0, sizeof( mc_addr ) );
     mc_addr.sin_family = AF_INET;
-    mc_addr.sin_addr.s_addr = inet_addr( "224.0.23.158" );
-    mc_addr.sin_port = htons( mc_port );
+    mc_addr.sin_addr.s_addr = inet_addr( VSCP_MULTICAST_IPV4_ADDRESS_STR);
+    mc_addr.sin_port = htons( port );
 
 #endif
 
@@ -169,7 +182,7 @@ void *worksMulticastThread::Entry()
     char buf[ 1024 ];               // buffer to receive string 
     int recv_len;                   // length of string received 
     struct sockaddr_in from_addr;   // packet source 
-    int from_len;                   // source addr length
+    socklen_t from_len;             // source addr length
     int nRcv;
 
     while ( !m_bQuit && !TestDestroy() ) {
@@ -190,7 +203,9 @@ void *worksMulticastThread::Entry()
         }
         else if ( nRcv == -1 ) {
             // Error  
-            nRcv = WSAGetLastError();
+#ifdef WIN32            
+            //nRcv = WSAGetLastError();
+#endif            
             wxSleep( 1 );   // Protects from exhausing system if error takes over
             continue;
         }
@@ -205,11 +220,14 @@ void *worksMulticastThread::Entry()
         if ( ( recv_len = recvfrom( sock,
                                     buf, sizeof( buf ), 0,
                                     ( struct sockaddr* )&from_addr, &from_len ) ) < 0 ) {
-            nRcv = WSAGetLastError();
+#ifdef WIN32            
+            //nRcv = WSAGetLastError();
+#endif            
         }
 
 #else
-        if ( ( recv_len = recvfrom( m_sock_mc, recv_str, 1024, MSG_DONTWAIT,
+        if ( ( recv_len = recvfrom( sock,
+                                    buf, sizeof( buf ), MSG_DONTWAIT,
                                     ( struct sockaddr* )&from_addr, &from_len ) ) < 0 ) {
 
         }
@@ -245,13 +263,13 @@ void *worksMulticastThread::Entry()
         switch ( from_addr.sin_family ) {
             case AF_INET: {
                 struct sockaddr_in *addr_in = ( struct sockaddr_in * )&from_addr;
-                s = malloc( INET_ADDRSTRLEN );
+                s = (char *)malloc( INET_ADDRSTRLEN );
                 inet_ntop( AF_INET, &( addr_in->sin_addr ), s, INET_ADDRSTRLEN );
                 break;
             }
             case AF_INET6: {
                 struct sockaddr_in6 *addr_in6 = ( struct sockaddr_in6 * )&from_addr;
-                s = malloc( INET6_ADDRSTRLEN );
+                s = (char *)malloc( INET6_ADDRSTRLEN );
                 inet_ntop( AF_INET6, &( addr_in6->sin6_addr ), s, INET6_ADDRSTRLEN );
                 break;
             }
@@ -396,6 +414,7 @@ void *worksMulticastThread::Entry()
     }
 
 
+#ifdef WIN32
     // send a DROP MEMBERSHIP message via setsockopt 
     if ( ( setsockopt( sock, IPPROTO_IP, IP_DROP_MEMBERSHIP,
                        ( const char * )&mc_req, sizeof( mc_req ) ) ) < 0 ) {
@@ -404,10 +423,11 @@ void *worksMulticastThread::Entry()
 
     // Close the multicast socket
     closesocket( sock );
-
-#ifdef WIN32
+    
     // Cleanup Winsock
     WSACleanup();
+#else
+    close( sock );
 #endif
 
     return NULL;
