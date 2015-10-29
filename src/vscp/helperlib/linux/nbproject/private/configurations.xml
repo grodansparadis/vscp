@@ -18,6 +18,7 @@
         <in>vscphelperexport.h</in>
       </df>
       <in>libvscphelper.cpp</in>
+      <in>libvscphelper.h</in>
       <in>test.c</in>
     </df>
   </logicalFolder>

@@ -59,7 +59,7 @@ typedef int BOOL;
 #include "../common/simulation.h"
 
 // This is the version info for this DLL - Change to your own value
-#define VSCP_DLL_VERSION		                0x010000
+#define VSCP_DLL_VERSION		        0x010000
 
 #define VSCP_DLL_VERSION_MAJOR                  0x01
 #define VSCP_DLL_VERSION_MINOR                  0x00

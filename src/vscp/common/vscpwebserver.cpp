@@ -5516,7 +5516,7 @@ void VSCPWebServerThread::websrc_rest_renderTableData( struct mg_connection *con
 
         memset( buf, 0, sizeof( buf ) );
         sprintf( wrkbuf,
-                 "<count>%d</count>\r\n<info>Fetched %d elements of table %s</info>\r\n",
+                 "<count>%ld</count>\r\n<info>Fetched %ld elements of table %s</info>\r\n",
                  nfetchedRecords,
                  nfetchedRecords,
                  ( const char * )strName.mbc_str() );

@@ -1,7 +1,7 @@
 dnl Autoconf settings for VSCP
 dnl $Id: configure.in,v 1.5 2005/10/03 16:30:06 akhe Exp $
 
-AC_INIT(vscp, [1.0.1], [info@grodansparadis.com])
+AC_INIT(vscp, [1.1.0], [info@grodansparadis.com])
 
 CONFIGURE_LINE="$0 $*"
 CODENAME="Ant"
