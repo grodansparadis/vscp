@@ -382,7 +382,7 @@ public:
     /*!
         Name of this server
     */
-    wxString strServerName;
+    wxString m_strServerName;
 
     /*!
         Server GUID
@@ -544,7 +544,7 @@ public:
    
 
     /*!
-        Username for level II divers
+        Username for level II drivers
      */
     wxString m_driverUsername;
 

@@ -29,6 +29,7 @@
 #pragma implementation "vscpworks.h"
 #endif
 
+
 #ifndef WX_PRECOMP
 #include "wx/wx.h"
 #endif
@@ -36,8 +37,11 @@
 #include <wx/socket.h>
 #include <wx/listimpl.cpp>
 
+
+
 #include <crc.h>
-#include "vscp.h"
+#include <canal_macro.h>
+#include <vscp.h>
 #include "vscpmulticast.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -211,6 +215,53 @@ void *worksMulticastThread::Entry()
         }
 #endif
 
+        wxString originatingAddress;
+#ifdef WIN32
+        char *s = NULL;
+        struct sockaddr_in *addr_in = ( struct sockaddr_in * )&from_addr;
+        s = inet_ntoa( addr_in->sin_addr );
+        // TODO
+        /*switch ( from_addr.sin_family ) {
+        case AF_INET: {
+        struct sockaddr_in *addr_in = ( struct sockaddr_in * )&from_addr;
+        s = (char *)malloc( 128 );
+        InetNtop( AF_INET, &( addr_in->sin_addr ), s, 128 );
+        break;
+        }
+        case AF_INET6: {
+        struct sockaddr_in6 *addr_in6 = ( struct sockaddr_in6 * )&from_addr;
+        s = (char *)malloc( 128 );
+        InetNtop( AF_INET6, &( addr_in6->sin6_addr ), s, 128 );
+        break;
+        }
+        default:
+        break;
+        }*/
+
+        originatingAddress.FromAscii( s );
+        //free( s );
+#else
+        char *s = NULL;
+        switch ( from_addr.sin_family ) {
+            case AF_INET: {
+                struct sockaddr_in *addr_in = ( struct sockaddr_in * )&from_addr;
+                s = malloc( INET_ADDRSTRLEN );
+                inet_ntop( AF_INET, &( addr_in->sin_addr ), s, INET_ADDRSTRLEN );
+                break;
+            }
+            case AF_INET6: {
+                struct sockaddr_in6 *addr_in6 = ( struct sockaddr_in6 * )&from_addr;
+                s = malloc( INET6_ADDRSTRLEN );
+                inet_ntop( AF_INET6, &( addr_in6->sin6_addr ), s, INET6_ADDRSTRLEN );
+                break;
+            }
+            default:
+                break;
+        }
+        originatingAddress.FromAscii( s );
+        free( s );
+#endif
+
         // We have data
         crc chksum = crcFast( (unsigned const char *)buf, recv_len  );
         wxUINT32_SWAP_ON_LE( chksum );
@@ -223,9 +274,121 @@ void *worksMulticastThread::Entry()
             uint16_t vscp_type = ( ( ( uint16_t )buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE ] ) << 8 ) + buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE + 1 ];
             wxUINT32_SWAP_ON_LE( vscp_type );
 
-            if ( ( VSCP_CLASS2_INFORMATION  == vscp_class ) && ( VSCP2_TYPE_INFORMATION_PROXY_HEART_BEAT == vscp_type ) ) {
+            // Level I node heart beat
+            if ( ( VSCP_CLASS1_INFORMATION == vscp_class ) && 
+                 ( VSCP_TYPE_INFORMATION_NODE_HEARTBEAT == vscp_type ) ) {
+
+                // * * * Should not see this event here normally * * *
+                // This event will use the interfae GUID as its originator
+                
 
             }
+            // Level II node Heart beat
+            else if ( ( VSCP_CLASS2_INFORMATION == vscp_class ) && 
+                      ( VSCP2_TYPE_INFORMATION_HEART_BEAT == vscp_type ) ) {
+                
+                // This will use the correct GUID as originator 
+                cguid guid;
+
+                guid.getFromArray( ( unsigned const char * )buf + VSCP_MULTICAST_PACKET0_POS_VSCP_GUID  );
+                CNodeInformation *pNode = m_knownNodes.addNode( guid );
+                if ( NULL != pNode ) {
+
+                    // not a proxy
+                    pNode->m_bProxy = false;
+
+                    // Save the nodes GUID
+                    pNode->m_realguid = guid;
+
+                    uint16_t size = ( buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE  ] << 8 ) + 
+                                        buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE +1 ];
+                    wxUINT32_SWAP_ON_LE( size );
+
+                    // Update heart beat
+                    pNode->m_lastHeartBeat = wxDateTime::Now();
+
+                    // If a node name supplied. save it
+                    if ( size ) {
+
+                        // Name can be 64 byte max. We must make sure it is null terminates
+                        unsigned char wrkbuf[ 65 ];
+                        memset( wrkbuf, 0, sizeof( wrkbuf ) );
+                        memcpy( wrkbuf, ( unsigned const char * )buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA, MIN( size, 64 ) );
+                        pNode->m_strNodeName = wxString::FromUTF8( (const char *)wrkbuf );
+
+                    }
+
+                    // Save the servers address
+                    pNode->m_address = originatingAddress;
+
+                }
+
+            }
+            // Server proxy heart beats
+            else if ( ( VSCP_CLASS2_INFORMATION  == vscp_class ) && 
+                      ( VSCP2_TYPE_INFORMATION_PROXY_HEART_BEAT == vscp_type ) ) {
+
+                // This will use the correct GUID as originator 
+
+                cguid guid;
+                // INterface GUID is used as identifier
+                guid.getFromArray( ( unsigned const char * )buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 32 );
+                CNodeInformation *pNode = m_knownNodes.addNode( guid );
+                if ( NULL != pNode ) {
+
+                    // not a proxy
+                    pNode->m_bProxy = true;
+
+                    // Save the nodes real GUID
+                    guid.getFromArray( ( unsigned const char * )buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA );
+                    if ( !guid.isNULL() ) {
+                        pNode->m_realguid = guid;
+                    }
+
+                    // Save the nodes interface GUID
+                    guid.getFromArray( ( unsigned const char * )buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 32  );
+                    if ( !guid.isNULL() ) {
+                        pNode->m_interfaceguid = guid;
+                    }
+
+                    // Time for last heatbeat
+                    pNode->m_lastHeartBeat = wxDateTime::Now();
+
+                    // Name can be 64 byte max. We must make sure it is null terminates
+                    unsigned char wrkbuf[ 65 ];
+                    memset( wrkbuf, 0, sizeof( wrkbuf ) );
+                    memcpy( wrkbuf, ( unsigned const char * )buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 64, 64  );
+                    pNode->m_strNodeName = wxString::FromUTF8( ( const char * )wrkbuf );
+
+                    // Save Name for interface this node is on
+
+                    // Save the servers address
+                    pNode->m_address = originatingAddress;
+
+                    // Get server GUID
+                    guid.getFromArray( ( uint8_t * )buf + VSCP_MULTICAST_PACKET0_POS_VSCP_GUID );
+
+                }
+                
+
+            }
+            // Server capabilities
+            else if ( ( VSCP_CLASS2_PROTOCOL == vscp_class ) && 
+                      ( VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS == vscp_type ) ) {
+
+                // This will use the server GUID as originator
+                // This will use the correct GUID as originator 
+                cguid guid;
+
+                guid.getFromArray( ( unsigned const char * )buf + VSCP_MULTICAST_PACKET0_POS_VSCP_GUID );
+                CVSCPServerInformation *pServer = m_knownNodes.addServer( guid );
+                if ( NULL != pServer ) {
+
+                }
+
+            }
+
+
         }
         
 

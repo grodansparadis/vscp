@@ -573,7 +573,7 @@ bool CControlObject::init(wxString& strcfgfile)
         logMsg(_("Path = .") + strcfgfile + _("\n"), DAEMON_LOGMSG_CRITICAL);
         return FALSE;
     }
-    
+   
     // Open up the General logging file.
     if ( m_bLogGeneralEnable ) {
         m_fileLogGeneral.Open( m_logGeneralFileName.GetFullPath(), wxFile::write_append ); 
@@ -610,6 +610,15 @@ bool CControlObject::init(wxString& strcfgfile)
             // 'localhost' IP instead as the base.
             getIPAddress(m_guid);
         }
+    }
+
+    // If no server name set construct one
+    if ( 0 == m_strServerName.Length() ) {
+        m_strServerName = _( "VSCP Daemon @ " );
+        //m_strServerName += _( VSCPD_DISPLAY_VERSION );
+        wxString strguid;
+        m_guid.toString( strguid );
+        m_strServerName += strguid;
     }
 
     // Load decision matrix if mechanism is enabled
@@ -1822,7 +1831,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     m_guid.getFromString(str);
                 } 
                 else if ( subchild->GetName() == wxT( "servername" ) ) {
-                    strServerName = subchild->GetNodeContent();
+                    m_strServerName = subchild->GetNodeContent();
                 }
 				else if (subchild->GetName() == wxT("clientbuffersize")) {
                     wxString str = subchild->GetNodeContent();

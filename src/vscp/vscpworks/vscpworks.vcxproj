@@ -247,6 +247,7 @@
     <ClInclude Include="..\common\canalconfobj.h" />
     <ClInclude Include="..\common\canaldlldef.h" />
     <ClInclude Include="..\common\canalsuperwrapper.h" />
+    <ClInclude Include="..\common\canal_macro.h" />
     <ClInclude Include="..\common\devicelist.h" />
     <ClInclude Include="..\common\devitem.h" />
     <ClInclude Include="..\common\dllwrapper.h" />

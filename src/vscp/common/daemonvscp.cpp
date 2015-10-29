@@ -214,7 +214,8 @@ void *daemonVSCPThread::Entry()
         // Automation
         if (  m_pCtrlObject->m_automation.isAutomationEnabled() ) {
         
-            // Check if automation event should be sent and send it if so
+            // Check if automation event should be sent and send it if 
+            // that is the case
             vscpEventEx eventEx;
             if ( m_pCtrlObject->m_automation.doWork( &eventEx ) ) {
 
@@ -227,10 +228,28 @@ void *daemonVSCPThread::Entry()
                 eventEx.obid = pClientItem->m_clientID;
                 pClientItem->m_guid.writeGUID( eventEx.GUID );
 
-                if ( VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT == eventEx.vscp_type ) {
+                if ( ( VSCP_CLASS1_PROTOCOL == eventEx.vscp_class ) &&
+                     ( VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT == eventEx.vscp_type ) ) {
 
                     // crc8 of VSCP daemon GUID should be indata byte 0
                     eventEx.data[ 0 ] = vscp_calcCRC4GUIDArray( m_pCtrlObject->m_guid.getGUID() );
+
+                    // Send event on multicast information channel
+                    sendMulticastEventEx( sock_mc, &eventEx, mc_port );
+
+                }                
+                else if ( ( VSCP_CLASS1_INFORMATION  == eventEx.vscp_class ) &&
+                          ( VSCP_TYPE_INFORMATION_NODE_HEARTBEAT == eventEx.vscp_type ) ) {
+                
+                    // Send event on multicast information channel
+                    sendMulticastEventEx( sock_mc, &eventEx, mc_port );
+
+                }
+                else if ( ( VSCP_CLASS2_INFORMATION == eventEx.vscp_class ) &&
+                          ( VSCP2_TYPE_INFORMATION_HEART_BEAT == eventEx.vscp_type ) ) {
+
+                    // Copy in server name.
+                    memcpy( eventEx.data, m_pCtrlObject->m_strServerName.mbc_str(), MAX( 64, m_pCtrlObject->m_strServerName.Length() ) );
 
                     // Send event on multicast information channel
                     sendMulticastEventEx( sock_mc, &eventEx, mc_port );
@@ -326,7 +345,7 @@ void *daemonVSCPThread::Entry()
 
             } 
             
-            // New node on-line   - collect 
+            // New node on-line - collect 
             else if ( ( VSCP_CLASS1_PROTOCOL == pEvent->vscp_class ) && 
                 ( VSCP_TYPE_PROTOCOL_NEW_NODE_ONLINE == pEvent->vscp_type ) ) {
                 
@@ -698,8 +717,7 @@ bool daemonVSCPThread::sendMulticastInformationProxyEvent( int sock,
     //  7 	CLASS LSB
     //  8 	TYPE MSB
     //  9 	TYPE LSB
-    //  10 - 24 	ORIGINATING GUID MSB
-    //  25 	ORIGINATING GUID LSB
+    //  10 - 25  ORIGINATING GUID 
     //  26 	DATA SIZE MSB
     //  27 	DATA SIZE LSB
     //  28 - n 	data limited to max 512 - 25 = 487 bytes
@@ -733,7 +751,7 @@ bool daemonVSCPThread::sendMulticastInformationProxyEvent( int sock,
     buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE + 0 ] = ( vscp_type >> 8 ) & 0xff;
     buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE + 1 ] = vscp_type & 0xff;
 
-    // Originating GUID 
+    // Originating GUID - Daemon GUID
     memcpy( buf + VSCP_MULTICAST_PACKET0_POS_VSCP_GUID, m_pCtrlObject->m_guid.m_id, 16 );
 
     // Size of payload =  128 bytes

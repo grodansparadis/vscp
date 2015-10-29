@@ -5,7 +5,7 @@
 // as published by the Free Software Foundation; either version
 // 2 of the License, or (at your option) any later version.
 // 
-// This file is part of the VSCP (http://www.vscp.org) 
+// This file is part of the VSCP project (http://www.vscp.org) 
 //
 // Copyright (C) 2000-2015 
 // Ake Hedman, Paradise of the Frog, <akhe@paradiseofthefrog.com>
@@ -212,7 +212,7 @@ public:
 
     bool  isSendHeartbeat( void ) { return m_bHeartBeatEvent; };
     long getIntervalHeartbeat( void ) { return m_intervalHeartBeat; };
-    wxDateTime &getHeartbeatSent( void ) { return m_Heartbeat_sent; };
+    wxDateTime &getHeartbeatSent( void ) { return m_Heartbeat_Level1_sent; };
 
 private:
 
@@ -254,8 +254,14 @@ private:
     */
     long m_intervalHeartBeat;                   // long because of .toLong
 
-    // Time when heartbeat send
-    wxDateTime m_Heartbeat_sent;
+    // Time when heartbeat Level I sent
+    wxDateTime m_Heartbeat_Level1_sent;
+
+    // Time when heartbeat Level II sent
+    wxDateTime m_Heartbeat_Level2_sent;
+
+    // Time when capabilities Level II sent
+    wxDateTime m_Capabilities_Level2_sent;
 
     /*!
         Start date time when daylight saving time starts. When daylight saving time is in 

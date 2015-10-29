@@ -112,7 +112,7 @@ public:
     // Full GUID for interface 
     cguid m_interfaceguid;
 
-    // Client id
+    // Client id - Used by the VSCP daemon
     uint32_t m_clientID;
 
     // MDF path for node
@@ -130,6 +130,10 @@ public:
 
     // If a driver is associated with the 
     wxString m_deviceName;
+
+    // IP/MAC/... address (if any) associated with the node
+    wxString m_address;
+
 };
 
 // GUID -> Node info

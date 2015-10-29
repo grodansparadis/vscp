@@ -127,8 +127,11 @@ CVSCPAutomation::CVSCPAutomation( void )
 
     m_lastCalculation = wxDateTime::Now();
 
-    m_Heartbeat_sent =  wxDateTime::Now() + in_the_past;
+    m_Heartbeat_Level1_sent =  wxDateTime::Now() + in_the_past;
+    m_Heartbeat_Level2_sent = wxDateTime::Now() + in_the_past;
+    
     m_SegmentHeartbeat_sent =  wxDateTime::Now() + in_the_past;
+    m_Capabilities_Level2_sent = wxDateTime::Now() + in_the_past;
 
 }
 
@@ -561,12 +564,12 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         return true;
     }
 
-    // Heartbeat
-    wxTimeSpan HeartBeatPeriod( 0, 0, m_intervalHeartBeat );
+    // Heartbeat Level I
+    wxTimeSpan HeartBeatLevel1Period( 0, 0, m_intervalHeartBeat );
     if ( m_bHeartBeatEvent && 
-         ( ( wxDateTime::Now() - m_Heartbeat_sent ) > HeartBeatPeriod ) ) {
+         ( ( wxDateTime::Now() - m_Heartbeat_Level1_sent ) > HeartBeatLevel1Period ) ) {
         
-        m_Heartbeat_sent = wxDateTime::Now();
+        m_Heartbeat_Level1_sent = wxDateTime::Now();
 
         // Send VSCP_CLASS1_INFORMATION, Type=9/VSCP_TYPE_INFORMATION_NODE_HEARTBEAT
         pEventEx->obid = 0;         // IMPORTANT Must be set by caller before event is sent
@@ -578,6 +581,27 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         pEventEx->data[ 0 ] = 0;    // index
         pEventEx->data[ 1 ] = 0;    // zone
         pEventEx->data[ 2 ] = 0;    // subzone
+
+        return true;
+    }
+
+    // Heartbeat Level II
+    wxTimeSpan HeartBeatLevel2Period( 0, 0, m_intervalHeartBeat );
+    if ( m_bHeartBeatEvent &&
+         ( ( wxDateTime::Now() - m_Heartbeat_Level2_sent ) > HeartBeatLevel2Period ) ) {
+
+        m_Heartbeat_Level2_sent = wxDateTime::Now();
+
+        // Send VSCP_CLASS1_INFORMATION, Type=9/VSCP_TYPE_INFORMATION_NODE_HEARTBEAT
+        pEventEx->obid = 0;         // IMPORTANT Must be set by caller before event is sent
+        pEventEx->head = 0;
+        pEventEx->vscp_class = VSCP_CLASS2_INFORMATION;
+        pEventEx->vscp_type = VSCP2_TYPE_INFORMATION_HEART_BEAT;
+        pEventEx->sizeData = 64;
+        // IMPORTANT - GUID must be set by caller before event is sent
+        
+        memset( pEventEx->data, 0, sizeof( pEventEx->data ) );
+        // Server name should be copied in by the calling routine 
 
         return true;
     }
