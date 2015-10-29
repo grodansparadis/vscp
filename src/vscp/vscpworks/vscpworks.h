@@ -301,6 +301,9 @@ typedef struct {
 } listfield;
 
 
+// Forward class definitions
+class worksMulticastThread;
+
 
 
 /*!
@@ -523,6 +526,12 @@ public:
   */
   bool m_bUseGlobalConfig;
 
+  /*!
+    Pointer to the multicast worker thread
+  */
+  worksMulticastThread *m_pmulticastWorkerThread;
+  wxMutex m_mutexmulticastWorkerThread;
+
 };
 
 /*!
@@ -532,6 +541,17 @@ public:
 ////@begin declare app
 DECLARE_APP(VscpworksApp)
 ////@end declare app
+
+
+
+
+
+
+
+
+
+
+
 
 #endif
   // _VSCPWORKS_H_

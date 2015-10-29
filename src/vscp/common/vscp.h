@@ -245,39 +245,39 @@ typedef vscpEventEx *PVSCPEVENTEX;
 
 // Priorities in the header byte as or'in values
 // Priorities goes from 0-7 where 0 is highest 
-#define VSCP_PRIORITY_0             0x00
-#define VSCP_PRIORITY_1             0x20
-#define VSCP_PRIORITY_2             0x40
-#define VSCP_PRIORITY_3             0x60
-#define VSCP_PRIORITY_4             0x80
-#define VSCP_PRIORITY_5             0xA0
-#define VSCP_PRIORITY_6             0xC0
-#define VSCP_PRIORITY_7             0xE0
+#define VSCP_PRIORITY_0                     0x00
+#define VSCP_PRIORITY_1                     0x20
+#define VSCP_PRIORITY_2                     0x40
+#define VSCP_PRIORITY_3                     0x60
+#define VSCP_PRIORITY_4                     0x80
+#define VSCP_PRIORITY_5                     0xA0
+#define VSCP_PRIORITY_6                     0xC0
+#define VSCP_PRIORITY_7                     0xE0
 
-#define VSCP_PRIORITY_HIGH          0x00
-#define VSCP_PRIORITY_LOW           0xE0
-#define VSCP_PRIORITY_MEDIUM        0xC0
-#define VSCP_PRIORITY_NORMAL        0x60
+#define VSCP_PRIORITY_HIGH                  0x00
+#define VSCP_PRIORITY_LOW                   0xE0
+#define VSCP_PRIORITY_MEDIUM                0xC0
+#define VSCP_PRIORITY_NORMAL                0x60
 
-#define VSCP_HEADER_PRIORITY_MASK   0xE0
+#define VSCP_HEADER_PRIORITY_MASK           0xE0
 
-#define VSCP_HEADER_HARD_CODED      0x10    // If set node nickname is hardcoded
-#define VSCP_HEADER_NO_CRC          0x08    // Don't calculate CRC
+#define VSCP_HEADER_HARD_CODED              0x10    // If set node nickname is hardcoded
+#define VSCP_HEADER_NO_CRC                  0x08    // Don't calculate CRC
 
-#define VSCP_NO_CRC_CALC            0x08    // If set no CRC is calculated
+#define VSCP_NO_CRC_CALC                    0x08    // If set no CRC is calculated
 
-#define VSCP_MASK_PRIORITY          0xE0
-#define VSCP_MASK_HARDCODED         0x10
-#define VSCP_MASK_NOCRCCALC         0x08
+#define VSCP_MASK_PRIORITY                  0xE0
+#define VSCP_MASK_HARDCODED                 0x10
+#define VSCP_MASK_NOCRCCALC                 0x08
 
-#define VSCP_LEVEL1_MAXDATA         8
-#define VSCP_LEVEL2_MAXDATA         (512 - 25)
+#define VSCP_LEVEL1_MAXDATA                 8
+#define VSCP_LEVEL2_MAXDATA                 (512 - 25)
 
-#define VSCP_CAN_ID_HARD_CODED	    0x02000000  // Hard coded bit in CAN frame id
+#define VSCP_CAN_ID_HARD_CODED	            0x02000000  // Hard coded bit in CAN frame id
 
 // GUID byte positions
-#define VSCP_GUID_MSB               0
-#define VSCP_GUID_LSB               15
+#define VSCP_GUID_MSB                       0
+#define VSCP_GUID_LSB                       15
 
 //
 // Filter structure for VSCP Level 2
@@ -329,7 +329,7 @@ typedef  VSCPStatistics * PVSCPSTATISTICS;
 	This is the general channel state structure
 */
 
-#define VSCP_STATUS_ERROR_STRING_SIZE   80
+#define VSCP_STATUS_ERROR_STRING_SIZE       80
 
 typedef struct structVSCPStatus {
     unsigned long channel_status;                       // Current state for channel
@@ -343,14 +343,14 @@ typedef  VSCPStatus * PVSCPSTATUS;
  
 
 // VSCP LEVEL II UDP datagram offsets
-#define VSCP_UDP_POS_HEAD             0
-#define VSCP_UDP_POS_CLASS            1
-#define VSCP_UDP_POS_TYPE             3
-#define VSCP_UDP_POS_GUID             5
-#define VSCP_UDP_POS_SIZE             21
+#define VSCP_UDP_POS_HEAD                   0
+#define VSCP_UDP_POS_CLASS                  1
+#define VSCP_UDP_POS_TYPE                   3
+#define VSCP_UDP_POS_GUID                   5
+#define VSCP_UDP_POS_SIZE                   21
 
-#define VSCP_UDP_POS_DATA             23  // Holder for beginning of data
-#define VSCP_UDP_POS_CRC              25  // dummy: actual is len - 2
+#define VSCP_UDP_POS_DATA                   23  // Holder for beginning of data
+#define VSCP_UDP_POS_CRC                    25  // dummy: actual is len - 2
 
 
 /*!
@@ -370,7 +370,10 @@ typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 
 // * * * Multicast on VSCP reserved IP 224.0.23.158
 
-#define VSCP_MULTICAST_DEFAULT_ANNNOUNCE_PORT   33333
+#define VSCP_MULTICAST_IPV4_ADDRESS_STR         "224.0.23.158"
+
+#define VSCP_MULTICAST_ANNNOUNCE_PORT           9598 //33333
+#define VSCP_MULTICAST_PORT                     44444   
 
 // Packet format type = 0
 #define VSCP_MULTICATS_PACKET0_HEADER_LENGTH    28
@@ -392,7 +395,9 @@ typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 // VSCP multicast Encryption types
 #define VSCP_MULTICAST_ENCRYPTION_NONE          0
 
-#define SET_VSCP_MULTICAST_TYPE( type, encryption )  ( (type<<8) + encryption )
+#define SET_VSCP_MULTICAST_TYPE( type, encryption )  ( (type<<4) + encryption )
+#define GET_VSCP_MULTICAST_PACKET_TYPE( type)        ( (type>>4) & 0x0f)
+#define GET_VSCP_MULTICAST_PACKET_ENCRYPTION( type)  ( (type) & 0x0f)
 
 // Bootloaders
 #define VSCP_BOOTLOADER_VSCP                    0x00	// VSCP boot loader algorithm
@@ -407,20 +412,20 @@ typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 //			* * * Data Coding for VSCP packets * * *
 
 // Data format masks
-#define VSCP_MASK_DATACODING_TYPE       0xE0  // Bits 5,6,7
-#define VSCP_MASK_DATACODING_UNIT       0x18  // Bits 3,4
-#define VSCP_MASK_DATACODING_INDEX      0x07  // Bits 0,1,2
+#define VSCP_MASK_DATACODING_TYPE               0xE0  // Bits 5,6,7
+#define VSCP_MASK_DATACODING_UNIT               0x18  // Bits 3,4
+#define VSCP_MASK_DATACODING_INDEX              0x07  // Bits 0,1,2
 
 // Theese bits are coded in the three MSB bytes of the first data byte
 // in a paket and tells the type of the data that follows.
-#define VSCP_DATACODING_BIT             0x00
-#define VSCP_DATACODING_BYTE            0x20
-#define VSCP_DATACODING_STRING          0x40
-#define VSCP_DATACODING_INTEGER         0x60
-#define VSCP_DATACODING_NORMALIZED      0x80
-#define VSCP_DATACODING_SINGLE          0xA0	// single precision float
-#define VSCP_DATACODING_RESERVED1       0xC0
-#define VSCP_DATACODING_RESERVED2       0xE0
+#define VSCP_DATACODING_BIT                     0x00
+#define VSCP_DATACODING_BYTE                    0x20
+#define VSCP_DATACODING_STRING                  0x40
+#define VSCP_DATACODING_INTEGER                 0x60
+#define VSCP_DATACODING_NORMALIZED              0x80
+#define VSCP_DATACODING_SINGLE                  0xA0	// single precision float
+#define VSCP_DATACODING_RESERVED1               0xC0
+#define VSCP_DATACODING_RESERVED2               0xE0
 
 // These bits are coded in the four least significant bits of the first data byte
 // in a packet and tells how the following data should be interpreted. For a flow sensor
@@ -438,16 +443,16 @@ typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 #define VSCP_DATACODING_INDEX( b ) ( VSCP_MASK_DATACODING_INDEX & b )
 
 // CRC8 Constants
-#define VSCP_CRC8_POLYNOMIAL            0x18
-#define VSCP_CRC8_REMINDER              0x00
+#define VSCP_CRC8_POLYNOMIAL                0x18
+#define VSCP_CRC8_REMINDER                  0x00
 
 // CRC16 Constants
-#define VSCP_CRC16_POLYNOMIAL           0x1021
-#define VSCP_CRC16_REMINDER             0xFFFF
+#define VSCP_CRC16_POLYNOMIAL               0x1021
+#define VSCP_CRC16_REMINDER                 0xFFFF
 
 // CRC32 Constants
-#define VSCP_CRC32_POLYNOMIAL           0x04C11DB7
-#define VSCP_CRC32_REMINDER             0xFFFFFFFF
+#define VSCP_CRC32_POLYNOMIAL               0x04C11DB7
+#define VSCP_CRC32_REMINDER                 0xFFFFFFFF
 
 
 // Node data - the required registers are fetched from this 
@@ -510,19 +515,21 @@ struct myNode {
 // used by CLASS1.PROTOCOL, HIGH END SERVER RESPONSE
 // and low end 15-bits for
 // CLASS2.PROTOCOL, HIGH END SERVER HEART BEAT
-#define VSCP_SERVER_CAPABILITY_TCPIP            (1<<15)
-#define VSCP_SERVER_CAPABILITY_UDP              (1<<14)
-#define VSCP_SERVER_CAPABILITY_MULTICAST        (1<<13)
-#define VSCP_SERVER_CAPABILITY_RAWETH           (1<<12)
-#define VSCP_SERVER_CAPABILITY_WEB              (1<<11)
-#define VSCP_SERVER_CAPABILITY_WEBSOCKET        (1<<10)
-#define VSCP_SERVER_CAPABILITY_REST             (1<<9)
-#define VSCP_SERVER_CAPABILITY_MQTT             (1<<7)
-#define VSCP_SERVER_CAPABILITY_COAP             (1<<7)
-#define VSCP_SERVER_CAPABILITY_IP6              (1<<6)
-#define VSCP_SERVER_CAPABILITY_IP4              (1<<5)
-#define VSCP_SERVER_CAPABILITY_SSL              (1<<4)
-#define VSCP_SERVER_CAPABILITY_TWO_CONNECTIONS  (1<<3)
+
+#define VSCP_SERVER_CAPABILITY_MULTICAST            (1<<16)
+#define VSCP_SERVER_CAPABILITY_TCPIP                (1<<15)
+#define VSCP_SERVER_CAPABILITY_UDP                  (1<<14)
+#define VSCP_SERVER_CAPABILITY_MULTICAST_ANNOUNCE   (1<<13)
+#define VSCP_SERVER_CAPABILITY_RAWETH               (1<<12)
+#define VSCP_SERVER_CAPABILITY_WEB                  (1<<11)
+#define VSCP_SERVER_CAPABILITY_WEBSOCKET            (1<<10)
+#define VSCP_SERVER_CAPABILITY_REST                 (1<<9)
+#define VSCP_SERVER_CAPABILITY_MQTT                 (1<<8)
+#define VSCP_SERVER_CAPABILITY_COAP                 (1<<7)
+#define VSCP_SERVER_CAPABILITY_IP6                  (1<<6)
+#define VSCP_SERVER_CAPABILITY_IP4                  (1<<5)
+#define VSCP_SERVER_CAPABILITY_SSL                  (1<<4)
+#define VSCP_SERVER_CAPABILITY_TWO_CONNECTIONS      (1<<3)
 
 
 /// Error Codes

@@ -90,6 +90,7 @@
 #include <vscp.h>
 #include <vscphelper.h>
 #include <vscpeventhelper.h>
+#include <vscpmulticast.h>
 #include <mdf.h>
 #include <vscp_class.h>
 #include <vscp_type.h>
@@ -202,6 +203,8 @@ void VscpworksApp::Init()
     result=3;
     }
     */
+
+    m_pmulticastWorkerThread = NULL;
 
     m_bUseGlobalConfig = false; // Store config in users folder
 
@@ -328,8 +331,31 @@ bool VscpworksApp::OnInit()
     // Get the configuration
     readConfiguration();
 
-	// Remove the comment markers above and below this block
-	// to make permanent changes to the code.
+    /////////////////////////////////////////////////////////////////////////////
+    //                  Start the mulicast worker thread
+    /////////////////////////////////////////////////////////////////////////////
+    m_pmulticastWorkerThread = new worksMulticastThread;
+
+    if ( NULL != m_pmulticastWorkerThread ) {
+        //m_pmulticastWorkerThread->m_pApp = this;
+        wxThreadError err;
+        if ( wxTHREAD_NO_ERROR == ( err = m_pmulticastWorkerThread->Create() ) ) {
+            m_pmulticastWorkerThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
+            if ( wxTHREAD_NO_ERROR != ( err = m_pmulticastWorkerThread->Run() ) ) {
+                delete m_pmulticastWorkerThread;
+                m_pmulticastWorkerThread = NULL;
+                wxMessageBox( _( "Unable to run multicast discovery thread. Functionality is disabled." ) );
+            }
+        }
+        else {
+            delete m_pmulticastWorkerThread;
+            m_pmulticastWorkerThread = NULL;
+            wxMessageBox( _( "Unable to create multicast discovery thread. Functionality is disabled." ) );
+        }
+    }
+    else {
+        wxMessageBox( _( "Unable to create multicast discovery thread. Functionality is disabled." ) );
+    }
 
 #if wxUSE_XPM
 	wxImage::AddHandler(new wxXPMHandler);
@@ -381,6 +407,16 @@ int VscpworksApp::OnExit()
             if ( NULL != current ) delete current;
     }
     g_Config.m_vscpIfList.clear();
+
+    // Terminate multicast discovery system
+    if ( NULL != m_pmulticastWorkerThread ) {
+        m_mutexmulticastWorkerThread.Lock();
+        m_pmulticastWorkerThread->m_bQuit = true;
+        m_pmulticastWorkerThread->Wait();
+        delete m_pmulticastWorkerThread;
+        m_pmulticastWorkerThread = NULL;
+        m_mutexmulticastWorkerThread.Unlock();
+    }
 
     //_CrtDumpMemoryLeaks();
 
@@ -4272,4 +4308,7 @@ wxString VscpworksApp::addMDFInfo( CMDF *pmdf )
 }
 
 */
+
+
+
 

@@ -147,15 +147,37 @@ public:
     CNodeInformation *addNodeIfNotKnown( vscpEvent *pEvent );
 
     /*!
-        Send multicast information event
-        @param sock_mc Multicast socket to send on
-        @param pNode Pointer to information node.
-        @param pmc_addr Pointer to Multicast socket address
+        Send multicast event
+        @param sock Multicast socket to send on
+        @param pEvent Event to send
+        @param port Port to send multicast frame on.
         @return true on success, false on failure
     */
-    bool sendMulticastInformationEvent( int sock_mc, 
-                                            CNodeInformation *pNode,
-                                            struct sockaddr_in *mc_addr );
+    bool sendMulticastEvent( int sock,
+                                vscpEvent *pEvent,
+                                int port );
+
+    /*!
+        Send multicast event Ex
+        @param sock Multicast socket to send on
+        @param pEventEx Event ex to send
+        @param port Port to send multicast frame on.
+        @return true on success, false on failure
+    */
+    bool sendMulticastEventEx( int sock,
+                                vscpEventEx *pEventEx,
+                                int port );
+
+    /*!
+        Send multicast information event
+        @param sock Multicast socket to send on
+        @param pNode Pointer to information node.
+        @param port Port to send multicast frame on.
+        @return true on success, false on failure
+    */
+    bool sendMulticastInformationProxyEvent( int sock, 
+                                                CNodeInformation *pNode,
+                                                int port );
 
     /*!
         Termination control

@@ -67,6 +67,62 @@
 #include "guid.h"
 #include "knownnodes.h"
 
+
+///////////////////////////////////////////////////////////////////////////////
+//                           Server information
+///////////////////////////////////////////////////////////////////////////////
+
+CVSCPServerInformation::CVSCPServerInformation()
+{
+    m_capabilities = 0;
+    m_guid.clear();
+    m_nameOfServer.Empty();
+    m_ipaddress.Empty();
+
+    // Set default ports
+    memset( m_ports, 0, sizeof( m_ports ) );
+  
+    // Multicast announce port
+    m_ports[ 16 ] = VSCP_MULTICAST_PORT;
+
+    // VSCP TCP/IP interface
+    m_ports[ 15 ] = VSCP_LEVEL2_TCP_PORT;
+
+    // UDP INterface
+    m_ports[ 14 ] = VSCP_LEVEL2_UDP_PORT;
+
+    // Multicast announce
+    m_ports[ 13 ] = VSCP_MULTICAST_ANNNOUNCE_PORT;
+
+    // Raw Ethernet
+    m_ports[ 12 ] = VSCP_LEVEL2_TCP_PORT;  // No port is used - This is the Ethernet frame id
+
+    // Web server
+    m_ports[ 11 ] = 8080;
+
+    // Websocket interface
+    m_ports[ 10 ] = 8080;
+
+    // REST interface
+    m_ports[ 9 ] = 8080;
+
+    // MQTT interface
+    m_ports[ 8 ] = 1883;
+
+    // CoAP interface
+    m_ports[ 7 ] = 8080;
+
+}
+
+CVSCPServerInformation::~CVSCPServerInformation()
+{
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//                           Node information
+///////////////////////////////////////////////////////////////////////////////
+
 ///////////////////////////////////////////////////////////////////////////////
 // CNodeInformation CTOR
 //
@@ -114,18 +170,32 @@ CKnownNodes::CKnownNodes()
 CKnownNodes::~CKnownNodes()
 {
     // Remove hash content
-    VSCP_HASH_KNOWN_NODES::iterator it;
-    for ( it = m_nodes.begin(); it != m_nodes.end(); ++it )
     {
-        wxString key = it->first;
-        CNodeInformation *pNode = it->second;
-        if ( NULL != pNode ) delete pNode;
-        pNode = NULL;
+        VSCP_HASH_KNOWN_NODES::iterator it;
+        for ( it = m_nodes.begin(); it != m_nodes.end(); ++it )
+        {
+            wxString key = it->first;
+            CNodeInformation *pNode = it->second;
+            if ( NULL != pNode ) delete pNode;
+            pNode = NULL;
+        }
     }
     // Clear the map
     m_nodes.clear();
 
-
+    // Remove hash content
+    {
+        VSCP_HASH_KNOWN_SERVERS::iterator it;
+        for ( it = m_servers.begin(); it != m_servers.end(); ++it )
+        {
+            wxString key = it->first;
+            CVSCPServerInformation *pNode = it->second;
+            if ( NULL != pNode ) delete pNode;
+            pNode = NULL;
+        }
+    }
+    // Clear the map
+    m_servers.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -138,6 +208,19 @@ CNodeInformation *CKnownNodes::findNode( cguid& guid )
 
     guid.toString( strGUID  );
     return m_nodes[ strGUID ];
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// findServer
+//
+
+CVSCPServerInformation *CKnownNodes::findServer( cguid& guid )
+{
+    wxString strGUID;
+
+    guid.toString( strGUID );
+    return m_servers[ strGUID ];
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -160,7 +243,26 @@ CNodeInformation *CKnownNodes::addNode( cguid& guid )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// addNode
+// addServer
+//
+
+CVSCPServerInformation *CKnownNodes::addServer( cguid& guid )
+{
+    CVSCPServerInformation *pServer = findServer( guid );
+    if ( NULL == pServer ) {
+        pServer = new CVSCPServerInformation;
+        if ( NULL != pServer ) {
+            wxString strGUID;
+            guid.toString( strGUID );
+            m_servers[ strGUID ] = pServer;    // Assign the node
+        }
+    }
+
+    return pServer;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// removeNode
 //
 
 bool CKnownNodes::removeNode( cguid& guid )
@@ -179,20 +281,39 @@ bool CKnownNodes::removeNode( cguid& guid )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// removeServer
+//
+
+bool CKnownNodes::removeServer( cguid& guid )
+{
+    wxString strGUID;
+    bool rv = false;
+    CVSCPServerInformation *pServer = findServer( guid );
+    if ( NULL != pServer ) delete pServer;
+    pServer = NULL;
+
+    guid.toString( strGUID );
+    m_servers[ strGUID ] = NULL;
+    m_servers.erase( strGUID );
+
+    return rv;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // saveNodes
 //
 
-void CKnownNodes::saveNodes( void )
+void CKnownNodes::save( wxString& path )
 {
-
+    // TODO
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // loadNodes
 //
 
-void CKnownNodes::loadNodes( void )
+void CKnownNodes::load( wxString& path )
 {
-
+    // TODO
 }
 

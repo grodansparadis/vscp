@@ -4364,9 +4364,9 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
                     memset( buf, 0, sizeof( buf ) );
 					sprintf( wrkbuf, 
 #if WIN32
-                             "1,2,Info,%zd events requested of %zd available (unfiltered) %lu will be retrieved,NULL\r\n",
+                             "1,2,Info,%zd events requested of %d available (unfiltered) %zu will be retrieved,NULL\r\n",
 #else
-								"1,2,Info,%zd events requested of %ul available (unfiltered) %lu will be retrieved,NULL\r\n", 
+							 "1,2,Info,%zd events requested of %ul available (unfiltered) %lu will be retrieved,NULL\r\n", 
 #endif
 								count, 
                                 cntAvailable,					
@@ -4477,7 +4477,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
                     memset( buf, 0, sizeof( buf ) );
 
 					sprintf( wrkbuf, 
-								"<info>%zd events requested of %ul available (unfiltered) %lu will be retrieved</info>", 
+								"<info>%zd events requested of %lu available (unfiltered) %zu will be retrieved</info>", 
 								count, 
                                 cntAvailable,
                                 MIN(count, cntAvailable ) );
@@ -4645,7 +4645,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
                     {
                         char buf2[200];
                         sprintf( buf2,
-                                 "\"%zd events requested of %ul available (unfiltered) %lu will be retrieved\"",
+                                 "\"%zd events requested of %lu available (unfiltered) %zd will be retrieved\"",
                                  count,
                                  cntAvailable,
                                  MIN( count, cntAvailable ) );
@@ -5660,8 +5660,8 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn,
                                                         wxString& strFrom,
                                                         wxString& strTo )
 {
-    char buf[ 2048 ];
-    char wrkbuf[ 2048 ];
+    //char buf[ 2048 ];
+    //char wrkbuf[ 2048 ];
     long nRecords = 0;
 
     // Check pointer
