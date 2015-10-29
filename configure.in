@@ -224,8 +224,8 @@ echo
 echo   "           VSCP configuration"
 echo   "--------------------------------------------"
 echo   "VSCP version          : ${PACKAGE_VERSION}"
-echo   "System                : ${host}"
-echo   "Architecture          : ${arch}"
+echo   "System                : ($(hostname)) `uname -a` "
+echo   "Architecture          : $(arch)"
 echo   "VSCP GUI Build        : ${vscp_gui}"
 
 if test "${vscp_debug}" = "yes" 
