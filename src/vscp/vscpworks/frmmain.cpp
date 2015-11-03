@@ -115,12 +115,108 @@ BEGIN_EVENT_TABLE( frmMain, wxFrame )
     EVT_IDLE( frmMain::onIdle )
 END_EVENT_TABLE()
 
+
+///////////////////////////////////////////////////////////////////////////////
+// RenderTimer CTor/DTor
+//
+
+RenderTimer::RenderTimer( frmMain *pwnd, worksMulticastThread *pThread ) : wxTimer()
+{
+    m_nLastKnownNodes = 0;
+    m_nLastKnownServers = 0;
+
+    RenderTimer::m_pwnd = pwnd;
+    m_multicastThread  = pThread;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Notify
+//
+
+void RenderTimer::Notify()
+{
+    bool bRefresh = false;
+
+    m_multicastThread->m_knownNodes.m_mutexKnownNodes.Lock();
+    
+    if ( m_nLastKnownNodes < m_multicastThread->m_knownNodes.m_nodes.size() ) {
+
+        bRefresh = true;    // We should update stuff
+
+        VSCP_HASH_KNOWN_NODES::iterator it;
+        for ( it = m_multicastThread->m_knownNodes.m_nodes.begin(); it != m_multicastThread->m_knownNodes.m_nodes.end(); ++it )
+        {
+            wxString key = it->first;
+            CNodeInformation *pNodeInfo = it->second;
+            
+            if ( NULL != pNodeInfo ) {
+                nodeClientData *pNode = new nodeClientData( pNodeInfo );
+                if ( NULL != pNode ) {
+                    m_pwnd->m_nodeTree->AppendItem( m_pwnd->m_moduleNodeItem, pNodeInfo->m_strNodeName, MDF_EDITOR_SUB_ITEM );
+                }
+            }
+
+        }
+
+        
+        
+        // Update numbers
+        m_nLastKnownNodes = m_multicastThread->m_knownNodes.m_nodes.size();    
+        
+    }
+
+    if ( m_nLastKnownServers < m_multicastThread->m_knownNodes.m_servers.size() ) {
+
+        bRefresh = true;    // We should update stuff
+
+        VSCP_HASH_KNOWN_SERVERS::iterator it;
+        for ( it = m_multicastThread->m_knownNodes.m_servers.begin(); it != m_multicastThread->m_knownNodes.m_servers.end(); ++it )
+        {
+            wxString key = it->first;
+            CVSCPServerInformation *pNodeInfo = it->second;
+ 
+            if ( NULL != pNodeInfo ) {
+                serverClientData *pServer = new serverClientData( pNodeInfo );
+                if ( NULL != pServer ) {
+                    m_pwnd->m_nodeTree->AppendItem( m_pwnd->m_moduleServerItem, pNodeInfo->m_nameOfServer, MDF_EDITOR_SUB_ITEM );
+                }
+            }
+
+        }
+
+        // Update numbers
+        m_nLastKnownServers = m_multicastThread->m_knownNodes.m_servers.size();
+
+    }
+
+    m_multicastThread->m_knownNodes.m_mutexKnownNodes.Unlock();
+
+    // Refresh the window if necessary
+    if ( bRefresh ) {
+        // Refresh the display
+        m_pwnd->Refresh();
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// start
+//
+
+void RenderTimer::start()
+{
+    wxTimer::Start( 5000 );
+}
+
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // frmMain ctor
 //
 
 frmMain::frmMain()
 {
+    m_timerDiscovery = new RenderTimer( this, wxGetApp().m_pmulticastWorkerThread );
+
 	Init();
 }
 
@@ -135,7 +231,10 @@ frmMain::frmMain( wxWindow* parent,
                     const wxSize& size, 
                     long style )
 {
-	Init();
+    // Create the timer object
+    m_timerDiscovery = new RenderTimer( this, wxGetApp().m_pmulticastWorkerThread );
+	
+    Init();
 	Create( parent, id, caption, pos, size, style );
 }
 
@@ -153,7 +252,7 @@ bool frmMain::Create( wxWindow* parent,
     wxFrame::Create( parent, id, caption, pos, size, style );
 
     CreateControls();
-    SetIcon(GetIconResource(wxT("../../../docs/vscp/logo/fatbee_v2.ico")));
+    SetIcon( GetIconResource( wxT("../../../docs/vscp/logo/fatbee_v2.ico") ) );
     return true;
 }
 
@@ -163,7 +262,7 @@ bool frmMain::Create( wxWindow* parent,
 
 frmMain::~frmMain()
 {
-
+    delete m_timerDiscovery;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -178,7 +277,7 @@ void frmMain::Init()
         }
     }
 
-    
+    m_timerDiscovery->Start();
 
 }
 
@@ -322,18 +421,18 @@ void frmMain::CreateControls()
     itemStaticTextTop->SetFont( wxFont( 10, wxSWISS, wxNORMAL, wxBOLD, false, wxT( "Tahoma" ) ) );
     itemSizerVertical->Add( itemStaticTextTop, 0, wxALIGN_LEFT | wxALL, 5 );
 
-    m_mdfTree = new wxTreeCtrl;
-    m_mdfTree->Create( itemPanel, ID_TREECTRL, wxDefaultPosition, wxDefaultSize, wxTR_HAS_BUTTONS | wxTR_FULL_ROW_HIGHLIGHT | wxTR_LINES_AT_ROOT | wxTR_ROW_LINES | wxTR_SINGLE );
-    itemSizerVertical->Add( m_mdfTree, 10, wxGROW | wxALL, 2 );
+    m_nodeTree = new wxTreeCtrl;
+    m_nodeTree->Create( itemPanel, ID_TREECTRL, wxDefaultPosition, wxDefaultSize, wxTR_HAS_BUTTONS | wxTR_FULL_ROW_HIGHLIGHT | wxTR_LINES_AT_ROOT | wxTR_ROW_LINES | wxTR_SINGLE );
+    itemSizerVertical->Add( m_nodeTree, 10, wxGROW | wxALL, 2 );
 
     m_htmlInfoWnd = new wxHtmlWindow;
     m_htmlInfoWnd->Create( itemPanel, ID_HTMLWINDOW2, wxDefaultPosition, wxSize( -1, 150 ), wxHW_SCROLLBAR_AUTO | wxSUNKEN_BORDER | wxHSCROLL | wxVSCROLL );
-    m_htmlInfoWnd->SetPage( _( "<html><h4>No data</h4></html>" ) );
+    m_htmlInfoWnd->SetPage( _( "<html><h4>Node information</h4>This area will contain extended information about known (discovered) nodes. This is work in progress sp information is static at the moment.</html>" ) );
     itemSizerVertical->Add( m_htmlInfoWnd, 0, wxGROW | wxALL, 5 );
     
     // Connect events and objects
-    m_mdfTree->Connect( ID_TREECTRL, wxEVT_LEFT_DOWN, wxMouseEventHandler( frmMDFEditor::OnLeftDown ), NULL, this );
-    m_mdfTree->Connect( ID_TREECTRL, wxEVT_LEFT_DCLICK, wxMouseEventHandler( frmMDFEditor::OnLeftDClick ), NULL, this );
+    m_nodeTree->Connect( ID_TREECTRL, wxEVT_LEFT_DOWN, wxMouseEventHandler( frmMDFEditor::OnLeftDown ), NULL, this );
+    m_nodeTree->Connect( ID_TREECTRL, wxEVT_LEFT_DCLICK, wxMouseEventHandler( frmMDFEditor::OnLeftDClick ), NULL, this );
 
     wxImageList* itemImageList = new wxImageList( 16, 16, true, 5 );
     {
@@ -349,7 +448,7 @@ void frmMain::CreateControls()
         itemImageList->Add( Icon4 );
     }
 
-    m_mdfTree->AssignImageList( itemImageList );
+    m_nodeTree->AssignImageList( itemImageList );
 
     addDefaultContent();
     
@@ -426,7 +525,7 @@ wxIcon frmMain::GetIconResource( const wxString& name )
 
 void frmMain::OnCloseWindow( wxCloseEvent& event )
 {
-    
+    m_timerDiscovery->Stop();
 
     // Save frame size and position
     wxRect rc = GetRect();
@@ -500,21 +599,19 @@ void frmMain::OnLeftDClick( wxMouseEvent& event )
 
 void frmMain::addDefaultContent( void )
 {
-    m_rootItem = m_mdfTree->AddRoot( _( "VSCP Network neighbourhood" ), MDF_EDITOR_TOP_ITEM );
-    m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "Daemon TCP/IP Interfaces" ), MDF_EDITOR_MAIN_ITEM );
-    m_mdfTree->AppendItem( m_moduleItem, _( "Node" ), MDF_EDITOR_SUB_ITEM );
+    m_rootItem = m_nodeTree->AddRoot( _( "VSCP Network neighbourhood" ), MDF_EDITOR_TOP_ITEM );
+    m_moduleServerItem = m_nodeTree->AppendItem( m_rootItem, _( "High end nodes" ), MDF_EDITOR_MAIN_ITEM );
+    m_nodeTree->AppendItem( m_moduleServerItem, _( "Node" ), MDF_EDITOR_SUB_ITEM );
 
-    m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "WEB interface" ), MDF_EDITOR_MAIN_ITEM );
+    m_moduleNodeItem = m_nodeTree->AppendItem( m_rootItem, _( "Known nodes" ), MDF_EDITOR_MAIN_ITEM );
+    m_nodeTree->AppendItem( m_moduleNodeItem, _( "Node" ), MDF_EDITOR_SUB_ITEM );
 
-    m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "Level II node" ), MDF_EDITOR_MAIN_ITEM );
-
-    m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "Websocket interface" ), MDF_EDITOR_MAIN_ITEM );
-
-    m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "REST interface" ), MDF_EDITOR_MAIN_ITEM );
-
-    m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "MQTT interface" ), MDF_EDITOR_MAIN_ITEM );
-
-    m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "CoAP interface" ), MDF_EDITOR_MAIN_ITEM );
+    //m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "WEB interface" ), MDF_EDITOR_MAIN_ITEM );
+    //m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "Level II node" ), MDF_EDITOR_MAIN_ITEM );
+    //m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "Websocket interface" ), MDF_EDITOR_MAIN_ITEM );
+    //m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "REST interface" ), MDF_EDITOR_MAIN_ITEM );
+    //m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "MQTT interface" ), MDF_EDITOR_MAIN_ITEM );
+    //m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "CoAP interface" ), MDF_EDITOR_MAIN_ITEM );
 
     /*
     m_mdfTree->AppendItem( m_moduleItem, _( "Model" ), MDF_EDITOR_SUB_ITEM );

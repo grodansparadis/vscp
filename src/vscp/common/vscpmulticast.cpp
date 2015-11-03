@@ -38,6 +38,7 @@
 #include <wx/listimpl.cpp>
 
 #ifdef WIN32
+
 #else
 
 #include <sys/types.h>   
@@ -81,31 +82,19 @@ worksMulticastThread::~worksMulticastThread()
 
 void *worksMulticastThread::Entry()
 {
-    // Must have a valid pointer to the app. object
-    //if ( NULL == m_pApp ) return NULL;
-
     crcInit();
 
     //*************************************************************************
     //                           Multicast init.
     //*************************************************************************
 
-    int sock;                           // socket descriptor 
-    struct sockaddr_in mc_addr;         // socket address structure  
-    unsigned short port = VSCP_MULTICAST_ANNNOUNCE_PORT;        // multicast port 
-    unsigned char ttl = 1;              // time to live (hop count) 
-    int flag_on = 1;                    // socket option flag 
+    int sock;                                               // socket descriptor 
+    struct sockaddr_in mc_addr;                             // socket address structure  
+    unsigned short port = VSCP_MULTICAST_ANNNOUNCE_PORT;    // multicast port 
+    unsigned char ttl = 1;                                  // time to live (hop count) 
+    int flag_on = 1;                                        // socket option flag 
 
 #ifdef WIN32
-
-    WSADATA wsaData;                    // Windows socket DLL structure 
-    struct ip_mreq mc_req;              // multicast request structure 
-
-    // Load Winsock 2.0 DLL
-    if ( WSAStartup( MAKEWORD( 2, 0 ), &wsaData ) != 0 ) {
-        fprintf( stderr, "Multicast WSAStartup() failed" );
-        return NULL;
-    }
 
     // create a socket for sending to the multicast address 
     if ( ( sock = socket( PF_INET, SOCK_DGRAM, IPPROTO_UDP ) ) < 0 ) {
@@ -121,11 +110,11 @@ void *worksMulticastThread::Entry()
     }
 
     // set the TTL (time to live/hop count) for the send 
-    if ( ( setsockopt( sock, IPPROTO_IP, IP_MULTICAST_TTL,
+    /*if ( ( setsockopt( sock, IPPROTO_IP, IP_MULTICAST_TTL,
                        ( const char* )&ttl, sizeof( ttl ) ) ) < 0 ) {
         perror( "Multicast setsockopt() failed" );
         return NULL;
-    }
+    }*/
 
     // construct a multicast address structure 
     memset( &mc_addr, 0, sizeof( mc_addr ) );
@@ -141,6 +130,7 @@ void *worksMulticastThread::Entry()
     }
 
     // construct an IGMP join request structure 
+    struct ip_mreq mc_req;                      // multicast request structure
     mc_req.imr_multiaddr.s_addr = inet_addr( VSCP_MULTICAST_IPV4_ADDRESS_STR );
     mc_req.imr_interface.s_addr = htonl( INADDR_ANY );
 
@@ -182,7 +172,11 @@ void *worksMulticastThread::Entry()
     char buf[ 1024 ];               // buffer to receive string 
     int recv_len;                   // length of string received 
     struct sockaddr_in from_addr;   // packet source 
+#ifdef WIN32
+    int from_len;                   // source addr length
+#else
     socklen_t from_len;             // source addr length
+#endif
     int nRcv;
 
     while ( !m_bQuit && !TestDestroy() ) {
@@ -192,7 +186,7 @@ void *worksMulticastThread::Entry()
         FD_SET( sock, &fds );
 
         // Set up the struct timeval for the timeout.
-        tv.tv_sec = 1;
+        tv.tv_sec = 2;
         tv.tv_usec = 0;
 
         // Wait until timeout or data received.
@@ -350,12 +344,12 @@ void *worksMulticastThread::Entry()
                 // This will use the correct GUID as originator 
 
                 cguid guid;
-                // INterface GUID is used as identifier
+                // Interface GUID is used as identifier
                 guid.getFromArray( ( unsigned const char * )buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 32 );
                 CNodeInformation *pNode = m_knownNodes.addNode( guid );
                 if ( NULL != pNode ) {
 
-                    // not a proxy
+                    // Not a proxy
                     pNode->m_bProxy = true;
 
                     // Save the nodes real GUID
@@ -407,11 +401,9 @@ void *worksMulticastThread::Entry()
 
             }
 
+        }        
 
-        }
-        
-
-    }
+    } // while
 
 
 #ifdef WIN32
@@ -423,9 +415,6 @@ void *worksMulticastThread::Entry()
 
     // Close the multicast socket
     closesocket( sock );
-    
-    // Cleanup Winsock
-    WSACleanup();
 #else
     close( sock );
 #endif

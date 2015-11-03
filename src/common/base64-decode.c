@@ -166,9 +166,9 @@ lws_b64_selftest(void)
 	for (test = 0; test < sizeof plaintext / sizeof(plaintext[0]); test++) {
 
 		buf[sizeof(buf) - 1] = '\0';
-		n = lws_b64_encode_string(plaintext[test],
-			strlen(plaintext[test]), buf, sizeof buf);
-		if (n != strlen(coded[test]) || strcmp(buf, coded[test])) {
+		n = lws_b64_encode_string( plaintext[ test ],
+			                        strlen( plaintext[test] ), buf, sizeof buf );
+		if ( n != strlen(coded[test] ) || strcmp( buf, coded[test] ) ) {
 			fprintf(stderr, "Failed lws_b64 encode selftest "
 				"%d result '%s' %d\n", test, buf, n);
 			return -1;

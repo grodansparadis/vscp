@@ -56,9 +56,10 @@
 #include "wx/toolbar.h"
 #include "wx/treectrl.h"
 #include "wx/html/htmlwin.h"
+#include <wx/timer.h>
 
 #include <canal.h>
-
+#include <vscpmulticast.h>
 
 // Control identifiers
 #define SYMBOL_FRMMAIN_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX
@@ -73,8 +74,80 @@
 #define wxCLOSE_BOX 0x1000
 #endif
 
+// Forward declarations
+class frmMain;
 
+///////////////////////////////////////////////////////////////////////////////
+// serverClientData
+//
 
+class serverClientData : public wxTreeItemData
+{
+
+public:
+
+    serverClientData( CVSCPServerInformation* psrv )
+        : wxTreeItemData()
+    {
+        m_serverInformation = *psrv;
+    };
+
+    CVSCPServerInformation m_serverInformation;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// nodeClientData
+//
+
+class  nodeClientData : public wxTreeItemData
+{
+
+public:
+
+    nodeClientData( CNodeInformation* pnode )
+        : wxTreeItemData()
+    {
+        m_nodeInformation = *pnode;
+    };
+
+public:
+
+    CNodeInformation m_nodeInformation;
+};
+
+//YourTreeClientData *d = new YourTreeClientData();
+//d->SetRefClass( YourClass );
+
+//m_treeCtrl->AppendItem( parent_id, wxT( "Hello" ), -1, -1, d );
+
+///////////////////////////////////////////////////////////////////////////////
+// RenderTimer
+//
+
+class RenderTimer : public wxTimer
+{
+
+public:
+    RenderTimer( frmMain *pwnd, worksMulticastThread  *pThread );
+
+    void Notify();
+    void start();
+
+    // Last number of known nodes if this differs with current
+    // number interface data should be updated
+    uint16_t m_nLastKnownNodes; 
+
+    // Last number of known servers if this differs with current
+    // number interface data should be updated
+    uint16_t m_nLastKnownServers;
+
+    frmMain* m_pwnd; // Main window
+
+    // The multicast thread
+    // The threadobject holds information about discovered nodes
+    // !!!! MUST BE protected by wxGetApp().m_mutexmulticastWorkerThread !!!!
+    worksMulticastThread* m_multicastThread;  
+};
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -204,8 +277,13 @@ public:
     wxTreeItemId m_rootItem;
 
     /// Module item of the list
-    wxTreeItemId m_moduleItem;
+    wxTreeItemId m_moduleServerItem;
 
+    /// Module item of the list
+    wxTreeItemId m_moduleNodeItem;
+
+    /// Timer for discovery updates
+    RenderTimer* m_timerDiscovery;
 
   /// Control identifiers
   enum {
@@ -242,7 +320,7 @@ public:
   */
   wxStaticBitmap* m_pStaticBitmapLogo;
   wxStatusBar* m_pitemStatusBar;
-  wxTreeCtrl* m_mdfTree;
+  wxTreeCtrl* m_nodeTree;
   wxHtmlWindow* m_htmlInfoWnd;
 
 };

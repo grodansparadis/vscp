@@ -74,6 +74,7 @@
 
 CVSCPServerInformation::CVSCPServerInformation()
 {
+    m_bUpdated = false;
     m_capabilities = 0;
     m_guid.clear();
     m_nameOfServer.Empty();
@@ -129,6 +130,7 @@ CVSCPServerInformation::~CVSCPServerInformation()
 
 CNodeInformation::CNodeInformation()
 {
+    m_bUpdated = false;
     m_bInvestigated = false;
     m_realguid.clear();
     m_interfaceguid.clear();

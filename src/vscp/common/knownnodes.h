@@ -47,6 +47,27 @@ public:
     CVSCPServerInformation();
     ~CVSCPServerInformation();
 
+    CVSCPServerInformation& operator=( const CVSCPServerInformation& node ) 
+    {
+        // Check for self-assignment!
+        if ( this == &node ) {	// Same object?
+            return *this;		// Yes, so skip assignment, and just return *this.
+        }
+
+        m_bUpdated = node.m_bUpdated;
+        m_capabilities = node.m_capabilities;
+        m_guid = node.m_guid;
+        m_nameOfServer = node.m_nameOfServer;
+        m_ipaddress = node.m_ipaddress;
+        memcpy( m_ports, node.m_ports, sizeof( m_ports ) );
+
+        return *this;
+    };
+
+    // This flag can be used by a client to mark this item as seen
+    // by an upfate routine.
+    bool m_bUpdated;
+
     // Capabilities for this server
     uint64_t m_capabilities;    
 
@@ -97,6 +118,33 @@ public:
 
     CNodeInformation();
     ~CNodeInformation();
+
+    CNodeInformation& operator=( const CNodeInformation& node )
+    {
+        // Check for self-assignment!
+        if ( this == &node ) {	// Same object?
+            return *this;		// Yes, so skip assignment, and just return *this.
+        }
+
+        m_bUpdated = node.m_bUpdated;
+        m_bInvestigated = node.m_bInvestigated;
+        m_bProxy = node.m_bProxy;
+        m_realguid = node.m_realguid;
+        m_interfaceguid = node.m_interfaceguid;
+        m_clientID = node.m_clientID;
+        m_mdfPath = node.m_mdfPath;
+        m_lastHeartBeat = node.m_lastHeartBeat;
+        memcpy( m_stdreg, node.m_stdreg, sizeof( m_stdreg ) );
+        m_strNodeName = node.m_strNodeName;
+        m_deviceName = node.m_deviceName;
+        m_address = node.m_address;
+
+        return *this;
+    };
+
+    // This flag can be used by a client to mark this item as seen
+    // by an upfate routine.
+    bool m_bUpdated;
 
     // Thru if this node has been checked
     bool m_bInvestigated;
@@ -203,7 +251,6 @@ public:
         Load the list of known nodes
     */
     void load( wxString& path );
-
 
     // Protect the lists
     wxMutex m_mutexKnownNodes;

@@ -113,7 +113,7 @@ WX_DEFINE_LIST(LIST_VSCP_IF);
 * Application instance implementation
 */
 
-IMPLEMENT_APP( VscpworksApp )
+IMPLEMENT_APP( VscpworksApp ) 
 
 
 /*!
@@ -149,7 +149,14 @@ VscpworksApp::VscpworksApp()
 	
 	// net_skeleton generates on no receiving socket at other end
 	// we can safely dismiss.
-#ifndef WIN32	
+#ifdef WIN32	
+    WSADATA wsaData;                    // Windows socket DLL structure 
+
+    // Load Winsock 2.0 DLL
+    if ( WSAStartup( MAKEWORD( 2, 0 ), &wsaData ) != 0 ) {
+        fprintf( stderr, "Multicast WSAStartup() failed" );
+    }
+#else
 	//int set = 1;
 	//setsockopt(sd, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));
 	signal(SIGPIPE, SIG_IGN);
@@ -417,6 +424,11 @@ int VscpworksApp::OnExit()
         m_pmulticastWorkerThread = NULL;
         m_mutexmulticastWorkerThread.Unlock();
     }
+
+#ifdef WIN32
+    // Cleanup Winsock
+    WSACleanup();
+#endif
 
     //_CrtDumpMemoryLeaks();
 
