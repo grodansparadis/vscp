@@ -278,6 +278,10 @@ void *daemonVSCPThread::Entry()
             }
         }
 
+        ///////////////////////////////////////////////////////////////////////
+        //                          Input queue
+        ///////////////////////////////////////////////////////////////////////
+
         int rv = pClientItem->m_clientInputQueue.GetCount();
         // Wait for incoming event
         if ( wxSEMA_TIMEOUT == pClientItem->m_semClientInputQueue.WaitTimeout( 100 ) ) continue;
@@ -347,7 +351,7 @@ void *daemonVSCPThread::Entry()
             
             // New node on-line - collect 
             else if ( ( VSCP_CLASS1_PROTOCOL == pEvent->vscp_class ) && 
-                ( VSCP_TYPE_PROTOCOL_NEW_NODE_ONLINE == pEvent->vscp_type ) ) {
+                    ( VSCP_TYPE_PROTOCOL_NEW_NODE_ONLINE == pEvent->vscp_type ) ) {
                 
                 // Add node to knows nodes or return info if known
                 CNodeInformation *pNode = addNodeIfNotKnown( pEvent );
@@ -363,7 +367,7 @@ void *daemonVSCPThread::Entry()
 
             // Level I node heart beat - collect 
             else if ( ( VSCP_CLASS1_INFORMATION == pEvent->vscp_class ) && 
-                ( VSCP_TYPE_INFORMATION_NODE_HEARTBEAT == pEvent->vscp_type ) ) {
+                    ( VSCP_TYPE_INFORMATION_NODE_HEARTBEAT == pEvent->vscp_type ) ) {
                 
                 // Add node to knows nodes or return info if known
                 CNodeInformation *pNode = addNodeIfNotKnown( pEvent );
@@ -415,7 +419,7 @@ void *daemonVSCPThread::Entry()
 
             // Level II node heart beat   - collect 
             else if ( ( VSCP_CLASS2_INFORMATION == pEvent->vscp_class ) && 
-                ( VSCP_TYPE_INFORMATION_NODE_HEARTBEAT == pEvent->vscp_type ) ) {
+                    ( VSCP_TYPE_INFORMATION_NODE_HEARTBEAT == pEvent->vscp_type ) ) {
                 
                 // Send event on multicast information channel
                 sendMulticastEvent( sock_mc, pEvent, mc_port );
@@ -492,18 +496,20 @@ CNodeInformation * daemonVSCPThread::addNodeIfNotKnown( vscpEvent *pEvent )
             m_pCtrlObject->m_knownNodes.m_nodes[ strGUID ] = pNode;
             m_pCtrlObject->m_mutexKnownNodes.Unlock();
 
-            // Is there a device realted to this node
+            // Is there a device related to this node
             m_pCtrlObject->m_mutexDeviceList.Lock();
             CDeviceItem *pDeviceItem =
                 m_pCtrlObject->m_deviceList.getDeviceItemFromClientId( pEvent->obid );
             if ( NULL != pDeviceItem ) {
 
-                // Construct a name if no name set
-                // 'device.nickname'
-                if ( pNode->m_strNodeName.IsEmpty() ) {
-                    pNode->m_strNodeName = pDeviceItem->m_strName;
-                    pNode->m_strNodeName += _( "." );
-                    pNode->m_strNodeName += wxString::Format( _( "%lu" ), pDeviceItem->m_pClientItem->m_clientID );
+                pNode->m_level = pDeviceItem->m_driverLevel;
+
+                // Construct a devicename if no devicename set
+                // 'devicename_clientid'
+                if ( pNode->m_deviceName.IsEmpty() ) {
+                    pNode->m_deviceName = pDeviceItem->m_strName;
+                    pNode->m_deviceName += _( "_" );
+                    pNode->m_deviceName += wxString::Format( _( "%lu" ), pDeviceItem->m_pClientItem->m_clientID );
                 }
 
                 // Save interface
@@ -512,12 +518,12 @@ CNodeInformation * daemonVSCPThread::addNodeIfNotKnown( vscpEvent *pEvent )
                 // Save Client ID
                 pNode->m_clientID = pEvent->obid;
 
-                // We set name fron client id
-                // 'client|clientid|.nickname'
+                // We set name from client id
+                // 'client_clientid_nickname'
                 if ( pNode->m_strNodeName.IsEmpty() ) {
-                    pNode->m_strNodeName = _( "client" );
+                    pNode->m_strNodeName = _( "client_" );
                     pNode->m_strNodeName += wxString::Format( _( "%lu" ), pDeviceItem->m_pClientItem->m_clientID );
-                    pNode->m_strNodeName += _( "." );
+                    pNode->m_strNodeName += _( "_" );
                     pNode->m_strNodeName += wxString::Format( _( "%u" ), ( pEvent->GUID[ 14 ] << 8 ) + pEvent->GUID[ 15 ] );
                 }
 
@@ -541,11 +547,11 @@ CNodeInformation * daemonVSCPThread::addNodeIfNotKnown( vscpEvent *pEvent )
                 m_pCtrlObject->m_mutexDeviceList.Unlock();
 
                 // We set name fron client id
-                // 'client|clientid|.nickname'
+                // 'client_clientid_nickname'
                 if ( pNode->m_strNodeName.IsEmpty() ) {
-                    pNode->m_strNodeName = _( "client" );
+                    pNode->m_strNodeName = _( "client_" );
                     pNode->m_strNodeName += wxString::Format( _( "%lu" ), pClientItem->m_clientID );
-                    pNode->m_strNodeName += _( "." );
+                    pNode->m_strNodeName += _( "_" );
                     pNode->m_strNodeName += wxString::Format( _( "%u" ), ( pEvent->GUID[ 14 ] << 8 ) + pEvent->GUID[ 15 ] );
                 }
 
@@ -723,6 +729,16 @@ bool daemonVSCPThread::sendMulticastInformationProxyEvent( int sock,
     //  28 - n 	data limited to max 512 - 25 = 487 bytes
     //  len - 2 	CRC MSB( Calculated on HEAD + CLASS + TYPE + ADDRESS + SIZE + DATA� )
     //  len - 1 	CRC LSB
+    //
+    //  Data
+    //  ====================================================================================
+    //  0-15 	    Real GUID for node (not interface GUID)
+    //  16-31 	    Reserved
+    //  32-47 	    GUID for interface on server the node is connected to.
+    //  48 	        Interface Level( 0 == Level I, 1 == Level II )
+    //  49-63 	    Reserved
+    //  64-127 	    Real text name of node( if any ).Set to all zero if not available.
+    //  128-191     Real text name of interface ( if any ).Set to all zero if not available.
 
     // Packe type
     buf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = SET_VSCP_MULTICAST_TYPE( VSCP_MULTICAST_TYPE_EVENT , VSCP_MULTICAST_ENCRYPTION_NONE );
@@ -754,32 +770,49 @@ bool daemonVSCPThread::sendMulticastInformationProxyEvent( int sock,
     // Originating GUID - Daemon GUID
     memcpy( buf + VSCP_MULTICAST_PACKET0_POS_VSCP_GUID, m_pCtrlObject->m_guid.m_id, 16 );
 
-    // Size of payload =  128 bytes
+    // Size of payload 
     buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE + 0 ] = 0x00;
-    buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE + 1 ] = 0x80;
+    buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE + 1 ] = VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE;
 
-    // Real GUID of node 
-    memcpy( buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA, pNode->m_realguid.getGUID(), 16 );
+    // Real GUID of node
+    memcpy( buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA, 
+                pNode->m_realguid.getGUID(), 
+                16 );
 
-    // Interface GUID of node 
-    memcpy( buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 32, pNode->m_interfaceguid.getGUID(), 16 );
+    // Interface GUID of node
+    memcpy( buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + VSCP_MULTICAST_PROXY_HEARTBEAT_POS_IFGUID,
+                pNode->m_interfaceguid.getGUID(), 
+                16 );
+
+    buf[ VSCP_MULTICAST_PROXY_HEARTBEAT_POS_IFLEVEL  ] = pNode->m_level;
 
     // Name of node
-    memcpy( buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 64,
-                pNode->m_deviceName.mbc_str(), 
-                MIN( 64, strlen( pNode->m_deviceName.mbc_str() ) ) );
+    memcpy( buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + VSCP_MULTICAST_PROXY_HEARTBEAT_POS_NODENAME,
+                pNode->m_strNodeName.mbc_str(),
+                MIN( 64, strlen( pNode->m_strNodeName.mbc_str() ) ) );
+
+    // Name of interface node is on
+    memcpy( buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + VSCP_MULTICAST_PROXY_HEARTBEAT_POS_IFNAME,
+            pNode->m_deviceName.mbc_str(),
+            MIN( 64, strlen( pNode->m_deviceName.mbc_str() ) ) );
 
     // CRC
     crcInit();
-    crc chksum = crcFast( buf, VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 );
+    crc chksum = crcFast( buf, 
+                            VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 
+                                VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE );
     wxUINT32_SWAP_ON_LE( chksum );
-    buf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 0 ] = ( chksum >> 8 ) & 0xff;
-    buf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 1 ] = chksum & 0xff;
+    buf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 
+            VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE + 0 ] = ( chksum >> 8 ) & 0xff;
+    buf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 
+            VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE + 1 ] = chksum & 0xff;
 
-    return ( ( VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 2 ) == 
+    return ( ( VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 
+                    VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE + 2 ) ==
              sendto( sock,
                         (const char *)buf,
-                        VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 128 + 2,
+                        VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 
+                            VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE + 2,
                         0, 
                         ( struct sockaddr * )&mc_addr,
                         sizeof( mc_addr ) ) );

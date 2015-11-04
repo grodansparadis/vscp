@@ -250,7 +250,7 @@ void *worksMulticastThread::Entry()
         break;
         }*/
 
-        originatingAddress.FromAscii( s );
+        originatingAddress = wxString::FromAscii( s );
         //free( s );
 #else
         char *s = NULL;
@@ -343,25 +343,33 @@ void *worksMulticastThread::Entry()
 
                 // This will use the correct GUID as originator 
 
+                // GUID is sending nodes/servers GUID
+                // For a Level I node connected to a server this is the GUID for the server.
                 cguid guid;
-                // Interface GUID is used as identifier
-                guid.getFromArray( ( unsigned const char * )buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 32 );
-                CNodeInformation *pNode = m_knownNodes.addNode( guid );
+                guid.getFromArray( ( unsigned const char * )buf + VSCP_MULTICAST_PACKET0_POS_VSCP_GUID );
+
+                // Interface GUID is the GUID the node uses. This is not the real GUID of a node
+                // but instead a GUID constructed from the interface the node is on. But this is the
+                // GUID the node is identified as here so it is used as identifier for the node.
+                cguid ifguid;
+                ifguid.getFromArray( ( unsigned const char * )buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 32 );
+
+                CNodeInformation *pNode = m_knownNodes.addNode( ifguid );
                 if ( NULL != pNode ) {
 
                     // Not a proxy
                     pNode->m_bProxy = true;
 
                     // Save the nodes real GUID
-                    guid.getFromArray( ( unsigned const char * )buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA );
-                    if ( !guid.isNULL() ) {
+                    cguid realguid;
+                    realguid.getFromArray( ( unsigned const char * )buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA );
+                    if ( !realguid.isNULL() ) {
                         pNode->m_realguid = guid;
                     }
 
                     // Save the nodes interface GUID
-                    guid.getFromArray( ( unsigned const char * )buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 32  );
-                    if ( !guid.isNULL() ) {
-                        pNode->m_interfaceguid = guid;
+                    if ( !ifguid.isNULL() ) {
+                        pNode->m_interfaceguid = ifguid;
                     }
 
                     // Time for last heatbeat
@@ -373,17 +381,23 @@ void *worksMulticastThread::Entry()
                     memcpy( wrkbuf, ( unsigned const char * )buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 64, 64  );
                     pNode->m_strNodeName = wxString::FromUTF8( ( const char * )wrkbuf );
 
-                    // Save Name for interface this node is on
+                    // If the node does not have a name give it one
+                    if ( 0 == pNode->m_strNodeName.Length() ) {
+                        wxString wxstr;
+                        guid.toString( wxstr );
+                        pNode->m_strNodeName = _("Node without name @ ");
+                        pNode->m_strNodeName += wxstr;
+                        pNode->m_strNodeName += _(" IP=");
+                        pNode->m_strNodeName += originatingAddress;
+                    }
+
+                    // Save name for interface this node is on
 
                     // Save the servers address
                     pNode->m_address = originatingAddress;
 
-                    // Get server GUID
-                    guid.getFromArray( ( uint8_t * )buf + VSCP_MULTICAST_PACKET0_POS_VSCP_GUID );
-
                 }
                 
-
             }
             // Server capabilities
             else if ( ( VSCP_CLASS2_PROTOCOL == vscp_class ) && 

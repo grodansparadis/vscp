@@ -40,7 +40,7 @@
   <variable type="guid">
     <name>SIM1_GUID0</name>
     <note>GUID for the node.</note>
-    <value>FF:FF:FF:FF:FF:FF:FF:F7:03:00:00:00:00:00:00:00</value>
+    <value>FF:FF:FF:FF:FF:FF:FF:F7:03:11:22:33:44:55:66:77</value>
   </variable>
 
   <variable type="string">

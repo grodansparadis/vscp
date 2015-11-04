@@ -150,15 +150,36 @@ void RenderTimer::Notify()
             CNodeInformation *pNodeInfo = it->second;
             
             if ( NULL != pNodeInfo ) {
-                nodeClientData *pNode = new nodeClientData( pNodeInfo );
-                if ( NULL != pNode ) {
-                    m_pwnd->m_nodeTree->AppendItem( m_pwnd->m_moduleNodeItem, pNodeInfo->m_strNodeName, MDF_EDITOR_SUB_ITEM );
+
+                if ( !pNodeInfo->m_bUpdated ) {
+
+                    nodeClientData *pNode = new nodeClientData( CLIENT_NODE  );
+                    if ( NULL != pNode ) {
+
+                        pNode->m_nodeInformation = *pNodeInfo;
+
+                        if ( pNodeInfo->m_strNodeName.Length() ) {
+                            m_pwnd->m_nodeTree->AppendItem( m_pwnd->m_moduleNodeItem,
+                                                            pNodeInfo->m_strNodeName,
+                                                            MDF_EDITOR_SUB_ITEM,
+                                                            -1,
+                                                            pNode );
+                        }
+                        else {
+                            m_pwnd->m_nodeTree->AppendItem( m_pwnd->m_moduleNodeItem,
+                                                            _( "Node without name." ),
+                                                            MDF_EDITOR_SUB_ITEM,
+                                                            -1,
+                                                            pNode );
+                        }
+
+                        pNodeInfo->m_bUpdated = true;
+
+                    }
                 }
             }
 
         }
-
-        
         
         // Update numbers
         m_nLastKnownNodes = m_multicastThread->m_knownNodes.m_nodes.size();    
@@ -176,9 +197,32 @@ void RenderTimer::Notify()
             CVSCPServerInformation *pNodeInfo = it->second;
  
             if ( NULL != pNodeInfo ) {
-                serverClientData *pServer = new serverClientData( pNodeInfo );
-                if ( NULL != pServer ) {
-                    m_pwnd->m_nodeTree->AppendItem( m_pwnd->m_moduleServerItem, pNodeInfo->m_nameOfServer, MDF_EDITOR_SUB_ITEM );
+
+                if ( !pNodeInfo->m_bUpdated ) {
+
+                    nodeClientData *pServer = new nodeClientData( CLIENT_SERVER  );
+                    if ( NULL != pServer ) {
+
+                        pServer->m_serverInformation = *pNodeInfo;
+
+                        if ( pNodeInfo->m_nameOfServer.Length() ) {
+                            m_pwnd->m_nodeTree->AppendItem( m_pwnd->m_moduleServerItem,
+                                                            pNodeInfo->m_nameOfServer,
+                                                            MDF_EDITOR_SUB_ITEM,
+                                                            -1,
+                                                            pServer );
+                        }
+                        else {
+                            m_pwnd->m_nodeTree->AppendItem( m_pwnd->m_moduleServerItem,
+                                                            _( "Server without name." ),
+                                                            MDF_EDITOR_SUB_ITEM,
+                                                            -1,
+                                                            pServer );
+                        }
+
+                        pNodeInfo->m_bUpdated = true;
+
+                    }
                 }
             }
 
@@ -427,7 +471,7 @@ void frmMain::CreateControls()
 
     m_htmlInfoWnd = new wxHtmlWindow;
     m_htmlInfoWnd->Create( itemPanel, ID_HTMLWINDOW2, wxDefaultPosition, wxSize( -1, 150 ), wxHW_SCROLLBAR_AUTO | wxSUNKEN_BORDER | wxHSCROLL | wxVSCROLL );
-    m_htmlInfoWnd->SetPage( _( "<html><h4>Node information</h4>This area will contain extended information about known (discovered) nodes. This is work in progress sp information is static at the moment.</html>" ) );
+    m_htmlInfoWnd->SetPage( _( "<html><h4>Node information</h4>This area will contain extended information about known (discovered) nodes. This is work in progress so information is sparse (and may be wrong) at the moment. Click on a discovered node to display info about it in this area.</html>" ) );
     itemSizerVertical->Add( m_htmlInfoWnd, 0, wxGROW | wxALL, 5 );
     
     // Connect events and objects
@@ -554,20 +598,79 @@ void frmMain::OnPaint( wxPaintEvent& event )
 
 void frmMain::OnTreectrlSelChanged( wxTreeEvent& event )
 {
-    /*wxString strPage;
-    strPage = _( "<html><body><h3>" );
-    wxTreeItemId itemID = event.GetItem();
-    //MyTreeItemData *item = itemId.IsOk() ? (MyTreeItemData *)GetItemData(itemId)
-    //                                     : NULL;
-    if ( itemID.IsOk() ) {
-        strPage += m_mdfTree->GetItemText( itemID );
-        strPage += event.GetLabel();
+    wxTreeItemId itemId = event.GetItem();
+    nodeClientData *item = ( nodeClientData * )m_nodeTree->GetItemData( itemId );
+
+    if ( item != NULL ) {
+
+        wxString str;
+        wxString page;
+        
+        if ( CLIENT_SERVER == item->m_type ) {
+            page = _( "<h1>Hi-end Node Information</h1>" );
+        }
+        else if ( CLIENT_NODE == item->m_type ) {
+            page = _( "<h1>Node information</h1>" );
+
+            if ( VSCP_LEVEL1 == item->m_nodeInformation.m_level ) {
+                page += _( "<b>Level: </b> 1<br>" );
+            }
+            else if ( VSCP_LEVEL2 == item->m_nodeInformation.m_level ) {
+                page += _( "<b>Level: </b> 2<br>" );
+            }
+
+            page += _( "<b>Last heartbeat: </b>" );
+            page += item->m_nodeInformation.m_lastHeartBeat.FormatISODate();
+            page += _( " " );
+            page += item->m_nodeInformation.m_lastHeartBeat.FormatISOTime();
+            page += _( "<br>" );
+
+            page += _( "<b>Node name: </b>" );
+            if ( item->m_nodeInformation.m_strNodeName.Length() ) {
+                page += item->m_nodeInformation.m_strNodeName;
+            }
+            else {
+                page += _("No name set.");
+            }
+            page += _( "<br>" );
+
+            page += _( "<b>Device name: </b>" );
+            if ( item->m_nodeInformation.m_deviceName.Length() ) {
+                page += item->m_nodeInformation.m_deviceName;
+            }
+            else {
+                page += _( "No name set." );
+            }
+            page += _( "<br>" );
+
+            page += _( "<b>Received from address: </b>" );
+            page += item->m_nodeInformation.m_address;
+            page += _( "<br>" );
+
+            item->m_nodeInformation.m_realguid.toString( str );
+            page += _( "<b>GUID: </b>" );
+            page += str;
+            page += _( "<br>" );
+
+            item->m_nodeInformation.m_interfaceguid.toString( str );
+            page += _( "<b>Interface GUID: </b>" );
+            page += str;
+            page += _( "<br>" );
+
+            page += _( "<b>Proxy:</b> " );
+            if ( item->m_nodeInformation.m_bProxy ) {
+                page += _( "Yes" );
+            }
+            else {
+                page += _( "No" );
+            }
+            page += _( "<br>" );
+
+        }
+
+        m_htmlInfoWnd->SetPage( page ); 
     }
-    else {
-        strPage += _( "????" );
-    }
-    strPage += _( "</h3></body></html>" );
-    m_htmlInfoWnd->SetPage( strPage );*/
+
     event.Skip();
 }
 
@@ -601,10 +704,10 @@ void frmMain::addDefaultContent( void )
 {
     m_rootItem = m_nodeTree->AddRoot( _( "VSCP Network neighbourhood" ), MDF_EDITOR_TOP_ITEM );
     m_moduleServerItem = m_nodeTree->AppendItem( m_rootItem, _( "High end nodes" ), MDF_EDITOR_MAIN_ITEM );
-    m_nodeTree->AppendItem( m_moduleServerItem, _( "Node" ), MDF_EDITOR_SUB_ITEM );
+    //m_nodeTree->AppendItem( m_moduleServerItem, _( "Node" ), MDF_EDITOR_SUB_ITEM );
 
     m_moduleNodeItem = m_nodeTree->AppendItem( m_rootItem, _( "Known nodes" ), MDF_EDITOR_MAIN_ITEM );
-    m_nodeTree->AppendItem( m_moduleNodeItem, _( "Node" ), MDF_EDITOR_SUB_ITEM );
+    //m_nodeTree->AppendItem( m_moduleNodeItem, _( "Node" ), MDF_EDITOR_SUB_ITEM );
 
     //m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "WEB interface" ), MDF_EDITOR_MAIN_ITEM );
     //m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "Level II node" ), MDF_EDITOR_MAIN_ITEM );

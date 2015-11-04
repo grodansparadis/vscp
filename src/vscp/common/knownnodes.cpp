@@ -140,6 +140,7 @@ CNodeInformation::CNodeInformation()
     m_strNodeName.Empty();
     m_deviceName.Empty();
     m_clientID = 0;
+    m_level = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

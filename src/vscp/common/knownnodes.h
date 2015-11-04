@@ -138,6 +138,7 @@ public:
         m_strNodeName = node.m_strNodeName;
         m_deviceName = node.m_deviceName;
         m_address = node.m_address;
+        m_level = node.m_level;
 
         return *this;
     };
@@ -181,6 +182,9 @@ public:
 
     // IP/MAC/... address (if any) associated with the node
     wxString m_address;
+
+    // Node level 0=Level I, 1 = Level II
+    uint8_t m_level;
 
 };
 

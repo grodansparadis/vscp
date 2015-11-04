@@ -77,11 +77,16 @@
 // Forward declarations
 class frmMain;
 
+enum clientdatatype {
+    CLIENT_SERVER = 0,
+    CLIENT_NODE
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 // serverClientData
 //
 
-class serverClientData : public wxTreeItemData
+/*class serverClientData : public wxTreeItemData
 {
 
 public:
@@ -93,7 +98,7 @@ public:
     };
 
     CVSCPServerInformation m_serverInformation;
-};
+};*/
 
 ///////////////////////////////////////////////////////////////////////////////
 // nodeClientData
@@ -104,21 +109,20 @@ class  nodeClientData : public wxTreeItemData
 
 public:
 
-    nodeClientData( CNodeInformation* pnode )
+    nodeClientData( clientdatatype type )
         : wxTreeItemData()
     {
-        m_nodeInformation = *pnode;
+        m_type = type;
     };
 
 public:
 
+    clientdatatype m_type;
+
     CNodeInformation m_nodeInformation;
+    CVSCPServerInformation m_serverInformation;
 };
 
-//YourTreeClientData *d = new YourTreeClientData();
-//d->SetRefClass( YourClass );
-
-//m_treeCtrl->AppendItem( parent_id, wxT( "Hello" ), -1, -1, d );
 
 ///////////////////////////////////////////////////////////////////////////////
 // RenderTimer

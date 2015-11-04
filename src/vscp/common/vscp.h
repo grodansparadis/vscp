@@ -176,8 +176,8 @@ typedef unsigned short                      uint64_t;
 
 #define VSCP_MAX_DATA                       (512-25)
 
-#define VSCP_LEVEL1                         1
-#define VSCP_LEVEL2                         2
+#define VSCP_LEVEL1                         0           // Changed 151104  Was 1/2
+#define VSCP_LEVEL2                         1
 
 #ifdef __cplusplus
 extern "C" {
@@ -398,6 +398,14 @@ typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 #define SET_VSCP_MULTICAST_TYPE( type, encryption )  ( (type<<4) + encryption )
 #define GET_VSCP_MULTICAST_PACKET_TYPE( type)        ( (type>>4) & 0x0f)
 #define GET_VSCP_MULTICAST_PACKET_ENCRYPTION( type)  ( (type) & 0x0f)
+
+// Multicast proxy CLASS=1026, TYPE=3 http://www.vscp.org/docs/vscpspec/doku.php?id=class2.information#type_3_0x0003_level_ii_proxy_node_heartbeat
+#define VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE            192
+#define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_REALGUID         0       // The real GUID for the node
+#define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_IFGUID           32      // GUID for interface node is on
+#define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_IFLEVEL          48      // 0=Level I node, 1=Level II node
+#define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_NODENAME         64      // Name of node
+#define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_IFNAME           128     // Name of interface
 
 // Bootloaders
 #define VSCP_BOOTLOADER_VSCP                    0x00	// VSCP boot loader algorithm
