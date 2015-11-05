@@ -130,7 +130,7 @@ void *worksMulticastThread::Entry()
     }
 
     // construct an IGMP join request structure 
-    struct ip_mreq mc_req;                      // multicast request structure
+    struct ip_mreq mc_req; // multicast request structure
     mc_req.imr_multiaddr.s_addr = inet_addr( VSCP_MULTICAST_IPV4_ADDRESS_STR );
     mc_req.imr_interface.s_addr = htonl( INADDR_ANY );
 
@@ -161,6 +161,25 @@ void *worksMulticastThread::Entry()
     mc_addr.sin_family = AF_INET;
     mc_addr.sin_addr.s_addr = inet_addr( VSCP_MULTICAST_IPV4_ADDRESS_STR);
     mc_addr.sin_port = htons( port );
+    
+    // bind to multicast address to socket 
+    if ( ( bind( sock, ( struct sockaddr * ) &mc_addr,
+                 sizeof( mc_addr ) ) ) < 0 ) {
+        perror( "Multicast bind() failed" );
+        return NULL;
+    }
+    
+    // construct an IGMP join request structure 
+    struct ip_mreq mc_req; // multicast request structure
+    mc_req.imr_multiaddr.s_addr = inet_addr( VSCP_MULTICAST_IPV4_ADDRESS_STR );
+    mc_req.imr_interface.s_addr = htonl(INADDR_ANY);
+
+    // send an ADD MEMBERSHIP message via setsockopt 
+    if ((setsockopt(sock, IPPROTO_IP, IP_ADD_MEMBERSHIP,
+       (void*) &mc_req, sizeof(mc_req))) < 0) {
+        perror("setsockopt() failed");
+        exit(1);
+    } 
 
 #endif
 

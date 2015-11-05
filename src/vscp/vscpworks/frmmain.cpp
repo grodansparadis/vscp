@@ -92,7 +92,6 @@ IMPLEMENT_CLASS( frmMain, wxFrame )
 // frmMain event table definition
 BEGIN_EVENT_TABLE( frmMain, wxFrame )
 	EVT_CLOSE( frmMain::OnCloseWindow )
-	EVT_PAINT( frmMain::OnPaint )
 	EVT_MENU( ID_MENUITEM_OPEN_VSCP_SESSION, frmMain::OnMenuitemOpenVscpSessionClick )
 	EVT_MENU( ID_MENUITEM_DEVICE_CONFIGURATION, frmMain::OnMenuitemOpenConfigSessionClick )
 	EVT_MENU( ID_MENUITEM_MDF_EDITOR, frmMain::OnMenuitemMdfEditorClick )
@@ -112,7 +111,6 @@ BEGIN_EVENT_TABLE( frmMain, wxFrame )
 	EVT_MENU( ID_MENUITEM_VSCP_SITE, frmMain::OnMenuitemVSCPSiteClick )
 	EVT_MENU( ID_MENUITEM_ABOUT, frmMain::OnMenuitemAboutClick )
     EVT_TREE_SEL_CHANGED( ID_TREECTRL, frmMain::OnTreectrlSelChanged )
-    EVT_IDLE( frmMain::onIdle )
 END_EVENT_TABLE()
 
 
@@ -136,7 +134,7 @@ RenderTimer::RenderTimer( frmMain *pwnd, worksMulticastThread *pThread ) : wxTim
 void RenderTimer::Notify()
 {
     bool bRefresh = false;
-
+    
     m_multicastThread->m_knownNodes.m_mutexKnownNodes.Lock();
     
     if ( m_nLastKnownNodes < m_multicastThread->m_knownNodes.m_nodes.size() ) {
@@ -240,6 +238,7 @@ void RenderTimer::Notify()
         // Refresh the display
         m_pwnd->Refresh();
     }
+    
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -248,7 +247,7 @@ void RenderTimer::Notify()
 
 void RenderTimer::start()
 {
-    wxTimer::Start( 5000 );
+    wxTimer::Start( 2000 );
 }
 
 
@@ -262,6 +261,7 @@ frmMain::frmMain()
     m_timerDiscovery = new RenderTimer( this, wxGetApp().m_pmulticastWorkerThread );
 
 	Init();
+    m_timerDiscovery->start();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -280,6 +280,7 @@ frmMain::frmMain( wxWindow* parent,
 	
     Init();
 	Create( parent, id, caption, pos, size, style );
+    m_timerDiscovery->start();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -320,8 +321,6 @@ void frmMain::Init()
             wxMessageBox(_("Failed to create directory. ") + wxStandardPaths::Get().GetUserDataDir() );
         }
     }
-
-    m_timerDiscovery->Start();
 
 }
 
@@ -442,7 +441,7 @@ void frmMain::CreateControls()
     itemToolBar->Realize();
     itemMainFrame->SetToolBar( itemToolBar );
 
-
+    
     wxPanel* itemPanel = new wxPanel;
     itemPanel->Create( itemMainFrame,
                             ID_PANEL1, 
@@ -451,9 +450,11 @@ void frmMain::CreateControls()
                             wxSUNKEN_BORDER | wxTAB_TRAVERSAL );
     itemPanel->SetBackgroundColour( wxColour( 255, 255, 255 ) );
 
+    
     wxBoxSizer* itemSizerVertical = new wxBoxSizer( wxVERTICAL );
     itemPanel->SetSizer( itemSizerVertical );
 
+    
     // Header for servers
     wxStaticText* itemStaticTextTop = new wxStaticText;
     itemStaticTextTop->Create( itemPanel,
@@ -466,17 +467,25 @@ void frmMain::CreateControls()
     itemSizerVertical->Add( itemStaticTextTop, 0, wxALIGN_LEFT | wxALL, 5 );
 
     m_nodeTree = new wxTreeCtrl;
-    m_nodeTree->Create( itemPanel, ID_TREECTRL, wxDefaultPosition, wxDefaultSize, wxTR_HAS_BUTTONS | wxTR_FULL_ROW_HIGHLIGHT | wxTR_LINES_AT_ROOT | wxTR_ROW_LINES | wxTR_SINGLE );
+    m_nodeTree->Create( itemPanel, 
+                            ID_TREECTRL, 
+                            wxDefaultPosition, 
+                            wxDefaultSize, 
+                            wxTR_HAS_BUTTONS | wxTR_FULL_ROW_HIGHLIGHT | wxTR_LINES_AT_ROOT | wxTR_ROW_LINES | wxTR_SINGLE );
     itemSizerVertical->Add( m_nodeTree, 10, wxGROW | wxALL, 2 );
 
     m_htmlInfoWnd = new wxHtmlWindow;
-    m_htmlInfoWnd->Create( itemPanel, ID_HTMLWINDOW2, wxDefaultPosition, wxSize( -1, 150 ), wxHW_SCROLLBAR_AUTO | wxSUNKEN_BORDER | wxHSCROLL | wxVSCROLL );
+    m_htmlInfoWnd->Create( itemPanel, 
+                            ID_HTMLWINDOW2, 
+                            wxDefaultPosition, 
+                            wxSize( -1, 150 ), 
+                            wxHW_SCROLLBAR_AUTO | wxSUNKEN_BORDER | wxHSCROLL | wxVSCROLL );
     m_htmlInfoWnd->SetPage( _( "<html><h4>Node information</h4>This area will contain extended information about known (discovered) nodes. This is work in progress so information is sparse (and may be wrong) at the moment. Click on a discovered node to display info about it in this area.</html>" ) );
     itemSizerVertical->Add( m_htmlInfoWnd, 0, wxGROW | wxALL, 5 );
     
     // Connect events and objects
-    m_nodeTree->Connect( ID_TREECTRL, wxEVT_LEFT_DOWN, wxMouseEventHandler( frmMDFEditor::OnLeftDown ), NULL, this );
-    m_nodeTree->Connect( ID_TREECTRL, wxEVT_LEFT_DCLICK, wxMouseEventHandler( frmMDFEditor::OnLeftDClick ), NULL, this );
+    m_nodeTree->Connect( ID_TREECTRL, wxEVT_LEFT_DOWN, wxMouseEventHandler( frmMain::OnLeftDown ), NULL, this );
+    m_nodeTree->Connect( ID_TREECTRL, wxEVT_LEFT_DCLICK, wxMouseEventHandler( frmMain::OnLeftDClick ), NULL, this );
 
     wxImageList* itemImageList = new wxImageList( 16, 16, true, 5 );
     {
@@ -509,12 +518,13 @@ void frmMain::CreateControls()
     itemSizerVertical->Add( m_pStaticBitmapLogo,
                             0, 
                             wxALIGN_CENTER_HORIZONTAL | wxALL, 
-                            0 );*/
-    
+                            0 );
+    */
     wxString strVersion = _( VSCPD_COPYRIGHT );
     strVersion += _( " - " );
     strVersion += _( VSCPD_DISPLAY_VERSION );
     m_pitemStatusBar->SetStatusText( strVersion );
+        
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -581,15 +591,6 @@ void frmMain::OnCloseWindow( wxCloseEvent& event )
     event.Skip();
 }
 
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// OnPaint
-//
-
-void frmMain::OnPaint( wxPaintEvent& event )
-{
-	event.Skip( false );
-}
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1348,12 +1349,3 @@ void frmMain::OnMenuitemOpenDaemonVariableEditorClick( wxCommandEvent& event )
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// onIdle
-//
-
-void frmMain::onIdle( wxIdleEvent& event )
-{
-    
-    event.Skip( false );
-}

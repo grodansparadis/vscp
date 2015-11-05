@@ -153,7 +153,7 @@ void frmMDFEditor::Init()
 
 void frmMDFEditor::CreateControls()
 {
-    frmMDFEditor* itemFrame1 = this;
+    frmMDFEditor* itemFrame = this;
 
     wxMenuBar* menuBar = new wxMenuBar;
     wxMenu* itemMenu3 = new wxMenu;
@@ -171,53 +171,119 @@ void frmMDFEditor::CreateControls()
     itemMenu13->Append( ID_MENUITEM_ADD, _( "Add MDF Item..." ), wxEmptyString, wxITEM_NORMAL );
     itemMenu13->Append( ID_MENUITEM_REMOVE, _( "Remove MDF Item..." ), wxEmptyString, wxITEM_NORMAL );
     menuBar->Append( itemMenu13, _( "Edit" ) );
-    itemFrame1->SetMenuBar( menuBar );
+    itemFrame->SetMenuBar( menuBar );
 
-    wxPanel* itemPanel16 = new wxPanel;
-    itemPanel16->Create( itemFrame1, ID_PANEL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER | wxTAB_TRAVERSAL );
+    wxPanel* itemPanel = new wxPanel;
+    itemPanel->Create( itemFrame, 
+                            ID_PANEL, 
+                            wxDefaultPosition, 
+                            wxDefaultSize, 
+                            wxSUNKEN_BORDER | wxTAB_TRAVERSAL );
 
-    wxBoxSizer* itemBoxSizer17 = new wxBoxSizer( wxVERTICAL );
-    itemPanel16->SetSizer( itemBoxSizer17 );
+    wxBoxSizer* itemBoxSizer = new wxBoxSizer( wxVERTICAL );
+    itemPanel->SetSizer( itemBoxSizer );
 
-    wxToolBar* itemToolBar18 = new wxToolBar;
-    itemToolBar18->Create( itemPanel16, ID_TOOLBAR3, wxDefaultPosition, wxDefaultSize, wxTB_FLAT | wxTB_HORIZONTAL );
-    wxBitmap itemtool19Bitmap( itemFrame1->GetBitmapResource( wxT( "deffile.xpm" ) ) );
+    wxToolBar* itemToolBar = new wxToolBar;
+    itemToolBar->Create( itemPanel, 
+                            ID_TOOLBAR3, 
+                            wxDefaultPosition, 
+                            wxDefaultSize, 
+                            wxTB_FLAT | wxTB_HORIZONTAL );
+    wxBitmap itemtool19Bitmap( itemFrame->GetBitmapResource( wxT( "deffile.xpm" ) ) );
     wxBitmap itemtool19BitmapDisabled;
-    itemToolBar18->AddTool( ID_TOOL_NEW, wxEmptyString, itemtool19Bitmap, itemtool19BitmapDisabled, wxITEM_NORMAL, _( "Create new MDF file" ), wxEmptyString );
-    wxBitmap itemtool20Bitmap( itemFrame1->GetBitmapResource( wxT( "open.xpm" ) ) );
+    itemToolBar->AddTool( ID_TOOL_NEW, 
+                                wxEmptyString, 
+                                itemtool19Bitmap, 
+                                itemtool19BitmapDisabled, 
+                                wxITEM_NORMAL, 
+                                _( "Create new MDF file" ), 
+                                wxEmptyString );
+    wxBitmap itemtool20Bitmap( itemFrame->GetBitmapResource( wxT( "open.xpm" ) ) );
     wxBitmap itemtool20BitmapDisabled;
-    itemToolBar18->AddTool( ID_TOOL_LOAD, wxEmptyString, itemtool20Bitmap, itemtool20BitmapDisabled, wxITEM_NORMAL, _( "Load MDF file" ), wxEmptyString );
-    wxBitmap itemtool21Bitmap( itemFrame1->GetBitmapResource( wxT( "save.xpm" ) ) );
+    itemToolBar->AddTool( ID_TOOL_LOAD, 
+                                wxEmptyString, 
+                                itemtool20Bitmap, 
+                                itemtool20BitmapDisabled, 
+                                wxITEM_NORMAL, 
+                                _( "Load MDF file" ), 
+                                wxEmptyString );
+    wxBitmap itemtool21Bitmap( itemFrame->GetBitmapResource( wxT( "save.xpm" ) ) );
     wxBitmap itemtool21BitmapDisabled;
-    itemToolBar18->AddTool( ID_TOOL_SAVE, wxEmptyString, itemtool21Bitmap, itemtool21BitmapDisabled, wxITEM_NORMAL, _( "Save MDF file" ), wxEmptyString );
-    wxBitmap itemtool22Bitmap( itemFrame1->GetBitmapResource( wxT( "filesaveas.xpm" ) ) );
+    itemToolBar->AddTool( ID_TOOL_SAVE, 
+                                wxEmptyString, 
+                                itemtool21Bitmap, 
+                                itemtool21BitmapDisabled, 
+                                wxITEM_NORMAL, 
+                                _( "Save MDF file" ), 
+                                wxEmptyString );
+    wxBitmap itemtool22Bitmap( itemFrame->GetBitmapResource( wxT( "filesaveas.xpm" ) ) );
     wxBitmap itemtool22BitmapDisabled;
-    itemToolBar18->AddTool( ID_TOOL_UPLOAD, wxEmptyString, itemtool22Bitmap, itemtool22BitmapDisabled, wxITEM_NORMAL, _( "Upload MDF file" ), wxEmptyString );
-    wxBitmap itemtool23Bitmap( itemFrame1->GetBitmapResource( wxT( "redo.xpm" ) ) );
+    itemToolBar->AddTool( ID_TOOL_UPLOAD, 
+                                wxEmptyString, 
+                                itemtool22Bitmap, 
+                                itemtool22BitmapDisabled, 
+                                wxITEM_NORMAL, 
+                                _( "Upload MDF file" ), 
+                                wxEmptyString );
+    wxBitmap itemtool23Bitmap( itemFrame->GetBitmapResource( wxT( "redo.xpm" ) ) );
     wxBitmap itemtool23BitmapDisabled;
-    itemToolBar18->AddTool( ID_TOOL_DOWNLOAD, wxEmptyString, itemtool23Bitmap, itemtool23BitmapDisabled, wxITEM_NORMAL, _( "Upload MDF file" ), wxEmptyString );
-    itemToolBar18->AddSeparator();
-    wxBitmap itemtool25Bitmap( itemFrame1->GetBitmapResource( wxT( "New1.xpm" ) ) );
+    itemToolBar->AddTool( ID_TOOL_DOWNLOAD, 
+                                wxEmptyString, 
+                                itemtool23Bitmap, 
+                                itemtool23BitmapDisabled, 
+                                wxITEM_NORMAL, 
+                                _( "Upload MDF file" ), 
+                                wxEmptyString );
+    itemToolBar->AddSeparator();
+    wxBitmap itemtool25Bitmap( itemFrame->GetBitmapResource( wxT( "New1.xpm" ) ) );
     wxBitmap itemtool25BitmapDisabled;
-    itemToolBar18->AddTool( ID_TOOL_ADD_ITEM, wxEmptyString, itemtool25Bitmap, itemtool25BitmapDisabled, wxITEM_NORMAL, _( "Add MDF item" ), wxEmptyString );
-    wxBitmap itemtool26Bitmap( itemFrame1->GetBitmapResource( wxT( "delete.xpm" ) ) );
+    itemToolBar->AddTool( ID_TOOL_ADD_ITEM, 
+                                wxEmptyString, 
+                                itemtool25Bitmap, 
+                                itemtool25BitmapDisabled, 
+                                wxITEM_NORMAL, 
+                                _( "Add MDF item" ), 
+                                wxEmptyString );
+    wxBitmap itemtool26Bitmap( itemFrame->GetBitmapResource( wxT( "delete.xpm" ) ) );
     wxBitmap itemtool26BitmapDisabled;
-    itemToolBar18->AddTool( ID_TOOL_REMOVE_ITEM, wxEmptyString, itemtool26Bitmap, itemtool26BitmapDisabled, wxITEM_NORMAL, _( "Remove MDF item" ), wxEmptyString );
-    itemToolBar18->Realize();
-    itemBoxSizer17->Add( itemToolBar18, 0, wxGROW | wxALL, 5 );
+    itemToolBar->AddTool( ID_TOOL_REMOVE_ITEM, 
+                                wxEmptyString, 
+                                itemtool26Bitmap, 
+                                itemtool26BitmapDisabled, 
+                                wxITEM_NORMAL, 
+                                _( "Remove MDF item" ), 
+                                wxEmptyString );
+    itemToolBar->Realize();
+    itemBoxSizer->Add( itemToolBar, 0, wxGROW | wxALL, 5 );
 
     m_mdfTree = new wxTreeCtrl;
-    m_mdfTree->Create( itemPanel16, ID_TREECTRL, wxDefaultPosition, wxSize( 400, 300 ), wxTR_HAS_BUTTONS | wxTR_FULL_ROW_HIGHLIGHT | wxTR_LINES_AT_ROOT | wxTR_ROW_LINES | wxTR_SINGLE );
-    itemBoxSizer17->Add( m_mdfTree, 0, wxGROW | wxALL, 2 );
+    m_mdfTree->Create( itemPanel, 
+                            ID_TREECTRL, 
+                            wxDefaultPosition, 
+                            wxSize( 400, 300 ), 
+                            wxTR_HAS_BUTTONS | wxTR_FULL_ROW_HIGHLIGHT | wxTR_LINES_AT_ROOT | wxTR_ROW_LINES | wxTR_SINGLE );
+    itemBoxSizer->Add( m_mdfTree, 0, wxGROW | wxALL, 2 );
 
     m_htmlInfoWnd = new wxHtmlWindow;
-    m_htmlInfoWnd->Create( itemPanel16, ID_HTMLWINDOW2, wxDefaultPosition, wxSize( 200, 150 ), wxHW_SCROLLBAR_AUTO | wxSUNKEN_BORDER | wxHSCROLL | wxVSCROLL );
+    m_htmlInfoWnd->Create( itemPanel, 
+                                ID_HTMLWINDOW2, 
+                                wxDefaultPosition, 
+                                wxSize( 200, 150 ), 
+                                wxHW_SCROLLBAR_AUTO | wxSUNKEN_BORDER | wxHSCROLL | wxVSCROLL );
     m_htmlInfoWnd->SetPage( _( "<html><h4>No data</h4></html>" ) );
-    itemBoxSizer17->Add( m_htmlInfoWnd, 0, wxGROW | wxALL, 5 );
+    itemBoxSizer->Add( m_htmlInfoWnd, 0, wxGROW | wxALL, 5 );
 
     // Connect events and objects
-    m_mdfTree->Connect( ID_TREECTRL, wxEVT_LEFT_DOWN, wxMouseEventHandler( frmMDFEditor::OnLeftDown ), NULL, this );
-    m_mdfTree->Connect( ID_TREECTRL, wxEVT_LEFT_DCLICK, wxMouseEventHandler( frmMDFEditor::OnLeftDClick ), NULL, this );
+    m_mdfTree->Connect( ID_TREECTRL, 
+                            wxEVT_LEFT_DOWN, 
+                            wxMouseEventHandler( frmMDFEditor::OnLeftDown ), 
+                            NULL, 
+                            this );
+    m_mdfTree->Connect( ID_TREECTRL, 
+                            wxEVT_LEFT_DCLICK, 
+                            wxMouseEventHandler( frmMDFEditor::OnLeftDClick ), 
+                            NULL, 
+                            this );
 
     wxImageList* itemImageList = new wxImageList( 16, 16, true, 5 );
     {

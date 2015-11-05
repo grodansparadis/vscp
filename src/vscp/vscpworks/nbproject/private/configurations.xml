@@ -151,6 +151,7 @@
       <in>gridtable.h</in>
       <in>merlin.cpp</in>
       <in>merlin.h</in>
+      <in>newfile.c</in>
       <in>platform.h</in>
       <in>readguid.cpp</in>
       <in>readguid.h</in>
