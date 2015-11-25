@@ -313,6 +313,8 @@
 #define VSCP_TYPE_CONTROL_SHUTTER_RIGHT                     37
 #define VSCP_TYPE_CONTROL_SHUTTER_MIDDLE                    38
 #define VSCP_TYPE_CONTROL_SHUTTER_PRESET                    39
+#define VSCP_TYPE_CONTROL_ALL_LAMPS_ON                      40
+#define VSCP_TYPE_CONTROL_ALL_LAMPS_OFF                     41
 
 // class 40 (0x28) -- MULTIMEDIA
 #define VSCP_TYPE_MULTIMEDIA_GENERAL                        0

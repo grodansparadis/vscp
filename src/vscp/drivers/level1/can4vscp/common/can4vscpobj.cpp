@@ -2434,7 +2434,7 @@ static bool transmitMessage( CCan4VSCPObj * pobj, uint8_t *pseq )
 
     pos += addWithEscape( sendData + pos, (*pseq)++, &crc );
 
-    // Size of payload  6 + datalen
+    // Size of payload  4 + datalen
     sendData[ pos++ ] = 0;
     crc8( &crc, 0 );
     pos += addWithEscape( sendData + pos, 4 + msg.sizeData, &crc );
@@ -2444,6 +2444,8 @@ static bool transmitMessage( CCan4VSCPObj * pobj, uint8_t *pseq )
     pos += addWithEscape( sendData + pos, ( msg.id >> 16 ) & 0xff, &crc );
     pos += addWithEscape( sendData + pos, ( msg.id >> 8 ) & 0xff, &crc );
     pos += addWithEscape( sendData + pos, msg.id & 0xff, &crc );
+
+    
 
     // Data
     for ( int i = 0; i<msg.sizeData; i++ ) {

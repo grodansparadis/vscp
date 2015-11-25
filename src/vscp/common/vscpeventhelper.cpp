@@ -386,6 +386,8 @@ VSCPInformation::VSCPInformation( void )
     m_hashType[ MAKE_CLASSTYPE_LONG(30, 37) ] = _("SHUTTER_RIGHT");
     m_hashType[ MAKE_CLASSTYPE_LONG(30, 38) ] = _("SHUTTER_MIDDLE");
     m_hashType[ MAKE_CLASSTYPE_LONG(30, 39) ] = _("SHUTTER_PRESET");
+    m_hashType[ MAKE_CLASSTYPE_LONG(30, 40) ] = _("ALL_LAMPS_ON");
+    m_hashType[ MAKE_CLASSTYPE_LONG(30, 41) ] = _("ALL_LAMPS_OFF");
 
 	// class 40 (0x28) -- MULTIMEDIA
 	m_hashType[ MAKE_CLASSTYPE_LONG(40, 0) ] = _("MULTIMEDIA_GENERAL");
