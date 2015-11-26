@@ -341,7 +341,7 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
                 strValue.Printf( _( "%ud" ), val );
             }
             else {
-                strValue.Printf( _( "%d 0x%04x" ), val );
+                strValue.Printf( _( "0x%04x" ), val );
             }
 		}
 		break;
