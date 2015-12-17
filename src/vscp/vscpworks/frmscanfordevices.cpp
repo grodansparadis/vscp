@@ -591,7 +591,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
     }
 
     m_DeviceTree->DeleteAllItems();
-    m_htmlWnd->SetPage( "<html><body></body></html>" );
+    m_htmlWnd->SetPage( _("<html><body></body></html>") );
     m_htmlWnd->Update();
 
     wxProgressDialog progressDlg(_("Scanning for VSCP devices"),

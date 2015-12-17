@@ -204,7 +204,7 @@ bool CCanalConfObj::parseDriverInfo( wxString& xmldata )
             }
         }
         else if ( child1->GetName() == wxT( "level" ) ) {
-            m_level = vscp_readStringValue( (const char *)child1->GetNodeContent().mbc_str() );
+            m_level = vscp_readStringValue( child1->GetNodeContent() );
         }
         else if ( child1->GetName() == wxT( "blocking" ) ) {
 
@@ -756,10 +756,10 @@ void WizardCanalConfigPageStart::CreateControls()
     // Level
     wxString strBlocking;
     if ( m_pconfigObj->m_bBlocking ) {
-        strBlocking = "blocking";
+        strBlocking = _("blocking");
     }
     else {
-        strBlocking = "non blocking";
+        strBlocking = _("non blocking");
     }
     wxString strInfo = wxString::Format( _( "This is a %s level %d driver." ), (const char *)strBlocking.mbc_str(), m_pconfigObj->m_level );
     wxStaticText* itemStaticTextInfo = new wxStaticText;
@@ -968,7 +968,8 @@ void WizardPageCanalConfig::CreateControls()
         
         m_listBox->SetBackgroundColour( wxColour( 255, 255, 210 ) );
         unsigned long sel = 0;
-        m_strValue.ToCULong( &sel );
+        sel = vscp_readStringValue( m_strValue );
+        //m_strValue.ToCULongsel( &sel );
         m_listBox->Select( sel );
         itemBoxSizer->Add( m_listBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
 
@@ -989,7 +990,8 @@ void WizardPageCanalConfig::CreateControls()
         m_boolChoice->SetBackgroundColour( wxColour( 255, 255, 210 ) );
         if ( m_strValue.IsNumber() ) {
             unsigned long val = 0;
-            m_strValue.ToCULong( &val );
+            val = vscp_readStringValue( m_strValue );
+            //m_strValue.ToCULong( &val );
             if ( val ) m_boolChoice->SetValue( true );
         }
         else {
@@ -1070,7 +1072,7 @@ void WizardPageCanalConfig::OnWizardPageChanging( wxWizardEvent& event )
             int sel = m_listBox->GetSelection();
             if ( -1 != sel ) {
                 if ( !m_bOptional ) {
-                    wxMessageBox("This value is not optional. Please select a value!");
+                    wxMessageBox(_("This value is not optional. Please select a value!"));
                     event.Veto();
                 }
                 else {
