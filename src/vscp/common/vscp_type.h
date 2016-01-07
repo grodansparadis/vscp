@@ -274,6 +274,9 @@
 #define VSCP_TYPE_INFORMATION_SHUTTER_END_PRESET            66
 #define VSCP_TYPE_INFORMATION_SHUTTER_END_LEFT              67
 #define VSCP_TYPE_INFORMATION_SHUTTER_END_RIGHT             68
+#define VSCP_TYPE_INFORMATION_LONG_CLICK                    69
+#define VSCP_TYPE_INFORMATION_SINGLE_CLICK                  70
+#define VSCP_TYPE_INFORMATION_DOUBLE_CLICK                  71
 
 // class 30 (0x1E) -- CONTROL
 #define VSCP_TYPE_CONTROL_GENERAL                           0

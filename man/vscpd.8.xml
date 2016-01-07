@@ -5,7 +5,7 @@
 	<refmeta>
 		<refentrytitle>vscpd</refentrytitle>
 		<manvolnum>8</manvolnum>
-		<refmiscinfo class="source">VSCP Project</refmiscinfo>
+		<refmiscinfo class="source">VSCP system daemon</refmiscinfo>
 		<refmiscinfo class="manual">System management commands</refmiscinfo>
 	</refmeta>
 
@@ -180,13 +180,9 @@
 
 	<refsect1>
 		<title>Thanks</title>
-		<para>Thanks to my wife and my children who made this project possible. The project 				started in the autumn of year 2000 and is still under active development.
-			Many hours that should have been spent with family and children has
-			been spent in front of a screen in the office instead. A bad choice
-			but there was no other path to walk.  </para>
 		<para>Thanks to Behzad Ardakani, Marcus Rejås, Charles Tewiah, Mark Marooth, 
 			Gediminas Simanskis, Henk Hofstra, Stefan Langer, Kurt Herremans, 
-			Jiri Kubias, Frank Sautter, Dinesh Guleria, Andreas Merkle, 
+			Jiri Kubias, Frank Sautter, Dinesh Guleria, Andreas Merkle
 			Arpad Toth for valuable contributions to this project over the years.</para>
 		
 	</refsect1>

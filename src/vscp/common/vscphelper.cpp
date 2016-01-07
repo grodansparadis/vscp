@@ -3663,6 +3663,9 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 		case VSCP_TYPE_INFORMATION_SUNSET:
 		case VSCP_TYPE_INFORMATION_DETECT:
 		case VSCP_TYPE_INFORMATION_OVERFLOW:
+        case VSCP_TYPE_INFORMATION_LONG_CLICK:
+        case VSCP_TYPE_INFORMATION_SINGLE_CLICK:
+        case VSCP_TYPE_INFORMATION_DOUBLE_CLICK:
 			if ((pEvent->sizeData-offset) >= 3) {
                 strOutput = wxString::Format(_("Index=%d Zone=%d Subzone=%d\nNickname=%d\n"),
 						pEvent->pdata[ 0+offset ],
