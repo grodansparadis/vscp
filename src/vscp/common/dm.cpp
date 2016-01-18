@@ -1820,27 +1820,82 @@ bool dmElement::doActionExecute(vscpEvent *pDMEvent)
 //
 // http://stackoverflow.com/questions/21558937/i-do-not-understand-how-execlp-work-in-linux    
 // http://stackoverflow.com/questions/6718272/c-exec-fork-defunct-processes
-// http://beej.us/guide/bgipc/output/html/multipage/fork.html    
+// http://beej.us/guide/bgipc/output/html/multipage/fork.html 
+// https://www.gidforums.com/t-3369.html    
 //    
 #ifndef WIN32
 bool dmElement::unixVSCPExecute( wxString& argExec )
 { 
+    int pos;
+    int cntArgs;
+    wxString strPath;
+    wxString strExe;
+    wxArrayString wxargs;
+    char** args;
+    
     wxStringTokenizer tkz( argExec, " " );
-    int cnt = tkz.CountTokens();
-    if ( !cnt ) return false;   // Must at least have an exec file
+    cntArgs = tkz.CountTokens();
+    if ( !cntArgs ) return false;   // Must at least have an exec file
+    
+    // First parameter is executable
+    strPath = tkz.GetNextToken();
+    
+    // If it contains a path we need to pick out the executable name
+    if ( wxNOT_FOUND != ( pos = strPath.Find( '/', true ) ) ) {
+        strExe = strPath.Right( strPath.Length()-pos-1 );
+    }
+    else {
+        strExe = strPath;
+    }
+    
+    wxargs.Add( strExe );
+    while ( tkz.HasMoreTokens() ) {
+        wxargs.Add( tkz.GetNextToken() );
+    }
     
     pid_t pid = fork();
 
     if( pid == 0 ) {
-        //int devNull = open("/dev/null", O_WRONLY);
+        
+        fclose(stdin);
         fclose(stdout);
         fclose(stderr);
-        int rc = execlp("date", "date", NULL);
+        open("/dev/null", O_RDONLY); // stdin
+        open("/dev/null", O_WRONLY); // stdout
+        open("/dev/null", O_WRONLY); // stderr
+        
+        // Create the args
+        args = (char **)malloc( (cntArgs + 1) * sizeof(char *) );
+        for ( int i=0; i<cntArgs; i++ ) {
+            args[ i ] = ( char *)malloc( wxargs[i].Length() + 1 );
+            strcpy( args[ i ], (const char*)wxargs[i].mbc_str() );
+        }
+        
+        // Last is NULL pointer
+        args[ cntArgs ] = NULL;
+        
+        //int rc = execlp("/tmp/test.sh", "test.sh", NULL);
+        int rc = execvp( (const char*)strPath.mbc_str(), args );
+        
+        // Here only if execvp fails
+        
+        // free allocated resources before terminating
+        for ( int i=0; i<cntArgs; i++ ) {
+            free( args[ i ] );
+            args[ i ] = NULL;
+        }
+        
+        free( args ); 
+        
+        // Terminate
+        exit( rc ); 
     }
     else if ( -1 == pid ) {
+        // Error
         return false;
     }
     else {
+        // OK
         return true;
     }
 }   

@@ -183,7 +183,6 @@
         <ccTool flags="1">
           <incDir>
             <pElem>../../../common</pElem>
-            <pElem>../../../../../development/vscp/src/common</pElem>
             <pElem>.</pElem>
           </incDir>
         </ccTool>
@@ -242,7 +241,6 @@
             <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>/usr/include/openssl</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
-            <pElem>../../../../../development/vscp/src/common</pElem>
             <pElem>.</pElem>
           </incDir>
         </ccTool>
@@ -287,7 +285,6 @@
         <ccTool flags="1">
           <incDir>
             <pElem>../../../common</pElem>
-            <pElem>../../../../../development/vscp/src/common</pElem>
             <pElem>.</pElem>
           </incDir>
         </ccTool>
@@ -364,7 +361,6 @@
             <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
-            <pElem>../../../../../development/vscp/src/vscp/common</pElem>
             <pElem>.</pElem>
           </incDir>
         </ccTool>
@@ -409,7 +405,6 @@
             <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
-            <pElem>../../../../../development/vscp/src/vscp/common</pElem>
             <pElem>.</pElem>
           </incDir>
         </ccTool>
@@ -451,7 +446,6 @@
             <pElem>/usr/include/wx-3.0/wx/xml</pElem>
             <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
-            <pElem>../../../../../development/vscp/src/vscp/common</pElem>
             <pElem>.</pElem>
           </incDir>
         </ccTool>
@@ -465,7 +459,6 @@
             <pElem>../../common</pElem>
             <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
-            <pElem>../../../../../development/vscp/src/vscp/common</pElem>
             <pElem>.</pElem>
           </incDir>
         </ccTool>
@@ -573,8 +566,7 @@
             <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
-            <pElem>../../../../../development/vscp/src/vscp/common</pElem>
-            <pElem>../../vscpworks</pElem>
+            <pElem>.</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -589,8 +581,6 @@
             <pElem>/usr/include/wx-3.0/wx/xml</pElem>
             <pElem>../../../common</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
-            <pElem>../../../../../development/vscp/src/vscp/common</pElem>
-            <pElem>../../../../../development/vscp/src/common</pElem>
             <pElem>.</pElem>
           </incDir>
         </ccTool>
@@ -606,8 +596,6 @@
             <pElem>../../../common</pElem>
             <pElem>/usr/include/openssl</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
-            <pElem>../../../../../development/vscp/src/vscp/common</pElem>
-            <pElem>../../../../../development/vscp/src/common</pElem>
             <pElem>.</pElem>
           </incDir>
         </ccTool>
@@ -648,22 +636,19 @@
       <folder path="0">
         <ccTool>
           <incDir>
-            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/wx-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
+            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>../../common</pElem>
             <pElem>../../../common</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>.</pElem>
           </incDir>
-          <preprocessorList>
-            <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSL</Elem>
-            <Elem>WXUSINGDLL</Elem>
-            <Elem>_FILE_OFFSET_BITS=64</Elem>
-            <Elem>__WXGTK__</Elem>
-          </preprocessorList>
         </ccTool>
       </folder>
       <item path="vscpd.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="0">
+        <ccTool flags="1">
         </ccTool>
       </item>
     </conf>
