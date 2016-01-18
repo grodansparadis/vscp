@@ -1835,7 +1835,12 @@ bool dmElement::unixVSCPExecute( wxString& argExec )
     char** args;
     
     wxCmdLineParser cmdParser;
+    
+#if wxMAJOR_VERSION > 3    
     wxargs = cmdParser.ConvertStringToArgs( argExec, wxCMD_LINE_SPLIT_UNIX );
+#else
+    wxargs = cmdParser.ConvertStringToArgs( argExec );
+#endif    
     cntArgs = wxargs.Count();
     
     
