@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2015 
+// Copyright (C) 2000-2016
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -46,9 +46,9 @@ WX_DECLARE_LIST( int, ACTIONTIME );
 
 // Control bits
 #define DM_CONTROL_DONT_CONTINUE_SCAN	0x40000000
-#define DM_CONTROL_CHECK_INDEX			0x00000020
-#define DM_CONTROL_CHECK_ZONE			0x00000010 
-#define DM_CONTROL_CHECK_SUBZONE		0x00000008  
+#define DM_CONTROL_CHECK_INDEX          0x00000020
+#define DM_CONTROL_CHECK_ZONE           0x00000010 
+#define DM_CONTROL_CHECK_SUBZONE        0x00000008  
 
 
 enum {
@@ -484,27 +484,35 @@ public:
   
     /*!
         Handle escape sequencies
-        @param pEvent Event feed thru matrix
+        @param pEvent Event feed true matrix
         @param str String to replace escapes in
-         @return true on success, else false.
+        @return true on success, else false.
     */
     bool handleEscapes( vscpEvent *pEvent, wxString& str );
-
+    
+    /*
+        Execute for Unix.
+        @param argExec shell command line to execute.
+        @return True on success.
+    */
+#ifndef WIN32    
+    bool unixVSCPExecute( wxString& argExec );
+#endif    
 
     /*!
-    Perform the selected internal action. The parameter
-    is action dependent.
-    @param pDMEvent Event that triggered the action
-    @returns true if all went well.
+        Perform the selected internal action. The parameter
+        is action dependent.
+        @param pDMEvent Event that triggered the action
+        @returns true if all went well.
     */
     bool doAction( vscpEvent *pDMEvent );
 
     /*!
-    Exceute action 
-    Just executes the external action script. The parameter
-    is action dependent.
-    @param pDMEvent Event that triggered the action
-    @returns true if all went well.
+        Exceute action 
+        Just executes the external action script. The parameter
+        is action dependent.
+        @param pDMEvent Event that triggered the action
+        @returns true if all went well.
     */
     bool doActionExecute( vscpEvent *pDMEvent );
 

@@ -96,7 +96,9 @@ int main(int argc, char **argv)
 	int arg = 0;
 	wxString strcfgfile;
 
-	
+        // Ignore return value from defunct processes
+	signal(SIGCHLD, SIG_IGN);
+        
 	crcInit();
 	/*	
 	  unsigned char ttt[ 50 ];
@@ -129,7 +131,7 @@ int main(int argc, char **argv)
 	VSCPApp theApp;
 	//IMPLEMENT_APP(theApp)
     
-    wxSocketBase::Initialize();
+        wxSocketBase::Initialize();
 
 	while ((arg = getopt(argc, argv, "d:c:hgs")) != EOF) {
 

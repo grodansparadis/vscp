@@ -7,7 +7,7 @@
 //
 // This file is part of the VSCP (http://www.vscp.org)
 //
-// Copyright (C) 2000-2015 
+// Copyright (C) 2000-2016 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This file is distributed in the hope that it will be useful,
@@ -1788,7 +1788,8 @@ bool dmElement::doActionExecute(vscpEvent *pDMEvent)
 #ifdef WIN32
     if ( bOK && ( ::wxExecute(wxstr, wxEXEC_ASYNC | wxEXEC_HIDE_CONSOLE ) ) ) {
 #else
-    if ( bOK && ( ::wxExecute(wxstr, wxEXEC_ASYNC  ) ) ) {
+    //if ( bOK && ( ::wxExecute(wxstr, wxEXEC_ASYNC  ) ) ) {
+    if ( unixVSCPExecute( wxstr ) ) {    
 #endif
         wxString wxstr = wxT("[Action] Executed: ");
         wxstr += m_actionparam;
@@ -1813,6 +1814,37 @@ bool dmElement::doActionExecute(vscpEvent *pDMEvent)
 
     return true;
 }
+    
+///////////////////////////////////////////////////////////////////////////////
+// unixVSCPExecute
+//
+// http://stackoverflow.com/questions/21558937/i-do-not-understand-how-execlp-work-in-linux    
+// http://stackoverflow.com/questions/6718272/c-exec-fork-defunct-processes
+// http://beej.us/guide/bgipc/output/html/multipage/fork.html    
+//    
+#ifndef WIN32
+bool dmElement::unixVSCPExecute( wxString& argExec )
+{ 
+    wxStringTokenizer tkz( argExec, " " );
+    int cnt = tkz.CountTokens();
+    if ( !cnt ) return false;   // Must at least have an exec file
+    
+    pid_t pid = fork();
+
+    if( pid == 0 ) {
+        //int devNull = open("/dev/null", O_WRONLY);
+        fclose(stdout);
+        fclose(stderr);
+        int rc = execlp("date", "date", NULL);
+    }
+    else if ( -1 == pid ) {
+        return false;
+    }
+    else {
+        return true;
+    }
+}   
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3157,7 +3189,7 @@ bool CDM::load ( void )
                     if ( wxNOT_FOUND != str.Find(_("TRUE"))) {
                         pDMitem->m_bMeasurement = true;
                     }
-                    pDMitem->m_index =vscp_readStringValue( subchild->GetNodeContent() );
+                    pDMitem->m_index = vscp_readStringValue( subchild->GetNodeContent() );
                 }
                 else if ( subchild->GetName() == wxT ( "zone" ) ) {
                     pDMitem->m_zone = vscp_readStringValue( subchild->GetNodeContent() );
@@ -3379,7 +3411,7 @@ bool CDM::feed( vscpEvent *pEvent )
 		if ( !pDMitem->isEnabled() ) continue;
 
         if ( vscp_doLevel2Filter( pEvent, &pDMitem->m_vscpfilter ) && 
-            pDMitem->m_timeAllow.ShouldWeDoAction() ) { 
+                pDMitem->m_timeAllow.ShouldWeDoAction() ) { 
             
                 if ( pDMitem->isCheckIndexSet() ) {
                     if ( pDMitem->m_bMeasurement ) {

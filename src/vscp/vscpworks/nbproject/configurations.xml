@@ -134,23 +134,17 @@
           <executablePath>vscpworks</executablePath>
           <cTool>
             <preprocessorList>
+              <Elem>NS_ENABLE_SSL</Elem>
+              <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__WXGTK__</Elem>
               <Elem>wxUSE_GUI=1</Elem>
             </preprocessorList>
           </cTool>
           <ccTool>
-            <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
-              <pElem>/usr/local/include/wx-2.8</pElem>
-              <pElem>.</pElem>
-              <pElem>../common</pElem>
-              <pElem>../../common</pElem>
-            </incDir>
             <preprocessorList>
               <Elem>USE_FOSSA</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
-              <Elem>_LARGE_FILES</Elem>
               <Elem>__WXGTK__</Elem>
               <Elem>wxUSE_GUI=1</Elem>
             </preprocessorList>
@@ -164,45 +158,42 @@
       <item path="../../common/crc.c" ex="false" tool="0" flavor2="2">
         <cTool>
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
             <pElem>.</pElem>
             <pElem>../common</pElem>
             <pElem>../../common</pElem>
           </incDir>
           <preprocessorList>
             <Elem>USE_FOSSA</Elem>
-            <Elem>_LARGE_FILES</Elem>
           </preprocessorList>
         </cTool>
       </item>
       <item path="../../common/crc8.c" ex="false" tool="0" flavor2="2">
         <cTool>
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
             <pElem>.</pElem>
             <pElem>../common</pElem>
             <pElem>../../common</pElem>
           </incDir>
           <preprocessorList>
             <Elem>USE_FOSSA</Elem>
-            <Elem>_LARGE_FILES</Elem>
           </preprocessorList>
         </cTool>
       </item>
       <item path="../../common/fossa.c" ex="false" tool="0" flavor2="2">
         <cTool>
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
             <pElem>.</pElem>
             <pElem>../common</pElem>
             <pElem>../../common</pElem>
           </incDir>
           <preprocessorList>
             <Elem>USE_FOSSA</Elem>
-            <Elem>_LARGE_FILES</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -215,54 +206,168 @@
             <pElem>../../common</pElem>
             <pElem>.</pElem>
           </incDir>
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-            <Elem>WXUSINGDLL</Elem>
-          </preprocessorList>
         </cTool>
       </item>
       <item path="../common/canalconfobj.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>_LARGE_FILES</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="../common/canalsuperwrapper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>.</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>WXUSINGDLL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="../common/dllwrapper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>.</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>WXUSINGDLL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>.</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>WXUSINGDLL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="../common/knownnodes.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>_LARGE_FILES</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="../common/mdf.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>.</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>WXUSINGDLL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="../common/register.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>.</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>WXUSINGDLL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="../common/vscpeventhelper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>.</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>WXUSINGDLL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>.</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>WXUSINGDLL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="../common/vscpmulticast.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>_LARGE_FILES</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="../common/vscpremotetcpif.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>.</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>WXUSINGDLL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="bootdevice.cpp" ex="false" tool="1" flavor2="4">
@@ -343,11 +448,19 @@
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
           </incDir>
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-            <Elem>WXUSINGDLL</Elem>
-          </preprocessorList>
         </cTool>
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>_LARGE_FILES</Elem>
+          </preprocessorList>
+        </ccTool>
       </folder>
       <item path="frmdaemondecisionmartrixeditor.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">

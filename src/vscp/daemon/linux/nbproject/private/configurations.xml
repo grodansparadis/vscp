@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="95">
+<configurationDescriptor version="97">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="." name="0">
+      <df name=".codelite">
+      </df>
       <df name="carambola">
         <df name="include">
           <df name="linux">
@@ -95,6 +97,8 @@
         <in>vscpvariable.h</in>
       </df>
       <df name="codelite_vscpd">
+        <df name=".codelite">
+        </df>
       </df>
       <df name="html">
       </df>
@@ -135,10 +139,13 @@
         <gdb_interceptlist>
           <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
         </gdb_interceptlist>
+        <gdb_signals>
+        </gdb_signals>
         <gdb_options>
           <DebugOptions>
             <option name="debug_command" value="vscpd -s"/>
-            <option name="debug_dir" value="/home/akhe/vscp_software/src/vscp/daemon/linux"/>
+            <option name="debug_dir"
+                    value="/home/akhe/development/vscp/src/vscp/daemon/linux"/>
           </DebugOptions>
         </gdb_options>
         <gdb_buildfirst gdb_buildfirst_overriden="false" gdb_buildfirst_old="false"/>
