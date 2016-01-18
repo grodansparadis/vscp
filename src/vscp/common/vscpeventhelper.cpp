@@ -347,6 +347,9 @@ VSCPInformation::VSCPInformation( void )
     m_hashType[ MAKE_CLASSTYPE_LONG(20, 66) ] = _("SHUTTER_END_PRESET");
     m_hashType[ MAKE_CLASSTYPE_LONG(20, 67) ] = _("SHUTTER_END_LEFT");
     m_hashType[ MAKE_CLASSTYPE_LONG(20, 68) ] = _("SHUTTER_END_RIGHT");
+    m_hashType[ MAKE_CLASSTYPE_LONG( 20, 69 ) ] = _( "LONG_CLICK" );
+    m_hashType[ MAKE_CLASSTYPE_LONG( 20, 70 ) ] = _( "SINGLE_CLICK" );
+    m_hashType[ MAKE_CLASSTYPE_LONG( 20, 71 ) ] = _( "DOUBLE_CLICK" );
     
 	// class 30 (0x1E) -- CONTROL
 	m_hashType[ MAKE_CLASSTYPE_LONG(30, 0) ] = _("CONTROL_GENERAL");
