@@ -26,19 +26,20 @@
 #endif
 
 //#include "wx/wxprec.h"
-#include "wx/wx.h"
-#include "wx/defs.h"
-#include "wx/app.h"
+#include <wx/wx.h>
+#include <wx/defs.h>
+#include <wx/app.h>
 #include <wx/wfstream.h>
 #include <wx/xml/xml.h>
 #include <wx/listimpl.cpp>
 #include <wx/tokenzr.h>
 #include <wx/stdpaths.h>
-#include "wx/thread.h"
-#include "wx/socket.h"
+#include <wx/thread.h>
+#include <wx/socket.h>
 #include <wx/url.h>
-#include "wx/datetime.h"
+#include <wx/datetime.h>
 #include <wx/filename.h>
+#include <wx/cmdline.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -1833,25 +1834,33 @@ bool dmElement::unixVSCPExecute( wxString& argExec )
     wxArrayString wxargs;
     char** args;
     
-    wxStringTokenizer tkz( argExec, " " );
-    cntArgs = tkz.CountTokens();
+    wxCmdLineParser cmdParser;
+    wxargs = cmdParser.ConvertStringToArgs( argExec, wxCMD_LINE_SPLIT_UNIX );
+    cntArgs = wxargs.Count();
+    
+    
+    //wxStringTokenizer tkz( argExec, " " );
+    //cntArgs = tkz.CountTokens();
     if ( !cntArgs ) return false;   // Must at least have an exec file
     
     // First parameter is executable
-    strPath = tkz.GetNextToken();
+    //strPath = tkz.GetNextToken();
+    strPath = wxargs[ 0 ];
     
     // If it contains a path we need to pick out the executable name
     if ( wxNOT_FOUND != ( pos = strPath.Find( '/', true ) ) ) {
         strExe = strPath.Right( strPath.Length()-pos-1 );
+        wxargs[ 0 ] = strExe;
     }
     else {
         strExe = strPath;
     }
     
+    /*
     wxargs.Add( strExe );
     while ( tkz.HasMoreTokens() ) {
         wxargs.Add( tkz.GetNextToken() );
-    }
+    }*/
     
     pid_t pid = fork();
 
@@ -1891,10 +1900,16 @@ bool dmElement::unixVSCPExecute( wxString& argExec )
         exit( rc ); 
     }
     else if ( -1 == pid ) {
-        // Error
+        
+        wxargs.Clear();
+        
+        // fork error
         return false;
     }
     else {
+        
+        wxargs.Clear();
+        
         // OK
         return true;
     }
