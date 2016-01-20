@@ -111,7 +111,7 @@ int main(int argc, char **argv)
 	  ttt[ 49 ] = 0x87;
 	  printf( "CRC for data = %X\n", crcFast( ttt, 48 ) );
 	  printf( "CRC for all = %X\n", crcFast( ttt, 50 ) );
-	 */
+	*/
 
 	wxInitializer initializer;
 	if (!::wxInitialize()) {
@@ -126,7 +126,6 @@ int main(int argc, char **argv)
 	//strcfgFile =  _("/etc/vscp/vscpd.conf" );     // default config path
 	strcfgfile = wxStandardPaths::Get().GetConfigDir() + _("/vscp/vscpd.conf");
 	gbStopDaemon = false;
-
 
 	VSCPApp theApp;
 	//IMPLEMENT_APP(theApp)

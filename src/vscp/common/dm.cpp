@@ -69,15 +69,31 @@ actionThreadURL::actionThreadURL( CControlObject *pCtrlObject,
                                     wxString& url,
                                     uint8_t nAccessMethod,
                                     wxString& putdata,
+                                    wxString& extraheaders,
                                     wxString& proxy,
                                     wxThreadKind kind )
                                     : wxThread( kind )
 {
+    m_bOK = true;
+    
     //OutputDebugString( "actionThreadURL: Create");
     m_pCtrlObject = pCtrlObject;
 
     // Set URL
-    m_url.SetURL( url );
+    if (  wxURL_NOERR != m_url.SetURL( url ) ) {
+        m_bOK = false;
+    }
+    
+    //m_extraheaders = extraheaders;
+    m_extraheaders.Empty();
+    
+    int pos;
+    wxString wxwrk = extraheaders;
+    while ( wxNOT_FOUND != ( pos =  wxwrk.Find( _("\\n") ) ) ) {
+        m_extraheaders += wxwrk.Left( pos-1 );
+        m_extraheaders += _("\r\n");
+        wxwrk = wxwrk.Right( wxwrk.Length()-pos-2 );
+    }
 
     m_acessMethod = nAccessMethod;
     m_putdata = putdata;
@@ -96,11 +112,12 @@ actionThreadURL::~actionThreadURL()
 // Entry
 //
 // http://www.jmarshall.com/easy/http/
+//
 
 void *actionThreadURL::Entry()
 {
     //m_pCtrlObject->logMsg ( _T ( "TCP actionThreadURL: Quit.\n" ), DAEMON_LOGMSG_INFO );
-
+    
     wxIPV4address addr;
     wxSocketClient sock;
 
@@ -115,33 +132,41 @@ void *actionThreadURL::Entry()
         if ( 0 == m_acessMethod ) {
             wxstr = wxT("GET ");
             wxstr += m_url.GetPath();
-            wxstr += wxT("");
-            wxstr += wxT("HTTP/1.1\n");
+            wxstr += wxT(" ");
+            wxstr += wxT("HTTP/1.1\r\n");
             wxstr += wxT("Host: ");
             wxstr += m_url.GetServer();
             wxstr += wxT(":");
             wxstr += m_url.GetPort();
-            wxstr += wxT("\n");
-            wxstr += wxT("User-Agent: VSCPD/1.0\n\n");
+            wxstr += wxT("\r\n");
+            // Add extra headers if there are any
+            if ( m_extraheaders.Length() ) {
+                wxstr += m_extraheaders;
+            }
+            wxstr += wxT("User-Agent: VSCPD/1.1\r\n\r\n");
         }
         // OK the access method is PUT
         else {
-            wxstr = wxT("POST ");
+            wxstr = wxT("PUT ");
             wxstr += m_url.GetPath();
-            wxstr += wxT("");
-            wxstr += wxT("HTTP/1.1\n");
+            wxstr += wxT(" ");
+            wxstr += wxT("HTTP/1.1\r\n");
             wxstr += wxT("Host: ");
             wxstr += m_url.GetServer();
             wxstr += wxT(":");
             wxstr += m_url.GetPort();
             wxstr += wxT("\n");
-            wxstr += wxT("User-Agent: VSCPD/1.0\n");
-            wxstr += wxT("Content-Type: application/x-www-form-urlencoded\n");
+            wxstr += wxT("User-Agent: VSCPD/1.1\r\n");
+            // Add extra headers if there are any
+            if ( m_extraheaders.Length() ) {
+                wxstr += m_extraheaders;
+            }
+            wxstr += wxT("Content-Type: application/x-www-form-urlencoded\r\n");
             wxstr += wxT("Content-Length: ");
-            wxstr += wxString::Format(_("%d"),m_putdata.Length());
-            wxstr += wxT("\n\n");
+            wxstr += wxString::Format(_("%ld"),m_putdata.Length());
+            wxstr += wxT("\r\n\r\n");
             wxstr += m_putdata;
-            wxstr += wxT("\n");
+            wxstr += wxT("\r\n");
         }
 
         // Send the request 
@@ -155,7 +180,7 @@ void *actionThreadURL::Entry()
                 wxT(",") + 
                 m_url.GetPath() +
                 wxT(",") +
-                ( m_acessMethod ? wxT("GET") : wxT("PUT") ) +
+                ( m_acessMethod ? wxT("PUT") : wxT("GET") ) +
                 wxT(" \n"), 
                 DAEMON_LOGMSG_ERROR );
         }
@@ -180,7 +205,7 @@ void *actionThreadURL::Entry()
                         wxT(",") + 
                         m_url.GetPath() +
                         wxT(",") +
-                        ( m_acessMethod ? wxT("GET") : wxT("PUT") ) +
+                        ( m_acessMethod ? wxT("PUT") : wxT("GET") ) +
                         wxT(", Response = ") +
                         strReponse +
                         wxT(" \n"), 
@@ -198,7 +223,7 @@ void *actionThreadURL::Entry()
                 wxT(",") + 
                 m_url.GetPath() +
                 wxT(",") +
-                ( m_acessMethod ? wxT("GET") : wxT("PUT") ) +
+                ( m_acessMethod ? wxT("PUT") : wxT("GET") ) +
                 wxT(" \n"), 
                 DAEMON_LOGMSG_ERROR );
         }
@@ -250,13 +275,13 @@ void actionThreadURL::OnExit()
 //
 
 actionThreadVSCPSrv::actionThreadVSCPSrv( CControlObject *pCtrlObject, 
-    wxString& strHostname, 
-    short port, 
-    wxString& strUsername, 
-    wxString& strPassword,
-    wxString& strEvent,
-    wxThreadKind kind )
-    : wxThread( kind )
+                                            wxString& strHostname, 
+                                            short port, 
+                                            wxString& strUsername, 
+                                            wxString& strPassword,
+                                            wxString& strEvent,
+                                            wxThreadKind kind )
+                                            : wxThread( kind )
 {
     //OutputDebugString( "actionThreadURL: Create");
     m_pCtrlObject = pCtrlObject;
@@ -1836,20 +1861,20 @@ bool dmElement::unixVSCPExecute( wxString& argExec )
     
     wxCmdLineParser cmdParser;
     
-#if wxMAJOR_VERSION > 3    
+#if wxMAJOR_VERSION > 2  
+#ifdef WIN32
+    wxargs = cmdParser.ConvertStringToArgs( argExec, wxCMD_LINE_SPLIT_DOS );
+#else    
     wxargs = cmdParser.ConvertStringToArgs( argExec, wxCMD_LINE_SPLIT_UNIX );
+#endif    
 #else
     wxargs = cmdParser.ConvertStringToArgs( argExec );
 #endif    
     cntArgs = wxargs.Count();
     
-    
-    //wxStringTokenizer tkz( argExec, " " );
-    //cntArgs = tkz.CountTokens();
     if ( !cntArgs ) return false;   // Must at least have an exec file
     
     // First parameter is executable
-    //strPath = tkz.GetNextToken();
     strPath = wxargs[ 0 ];
     
     // If it contains a path we need to pick out the executable name
@@ -1860,12 +1885,6 @@ bool dmElement::unixVSCPExecute( wxString& argExec )
     else {
         strExe = strPath;
     }
-    
-    /*
-    wxargs.Add( strExe );
-    while ( tkz.HasMoreTokens() ) {
-        wxargs.Add( tkz.GetNextToken() );
-    }*/
     
     pid_t pid = fork();
 
@@ -1888,7 +1907,6 @@ bool dmElement::unixVSCPExecute( wxString& argExec )
         // Last is NULL pointer
         args[ cntArgs ] = NULL;
         
-        //int rc = execlp("/tmp/test.sh", "test.sh", NULL);
         int rc = execvp( (const char*)strPath.mbc_str(), args );
         
         // Here only if execvp fails
@@ -2252,46 +2270,66 @@ bool dmElement::doActionGetURL( vscpEvent *pDMEvent )
 
     wxStringTokenizer tkz( wxstr, wxT(";") );
     if ( !tkz.HasMoreTokens() ) {
-        // Strange action parameter	
-        wxString wxstrErr = wxT("[Action] Get URL: Wrong action parameter ");
+        // Action parameter is wrong
+        wxString wxstrErr = wxT("[Action] Get URL: Wrong action parameter (method;URL required");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
         m_pDM->m_pCtrlObject->logMsg( wxstrErr, DAEMON_LOGMSG_ERROR );
         return false;  
     }
-
-    // Get URL
-    wxString url = tkz.GetNextToken();
-
+    
     // Use get or put method
-    uint8_t nAccessMethod = 0;   //  "GET" is defualt
-    if ( tkz.HasMoreTokens() ) {
-        wxString access = tkz.GetNextToken();
-        access.UpperCase();
-        if ( wxNOT_FOUND == access.Find(wxT("PUT") ) ) {
-            nAccessMethod = 1;    // Access-method is PUT
-        }
+    uint8_t nAccessMethod = 0;   //  "GET" is default
+    wxString access = tkz.GetNextToken();
+    access.MakeUpper();
+    if ( wxNOT_FOUND != access.Find(wxT("PUT") ) ) {
+        nAccessMethod = 1;    // Access-method is PUT
     }
 
-    // put data
-    wxString putdata;  
+    // Get URL
+    wxString url;
+    if ( tkz.HasMoreTokens() ) {
+        url = tkz.GetNextToken();    
+    }
+    else {
+        // URL is required
+        wxString wxstrErr = wxT("[Action] Get URL: Wrong action parameter (URL required)");
+        wxstrErr += wxstr;
+        wxstrErr += _("\n");
+        m_pDM->m_pCtrlObject->logMsg( wxstrErr, DAEMON_LOGMSG_ERROR );
+        return false;
+    }
+
+    // Get PUT data
+    wxString putdata;
     if ( tkz.HasMoreTokens() ) {
         putdata = tkz.GetNextToken();  
     }
+    
+    // Get extra headers
+    wxString extraheaders;
+    if ( tkz.HasMoreTokens() ) {
+        extraheaders = tkz.GetNextToken();  
+    }
 
-    // proxy
+    // Get proxy
     wxString proxy;  
     if ( tkz.HasMoreTokens() ) {
         proxy = tkz.GetNextToken();  
     }
 
     // Go do your work mate
-    actionThreadURL *thread = new actionThreadURL( m_pDM->m_pCtrlObject,
-        url,
-        nAccessMethod,
-        putdata,
-        proxy );
-    if ( NULL == thread ) thread->Run();
+    actionThreadURL *thread = 
+            new actionThreadURL( m_pDM->m_pCtrlObject,
+                                    url,
+                                    nAccessMethod,
+                                    putdata,
+                                    extraheaders,
+                                    proxy );
+    if ( NULL == thread ) return false;
+        
+    // Go Go Go
+    thread->Run();
 
     return true;
 }

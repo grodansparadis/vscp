@@ -74,6 +74,7 @@ public:
         @param url URL to access
         @param nAccessMethod 0 for GET, 1 for PUT and 2 for POST
         @param putdata Data if PUT is used as accessmethod.
+        @param extraheaders Optional extra headers
         @param proxy Optional proxy to use on the form <hostname>:<port number>
         @param kind Threadtype.
     */
@@ -81,6 +82,7 @@ public:
                       wxString& url,
                       uint8_t nAccessMethod,
                       wxString& putdata,
+                      wxString& extraheaders,
                       wxString& proxy,
                       wxThreadKind kind = wxTHREAD_DETACHED );
   
@@ -116,6 +118,14 @@ private:
         Data for PUT
     */
     wxString m_putdata;
+    
+    /*!
+        Optional Extra headers
+     */
+    wxString m_extraheaders;
+    
+    // Is set to true if initialization went OK
+    bool m_bOK;
 };
 
 

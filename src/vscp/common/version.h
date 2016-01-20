@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2015 
+// Copyright (C) 2000-2016 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -29,11 +29,11 @@
 #define VSCPD_SUB_VERSION   	0
 
 
-#define VSCPD_SUB_SUB_VERSION   10
+#define VSCPD_SUB_SUB_VERSION   12
 
-#define VSCPD_DISPLAY_VERSION "1.1.0.10 Sodium"
+#define VSCPD_DISPLAY_VERSION "1.1.0.12 Sodium"
 
-#define VSCPD_COPYRIGHT "Copyright (C) 2000-2015, Paradise of the Frog AB, http://www.paradiseofthefrog.com"
-#define VSCPD_COPYRIGHT_HTML "Copyright (C) 2000-2015, <a href=\"mailto:info@paradiseofthefrog.com\">Paradise of the Frog</a>, <a href=\"http://www.paradiseofthefrog.com\">http://www.paradiseofthefrog.com</a>"
+#define VSCPD_COPYRIGHT "Copyright (C) 2000-2016, Paradise of the Frog AB, http://www.paradiseofthefrog.com"
+#define VSCPD_COPYRIGHT_HTML "Copyright (C) 2000-2016, <a href=\"mailto:info@paradiseofthefrog.com\">Paradise of the Frog</a>, <a href=\"http://www.paradiseofthefrog.com\">http://www.paradiseofthefrog.com</a>"
 
 #endif

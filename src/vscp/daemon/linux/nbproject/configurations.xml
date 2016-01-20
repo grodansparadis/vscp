@@ -153,8 +153,7 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0" commonFlags="-O2"/>
-        <element flagsID="1" commonFlags="-mtune=generic -march=x86-64 -O2"/>
+        <element flagsID="0" commonFlags="-mtune=generic -march=x86-64"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -180,7 +179,7 @@
         </preBuild>
       </makefileType>
       <item path="../../../common/configfile.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
             <pElem>../../../common</pElem>
             <pElem>.</pElem>
@@ -232,12 +231,12 @@
         </cTool>
       </item>
       <item path="../../../common/md5.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/include/wx-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
             <pElem>../../../common</pElem>
-            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>/usr/include/openssl</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
@@ -282,7 +281,7 @@
         </ccTool>
       </item>
       <item path="../../../common/randpassword.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
             <pElem>../../../common</pElem>
             <pElem>.</pElem>
@@ -310,12 +309,12 @@
         </cTool>
       </item>
       <item path="../../common/clientlist.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/include/wx-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
             <pElem>../../common</pElem>
-            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
             <pElem>.</pElem>
@@ -323,15 +322,15 @@
         </ccTool>
       </item>
       <item path="../../common/controlobject.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/include/wx-3.0/wx</pElem>
-            <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
-            <pElem>../../common</pElem>
             <pElem>/usr/include/wx-3.0/wx/generic</pElem>
+            <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
             <pElem>/usr/include/wx-3.0/wx/xml</pElem>
-            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
+            <pElem>../../common</pElem>
             <pElem>../../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>/usr/include/openssl</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
             <pElem>.</pElem>
@@ -339,12 +338,12 @@
         </ccTool>
       </item>
       <item path="../../common/daemonvscp.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/include/wx-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
             <pElem>../../common</pElem>
-            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>../../../common</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
@@ -353,12 +352,12 @@
         </ccTool>
       </item>
       <item path="../../common/devicelist.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/include/wx-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
             <pElem>../../common</pElem>
-            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
             <pElem>.</pElem>
@@ -366,12 +365,12 @@
         </ccTool>
       </item>
       <item path="../../common/devicethread.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/include/wx-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
             <pElem>../../common</pElem>
-            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
             <pElem>.</pElem>
@@ -381,28 +380,24 @@
       <item path="../../common/dm.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/wx-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
+            <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
+            <pElem>/usr/include/wx-3.0/wx/xml</pElem>
             <pElem>../../common</pElem>
-            <pElem>../../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
             <pElem>.</pElem>
           </incDir>
-          <preprocessorList>
-            <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSL</Elem>
-            <Elem>WXUSINGDLL</Elem>
-            <Elem>_FILE_OFFSET_BITS=64</Elem>
-            <Elem>__WXGTK__</Elem>
-          </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/guid.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/include/wx-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
             <pElem>../../common</pElem>
-            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
             <pElem>.</pElem>
@@ -410,12 +405,12 @@
         </ccTool>
       </item>
       <item path="../../common/interfacelist.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/include/wx-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
             <pElem>../../common</pElem>
-            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>/usr/include/wx-3.0/wx/xml</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
@@ -424,12 +419,12 @@
         </ccTool>
       </item>
       <item path="../../common/knownnodes.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/include/wx-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
             <pElem>../../common</pElem>
-            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
             <pElem>.</pElem>
@@ -437,13 +432,13 @@
         </ccTool>
       </item>
       <item path="../../common/mdf.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/include/wx-3.0/wx</pElem>
-            <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
-            <pElem>../../common</pElem>
             <pElem>/usr/include/wx-3.0/wx/generic</pElem>
+            <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
             <pElem>/usr/include/wx-3.0/wx/xml</pElem>
+            <pElem>../../common</pElem>
             <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
             <pElem>.</pElem>
@@ -451,11 +446,11 @@
         </ccTool>
       </item>
       <item path="../../common/register.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/include/wx-3.0/wx</pElem>
-            <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
             <pElem>/usr/include/wx-3.0/wx/generic</pElem>
+            <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
             <pElem>../../common</pElem>
             <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
@@ -464,12 +459,12 @@
         </ccTool>
       </item>
       <item path="../../common/tables.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/include/wx-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
             <pElem>../../common</pElem>
-            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
             <pElem>.</pElem>
@@ -477,14 +472,14 @@
         </ccTool>
       </item>
       <item path="../../common/tcpipclientthread.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/include/wx-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
             <pElem>../../common</pElem>
-            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
-            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>../../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>/usr/include/openssl</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
             <pElem>.</pElem>
@@ -492,14 +487,14 @@
         </ccTool>
       </item>
       <item path="../../common/udpclientthread.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/include/wx-3.0/wx</pElem>
-            <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
-            <pElem>../../common</pElem>
             <pElem>/usr/include/wx-3.0/wx/generic</pElem>
-            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
+            <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
             <pElem>../../../common</pElem>
+            <pElem>../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>/usr/include/openssl</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
             <pElem>.</pElem>
@@ -523,12 +518,12 @@
         </ccTool>
       </item>
       <item path="../../common/userlist.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/include/wx-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
             <pElem>../../common</pElem>
-            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>/usr/include/wx-3.0/wx/xml</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
@@ -537,12 +532,12 @@
         </ccTool>
       </item>
       <item path="../../common/vscpautomation.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/include/wx-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
             <pElem>../../common</pElem>
-            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
             <pElem>.</pElem>
@@ -558,12 +553,12 @@
         </ccTool>
       </item>
       <item path="../../common/vscpeventhelper.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/include/wx-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
             <pElem>../../common</pElem>
-            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
             <pElem>.</pElem>
@@ -571,27 +566,26 @@
         </ccTool>
       </item>
       <item path="../../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/include/wx-3.0/wx</pElem>
-            <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
             <pElem>/usr/include/wx-3.0/wx/generic</pElem>
+            <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
             <pElem>../../common</pElem>
             <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>/usr/include/wx-3.0/wx/xml</pElem>
-            <pElem>../../../common</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
             <pElem>.</pElem>
           </incDir>
         </ccTool>
       </item>
       <item path="../../common/vscpremotetcpif.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/include/wx-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
             <pElem>../../common</pElem>
-            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
             <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>../../../common</pElem>
             <pElem>/usr/include/openssl</pElem>
@@ -601,13 +595,13 @@
         </ccTool>
       </item>
       <item path="../../common/vscpvariable.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/include/wx-3.0/wx</pElem>
-            <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
-            <pElem>../../common</pElem>
             <pElem>/usr/include/wx-3.0/wx/generic</pElem>
+            <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
             <pElem>/usr/include/wx-3.0/wx/xml</pElem>
+            <pElem>../../common</pElem>
             <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
             <pElem>.</pElem>
@@ -615,17 +609,17 @@
         </ccTool>
       </item>
       <item path="../../common/vscpwebserver.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/include/wx-3.0/wx</pElem>
-            <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
-            <pElem>../../../common/rapidxml</pElem>
-            <pElem>../../common</pElem>
             <pElem>/usr/include/wx-3.0/wx/generic</pElem>
+            <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
+            <pElem>/usr/include/wx-3.0/wx/xml</pElem>
+            <pElem>../../common</pElem>
+            <pElem>../../../common</pElem>
+            <pElem>../../../common/rapidxml</pElem>
             <pElem>../../../common/rapidjson</pElem>
             <pElem>../../../common/rapidjson/internal</pElem>
-            <pElem>/usr/include/wx-3.0/wx/xml</pElem>
-            <pElem>../../../common</pElem>
             <pElem>../../../common/rapidjson/error</pElem>
             <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
@@ -637,18 +631,17 @@
         <ccTool>
           <incDir>
             <pElem>/usr/include/wx-3.0/wx</pElem>
-            <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
             <pElem>/usr/include/wx-3.0/wx/generic</pElem>
+            <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
             <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>../../common</pElem>
-            <pElem>../../../common</pElem>
             <pElem>/usr/include/wx-3.0</pElem>
             <pElem>.</pElem>
           </incDir>
         </ccTool>
       </folder>
       <item path="vscpd.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="1">
+        <ccTool flags="0">
         </ccTool>
       </item>
     </conf>
