@@ -97,7 +97,11 @@
         <in>vscpvariable.h</in>
       </df>
       <df name="codelite_vscpd">
+        <df name=".clang">
+        </df>
         <df name=".codelite">
+          <df name="tabgroups">
+          </df>
         </df>
       </df>
       <df name="html">
@@ -139,8 +143,6 @@
         <gdb_interceptlist>
           <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
         </gdb_interceptlist>
-        <gdb_signals>
-        </gdb_signals>
         <gdb_options>
           <DebugOptions>
             <option name="debug_command" value="vscpd -s"/>

@@ -68,6 +68,12 @@ class actionThreadURL : public wxThread
 
 public:
 
+    static enum accessmethod_t {
+        GET = 0,
+        PUT,
+        POST
+    } accessmethod;
+
     /*!
         Constructor
         @param pCtrlObject Pointer to main object
@@ -80,7 +86,7 @@ public:
     */
     actionThreadURL( CControlObject *pCtrlObject, 
                       wxString& url,
-                      uint8_t nAccessMethod,
+                      accessmethod_t nAccessMethod,
                       wxString& putdata,
                       wxString& extraheaders,
                       wxString& proxy,
@@ -110,9 +116,9 @@ private:
     wxURL m_url;
   
     /*!
-        Accessmethod: 0 for 'GET' and 1 for 'PUT'
+        Accessmethod for HTTP call
     */
-    uint8_t m_acessMethod;
+    accessmethod_t m_acessMethod;
 
     /*!
         Data for PUT

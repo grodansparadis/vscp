@@ -400,14 +400,14 @@ void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const ui
     }
 
     ::ReportEventA(m_hEventSource,
-            EVENTLOG_INFORMATION_TYPE,
-            0,
-            (1L << 30),
-            NULL, // sid
-            iStr,
-            0,
-            ps,
-            NULL);
+                    EVENTLOG_INFORMATION_TYPE,
+                    0,
+                    (1L << 30),
+                    NULL, // sid
+                    iStr,
+                    0,
+                    ps,
+                    NULL);
 #endif
 #endif
 

@@ -45,6 +45,7 @@
 #include <string.h>
 
 #include <vscp.h>
+#include  <version.h>
 #include <vscphelper.h>
 #include <vscpeventhelper.h>
 #include <actioncodes.h>
@@ -67,7 +68,7 @@ WX_DEFINE_LIST( ACTIONTIME );
 
 actionThreadURL::actionThreadURL( CControlObject *pCtrlObject, 
                                     wxString& url,
-                                    uint8_t nAccessMethod,
+                                    accessmethod_t nAccessMethod,
                                     wxString& putdata,
                                     wxString& extraheaders,
                                     wxString& proxy,
@@ -84,13 +85,12 @@ actionThreadURL::actionThreadURL( CControlObject *pCtrlObject,
         m_bOK = false;
     }
     
-    //m_extraheaders = extraheaders;
     m_extraheaders.Empty();
     
     int pos;
     wxString wxwrk = extraheaders;
-    while ( wxNOT_FOUND != ( pos =  wxwrk.Find( _("\\n") ) ) ) {
-        m_extraheaders += wxwrk.Left( pos-1 );
+    while ( wxNOT_FOUND != ( pos = wxwrk.Find( _("\\n") ) ) ) {
+        m_extraheaders += wxwrk.Left( pos );
         m_extraheaders += _("\r\n");
         wxwrk = wxwrk.Right( wxwrk.Length()-pos-2 );
     }
@@ -99,7 +99,6 @@ actionThreadURL::actionThreadURL( CControlObject *pCtrlObject,
     m_putdata = putdata;
 
     m_url.SetProxy( proxy );
-
 }
 
 actionThreadURL::~actionThreadURL()
@@ -127,9 +126,10 @@ void *actionThreadURL::Entry()
     if ( sock.Connect( addr ) ) {
 
         wxString wxstr;
+        wxString wxwork;
 
         // Check if access method is GET
-        if ( 0 == m_acessMethod ) {
+        if ( actionThreadURL::GET == m_acessMethod ) {
             wxstr = wxT("GET ");
             wxstr += m_url.GetPath();
             wxstr += wxT(" ");
@@ -143,10 +143,36 @@ void *actionThreadURL::Entry()
             if ( m_extraheaders.Length() ) {
                 wxstr += m_extraheaders;
             }
-            wxstr += wxT("User-Agent: VSCPD/1.1\r\n\r\n");
+            wxstr += wxString::Format(  wxT("User-Agent: VSCPD/%s\r\n\r\n"),
+                                            VSCPD_DISPLAY_VERSION );
+        }
+        // OK the access method is POST
+        else if ( actionThreadURL::POST == m_acessMethod ) {
+            wxstr = wxT("POST ");
+            wxstr += m_url.GetPath();
+            wxstr += wxT(" ");
+            wxstr += wxT("HTTP/1.1\r\n");
+            wxstr += wxT("Host: ");
+            wxstr += m_url.GetServer();
+            wxstr += wxT(":");
+            wxstr += m_url.GetPort();
+            wxstr += wxT("\r\n");
+            wxstr += wxString::Format( wxT("User-Agent: VSCPD/%s\r\n"),
+                                        VSCPD_DISPLAY_VERSION );
+            // Add extra headers if there are any
+            if ( m_extraheaders.Length() ) {
+                wxstr += m_extraheaders;
+            }
+            wxstr += wxT("Accept: */*\r\n");
+            wxstr += wxT("Content-Type: application/x-www-form-urlencoded\r\n");            
+            wxstr += wxT("Content-Length: ");
+            wxstr += wxString::Format(_("%ld"),m_putdata.Length());
+            wxstr += wxT("\r\n\r\n");
+            wxstr += m_putdata;
+            wxstr += wxT("\r\n");
         }
         // OK the access method is PUT
-        else {
+        else if ( actionThreadURL::PUT == m_acessMethod ) {
             wxstr = wxT("PUT ");
             wxstr += m_url.GetPath();
             wxstr += wxT(" ");
@@ -155,8 +181,9 @@ void *actionThreadURL::Entry()
             wxstr += m_url.GetServer();
             wxstr += wxT(":");
             wxstr += m_url.GetPort();
-            wxstr += wxT("\n");
-            wxstr += wxT("User-Agent: VSCPD/1.1\r\n");
+            wxstr += wxT("\r\n");
+            wxstr += wxString::Format( wxT("User-Agent: VSCPD/%s\r\n"),
+                                        VSCPD_DISPLAY_VERSION );
             // Add extra headers if there are any
             if ( m_extraheaders.Length() ) {
                 wxstr += m_extraheaders;
@@ -168,10 +195,29 @@ void *actionThreadURL::Entry()
             wxstr += m_putdata;
             wxstr += wxT("\r\n");
         }
+        else {
+            // Invalid method
+            m_pCtrlObject->logMsg( _T ( "actionThreadURL: Invalid http access method: " ) +
+                m_url.GetServer() + 
+                wxT(",") + 
+                m_url.GetPort() +
+                wxT(",") + 
+                m_url.GetPath() +
+                wxT(",") +
+                wxString::Format( _("Accessmethod = %d"), m_acessMethod ) +
+                //( m_acessMethod ? wxT("PUT") : wxT("GET") ) +
+                wxT(" \n"), 
+                DAEMON_LOGMSG_ERROR );
+        }
+        
+        m_pCtrlObject->logMsg( _T ( "actionThreadURL: Request: \n" ) +
+                wxstr, 
+                DAEMON_LOGMSG_DEBUG );
+        wxPrintf( wxstr + _("\r\n-------------------------------------\r\n") );        
 
         // Send the request 
         sock.Write( wxstr, wxstr.Length() );
-        if ( sock.Error() ) {
+        if ( sock.Error() || (  wxstr.Length() != sock.LastWriteCount() ) ) {
             // There was an error
             m_pCtrlObject->logMsg( _T ( "actionThreadURL: Error writing request: " ) +
                 m_url.GetServer() + 
@@ -186,13 +232,15 @@ void *actionThreadURL::Entry()
         }
 
         // Get the response
-        char buffer[ 2048 ];
+        char buffer[ 8192 ];
         wxString strReponse;
+        //while ( !sock.Read( buffer, sizeof( buffer ) ).LastReadCount() );
         sock.Read( buffer, sizeof( buffer ) );
         if ( !sock.Error() ) {
 
-            // Check the response
-            strReponse.FromAscii( buffer );
+            // OK, Check the response
+            strReponse = wxString::FromUTF8( buffer );
+            wxPrintf( strReponse + _("\r\n-------------------------------------\r\n") ); 
             wxStringTokenizer tkz( strReponse );
             if ( tkz.HasMoreTokens() ) {
                 wxString str = tkz.GetNextToken();
@@ -1222,7 +1270,6 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
 {
     int pos;
     wxString strResult;
-    //wxStandardPaths stdPath;
 
     while ( wxNOT_FOUND != ( pos = str.Find( wxT("%") ) ) ) {
 
@@ -1259,13 +1306,38 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             else if ( str.StartsWith( wxT("%bell"), &str ) ) {
                 strResult += wxT("\a");					// add bell
             }
+            // Check for %amp.html
+            else if ( str.StartsWith( wxT("%amp.html"), &str ) ) {
+                strResult += wxT("&amp;");					// add bell
+            }
+            // Check for %amp
+            else if ( str.StartsWith( wxT("%amp"), &str ) ) {
+                strResult += wxT("&");					// add bell
+            }
+            // Check for %lt.html
+            else if ( str.StartsWith( wxT("%lt.html"), &str ) ) {
+                strResult += wxT("&lt;");					// add bell
+            }
+            // Check for %lt
+            else if ( str.StartsWith( wxT("%lt"), &str ) ) {
+                strResult += wxT("<");					// add bell
+            }
+            // Check for %gt.html
+            else if ( str.StartsWith( wxT("%gt.html"), &str ) ) {
+                strResult += wxT("&gt;");					// add bell
+            }
+            // Check for %gt
+            else if ( str.StartsWith( wxT("%gt"), &str ) ) {
+                strResult += wxT(">");					// add bell
+            }
             // Check for head escape
             else if ( str.StartsWith( wxT("%event.head"), &str ) ) {
                 strResult +=  wxString::Format( _("%d"), pEvent->head );
             }
             // Check for priority escape
             else if ( str.StartsWith( wxT("%event.priority"), &str ) ) {
-                strResult +=  wxString::Format( wxT("%d"), ( ( pEvent->head & VSCP_HEADER_PRIORITY_MASK ) >> 5 ) );	
+                strResult +=  wxString::Format( wxT("%d"), 
+                    ( ( pEvent->head & VSCP_HEADER_PRIORITY_MASK ) >> 5 ) );	
             }
             // Check for hardcoded escape
             else if ( str.StartsWith( wxT("%event.hardcoded"), &str ) ) {
@@ -1469,47 +1541,47 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                 }
             }
             // Check for path_config escape
-            else if ( str.StartsWith( wxT("%path_config"), &str ) ) {
+            else if ( str.StartsWith( wxT("%path.config"), &str ) ) {
                 strResult += wxStandardPaths::Get().GetConfigDir();
             }
             // Check for path_datadir escape
-            else if ( str.StartsWith( wxT("%path_datadir"), &str ) ) {
+            else if ( str.StartsWith( wxT("%path.datadir"), &str ) ) {
                 strResult += wxStandardPaths::Get().GetDataDir();
             }
             // Check for path_documentsdir escape
-            else if ( str.StartsWith( wxT("%path_documentsdir"), &str ) ) {
+            else if ( str.StartsWith( wxT("%path.documentsdir"), &str ) ) {
                 strResult += wxStandardPaths::Get().GetDocumentsDir();
             }
             // Check for path_executable escape
-            else if ( str.StartsWith( wxT("%path_executable"), &str ) ) {
+            else if ( str.StartsWith( wxT("%path.executable"), &str ) ) {
                 strResult += wxStandardPaths::Get().GetExecutablePath();
             }
             // Check for path_localdatadir escape
-            else if ( str.StartsWith( wxT("%path_localdatadir"), &str ) ) {
+            else if ( str.StartsWith( wxT("%path.localdatadir"), &str ) ) {
                 strResult += wxStandardPaths::Get().GetLocalDataDir();
             }
             // Check for path_pluginsdir escape
-            else if ( str.StartsWith( wxT("%path_pluginsdir"), &str ) ) {
+            else if ( str.StartsWith( wxT("%path.pluginsdir"), &str ) ) {
                 strResult += wxStandardPaths::Get().GetPluginsDir();
             }
             // Check for path_resourcedir escape
-            else if ( str.StartsWith( wxT("%path_resourcedir"), &str ) ) {
+            else if ( str.StartsWith( wxT("%path.resourcedir"), &str ) ) {
                 strResult += wxStandardPaths::Get().GetResourcesDir();
             }
             // Check for path_tempdir escape
-            else if ( str.StartsWith( wxT("%path_tempdir"), &str ) ) {
+            else if ( str.StartsWith( wxT("%path.tempdir"), &str ) ) {
                 strResult += wxStandardPaths::Get().GetTempDir();
             }
             // Check for path_userconfigdir escape
-            else if ( str.StartsWith( wxT("%path_userconfigdir"), &str ) ) {
+            else if ( str.StartsWith( wxT("%path.userconfigdir"), &str ) ) {
                 strResult += wxStandardPaths::Get().GetUserConfigDir();
             }
             // Check for path_userdatadir escape
-            else if ( str.StartsWith( wxT("%path_userdatadir"), &str ) ) {
+            else if ( str.StartsWith( wxT("%path.userdatadir"), &str ) ) {
                 strResult += wxStandardPaths::Get().GetUserDataDir();
             }
             // Check for path_localdatadir escape
-            else if ( str.StartsWith( wxT("%path_localdatadir"), &str ) ) {
+            else if ( str.StartsWith( wxT("%path.localdatadir"), &str ) ) {
                 strResult += wxStandardPaths::Get().GetUserLocalDataDir();
             }
             // Check for toliveafter
@@ -1566,6 +1638,48 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             // Check for eventdata.realtext escape
             else if ( str.StartsWith( wxT("%eventdata.realtext"), &str ) ) {
                 strResult += vscp_getRealTextData( pEvent );
+            }
+            
+            // Check for %variable:name (name is name of variable)
+            else if ( str.StartsWith( wxT("%variable:"), &str ) ) {
+                
+                str.Trim(); // Trim of leading white space
+                if ( wxNOT_FOUND == ( pos = str.First(' ') ) ) {
+                    
+                    // OK variable name must be all that is left in the param
+                    CVSCPVariable *pVariable  = m_pDM->m_pCtrlObject->m_VSCP_Variables.find( str );
+                    
+                    str.Empty(); // Not needed anymore
+                    
+                    // Assign value if variable exist
+                    if ( NULL != pVariable ) {
+
+                        // Existing - get real text value
+                        wxString wxwrk;
+                        if ( pVariable->writeValueToString( wxwrk ) ) {
+                            strResult += wxwrk;
+                        }
+
+                    }
+                }
+                else {
+                    wxString variableName = str.Left( pos );
+                    str = str.Right( str.Length() - pos );
+                    
+                    CVSCPVariable *pVariable  = 
+                        m_pDM->m_pCtrlObject->m_VSCP_Variables.find( variableName );
+                    
+                    // Assign value if variable exist
+                    if ( NULL != pVariable ) {
+                    
+                        wxString wxwrk;
+                        if ( pVariable->writeValueToString( wxwrk ) ) {
+                            strResult += wxwrk;
+                        }
+                        
+                    }
+                }
+                
             }
 
         }
@@ -2278,12 +2392,15 @@ bool dmElement::doActionGetURL( vscpEvent *pDMEvent )
         return false;  
     }
     
-    // Use get or put method
-    uint8_t nAccessMethod = 0;   //  "GET" is default
+    // Access method
+    actionThreadURL::accessmethod_t nAccessMethod = actionThreadURL::GET;
     wxString access = tkz.GetNextToken();
     access.MakeUpper();
     if ( wxNOT_FOUND != access.Find(wxT("PUT") ) ) {
-        nAccessMethod = 1;    // Access-method is PUT
+        nAccessMethod = actionThreadURL::PUT;
+    }
+    else if ( wxNOT_FOUND != access.Find(wxT("POST") ) ) {
+        nAccessMethod = actionThreadURL::POST;
     }
 
     // Get URL
@@ -2300,7 +2417,7 @@ bool dmElement::doActionGetURL( vscpEvent *pDMEvent )
         return false;
     }
 
-    // Get PUT data
+    // Get POST/PUT data
     wxString putdata;
     if ( tkz.HasMoreTokens() ) {
         putdata = tkz.GetNextToken();  

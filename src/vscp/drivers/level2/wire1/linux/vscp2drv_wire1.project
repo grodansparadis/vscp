@@ -290,4 +290,6 @@
     <File Name="../../../../common/old/StdAfx.h"/>
     <File Name="../../../../common/old/clientthread_level2_win32.cpp"/>
   </VirtualDirectory>
+  <Dependencies Name="Debug"/>
+  <Dependencies Name="Release"/>
 </CodeLite_Project>
