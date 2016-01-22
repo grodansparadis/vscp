@@ -509,7 +509,8 @@ CNodeInformation * daemonVSCPThread::addNodeIfNotKnown( vscpEvent *pEvent )
                 if ( pNode->m_deviceName.IsEmpty() ) {
                     pNode->m_deviceName = pDeviceItem->m_strName;
                     pNode->m_deviceName += _( "_" );
-                    pNode->m_deviceName += wxString::Format( _( "%lu" ), pDeviceItem->m_pClientItem->m_clientID );
+                    pNode->m_deviceName += wxString::Format( _( "%lu" ), 
+                                             pDeviceItem->m_pClientItem->m_clientID );
                 }
 
                 // Save interface
@@ -522,9 +523,11 @@ CNodeInformation * daemonVSCPThread::addNodeIfNotKnown( vscpEvent *pEvent )
                 // 'client_clientid_nickname'
                 if ( pNode->m_strNodeName.IsEmpty() ) {
                     pNode->m_strNodeName = _( "client_" );
-                    pNode->m_strNodeName += wxString::Format( _( "%lu" ), pDeviceItem->m_pClientItem->m_clientID );
+                    pNode->m_strNodeName += wxString::Format( _( "%lu" ), 
+                                                pDeviceItem->m_pClientItem->m_clientID );
                     pNode->m_strNodeName += _( "_" );
-                    pNode->m_strNodeName += wxString::Format( _( "%u" ), ( pEvent->GUID[ 14 ] << 8 ) + pEvent->GUID[ 15 ] );
+                    pNode->m_strNodeName += wxString::Format( _( "%u" ), 
+                                                ( pEvent->GUID[ 14 ] << 8 ) + pEvent->GUID[ 15 ] );
                 }
 
                 // Now let the discovery thread do the rest of the work

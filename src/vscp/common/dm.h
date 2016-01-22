@@ -71,7 +71,10 @@ public:
     static enum accessmethod_t {
         GET = 0,
         PUT,
-        POST
+        POST,
+        OPTIONS,
+        DELETE,
+        PATCH
     } accessmethod;
 
     /*!

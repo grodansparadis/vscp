@@ -130,8 +130,11 @@ void *actionThreadURL::Entry()
 
         // Check if access method is GET
         if ( actionThreadURL::GET == m_acessMethod ) {
+            
             wxstr = wxT("GET ");
             wxstr += m_url.GetPath();
+            wxstr += wxT("?");
+            wxstr += m_url.GetQuery();
             wxstr += wxT(" ");
             wxstr += wxT("HTTP/1.1\r\n");
             wxstr += wxT("Host: ");
@@ -139,15 +142,19 @@ void *actionThreadURL::Entry()
             wxstr += wxT(":");
             wxstr += m_url.GetPort();
             wxstr += wxT("\r\n");
+            wxstr += wxString::Format( wxT("User-Agent: VSCPD/%s\r\n"),
+                                        VSCPD_DISPLAY_VERSION );
+            
             // Add extra headers if there are any
             if ( m_extraheaders.Length() ) {
                 wxstr += m_extraheaders;
             }
-            wxstr += wxString::Format(  wxT("User-Agent: VSCPD/%s\r\n\r\n"),
-                                            VSCPD_DISPLAY_VERSION );
+            wxstr += wxT("\r\n\r\n");
+                                            
         }
         // OK the access method is POST
         else if ( actionThreadURL::POST == m_acessMethod ) {
+            
             wxstr = wxT("POST ");
             wxstr += m_url.GetPath();
             wxstr += wxT(" ");
@@ -163,6 +170,7 @@ void *actionThreadURL::Entry()
             if ( m_extraheaders.Length() ) {
                 wxstr += m_extraheaders;
             }
+            
             wxstr += wxT("Accept: */*\r\n");
             wxstr += wxT("Content-Type: application/x-www-form-urlencoded\r\n");            
             wxstr += wxT("Content-Length: ");
@@ -170,9 +178,11 @@ void *actionThreadURL::Entry()
             wxstr += wxT("\r\n\r\n");
             wxstr += m_putdata;
             wxstr += wxT("\r\n");
+            
         }
         // OK the access method is PUT
         else if ( actionThreadURL::PUT == m_acessMethod ) {
+            
             wxstr = wxT("PUT ");
             wxstr += m_url.GetPath();
             wxstr += wxT(" ");
@@ -184,18 +194,22 @@ void *actionThreadURL::Entry()
             wxstr += wxT("\r\n");
             wxstr += wxString::Format( wxT("User-Agent: VSCPD/%s\r\n"),
                                         VSCPD_DISPLAY_VERSION );
+                                        
             // Add extra headers if there are any
             if ( m_extraheaders.Length() ) {
                 wxstr += m_extraheaders;
             }
+            
             wxstr += wxT("Content-Type: application/x-www-form-urlencoded\r\n");
             wxstr += wxT("Content-Length: ");
             wxstr += wxString::Format(_("%ld"),m_putdata.Length());
             wxstr += wxT("\r\n\r\n");
             wxstr += m_putdata;
             wxstr += wxT("\r\n");
+            
         }
         else {
+            
             // Invalid method
             m_pCtrlObject->logMsg( _T ( "actionThreadURL: Invalid http access method: " ) +
                 m_url.GetServer() + 
@@ -208,13 +222,14 @@ void *actionThreadURL::Entry()
                 //( m_acessMethod ? wxT("PUT") : wxT("GET") ) +
                 wxT(" \n"), 
                 DAEMON_LOGMSG_ERROR );
+                
         }
         
         m_pCtrlObject->logMsg( _T ( "actionThreadURL: Request: \n" ) +
                 wxstr, 
                 DAEMON_LOGMSG_DEBUG );
-        wxPrintf( wxstr + _("\r\n-------------------------------------\r\n") );        
-
+        //wxPrintf( wxstr + _("\r\n-------------------------------------\r\n") );        
+        
         // Send the request 
         sock.Write( wxstr, wxstr.Length() );
         if ( sock.Error() || (  wxstr.Length() != sock.LastWriteCount() ) ) {
@@ -234,6 +249,7 @@ void *actionThreadURL::Entry()
         // Get the response
         char buffer[ 8192 ];
         wxString strReponse;
+        
         //while ( !sock.Read( buffer, sizeof( buffer ) ).LastReadCount() );
         sock.Read( buffer, sizeof( buffer ) );
         if ( !sock.Error() ) {
@@ -243,8 +259,10 @@ void *actionThreadURL::Entry()
             wxPrintf( strReponse + _("\r\n-------------------------------------\r\n") ); 
             wxStringTokenizer tkz( strReponse );
             if ( tkz.HasMoreTokens() ) {
+                
                 wxString str = tkz.GetNextToken();
                 if ( wxNOT_FOUND != str.Find( wxT("OK") ) ) {
+                    
                     // Something is wrong
                     m_pCtrlObject->logMsg ( _T ( "actionThreadURL: Error reading respons: " ) +
                         m_url.GetServer() + 
@@ -258,6 +276,7 @@ void *actionThreadURL::Entry()
                         strReponse +
                         wxT(" \n"), 
                         DAEMON_LOGMSG_ERROR );
+                        
                 }
             }
 
@@ -1585,8 +1604,16 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                 strResult += wxStandardPaths::Get().GetUserLocalDataDir();
             }
             // Check for toliveafter
-            else if ( str.StartsWith( wxT("%toliveafter"), &str ) ) {
+            else if ( str.StartsWith( wxT("%toliveafter1"), &str ) ) {
                 strResult += wxT("Carpe diem quam minimum credula postero.");
+            }
+            // Check for toliveafter
+            else if ( str.StartsWith( wxT("%toliveafter2"), &str ) ) {
+                strResult += wxT("Be Hungry - Stay Foolish.");
+            }
+            // Check for toliveafter
+            else if ( str.StartsWith( wxT("%toliveafter3"), &str ) ) {
+                strResult += wxT("Be Foolish - Stay Hungry.");
             }
             // Check for measurement.index escape
             else if ( str.StartsWith( wxT("%measurement.index"), &str ) ) {
@@ -1647,7 +1674,8 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                 if ( wxNOT_FOUND == ( pos = str.First(' ') ) ) {
                     
                     // OK variable name must be all that is left in the param
-                    CVSCPVariable *pVariable  = m_pDM->m_pCtrlObject->m_VSCP_Variables.find( str );
+                    CVSCPVariable *pVariable  = 
+                        m_pDM->m_pCtrlObject->m_VSCP_Variables.find( str );
                     
                     str.Empty(); // Not needed anymore
                     
@@ -1661,6 +1689,7 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                         }
 
                     }
+                    
                 }
                 else {
                     wxString variableName = str.Left( pos );
@@ -1678,11 +1707,13 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                         }
                         
                     }
+                    
                 }
                 
             }
 
         }
+        
     }
 
     // Add last part of working string if any.
@@ -1975,7 +2006,7 @@ bool dmElement::unixVSCPExecute( wxString& argExec )
     
     wxCmdLineParser cmdParser;
     
-#if wxMAJOR_VERSION > 2  
+#if wxMAJOR_VERSION >= 3  
 #ifdef WIN32
     wxargs = cmdParser.ConvertStringToArgs( argExec, wxCMD_LINE_SPLIT_DOS );
 #else    
@@ -2069,7 +2100,7 @@ bool dmElement::doActionSendEvent( vscpEvent *pDMEvent )
 
     // There must be room in the send queue
     if ( m_pDM->m_pCtrlObject->m_maxItemsInClientReceiveQueue >
-        m_pDM->m_pCtrlObject->m_clientOutputQueue.GetCount() ) {
+            m_pDM->m_pCtrlObject->m_clientOutputQueue.GetCount() ) {
 
             if (  wxNOT_FOUND != ( idx = m_actionparam.Find( wxT(";") ) ) ) {
                 // There is a variable that we should set to true in 
@@ -2089,13 +2120,15 @@ bool dmElement::doActionSendEvent( vscpEvent *pDMEvent )
                 m_pDM->m_pCtrlObject->m_mutexClientOutputQueue.Unlock();
 
                 // TX Statistics
-                m_pDM->m_pClientItem->m_statistics.cntTransmitData += pEvent->sizeData;
+                m_pDM->m_pClientItem->m_statistics.cntTransmitData += 
+                                                            pEvent->sizeData;
                 m_pDM->m_pClientItem->m_statistics.cntTransmitFrames++;
 
                 // Set the variable to false if it is defined
                 if ( 0 != var.Length() ) {
 
-                    CVSCPVariable *pVariable  = m_pDM->m_pCtrlObject->m_VSCP_Variables.find( var );
+                    CVSCPVariable *pVariable  = 
+                            m_pDM->m_pCtrlObject->m_VSCP_Variables.find( var );
                     if ( NULL == pVariable ) {
 
                         // Non existent - add and set to false
