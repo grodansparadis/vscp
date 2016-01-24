@@ -218,8 +218,7 @@ void *actionThreadURL::Entry()
                 wxT(",") + 
                 m_url.GetPath() +
                 wxT(",") +
-                wxString::Format( _("Accessmethod = %d"), m_acessMethod ) +
-                //( m_acessMethod ? wxT("PUT") : wxT("GET") ) +
+                wxString::Format( _("acessMethod = %d" ), m_acessMethod ) +
                 wxT(" \n"), 
                 DAEMON_LOGMSG_ERROR );
                 
@@ -227,8 +226,7 @@ void *actionThreadURL::Entry()
         
         m_pCtrlObject->logMsg( _T ( "actionThreadURL: Request: \n" ) +
                 wxstr, 
-                DAEMON_LOGMSG_DEBUG );
-        //wxPrintf( wxstr + _("\r\n-------------------------------------\r\n") );        
+                DAEMON_LOGMSG_DEBUG );        
         
         // Send the request 
         sock.Write( wxstr, wxstr.Length() );
@@ -241,7 +239,7 @@ void *actionThreadURL::Entry()
                 wxT(",") + 
                 m_url.GetPath() +
                 wxT(",") +
-                ( m_acessMethod ? wxT("PUT") : wxT("GET") ) +
+                wxString::Format( _("acessMethod = %d" ), m_acessMethod ) +
                 wxT(" \n"), 
                 DAEMON_LOGMSG_ERROR );
         }
@@ -256,7 +254,13 @@ void *actionThreadURL::Entry()
 
             // OK, Check the response
             strReponse = wxString::FromUTF8( buffer );
-            wxPrintf( strReponse + _("\r\n-------------------------------------\r\n") ); 
+            
+            // Log response
+            m_pCtrlObject->logMsg( _T ( "actionThreadURL: OK Response: " ) +
+                strReponse + 
+                wxT(" \n"), 
+                DAEMON_LOGMSG_ERROR );
+
             wxStringTokenizer tkz( strReponse );
             if ( tkz.HasMoreTokens() ) {
                 
@@ -271,7 +275,7 @@ void *actionThreadURL::Entry()
                         wxT(",") + 
                         m_url.GetPath() +
                         wxT(",") +
-                        ( m_acessMethod ? wxT("PUT") : wxT("GET") ) +
+                        wxString::Format( _("acessMethod = %d" ), m_acessMethod ) +
                         wxT(", Response = ") +
                         strReponse +
                         wxT(" \n"), 
@@ -308,7 +312,7 @@ void *actionThreadURL::Entry()
                                 wxT(",") + 
                                 m_url.GetPath() +
                                 wxT(",") +
-                                ( m_acessMethod ? wxT("GET") : wxT("PUT") ) +
+                                wxString::Format( _("acessMethod = %d" ), m_acessMethod ) +
                                 wxT(" \n"), 
                                 DAEMON_LOGMSG_ERROR );
     }
