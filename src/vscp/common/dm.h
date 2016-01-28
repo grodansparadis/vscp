@@ -73,7 +73,7 @@ public:
         PUT,
         POST,
         OPTIONS,
-        DELETE,
+        DEL,
         PATCH
     } accessmethod;
 
