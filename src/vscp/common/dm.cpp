@@ -230,7 +230,11 @@ void *actionThreadURL::Entry()
         
         // Send the request 
         sock.Write( wxstr, wxstr.Length() );
+#if  wxMAJOR_VERSION >=3
         if ( sock.Error() || (  wxstr.Length() != sock.LastWriteCount() ) ) {
+#else
+	if ( sock.Error() ) {
+#endif
             // There was an error
             m_pCtrlObject->logMsg( _T ( "actionThreadURL: Error writing request: " ) +
                 m_url.GetServer() + 
