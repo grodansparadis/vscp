@@ -121,9 +121,9 @@ typedef struct {
 	uint8_t head;                   // bit 7,6,5 priority => Priority 0-7 where 0 is highest.
                                     // bit 4 = hard coded, true for a hard coded device.
                                     // bit 3 = Don't calculate CRC, Set to zero to use CRC.
-                                    // bit 2 = Set means this is CAN message.
-                                    // bit 1 = If bit 2 is set; Extended CAN message if set
-                                    // bit 0 = If bit 2 is set: Remote frame if set
+                                    // bit 2 = Reserved.
+                                    // bit 1 = Reserved.
+                                    // bit 0 = Reserved.
 	uint16_t vscp_class;            // VSCP class
 	uint16_t vscp_type;             // VSCP type
 	uint8_t  GUID[ 16 ];            // Node globally unique id MSB(0) -> LSB(15)
