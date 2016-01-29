@@ -23,23 +23,23 @@
 /*
  * Derive parameters from the standard-specific parameters in crc.h.
  */
-#define WIDTH    (8 * sizeof(crc))
-#define TOPBIT   (1 << (WIDTH - 1))
+#define WIDTH                   (8 * sizeof(crc))
+#define TOPBIT                  (1 << (WIDTH - 1))
 
 #if ( REFLECT_DATA == TRUE )
 #undef  REFLECT_DATA
-#define REFLECT_DATA(X)			((unsigned char) reflect((X), 8))
+#define REFLECT_DATA(X)         ((unsigned char) reflect((X), 8))
 #else
 #undef  REFLECT_DATA
-#define REFLECT_DATA(X)			(X)
+#define REFLECT_DATA(X)         (X)
 #endif
 
 #if (REFLECT_REMAINDER == TRUE)
 #undef  REFLECT_REMAINDER
-#define REFLECT_REMAINDER(X)	((crc) reflect((X), WIDTH))
+#define REFLECT_REMAINDER(X)    ((crc) reflect((X), WIDTH))
 #else
 #undef  REFLECT_REMAINDER
-#define REFLECT_REMAINDER(X)	(X)
+#define REFLECT_REMAINDER(X)    (X)
 #endif
 
 crc  crcTable[256];
@@ -63,10 +63,9 @@ reflect(unsigned long data, unsigned char nBits)
     unsigned char  bit;
 
     /*
-     * Reflect the data about the center bit.
-     */
-    for (bit = 0; bit < nBits; ++bit)
-    {
+        * Reflect the data about the center bit.
+    */
+    for (bit = 0; bit < nBits; ++bit) {
         /*
          * If the LSB bit is set, set the reflection of it.
          */
@@ -80,7 +79,7 @@ reflect(unsigned long data, unsigned char nBits)
 
     return (reflection);
 
-}	/* reflect() */
+}   /* reflect() */
 
 
 /*********************************************************************
@@ -89,9 +88,9 @@ reflect(unsigned long data, unsigned char nBits)
  * 
  * Description: Compute the CRC of a given message.
  *
- * Notes:		
+ * Notes:
  *
- * Returns:		The CRC of the message.
+ * Returns: The CRC of the message.
  *
  *********************************************************************/
 crc
@@ -145,18 +144,18 @@ crcSlow( unsigned char const message[], int nBytes )
  * 
  * Description: Populate the partial CRC lookup table.
  *
- * Notes:		This function must be rerun any time the CRC standard
- *				is changed.  If desired, it can be run "offline" and
- *				the table results stored in an embedded system's ROM.
+ * Notes:       This function must be rerun any time the CRC standard
+ *              is changed.  If desired, it can be run "offline" and
+ *              the table results stored in an embedded system's ROM.
  *
- * Returns:		None defined.
+ * Returns:     None defined.
  *
  *********************************************************************/
 void
 crcInit(void)
 {
-    crc			   remainder;
-    int			   dividend;
+    crc            remainder;
+    int            dividend;
     unsigned char  bit;
 
 
@@ -203,9 +202,9 @@ crcInit(void)
  * 
  * Description: Compute the CRC of a given message.
  *
- * Notes:		crcInit() must be called first.
+ * Notes:       crcInit() must be called first.
  *
- * Returns:		The CRC of the message.
+ * Returns:     The CRC of the message.
  *
  *********************************************************************/
 crc
