@@ -76,7 +76,7 @@
 extern "C" {
 #endif
 
-    //			* * * General structure for VSCP * * *
+    //          * * * General structure for VSCP * * *
 
     // This structure is for VSCP Level II
     //
@@ -110,24 +110,26 @@ typedef vscpEvent *PVSCPEVENT;
 // This structure is for VSCP Level II with data embedded which is used
 // for the TCP interface.// 
 
-typedef struct {	
-	uint16_t crc;                   // crc checksum
-	
-	// Following two are for daemon internal use
-	uint32_t obid;                  // Used by driver for channel info etc.
-	uint32_t timestamp;             // Relative time stamp for package in microseconds.
-// CRC should be calculated from
-// here to end + datablock
-	uint8_t head;                   // bit 7,6,5 priority => Priority 0-7 where 0 is highest.
+typedef struct { 
+    
+    uint16_t crc;                   // crc checksum
+ 
+    // Following two are for daemon internal use
+    uint32_t obid;                  // Used by driver for channel info etc.
+    uint32_t timestamp;             // Relative time stamp for package in microseconds.
+    
+    // CRC should be calculated from
+    // here to end + datablock
+    uint8_t head;                   // bit 7,6,5 priority => Priority 0-7 where 0 is highest.
                                     // bit 4 = hard coded, true for a hard coded device.
                                     // bit 3 = Don't calculate CRC, Set to zero to use CRC.
                                     // bit 2 = Reserved.
                                     // bit 1 = Reserved.
                                     // bit 0 = Reserved.
-	uint16_t vscp_class;            // VSCP class
-	uint16_t vscp_type;             // VSCP type
-	uint8_t  GUID[ 16 ];            // Node globally unique id MSB(0) -> LSB(15)
-	uint16_t sizeData;              // Number of valid data bytes		
+    uint16_t vscp_class;            // VSCP class
+    uint16_t vscp_type;             // VSCP type
+    uint8_t  GUID[ 16 ];            // Node globally unique id MSB(0) -> LSB(15)
+    uint16_t sizeData;              // Number of valid data bytes		
 
     uint8_t  data[VSCP_MAX_DATA];   // Pointer to data. Max. 487 (512-25) bytes
 
@@ -178,18 +180,18 @@ typedef vscpEventEx *PVSCPEVENTEX;
 
 typedef struct  {
 
-	uint8_t filter_priority;        // Priority 
-	uint8_t mask_priority;
-									
-	uint16_t filter_class;          // VSCP class
-	uint16_t mask_class;
+    uint8_t filter_priority;        // Priority 
+    uint8_t mask_priority;
+                
+    uint16_t filter_class;          // VSCP class
+    uint16_t mask_class;
 
-	uint16_t filter_type;           // VSCP type
-	uint16_t mask_type;
+    uint16_t filter_type;           // VSCP type
+    uint16_t mask_type;
 
-	uint8_t filter_GUID[ 16 ];      // Node address MSB -> LSB, LSB is node nickname id
-	uint8_t mask_GUID[ 16 ];        // when interfacing the VSCP daemon.
-	
+    uint8_t filter_GUID[ 16 ];      // Node address MSB -> LSB, LSB is node nickname id
+    uint8_t mask_GUID[ 16 ];        // when interfacing the VSCP daemon.
+    
 } /*__attribute__((packed, aligned(1)))*/ vscpEventFilter;
 
 
@@ -197,9 +199,9 @@ typedef vscpEventFilter *PVSCPEVENTFILTER;
 
 
 /*!
-	Statistics
+    Statistics
 
-	This is the general statistics structure
+    This is the general statistics structure
 */
 
 typedef struct structVSCPStatistics {
@@ -217,9 +219,9 @@ typedef  VSCPStatistics * PVSCPSTATISTICS;
 
 
 /*!
-	VSCPStatus
+    VSCPStatus
 
-	This is the general channel state structure
+    This is the general channel state structure
 */
 
 #define VSCP_STATUS_ERROR_STRING_SIZE       80
@@ -247,16 +249,16 @@ typedef  VSCPStatus * PVSCPSTATUS;
 
 
 /*!
-	VSCP Channel Info
+    VSCP Channel Info
 
-	This is the channel VSCP Info structure
+    This is the channel VSCP Info structure
 */
 
 typedef struct structVSCPChannelInfo {
-	unsigned char channelType;      // Level I, Level II etc. from canal.h 
-	unsigned short channel;         // daemon channel number
-	char GUID[ 16 ];                // Channel GUID id
-	
+    unsigned char channelType;      // Level I, Level II etc. from canal.h 
+    unsigned short channel;         // daemon channel number
+    char GUID[ 16 ];                // Channel GUID id
+    
 } /*__attribute__((packed, aligned(1)))*/ VSCPChannelInfo;
 
 typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
@@ -310,7 +312,7 @@ typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 #define VSCP_BOOTLOADER_NONE                    0xff
 
 
-//			* * * Data Coding for VSCP packets * * *
+//          * * * Data Coding for VSCP packets * * *
 
 // Data format masks
 #define VSCP_MASK_DATACODING_TYPE               0xE0  // Bits 5,6,7
@@ -359,8 +361,8 @@ typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 // Node data - the required registers are fetched from this 
 //	structure
 struct myNode {
-	unsigned char GUID[ 16 ];
-	unsigned char nicknameID;
+    unsigned char GUID[ 16 ];
+    unsigned char nicknameID;
 };
 
 // * * * Standard VSCP registers * * *
