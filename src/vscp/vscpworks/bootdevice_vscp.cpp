@@ -446,7 +446,6 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
 
     uint16_t vscpclass;
     uint8_t vscptype;
-    uint8_t nodeid = 0;
     uint8_t priority = 0;
 
     wxBusyCursor busy;
@@ -459,50 +458,56 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
         memset( msg.data, 0x00, 8 );
 
         // Read page register Page select MSB
-        if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
-                                                                0,
-                                                                VSCP_REG_PAGE_SELECT_MSB,
-                                                                &pageSelectMsb ) ) {
+        if ( CANAL_ERROR_SUCCESS != 
+                m_pdll->readLevel1Register( m_nodeid,
+                                                0,
+                                                VSCP_REG_PAGE_SELECT_MSB,
+                                                &pageSelectMsb ) ) {
             return false;
         }
 
         // Read page register page select lsb
-        if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
-                                                                0,
-                                                                VSCP_REG_PAGE_SELECT_LSB,
-                                                                &pageSelectLsb ) ) {
+        if ( CANAL_ERROR_SUCCESS != 
+                m_pdll->readLevel1Register( m_nodeid,
+                                                0,
+                                                VSCP_REG_PAGE_SELECT_LSB,
+                                                &pageSelectLsb ) ) {
             return false;
         }
         
         // Read page register GUID0
-        if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
-                                                                0,
-                                                                VSCP_REG_GUID0,
-                                                                &guid0 ) ) {
+        if ( CANAL_ERROR_SUCCESS != 
+                m_pdll->readLevel1Register( m_nodeid,
+                                                0,
+                                                VSCP_REG_GUID0,
+                                                &guid0 ) ) {
             return false;
         }
 
         // Read page register GUID3
-        if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
-                                                                0,
-                                                                VSCP_REG_GUID3,
-                                                                &guid3 ) ) {
+        if ( CANAL_ERROR_SUCCESS != 
+                m_pdll->readLevel1Register( m_nodeid,
+                                                0,
+                                                VSCP_REG_GUID3,
+                                                &guid3 ) ) {
             return false;
         }
 
         // Read page register GUID5
-        if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
-                                                                0,
-                                                                VSCP_REG_GUID5,
-                                                                &guid5 ) ) {
+        if ( CANAL_ERROR_SUCCESS != 
+                m_pdll->readLevel1Register( m_nodeid,
+                                                0,
+                                                VSCP_REG_GUID5,
+                                                &guid5 ) ) {
             return false;
         }
 
         // Read page register GUID7
-        if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
-                                                                0,
-                                                                VSCP_REG_GUID7,
-                                                                &guid7 ) ) {
+        if ( CANAL_ERROR_SUCCESS != 
+                m_pdll->readLevel1Register( m_nodeid,
+                                                0,
+                                                VSCP_REG_GUID7,
+                                                &guid7 ) ) {
             return false;
         }
 
@@ -533,9 +538,9 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
             bRun = true;
 
             // Get start time
-            time(&tstart);
+            time( &tstart );
 
-            while (bRun) {
+            while ( bRun ) {
 
                 time(&tnow);
                 if ((unsigned long) (tnow - tstart) > BOOT_COMMAND_RESPONSE_TIMEOUT ) {
@@ -546,12 +551,14 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
 
                     m_pdll->doCmdReceive( &rcvmsg );
 
+                    vscpclass = VSCP_CLASS1_PROTOCOL;
                     vscptype = VSCP_TYPE_PROTOCOL_ACK_BOOT_LOADER;
 
                     if ((uint32_t) (rcvmsg.id & 0x01ffffff) == 
-                         (uint32_t) (((uint32_t) vscpclass << 16) | ((uint32_t) vscptype << 8) | nodeid)) {
+                         (uint32_t) (((uint32_t) vscpclass << 16) | 
+                            ((uint32_t) vscptype << 8) | m_ nodeid ) ) {
+                        
                         // OK in bootmode - return
-
                         m_blockSize = ((uint32_t) rcvmsg.data[ 0 ] << 24) |
                                       ((uint32_t) rcvmsg.data[ 1 ] << 16) |
                                       ((uint32_t) rcvmsg.data[ 2 ] <<  8) |
@@ -722,8 +729,11 @@ bool CBootDevice_VSCP::doFirmwareLoad( void )
     uint32_t nConfigPackets = 0;
     uint32_t nEEPROMPackets = 0;
     
+    // Packet size is always eight byte due to CAN frame 
+    // limitation
+    
     // Flash memory
-    if (m_bPrgData) {
+    if ( m_bPrgData ) {
         nFlashPackets = (m_maxFlashAddr - m_minFlashAddr) / 8;
 
         if (0 != ((m_maxFlashAddr - m_minFlashAddr) % 8)) {
@@ -732,7 +742,7 @@ bool CBootDevice_VSCP::doFirmwareLoad( void )
     }
 
     // Config
-    if (m_bConfigData) {
+    if ( m_bConfigData ) {
         nConfigPackets = (m_maxConfigAddr - m_minConfigAddr) / 8;
 
         if (0 != ((m_maxConfigAddr - m_minConfigAddr) % 8)) {
@@ -741,7 +751,7 @@ bool CBootDevice_VSCP::doFirmwareLoad( void )
     }
 
     // EEPROM
-    if (m_bEEPROMData) {
+    if  (m_bEEPROMData ) {
         nEEPROMPackets = (m_maxEEPROMAddr - m_minEEPROMAddr) / 8;
 
         if (0 != ((m_maxEEPROMAddr - m_minEEPROMAddr) % 8)) {
@@ -750,34 +760,35 @@ bool CBootDevice_VSCP::doFirmwareLoad( void )
     }
 
     long nTotalPackets = nFlashPackets + nConfigPackets + nEEPROMPackets;
-    wxProgressDialog* pDlg = new wxProgressDialog(_T("Boot loading in progress..."),
-            _T("---"),
-            nTotalPackets,
-            NULL,
-            wxPD_AUTO_HIDE |
-            wxPD_APP_MODAL |
-            wxPD_CAN_ABORT |
-            wxPD_ELAPSED_TIME |
-            wxPD_REMAINING_TIME);
+    wxProgressDialog* pDlg = 
+            new wxProgressDialog( _T("Boot loading in progress..."),
+                                    _T("---"),
+                                    nTotalPackets,
+                                    NULL,
+                                    wxPD_AUTO_HIDE |
+                                    wxPD_APP_MODAL |
+                                    wxPD_CAN_ABORT |
+                                    wxPD_ELAPSED_TIME |
+                                    wxPD_REMAINING_TIME );
 
     // Initialize checksum
     addr = m_minFlashAddr;
-    if (!writeDeviceControlRegs(addr)) {
-        wxMessageBox(_T("Memmory not fall in any category of FLASH , Config, EEPROM."));
+    if ( !writeDeviceControlRegs( addr ) ) {
+        wxMessageBox(_T("Memory not fall in any category of FLASH , Config, EEPROM."));
         rv = false;
         bRun = false;
     }
 
     // * * * flash memory * * *
 
-    if (rv && m_bPrgData) {
+    if ( rv && m_bPrgData ) {
 
         addr = m_minFlashAddr;
-        if (writeDeviceControlRegs(addr)) {
+        if ( writeDeviceControlRegs( addr ) ) {
 
             // nFlashPackets  = number of 8 byte packets
             m_blockNumber = 0;
-            for ( unsigned long blk = 0; ( ( blk < nFlashPackets ) && ( true == bRun ) ); blk++) {
+            for ( uint32_t blk = 0; ( ( blk < nFlashPackets ) && ( true == bRun ) ); blk++) {
 
                 // Start block data transfer
                 if ( 0 == ( blk  % ( m_blockSize / 8 ) ) ) {
@@ -1012,7 +1023,7 @@ bool CBootDevice_VSCP::writeFrimwareSector( void )
 // writeDeviceControlRegs
 //
 
-bool CBootDevice_VSCP::writeDeviceControlRegs(uint32_t addr) 
+bool CBootDevice_VSCP::writeDeviceControlRegs( uint32_t addr ) 
 {
     // Save the internal addresss
     m_pAddr = addr;
