@@ -2756,7 +2756,7 @@ int VscpRemoteTcpIf::readLevel2Register( uint32_t reg,
                                 e.data[ 3 ];
 
                         // Reg we requested?
-                        if ( retreg == reg 
+                        if ( retreg == reg ) {
                         
                             // OK get the data
                             if ( NULL != pval ) {
