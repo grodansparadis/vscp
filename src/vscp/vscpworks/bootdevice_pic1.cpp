@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 // 
-// Copyright:   (C) 2007-2015 
+// Copyright:   (C) 2007-2016 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This file is distributed in the hope that it will be useful,
@@ -46,19 +46,24 @@
 // Constructor
 //
 
-CBootDevice_PIC1::CBootDevice_PIC1( CDllWrapper *pdll, uint8_t nodeid, bool bDeviceFound ) :
+CBootDevice_PIC1::CBootDevice_PIC1( CDllWrapper *pdll, 
+                                        uint8_t nodeid, 
+                                        bool bDeviceFound ) :
 CBootDevice( pdll, nodeid, bDeviceFound )
 {
     init();
 }
 
-CBootDevice_PIC1::CBootDevice_PIC1( VscpRemoteTcpIf *ptcpip, cguid &guid, cguid &ifguid, bool bDeviceFound ) :
+CBootDevice_PIC1::CBootDevice_PIC1( VscpRemoteTcpIf *ptcpip, 
+                                        cguid &guid, 
+                                        cguid &ifguid, 
+                                        bool bDeviceFound ) :
 CBootDevice( ptcpip, guid, ifguid, bDeviceFound )
 {
     init();
 }
 
-CBootDevice_PIC1::~CBootDevice_PIC1(void)
+CBootDevice_PIC1::~CBootDevice_PIC1( void )
 {
     ;
 }
@@ -75,16 +80,19 @@ void CBootDevice_PIC1::init( void )
     m_pbufCfg = new unsigned char[ BUFFER_SIZE_CONFIG ];
     m_pbufEEPROM = new unsigned char[ BUFFER_SIZE_EEPROM ];
 
-    m_bHandshake = true;		// No handshake as default
+    m_bHandshake = true;        // No handshake as default
     m_pAddr = 0;
     m_memtype = MEM_TYPE_PROGRAM;
+    
+    crcInit();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // loadBinaryFile
 //
 
-bool CBootDevice_PIC1::loadBinaryFile( const wxString& path, uint16_t typeHexfile )
+bool CBootDevice_PIC1::loadBinaryFile( const wxString& path, 
+                                            uint16_t typeHexfile )
 {
     unsigned long i;
     bool rv = false;
@@ -564,7 +572,7 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
                         return true;
                     }
 
-                }			
+                }
             }
 
         }
@@ -621,7 +629,12 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
         }
 
         // Read page register MSB
-        if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_PAGE_SELECT_MSB, 0, &pageSelectMsb, m_ifguid, &m_guid ) ) {
+        if ( VSCP_ERROR_SUCCESS != 
+                m_ptcpip->readLevel2Register( VSCP_REG_PAGE_SELECT_MSB, 
+                                                0, 
+                                                &pageSelectMsb, 
+                                                m_ifguid, 
+                                                &m_guid ) ) {
             return false;
         }
 

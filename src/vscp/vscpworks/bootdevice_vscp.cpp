@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     16/12/2009 22:26:09
 // RCS-ID:      
-// Copyright:   (C) 2007-2015 
+// Copyright:   (C) 2007-2016 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //				(C) 2012 Dinesh Guleria
 // Licence:     
@@ -65,19 +65,24 @@
 #include "crc.h"
 
 
-CBootDevice_VSCP::CBootDevice_VSCP( CDllWrapper *pdll, uint8_t nodeid, bool bDeviceFound ) :
+CBootDevice_VSCP::CBootDevice_VSCP( CDllWrapper *pdll, 
+                                        uint8_t nodeid, 
+                                        bool bDeviceFound ) :
 CBootDevice( pdll, nodeid, bDeviceFound )
 {
     init();
 }
 
-CBootDevice_VSCP::CBootDevice_VSCP( VscpRemoteTcpIf *ptcpip, cguid &guid, cguid &ifguid, bool bDeviceFound ) :
+CBootDevice_VSCP::CBootDevice_VSCP( VscpRemoteTcpIf *ptcpip, 
+                                        cguid &guid, 
+                                        cguid &ifguid, 
+                                        bool bDeviceFound ) :
 CBootDevice( ptcpip, guid, ifguid, bDeviceFound )
 {
     init();
 }
 
-CBootDevice_VSCP::~CBootDevice_VSCP(void)
+CBootDevice_VSCP::~CBootDevice_VSCP( void )
 {
     ;
 }
@@ -217,7 +222,7 @@ bool CBootDevice_VSCP::loadBinaryFile(const wxString& path, uint16_t type) {
 #ifdef WIN32						
                         strncpy_s(szData, 16, (szLine + ((i * 2) + 9)), 2);
 #else
-                        strncpy(szData, (szLine + ((i * 2) + 9)), 2); // read two character -- because two character makes one digit 1= 0x01
+                        strncpy(szData, (szLine + ((i * 2) + 9)), 2);  
 #endif
                         unsigned char val =
                                 (unsigned char) (strtoul(szData, &endptr, 16) & 0xff);
@@ -236,7 +241,8 @@ bool CBootDevice_VSCP::loadBinaryFile(const wxString& path, uint16_t type) {
                             // Set max flash address
                             if (fullAddr > m_maxFlashAddr) m_maxFlashAddr = fullAddr;
 
-                        } else if ((fullAddr >= MEMREG_CONFIG_START_COMMON) &&
+                        } 
+                        else if ((fullAddr >= MEMREG_CONFIG_START_COMMON) &&
                                 ((fullAddr < MEMREG_CONFIG_START_COMMON + BUFFER_SIZE_CONFIG_COMMON))) {
 
                             // Write into config memory buffer
@@ -250,7 +256,8 @@ bool CBootDevice_VSCP::loadBinaryFile(const wxString& path, uint16_t type) {
                             // Set max config address
                             if (fullAddr > m_maxConfigAddr) m_maxConfigAddr = fullAddr;
 
-                        } else if ((fullAddr >= MEMREG_EEPROM_START_COMMON) &&
+                        } 
+                        else if ((fullAddr >= MEMREG_EEPROM_START_COMMON) &&
                                 ((fullAddr <= MEMREG_EEPROM_START_COMMON + BUFFER_SIZE_EEPROM_COMMON))) {
 
                             // Write into EEPROM memory buffer
@@ -531,7 +538,7 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
             while (bRun) {
 
                 time(&tnow);
-                if ((unsigned long) (tnow - tstart) > 5) {
+                if ((unsigned long) (tnow - tstart) > BOOT_COMMAND_RESPONSE_TIMEOUT ) {
                     bRun = false;
                 }
 
@@ -570,32 +577,62 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
         time_t tstart, tnow;
 
         // Read page register MSB
-        if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_PAGE_SELECT_MSB, 0, &pageSelectMsb, m_ifguid, &m_guid ) ) {
+        if ( VSCP_ERROR_SUCCESS != 
+                m_ptcpip->readLevel2Register( VSCP_REG_PAGE_SELECT_MSB, 
+                                                0, 
+                                                &pageSelectMsb, 
+                                                m_ifguid, 
+                                                &m_guid ) ) {
             return false;
         }
 
         // Read page register LSB
-        if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_PAGE_SELECT_LSB, 0, &pageSelectLsb, m_ifguid, &m_guid ) ) {
+        if ( VSCP_ERROR_SUCCESS != 
+                m_ptcpip->readLevel2Register( VSCP_REG_PAGE_SELECT_LSB, 
+                                                0, 
+                                                &pageSelectLsb, 
+                                                m_ifguid, 
+                                                &m_guid ) ) {
             return false;
         }
 
         // Read GUID0
-        if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_GUID0, 0, &guid0, m_ifguid, &m_guid ) ) {
+        if ( VSCP_ERROR_SUCCESS != 
+                m_ptcpip->readLevel2Register( VSCP_REG_GUID0, 
+                                                0, 
+                                                &guid0, 
+                                                m_ifguid, 
+                                                &m_guid ) ) {
             return false;
         }
 
         // Read GUID3
-        if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_GUID3, 0, &guid3, m_ifguid, &m_guid ) ) {
+        if ( VSCP_ERROR_SUCCESS != 
+                m_ptcpip->readLevel2Register( VSCP_REG_GUID3, 
+                                                0, 
+                                                &guid3, 
+                                                m_ifguid, 
+                                                &m_guid ) ) {
             return false;
         }
 
         // Read GUID5
-        if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_GUID5, 0, &guid5, m_ifguid, &m_guid ) ) {
+        if ( VSCP_ERROR_SUCCESS != 
+                m_ptcpip->readLevel2Register( VSCP_REG_GUID5, 
+                                                0, 
+                                                &guid5, 
+                                                m_ifguid, 
+                                                &m_guid ) ) {
             return false;
         }
 
         // Read GUID7
-        if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_GUID7, 0, &guid7, m_ifguid, &m_guid ) ) {
+        if ( VSCP_ERROR_SUCCESS != 
+                m_ptcpip->readLevel2Register( VSCP_REG_GUID7, 
+                                                0, 
+                                                &guid7, 
+                                                m_ifguid, 
+                                                &m_guid ) ) {
             return false;
         }
 
@@ -610,7 +647,7 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
         memset( event.data, 0, sizeof( event.data ) );
         memcpy( event.data, m_ifguid.m_id, 16 );        // Address node i/f
         event.data[ 16 ] = m_guid.getLSB();	            // Nickname for device 
-        event.data[ 17 ] = VSCP_BOOTLOADER_VSCP;	    // VSCP standard bootloader algorithm	
+        event.data[ 17 ] = VSCP_BOOTLOADER_VSCP;        // VSCP standard bootloader algorithm	
         event.data[ 18 ] = guid0;
         event.data[ 19 ] = guid3;
         event.data[ 20 ] = guid5;
@@ -628,7 +665,7 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
             while (bRun) {
 
                 time(&tnow);
-                if ((unsigned long) (tnow - tstart) > 5) {
+                if ((unsigned long) (tnow - tstart) > BOOT_COMMAND_RESPONSE_TIMEOUT) {
                     bRun = false;
                 }
 
