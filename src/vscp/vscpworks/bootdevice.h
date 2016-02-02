@@ -56,13 +56,13 @@
 class wxHtmlWindow;
 
 // Timeout for response
-#define BOOT_COMMAND_DEFAULT_RESPONSE_TIMEOUT	5000
+#define BOOT_COMMAND_DEFAULT_RESPONSE_TIMEOUT   5000
 
 // Hexfiles type
-#define HEXFILE_TYPE_INTEL_HEX8     	        0
-#define HEXFILE_TYPE_INTEL_HEX16    	        1
-#define HEXFILE_TYPE_INTEL_HEX32    	        2
-#define HEXFILE_TYPE_INTEL_SRECORD  	        3
+#define HEXFILE_TYPE_INTEL_HEX8                 0
+#define HEXFILE_TYPE_INTEL_HEX16                1
+#define HEXFILE_TYPE_INTEL_HEX32                2
+#define HEXFILE_TYPE_INTEL_SRECORD              3
 
 class CBootDevice
 {
@@ -102,17 +102,17 @@ public:
      void init( void );
 
     /*!
-		Load a binary file to the image
+        Load a binary file to the image
 
         This is typically an Intel HEX file that contains the memory
         image of the device.
 
-		@param path Path to file
+        @param path Path to file
         @param typecode A typecode for the file to load. Typical
             Intel HEX8, HEX6, HEX32, SRECORD etc
-		@return true on success 
-	*/
-	virtual bool loadBinaryFile( const wxString& path, uint16_t type ) = 0;
+        @return true on success 
+    */
+    virtual bool loadBinaryFile( const wxString& path, uint16_t type ) = 0;
 
     /*!
         Show info for hex file
@@ -121,11 +121,11 @@ public:
     virtual void showInfo( wxHtmlWindow *phtmlWnd ) = 0;
 
     /*!
-		Set a device in bootmode
+        Set a device in bootmode
 
         @return true on success.
-	*/
-	virtual bool setDeviceInBootMode( void ) = 0;
+    */
+    virtual bool setDeviceInBootMode( void ) = 0;
 
     /*!
         Perform the actual boot process
@@ -172,57 +172,57 @@ protected:
     uint32_t m_checksum;
 
      /*!
-		Flag for flash memory programming or not	
-	*/
-	bool m_bFlashMemory;
+        Flag for flash memory programming or not	
+    */
+    bool m_bFlashMemory;
 
-	/*!
-		Flag for config memory programming or not		
-	*/
-	bool m_bConfigMemory;
+    /*!
+        Flag for config memory programming or not		
+    */
+    bool m_bConfigMemory;
 
-	/*!
-		Flag for EEPROM memory programming or not		
-	*/
-	bool m_bEEPROMMemory;
+    /*!
+        Flag for EEPROM memory programming or not		
+    */
+    bool m_bEEPROMMemory;
 
     /// Program memory buffer
-	uint8_t *m_pbufPrg;
+    uint8_t *m_pbufPrg;
 
-	/// Config memory buffer
-	uint8_t *m_pbufCfg;
+    /// Config memory buffer
+    uint8_t *m_pbufCfg;
 
-	/// EEPROM memory buffer
-	uint8_t *m_pbufEEPROM;
+    /// EEPROM memory buffer
+    uint8_t *m_pbufEEPROM;
 
-	/// True if there is at least one program data byte
-	bool m_bPrgData;
+    /// True if there is at least one program data byte
+    bool m_bPrgData;
 
-	/// True if there is at least one config data byte
-	bool m_bConfigData;
+    /// True if there is at least one config data byte
+    bool m_bConfigData;
 
-	/// True if there is at least one EEPROM data byte
-	bool m_bEEPROMData;
+    /// True if there is at least one EEPROM data byte
+    bool m_bEEPROMData;
     
     /// Lowest flash address
-	unsigned long m_minFlashAddr;
+    unsigned long m_minFlashAddr;
 
-	/// Highest flash address
-	unsigned long m_maxFlashAddr;
+    /// Highest flash address
+    unsigned long m_maxFlashAddr;
 
-	/// Lowest config address
-	unsigned long m_minConfigAddr;
+    /// Lowest config address
+    unsigned long m_minConfigAddr;
 
     /// Highest config address
-	unsigned long m_maxConfigAddr;
+    unsigned long m_maxConfigAddr;
 
-	/// Lowest EEPROM address
-	unsigned long m_minEEPROMAddr;
+    /// Lowest EEPROM address
+    unsigned long m_minEEPROMAddr;
 
-	/// Highest EEPROM address
-	unsigned long m_maxEEPROMAddr;
+    /// Highest EEPROM address
+    unsigned long m_maxEEPROMAddr;
 
     /// # data bytes in file
-	unsigned long m_totalCntData;
+    unsigned long m_totalCntData;
 
 };

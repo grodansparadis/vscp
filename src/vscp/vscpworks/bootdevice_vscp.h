@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     16/12/2009 22:26:09
 // RCS-ID:      
-// Copyright:   (C) 2007-2015 
+// Copyright:   (C) 2007-2016 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //				(C) 2012 Dinesh Guleria
 // Licence:     
@@ -55,14 +55,14 @@
 /*
 // Not used anywhere
 typedef struct _bootclientItem {
-	unsigned char m_nickname;		// Nickname for node
-	unsigned char m_bootalgorithm;	// Bootloader algorithm to use
-	unsigned char m_pageMSB;		// MSB of current page
-	unsigned char m_pageLSB;		// LSB of current page
-	unsigned char m_GUID0;			// GUID byte 0
-	unsigned char m_GUID3;			// GUID byte 3
-	unsigned char m_GUID5;			// GUID byte 5
-	unsigned char m_GUID7;			// GUID byte 7
+	unsigned char m_nickname;       // Nickname for node
+	unsigned char m_bootalgorithm;  // Bootloader algorithm to use
+	unsigned char m_pageMSB;        // MSB of current page
+	unsigned char m_pageLSB;        // LSB of current page
+	unsigned char m_GUID0;          // GUID byte 0
+	unsigned char m_GUID3;          // GUID byte 3
+	unsigned char m_GUID5;          // GUID byte 5
+	unsigned char m_GUID7;          // GUID byte 7
 } bootclientItem;
 
 */
@@ -97,14 +97,14 @@ public:
     void init( void );
 
     /*!
-		Load a binary file to the image
+        Load a binary file to the image
 
         This is typically an Intel HEX file that contains the memory
         image of the device.
 
-		@param path Path to file
-		@return true on success 
-	*/
+        @param path Path to file
+        @return true on success 
+    */
     bool loadBinaryFile( const wxString& path, uint16_t typeHexfile );
 
     /*!
@@ -115,10 +115,10 @@ public:
 
 
     /*!
-		Set a device in bootmode
+        Set a device in bootmode
         @return true on success.
-	*/
-	bool setDeviceInBootMode( void );
+    */
+    bool setDeviceInBootMode( void );
 
     /*!
         Perform the actual boot process
@@ -133,75 +133,74 @@ public:
     bool writeFrimwareSector( void );
 
     /*!
-		Write to device control registry
+        Write to device control registry
+        @param addr Address to set as start address
 
-		@param addr Address to set as start address
-
-	*/
+    */
     bool writeDeviceControlRegs( uint32_t addr );
-	
-	/*!
-	// sendVSCPCommandStartBlock
-	// PageAddress : Page to be programmed
-	// This command have no ACK
-	*/
-	bool sendVSCPCommandStartBlock( uint16_t PageAddress );
+    
+    /*!
+    // sendVSCPCommandStartBlock
+    // PageAddress : Page to be programmed
+    // This command have no ACK
+    */
+    bool sendVSCPCommandStartBlock( uint16_t PageAddress );
 
     /*!
-		Send command to node under test nodes (Level I).
+        Send command to node under test nodes (Level I).
 
-		This routine is used to send command from nodes under boot. 
-		Index tells which Type & class to send.
-	
-		@return true on success.
-	*/
-	bool sendVSCPBootCommand( uint8_t index );
+        This routine is used to send command from nodes under boot. 
+        Index tells which Type & class to send.
 
-	/*!
-	 sendVSCPCommandSeqenceLevel1
-	 This routine is used to check ack & send command from nodes under boot. 
-	 check response VSCP_TYPE_PROTOCOL_BLOCK_DATA_ACK   --- Check CRC
-	 send  VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA
-	 check response VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA_ACK
-	*/
-	bool sendVSCPCommandSeqenceLevel1(  void  );
-
-	/*!
-	 sendVSCPCommandSeqenceLevel1
-	 This routine is used to check ack & send command from nodes under boot. 
-	 check response VSCP_TYPE_PROTOCOL_BLOCK_DATA_ACK   --- Check CRC
-	 send  VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA
-	 check response VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA_ACK
-	*/
-	bool sendVSCPCommandSeqenceLevel2(  void  );
+        @return true on success.
+    */
+    bool sendVSCPBootCommand( uint8_t index );
 
     /*!
-		Check for response from nodes (Level I).
-
-		This routine is used as a check for response from nodes under boot. 
-		Index tells which Type & class to check
-	
-		@return true on success.
-	*/
-	bool checkResponseLevel1( uint8_t index );
+        sendVSCPCommandSeqenceLevel1
+        This routine is used to check ack & send command from nodes under boot. 
+        check response VSCP_TYPE_PROTOCOL_BLOCK_DATA_ACK   --- Check CRC
+        send  VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA
+        check response VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA_ACK
+    */
+    bool sendVSCPCommandSeqenceLevel1(  void  );
 
     /*!
-		Check for response from nodes over server (Level II).
+        sendVSCPCommandSeqenceLevel1
+        This routine is used to check ack & send command from nodes under boot. 
+        check response VSCP_TYPE_PROTOCOL_BLOCK_DATA_ACK   --- Check CRC
+        send  VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA
+        check response VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA_ACK
+    */
+    bool sendVSCPCommandSeqenceLevel2(  void  );
 
-		This routine is used as a check for response from nodes under boot. 
-		Index tells which Type & class to check
+    /*!
+        Check for response from nodes (Level I).
 
-		@return true on success.
-	*/
-	bool checkResponseLevel2( uint8_t index );
+        This routine is used as a check for response from nodes under boot. 
+        Index tells which Type & class to check
+    
+        @return true on success.
+    */
+    bool checkResponseLevel1( uint8_t index );
+
+    /*!
+        Check for response from nodes over server (Level II).
+
+        This routine is used as a check for response from nodes under boot. 
+        Index tells which Type & class to check
+
+        @return true on success.
+    */
+    bool checkResponseLevel2( uint8_t index );
 
 private:
 
-	/// Flag for handshake with node
-	bool m_bHandshake;	
+    /// Flag for handshake with node
+    bool m_bHandshake;	
 
-	/// Internal address pointer
-	uint32_t m_pAddr;
+    /// Internal address pointer
+    uint32_t m_pAddr;
 
     /// memory type
     uint8_t m_memtype;
@@ -218,6 +217,6 @@ private:
     /// Number of blocks
     uint32_t m_numBlocks;
 
-	uint16_t crc_16_remote;
-	uint16_t crc_16_host;
+    uint16_t crc_16_remote;
+    uint16_t crc_16_host;
 };

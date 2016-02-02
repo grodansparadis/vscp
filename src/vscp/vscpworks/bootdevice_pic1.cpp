@@ -49,7 +49,7 @@
 CBootDevice_PIC1::CBootDevice_PIC1( CDllWrapper *pdll, uint8_t nodeid, bool bDeviceFound ) :
 CBootDevice( pdll, nodeid, bDeviceFound )
 {
-	init();
+    init();
 }
 
 CBootDevice_PIC1::CBootDevice_PIC1( VscpRemoteTcpIf *ptcpip, cguid &guid, cguid &ifguid, bool bDeviceFound ) :
@@ -86,218 +86,218 @@ void CBootDevice_PIC1::init( void )
 
 bool CBootDevice_PIC1::loadBinaryFile( const wxString& path, uint16_t typeHexfile )
 {
-	unsigned long i;
-	bool rv = false;
+    unsigned long i;
+    bool rv = false;
+#ifdef WIN32
+    errno_t err;
+#else
+    long err;
+#endif
+    unsigned long fullAddr = 0;
+    unsigned long highAddr = 0;
+    unsigned long lowAddr = 0;
+    unsigned long cntData = 0;
+    unsigned long recType = 0;
+    
+    
+    // Init. flash memory pointers
+    m_minFlashAddr = 0xffffffff;
+    m_maxFlashAddr = 0;
+    m_totalCntData = 0;
+    m_bPrgData = false;
+    m_bFlashMemory = true;  // Flash memory should be programmed
+
+
+    // Init program memory buffer
+    if ( NULL == m_pbufPrg ) return false;
+    memset( m_pbufPrg, 0xff, BUFFER_SIZE_PROGRAM );
+
+
+    // Init. config memory pointers
+    m_minConfigAddr = 0xffffffff;
+    m_maxConfigAddr = 0;
+    m_bConfigData = false;
+    m_bConfigMemory = true; // Config memory should be programmed
+
+    // Init config memory buffer
+    if ( NULL == m_pbufCfg ) return false;
+    memset( m_pbufCfg, 0xff, BUFFER_SIZE_CONFIG );
+
+    // Init. EEPROM memory pointers
+    m_minEEPROMAddr = 0xffffffff;
+    m_maxEEPROMAddr = 0;
+    m_bEEPROMData = false;
+    m_bEEPROMMemory = true;	// EEPROM should be programmed
+
+    // Init EEPROM memory buffer
+    if ( NULL == m_pbufEEPROM ) return false;
+    memset( m_pbufEEPROM, 0xff, BUFFER_SIZE_EEPROM );
+    
+    FILE* fs;
 #ifdef WIN32	
-	errno_t err;
-#else	
-	long err;
-#endif	
-	unsigned long fullAddr = 0;
-	unsigned long highAddr = 0;
-	unsigned long lowAddr = 0;
-	unsigned long cntData = 0;
-	unsigned long recType = 0;
-	
-	
-	// Init. flash memory pointers
-	m_minFlashAddr = 0xffffffff;
-	m_maxFlashAddr = 0;
-	m_totalCntData = 0;
-	m_bPrgData = false;
-	m_bFlashMemory = true;	// Flash memory should be programmed
-
-
-	// Init program memory buffer
-	if ( NULL == m_pbufPrg ) return false;
-	memset( m_pbufPrg, 0xff, BUFFER_SIZE_PROGRAM );
-
-
-	// Init. config memory pointers
-	m_minConfigAddr = 0xffffffff;
-	m_maxConfigAddr = 0;
-	m_bConfigData = false;
-	m_bConfigMemory = true;	// Config memory should be programmed
-
-	// Init config memory buffer
-	if ( NULL == m_pbufCfg ) return false;
-	memset( m_pbufCfg, 0xff, BUFFER_SIZE_CONFIG );
-
-	// Init. EEPROM memory pointers
-	m_minEEPROMAddr = 0xffffffff;
-	m_maxEEPROMAddr = 0;
-	m_bEEPROMData = false;
-	m_bEEPROMMemory = true;	// EEPROM should be programmed
-
-	// Init EEPROM memory buffer
-	if ( NULL == m_pbufEEPROM ) return false;
-	memset( m_pbufEEPROM, 0xff, BUFFER_SIZE_EEPROM );
-	
-	FILE* fs;
-#ifdef WIN32	
-	if ( 0 != ( err = fopen_s( &fs, path.char_str(), "r" ) ) ) {
-		return false;
-	}
+    if ( 0 != ( err = fopen_s( &fs, path.char_str(), "r" ) ) ) {
+        return false;
+    }
 #else
-	if ( NULL == ( fs = fopen( path.char_str(), "r" ) ) ) {
-                return false;
-	}
+    if ( NULL == ( fs = fopen( path.char_str(), "r" ) ) ) {
+        return false;
+    }
 #endif
 
-	char szLine[ MAX_PATH ];
-	char szData[ 16 ];
-	char *endptr;
+    char szLine[ MAX_PATH ];
+    char szData[ 16 ];
+    char *endptr;
 
-	bool bRun = true;
-	
+    bool bRun = true;
 
-	while ( bRun && ( NULL != fgets( szLine, MAX_PATH, fs ) ) ) {
-		
-		if ( ':' == szLine [ 0 ] ) {
 
-			// Get data count
-			memset( szData, 0, 16 );
-#ifdef WIN32			
-			strncpy_s( szData, 16,  ( szLine + 1 ), 2 ); 
+    while ( bRun && ( NULL != fgets( szLine, MAX_PATH, fs ) ) ) {
+    
+        if ( ':' == szLine [ 0 ] ) {
+
+            // Get data count
+            memset( szData, 0, 16 );
+#ifdef WIN32
+            strncpy_s( szData, 16,  ( szLine + 1 ), 2 ); 
 #else
-			strncpy( szData, ( szLine + 1 ), 2 );
+            strncpy( szData, ( szLine + 1 ), 2 );
 #endif
-			cntData = strtoul( szData, &endptr, 16 );
-			m_totalCntData += cntData;
+            cntData = strtoul( szData, &endptr, 16 );
+            m_totalCntData += cntData;
 
-			// Get address
-			memset( szData, 0, 16 );
-#ifdef WIN32			
-			strncpy_s( szData, 16, ( szLine + 3 ), 4 );
+            // Get address
+            memset( szData, 0, 16 );
+#ifdef WIN32
+            strncpy_s( szData, 16, ( szLine + 3 ), 4 );
 #else
-			strncpy( szData, ( szLine + 3 ), 4 );
+            strncpy( szData, ( szLine + 3 ), 4 );
 #endif
-			lowAddr = strtoul( szData, &endptr, 16 );
+            lowAddr = strtoul( szData, &endptr, 16 );
 
-			// Get record type
-			memset( szData, 0, 16 );
-#ifdef WIN32			
-			strncpy_s( szData, 16, ( szLine + 7 ), 2 );
+            // Get record type
+            memset( szData, 0, 16 );
+#ifdef WIN32
+            strncpy_s( szData, 16, ( szLine + 7 ), 2 );
 #else
-			strncpy( szData, ( szLine + 7 ), 2 );
+            strncpy( szData, ( szLine + 7 ), 2 );
 #endif
 
-			recType = strtoul( szData, &endptr, 16 );
+            recType = strtoul( szData, &endptr, 16 );
 
-			fullAddr = ( highAddr * 0xffff ) + lowAddr;
+            fullAddr = ( highAddr * 0xffff ) + lowAddr;
 
-			// Decode the record type
-			switch ( recType ) {
-				
-				case INTEL_LINETYPE_DATA:
-					
-					for ( i=0; i < cntData; i++ ) {
-											
-						memset( szData, 0, 16 );
-#ifdef WIN32						
-						strncpy_s( szData, 16, ( szLine + ( ( i * 2 ) + 9 ) ), 2 );
+            // Decode the record type
+            switch ( recType ) {
+            
+                case INTEL_LINETYPE_DATA:
+                    
+                    for ( i=0; i < cntData; i++ ) {
+                                            
+                        memset( szData, 0, 16 );
+#ifdef WIN32
+                        strncpy_s( szData, 16, ( szLine + ( ( i * 2 ) + 9 ) ), 2 );
 #else
-						strncpy( szData, ( szLine + ( ( i * 2 ) + 9 ) ), 2 );
+                        strncpy( szData, ( szLine + ( ( i * 2 ) + 9 ) ), 2 );
 #endif
-						unsigned char val = 
+                        unsigned char val = 
                             (unsigned char)( strtoul( szData, &endptr, 16 ) & 0xff);
 
-						if ( ( fullAddr < MEMREG_PRG_END ) && 
-								( fullAddr < BUFFER_SIZE_PROGRAM ) ) {
-							
-							// Write into program memory buffer
+                        if ( ( fullAddr < MEMREG_PRG_END ) && 
+                                ( fullAddr < BUFFER_SIZE_PROGRAM ) ) {
+                        
+                            // Write into program memory buffer
 
-							m_pbufPrg[ fullAddr ] = val;
-							m_bPrgData = true;
+                            m_pbufPrg[ fullAddr ] = val;
+                            m_bPrgData = true;
 
-							// Set min flash address
-							if ( fullAddr < m_minFlashAddr ) m_minFlashAddr = fullAddr;
+                            // Set min flash address
+                            if ( fullAddr < m_minFlashAddr ) m_minFlashAddr = fullAddr;
 
-							// Set max flash address
-							if ( fullAddr > m_maxFlashAddr ) m_maxFlashAddr = fullAddr;
-								
-						}
-						else if ( ( fullAddr >= MEMREG_CONFIG_START ) && 
-									( ( fullAddr < MEMREG_CONFIG_START + BUFFER_SIZE_CONFIG ) ) ) {
-							
-							// Write into config memory buffer
+                            // Set max flash address
+                            if ( fullAddr > m_maxFlashAddr ) m_maxFlashAddr = fullAddr;
+                            
+                        }
+                        else if ( ( fullAddr >= MEMREG_CONFIG_START ) && 
+                                    ( ( fullAddr < MEMREG_CONFIG_START + BUFFER_SIZE_CONFIG ) ) ) {
+                            
+                            // Write into config memory buffer
 
-							m_pbufCfg[ fullAddr - MEMREG_CONFIG_START ] = val;
-							m_bConfigData = true;
+                            m_pbufCfg[ fullAddr - MEMREG_CONFIG_START ] = val;
+                            m_bConfigData = true;
 
-							// Set min config address
-							if ( fullAddr < m_minConfigAddr ) m_minConfigAddr = fullAddr;
+                            // Set min config address
+                            if ( fullAddr < m_minConfigAddr ) m_minConfigAddr = fullAddr;
 
-							// Set max config address
-							if ( fullAddr > m_maxConfigAddr ) m_maxConfigAddr = fullAddr;
+                            // Set max config address
+                            if ( fullAddr > m_maxConfigAddr ) m_maxConfigAddr = fullAddr;
 
-						}
-						else if ( ( fullAddr >= MEMREG_EEPROM_START ) && 
-									( ( fullAddr <= MEMREG_EEPROM_START + BUFFER_SIZE_EEPROM ) ) ) {
+                        }
+                        else if ( ( fullAddr >= MEMREG_EEPROM_START ) && 
+                                    ( ( fullAddr <= MEMREG_EEPROM_START + BUFFER_SIZE_EEPROM ) ) ) {
 
-							// Write into EEPROM memory buffer
+                            // Write into EEPROM memory buffer
 
-							m_pbufEEPROM[ fullAddr - MEMREG_EEPROM_START ] = val;
-							m_bEEPROMData = true;
+                            m_pbufEEPROM[ fullAddr - MEMREG_EEPROM_START ] = val;
+                            m_bEEPROMData = true;
 
-							// Set min EEEPROM address
-							if ( fullAddr < m_minEEPROMAddr ) m_minEEPROMAddr = fullAddr;
+                            // Set min EEEPROM address
+                            if ( fullAddr < m_minEEPROMAddr ) m_minEEPROMAddr = fullAddr;
 
-							// Set max config address
-							if ( fullAddr > m_maxEEPROMAddr ) m_maxEEPROMAddr = fullAddr;
+                            // Set max config address
+                            if ( fullAddr > m_maxEEPROMAddr ) m_maxEEPROMAddr = fullAddr;
 
-						}
+                        }
 
-						fullAddr = fullAddr + 1;
+                        fullAddr = fullAddr + 1;
 
-					}
-					break;
+                    }
+                    break;
 
-				case INTEL_LINETYPE_EOF:
-					bRun = false;	// We are done
-					rv = true;
-					break;
+                case INTEL_LINETYPE_EOF:
+                    bRun = false;	// We are done
+                    rv = true;
+                    break;
 
-				case INTEL_LINETYPE_EXTENDED_SEGMENT:
-					// We don't handle this
-					break;
+                case INTEL_LINETYPE_EXTENDED_SEGMENT:
+                    // We don't handle this
+                    break;
 
-				case INTEL_LINETYPE_EXTENDED_LINEAR :
-					memset( szData, 0, 16 );
-#ifdef WIN32					
-					strncpy_s( szData, 16,  ( szLine + 9 ), 4 );
+                case INTEL_LINETYPE_EXTENDED_LINEAR :
+                    memset( szData, 0, 16 );
+#ifdef WIN32
+                    strncpy_s( szData, 16,  ( szLine + 9 ), 4 );
 #else
-					strncpy( szData, ( szLine + 9 ), 4 );
+                    strncpy( szData, ( szLine + 9 ), 4 );
 #endif
-					highAddr = strtoul( szData, &endptr, 16 );
-					break;
+                    highAddr = strtoul( szData, &endptr, 16 );
+                    break;
 
-			}
-			
-		}
-	}
-	
-	rv = true;
+            }
+        
+        }
+    }
+    
+    rv = true;
     
     // Flash to program if none read
     if ( !m_bPrgData ) {
-		m_bFlashMemory = false;
-		m_minFlashAddr = 0x00000000;
+        m_bFlashMemory = false;
+        m_minFlashAddr = 0x00000000;
     }
     
     // Config data to program if none read
     if ( !m_bConfigData ) {
-		m_bConfigMemory = false;
-		m_minConfigAddr = 0x00000000;
+        m_bConfigMemory = false;
+        m_minConfigAddr = 0x00000000;
     }
     
     // EEPROM data to program if none read
     if ( !m_bEEPROMData ) {
-		m_bEEPROMMemory = false;
-		m_minEEPROMAddr = 0x00000000;
+        m_bEEPROMMemory = false;
+        m_minEEPROMAddr = 0x00000000;
     }
 
-	fclose( fs );
+    fclose( fs );
     
     return rv;
 }
@@ -313,97 +313,96 @@ void CBootDevice_PIC1::showInfo( wxHtmlWindow *phtmlWnd )
     // Check pointer
     if ( NULL == phtmlWnd ) return;
 
-	// Clear HTML
+    // Clear HTML
     phtmlWnd->SetPage( _("") );
     
-	// * * * Flash Memory * * *
+    // * * * Flash Memory * * *
 
-	phtmlWnd->AppendToPage( 
-				_("<b><u>Flash Memory</u></b><br>") );
+    phtmlWnd->AppendToPage( 
+                _("<b><u>Flash Memory</u></b><br>") );
 
-	phtmlWnd->AppendToPage(
-				_("<b>Start :</b><font color=\"#005CB9\">") );
+    phtmlWnd->AppendToPage(
+                _("<b>Start :</b><font color=\"#005CB9\">") );
                 
     strInfo.Printf( _("0x%08X"), m_minFlashAddr );
     phtmlWnd->AppendToPage(  strInfo );
 
     phtmlWnd->AppendToPage( 
-				_("</font><b> End :</b><font color=\"#005CB9\">") );
+                _("</font><b> End :</b><font color=\"#005CB9\">") );
                 
     strInfo.Printf( _("0x%08X</font><br>"), m_maxFlashAddr );
     phtmlWnd->AppendToPage(  strInfo );            
                 
     if ( m_bFlashMemory ) {
         phtmlWnd->AppendToPage( 
-				_("<font color=\"#348017\">Will be programmed</font><br>") );
+                _("<font color=\"#348017\">Will be programmed</font><br>") );
     }
     else {
         phtmlWnd->AppendToPage( 
-				_("<font color=\"#F6358A\">Will not be programmed</font><br>") );
+                _("<font color=\"#F6358A\">Will not be programmed</font><br>") );
     }
 
     phtmlWnd->AppendToPage(
-				_("<br><br>") );
+                _("<br><br>") );
 
-	// * * * Config Memory * * *
+    // * * * Config Memory * * *
 
-	phtmlWnd->AppendToPage( 
-				_("<b><u>Config Memory</u></b><br>") );
+    phtmlWnd->AppendToPage( 
+                _("<b><u>Config Memory</u></b><br>") );
 
-	phtmlWnd->AppendToPage(
+    phtmlWnd->AppendToPage(
                 _("<b>Start :</b>") );
                 
     strInfo.Printf( _("<font color=\"#005CB9\">0x%08X</font>"), m_minConfigAddr );
     phtmlWnd->AppendToPage(  strInfo );            
 
     phtmlWnd->AppendToPage( 
-				_("<b> End :</b>") );
+                _("<b> End :</b>") );
                 
     strInfo.Printf( _("<font color=\"#005CB9\">0x%08X<br></font>"), m_maxConfigAddr );
     phtmlWnd->AppendToPage(  strInfo );            
                 
     if ( m_bConfigMemory ) {
         phtmlWnd->AppendToPage( 
-				_("<font color=\"#348017\">Will be programmed</font><br>") );
+                _("<font color=\"#348017\">Will be programmed</font><br>") );
     }
     else {
         phtmlWnd->AppendToPage( 
-				_("<font color=\"#F6358A\">Will not be programmed</font><br>") );
+                _("<font color=\"#F6358A\">Will not be programmed</font><br>") );
     }            
 
     phtmlWnd->AppendToPage(
-				_("<br><br>") );
+                _("<br><br>") );
 
 
+    // * * * EEPROM * * *
 
-	// * * * EEPROM * * *
+    phtmlWnd->AppendToPage( 
+                _("<b><u>EEPROM Memory</u></b><br>") );
 
-	phtmlWnd->AppendToPage( 
-				_("<b><u>EEPROM Memory</u></b><br>") );
-
-	phtmlWnd->AppendToPage( 
-				_("<B>Start :</b>") );
+    phtmlWnd->AppendToPage( 
+                _("<B>Start :</b>") );
                 
     strInfo.Printf( _("<font color=\"#005CB9\">0x%08X</font>"), m_minEEPROMAddr );
     phtmlWnd->AppendToPage(  strInfo );            
 
-	phtmlWnd->AppendToPage( 
-				_("<b> End :</b>") );
+    phtmlWnd->AppendToPage( 
+                _("<b> End :</b>") );
                 
     strInfo.Printf( _("<font color=\"#005CB9\">0x%08X<br></font>"), m_maxEEPROMAddr );
     phtmlWnd->AppendToPage(  strInfo );              
                 
     if ( m_bEEPROMMemory ) {
         phtmlWnd->AppendToPage( 
-				_("<font color=\"#348017\">Will be programmed</font><br>") );
+                _("<font color=\"#348017\">Will be programmed</font><br>") );
     }
     else {
         phtmlWnd->AppendToPage( 
-				_("<font color=\"#F6358A\">Will not be programmed</font><br>") );
+                _("<font color=\"#F6358A\">Will not be programmed</font><br>") );
     }             
                 
     phtmlWnd->AppendToPage(
-				_("<br><br>") );            
+                _("<br><br>") );            
     
 }
 
@@ -627,27 +626,52 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
         }
 
         // Read page register LSB
-        if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_PAGE_SELECT_LSB, 0, &pageSelectLsb, m_ifguid, &m_guid ) ) {
+        if ( VSCP_ERROR_SUCCESS != 
+                m_ptcpip->readLevel2Register( VSCP_REG_PAGE_SELECT_LSB, 
+                                                0, 
+                                                &pageSelectLsb, 
+                                                m_ifguid, 
+                                                &m_guid ) ) {
             return false;
         }
 
         // Read GUID0
-        if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_GUID0, 0, &guid0, m_ifguid, &m_guid ) ) {
+        if ( VSCP_ERROR_SUCCESS != 
+                m_ptcpip->readLevel2Register( VSCP_REG_GUID0, 
+                                                0, 
+                                                &guid0, 
+                                                m_ifguid, 
+                                                &m_guid ) ) {
             return false;
         }
 
         // Read GUID3
-        if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_GUID3, 0, &guid3, m_ifguid, &m_guid ) ) {
+        if ( VSCP_ERROR_SUCCESS != 
+                m_ptcpip->readLevel2Register( VSCP_REG_GUID3, 
+                                                0, 
+                                                &guid3, 
+                                                m_ifguid, 
+                                                &m_guid ) ) {
             return false;
         }
 
         // Read GUID5
-        if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_GUID5, 0, &guid5, m_ifguid, &m_guid ) ) {
+        if ( VSCP_ERROR_SUCCESS != 
+                m_ptcpip->readLevel2Register( VSCP_REG_GUID5, 
+                                                0, 
+                                                &guid5, 
+                                                m_ifguid, 
+                                                &m_guid ) ) {
             return false;
         }
 
         // Read GUID7
-        if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_GUID7, 0, &guid7, m_ifguid, &m_guid ) ) {
+        if ( VSCP_ERROR_SUCCESS != 
+                m_ptcpip->readLevel2Register( VSCP_REG_GUID7, 
+                                                0, 
+                                                &guid7, 
+                                                m_ifguid, 
+                                                &m_guid ) ) {
             return false;
         }
 
@@ -700,7 +724,7 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
                         return true;
                     }
 
-                }		
+                }
             }
         }
     }
@@ -718,174 +742,174 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
 bool CBootDevice_PIC1::doFirmwareLoad( void )
 {
     bool bRun = true;
-	bool rv = true;
+    bool rv = true;
 
     wxBusyCursor busy;
 
-	m_checksum = 0;
-	uint32_t progress = 0;
-	uint32_t addr;
-	wxString wxStatusStr;
+    m_checksum = 0;
+    uint32_t progress = 0;
+    uint32_t addr;
+    wxString wxStatusStr;
 
-	uint32_t nFlashPackets = 0;
-	uint32_t nConfigPackets = 0;
-	uint32_t nEEPROMPackets = 0;
-	
-	// Flash memory
-	if ( m_bPrgData ) {
-		nFlashPackets = ( m_maxFlashAddr - m_minFlashAddr )/8;
-	
-		if ( 0 != ( ( m_maxFlashAddr - m_minFlashAddr ) % 8 ) ) {
-			nFlashPackets++;		
-		}
-	}
+    uint32_t nFlashPackets = 0;
+    uint32_t nConfigPackets = 0;
+    uint32_t nEEPROMPackets = 0;
 
-	// Config
-	if ( m_bConfigData ) {
-		nConfigPackets = ( m_maxConfigAddr - m_minConfigAddr )/8;
-	
-		if ( 0 != ( ( m_maxConfigAddr - m_minConfigAddr ) % 8 ) ) {
-			nConfigPackets++;		
-		}
-	}
+    // Flash memory
+    if ( m_bPrgData ) {
+        nFlashPackets = ( m_maxFlashAddr - m_minFlashAddr )/8;
 
-	// EEPROM
-	if ( m_bEEPROMData ) {
-		nEEPROMPackets = ( m_maxEEPROMAddr - m_minEEPROMAddr )/8;
-	
-		if ( 0 != ( ( m_maxEEPROMAddr - m_minEEPROMAddr ) % 8 ) ) {
-			nEEPROMPackets++;		
-		}
-	}
+        if ( 0 != ( ( m_maxFlashAddr - m_minFlashAddr ) % 8 ) ) {
+            nFlashPackets++;		
+        }
+    }
 
-	long nTotalPackets = nFlashPackets + nConfigPackets + nEEPROMPackets;
-	wxProgressDialog* pDlg = new wxProgressDialog( _T("Boot loading in progress..."),
-														_T("---"),
-														nTotalPackets,
-														NULL,
-														wxPD_AUTO_HIDE | 
-														wxPD_APP_MODAL | 
-														wxPD_CAN_ABORT | 
-														wxPD_ELAPSED_TIME |
-														wxPD_REMAINING_TIME );
-		
-	// Initialize checksum
-	addr = m_minFlashAddr;
-	if ( !writeDeviceControlRegs( addr, 
-									MODE_WRT_UNLCK | MODE_AUTO_ERASE | MODE_AUTO_INC | MODE_ACK,
-									CMD_RST_CHKSM, 
+    // Config
+    if ( m_bConfigData ) {
+        nConfigPackets = ( m_maxConfigAddr - m_minConfigAddr )/8;
+
+        if ( 0 != ( ( m_maxConfigAddr - m_minConfigAddr ) % 8 ) ) {
+            nConfigPackets++;		
+        }
+    }
+
+    // EEPROM
+    if ( m_bEEPROMData ) {
+        nEEPROMPackets = ( m_maxEEPROMAddr - m_minEEPROMAddr )/8;
+
+        if ( 0 != ( ( m_maxEEPROMAddr - m_minEEPROMAddr ) % 8 ) ) {
+            nEEPROMPackets++;		
+        }
+    }
+
+    long nTotalPackets = nFlashPackets + nConfigPackets + nEEPROMPackets;
+    wxProgressDialog* pDlg = new wxProgressDialog( _T("Boot loading in progress..."),
+                                                        _T("---"),
+                                                        nTotalPackets,
+                                                        NULL,
+                                                        wxPD_AUTO_HIDE | 
+                                                        wxPD_APP_MODAL | 
+                                                        wxPD_CAN_ABORT | 
+                                                        wxPD_ELAPSED_TIME |
+                                                        wxPD_REMAINING_TIME );
+    
+    // Initialize checksum
+    addr = m_minFlashAddr;
+    if ( !writeDeviceControlRegs( addr, 
+                                    MODE_WRT_UNLCK | MODE_AUTO_ERASE | MODE_AUTO_INC | MODE_ACK,
+                                    CMD_RST_CHKSM, 
                                     0,
                                     0 ) ) {
-		wxMessageBox( _T("Failed to initialize checksum at node(s).") );
-		rv = false;
-		bRun = false;
-	}
+        wxMessageBox( _T("Failed to initialize checksum at node(s).") );
+        rv = false;
+        bRun = false;
+    }
 
-	// * * * flash memory * * *
+    // * * * flash memory * * *
 
-	if ( rv && m_bPrgData ) {
-			
-		// Send the start block
-		addr = m_minFlashAddr;
-		if ( writeDeviceControlRegs( addr ) ) {
-				
-			for ( unsigned long blk = 0; ( ( blk < nFlashPackets ) && bRun); blk++ ) {
-				
-				wxStatusStr.Printf( _("Loading flash... %0X"), addr );
-				if (  !( bRun = pDlg->Update( progress, wxStatusStr ) ) ) {
-					wxMessageBox( _T("Aborted by user.") );
-					rv = false;
-					bRun = false;
-				}
+    if ( rv && m_bPrgData ) {
+            
+        // Send the start block
+        addr = m_minFlashAddr;
+        if ( writeDeviceControlRegs( addr ) ) {
+                
+            for ( unsigned long blk = 0; ( ( blk < nFlashPackets ) && bRun); blk++ ) {
+                
+                wxStatusStr.Printf( _("Loading flash... %0X"), addr );
+                if (  !( bRun = pDlg->Update( progress, wxStatusStr ) ) ) {
+                    wxMessageBox( _T("Aborted by user.") );
+                    rv = false;
+                    bRun = false;
+                }
 
-				if ( !writeFrimwareSector() ) {
-					wxMessageBox( _T("Failed to write flash data to node(s).") );
-					rv = false;
-					bRun = false;
-				}
-				
-				wxMilliSleep( 1 );
-				progress++;
-				addr += 8;
-				
-			}
-		}
-		else {
-			wxMessageBox( _T("Failed to send control info for flash data to node(s).") );	
-			rv = false;
-		}
+                if ( !writeFrimwareSector() ) {
+                    wxMessageBox( _T("Failed to write flash data to node(s).") );
+                    rv = false;
+                    bRun = false;
+                }
+                
+                wxMilliSleep( 1 );
+                progress++;
+                addr += 8;
+                
+            }
+        }
+        else {
+            wxMessageBox( _T("Failed to send control info for flash data to node(s).") );	
+            rv = false;
+        }
 
-	}
+    }
 
-	// * * * config memory * * *
+    // * * * config memory * * *
 
-	if ( rv && m_bConfigData ) {
+    if ( rv && m_bConfigData ) {
 
-		// Send the start block
-		addr = m_minConfigAddr;
-		if ( writeDeviceControlRegs( addr ) ) {
-			
-			for ( unsigned long blk = 0; ( ( blk < nConfigPackets ) && bRun); blk++ ) {
-				
-				wxStatusStr.Printf(_("Loading config memory... %0X"), addr );
-				if (  !( bRun = pDlg->Update( progress, wxStatusStr ) ) ) {
-					wxMessageBox( _T("Aborted by user.") );
-					rv = false;
-					bRun = false;
-				}
+        // Send the start block
+        addr = m_minConfigAddr;
+        if ( writeDeviceControlRegs( addr ) ) {
+            
+            for ( unsigned long blk = 0; ( ( blk < nConfigPackets ) && bRun); blk++ ) {
+                
+                wxStatusStr.Printf(_("Loading config memory... %0X"), addr );
+                if (  !( bRun = pDlg->Update( progress, wxStatusStr ) ) ) {
+                    wxMessageBox( _T("Aborted by user.") );
+                    rv = false;
+                    bRun = false;
+                }
 
-				if ( !writeFrimwareSector() ) {
-					wxMessageBox( _T("Failed to write config data to node(s).") );
-					rv = false;
-					bRun = false;
-				}
-				
-				wxMilliSleep( 1 );
-				progress++;
-				addr += 8;
-				
-			}
-		}
-		else {
-			wxMessageBox( _T("Failed to send control info for config data to node(s).") );	
-			rv = false;
-		}
-	}
+                if ( !writeFrimwareSector() ) {
+                    wxMessageBox( _T("Failed to write config data to node(s).") );
+                    rv = false;
+                    bRun = false;
+                }
+                
+                wxMilliSleep( 1 );
+                progress++;
+                addr += 8;
+                
+            }
+        }
+        else {
+            wxMessageBox( _T("Failed to send control info for config data to node(s).") );	
+            rv = false;
+        }
+    }
 
-	// * * * EEPROM memory * * *
+    // * * * EEPROM memory * * *
 
-	if ( rv && m_bEEPROMData ) {
+    if ( rv && m_bEEPROMData ) {
 
-		// Send the start block
-		addr = m_minEEPROMAddr;
-		if ( writeDeviceControlRegs( addr ) ) {
-			
-			for ( unsigned long blk = 0; ( ( blk < nConfigPackets ) && bRun); blk++ ) {
-				
-				wxStatusStr.Printf(_("Loading EEPROM memory... %0X"), addr );
-				if (  !( bRun = pDlg->Update( progress, wxStatusStr ) ) ) {
-					wxMessageBox( _T("Aborted by user.") );
-					rv = false;
-					bRun = false;
-				}
+        // Send the start block
+        addr = m_minEEPROMAddr;
+        if ( writeDeviceControlRegs( addr ) ) {
+        
+            for ( unsigned long blk = 0; ( ( blk < nConfigPackets ) && bRun); blk++ ) {
+            
+                wxStatusStr.Printf(_("Loading EEPROM memory... %0X"), addr );
+                if (  !( bRun = pDlg->Update( progress, wxStatusStr ) ) ) {
+                    wxMessageBox( _T("Aborted by user.") );
+                    rv = false;
+                    bRun = false;
+                }
 
-				if ( !writeFrimwareSector() ) {
-					wxMessageBox( _T("Failed to write EEPROM data to node(s).") );
-					rv = false;
-					bRun = false;
-				}
-				
-				wxMilliSleep( 1 );
-				progress++;
-				addr += 8;
-				
-			}
-		}
-		else {
-			wxMessageBox( _T("Failed to send control info for EEPROM data to node(s).") );	
-			rv = false;
-		}
-	}
+                if ( !writeFrimwareSector() ) {
+                    wxMessageBox( _T("Failed to write EEPROM data to node(s).") );
+                    rv = false;
+                    bRun = false;
+                }
+                
+                wxMilliSleep( 1 );
+                progress++;
+                addr += 8;
+                
+            }
+        }
+        else {
+            wxMessageBox( _T("Failed to send control info for EEPROM data to node(s).") );	
+            rv = false;
+        }
+    }
 
 
     if ( rv ) {
@@ -974,12 +998,11 @@ bool CBootDevice_PIC1::doFirmwareLoad( void )
 
     }
 
-	// Done
-	progress = nTotalPackets;
-	pDlg->Update( progress, wxStatusStr  );
-		
-	
-	pDlg->Destroy();
+    // Done
+    progress = nTotalPackets;
+    pDlg->Update( progress, wxStatusStr  );
+
+    pDlg->Destroy();
 
 
     return rv;
@@ -1090,55 +1113,55 @@ bool CBootDevice_PIC1::writeFrimwareSector( void )
 
 bool CBootDevice_PIC1::writeDeviceControlRegs( uint32_t addr,
                                                     uint8_t flags,
-												    uint8_t cmd,
-												    uint8_t cmdData0,
-												    uint8_t cmdData1 )
+                                                    uint8_t cmd,
+                                                    uint8_t cmdData0,
+                                                    uint8_t cmdData1 )
 {
-	bool rv = true;	        // think positive ;-)
+    bool rv = true;	        // think positive ;-)
     vscpEventEx event;
-	canalMsg msg;
+    canalMsg msg;
 
-	// Save the internal addresss
-	m_pAddr = addr;
+    // Save the internal addresss
+    m_pAddr = addr;
 
-	if ( ( m_pAddr < MEMREG_PRG_END ) && ( m_pAddr < BUFFER_SIZE_PROGRAM ) ) {
-							
-		// Flash memory
+    if ( ( m_pAddr < MEMREG_PRG_END ) && ( m_pAddr < BUFFER_SIZE_PROGRAM ) ) {
+                        
+        // Flash memory
         m_memtype = MEM_TYPE_PROGRAM;
-								
-	}
-	else if ( ( m_pAddr >= MEMREG_CONFIG_START ) && 
-				( ( m_pAddr < MEMREG_CONFIG_START + BUFFER_SIZE_CONFIG ) ) ) {
-							
-		// Config memory
+                            
+    }
+    else if ( ( m_pAddr >= MEMREG_CONFIG_START ) && 
+                ( ( m_pAddr < MEMREG_CONFIG_START + BUFFER_SIZE_CONFIG ) ) ) {
+                        
+        // Config memory
         m_memtype = MEM_TYPE_CONFIG;
 
-	}
-	else if ( ( m_pAddr >= MEMREG_EEPROM_START ) && 
-				( ( m_pAddr <= MEMREG_EEPROM_START + BUFFER_SIZE_EEPROM ) ) ) {
+    }
+    else if ( ( m_pAddr >= MEMREG_EEPROM_START ) && 
+                ( ( m_pAddr <= MEMREG_EEPROM_START + BUFFER_SIZE_EEPROM ) ) ) {
 
-		// EEPROM
+        // EEPROM
         m_memtype = MEM_TYPE_EEPROM;
 
-	}
-	else {
-		return false;
-	}
+    }
+    else {
+        return false;
+    }
 
     if ( USE_DLL_INTERFACE == m_type ) {
         
         msg.id = ID_PUT_BASE_INFO;
-	    msg.flags = CANAL_IDFLAG_EXTENDED;
-	    msg.sizeData = 8;
+        msg.flags = CANAL_IDFLAG_EXTENDED;
+        msg.sizeData = 8;
         msg.id += m_nodeid; // Add node id. 
-	    msg.data[ 0 ]  = ( unsigned char )( addr & 0xff );
-	    msg.data[ 1 ]  = ( unsigned char )( ( addr >> 8 ) & 0xff );
-    	msg.data[ 2 ]  = ( unsigned char )( ( addr >> 16 ) & 0xff );
-	    msg.data[ 3 ]  = 0;
-	    msg.data[ 4 ]  = flags;
-	    msg.data[ 5 ]  = cmd;
-	    msg.data[ 6 ]  = cmdData0;
-	    msg.data[ 7 ]  = cmdData1;
+        msg.data[ 0 ]  = ( unsigned char )( addr & 0xff );
+        msg.data[ 1 ]  = ( unsigned char )( ( addr >> 8 ) & 0xff );
+        msg.data[ 2 ]  = ( unsigned char )( ( addr >> 16 ) & 0xff );
+        msg.data[ 3 ]  = 0;
+        msg.data[ 4 ]  = flags;
+        msg.data[ 5 ]  = cmd;
+        msg.data[ 6 ]  = cmdData0;
+        msg.data[ 7 ]  = cmdData1;
 
     }
     else if ( USE_TCPIP_INTERFACE == m_type ) {
@@ -1150,59 +1173,59 @@ bool CBootDevice_PIC1::writeDeviceControlRegs( uint32_t addr,
         event.sizeData = 16 + 8;                    // Interface GUID
         memcpy( event.data, m_ifguid.m_id, 16 );    // Address node in i/f
         event.data[ 16 ]  = ( unsigned char )( addr & 0xff );
-	    event.data[ 17 ]  = ( unsigned char )( ( addr >> 8 ) & 0xff );
-    	event.data[ 18 ]  = ( unsigned char )( ( addr >> 16 ) & 0xff );
-	    event.data[ 19 ]  = 0;
-	    event.data[ 20 ]  = flags;
-	    event.data[ 21 ]  = cmd;
-	    event.data[ 22 ]  = cmdData0;
-	    event.data[ 23 ]  = cmdData1;
+        event.data[ 17 ]  = ( unsigned char )( ( addr >> 8 ) & 0xff );
+        event.data[ 18 ]  = ( unsigned char )( ( addr >> 16 ) & 0xff );
+        event.data[ 19 ]  = 0;
+        event.data[ 20 ]  = flags;
+        event.data[ 21 ]  = cmd;
+        event.data[ 22 ]  = cmdData0;
+        event.data[ 23 ]  = cmdData1;
 
     }
     else {
         return false;
     }
 
-	if ( flags & MODE_ACK ) {
-		m_bHandshake = true;
-	}
-	else {
-		m_bHandshake = false;
-	}
+    if ( flags & MODE_ACK ) {
+        m_bHandshake = true;
+    }
+    else {
+        m_bHandshake = false;
+    }
 
-	// Send message
+    // Send message
     if ( USE_DLL_INTERFACE == m_type ) {
 
-	    if ( CANAL_ERROR_SUCCESS == m_pdll->doCmdSend( &msg ) ) {
-		
-		    // Message queued - ( wait for response from client(s) ).
-		    if ( m_bHandshake ) {
-			    rv = checkResponseLevel1( ID_RESPONSE_PUT_BASE_INFO );	
-		    }
+        if ( CANAL_ERROR_SUCCESS == m_pdll->doCmdSend( &msg ) ) {
+        
+            // Message queued - ( wait for response from client(s) ).
+            if ( m_bHandshake ) {
+                rv = checkResponseLevel1( ID_RESPONSE_PUT_BASE_INFO );	
+            }
 
-	    }
-	    else {
-		    rv = false;
-	    }
+        }
+        else {
+            rv = false;
+        }
 
     }
     else {
 
-	    if ( CANAL_ERROR_SUCCESS == m_ptcpip->doCmdSendEx( &event ) ) {
-		
-		    // Message queued - ( wait for response from client(s) ).
-		    if ( m_bHandshake ) {
-			    rv = checkResponseLevel2( ID_RESPONSE_PUT_BASE_INFO );	
-		    }
+        if ( CANAL_ERROR_SUCCESS == m_ptcpip->doCmdSendEx( &event ) ) {
+        
+            // Message queued - ( wait for response from client(s) ).
+            if ( m_bHandshake ) {
+                rv = checkResponseLevel2( ID_RESPONSE_PUT_BASE_INFO );	
+            }
 
-	    }
-	    else {
-		    rv = false;
-	    }    
+        }
+        else {
+            rv = false;
+        }    
 
     }
 
-	return rv;
+    return rv;
 }
 
 
@@ -1218,7 +1241,7 @@ bool CBootDevice_PIC1::checkResponseLevel1( uint32_t id )
 
     // Get system time
     time( &tstart );
-	
+    
     bool bRun = true;
     while( bRun ) {
 
@@ -1267,7 +1290,7 @@ bool CBootDevice_PIC1::checkResponseLevel2( uint32_t id )
 
     // Get system time
     time( &tstart );
-	
+
     bool bRun = true;
     while( bRun ) {
 

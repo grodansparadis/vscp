@@ -749,18 +749,18 @@ bool CBootDevice_VSCP::doFirmwareLoad( void )
                         bRun = false;
                 }
                 
-				wxStatusStr.Printf( _("Loading flash... %0X"), addr );
-				if (  false == ( bRun = pDlg->Update( progress, wxStatusStr ) ) ) {
-					wxMessageBox( _T("Aborted by user.") );
-					rv = false;
-					bRun = false;
-				}
+                wxStatusStr.Printf( _("Loading flash... %0X"), addr );
+                if (  false == ( bRun = pDlg->Update( progress, wxStatusStr ) ) ) {
+                    wxMessageBox( _T("Aborted by user.") );
+                    rv = false;
+                    bRun = false;
+                }
                 
-				if ( false == writeFrimwareSector() ) {
-					wxMessageBox( _T("Failed to write flash data to node(s).") );
-					rv = false;
-					bRun = false;
-				}
+                if ( false == writeFrimwareSector() ) {
+                    wxMessageBox( _T("Failed to write flash data to node(s).") );
+                    rv = false;
+                    bRun = false;
+                }
                 
                 /* After a complete block, wait for the block data acknowledge. */
                 if ( 0 == ( ( blk + 1 )  % ( m_blockSize / 8 ) ) ) {
@@ -782,7 +782,7 @@ bool CBootDevice_VSCP::doFirmwareLoad( void )
                 addr += 8;
             }
         }
-		else {
+        else {
             wxMessageBox(_T("Failed to send control info for flash data to node(s)."));
             rv = false;
         }
@@ -816,8 +816,8 @@ bool CBootDevice_VSCP::doFirmwareLoad( void )
                 addr += 8;
 
             }
-		}
-		else {
+        }
+        else {
             wxMessageBox(_T("Failed to send control info for config data to node(s)."));
             rv = false;
         }
@@ -851,8 +851,8 @@ bool CBootDevice_VSCP::doFirmwareLoad( void )
                 addr += 8;
 
             }
-		}
-		else {
+        }
+        else {
             wxMessageBox(_T("Failed to send control info for EEPROM data to node(s)."));
             rv = false;
         }
@@ -1132,7 +1132,7 @@ bool CBootDevice_VSCP::sendVSCPBootCommand( uint8_t index )
         msg.id = ((uint32_t) priority << 26) |
                 ((uint32_t) vscpclass << 16) |
                 ((uint32_t) vscptype << 8) |
-                m_nodeid;                                         // nodeaddress (our address)
+                m_nodeid;                       // nodeaddress (our address)
 
         msg.flags = CANAL_IDFLAG_EXTENDED;
 
@@ -1381,7 +1381,9 @@ bool CBootDevice_VSCP::checkResponseLevel1(uint8_t index)
                     vscpclass = VSCP_CLASS1_PROTOCOL;
                     vscptype = VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA_ACK;
 
-                    if ((uint32_t) (rcvmsg.id & 0x01ffffff) == (uint32_t) (((uint32_t) vscpclass << 16) | ((uint32_t) vscptype << 8) | m_nodeid)) {
+                    if ((uint32_t) (rcvmsg.id & 0x01ffffff) == 
+                            (uint32_t) (((uint32_t) vscpclass << 16) | 
+                                ((uint32_t) vscptype << 8) | m_nodeid)) {
 
                         // Response received from all - return success
                         rv = true;
@@ -1408,7 +1410,8 @@ bool CBootDevice_VSCP::checkResponseLevel1(uint8_t index)
 
 ///////////////////////////////////////////////////////////////////////////////
 // checkResponseLevel2
-// Type = 20 (0x14) ACK program data block    -- for 8 byte packet received correctly by bootloader
+// Type = 20 (0x14) ACK program data block    -- 
+//  for 8 byte packet received correctly by bootloader
 //
 bool CBootDevice_VSCP::checkResponseLevel2(uint8_t index) 
 {
