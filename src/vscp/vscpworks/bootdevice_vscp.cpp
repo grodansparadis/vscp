@@ -556,7 +556,7 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
 
                     if ((uint32_t) (rcvmsg.id & 0x01ffffff) == 
                          (uint32_t) (((uint32_t) vscpclass << 16) | 
-                            ((uint32_t) vscptype << 8) | m_ nodeid ) ) {
+                            ((uint32_t) vscptype << 8) | m_nodeid ) ) {
                         
                         // OK in bootmode - return
                         m_blockSize = ((uint32_t) rcvmsg.data[ 0 ] << 24) |
