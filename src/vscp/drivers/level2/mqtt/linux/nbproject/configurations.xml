@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="95">
+<configurationDescriptor version="97">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <logicalFolder name="common"
                    displayName="common"
@@ -73,8 +73,6 @@
               <pElem>../../../../common</pElem>
               <pElem>../../../../../common</pElem>
               <pElem>include</pElem>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-              <pElem>/usr/local/include/wx-3.0</pElem>
             </incDir>
             <preprocessorList>
               <Elem>USE_FOSSA</Elem>
@@ -90,9 +88,18 @@
             </preprocessorList>
           </ccTool>
         </makeTool>
+        <preBuild>
+          <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
+          <preBuildCommand></preBuildCommand>
+        </preBuild>
       </makefileType>
       <item path="../../../../../common/crc.c" ex="false" tool="0" flavor2="0">
         <cTool flags="1">
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
           <preprocessorList>
             <Elem>NS_ENABLE_SSL</Elem>
           </preprocessorList>
@@ -100,6 +107,11 @@
       </item>
       <item path="../../../../../common/crc8.c" ex="false" tool="0" flavor2="0">
         <cTool flags="1">
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
           <preprocessorList>
             <Elem>NS_ENABLE_SSL</Elem>
           </preprocessorList>
@@ -107,6 +119,11 @@
       </item>
       <item path="../../../../../common/fossa.c" ex="false" tool="0" flavor2="0">
         <cTool flags="1">
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
           <preprocessorList>
             <Elem>NS_ENABLE_SSL</Elem>
           </preprocessorList>
@@ -116,6 +133,13 @@
             ex="false"
             tool="0"
             flavor2="2">
+        <cTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
       </item>
       <item path="../../../../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
@@ -123,8 +147,8 @@
             <pElem>../../../../common</pElem>
             <pElem>../../../../../common</pElem>
             <pElem>include</pElem>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
@@ -140,8 +164,8 @@
             <pElem>../../../../common</pElem>
             <pElem>../../../../../common</pElem>
             <pElem>include</pElem>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
@@ -160,8 +184,8 @@
             <pElem>../../../../common</pElem>
             <pElem>../../../../../common</pElem>
             <pElem>include</pElem>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
@@ -193,8 +217,8 @@
             <pElem>../../../../common</pElem>
             <pElem>../../../../../common</pElem>
             <pElem>include</pElem>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
@@ -206,6 +230,10 @@
       </item>
       <folder path="0">
         <cTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+          </incDir>
           <preprocessorList>
             <Elem>NS_ENABLE_SSL</Elem>
           </preprocessorList>
@@ -215,8 +243,6 @@
             <pElem>../../../../common</pElem>
             <pElem>../../../../../common</pElem>
             <pElem>include</pElem>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
           </incDir>
           <preprocessorList>
             <Elem>NS_ENABLE_SSL</Elem>
@@ -225,15 +251,12 @@
           </preprocessorList>
         </ccTool>
       </folder>
-      <folder path="common">
-        <cTool>
-          <incDir>
-            <pElem>.</pElem>
-          </incDir>
-        </cTool>
-      </folder>
       <item path="mqtt.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="test.c" ex="false" tool="0" flavor2="2">
@@ -242,6 +265,10 @@
       </item>
       <item path="vscpl2drv_mqtt.cpp" ex="false" tool="1" flavor2="0">
         <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+          </incDir>
         </ccTool>
       </item>
     </conf>

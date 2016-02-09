@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2015 Ake Hedman, 
+// Copyright (C) 2000-2016 Ake Hedman, 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -64,9 +64,8 @@
 
 using namespace std;
 
-#define VSCP_LEVEL2_DLL_MQTT_OBJ_MUTEX "___VSCP__DLL_L2MQTT_OBJ_MUTEX____"
-
-#define VSCP_MQTT_LIST_MAX_MSG		2048
+#define VSCP_LEVEL2_DLL_MQTT_OBJ_MUTEX  "___VSCP__DLL_L2MQTT_OBJ_MUTEX____"
+#define VSCP_MQTT_LIST_MAX_MSG          2048
 
 
 // Forward declarations
@@ -100,10 +99,10 @@ public:
      */
     void close(void);
 
-	/*!
-		Add event to send queue 
-	 */
-	bool addEvent2SendQueue(const vscpEvent *pEvent);
+    /*!
+        Add event to send queue 
+    */
+    bool addEvent2SendQueue(const vscpEvent *pEvent);
 
 public:
 
@@ -138,10 +137,6 @@ public:
      */
     wxString m_hostMQTT;
     
-    /*!
-        MQTT port
-    */       
-	int m_portMQTT;
     
     /*!
         MQTT username (broker)
@@ -158,34 +153,34 @@ public:
         one entry for this driver.
     */
     struct ns_mqtt_topic_expression m_topic_list[ 1 ];
-	
-	/*!
-		Event simplification
-     */
+
+    /*!
+        Event simplification
+    */
     wxString m_simplify;
-	
-	/// Flag for simple channel handling
-	bool m_bSimplify;
-	
-	/// Class for simple channel handling
-	uint16_t m_simple_class;
-	
-	/// Type for simple channel handling
-	uint16_t m_simple_type;
-	
-	/// Coding for simple channel handling
-	uint16_t m_simple_coding;
-	
-	/// zone for simple channel handling
-	uint16_t m_simple_zone;
+    
+    /// Flag for simple channel handling
+    bool m_bSimplify;
+    
+    /// Class for simple channel handling
+    uint16_t m_simple_class;
+    
+    /// Type for simple channel handling
+    uint16_t m_simple_type;
+    
+    /// Coding for simple channel handling
+    uint16_t m_simple_coding;
+    
+    /// zone for simple channel handling
+    uint16_t m_simple_zone;
             
-	/// Subzone for simple channel handling
-	uint16_t m_simple_subzone;
-	
+    /// Subzone for simple channel handling
+    uint16_t m_simple_subzone;
+    
     /*!
         Keepalive value
     */
-	int m_keepalive;
+    int m_keepalive;
 
     /// Filter
     vscpEventFilter m_vscpfilter;
@@ -195,25 +190,25 @@ public:
 
     /// VSCP server interface
     VscpRemoteTcpIf m_srv;
-	
-	// Queue
-	std::list<vscpEvent *> m_sendList;
-	std::list<vscpEvent *> m_receiveList;
-	
-	/*!
+    
+    // Queue
+    std::list<vscpEvent *> m_sendList;
+    std::list<vscpEvent *> m_receiveList;
+    
+    /*!
         Event object to indicate that there is an event in the output queue
-     */
-    wxSemaphore m_semSendQueue;			
-	wxSemaphore m_semReceiveQueue;		
-	
-	// Mutex to protect the output queue
-	wxMutex m_mutexSendQueue;		
-	wxMutex m_mutexReceiveQueue;
+    */
+    wxSemaphore m_semSendQueue;
+    wxSemaphore m_semReceiveQueue;
+    
+    // Mutex to protect the output queue
+    wxMutex m_mutexSendQueue;
+    wxMutex m_mutexReceiveQueue;
 
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-//				                Worker Treads
+//                          Worker Treads
 ///////////////////////////////////////////////////////////////////////////////
 
 class CWrkThread : public wxThread {

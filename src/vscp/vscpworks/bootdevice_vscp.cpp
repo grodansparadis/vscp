@@ -573,6 +573,7 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
                     }
 
                 }
+                
             }
 
         }

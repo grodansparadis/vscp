@@ -106,7 +106,7 @@ static void ev_handler( struct ns_connection *nc, int ev, void *p )
             printf( "Got incoming message %s: %.*s\n", msg->topic, ( int )msg->payload.len, msg->payload.p );
             vscpEventEx eventEx;
 
-            if ( !strcmp( msg->topic, pmqttobj->m_topic.ToAscii() ) ) {
+            if ( !strcmp( msg->topic, (const char *)pmqttobj->m_topic.mbc_str() ) ) {
 
                 wxString str = wxString::FromAscii( ( const char * )msg->payload.p );
                 if ( vscp_setVscpEventExFromString( &eventEx, str ) ) {
@@ -177,8 +177,8 @@ Cmqttobj::Cmqttobj()
 
 Cmqttobj::~Cmqttobj()
 {
-	close();
-	::wxUninitialize();
+    close();
+    ::wxUninitialize();
 }
 
 
@@ -194,163 +194,158 @@ Cmqttobj::open( const char *pUsername,
                     const char *pPrefix,
                     const char *pConfig)
 {
-	bool rv = true;
-	wxString str;
-	wxString wxstr = wxString::FromAscii(pConfig);
+    bool rv = true;
+    wxString str;
+    wxString wxstr = wxString::FromAscii(pConfig);
 
-	m_username = wxString::FromAscii(pUsername);
-	m_password = wxString::FromAscii(pPassword);
-	m_host = wxString::FromAscii(pHost);
-	m_prefix = wxString::FromAscii(pPrefix);
+    m_username = wxString::FromAscii(pUsername);
+    m_password = wxString::FromAscii(pPassword);
+    m_host = wxString::FromAscii(pHost);
+    m_prefix = wxString::FromAscii(pPrefix);
 
-	// Parse the configuration string. It should
-	// have the following form
-	// path
-	// 
-	wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";\n"));
+    // Parse the configuration string. It should
+    // have the following form
+    // “subscribe”|”publish”;channel;host;port;user;password;keepalive;filter;mask
+    // 
+    wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";\n"));
 
-	// Check if we should publish or subscribe
-	if ( tkz.HasMoreTokens() ) {
-		// Check for subscribe/publish
-		str = tkz.GetNextToken();
-		str.Trim();
-		str.Trim(false);
-		str.MakeUpper();
-		if ( wxNOT_FOUND != str.Find( _("PUBLISH") ) ) {
-			m_bSubscribe = false;
-		}
-	}
+    // Check if we should publish or subscribe
+    if ( tkz.HasMoreTokens() ) {
+        // Check for subscribe/publish
+        str = tkz.GetNextToken();
+        str.Trim();
+        str.Trim(false);
+        str.MakeUpper();
+        if ( wxNOT_FOUND != str.Find( _("PUBLISH") ) ) {
+            m_bSubscribe = false;
+        }
+    }
 
-	// Get topic from configuration string
-	if ( tkz.HasMoreTokens() ) {
-		m_topic = tkz.GetNextToken();
-	}
+    // Get topic from configuration string
+    if ( tkz.HasMoreTokens() ) {
+        m_topic = tkz.GetNextToken();
+    }
 
-	// Get MQTT host from configuration string
-	if ( tkz.HasMoreTokens() ) {
-		m_hostMQTT = tkz.GetNextToken();
-	}
+    // Get MQTT host from configuration string
+    if ( tkz.HasMoreTokens() ) {
+        m_hostMQTT = tkz.GetNextToken();
+    }
 
-	// Get MQTT host port from configuration string
-	if ( tkz.HasMoreTokens() ) {
-		m_portMQTT = vscp_readStringValue(tkz.GetNextToken());
-	}
+    // Get MQTT user from configuration string
+    if ( tkz.HasMoreTokens() ) {
+        m_usernameMQTT = tkz.GetNextToken();
+    }
 
-	// Get MQTT user from configuration string
-	if ( tkz.HasMoreTokens() ) {
-		m_usernameMQTT = tkz.GetNextToken();
-	}
+    // Get MQTT password from configuration string
+    if ( tkz.HasMoreTokens() ) {
+        m_passwordMQTT = tkz.GetNextToken();
+    }
 
-	// Get MQTT password from configuration string
-	if ( tkz.HasMoreTokens() ) {
-		m_passwordMQTT = tkz.GetNextToken();
-	}
+    // Get MQTT keep alive from configuration string
+    if ( tkz.HasMoreTokens() ) {
+        m_keepalive = vscp_readStringValue(tkz.GetNextToken());
+    }
 
-	// Get MQTT keep alive from configuration string
-	if ( tkz.HasMoreTokens() ) {
-		m_keepalive = vscp_readStringValue(tkz.GetNextToken());
-	}
+    // First log on to the host and get configuration 
+    // variables
 
-	// First log on to the host and get configuration 
-	// variables
-
-	if ( VSCP_ERROR_SUCCESS !=  m_srv.doCmdOpen( m_host,
+    if ( VSCP_ERROR_SUCCESS !=  m_srv.doCmdOpen( m_host,
                                                     m_username,
                                                     m_password) ) {
 #ifndef WIN32
-		syslog(LOG_ERR,
-				"%s",
-				(const char *) "Unable to connect to VSCP TCP/IP interface. Terminating!");
+        syslog(LOG_ERR,
+                "%s",
+                (const char *) "Unable to connect to VSCP TCP/IP interface. Terminating!");
 #endif
-		return false;
-	}
+        return false;
+    }
 
-	// Find the channel id
-	uint32_t ChannelID;
-	m_srv.doCmdGetChannelID( &ChannelID );
+    // Find the channel id
+    uint32_t ChannelID;
+    m_srv.doCmdGetChannelID( &ChannelID );
 
-	// The server should hold configuration data for each sensor
-	// we want to monitor.
-	// 
-	// We look for 
-	//
-	//	 _type	- “subscribe” to subscribe to a MQTT topic. ”publish” to 
-	//				publish events to a MQTT topic. Defaults to “subscribe”.
-	//
-	//	 _topic	- This is a text string identifying the topic. It is 
-	//				recommended that this string starts with “vscp/”. 
-	//						Defaults to “vscp”
-	//
-    //	 _qos	- MQTT QOS value. Defaults to 0. 
+    // The server should hold configuration data for each sensor
+    // we want to monitor.
+    // 
+    // We look for 
     //
-	//	 _host	- IP address + port or a DNS resolvable address + port on the 
+    //  _type   - “subscribe” to subscribe to a MQTT topic. ”publish” to 
+    //              publish events to a MQTT topic. Defaults to “subscribe”.
+    //
+    //   _topic - This is a text string identifying the topic. It is 
+    //              recommended that this string starts with “vscp/”. 
+    //              Defaults to “vscp”
+    //
+    //   _qos   - MQTT QOS value. Defaults to 0. 
+    //
+    //   _host  - IP address + port or a DNS resolvable address + port on the 
     //              form host:port to the remote host. 
-	//				Mandatory and must be declared either in the configuration 
-	//				string or in this variable. Defaults to “localhost:1883”
-	//
-	//	 _user - Username used to log in on the remote sever. 
-	//				Defaults to empty. 
-	//
-	//	 _password - Password used to login on the remote server. 
-	//				Defaults to empty.
-	//
-	//	 _keepalive - Keepalive value for channel. Defaults to 60.
-	//
-	//   _filter - Standard VSCP filter in string form. 
-	//				   1,0x0000,0x0006,
-	//				   ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
-	//				as priority,class,type,GUID
-	//				Used to filter what events that is received from 
-	//				the mqtt interface. If not give all events 
-	//				are received.
-	//	 _mask - Standard VSCP mask in string form.
-	//				   1,0x0000,0x0006,
-	//				   ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
-	//				as priority,class,type,GUID
-	//				Used to filter what events that is received from 
-	//				the mqtt interface. If not give all events 
-	//				are received. 
-	//
+    //              Mandatory and must be declared either in the configuration 
+    //              string or in this variable. Defaults to “localhost:1883”
+    //
+    //   _user - Username used to log in on the remote sever. 
+    //              Defaults to empty. 
+    //
+    //   _password - Password used to login on the remote server. 
+    //              Defaults to empty.
+    //
+    //   _keepalive - Keepalive value for channel. Defaults to 60.
+    //
+    //   _filter - Standard VSCP filter in string form. 
+    //                 1,0x0000,0x0006,
+    //                 ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
+    //              as priority,class,type,GUID
+    //              Used to filter what events that is received from 
+    //              the mqtt interface. If not give all events 
+    //              are received.
+    //   _mask - Standard VSCP mask in string form.
+    //                 1,0x0000,0x0006,
+    //                 ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
+    //              as priority,class,type,GUID
+    //              Used to filter what events that is received from 
+    //              the mqtt interface. If not give all events 
+    //              are received. 
+    //
 
-	wxString strName = m_prefix +
-			wxString::FromAscii("_type");
-	m_srv.getVariableString(strName, &str);
+    wxString strName = m_prefix +
+                        wxString::FromAscii("_type");
+    m_srv.getVariableString(strName, &str);
 
-	// Check for subscribe/publish
-	str = tkz.GetNextToken();
-	str.Trim();
-	str.Trim(false);
-	str.MakeUpper();
-	if ( wxNOT_FOUND != str.Find(_("publish") ) ) {
-		m_bSubscribe = false;
-	}
+    // Check for subscribe/publish
+    str = tkz.GetNextToken();
+    str.Trim();
+    str.Trim(false);
+    str.MakeUpper();
+    if ( wxNOT_FOUND != str.Find(_("publish") ) ) {
+        m_bSubscribe = false;
+    }
 
-	strName = m_prefix +
-			wxString::FromAscii("_topic");
+    strName = m_prefix +
+                wxString::FromAscii("_topic");
     if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( strName, &str ) ) {
         m_topic = str;
     }
 
-	strName = m_prefix +
-			wxString::FromAscii("_host");
+    strName = m_prefix +
+                wxString::FromAscii("_host");
     if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( strName, &m_hostMQTT ) ) {
         m_hostMQTT = str;
     }
 
-	strName = m_prefix +
-			wxString::FromAscii("_username");
+    strName = m_prefix +
+                wxString::FromAscii("_username");
     if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( strName, &str ) ) {
         m_usernameMQTT = str;
     }
 
-	strName = m_prefix +
-			wxString::FromAscii("_password");
+    strName = m_prefix +
+                wxString::FromAscii("_password");
     if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( strName, &m_passwordMQTT ) ) {
         m_passwordMQTT = str;
     }
 
-	strName = m_prefix +
-			wxString::FromAscii("_keepalive");
+    strName = m_prefix +
+                wxString::FromAscii("_keepalive");
     int intval;
     if ( VSCP_ERROR_SUCCESS == m_srv.getVariableInt( strName, &intval ) ) {
         m_keepalive = intval;
@@ -362,20 +357,20 @@ Cmqttobj::open( const char *pUsername,
         m_topic_list[ 0 ].qos = intval;
     }
 
-	strName = m_prefix +
-			wxString::FromAscii("_filter");
+    strName = m_prefix +
+                wxString::FromAscii("_filter");
     if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( strName, &str ) ) {
-		vscp_readFilterFromString(&m_vscpfilter, str);
+        vscp_readFilterFromString(&m_vscpfilter, str);
     }
 
-	strName = m_prefix +
-			wxString::FromAscii("_mask");
+    strName = m_prefix +
+                wxString::FromAscii("_mask");
     if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( strName, &str ) ) {
-		vscp_readMaskFromString(&m_vscpfilter, str);
-	}
+        vscp_readMaskFromString(&m_vscpfilter, str);
+    }
     
     strName = m_prefix +
-			wxString::FromAscii("_simplify");
+                wxString::FromAscii("_simplify");
     if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( strName, &str ) ) {
         m_simplify = str;
     }
@@ -424,21 +419,21 @@ Cmqttobj::open( const char *pUsername,
         }
     }
     
-	// Close the channel
-	m_srv.doCmdClose();
+    // Close the channel
+    m_srv.doCmdClose();
 
-	// start the worker thread
-	m_pthreadWork = new CWrkThread();
-	if (NULL != m_pthreadWork) {
-		m_pthreadWork->m_pObj = this;
-		m_pthreadWork->Create();
-		m_pthreadWork->Run();
-	}
-	else {
-		rv = false;
-	}
+    // start the worker thread
+    m_pthreadWork = new CWrkThread();
+    if (NULL != m_pthreadWork) {
+        m_pthreadWork->m_pObj = this;
+        m_pthreadWork->Create();
+        m_pthreadWork->Run();
+    }
+    else {
+        rv = false;
+    }
 
-	return rv;
+    return rv;
 }
 
 
@@ -449,11 +444,11 @@ Cmqttobj::open( const char *pUsername,
 void
 Cmqttobj::close( void )
 {
-	// Do nothing if already terminated
-	if (m_bQuit) return;
+    // Do nothing if already terminated
+    if (m_bQuit) return;
 
-	m_bQuit = true; // terminate the thread
-	wxSleep(1);		// Give the thread some time to terminate
+    m_bQuit = true; // terminate the thread
+    wxSleep(1);		// Give the thread some time to terminate
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -465,8 +460,8 @@ Cmqttobj::addEvent2SendQueue( const vscpEvent *pEvent )
 {
     m_mutexSendQueue.Lock();
     m_sendList.push_back((vscpEvent *)pEvent);
-	m_semSendQueue.Post();
-	m_mutexSendQueue.Unlock();
+    m_semSendQueue.Post();
+    m_mutexSendQueue.Unlock();
     return true;
 }
 
@@ -496,17 +491,19 @@ CWrkThread::Entry()
     struct ns_connection *nc;
     struct ns_mgr mgr;
 
-    const char *address = "192.168.1.9:1883";
-
     mgr.user_data = m_pObj;
     ns_mgr_init( &mgr, m_pObj );
 
-    if ( NULL == ( nc = ns_connect( &mgr, (const char *)m_pObj->m_hostMQTT.mbc_str(), ev_handler ) ) ) {
-        fprintf( stderr, "ns_connect(%s) failed\n", address );
+    if ( NULL == ( nc = ns_connect( &mgr, 
+                                    (const char *)m_pObj->m_hostMQTT.mbc_str(), 
+                                    ev_handler ) ) ) {
+        fprintf( stderr, 
+                    "ns_connect(%s) failed\n", 
+                    (const char *)m_pObj->m_hostMQTT.mbc_str() );
         return NULL;
     }
 
-	if (m_pObj->m_bSubscribe) {
+    if ( m_pObj->m_bSubscribe ) {
 
         while (!TestDestroy() && !m_pObj->m_bQuit) {
             ns_mgr_poll( &mgr, 100 );           
@@ -525,7 +522,8 @@ CWrkThread::Entry()
                 continue;
             }
 
-            if ( wxSEMA_TIMEOUT == m_pObj->m_semSendQueue.WaitTimeout( 10 ) ) continue;            
+            if ( wxSEMA_TIMEOUT == 
+                    m_pObj->m_semSendQueue.WaitTimeout( 10 ) ) continue;            
 
             if ( m_pObj->m_sendList.size() ) {
 
@@ -540,7 +538,7 @@ CWrkThread::Entry()
                 else {
                     vscp_writeVscpEventToString( pEvent, str );
                     ns_mqtt_publish( nc, 
-                                        "/vscp1", 
+                                        m_pObj->m_topic.mbc_str(),  //"/vscp1", 
                                         65, 
                                         NS_MQTT_QOS( 0 ), 
                                         (const char *)str.mbc_str(), 
