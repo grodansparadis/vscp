@@ -123,6 +123,7 @@ public:
 public:
     
     BOOL InitInstance();
+    
 
 };
 
