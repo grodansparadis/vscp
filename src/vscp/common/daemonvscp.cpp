@@ -509,7 +509,7 @@ CNodeInformation * daemonVSCPThread::addNodeIfNotKnown( vscpEvent *pEvent )
                 if ( pNode->m_deviceName.IsEmpty() ) {
                     pNode->m_deviceName = pDeviceItem->m_strName;
                     pNode->m_deviceName += _( "_" );
-                    pNode->m_deviceName += wxString::Format( _( "%lu" ), 
+                    pNode->m_deviceName += wxString::Format( _( "%u" ), 
                                              pDeviceItem->m_pClientItem->m_clientID );
                 }
 
@@ -523,8 +523,9 @@ CNodeInformation * daemonVSCPThread::addNodeIfNotKnown( vscpEvent *pEvent )
                 // 'client_clientid_nickname'
                 if ( pNode->m_strNodeName.IsEmpty() ) {
                     pNode->m_strNodeName = _( "client_" );
-                    pNode->m_strNodeName += wxString::Format( _( "%lu" ), 
-                                                pDeviceItem->m_pClientItem->m_clientID );
+                    uint32_t clientID = pDeviceItem->m_pClientItem->m_clientID;
+                    pNode->m_strNodeName += wxString::Format( _( "%u" ), 
+                                                                clientID );
                     pNode->m_strNodeName += _( "_" );
                     pNode->m_strNodeName += wxString::Format( _( "%u" ), 
                                                 ( pEvent->GUID[ 14 ] << 8 ) + pEvent->GUID[ 15 ] );
