@@ -326,7 +326,7 @@ typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 #define VSCP_DATACODING_STRING                  0x40
 #define VSCP_DATACODING_INTEGER                 0x60
 #define VSCP_DATACODING_NORMALIZED              0x80
-#define VSCP_DATACODING_SINGLE                  0xA0	// single precision float
+#define VSCP_DATACODING_SINGLE                  0xA0  // single precision float
 #define VSCP_DATACODING_RESERVED1               0xC0
 #define VSCP_DATACODING_RESERVED2               0xE0
 
@@ -446,7 +446,7 @@ struct myNode {
 #define VSCP_ERROR_GENERIC                      12      // Generic error
 #define VSCP_ERROR_HARDWARE                     13      // Hardware error
 #define VSCP_ERROR_INIT_FAIL                    14      // Initialization failed
-#define VSCP_ERROR_INIT_MISSING                 15		
+#define VSCP_ERROR_INIT_MISSING                 15
 #define VSCP_ERROR_INIT_READY                   16
 #define VSCP_ERROR_NOT_SUPPORTED                17      // Not supported
 #define VSCP_ERROR_OVERRUN                      18      // Overrun

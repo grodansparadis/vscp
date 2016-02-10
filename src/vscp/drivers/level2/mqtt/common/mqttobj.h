@@ -74,7 +74,6 @@ class VscpRemoteTcpIf;
 class Cmqtt;
 
 
-
 class Cmqttobj {
 public:
 
@@ -166,19 +165,26 @@ public:
     bool m_bSimplify;
     
     /// Class for simple channel handling
-    uint16_t m_simple_class;
+    uint16_t m_simple_vscpclass;
     
     /// Type for simple channel handling
-    uint16_t m_simple_type;
+    uint16_t m_simple_vscptype;
     
     /// Coding for simple channel handling
-    uint16_t m_simple_coding;
+    uint8_t m_simple_coding;
+    
+    /// Unit for simple channel handling
+    uint8_t m_simple_unit;
+    
+    /// Unit for simple channel handling
+    uint8_t m_simple_sensorindex;
     
     /// zone for simple channel handling
-    uint16_t m_simple_zone;
+    uint8_t m_simple_zone;
             
     /// Subzone for simple channel handling
-    uint16_t m_simple_subzone;
+    uint8_t m_simple_subzone;
+    
     
     /*!
         Keepalive value

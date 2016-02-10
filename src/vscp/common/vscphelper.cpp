@@ -831,7 +831,7 @@ bool vscp_convertIntegerToNormalizedEventData( uint8_t *pdata,
         memcpy ( data, (uint8_t *)val64, 8 );
     }
 
-    // Count the leasing zeror
+    // Count the leading zeror
     uint8_t nZeros = 0;
     for ( i=0; i<8; i++ ) {
         if ( *(p+i) ) break;

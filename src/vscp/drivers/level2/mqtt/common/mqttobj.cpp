@@ -122,8 +122,8 @@ static void ev_handler( struct ns_connection *nc, int ev, void *p )
             }
             
             ns_send_mqtt_handshake_opt( nc, 
-                                                pmqttobj->m_sessionid.mbc_str(), 
-                                                opts );
+                                            pmqttobj->m_sessionid.mbc_str(), 
+                                            opts );
         
         
 #ifndef WIN32
@@ -166,37 +166,174 @@ static void ev_handler( struct ns_connection *nc, int ev, void *p )
         case NS_MQTT_PUBLISH:
         {            
             vscpEventEx eventEx;
+            
+            eventEx.obid = 0;
+            eventEx.timestamp = 0;
+            eventEx.head = VSCP_PRIORITY_NORMAL;
+            memset( eventEx.GUID, 0, 16 );
 
             if ( !strcmp( msg->topic, 
                             (const char *)pmqttobj->m_topic.mbc_str() ) ) {
 
                 wxString str = 
                     wxString::FromAscii( ( const char * )msg->payload.p );
-                if ( vscp_setVscpEventExFromString( &eventEx, str ) ) {
+                    
+                if ( pmqttobj->m_bSimplify ) {
+                
+                        // Here the data will only be a value (Simple)
+                                                
+                        eventEx.vscp_class = pmqttobj->m_simple_vscpclass;
+                        eventEx.vscp_type = pmqttobj->m_simple_vscptype;
+                    
+                        switch( pmqttobj->m_simple_vscpclass ) {
+                         
+                            case VSCP_CLASS2_MEASUREMENT_STR:
+                            
+                                // Sensor index
+                                eventEx.data[ 0 ] = pmqttobj->m_simple_sensorindex;
+                                
+                                // Zone
+                                eventEx.data[ 1 ] = pmqttobj->m_simple_zone;
+                                
+                                // Subzone
+                                eventEx.data[ 2 ] = pmqttobj->m_simple_subzone;
+                                
+                                // Unit
+                                eventEx.data[ 3 ] = pmqttobj->m_simple_unit;
+                                
+                                // Value can have max 7 characters                
+                                if ( str.Length() > ( VSCP_LEVEL2_MAXDATA - 4 ) ) {
+                                    str.Truncate( VSCP_LEVEL2_MAXDATA - 4 );
+                                }
+                                
+                                // Set size
+                                eventEx.sizeData = str.Length() + 4;
+                                
+                                // Copy in string data
+                                memcpy( eventEx.data + 4, 
+                                            str.mbc_str(),
+                                            str.Length() );
+                                
+                                break;
+                                
+                            case VSCP_CLASS2_MEASUREMENT_FLOAT:
+                                {
+                                    // Sensor index
+                                    eventEx.data[ 0 ] = pmqttobj->m_simple_sensorindex;
+                                
+                                    // Zone
+                                    eventEx.data[ 1 ] = pmqttobj->m_simple_zone;
+                                
+                                    // Subzone
+                                    eventEx.data[ 2 ] = pmqttobj->m_simple_subzone;
+                                
+                                    // Unit
+                                    eventEx.data[ 3 ] = pmqttobj->m_simple_unit;
+                                    
+                                    double val;
+                                    str.ToCDouble( &val );
+                                    uint8_t *p = (uint8_t *)&val;
+                                    
+                                    if ( wxIsPlatformLittleEndian() ) {
+                                        
+                                        for ( int i=7; i>0; i--) {
+                                            eventEx.data[ 7-i ] = *(p+i);
+                                        }
+                                    }
+                                    else {
+                                        memcpy ( eventEx.data, p, 8 );
+                                    }
+                                    
+                                    // Set data size
+                                    eventEx.sizeData = 8;
+                                    
+                                }
+                                break; 
 
-                    vscpEvent *pEvent = new vscpEvent;
-                    if ( NULL != pEvent ) {
+                            default:
+                            case VSCP_CLASS1_MEASUREMENT:
+                            
+                                if ( VSCP_DATACODING_STRING == 
+                                                pmqttobj->m_simple_coding ) {
+                                                    
+                                    // * * * Present as string  * * * 
 
-                        pEvent->sizeData = 0;
-                        pEvent->pdata = NULL;
+                                    // Coding                    
+                                    eventEx.data[ 0 ] = 
+                                            VSCP_DATACODING_STRING |
+                                            ( ( pmqttobj->m_simple_unit << 3 ) & 
+                                                    VSCP_MASK_DATACODING_UNIT ) |
+                                            ( pmqttobj->m_simple_sensorindex & 
+                                                    VSCP_MASK_DATACODING_INDEX );
+                                    
+                                    // Set string data
+                            
+                                    // Value can have max 7 characters                
+                                    if ( str.Length() > 7 ) str.Truncate( 7 );
+                                    
+                                    memcpy( eventEx.data + 1, 
+                                                str.mbc_str(), 
+                                                str.Length() );
+                                    
+                                    // Set size
+                                    eventEx.sizeData = str.Length() + 1;
+                                    
+                                }
+                                else {
+                                    
+                                    // * * * Present as single precision floating  
+                                    // point number * * *
+                                    float val = atof( str.mbc_str() );
+                                    
+                                    wxUINT32_SWAP_ON_LE( val );
+                                    memcpy( eventEx.data, (uint8_t *)&val, 4 );
+                                    
+                                    eventEx.data[ 0 ] = VSCP_DATACODING_SINGLE |
+                                            ( ( pmqttobj->m_simple_unit << 3 ) & 
+                                                    VSCP_MASK_DATACODING_UNIT ) |
+                                            ( pmqttobj->m_simple_sensorindex & 
+                                                    VSCP_MASK_DATACODING_INDEX );
+                                    
+                                    // Set size
+                                    eventEx.sizeData = 5; // coding + 32-bit value
+                                    
+                                }
+                                break;
+                                
+                        }           
 
-                        if ( vscp_doLevel2FilterEx( &eventEx, 
-                                                &pmqttobj->m_vscpfilter ) ) {
+                        goto FEED_EVENT;
+                    
+                }
+                else {
+                    
+                    if ( vscp_setVscpEventExFromString( &eventEx, str ) ) {
 
-                            if ( vscp_convertVSCPfromEx( pEvent, &eventEx ) ) {
-                                pmqttobj->m_mutexReceiveQueue.Lock();
-                                pmqttobj->m_receiveList.push_back( pEvent );
-                                pmqttobj->m_semReceiveQueue.Post();
-                                pmqttobj->m_mutexReceiveQueue.Unlock();
+FEED_EVENT:                        
+                        
+                        vscpEvent *pEvent = new vscpEvent;
+                        if ( NULL != pEvent ) {
+
+                            pEvent->sizeData = 0;
+                            pEvent->pdata = NULL;
+
+                            if ( vscp_doLevel2FilterEx( &eventEx, 
+                                                    &pmqttobj->m_vscpfilter ) ) {
+
+                                if ( vscp_convertVSCPfromEx( pEvent, &eventEx ) ) {
+                                    pmqttobj->m_mutexReceiveQueue.Lock();
+                                    pmqttobj->m_receiveList.push_back( pEvent );
+                                    pmqttobj->m_semReceiveQueue.Post();
+                                    pmqttobj->m_mutexReceiveQueue.Unlock();
+                                }
+                                
                             }
                             else {
-
+                                vscp_deleteVSCPevent( pEvent );
                             }
                         }
-                        else {
-                            vscp_deleteVSCPevent( pEvent );
-                        }
-                    }
+                    }   
+                
                 }
             }
         }
@@ -225,10 +362,14 @@ Cmqttobj::Cmqttobj()
     m_bConnected = false;
     m_pthreadWork = NULL;
     m_bSubscribe = true;
+    
+    // Simple
     m_bSimplify = false;
-    m_simple_class = 0;
-    m_simple_type = 0;
+    m_simple_vscpclass = VSCP_CLASS1_MEASUREMENT;
+    m_simple_vscptype = 0;
     m_simple_coding = 0;
+    m_simple_unit = 0;
+    m_simple_sensorindex = 0;
     m_simple_zone = 0;
     m_simple_subzone = 0;
 
@@ -394,7 +535,6 @@ Cmqttobj::open( const char *pUsername,
         m_sessionid = *pwrkstr;
     }
     
-    
     *pstrName = m_prefix +
                         wxString::FromAscii("_type");
     m_srv.getVariableString( *pstrName, pwrkstr );
@@ -459,41 +599,150 @@ Cmqttobj::open( const char *pUsername,
         vscp_readMaskFromString(&m_vscpfilter, *pwrkstr );
     }
     
+    // Type = 0
+    // ====================================================================
+    // Send CLASS1.MEASUREMENT  float or string
+    // Coding: 10,float|string,vscp-type,sensorindex(0-7),unit(0-7)
+    //
+    // Type = 1
+    // ====================================================================
+    // Send CLASS2.MEASUREMENT.STR
+    // Coding: 1040,vscp-type,sensorindex(0-255), unit (0-255), zone(0-255), subzone(0-255)
+    //
+    // Type = 2
+    // ====================================================================
+    // Send CLASS2.MEASUREMENT.FLOAT
+    // Coding: 1060,vscp-type,sensorindex(0-255), unit (0-255), zone(0-255), subzone(0-255)
+    //
+    
     *pstrName = m_prefix +
                 wxString::FromAscii("_simplify");
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( *pstrName, pwrkstr ) ) {
+    if ( VSCP_ERROR_SUCCESS == 
+                        m_srv.getVariableString( *pstrName, pwrkstr ) ) {
         m_simplify = *pwrkstr;
     }
     
     if ( m_simplify.Length() ) {
         
         m_bSimplify = true; 
-        wxStringTokenizer tkzSimple( m_simplify, _(",\n"));
-        
-        // simple class
-        if ( tkzSimple.HasMoreTokens() ) {
-            m_simple_class = vscp_readStringValue(tkzSimple.GetNextToken());
-        }
+        wxStringTokenizer tkzSimple( m_simplify, _(","));
         
         // simple type
         if ( tkzSimple.HasMoreTokens() ) {
-            m_simple_type = vscp_readStringValue(tkzSimple.GetNextToken());
+            m_simple_vscpclass = 
+                            vscp_readStringValue(tkzSimple.GetNextToken());
         }
         
-        // simple coding
-        if ( tkzSimple.HasMoreTokens() ) {
-            m_simple_coding = vscp_readStringValue(tkzSimple.GetNextToken());
+        switch ( m_simple_vscpclass ) {
+
+            case VSCP_CLASS2_MEASUREMENT_STR:
+            
+                // simple vscp-type
+                if ( tkzSimple.HasMoreTokens() ) {
+                    m_simple_vscptype = 
+                        vscp_readStringValue(tkzSimple.GetNextToken());
+                }
+                
+                // simple sensorindex
+                if ( tkzSimple.HasMoreTokens() ) {
+                    m_simple_sensorindex = 
+                        vscp_readStringValue(tkzSimple.GetNextToken());
+                }
+                
+                // simple unit
+                if ( tkzSimple.HasMoreTokens() ) {
+                    m_simple_unit = 
+                        vscp_readStringValue(tkzSimple.GetNextToken());
+                }
+                
+                // simple zone
+                if ( tkzSimple.HasMoreTokens() ) {
+                    m_simple_zone = 
+                                vscp_readStringValue(tkzSimple.GetNextToken());
+                }
+        
+                // simple subzone
+                if (tkzSimple.HasMoreTokens()) {
+                    m_simple_subzone = 
+                                vscp_readStringValue(tkzSimple.GetNextToken());
+                }
+                
+                break;
+            
+    
+            case VSCP_CLASS2_MEASUREMENT_FLOAT:
+            
+                // simple vscp-type
+                if ( tkzSimple.HasMoreTokens() ) {
+                    m_simple_vscptype = 
+                        vscp_readStringValue(tkzSimple.GetNextToken());
+                }
+            
+                
+                // simple sensorindex
+                if ( tkzSimple.HasMoreTokens() ) {
+                    m_simple_sensorindex = 
+                        vscp_readStringValue(tkzSimple.GetNextToken());
+                }
+                
+                // simple unit
+                if ( tkzSimple.HasMoreTokens() ) {
+                    m_simple_unit = 
+                        vscp_readStringValue(tkzSimple.GetNextToken());
+                }
+                
+                // simple zone
+                if ( tkzSimple.HasMoreTokens() ) {
+                    m_simple_zone = 
+                                vscp_readStringValue(tkzSimple.GetNextToken());
+                }
+        
+                // simple subzone
+                if (tkzSimple.HasMoreTokens()) {
+                    m_simple_subzone = 
+                                vscp_readStringValue(tkzSimple.GetNextToken());
+                }
+                
+                break;    
+            
+            case VSCP_CLASS1_MEASUREMENT:
+            default:
+            
+                // simple vscp-type
+                if ( tkzSimple.HasMoreTokens() ) {
+                    m_simple_vscptype = 
+                        vscp_readStringValue(tkzSimple.GetNextToken());
+                }
+                
+                // Coding
+                if ( tkzSimple.HasMoreTokens() ) {
+                    wxString strcoding = tkzSimple.GetNextToken();
+                    strcoding.Trim();
+                    pwrkstr->Trim(false);
+                    pwrkstr->MakeUpper();
+                    m_simple_coding = VSCP_DATACODING_STRING;
+                    if ( wxNOT_FOUND != pwrkstr->Find(_("FLOAT") ) ) {
+                        m_simple_coding = VSCP_DATACODING_SINGLE;
+                    }
+                }
+                
+                // simple sensorindex
+                if ( tkzSimple.HasMoreTokens() ) {
+                    m_simple_sensorindex = 
+                        vscp_readStringValue(tkzSimple.GetNextToken());
+                }
+                if ( m_simple_sensorindex > 7 ) m_simple_sensorindex = 7;
+                
+                // simple unit
+                if ( tkzSimple.HasMoreTokens() ) {
+                    m_simple_unit = 
+                        vscp_readStringValue(tkzSimple.GetNextToken());
+                }
+                if ( m_simple_unit > 7 ) m_simple_unit = 7;
+                
+                break;
         }
         
-        // simple zone
-        if ( tkzSimple.HasMoreTokens() ) {
-            m_simple_zone = vscp_readStringValue(tkzSimple.GetNextToken());
-        }
-        
-        // simple subzone
-        if (tkzSimple.HasMoreTokens()) {
-            m_simple_subzone = vscp_readStringValue(tkzSimple.GetNextToken());
-        }
         
     }
     else {
