@@ -919,11 +919,156 @@ CWrkThread::Entry()
                 m_pObj->m_sendList.pop_front();
                 m_pObj->m_mutexSendQueue.Unlock();
                 if (NULL == pEvent) continue;
-                if (m_pObj->m_bSimplify) {
-                    ;
+                
+                // If simple there must also be data
+                if ( m_pObj->m_bSimplify && ( NULL != pEvent->pdata ) ) {
+                                    
+                    switch( m_pObj->m_simple_vscpclass ) {
+                        
+                        case VSCP_CLASS2_MEASUREMENT_STR:
+                        {
+
+                            // There must be at least one 
+                            // character in the string
+                            if ( pEvent->sizeData < 5 ) {
+                                break;
+                            }
+                            
+                            // Sensor index must be the same
+                            if ( m_pObj->m_simple_sensorindex != 
+                                pEvent->pdata[ 0 ] ) {
+                                break;
+                            }
+                                
+                            // Zone must be the same
+                            if ( m_pObj->m_simple_zone != 
+                                pEvent->pdata[ 1 ] ) {
+                                break;
+                            }
+                                
+                            // Subzone must be the same
+                            if ( m_pObj->m_simple_zone != 
+                                pEvent->pdata[ 2 ] ) {
+                                break;
+                            }
+                                
+                            // Unit must be the same
+                            if ( m_pObj->m_simple_unit != 
+                                pEvent->pdata[ 3 ] ) {
+                                break;
+                            }
+                            
+                            char buf[512];
+                            memset( buf, 0, sizeof( buf ) );
+                            memcpy( buf, pEvent->pdata + 4, pEvent->sizeData - 4 );
+                            str = wxString::FromAscii( buf );
+                            goto PUBLISH;
+                    }    
+                    break;
+                                
+                        case VSCP_CLASS2_MEASUREMENT_FLOAT:
+                        {
+                            // There must be place for the  
+                            // double in the data 4 + 8
+                            if ( pEvent->sizeData < 12 ) {
+                                break;
+                            }
+                            
+                            // Sensor index must be the same
+                            if ( m_pObj->m_simple_sensorindex != 
+                                pEvent->pdata[ 0 ] ) {
+                                break;
+                            }
+                                
+                            // Zone must be the same
+                            if ( m_pObj->m_simple_zone != 
+                                pEvent->pdata[ 1 ] ) {
+                                break;
+                            }
+                                
+                            // Subzone must be the same
+                            if ( m_pObj->m_simple_zone != 
+                                pEvent->pdata[ 2 ] ) {
+                                break;
+                            }
+                                
+                            // Unit must be the same
+                            if ( m_pObj->m_simple_unit != 
+                                pEvent->pdata[ 3 ] ) {
+                                break;
+                            }
+                            
+                            uint8_t *p = pEvent->pdata + 4;
+                            if ( wxIsPlatformLittleEndian() ) {
+                                for ( int i=7; i>0; i--) {
+                                    pEvent->pdata[ 4 + 7 - i ] = *(p+i);
+                                }
+                            }
+                            
+                            double val = *( (double *)( pEvent->pdata + 4 ) );
+                            char buf[80];
+                            sprintf( buf, "%g", val );
+                            str = wxString::FromAscii( buf );
+                                    
+                            goto PUBLISH;
+                        
+                        
+                        }
+                        break;    
+                            
+                        default:
+                        case VSCP_CLASS1_MEASUREMENT:
+                        {    
+                            // Sensor index must be the same
+                            if ( m_pObj->m_simple_sensorindex != 
+                                VSCP_DATACODING_INDEX( pEvent->pdata[ 0 ] ) ) {
+                                break;
+                            }
+                                
+                            // Unit must be the same
+                            if ( m_pObj->m_simple_unit != 
+                                VSCP_DATACODING_UNIT( pEvent->pdata[ 0 ] ) ) {
+                                break;
+                            }
+                            
+                            if ( VSCP_DATACODING_SINGLE == 
+                                ( pEvent->pdata[ 0 ] & VSCP_MASK_DATACODING_TYPE ) ) {
+                                        
+                                wxUINT32_SWAP_ON_LE( *( (uint32_t *)( pEvent->pdata + 1 ) ) );                                
+                                float val = *( (float *)( pEvent->pdata + 1 ) );
+                                char buf[80];
+                                sprintf( buf, "%f", val );
+                                str = wxString::FromAscii( buf );
+                                    
+                                goto PUBLISH;
+                            }
+                            else {  // STRING
+                                
+                                char buf[ 8 ];
+                                memset( buf, 0, sizeof( buf ) );
+                                if ( pEvent->sizeData > 7 ) {
+                                    memcpy( buf, pEvent->pdata + 1, 7 );
+                                }
+                                else {
+                                    memcpy( buf, pEvent->pdata + 1, pEvent->sizeData - 1 );                                        
+                                }
+                                str = wxString::FromAscii( buf );
+                                goto PUBLISH;
+                                    
+                            }
+                            
+                        }
+                        break;
+                            
+                    } // switch
+                    
                 }
                 else {
+                    
                     vscp_writeVscpEventToString( pEvent, str );
+                    
+PUBLISH:                    
+                    
                     ns_mqtt_publish( nc, 
                                         m_pObj->m_topic.mbc_str(), 
                                         msgid++, 
