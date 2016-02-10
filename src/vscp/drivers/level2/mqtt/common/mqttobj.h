@@ -114,6 +114,9 @@ public:
     
     /// True if we should subscribe. False if we should publish)
     bool m_bSubscribe;
+    
+    /// Session id
+    wxString m_sessionid;
 
     /// Server supplied username
     wxString m_username;

@@ -62,7 +62,6 @@
 #include <vscp_class.h>
 #include "mqttobj.h"
 
-#define DEBUG
 
 ////////////////////////////////////////////////////////////////////////////////
 // ev_handler
@@ -76,26 +75,71 @@ static void ev_handler( struct ns_connection *nc, int ev, void *p )
     switch ( ev ) {
 
         case NS_CONNECT:
+        {
+            struct ns_send_mqtt_handshake_opts opts;
+            
+            opts.flags = NS_MQTT_CLEAN_SESSION;
+            opts.keep_alive = pmqttobj->m_keepalive;
+            
+            // Username
+            wxCharBuffer bufferedUserName = pmqttobj->m_username.ToUTF8();            
+            if ( pmqttobj->m_username.IsEmpty() ) {
+                opts.user_name = NULL;
+            }
+            else {
+                opts.user_name = bufferedUserName;
+                opts.flags |= NS_MQTT_HAS_USER_NAME;
+            }
+            
+            // Password
+            wxCharBuffer bufferedPassword = pmqttobj->m_password.ToUTF8();
+            if ( pmqttobj->m_password.IsEmpty() ) {
+                opts.password = NULL;
+            }
+            else {
+                opts.password = bufferedPassword;
+                opts.flags |= NS_MQTT_HAS_PASSWORD;
+            }
+            
             ns_set_protocol_mqtt( nc );
-            ns_send_mqtt_handshake( nc, "vscpd" );
-#ifdef DEBUG        
-            printf( "MQTT: Connection opened\n" );
-#endif            
+        
+            if ( pmqttobj->m_bSubscribe ) {
+            
+                
+                opts.password = NULL;
+                opts.user_name = NULL;
+                
+            }
+            else {
+                
+                opts.flags = NS_MQTT_CLEAN_SESSION;
+                opts.keep_alive = 60;
+                opts.password = NULL;
+                opts.user_name = NULL;
+                
+                //ns_send_mqtt_handshake( nc, pmqttobj->m_sessionid.mbc_str() );
+                
+            }
+            
+            ns_send_mqtt_handshake_opt( nc, 
+                                                pmqttobj->m_sessionid.mbc_str(), 
+                                                opts );
+        
+        
 #ifndef WIN32
         syslog(LOG_INFO,
                 "VSCP MQTT Driver - Connection opened: %d\n" );
-#endif            
-            break;
+#endif   
+
+        }       
+        break;
 
         case NS_MQTT_CONNACK:
-            if ( msg->connack_ret_code != NS_MQTT_CONNACK_ACCEPTED ) {
-#ifdef DEBUG                
-                printf( "Got MQTT connection error: %d\n", msg->connack_ret_code );
-#endif               
+            if ( msg->connack_ret_code != NS_MQTT_CONNACK_ACCEPTED ) {              
 #ifndef WIN32
-        syslog(LOG_ERR,
-                "VSCP MQTT Driver - Got MQTT connection error: %d\n",
-                msg->connack_ret_code );
+                syslog(LOG_ERR,
+                    "VSCP MQTT Driver - Got MQTT connection error: %d\n",
+                    msg->connack_ret_code );
 #endif 
                 pmqttobj->m_bQuit = true;
                 return;
@@ -106,33 +150,28 @@ static void ev_handler( struct ns_connection *nc, int ev, void *p )
             if ( pmqttobj->m_bSubscribe ) {
                 ns_mqtt_subscribe( nc, pmqttobj->m_topic_list, 1, 42 );
             }
-            else {
-                ;
-            }
             break;
 
         case NS_MQTT_PUBACK:
-#ifdef DEBUG        
-            printf( "MQTT: Message publishing acknowledged (msg_id: %d)\n", msg->message_id );
-#endif           
             break;
 
         case NS_MQTT_SUBACK:
-#ifdef DEBUG        
-            printf( "MQTT: Subscription acknowledged\n" );
-#endif            
+            break;
+            
+        case NS_MQTT_PINGREQ:
+            ns_mqtt_pong( nc );
             break;
 
+        // Incoming message
         case NS_MQTT_PUBLISH:
-        {
-#ifdef DEBUG            
-            printf( "MQTT: Got incoming message %s: %.*s\n", msg->topic, ( int )msg->payload.len, msg->payload.p );
-#endif            
+        {            
             vscpEventEx eventEx;
 
-            if ( !strcmp( msg->topic, (const char *)pmqttobj->m_topic.mbc_str() ) ) {
+            if ( !strcmp( msg->topic, 
+                            (const char *)pmqttobj->m_topic.mbc_str() ) ) {
 
-                wxString str = wxString::FromAscii( ( const char * )msg->payload.p );
+                wxString str = 
+                    wxString::FromAscii( ( const char * )msg->payload.p );
                 if ( vscp_setVscpEventExFromString( &eventEx, str ) ) {
 
                     vscpEvent *pEvent = new vscpEvent;
@@ -141,7 +180,8 @@ static void ev_handler( struct ns_connection *nc, int ev, void *p )
                         pEvent->sizeData = 0;
                         pEvent->pdata = NULL;
 
-                        if ( vscp_doLevel2FilterEx( &eventEx, &pmqttobj->m_vscpfilter ) ) {
+                        if ( vscp_doLevel2FilterEx( &eventEx, 
+                                                &pmqttobj->m_vscpfilter ) ) {
 
                             if ( vscp_convertVSCPfromEx( pEvent, &eventEx ) ) {
                                 pmqttobj->m_mutexReceiveQueue.Lock();
@@ -163,9 +203,7 @@ static void ev_handler( struct ns_connection *nc, int ev, void *p )
         break;
 
         case NS_CLOSE:
-#ifdef DEBUG        
-            printf( "MQTT: Connection closed\n" );
-#endif 
+        
 #ifndef WIN32
         syslog(LOG_INFO,
                 "VSCP MQTTT Driver - Connection closed: %d\n" );
@@ -239,11 +277,16 @@ Cmqttobj::open( const char *pUsername,
 
     // Parse the configuration string. It should
     // have the following form
-    // “subscribe”|”publish”;channel;host:port;user;password;keepalive;filter;mask
+    // "sessionid";“subscribe”|”publish”;channel;host:port;user;password;keepalive;filter;mask
     // 
     wxStringTokenizer *ptkz = 
-            new wxStringTokenizer(wxString::FromAscii(pConfig), _(";\n"));
+            new wxStringTokenizer(wxString::FromAscii(pConfig), _(";"));
     assert( NULL != ptkz );
+    
+    // Session id
+    if ( ptkz->HasMoreTokens() ) {
+        m_sessionid = ptkz->GetNextToken();
+    }
 
     // Check if we should publish or subscribe
     if ( ptkz->HasMoreTokens() ) {
@@ -305,7 +348,9 @@ Cmqttobj::open( const char *pUsername,
     // 
     // We look for 
     //
-    //  _type   - “subscribe” to subscribe to a MQTT topic. ”publish” to 
+    //   _sessionid - Unique id for MQTT session. "session2"
+    //
+    //   _type   - “subscribe” to subscribe to a MQTT topic. ”publish” to 
     //              publish events to a MQTT topic. Defaults to “subscribe”.
     //
     //   _topic - This is a text string identifying the topic. It is 
@@ -342,6 +387,13 @@ Cmqttobj::open( const char *pUsername,
     //              the mqtt interface. If not give all events 
     //              are received. 
     //
+    
+    *pstrName = m_prefix +
+                wxString::FromAscii("_sessionid");
+    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( *pstrName, pwrkstr ) ) {
+        m_sessionid = *pwrkstr;
+    }
+    
     
     *pstrName = m_prefix +
                         wxString::FromAscii("_type");
@@ -381,7 +433,6 @@ Cmqttobj::open( const char *pUsername,
 
     *pstrName = m_prefix +
                 wxString::FromAscii("_keepalive");
-    
     int * pint = new int;
     assert( NULL != pint );
     if ( VSCP_ERROR_SUCCESS == m_srv.getVariableInt( *pstrName, pint ) ) {
@@ -450,14 +501,16 @@ Cmqttobj::open( const char *pUsername,
     }
 
     if ( m_bSubscribe ) {
+        // QOS set from variable read or constructor
         m_topic_list[ 0 ].topic = new char( m_topic.Length() + 1 );
+        assert( NULL != m_topic_list[ 0 ].topic ); 
         if ( NULL != m_topic_list[ 0 ].topic ) {
             memset( (void *)m_topic_list[ 0 ].topic, 
-                        0, 
-                        m_topic.Length() + 1 );
+                                0, 
+                                m_topic.Length() + 1 );
             memcpy( (void *)m_topic_list[ 0 ].topic, 
-                        m_topic.mbc_str(), 
-                        m_topic.Length() );
+                                m_topic.mbc_str(), 
+                                m_topic.Length() );
         }
     }
     
@@ -496,7 +549,7 @@ Cmqttobj::close( void )
     if (m_bQuit) return;
 
     m_bQuit = true; // terminate the thread
-    wxSleep(1);		// Give the thread some time to terminate
+    wxSleep(1);	    // Give the thread some time to terminate
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -535,28 +588,63 @@ CWrkThread::~CWrkThread()
 void *
 CWrkThread::Entry()
 {
+    int cnt_poll = 0;
     wxString str;
     struct ns_connection *nc;
-    struct ns_mgr mgr;
+    struct ns_mgr *pmgr = new ns_mgr;
+    assert( NULL != pmgr );
+    uint16_t msgid = 0;
 
-    mgr.user_data = m_pObj;
-    ns_mgr_init( &mgr, m_pObj );
+    //mgr.user_data = m_pObj;
+    ns_mgr_init( pmgr, m_pObj );
 
-    if ( NULL == ( nc = ns_connect( &mgr, 
+    if ( NULL == ( nc = ns_connect( pmgr, 
                                     (const char *)m_pObj->m_hostMQTT.mbc_str(), 
                                     ev_handler ) ) ) {
 #ifdef DEBUG                                        
         fprintf( stderr, 
                     "ns_connect(%s) failed\n", 
                     (const char *)m_pObj->m_hostMQTT.mbc_str() );
-#endif                    
+#endif  
+#ifndef WIN32
+        syslog(LOG_INFO,
+                "VSCP MQTTT Driver - ns_connet failed\n" );
+#endif                  
         return NULL;
     }
 
     if ( m_pObj->m_bSubscribe ) {
 
-        while (!TestDestroy() && !m_pObj->m_bQuit) {
-            ns_mgr_poll( &mgr, 100 );           
+        while ( !TestDestroy() && !m_pObj->m_bQuit ) {
+            
+                
+            ns_mgr_poll( pmgr, 100 );
+            cnt_poll++;
+            
+            
+            // Keep the connection alive
+            if ( cnt_poll > 600 ) {
+                ns_mqtt_pong( nc );
+                cnt_poll = 0;
+            }
+            
+            if ( m_pObj->m_bConnected  ) {    
+            
+            }
+            else {
+                
+                // Give system time to connect
+                //wxMilliSleep( 1000 );
+                
+                // Try to connect again
+                //nc = ns_connect( pmgr, 
+                //                    (const char *)m_pObj->m_hostMQTT.mbc_str(), 
+                //                    ev_handler );
+                
+                
+                //ns_mqtt_subscribe( nc, m_pObj->m_topic_list, 1, 42 );
+                
+            }
         }
 
     }
@@ -565,7 +653,7 @@ CWrkThread::Entry()
         
         while ( !TestDestroy() && !m_pObj->m_bQuit ) {
 
-            ns_mgr_poll( &mgr, 100 );
+            ns_mgr_poll( pmgr, 100 );
 
             // Wait for connection
             if ( !m_pObj->m_bConnected ) {
@@ -589,8 +677,8 @@ CWrkThread::Entry()
                     vscp_writeVscpEventToString( pEvent, str );
                     ns_mqtt_publish( nc, 
                                         m_pObj->m_topic.mbc_str(), 
-                                        65, 
-                                        NS_MQTT_QOS( 0 ), 
+                                        msgid++, 
+                                        NS_MQTT_QOS( m_pObj->m_topic_list[0].qos ), 
                                         (const char *)str.mbc_str(), 
                                         str.Length() );
                 }
@@ -614,6 +702,9 @@ CWrkThread::Entry()
     if ( m_pObj->m_bConnected ) {
         ns_mqtt_disconnect( nc );
     }
+    
+    delete pmgr;
+    pmgr = NULL;
 
     return NULL;
 

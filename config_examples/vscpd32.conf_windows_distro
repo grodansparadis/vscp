@@ -223,7 +223,7 @@
         <driver enable="false" >
             <name>VSCPMQTTDriver1</name>
             <path>C:\Program Files (x86)\VSCP\drivers\x86\vscpl2drv_mqtt.dll</path>
-            <config>subscribe;vscp;localhost;1883;;60</config>
+            <config>mysession1;subscribe;vscp;localhost;1883;;60</config>
             <guid>08:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>	
 

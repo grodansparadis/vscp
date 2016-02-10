@@ -239,7 +239,7 @@
         <driver enable="false" >
             <name>VSCP Level II MQTT Driver 1</name>
             <path>/usr/local/lib/vscpl2drv_mqtt.so</path>
-            <config>subscribe;vscp;localhost;1883;;60</config>
+            <config>mysession;subscribe;vscp;localhost;1883;;60</config>
             <guid>08:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>	
 
