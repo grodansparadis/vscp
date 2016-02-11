@@ -171,7 +171,7 @@ extern "C" {
         @return returns value as a 64-bit integer.
      */
     int64_t vscp_getDataCodingInteger(const uint8_t *pCode,
-		                                  uint8_t length );
+                                            uint8_t length );
 
     /*!
         Get normalised integer from coded event data
@@ -215,7 +215,8 @@ extern "C" {
         @param pvalue Pointer to double that holds the result
         @return true on success, false on failure.
     */
-    bool vscp_getVSCPMeasurementAsDouble(const vscpEvent *pEvent, double *pvalue);
+    bool vscp_getVSCPMeasurementAsDouble(const vscpEvent *pEvent, 
+                                            double *pvalue);
 
     /*!
         Get data in the VSCP data coding format to a string. Works for
@@ -225,7 +226,8 @@ extern "C" {
         @return true on success, false on failure.
      */
  
-    bool vscp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, wxString& str);
+    bool vscp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, 
+                                                    wxString& str);
 
     /*!
       Convert a floating point measurement value into VSCP data with the
@@ -409,8 +411,8 @@ extern "C" {
       @return CAN id with nickname == 0
      */
     uint32_t vscp_getCANALidFromVSCPdata(unsigned char priority,
-            const uint16_t vscp_class,
-            const uint16_t vscp_type);
+                                            const uint16_t vscp_class,
+                                            const uint16_t vscp_type);
 
     /*!
       Get CANAL id from VSCP event
@@ -476,14 +478,16 @@ extern "C" {
       @return True on success, false on failure.
     */
  
-    bool vscp_getGuidFromStringEx(vscpEventEx *pEventEx, const wxString& strGUID);
+    bool vscp_getGuidFromStringEx(vscpEventEx *pEventEx, 
+                                    const wxString& strGUID);
 
 
     /*!
       Fill event GUID from a string
      */
  
-    bool vscp_getGuidFromStringToArray(unsigned char *pGUID, const wxString& strGUID);
+    bool vscp_getGuidFromStringToArray(unsigned char *pGUID, 
+                                        const wxString& strGUID);
 
     /*!
       Write out GUID to string
@@ -493,7 +497,8 @@ extern "C" {
       @return True on success, false on failure.
     */
 
-    bool vscp_writeGuidArrayToString(const unsigned char *pGUID, wxString& strGUID);
+    bool vscp_writeGuidArrayToString(const unsigned char *pGUID, 
+                                        wxString& strGUID);
 
 
     /*!
@@ -504,7 +509,8 @@ extern "C" {
       @return True on success, false on failure.
      */
 
-    bool vscp_writeGuidToString(const vscpEvent *pEvent, wxString& strGUID);
+    bool vscp_writeGuidToString(const vscpEvent *pEvent,        
+                                    wxString& strGUID);
 
     
         /*!
@@ -515,7 +521,8 @@ extern "C" {
       @return True on success, false on failure.
      */
 
-    bool vscp_writeGuidToStringEx(const vscpEventEx *pEvent, wxString& strGUID);
+    bool vscp_writeGuidToStringEx(const vscpEventEx *pEvent,            
+                                    wxString& strGUID);
 
 
     /*!
@@ -526,7 +533,8 @@ extern "C" {
       @return True on success, false on failure.
      */
  
-    bool vscp_writeGuidToString4Rows(const vscpEvent *pEvent, wxString& strGUID);
+    bool vscp_writeGuidToString4Rows(const vscpEvent *pEvent,   
+                                        wxString& strGUID);
 
     
     /*!
@@ -536,8 +544,9 @@ extern "C" {
       @param strGUID Reference to string for written GUID
       @return True on success, false on failure.
     */
-	 
-    bool vscp_writeGuidToString4RowsEx(const vscpEventEx *pEvent, wxString& strGUID);
+    
+    bool vscp_writeGuidToString4RowsEx(const vscpEventEx *pEvent, 
+                                        wxString& strGUID);
 
 
 
@@ -554,7 +563,8 @@ extern "C" {
       @param pGUID2 Second GUID to compare
       @return True if the two GUID's are equal. False otherwise.
      */
-    bool vscp_isSameGUID(const unsigned char *pGUID1, const unsigned char *pGUID2);
+    bool vscp_isSameGUID(const unsigned char *pGUID1, 
+                            const unsigned char *pGUID2);
 
     /*!
         Reverse GUID
@@ -566,12 +576,14 @@ extern "C" {
     /*!
       Convert a standard VSCP event to the Ex version
      */
-    bool vscp_convertVSCPtoEx(vscpEventEx *pEventEx, const vscpEvent *pEvent);
+    bool vscp_convertVSCPtoEx(vscpEventEx *pEventEx, 
+                                const vscpEvent *pEvent);
 
     /*!
       Convert an Ex event to a standard VSCP event
      */
-    bool vscp_convertVSCPfromEx(vscpEvent *pEvent, const vscpEventEx *pEventEx);
+    bool vscp_convertVSCPfromEx(vscpEvent *pEvent, 
+                                    const vscpEventEx *pEventEx);
 
     /*!
       Delete a standard VSCP event
@@ -620,7 +632,7 @@ extern "C" {
         priority,class,type,GUID and all is optional but if given must be given in order.
         @param pFilter Filter structure to write filter to.
         @param strFilter Filter in string form 
-                filter-priority, filter-class, filter-type, filter-GUID
+                filter-priority, filter-class, filter-type, filter-GUID
         @return true on success, false on failure.
      */
  
