@@ -231,7 +231,12 @@ static void ev_handler( struct ns_connection *nc, int ev, void *p )
                                     eventEx.data[ 3 ] = pmqttobj->m_simple_unit;
                                     
                                     double val;
+#if  wxMAJOR_VERSION < 3                                    
+                                    char *pNext;                                    
+                                    val = strtod( str.mbc_str(), &pNext );
+#else                                    
                                     str.ToCDouble( &val );
+#endif                                    
                                     uint8_t *p = (uint8_t *)&val;
                                     
                                     if ( wxIsPlatformLittleEndian() ) {
@@ -962,6 +967,7 @@ CWrkThread::Entry()
                             memset( buf, 0, sizeof( buf ) );
                             memcpy( buf, pEvent->pdata + 4, pEvent->sizeData - 4 );
                             str = wxString::FromAscii( buf );
+                            
                             goto PUBLISH;
                     }    
                     break;
@@ -1011,7 +1017,6 @@ CWrkThread::Entry()
                             str = wxString::FromAscii( buf );
                                     
                             goto PUBLISH;
-                        
                         
                         }
                         break;    
