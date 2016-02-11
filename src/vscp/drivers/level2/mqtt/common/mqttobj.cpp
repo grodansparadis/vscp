@@ -125,7 +125,6 @@ static void ev_handler( struct ns_connection *nc, int ev, void *p )
                                             pmqttobj->m_sessionid.mbc_str(), 
                                             opts );
         
-        
 #ifndef WIN32
         syslog(LOG_INFO,
                 "VSCP MQTT Driver - Connection opened: %d\n" );
@@ -175,8 +174,11 @@ static void ev_handler( struct ns_connection *nc, int ev, void *p )
             if ( !strcmp( msg->topic, 
                             (const char *)pmqttobj->m_topic.mbc_str() ) ) {
 
+                char valbuf[512];
+                memset( valbuf, 0, sizeof( valbuf ) );
+                memcpy( valbuf, msg->payload.p, MIN( 511, msg->payload.len ) );
                 wxString str = 
-                    wxString::FromAscii( ( const char * )msg->payload.p );
+                    wxString::FromAscii( valbuf );
                     
                 if ( pmqttobj->m_bSimplify ) {
                 
@@ -291,7 +293,7 @@ static void ev_handler( struct ns_connection *nc, int ev, void *p )
                                     float val = atof( str.mbc_str() );
                                     
                                     wxUINT32_SWAP_ON_LE( val );
-                                    memcpy( eventEx.data, (uint8_t *)&val, 4 );
+                                    memcpy( eventEx.data + 1, (uint8_t *)&val, 4 );
                                     
                                     eventEx.data[ 0 ] = VSCP_DATACODING_SINGLE |
                                             ( ( pmqttobj->m_simple_unit << 3 ) & 
@@ -494,7 +496,7 @@ Cmqttobj::open( const char *pUsername,
     // 
     // We look for 
     //
-    //   _sessionid - Unique id for MQTT session. "session2"
+    //   _sessionid - Unique id for MQTT session, e.g. "session2"
     //
     //   _type   - “subscribe” to subscribe to a MQTT topic. ”publish” to 
     //              publish events to a MQTT topic. Defaults to “subscribe”.
@@ -533,6 +535,12 @@ Cmqttobj::open( const char *pUsername,
     //              the mqtt interface. If not give all events 
     //              are received. 
     //
+    //   _simple - If available simlicty will be enabled which makes it 
+    //              possible to send just numbers over MQTT but still get
+    //              valid events into the system. The functionality works the 
+    //              other way around to so measurement events can sen data
+    //              over MQTT as just a number possibly using the topic as
+    //              a way to tell what is sent.
     
     *pstrName = m_prefix +
                 wxString::FromAscii("_sessionid");
@@ -541,7 +549,7 @@ Cmqttobj::open( const char *pUsername,
     }
     
     *pstrName = m_prefix +
-                        wxString::FromAscii("_type");
+                    wxString::FromAscii("_type");
     m_srv.getVariableString( *pstrName, pwrkstr );
 
     // Check for subscribe/publish
@@ -969,8 +977,8 @@ CWrkThread::Entry()
                             str = wxString::FromAscii( buf );
                             
                             goto PUBLISH;
-                    }    
-                    break;
+                        }    
+                        break;
                                 
                         case VSCP_CLASS2_MEASUREMENT_FLOAT:
                         {
@@ -1036,6 +1044,10 @@ CWrkThread::Entry()
                                 break;
                             }
                             
+                            vscp_getVSCPMeasurementAsString( pEvent, str );
+                            goto PUBLISH;
+                            
+                        /*    
                             if ( VSCP_DATACODING_SINGLE == 
                                 ( pEvent->pdata[ 0 ] & VSCP_MASK_DATACODING_TYPE ) ) {
                                         
@@ -1049,19 +1061,23 @@ CWrkThread::Entry()
                             }
                             else {  // STRING
                                 
-                                char buf[ 8 ];
+                                char buf[ 10 ];
                                 memset( buf, 0, sizeof( buf ) );
-                                if ( pEvent->sizeData > 7 ) {
+                                if ( pEvent->sizeData >= 8 ) {
                                     memcpy( buf, pEvent->pdata + 1, 7 );
                                 }
                                 else {
                                     memcpy( buf, pEvent->pdata + 1, pEvent->sizeData - 1 );                                        
                                 }
+                                int ttt = pEvent->pdata[1];
+                                ttt = pEvent->pdata[2];
+                                ttt = pEvent->pdata[3];
                                 str = wxString::FromAscii( buf );
                                 goto PUBLISH;
                                     
                             }
-                            
+                        */
+                         
                         }
                         break;
                             
