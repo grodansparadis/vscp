@@ -374,7 +374,6 @@ wxString& vscp_getDataCodingString(const unsigned char *pCode,
     }
 
     return str;
-
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -404,7 +403,7 @@ bool vscp_getDataCodingString(const unsigned char *pCode,
 // getMeasurementAsFloat
 //
 
-float vscp_getMeasurementAsFloat(const unsigned char *pCode, 
+float vscp_getMeasurementAsFloat( const unsigned char *pCode, 
                                     unsigned char length)
 {
     float *pfloat = NULL;
@@ -413,13 +412,10 @@ float vscp_getMeasurementAsFloat(const unsigned char *pCode,
     // Check pointers
     if ( NULL == pCode ) return false;
     
-    //float value;
-    //value = std::numeric_limits<float>::infinity();
     if (length >= 5) {
         pfloat = (float*)(pCode + 1);
         value = *pfloat;
-        //value = pfloat[0];
-        // please insert test for (!NaN || !INF)
+        // TODO: please insert test for (!NaN || !INF)
     }
     
     return value;
@@ -430,8 +426,8 @@ float vscp_getMeasurementAsFloat(const unsigned char *pCode,
 //
 //
 
-bool vscp_getVSCPMeasurementAsString( const vscpEvent *pEvent, wxString& strValue )
-
+bool vscp_getVSCPMeasurementAsString( const vscpEvent *pEvent, 
+                                        wxString& strValue )
 {
     int i, j;
     int offset = 0;
@@ -439,133 +435,151 @@ bool vscp_getVSCPMeasurementAsString( const vscpEvent *pEvent, wxString& strValu
     // Check pointers
     if ( NULL == pEvent ) return false;
 
-
     strValue.Empty();
-
 
     // Check pointers
     if (NULL == pEvent) return false;
     if (NULL == pEvent->pdata) return false;
-
-    // If class >= 512 and class < 1024 we
-    // have GUID in front of data. 
-    if ( ( pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL)  ) {
-        offset = 16;
-    }
     
-    // Must be at least two data bytes
-    if (pEvent->sizeData-offset < 2) return false;
-
-    unsigned short type = (0x07 & (pEvent->pdata[0+offset] >> 5));
-    switch (type) {
-
-    case 0: // series of bits
-        for (i = 1; i < (pEvent->sizeData-offset); i++) {
-
-            for ( j=7; j>=0; j--) {
-
-                if (pEvent->pdata[ i+offset ] & (1<<j)) {		
-                    strValue += wxT("1");				
-                } 
-                else {
-                    strValue += wxT("0");
-                }
-
-                //if ((i != (pEvent->sizeData - 1 - offset)) && (j != 0)) {
-                    //strValue += wxT(",");
-                //}
-            }
-            strValue += wxT(" ");
-        }
-        break;
-
-    case 1: // series of bytes
-        for (i = 1; i < (pEvent->sizeData-offset); i++) {
-
-            strValue += wxString::Format(wxT("%d"), pEvent->pdata[ i+offset ]);
+    if ( VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class ) {
+        char buf[ 512 ];
         
-            if (i != (pEvent->sizeData - 1 - offset)) {
+        memset( buf, 0, sizeof( buf ) );
+        memcpy( buf, pEvent->pdata + 4, pEvent->sizeData-4 );
+        strValue = wxString::FromUTF8( buf );
+    }
+    else if if ( VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class  ) {
+        
+        char buf[ 512 ];
 
-                strValue += wxT(",");
-
-            }
+        memset( buf, 0, sizeof( buf ) );
+        memcpy( buf, pEvent->pdata + 4, 8 );    // Double
+        wxUINT64_SWAP_ON_LE( buf );             // Take care of byte order
+#if ( wxMAJOR_VERSION >= 3 )
+        strValue = wxString::FromDouble( *( ( double * )buf ) );
+#else
+        strValue = wxString::Format(_("%f"), *( ( double * )buf ) );
+#endif
+    }
+    else {
+        
+        // If class >= 512 and class < 1024 we
+        // have GUID in front of data. 
+        if ( ( pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL)  ) {
+            offset = 16;
         }
-        break;
-
-    case 2: // string
-    {
-        char strData[ 9 ];
-        memset(strData, 0, sizeof( strData));
-        for (i = 1; i < (pEvent->sizeData-offset); i++) {
-            strData[ i - 1 ] = pEvent->pdata[ i+offset ];
-        }
-
-        strValue = wxString::FromAscii(strData);
     
-    }
-    break;
+        // Must be at least two data bytes
+        if (pEvent->sizeData-offset < 2) return false;
 
-    case 3: // integer
-    {
-        double value = 
-            (double)vscp_getDataCodingInteger( pEvent->pdata+offset, 
-                                                pEvent->sizeData-offset );
-        strValue.Printf(_("%.0lf"), value );
-    }
-    break;
+        unsigned short type = (0x07 & (pEvent->pdata[0+offset] >> 5));
+        switch (type) {
 
-    case 4: // normalized integer
-    {
-        double value = 
-            vscp_getDataCodingNormalizedInteger( pEvent->pdata+offset, 
-                                                    pEvent->sizeData-offset);
-        strValue.Printf(_("%lf"), value );
-    }
-    break;
+        case 0: // series of bits
+            for (i = 1; i < (pEvent->sizeData-offset); i++) {
 
+                for ( j=7; j>=0; j--) {
 
-    case 5: // Floating point value
-    {
-        // s eeeeeeee mmmmmmmmmmmmmmmmmmmmmmm 
-        // s = sign bit( 1-bit) 
-        // e = exponent ( 8-bit) 
-        // m = mantissa (23-bit)
-        int sign = 1;
-        unsigned char exponent;
+                    if (pEvent->pdata[ i+offset ] & (1<<j)) {		
+                        strValue += wxT("1");				
+                    } 
+                    else {
+                        strValue += wxT("0");
+                    }
 
-        // Check the sign
-        if (pEvent->pdata[ 1+offset ] & 0x80) {
-            sign = -1;
+                }   
+                strValue += wxT(" ");
+            }
+            break;
+
+        case 1: // series of bytes
+            for (i = 1; i < (pEvent->sizeData-offset); i++) {
+
+                strValue += wxString::Format( wxT("%d"), 
+                                                pEvent->pdata[ i+offset ]);
+        
+                if (i != (pEvent->sizeData - 1 - offset)) {
+                    strValue += wxT(",");
+                }
+            }
+            break;
+
+        case 2: // string
+        {
+            char strData[ 9 ];
+            memset(strData, 0, sizeof( strData));
+            for (i = 1; i < (pEvent->sizeData-offset); i++) {
+                strData[ i - 1 ] = pEvent->pdata[ i+offset ];
+            }
+
+            strValue = wxString::FromAscii(strData);
+    
         }
-
-        // Clear the sign bit
-        pEvent->pdata[ 1+offset ] &= 0x7f;
-
-        // Get the exponent
-        exponent = (pEvent->pdata[ 1+offset ] << 1);
-        if (pEvent->pdata[ 2+offset ] & 0x80) {
-            exponent = exponent | 1;
-        }
-
-        // Clear the exponent
-        pEvent->pdata[ 1+offset ] = 0;
-        pEvent->pdata[ 2+offset ] &= 0x7f;
-
-        uint32_t value = *((uint32_t *) (pEvent->pdata + 1 + offset));
-        value = wxUINT32_SWAP_ON_LE(value);
-
-        wxDouble dValue = value;
-        dValue = sign * (dValue * pow(10.0, exponent));
-        strValue.Printf(_("%f"), dValue);
-
-    }
-    break;
-
-    case 6: // Not defined yet
         break;
 
-    case 7: // Not defined yet
+        case 3: // integer
+        {
+            double value = 
+                (double)vscp_getDataCodingInteger( pEvent->pdata+offset, 
+                                                    pEvent->sizeData-offset );
+            strValue.Printf(_("%.0lf"), value );
+        }
         break;
+
+        case 4: // normalized integer
+        {
+            double value = 
+                vscp_getDataCodingNormalizedInteger( pEvent->pdata+offset, 
+                                                      pEvent->sizeData-offset);
+            strValue.Printf(_("%lf"), value );
+        }
+        break;
+
+
+        case 5: // Floating point value
+        {
+            // s eeeeeeee mmmmmmmmmmmmmmmmmmmmmmm 
+            // s = sign bit( 1-bit) 
+            // e = exponent ( 8-bit) 
+            // m = mantissa (23-bit)
+            int sign = 1;
+            unsigned char exponent;
+
+            // Check the sign
+            if (pEvent->pdata[ 1+offset ] & 0x80) {
+                sign = -1;
+            }
+
+            // Clear the sign bit
+            pEvent->pdata[ 1+offset ] &= 0x7f;
+
+            // Get the exponent
+            exponent = (pEvent->pdata[ 1+offset ] << 1);
+            if (pEvent->pdata[ 2+offset ] & 0x80) {
+                exponent = exponent | 1;
+            }
+
+            // Clear the exponent
+            pEvent->pdata[ 1 + offset ] = 0;
+            pEvent->pdata[ 2 + offset ] &= 0x7f;
+
+            uint32_t value = *((uint32_t *) (pEvent->pdata + 1 + offset));
+            value = wxUINT32_SWAP_ON_LE(value);
+
+            wxDouble dValue = value;
+            dValue = sign * (dValue * pow(10.0, exponent));
+            strValue.Printf(_("%f"), dValue);
+
+        }
+        break;
+
+        case 6: // Not defined yet
+            break;
+
+        case 7: // Not defined yet
+            break;
+            
+        }
     }
 
     return true;
@@ -600,7 +614,7 @@ bool vscp_getVSCPMeasurementAsDouble(const vscpEvent *pEvent, double *pvalue)
         if ( !str.ToDouble( pvalue ) ) return false;
 
     }
-    else if ( VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class ){
+    else if ( VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class ) {
 
         wxString str;
         char buf[512];
@@ -610,6 +624,9 @@ bool vscp_getVSCPMeasurementAsDouble(const vscpEvent *pEvent, double *pvalue)
 
         str = wxString::FromAscii( buf );
         str.ToDouble( pvalue );
+    
+    }
+    else if ( VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class ) {
     
     }
     else {
@@ -783,7 +800,7 @@ bool vscp_convertFloatToFloatEventData( uint8_t *pdata,
                                                 uint8_t unit,
                                                 uint8_t sensoridx )
 {
-    // Max an min for Single-precision floating-point IEEE 754-1985
+    // Max and min for Single-precision floating-point IEEE 754-1985
     double float_max = 3.4e38;
     double float_min = -3.4e38;
 
@@ -904,12 +921,13 @@ bool vscp_makeStringMeasurementEvent( vscpEvent *pEvent,
 
     sensoridx &= 7;     // Mask of invalid bits
 
-    strValue = wxString::Format(_("%g"), value );
-    pEvent->sizeData = ( strValue.Length() > 7 ) ? 8 : ( strValue.Length() + 1 );
+    strValue = wxString::Format(_("%f"), value );
+    pEvent->sizeData = 
+        ( strValue.Length() > 7 ) ? 8 : ( strValue.Length() + 1 );
 
     // Allocate data if needed
     if ( ( NULL == pEvent->pdata ) &&
-         ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) ) {
+            ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) ) {
         offset = 0;
         pEvent->pdata = new uint8_t[ pEvent->sizeData + 1 ];
         if ( NULL == pEvent->pdata ) return false;
@@ -940,7 +958,7 @@ bool vscp_getVSCPMeasurementZoneAsString(const vscpEvent *pEvent, wxString& str)
 }
 
 
-//////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // replaceBackslash
 //
 
@@ -955,7 +973,7 @@ wxString& vscp_replaceBackslash(wxString& wxstr)
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // readStringValue
 
 uint32_t vscp_readStringValue(const wxString& strval)
@@ -4043,16 +4061,13 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
     case VSCP_CLASS2_MEASUREMENT_FLOAT:
     {
         wxString strValue;
-        char buf[ 512 ];
-
-        memset( buf, 0, sizeof( buf ) );
-        memcpy( buf, pEvent->pdata + 4, 8 );    // Double
-        wxUINT64_SWAP_ON_LE( buf );             // Take care of byte order
-#if ( wxMAJOR_VERSION >= 3 )
-        strValue = wxString::FromDouble( *( ( double * )buf ) );
-#else
-        strValue = wxString::Format(_("%f"), *( ( double * )buf ) );
-#endif
+        
+        
+        if ( !vscp_getVSCPMeasurementAsString( pEvent, strValue ) ) {
+            strValue = _("ERROR");
+        }
+        
+        
         strValue = _("[double] = ") + strValue;
 
         strOutput += writeMeasurementValue( pEvent->vscp_type,
@@ -4060,7 +4075,9 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
                                             pEvent->pdata[ 0 ],
                                             strValue );
         strOutput += _("\n") + strOutput;
-        strOutput += wxString::Format( _(" Zone=%d Subzone=%d\n"), pEvent->pdata[ 1 ], pEvent->pdata[ 2 ] );
+        strOutput += wxString::Format( _(" Zone=%d Subzone=%d\n"), 
+                                            pEvent->pdata[ 1 ], 
+                                            pEvent->pdata[ 2 ] );
 
     } // measurement Class 1
 

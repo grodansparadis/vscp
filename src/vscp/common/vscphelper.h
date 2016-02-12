@@ -151,7 +151,7 @@ extern "C" {
         @return Measurement datacoding byte or zero if its not an 
         event with a datacoding.
     */
-    uint8_t vscp_getMeasurementDataCoding(const vscpEvent *pEvent);
+    uint8_t vscp_getMeasurementDataCoding( const vscpEvent *pEvent );
 
     /*!
         Get bitarray from coded event data
@@ -160,7 +160,7 @@ extern "C" {
         the first normalize byte.
         @return Bitarray as a unsigned 64-bit integer.
     */
-    uint64_t vscp_getDataCodingBitArray(const uint8_t *pCode, uint8_t length);
+    uint64_t vscp_getDataCodingBitArray( const uint8_t *pCode, uint8_t length);
 
 
     /*!
@@ -170,7 +170,7 @@ extern "C" {
         the first normalise byte.
         @return returns value as a 64-bit integer.
      */
-    int64_t vscp_getDataCodingInteger(const uint8_t *pCode,
+    int64_t vscp_getDataCodingInteger( const uint8_t *pCode,
                                             uint8_t length );
 
     /*!
@@ -180,7 +180,7 @@ extern "C" {
         the first normalise byte.
         @return returns value as a double.
     */
-    double vscp_getDataCodingNormalizedInteger(const unsigned char *pCode, 
+    double vscp_getDataCodingNormalizedInteger( const unsigned char *pCode, 
                                                     unsigned char length);
 
     /*!
@@ -191,31 +191,47 @@ extern "C" {
         @return Returns unicode UTF-8 string of event data
     */
 
-    bool vscp_getDataCodingString(const unsigned char *pCode, 
+    bool vscp_getDataCodingString( const unsigned char *pCode, 
                                             unsigned char dataSize,
                                             wxString& strResult );
 
 
     /*!
-        Get data in the VSCP data coding format to a string. Works for
-        CLASS1.MEAUREMENT, CLASS2_LEVEL1.MEASUREMENT
+        Write data from event in the VSCP data coding format to a string. 
+        
+        Works for
+        
+        CLASS1.MEASUREMENT
+        CLASS2_LEVEL1.MEASUREMENT 
+        CLASS2_MEASUREMENT_FLOAT
+        CLASS2_MEASUREMENT_STR
+         
         @param pEvent Pointer to VSCP event.
         @param str String that holds the result
         @return true on success, false on failure.
     */
 
-    bool vscp_getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& str);
+    bool vscp_getVSCPMeasurementAsString( const vscpEvent *pEvent, 
+                                            wxString& str);
 
     
     /*!
-        Get data in the VSCP data coding format as a double. Works for
-        CLASS1.MEAUREMENT, CLASS2_LEVEL1.MEASUREMENT, 
-        VSCP_CLASS1_MEASUREZONE, VSCP_CLASS1_SETVALUEZONE
+        Write data from event in the VSCP data coding format as a double. 
+        
+        Works for
+        
+        CLASS1.MEASUREMENT
+        CLASS2_LEVEL1.MEASUREMENT
+        VSCP_CLASS1_MEASUREZONE
+        VSCP_CLASS1_SETVALUEZONE
+        CLASS2_MEASUREMENT_FLOAT
+        CLASS2_MEASUREMENT_STR
+        
         @param pEvent Pointer to VSCP event.
         @param pvalue Pointer to double that holds the result
         @return true on success, false on failure.
     */
-    bool vscp_getVSCPMeasurementAsDouble(const vscpEvent *pEvent, 
+    bool vscp_getVSCPMeasurementAsDouble( const vscpEvent *pEvent, 
                                             double *pvalue);
 
     /*!
