@@ -46,7 +46,7 @@
  // This file may be a copy of the original file. This is because the file is
  // copied to other projects as a convinience. Thus editing the copy will not make
  // it to the original and will be overwritten.
- // The original file can be foud in the vscp_softare source tree under 
+ // The original file can be foud in the vscp software source tree under 
  // src/vscp/common 
 
 
@@ -104,8 +104,8 @@
 #define VSCP_CLASS2_LEVEL1_MEASUREZONE                  ( 512 + 65 )
 #define VSCP_CLASS2_LEVEL1_MEASUREMENT32                ( 512 + 70 )
 #define VSCP_CLASS2_LEVEL1_SETVALUEZONE                 ( 512 + 85 )
-#define VSCP_CLASS1_WEATHER                             ( 512 + 90 )
-#define VSCP_CLASS1_WEATHER_FORECAST                    ( 512 + 95 )
+#define VSCP_CLASS2_LEVEL1_WEATHER                      ( 512 + 90 )
+#define VSCP_CLASS2_LEVEL1_WEATHER_FORECAST             ( 512 + 95 )
 #define VSCP_CLASS2_LEVEL1_PHONE                        ( 512 + 100 )
 #define VSCP_CLASS2_LEVEL1_LIN                          ( 512 + 101 )
 #define VSCP_CLASS2_LEVEL1_REMOTE                       ( 512 + 110 )

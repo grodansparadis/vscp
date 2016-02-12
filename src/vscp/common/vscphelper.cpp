@@ -448,7 +448,7 @@ bool vscp_getVSCPMeasurementAsString( const vscpEvent *pEvent,
         memcpy( buf, pEvent->pdata + 4, pEvent->sizeData-4 );
         strValue = wxString::FromUTF8( buf );
     }
-    else if if ( VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class  ) {
+    else if ( VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class  ) {
         
         char buf[ 512 ];
 
