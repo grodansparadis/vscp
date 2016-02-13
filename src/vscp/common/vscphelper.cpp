@@ -457,8 +457,9 @@ bool vscp_getVSCPMeasurementAsString( const vscpEvent *pEvent,
 
         memset( buf, 0, sizeof( buf ) );
         memcpy( buf, pEvent->pdata + 4, 8 );    // Double
-        //wxUINT64_SWAP_ON_LE( buf );             // Take care of byte order
+        //wxUINT64_SWAP_ON_LE( buf );           // Does not work. Hmmm        
         
+        // Take care of byte order on little endian
         if ( wxIsPlatformLittleEndian() ) {
                                         
             for ( int i=7; i>0; i--) {
@@ -4085,12 +4086,12 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
                 memcpy( buf, pEvent->pdata + 3, pEvent->sizeData-3 );
                 strValue = wxString::FromUTF8( buf );
 
-                strOutput += writeMeasurementValue( pEvent->vscp_type,
-                                                    pEvent->pdata[ 3 ],
-                                                    pEvent->pdata[ 0 ],
-                                                    strValue );
+                if ( !vscp_getVSCPMeasurementAsString( pEvent, strValue ) ) {
+                    strValue = _("ERROR");
+                }
 
-                strOutput += _( "\n" ) + strOutput;
+                strOutput = _("\n[string] = ") + strValue;
+                strOutput += _( "\n" );
                 strOutput += wxString::Format( _(" Unit=%d Sensor index=%d\n"), 
                                                     pEvent->pdata[ 3 ], 
                                                     pEvent->pdata[ 0 ] );
@@ -4109,10 +4110,6 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
             {
                 wxString strValue;
         
-                /*strOutput += writeMeasurementValue( pEvent->vscp_type,
-                                                    pEvent->pdata[ 3 ],
-                                                    pEvent->pdata[ 0 ],
-                                                    strValue );*/
                 if ( !vscp_getVSCPMeasurementAsString( pEvent, strValue ) ) {
                     strValue = _("ERROR");
                 }

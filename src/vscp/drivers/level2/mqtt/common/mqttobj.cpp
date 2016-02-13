@@ -252,9 +252,6 @@ static void ev_handler( struct ns_connection *nc, int ev, void *p )
                                         memcpy ( eventEx.data + 4, p, 8 );
                                     }
                                     
-                                    uint8_t ttt[100];
-                                    memcpy( ttt, eventEx.data, 9 );
-                                    
                                     // Set data size
                                     eventEx.sizeData = 8 + 4;
                                     
