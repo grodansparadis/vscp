@@ -121,4 +121,6 @@
     <File Name="../Makefile.in"/>
     <File Name="../Makefile"/>
   </VirtualDirectory>
+  <Dependencies Name="Debug"/>
+  <Dependencies Name="Release"/>
 </CodeLite_Project>

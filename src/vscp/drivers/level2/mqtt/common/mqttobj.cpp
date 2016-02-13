@@ -244,15 +244,19 @@ static void ev_handler( struct ns_connection *nc, int ev, void *p )
                                     if ( wxIsPlatformLittleEndian() ) {
                                         
                                         for ( int i=7; i>0; i--) {
-                                            eventEx.data[ 7-i ] = *(p+i);
+                                            eventEx.data[ 4+7-i ] = *(p+i);
                                         }
+                                        
                                     }
                                     else {
-                                        memcpy ( eventEx.data, p, 8 );
+                                        memcpy ( eventEx.data + 4, p, 8 );
                                     }
                                     
+                                    uint8_t ttt[100];
+                                    memcpy( ttt, eventEx.data, 9 );
+                                    
                                     // Set data size
-                                    eventEx.sizeData = 8;
+                                    eventEx.sizeData = 8 + 4;
                                     
                                 }
                                 break; 

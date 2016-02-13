@@ -450,11 +450,23 @@ bool vscp_getVSCPMeasurementAsString( const vscpEvent *pEvent,
     }
     else if ( VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class  ) {
         
-        char buf[ 512 ];
+        uint8_t buf[ 8 ];
+        
+        // Must be correct data
+        if ( 12 != pEvent->sizeData  ) return false;
 
         memset( buf, 0, sizeof( buf ) );
         memcpy( buf, pEvent->pdata + 4, 8 );    // Double
-        wxUINT64_SWAP_ON_LE( buf );             // Take care of byte order
+        //wxUINT64_SWAP_ON_LE( buf );             // Take care of byte order
+        
+        if ( wxIsPlatformLittleEndian() ) {
+                                        
+            for ( int i=7; i>0; i--) {
+                buf[ i ] = buf[ 7-i ];
+            }
+                                        
+        }
+
 #if ( wxMAJOR_VERSION >= 3 )
         strValue = wxString::FromDouble( *( ( double * )buf ) );
 #else
@@ -706,10 +718,10 @@ bool vscp_convertFloatToNormalizedEventData( uint8_t *pdata,
     // No data assigned yet
     *psize = 0;
 
-    unit &= 3;          // Mask of invalid bits
-    unit <<= 3;         // Shift to correct position
+    unit &= VSCP_MASK_DATACODING_UNIT;          // Mask of invalid bits
+    unit <<= 3;                                 // Shift to correct position
 
-    sensoridx &= 7;     // Mask of invalid bits
+    sensoridx &= VSCP_MASK_DATACODING_INDEX;    // Mask of invalid bits
 
     char buf[128];
     bool bNegative = (value>0) ? false : true ;
@@ -3271,820 +3283,854 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 
     // Check pointer
     if (NULL == pEvent) return strOutput;
-
-    // If class >= 512 and class <1024 we
-    // have GUID in front of data. 
-    if ( ( pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL ) )  {
-        offset = 16;
-    }
-
-    switch ( pEvent->vscp_class-( offset ? 512 : 0 ) ) {
-
-    // **** CLASS ****
-    case VSCP_CLASS1_PROTOCOL: 
-    {
-        switch ( pEvent->vscp_type ) {
-
-        case VSCP_TYPE_UNDEFINED:
-            strOutput = _("This event is reserved and should not be seen here.");
-            break;
-
-        case VSCP_TYPE_PROTOCOL_NEW_NODE_ONLINE:
-            if ( 0xff != pEvent->GUID[ 15 ] ) {
-                strOutput = wxString::Format( _("New node with nickname=0x%02X"), 
-                                                pEvent->GUID[ 15 ] );
-            }
-            else {
-                strOutput = wxString::Format( _("Probe for nickname=0x%02X"),
-                                                pEvent->pdata[ 0+offset ] );
-                if ( 0 == pEvent->pdata[ 0+offset ] ) {
-                    strOutput += _( "\n(Check if there is a server that should supply a nickname.)" );
-                }
-            }
-            break;
-
-        case VSCP_TYPE_PROTOCOL_PROBE_ACK:
-            strOutput = wxString::Format( _("The nickname=0x%02X is in use"), 
-                                                pEvent->GUID[ 15 ] );
-            if ( 0 == pEvent->GUID[ 15 ] ) {
-                strOutput += _( "\n(Server will suppy nickname.)");
-            }
-            break;
-
-        case VSCP_TYPE_PROTOCOL_SET_NICKNAME:
-            strOutput = wxString::Format( _( "Set/change nickname for node 0x%02X from 0x%02X to 0x%02X." ),
-                                          pEvent->GUID[ 15 ],
-                                          pEvent->pdata[ 0+offset ],
-                                          pEvent->pdata[ 1+offset ] );
-            break;
-
-        case VSCP_TYPE_PROTOCOL_NICKNAME_ACCEPTED:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_DROP_NICKNAME:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_READ_REGISTER:
-            strOutput = wxString::Format( _("node=0x%02X register=0x%02X"),
-                                        pEvent->pdata[ 0+offset ],
-                                        pEvent->pdata[ 1+offset ] );
-            break;
-
-        case VSCP_TYPE_PROTOCOL_RW_RESPONSE:
-            strOutput = wxString::Format( _("node=0x%02X register=0x%02X content=0x%02X "),
-                                        pEvent->GUID[ 15 ],
-                                        pEvent->pdata[ 0+offset ],
-                                        pEvent->pdata[ 1+offset ] );
-            break;
-
-        case VSCP_TYPE_PROTOCOL_WRITE_REGISTER:
-            strOutput = wxString::Format( _("node=0x%02X register=0x%02X content=0x%02X "),
-                                        pEvent->GUID[ 0 ],
-                                        pEvent->pdata[ 1+offset ],
-                                        pEvent->pdata[ 2+offset ] );
-            break;
-
-        case VSCP_TYPE_PROTOCOL_ENTER_BOOT_LOADER:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_ACK_BOOT_LOADER:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_NACK_BOOT_LOADER:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_START_BLOCK:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_BLOCK_DATA:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_BLOCK_DATA_ACK:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_BLOCK_DATA_NACK:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA_ACK:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA_NACK:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_ACTIVATE_NEW_IMAGE:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_RESET_DEVICE:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_PAGE_READ:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_PAGE_WRITE:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_RW_PAGE_RESPONSE:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_HIGH_END_SERVER_PROBE:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_HIGH_END_SERVER_RESPONSE:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_INCREMENT_REGISTER:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_DECREMENT_REGISTER:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_WHO_IS_THERE:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_WHO_IS_THERE_RESPONSE:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_GET_MATRIX_INFO:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_GET_MATRIX_INFO_RESPONSE:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_GET_EMBEDDED_MDF:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_GET_EMBEDDED_MDF_RESPONSE:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_READ:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_WRITE:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_GET_EVENT_INTEREST:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_GET_EVENT_INTEREST_RESPONSE:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_ACTIVATE_NEW_IMAGE_ACK:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_ACTIVATE_NEW_IMAGE_NACK:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_START_BLOCK_ACK:
-            break;
-
-        case VSCP_TYPE_PROTOCOL_START_BLOCK_NACK:
-            break;
-        }
-    }
-    break;
-
-    // **** CLASS ****
-    case VSCP_CLASS1_ALARM:
-    {
-
-        switch ( pEvent->vscp_type ) {
-
-        case VSCP_TYPE_ALARM_WARNING:
-            break;
-
-        case VSCP_TYPE_ALARM_ALARM:
-            break;
-
-        case VSCP_TYPE_ALARM_SOUND:
-            break;
-
-        case VSCP_TYPE_ALARM_LIGHT:
-            break;
-
-        case VSCP_TYPE_ALARM_POWER:
-            break;
-
-        case VSCP_TYPE_ALARM_EMERGENCY_STOP:
-            break;
-
-        case VSCP_TYPE_ALARM_EMERGENCY_PAUSE:
-            break;
-
-        case VSCP_TYPE_ALARM_EMERGENCY_RESET:
-            break;
-
-        case VSCP_TYPE_ALARM_EMERGENCY_RESUME:
-            break;
-
-        }
-    }
-    break;
-
-
-    // **** CLASS ****
-    case VSCP_CLASS1_SECURITY:
-    {
-        switch (pEvent->vscp_type) {
-        case VSCP_TYPE_SECURITY_MOTION:
-            break;
-        }
-    }
-    break;
-
-    ///////////////////////////////////////////////////////////////////////////
-    //                        LEVEL I MEASUREMENT CLASSES
-    ///////////////////////////////////////////////////////////////////////////
-
-    // **** CLASS ****
-    case VSCP_CLASS1_MEASUREMENT:
-    {
-        wxString strValue;
-
-        // disassemble the data bytes to clear text depending on the datacoding
-        // this is the same for all CLASS1_MEASUREMENT events. The only thing thats
-        // different is the unit that follows!
-        // for debugging we put out in [] the type of data, and its value
-        // after the =
-        // this works on bits 7,6,5 of the datacoding byte
-        switch ( VSCP_DATACODING_TYPE( *( pEvent->pdata+offset ) ) & 0xE0 ) {
-
-        case 0x00: // bit format
-        {
-            strValue = _("[bit] = ");
-            strValue += wxString::Format(wxT("%X"),
-                    (long) vscp_getDataCodingBitArray(pEvent->pdata+offset, 
-                    pEvent->sizeData-offset));
-        }
-        break;
-
-        case 0x20: // byte format
-            vscp_getVSCPMeasurementAsString( pEvent, wrkstr1 );
-            strValue = _("[byte] = ?");
-            strValue += wrkstr1;
-            break;
-
-        case 0x40: // string format
-        {
-            strValue = _("[string] = ");
-            wxString wxstr;
-            vscp_getDataCodingString(pEvent->pdata+offset, 
-                                        pEvent->sizeData-offset,
-                                        wxstr );
-            strValue += wxstr;
-        }
-        break;
-
-        case 0x60: // int format
-            vscp_getVSCPMeasurementAsString( pEvent, wrkstr1 );
-            strValue = _("[int] = ");
-            strValue += wrkstr1;
-            break;
-
-        case 0x80: // normalized int format
-        {
-            double temp = 
-                vscp_getDataCodingNormalizedInteger( pEvent->pdata+offset, 
-                                                        pEvent->sizeData-offset );
-            strValue = wxString::Format(_("[nint] = %f "), temp);
-        }
-        break;
-
-        case 0xA0: // float format
-            if ( (pEvent->sizeData-offset) >= 5 ) {
-                float msrmt = vscp_getMeasurementAsFloat(pEvent->pdata+offset, 
-                        pEvent->sizeData-offset);
-                strValue = wxString::Format(_("[float] = %g "), msrmt);
-            }
-            else {
-                strValue = _("[float] = invalid event format ");
-            }
-            break;
-        }
-
-        // here we put out the unit depending on each measurement type's own
-        // definition which unit to use (this is bits 4,3 of datacoding byte)
-
-        strOutput += writeMeasurementValue( pEvent->vscp_type,
-                                                VSCP_DATACODING_UNIT( *( pEvent->pdata + offset ) ),
-                                                VSCP_DATACODING_INDEX( *( pEvent->pdata + offset ) ),
-                                                strValue );
     
-    } // measurement Class 1
+    // Level I classes
+    if ( pEvent->vscp_class < 1024 ) {
 
-    strOutput += _("\n");
-    break;
-
-    // **** CLASS ****
-    case VSCP_CLASS1_DATA:
-    {
-
-        switch (pEvent->vscp_type) {
-
-        case VSCP_TYPE_DATA_IO:
-        {
-
+        // If class >= 512 and class <1024 we
+        // have GUID in front of data. 
+        if ( ( pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL ) )  {
+            offset = 16;
         }
-        break;
 
-        case VSCP_TYPE_DATA_AD:
-        {
+        switch ( pEvent->vscp_class-( offset ? 512 : 0 ) ) {
 
-        }
-        break;
-
-        case VSCP_TYPE_DATA_DA:
-        {
-
-        }
-        break;
-
-        case VSCP_TYPE_DATA_RELATIVE_STRENGTH:
-        {
-
-        }
-        break;
-
-        case VSCP_TYPE_DATA_SIGNAL_LEVEL:
-        {
-
-        }
-        break;
-
-        case VSCP_TYPE_DATA_SIGNAL_QUALITY:
-        {
-
-        }
-        break;
+        ///////////////////////////////////////////////////////////////////////////
+        //                        LEVEL I PROTOCOL CLASSES
+        ///////////////////////////////////////////////////////////////////////////
         
-        case VSCP_TYPE_DATA_COUNT:
+        case VSCP_CLASS1_PROTOCOL: 
         {
+            switch ( pEvent->vscp_type ) {
 
+            case VSCP_TYPE_UNDEFINED:
+                strOutput = _("This event is reserved and should not be seen here.");
+                break;
+
+            case VSCP_TYPE_PROTOCOL_NEW_NODE_ONLINE:
+                if ( 0xff != pEvent->GUID[ 15 ] ) {
+                    strOutput = wxString::Format( _("New node with nickname=0x%02X"), 
+                                                    pEvent->GUID[ 15 ] );
+                }
+                else {
+                    strOutput = wxString::Format( _("Probe for nickname=0x%02X"),
+                                                    pEvent->pdata[ 0+offset ] );
+                    if ( 0 == pEvent->pdata[ 0+offset ] ) {
+                        strOutput += _( "\n(Check if there is a server that should supply a nickname.)" );
+                    }
+                }
+                break;
+
+            case VSCP_TYPE_PROTOCOL_PROBE_ACK:
+                strOutput = wxString::Format( _("The nickname=0x%02X is in use"), 
+                                                    pEvent->GUID[ 15 ] );
+                if ( 0 == pEvent->GUID[ 15 ] ) {
+                    strOutput += _( "\n(Server will suppy nickname.)");
+                }
+                break;
+
+            case VSCP_TYPE_PROTOCOL_SET_NICKNAME:
+                strOutput = wxString::Format( _( "Set/change nickname for node 0x%02X from 0x%02X to 0x%02X." ),
+                                            pEvent->GUID[ 15 ],
+                                            pEvent->pdata[ 0+offset ],
+                                            pEvent->pdata[ 1+offset ] );
+                break;
+
+            case VSCP_TYPE_PROTOCOL_NICKNAME_ACCEPTED:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_DROP_NICKNAME:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_READ_REGISTER:
+                strOutput = wxString::Format( _("node=0x%02X register=0x%02X"),
+                                            pEvent->pdata[ 0+offset ],
+                                            pEvent->pdata[ 1+offset ] );
+                break;
+
+            case VSCP_TYPE_PROTOCOL_RW_RESPONSE:
+                strOutput = wxString::Format( _("node=0x%02X register=0x%02X content=0x%02X "),
+                                            pEvent->GUID[ 15 ],
+                                            pEvent->pdata[ 0+offset ],
+                                            pEvent->pdata[ 1+offset ] );
+                break;
+
+            case VSCP_TYPE_PROTOCOL_WRITE_REGISTER:
+                strOutput = wxString::Format( _("node=0x%02X register=0x%02X content=0x%02X "),
+                                            pEvent->GUID[ 0 ],
+                                            pEvent->pdata[ 1+offset ],
+                                            pEvent->pdata[ 2+offset ] );
+                break;
+
+            case VSCP_TYPE_PROTOCOL_ENTER_BOOT_LOADER:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_ACK_BOOT_LOADER:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_NACK_BOOT_LOADER:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_START_BLOCK:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_BLOCK_DATA:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_BLOCK_DATA_ACK:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_BLOCK_DATA_NACK:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA_ACK:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA_NACK:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_ACTIVATE_NEW_IMAGE:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_RESET_DEVICE:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_PAGE_READ:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_PAGE_WRITE:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_RW_PAGE_RESPONSE:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_HIGH_END_SERVER_PROBE:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_HIGH_END_SERVER_RESPONSE:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_INCREMENT_REGISTER:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_DECREMENT_REGISTER:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_WHO_IS_THERE:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_WHO_IS_THERE_RESPONSE:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_GET_MATRIX_INFO:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_GET_MATRIX_INFO_RESPONSE:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_GET_EMBEDDED_MDF:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_GET_EMBEDDED_MDF_RESPONSE:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_READ:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_WRITE:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_GET_EVENT_INTEREST:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_GET_EVENT_INTEREST_RESPONSE:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_ACTIVATE_NEW_IMAGE_ACK:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_ACTIVATE_NEW_IMAGE_NACK:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_START_BLOCK_ACK:
+                break;
+
+            case VSCP_TYPE_PROTOCOL_START_BLOCK_NACK:
+                break;
+            }
         }
         break;
 
-        }
-    }
-    break;
-
-    // **** CLASS ****
-    case VSCP_CLASS1_INFORMATION:
-
-        switch (pEvent->vscp_type) {
-
-        case VSCP_TYPE_INFORMATION_GENERAL:
-        case VSCP_TYPE_INFORMATION_ON:
-        case VSCP_TYPE_INFORMATION_OFF:
-        case VSCP_TYPE_INFORMATION_ALIVE:
-        case VSCP_TYPE_INFORMATION_TERMINATING:
-        case VSCP_TYPE_INFORMATION_OPENED:
-        case VSCP_TYPE_INFORMATION_CLOSED:
-        case VSCP_TYPE_INFORMATION_NODE_HEARTBEAT:
-        case VSCP_TYPE_INFORMATION_BELOW_LIMIT:
-        case VSCP_TYPE_INFORMATION_ABOVE_LIMIT:
-        case VSCP_TYPE_INFORMATION_PULSE:
-        case VSCP_TYPE_INFORMATION_ERROR:
-        case VSCP_TYPE_INFORMATION_RESUMED:
-        case VSCP_TYPE_INFORMATION_PAUSED:
-        case VSCP_TYPE_INFORMATION_GOOD_MORNING:
-        case VSCP_TYPE_INFORMATION_GOOD_DAY:
-        case VSCP_TYPE_INFORMATION_GOOD_AFTERNOON:
-        case VSCP_TYPE_INFORMATION_GOOD_EVENING:
-        case VSCP_TYPE_INFORMATION_GOOD_NIGHT:
-        case VSCP_TYPE_INFORMATION_GOODBYE:
-        case VSCP_TYPE_INFORMATION_STOP:
-        case VSCP_TYPE_INFORMATION_START:
-        case VSCP_TYPE_INFORMATION_RESET_COMPLETED:
-        case VSCP_TYPE_INFORMATION_INTERRUPTED:
-        case VSCP_TYPE_INFORMATION_PREPARING_TO_SLEEP:
-        case VSCP_TYPE_INFORMATION_WOKEN_UP:
-        case VSCP_TYPE_INFORMATION_DUSK:
-        case VSCP_TYPE_INFORMATION_DAWN:
-        case VSCP_TYPE_INFORMATION_ACTIVE:
-        case VSCP_TYPE_INFORMATION_INACTIVE:
-        case VSCP_TYPE_INFORMATION_BUSY:
-        case VSCP_TYPE_INFORMATION_IDLE:
-        case VSCP_TYPE_INFORMATION_LEVEL_CHANGED:
-        case VSCP_TYPE_INFORMATION_WARNING:
-        case VSCP_TYPE_INFORMATION_SUNRISE:
-        case VSCP_TYPE_INFORMATION_SUNSET:
-        case VSCP_TYPE_INFORMATION_DETECT:
-        case VSCP_TYPE_INFORMATION_OVERFLOW:
-        case VSCP_TYPE_INFORMATION_LONG_CLICK:
-        case VSCP_TYPE_INFORMATION_SINGLE_CLICK:
-        case VSCP_TYPE_INFORMATION_DOUBLE_CLICK:
-            if ((pEvent->sizeData-offset) >= 3) {
-                strOutput = wxString::Format(_("Index=%d Zone=%d Subzone=%d\nNickname=%d\n"),
-                        pEvent->pdata[ 0+offset ],
-                        pEvent->pdata[ 1+offset ],
-                        pEvent->pdata[ 2+offset ],
-                        pEvent ->GUID[15] );
-            }
-            break;
-
-        case VSCP_TYPE_INFORMATION_BUTTON:
-            if ((pEvent->sizeData - offset) >= 5) {
-
-                // Key type code
-                if (0 == (pEvent->pdata[ 0+offset ] & 0x03)) {
-                    strOutput = _("Button released.");
-                } 
-                else if (1 == (pEvent->pdata[ 0+offset ] & 0x03)) {
-                    strOutput = _("Button pressed.");
-                } 
-                else if (2 == (pEvent->pdata[ 0+offset ] & 0x03)) {
-                    strOutput = _("Keycode.");
-                }
-                else {
-                    strOutput = _("Unknown key type code.");
-                }
-
-                strOutput += wxString::Format(_("Repeat count = %d\n"),
-                        (pEvent->pdata[ 0+offset ] >> 3 & 0x01f));
-
-                strOutput += wxString::Format(_("Zone=%d Subzone=%d\n"),
-                        pEvent->pdata[ 1+offset ],
-                        pEvent->pdata[ 2+offset ]);
-
-                strOutput += wxString::Format(_("Button Code=%d\n"),
-                        ((pEvent->pdata[ 3+offset ] << 8) + pEvent->pdata[ 4 + offset ]));
-
-                if ((pEvent->sizeData - offset) > 5) {
-                    strOutput += wxString::Format(_("Code Page=%d\n"),
-                            ((pEvent->pdata[ 5+offset ] << 8) + pEvent->pdata[ 6 + offset ]));
-                }
-                else {
-                    strOutput += _("No code page.");
-                }
-            }
-            break;
-
-        case VSCP_TYPE_INFORMATION_MOUSE:
-            if ((pEvent->sizeData-offset) == 7) {
-
-                strOutput += wxString::Format(_("Zone=%d Subzone=%d\n"),
-                        pEvent->pdata[ 1+offset ],
-                        pEvent->pdata[ 2+offset ]);
-
-                if (0 == pEvent->pdata[ 0+offset ]) {
-                    strOutput += _("Absolute coordinates.\n");
-                } 
-                else if (1 == pEvent->pdata[ 0+offset ]) {
-                    strOutput += _("Relative coordinates.\n");
-                } 
-                else {
-                    strOutput += _("Unknown coordinates.\n");
-                }
-
-                strOutput += wxString::Format(_("x=%d y=%d\n"),
-                        ((pEvent->pdata[ 3+offset ] << 8) + pEvent->pdata[ 4+offset ]),
-                        ((pEvent->pdata[ 5+offset ] << 8) + pEvent->pdata[ 6+offset ]));
-
-            } 
-            else {
-                strOutput = _("Wrong number of databytes.");
-            }
-            break;
-
-
-        case VSCP_TYPE_INFORMATION_TOKEN_ACTIVITY:
+        ///////////////////////////////////////////////////////////////////////////
+        //                        LEVEL I ALARM CLASSES
+        ///////////////////////////////////////////////////////////////////////////
+        
+        case VSCP_CLASS1_ALARM:
         {
-            if ((pEvent->sizeData-offset) >= 5) {
 
-                strOutput = wxString::Format(_("Token activity.\n Event Code=%d ["),
-                        (*(pEvent->pdata+offset) & 0x03));
+            switch ( pEvent->vscp_type ) {
 
-                // Event Code
-                switch (*(pEvent->pdata+offset) & 0x03) {
+            case VSCP_TYPE_ALARM_WARNING:
+                break;
 
-                case 0:
-                    strOutput += _("Touched and released] ");
-                    break;
+            case VSCP_TYPE_ALARM_ALARM:
+                break;
 
-                case 1:
-                    strOutput += _("Touched] ");
-                    break;
+            case VSCP_TYPE_ALARM_SOUND:
+                break;
 
-                case 2:
-                    strOutput += _("Released] ");
-                    break;
+            case VSCP_TYPE_ALARM_LIGHT:
+                break;
 
-                case 3:
-                    strOutput += _("Reserved code] ");
-                    break;
+            case VSCP_TYPE_ALARM_POWER:
+                break;
+
+            case VSCP_TYPE_ALARM_EMERGENCY_STOP:
+                break;
+
+            case VSCP_TYPE_ALARM_EMERGENCY_PAUSE:
+                break;
+
+            case VSCP_TYPE_ALARM_EMERGENCY_RESET:
+                break;
+
+            case VSCP_TYPE_ALARM_EMERGENCY_RESUME:
+                break;
+
+            }
+        }
+        break;
+
+
+        ///////////////////////////////////////////////////////////////////////////
+        //                        LEVEL I SECURITY CLASSES
+        ///////////////////////////////////////////////////////////////////////////
+        
+        case VSCP_CLASS1_SECURITY:
+        {
+            switch (pEvent->vscp_type) {
+            case VSCP_TYPE_SECURITY_MOTION:
+                break;
+            }
+        }
+        break;
+
+        ///////////////////////////////////////////////////////////////////////////
+        //                        LEVEL I MEASUREMENT CLASSES
+        ///////////////////////////////////////////////////////////////////////////
+
+        // **** CLASS  MEASUREMENT ****
+        case VSCP_CLASS1_MEASUREMENT:
+        {
+            wxString strValue;
+
+            // disassemble the data bytes to clear text depending on the datacoding
+            // this is the same for all CLASS1_MEASUREMENT events. The only thing thats
+            // different is the unit that follows!
+            // for debugging we put out in [] the type of data, and its value
+            // after the =
+            // this works on bits 7,6,5 of the datacoding byte
+            switch ( VSCP_DATACODING_TYPE( *( pEvent->pdata+offset ) ) & 0xE0 ) {
+
+            case 0x00: // bit format
+            {
+                strValue = _("[bit] = ");
+                strValue += wxString::Format(wxT("%X"),
+                        (long) vscp_getDataCodingBitArray(pEvent->pdata+offset, 
+                        pEvent->sizeData-offset));
+            }
+            break;
+
+            case 0x20: // byte format
+                vscp_getVSCPMeasurementAsString( pEvent, wrkstr1 );
+                strValue = _("[byte] = ?");
+                strValue += wrkstr1;
+                break;
+
+            case 0x40: // string format
+            {
+                strValue = _("[string] = ");
+                wxString wxstr;
+                vscp_getDataCodingString(pEvent->pdata+offset, 
+                                            pEvent->sizeData-offset,
+                                            wxstr );
+                strValue += wxstr;
+            }
+            break;
+
+            case 0x60: // int format
+                vscp_getVSCPMeasurementAsString( pEvent, wrkstr1 );
+                strValue = _("[int] = ");
+                strValue += wrkstr1;
+                break;
+
+            case 0x80: // normalized int format
+            {
+                double temp = 
+                    vscp_getDataCodingNormalizedInteger( pEvent->pdata+offset, 
+                                                            pEvent->sizeData-offset );
+                strValue = wxString::Format(_("[nint] = %f "), temp);
+            }
+            break;
+
+            case 0xA0: // float format
+                if ( (pEvent->sizeData-offset) >= 5 ) {
+                    float msrmt = vscp_getMeasurementAsFloat(pEvent->pdata+offset, 
+                            pEvent->sizeData-offset);
+                    strValue = wxString::Format(_("[float] = %f "), msrmt);
+                }
+                else {
+                    strValue = _("[float] = invalid event format ");
+                }
+                break;
+            }
+
+            // here we put out the unit depending on each measurement type's own
+            // definition which unit to use (this is bits 4,3 of datacoding byte)
+
+            strOutput += 
+                writeMeasurementValue( pEvent->vscp_type,
+                                        VSCP_DATACODING_UNIT( *( pEvent->pdata + offset ) ),
+                                        VSCP_DATACODING_INDEX( *( pEvent->pdata + offset ) ),
+                                        strValue );
+    
+        } // measurement Class 1
+
+        strOutput += _("\n");
+        break;
+
+        ///////////////////////////////////////////////////////////////////////////
+        //                        LEVEL I DATA CLASSES
+        ///////////////////////////////////////////////////////////////////////////
+        
+        case VSCP_CLASS1_DATA:
+        {
+
+            switch (pEvent->vscp_type) {
+
+                case VSCP_TYPE_DATA_IO:
+                {
 
                 }
+                break;
 
-                // Token code
-                strOutput += wxString::Format(_("\nToken Code=%d ["),
-                        (*(pEvent->pdata+offset) >> 2) & 0x3f);
-                switch ((*(pEvent->pdata+offset) >> 2) & 0x3f) {
+                case VSCP_TYPE_DATA_AD:
+                {
 
-                case 0:
-                    strOutput += _("Unknown token. 128-bits.] ");
-                    break;
+                }
+                break;
 
-                case 1:
-                    strOutput += _("iButton token. 64-bits.] ");
-                    break;
+                case VSCP_TYPE_DATA_DA:
+                {
 
-                case 2:
-                    strOutput += _("RFID Token. 64-bits.] ");
-                    break;
+                }
+                break;
 
-                case 3:
-                    strOutput += _("RFID Token. 128-bits.] ");
-                    break;
+                case VSCP_TYPE_DATA_RELATIVE_STRENGTH:
+                {
 
-                case 4:
-                    strOutput += _("RFID Token. 256-bits.] ");
-                    break;
+                }
+                break;
 
-                case 9:
-                    strOutput += _("ID/Credit card. 128-bits.] ");
-                    break;
+                case VSCP_TYPE_DATA_SIGNAL_LEVEL:
+                {
 
-                case 16:
-                    strOutput += _("Biometri device. 256-bits.] ");
-                    break;
+                }
+                break;
 
-                case 17:
-                    strOutput += _("Biometri device. 64-bits.] ");
-                    break;
+                case VSCP_TYPE_DATA_SIGNAL_QUALITY:
+                {
 
-                case 18:
-                    strOutput += _("Bluetooth device. 48-bits.] ");
-                    break;
+                }
+                break;
+            
+                case VSCP_TYPE_DATA_COUNT:
+                {
 
-                case 19:
-                    strOutput += _("GSM IMEI Code. 64-bits.] ");
-                    break;
+                }
+                break;
 
-                case 20:
-                    strOutput += _("GSM IMSI code. 64-bits.] ");
-                    break;
+            }
+        }
+        break;
+
+        ///////////////////////////////////////////////////////////////////////////
+        //                        LEVEL I INFORMATION CLASSES
+        ///////////////////////////////////////////////////////////////////////////
+        
+        case VSCP_CLASS1_INFORMATION:
+
+            switch (pEvent->vscp_type) {
+
+            case VSCP_TYPE_INFORMATION_GENERAL:
+            case VSCP_TYPE_INFORMATION_ON:
+            case VSCP_TYPE_INFORMATION_OFF:
+            case VSCP_TYPE_INFORMATION_ALIVE:
+            case VSCP_TYPE_INFORMATION_TERMINATING:
+            case VSCP_TYPE_INFORMATION_OPENED:
+            case VSCP_TYPE_INFORMATION_CLOSED:
+            case VSCP_TYPE_INFORMATION_NODE_HEARTBEAT:
+            case VSCP_TYPE_INFORMATION_BELOW_LIMIT:
+            case VSCP_TYPE_INFORMATION_ABOVE_LIMIT:
+            case VSCP_TYPE_INFORMATION_PULSE:
+            case VSCP_TYPE_INFORMATION_ERROR:
+            case VSCP_TYPE_INFORMATION_RESUMED:
+            case VSCP_TYPE_INFORMATION_PAUSED:
+            case VSCP_TYPE_INFORMATION_GOOD_MORNING:
+            case VSCP_TYPE_INFORMATION_GOOD_DAY:
+            case VSCP_TYPE_INFORMATION_GOOD_AFTERNOON:
+            case VSCP_TYPE_INFORMATION_GOOD_EVENING:
+            case VSCP_TYPE_INFORMATION_GOOD_NIGHT:
+            case VSCP_TYPE_INFORMATION_GOODBYE:
+            case VSCP_TYPE_INFORMATION_STOP:
+            case VSCP_TYPE_INFORMATION_START:
+            case VSCP_TYPE_INFORMATION_RESET_COMPLETED:
+            case VSCP_TYPE_INFORMATION_INTERRUPTED:
+            case VSCP_TYPE_INFORMATION_PREPARING_TO_SLEEP:
+            case VSCP_TYPE_INFORMATION_WOKEN_UP:
+            case VSCP_TYPE_INFORMATION_DUSK:
+            case VSCP_TYPE_INFORMATION_DAWN:
+            case VSCP_TYPE_INFORMATION_ACTIVE:
+            case VSCP_TYPE_INFORMATION_INACTIVE:
+            case VSCP_TYPE_INFORMATION_BUSY:
+            case VSCP_TYPE_INFORMATION_IDLE:
+            case VSCP_TYPE_INFORMATION_LEVEL_CHANGED:
+            case VSCP_TYPE_INFORMATION_WARNING:
+            case VSCP_TYPE_INFORMATION_SUNRISE:
+            case VSCP_TYPE_INFORMATION_SUNSET:
+            case VSCP_TYPE_INFORMATION_DETECT:
+            case VSCP_TYPE_INFORMATION_OVERFLOW:
+            case VSCP_TYPE_INFORMATION_LONG_CLICK:
+            case VSCP_TYPE_INFORMATION_SINGLE_CLICK:
+            case VSCP_TYPE_INFORMATION_DOUBLE_CLICK:
+                if ((pEvent->sizeData-offset) >= 3) {
+                    strOutput = wxString::Format(_("Index=%d Zone=%d Subzone=%d\nNickname=%d\n"),
+                            pEvent->pdata[ 0+offset ],
+                            pEvent->pdata[ 1+offset ],
+                            pEvent->pdata[ 2+offset ],
+                            pEvent ->GUID[15] );
+                }
+                break;
+
+            case VSCP_TYPE_INFORMATION_BUTTON:
+                if ((pEvent->sizeData - offset) >= 5) {
+
+                    // Key type code
+                    if (0 == (pEvent->pdata[ 0+offset ] & 0x03)) {
+                        strOutput = _("Button released.");
+                    } 
+                    else if (1 == (pEvent->pdata[ 0+offset ] & 0x03)) {
+                        strOutput = _("Button pressed.");
+                    } 
+                    else if (2 == (pEvent->pdata[ 0+offset ] & 0x03)) {
+                        strOutput = _("Keycode.");
+                    }
+                    else {
+                        strOutput = _("Unknown key type code.");
+                    }
+
+                    strOutput += wxString::Format(_("Repeat count = %d\n"),
+                            (pEvent->pdata[ 0+offset ] >> 3 & 0x01f));
+
+                    strOutput += wxString::Format(_("Zone=%d Subzone=%d\n"),
+                            pEvent->pdata[ 1+offset ],
+                            pEvent->pdata[ 2+offset ]);
+
+                    strOutput += wxString::Format(_("Button Code=%d\n"),
+                            ((pEvent->pdata[ 3+offset ] << 8) + pEvent->pdata[ 4 + offset ]));
+
+                    if ((pEvent->sizeData - offset) > 5) {
+                        strOutput += wxString::Format(_("Code Page=%d\n"),
+                                ((pEvent->pdata[ 5+offset ] << 8) + pEvent->pdata[ 6 + offset ]));
+                    }
+                    else {
+                        strOutput += _("No code page.");
+                    }
+                }
+                break;
+
+            case VSCP_TYPE_INFORMATION_MOUSE:
+                if ((pEvent->sizeData-offset) == 7) {
+
+                    strOutput += wxString::Format(_("Zone=%d Subzone=%d\n"),
+                            pEvent->pdata[ 1+offset ],
+                            pEvent->pdata[ 2+offset ]);
+
+                    if (0 == pEvent->pdata[ 0+offset ]) {
+                        strOutput += _("Absolute coordinates.\n");
+                    } 
+                    else if (1 == pEvent->pdata[ 0+offset ]) {
+                        strOutput += _("Relative coordinates.\n");
+                    } 
+                    else {
+                        strOutput += _("Unknown coordinates.\n");
+                    }
+
+                    strOutput += wxString::Format(_("x=%d y=%d\n"),
+                            ((pEvent->pdata[ 3+offset ] << 8) + pEvent->pdata[ 4+offset ]),
+                            ((pEvent->pdata[ 5+offset ] << 8) + pEvent->pdata[ 6+offset ]));
+
+                } 
+                else {
+                    strOutput = _("Wrong number of databytes.");
+                }
+                break;
+
+
+            case VSCP_TYPE_INFORMATION_TOKEN_ACTIVITY:
+            {
+                if ((pEvent->sizeData-offset) >= 5) {
+
+                    strOutput = wxString::Format(_("Token activity.\n Event Code=%d ["),
+                            (*(pEvent->pdata+offset) & 0x03));
+
+                    // Event Code
+                    switch (*(pEvent->pdata+offset) & 0x03) {
+
+                    case 0:
+                        strOutput += _("Touched and released] ");
+                        break;
+
+                    case 1:
+                        strOutput += _("Touched] ");
+                        break;
+
+                    case 2:
+                        strOutput += _("Released] ");
+                        break;
+
+                    case 3:
+                        strOutput += _("Reserved code] ");
+                        break;
+
+                    }
+
+                    // Token code
+                    strOutput += wxString::Format(_("\nToken Code=%d ["),
+                            (*(pEvent->pdata+offset) >> 2) & 0x3f);
+                    switch ((*(pEvent->pdata+offset) >> 2) & 0x3f) {
+
+                    case 0:
+                        strOutput += _("Unknown token. 128-bits.] ");
+                        break;
+
+                    case 1:
+                        strOutput += _("iButton token. 64-bits.] ");
+                        break;
+
+                    case 2:
+                        strOutput += _("RFID Token. 64-bits.] ");
+                        break;
+
+                    case 3:
+                        strOutput += _("RFID Token. 128-bits.] ");
+                        break;
+
+                    case 4:
+                        strOutput += _("RFID Token. 256-bits.] ");
+                        break;
+
+                    case 9:
+                        strOutput += _("ID/Credit card. 128-bits.] ");
+                        break;
+
+                    case 16:
+                        strOutput += _("Biometri device. 256-bits.] ");
+                        break;
+
+                    case 17:
+                        strOutput += _("Biometri device. 64-bits.] ");
+                        break;
+
+                    case 18:
+                        strOutput += _("Bluetooth device. 48-bits.] ");
+                        break;
+
+                    case 19:
+                        strOutput += _("GSM IMEI Code. 64-bits.] ");
+                        break;
+
+                    case 20:
+                        strOutput += _("GSM IMSI code. 64-bits.] ");
+                        break;
 
                     case 21:
-                    strOutput += _("RFID Token. 40-bits.] ");
-                    break;
+                        strOutput += _("RFID Token. 40-bits.] ");
+                        break;
 
-                case 22:
-                    strOutput += _("RFID Token. 32-bits.] ");
-                    break;
+                    case 22:
+                        strOutput += _("RFID Token. 32-bits.] ");
+                        break;
 
-                case 23:
-                    strOutput += _("RFID Token. 24-bits.] ");
-                    break;
+                    case 23:
+                        strOutput += _("RFID Token. 24-bits.] ");
+                        break;
 
-                case 24:
-                    strOutput += _("RFID Token. 16-bits.] ");
-                    break;
+                    case 24:
+                        strOutput += _("RFID Token. 16-bits.] ");
+                        break;
 
-                case 25:
-                    strOutput += _("RFID Token. 8-bits.] ");
-                    break;
+                    case 25:
+                        strOutput += _("RFID Token. 8-bits.] ");
+                        break;
 
-                default:
-                    strOutput += _("Reserved token. ] ");
+                    default:
+                        strOutput += _("Reserved token. ] ");
+                    }
+
+                    wrkstr1 = 
+                        wxString::Format(_("\nZone=%d\n Subzone=%d\n Index=%d\n"),
+                            pEvent->pdata[ 1+offset ],
+                            pEvent->pdata[ 2+offset ],
+                            pEvent->pdata[ 3+offset ]);
+                    strOutput += wrkstr1;
+                } 
+                else {
+                    strOutput = _("Invalid data!");
                 }
+            } // Token activity
+            break;
 
-                wrkstr1 = wxString::Format(_("\nZone=%d\n Subzone=%d\n Index=%d\n"),
+            case VSCP_TYPE_INFORMATION_STREAM_DATA:
+            {
+                strOutput = wxString::Format(_("sequence index=%d\n"),
+                        pEvent->pdata[ 0+offset ]);
+                strOutput += _("steam data = ");
+                for (i = 1; i < (pEvent->sizeData-offset); i++) {
+                    strOutput += wxString::Format(_("%02X(%c) "),
+                            pEvent->pdata[ i+offset ],
+                            pEvent->pdata[ i+offset ]);
+                }
+                strOutput += _("\n");
+            }
+            break;
+
+            case VSCP_TYPE_INFORMATION_STREAM_DATA_WITH_ZONE:
+            {
+
+                strOutput = wxString::Format(_("\nZone=%d\n Subzone=%d\n"),
+                        pEvent->pdata[ 0+offset ],
+                        pEvent->pdata[ 1+offset ]);
+
+                strOutput += wxString::Format(_("sequence index=%d\n"),
+                        pEvent->pdata[ 2+offset ]);
+                strOutput += _("steam data = ");
+                for (i = 3; i < (pEvent->sizeData-offset); i++) {
+                    strOutput += wxString::Format(_("%02X(%c) "),
+                            pEvent->pdata[ i+offset ],
+                            pEvent->pdata[ i+offset ]);
+                }
+                strOutput += _("\n");
+            }
+            break;
+
+            case VSCP_TYPE_INFORMATION_CONFIRM:
+            {
+                strOutput = 
+                    wxString::Format(_("\nZone=%d\n Subzone=%d\n Sequence index=%d\n"),
+                        pEvent->pdata[ 0+offset ],
+                        pEvent->pdata[ 1+offset ],
+                        pEvent->pdata[ 2+offset ]);
+                strOutput += wxString::Format(_("Class=%d\n"),
+                        ((pEvent->pdata[ 3+offset ] << 8) + pEvent->pdata[ 4+offset ]));
+
+                strOutput += wxString::Format(_("Type=%d\n"),
+                        ((pEvent->pdata[ 5+offset ] << 8) + pEvent->pdata[ 6+offset ]));
+            }
+            break;
+
+            case VSCP_TYPE_INFORMATION_STATE:
+            {
+                strOutput = wxString::Format(_("Zone=%d\n Subzone=%d\n User byte=%d\n"),
+                        pEvent->pdata[ 1+offset ],
+                        pEvent->pdata[ 2+offset ],
+                        pEvent->pdata[ 0+offset ]);
+                strOutput += wxString::Format(_("Current state=%d\n Previous state=%d\n"),
+                        pEvent->pdata[ 3+offset ],
+                        pEvent->pdata[ 3+offset ]);
+            }
+            break;
+
+            case VSCP_TYPE_INFORMATION_ACTION_TRIGGER:
+            {
+                strOutput = wxString::Format(_("Zone=%d\n Subzone=%d\n Action Trigger=%d\n"),
+                        pEvent->pdata[ 1+offset ],
+                        pEvent->pdata[ 2+offset ],
+                        pEvent->pdata[ 0+offset ]);
+            }
+            break;
+
+            case VSCP_TYPE_INFORMATION_START_OF_RECORD:
+            {
+                strOutput = wxString::Format(_("Zone=%d\n Subzone=%d\n Record=%d\n Count=%d\n"),
+                        pEvent->pdata[ 1+offset ],
+                        pEvent->pdata[ 2+offset ],
+                        pEvent->pdata[ 0+offset ],
+                        pEvent->pdata[ 3+offset ]);
+            }
+            break;
+
+            case VSCP_TYPE_INFORMATION_END_OF_RECORD:
+            {
+                strOutput = wxString::Format(_("Zone=%d\n Subzone=%d\n Record=%d\n"),
+                        pEvent->pdata[ 1+offset ],
+                        pEvent->pdata[ 2+offset ],
+                        pEvent->pdata[ 0+offset ]);
+            }
+            break;
+
+            case VSCP_TYPE_INFORMATION_PRESET_ACTIVE:
+            {
+                strOutput = wxString::Format(_("Zone=%d\n Subzone=%d\n Preset code=%d\n"),
                         pEvent->pdata[ 1+offset ],
                         pEvent->pdata[ 2+offset ],
                         pEvent->pdata[ 3+offset ]);
-                strOutput += wrkstr1;
-            } 
-            else {
-                strOutput = _("Invalid data!");
             }
-        } // Token activity
+            break;
+
+        } // switch type  // VSCP_CLASS1_INFORMATION
         break;
 
-        case VSCP_TYPE_INFORMATION_STREAM_DATA:
-        {
-            strOutput = wxString::Format(_("sequence index=%d\n"),
-                    pEvent->pdata[ 0+offset ]);
-            strOutput += _("steam data = ");
-            for (i = 1; i < (pEvent->sizeData-offset); i++) {
-                strOutput += wxString::Format(_("%02X(%c) "),
-                        pEvent->pdata[ i+offset ],
-                        pEvent->pdata[ i+offset ]);
+        } // Switch
+    
+    } // Level I classes
+    
+    // * * * Level II classes * * *
+    else {
+        
+        switch ( pEvent->vscp_class  ) {
+            
+            ///////////////////////////////////////////////////////////////////////////
+            //                          LEVEL II PROTOCOL CLASSES
+            ///////////////////////////////////////////////////////////////////////////
+            case VSCP_CLASS2_PROTOCOL:
+            {
+                switch ( pEvent->vscp_type ) {
+
+                case VSCP2_TYPE_PROTOCOL_GENERAL:
+                    strOutput += _("CLASS2 PROTOCOL - General event.\n");
+                    break;
+
+                case VSCP2_TYPE_PROTOCOL_READ_REGISTER:
+                    strOutput += _( "CLASS2 PROTOCOL - Read register.\n");
+                    break;
+
+                case VSCP2_TYPE_PROTOCOL_WRITE_REGISTER:
+                    strOutput += _( "CLASS2 PROTOCOL - Write register.\n" );
+                    break;
+
+                case VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE:
+                    strOutput += _( "CLASS2 PROTOCOL - Read/write response.\n" );
+                    break;
+
+                case VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS:
+                    strOutput += _( "CLASS2 PROTOCOL - High End Server Capabilities.\n" );
+                    break;
+
+                default:
+                    break;
+                
+                }
             }
-            strOutput += _("\n");
-        }
-        break;
+            strOutput += _( "\n" );
+            break;
 
-        case VSCP_TYPE_INFORMATION_STREAM_DATA_WITH_ZONE:
-        {
+            ///////////////////////////////////////////////////////////////////////////
+            //                         LEVEL II INFORMATION CLASSES
+            ///////////////////////////////////////////////////////////////////////////
+            case VSCP_CLASS2_INFORMATION:
+            {
+                switch ( pEvent->vscp_type ) {
 
-            strOutput = wxString::Format(_("\nZone=%d\n Subzone=%d\n"),
-                    pEvent->pdata[ 0+offset ],
-                    pEvent->pdata[ 1+offset ]);
+                case VSCP2_TYPE_INFORMATION_GENERAL:
+                    strOutput += _( "VSCP_CLASS2_INFORMATION - General event.\n" );
+                    break;
 
-            strOutput += wxString::Format(_("sequence index=%d\n"),
-                    pEvent->pdata[ 2+offset ]);
-            strOutput += _("steam data = ");
-            for (i = 3; i < (pEvent->sizeData-offset); i++) {
-                strOutput += wxString::Format(_("%02X(%c) "),
-                        pEvent->pdata[ i+offset ],
-                        pEvent->pdata[ i+offset ]);
+                case VSCP2_TYPE_INFORMATION_TOKEN_ACTIVITY:
+                    strOutput += _( "VSCP_CLASS2_INFORMATION - Read register.\n" );
+                    break;
+
+                case VSCP2_TYPE_INFORMATION_HEART_BEAT:
+                    strOutput += _( "VSCP_CLASS2_INFORMATION - Write register.\n" );
+                    break;
+
+                case VSCP2_TYPE_INFORMATION_PROXY_HEART_BEAT:
+                    strOutput += _( "VSCP_CLASS2_INFORMATION - Read/write response.\n" );
+                    break;
+
+                default:
+                    break;
+                }
             }
-            strOutput += _("\n");
-        }
-        break;
+            strOutput += _( "\n" );
+            break;
 
-        case VSCP_TYPE_INFORMATION_CONFIRM:
-        {
-            strOutput = wxString::Format(_("\nZone=%d\n Subzone=%d\n Sequence index=%d\n"),
-                    pEvent->pdata[ 0+offset ],
-                    pEvent->pdata[ 1+offset ],
-                    pEvent->pdata[ 2+offset ]);
-            strOutput += wxString::Format(_("Class=%d\n"),
-                    ((pEvent->pdata[ 3+offset ] << 8) + pEvent->pdata[ 4+offset ]));
+            ///////////////////////////////////////////////////////////////////////////
+            //                  LEVEL II MEASUREMENT STRING CLASSES
+            ///////////////////////////////////////////////////////////////////////////
 
-            strOutput += wxString::Format(_("Type=%d\n"),
-                    ((pEvent->pdata[ 5+offset ] << 8) + pEvent->pdata[ 6+offset ]));
-        }
-        break;
-
-        case VSCP_TYPE_INFORMATION_STATE:
-        {
-            strOutput = wxString::Format(_("Zone=%d\n Subzone=%d\n User byte=%d\n"),
-                    pEvent->pdata[ 1+offset ],
-                    pEvent->pdata[ 2+offset ],
-                    pEvent->pdata[ 0+offset ]);
-            strOutput += wxString::Format(_("Current state=%d\n Previous state=%d\n"),
-                    pEvent->pdata[ 3+offset ],
-                    pEvent->pdata[ 3+offset ]);
-        }
-        break;
-
-        case VSCP_TYPE_INFORMATION_ACTION_TRIGGER:
-        {
-            strOutput = wxString::Format(_("Zone=%d\n Subzone=%d\n Action Trigger=%d\n"),
-                    pEvent->pdata[ 1+offset ],
-                    pEvent->pdata[ 2+offset ],
-                    pEvent->pdata[ 0+offset ]);
-        }
-        break;
-
-        case VSCP_TYPE_INFORMATION_START_OF_RECORD:
-        {
-            strOutput = wxString::Format(_("Zone=%d\n Subzone=%d\n Record=%d\n Count=%d\n"),
-                    pEvent->pdata[ 1+offset ],
-                    pEvent->pdata[ 2+offset ],
-                    pEvent->pdata[ 0+offset ],
-                    pEvent->pdata[ 3+offset ]);
-        }
-        break;
-
-        case VSCP_TYPE_INFORMATION_END_OF_RECORD:
-        {
-            strOutput = wxString::Format(_("Zone=%d\n Subzone=%d\n Record=%d\n"),
-                    pEvent->pdata[ 1+offset ],
-                    pEvent->pdata[ 2+offset ],
-                    pEvent->pdata[ 0+offset ]);
-        }
-        break;
-
-        case VSCP_TYPE_INFORMATION_PRESET_ACTIVE:
-        {
-            strOutput = wxString::Format(_("Zone=%d\n Subzone=%d\n Preset code=%d\n"),
-                    pEvent->pdata[ 1+offset ],
-                    pEvent->pdata[ 2+offset ],
-                    pEvent->pdata[ 3+offset ]);
-        }
-        break;
-
-   } // switch type  // VSCP_CLASS1_INFORMATION
-   break;
-
-   ///////////////////////////////////////////////////////////////////////////
-   //                          LEVEL II PROTOCOL
-   ///////////////////////////////////////////////////////////////////////////
-   case VSCP_CLASS2_PROTOCOL:
-   {
-       switch ( pEvent->vscp_type ) {
-
-           case VSCP2_TYPE_PROTOCOL_GENERAL:
-               strOutput += _("CLASS2 PROTOCOL - General event.\n");
-               break;
-
-           case VSCP2_TYPE_PROTOCOL_READ_REGISTER:
-               strOutput += _( "CLASS2 PROTOCOL - Read register.\n");
-               break;
-
-           case VSCP2_TYPE_PROTOCOL_WRITE_REGISTER:
-               strOutput += _( "CLASS2 PROTOCOL - Write register.\n" );
-               break;
-
-           case VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE:
-               strOutput += _( "CLASS2 PROTOCOL - Read/write response.\n" );
-               break;
-
-           case VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS:
-               strOutput += _( "CLASS2 PROTOCOL - High End Server Capabilities.\n" );
-               break;
-
-           default:
-               break;
-       }
-   }
-   strOutput += _( "\n" );
-   break;
-
-   ///////////////////////////////////////////////////////////////////////////
-   //                          LEVEL II PROTOCOL
-   ///////////////////////////////////////////////////////////////////////////
-   case VSCP_CLASS2_INFORMATION:
-   {
-       switch ( pEvent->vscp_type ) {
-
-           case VSCP2_TYPE_INFORMATION_GENERAL:
-               strOutput += _( "VSCP_CLASS2_INFORMATION - General event.\n" );
-               break;
-
-           case VSCP2_TYPE_INFORMATION_TOKEN_ACTIVITY:
-               strOutput += _( "VSCP_CLASS2_INFORMATION - Read register.\n" );
-               break;
-
-           case VSCP2_TYPE_INFORMATION_HEART_BEAT:
-               strOutput += _( "VSCP_CLASS2_INFORMATION - Write register.\n" );
-               break;
-
-           case VSCP2_TYPE_INFORMATION_PROXY_HEART_BEAT:
-               strOutput += _( "VSCP_CLASS2_INFORMATION - Read/write response.\n" );
-               break;
-
-           default:
-               break;
-       }
-   }
-   strOutput += _( "\n" );
-   break;
-
-    ///////////////////////////////////////////////////////////////////////////
-    //                        LEVEL II MEASUREMENT CLASSES
-    ///////////////////////////////////////////////////////////////////////////
-
-    // **** CLASS ****
-    case VSCP_CLASS2_MEASUREMENT_STR:
-    {
-        wxString strValue;
-        char buf[ 512 ];
+            // **** CLASS ****
+            case VSCP_CLASS2_MEASUREMENT_STR:
+            {
+                wxString strValue;
+                char buf[ 512 ];
         
-        memset( buf, 0, sizeof( buf ) );
-        memcpy( buf, pEvent->pdata + 3, pEvent->sizeData-3 );
-        strValue = wxString::FromUTF8( buf );
+                memset( buf, 0, sizeof( buf ) );
+                memcpy( buf, pEvent->pdata + 3, pEvent->sizeData-3 );
+                strValue = wxString::FromUTF8( buf );
 
-        strOutput += writeMeasurementValue( pEvent->vscp_type,
-                                            pEvent->pdata[ 3 ],
-                                            pEvent->pdata[ 0 ],
-                                            strValue );
+                strOutput += writeMeasurementValue( pEvent->vscp_type,
+                                                    pEvent->pdata[ 3 ],
+                                                    pEvent->pdata[ 0 ],
+                                                    strValue );
 
-        strOutput += _( "\n" ) + strOutput;
-        strOutput += wxString::Format( _( " Zone=%d Subzone=%d\n" ), 
-                                            pEvent->pdata[ 1 ], 
-                                            pEvent->pdata[ 2 ] );
+                strOutput += _( "\n" ) + strOutput;
+                strOutput += wxString::Format( _(" Unit=%d Sensor index=%d\n"), 
+                                                    pEvent->pdata[ 3 ], 
+                                                    pEvent->pdata[ 0 ] );
+                strOutput += wxString::Format( _( " Zone=%d Subzone=%d\n" ), 
+                                                    pEvent->pdata[ 1 ], 
+                                                    pEvent->pdata[ 2 ] );
 
-    } // measurement Class 1
+            }
+            strOutput += _( "\n" );
+            break;
 
-    strOutput += _( "\n" );
-    break;
-
-    // **** CLASS ****
-    case VSCP_CLASS2_MEASUREMENT_FLOAT:
-    {
-        wxString strValue;
+            ///////////////////////////////////////////////////////////////////////////
+            //                  LEVEL II MEASUREMENT FLOAT CLASSES
+            ///////////////////////////////////////////////////////////////////////////
+            case VSCP_CLASS2_MEASUREMENT_FLOAT:
+            {
+                wxString strValue;
         
+                /*strOutput += writeMeasurementValue( pEvent->vscp_type,
+                                                    pEvent->pdata[ 3 ],
+                                                    pEvent->pdata[ 0 ],
+                                                    strValue );*/
+                if ( !vscp_getVSCPMeasurementAsString( pEvent, strValue ) ) {
+                    strValue = _("ERROR");
+                }
+                
+                strOutput = _("\n[double] = ") + strValue;
+                strOutput += _("\n");
+                strOutput += wxString::Format( _(" Unit=%d Sensor index=%d\n"), 
+                                                    pEvent->pdata[ 3 ], 
+                                                    pEvent->pdata[ 0 ] );
+                strOutput += wxString::Format( _(" Zone=%d Subzone=%d\n"), 
+                                                    pEvent->pdata[ 1 ], 
+                                                    pEvent->pdata[ 2 ] );
+
+            }     
+            
+        } // Switch Level II classes
         
-        if ( !vscp_getVSCPMeasurementAsString( pEvent, strValue ) ) {
-            strValue = _("ERROR");
-        }
-        
-        
-        strValue = _("[double] = ") + strValue;
-
-        strOutput += writeMeasurementValue( pEvent->vscp_type,
-                                            pEvent->pdata[ 3 ],
-                                            pEvent->pdata[ 0 ],
-                                            strValue );
-        strOutput += _("\n") + strOutput;
-        strOutput += wxString::Format( _(" Zone=%d Subzone=%d\n"), 
-                                            pEvent->pdata[ 1 ], 
-                                            pEvent->pdata[ 2 ] );
-
-    } // measurement Class 1
-
-    strOutput += _( "\n" );
-    break;
-
-    } // class switch
+    } // Level II classes
     
     return strOutput;
 }

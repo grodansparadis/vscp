@@ -290,6 +290,8 @@
     <File Name="dlgnewcanalsession.cpp"/>
     <File Name="dlgabout_symbols.h"/>
     <File Name="frmmain_symbols.h"/>
+    <File Name="Makefile"/>
+    <File Name="Makefile.in"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>

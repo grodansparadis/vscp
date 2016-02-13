@@ -22,8 +22,8 @@
 //
 
 
-#if !defined(AFX_VSCPLOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)
-#define AFX_VSCPLOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_
+#if !defined(AFX_VSCPMQTT_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)
+#define AFX_VSCPMQTT_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_
 
 #ifdef WIN32
 #include <windows.h>
@@ -63,9 +63,6 @@
 #include <string>
 
 using namespace std;
-
-#define VSCP_LEVEL2_DLL_MQTT_OBJ_MUTEX  "___VSCP__DLL_L2MQTT_OBJ_MUTEX____"
-#define VSCP_MQTT_LIST_MAX_MSG          2048
 
 
 // Forward declarations
@@ -129,9 +126,7 @@ public:
     /// server supplied host
     wxString m_host;
 
-    /*!
-        Subscribe or Publish topic.
-     */
+    /// Subscribe or Publish topic.
     wxString m_topic;
     
     /*!
@@ -249,4 +244,4 @@ public:
 };
 
 
-#endif // !defined(AFX_VSCPLOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)
+#endif 
