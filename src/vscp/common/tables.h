@@ -49,41 +49,41 @@ ab+		binary Write Create
 
 // Table types
 enum  {
-	VSCP_TABLE_DYNAMIC = 0,
-	VSCP_TABLE_STATIC
+    VSCP_TABLE_DYNAMIC = 0,
+    VSCP_TABLE_STATIC
 };
 
-// Thuis structure is located at the start of the main file.
+// This structure is located at the start of the main file.
 struct _vscpFileHead {
-	uint8_t id[2];			    // File id (main: 0x55,0xaa  index 0xaa,0x55
-	uint8_t type;			    // VSCP_TABLE_NORMAL/VSCP_TABLE_STATIC
-	char nameTable[64];		    // Name of table - Used to reference it
-	char descriptionTable[512];	// Description of table
-	char nameXLabel[128];	    // Label for X-axis
-	char nameYLabel[128];	    // Label for Y-axis
-	uint16_t vscp_class;	    // Should be 10 but in future can be 11/12/13...		
-	uint16_t vscp_type;		    // Measurement type: temp, current etc
-	uint8_t vscp_unit;		    // Measurement unit: e.g. Celsius(1)/Fahrenheit(2)/Kelvin(0) for temperature class=10/Type=6
+    uint8_t id[2];              // File id (main: 0x55,0xaa  index 0xaa,0x55
+    uint8_t type;               // VSCP_TABLE_NORMAL/VSCP_TABLE_STATIC
+    char nameTable[64];         // Name of table - Used to reference it
+    char descriptionTable[512];	// Description of table
+    char nameXLabel[128];       // Label for X-axis
+    char nameYLabel[128];       // Label for Y-axis
+    uint16_t vscp_class;        // Should be 10 but in future can be 11/12/13...		
+    uint16_t vscp_type;         // Measurement type: temp, current etc
+    uint8_t vscp_unit;          // Measurement unit: e.g. Celsius(1)/Fahrenheit(2)/Kelvin(0) for temperature class=10/Type=6
 
-	long unsigned int dummy;	        // Next read position for static file   !!! NOT USED !!!
-	long unsigned int posStaticWrite;	// Next write position for static file
+    long unsigned int dummy;            // Next read position for static file   !!! NOT USED !!!
+    long unsigned int posStaticWrite;   // Next write position for static file
 
-	unsigned long staticSize;		    // Number of records in static file
+    unsigned long staticSize;           // Number of records in static file
 };
 
 // All data is written with this record type
 struct _vscpFileRecord {
-	uint64_t timestamp;
-	double measurement;
+    uint64_t timestamp;
+    double measurement;
 };
 
 struct _vscptableInfo {
-	double minValue;
-	double maxValue;
-	uint64_t minTime;
-	uint64_t maxTime;
-	double meanValue;
-	uint32_t nRecords;
+    double minValue;
+    double maxValue;
+    uint64_t minTime;
+    uint64_t maxTime;
+    double meanValue;
+    uint32_t nRecords;
 };
 
 
@@ -92,94 +92,94 @@ struct _vscptableInfo {
 class CVSCPTable {
 public:
 
-	/// Constructor dtable
-	CVSCPTable( const char *file = NULL, int type = VSCP_TABLE_DYNAMIC, uint32_t size = 0 );
+    /// Constructor dtable
+    CVSCPTable( const char *file = NULL, int type = VSCP_TABLE_DYNAMIC, uint32_t size = 0 );
 
-	// Destructor
-	virtual ~CVSCPTable(void);
+    // Destructor
+    virtual ~CVSCPTable(void);
 
-	/*!
-		Open/create file and get ready to work with it.
-		@return 0 on success, <0 on error.
-	*/
-	int init();
+    /*!
+        Open/create file and get ready to work with it.
+        @return 0 on success, <0 on error.
+    */
+    int init();
 
-	/*!
-		Set table info
-		@param tableName Name of table
-		@param xAxisLabel Name of X-axis
-		@param yAxisLabel Name of Y axis
-		@return zero on succss
-	*/
-	int setTableInfo( const char *path,
-						uint8_t type,
-						const char *tableName, 
-						const char *tableDescription,
-						const char *xAxisLabel, 
-						const char *yAxisLabel,
-						uint32_t size,
-						uint16_t vscp_class, 
-						uint16_t vscp_type,
-						uint8_t vscp_unit );         
+    /*!
+        Set table info
+        @param tableName Name of table
+        @param xAxisLabel Name of X-axis
+        @param yAxisLabel Name of Y axis
+        @return zero on succss
+    */
+    int setTableInfo( const char *path,
+                        uint8_t type,
+                        const char *tableName, 
+                        const char *tableDescription,
+                        const char *xAxisLabel, 
+                        const char *yAxisLabel,
+                        uint32_t size,
+                        uint16_t vscp_class, 
+                        uint16_t vscp_type,
+                        uint8_t vscp_unit );         
 
-	/*!
-		Check if a file exists and returns true if it does
-		@param path Full path to file
-		@return nonzero if file exist, zero if not
-	*/
-	int fileExists( const char *path);
+    /*!
+        Check if a file exists and returns true if it does
+        @param path Full path to file
+        @return nonzero if file exist, zero if not
+    */
+    int fileExists( const char *path);
 
-	/*!
-		Get size of file
-		@param fd File descriptor
-		@return Size of file.
-	*/
-	long fdGetFileSize(const char *path);
+    /*!
+        Get size of file
+        @param fd File descriptor
+        @return Size of file.
+    */
+    long fdGetFileSize(const char *path);
 
-	/*!
-		Read file header
-		@return VSCP_ERROR_ERROR on success.
-	*/
-	int readMainHeader( void );
+    /*!
+        Read file header
+        @return VSCP_ERROR_ERROR on success.
+    */
+    int readMainHeader( void );
 
-	/*!
-		Write file header
-		@return VSCP_ERROR_ERROR on success.
-	*/
-	int writeMainHeader( void );
-
-
-	/*!
-		Log data
-		@param time Log time (since epoch)
-		@param measurement Measurement data
-		@return VSCP_ERROR_ERROR on success
-	*/
-	int logData( uint64_t timestamp, double measurement );
-
-	/*!
-		Get a data range
-		@param from date/time from which data should be fetched
-		@param to date/time to which data should be fetched
-		@param buf Buffer where result will be placed. If buffer is NULL
-				no data will be filled only the number of records will be
-				returned.
-		@param size Size of bugger in bytes
-		@return Number of records read or to read or -1 if error.
-	*/
-	long getRangeOfData( uint64_t start, uint64_t end, void *buf = NULL, uint16_t size = 0 );
+    /*!
+        Write file header
+        @return VSCP_ERROR_ERROR on success.
+    */
+    int writeMainHeader( void );
 
 
     /*!
-		Get a data range
-		@param from date/time from which data should be fetched
-		@param to date/time to which data should be fetched
-		@param buf Buffer where result will be placed. If buffer is NULL
-				no data will be filled only the number of records will be
-				returned.
-		@param size Size of bugger in bytes
-		@return Number of records read or to read or -1 if error.
-	*/
+        Log data
+        @param time Log time (since epoch)
+        @param measurement Measurement data
+        @return VSCP_ERROR_ERROR on success
+    */
+    int logData( uint64_t timestamp, double measurement );
+
+    /*!
+        Get a data range
+        @param from date/time from which data should be fetched
+        @param to date/time to which data should be fetched
+        @param buf Buffer where result will be placed. If buffer is NULL
+                no data will be filled only the number of records will be
+                returned.
+        @param size Size of bugger in bytes
+        @return Number of records read or to read or -1 if error.
+    */
+    long getRangeOfData( uint64_t start, uint64_t end, void *buf = NULL, uint16_t size = 0 );
+
+
+    /*!
+        Get a data range
+        @param from date/time from which data should be fetched
+        @param to date/time to which data should be fetched
+        @param buf Buffer where result will be placed. If buffer is NULL
+                no data will be filled only the number of records will be
+                returned.
+        @param size Size of bugger in bytes
+        @return Number of records read or to read or -1 if error.
+    */
     long getRangeOfData( wxDateTime& wxStart, wxDateTime& wxEnd, void *buf = NULL, uint16_t size = 0 );
 
 
@@ -192,30 +192,30 @@ public:
     long getRangeOfData( uint32_t startpos, uint16_t count, struct _vscpFileRecord *buf );
 
 
-	/*!
-		Get static dataset
-		@param buf Buffer that holds the result
-		@param size of buffer
-		@return Number of records in buffer or zero on error
-	*/
-	long getStaticData( void *buf, uint16_t size );
+    /*!
+        Get static dataset
+        @param buf Buffer that holds the result
+        @param size of buffer
+        @return Number of records in buffer or zero on error
+    */
+    long getStaticData( void *buf, uint16_t size );
 
-	/*!
-		Get required buffer size for static file
-		@return Returns the number of bytes needed to hold the
-				static file, -1 on error.
-	*/
-	long getStaticRequiredBuffSize( void );
+    /*!
+        Get required buffer size for static file
+        @return Returns the number of bytes needed to hold the
+                static file, -1 on error.
+    */
+    long getStaticRequiredBuffSize( void );
 
-	/*!
-		Get statistics for a range for a range
-	*/
-	int getInfo( struct _vscptableInfo *pInfo, uint64_t from = 0, uint64_t to = 0 );
+    /*!
+        Get statistics for a range for a range
+    */
+    int getInfo( struct _vscptableInfo *pInfo, uint64_t from = 0, uint64_t to = 0 );
 
-	/*!
-		Calculate mean over a range
-	*/
-	double calculatMean( uint64_t from, uint64_t to );
+    /*!
+        Calculate mean over a range
+    */
+    double calculatMean( uint64_t from, uint64_t to );
 
     // Get time for firts logged entry
     uint64_t getTimeStampStart( void ) { return m_timestamp_first; };
@@ -229,34 +229,34 @@ public:
     // Get file
     wxString& getFileName( void ) { return m_path; };
 
-	// isOPen()
-	bool isOpen( void ) { return m_ft ? true : false; };
+    // isOPen()
+    bool isOpen( void ) { return m_ft ? true : false; };
 
 public:
     
     // Protector for this table
     wxMutex m_mutexThisTable;
 
-	/// Main file head structure
-	struct _vscpFileHead m_vscpFileHead;
+    /// Main file head structure
+    struct _vscpFileHead m_vscpFileHead;
 
 
 private:
-	
-	/// File handel for mainfile
-	FILE *m_ft;
+    
+    /// File handel for mainfile
+    FILE *m_ft;
 
-	/// Path to main file
-	wxString m_path;	
+    /// Path to main file
+    wxString m_path;	
 
-	/// Timestamp for first record
-	uint64_t m_timestamp_first;
+    /// Timestamp for first record
+    uint64_t m_timestamp_first;
 
-	/// Timestamp for last record
-	uint64_t m_timestamp_last;
+    /// Timestamp for last record
+    uint64_t m_timestamp_last;
 
-	/// Current number of records in database
-	long m_number_of_records;
+    /// Current number of records in database
+    long m_number_of_records;
 };
 
 

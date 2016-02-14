@@ -30,7 +30,7 @@
 #endif // _MSC_VER > 1000
 #endif
 
-// NS_ENABLE_SSL		// Enable webserver SSL functionality
+// NS_ENABLE_SSL        // Enable webserver SSL functionality
 
 #include "wx/wx.h"
 #include <wx/thread.h>
@@ -104,7 +104,7 @@ enum {
 #define MAX_ITEMS_RECEIVE_QUEUE                 1021
 #define MAX_ITEMS_SEND_QUEUE                    1021
 #define MAX_ITEMS_CLIENT_RECEIVE_QUEUE          8191
-#define VSCP_TCPIPIF_DEFAULT_PORT				9598
+#define VSCP_TCPIPIF_DEFAULT_PORT               9598
 
 
 WX_DECLARE_LIST(canalMsg, CanalMsgList);
@@ -152,7 +152,7 @@ public:
 
 
 /*!
-	This is the class that does the main work in the daemon.
+    This is the class that does the main work in the daemon.
 */
 
 class CControlObject {
@@ -227,17 +227,17 @@ public:
      */
     bool stopTcpWorkerThread(void);
 
-	/*!
-		Start the UDP worker thread
-	*/
-	bool startUDPWorkerThread(void);
+    /*!
+        Start the UDP worker thread
+    */
+    bool startUDPWorkerThread(void);
 
-	/*!
-		Stop the UDP Workerthread
-	*/
-	bool stopUDPWorkerThread(void);
+    /*!
+        Stop the UDP Workerthread
+    */
+    bool stopUDPWorkerThread(void);
 
-	/*!
+    /*!
         Starting WebServer worker thread
         @return true on success
      */
@@ -307,7 +307,7 @@ public:
      */
     bool readConfiguration(wxString& strcfgfile);
 
-	/*!
+    /*!
          Save configuration data
      */
     bool saveConfiguration(void);
@@ -341,21 +341,21 @@ public:
 
     /*!
         Remove a client id to the clientmap
-		@return Tfrue on success
+        @return Tfrue on success
      */
     bool removeIdFromClientMap(uint32_t clid);
 
-	/*!
-		Get the webserver thread
-		@return Pointer to the webserver thread
-	*/
-	VSCPWebServerThread *getWebServer( void ) { return m_pwebServerThread; };
+    /*!
+        Get the webserver thread
+        @return Pointer to the webserver thread
+    */
+    VSCPWebServerThread *getWebServer( void ) { return m_pwebServerThread; };
 
-	/*!
-		Get the VSCP TCP/IP thread thread
-		@return Pointer to the VSCP TCP/IP thread thread
-	*/ 
-	VSCPClientThread *getTCPIPServer( void ) { return m_pVSCPClientThread; };
+    /*!
+        Get the VSCP TCP/IP thread thread
+        @return Pointer to the VSCP TCP/IP thread thread
+    */ 
+    VSCPClientThread *getTCPIPServer( void ) { return m_pVSCPClientThread; };
 
 public:
 
@@ -388,7 +388,7 @@ public:
         Server GUID
         This is the GUID for the server
      */
-	cguid m_guid;
+    cguid m_guid;
 
     /*!
         ClientMap
@@ -401,8 +401,8 @@ public:
     uint32_t m_clientMap[ VSCP_MAX_CLIENTS ];
 
     /////////////////////////////////////////////////////////
-	//                      Logging
-	/////////////////////////////////////////////////////////
+    //                      Logging
+    /////////////////////////////////////////////////////////
 
     wxMutex m_mutexLogWrite;
 
@@ -433,31 +433,31 @@ public:
     wxFile m_fileLogAccess;
 
 
-	/////////////////////////////////////////////////////////
-	//              Enable/disable switches
-	/////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////
+    //              Enable/disable switches
+    /////////////////////////////////////////////////////////
 
     /*!
         Enable control (TCP/IP) interface
      */
     bool m_bTCPInterface;
 
-	/*!
-		Enable UDP interface
-	*/
-	bool m_bUDPInterface;
+    /*!
+        Enable UDP interface
+    */
+    bool m_bUDPInterface;
 
     /*!
         Multicast announce interface
     */
     bool m_bMulticastAnnounce;
 
-	/*!
+    /*!
         Enable DM functionality
      */
     bool m_bDM;
 
-	/*!
+    /*!
         Enable CANAL Driver functionality
      */
     bool m_bEnableLevel1Drivers;
@@ -478,12 +478,12 @@ public:
     bool m_bVariables;
 
 
-	/////////////////////////////////////////////////////////
-	//                  Communication
-	/////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////
+    //                  Communication
+    /////////////////////////////////////////////////////////
 
-	/// net_skeleton structure
-	struct ns_mgr m_mgrTcpIpServer;
+    /// net_skeleton structure
+    struct ns_mgr m_mgrTcpIpServer;
 
     /// Interface(s) used for TCP/IP connection
     wxString m_strTcpInterfaceAddress;
@@ -494,15 +494,15 @@ public:
     // ttl for multicast announce
     uint8_t m_ttlMultiCastAnnounce;
 
-	/// INterface(s) to use for UDP
-	wxString m_strUDPInterfaceAddress;
+    /// INterface(s) to use for UDP
+    wxString m_strUDPInterfaceAddress;
 
     
 
 
-	/////////////////////////////////////////////////////////
-	//                     VARIABLES
-	/////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////
+    //                     VARIABLES
+    /////////////////////////////////////////////////////////
 
     /*!
         Hash table for variables
@@ -567,16 +567,16 @@ public:
     */
     bool m_bDisableSecurityWebServer;
 
-	struct mg_server *m_pwebserver;
+    struct mg_server *m_pwebserver;
 
-	/// Extra mime types on the form "extension1=type1,extension2=type2,..."
+    /// Extra mime types on the form "extension1=type1,extension2=type2,..."
     wxString m_extraMimeTypes;
-	
+    
     // Path to web root
     wxString m_pathWebRoot;
 
     // Domain for webserver and other net services
-	wxString m_authDomain;
+    wxString m_authDomain;
 
     // webserver port as port "8080" or address + port "127.0.0.1:8080"
     // If only port will bind to all interfaces,
@@ -611,9 +611,9 @@ public:
     // Enable disable web socket interface
     bool m_bWebSockets;
 
-	// websocket authentivcation is needed  (if true)
-	bool m_bAuthWebsockets;
-	
+    // websocket authentivcation is needed  (if true)
+    bool m_bAuthWebsockets;
+    
 
     //*****************************************************
     //                      Lists
@@ -637,11 +637,11 @@ public:
     CUserList m_userList;
     wxMutex m_mutexUserList;
 
-	/*!
-		This is a list with defined tables
-	*/
-	listVSCPTables m_listTables;
-	wxMutex m_mutexTableList;
+    /*!
+        This is a list with defined tables
+    */
+    listVSCPTables m_listTables;
+    wxMutex m_mutexTableList;
 
     /*!
         This is the list with knwon nodes in the system
@@ -656,7 +656,7 @@ public:
         Send queue
 
         This is the send queue for all clients attached to the system. A client
-	 *  place events here and the system distribute it to all other clients.
+        place events here and the system distribute it to all other clients.
      */
     VSCPEventList m_clientOutputQueue;
 
@@ -697,17 +697,17 @@ private:
     daemonVSCPThread *m_pdaemonVSCPThread;
     wxMutex m_mutexdaemonVSCPThread;
 
-	/*!
+    /*!
         The server thread for the VSCP daemon
      */
-	VSCPUDPClientThread *m_pVSCPClientUDPThread;
-	wxMutex m_mutexVSCPClientnUDPThread;
+    VSCPUDPClientThread *m_pVSCPClientUDPThread;
+    wxMutex m_mutexVSCPClientnUDPThread;
 
-	/*!
-		Webserver
-	*/
-	VSCPWebServerThread *m_pwebServerThread;
-	wxMutex m_mutexwebServerThread;
+    /*!
+        Webserver
+    */
+    VSCPWebServerThread *m_pwebServerThread;
+    wxMutex m_mutexwebServerThread;
 
     /*!
         UDP Worker threads

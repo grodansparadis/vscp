@@ -172,8 +172,8 @@ typedef struct _ASTAT_ {
 ASTAT Adapter;
 
 
-WORD wVersionRequested = MAKEWORD(1, 1);	// WSA functions
-WSADATA wsaData;							// WSA functions
+WORD wVersionRequested = MAKEWORD(1, 1);    // WSA functions
+WSADATA wsaData;                            // WSA functions
 
 #endif
 
@@ -185,8 +185,8 @@ WSADATA wsaData;							// WSA functions
 CControlObject::CControlObject()
 {
     int i;
-    m_bQuit = false;	        // true if we should quit
-    gpctrlObj = this;	        // needed by websocket static callbacks
+    m_bQuit = false;            // true if we should quit
+    gpctrlObj = this;           // needed by websocket static callbacks
 
     m_maxItemsInClientReceiveQueue = MAX_ITEMS_CLIENT_RECEIVE_QUEUE;
 
@@ -202,8 +202,8 @@ CControlObject::CControlObject()
     // Web server secutity should be used.
     m_bDisableSecurityWebServer = false;
 
-	// Local domain
-	m_authDomain = _("mydomain.com");
+    // Local domain
+    m_authDomain = _("mydomain.com");
 
     // Set Default Log Level
     m_logLevel = 0;
@@ -241,8 +241,8 @@ CControlObject::CControlObject()
     // Multicast annouce 
     m_bMulticastAnnounce = true;
 
-	// Control UDP INterface
-	m_bUDPInterface = false;
+    // Control UDP INterface
+    m_bUDPInterface = false;
 
     // Default TCP/IP interface
     m_strTcpInterfaceAddress = _("9598");
@@ -253,7 +253,7 @@ CControlObject::CControlObject()
     // default multicast announce ttl
     m_ttlMultiCastAnnounce = IP_MULTICAST_DEFAULT_TTL;
 
-	// Default UDP interface
+    // Default UDP interface
     m_strUDPInterfaceAddress = _("udp://:9598");
 
     // Level I (Canal) drivers
@@ -274,11 +274,11 @@ CControlObject::CControlObject()
     m_pclientMsgWorkerThread = NULL;
     m_pVSCPClientThread = NULL;
     m_pdaemonVSCPThread = NULL;
-	m_pwebServerThread = NULL;
+    m_pwebServerThread = NULL;
     
     // Websocket interface
-    m_bWebSockets = true;		// websocket interface ia active
-	m_bAuthWebsockets = true;	// Authentication is needed
+    m_bWebSockets = true;       // websocket interface ia active
+    m_bAuthWebsockets = true;   // Authentication is needed
     m_pathCert.Empty();
     
     // Webserver interface
@@ -286,9 +286,9 @@ CControlObject::CControlObject()
     m_bWebServer = true;
 
 #ifdef WIN32
-	m_pathWebRoot = _("/programdata/vscp/www");
+    m_pathWebRoot = _("/programdata/vscp/www");
 #else
-	m_pathWebRoot = _("/srv/vscp/www");
+    m_pathWebRoot = _("/srv/vscp/www");
 #endif
 
     // Set control object
@@ -316,20 +316,20 @@ CControlObject::CControlObject()
     crcInit();
 
 #if (0)
-	CVSCPTable testtable( "c:/tmp/test.tbl" );
+    CVSCPTable testtable( "c:/tmp/test.tbl" );
 
-	testtable.logData( 1, 100 );
-	testtable.logData( 8, 800 );
-	testtable.logData( 12, 1200 );
-	testtable.logData( 19, 2000 );
-	testtable.logData( 20, 2000 );
-	testtable.logData( 21, 2100 );
-	testtable.logData( 30, 3000 );
-	testtable.logData( 48, 4800 );
+    testtable.logData( 1, 100 );
+    testtable.logData( 8, 800 );
+    testtable.logData( 12, 1200 );
+    testtable.logData( 19, 2000 );
+    testtable.logData( 20, 2000 );
+    testtable.logData( 21, 2100 );
+    testtable.logData( 30, 3000 );
+    testtable.logData( 48, 4800 );
 
-	long size = testtable.GetRangeOfData( 22, 48, NULL, 0 );
-	size = testtable.GetRangeOfData( 1, 8, NULL, 0 );
-	size = testtable.GetRangeOfData( 20, 48, NULL, 0 );
+    long size = testtable.GetRangeOfData( 22, 48, NULL, 0 );
+    size = testtable.GetRangeOfData( 1, 8, NULL, 0 );
+    size = testtable.GetRangeOfData( 20, 48, NULL, 0 );
 #endif
 
 if ( 0 ) {
@@ -416,10 +416,10 @@ void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const ui
     //printf( wxdebugmsg.mb_str( wxConvUTF8 ) );
     if ( level >= m_logLevel ) {
 
-#ifdef WIN32		
+#ifdef WIN32
         // Send out to possible window
         wxPrintf( wxdebugmsg );
-#endif		
+#endif
 
         if ( DAEMON_LOGTYPE_GENERAL == nType ) {
 
@@ -516,7 +516,7 @@ bool CControlObject::init(wxString& strcfgfile)
 
     // A configuration file must be available
     if (!wxFile::Exists(strcfgfile)) {
-		printf("No configuration file. Can't initialize!.");
+        printf("No configuration file. Can't initialize!.");
         logMsg(_("No configuration file. Can't initialize!.\n"), DAEMON_LOGMSG_CRITICAL);
         logMsg(_("Path = .") + strcfgfile + _("\n"), DAEMON_LOGMSG_CRITICAL);
         return FALSE;
@@ -543,29 +543,29 @@ bool CControlObject::init(wxString& strcfgfile)
     char buf[ 512 ];
     randPassword pw(3);
 
-	// Level II Driver Username	
+    // Level II Driver Username	
     pw.generatePassword(32, buf);
     m_driverUsername = wxString::FromAscii(buf);
-	
-	// Level II Driver Password
+    
+    // Level II Driver Password
     pw.generatePassword(32, buf);
-	m_driverPassword = wxString::FromAscii( buf );
-	
-	wxString driverhash = m_driverUsername + _(":") +
-							m_authDomain + _(":") +
-							m_driverPassword;
-	
-	memset( buf, 0, sizeof( buf ) );
-	strncpy( buf,(const char *)driverhash.mbc_str(), driverhash.Length() );
+    m_driverPassword = wxString::FromAscii( buf );
+    
+    wxString driverhash = m_driverUsername + _(":") +
+                            m_authDomain + _(":") +
+                            m_driverPassword;
+    
+    memset( buf, 0, sizeof( buf ) );
+    strncpy( buf,(const char *)driverhash.mbc_str(), driverhash.Length() );
     Cmd5 md5( (unsigned char *)buf );
     
 
     m_userList.addUser( m_driverUsername,
-							wxString::FromAscii( md5.getDigest() ),
-							_("admin"),
-							NULL,
-							_(""),
-							_("") );
+                            wxString::FromAscii( md5.getDigest() ),
+                            _("admin"),
+                            NULL,
+                            _(""),
+                            _("") );
 
     // Read configuration
     if (!readConfiguration(strcfgfile)) {
@@ -651,22 +651,22 @@ bool CControlObject::init(wxString& strcfgfile)
     else {
         logMsg(_("TCP/IP interface disabled.\n"), DAEMON_LOGMSG_INFO);
     }
-	
+
     // Start daemon worker thread if enabled.
     if ( m_bVSCPDaemon ) {
-	    startDaemonWorkerThread();
+        startDaemonWorkerThread();
     }
 
     // Start web sockets if enabled
-	if (m_bWebSockets) {
+    if (m_bWebSockets) {
         logMsg(_("WebServer interface active.\n"), DAEMON_LOGMSG_INFO);
         startWebServerThread();
     }
     else {
         logMsg(_("WebServer interface disabled.\n"), DAEMON_LOGMSG_INFO);
     }
-	
-	// Load drivers if the are enabled
+    
+    // Load drivers if the are enabled
     if (m_bEnableLevel1Drivers) {
         logMsg(_("Level I drivers enabled.\n"), DAEMON_LOGMSG_INFO);
         startDeviceWorkerThreads();
@@ -708,16 +708,16 @@ bool CControlObject::run(void)
     EventShutDown.sizeData = 0;
     EventShutDown.pdata = NULL;
 
-	// Init table files
-	m_mutexTableList.Lock();
-	listVSCPTables::iterator iter;
-	for ( iter = m_listTables.begin(); iter != m_listTables.end(); ++iter ) {
-		CVSCPTable *pTable = *iter;
+    // Init table files
+    m_mutexTableList.Lock();
+    listVSCPTables::iterator iter;
+    for ( iter = m_listTables.begin(); iter != m_listTables.end(); ++iter ) {
+        CVSCPTable *pTable = *iter;
         pTable->m_mutexThisTable.Lock();
-		pTable->init();
+        pTable->init();
         pTable->m_mutexThisTable.Unlock();
-	}
-	m_mutexTableList.Unlock();
+    }
+    m_mutexTableList.Unlock();
 
     // We need to create a clientItem and add this object to the list
     CClientItem *pClientItem = new CClientItem;
@@ -757,10 +757,10 @@ bool CControlObject::run(void)
     
     // DM Loop
     while (!m_bQuit) {
-		
+    
         // CLOCKS_PER_SEC 
-		clock_t ticks,oldus;
-		oldus = ticks = clock();
+        clock_t ticks,oldus;
+        oldus = ticks = clock();
 
         // Feed possible perodic event
         m_dm.feedPeriodicEvent();
@@ -837,20 +837,20 @@ bool CControlObject::cleanup(void)
 {
     stopDeviceWorkerThreads();
     stopTcpWorkerThread();
-	stopWebServerThread();
+    stopWebServerThread();
     stopClientWorkerThread();
     stopDaemonWorkerThread();
 
-	// kill table files
-	m_mutexTableList.Lock();
-	listVSCPTables::iterator iter;
-	for (iter = m_listTables.begin(); iter != m_listTables.end(); ++iter)
-	{
-		CVSCPTable *pTable = *iter;
-		delete pTable;
-	}
-	m_mutexTableList.Unlock();
-	
+    // kill table files
+    m_mutexTableList.Lock();
+    listVSCPTables::iterator iter;
+    for (iter = m_listTables.begin(); iter != m_listTables.end(); ++iter)
+    {
+        CVSCPTable *pTable = *iter;
+        delete pTable;
+    }
+    m_mutexTableList.Unlock();
+    
     // Close logfile
     if ( m_bLogGeneralEnable ) {
         m_fileLogGeneral.Close();
@@ -941,11 +941,11 @@ bool CControlObject::startTcpWorkerThread(void)
                     logMsg(_("Unable to run TCP thread."), DAEMON_LOGMSG_CRITICAL);
                 }
             } 
-			else {
+            else {
                 logMsg(_("Unable to create TCP thread."), DAEMON_LOGMSG_CRITICAL);
             }
         } 
-		else {
+        else {
             logMsg(_("Unable to allocate memory for TCP thread."), DAEMON_LOGMSG_CRITICAL);
         }
     }
@@ -996,11 +996,11 @@ bool CControlObject::startUDPWorkerThread(void)
                     logMsg(_("Unable to run TCP thread."), DAEMON_LOGMSG_CRITICAL);
                 }
             } 
-			else {
+            else {
                 logMsg(_("Unable to create TCP thread."), DAEMON_LOGMSG_CRITICAL);
             }
         } 
-		else {
+        else {
             logMsg(_("Unable to allocate memory for TCP thread."), DAEMON_LOGMSG_CRITICAL);
         }
     }
@@ -1049,11 +1049,11 @@ bool CControlObject::startWebServerThread(void)
                     logMsg(_("Unable to run WeServer thread."), DAEMON_LOGMSG_CRITICAL);
                 }
             } 
-			else {
+            else {
                 logMsg(_("Unable to create WebServer thread."), DAEMON_LOGMSG_CRITICAL);
             }
         } 
-		else {
+        else {
             logMsg(_("Unable to allocate memory for WebServer thread."), DAEMON_LOGMSG_CRITICAL);
         }
     }
@@ -1102,11 +1102,11 @@ bool CControlObject::startDaemonWorkerThread(void)
                     logMsg(_("Unable to start TCP VSCP daemon thread."), DAEMON_LOGMSG_CRITICAL);
                 }
             } 
-			else {
+            else {
                 logMsg(_("Unable to create TCP VSCP daemon thread."), DAEMON_LOGMSG_CRITICAL);
             }
         } 
-		else {
+        else {
             logMsg(_("Unable to start VSCP daemon thread."), DAEMON_LOGMSG_CRITICAL);
         }
 
@@ -1501,7 +1501,8 @@ bool CControlObject::getMacAddress(cguid& guid)
         guid.setAt( 13, *(ptr + 5) );
         guid.setAt( 14, 0 );
         guid.setAt( 15, 0 );
-    } else {
+    } 
+    else {
         logMsg(_("Failed to get hardware address (must be root?).\n"), DAEMON_LOGMSG_WARNING);
         rv = false;
     }
@@ -1581,17 +1582,20 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
     unsigned long val;
     wxXmlDocument doc;
 
-    wxString wxlogmsg = wxString::Format(_("Reading configuration from [%s]\n"), (const char *)strcfgfile.c_str() );
+    wxString wxlogmsg = wxString::Format(_("Reading configuration from [%s]\n"), 
+                                            (const char *)strcfgfile.c_str() );
     logMsg( wxlogmsg, DAEMON_LOGMSG_INFO );
 
     if (!doc.Load(strcfgfile)) {
-        logMsg(_("Can't load logfile. Is path correct?"), DAEMON_LOGMSG_CRITICAL );
+        logMsg(_("Can't load logfile. Is path correct?"), 
+                    DAEMON_LOGMSG_CRITICAL );
         return false;
     }
 
     // start processing the XML file
     if (doc.GetRoot()->GetName() != wxT("vscpconfig")) {
-        logMsg(_("Can't read logfile. Maybe it is invalid!"), DAEMON_LOGMSG_CRITICAL );
+        logMsg(_("Can't read logfile. Maybe it is invalid!"), 
+                    DAEMON_LOGMSG_CRITICAL );
         return false;
     }
 
@@ -1602,15 +1606,15 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
-					
-				if (subchild->GetName() == wxT("loglevel")) {
-					wxString str = subchild->GetNodeContent();
-					str.Trim();
-					str.Trim(false);
+                
+                if (subchild->GetName() == wxT("loglevel")) {
+                    wxString str = subchild->GetNodeContent();
+                    str.Trim();
+                    str.Trim(false);
                     str.MakeUpper();
-					if ( str.IsSameAs(_("NONE"), false)) {
-						m_logLevel = DAEMON_LOGMSG_NONE;
-					}
+                    if ( str.IsSameAs(_("NONE"), false)) {
+                        m_logLevel = DAEMON_LOGMSG_NONE;
+                    }
                     else if ( str.IsSameAs(_("INFO"), false)) {
                         m_logLevel = DAEMON_LOGMSG_INFO;
                     }
@@ -1651,9 +1655,9 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_bLogGeneralEnable = false;
                     }
-					else {
-						m_bLogGeneralEnable = true;
-					}
+                    else {
+                        m_bLogGeneralEnable = true;
+                    }
 
                     wxFileName fileName;
                     fileName.SetName( subchild->GetNodeContent() );
@@ -1668,9 +1672,9 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_bLogSecurityEnable = false;
                     }
-					else {
-						m_bLogSecurityEnable = true;
-					}
+                    else {
+                        m_bLogSecurityEnable = true;
+                    }
 
                     wxFileName fileName;
                     fileName.SetName( subchild->GetNodeContent() );
@@ -1685,9 +1689,9 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_bLogAccessEnable = false;
                     }
-					else {
-						m_bLogAccessEnable = true;
-					}
+                    else {
+                        m_bLogAccessEnable = true;
+                    }
 
                     wxFileName fileName;
                     fileName.SetName( subchild->GetNodeContent() );
@@ -1695,19 +1699,19 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                         m_logAccessFileName = fileName;
                     }
                 }
-				else if (subchild->GetName() == wxT("tcpip")) {
+                else if (subchild->GetName() == wxT("tcpip")) {
                     wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true")); 
                     attribute.MakeLower();
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_bTCPInterface = false;
                     }
-					else {
-						m_bTCPInterface = true;
-					}
+                    else {
+                        m_bTCPInterface = true;
+                    }
 
                     m_strTcpInterfaceAddress = subchild->GetAttribute(wxT("interface"), wxT(""));
 
-				} 
+                } 
                 else if ( subchild->GetName() == wxT( "multicast-announce" ) ) {
 
                     wxString attribute = subchild->GetAttribute( wxT( "enable" ), wxT( "true" ) );
@@ -1724,15 +1728,15 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     m_ttlMultiCastAnnounce = vscp_readStringValue( subchild->GetAttribute( wxT( "ttl" ), wxT( "1" ) ) );
 
                 }
-				else if (subchild->GetName() == wxT("udp")) {
+                else if (subchild->GetName() == wxT("udp")) {
                     wxString attribut = subchild->GetAttribute(wxT("enable"), wxT("true")); 
                     attribut.MakeLower();
                     if (attribut.IsSameAs(_("false"), false)) {
                         m_bUDPInterface = false;
                     }
-					else {
-						m_bUDPInterface = true;
-					}
+                    else {
+                        m_bUDPInterface = true;
+                    }
 
                     m_strUDPInterfaceAddress = subchild->GetAttribute(wxT("interface"), wxT(""));
 
@@ -1769,33 +1773,33 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
                     // Get the loglevel
                     wxString str = subchild->GetAttribute(wxT("loglevel"), wxT("NORMAL"));
-					str.Trim();
-					str.Trim(false);
+                    str.Trim();
+                    str.Trim(false);
                     str.MakeUpper();
                     if ( str.IsSameAs(_("NONE"), false)) {
-						m_dm.m_logLevel = LOG_DM_NONE;
-					}
+                        m_dm.m_logLevel = LOG_DM_NONE;
+                    }
                     else if ( str.IsSameAs(_("0"), false)) {
-						m_dm.m_logLevel = LOG_DM_NONE;
-					}
+                        m_dm.m_logLevel = LOG_DM_NONE;
+                    }
                     else if ( str.IsSameAs(_("DEBUG"), false)) {
-						m_dm.m_logLevel = LOG_DM_DEBUG;
-					}
+                        m_dm.m_logLevel = LOG_DM_DEBUG;
+                    }
                     else if ( str.IsSameAs(_("1"), false)) {
-						m_dm.m_logLevel = LOG_DM_DEBUG;
-					}
-					else if ( str.IsSameAs(_("NORMAL"), false)) {
-						m_dm.m_logLevel = LOG_DM_NORMAL;
-					}
+                        m_dm.m_logLevel = LOG_DM_DEBUG;
+                    }
+                    else if ( str.IsSameAs(_("NORMAL"), false)) {
+                        m_dm.m_logLevel = LOG_DM_NORMAL;
+                    }
                     else if ( str.IsSameAs(_("2"), false)) {
-						m_dm.m_logLevel = LOG_DM_NORMAL;
-					}
+                        m_dm.m_logLevel = LOG_DM_NORMAL;
+                    }
                     else if ( str.IsSameAs(_("EXTRA"), false)) {
-						m_dm.m_logLevel = LOG_DM_EXTRA;
-					}
+                        m_dm.m_logLevel = LOG_DM_EXTRA;
+                    }
                     else if ( str.IsSameAs(_("3"), false)) {
-						m_dm.m_logLevel = LOG_DM_EXTRA;
-					}
+                        m_dm.m_logLevel = LOG_DM_EXTRA;
+                    }
                     
                 }                 
                 else if (subchild->GetName() == wxT("variables")) {
@@ -1826,18 +1830,18 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     }
 
                 } 
-				else if (subchild->GetName() == wxT("guid")) {
+                else if (subchild->GetName() == wxT("guid")) {
                     wxString str = subchild->GetNodeContent();
                     m_guid.getFromString(str);
                 } 
                 else if ( subchild->GetName() == wxT( "servername" ) ) {
                     m_strServerName = subchild->GetNodeContent();
                 }
-				else if (subchild->GetName() == wxT("clientbuffersize")) {
+                else if (subchild->GetName() == wxT("clientbuffersize")) {
                     wxString str = subchild->GetNodeContent();
                     m_maxItemsInClientReceiveQueue = vscp_readStringValue(str);
                 }  
-				else if (subchild->GetName() == wxT("webserver")) {
+                else if (subchild->GetName() == wxT("webserver")) {
                    
                     wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
                    
@@ -2008,7 +2012,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             VSCPFilter.filter_type = val;
                           
                             wxString str_vscp_guid = subchild->GetAttribute(wxT("guid"),                                 
-														wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"));
+                                                        wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"));
                             vscp_getGuidFromStringToArray(VSCPFilter.filter_GUID, str_vscp_guid);
                         } 
                         else if (subsubchild->GetName() == wxT("mask")) {
@@ -2037,10 +2041,10 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                                     wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"));
                             vscp_getGuidFromStringToArray(VSCPFilter.mask_GUID, str_vscp_guid);
                         } 
-						else if (subsubchild->GetName() == wxT("allowfrom")) {
+                        else if (subsubchild->GetName() == wxT("allowfrom")) {
                             allowfrom = subsubchild->GetNodeContent();
                         } 
-						else if (subsubchild->GetName() == wxT("allowevent")) {
+                        else if (subsubchild->GetName() == wxT("allowevent")) {
                             allowevent = subsubchild->GetNodeContent();
                         }
 
@@ -2056,7 +2060,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     if (bFilterPresent && bMaskPresent) {
                         m_userList.addUser(name, md5, privilege, &VSCPFilter, allowfrom, allowevent);
                     } 
-					else {
+                    else {
                         m_userList.addUser(name, md5, privilege, NULL, allowfrom, allowevent);
                     }
 
@@ -2298,7 +2302,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                         logMsg(errMsg, DAEMON_LOGMSG_INFO);
                     
                     } 
-					else {
+                    else {
                         wxString errMsg = _("Level II driver added. - [ ") +
                                     strPath + _(" ]\n");
                         logMsg(errMsg, DAEMON_LOGMSG_INFO);
@@ -2314,8 +2318,8 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
             }
 
         }
-		// <table name="jhjhdjhsdjh" description="jsjdsjhdhsjh" xaxis="lfdlfldk" yaxis="dfddfd" path="path" type="normal|static" size="n" class="n" type="n" unit="n" />
-		else if (child->GetName() == wxT("tables")) {
+        // <table name="jhjhdjhsdjh" description="jsjdsjhdhsjh" xaxis="lfdlfldk" yaxis="dfddfd" path="path" type="normal|static" size="n" class="n" type="n" unit="n" />
+        else if (child->GetName() == wxT("tables")) {
 
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
@@ -2335,23 +2339,23 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                         nType = vscp_readStringValue( attribute );
                     }
 
-					CVSCPTable *pTable = new CVSCPTable();
-					if ( NULL != pTable ) {
+                    CVSCPTable *pTable = new CVSCPTable();
+                    if ( NULL != pTable ) {
                         memset( &pTable->m_vscpFileHead, 0, sizeof(_vscptableInfo) );
-						pTable->setTableInfo( subchild->GetAttribute( wxT("path"), wxT("") ).mbc_str(),
-													nType,
-													subchild->GetAttribute( wxT("name"), wxT("") ).Upper().mbc_str(), 
-													subchild->GetAttribute( wxT("description"), wxT("") ).mbc_str(),
-													subchild->GetAttribute( wxT("labelx"), wxT("") ).mbc_str(), 
-													subchild->GetAttribute( wxT("labely"), wxT("") ).mbc_str(),
-													vscp_readStringValue( subchild->GetAttribute( wxT("size"), wxT("0") ) ),
-													vscp_readStringValue( subchild->GetAttribute( wxT("vscpclass"), wxT("10") ) ), 
-													vscp_readStringValue( subchild->GetAttribute( wxT("vscptype"), wxT("6") ) ),
-													vscp_readStringValue( subchild->GetAttribute( wxT("vscpunit"), wxT("0") ) ) );
-						m_mutexTableList.Lock();
-						m_listTables.Append( pTable ) ;
-						m_mutexTableList.Unlock();
-					}
+                        pTable->setTableInfo( subchild->GetAttribute( wxT("path"), wxT("") ).mbc_str(),
+                                                    nType,
+                                                    subchild->GetAttribute( wxT("name"), wxT("") ).Upper().mbc_str(), 
+                                                    subchild->GetAttribute( wxT("description"), wxT("") ).mbc_str(),
+                                                    subchild->GetAttribute( wxT("labelx"), wxT("") ).mbc_str(), 
+                                                    subchild->GetAttribute( wxT("labely"), wxT("") ).mbc_str(),
+                                                    vscp_readStringValue( subchild->GetAttribute( wxT("size"), wxT("0") ) ),
+                                                    vscp_readStringValue( subchild->GetAttribute( wxT("vscpclass"), wxT("10") ) ), 
+                                                    vscp_readStringValue( subchild->GetAttribute( wxT("vscptype"), wxT("6") ) ),
+                                                    vscp_readStringValue( subchild->GetAttribute( wxT("vscpunit"), wxT("0") ) ) );
+                        m_mutexTableList.Lock();
+                        m_listTables.Append( pTable ) ;
+                        m_mutexTableList.Unlock();
+                    }
                 }
 
                 subchild = subchild->GetNext();
