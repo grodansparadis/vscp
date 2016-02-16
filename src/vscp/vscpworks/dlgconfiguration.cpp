@@ -97,7 +97,12 @@ dlgConfiguration::dlgConfiguration()
     Init();
 }
 
-dlgConfiguration::dlgConfiguration( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+dlgConfiguration::dlgConfiguration( wxWindow* parent, 
+                                        wxWindowID id, 
+                                        const wxString& caption, 
+                                        const wxPoint& pos, 
+                                        const wxSize& size, 
+                                        long style )
 {
     Init();
     Create(parent, id, caption, pos, size, style);
@@ -108,7 +113,12 @@ dlgConfiguration::dlgConfiguration( wxWindow* parent, wxWindowID id, const wxStr
 // dlgConfiguration creator
 //
 
-bool dlgConfiguration::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+bool dlgConfiguration::Create( wxWindow* parent, 
+                                    wxWindowID id, 
+                                    const wxString& caption, 
+                                    const wxPoint& pos, 
+                                    const wxSize& size, 
+                                    long style )
 {
     SetExtraStyle(wxWS_EX_BLOCK_EVENTS);
     SetSheetStyle(wxPROPSHEET_DEFAULT);

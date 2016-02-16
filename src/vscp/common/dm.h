@@ -45,7 +45,7 @@ WX_DECLARE_LIST ( wxDynamicLibrary, PLUGINLIST ); 	// List with DM plugins
 WX_DECLARE_LIST( int, ACTIONTIME );
 
 // Control bits
-#define DM_CONTROL_DONT_CONTINUE_SCAN	0x40000000
+#define DM_CONTROL_DONT_CONTINUE_SCAN   0x40000000
 #define DM_CONTROL_CHECK_INDEX          0x00000020
 #define DM_CONTROL_CHECK_ZONE           0x00000010 
 #define DM_CONTROL_CHECK_SUBZONE        0x00000008  
@@ -100,18 +100,18 @@ public:
 
     virtual void *Entry();
 
-  	/*! 
-		called when the thread exits - whether it terminates normally or is
-		stopped with Delete() (but not when it is Kill()ed!)
-	*/
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+    */
     virtual void OnExit();
 
 private:
 
     /*!
-		Control object pointer
-	*/
-	CControlObject *m_pCtrlObject;
+        Control object pointer
+    */
+    CControlObject *m_pCtrlObject;
 
     /*!
         URL to access  
@@ -167,19 +167,19 @@ public:
 
   virtual void *Entry();
 
-  	/*! 
-		called when the thread exits - whether it terminates normally or is
-		stopped with Delete() (but not when it is Kill()ed!)
-	*/
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+    */
     virtual void OnExit();
 
 private:
 
 
-  /*!
-		Control object pointer
-	*/
-	CControlObject *m_pCtrlObject;
+    /*!
+        Control object pointer
+    */
+    CControlObject *m_pCtrlObject;
 
   /*!
     Hostname  
@@ -212,7 +212,7 @@ private:
 
 
 /*!
-DM Timer	
+    DM Timer
 */
 
 class dmTimer
@@ -325,7 +325,7 @@ private:
 
 
 /*!
-Timed object	
+Timed object
 */
 
 class actionTime
@@ -399,7 +399,7 @@ public:
   /*!
   True if working on that day.
   */
-  bool m_weekDay[ 7 ];		// Monday - Sunday
+  bool m_weekDay[ 7 ];      // Monday - Sunday
 
   /*!
   This is the time (inclusive) from which this action is
@@ -481,25 +481,29 @@ public:
         Check if scan should continue
         @returns true if enabled false otherwise
     */
-    bool isScanDontContinueSet( void ) { return ( ( m_control & DM_CONTROL_DONT_CONTINUE_SCAN ) ? true : false ); };
+    bool isScanDontContinueSet( void ) 
+        { return ( ( m_control & DM_CONTROL_DONT_CONTINUE_SCAN ) ? true : false ); };
 
     /*!
         Check if index should be checked
         @returns true if enabled false otherwise
      */
-    bool isCheckIndexSet( void ) { return ( ( m_control & DM_CONTROL_CHECK_INDEX ) ? true : false ); };
+    bool isCheckIndexSet( void ) 
+        { return ( ( m_control & DM_CONTROL_CHECK_INDEX ) ? true : false ); };
     
     /*!
         Check if zone should be checked
         @returns true if enabled false otherwise
     */    
-    bool isCheckZoneSet( void ) { return ( ( m_control & DM_CONTROL_CHECK_ZONE ) ? true : false ); };
+    bool isCheckZoneSet( void ) 
+        { return ( ( m_control & DM_CONTROL_CHECK_ZONE ) ? true : false ); };
   
     /*!
         Check if zone should be checked
         @returns true if enabled false otherwise
     */
-    bool isCheckSubZoneSet( void ) { return ( ( m_control & DM_CONTROL_CHECK_SUBZONE ) ? true : false ); };
+    bool isCheckSubZoneSet( void ) 
+        { return ( ( m_control & DM_CONTROL_CHECK_SUBZONE ) ? true : false ); };
   
     /*!
         Handle escape sequencies
@@ -862,7 +866,10 @@ public:
         exist create it.
         @return timer id or zero on failure
     */
-    int startTimer( uint16_t id, wxString& nameVariable, uint32_t delay, bool bSetValue = false );
+    int startTimer( uint16_t id, 
+                        wxString& nameVariable, 
+                        uint32_t delay, 
+                        bool bSetValue = false );
 
      /*!
         Stop an existing timer

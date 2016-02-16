@@ -84,9 +84,13 @@ clientTcpIpWorkerThread::~clientTcpIpWorkerThread()
 //
 
 #ifdef USE_FOSSA
-void clientTcpIpWorkerThread::ev_handler(struct ns_connection *conn, int ev, void *pUser) 
+void clientTcpIpWorkerThread::ev_handler( struct ns_connection *conn, 
+                                            int ev, 
+                                            void *pUser) 
 #else
-void clientTcpIpWorkerThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void *pUser) 
+void clientTcpIpWorkerThread::ev_handler( struct ns_connection *conn, 
+                                            enum ns_event ev, 
+                                            void *pUser) 
 #endif
 {
     char rbuf[ 2048 ];

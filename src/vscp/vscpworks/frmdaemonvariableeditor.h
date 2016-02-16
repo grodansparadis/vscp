@@ -93,9 +93,19 @@ class DaemonVariableEditor: public wxFrame
 public:
   /// Constructors
   DaemonVariableEditor();
-  DaemonVariableEditor( wxWindow* parent, wxWindowID id = SYMBOL_DAEMONVARIABLEEDITOR_IDNAME, const wxString& caption = SYMBOL_DAEMONVARIABLEEDITOR_TITLE, const wxPoint& pos = SYMBOL_DAEMONVARIABLEEDITOR_POSITION, const wxSize& size = SYMBOL_DAEMONVARIABLEEDITOR_SIZE, long style = SYMBOL_DAEMONVARIABLEEDITOR_STYLE );
+  DaemonVariableEditor( wxWindow* parent, 
+                            wxWindowID id = SYMBOL_DAEMONVARIABLEEDITOR_IDNAME, 
+                            const wxString& caption = SYMBOL_DAEMONVARIABLEEDITOR_TITLE, 
+                            const wxPoint& pos = SYMBOL_DAEMONVARIABLEEDITOR_POSITION, 
+                            const wxSize& size = SYMBOL_DAEMONVARIABLEEDITOR_SIZE, 
+                            long style = SYMBOL_DAEMONVARIABLEEDITOR_STYLE );
 
-  bool Create( wxWindow* parent, wxWindowID id = SYMBOL_DAEMONVARIABLEEDITOR_IDNAME, const wxString& caption = SYMBOL_DAEMONVARIABLEEDITOR_TITLE, const wxPoint& pos = SYMBOL_DAEMONVARIABLEEDITOR_POSITION, const wxSize& size = SYMBOL_DAEMONVARIABLEEDITOR_SIZE, long style = SYMBOL_DAEMONVARIABLEEDITOR_STYLE );
+  bool Create( wxWindow* parent, 
+                    wxWindowID id = SYMBOL_DAEMONVARIABLEEDITOR_IDNAME, 
+                    const wxString& caption = SYMBOL_DAEMONVARIABLEEDITOR_TITLE, 
+                    const wxPoint& pos = SYMBOL_DAEMONVARIABLEEDITOR_POSITION, 
+                    const wxSize& size = SYMBOL_DAEMONVARIABLEEDITOR_SIZE, 
+                    long style = SYMBOL_DAEMONVARIABLEEDITOR_STYLE );
 
   /// Destructor
   ~DaemonVariableEditor();

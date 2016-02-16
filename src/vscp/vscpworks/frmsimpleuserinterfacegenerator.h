@@ -91,9 +91,19 @@ class SimpleUserInterfaceGenerator: public wxFrame
 public:
   /// Constructors
   SimpleUserInterfaceGenerator();
-  SimpleUserInterfaceGenerator( wxWindow* parent, wxWindowID id = SYMBOL_SIMPLEUSERINTERFACEGENERATOR_IDNAME, const wxString& caption = SYMBOL_SIMPLEUSERINTERFACEGENERATOR_TITLE, const wxPoint& pos = SYMBOL_SIMPLEUSERINTERFACEGENERATOR_POSITION, const wxSize& size = SYMBOL_SIMPLEUSERINTERFACEGENERATOR_SIZE, long style = SYMBOL_SIMPLEUSERINTERFACEGENERATOR_STYLE );
+  SimpleUserInterfaceGenerator( wxWindow* parent, 
+                                    wxWindowID id = SYMBOL_SIMPLEUSERINTERFACEGENERATOR_IDNAME, 
+                                    const wxString& caption = SYMBOL_SIMPLEUSERINTERFACEGENERATOR_TITLE, 
+                                    const wxPoint& pos = SYMBOL_SIMPLEUSERINTERFACEGENERATOR_POSITION, 
+                                    const wxSize& size = SYMBOL_SIMPLEUSERINTERFACEGENERATOR_SIZE, 
+                                    long style = SYMBOL_SIMPLEUSERINTERFACEGENERATOR_STYLE );
 
-  bool Create( wxWindow* parent, wxWindowID id = SYMBOL_SIMPLEUSERINTERFACEGENERATOR_IDNAME, const wxString& caption = SYMBOL_SIMPLEUSERINTERFACEGENERATOR_TITLE, const wxPoint& pos = SYMBOL_SIMPLEUSERINTERFACEGENERATOR_POSITION, const wxSize& size = SYMBOL_SIMPLEUSERINTERFACEGENERATOR_SIZE, long style = SYMBOL_SIMPLEUSERINTERFACEGENERATOR_STYLE );
+  bool Create( wxWindow* parent, 
+                    wxWindowID id = SYMBOL_SIMPLEUSERINTERFACEGENERATOR_IDNAME, 
+                    const wxString& caption = SYMBOL_SIMPLEUSERINTERFACEGENERATOR_TITLE, 
+                    const wxPoint& pos = SYMBOL_SIMPLEUSERINTERFACEGENERATOR_POSITION, 
+                    const wxSize& size = SYMBOL_SIMPLEUSERINTERFACEGENERATOR_SIZE, 
+                    long style = SYMBOL_SIMPLEUSERINTERFACEGENERATOR_STYLE );
 
   /// Destructor
   ~SimpleUserInterfaceGenerator();

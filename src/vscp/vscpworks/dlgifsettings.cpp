@@ -91,7 +91,12 @@ dlgInterfaceSettings::dlgInterfaceSettings()
     Init();
 }
 
-dlgInterfaceSettings::dlgInterfaceSettings( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+dlgInterfaceSettings::dlgInterfaceSettings( wxWindow* parent, 
+                                                wxWindowID id, 
+                                                const wxString& caption, 
+                                                const wxPoint& pos, 
+                                                const wxSize& size, 
+                                                long style )
 {
     Init();
     Create(parent, id, caption, pos, size, style);
@@ -101,7 +106,12 @@ dlgInterfaceSettings::dlgInterfaceSettings( wxWindow* parent, wxWindowID id, con
  * DlgInterfaceSettings creator
  */
 
-bool dlgInterfaceSettings::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+bool dlgInterfaceSettings::Create( wxWindow* parent, 
+                                        wxWindowID id, 
+                                        const wxString& caption, 
+                                        const wxPoint& pos, 
+                                        const wxSize& size, 
+                                        long style )
 {
 ////@begin dlgInterfaceSettings creation
   SetExtraStyle(wxWS_EX_BLOCK_EVENTS);

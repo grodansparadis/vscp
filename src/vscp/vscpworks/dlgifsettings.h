@@ -93,10 +93,20 @@ class dlgInterfaceSettings: public wxDialog
 public:
     /// Constructors
     dlgInterfaceSettings();
-    dlgInterfaceSettings( wxWindow* parent, wxWindowID id = SYMBOL_DLGINTERFACESETTINGS_IDNAME, const wxString& caption = SYMBOL_DLGINTERFACESETTINGS_TITLE, const wxPoint& pos = SYMBOL_DLGINTERFACESETTINGS_POSITION, const wxSize& size = SYMBOL_DLGINTERFACESETTINGS_SIZE, long style = SYMBOL_DLGINTERFACESETTINGS_STYLE );
+    dlgInterfaceSettings( wxWindow* parent, 
+                            wxWindowID id = SYMBOL_DLGINTERFACESETTINGS_IDNAME, 
+                            const wxString& caption = SYMBOL_DLGINTERFACESETTINGS_TITLE, 
+                            const wxPoint& pos = SYMBOL_DLGINTERFACESETTINGS_POSITION, 
+                            const wxSize& size = SYMBOL_DLGINTERFACESETTINGS_SIZE, 
+                            long style = SYMBOL_DLGINTERFACESETTINGS_STYLE );
 
     /// Creation
-    bool Create( wxWindow* parent, wxWindowID id = SYMBOL_DLGINTERFACESETTINGS_IDNAME, const wxString& caption = SYMBOL_DLGINTERFACESETTINGS_TITLE, const wxPoint& pos = SYMBOL_DLGINTERFACESETTINGS_POSITION, const wxSize& size = SYMBOL_DLGINTERFACESETTINGS_SIZE, long style = SYMBOL_DLGINTERFACESETTINGS_STYLE );
+    bool Create( wxWindow* parent, 
+                    wxWindowID id = SYMBOL_DLGINTERFACESETTINGS_IDNAME, 
+                    const wxString& caption = SYMBOL_DLGINTERFACESETTINGS_TITLE, 
+                    const wxPoint& pos = SYMBOL_DLGINTERFACESETTINGS_POSITION, 
+                    const wxSize& size = SYMBOL_DLGINTERFACESETTINGS_SIZE, 
+                    long style = SYMBOL_DLGINTERFACESETTINGS_STYLE );
 
     /// Destructor
     ~dlgInterfaceSettings();

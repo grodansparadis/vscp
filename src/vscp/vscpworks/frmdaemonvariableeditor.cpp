@@ -2088,7 +2088,12 @@ DaemonVariableEditor::DaemonVariableEditor()
   Init();
 }
 
-DaemonVariableEditor::DaemonVariableEditor( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+DaemonVariableEditor::DaemonVariableEditor( wxWindow* parent, 
+                                                wxWindowID id, 
+                                                const wxString& caption, 
+                                                const wxPoint& pos, 
+                                                const wxSize& size, 
+                                                long style )
 {
   Init();
   Create( parent, id, caption, pos, size, style );
@@ -2099,7 +2104,12 @@ DaemonVariableEditor::DaemonVariableEditor( wxWindow* parent, wxWindowID id, con
 // DaemonVariableEditor creator
 //
 
-bool DaemonVariableEditor::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+bool DaemonVariableEditor::Create( wxWindow* parent, 
+                                        wxWindowID id, 
+                                        const wxString& caption, 
+                                        const wxPoint& pos, 
+                                        const wxSize& size, 
+                                        long style )
 {
 ////@begin DaemonVariableEditor creation
   wxFrame::Create( parent, id, caption, pos, size, style );

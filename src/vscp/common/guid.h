@@ -43,20 +43,20 @@ public:
 
 public:
 
-	/*!
-		Assignement overload
-	*/
-	cguid& operator=( const cguid& guid);
+    /*!
+        Assignement overload
+    */
+    cguid& operator=( const cguid& guid);
 
-	/*!
-		Positive compare
-	*/
-	bool operator==(const cguid &guid);
+    /*!
+        Positive compare
+    */
+    bool operator==(const cguid &guid);
 
-	/*!
-		Negative compare
-	*/
-	bool operator!=(const cguid &guid);
+    /*!
+        Negative compare
+    */
+    bool operator!=(const cguid &guid);
 
     /*!
         Nill the GUID
@@ -76,12 +76,12 @@ public:
     */
     void getFromString( const char *pszGUID );
 
-	/*!
-		Set GUID from array
-		@param pguid Pointer to array that holds 16 GUID bytes on
-						MSB->LSB form.
-	*/
-	void getFromArray( const uint8_t *pguid );
+    /*!
+        Set GUID from array
+        @param pguid Pointer to array that holds 16 GUID bytes on
+                MSB->LSB form.
+    */
+    void getFromArray( const uint8_t *pguid );
 
     /*!
         GUID to string
@@ -100,18 +100,21 @@ public:
         \param pos Position 0-15 for GUID byte to get.
         \return GUID for position
     */
-    uint8_t getGUID( const unsigned char n ) { int pos; pos = n & 0xf; return m_id[ pos ]; };
+    uint8_t getGUID( const unsigned char n ) 
+                { int pos; pos = n & 0xf; return m_id[ pos ]; };
 
 
     /*!
         Get a byte from a specific GUID position
     */
-    uint8_t getAt( const unsigned char n ) { int pos; pos = ( n & 0x0f ); return m_id[ pos ]; };
+    uint8_t getAt( const unsigned char n ) 
+                { int pos; pos = ( n & 0x0f ); return m_id[ pos ]; };
 
     /*!
         Set a byte at a specific GUID position
     */
-    void setAt( const unsigned char n, const unsigned char value ) { int pos; pos = ( n & 0x0f ); m_id[ pos ] = value; };
+    void setAt( const unsigned char n, const unsigned char value ) 
+                { int pos; pos = ( n & 0x0f ); m_id[ pos ] = value; };
 
     /*!
         Set LSB GUID position
@@ -166,8 +169,8 @@ public:
     void setNicknameID( uint16_t nicknameid );    
               
     // GUID id  MSB (index=0) -> LSB (index=15)
-	uint8_t m_id[16];
- 	
+    uint8_t m_id[16];
+    
 };
 
 #endif  

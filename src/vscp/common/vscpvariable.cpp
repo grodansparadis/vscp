@@ -62,8 +62,8 @@ WX_DEFINE_LIST( listVscpVariable );
 CVSCPVariable::CVSCPVariable( void )
 {
     m_type = VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED;
-    m_bPersistent = false;			// Not persistent by default
-    m_bArray = false;				// Nor an array by default
+    m_bPersistent = false;          // Not persistent by default
+    m_bArray = false;               // Nor an array by default
 
     m_boolValue = false;
     m_event.pdata = NULL;
@@ -129,7 +129,7 @@ uint8_t CVSCPVariable::getVariableTypeFromString( const wxString& strVariableTyp
         else if ( 0 == str.Find( _("MEASUREMENT") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT;
         }         
-		else if ( 0 == str.Find( _("EVENTGUID") ) ) {
+        else if ( 0 == str.Find( _("EVENTGUID") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID;
         }
         else if ( 0 == str.Find( _("GUID") ) ) {
@@ -144,13 +144,13 @@ uint8_t CVSCPVariable::getVariableTypeFromString( const wxString& strVariableTyp
         else if ( 0 == str.Find( _("VSCPCLASS") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS;
         }
-		else if ( 0 == str.Find( _("EVENTCLASS") ) ) {
+        else if ( 0 == str.Find( _("EVENTCLASS") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS;
         }
         else if ( 0 == str.Find( _("VSCPTYPE") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE;
         }
-		else if ( 0 == str.Find( _("EVENTTYPE") ) ) {
+        else if ( 0 == str.Find( _("EVENTTYPE") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE;
         }
         else if ( 0 == str.Find( _("EVENTTIMESTAMP") ) ) {
@@ -180,53 +180,53 @@ uint8_t CVSCPVariable::getVariableTypeFromString( const wxString& strVariableTyp
 
 const char * CVSCPVariable::getVariableTypeAsString( int type )
 {
-	switch ( type ) {
+    switch ( type ) {
 
-		case VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED:
-			return "Unassigned";
+        case VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED:
+            return "Unassigned";
 
-		case VSCP_DAEMON_VARIABLE_CODE_STRING:
-			return "String";
+        case VSCP_DAEMON_VARIABLE_CODE_STRING:
+            return "String";
 
-		case VSCP_DAEMON_VARIABLE_CODE_BOOLEAN:
-			return "Boolean";
+        case VSCP_DAEMON_VARIABLE_CODE_BOOLEAN:
+            return "Boolean";
 
-		case VSCP_DAEMON_VARIABLE_CODE_INTEGER:
-			return "Integer";
+        case VSCP_DAEMON_VARIABLE_CODE_INTEGER:
+            return "Integer";
 
-		case VSCP_DAEMON_VARIABLE_CODE_LONG:
-			return "Long";
+        case VSCP_DAEMON_VARIABLE_CODE_LONG:
+            return "Long";
 
-		case VSCP_DAEMON_VARIABLE_CODE_DOUBLE:
-			return "Double";
+        case VSCP_DAEMON_VARIABLE_CODE_DOUBLE:
+            return "Double";
 
-		case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
-			return "Measurement";
+        case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
+            return "Measurement";
 
-		case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
-			return "VscpEvent";
+        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
+            return "VscpEvent";
 
-		case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID:
-			return "VscpGuid";
+        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID:
+            return "VscpGuid";
 
-		case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA:
-			return "VscpData";
+        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA:
+            return "VscpData";
 
-		case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS:
-			return "VscpClass";
+        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS:
+            return "VscpClass";
 
-		case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE:
-			return "VscpType";
+        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE:
+            return "VscpType";
 
-		case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP:
-			return "Timestamp";
+        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP:
+            return "Timestamp";
 
-		case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
-			return "DateTime";
+        case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
+            return "DateTime";
 
-		default:
-			return "Unknown";
-	}
+        default:
+            return "Unknown";
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -695,7 +695,7 @@ CVariableStorage::CVariableStorage()
 
     // Set the default dm configuration path
 #ifdef WIN32
-	m_configPath = wxStandardPaths::Get().GetConfigDir();
+    m_configPath = wxStandardPaths::Get().GetConfigDir();
     m_configPath += _("/vscp/variables.xml");
 #else	
     m_configPath = _("/srv/vscp/variables.xml");
@@ -791,10 +791,10 @@ bool CVariableStorage::add( const wxString& varName,
                                     uint8_t type, 
                                     bool bPersistent )
 {
-	// Name is always upper case
+    // Name is always upper case
     wxString name = varName.Upper();
-	name.Trim( true );
-	name.Trim( false );
+    name.Trim( true );
+    name.Trim( false );
 
     m_bChanged = true;
 
@@ -806,12 +806,12 @@ bool CVariableStorage::add( const wxString& varName,
     }
 
     CVSCPVariable *pVar = new CVSCPVariable;
-	if ( NULL == pVar ) return false;
+    if ( NULL == pVar ) return false;
 
     // Update lastchanged
     pVar->setLastChangedToNow();
 
-	pVar->setType( type );			// Store the type
+    pVar->setType( type );			// Store the type
 
     // Store persistence
     if ( bPersistent ) {
@@ -853,15 +853,15 @@ bool CVariableStorage::add( const wxString& varName,
 //
 
 bool CVariableStorage::addWithStringType(const wxString& varName,
-		                const wxString& value,
-		                const wxString& strType,
-		                bool bPersistent ) 
+                        const wxString& value,
+                        const wxString& strType,
+                        bool bPersistent ) 
 {
     uint8_t type = CVSCPVariable::getVariableTypeFromString( strType );
     return add(varName,
-		        value,
-		        type,
-		        bPersistent ); 
+                value,
+                type,
+                bPersistent ); 
 }
 
 
@@ -884,19 +884,19 @@ bool CVariableStorage::add( CVSCPVariable *pVar )
 
     if ( NULL != find( pVar->getName() ) ) {
         
-		// The variable is there already - remove so we could add the new
-		//remove( pVar->getName() );
-		m_listVariable.DeleteObject( m_hashVariable[ pVar->getName() ] );
-		m_hashVariable.erase( pVar->getName() );
+        // The variable is there already - remove so we could add the new
+        //remove( pVar->getName() );
+        m_listVariable.DeleteObject( m_hashVariable[ pVar->getName() ] );
+        m_hashVariable.erase( pVar->getName() );
 
-		// New variable
-		m_hashVariable[ pVar->getName() ] = pVar;
+        // New variable
+        m_hashVariable[ pVar->getName() ] = pVar;
         m_listVariable.Append( pVar );
         
     }
     else {
         // New variable
-		m_hashVariable[ pVar->getName() ] = pVar;
+        m_hashVariable[ pVar->getName() ] = pVar;
         m_listVariable.Append( pVar );
     }
 
@@ -947,7 +947,7 @@ bool CVariableStorage::load( void )
     m_configPath = wxStandardPaths::Get().GetConfigDir();
     m_configPath += _("/vscp/variables.xml");
 #else
-	m_configPath = _("/srv/vscp/variables.xml");
+    m_configPath = _("/srv/vscp/variables.xml");
 #endif	
 #endif
 
@@ -1035,7 +1035,7 @@ bool CVariableStorage::save()
     // Make a copy before we save
     wxCopyFile( m_configPath, m_configPath + _("~") );
 
-	return save( m_configPath );
+    return save( m_configPath );
 }
 
 
@@ -1051,15 +1051,15 @@ bool CVariableStorage::save( wxString& path )
     m_configPath += _("/vscp/variable.xml");
 #endif
 
-	if ( !wxFileName::IsFileWritable( path ) ) {
-		//wxString strLog = _("Variable save: File is not writable.\n");
-		//logMsg( strLog );
-		return false;
-	}
+    if ( !wxFileName::IsFileWritable( path ) ) {
+        //wxString strLog = _("Variable save: File is not writable.\n");
+        //logMsg( strLog );
+        return false;
+    }
 
     wxFFileOutputStream *pFileStream = new wxFFileOutputStream( path );
     if ( NULL == pFileStream ) return false;
-	if ( !pFileStream->IsOk() ) return false;
+    if ( !pFileStream->IsOk() ) return false;
 
     pFileStream->Write("<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n\n", 
                         strlen("<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n\n") );

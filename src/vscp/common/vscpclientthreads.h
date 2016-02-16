@@ -53,10 +53,10 @@ WX_DECLARE_LIST( vscpEvent, TXLIST );
 WX_DECLARE_LIST( vscpEvent, eventOutQueue );
 
 
-DECLARE_EVENT_TYPE(wxVSCP_IN_EVENT, wxID_ANY)					// Received event
-DECLARE_EVENT_TYPE(wxVSCP_OUT_EVENT, wxID_ANY)				// Transmitted event
-DECLARE_EVENT_TYPE(wxVSCP_CTRL_LOST_EVENT, wxID_ANY)	// Control thread connection lost
-DECLARE_EVENT_TYPE(wxVSCP_RCV_LOST_EVENT, wxID_ANY)		// Receive thread connection lost
+DECLARE_EVENT_TYPE(wxVSCP_IN_EVENT, wxID_ANY)           // Received event
+DECLARE_EVENT_TYPE(wxVSCP_OUT_EVENT, wxID_ANY)          // Transmitted event
+DECLARE_EVENT_TYPE(wxVSCP_CTRL_LOST_EVENT, wxID_ANY)    // Control thread connection lost
+DECLARE_EVENT_TYPE(wxVSCP_RCV_LOST_EVENT, wxID_ANY)	    // Receive thread connection lost
 
 // Error constants for worker threads
 #define VSCP_SESSION_ERROR_UNABLE_TO_CONNECT  -1
@@ -65,20 +65,20 @@ DECLARE_EVENT_TYPE(wxVSCP_RCV_LOST_EVENT, wxID_ANY)		// Receive thread connectio
 
 // Structure for CANAL drivers
 typedef struct {
-    wxString m_strDescription;	// Decription of driver
-    wxString m_strPath;					// Path to driver
-    wxString m_strConfig;				// Driver configuration string
-    unsigned long m_flags;			// Driver flags
-		unsigned char m_GUID[16];		// GUID for interface
+    wxString m_strDescription;          // Decription of driver
+    wxString m_strPath;                 // Path to driver
+    wxString m_strConfig;               // Driver configuration string
+    unsigned long m_flags;              // Driver flags
+        unsigned char m_GUID[16];       // GUID for interface
 } canal_interface;
 
 // Structure for VSCP drivers
 typedef struct {	
-    wxString m_strDescription;	// Description of VSCP interface
-    wxString m_strHost;					// Host where server lives
-    wxString m_strUser;					// Username
-    wxString m_strPassword;			// Password
-    unsigned long m_port;				// Port to use on server
+    wxString m_strDescription;          // Description of VSCP interface
+    wxString m_strHost;                 // Host where server lives
+    wxString m_strUser;                 // Username
+    wxString m_strPassword;             // Password
+    unsigned long m_port;               // Port to use on server
 } vscp_interface;
 
 /*!
@@ -141,10 +141,10 @@ class ctrlObj
   /// Interface type
   int m_interfaceType;
 
-	/*!
-		CANAL driver level
-	*/
-	unsigned char m_driverLevel;
+    /*!
+        CANAL driver level
+    */
+    unsigned char m_driverLevel;
   
   /// Interface information CANAL interface type
   canal_interface m_ifCANAL;
@@ -152,10 +152,10 @@ class ctrlObj
   /// Interface information VSCP interface type
   vscp_interface m_ifVSCP;
 
-	/*!
-		Mutex handle that is used for sharing of the device.
-	*/
-	wxMutex m_deviceMutex;
+    /*!
+        Mutex handle that is used for sharing of the device.
+    */
+    wxMutex m_deviceMutex;
 
   /*!
     GUID for CANAL device
@@ -163,99 +163,99 @@ class ctrlObj
   unsigned char m_GUID[16];
 
 
-	// Handle for dll/dl driver interface
-	long m_openHandle;
+    // Handle for dll/dl driver interface
+    long m_openHandle;
 
-	// CANAL methods
-	LPFNDLL_CANALOPEN				      m_proc_CanalOpen;
-	LPFNDLL_CANALCLOSE				    m_proc_CanalClose;
-	LPFNDLL_CANALGETLEVEL			    m_proc_CanalGetLevel;
-	LPFNDLL_CANALSEND				      m_proc_CanalSend;
-	LPFNDLL_CANALRECEIVE			    m_proc_CanalReceive;
-	LPFNDLL_CANALDATAAVAILABLE		m_proc_CanalDataAvailable;
-	LPFNDLL_CANALGETSTATUS			  m_proc_CanalGetStatus;
-	LPFNDLL_CANALGETSTATISTICS		m_proc_CanalGetStatistics;
-	LPFNDLL_CANALSETFILTER			  m_proc_CanalSetFilter;
-	LPFNDLL_CANALSETMASK			    m_proc_CanalSetMask;
-	LPFNDLL_CANALSETBAUDRATE		  m_proc_CanalSetBaudrate;
-	LPFNDLL_CANALGETVERSION			  m_proc_CanalGetVersion;
-	LPFNDLL_CANALGETDLLVERSION		m_proc_CanalGetDllVersion;
-	LPFNDLL_CANALGETVENDORSTRING	m_proc_CanalGetVendorString;
-	// Generation 2
-	LPFNDLL_CANALBLOCKINGSEND		  m_proc_CanalBlockingSend;
-	LPFNDLL_CANALBLOCKINGRECEIVE	m_proc_CanalBlockingReceive;
-	LPFNDLL_CANALGETDRIVERINFO		m_proc_CanalGetdriverInfo;
+    // CANAL methods
+    LPFNDLL_CANALOPEN                   m_proc_CanalOpen;
+    LPFNDLL_CANALCLOSE                  m_proc_CanalClose;
+    LPFNDLL_CANALGETLEVEL               m_proc_CanalGetLevel;
+    LPFNDLL_CANALSEND                   m_proc_CanalSend;
+    LPFNDLL_CANALRECEIVE                m_proc_CanalReceive;
+    LPFNDLL_CANALDATAAVAILABLE          m_proc_CanalDataAvailable;
+    LPFNDLL_CANALGETSTATUS              m_proc_CanalGetStatus;
+    LPFNDLL_CANALGETSTATISTICS          m_proc_CanalGetStatistics;
+    LPFNDLL_CANALSETFILTER              m_proc_CanalSetFilter;
+    LPFNDLL_CANALSETMASK                m_proc_CanalSetMask;
+    LPFNDLL_CANALSETBAUDRATE            m_proc_CanalSetBaudrate;
+    LPFNDLL_CANALGETVERSION             m_proc_CanalGetVersion;
+    LPFNDLL_CANALGETDLLVERSION          m_proc_CanalGetDllVersion;
+    LPFNDLL_CANALGETVENDORSTRING        m_proc_CanalGetVendorString;
+    // Generation 2
+    LPFNDLL_CANALBLOCKINGSEND           m_proc_CanalBlockingSend;
+    LPFNDLL_CANALBLOCKINGRECEIVE        m_proc_CanalBlockingReceive;
+    LPFNDLL_CANALGETDRIVERINFO          m_proc_CanalGetdriverInfo;
   
 };
 
 
 /*!
-	This class implement a thread that handles
-	transmit events
+    This class implement a thread that handles
+    transmit events
 */
 
 class TXWorkerThread : public wxThread
 {
 
 public:
-	
-	/// Constructor
-	TXWorkerThread();
+    
+    /// Constructor
+    TXWorkerThread();
 
-	/// Destructor
-	virtual ~TXWorkerThread();
+    /// Destructor
+    virtual ~TXWorkerThread();
 
-	/*!
-		Thread code entry point
-	*/
-	virtual void *Entry();
+    /*!
+        Thread code entry point
+    */
+    virtual void *Entry();
 
 
-	/*! 
-		called when the thread exits - whether it terminates normally or is
-		stopped with Delete() (but not when it is Kill()ed!)
-	*/
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+    */
     virtual void OnExit();
 
-	/*!
-		Pointer to control object.
-	*/
-	ctrlObj *m_pCtrlObject;
+    /*!
+        Pointer to control object.
+    */
+    ctrlObj *m_pCtrlObject;
 
 };
 
 /*!
-	This class implement a thread that handles
-	client receive events
+    This class implement a thread that handles
+    client receive events
 */
 
 class RXWorkerThread : public wxThread
 {
 
 public:
-	
-	/// Constructor
-	RXWorkerThread();
+    
+    /// Constructor
+    RXWorkerThread();
 
-	/// Destructor
-	virtual ~RXWorkerThread();
+    /// Destructor
+    virtual ~RXWorkerThread();
 
-	/*!
-		Thread code entry point
-	*/
-	virtual void *Entry();
+    /*!
+        Thread code entry point
+    */
+    virtual void *Entry();
 
 
-	/*! 
-		called when the thread exits - whether it terminates normally or is
-		stopped with Delete() (but not when it is Kill()ed!)
-	*/
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+    */
     virtual void OnExit();
 
-	/*!
-		Pointer to control object.
-	*/
-	ctrlObj *m_pCtrlObject;
+    /*!
+        Pointer to control object.
+    */
+    ctrlObj *m_pCtrlObject;
   
 
 
@@ -276,36 +276,36 @@ class deviceThread;
 
 
 /*!
-	This class implement a thread that write data
-	to a blocking driver
+    This class implement a thread that write data
+    to a blocking driver
 */
 
 class deviceWriteThread : public wxThread
 {
 
 public:
-	
-	/// Constructor
-	deviceWriteThread();
+    
+    /// Constructor
+    deviceWriteThread();
 
-	/// Destructor
-	virtual ~deviceWriteThread();
+    /// Destructor
+    virtual ~deviceWriteThread();
 
-	/*!
-		Thread code entry point
-	*/
-	virtual void *Entry();
+    /*!
+        Thread code entry point
+    */
+    virtual void *Entry();
 
-	/*! 
-		called when the thread exits - whether it terminates normally or is
-		stopped with Delete() (but not when it is Kill()ed!)
-	*/
-	virtual void OnExit();
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+    */
+    virtual void OnExit();
 
-	/*!
-		Pointer to master thread.
-	*/
-	deviceThread *m_pMainThreadObj;
+    /*!
+        Pointer to master thread.
+    */
+    deviceThread *m_pMainThreadObj;
   
 
   /*!
@@ -318,37 +318,37 @@ public:
 
 
 /*!
-	This class implement a thread that read data
-	from a blocking driver
+    This class implement a thread that read data
+    from a blocking driver
 */
 
 class deviceReceiveThread : public wxThread
 {
 
 public:
-	
-	/// Constructor
-	deviceReceiveThread();
+    
+    /// Constructor
+    deviceReceiveThread();
 
-	/// Destructor
-	virtual ~deviceReceiveThread();
+    /// Destructor
+    virtual ~deviceReceiveThread();
 
-	/*!
-		Thread code entry point
-	*/
-	virtual void *Entry();
+    /*!
+        Thread code entry point
+    */
+    virtual void *Entry();
 
 
-	/*! 
-		called when the thread exits - whether it terminates normally or is
-		stopped with Delete() (but not when it is Kill()ed!)
-	*/
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+    */
     virtual void OnExit();
 
-	/*!
-		Pointer to master thread.
-	*/
-	deviceThread *m_pMainThreadObj;
+    /*!
+        Pointer to master thread.
+    */
+    deviceThread *m_pMainThreadObj;
   
 
   /*!
@@ -359,8 +359,8 @@ public:
 };
 
 /*!
-	This class implement a one of thread that look
-	for specific events and react on them appropriatly.
+    This class implement a one of thread that look
+    for specific events and react on them appropriatly.
 
 */
 
@@ -368,67 +368,67 @@ class deviceThread : public wxThread
 {
 
 public:
-	
-	/// Constructor
-	deviceThread();
+    
+    /// Constructor
+    deviceThread();
 
-	/// Destructor
-	virtual ~deviceThread();
+    /// Destructor
+    virtual ~deviceThread();
 
-	/*!
-		Thread code entry point
-	*/
-	virtual void *Entry();
+    /*!
+        Thread code entry point
+    */
+    virtual void *Entry();
 
 
-	/*! 
-		called when the thread exits - whether it terminates normally or is
-		stopped with Delete() (but not when it is Kill()ed!)
-	*/
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+    */
   virtual void OnExit();
 
 
-	/// dl/dll handler
-	wxDynamicLibrary m_wxdll;
+    /// dl/dll handler
+    wxDynamicLibrary m_wxdll;
 
 
-	/*!
-		Pointer to control object.
-	*/
-	ctrlObj *m_pCtrlObject;
+    /*!
+        Pointer to control object.
+    */
+    ctrlObj *m_pCtrlObject;
   
 
-	/*!
-		Holder for receive thread
-	*/
-	deviceReceiveThread *m_preceiveThread;
+    /*!
+        Holder for receive thread
+    */
+    deviceReceiveThread *m_preceiveThread;
 
-	/*!
-		Holder for write thread
-	*/
-	deviceWriteThread *m_pwriteThread;
+    /*!
+        Holder for write thread
+    */
+    deviceWriteThread *m_pwriteThread;
 
-		/*!
-			Check filter/mask to see if filter should be delivered
+        /*!
+            Check filter/mask to see if filter should be delivered
 
-			The filter have the following matrix
+            The filter have the following matrix
 
-			mask bit n	|	filter bit n	| msg id bit	|	result
-			===========================================================
-				0				X					X			Accept
-				1				0					0			Accept
-				1				0					1			Reject
-				1				1					0			Reject
-				1				1					1			Accept
+            mask bit n	|	filter bit n	| msg id bit	|	result
+            ===========================================================
+                0				X					X			Accept
+                1				0					0			Accept
+                1				0					1			Reject
+                1				1					0			Reject
+                1				1					1			Accept
 
-				Formula is !( ( filter ?d ) & mask )
+                Formula is !( ( filter ?d ) & mask )
 
-			@param pclientItem Pointer to client item
-			@param pcanalMsg Pointer to can message
-			@return True if message is accepted false if rejected
-			TODO
-		*/
-		
+            @param pclientItem Pointer to client item
+            @param pcanalMsg Pointer to can message
+            @return True if message is accepted false if rejected
+            TODO
+        */
+        
 };
 
 

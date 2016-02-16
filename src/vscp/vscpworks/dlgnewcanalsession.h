@@ -86,10 +86,20 @@ class dlgNewCanalSession: public wxDialog
 public:
   /// Constructors
   dlgNewCanalSession();
-  dlgNewCanalSession( wxWindow* parent, wxWindowID id = SYMBOL_DLGNEWCANALSESSION_IDNAME, const wxString& caption = SYMBOL_DLGNEWCANALSESSION_TITLE, const wxPoint& pos = SYMBOL_DLGNEWCANALSESSION_POSITION, const wxSize& size = SYMBOL_DLGNEWCANALSESSION_SIZE, long style = SYMBOL_DLGNEWCANALSESSION_STYLE );
+  dlgNewCanalSession( wxWindow* parent, 
+                        wxWindowID id = SYMBOL_DLGNEWCANALSESSION_IDNAME, 
+                        const wxString& caption = SYMBOL_DLGNEWCANALSESSION_TITLE, 
+                        const wxPoint& pos = SYMBOL_DLGNEWCANALSESSION_POSITION, 
+                        const wxSize& size = SYMBOL_DLGNEWCANALSESSION_SIZE, 
+                        long style = SYMBOL_DLGNEWCANALSESSION_STYLE );
 
   /// Creation
-  bool Create( wxWindow* parent, wxWindowID id = SYMBOL_DLGNEWCANALSESSION_IDNAME, const wxString& caption = SYMBOL_DLGNEWCANALSESSION_TITLE, const wxPoint& pos = SYMBOL_DLGNEWCANALSESSION_POSITION, const wxSize& size = SYMBOL_DLGNEWCANALSESSION_SIZE, long style = SYMBOL_DLGNEWCANALSESSION_STYLE );
+  bool Create( wxWindow* parent, 
+                    wxWindowID id = SYMBOL_DLGNEWCANALSESSION_IDNAME, 
+                    const wxString& caption = SYMBOL_DLGNEWCANALSESSION_TITLE, 
+                    const wxPoint& pos = SYMBOL_DLGNEWCANALSESSION_POSITION, 
+                    const wxSize& size = SYMBOL_DLGNEWCANALSESSION_SIZE, 
+                    long style = SYMBOL_DLGNEWCANALSESSION_STYLE );
 
   /// Destructor
   ~dlgNewCanalSession();

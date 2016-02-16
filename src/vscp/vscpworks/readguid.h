@@ -86,10 +86,20 @@ class ReadGUID: public wxDialog
 public:
   /// Constructors
   ReadGUID();
-  ReadGUID( wxWindow* parent, wxWindowID id = SYMBOL_READGUID_IDNAME, const wxString& caption = SYMBOL_READGUID_TITLE, const wxPoint& pos = SYMBOL_READGUID_POSITION, const wxSize& size = SYMBOL_READGUID_SIZE, long style = SYMBOL_READGUID_STYLE );
+  ReadGUID( wxWindow* parent, 
+                wxWindowID id = SYMBOL_READGUID_IDNAME, 
+                const wxString& caption = SYMBOL_READGUID_TITLE, 
+                const wxPoint& pos = SYMBOL_READGUID_POSITION, 
+                const wxSize& size = SYMBOL_READGUID_SIZE, 
+                long style = SYMBOL_READGUID_STYLE );
 
   /// Creation
-  bool Create( wxWindow* parent, wxWindowID id = SYMBOL_READGUID_IDNAME, const wxString& caption = SYMBOL_READGUID_TITLE, const wxPoint& pos = SYMBOL_READGUID_POSITION, const wxSize& size = SYMBOL_READGUID_SIZE, long style = SYMBOL_READGUID_STYLE );
+  bool Create( wxWindow* parent, 
+                    wxWindowID id = SYMBOL_READGUID_IDNAME, 
+                    const wxString& caption = SYMBOL_READGUID_TITLE, 
+                    const wxPoint& pos = SYMBOL_READGUID_POSITION, 
+                    const wxSize& size = SYMBOL_READGUID_SIZE, 
+                    long style = SYMBOL_READGUID_STYLE );
 
   /// Destructor
   ~ReadGUID();

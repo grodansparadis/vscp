@@ -73,7 +73,7 @@ VSCPClientThread::VSCPClientThread()
 
 VSCPClientThread::~VSCPClientThread()
 {
-	;
+    ;
 }
 
 
@@ -83,34 +83,34 @@ VSCPClientThread::~VSCPClientThread()
 
 void *VSCPClientThread::Entry()
 {
-	// Check pointers
-	if ( NULL == m_pCtrlObject ) return NULL;
+    // Check pointers
+    if ( NULL == m_pCtrlObject ) return NULL;
 
-	ns_mgr_init( &m_pCtrlObject->m_mgrTcpIpServer, m_pCtrlObject, VSCPClientThread::ev_handler );
+    ns_mgr_init( &m_pCtrlObject->m_mgrTcpIpServer, m_pCtrlObject, VSCPClientThread::ev_handler );
 
-	m_pCtrlObject->m_strTcpInterfaceAddress.Trim();
-	m_pCtrlObject->m_strTcpInterfaceAddress.Trim( false );
-	wxStringTokenizer tkz( m_pCtrlObject->m_strTcpInterfaceAddress, _(" ") );
-	while ( tkz.HasMoreTokens() ) {
-		
-		wxString str = tkz.GetNextToken();
-		str.Trim();
-		str.Trim( false );
-		if ( 0 == str.Length() ) continue;
+    m_pCtrlObject->m_strTcpInterfaceAddress.Trim();
+    m_pCtrlObject->m_strTcpInterfaceAddress.Trim( false );
+    wxStringTokenizer tkz( m_pCtrlObject->m_strTcpInterfaceAddress, _(" ") );
+    while ( tkz.HasMoreTokens() ) {
+        
+        wxString str = tkz.GetNextToken();
+        str.Trim();
+        str.Trim( false );
+        if ( 0 == str.Length() ) continue;
 
-		// Bind to this interface
-		ns_bind( &m_pCtrlObject->m_mgrTcpIpServer, (const char *)str.mbc_str(), NULL ); 
-	}
+        // Bind to this interface
+        ns_bind( &m_pCtrlObject->m_mgrTcpIpServer, (const char *)str.mbc_str(), NULL ); 
+    }
 
-	m_pCtrlObject->logMsg(_T("TCP Client: Thread started.\n"), DAEMON_LOGMSG_INFO);
+    m_pCtrlObject->logMsg(_T("TCP Client: Thread started.\n"), DAEMON_LOGMSG_INFO);
 
-	while ( !TestDestroy() && !m_bQuit ) {
-		ns_mgr_poll( &m_pCtrlObject->m_mgrTcpIpServer, 50 );
-		Yield();
-	}
+    while ( !TestDestroy() && !m_bQuit ) {
+        ns_mgr_poll( &m_pCtrlObject->m_mgrTcpIpServer, 50 );
+        Yield();
+    }
 
-	// release the server
-	ns_mgr_free( &m_pCtrlObject->m_mgrTcpIpServer );
+    // release the server
+    ns_mgr_free( &m_pCtrlObject->m_mgrTcpIpServer );
 
     m_pCtrlObject->logMsg( _T( "TCP ClientThread: Quit.\n" ), DAEMON_LOGMSG_INFO );
 
@@ -134,7 +134,7 @@ void VSCPClientThread::OnExit()
 void 
 VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void *pUser) 
 {
-	char rbuf[ 2048 ];
+    char rbuf[ 2048 ];
     int pos4lf; 
 
     struct iobuf *io = NULL;
@@ -154,73 +154,73 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
     }
     pCtrlObject = ( CControlObject * )conn->mgr->user_data;
 
-	switch (ev) {
-	
-		case NS_CONNECT: // connect() succeeded or failed. int *success_status
-			pCtrlObject->logMsg(_T("TCP Client: Connect.\n"), DAEMON_LOGMSG_INFO);
-			break;
+    switch (ev) {
+    
+        case NS_CONNECT: // connect() succeeded or failed. int *success_status
+            pCtrlObject->logMsg(_T("TCP Client: Connect.\n"), DAEMON_LOGMSG_INFO);
+            break;
 
-		case NS_ACCEPT:	// New connection accept()-ed. union socket_address *remote_addr
-			{
-				pCtrlObject->logMsg(_T("TCP Client: --Accept.\n"), DAEMON_LOGMSG_INFO);
+        case NS_ACCEPT:	// New connection accept()-ed. union socket_address *remote_addr
+            {
+                pCtrlObject->logMsg(_T("TCP Client: --Accept.\n"), DAEMON_LOGMSG_INFO);
 
-				// We need to create a clientobject and add this object to the list
-				pClientItem = new CClientItem;
-				if ( NULL == pClientItem ) {
-					pCtrlObject->logMsg ( _T ( "[TCP/IP Client] Unable to allocate memory for client.\n" ), DAEMON_LOGMSG_ERROR );
-					conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
-					return;
-				}
+                // We need to create a clientobject and add this object to the list
+                pClientItem = new CClientItem;
+                if ( NULL == pClientItem ) {
+                    pCtrlObject->logMsg ( _T ( "[TCP/IP Client] Unable to allocate memory for client.\n" ), DAEMON_LOGMSG_ERROR );
+                    conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
+                    return;
+                }
 
-				// save the client item
-				conn->user_data = pClientItem;
+                // save the client item
+                conn->user_data = pClientItem;
 
-				// This is now an active Client
-				pClientItem->m_bOpen = true; 
-				pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_TCPIP;
-				pClientItem->m_strDeviceName = _("Remote TCP/IP Client. Started at ");
-				wxDateTime now = wxDateTime::Now(); 
-				pClientItem->m_strDeviceName += now.FormatISODate();
-				pClientItem->m_strDeviceName += _(" ");
-				pClientItem->m_strDeviceName += now.FormatISOTime();
-				
-				// Add the client to the Client List
-				pCtrlObject->m_wxClientMutex.Lock();
-				pCtrlObject->addClient( pClientItem );
-				pCtrlObject->m_wxClientMutex.Unlock();
-				
-				// Clear the filter (Allow everything )
-				vscp_clearVSCPFilter( &pClientItem->m_filterVSCP );
+                // This is now an active Client
+                pClientItem->m_bOpen = true; 
+                pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_TCPIP;
+                pClientItem->m_strDeviceName = _("Remote TCP/IP Client. Started at ");
+                wxDateTime now = wxDateTime::Now(); 
+                pClientItem->m_strDeviceName += now.FormatISODate();
+                pClientItem->m_strDeviceName += _(" ");
+                pClientItem->m_strDeviceName += now.FormatISOTime();
+                
+                // Add the client to the Client List
+                pCtrlObject->m_wxClientMutex.Lock();
+                pCtrlObject->addClient( pClientItem );
+                pCtrlObject->m_wxClientMutex.Unlock();
+                
+                // Clear the filter (Allow everything )
+                vscp_clearVSCPFilter( &pClientItem->m_filterVSCP );
 
-				// Send welcome message
-				wxString str = _(MSG_WELCOME);
-				str += _("Version: ");
-				str += _(VSCPD_DISPLAY_VERSION);
-				str += _("\r\n");
-				str += _(VSCPD_COPYRIGHT);
-				str += _("\r\n");
-				str += _(MSG_OK);
-				ns_send( conn, (const char*)str.mbc_str(), str.Length() );	 
+                // Send welcome message
+                wxString str = _(MSG_WELCOME);
+                str += _("Version: ");
+                str += _(VSCPD_DISPLAY_VERSION);
+                str += _("\r\n");
+                str += _(VSCPD_COPYRIGHT);
+                str += _("\r\n");
+                str += _(MSG_OK);
+                ns_send( conn, (const char*)str.mbc_str(), str.Length() );	 
 
-				pCtrlObject->logMsg(_T("TCP Client: Ready to serve client.\n"), DAEMON_LOGMSG_DEBUG);
-			}
-			break;
+                pCtrlObject->logMsg(_T("TCP Client: Ready to serve client.\n"), DAEMON_LOGMSG_DEBUG);
+            }
+            break;
 
-		case NS_CLOSE:
+        case NS_CLOSE:
 
-			// Close client
-			pClientItem->m_bOpen = false;
-			conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
-			
-			// Remove the client from the Client List
-			pCtrlObject->m_wxClientMutex.Lock();
-			pCtrlObject->removeClient( pClientItem );
-			pCtrlObject->m_wxClientMutex.Unlock();
+            // Close client
+            pClientItem->m_bOpen = false;
+            conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
+            
+            // Remove the client from the Client List
+            pCtrlObject->m_wxClientMutex.Lock();
+            pCtrlObject->removeClient( pClientItem );
+            pCtrlObject->m_wxClientMutex.Unlock();
             // Remove client item
             conn->user_data = NULL;
-			break;
+            break;
 
-		case NS_RECV:
+        case NS_RECV:
 
             if ( NULL == pClientItem ) {
                 pCtrlObject->logMsg( _T( "[TCP/IP Client] Remote client died\n" ), DAEMON_LOGMSG_ERROR );
@@ -234,42 +234,42 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
                 return;
             }
 
-			// Read new data
-			memset( rbuf, 0, sizeof( rbuf ) );
-			memcpy( rbuf, io->buf, io->len );
-			iobuf_remove(io, io->len); 
+            // Read new data
+            memset( rbuf, 0, sizeof( rbuf ) );
+            memcpy( rbuf, io->buf, io->len );
+            iobuf_remove(io, io->len); 
             pClientItem->m_readBuffer += wxString::FromUTF8( rbuf );
 
-			// Check if command already in buffer
-			while ( wxNOT_FOUND != ( pos4lf = pClientItem->m_readBuffer.Find ( (const char)0x0a ) ) ) {
-				wxString strCmdGo = pClientItem->m_readBuffer.Mid( 0, pos4lf );
-				pCtrlObject->getTCPIPServer()->CommandHandler( conn, 
-										pCtrlObject, 
-										strCmdGo );
-				pClientItem->m_readBuffer = pClientItem->m_readBuffer.Right( pClientItem->m_readBuffer.Length()-pos4lf-1 );
-			}
-			break;
+            // Check if command already in buffer
+            while ( wxNOT_FOUND != ( pos4lf = pClientItem->m_readBuffer.Find ( (const char)0x0a ) ) ) {
+                wxString strCmdGo = pClientItem->m_readBuffer.Mid( 0, pos4lf );
+                pCtrlObject->getTCPIPServer()->CommandHandler( conn, 
+                                        pCtrlObject, 
+                                        strCmdGo );
+                pClientItem->m_readBuffer = pClientItem->m_readBuffer.Right( pClientItem->m_readBuffer.Length()-pos4lf-1 );
+            }
+            break;
 
-		case NS_SEND:
-			break;
+        case NS_SEND:
+            break;
 
-		case NS_POLL:
-			if ( conn->flags & NSF_USER_1) {
-				
-				pCtrlObject->getTCPIPServer()->sendOneEventFromQueue( conn, pCtrlObject, false );
-				
-				// Send '+OK<CR><LF>' every two seconds to indicate that the
-				// link is open		
-				if ( ( wxGetUTCTime()-pClientItem->m_timeRcvLoop ) > 2 ) {
-					pClientItem->m_timeRcvLoop = wxGetUTCTime();
-					ns_send( conn, "+OK\r\n", 5 );
-				}
-			}
-			break;
+        case NS_POLL:
+            if ( conn->flags & NSF_USER_1) {
+                
+                pCtrlObject->getTCPIPServer()->sendOneEventFromQueue( conn, pCtrlObject, false );
+                
+                // Send '+OK<CR><LF>' every two seconds to indicate that the
+                // link is open		
+                if ( ( wxGetUTCTime()-pClientItem->m_timeRcvLoop ) > 2 ) {
+                    pClientItem->m_timeRcvLoop = wxGetUTCTime();
+                    ns_send( conn, "+OK\r\n", 5 );
+                }
+            }
+            break;
 
-		default:
-			break;
-	}
+        default:
+            break;
+    }
 }
 
 
@@ -287,32 +287,32 @@ VSCPClientThread::CommandHandler( struct ns_connection *conn, CControlObject *pC
     }
     
     pClientItem = ( CClientItem * )conn->user_data;
-	
+    
     if ( NULL == pCtrlObject ) {
         conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
         return;
     }
 
-	if ( NULL == pClientItem ) {
-		pCtrlObject->logMsg ( _T ( "[TCP/IP Client] ClientItem pointer is NULL in command handler.\n" ), DAEMON_LOGMSG_ERROR );
-		conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
-		return;
-	}
+    if ( NULL == pClientItem ) {
+        pCtrlObject->logMsg ( _T ( "[TCP/IP Client] ClientItem pointer is NULL in command handler.\n" ), DAEMON_LOGMSG_ERROR );
+        conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
+        return;
+    }
 
-	pClientItem->m_currentCommand = strCommand;
-	pClientItem->m_currentCommandUC = pClientItem->m_currentCommand.Upper();
+    pClientItem->m_currentCommand = strCommand;
+    pClientItem->m_currentCommandUC = pClientItem->m_currentCommand.Upper();
     pClientItem->m_currentCommand.Trim();
     pClientItem->m_currentCommand.Trim( false );
 
-	// If nothing to handle just return
-	if ( 0 == pClientItem->m_currentCommand.Length() ) {
+    // If nothing to handle just return
+    if ( 0 == pClientItem->m_currentCommand.Length() ) {
         ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );      
         return;
     }
     
-	pClientItem->m_currentCommandUC.Trim();
+    pClientItem->m_currentCommandUC.Trim();
     pClientItem->m_currentCommandUC.Trim( false );
-	//wxLogDebug( _("Argument = ") + pClientItem->m_currentCommandUC );
+    //wxLogDebug( _("Argument = ") + pClientItem->m_currentCommandUC );
 
 REPEAT_COMMAND:
 
@@ -322,16 +322,16 @@ REPEAT_COMMAND:
     //                            No Operation
     //*********************************************************************
     if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "NOOP" ) ) ) {
-	    ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );
+        ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );
     }
 
-	//*********************************************************************
+    //*********************************************************************
     //                             Send event
     //*********************************************************************
     else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "SEND " ) ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 4 ) ) {
-			handleClientSend( conn, pCtrlObject );
-		}
+            handleClientSend( conn, pCtrlObject );
+        }
     }
 
     //*********************************************************************
@@ -339,8 +339,8 @@ REPEAT_COMMAND:
     //*********************************************************************
     else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "RETR" ) ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 2 ) ) {
-			handleClientReceive( conn, pCtrlObject );
-		}
+            handleClientReceive( conn, pCtrlObject );
+        }
     }
 
     //*********************************************************************
@@ -349,8 +349,8 @@ REPEAT_COMMAND:
     else if ( ( 0 == pClientItem->m_currentCommandUC.Find ( _( "CDTA" ) ) ) || 
                ( 0 == pClientItem->m_currentCommandUC.Find ( _( "CHKDATA" ) ) ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 1 ) ) {
-			handleClientDataAvailable( conn, pCtrlObject );
-		}
+            handleClientDataAvailable( conn, pCtrlObject );
+        }
     }
 
     //*********************************************************************
@@ -359,8 +359,8 @@ REPEAT_COMMAND:
     else if ( ( 0 == pClientItem->m_currentCommandUC.Find ( _( "CLRA" ) ) ) ||
                 ( 0 == pClientItem->m_currentCommandUC.Find ( _( "CLRALL" ) ) ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 1 ) ) {
-			handleClientClearInputQueue( conn, pCtrlObject );
-		}
+            handleClientClearInputQueue( conn, pCtrlObject );
+        }
     }
 
 
@@ -369,8 +369,8 @@ REPEAT_COMMAND:
     //*********************************************************************
     else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "STAT" ) ) ) {
          if ( checkPrivilege( conn, pCtrlObject, 1 ) ) {
-			 handleClientGetStatistics( conn, pCtrlObject );
-		 }
+             handleClientGetStatistics( conn, pCtrlObject );
+         }
     }
 
     //*********************************************************************
@@ -378,8 +378,8 @@ REPEAT_COMMAND:
     //*********************************************************************
     else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "INFO" ) ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 1 ) ) {
-			handleClientGetStatus( conn, pCtrlObject );
-		}
+            handleClientGetStatus( conn, pCtrlObject );
+        }
     }
 
     //*********************************************************************
@@ -388,8 +388,8 @@ REPEAT_COMMAND:
     else if ( ( 0 == pClientItem->m_currentCommandUC.Find ( _( "CHID" ) ) ) || 
                 ( 0 == pClientItem->m_currentCommandUC.Find ( _( "GETCHID" ) ) ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 1 ) ) {
-			handleClientGetChannelID( conn, pCtrlObject );
-		}
+            handleClientGetChannelID( conn, pCtrlObject );
+        }
     }
 
     //*********************************************************************
@@ -398,8 +398,8 @@ REPEAT_COMMAND:
     else if ( ( 0 == pClientItem->m_currentCommandUC.Find ( _( "SGID" ) ) ) ||
                 ( 0 == pClientItem->m_currentCommandUC.Find ( _( "SETGUID" ) ) )) {
         if ( checkPrivilege( conn, pCtrlObject, 6 ) ) {
-			handleClientSetChannelGUID( conn, pCtrlObject );
-		}
+            handleClientSetChannelGUID( conn, pCtrlObject );
+        }
     }
 
     //*********************************************************************
@@ -408,8 +408,8 @@ REPEAT_COMMAND:
     else if ( ( 0 == pClientItem->m_currentCommandUC.Find ( _( "GGID" ) ) ) ||
                 ( 0 == pClientItem->m_currentCommandUC.Find ( _( "GETGUID" ) ) )  ) {
         if ( checkPrivilege( conn, pCtrlObject, 1 ) ) {
-			handleClientGetChannelGUID( conn, pCtrlObject );
-		}
+            handleClientGetChannelGUID( conn, pCtrlObject );
+        }
     }
 
     //*********************************************************************
@@ -426,8 +426,8 @@ REPEAT_COMMAND:
     else if ( ( 0 == pClientItem->m_currentCommandUC.Find ( _( "SFLT" ) ) ) ||
                ( 0 == pClientItem->m_currentCommandUC.Find ( _( "SETFILTER" ) ) )  ) {
         if ( checkPrivilege( conn, pCtrlObject, 6 ) ) {
-			handleClientSetFilter( conn, pCtrlObject );
-		}
+            handleClientSetFilter( conn, pCtrlObject );
+        }
     }
 
     //*********************************************************************
@@ -436,8 +436,8 @@ REPEAT_COMMAND:
     else if ( ( 0 == pClientItem->m_currentCommandUC.Find ( _( "SMSK" ) ) ) || 
                 ( 0 == pClientItem->m_currentCommandUC.Find ( _( "SETMASK" ) ) ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 6 ) ) {
-			handleClientSetMask( conn, pCtrlObject );
-		}
+            handleClientSetMask( conn, pCtrlObject );
+        }
     }
 
     //*********************************************************************
@@ -452,9 +452,11 @@ REPEAT_COMMAND:
     //*********************************************************************
     else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "PASS " ) ) ) {
         if ( !handleClientPassword( conn, pCtrlObject ) ) {
-            pCtrlObject->logMsg ( _( "[TCP/IP Clinet] Command: Password. Not authorized.\n" ), DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
-			conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
-			return;
+            pCtrlObject->logMsg ( _( "[TCP/IP Clinet] Command: Password. Not authorized.\n" ), 
+                                    DAEMON_LOGMSG_INFO, 
+                                    DAEMON_LOGTYPE_SECURITY );
+            conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
+            return;
         }
     }  
 
@@ -463,160 +465,162 @@ REPEAT_COMMAND:
     //*********************************************************************
     else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "+" ) ) ) {
         // Repeat last command
-		pClientItem->m_currentCommand = pClientItem->m_lastCommand;
-		pClientItem->m_currentCommandUC = pClientItem->m_lastCommand.Upper();
-		goto REPEAT_COMMAND;
+        pClientItem->m_currentCommand = pClientItem->m_lastCommand;
+        pClientItem->m_currentCommandUC = pClientItem->m_lastCommand.Upper();
+        goto REPEAT_COMMAND;
     }
 
-	//*********************************************************************
-	//                               Rcvloop
-	//*********************************************************************
-	else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "RCVLOOP" ) ) ) {
-		if ( checkPrivilege( conn, pCtrlObject, 2 ) ) {
-			pClientItem->m_timeRcvLoop = wxGetUTCTime();
-			handleClientRcvLoop( conn, pCtrlObject );
-		}
-	}
+    //*********************************************************************
+    //                               Rcvloop
+    //*********************************************************************
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "RCVLOOP" ) ) ) {
+        if ( checkPrivilege( conn, pCtrlObject, 2 ) ) {
+            pClientItem->m_timeRcvLoop = wxGetUTCTime();
+            handleClientRcvLoop( conn, pCtrlObject );
+        }
+    }
 
-	//*********************************************************************
-	//                           Quitloop
-	//*********************************************************************
-	else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "QUITLOOP" ) ) ) {
-		// Turn of receive loop
-		conn->flags &= ~(unsigned int)NSF_USER_1;
-		ns_send( conn, MSG_QUIT_LOOP, strlen ( MSG_QUIT_LOOP ) );
-	}
+    //*********************************************************************
+    //                           Quitloop
+    //*********************************************************************
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "QUITLOOP" ) ) ) {
+        // Turn of receive loop
+        conn->flags &= ~(unsigned int)NSF_USER_1;
+        ns_send( conn, MSG_QUIT_LOOP, strlen ( MSG_QUIT_LOOP ) );
+    }
 
-	// *********************************************************************
+    // *********************************************************************
     //                                 QUIT
     // *********************************************************************
-	else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "QUIT" ) ) ) {
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "QUIT" ) ) ) {
         //long test = NSF_CLOSE_IMMEDIATELY;
-		pCtrlObject->logMsg( _( "[TCP/IP Client] Command: Close.\n" ), 
-								DAEMON_LOGMSG_INFO );
-		ns_send( conn, MSG_GOODBY, strlen ( MSG_GOODBY ) );
-		conn->flags = NSF_FINISHED_SENDING_DATA;	// Close connection
+        pCtrlObject->logMsg( _( "[TCP/IP Client] Command: Close.\n" ), 
+                                DAEMON_LOGMSG_INFO );
+        ns_send( conn, MSG_GOODBY, strlen ( MSG_GOODBY ) );
+        conn->flags = NSF_FINISHED_SENDING_DATA;	// Close connection
         return;
     }
 
-	//*********************************************************************
-	//                             Help
-	//*********************************************************************
-	else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "HELP" ) ) ) {
-		handleClientHelp( conn, pCtrlObject );
-	}
-
-	//*********************************************************************
-	//                             Restart
-	//*********************************************************************
-	else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "RESTART" ) ) ) {
-		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
-            handleClientRestart( conn, pCtrlObject );
-        }
-	}
-
-	//*********************************************************************
-	//                             Driver
-	//*********************************************************************
-	else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "DRIVER " ) ) ) {
-		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
-            handleClientDriver( conn, pCtrlObject );
-        }
-	}
-
-	//*********************************************************************
-	//                               DM
-	//*********************************************************************
-	else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "DM " ) ) ) {
-		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
-            handleClientDm( conn, pCtrlObject );
-        }
-	}
-
-	//*********************************************************************
-	//                             Variable
-	//*********************************************************************
-	else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "VARIABLE " ) ) ) {
-		if ( checkPrivilege( conn, pCtrlObject, 4 ) ) {
-            handleClientVariable( conn, pCtrlObject );
-        }
-	}
-
-	//*********************************************************************
-	//                               File
-	//*********************************************************************
-	else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "FILE " ) ) ) {
-		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
-            handleClientFile( conn, pCtrlObject );
-        }
-	}
-
-	//*********************************************************************
-	//                               UDP
-	//*********************************************************************
-	else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "UDP " ) ) ) {
-		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
-            handleClientUdp( conn, pCtrlObject );
-        }
-	}
-
-	//*********************************************************************
-	//                         Client/interface
-	//*********************************************************************
-	else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "CLIENT " ) ) ) {
-		pClientItem->m_currentCommandUC = pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-7 ); // Remove "CLIENT "
-		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
-            handleClientInterface( conn, pCtrlObject );
-        }
-	}
-	else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "INTERFACE " ) ) ) {
-		pClientItem->m_currentCommandUC = pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-10 ); // Remove "INTERFACE "
-		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
-            handleClientInterface( conn, pCtrlObject );
-        }
-	}
-
-	//*********************************************************************
-	//                               User
-	//*********************************************************************
-	else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "USER " ) ) ) {
-		handleClientUser( conn, pCtrlObject );
-	}
-
-	//*********************************************************************
-	//                               Test
-	//*********************************************************************
-	else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "TEST" ) ) ) {
-		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
-            handleClientTest( conn, pCtrlObject );
-        }
-	}
-
-
-	//*********************************************************************
-	//                              Shutdown
-	//*********************************************************************
-	else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "SHUTDOWN" ) ) ) {
-		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
-            handleClientShutdown( conn, pCtrlObject );
-        }
-	}
+    //*********************************************************************
+    //                             Help
+    //*********************************************************************
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "HELP" ) ) ) {
+        handleClientHelp( conn, pCtrlObject );
+    }
 
     //*********************************************************************
-	//                             WhatCanYouDo
-	//*********************************************************************
-	else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "WHATCANYOUDO" ) ) ) {
+    //                             Restart
+    //*********************************************************************
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "RESTART" ) ) ) {
+        if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
+            handleClientRestart( conn, pCtrlObject );
+        }
+    }
+
+    //*********************************************************************
+    //                             Driver
+    //*********************************************************************
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "DRIVER " ) ) ) {
+        if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
+            handleClientDriver( conn, pCtrlObject );
+        }
+    }
+
+    //*********************************************************************
+    //                               DM
+    //*********************************************************************
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "DM " ) ) ) {
+        if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
+            handleClientDm( conn, pCtrlObject );
+        }
+    }
+
+    //*********************************************************************
+    //                             Variable
+    //*********************************************************************
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "VARIABLE " ) ) ) {
+        if ( checkPrivilege( conn, pCtrlObject, 4 ) ) {
+            handleClientVariable( conn, pCtrlObject );
+        }
+    }
+
+    //*********************************************************************
+    //                               File
+    //*********************************************************************
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "FILE " ) ) ) {
+        if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
+            handleClientFile( conn, pCtrlObject );
+        }
+    }
+
+    //*********************************************************************
+    //                               UDP
+    //*********************************************************************
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "UDP " ) ) ) {
+        if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
+            handleClientUdp( conn, pCtrlObject );
+        }
+    }
+
+    //*********************************************************************
+    //                         Client/interface
+    //*********************************************************************
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "CLIENT " ) ) ) {
+        pClientItem->m_currentCommandUC = 
+            pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-7 ); // Remove "CLIENT "
+        if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
+            handleClientInterface( conn, pCtrlObject );
+        }
+    }
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "INTERFACE " ) ) ) {
+        pClientItem->m_currentCommandUC = 
+            pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-10 ); // Remove "INTERFACE "
+        if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
+            handleClientInterface( conn, pCtrlObject );
+        }
+    }
+
+    //*********************************************************************
+    //                               User
+    //*********************************************************************
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "USER " ) ) ) {
+        handleClientUser( conn, pCtrlObject );
+    }
+
+    //*********************************************************************
+    //                               Test
+    //*********************************************************************
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "TEST" ) ) ) {
+        if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
+            handleClientTest( conn, pCtrlObject );
+        }
+    }
+
+
+    //*********************************************************************
+    //                              Shutdown
+    //*********************************************************************
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "SHUTDOWN" ) ) ) {
+        if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
+            handleClientShutdown( conn, pCtrlObject );
+        }
+    }
+
+    //*********************************************************************
+    //                             WhatCanYouDo
+    //*********************************************************************
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "WHATCANYOUDO" ) ) ) {
             handleClientCapabilityRquest( conn, pCtrlObject );
-	}
+    }
 
-	//*********************************************************************
-	//                                Que?
-	//*********************************************************************
-	else {
-		ns_send( conn,  MSG_UNKNOWN_COMMAND, strlen ( MSG_UNKNOWN_COMMAND ) );
-	}
+    //*********************************************************************
+    //                                Que?
+    //*********************************************************************
+    else {
+        ns_send( conn,  MSG_UNKNOWN_COMMAND, strlen ( MSG_UNKNOWN_COMMAND ) );
+    }
 
-	pClientItem->m_lastCommand = pClientItem->m_currentCommand;
+    pClientItem->m_lastCommand = pClientItem->m_currentCommand;
 
 }
 
@@ -637,7 +641,7 @@ void VSCPClientThread::handleClientCapabilityRquest( struct ns_connection *conn,
 
 bool VSCPClientThread::isVerified( struct ns_connection *conn, CControlObject *pCtrlObject )
 { 
-	CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
@@ -654,7 +658,7 @@ bool VSCPClientThread::isVerified( struct ns_connection *conn, CControlObject *p
 
 bool VSCPClientThread::checkPrivilege( struct ns_connection *conn, CControlObject *pCtrlObject, unsigned char reqiredPrivilege )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be loged on
     if ( !pClientItem->m_bAuthorized ) {
@@ -827,7 +831,7 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
             
             unsigned int index = 0;
 
-			event.pdata = new uint8_t[ event.sizeData ];
+            event.pdata = new uint8_t[ event.sizeData ];
             
             if ( NULL == event.pdata ) {
                 ns_send( conn, MSG_INTERNAL_MEMORY_ERROR, strlen( MSG_INTERNAL_MEMORY_ERROR ) );
@@ -857,8 +861,8 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
                         wxString::Format( _("[tcp/ip Client] User [%s] not allowed to send event class=%d type=%d.\n"), 
                                                 (const char *)pClientItem->m_pUserItem->m_user.c_str(), 
                                                 event.vscp_class, event.vscp_type );			
-		
-	    pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
+        
+        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
         
         ns_send( conn, MSG_MOT_ALLOWED_TO_SEND_EVENT, strlen ( MSG_MOT_ALLOWED_TO_SEND_EVENT ) );
 
@@ -941,16 +945,16 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
                     if ( pItem->m_guid == destguid ) {
                         // Found
                         pDestClientItem = pItem;
-				        bSent = true;
+                        bSent = true;
                         dbgStr = _("Match ");    
                         m_pCtrlObject->logMsg( dbgStr, DAEMON_LOGMSG_DEBUG );
-					    m_pCtrlObject->sendEventToClient( pItem, pEvent );
+                        m_pCtrlObject->sendEventToClient( pItem, pEvent );
                         break;
                     }
 
                 }
 
-				m_pCtrlObject->m_wxClientMutex.Unlock();
+                m_pCtrlObject->m_wxClientMutex.Unlock();
 
         }
 
@@ -993,7 +997,7 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
 void VSCPClientThread::handleClientReceive ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
     unsigned short cnt = 0;	// # of messages to read
-	CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
@@ -1018,8 +1022,8 @@ void VSCPClientThread::handleClientReceive ( struct ns_connection *conn, CContro
         }
         else {
             if ( false == sendOneEventFromQueue( conn, pCtrlObject ) ) {
-				return;
-			}
+                return;
+            }
         }
 
         cnt--;
@@ -1037,13 +1041,13 @@ void VSCPClientThread::handleClientReceive ( struct ns_connection *conn, CContro
 bool VSCPClientThread::sendOneEventFromQueue( struct ns_connection *conn, CControlObject *pCtrlObject, bool bStatusMsg )
 {
     wxString strOut;
-	CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     CLIENTEVENTLIST::compatibility_iterator nodeClient;
 
     if ( pClientItem->m_clientInputQueue.GetCount() ) {
-		
-		vscpEvent *pqueueEvent;
+        
+        vscpEvent *pqueueEvent;
         pClientItem->m_mutexClientInputQueue.Lock();
         {
             nodeClient = pClientItem->m_clientInputQueue.GetFirst();
@@ -1060,7 +1064,7 @@ bool VSCPClientThread::sendOneEventFromQueue( struct ns_connection *conn, CContr
                             pqueueEvent->vscp_type,
                             pqueueEvent->obid,
                             pqueueEvent->timestamp );
-		 
+         
         wxString strGUID;
         vscp_writeGuidToString( pqueueEvent, strGUID );
         strOut += strGUID;
@@ -1086,10 +1090,10 @@ bool VSCPClientThread::sendOneEventFromQueue( struct ns_connection *conn, CContr
         ns_send( conn,  strOut.mb_str(), strlen ( strOut.mb_str() ) );
 
         //delete pqueueEvent;
-		vscp_deleteVSCPevent( pqueueEvent );
+        vscp_deleteVSCPevent( pqueueEvent );
 
-		// Let the system work a little
-		//ns_mgr_poll( &m_pCtrlObject->m_mgrTcpIpServer, 1 );
+        // Let the system work a little
+        //ns_mgr_poll( &m_pCtrlObject->m_mgrTcpIpServer, 1 );
     }
     else {
         if ( bStatusMsg ) {
@@ -1113,7 +1117,7 @@ bool VSCPClientThread::sendOneEventFromQueue( struct ns_connection *conn, CContr
 void VSCPClientThread::handleClientDataAvailable ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
     char outbuf[ 1024 ];
-	CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
@@ -1126,7 +1130,7 @@ void VSCPClientThread::handleClientDataAvailable ( struct ns_connection *conn, C
         "%zd\r\n%s",
         pClientItem->m_clientInputQueue.GetCount(),
         MSG_OK );
-	ns_send( conn,  outbuf, strlen ( outbuf ) );
+    ns_send( conn,  outbuf, strlen ( outbuf ) );
 
 
 }
@@ -1137,7 +1141,7 @@ void VSCPClientThread::handleClientDataAvailable ( struct ns_connection *conn, C
 
 void VSCPClientThread::handleClientClearInputQueue ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
@@ -1161,7 +1165,7 @@ void VSCPClientThread::handleClientClearInputQueue ( struct ns_connection *conn,
 void VSCPClientThread::handleClientGetStatistics ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
     char outbuf[ 1024 ];
-	CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
@@ -1191,7 +1195,7 @@ void VSCPClientThread::handleClientGetStatistics ( struct ns_connection *conn, C
 void VSCPClientThread::handleClientGetStatus ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
     char outbuf[ 1024 ];
-	CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
@@ -1218,7 +1222,7 @@ void VSCPClientThread::handleClientGetStatus ( struct ns_connection *conn, CCont
 void VSCPClientThread::handleClientGetChannelID ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
     char outbuf[ 1024 ];
-	CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
@@ -1240,7 +1244,7 @@ void VSCPClientThread::handleClientGetChannelID ( struct ns_connection *conn, CC
 
 void VSCPClientThread::handleClientSetChannelGUID ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
@@ -1271,7 +1275,7 @@ void VSCPClientThread::handleClientGetChannelGUID ( struct ns_connection *conn, 
     //char outbuf[ 1024 ];
     //char wrkbuf[ 20 ];
     //int i;
-	CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
@@ -1296,7 +1300,7 @@ void VSCPClientThread::handleClientGetVersion ( struct ns_connection *conn, CCon
 {
     char outbuf[ 1024 ];
 
-	CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
@@ -1322,7 +1326,7 @@ void VSCPClientThread::handleClientGetVersion ( struct ns_connection *conn, CCon
 
 void VSCPClientThread::handleClientSetFilter ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
@@ -1390,7 +1394,7 @@ void VSCPClientThread::handleClientSetFilter ( struct ns_connection *conn, CCont
 
 void VSCPClientThread::handleClientSetMask ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
@@ -1458,7 +1462,7 @@ void VSCPClientThread::handleClientSetMask ( struct ns_connection *conn, CContro
 
 void VSCPClientThread::handleClientUser ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     if ( pClientItem->m_bAuthorized ) {
         ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );
@@ -1483,7 +1487,7 @@ void VSCPClientThread::handleClientUser ( struct ns_connection *conn, CControlOb
 
 bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     if ( pClientItem->m_bAuthorized ) {
         ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );
@@ -1500,7 +1504,7 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
     strPassword.Trim();             // Trim right side	
     strPassword.Trim( false );      // Trim left
     if ( strPassword.IsEmpty() ) {
-		pClientItem->m_UserName = _("");
+        pClientItem->m_UserName = _("");
         ns_send( conn,  MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
         return false;
     }
@@ -1508,12 +1512,12 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
     // Calculate MD5 for username:autdomain:password
     char buf[2148];
     memset( buf, 0, sizeof( buf ) );
-	strncpy( buf, (const char *)pClientItem->m_UserName.mbc_str(), pClientItem->m_UserName.Length() );
-	strncat( buf, ":", 1 );
-	strncat( buf, (const char *)pCtrlObject->m_authDomain.mbc_str(), pCtrlObject->m_authDomain.Length() );
-	strncat( buf, ":", 1 );
+    strncpy( buf, (const char *)pClientItem->m_UserName.mbc_str(), pClientItem->m_UserName.Length() );
+    strncat( buf, ":", 1 );
+    strncat( buf, (const char *)pCtrlObject->m_authDomain.mbc_str(), pCtrlObject->m_authDomain.Length() );
+    strncat( buf, ":", 1 );
     strncat( (char *)buf, strPassword.mbc_str(), strPassword.Length() );
-	
+    
     Cmd5 md5 ( (unsigned char *)buf );
     if ( NULL == md5.getDigest() ) return false; 
     wxString md5Password = wxString( md5.getDigest(), wxConvUTF8 );
@@ -1528,24 +1532,24 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
 
     if ( NULL == pClientItem->m_pUserItem ) {
 #if wxMAJOR_VERSION >= 3
-		wxLogDebug( _("Password/Username failure.") );
+        wxLogDebug( _("Password/Username failure.") );
 #else		
         ::wxLogDebug( _("Password/Username failure.") );
 #endif		
         wxString strErr = 
-			wxString::Format(_("[TCP/IP Client] User [%s][%s] not allowed to connect.\n"), 	
-			(const char *)pClientItem->m_UserName.c_str(), (const char *)strPassword.c_str() );
+            wxString::Format(_("[TCP/IP Client] User [%s][%s] not allowed to connect.\n"), 	
+            (const char *)pClientItem->m_UserName.c_str(), (const char *)strPassword.c_str() );
 
-		pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
-		ns_send( conn,  MSG_PASSWORD_ERROR, strlen ( MSG_PASSWORD_ERROR ) );
+        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
+        ns_send( conn,  MSG_PASSWORD_ERROR, strlen ( MSG_PASSWORD_ERROR ) );
         return false;
     }
 
-	// Get remote address
-	struct sockaddr_in cli_addr;
-	socklen_t clilen = 0;    
+    // Get remote address
+    struct sockaddr_in cli_addr;
+    socklen_t clilen = 0;    
     clilen = sizeof (cli_addr);
-	(void)getpeername( conn->sock, (struct sockaddr *)&cli_addr, &clilen);
+    (void)getpeername( conn->sock, (struct sockaddr *)&cli_addr, &clilen);
     wxString remoteaddr = wxString::FromAscii( inet_ntoa( cli_addr.sin_addr ) );
 
     // Check if this user is allowed to connect from this location
@@ -1555,25 +1559,25 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
     m_pCtrlObject->m_mutexUserList.Unlock();
 
     if ( !bValidHost ) {
-		wxString strErr = wxString::Format(_("[TCP/IP Client] Host [%s] not allowed to connect.\n"), 
-			(const char *)remoteaddr.c_str() );
-		
-		pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
+        wxString strErr = wxString::Format(_("[TCP/IP Client] Host [%s] not allowed to connect.\n"), 
+            (const char *)remoteaddr.c_str() );
+        
+        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
         ns_send( conn,  MSG_INVALID_REMOTE_ERROR, strlen ( MSG_INVALID_REMOTE_ERROR ) );
         return false;
     }
 
     // Copy in the user filter
     memcpy( &pClientItem->m_filterVSCP, 
-				&pClientItem->m_pUserItem->m_filterVSCP, 
-				sizeof( vscpEventFilter ) );
+                &pClientItem->m_pUserItem->m_filterVSCP, 
+                sizeof( vscpEventFilter ) );
 
     wxString strErr = 
         wxString::Format( _("[TCP/IP Client] Host [%s] User [%s] allowed to connect.\n"), 
-							(const char *)remoteaddr.c_str(),
+                            (const char *)remoteaddr.c_str(),
                             (const char *)pClientItem->m_UserName.c_str() );
 
-	pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
+    pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
 
     pClientItem->m_bAuthorized = true;
     ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );
@@ -1590,15 +1594,15 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
 void VSCPClientThread::handleClientRcvLoop( struct ns_connection *conn, CControlObject *pCtrlObject  )
 {
 /*
-	CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
 */
 
     ns_send( conn,  MSG_RECEIVE_LOOP, strlen ( MSG_RECEIVE_LOOP ) );
-	conn->flags |= NSF_USER_1;	// Mark socket as being in receive loop
+    conn->flags |= NSF_USER_1;	// Mark socket as being in receive loop
 /*
     // Loop until the connection is lost
     while ( !TestDestroy() && !m_bQuit && (conn->flags & NSF_USER_1 ) ) {
-		
+        
         if ( m_pClientSocket->IsDisconnected() ) m_bQuit = true;
 
         // Wait for event
@@ -1622,227 +1626,227 @@ void VSCPClientThread::handleClientRcvLoop( struct ns_connection *conn, CControl
 
 void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->user_data;
-	
-	wxString strcmd = pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-4 );
-	strcmd.Trim();
-	strcmd.Trim(false);
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    
+    wxString strcmd = pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-4 );
+    strcmd.Trim();
+    strcmd.Trim(false);
 
-	if ( _("") == strcmd ) {
+    if ( _("") == strcmd ) {
 
-		wxString str = _("Help for the VSCP tcp/ip interface\r\n");
-				str += _("====================================================================\r\n");
-				str += _("To get more information about a specific command issue 'HELP comman'\r\n");
-				str += _("+               - Repeat last command.\r\n");
-				str += _("NOOP            - No operation. Does nothing.\r\n");
-				str += _("QUIT            - Close the connection.\r\n");
-				str += _("USER 'username' - Username for login. \r\n");
-				str += _("PASS 'password' - Password for login.  \r\n");
-				str += _("SEND 'event'    - Send an event.   \r\n");
+        wxString str = _("Help for the VSCP tcp/ip interface\r\n");
+                str += _("====================================================================\r\n");
+                str += _("To get more information about a specific command issue 'HELP comman'\r\n");
+                str += _("+               - Repeat last command.\r\n");
+                str += _("NOOP            - No operation. Does nothing.\r\n");
+                str += _("QUIT            - Close the connection.\r\n");
+                str += _("USER 'username' - Username for login. \r\n");
+                str += _("PASS 'password' - Password for login.  \r\n");
+                str += _("SEND 'event'    - Send an event.   \r\n");
                 str += _("RETR 'count'    - Rtrive n events from input queue.   \r\n");
-				str += _("RCVLOOP         - Will retrieve events in an endless loop until the connection is closed by the client or QUITLOOP is sent.\r\n");
-				str += _("QUITLOOP        - Terminate RCVLOOP.\r\n");
-				str += _("CDTA/CHKDATA    - Check if there is data in the input queue.\r\n");
-				str += _("CLRA/CLRALL     - Clear input queue.\r\n");
-				str += _("STAT            - Get statistical information.\r\n");
-				str += _("INFO            - Get status info.\r\n");
-				str += _("CHID            - Get channel id.\r\n");
-				str += _("SGID/SETGUID    - Set GUID for channel.\r\n");
-				str += _("GGID/GETGUID    - Get GUID for channel.\r\n");
-				str += _("VERS/VERSION    - Get VSCP daemon version.\r\n");
-				str += _("SFLT/SETFILTER  - Set incoming event filter.\r\n");
-				str += _("SMSK/SETMASK    - Set incoming event mask.\r\n");
-				str += _("HELP [command]  - This command.\r\n");
-				str += _("TEST            - Do test sequence. Only used for debugging.\r\n");
-				str += _("SHUTDOWN        - Shutdown the daemon.\r\n");
-				str += _("RESTART         - Restart the daemon.\r\n");
-				str += _("DRIVER          - Driver manipulation.\r\n");
-				str += _("FILE            - File handling.\r\n");
-				str += _("UDP             - UDP.\r\n");
-				str += _("REMOTE          - User manipulation.\r\n");
-				str += _("INTERFACE       - Interface manipulation. \r\n");
-				str += _("DM              - Decision Matrix manipulation.\r\n");
-				str += _("VARIABLE        - Variable handling. \r\n");
-				ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( _("+") == strcmd ) {
-		wxString str = _("'+' repeats the last given command.\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( _("NOOP") == strcmd ) {
-		wxString str = _("'NOOP' Does absolutly nothing but giving a success in return.\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( _("QUIT") == strcmd ) {
-		wxString str = _("'QUIT' Quit a session with the VSCP daemon and closes the connection.\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( _("USER") == strcmd ) {
-		wxString str = _("'USER' Used to login to the system together with PASS. Connection will be closed if bad credentials are given.\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( _("PASS") == strcmd ) {
-		wxString str = _("'PASS' Used to login to the system together with USER. Connection will be closed if bad credentials are given.\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( _("QUIT") == strcmd ) {
-		wxString str = _("'QUIT' Quit a session with the VSCP daemon and closes the connection.\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( _("SEND") == strcmd ) {
-		wxString str = _("'SEND event'.\r\nThe event is given as 'head,class,type,obid,time-stamp,GUID,data1,data2,data3....' \r\n");
-		str += _("Normally set 'head' and 'obid' to zero. \r\nIf timestamp is set to zero it will be set by the server. \r\nIf GUID is given as '-' ");
-		str += _("the GUID of the interface will be used. \r\nThe GUID should be given on the form MSB-byte:MSB-byte-1:MSB-byte-2. \r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( _("RETR") == strcmd ) {
-		wxString str = _("'RETR count' - Retrieve one (if no argument) or 'count' event(s). ");
-		str += _("Events are retrived on the form head,class,type,obid,time-stamp,GUID,data0,data1,data2,...........\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( _("RCVLOOP") == strcmd ) {
-		wxString str = _("'RCVLOOP' - Enter the receive loop and receive events continously or until ");
-		str += _("terminated with 'QUITLOOP'. Events are retrived on the form head,class,type,obid,time-stamp,GUID,data0,data1,data2,...........\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( _("QUITLOOP") == strcmd ) {
-		wxString str = _("'QUITLOOP' - End 'RCVLOOP' event receives.\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( ( _("CDTA") == strcmd ) || ( ( _("CHKDATA") == strcmd ) ) ) {
-		wxString str = _("'CDTA' or 'CHKDATA' - Check if there is events in the input queue.\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( ( _("CLRA") == strcmd ) || ( ( _("CLRALL") == strcmd ) ) ) {
-		wxString str = _("'CLRA' or 'CLRALL' - Clear input queue.\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( _("STAT") == strcmd ) {
-		wxString str = _("'STAT' - Get statistical information.\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( _("INFO") == strcmd ) {
-		wxString str = _("'INFO' - Get status information.\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( ( _("CHID") == strcmd ) || ( ( _("GETCHID") == strcmd ) ) ) {
-		wxString str = _("'CHID' or 'GETCHID' - Get channel id.\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( ( _("SGID") == strcmd ) || ( ( _("SETGUID") == strcmd ) ) ) {
-		wxString str = _("'SGID' or 'SETGUID' - Set GUID for channel.\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( ( _("GGID") == strcmd ) || ( ( _("GETGUID") == strcmd ) ) ) {
-		wxString str = _("'GGID' or 'GETGUID' - Get GUID for channel.\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( ( _("VERS") == strcmd ) || ( ( _("VERSION") == strcmd ) ) ) {
-		wxString str = _("'VERS' or 'VERSION' - Get version of VSCP daemon.\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( ( _("SFLT") == strcmd ) || ( ( _("SETFILTER") == strcmd ) ) ) {
-		wxString str = _("'SFLT' or 'SETFILTER' - Set filter for channel. ");
-		str += _("The format is 'filter-priority, filter-class, filter-type, filter-GUID' \r\n");
-		str += _("Example:  \r\nSETFILTER 1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( ( _("SMSK") == strcmd ) || ( ( _("SETMASK") == strcmd ) ) ) {
-		wxString str = _("'SMSK' or 'SETMASK' - Set mask for channel. ");
-		str += _("The format is 'mask-priority, mask-class, mask-type, mask-GUID' \r\n");
-		str += _("Example:  \r\nSETMASK 0x0f,0xffff,0x00ff,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00 \r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( _("HELP") == strcmd ) {
-		wxString str = _("'HELP [command]' This command. Gives help about available commands and the usage.\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( _("TEST") == strcmd ) {
-		wxString str = _("'TEST [sequency]' Test command for debugging.\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( _("SHUTDOWN") == strcmd ) {
-		wxString str = _("'SHUTDOWN' Shutdown the daemon.\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( _("RESTART") == strcmd ) {
-		wxString str = _("'RESTART' Restart the daemon.\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( _("DRIVER") == strcmd ) {
-		wxString str = _("'DRIVER' Handle (load/unload/update/start/stop) Level I/Level II drivers.\r\n");
-		str += _("'DRIVER install package' .\r\n");
-		str += _("'DRIVER uninstall package' .\r\n");
-		str += _("'DRIVER upgrade package' .\r\n");
-		str += _("'DRIVER start package' .\r\n");
-		str += _("'DRIVER stop package' .\r\n");
-		str += _("'DRIVER reload package' .\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( _("FILE") == strcmd ) {
-		wxString str = _("'FILE' Handle daemon files.\r\n");
-		str += _("'FILE dir'.\r\n");
-		str += _("'FILE copy'.\r\n");
-		str += _("'FILE move'.\r\n");
-		str += _("'FILE delete'.\r\n");
-		str += _("'FILE list'.\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( _("UDP") == strcmd ) {
-		wxString str = _("'UDP' Handle UDP interface.\r\n");
-		str += _("'UDP enable'.\r\n");
-		str += _("'UDP disable' .\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( _("REMOTE") == strcmd ) {
-		wxString str = _("'REMOTE' User management.\r\n");
-		str += _("'REMOTE list'.\r\n");
-		str += _("'REMOTE add 'username','MD5 password','from-host(s)','access-right-list','event-list','filter','mask''. Add a user.\r\n");
-		str += _("'REMOTE remove username'.\r\n");
-		str += _("'REMOTE privilege 'username','access-right-list''.\r\n");
-		str += _("'REMOTE password 'username','MD5 for password' '.\r\n");
-		str += _("'REMOTE host-list 'username','host-list''.\r\n");
-		str += _("'REMOTE event-list 'username','event-list''.\r\n");
-		str += _("'REMOTE filter 'username','filter''.\r\n");
-		str += _("'REMOTE mask 'username','mask''.\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( _("INTERFACE") == strcmd ) {
-		wxString str = _("'INTERFACE' Handle interfaces on the daemon.\r\n");
-		str += _("'INTERFACE list'.\r\n");
-		str += _("'INTERFACE close'.\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( _("DM") == strcmd ) {
-		wxString str = _("'DM' Handle decision matrix on the daemon.\r\n");
-		str += _("'DM enable'.\r\n");
-		str += _("'DM disable'.\r\n");
-		str += _("'DM list'.\r\n");
-		str += _("'DM add'.\r\n");
-		str += _("'DM delete'.\r\n");
-		str += _("'DM reset'.\r\n");
-		str += _("'DM clrtrig'.\r\n");
-		str += _("'DM clrerr'.\r\n");
-		str += _("'DM load'.\r\n");
-		str += _("'DM save'.\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
-	else if ( _("VARIABLE") == strcmd ) {
-		wxString str = _("'VARIABLE' Handle variables on the daemon.\r\n");
-		str += _("'VARIABLE list'.\r\n");
-		str += _("'VARIABLE write'.\r\n");
-		str += _("'VARIABLE read'.\r\n");
-		str += _("'VARIABLE reset'.\r\n");
-		str += _("'VARIABLE readreset'.\r\n");
-		str += _("'VARIABLE remove'.\r\n");
-		str += _("'VARIABLE readremove'.\r\n");
-		str += _("'VARIABLE length'.\r\n");
-		str += _("'VARIABLE save'.\r\n");
-		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
-	}
+                str += _("RCVLOOP         - Will retrieve events in an endless loop until the connection is closed by the client or QUITLOOP is sent.\r\n");
+                str += _("QUITLOOP        - Terminate RCVLOOP.\r\n");
+                str += _("CDTA/CHKDATA    - Check if there is data in the input queue.\r\n");
+                str += _("CLRA/CLRALL     - Clear input queue.\r\n");
+                str += _("STAT            - Get statistical information.\r\n");
+                str += _("INFO            - Get status info.\r\n");
+                str += _("CHID            - Get channel id.\r\n");
+                str += _("SGID/SETGUID    - Set GUID for channel.\r\n");
+                str += _("GGID/GETGUID    - Get GUID for channel.\r\n");
+                str += _("VERS/VERSION    - Get VSCP daemon version.\r\n");
+                str += _("SFLT/SETFILTER  - Set incoming event filter.\r\n");
+                str += _("SMSK/SETMASK    - Set incoming event mask.\r\n");
+                str += _("HELP [command]  - This command.\r\n");
+                str += _("TEST            - Do test sequence. Only used for debugging.\r\n");
+                str += _("SHUTDOWN        - Shutdown the daemon.\r\n");
+                str += _("RESTART         - Restart the daemon.\r\n");
+                str += _("DRIVER          - Driver manipulation.\r\n");
+                str += _("FILE            - File handling.\r\n");
+                str += _("UDP             - UDP.\r\n");
+                str += _("REMOTE          - User manipulation.\r\n");
+                str += _("INTERFACE       - Interface manipulation. \r\n");
+                str += _("DM              - Decision Matrix manipulation.\r\n");
+                str += _("VARIABLE        - Variable handling. \r\n");
+                ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( _("+") == strcmd ) {
+        wxString str = _("'+' repeats the last given command.\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( _("NOOP") == strcmd ) {
+        wxString str = _("'NOOP' Does absolutly nothing but giving a success in return.\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( _("QUIT") == strcmd ) {
+        wxString str = _("'QUIT' Quit a session with the VSCP daemon and closes the connection.\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( _("USER") == strcmd ) {
+        wxString str = _("'USER' Used to login to the system together with PASS. Connection will be closed if bad credentials are given.\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( _("PASS") == strcmd ) {
+        wxString str = _("'PASS' Used to login to the system together with USER. Connection will be closed if bad credentials are given.\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( _("QUIT") == strcmd ) {
+        wxString str = _("'QUIT' Quit a session with the VSCP daemon and closes the connection.\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( _("SEND") == strcmd ) {
+        wxString str = _("'SEND event'.\r\nThe event is given as 'head,class,type,obid,time-stamp,GUID,data1,data2,data3....' \r\n");
+        str += _("Normally set 'head' and 'obid' to zero. \r\nIf timestamp is set to zero it will be set by the server. \r\nIf GUID is given as '-' ");
+        str += _("the GUID of the interface will be used. \r\nThe GUID should be given on the form MSB-byte:MSB-byte-1:MSB-byte-2. \r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( _("RETR") == strcmd ) {
+        wxString str = _("'RETR count' - Retrieve one (if no argument) or 'count' event(s). ");
+        str += _("Events are retrived on the form head,class,type,obid,time-stamp,GUID,data0,data1,data2,...........\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( _("RCVLOOP") == strcmd ) {
+        wxString str = _("'RCVLOOP' - Enter the receive loop and receive events continously or until ");
+        str += _("terminated with 'QUITLOOP'. Events are retrived on the form head,class,type,obid,time-stamp,GUID,data0,data1,data2,...........\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( _("QUITLOOP") == strcmd ) {
+        wxString str = _("'QUITLOOP' - End 'RCVLOOP' event receives.\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( ( _("CDTA") == strcmd ) || ( ( _("CHKDATA") == strcmd ) ) ) {
+        wxString str = _("'CDTA' or 'CHKDATA' - Check if there is events in the input queue.\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( ( _("CLRA") == strcmd ) || ( ( _("CLRALL") == strcmd ) ) ) {
+        wxString str = _("'CLRA' or 'CLRALL' - Clear input queue.\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( _("STAT") == strcmd ) {
+        wxString str = _("'STAT' - Get statistical information.\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( _("INFO") == strcmd ) {
+        wxString str = _("'INFO' - Get status information.\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( ( _("CHID") == strcmd ) || ( ( _("GETCHID") == strcmd ) ) ) {
+        wxString str = _("'CHID' or 'GETCHID' - Get channel id.\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( ( _("SGID") == strcmd ) || ( ( _("SETGUID") == strcmd ) ) ) {
+        wxString str = _("'SGID' or 'SETGUID' - Set GUID for channel.\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( ( _("GGID") == strcmd ) || ( ( _("GETGUID") == strcmd ) ) ) {
+        wxString str = _("'GGID' or 'GETGUID' - Get GUID for channel.\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( ( _("VERS") == strcmd ) || ( ( _("VERSION") == strcmd ) ) ) {
+        wxString str = _("'VERS' or 'VERSION' - Get version of VSCP daemon.\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( ( _("SFLT") == strcmd ) || ( ( _("SETFILTER") == strcmd ) ) ) {
+        wxString str = _("'SFLT' or 'SETFILTER' - Set filter for channel. ");
+        str += _("The format is 'filter-priority, filter-class, filter-type, filter-GUID' \r\n");
+        str += _("Example:  \r\nSETFILTER 1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( ( _("SMSK") == strcmd ) || ( ( _("SETMASK") == strcmd ) ) ) {
+        wxString str = _("'SMSK' or 'SETMASK' - Set mask for channel. ");
+        str += _("The format is 'mask-priority, mask-class, mask-type, mask-GUID' \r\n");
+        str += _("Example:  \r\nSETMASK 0x0f,0xffff,0x00ff,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00 \r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( _("HELP") == strcmd ) {
+        wxString str = _("'HELP [command]' This command. Gives help about available commands and the usage.\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( _("TEST") == strcmd ) {
+        wxString str = _("'TEST [sequency]' Test command for debugging.\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( _("SHUTDOWN") == strcmd ) {
+        wxString str = _("'SHUTDOWN' Shutdown the daemon.\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( _("RESTART") == strcmd ) {
+        wxString str = _("'RESTART' Restart the daemon.\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( _("DRIVER") == strcmd ) {
+        wxString str = _("'DRIVER' Handle (load/unload/update/start/stop) Level I/Level II drivers.\r\n");
+        str += _("'DRIVER install package' .\r\n");
+        str += _("'DRIVER uninstall package' .\r\n");
+        str += _("'DRIVER upgrade package' .\r\n");
+        str += _("'DRIVER start package' .\r\n");
+        str += _("'DRIVER stop package' .\r\n");
+        str += _("'DRIVER reload package' .\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( _("FILE") == strcmd ) {
+        wxString str = _("'FILE' Handle daemon files.\r\n");
+        str += _("'FILE dir'.\r\n");
+        str += _("'FILE copy'.\r\n");
+        str += _("'FILE move'.\r\n");
+        str += _("'FILE delete'.\r\n");
+        str += _("'FILE list'.\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( _("UDP") == strcmd ) {
+        wxString str = _("'UDP' Handle UDP interface.\r\n");
+        str += _("'UDP enable'.\r\n");
+        str += _("'UDP disable' .\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( _("REMOTE") == strcmd ) {
+        wxString str = _("'REMOTE' User management.\r\n");
+        str += _("'REMOTE list'.\r\n");
+        str += _("'REMOTE add 'username','MD5 password','from-host(s)','access-right-list','event-list','filter','mask''. Add a user.\r\n");
+        str += _("'REMOTE remove username'.\r\n");
+        str += _("'REMOTE privilege 'username','access-right-list''.\r\n");
+        str += _("'REMOTE password 'username','MD5 for password' '.\r\n");
+        str += _("'REMOTE host-list 'username','host-list''.\r\n");
+        str += _("'REMOTE event-list 'username','event-list''.\r\n");
+        str += _("'REMOTE filter 'username','filter''.\r\n");
+        str += _("'REMOTE mask 'username','mask''.\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( _("INTERFACE") == strcmd ) {
+        wxString str = _("'INTERFACE' Handle interfaces on the daemon.\r\n");
+        str += _("'INTERFACE list'.\r\n");
+        str += _("'INTERFACE close'.\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( _("DM") == strcmd ) {
+        wxString str = _("'DM' Handle decision matrix on the daemon.\r\n");
+        str += _("'DM enable'.\r\n");
+        str += _("'DM disable'.\r\n");
+        str += _("'DM list'.\r\n");
+        str += _("'DM add'.\r\n");
+        str += _("'DM delete'.\r\n");
+        str += _("'DM reset'.\r\n");
+        str += _("'DM clrtrig'.\r\n");
+        str += _("'DM clrerr'.\r\n");
+        str += _("'DM load'.\r\n");
+        str += _("'DM save'.\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
+    else if ( _("VARIABLE") == strcmd ) {
+        wxString str = _("'VARIABLE' Handle variables on the daemon.\r\n");
+        str += _("'VARIABLE list'.\r\n");
+        str += _("'VARIABLE write'.\r\n");
+        str += _("'VARIABLE read'.\r\n");
+        str += _("'VARIABLE reset'.\r\n");
+        str += _("'VARIABLE readreset'.\r\n");
+        str += _("'VARIABLE remove'.\r\n");
+        str += _("'VARIABLE readremove'.\r\n");
+        str += _("'VARIABLE length'.\r\n");
+        str += _("'VARIABLE save'.\r\n");
+        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+    }
 
-	ns_send( conn, MSG_OK, strlen(MSG_OK) );
-	return;
+    ns_send( conn, MSG_OK, strlen(MSG_OK) );
+    return;
 }
 
 
@@ -1852,8 +1856,8 @@ void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObj
 
 void VSCPClientThread::handleClientTest ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-	ns_send( conn, MSG_OK, strlen ( MSG_OK ) );
-	return;
+    ns_send( conn, MSG_OK, strlen ( MSG_OK ) );
+    return;
 }
 
 
@@ -1863,8 +1867,8 @@ void VSCPClientThread::handleClientTest ( struct ns_connection *conn, CControlOb
 
 void VSCPClientThread::handleClientRestart ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-	ns_send( conn, MSG_OK, strlen ( MSG_OK ) );
-	return;
+    ns_send( conn, MSG_OK, strlen ( MSG_OK ) );
+    return;
 }
 
 
@@ -1874,14 +1878,14 @@ void VSCPClientThread::handleClientRestart ( struct ns_connection *conn, CContro
 
 void VSCPClientThread::handleClientShutdown ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     if ( !pClientItem->m_bAuthorized ) {
         ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );
     }
 
-	ns_send( conn,  MSG_GOODBY, strlen ( MSG_GOODBY ) );
-	conn->flags |= NSF_CLOSE_IMMEDIATELY;
+    ns_send( conn,  MSG_GOODBY, strlen ( MSG_GOODBY ) );
+    conn->flags |= NSF_CLOSE_IMMEDIATELY;
     //m_pCtrlObject->m_bQuit = true;
     //m_bRun = false;
 }
@@ -1893,7 +1897,7 @@ void VSCPClientThread::handleClientShutdown ( struct ns_connection *conn, CContr
 
 void VSCPClientThread::handleClientRemote( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-	return;
+    return;
 }
 
 
@@ -1953,7 +1957,7 @@ void VSCPClientThread::handleClientInterface_List( struct ns_connection *conn, C
             strBuf += _("\r\n");
 
             ns_send( conn,  strBuf.mb_str(),
-									strlen( strBuf.mb_str() ) );
+                                    strlen( strBuf.mb_str() ) );
 
     }
 
@@ -2137,7 +2141,7 @@ void VSCPClientThread::handleVariable_List( struct ns_connection *conn, CControl
                 else {
                     str += _(";false;");
                 }
-				
+                
                 pVariable->writeValueToString( strWork );
                 str += strWork;
                 str += _("\r\n");
@@ -2375,8 +2379,8 @@ void VSCPClientThread::handleVariable_Write( struct ns_connection *conn, CContro
     // If the variable exist change value
     // if not add it. This is handled in add.
     m_pCtrlObject->m_VSCP_Variables.addWithStringType( strName, strValue, strType, bPersistence );
-	
-	// Save decision matrix
+    
+    // Save decision matrix
     m_pCtrlObject->m_dm.save();
 
     ns_send( conn, MSG_OK, strlen( MSG_OK ) );

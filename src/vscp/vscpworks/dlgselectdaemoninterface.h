@@ -86,10 +86,20 @@ class dlgSelectDaemonInterface: public wxDialog
 public:
   /// Constructors
   dlgSelectDaemonInterface();
-  dlgSelectDaemonInterface( wxWindow* parent, wxWindowID id = SYMBOL_DLGSELECTDAEMONINTERFACE_IDNAME, const wxString& caption = SYMBOL_DLGSELECTDAEMONINTERFACE_TITLE, const wxPoint& pos = SYMBOL_DLGSELECTDAEMONINTERFACE_POSITION, const wxSize& size = SYMBOL_DLGSELECTDAEMONINTERFACE_SIZE, long style = SYMBOL_DLGSELECTDAEMONINTERFACE_STYLE );
+  dlgSelectDaemonInterface( wxWindow* parent, 
+                                wxWindowID id = SYMBOL_DLGSELECTDAEMONINTERFACE_IDNAME, 
+                                const wxString& caption = SYMBOL_DLGSELECTDAEMONINTERFACE_TITLE, 
+                                const wxPoint& pos = SYMBOL_DLGSELECTDAEMONINTERFACE_POSITION, 
+                                const wxSize& size = SYMBOL_DLGSELECTDAEMONINTERFACE_SIZE, 
+                                long style = SYMBOL_DLGSELECTDAEMONINTERFACE_STYLE );
 
   /// Creation
-  bool Create( wxWindow* parent, wxWindowID id = SYMBOL_DLGSELECTDAEMONINTERFACE_IDNAME, const wxString& caption = SYMBOL_DLGSELECTDAEMONINTERFACE_TITLE, const wxPoint& pos = SYMBOL_DLGSELECTDAEMONINTERFACE_POSITION, const wxSize& size = SYMBOL_DLGSELECTDAEMONINTERFACE_SIZE, long style = SYMBOL_DLGSELECTDAEMONINTERFACE_STYLE );
+  bool Create( wxWindow* parent, 
+                    wxWindowID id = SYMBOL_DLGSELECTDAEMONINTERFACE_IDNAME, 
+                    const wxString& caption = SYMBOL_DLGSELECTDAEMONINTERFACE_TITLE, 
+                    const wxPoint& pos = SYMBOL_DLGSELECTDAEMONINTERFACE_POSITION, 
+                    const wxSize& size = SYMBOL_DLGSELECTDAEMONINTERFACE_SIZE, 
+                    long style = SYMBOL_DLGSELECTDAEMONINTERFACE_STYLE );
 
   /// Destructor
   ~dlgSelectDaemonInterface();

@@ -386,7 +386,12 @@ dlgSelectDaemonInterface::dlgSelectDaemonInterface()
     Init();
 }
 
-dlgSelectDaemonInterface::dlgSelectDaemonInterface( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+dlgSelectDaemonInterface::dlgSelectDaemonInterface( wxWindow* parent, 
+                                                        wxWindowID id, 
+                                                        const wxString& caption, 
+                                                        const wxPoint& pos, 
+                                                        const wxSize& size, 
+                                                        long style )
 {
     Init();
     Create(parent, id, caption, pos, size, style);
@@ -397,7 +402,12 @@ dlgSelectDaemonInterface::dlgSelectDaemonInterface( wxWindow* parent, wxWindowID
 // dlgSelectDaemonInterface creator
 //
 
-bool dlgSelectDaemonInterface::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+bool dlgSelectDaemonInterface::Create( wxWindow* parent, 
+                                            wxWindowID id, 
+                                            const wxString& caption, 
+                                            const wxPoint& pos, 
+                                            const wxSize& size, 
+                                            long style )
 {
 ////@begin dlgSelectDaemonInterface creation
   SetExtraStyle(wxWS_EX_BLOCK_EVENTS);

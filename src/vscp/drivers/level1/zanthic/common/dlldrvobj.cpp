@@ -54,45 +54,45 @@ void _fini() {printf("finishing\n");}
 
 CDllDrvObj::CDllDrvObj()
 {
-	m_instanceCounter = 0;
+    m_instanceCounter = 0;
 #ifdef WIN32
-	m_objMutex = CreateMutex( NULL, true, "__CANAL_IXXATVCI_MUTEX__" );
+    m_objMutex = CreateMutex( NULL, true, "__CANAL_IXXATVCI_MUTEX__" );
 #else
-	pthread_mutex_init( &m_objMutex, NULL );
+    pthread_mutex_init( &m_objMutex, NULL );
 #endif
 
-	// Init the driver array
-	for ( int i = 0; i<CANAL_ZANTHIC_DRIVER_MAX_OPEN; i++ ) {
-		m_drvObjArray[ i ] = NULL;
-	}
+    // Init the driver array
+    for ( int i = 0; i<CANAL_ZANTHIC_DRIVER_MAX_OPEN; i++ ) {
+        m_drvObjArray[ i ] = NULL;
+    }
 
-	UNLOCK_MUTEX( m_objMutex );
+    UNLOCK_MUTEX( m_objMutex );
 }
 
 
 CDllDrvObj::~CDllDrvObj()
 {
-	LOCK_MUTEX( m_objMutex );
-	
-	for ( int i = 0; i<CANAL_ZANTHIC_DRIVER_MAX_OPEN; i++ ) {
-		
-		if ( NULL != m_drvObjArray[ i ] ) {
-			
-			CZanthicObj *pdrvObj =  getDriverObject( i );
-			if ( NULL != pdrvObj ) { 
-				pdrvObj->close();	
-				delete m_drvObjArray[ i ];
-				m_drvObjArray[ i ] = NULL; 
-			}
-		}
-	}
+    LOCK_MUTEX( m_objMutex );
+    
+    for ( int i = 0; i<CANAL_ZANTHIC_DRIVER_MAX_OPEN; i++ ) {
+        
+        if ( NULL != m_drvObjArray[ i ] ) {
+            
+            CZanthicObj *pdrvObj =  getDriverObject( i );
+            if ( NULL != pdrvObj ) { 
+                pdrvObj->close();	
+                delete m_drvObjArray[ i ];
+                m_drvObjArray[ i ] = NULL; 
+            }
+        }
+    }
 
-	UNLOCK_MUTEX( m_objMutex );
+    UNLOCK_MUTEX( m_objMutex );
 
 #ifdef WIN32
-	CloseHandle( m_objMutex );
+    CloseHandle( m_objMutex );
 #else	
-	pthread_mutex_destroy( &m_objMutex );
+    pthread_mutex_destroy( &m_objMutex );
 #endif
 }
 
@@ -109,25 +109,25 @@ CDllDrvObj::~CDllDrvObj()
 
 long CDllDrvObj::addDriverObject( CZanthicObj *pdrvObj )
 {
-	long h = 0;
+    long h = 0;
 
-	LOCK_MUTEX( m_objMutex );
-	for ( uint16_t i=0; i<CANAL_ZANTHIC_DRIVER_MAX_OPEN; i++ ) {
-	
-		if ( NULL == m_drvObjArray[ i ] ) {
-		
-			pdrvObj->m_drvIdx = (uint8_t)i;	// Save driver index (for open)
-			m_drvObjArray[ i ] = pdrvObj;	
-			h = i + 1681; 
-			break;
+    LOCK_MUTEX( m_objMutex );
+    for ( uint16_t i=0; i<CANAL_ZANTHIC_DRIVER_MAX_OPEN; i++ ) {
+    
+        if ( NULL == m_drvObjArray[ i ] ) {
+        
+            pdrvObj->m_drvIdx = (uint8_t)i;	// Save driver index (for open)
+            m_drvObjArray[ i ] = pdrvObj;	
+            h = i + 1681; 
+            break;
 
-		}
+        }
 
-	}
+    }
 
-	UNLOCK_MUTEX( m_objMutex );
+    UNLOCK_MUTEX( m_objMutex );
 
-	return h;
+    return h;
 }
 
 
@@ -137,12 +137,12 @@ long CDllDrvObj::addDriverObject( CZanthicObj *pdrvObj )
 
 CZanthicObj * CDllDrvObj::getDriverObject( long h )
 {
-	long idx = h - 1681;
+    long idx = h - 1681;
 
-	// Check if valid handle
-	if ( idx < 0 ) return NULL;
-	if ( idx >= CANAL_ZANTHIC_DRIVER_MAX_OPEN ) return NULL;
-	return m_drvObjArray[ idx ];
+    // Check if valid handle
+    if ( idx < 0 ) return NULL;
+    if ( idx >= CANAL_ZANTHIC_DRIVER_MAX_OPEN ) return NULL;
+    return m_drvObjArray[ idx ];
 }
 
 
@@ -152,16 +152,16 @@ CZanthicObj * CDllDrvObj::getDriverObject( long h )
 
 void CDllDrvObj::removeDriverObject( long h )
 {
-	long idx = h - 1681;
+    long idx = h - 1681;
 
-	// Check if valid handle
-	if ( idx < 0 ) return;
-	if ( idx >= CANAL_ZANTHIC_DRIVER_MAX_OPEN ) return;
+    // Check if valid handle
+    if ( idx < 0 ) return;
+    if ( idx >= CANAL_ZANTHIC_DRIVER_MAX_OPEN ) return;
 
-	LOCK_MUTEX( m_objMutex );
-	if ( NULL != m_drvObjArray[ idx ] ) delete m_drvObjArray[ idx ];
-	m_drvObjArray[ idx ] = NULL;
-	UNLOCK_MUTEX( m_objMutex );
+    LOCK_MUTEX( m_objMutex );
+    if ( NULL != m_drvObjArray[ idx ] ) delete m_drvObjArray[ idx ];
+    m_drvObjArray[ idx ] = NULL;
+    UNLOCK_MUTEX( m_objMutex );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -169,8 +169,8 @@ void CDllDrvObj::removeDriverObject( long h )
 
 BOOL CDllDrvObj::InitInstance() 
 {
-	m_instanceCounter++;
-	return TRUE;
+    m_instanceCounter++;
+    return TRUE;
 }
 
 

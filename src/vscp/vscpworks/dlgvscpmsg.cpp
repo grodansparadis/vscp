@@ -387,7 +387,12 @@ dlgVSCPMsg::dlgVSCPMsg()
     Init();
 }
 
-dlgVSCPMsg::dlgVSCPMsg( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+dlgVSCPMsg::dlgVSCPMsg( wxWindow* parent, 
+                            wxWindowID id, 
+                            const wxString& caption, 
+                            const wxPoint& pos, 
+                            const wxSize& size, 
+                            long style )
 {
     Init();
     Create(parent, id, caption, pos, size, style);
@@ -397,7 +402,12 @@ dlgVSCPMsg::dlgVSCPMsg( wxWindow* parent, wxWindowID id, const wxString& caption
  * DlgVSCPMsg creator
  */
 
-bool dlgVSCPMsg::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+bool dlgVSCPMsg::Create( wxWindow* parent, 
+                            wxWindowID id, 
+                            const wxString& caption, 
+                            const wxPoint& pos, 
+                            const wxSize& size, 
+                            long style )
 {
 ////@begin dlgVSCPMsg creation
   SetExtraStyle(wxWS_EX_BLOCK_EVENTS);

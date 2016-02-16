@@ -97,9 +97,19 @@ class frmCANALSession: public wxFrame
 public:
     /// Constructors
     frmCANALSession();
-    frmCANALSession( wxWindow* parent, wxWindowID id = SYMBOL_FRMCANALSESSION_IDNAME, const wxString& caption = SYMBOL_FRMCANALSESSION_TITLE, const wxPoint& pos = SYMBOL_FRMCANALSESSION_POSITION, const wxSize& size = SYMBOL_FRMCANALSESSION_SIZE, long style = SYMBOL_FRMCANALSESSION_STYLE );
+    frmCANALSession( wxWindow* parent, 
+                        wxWindowID id = SYMBOL_FRMCANALSESSION_IDNAME, 
+                        const wxString& caption = SYMBOL_FRMCANALSESSION_TITLE, 
+                        const wxPoint& pos = SYMBOL_FRMCANALSESSION_POSITION, 
+                        const wxSize& size = SYMBOL_FRMCANALSESSION_SIZE, 
+                        long style = SYMBOL_FRMCANALSESSION_STYLE );
 
-    bool Create( wxWindow* parent, wxWindowID id = SYMBOL_FRMCANALSESSION_IDNAME, const wxString& caption = SYMBOL_FRMCANALSESSION_TITLE, const wxPoint& pos = SYMBOL_FRMCANALSESSION_POSITION, const wxSize& size = SYMBOL_FRMCANALSESSION_SIZE, long style = SYMBOL_FRMCANALSESSION_STYLE );
+    bool Create( wxWindow* parent, 
+                    wxWindowID id = SYMBOL_FRMCANALSESSION_IDNAME, 
+                    const wxString& caption = SYMBOL_FRMCANALSESSION_TITLE, 
+                    const wxPoint& pos = SYMBOL_FRMCANALSESSION_POSITION, 
+                    const wxSize& size = SYMBOL_FRMCANALSESSION_SIZE, 
+                    long style = SYMBOL_FRMCANALSESSION_STYLE );
 
     /// Destructor
     ~frmCANALSession();

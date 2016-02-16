@@ -24,8 +24,8 @@
 #if !defined(WEBSERVER_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_)
 #define WEBSERVER_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_
 
-#define WEBSRV_MAX_SESSIONS						1000	// Max web server active sessions
-#define WEBSRV_NAL_USERNAMELEN					128		// Max length for userdname
+#define WEBSRV_MAX_SESSIONS                     1000    // Max web server active sessions
+#define WEBSRV_NAL_USERNAMELEN                  128	    // Max length for userdname
 
 
 /**
@@ -324,7 +324,7 @@ enum {
 #define REST_PLAIN_ERROR_SUCCESS				"1 1 Success \r\n\r\nEverything is fine.\r\n"
 #define REST_PLAIN_ERROR_GENERAL_FAILURE		"0 -1 Failure \r\n\r\nGeneral failure.\r\n"
 #define REST_PLAIN_ERROR_INVALID_SESSION		"0 -2 Invalid session \r\n\r\nThe session must be opened with 'open' before a session command can be used. It may also be possible that the session has timed out.\r\n"
-#define REST_PLAIN_ERROR_UNSUPPORTED_FORMAT		"0 -3 Unsupported format \r\n\r\nFormat can be 0/plain, 1/CSV, 2/XML, 3/JSON, 4/JSONP´.\r\n"
+#define REST_PLAIN_ERROR_UNSUPPORTED_FORMAT		"0 -3 Unsupported format \r\n\r\nFormat can be 0/plain, 1/CSV, 2/XML, 3/JSON, 4/JSONPÂ´.\r\n"
 #define REST_PLAIN_ERROR_COULD_NOT_OPEN_SESSION "0 -4 Unable to create session \r\n\r\nA new session could not be created.\r\n"
 #define REST_PLAIN_ERROR_MISSING_DATA			"0 -5 Missing data/parameter \r\n\r\nA needed parameter or data is missing to be able to perform operation.\r\n"
 #define REST_PLAIN_ERROR_INPUT_QUEUE_EMPTY		"0 -6 Input queue empty \r\n\r\nThe input queue is empty.\r\n"
@@ -353,7 +353,7 @@ enum {
 #define REST_XML_ERROR_SUCCESS					"<vscp-rest success = \"true\" code = \"1\" message = \"Success\" description = \"Success.\" />"
 #define REST_XML_ERROR_GENERAL_FAILURE			"<vscp-rest success = \"false\" code = \"-1\" message = \"Failure\" description = \"General failure.\" />"
 #define REST_XML_ERROR_INVALID_SESSION			"<vscp-rest success = \"false\" code = \"-2\" message = \"Invalid session\" description = \"The session must be opened with 'open' before a session command can be used. It may also be possible that the session has timed out.\" />"
-#define REST_XML_ERROR_UNSUPPORTED_FORMAT		"<vscp-rest success = \"false\" code = \"-3\" message = \"Unsupported format\" description = \"Format can be 0/plain, 1/CSV, 2/XML, 3/JSON, 4/JSONP´.\" />"
+#define REST_XML_ERROR_UNSUPPORTED_FORMAT		"<vscp-rest success = \"false\" code = \"-3\" message = \"Unsupported format\" description = \"Format can be 0/plain, 1/CSV, 2/XML, 3/JSON, 4/JSONPÂ´.\" />"
 #define REST_XML_ERROR_COULD_NOT_OPEN_SESSION	"<vscp-rest success = \"false\" code = \"-4\" message = \"Unable to create session\" description = \"A new session could not be created.\" />"
 #define REST_XML_ERROR_MISSING_DATA			    "<vscp-rest success = \"false\" code = \"-5\" message = \"Missing data/parameter\" description = \"A needed parameter or data is missing to be able to perform operation.\" />"
 #define REST_XML_ERROR_INPUT_QUEUE_EMPTY		"<vscp-rest success = \"false\" code = \"-6\" message = \"Input queue empty\" description = \"The input queue is empty.\" />"
@@ -367,7 +367,7 @@ enum {
 #define REST_JSON_ERROR_SUCCESS					"{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\"}"
 #define REST_JSON_ERROR_GENERAL_FAILURE			"{\"success\":false,\"code\":-1,\"message\":\"Failure\",\"description\":\"General failure.\"}"
 #define REST_JSON_ERROR_INVALID_SESSION			"{\"success\":false,\"code\":-2,\"message\":\"Invalid session\",\"description\":\"The session must be opened with 'open' before a session command can be used. It may also be possible that the session has timed out.\"}"
-#define REST_JSON_ERROR_UNSUPPORTED_FORMAT		"{\"success\":false,\"code\":-3,\"message\":\"Unsupported format\",\"description\":\"Unsupported format. Format can be 0/plain, 1/CSV, 2/XML, 3/JSON, 4/JSONP´.\"}"
+#define REST_JSON_ERROR_UNSUPPORTED_FORMAT		"{\"success\":false,\"code\":-3,\"message\":\"Unsupported format\",\"description\":\"Unsupported format. Format can be 0/plain, 1/CSV, 2/XML, 3/JSON, 4/JSONPÂ´.\"}"
 #define REST_JSON_ERROR_COULD_NOT_OPEN_SESSION	"{\"success\":false,\"code\":-4,\"message\":\"Unable to create session\",\"description\":\"A new session could not be created.\"}"
 #define REST_JSON_ERROR_MISSING_DATA			"{\"success\":false,\"code\":-5,\"message\":\"Missing data/parameter\",\"description\":\"A needed parameter or data is missing to be able to perform operation.\"}"
 #define REST_JSON_ERROR_INPUT_QUEUE_EMPTY		"{\"success\":false,\"code\":-6,\"message\":\"Input queue empty\",\"description\":\"The input queue is empty.\"}"

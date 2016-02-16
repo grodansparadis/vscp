@@ -44,7 +44,7 @@ class discoveryVSCPThread : public wxThread
 {
 
 public:
-	
+
     /// Constructor
     discoveryVSCPThread();
 
@@ -53,7 +53,7 @@ public:
 
     /*!
         Thread code entry point
-	*/
+    */
     virtual void *Entry();
 
     /*! 
@@ -71,8 +71,8 @@ public:
         Read a level I register
     */
     bool readLevel1Register( uint8_t nodeid, 
-								uint8_t reg, 
-								uint8_t *pcontent,
+                                uint8_t reg, 
+                                uint8_t *pcontent,
                                 uint32_t clientID,
                                 uint32_t timeout = 1000 );
 
@@ -120,7 +120,7 @@ class daemonVSCPThread : public wxThread
 {
 
 public:
-	
+    
     /// Constructor
     daemonVSCPThread();
 
@@ -129,7 +129,7 @@ public:
 
     /*!
         Thread code entry point
-	*/
+    */
     virtual void *Entry();
 
 

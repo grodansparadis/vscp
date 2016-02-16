@@ -75,10 +75,10 @@ class wxHtmlWindow;
 class scanElement : public wxTreeItemData 
 {
 public:
-	bool m_bLoaded;		// True if registers and info loaded
-	uint8_t m_nodeid;	// Node id
-	uint8_t m_reg[256]; // Full register space
-	wxString m_html;	// Device HTML info page.
+    bool m_bLoaded;		// True if registers and info loaded
+    uint8_t m_nodeid;	// Node id
+    uint8_t m_reg[256]; // Full register space
+    wxString m_html;	// Device HTML info page.
 };
 
 
@@ -92,75 +92,75 @@ class frmScanforDevices: public wxFrame
   DECLARE_EVENT_TABLE()
 
 public:
-	/// Constructors
-	frmScanforDevices();
-	frmScanforDevices( wxWindow* parent, 
+    /// Constructors
+    frmScanforDevices();
+    frmScanforDevices( wxWindow* parent, 
                             wxWindowID id = SYMBOL_FRMSCANFORDEVICES_IDNAME, 
                             const wxString& caption = SYMBOL_FRMSCANFORDEVICES_TITLE, 
                             const wxPoint& pos = SYMBOL_FRMSCANFORDEVICES_POSITION, 
                             const wxSize& size = SYMBOL_FRMSCANFORDEVICES_SIZE, 
                             long style = SYMBOL_FRMSCANFORDEVICES_STYLE );
 
-	bool Create( wxWindow* parent, 
+    bool Create( wxWindow* parent, 
                         wxWindowID id = SYMBOL_FRMSCANFORDEVICES_IDNAME, 
                         const wxString& caption = SYMBOL_FRMSCANFORDEVICES_TITLE, 
                         const wxPoint& pos = SYMBOL_FRMSCANFORDEVICES_POSITION, 
                         const wxSize& size = SYMBOL_FRMSCANFORDEVICES_SIZE, 
                         long style = SYMBOL_FRMSCANFORDEVICES_STYLE );
 
-	/// Destructor
-	~frmScanforDevices();
+    /// Destructor
+    ~frmScanforDevices();
 
-	/// Initialises member variables
-	void Init();
+    /// Initialises member variables
+    void Init();
 
-	/// Creates the controls and sizers -
-	void CreateControls();
+    /// Creates the controls and sizers -
+    void CreateControls();
   
-	bool disableInterface( void );
+    bool disableInterface( void );
   
-	bool enableInterface( void );
+    bool enableInterface( void );
   
-	/// Interface type
-	int m_interfaceType;
+    /// Interface type
+    int m_interfaceType;
 
-	/*!
-		Data for the selected device
-		id holds type of i/f (DLL, TCP/IP
+    /*!
+        Data for the selected device
+        id holds type of i/f (DLL, TCP/IP
     */
     //devItem m_itemDevice;
-	//both_interface m_both;
-	canal_interface m_canalif;
-	vscp_interface m_vscpif;
-	
-	/*!
+    //both_interface m_both;
+    canal_interface m_canalif;
+    vscp_interface m_vscpif;
+    
+    /*!
         GUID for interface or all
-	    zero if no interface selected
+        zero if no interface selected
     */
-	cguid m_ifguid;
+    cguid m_ifguid;
 
-	/*!
-		CANAL driver level
-	*/
-	unsigned char m_driverLevel;
+    /*!
+        CANAL driver level
+    */
+    unsigned char m_driverLevel;
   
-	/*!
-		The wrapper for the CANAL 
-		functionality.
-	*/
-	CCanalSuperWrapper m_csw;
+    /*!
+        The wrapper for the CANAL 
+        functionality.
+    */
+    CCanalSuperWrapper m_csw;
 
-	/// Module description file functionality
-	CMDF m_mdf;
+    /// Module description file functionality
+    CMDF m_mdf;
 
     /// Display info about node
-	void getNodeInfo(wxCommandEvent& event);
+    void getNodeInfo(wxCommandEvent& event);
 
     /// Open configuration window
-	void openConfiguration(wxCommandEvent& event);
-	
-	// Get GUID for interface
-	bool fetchIterfaceGUID(void);
+    void openConfiguration(wxCommandEvent& event);
+    
+    // Get GUID for interface
+    bool fetchIterfaceGUID(void);
 
     /// wxEVT_CLOSE_WINDOW event handler for ID_SCANFORDEVICES
     void OnCloseWindow( wxCloseEvent& event );
@@ -210,8 +210,8 @@ public:
     /// Retrieves icon resources
     wxIcon GetIconResource( const wxString& name );
 
-	/// Should we show tooltips?
-	static bool ShowToolTips();
+    /// Should we show tooltips?
+    static bool ShowToolTips();
 
     wxPanel* m_pPanel;
     wxStaticText* m_labelInterface;

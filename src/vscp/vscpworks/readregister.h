@@ -85,10 +85,20 @@ class ReadRegister: public wxDialog
 public:
   /// Constructors
   ReadRegister();
-  ReadRegister( wxWindow* parent, wxWindowID id = SYMBOL_READREGISTER_IDNAME, const wxString& caption = SYMBOL_READREGISTER_TITLE, const wxPoint& pos = SYMBOL_READREGISTER_POSITION, const wxSize& size = SYMBOL_READREGISTER_SIZE, long style = SYMBOL_READREGISTER_STYLE );
+  ReadRegister( wxWindow* parent, 
+                    wxWindowID id = SYMBOL_READREGISTER_IDNAME, 
+                    const wxString& caption = SYMBOL_READREGISTER_TITLE, 
+                    const wxPoint& pos = SYMBOL_READREGISTER_POSITION, 
+                    const wxSize& size = SYMBOL_READREGISTER_SIZE, 
+                    long style = SYMBOL_READREGISTER_STYLE );
 
   /// Creation
-  bool Create( wxWindow* parent, wxWindowID id = SYMBOL_READREGISTER_IDNAME, const wxString& caption = SYMBOL_READREGISTER_TITLE, const wxPoint& pos = SYMBOL_READREGISTER_POSITION, const wxSize& size = SYMBOL_READREGISTER_SIZE, long style = SYMBOL_READREGISTER_STYLE );
+  bool Create( wxWindow* parent, 
+                    wxWindowID id = SYMBOL_READREGISTER_IDNAME, 
+                    const wxString& caption = SYMBOL_READREGISTER_TITLE, 
+                    const wxPoint& pos = SYMBOL_READREGISTER_POSITION, 
+                    const wxSize& size = SYMBOL_READREGISTER_SIZE, 
+                    long style = SYMBOL_READREGISTER_STYLE );
 
   /// Destructor
   ~ReadRegister();

@@ -2088,7 +2088,12 @@ DaemonDecisionMartrixEditor::DaemonDecisionMartrixEditor()
   Init();
 }
 
-DaemonDecisionMartrixEditor::DaemonDecisionMartrixEditor( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+DaemonDecisionMartrixEditor::DaemonDecisionMartrixEditor( wxWindow* parent, 
+                                                            wxWindowID id, 
+                                                            const wxString& caption, 
+                                                            const wxPoint& pos, 
+                                                            const wxSize& size, 
+                                                            long style )
 {
   Init();
   Create( parent, id, caption, pos, size, style );
@@ -2099,7 +2104,12 @@ DaemonDecisionMartrixEditor::DaemonDecisionMartrixEditor( wxWindow* parent, wxWi
 // DaemonDecisionMartrixEditor creator
 //
 
-bool DaemonDecisionMartrixEditor::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+bool DaemonDecisionMartrixEditor::Create( wxWindow* parent, 
+                                            wxWindowID id, 
+                                            const wxString& caption, 
+                                            const wxPoint& pos, 
+                                            const wxSize& size, 
+                                            long style )
 {
 ////@begin DaemonDecisionMartrixEditor creation
   wxFrame::Create( parent, id, caption, pos, size, style );

@@ -35,23 +35,23 @@
 // Entry we generate for each page served.
 struct vscpextpage
 {
-	// If true only admin will be allowed to access the page
-	bool bOnlyAdmin;
-	
-	// Acceptable URL for this page.
-	const char *url;
+    // If true only admin will be allowed to access the page
+    bool bOnlyAdmin;
+    
+    // Acceptable URL for this page.
+    const char *url;
 
-	// Mime type to set for the page.
-	const char *mime;
+    // Mime type to set for the page.
+    const char *mime;
   
-	// Description of page
-	const char *description;	
-	
+    // Description of page
+    const char *description;	
+    
 };
 
 struct vscpextwebpageinfo{
-	int nPages;	// Number of pages
-	vscpextpage **pages;
+    int nPages;	// Number of pages
+    vscpextpage **pages;
 };
 
 #ifdef WIN32

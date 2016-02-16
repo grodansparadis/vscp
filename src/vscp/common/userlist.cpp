@@ -152,7 +152,7 @@ bool CUserItem::isUserAllowedToSendEvent( const uint32_t vscp_class,
 
 
 //*****************************************************************************
-//								CUserList
+//                              CUserList
 //*****************************************************************************
 
 
@@ -162,7 +162,8 @@ bool CUserItem::isUserAllowedToSendEvent( const uint32_t vscp_class,
 
 CUserList::CUserList(void)
 {
-    //wxLogDebug( _("Read Configuration: VSCPEnable=%s"), ( m_bVSCPEnable ? _("true") : _("false") )  );
+    //wxLogDebug( _("Read Configuration: VSCPEnable=%s"), 
+    //              ( m_bVSCPEnable ? _("true") : _("false") )  );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -280,7 +281,8 @@ CUserItem * CUserList::getUser( const wxString& user )
 // checkUser
 //
 
-CUserItem * CUserList::checkUser(const wxString& user, const wxString& md5password)
+CUserItem * CUserList::checkUser( const wxString& user, 
+                                    const wxString& md5password)
 {
     int i = 1;
     i = i + 2;

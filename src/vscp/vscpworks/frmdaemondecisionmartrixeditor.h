@@ -93,9 +93,19 @@ class DaemonDecisionMartrixEditor: public wxFrame
 public:
   /// Constructors
   DaemonDecisionMartrixEditor();
-  DaemonDecisionMartrixEditor( wxWindow* parent, wxWindowID id = SYMBOL_DAEMONDECISIONMARTRIXEDITOR_IDNAME, const wxString& caption = SYMBOL_DAEMONDECISIONMARTRIXEDITOR_TITLE, const wxPoint& pos = SYMBOL_DAEMONDECISIONMARTRIXEDITOR_POSITION, const wxSize& size = SYMBOL_DAEMONDECISIONMARTRIXEDITOR_SIZE, long style = SYMBOL_DAEMONDECISIONMARTRIXEDITOR_STYLE );
+  DaemonDecisionMartrixEditor( wxWindow* parent, 
+                                wxWindowID id = SYMBOL_DAEMONDECISIONMARTRIXEDITOR_IDNAME, 
+                                const wxString& caption = SYMBOL_DAEMONDECISIONMARTRIXEDITOR_TITLE, 
+                                const wxPoint& pos = SYMBOL_DAEMONDECISIONMARTRIXEDITOR_POSITION, 
+                                const wxSize& size = SYMBOL_DAEMONDECISIONMARTRIXEDITOR_SIZE, 
+                                long style = SYMBOL_DAEMONDECISIONMARTRIXEDITOR_STYLE );
 
-  bool Create( wxWindow* parent, wxWindowID id = SYMBOL_DAEMONDECISIONMARTRIXEDITOR_IDNAME, const wxString& caption = SYMBOL_DAEMONDECISIONMARTRIXEDITOR_TITLE, const wxPoint& pos = SYMBOL_DAEMONDECISIONMARTRIXEDITOR_POSITION, const wxSize& size = SYMBOL_DAEMONDECISIONMARTRIXEDITOR_SIZE, long style = SYMBOL_DAEMONDECISIONMARTRIXEDITOR_STYLE );
+  bool Create( wxWindow* parent, 
+                    wxWindowID id = SYMBOL_DAEMONDECISIONMARTRIXEDITOR_IDNAME, 
+                    const wxString& caption = SYMBOL_DAEMONDECISIONMARTRIXEDITOR_TITLE, 
+                    const wxPoint& pos = SYMBOL_DAEMONDECISIONMARTRIXEDITOR_POSITION, 
+                    const wxSize& size = SYMBOL_DAEMONDECISIONMARTRIXEDITOR_SIZE, 
+                    long style = SYMBOL_DAEMONDECISIONMARTRIXEDITOR_STYLE );
 
   /// Destructor
   ~DaemonDecisionMartrixEditor();

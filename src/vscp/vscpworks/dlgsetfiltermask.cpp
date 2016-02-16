@@ -91,7 +91,12 @@ DialogSetfiltermask::DialogSetfiltermask()
     Init();
 }
 
-DialogSetfiltermask::DialogSetfiltermask( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+DialogSetfiltermask::DialogSetfiltermask( wxWindow* parent, 
+                                                wxWindowID id, 
+                                                const wxString& caption, 
+                                                const wxPoint& pos, 
+                                                const wxSize& size, 
+                                                long style )
 {
     Init();
     Create(parent, id, caption, pos, size, style);
@@ -102,7 +107,12 @@ DialogSetfiltermask::DialogSetfiltermask( wxWindow* parent, wxWindowID id, const
 // DialogSetfiltermask creator
 //
 
-bool DialogSetfiltermask::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+bool DialogSetfiltermask::Create( wxWindow* parent, 
+                                    wxWindowID id, 
+                                    const wxString& caption, 
+                                    const wxPoint& pos, 
+                                    const wxSize& size, 
+                                    long style )
 {
     SetExtraStyle(wxWS_EX_BLOCK_EVENTS);
     wxDialog::Create( parent, id, caption, pos, size, style );

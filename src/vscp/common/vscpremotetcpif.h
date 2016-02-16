@@ -64,28 +64,28 @@
         Default response timeout for communication with the
         tcp/ip interface of the daemon in seconds
  */
-#define TCPIP_DEFAULT_RESPONSE_TIMEOUT		    3000
+#define TCPIP_DEFAULT_RESPONSE_TIMEOUT          3000
 
 #define TCPIP_DEFAULT_AFTER_COMMAND_SLEEP       0
 
 // Default values for read/write register functions
 // used in device config and scan.
-#define TCPIP_REGISTER_READ_RESEND_TIMEOUT		1000
-#define TCPIP_REGISTER_READ_ERROR_TIMEOUT		5000
-#define TCPIP_REGISTER_READ_MAX_TRIES			3
+#define TCPIP_REGISTER_READ_RESEND_TIMEOUT      1000
+#define TCPIP_REGISTER_READ_ERROR_TIMEOUT       5000
+#define TCPIP_REGISTER_READ_MAX_TRIES           3
 
 /*!
         \def TCPIP_DLL_VERSION
         Pseudo version string
  */
-#define TCPIP_DLL_VERSION				        0x00000006
+#define TCPIP_DLL_VERSION                       0x00000006
 /*! 
         \def TCPIP_VENDOR_STRING
         Pseudo vendor string
  */
-#define TCPIP_VENDOR_STRING	  			        "Paradise of the Frog AB, Sweden"
+#define TCPIP_VENDOR_STRING                     "Paradise of the Frog AB, Sweden"
 
-#define DRIVER_INFO_STRING	  			        ""
+#define DRIVER_INFO_STRING                      ""
 
 /*!
     Use this macro for unused function parameters.

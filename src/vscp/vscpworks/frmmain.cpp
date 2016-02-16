@@ -91,25 +91,25 @@ IMPLEMENT_CLASS( frmMain, wxFrame )
 
 // frmMain event table definition
 BEGIN_EVENT_TABLE( frmMain, wxFrame )
-	EVT_CLOSE( frmMain::OnCloseWindow )
-	EVT_MENU( ID_MENUITEM_OPEN_VSCP_SESSION, frmMain::OnMenuitemOpenVscpSessionClick )
-	EVT_MENU( ID_MENUITEM_DEVICE_CONFIGURATION, frmMain::OnMenuitemOpenConfigSessionClick )
-	EVT_MENU( ID_MENUITEM_MDF_EDITOR, frmMain::OnMenuitemMdfEditorClick )
-	EVT_MENU( ID_MENUITEM_DM_EDITOR, frmMain::OnMenuitemOpenDaemonDMEditorClick )
-	EVT_MENU( ID_MENUITEM_VARIABLE_EDITOR, frmMain::OnMenuitemOpenDaemonVariableEditorClick )
-	EVT_MENU( ID_MENUITEM_SCAN, frmMain::OnMenuitemScanClick )
-	EVT_MENU( ID_MENUITEM_BOOTLOADER_WIZARD, frmMain::OnMenuitemBootloaderWizardClick )
-	EVT_MENU( ID_MENUITEM_SIMPLE_UI_DESIGNER, frmMain::OnMenuitemOpenSimpleUIdesignerClick )
-	EVT_MENU( ID_MENUITEM_MERLIN, frmMain::OnMenuitemMerlinClick )
-	EVT_MENU( ID_MENU_VSCPWORKS_EXIT, frmMain::OnMenuitemAppExitClick )
-	EVT_MENU( ID_MENUITEM_CONFIGURATION, frmMain::OnMenuitemConfigurationClick )
-	EVT_MENU( ID_MENUITEM33, frmMain::OnMenuitemHelpClick )
-	EVT_MENU( ID_MENUITEM34, frmMain::OnMenuitemFaqClick )
-	EVT_MENU( ID_MENUITEM35, frmMain::OnMenuitemShortcutsClick )
-	EVT_MENU( ID_MENUITEM_THANKS, frmMain::OnMenuitemThanksClick )
-	EVT_MENU( ID_MENUITEM_CREDITS, frmMain::OnMenuitemCrediitsClick )
-	EVT_MENU( ID_MENUITEM_VSCP_SITE, frmMain::OnMenuitemVSCPSiteClick )
-	EVT_MENU( ID_MENUITEM_ABOUT, frmMain::OnMenuitemAboutClick )
+    EVT_CLOSE( frmMain::OnCloseWindow )
+    EVT_MENU( ID_MENUITEM_OPEN_VSCP_SESSION, frmMain::OnMenuitemOpenVscpSessionClick )
+    EVT_MENU( ID_MENUITEM_DEVICE_CONFIGURATION, frmMain::OnMenuitemOpenConfigSessionClick )
+    EVT_MENU( ID_MENUITEM_MDF_EDITOR, frmMain::OnMenuitemMdfEditorClick )
+    EVT_MENU( ID_MENUITEM_DM_EDITOR, frmMain::OnMenuitemOpenDaemonDMEditorClick )
+    EVT_MENU( ID_MENUITEM_VARIABLE_EDITOR, frmMain::OnMenuitemOpenDaemonVariableEditorClick )
+    EVT_MENU( ID_MENUITEM_SCAN, frmMain::OnMenuitemScanClick )
+    EVT_MENU( ID_MENUITEM_BOOTLOADER_WIZARD, frmMain::OnMenuitemBootloaderWizardClick )
+    EVT_MENU( ID_MENUITEM_SIMPLE_UI_DESIGNER, frmMain::OnMenuitemOpenSimpleUIdesignerClick )
+    EVT_MENU( ID_MENUITEM_MERLIN, frmMain::OnMenuitemMerlinClick )
+    EVT_MENU( ID_MENU_VSCPWORKS_EXIT, frmMain::OnMenuitemAppExitClick )
+    EVT_MENU( ID_MENUITEM_CONFIGURATION, frmMain::OnMenuitemConfigurationClick )
+    EVT_MENU( ID_MENUITEM33, frmMain::OnMenuitemHelpClick )
+    EVT_MENU( ID_MENUITEM34, frmMain::OnMenuitemFaqClick )
+    EVT_MENU( ID_MENUITEM35, frmMain::OnMenuitemShortcutsClick )
+    EVT_MENU( ID_MENUITEM_THANKS, frmMain::OnMenuitemThanksClick )
+    EVT_MENU( ID_MENUITEM_CREDITS, frmMain::OnMenuitemCrediitsClick )
+    EVT_MENU( ID_MENUITEM_VSCP_SITE, frmMain::OnMenuitemVSCPSiteClick )
+    EVT_MENU( ID_MENUITEM_ABOUT, frmMain::OnMenuitemAboutClick )
     EVT_TREE_SEL_CHANGED( ID_TREECTRL, frmMain::OnTreectrlSelChanged )
 END_EVENT_TABLE()
 
@@ -260,7 +260,7 @@ frmMain::frmMain()
 {
     m_timerDiscovery = new RenderTimer( this, wxGetApp().m_pmulticastWorkerThread );
 
-	Init();
+    Init();
     m_timerDiscovery->start();
 }
 
@@ -277,9 +277,9 @@ frmMain::frmMain( wxWindow* parent,
 {
     // Create the timer object
     m_timerDiscovery = new RenderTimer( this, wxGetApp().m_pmulticastWorkerThread );
-	
+    
     Init();
-	Create( parent, id, caption, pos, size, style );
+    Create( parent, id, caption, pos, size, style );
     m_timerDiscovery->start();
 }
 
@@ -862,15 +862,15 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
 
                     if ( INTERFACE_CANAL == pBoth->m_type ) {
 
-						// Hide the Level II checkbox
-						subframe->m_bLevel2->Show( false );
+                        // Hide the Level II checkbox
+                        subframe->m_bLevel2->Show( false );
 
                         // Init node id combo
                         wxRect rc = subframe->m_comboNodeID->GetRect();
 #ifdef WIN32						
                         rc.SetWidth( 60 );	
 #else
-						rc.SetWidth( 80 );
+                        rc.SetWidth( 80 );
 #endif						
                         subframe->m_comboNodeID->SetSize( rc );
                         wxArrayString strings;
@@ -883,9 +883,9 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
                         subframe->SetTitle(_("VSCP Registers (CANAL) - ") +  pBoth->m_pcanalif->m_strDescription );
 
                         subframe->m_csw.setInterface( pBoth->m_pcanalif->m_strDescription,
-														pBoth->m_pcanalif->m_strPath,
-														pBoth->m_pcanalif->m_strConfig,
-														pBoth->m_pcanalif->m_flags, 0, 0 );
+                                                        pBoth->m_pcanalif->m_strPath,
+                                                        pBoth->m_pcanalif->m_strConfig,
+                                                        pBoth->m_pcanalif->m_flags, 0, 0 );
 
                         // DLL timings
                         subframe->m_csw.getDllInterface()->setMaxRetries( g_Config.m_CANALRegMaxRetries );
@@ -914,13 +914,13 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
 
                         wxString str;
 
-						// Mark as full Level II interface if it is requested
-						if ( pBoth->m_pvscpif->m_bLevel2 ) {
-							subframe->m_bLevel2->SetValue( true );
-						}
-						else {
-							subframe->m_bLevel2->SetValue( false );
-						}
+                        // Mark as full Level II interface if it is requested
+                        if ( pBoth->m_pvscpif->m_bLevel2 ) {
+                            subframe->m_bLevel2->SetValue( true );
+                        }
+                        else {
+                            subframe->m_bLevel2->SetValue( false );
+                        }
 
                         subframe->SetTitle(_("VSCP Registers (TCP/IP)- ") +  
                             pBoth->m_pvscpif->m_strDescription );
@@ -934,15 +934,15 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
                         }
                         
                         // Save interface parameters
-						subframe->m_vscpif.m_strDescription = pBoth->m_pvscpif->m_strDescription;
-						subframe->m_vscpif.m_strHost = pBoth->m_pvscpif->m_strHost;
-						subframe->m_vscpif.m_strUser = pBoth->m_pvscpif->m_strUser;
-						subframe->m_vscpif.m_strPassword = pBoth->m_pvscpif->m_strPassword;
+                        subframe->m_vscpif.m_strDescription = pBoth->m_pvscpif->m_strDescription;
+                        subframe->m_vscpif.m_strHost = pBoth->m_pvscpif->m_strHost;
+                        subframe->m_vscpif.m_strUser = pBoth->m_pvscpif->m_strUser;
+                        subframe->m_vscpif.m_strPassword = pBoth->m_pvscpif->m_strPassword;
                         subframe->m_vscpif.m_strInterfaceName = pBoth->m_pvscpif->m_strInterfaceName;
-						memcpy( subframe->m_vscpif.m_GUID, pBoth->m_pvscpif->m_GUID, 16 );
-						memcpy( &subframe->m_vscpif.m_vscpfilter, 
-									&pBoth->m_pvscpif->m_vscpfilter, 
-									sizeof( vscpEventFilter ) );
+                        memcpy( subframe->m_vscpif.m_GUID, pBoth->m_pvscpif->m_GUID, 16 );
+                        memcpy( &subframe->m_vscpif.m_vscpfilter, 
+                                    &pBoth->m_pvscpif->m_vscpfilter, 
+                                    sizeof( vscpEventFilter ) );
 
                         // TCP/IP timings
                         subframe->m_csw.getTcpIpInterface()->setRegisterOperationTiming( g_Config.m_TCPIPRegMaxRetries,
@@ -958,13 +958,13 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
                         // Connect to host
                         if ( subframe->enableInterface() ) {
 
-							// Show the VSCP configuration windows
-							subframe->Show( true );
+                            // Show the VSCP configuration windows
+                            subframe->Show( true );
 
-							// Move window on top
-							subframe->Raise();
-						
-						}
+                            // Move window on top
+                            subframe->Raise();
+                        
+                        }
                         else {
                             // Failed to connect - terminate
                             dlg.cleanupListbox();
@@ -1020,21 +1020,21 @@ void frmMain::OnMenuitemScanClick( wxCommandEvent& event )
 
                     if ( INTERFACE_CANAL == pBoth->m_type ) {
 
-						//subframe->m_comboNodeID->SetValue(_("0x01"));
+                        //subframe->m_comboNodeID->SetValue(_("0x01"));
                         subframe->SetTitle(_("VSCP Registers (CANAL) - ") +  pBoth->m_pcanalif->m_strDescription );
 
-						// Transfer some parameters so the configuration window can be
-						// opened from the scan window.
+                        // Transfer some parameters so the configuration window can be
+                        // opened from the scan window.
                         subframe->m_interfaceType = INTERFACE_CANAL;
-						subframe->m_canalif.m_strDescription = pBoth->m_pcanalif->m_strDescription;
-						subframe->m_canalif.m_strPath =  pBoth->m_pcanalif->m_strPath;
-						subframe->m_canalif.m_strConfig = pBoth->m_pcanalif->m_strConfig;
-						subframe->m_canalif.m_flags = pBoth->m_pcanalif->m_flags;
+                        subframe->m_canalif.m_strDescription = pBoth->m_pcanalif->m_strDescription;
+                        subframe->m_canalif.m_strPath =  pBoth->m_pcanalif->m_strPath;
+                        subframe->m_canalif.m_strConfig = pBoth->m_pcanalif->m_strConfig;
+                        subframe->m_canalif.m_flags = pBoth->m_pcanalif->m_flags;
 
                         subframe->m_csw.setInterface( pBoth->m_pcanalif->m_strDescription,
-														pBoth->m_pcanalif->m_strPath,
-														pBoth->m_pcanalif->m_strConfig,
-														pBoth->m_pcanalif->m_flags, 0, 0 );
+                                                        pBoth->m_pcanalif->m_strPath,
+                                                        pBoth->m_pcanalif->m_strConfig,
+                                                        pBoth->m_pcanalif->m_flags, 0, 0 );
 
                         // DLL timings
                         subframe->m_csw.getDllInterface()->setMaxRetries( g_Config.m_CANALRegMaxRetries );
@@ -1088,15 +1088,15 @@ void frmMain::OnMenuitemScanClick( wxCommandEvent& event )
 
                         // Save interface parameters
                         subframe->m_interfaceType = INTERFACE_VSCP;
-						subframe->m_vscpif.m_strDescription = pBoth->m_pvscpif->m_strDescription;
-						subframe->m_vscpif.m_strHost = pBoth->m_pvscpif->m_strHost;
-						subframe->m_vscpif.m_strUser = pBoth->m_pvscpif->m_strUser;
-						subframe->m_vscpif.m_strPassword = pBoth->m_pvscpif->m_strPassword;
+                        subframe->m_vscpif.m_strDescription = pBoth->m_pvscpif->m_strDescription;
+                        subframe->m_vscpif.m_strHost = pBoth->m_pvscpif->m_strHost;
+                        subframe->m_vscpif.m_strUser = pBoth->m_pvscpif->m_strUser;
+                        subframe->m_vscpif.m_strPassword = pBoth->m_pvscpif->m_strPassword;
                         subframe->m_vscpif.m_strInterfaceName = pBoth->m_pvscpif->m_strInterfaceName;
-						memcpy( subframe->m_vscpif.m_GUID, pBoth->m_pvscpif->m_GUID, 16 );
-						memcpy( &subframe->m_vscpif.m_vscpfilter, 
-									&pBoth->m_pvscpif->m_vscpfilter, 
-									sizeof( vscpEventFilter ) );
+                        memcpy( subframe->m_vscpif.m_GUID, pBoth->m_pvscpif->m_GUID, 16 );
+                        memcpy( &subframe->m_vscpif.m_vscpfilter, 
+                                    &pBoth->m_pvscpif->m_vscpfilter, 
+                                    sizeof( vscpEventFilter ) );
 
                         // TCP/IP timings
                         subframe->m_csw.getTcpIpInterface()->setRegisterOperationTiming( g_Config.m_TCPIPRegMaxRetries,
@@ -1112,8 +1112,8 @@ void frmMain::OnMenuitemScanClick( wxCommandEvent& event )
 
                         //subframe->m_csw = m_interfaceType;
                         subframe->m_csw.setInterface( pBoth->m_pvscpif->m_strHost,
-														pBoth->m_pvscpif->m_strUser,
-														pBoth->m_pvscpif->m_strPassword );
+                                                        pBoth->m_pvscpif->m_strUser,
+                                                        pBoth->m_pvscpif->m_strPassword );
 
                         // Connect to host
                         subframe->enableInterface();
@@ -1303,10 +1303,10 @@ void frmMain::OnMenuitemMdfEditorClick( wxCommandEvent& event )
 
 void frmMain::OnMenuitemMerlinClick( wxCommandEvent& event )
 {
-	Merlin* window = new Merlin(this);
-	window->Show(true);
+    Merlin* window = new Merlin(this);
+    window->Show(true);
 
-	event.Skip( false );
+    event.Skip( false );
 }
 
 
@@ -1316,10 +1316,10 @@ void frmMain::OnMenuitemMerlinClick( wxCommandEvent& event )
 
 void frmMain::OnMenuitemOpenSimpleUIdesignerClick( wxCommandEvent& event )
 {
-	SimpleUserInterfaceGenerator* window = new SimpleUserInterfaceGenerator(this);
-	window->Show(true);
+    SimpleUserInterfaceGenerator* window = new SimpleUserInterfaceGenerator(this);
+    window->Show(true);
 
-	event.Skip( false );
+    event.Skip( false );
 }
 
 
@@ -1329,10 +1329,10 @@ void frmMain::OnMenuitemOpenSimpleUIdesignerClick( wxCommandEvent& event )
 
 void frmMain::OnMenuitemOpenDaemonDMEditorClick( wxCommandEvent& event )
 {
-	DaemonDecisionMartrixEditor* window = new DaemonDecisionMartrixEditor(this);
-	window->Show( true );
+    DaemonDecisionMartrixEditor* window = new DaemonDecisionMartrixEditor(this);
+    window->Show( true );
 
-	event.Skip( false );
+    event.Skip( false );
 }
 
 
@@ -1342,10 +1342,10 @@ void frmMain::OnMenuitemOpenDaemonDMEditorClick( wxCommandEvent& event )
 
 void frmMain::OnMenuitemOpenDaemonVariableEditorClick( wxCommandEvent& event )
 {
-	DaemonVariableEditor* window = new DaemonVariableEditor(this);
-	window->Show(true);
+    DaemonVariableEditor* window = new DaemonVariableEditor(this);
+    window->Show(true);
 
-	event.Skip( false );
+    event.Skip( false );
 }
 
 

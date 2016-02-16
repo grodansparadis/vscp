@@ -35,7 +35,7 @@
 
 // This is the vendor string - Change to your own value
 #define CANAL_DLL_VENDOR "Grodans Paradis AB, Sweden, http://www.grodansparadis.com"
-							
+                            
 
 // Max number of open connections
 #define CANAL_ZANTHIC_DRIVER_MAX_OPEN	10
@@ -50,55 +50,55 @@ class CDllDrvObj
 
 public:
 
-	/// Constructor
-	CDllDrvObj();
-	
-	/// Destructor
-	~CDllDrvObj();
+    /// Constructor
+    CDllDrvObj();
+    
+    /// Destructor
+    ~CDllDrvObj();
 
-	/*!
-		Add a driver object
+    /*!
+        Add a driver object
 
-		@parm plog Object to add
-		@return handle or 0 for error
-	*/
-	long addDriverObject( CZanthicObj *pObj );
+        @parm plog Object to add
+        @return handle or 0 for error
+    */
+    long addDriverObject( CZanthicObj *pObj );
 
-	/*!
-		Get a driver object from its handle
+    /*!
+        Get a driver object from its handle
 
-		@param handle for object
-		@return pointer to object or NULL if invalid
-				handle.
-	*/
-	CZanthicObj *getDriverObject( long h );
+        @param handle for object
+        @return pointer to object or NULL if invalid
+                handle.
+    */
+    CZanthicObj *getDriverObject( long h );
 
-	/*!
-		Remove a driver object
+    /*!
+        Remove a driver object
 
-		@parm handle for object.
-	*/
-	void removeDriverObject( long h );
-	
-	/*!
-		The log file object
-		This is the array with driver objects (max 256 objects
-	*/
-	CZanthicObj *m_drvObjArray[ CANAL_ZANTHIC_DRIVER_MAX_OPEN ];
+        @parm handle for object.
+    */
+    void removeDriverObject( long h );
+    
+    /*!
+        The log file object
+        This is the array with driver objects (max 256 objects
+    */
+    CZanthicObj *m_drvObjArray[ CANAL_ZANTHIC_DRIVER_MAX_OPEN ];
 
 
-	/// Mutex for open/close
+    /// Mutex for open/close
 #ifdef WIN32	
-	HANDLE m_objMutex;
+    HANDLE m_objMutex;
 #else
-	pthread_mutex_t m_objMutex;
+    pthread_mutex_t m_objMutex;
 #endif
 
-	/// Counter for users of the interface
-	unsigned long m_instanceCounter;
+    /// Counter for users of the interface
+    unsigned long m_instanceCounter;
 
 public:
-	BOOL InitInstance();
+    BOOL InitInstance();
 
 };
 

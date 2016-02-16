@@ -82,10 +82,20 @@ class dlgAbout: public wxDialog
 public:
   /// Constructors
   dlgAbout();
-  dlgAbout( wxWindow* parent, wxWindowID id = SYMBOL_DLGABOUT_IDNAME, const wxString& caption = SYMBOL_DLGABOUT_TITLE, const wxPoint& pos = SYMBOL_DLGABOUT_POSITION, const wxSize& size = SYMBOL_DLGABOUT_SIZE, long style = SYMBOL_DLGABOUT_STYLE );
+  dlgAbout( wxWindow* parent, 
+                wxWindowID id = SYMBOL_DLGABOUT_IDNAME, 
+                const wxString& caption = SYMBOL_DLGABOUT_TITLE, 
+                const wxPoint& pos = SYMBOL_DLGABOUT_POSITION, 
+                const wxSize& size = SYMBOL_DLGABOUT_SIZE, 
+                long style = SYMBOL_DLGABOUT_STYLE );
 
   /// Creation
-  bool Create( wxWindow* parent, wxWindowID id = SYMBOL_DLGABOUT_IDNAME, const wxString& caption = SYMBOL_DLGABOUT_TITLE, const wxPoint& pos = SYMBOL_DLGABOUT_POSITION, const wxSize& size = SYMBOL_DLGABOUT_SIZE, long style = SYMBOL_DLGABOUT_STYLE );
+  bool Create( wxWindow* parent, 
+                wxWindowID id = SYMBOL_DLGABOUT_IDNAME, 
+                const wxString& caption = SYMBOL_DLGABOUT_TITLE, 
+                const wxPoint& pos = SYMBOL_DLGABOUT_POSITION, 
+                const wxSize& size = SYMBOL_DLGABOUT_SIZE, 
+                long style = SYMBOL_DLGABOUT_STYLE );
 
   /// Destructor
   ~dlgAbout();

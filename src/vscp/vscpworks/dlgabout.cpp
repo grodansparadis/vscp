@@ -469,7 +469,7 @@ void dlgAbout::CreateControls()
     wxString html( *about_html, wxConvUTF8 );
     //wxString wxStringhtml = itemHtmlWindow3->ToText();
     wxString out;
-	wxString versionstr( _(VSCPD_DISPLAY_VERSION) );
+    wxString versionstr( _(VSCPD_DISPLAY_VERSION) );
     out.Printf( html, (const char *)versionstr.c_str() );
   
     itemHtmlWindow3->SetPage( out );

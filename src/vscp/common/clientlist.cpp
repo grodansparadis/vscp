@@ -67,42 +67,42 @@ WX_DEFINE_LIST(VSCPCLIENTLIST);
 
 CClientItem::CClientItem()
 {
-	m_bOpen = false;                        // Initially Not Open
-	m_flags = 0;                            // No flags
-	m_status.channel_status = 0;
-	m_clientID = 0;
+    m_bOpen = false;                        // Initially Not Open
+    m_flags = 0;                            // No flags
+    m_status.channel_status = 0;
+    m_clientID = 0;
     m_type = CLIENT_ITEM_INTERFACE_TYPE_NONE;
     m_bUDPReceiveChannel = false;
 
-	// Nill GUID
+    // Nill GUID
     m_guid.clear();
 
-	// Nill Level II mask (accept all)
-	vscp_clearVSCPFilter( &m_filterVSCP );
-	
-	m_statistics.cntReceiveFrames = 0;      // # of receive frames
-	m_statistics.cntTransmitFrames = 0;     // # of transmitted frames
-	m_statistics.cntReceiveData = 0;        // # of received data bytes
-	m_statistics.cntTransmitData = 0;       // # of transmitted data bytes	
-	m_statistics.cntOverruns = 0;           // # of overruns
-	m_statistics.cntBusWarnings = 0;        // # of bys warnings
-	m_statistics.cntBusOff = 0;             // # of bus off's
+    // Nill Level II mask (accept all)
+    vscp_clearVSCPFilter( &m_filterVSCP );
+    
+    m_statistics.cntReceiveFrames = 0;      // # of receive frames
+    m_statistics.cntTransmitFrames = 0;     // # of transmitted frames
+    m_statistics.cntReceiveData = 0;        // # of received data bytes
+    m_statistics.cntTransmitData = 0;       // # of transmitted data bytes	
+    m_statistics.cntOverruns = 0;           // # of overruns
+    m_statistics.cntBusWarnings = 0;        // # of bys warnings
+    m_statistics.cntBusOff = 0;             // # of bus off's
 
-	m_status.channel_status = 0;
-	m_status.lasterrorcode = 0;
-	m_status.lasterrorsubcode = 0;
-	memset( m_status.lasterrorstr, 0, sizeof( m_status.lasterrorstr ) );
-	
+    m_status.channel_status = 0;
+    m_status.lasterrorcode = 0;
+    m_status.lasterrorsubcode = 0;
+    memset( m_status.lasterrorstr, 0, sizeof( m_status.lasterrorstr ) );
+    
 
-	///////////////////////////////////////////////////////////////////////////
-	//                 Working variable storage for clients
-	//////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    //                 Working variable storage for clients
+    //////////////////////////////////////////////////////////////////////////
 
-	m_bAuthorized = false;
-	m_pUserItem = NULL;
+    m_bAuthorized = false;
+    m_pUserItem = NULL;
 
-	/// Buffer for read data
-	wxString m_readBuffer;
+    /// Buffer for read data
+    wxString m_readBuffer;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -111,15 +111,15 @@ CClientItem::CClientItem()
 
 CClientItem::~CClientItem()
 {
-	CLIENTEVENTLIST::iterator iter;
+    CLIENTEVENTLIST::iterator iter;
 
-	for ( iter = m_clientInputQueue.begin(); 
+    for ( iter = m_clientInputQueue.begin(); 
             iter != m_clientInputQueue.end(); ++iter ) {
-		vscpEvent *pEvent = *iter;
-		vscp_deleteVSCPevent( pEvent );
-	}
+        vscpEvent *pEvent = *iter;
+        vscp_deleteVSCPevent( pEvent );
+    }
 
-	m_clientInputQueue.Clear();
+    m_clientInputQueue.Clear();
 
 }
 
@@ -138,8 +138,8 @@ CClientItem::~CClientItem()
 
 CClientList::CClientList()
 {
-	m_clientIDCounter = 1;	
-	m_clientItemList.DeleteContents ( true );
+    m_clientIDCounter = 1;	
+    m_clientItemList.DeleteContents ( true );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -165,7 +165,7 @@ bool CClientList::addClient( CClientItem *pClientItem, uint32_t id )
 
     m_clientItemList.Append( pClientItem );
 
-	return true;
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

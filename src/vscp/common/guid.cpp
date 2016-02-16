@@ -59,14 +59,14 @@
 //////////////////////////////////////////////////////////////////////
 
 cguid::cguid()
-{	
-	clear();
+{
+    clear();
 }
 
 
 cguid::~cguid()
-{	
-	;
+{  
+    ;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -75,10 +75,10 @@ cguid::~cguid()
 
 cguid& cguid::operator=( const cguid& guid )
 {
-	// Check for self-assignment!
-    if ( this == &guid ) {	// Same object?
-		return *this;		// Yes, so skip assignment, and just return *this.
-	}
+    // Check for self-assignment!
+    if ( this == &guid ) {  // Same object?
+        return *this;       // Yes, so skip assignment, and just return *this.
+    }
 
     memcpy( m_id, guid.m_id, 16 );
 
@@ -91,8 +91,8 @@ cguid& cguid::operator=( const cguid& guid )
 
 bool cguid::operator==( const cguid &guid )
 {
-	if ( 0 != memcmp( m_id, guid.m_id, 16 ) ) return false;
-	return true;
+    if ( 0 != memcmp( m_id, guid.m_id, 16 ) ) return false;
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -101,7 +101,7 @@ bool cguid::operator==( const cguid &guid )
 
 bool cguid::operator!=(const cguid &guid) 
 {
-	return !(*this == guid);
+    return !(*this == guid);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -142,7 +142,7 @@ void cguid::getFromString( const wxString& strGUID )
 
 void cguid::getFromArray( const uint8_t *pguid )
 {
-  memcpy(m_id, pguid, 16 );
+    memcpy(m_id, pguid, 16 );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -180,11 +180,11 @@ bool cguid::isSameGUID( const unsigned char *pguid )
 
 bool cguid::isNULL( void )
 {
-	for ( int i=0; i<16; i++ ) {
-		if ( m_id[ i ] ) return false;
-	}
+    for ( int i=0; i<16; i++ ) {
+        if ( m_id[ i ] ) return false;
+    }
 
-	return true;
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

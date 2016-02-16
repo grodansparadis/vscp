@@ -86,10 +86,20 @@ class dlgCanalMsg: public wxDialog
 public:
   /// Constructors
   dlgCanalMsg();
-  dlgCanalMsg( wxWindow* parent, wxWindowID id = SYMBOL_DLGCANALMSG_IDNAME, const wxString& caption = SYMBOL_DLGCANALMSG_TITLE, const wxPoint& pos = SYMBOL_DLGCANALMSG_POSITION, const wxSize& size = SYMBOL_DLGCANALMSG_SIZE, long style = SYMBOL_DLGCANALMSG_STYLE );
+  dlgCanalMsg( wxWindow* parent, 
+                    wxWindowID id = SYMBOL_DLGCANALMSG_IDNAME, 
+                    const wxString& caption = SYMBOL_DLGCANALMSG_TITLE, 
+                    const wxPoint& pos = SYMBOL_DLGCANALMSG_POSITION, 
+                    const wxSize& size = SYMBOL_DLGCANALMSG_SIZE, 
+                    long style = SYMBOL_DLGCANALMSG_STYLE );
 
   /// Creation
-  bool Create( wxWindow* parent, wxWindowID id = SYMBOL_DLGCANALMSG_IDNAME, const wxString& caption = SYMBOL_DLGCANALMSG_TITLE, const wxPoint& pos = SYMBOL_DLGCANALMSG_POSITION, const wxSize& size = SYMBOL_DLGCANALMSG_SIZE, long style = SYMBOL_DLGCANALMSG_STYLE );
+  bool Create( wxWindow* parent, 
+                    wxWindowID id = SYMBOL_DLGCANALMSG_IDNAME, 
+                    const wxString& caption = SYMBOL_DLGCANALMSG_TITLE, 
+                    const wxPoint& pos = SYMBOL_DLGCANALMSG_POSITION, 
+                    const wxSize& size = SYMBOL_DLGCANALMSG_SIZE, 
+                    long style = SYMBOL_DLGCANALMSG_STYLE );
 
   /// Destructor
   ~dlgCanalMsg();

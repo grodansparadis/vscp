@@ -406,7 +406,12 @@ dlgVSCPFilter::dlgVSCPFilter()
   Init();
 }
 
-dlgVSCPFilter::dlgVSCPFilter( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+dlgVSCPFilter::dlgVSCPFilter( wxWindow* parent, 
+                                wxWindowID id, 
+                                const wxString& caption, 
+                                const wxPoint& pos, 
+                                const wxSize& size, 
+                                long style )
 {
   Init();
   Create(parent, id, caption, pos, size, style);
@@ -417,7 +422,12 @@ dlgVSCPFilter::dlgVSCPFilter( wxWindow* parent, wxWindowID id, const wxString& c
 // dlgVSCPFilter creator
 //
 
-bool dlgVSCPFilter::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+bool dlgVSCPFilter::Create( wxWindow* parent, 
+                                wxWindowID id, 
+                                const wxString& caption, 
+                                const wxPoint& pos, 
+                                const wxSize& size, 
+                                long style )
 {
 ////@begin dlgVSCPFilter creation
   SetExtraStyle(wxWS_EX_BLOCK_EVENTS);

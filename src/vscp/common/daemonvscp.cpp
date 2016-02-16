@@ -102,8 +102,10 @@ void *daemonVSCPThread::Entry()
 {
     int sock_mc;                    // socket descriptor 
     struct sockaddr_in mc_addr;     // socket address structure  
-    unsigned short mc_port = vscp_readStringValue( m_pCtrlObject->m_strMulticastAnnounceAddress ) ; // multicast port 
-    unsigned char mc_ttl = m_pCtrlObject->m_ttlMultiCastAnnounce;                                   // time to live (hop count) 
+    unsigned short mc_port = 
+        vscp_readStringValue( m_pCtrlObject->m_strMulticastAnnounceAddress ) ; // multicast port 
+    unsigned char mc_ttl = 
+        m_pCtrlObject->m_ttlMultiCastAnnounce; // time to live (hop count) 
 
 #ifdef WIN32
 
@@ -112,14 +114,18 @@ void *daemonVSCPThread::Entry()
     // Load Winsock 2.0 DLL
     if ( WSAStartup( MAKEWORD( 2, 0 ), &wsaData ) != 0 ) {
         fprintf( stderr, "WSAStartup() failed" );
-        m_pCtrlObject->logMsg( _( "Automation multicast announce WSAStartup() failed\r\n" ), DAEMON_LOGMSG_CRITICAL, DAEMON_LOGTYPE_GENERAL );
+        m_pCtrlObject->logMsg( _( "Automation multicast announce WSAStartup() failed\r\n" ), 
+                                DAEMON_LOGMSG_CRITICAL, 
+                                DAEMON_LOGTYPE_GENERAL );
         return NULL;
     }
 
     // create a socket for sending to the multicast address 
     if ( ( sock_mc = socket( PF_INET, SOCK_DGRAM, IPPROTO_UDP ) ) < 0 ) {
         perror( "socket() failed" );
-        m_pCtrlObject->logMsg( _( "Automation multicast announce sock() failed\r\n" ), DAEMON_LOGMSG_CRITICAL, DAEMON_LOGTYPE_GENERAL );
+        m_pCtrlObject->logMsg( _( "Automation multicast announce sock() failed\r\n" ), 
+                                DAEMON_LOGMSG_CRITICAL, 
+                                DAEMON_LOGTYPE_GENERAL );
         return NULL;
     }
 
@@ -127,7 +133,9 @@ void *daemonVSCPThread::Entry()
     if ( ( setsockopt( sock_mc, IPPROTO_IP, IP_MULTICAST_TTL,
                        ( const char* )&mc_ttl, sizeof( mc_ttl ) ) ) < 0 ) {
         perror( "setsockopt() failed" );
-        m_pCtrlObject->logMsg(  _( "Automation multicast announce setsockopt() failed\r\n" ), DAEMON_LOGMSG_CRITICAL, DAEMON_LOGTYPE_GENERAL );
+        m_pCtrlObject->logMsg(  _( "Automation multicast announce setsockopt() failed\r\n" ), 
+                                DAEMON_LOGMSG_CRITICAL, 
+                                DAEMON_LOGTYPE_GENERAL );
         return NULL;
     }
 
@@ -892,8 +900,8 @@ void *discoveryVSCPThread::Entry()
         int error; // Resend errors
         for (error=0; error<3; error++ ) {
             if ( readLevel1Register( m_nodeid, 
-								        i, 
-								        &content,
+                                        i, 
+                                        &content,
                                         m_clientID,
                                         1000 ) ) {
                 newguid.setAt( i, content );
@@ -932,16 +940,16 @@ void discoveryVSCPThread::OnExit()
 //
 
 bool discoveryVSCPThread::readLevel1Register( uint8_t nodeid, 
-												uint8_t reg, 
-												uint8_t *pcontent,
+                                                uint8_t reg, 
+                                                uint8_t *pcontent,
                                                 uint32_t clientID,
                                                 uint32_t timeout )
 {
-	bool rv = true;
-	wxString strBuf;
+    bool rv = true;
+    wxString strBuf;
     
-	// Check pointer
-	if ( NULL == pcontent ) return false;
+    // Check pointer
+    if ( NULL == pcontent ) return false;
 
     // New event
     vscpEvent *pEvent = new vscpEvent;
@@ -949,31 +957,31 @@ bool discoveryVSCPThread::readLevel1Register( uint8_t nodeid,
 
     pEvent->vscp_class = VSCP_CLASS1_PROTOCOL;
     pEvent->vscp_type = VSCP_TYPE_PROTOCOL_READ_REGISTER;
-	pEvent->sizeData = 2;
+    pEvent->sizeData = 2;
     
     // Allocate data
     pEvent->pdata = new uint8_t[2];
     if ( NULL == pEvent->pdata ) return false;
 
-	pEvent->pdata[ 0 ] = nodeid;      // Node to read from
+    pEvent->pdata[ 0 ] = nodeid;      // Node to read from
     pEvent->pdata[ 1 ] = reg;         // Register to read
     
     // Send event
     sendEvent( pEvent, clientID );
 
-	wxLongLong startTime = ::wxGetLocalTimeMillis();
+    wxLongLong startTime = ::wxGetLocalTimeMillis();
 
     CLIENTEVENTLIST::compatibility_iterator nodeClient;
-	while ( true ) {
+    while ( true ) {
 
         // Check for read error timeout
-		if ( ( ::wxGetLocalTimeMillis() - startTime ) > timeout ) {
-				return false;
-		}
+        if ( ( ::wxGetLocalTimeMillis() - startTime ) > timeout ) {
+            return false;
+        }
 
         // Wait for incoming event
         if ( wxSEMA_TIMEOUT == m_pClientItem->m_semClientInputQueue.WaitTimeout( 500 ) ) continue;
-	
+
         if ( m_pClientItem->m_clientInputQueue.GetCount() ) {
 
             m_pClientItem->m_mutexClientInputQueue.Lock();
@@ -993,13 +1001,13 @@ bool discoveryVSCPThread::readLevel1Register( uint8_t nodeid,
             }
 
             vscp_deleteVSCPevent( pEvent );
-			
-		}
+        
+        }
 
 
-	} // while
+    } // while
 
-	return rv;
+    return rv;
 }
 
 
@@ -1030,7 +1038,7 @@ bool discoveryVSCPThread::sendEvent( vscpEvent *pEvent, uint32_t obid )
 
     }
 
-	m_pCtrlObject->m_wxClientMutex.Unlock();
+    m_pCtrlObject->m_wxClientMutex.Unlock();
 
     return bSent;
 }

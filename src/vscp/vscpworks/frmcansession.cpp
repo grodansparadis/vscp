@@ -435,7 +435,12 @@ frmCANSession::frmCANSession()
     Init();
 }
 
-frmCANSession::frmCANSession( wxMDIParentFrame* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+frmCANSession::frmCANSession( wxMDIParentFrame* parent, 
+                                wxWindowID id, 
+                                const wxString& caption, 
+                                const wxPoint& pos, 
+                                const wxSize& size, 
+                                long style )
 {
     Init();
     Create( parent, id, caption, pos, size, style );
@@ -445,7 +450,12 @@ frmCANSession::frmCANSession( wxMDIParentFrame* parent, wxWindowID id, const wxS
  * frmCANSession creator
  */
 
-bool frmCANSession::Create( wxMDIParentFrame* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+bool frmCANSession::Create( wxMDIParentFrame* parent, 
+                                wxWindowID id, 
+                                const wxString& caption, 
+                                const wxPoint& pos, 
+                                const wxSize& size, 
+                                long style )
 {
 ////@begin frmCANSession creation
     wxMDIChildFrame::Create( parent, id, caption, pos, size, style );

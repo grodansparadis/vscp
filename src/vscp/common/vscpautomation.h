@@ -35,11 +35,11 @@ class CVSCPAutomation {
 
 public:
 
-	/// Constructor
-	CVSCPAutomation(void);
+    /// Constructor
+    CVSCPAutomation(void);
 
-	// Destructor
-	virtual ~CVSCPAutomation(void);
+    // Destructor
+    virtual ~CVSCPAutomation(void);
 
     /*!
         

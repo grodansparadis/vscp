@@ -52,20 +52,20 @@ WX_DECLARE_LIST ( vscpEvent, CLIENTEVENTLIST );
 //
 
 enum {
-	CLIENT_ITEM_LEVEL1 = 0,
-	CLIENT_ITEM_LEVEL2
+    CLIENT_ITEM_LEVEL1 = 0,
+    CLIENT_ITEM_LEVEL2
 };
 
 
 enum {
-	CLIENT_ITEM_INTERFACE_TYPE_NONE = 0,
-	CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL,     // Daemon internal 
-	CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1,       // Level I drivers
-	CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL2,       // Level II drivers
-	CLIENT_ITEM_INTERFACE_TYPE_CLIENT_TCPIP,        // TCP/IP interface
-	CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP,          // UDP interface
-	CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEB,          // WEB interface
-	CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET,    // Websocket interface
+    CLIENT_ITEM_INTERFACE_TYPE_NONE = 0,
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL,     // Daemon internal 
+    CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1,       // Level I drivers
+    CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL2,       // Level II drivers
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_TCPIP,        // TCP/IP interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP,          // UDP interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEB,          // WEB interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET,    // Websocket interface
     CLIENT_ITEM_INTERFACE_TYPE_CLIENT_REST,         // REST interface
     CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MULTICAST,    // Multicast interface
     CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MQTT,         // MQTT interface
@@ -79,7 +79,7 @@ enum {
 #define CLIENT_ITEM_SPECIAL_ID_UDP                      0xffffffff
 
 /*!
-	Client Item
+    Client Item
 */
 
 class CClientItem
@@ -125,7 +125,7 @@ public:
         Channel flags
     */
     uint32_t m_flags;
-	
+
     /*!
         Filter mask for VSCP
     */
@@ -144,7 +144,7 @@ public:
         This is the default address and it can be changed by the client application
 
     */
-	cguid m_guid;
+    cguid m_guid;
 
     /*!
         Interface name
@@ -160,7 +160,7 @@ public:
         Channel statistics
     */
     canalStatistics m_statistics;
-	
+
     /*!
         Event to indicate that there is an event to send
     */
@@ -178,38 +178,38 @@ public:
     */
     bool m_bUDPReceiveChannel;
 
-	///////////////////////////////////////////////////////////////////////////
-	//                       Used by TCP/IP client thread
-	//////////////////////////////////////////////////////////////////////////
-	
-	/*!
-		RCVLOOP clock
-	 */
-	wxLongLong m_timeRcvLoop;
-	
-	/// Username given by user
-	wxString m_UserName;
+    ///////////////////////////////////////////////////////////////////////////
+    //                       Used by TCP/IP client thread
+    //////////////////////////////////////////////////////////////////////////
+    
+    /*!
+        RCVLOOP clock
+    */
+    wxLongLong m_timeRcvLoop;
+    
+    /// Username given by user
+    wxString m_UserName;
 
-	/// Password given by ysed
-	wxString m_Password;
+    /// Password given by ysed
+    wxString m_Password;
 
-	/// True if the credentials has been checked.
-	bool m_bAuthorized;
+    /// True if the credentials has been checked.
+    bool m_bAuthorized;
 
-	/// pointer ti the user
-	CUserItem *m_pUserItem;
+    /// pointer ti the user
+    CUserItem *m_pUserItem;
 
-	/// Read buffer
-	wxString m_readBuffer;
+    /// Read buffer
+    wxString m_readBuffer;
 
     /// Last connand executed
-	wxString m_lastCommand;
+    wxString m_lastCommand;
 
-	// Current command
-	wxString m_currentCommand;
+    // Current command
+    wxString m_currentCommand;
 
-	/// Current command i all upper case
-	wxString m_currentCommandUC;
+    /// Current command i all upper case
+    wxString m_currentCommandUC;
 };
 
 // List with clientitems

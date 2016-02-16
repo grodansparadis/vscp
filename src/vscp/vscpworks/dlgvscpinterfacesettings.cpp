@@ -76,36 +76,41 @@
 IMPLEMENT_DYNAMIC_CLASS( dlgVscpInterfaceSettings, wxPropertySheetDialog )
 
 
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// dlgVscpInterfaceSettings event table definition
-	//
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // dlgVscpInterfaceSettings event table definition
+    //
 
-	BEGIN_EVENT_TABLE( dlgVscpInterfaceSettings, wxPropertySheetDialog )
+    BEGIN_EVENT_TABLE( dlgVscpInterfaceSettings, wxPropertySheetDialog )
 
-	////@begin dlgVscpInterfaceSettings event table entries
+    ////@begin dlgVscpInterfaceSettings event table entries
   EVT_BUTTON( ID_BUTTON_VSCP_DRIVER_SET_PATH, dlgVscpInterfaceSettings::OnButtonVscpDriverSetPathClick )
   EVT_BUTTON( ID_BUTTON_VSCP_SET_CONFIGURATION, dlgVscpInterfaceSettings::OnButtonVscpSetConfigurationClick )
   EVT_BUTTON( ID_BUTTON_SET_FILTER, dlgVscpInterfaceSettings::OnButtonSetFilterClick )
   EVT_BUTTON( ID_BUTTON_TEST_INTERFACE, dlgVscpInterfaceSettings::OnButtonTestInterfaceClick )
   EVT_BUTTON( ID_BUTTON, dlgVscpInterfaceSettings::OnButtonGetInterfacesClick )
-	////@end dlgVscpInterfaceSettings event table entries
+    ////@end dlgVscpInterfaceSettings event table entries
 
-	END_EVENT_TABLE()
+    END_EVENT_TABLE()
 
 
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// dlgVscpInterfaceSettings constructors
-	//
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // dlgVscpInterfaceSettings constructors
+    //
 
-	dlgVscpInterfaceSettings::dlgVscpInterfaceSettings()
+    dlgVscpInterfaceSettings::dlgVscpInterfaceSettings()
 {
-	Init();
+    Init();
 }
 
-dlgVscpInterfaceSettings::dlgVscpInterfaceSettings( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+dlgVscpInterfaceSettings::dlgVscpInterfaceSettings( wxWindow* parent, 
+                                                        wxWindowID id, 
+                                                        const wxString& caption, 
+                                                        const wxPoint& pos, 
+                                                        const wxSize& size, 
+                                                        long style )
 {
-	Init();
-	Create(parent, id, caption, pos, size, style);
+    Init();
+    Create(parent, id, caption, pos, size, style);
 }
 
 
@@ -113,9 +118,14 @@ dlgVscpInterfaceSettings::dlgVscpInterfaceSettings( wxWindow* parent, wxWindowID
 // dlgVscpInterfaceSettings creator
 //
 
-bool dlgVscpInterfaceSettings::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+bool dlgVscpInterfaceSettings::Create( wxWindow* parent, 
+                                        wxWindowID id, 
+                                        const wxString& caption, 
+                                        const wxPoint& pos, 
+                                        const wxSize& size, 
+                                        long style )
 {
-	////@begin dlgVscpInterfaceSettings creation
+    ////@begin dlgVscpInterfaceSettings creation
   SetExtraStyle(wxWS_EX_BLOCK_EVENTS);
   SetSheetStyle(wxPROPSHEET_DEFAULT);
   wxPropertySheetDialog::Create( parent, id, caption, pos, size, style );
@@ -125,8 +135,8 @@ bool dlgVscpInterfaceSettings::Create( wxWindow* parent, wxWindowID id, const wx
   SetIcon(GetIconResource(wxT("../../../docs/vscp/logo/fatbee_v2.ico")));
   LayoutDialog();
   Centre();
-	////@end dlgVscpInterfaceSettings creation
-	return true;
+    ////@end dlgVscpInterfaceSettings creation
+    return true;
 }
 
 
@@ -136,8 +146,8 @@ bool dlgVscpInterfaceSettings::Create( wxWindow* parent, wxWindowID id, const wx
 
 dlgVscpInterfaceSettings::~dlgVscpInterfaceSettings()
 {
-	////@begin dlgVscpInterfaceSettings destruction
-	////@end dlgVscpInterfaceSettings destruction
+    ////@begin dlgVscpInterfaceSettings destruction
+    ////@end dlgVscpInterfaceSettings destruction
 }
 
 
@@ -147,7 +157,7 @@ dlgVscpInterfaceSettings::~dlgVscpInterfaceSettings()
 
 void dlgVscpInterfaceSettings::Init()
 {
-	////@begin dlgVscpInterfaceSettings member initialisation
+    ////@begin dlgVscpInterfaceSettings member initialisation
   m_panelCanal = NULL;
   m_DriverDescription = NULL;
   m_PathToDriver = NULL;
@@ -162,10 +172,10 @@ void dlgVscpInterfaceSettings::Init()
   m_RemoteInterfaceName = NULL;
   m_btnTestConnection = NULL;
   m_btnGetInterfaces = NULL;
-	////@end dlgVscpInterfaceSettings member initialisation
+    ////@end dlgVscpInterfaceSettings member initialisation
 
-	// Init filter
-	vscp_clearVSCPFilter( &m_vscpfilter );
+    // Init filter
+    vscp_clearVSCPFilter( &m_vscpfilter );
 }
 
 
@@ -175,7 +185,7 @@ void dlgVscpInterfaceSettings::Init()
 
 void dlgVscpInterfaceSettings::CreateControls()
 {    
-	////@begin dlgVscpInterfaceSettings content construction
+    ////@begin dlgVscpInterfaceSettings content construction
   dlgVscpInterfaceSettings* itemPropertySheetDialog1 = this;
 
   m_panelCanal = new wxPanel;
@@ -353,7 +363,7 @@ void dlgVscpInterfaceSettings::CreateControls()
 
   GetBookCtrl()->AddPage(m_panelServer, _("Remote VSCP server"));
 
-	////@end dlgVscpInterfaceSettings content construction
+    ////@end dlgVscpInterfaceSettings content construction
 
   
 }
@@ -365,7 +375,7 @@ void dlgVscpInterfaceSettings::CreateControls()
 
 bool dlgVscpInterfaceSettings::ShowToolTips()
 {
-	return true;
+    return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -374,11 +384,11 @@ bool dlgVscpInterfaceSettings::ShowToolTips()
 
 wxBitmap dlgVscpInterfaceSettings::GetBitmapResource( const wxString& name )
 {
-	// Bitmap retrieval
-	////@begin dlgVscpInterfaceSettings bitmap retrieval
+    // Bitmap retrieval
+    ////@begin dlgVscpInterfaceSettings bitmap retrieval
   wxUnusedVar(name);
   return wxNullBitmap;
-	////@end dlgVscpInterfaceSettings bitmap retrieval
+    ////@end dlgVscpInterfaceSettings bitmap retrieval
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -387,11 +397,11 @@ wxBitmap dlgVscpInterfaceSettings::GetBitmapResource( const wxString& name )
 
 wxIcon dlgVscpInterfaceSettings::GetIconResource( const wxString& name )
 {
-	// Icon retrieval
-	////@begin dlgVscpInterfaceSettings icon retrieval
+    // Icon retrieval
+    ////@begin dlgVscpInterfaceSettings icon retrieval
   wxUnusedVar(name);
   return wxNullIcon;
-	////@end dlgVscpInterfaceSettings icon retrieval
+    ////@end dlgVscpInterfaceSettings icon retrieval
 }
 
 
@@ -401,12 +411,12 @@ wxIcon dlgVscpInterfaceSettings::GetIconResource( const wxString& name )
 
 void dlgVscpInterfaceSettings::OnButtonVscpDriverSetPathClick( wxCommandEvent& event )
 {
-	wxString filename = wxFileSelector(_("Choose a CANAL driver"));
-	if ( !filename.empty() ) {
-		m_PathToDriver->SetValue( filename );
-	}
+    wxString filename = wxFileSelector(_("Choose a CANAL driver"));
+    if ( !filename.empty() ) {
+        m_PathToDriver->SetValue( filename );
+    }
 
-	event.Skip();
+    event.Skip();
 }
 
 
@@ -443,7 +453,7 @@ void dlgVscpInterfaceSettings::OnButtonVscpSetConfigurationClick( wxCommandEvent
 
     int baselen = strlen( wxbuf.data() );
     int len = ns_base64_decode( (const unsigned char *)wxbuf.data(), baselen, buf );
-	
+    
     if ( len != baselen ) {
         wxMessageBox( _( "The configurationd ata was either in the wrong form (should have been base64 encoded xml) or it was absent." ) );
         return;
@@ -473,7 +483,7 @@ void dlgVscpInterfaceSettings::OnButtonVscpSetConfigurationClick( wxCommandEvent
     wxString strWrk = wxString::Format( _( "%lu" ), resultFlags );
     m_DriverFlags->SetValue( strWrk );
 
-	event.Skip(); 
+    event.Skip(); 
 }
 
 
@@ -483,45 +493,45 @@ void dlgVscpInterfaceSettings::OnButtonVscpSetConfigurationClick( wxCommandEvent
 
 void dlgVscpInterfaceSettings::OnButtonTestInterfaceClick( wxCommandEvent& event )
 {
-	VscpRemoteTcpIf tcpif;
-	wxString wxstr;
+    VscpRemoteTcpIf tcpif;
+    wxString wxstr;
 
-	m_btnTestConnection->Enable( false );
+    m_btnTestConnection->Enable( false );
 
-	// If server username is given and no password is entered we ask for it.
-	if ( m_RemoteServerPassword->GetValue().IsEmpty() && !m_RemoteServerUsername->GetValue().IsEmpty() ) {
-		wxstr = ::wxGetTextFromUser( _("Please enter password"), 
-			_("Connection Test") );
-	}
-	else {
-		wxstr = m_RemoteServerPassword->GetValue();
-	}
+    // If server username is given and no password is entered we ask for it.
+    if ( m_RemoteServerPassword->GetValue().IsEmpty() && !m_RemoteServerUsername->GetValue().IsEmpty() ) {
+        wxstr = ::wxGetTextFromUser( _("Please enter password"), 
+            _("Connection Test") );
+    }
+    else {
+        wxstr = m_RemoteServerPassword->GetValue();
+    }
 
-	wxBusyCursor busy;
+    wxBusyCursor busy;
 
-	long rv = 
-		tcpif.doCmdOpen( m_RemoteServerURL->GetValue(),
-			m_RemoteServerUsername->GetValue(),
-			wxstr );
-	if ( VSCP_ERROR_SUCCESS == rv ) {
-		tcpif.doCmdClose();
-		wxMessageBox(_("Successful connect to server."), _("Connection Test"), wxICON_INFORMATION );
-		/*rv = tcpif.doCmdNOOP();
-		if ( CANAL_ERROR_SUCCESS == rv ) {
-			wxMessageBox(_("Successful connect to server."), _("Connection Test"), wxICON_INFORMATION );
-		}
-		else {
-			wxMessageBox(_("Failed do command on server (connected OK)."), _("Connection Test"), wxICON_STOP );
-		}*/
-	}
-	else {
-		wxMessageBox(_("Failed to connect to server."), _("Connection Test"), wxICON_STOP );
-		tcpif.doCmdClose();
-	}
+    long rv = 
+        tcpif.doCmdOpen( m_RemoteServerURL->GetValue(),
+            m_RemoteServerUsername->GetValue(),
+            wxstr );
+    if ( VSCP_ERROR_SUCCESS == rv ) {
+        tcpif.doCmdClose();
+        wxMessageBox(_("Successful connect to server."), _("Connection Test"), wxICON_INFORMATION );
+        /*rv = tcpif.doCmdNOOP();
+        if ( CANAL_ERROR_SUCCESS == rv ) {
+            wxMessageBox(_("Successful connect to server."), _("Connection Test"), wxICON_INFORMATION );
+        }
+        else {
+            wxMessageBox(_("Failed do command on server (connected OK)."), _("Connection Test"), wxICON_STOP );
+        }*/
+    }
+    else {
+        wxMessageBox(_("Failed to connect to server."), _("Connection Test"), wxICON_STOP );
+        tcpif.doCmdClose();
+    }
 
-	m_btnTestConnection->Enable( true );
+    m_btnTestConnection->Enable( true );
 
-	event.Skip();
+    event.Skip();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -530,93 +540,93 @@ void dlgVscpInterfaceSettings::OnButtonTestInterfaceClick( wxCommandEvent& event
 
 void dlgVscpInterfaceSettings::OnButtonGetInterfacesClick( wxCommandEvent& event )
 {
-	VscpRemoteTcpIf tcpif;
-	wxString wxstr;
+    VscpRemoteTcpIf tcpif;
+    wxString wxstr;
 
-	m_btnGetInterfaces->Enable( false );
+    m_btnGetInterfaces->Enable( false );
 
     
-	// If server username is given and no password is entered we ask for it.
-	if ( m_RemoteServerPassword->GetValue().IsEmpty() && 
-		!m_RemoteServerUsername->GetValue().IsEmpty() ) {
-			wxstr = ::wxGetTextFromUser( _("Please enter password"), 
-				_("Password is needed") );
-	}
-	else {
-		wxstr = m_RemoteServerPassword->GetValue();
-	}
+    // If server username is given and no password is entered we ask for it.
+    if ( m_RemoteServerPassword->GetValue().IsEmpty() && 
+        !m_RemoteServerUsername->GetValue().IsEmpty() ) {
+            wxstr = ::wxGetTextFromUser( _("Please enter password"), 
+                _("Password is needed") );
+    }
+    else {
+        wxstr = m_RemoteServerPassword->GetValue();
+    }
 
-	wxBusyCursor busy;
+    wxBusyCursor busy;
 
-	long rv = tcpif.doCmdOpen( m_RemoteServerURL->GetValue(),
-		m_RemoteServerUsername->GetValue(),
-		wxstr );
+    long rv = tcpif.doCmdOpen( m_RemoteServerURL->GetValue(),
+        m_RemoteServerUsername->GetValue(),
+        wxstr );
 
-	if ( VSCP_ERROR_SUCCESS == rv ) {
+    if ( VSCP_ERROR_SUCCESS == rv ) {
 
-		// Get the interface list
-		wxArrayString array;
-		tcpif.doCmdInterfaceList( array );
+        // Get the interface list
+        wxArrayString array;
+        tcpif.doCmdInterfaceList( array );
 
-		// Close the channel
-		tcpif.doCmdClose();
+        // Close the channel
+        tcpif.doCmdClose();
 
-		if ( array.Count() ) {
+        if ( array.Count() ) {
 
-			dlgSelectDaemonInterface dlg( this );
-			for ( unsigned int i=0; i<array.Count(); i++ ) {
+            dlgSelectDaemonInterface dlg( this );
+            for ( unsigned int i=0; i<array.Count(); i++ ) {
 
-				wxStringTokenizer tkz( array[i], _(",") );
-				wxString strOrdinal = tkz.GetNextToken();
-				wxString strType = tkz.GetNextToken();
-				wxString strGUID = tkz.GetNextToken();
-				wxString strDescription = tkz.GetNextToken();
-				wxString strLine = strGUID;
-				strLine += _(" ");
-				strLine += _(" Type = ");
-				strLine +=  strType;
-				strLine += _(" - ");
-				strLine += strDescription;
+                wxStringTokenizer tkz( array[i], _(",") );
+                wxString strOrdinal = tkz.GetNextToken();
+                wxString strType = tkz.GetNextToken();
+                wxString strGUID = tkz.GetNextToken();
+                wxString strDescription = tkz.GetNextToken();
+                wxString strLine = strGUID;
+                strLine += _(" ");
+                strLine += _(" Type = ");
+                strLine +=  strType;
+                strLine += _(" - ");
+                strLine += strDescription;
 
-				dlg.m_ctrlListInterfaces->Append( strLine );
-			}
+                dlg.m_ctrlListInterfaces->Append( strLine );
+            }
 
-			if ( wxID_OK == dlg.ShowModal() ) {
+            if ( wxID_OK == dlg.ShowModal() ) {
 
-				int selidx;
-				if ( wxNOT_FOUND != ( selidx = dlg.m_ctrlListInterfaces->GetSelection() ) ) {
+                int selidx;
+                if ( wxNOT_FOUND != ( selidx = dlg.m_ctrlListInterfaces->GetSelection() ) ) {
 
-					wxStringTokenizer tkz( array[selidx], _(",") );
-					wxString strOrdinal = tkz.GetNextToken();
-					wxString strType = tkz.GetNextToken();
-					wxString strGUID = tkz.GetNextToken();
+                    wxStringTokenizer tkz( array[selidx], _(",") );
+                    wxString strOrdinal = tkz.GetNextToken();
+                    wxString strType = tkz.GetNextToken();
+                    wxString strGUID = tkz.GetNextToken();
 
-					// Name of interface
-					wxString strifName = tkz.GetNextToken();
-					int pos;
-					if ( wxNOT_FOUND != ( pos = strifName.Find(_(" ") ) ) ) {
-						strifName = strifName.Left( pos );
-						strifName.Trim();
-					}
+                    // Name of interface
+                    wxString strifName = tkz.GetNextToken();
+                    int pos;
+                    if ( wxNOT_FOUND != ( pos = strifName.Find(_(" ") ) ) ) {
+                        strifName = strifName.Left( pos );
+                        strifName.Trim();
+                    }
 
-					m_RemoteInterfaceName->ChangeValue( strifName );
+                    m_RemoteInterfaceName->ChangeValue( strifName );
                     
-				}
-			}
+                }
+            }
 
-		}
-		else {
-			wxMessageBox(_("No interfaces found!"));
-		}
+        }
+        else {
+            wxMessageBox(_("No interfaces found!"));
+        }
 
-	}
-	else {
-		wxMessageBox(_("Failed to connect to server."), _("Get daemon interfaces"), wxICON_STOP );
-	}
+    }
+    else {
+        wxMessageBox(_("Failed to connect to server."), _("Get daemon interfaces"), wxICON_STOP );
+    }
 
-	m_btnGetInterfaces->Enable( true );
+    m_btnGetInterfaces->Enable( true );
 
-	event.Skip( false );
+    event.Skip( false );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -625,14 +635,14 @@ void dlgVscpInterfaceSettings::OnButtonGetInterfacesClick( wxCommandEvent& event
 
 void dlgVscpInterfaceSettings::OnButtonSetFilterClick( wxCommandEvent& event )
 {
-	dlgVSCPFilter dlg( this );
+    dlgVSCPFilter dlg( this );
 
-	dlg.setFilter( &m_vscpfilter );
-	if ( wxID_OK == dlg.ShowModal() ) {
-		dlg.getFilter( &m_vscpfilter );
-	}
+    dlg.setFilter( &m_vscpfilter );
+    if ( wxID_OK == dlg.ShowModal() ) {
+        dlg.getFilter( &m_vscpfilter );
+    }
 
-	event.Skip(); 
+    event.Skip(); 
 }
 
 

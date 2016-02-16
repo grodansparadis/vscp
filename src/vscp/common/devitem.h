@@ -45,18 +45,18 @@
 
 
 typedef struct _devItem {
-	int id;
-	int regid;
-	wxString strName;
-	wxString strPath;
-	wxString strParameters; 
-	wxString strPrefix;
-	uint32_t flags;
-	uint32_t filter;
-	uint32_t mask;
-	wxString strUsername;
-	wxString strPassword;
-	short port;
+    int id;
+    int regid;
+    wxString strName;
+    wxString strPath;
+    wxString strParameters; 
+    wxString strPrefix;
+    uint32_t flags;
+    uint32_t filter;
+    uint32_t mask;
+    wxString strUsername;
+    wxString strPassword;
+    short port;
 } devItem;
 
 typedef  devItem  *PDEVITEM;

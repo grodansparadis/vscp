@@ -692,8 +692,8 @@ bool actionTime::getMultiItem( const wxString& items, ACTIONTIME *pList )
             if ( NULL != pInt ) {
                 *pInt = (int)val;
                 pList->Append( pInt );
-            }	
-        }		
+            }
+        }
     }
 
     return true;
@@ -706,7 +706,7 @@ bool actionTime::getMultiItem( const wxString& items, ACTIONTIME *pList )
 
 bool actionTime::parseActionTime( const wxString& actionTime )
 {
-	wxString buf = actionTime;
+    wxString buf = actionTime;
     wxString strDate;
     wxString strYear;
     wxString strMonth;
@@ -717,8 +717,8 @@ bool actionTime::parseActionTime( const wxString& actionTime )
     wxString strMinute;
     wxString strSecond;
 
-	buf.Trim();
-	buf.Trim(false);
+    buf.Trim();
+    buf.Trim(false);
 
     // Formats:
     // YYYY-MM-SS HH:MM:SS
@@ -764,33 +764,33 @@ bool actionTime::parseActionTime( const wxString& actionTime )
         getMultiItem( strDay, &m_actionDay );
 
     }
-	else {
-		ACTIONTIME::iterator iter;
-		for (iter = m_actionYear.begin(); iter != m_actionYear.end(); ++iter) {
-			if ( NULL != *iter ) {
-				delete *iter;
-			}
-		}
+    else {
+        ACTIONTIME::iterator iter;
+        for (iter = m_actionYear.begin(); iter != m_actionYear.end(); ++iter) {
+            if ( NULL != *iter ) {
+                delete *iter;
+            }
+        }
 
-		m_actionYear.Clear();
+        m_actionYear.Clear();
 
-		for (iter = m_actionMonth.begin(); iter != m_actionMonth.end(); ++iter) {
-			if ( NULL != *iter ) {
-				delete *iter;
-			}
-		}
+        for (iter = m_actionMonth.begin(); iter != m_actionMonth.end(); ++iter) {
+            if ( NULL != *iter ) {
+                delete *iter;
+            }
+        }
 
-		m_actionMonth.Clear();
+        m_actionMonth.Clear();
 
-		for (iter = m_actionDay.begin(); iter != m_actionDay.end(); ++iter) {
-			if ( NULL != *iter ) {
-				delete *iter;
-			}
-		}
+        for (iter = m_actionDay.begin(); iter != m_actionDay.end(); ++iter) {
+            if ( NULL != *iter ) {
+                delete *iter;
+            }
+        }
 
-		m_actionDay.Clear();
+        m_actionDay.Clear();
 
-	}
+    }
 
     // Time
     if ( !strTime.IsSameAs( _("*") ) ) {
@@ -818,32 +818,32 @@ bool actionTime::parseActionTime( const wxString& actionTime )
         getMultiItem( strSecond, &m_actionSecond );
 
     }
-	else {
-		ACTIONTIME::iterator iter;
-		for (iter = m_actionHour.begin(); iter != m_actionHour.end(); ++iter) {
-			if ( NULL != *iter ) {
-				delete *iter;
-			}	
-		}
+    else {
+        ACTIONTIME::iterator iter;
+        for (iter = m_actionHour.begin(); iter != m_actionHour.end(); ++iter) {
+            if ( NULL != *iter ) {
+                delete *iter;
+            }  
+        }
 
-		m_actionHour.Clear();
+        m_actionHour.Clear();
 
-		for (iter = m_actionMinute.begin(); iter != m_actionMinute.end(); ++iter) {
-			if ( NULL != *iter ) {
-				delete *iter;
-			}
-		}
+        for (iter = m_actionMinute.begin(); iter != m_actionMinute.end(); ++iter) {
+            if ( NULL != *iter ) {
+                delete *iter;
+            }
+        }
 
-		m_actionMinute.Clear();
+        m_actionMinute.Clear();
 
-		for (iter = m_actionSecond.begin(); iter != m_actionSecond.end(); ++iter) {
-			if ( NULL != *iter ) {
-				delete *iter;
-			}
-		}
+        for (iter = m_actionSecond.begin(); iter != m_actionSecond.end(); ++iter) {
+            if ( NULL != *iter ) {
+                delete *iter;
+            }
+        }
 
-		m_actionSecond.Clear();
-	}
+        m_actionSecond.Clear();
+    }
 
     return true;
 
@@ -911,9 +911,9 @@ bool actionTime::ShouldWeDoAction( void )
                 if ( **iter == wxDateTime::Now().GetMonth() ) {
                     bMatch = true;
                     break;
-                }	
+                }
             }
-        }	
+        }
 
         // Fail if no match found
         if ( !bMatch ) return false;
@@ -930,13 +930,13 @@ bool actionTime::ShouldWeDoAction( void )
                 if ( **iter == wxDateTime::Now().GetDay() ) {
                     bMatch = true;
                     break;
-                }	
+                }
             }
-        }	
+        }
 
         // Fail if no match found
         if ( !bMatch ) return false;
-    }	
+    }
 
     // Check Hour
     if ( m_actionHour.GetCount() ) {
@@ -948,14 +948,14 @@ bool actionTime::ShouldWeDoAction( void )
                 if ( **iter == wxDateTime::Now().GetHour() ) {
                     bMatch = true;
                     break;
-                }	
+                }
             }
         }
 
         // Fail if no match found
         if ( !bMatch ) return false;
 
-    }	
+    }
 
     // Check Minute
     if ( m_actionMinute.GetCount() ) {
@@ -967,14 +967,14 @@ bool actionTime::ShouldWeDoAction( void )
                 if ( **iter == wxDateTime::Now().GetMinute() ) {
                     bMatch = true;
                     break;
-                }	
+                }
             }
-        }		
+        }
 
         // Fail if no match found
         if ( !bMatch ) return false;
 
-    }	
+    }
 
     // Check Second
     if ( m_actionSecond.GetCount() ) {
@@ -986,14 +986,14 @@ bool actionTime::ShouldWeDoAction( void )
                 if ( **iter == wxDateTime::Now().GetSecond() ) {
                     bMatch = true;
                     break;
-                }	
+                }
             }
-        }	
+        }
 
         // Fail if no match found
         if ( !bMatch ) return false;
 
-    }	
+    }
 
     return true;
 
@@ -1028,7 +1028,7 @@ wxString actionTime::getActionTimeAsString( void )
 
             }
 
-        }	
+        }
 
     }
     else {
@@ -1055,7 +1055,7 @@ wxString actionTime::getActionTimeAsString( void )
 
             }
 
-        }	
+        }
 
     }
     else {
@@ -1079,7 +1079,7 @@ wxString actionTime::getActionTimeAsString( void )
 
             }
 
-        }	
+        }
 
     }
     else {
@@ -1222,10 +1222,12 @@ wxString dmElement::getAsRealText( bool bCRLF )
     }
 
     // From time
-    strRow += m_timeAllow.m_fromTime.FormatISODate() + _(" ") + m_timeAllow.m_fromTime.FormatISOTime() + _(",");
+    strRow += m_timeAllow.m_fromTime.FormatISODate() + _(" ") + 
+                                m_timeAllow.m_fromTime.FormatISOTime() + _(",");
 
     // End time
-    strRow += m_timeAllow.m_endTime.FormatISODate() + _(" ") + m_timeAllow.m_endTime.FormatISOTime() + _(",");
+    strRow += m_timeAllow.m_endTime.FormatISODate() + _(" ") + 
+                                m_timeAllow.m_endTime.FormatISOTime() + _(",");
 
     // Allowed weekdays
     strRow += m_timeAllow.getWeekDays() + _(",");
@@ -1307,55 +1309,55 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
 
             // Check for percent i.e. %%
             if ( str.StartsWith( wxT("%%"), &str ) ) {
-                strResult += wxT("%");					// add percent
+                strResult += wxT("%");                  // add percent
             }
             // Check for ';' i.e. %;
             else if ( str.StartsWith( wxT("%;"), &str ) ) {
-                strResult += wxT(";");					// add semicolon
+                strResult += wxT(";");                  // add semicolon
             }
             // Check for %cr
             else if ( str.StartsWith( wxT("%cr"), &str ) ) {
-                strResult += wxT("\r");					// add carrige return
+                strResult += wxT("\r");                 // add carrige return
             }
             // Check for %lf
             else if ( str.StartsWith( wxT("%cr"), &str ) ) {
-                strResult += wxT("\n");					// add new line
+                strResult += wxT("\n");                 // add new line
             }
             // Check for %crlf
             else if ( str.StartsWith( wxT("%crlf"), &str ) ) {
-                strResult += wxT("\r\n");				// add carrige return line feed
+                strResult += wxT("\r\n");               // add carrige return line feed
             }
             // Check for %tab
             else if ( str.StartsWith( wxT("%tab"), &str ) ) {
-                strResult += wxT("\t");					// add tab
+                strResult += wxT("\t");                 // add tab
             }
             // Check for %bell
             else if ( str.StartsWith( wxT("%bell"), &str ) ) {
-                strResult += wxT("\a");					// add bell
+                strResult += wxT("\a");                 // add bell
             }
             // Check for %amp.html
             else if ( str.StartsWith( wxT("%amp.html"), &str ) ) {
-                strResult += wxT("&amp;");					// add bell
+                strResult += wxT("&amp;");              // add bell
             }
             // Check for %amp
             else if ( str.StartsWith( wxT("%amp"), &str ) ) {
-                strResult += wxT("&");					// add bell
+                strResult += wxT("&");                  // add bell
             }
             // Check for %lt.html
             else if ( str.StartsWith( wxT("%lt.html"), &str ) ) {
-                strResult += wxT("&lt;");					// add bell
+                strResult += wxT("&lt;");               // add bell
             }
             // Check for %lt
             else if ( str.StartsWith( wxT("%lt"), &str ) ) {
-                strResult += wxT("<");					// add bell
+                strResult += wxT("<");                  // add bell
             }
             // Check for %gt.html
             else if ( str.StartsWith( wxT("%gt.html"), &str ) ) {
-                strResult += wxT("&gt;");					// add bell
+                strResult += wxT("&gt;");               // add bell
             }
             // Check for %gt
             else if ( str.StartsWith( wxT("%gt"), &str ) ) {
-                strResult += wxT(">");					// add bell
+                strResult += wxT(">");                  // add bell
             }
             // Check for head escape
             else if ( str.StartsWith( wxT("%event.head"), &str ) ) {
@@ -1364,7 +1366,7 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             // Check for priority escape
             else if ( str.StartsWith( wxT("%event.priority"), &str ) ) {
                 strResult +=  wxString::Format( wxT("%d"), 
-                    ( ( pEvent->head & VSCP_HEADER_PRIORITY_MASK ) >> 5 ) );	
+                    ( ( pEvent->head & VSCP_HEADER_PRIORITY_MASK ) >> 5 ) );
             }
             // Check for hardcoded escape
             else if ( str.StartsWith( wxT("%event.hardcoded"), &str ) ) {
@@ -1402,16 +1404,16 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
 
                     wxString wxstr = str;
                     if ( wxNOT_FOUND != ( pos = str.Find( wxT("]") ) ) ) {
-                        str = str.Right( str.Length() - pos - 1 );		
+                        str = str.Right( str.Length() - pos - 1 );
                     } 
 
                     long idx=0; 
                     wxstr.ToLong( &idx );
                     if ( idx < pEvent->sizeData ) {
-                        strResult +=  wxString::Format( wxT("%d"), pEvent->pdata[ idx ] );	
+                        strResult +=  wxString::Format( wxT("%d"), pEvent->pdata[ idx ] );
                     }
                     else {
-                        strResult +=  wxT("?");		// invalid index	
+                        strResult +=  wxT("?");     // invalid index
                     }
                     
 
@@ -1419,9 +1421,9 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                 else {
                     // Just remove ending ]
                     if ( wxNOT_FOUND != ( pos = str.Find( wxT("]") ) ) ) {
-                        str = str.Right( str.Length() - pos - 1 );		
+                        str = str.Right( str.Length() - pos - 1 );
                     }
-                    strResult +=  wxT("");		// No data	
+                    strResult +=  wxT("");      // No data
                 }
             }
             // Check for sizedata escape
@@ -1436,7 +1438,7 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                     strResult +=  wxstr;
                 }
                 else {
-                    strResult +=  wxT("empty");		// No data
+                    strResult +=  wxT("empty");     // No data
                 }
             }
             // Check for guid escape
@@ -1447,7 +1449,8 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             }
             // Check for nickname escape
             else if ( str.StartsWith( wxT( "%event.nickname" ), &str ) ) {
-                strResult += wxString::Format( wxT( "%d" ), pEvent->GUID[ VSCP_GUID_LSB ] );
+                strResult += wxString::Format( wxT( "%d" ), 
+                                                pEvent->GUID[ VSCP_GUID_LSB ] );
             }
             // Check for obid escape
             else if ( str.StartsWith( wxT("%event.obid"), &str ) ) {
@@ -1463,7 +1466,7 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                     strResult += wxString::Format( wxT( "%d" ), pEvent->pdata[ 0 ] );
                 }
                 else {
-                    strResult += wxT( "empty" );		// No data
+                    strResult += wxT( "empty" );        // No data
                 }
             }
             // Check for event zone escape
@@ -1472,7 +1475,7 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                     strResult += wxString::Format( wxT( "%d" ), pEvent->pdata[ 1 ] );
                 }
                 else {
-                    strResult += wxT( "empty" );		// No data
+                    strResult += wxT( "empty" );        // No data
                 }
             }
             // Check for event subzone escape
@@ -1481,7 +1484,7 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                     strResult += wxString::Format( wxT( "%d" ), pEvent->pdata[ 2 ] );
                 }
                 else {
-                    strResult += wxT( "empty" );		// No data
+                    strResult += wxT( "empty" );        // No data
                 }
             }
             // Check for event escape
@@ -1500,11 +1503,12 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             }
             // Check for mstime escape
             else if ( str.StartsWith( wxT("%mstime"), &str ) ) {
-                strResult += wxString::Format( wxT("%d"), wxDateTime::Now().GetTicks() );
+                strResult += wxString::Format( wxT("%d"), 
+                                                wxDateTime::Now().GetTicks() );
             }
-			// Check for unixtime escape
+            // Check for unixtime escape
             else if ( str.StartsWith( wxT("%unixtime"), &str ) ) {
-				time_t now = time(NULL);	// Get current time
+                time_t now = time(NULL);    // Get current time
                 uint64_t tnow = now;
                 strResult += wxString::Format( wxT("%llu"), tnow );
             }
@@ -1522,35 +1526,45 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             }
             // Check for week0 escape
             else if ( str.StartsWith( wxT("%week0"), &str ) ) {
-                strResult += wxString::Format( wxT("%d"), wxDateTime::Now().GetWeekOfYear(), wxDateTime::Sunday_First );
+                strResult += wxString::Format( wxT("%d"), 
+                                                wxDateTime::Now().GetWeekOfYear(), 
+                                                wxDateTime::Sunday_First );
             }
             // Check for week1 escape
             else if ( str.StartsWith( wxT("%week1"), &str ) ) {
-                strResult += wxString::Format( wxT("%d"), wxDateTime::Now().GetWeekOfYear(), wxDateTime::Monday_First );
+                strResult += wxString::Format( wxT("%d"), 
+                                                wxDateTime::Now().GetWeekOfYear(), 
+                                                wxDateTime::Monday_First );
             }
             // Check for weekdaytxtfull escape
             else if ( str.StartsWith( wxT("%weekdaytxtfull"), &str ) ) {
-                strResult += wxDateTime::GetWeekDayName( wxDateTime::Now().GetWeekDay(), wxDateTime::Name_Full );
+                strResult += wxDateTime::GetWeekDayName( 
+                        wxDateTime::Now().GetWeekDay(), wxDateTime::Name_Full );
             }
             // Check for weekdaytxt escape
             else if ( str.StartsWith( wxT("%weekdaytxt"), &str ) ) {
-                strResult += wxDateTime::GetWeekDayName( wxDateTime::Now().GetWeekDay(), wxDateTime::Name_Abbr );	
+                strResult += wxDateTime::GetWeekDayName( 
+                        wxDateTime::Now().GetWeekDay(), wxDateTime::Name_Abbr );	
             }
             // Check for monthtxtfull escape
             else if ( str.StartsWith( wxT("%monthtxtfull"), &str ) ) {
-                strResult += wxDateTime::GetMonthName( wxDateTime::Now().GetMonth(), wxDateTime::Name_Full );
+                strResult += wxDateTime::GetMonthName( 
+                        wxDateTime::Now().GetMonth(), wxDateTime::Name_Full );
             }
             // Check for monthtxt escape
             else if ( str.StartsWith( wxT("%monthtxt"), &str ) ) {
-                strResult += wxDateTime::GetMonthName( wxDateTime::Now().GetMonth(), wxDateTime::Name_Abbr );
+                strResult += wxDateTime::GetMonthName( 
+                        wxDateTime::Now().GetMonth(), wxDateTime::Name_Abbr );
             }
             // Check for month escape
             else if ( str.StartsWith( wxT("%month"), &str ) ) {
-                strResult += wxString::Format( wxT("%d"), wxDateTime::Now().GetMonth() + 1 );
+                strResult += wxString::Format( wxT("%d"), 
+                        wxDateTime::Now().GetMonth() + 1 );
             }
             // Check for year escape
             else if ( str.StartsWith( wxT("%year"), &str ) ) {
-                strResult += wxString::Format( wxT("%d"), wxDateTime::Now().GetYear() );
+                strResult += wxString::Format( wxT("%d"), 
+                        wxDateTime::Now().GetYear() );
             }
             // Check for quarter escape
             else if ( str.StartsWith( wxT("%quarter"), &str ) ) {
@@ -1799,7 +1813,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
         m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
         doActionSendEventsFromFile( pEvent );
-        break;		
+        break;
 
     case  VSCP_DAEMON_ACTION_CODE_STORE_VARIABLE:
         
@@ -1922,7 +1936,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
         doActionGetURL( pEvent );
         break;
 
-	case VSCP_DAEMON_ACTION_CODE_WRITE_TABLE:
+    case VSCP_DAEMON_ACTION_CODE_WRITE_TABLE:
         
         logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_WRITE_TABLE.") ); // Log
         m_pDM->logMsg( logStr, LOG_DM_NORMAL );
@@ -1940,7 +1954,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
 ///////////////////////////////////////////////////////////////////////////////
 // doActionExecute 
-//		
+//
 
 bool dmElement::doActionExecute(vscpEvent *pDMEvent)
 {
@@ -2002,6 +2016,7 @@ bool dmElement::doActionExecute(vscpEvent *pDMEvent)
 // http://beej.us/guide/bgipc/output/html/multipage/fork.html 
 // https://www.gidforums.com/t-3369.html    
 //    
+
 #ifndef WIN32
 bool dmElement::unixVSCPExecute( wxString& argExec )
 { 
@@ -2499,12 +2514,12 @@ bool dmElement::doActionGetURL( vscpEvent *pDMEvent )
 bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
 {
     // Write in possible escapes
-	CVSCPVariable *pVar;
+    CVSCPVariable *pVar;
     wxString wxstr = m_actionparam;
     handleEscapes( pDMEvent, wxstr );
 
-	//if ( !m_pDM->m_pCtrlObject->m_VSCP_Variables.find( pVar ) ) {
-	//pVar = 
+    //if ( !m_pDM->m_pCtrlObject->m_VSCP_Variables.find( pVar ) ) {
+    //pVar = 
     pVar = new CVSCPVariable;
     if ( NULL == pVar ) {
         // must be a variable	
@@ -2521,7 +2536,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
         wxstrErr += wxstr;
         wxstrErr += _("\n");
         m_pDM->m_pCtrlObject->logMsg( wxstrErr, DAEMON_LOGMSG_ERROR );
-		delete pVar;
+        delete pVar;
         return false;
     }
 
@@ -2971,7 +2986,7 @@ bool dmElement::doActionResumeTimer( vscpEvent *pDMEvent )
     wxString wxstr = m_actionparam;
     handleEscapes( pDMEvent, wxstr );
 
-	wxStringTokenizer tkz( wxstr, wxT(";") );
+    wxStringTokenizer tkz( wxstr, wxT(";") );
     if ( !tkz.HasMoreTokens() ) {
         // Strange action parameter	
         wxString wxstrErr = wxT("[Action] Stop timer: Wrong action parameter ");
@@ -2999,7 +3014,7 @@ bool dmElement::doActionStopTimer( vscpEvent *pDMEvent )
     wxString wxstr = m_actionparam;
     handleEscapes( pDMEvent, wxstr );
 
-	wxStringTokenizer tkz( wxstr, wxT(";") );
+    wxStringTokenizer tkz( wxstr, wxT(";") );
     if ( !tkz.HasMoreTokens() ) {
         // Strange action parameter	
         wxString wxstrErr = wxT("[Action] Stop timer: Wrong action parameter ");
@@ -3023,70 +3038,72 @@ bool dmElement::doActionStopTimer( vscpEvent *pDMEvent )
 
 bool dmElement::doActionWriteTable( vscpEvent *pDMEvent )
 {
-	wxString tblName;
-	time_t timestamp;
-	double value;
-	bool bFound = false;
+    wxString tblName;
+    time_t timestamp;
+    double value;
+    bool bFound = false;
 
-	// Write in possible escapes
+    // Write in possible escapes
     wxString wxstr = m_actionparam;
     handleEscapes( pDMEvent, wxstr );
 
-	wxString wxstrErr = _( "[Action] Write Table: Wrong action parameter. Parameter= ");
+    wxString wxstrErr = _( "[Action] Write Table: Wrong action parameter. Parameter= ");
     wxstrErr += wxstr;
     wxstrErr += _("\n");
 
-	wxStringTokenizer tkz( wxstr, wxT(";") );
+    wxStringTokenizer tkz( wxstr, wxT(";") );
     
-	if ( !tkz.HasMoreTokens() ) {
+    if ( !tkz.HasMoreTokens() ) {
         // Strange action parameter	
         m_pDM->m_pCtrlObject->logMsg( wxstrErr, DAEMON_LOGMSG_ERROR );
         return false;  
     }
-	tblName = tkz.GetNextToken();
-	tblName.MakeUpper(); // Make sure it's upercase
+    tblName = tkz.GetNextToken();
+    tblName.MakeUpper(); // Make sure it's upercase
 
-	if ( !tkz.HasMoreTokens() ) {
+    if ( !tkz.HasMoreTokens() ) {
         // Strange action parameter	
         m_pDM->m_pCtrlObject->logMsg( wxstrErr, DAEMON_LOGMSG_ERROR );
         return false;  
     }
-	timestamp = vscp_readStringValue( tkz.GetNextToken() );
+    timestamp = vscp_readStringValue( tkz.GetNextToken() );
 
-	if ( !tkz.HasMoreTokens() ) {
+    if ( !tkz.HasMoreTokens() ) {
         // Strange action parameter	
         m_pDM->m_pCtrlObject->logMsg( wxstrErr, DAEMON_LOGMSG_ERROR );
         return false;  
     }
-	value = atof( tkz.GetNextToken().mbc_str() );
+    value = atof( tkz.GetNextToken().mbc_str() );
 
-	m_pDM->m_pCtrlObject->m_mutexTableList.Lock();  
-	listVSCPTables::iterator iter;
-	for (iter = m_pDM->m_pCtrlObject->m_listTables.begin(); iter != m_pDM->m_pCtrlObject->m_listTables.end(); ++iter)
-	{
-		CVSCPTable *pTable = *iter;
-		if ( 0 == strcmp( pTable->m_vscpFileHead.nameTable, tblName.mbc_str() ) ) {
+    m_pDM->m_pCtrlObject->m_mutexTableList.Lock();  
+    listVSCPTables::iterator iter;
+    for (iter = m_pDM->m_pCtrlObject->m_listTables.begin(); 
+            iter != m_pDM->m_pCtrlObject->m_listTables.end(); 
+            ++iter)
+    {
+        CVSCPTable *pTable = *iter;
+        if ( 0 == strcmp( pTable->m_vscpFileHead.nameTable, tblName.mbc_str() ) ) {
             pTable->m_mutexThisTable.Lock();
-			pTable->logData( timestamp, value );
+            pTable->logData( timestamp, value );
             pTable->m_mutexThisTable.Unlock();
-			bFound = true;
-			break;
-		}
-	}
-	m_pDM->m_pCtrlObject->m_mutexTableList.Unlock();
+            bFound = true;
+            break;
+            }
+    }
+    m_pDM->m_pCtrlObject->m_mutexTableList.Unlock();
 
-	if ( !bFound ) {
-		wxString wxstrErr = 
-			wxString::Format( _("[Action] Write Table: Table [%s] not found. Parameter='%s' "),
-			(const char *)tblName.c_str(), 
-			(const char *)wxstr.c_str() );
-		wxstrErr += wxstr;
-		wxstrErr += _("\n");
-		m_pDM->m_pCtrlObject->logMsg( wxstrErr, DAEMON_LOGMSG_ERROR );
-		return false; 
-	}
+    if ( !bFound ) {
+        wxString wxstrErr = 
+            wxString::Format( _("[Action] Write Table: Table [%s] not found. Parameter='%s' "),
+            (const char *)tblName.c_str(), 
+            (const char *)wxstr.c_str() );
+        wxstrErr += wxstr;
+        wxstrErr += _("\n");
+        m_pDM->m_pCtrlObject->logMsg( wxstrErr, DAEMON_LOGMSG_ERROR );
+        return false; 
+    }
 
-	return true;
+    return true;
 }
 
 
@@ -3110,11 +3127,11 @@ CDM::CDM( CControlObject *ctrlObj )
 #ifndef BUILD_VSCPD_SERVICE
 
     // Set the default dm configuration path
-#ifdef WIN32	
+#ifdef WIN32
     m_configPath = wxStandardPaths::Get().GetConfigDir();
     m_configPath += _("/vscp/dm.xml");
 #else
-	m_configPath = _("/srv/vscp/dm.xml");
+    m_configPath = _("/srv/vscp/dm.xml");
 #endif	
 #endif
 
@@ -3145,7 +3162,7 @@ CDM::CDM( CControlObject *ctrlObj )
 
     m_lastTime = wxDateTime::Now();
 
-#ifdef WIN32	
+#ifdef WIN32
 #ifdef BUILD_VSCPD_SERVICE
     //wxStandardPaths stdPath;
 
@@ -3204,11 +3221,11 @@ void CDM::init( void )
     if ( m_bLogEnable ) {
         m_fileLog.Open( m_logFileName.GetFullPath(), wxFile::write_append ); 
     }
-	
-	wxString wxlogmsg = 
-		wxString::Format(_("DM engine started. DM from [%s]\n"),
-							(const char *)m_configPath.c_str() );
-	logMsg( wxlogmsg );
+
+    wxString wxlogmsg = 
+    wxString::Format(_("DM engine started. DM from [%s]\n"),
+                        (const char *)m_configPath.c_str() );
+    logMsg( wxlogmsg );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3412,44 +3429,44 @@ bool CDM::load ( void )
                     pDMitem->m_comment = pDMitem->m_comment.Trim(false);
                 }
                 else if ( subchild->GetName() == wxT ( "allowed_from" ) ) {
-					wxString str = subchild->GetNodeContent();
-					str.Trim();
-					if ( 0 != str.Length() ) {
-						pDMitem->m_timeAllow.m_fromTime.ParseDateTime(str);
-					}
-					else {
-						pDMitem->m_timeAllow.m_fromTime.ParseDateTime( _("1970-01-01 00:00:00") );
-					}
+                    wxString str = subchild->GetNodeContent();
+                    str.Trim();
+                    if ( 0 != str.Length() ) {
+                        pDMitem->m_timeAllow.m_fromTime.ParseDateTime(str);
+                    }
+                    else {
+                        pDMitem->m_timeAllow.m_fromTime.ParseDateTime( _("1970-01-01 00:00:00") );
+                    }
                 }
                 else if ( subchild->GetName() == wxT ( "allowed_to" ) ) {
-					wxString str = subchild->GetNodeContent();
-					str.Trim();
-					if ( 0 != str.Length() ) {
-						pDMitem->m_timeAllow.m_endTime.ParseDateTime(str);
-					}
-					else {
-						pDMitem->m_timeAllow.m_endTime.ParseDateTime( _("2199-12-31 23:59:59") );
-					}
+                    wxString str = subchild->GetNodeContent();
+                    str.Trim();
+                    if ( 0 != str.Length() ) {
+                        pDMitem->m_timeAllow.m_endTime.ParseDateTime(str);
+                    }
+                    else {
+                        pDMitem->m_timeAllow.m_endTime.ParseDateTime( _("2199-12-31 23:59:59") );
+                    }
                 }
                 else if ( subchild->GetName() == wxT ( "allowed_weekdays" ) ) {
-					wxString str = subchild->GetNodeContent();
-					str.Trim();
-					if ( 0 != str.Length() ) {
-						pDMitem->m_timeAllow.setWeekDays(str);
-					}
-					else {
-						pDMitem->m_timeAllow.setWeekDays( _("mtwtfss") );
-					}
+                    wxString str = subchild->GetNodeContent();
+                    str.Trim();
+                    if ( 0 != str.Length() ) {
+                        pDMitem->m_timeAllow.setWeekDays(str);
+                    }
+                    else {
+                        pDMitem->m_timeAllow.setWeekDays( _("mtwtfss") );
+                    }
                 }
                 else if ( subchild->GetName() == wxT ( "allowed_time" ) ) {
-					wxString str = subchild->GetNodeContent();
-					str.Trim();
-					if ( 0 != str.Length() ) {
-						pDMitem->m_timeAllow.parseActionTime(str);
-					}
-					else {
-						pDMitem->m_timeAllow.parseActionTime(_("*:*:*" ));
-					}
+                    wxString str = subchild->GetNodeContent();
+                    str.Trim();
+                    if ( 0 != str.Length() ) {
+                        pDMitem->m_timeAllow.parseActionTime(str);
+                    }
+                    else {
+                        pDMitem->m_timeAllow.parseActionTime(_("*:*:*" ));
+                        }
                 }
                 else if ( subchild->GetName() == wxT ( "index" ) ) {
                     wxString str;
@@ -3493,30 +3510,30 @@ bool CDM::load ( void )
 
 bool CDM::save ( void )
 {
-	wxString strLog;
+    wxString strLog;
     wxString buf;
-	
-	strLog = _("DM: Saving decision matrix to: ") + m_configPath + _("\n");
-	logMsg( strLog );
-	
-	if ( !wxFileName::IsFileWritable( m_configPath ) ) {
-		strLog = _("DM: File is not writable.\n");
-		logMsg( strLog );
-		return false;
-	}
+    
+    strLog = _("DM: Saving decision matrix to: ") + m_configPath + _("\n");
+    logMsg( strLog );
+    
+    if ( !wxFileName::IsFileWritable( m_configPath ) ) {
+        strLog = _("DM: File is not writable.\n");
+        logMsg( strLog );
+        return false;
+    }
 
     wxFFileOutputStream *pFileStream = new wxFFileOutputStream ( m_configPath );
     if ( NULL == pFileStream ) {
-		strLog = _("DM: Failed to save: ") + m_configPath + _(" (memory allocation)\n");
-		logMsg( strLog );
-		return false;
-	 }
-		
+        strLog = _("DM: Failed to save: ") + m_configPath + _(" (memory allocation)\n");
+        logMsg( strLog );
+        return false;
+    }
+    
     // Make a copy before we save
     wxCopyFile( m_configPath, m_configPath + _("~") );
 
     pFileStream->Write ( "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n",
-			strlen ( "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n" ) ); 
+            strlen ( "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n" ) ); 
 
     m_mutexDM.Lock();
 
@@ -3661,7 +3678,7 @@ bool CDM::save ( void )
 
     // Close the file
     pFileStream->Close();
-	
+
     return true;
 }
 
@@ -3677,9 +3694,9 @@ bool CDM::feed( vscpEvent *pEvent )
     for ( it = m_DMList.begin(); it != m_DMList.end(); ++it ) {
 
         dmElement *pDMitem = *it;
-		
-		// Skip if disabled
-		if ( !pDMitem->isEnabled() ) continue;
+    
+        // Skip if disabled
+        if ( !pDMitem->isEnabled() ) continue;
 
         if ( vscp_doLevel2Filter( pEvent, &pDMitem->m_vscpfilter ) && 
                 pDMitem->m_timeAllow.ShouldWeDoAction() ) { 
@@ -3730,12 +3747,12 @@ bool CDM::feedPeriodicEvent( void )
 
         vscpEvent EventSecond;
         EventSecond.vscp_class = VSCP_CLASS2_VSCPD;
-        EventSecond.vscp_type = VSCP2_TYPE_VSCPD_SECOND;		        // Internal Second Event
-        EventSecond.head = VSCP_PRIORITY_NORMAL;				        // Set priority
-        EventSecond.timestamp = vscp_makeTimeStamp();                   // Set timestamp
-        EventSecond.sizeData = 0;								        // No data
+        EventSecond.vscp_type = VSCP2_TYPE_VSCPD_SECOND;    // Internal Second Event
+        EventSecond.head = VSCP_PRIORITY_NORMAL;            // Set priority
+        EventSecond.timestamp = vscp_makeTimeStamp();       // Set timestamp
+        EventSecond.sizeData = 0;                           // No data
         EventSecond.pdata = NULL;
-        //memcpy( EventSecond.GUID, m_pCtrlObject->m_GUID, 16 );	        // Server GUID
+        //memcpy( EventSecond.GUID, m_pCtrlObject->m_GUID, 16 ); // Server GUID
         m_pCtrlObject->m_guid.writeGUID( EventSecond.GUID );
         wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal second event\n") );
         feed( &EventSecond );
@@ -3747,12 +3764,12 @@ bool CDM::feedPeriodicEvent( void )
 
             vscpEvent EventRandomMinute;
             EventRandomMinute.vscp_class = VSCP_CLASS2_VSCPD;
-            EventRandomMinute.vscp_type = VSCP2_TYPE_VSCPD_RANDOM_MINUTE;	    // Internal Random-Minute Event
-            EventRandomMinute.head = VSCP_PRIORITY_NORMAL;					    // Set priority
-            EventRandomMinute.sizeData = 0;									    // No data
-            EventRandomMinute.timestamp = vscp_makeTimeStamp();                 // Set timestamp
+            EventRandomMinute.vscp_type = VSCP2_TYPE_VSCPD_RANDOM_MINUTE;   // Internal Random-Minute Event
+            EventRandomMinute.head = VSCP_PRIORITY_NORMAL;      // Set priority
+            EventRandomMinute.sizeData = 0;                     // No data
+            EventRandomMinute.timestamp = vscp_makeTimeStamp(); // Set timestamp
             EventRandomMinute.pdata = NULL;
-            //memcpy( EventRandomMinute.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+            //memcpy( EventRandomMinute.GUID, m_pCtrlObject->m_GUID, 16 ); // Server GUID
             m_pCtrlObject->m_guid.writeGUID( EventRandomMinute.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random minute event\n")  );
             feed( &EventRandomMinute );
@@ -3766,12 +3783,12 @@ bool CDM::feedPeriodicEvent( void )
         m_rndMinute = (rand()/ RAND_MAX) * 60;
         vscpEvent EventMinute;
         EventMinute.vscp_class = VSCP_CLASS2_VSCPD;
-        EventMinute.vscp_type = VSCP2_TYPE_VSCPD_MINUTE;			        // Internal Minute Event
-        EventMinute.head = VSCP_PRIORITY_NORMAL;					        // Set priority
-        EventMinute.timestamp = vscp_makeTimeStamp();                       // Set timestamp
-        EventMinute.sizeData = 0;									        // No data
+        EventMinute.vscp_type = VSCP2_TYPE_VSCPD_MINUTE;    // Internal Minute Event
+        EventMinute.head = VSCP_PRIORITY_NORMAL;            // Set priority
+        EventMinute.timestamp = vscp_makeTimeStamp();       // Set timestamp
+        EventMinute.sizeData = 0;                           // No data
         EventMinute.pdata = NULL;
-        //memcpy( EventMinute.GUID, m_pCtrlObject->m_GUID, 16 );		        // Server GUID
+        //memcpy( EventMinute.GUID, m_pCtrlObject->m_GUID, 16 ); // Server GUID
         m_pCtrlObject->m_guid.writeGUID( EventMinute.GUID );
         wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal minute event\n") );
         m_rndMinute = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 60;
@@ -3782,11 +3799,11 @@ bool CDM::feedPeriodicEvent( void )
             vscpEvent EventRandomHour;
             EventRandomHour.vscp_class = VSCP_CLASS2_VSCPD;
             EventRandomHour.vscp_type = VSCP2_TYPE_VSCPD_RANDOM_HOUR;       // Internal Random-Hour Event
-            EventRandomHour.head = VSCP_PRIORITY_NORMAL;				    // Set priority
+            EventRandomHour.head = VSCP_PRIORITY_NORMAL;                    // Set priority
             EventRandomHour.timestamp = vscp_makeTimeStamp();               // Set timestamp
-            EventRandomHour.sizeData = 0;								    // No data
+            EventRandomHour.sizeData = 0;                                   // No data
             EventRandomHour.pdata = NULL;
-            //memcpy( EventRandomHour.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+            //memcpy( EventRandomHour.GUID, m_pCtrlObject->m_GUID, 16 );    // Server GUID
             m_pCtrlObject->m_guid.writeGUID( EventRandomHour.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random hour event\n") );
             feed( &EventRandomHour );
@@ -3799,12 +3816,12 @@ bool CDM::feedPeriodicEvent( void )
         m_rndHour = (rand()/ RAND_MAX) * 60;
         vscpEvent EventHour;
         EventHour.vscp_class = VSCP_CLASS2_VSCPD;
-        EventHour.vscp_type = VSCP2_TYPE_VSCPD_HOUR;				        // Internal Hour Event
-        EventHour.head = VSCP_PRIORITY_NORMAL;						        // Set priority
+        EventHour.vscp_type = VSCP2_TYPE_VSCPD_HOUR;                        // Internal Hour Event
+        EventHour.head = VSCP_PRIORITY_NORMAL;                              // Set priority
         EventHour.timestamp = vscp_makeTimeStamp();                         // Set timestamp
-        EventHour.sizeData = 0;												// No data
+        EventHour.sizeData = 0;                                             // No data
         EventHour.pdata = NULL;
-        //memcpy( EventtHour.GUID, m_pCtrlObject->m_GUID, 16 );		        // Server GUID
+        //memcpy( EventtHour.GUID, m_pCtrlObject->m_GUID, 16 );             // Server GUID
         m_pCtrlObject->m_guid.writeGUID( EventHour.GUID );
         wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal hour event\n") );
         m_rndHour = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 24;
@@ -3815,12 +3832,12 @@ bool CDM::feedPeriodicEvent( void )
 
             vscpEvent EventRandomDay;
             EventRandomDay.vscp_class = VSCP_CLASS2_VSCPD;
-            EventRandomDay.vscp_type = VSCP2_TYPE_VSCPD_RANDOM_DAY;		    // Internal Random-Day Event
-            EventRandomDay.head = VSCP_PRIORITY_NORMAL;					    // Set priority
+            EventRandomDay.vscp_type = VSCP2_TYPE_VSCPD_RANDOM_DAY;         // Internal Random-Day Event
+            EventRandomDay.head = VSCP_PRIORITY_NORMAL;                     // Set priority
             EventRandomDay.timestamp = vscp_makeTimeStamp();                // Set timestamp
-            EventRandomDay.sizeData = 0;								    // No data
+            EventRandomDay.sizeData = 0;                                    // No data
             EventRandomDay.pdata = NULL;
-            //memcpy( EventRandomDay.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+            //memcpy( EventRandomDay.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
             m_pCtrlObject->m_guid.writeGUID( EventRandomDay.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random day event\n") );
             feed( &EventRandomDay );
@@ -3833,12 +3850,12 @@ bool CDM::feedPeriodicEvent( void )
         m_rndDay = (rand()/ RAND_MAX) * 24;
         vscpEvent EventDay;
         EventDay.vscp_class = VSCP_CLASS2_VSCPD;
-        EventDay.vscp_type = VSCP2_TYPE_VSCPD_MIDNIGHT;			            // Internal Midnight Event
-        EventDay.head = VSCP_PRIORITY_NORMAL;					            // Set priority
-        EventDay.timestamp = vscp_makeTimeStamp();                          // Set timestamp
-        EventDay.sizeData = 0;									            // No data
+        EventDay.vscp_type = VSCP2_TYPE_VSCPD_MIDNIGHT;     // Internal Midnight Event
+        EventDay.head = VSCP_PRIORITY_NORMAL;               // Set priority
+        EventDay.timestamp = vscp_makeTimeStamp();          // Set timestamp
+        EventDay.sizeData = 0;                              // No data
         EventDay.pdata = NULL;
-        //memcpy( EventDay.GUID, m_pCtrlObject->m_GUID, 16 );		            // Server GUID
+        //memcpy( EventDay.GUID, m_pCtrlObject->m_GUID, 16 );   // Server GUID
         m_pCtrlObject->m_guid.writeGUID( EventDay.GUID );
         wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal day event\n") );
         m_rndDay = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 7;
@@ -3849,12 +3866,12 @@ bool CDM::feedPeriodicEvent( void )
 
             vscpEvent EventRandomWeek;
             EventRandomWeek.vscp_class = VSCP_CLASS2_VSCPD;
-            EventRandomWeek.vscp_type = VSCP2_TYPE_VSCPD_RANDOM_WEEK;       // Internal Random-Week Event
-            EventRandomWeek.head = VSCP_PRIORITY_NORMAL;				    // Set priority
-            EventRandomWeek.timestamp = vscp_makeTimeStamp();               // Set timestamp
-            EventRandomWeek.sizeData = 0;								    // No data
+            EventRandomWeek.vscp_type = VSCP2_TYPE_VSCPD_RANDOM_WEEK;   // Internal Random-Week Event
+            EventRandomWeek.head = VSCP_PRIORITY_NORMAL;                // Set priority
+            EventRandomWeek.timestamp = vscp_makeTimeStamp();           // Set timestamp
+            EventRandomWeek.sizeData = 0;                               // No data
             EventRandomWeek.pdata = NULL;
-            //memcpy( EventRandomWeek.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+            //memcpy( EventRandomWeek.GUID, m_pCtrlObject->m_GUID, 16 );// Server GUID
             m_pCtrlObject->m_guid.writeGUID( EventRandomWeek.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random week event\n") );
             feed( &EventRandomWeek );
@@ -3868,12 +3885,12 @@ bool CDM::feedPeriodicEvent( void )
             m_rndWeek = (rand()/ RAND_MAX) * 7;
             vscpEvent EventWeek;
             EventWeek.vscp_class = VSCP_CLASS2_VSCPD;
-            EventWeek.vscp_type = VSCP2_TYPE_VSCPD_WEEK; 	                // Internal Week Event
-            EventWeek.head = VSCP_PRIORITY_NORMAL;						    // Set priority
-            EventWeek.timestamp = vscp_makeTimeStamp();                     // Set timestamp
-            EventWeek.sizeData = 0;										    // No data
+            EventWeek.vscp_type = VSCP2_TYPE_VSCPD_WEEK;    // Internal Week Event
+            EventWeek.head = VSCP_PRIORITY_NORMAL;          // Set priority
+            EventWeek.timestamp = vscp_makeTimeStamp();     // Set timestamp
+            EventWeek.sizeData = 0;                         // No data
             EventWeek.pdata = NULL;
-            //memcpy( EventWeek.GUID, m_pCtrlObject->m_GUID, 16 );		    // Server GUID
+            //memcpy( EventWeek.GUID, m_pCtrlObject->m_GUID, 16 ); // Server GUID
             m_pCtrlObject->m_guid.writeGUID( EventWeek.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal week event\n") );
             m_rndWeek = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 52;
@@ -3884,11 +3901,11 @@ bool CDM::feedPeriodicEvent( void )
                 vscpEvent EventRandomMonth;
                 EventRandomMonth.vscp_class = VSCP_CLASS2_VSCPD;
                 EventRandomMonth.vscp_type = VSCP2_TYPE_VSCPD_RANDOM_MONTH;     // Internal Random-Month Event
-                EventRandomMonth.head = VSCP_PRIORITY_NORMAL;					// Set priority
+                EventRandomMonth.head = VSCP_PRIORITY_NORMAL;                   // Set priority
                 EventRandomMonth.timestamp = vscp_makeTimeStamp();              // Set timestamp
-                EventRandomMonth.sizeData = 0;									// No data
+                EventRandomMonth.sizeData = 0;                                  // No data
                 EventRandomMonth.pdata = NULL;
-                //memcpy( EventRandomMonth.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+                //memcpy( EventRandomMonth.GUID, m_pCtrlObject->m_GUID, 16 );   // Server GUID
                 m_pCtrlObject->m_guid.writeGUID( EventRandomMonth.GUID );
                 wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random month event\n") );
                 feed( &EventRandomMonth );
@@ -3901,12 +3918,12 @@ bool CDM::feedPeriodicEvent( void )
         m_rndMonth = (rand()/ RAND_MAX) * 30;
         vscpEvent EventMonth;
         EventMonth.vscp_class = VSCP_CLASS2_VSCPD;
-        EventMonth.vscp_type = VSCP2_TYPE_VSCPD_MONTH; 	                        // Internal Month Event
-        EventMonth.head = VSCP_PRIORITY_NORMAL;							        // Set priority
-        EventMonth.timestamp = vscp_makeTimeStamp();                            // Set timestamp
-        EventMonth.sizeData = 0;										        // No data
+        EventMonth.vscp_type = VSCP2_TYPE_VSCPD_MONTH;      // Internal Month Event
+        EventMonth.head = VSCP_PRIORITY_NORMAL;             // Set priority
+        EventMonth.timestamp = vscp_makeTimeStamp();        // Set timestamp
+        EventMonth.sizeData = 0;                            // No data
         EventMonth.pdata = NULL;
-        //memcpy( EventMonth.GUID, m_pCtrlObject->m_GUID, 16 );			        // Server GUID
+        //memcpy( EventMonth.GUID, m_pCtrlObject->m_GUID, 16 );  // Server GUID
         m_pCtrlObject->m_guid.writeGUID( EventMonth.GUID );
         wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal month event\n") );
         m_rndMonth = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 12;
@@ -3916,12 +3933,12 @@ bool CDM::feedPeriodicEvent( void )
 
             vscpEvent EventRandomYear;
             EventRandomYear.vscp_class = VSCP_CLASS2_VSCPD;
-            EventRandomYear.vscp_type = VSCP2_TYPE_VSCPD_RANDOM_YEAR;	        // Internal Random-Minute Event 
-            EventRandomYear.head = VSCP_PRIORITY_NORMAL;				        // Set priority
-            EventRandomYear.timestamp = vscp_makeTimeStamp();                   // Set timestamp
-            EventRandomYear.sizeData = 0;								        // No data
+            EventRandomYear.vscp_type = VSCP2_TYPE_VSCPD_RANDOM_YEAR;   // Internal Random-Minute Event 
+            EventRandomYear.head = VSCP_PRIORITY_NORMAL;                // Set priority
+            EventRandomYear.timestamp = vscp_makeTimeStamp();           // Set timestamp
+            EventRandomYear.sizeData = 0;                               // No data
             EventRandomYear.pdata = NULL;
-            //memcpy( EventRandomYear.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+            //memcpy( EventRandomYear.GUID, m_pCtrlObject->m_GUID, 16 ); // Server GUID
             m_pCtrlObject->m_guid.writeGUID( EventRandomYear.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random year event\n") );
             feed( &EventRandomYear );
@@ -3934,12 +3951,12 @@ bool CDM::feedPeriodicEvent( void )
         m_rndYear = (rand()/ RAND_MAX) * 365;
         vscpEvent EventYear;
         EventYear.vscp_class = VSCP_CLASS2_VSCPD;
-        EventYear.vscp_type = VSCP2_TYPE_VSCPD_YEAR; 			        // Internal Year Event
-        EventYear.head = VSCP_PRIORITY_NORMAL;					        // Set priority
-        EventYear.timestamp = vscp_makeTimeStamp();                     // Set timestamp
-        EventYear.sizeData = 0;									        // No data
+        EventYear.vscp_type = VSCP2_TYPE_VSCPD_YEAR;            // Internal Year Event
+        EventYear.head = VSCP_PRIORITY_NORMAL;                  // Set priority
+        EventYear.timestamp = vscp_makeTimeStamp();             // Set timestamp
+        EventYear.sizeData = 0;                                 // No data
         EventYear.pdata = NULL;
-        //memcpy( EventYear.GUID, m_pCtrlObject->m_GUID, 16 );	        // Server GUID
+        //memcpy( EventYear.GUID, m_pCtrlObject->m_GUID, 16 );        // Server GUID
         m_pCtrlObject->m_guid.writeGUID( EventYear.GUID );
         wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal year event\n") );
         m_rndYear = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 365;
@@ -3952,10 +3969,10 @@ bool CDM::feedPeriodicEvent( void )
 
             vscpEvent EventQuarter;
             EventQuarter.vscp_class = VSCP_CLASS2_VSCPD;
-            EventQuarter.vscp_type = VSCP2_TYPE_VSCPD_QUARTER; 	        // Internal Quarter Event
-            EventQuarter.head = VSCP_PRIORITY_NORMAL;					// Set priority
-            EventQuarter.timestamp = vscp_makeTimeStamp();              // Set timestamp
-            EventQuarter.sizeData = 0;									// No data
+            EventQuarter.vscp_type = VSCP2_TYPE_VSCPD_QUARTER;  // Internal Quarter Event
+            EventQuarter.head = VSCP_PRIORITY_NORMAL;           // Set priority
+            EventQuarter.timestamp = vscp_makeTimeStamp();      // Set timestamp
+            EventQuarter.sizeData = 0;                          // No data
             EventQuarter.pdata = NULL;
             //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
             m_pCtrlObject->m_guid.writeGUID( EventQuarter.GUID );
@@ -3969,12 +3986,12 @@ bool CDM::feedPeriodicEvent( void )
 
             vscpEvent EventQuarter;
             EventQuarter.vscp_class = VSCP_CLASS2_VSCPD;
-            EventQuarter.vscp_type = VSCP2_TYPE_VSCPD_QUARTER; 	        // Internal Quarter Event
-            EventQuarter.head = VSCP_PRIORITY_NORMAL;	                // Set priority
-            EventQuarter.timestamp = vscp_makeTimeStamp();              // Set timestamp
-            EventQuarter.sizeData = 0;									// No data
+            EventQuarter.vscp_type = VSCP2_TYPE_VSCPD_QUARTER;  // Internal Quarter Event
+            EventQuarter.head = VSCP_PRIORITY_NORMAL;           // Set priority
+            EventQuarter.timestamp = vscp_makeTimeStamp();      // Set timestamp
+            EventQuarter.sizeData = 0;                          // No data
             EventQuarter.pdata = NULL;
-            //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+            //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );   // Server GUID
             m_pCtrlObject->m_guid.writeGUID( EventQuarter.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal quarter event\n") );
             feed( &EventQuarter );
@@ -3986,10 +4003,10 @@ bool CDM::feedPeriodicEvent( void )
 
             vscpEvent EventQuarter;
             EventQuarter.vscp_class = VSCP_CLASS2_VSCPD;
-            EventQuarter.vscp_type = VSCP2_TYPE_VSCPD_QUARTER; 	        // Internal Quarter Event
-            EventQuarter.head = VSCP_PRIORITY_NORMAL;					// Set priority
-            EventQuarter.timestamp = vscp_makeTimeStamp();              // Set timestamp
-            EventQuarter.sizeData = 0;					                // No data
+            EventQuarter.vscp_type = VSCP2_TYPE_VSCPD_QUARTER;  // Internal Quarter Event
+            EventQuarter.head = VSCP_PRIORITY_NORMAL;           // Set priority
+            EventQuarter.timestamp = vscp_makeTimeStamp();      // Set timestamp
+            EventQuarter.sizeData = 0;                          // No data
             EventQuarter.pdata = NULL;
             //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
             m_pCtrlObject->m_guid.writeGUID( EventQuarter.GUID );
@@ -4003,12 +4020,12 @@ bool CDM::feedPeriodicEvent( void )
 
             vscpEvent EventQuarter;
             EventQuarter.vscp_class = VSCP_CLASS2_VSCPD;
-            EventQuarter.vscp_type = VSCP2_TYPE_VSCPD_QUARTER; 	        // Internal Quarter Event
-            EventQuarter.head = VSCP_PRIORITY_NORMAL;			        // Set priority
-            EventQuarter.timestamp = vscp_makeTimeStamp();              // Set timestamp
-            EventQuarter.sizeData = 0;									// No data
+            EventQuarter.vscp_type = VSCP2_TYPE_VSCPD_QUARTER;  // Internal Quarter Event
+            EventQuarter.head = VSCP_PRIORITY_NORMAL;           // Set priority
+            EventQuarter.timestamp = vscp_makeTimeStamp();      // Set timestamp
+            EventQuarter.sizeData = 0;                          // No data
             EventQuarter.pdata = NULL;
-            //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
+            //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 ); // Server GUID
             m_pCtrlObject->m_guid.writeGUID( EventQuarter.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal quarter event\n") );
             feed( &EventQuarter );
@@ -4036,7 +4053,8 @@ void CDM::serviceTimers( void )
         dmTimer *pTimer = it->second;
 
         if ( pTimer->isActive() && 
-            ( NULL != ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( pTimer->getVariableName() ) ) ) ) {
+            ( NULL != 
+                ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( pTimer->getVariableName() ) ) ) ) {
 
                 if ( !pTimer->decTimer() ) {
 
@@ -4076,7 +4094,7 @@ int CDM::addTimer( uint16_t id,
 
     // Log
     wxString logStr = wxString::Format(_("Add Timer %s."), 
-										(const char *)nameVar.c_str() );
+                                        (const char *)nameVar.c_str() );
     logMsg( logStr, LOG_DM_EXTRA );
 
     // Check if the timer already exist - set new values
@@ -4100,7 +4118,7 @@ int CDM::addTimer( uint16_t id,
 
         // Log
         wxString logStr = wxString::Format(_("Variable is not defined %s"),  
-											(const char *)nameVar.c_str() );
+                                            (const char *)nameVar.c_str() );
         logMsg( logStr, LOG_DM_DEBUG );
 
         // Create a new timer
@@ -4123,7 +4141,7 @@ int CDM::addTimer( uint16_t id,
 
         // Log
         wxString logStr = wxString::Format(_("Variable already defined %s."), 
-											(const char *)nameVar.c_str() );
+                                            (const char *)nameVar.c_str() );
         logMsg( logStr, LOG_DM_DEBUG );
 
         if ( m_pCtrlObject->m_VSCP_Variables.add( nameVar, wxT("false"), VSCP_DAEMON_VARIABLE_CODE_BOOLEAN ) ) {

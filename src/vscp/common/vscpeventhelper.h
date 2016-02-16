@@ -67,10 +67,10 @@ extern "C" {
 
     enum VSCPInformationFormat {
         DEFAULT, 
-	WITH_DECIMAL_PREFIX, 
-	WITH_HEX_PREFIX, 
-	WITH_DECIMAL_SUFFIX, 
-	WITH_HEX_SUFFIX
+    WITH_DECIMAL_PREFIX, 
+    WITH_HEX_PREFIX, 
+    WITH_DECIMAL_SUFFIX, 
+    WITH_HEX_SUFFIX
     };
 
 
@@ -100,13 +100,13 @@ extern "C" {
           Get class description from class id
          */		 
         wxString& getClassDescription(int vscp_class);
-		
+        
 
         /*!
           Get type description from class id and type id
          */		 
         wxString& getTypeDescription(int vscp_class, int vscp_type);
-	
+    
 
 
         /*!
@@ -118,7 +118,7 @@ extern "C" {
 #ifdef VSCP_QT
 #else		 
         void fillClassDescriptions( wxArrayString& strArray, 
-					                    VSCPInformationFormat format = DEFAULT );
+                                        VSCPInformationFormat format = DEFAULT );
 #endif		
 
 
@@ -131,7 +131,7 @@ extern "C" {
                 id + description
          */
         void fillClassDescriptions( wxControlWithItems *pctrl, 
-					                    VSCPInformationFormat format = DEFAULT);
+                                        VSCPInformationFormat format = DEFAULT);
 
 #endif
         /*!
@@ -140,14 +140,14 @@ extern "C" {
             \param format Format for list. 0 is just description, 1 is
                 id + description
          */
-		 
+         
         void fillTypeDescriptions (wxArrayString& strArray, 
-					                unsigned int vscp_class, 
-					                VSCPInformationFormat format = DEFAULT);
-	
+                                    unsigned int vscp_class, 
+                                    VSCPInformationFormat format = DEFAULT);
+    
 
         // We don't want the graphcal UI on apps that don't use it 
-		
+        
 #if ( wxUSE_GUI != 0 )
         /*!
             Fills a combobox with type descriptions
@@ -156,8 +156,8 @@ extern "C" {
                 id + description
          */
         void fillTypeDescriptions(wxControlWithItems *pctrl, 
-					unsigned int vscp_class, 
-					VSCPInformationFormat format = DEFAULT);
+                    unsigned int vscp_class, 
+                    VSCPInformationFormat format = DEFAULT);
 
 #endif
 

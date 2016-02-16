@@ -104,7 +104,12 @@ dlgNewCanalSession::dlgNewCanalSession()
   Init();
 }
 
-dlgNewCanalSession::dlgNewCanalSession( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+dlgNewCanalSession::dlgNewCanalSession( wxWindow* parent, 
+                                            wxWindowID id, 
+                                            const wxString& caption, 
+                                            const wxPoint& pos, 
+                                            const wxSize& size, 
+                                            long style )
 {
   Init();
   Create(parent, id, caption, pos, size, style);
@@ -115,7 +120,12 @@ dlgNewCanalSession::dlgNewCanalSession( wxWindow* parent, wxWindowID id, const w
  * DlgNewCanalSession creator
  */
 
-bool dlgNewCanalSession::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+bool dlgNewCanalSession::Create( wxWindow* parent, 
+                                    wxWindowID id, 
+                                    const wxString& caption, 
+                                    const wxPoint& pos, 
+                                    const wxSize& size, 
+                                    long style )
 {
 ////@begin dlgNewCanalSession creation
   SetExtraStyle(wxWS_EX_BLOCK_EVENTS);

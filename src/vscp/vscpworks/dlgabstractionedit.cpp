@@ -68,28 +68,28 @@ IMPLEMENT_DYNAMIC_CLASS( DialogAbstractionEdit, wxDialog )
 //
 
 BEGIN_EVENT_TABLE( DialogAbstractionEdit, wxDialog )
-	 EVT_BUTTON( ID_BUTTON18, DialogAbstractionEdit::OnButtonDefaultClick )
+     EVT_BUTTON( ID_BUTTON18, DialogAbstractionEdit::OnButtonDefaultClick )
 END_EVENT_TABLE()
 
 
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// DialogAbstractionEdit constructors
-	//
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // DialogAbstractionEdit constructors
+    //
 
-	DialogAbstractionEdit::DialogAbstractionEdit()
+    DialogAbstractionEdit::DialogAbstractionEdit()
 {
-	Init();
+    Init();
 }
 
 DialogAbstractionEdit::DialogAbstractionEdit( wxWindow* parent, 
-												wxWindowID id, 
-												const wxString& caption, 
-												const wxPoint& pos, 
-												const wxSize& size, 
-												long style )
+                                                wxWindowID id, 
+                                                const wxString& caption, 
+                                                const wxPoint& pos, 
+                                                const wxSize& size, 
+                                                long style )
 {
-	Init();
-	Create(parent, id, caption, pos, size, style);
+    Init();
+    Create(parent, id, caption, pos, size, style);
 }
 
 
@@ -98,23 +98,23 @@ DialogAbstractionEdit::DialogAbstractionEdit( wxWindow* parent,
 //
 
 bool DialogAbstractionEdit::Create( wxWindow* parent, 
-										wxWindowID id, 
-										const wxString& caption, 
-										const wxPoint& pos, 
-										const wxSize& size, 
-										long style )
+                                        wxWindowID id, 
+                                        const wxString& caption, 
+                                        const wxPoint& pos, 
+                                        const wxSize& size, 
+                                        long style )
 {
-	SetExtraStyle(wxWS_EX_BLOCK_EVENTS);
-	wxDialog::Create( parent, id, caption, pos, size, style );
+    SetExtraStyle(wxWS_EX_BLOCK_EVENTS);
+    wxDialog::Create( parent, id, caption, pos, size, style );
 
-	CreateControls();
-	if ( GetSizer() ) {
-		GetSizer()->SetSizeHints(this);
-	}
-	
-	Centre();
-	
-	return true;
+    CreateControls();
+    if ( GetSizer() ) {
+        GetSizer()->SetSizeHints(this);
+    }
+    
+    Centre();
+    
+    return true;
 }
 
 
@@ -124,7 +124,7 @@ bool DialogAbstractionEdit::Create( wxWindow* parent,
 
 DialogAbstractionEdit::~DialogAbstractionEdit()
 {
-	;
+    ;
 }
 
 
@@ -134,21 +134,21 @@ DialogAbstractionEdit::~DialogAbstractionEdit()
 
 void DialogAbstractionEdit::Init()
 {
-	m_nType = 0;
-	m_abstractionName = NULL;
-	m_abstractionId = NULL;
-	m_abstractionType = NULL;
-	m_abstractionWidth = NULL;
-	m_abstractionRegisterPage = NULL;
-	m_abstractionRegisterOffset = NULL;
-	m_abstractionDescription = NULL;
-	m_abstractionHelp = NULL;
-	m_abstractionAccessRights = NULL;
-	m_abstractionDefaultValue = NULL;
-	m_singleValueLabel = NULL;
-	m_abstractionValue = NULL;
-	m_multipleValueLabel = NULL;
-	m_abstractionComboValue = NULL;
+    m_nType = 0;
+    m_abstractionName = NULL;
+    m_abstractionId = NULL;
+    m_abstractionType = NULL;
+    m_abstractionWidth = NULL;
+    m_abstractionRegisterPage = NULL;
+    m_abstractionRegisterOffset = NULL;
+    m_abstractionDescription = NULL;
+    m_abstractionHelp = NULL;
+    m_abstractionAccessRights = NULL;
+    m_abstractionDefaultValue = NULL;
+    m_singleValueLabel = NULL;
+    m_abstractionValue = NULL;
+    m_multipleValueLabel = NULL;
+    m_abstractionComboValue = NULL;
 }
 
 
@@ -158,187 +158,187 @@ void DialogAbstractionEdit::Init()
 
 void DialogAbstractionEdit::CreateControls()
 {
-	DialogAbstractionEdit* itemDialogAbstraction = this;
+    DialogAbstractionEdit* itemDialogAbstraction = this;
 
-	wxGridSizer* itemGridSizerWindow = new wxGridSizer(0, 2, 0, 0); 
-	itemDialogAbstraction->SetSizer( itemGridSizerWindow );
-	
-	
-	// Name
+    wxGridSizer* itemGridSizerWindow = new wxGridSizer(0, 2, 0, 0); 
+    itemDialogAbstraction->SetSizer( itemGridSizerWindow );
+    
+    
+    // Name
 
-	wxStaticText* itemStaticText6 = new wxStaticText;
-	itemStaticText6->Create(itemDialogAbstraction, wxID_STATIC, _("Name :"), wxDefaultPosition, wxDefaultSize, 0);
-	itemStaticText6->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
-	itemGridSizerWindow->Add( itemStaticText6, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    wxStaticText* itemStaticText6 = new wxStaticText;
+    itemStaticText6->Create(itemDialogAbstraction, wxID_STATIC, _("Name :"), wxDefaultPosition, wxDefaultSize, 0);
+    itemStaticText6->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+    itemGridSizerWindow->Add( itemStaticText6, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-	m_abstractionName = new wxStaticText;
-	m_abstractionName->Create(itemDialogAbstraction, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(200, -1), 0);
-	itemGridSizerWindow->Add(m_abstractionName, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 2 );
+    m_abstractionName = new wxStaticText;
+    m_abstractionName->Create(itemDialogAbstraction, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(200, -1), 0);
+    itemGridSizerWindow->Add(m_abstractionName, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 2 );
 
-	
-	
-	// id
+    
+    
+    // id
 
-	wxStaticText* itemStaticText10 = new wxStaticText;
-	itemStaticText10->Create(itemDialogAbstraction, wxID_STATIC, _("Id :"), wxDefaultPosition, wxDefaultSize, 0);
-	itemStaticText10->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
-	itemGridSizerWindow->Add(itemStaticText10, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    wxStaticText* itemStaticText10 = new wxStaticText;
+    itemStaticText10->Create(itemDialogAbstraction, wxID_STATIC, _("Id :"), wxDefaultPosition, wxDefaultSize, 0);
+    itemStaticText10->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+    itemGridSizerWindow->Add(itemStaticText10, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-	m_abstractionId = new wxStaticText;
-	m_abstractionId->Create(itemDialogAbstraction, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(200, -1), 0);
-	itemGridSizerWindow->Add(m_abstractionId, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    m_abstractionId = new wxStaticText;
+    m_abstractionId->Create(itemDialogAbstraction, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(200, -1), 0);
+    itemGridSizerWindow->Add(m_abstractionId, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-	// Type
+    // Type
 
-	wxStaticText* itemStaticText14 = new wxStaticText;
-	itemStaticText14->Create(itemDialogAbstraction, wxID_STATIC, _("Type :"), wxDefaultPosition, wxDefaultSize, 0);
-	itemStaticText14->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
-	itemGridSizerWindow->Add(itemStaticText14, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    wxStaticText* itemStaticText14 = new wxStaticText;
+    itemStaticText14->Create(itemDialogAbstraction, wxID_STATIC, _("Type :"), wxDefaultPosition, wxDefaultSize, 0);
+    itemStaticText14->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+    itemGridSizerWindow->Add(itemStaticText14, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-	m_abstractionType = new wxStaticText;
-	m_abstractionType->Create(itemDialogAbstraction, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(200, -1), 0);
-	itemGridSizerWindow->Add(m_abstractionType, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    m_abstractionType = new wxStaticText;
+    m_abstractionType->Create(itemDialogAbstraction, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(200, -1), 0);
+    itemGridSizerWindow->Add(m_abstractionType, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-	
-	// Width
+    
+    // Width
 
-	wxStaticText* itemStaticText18 = new wxStaticText;
-	itemStaticText18->Create(itemDialogAbstraction, wxID_STATIC, _("Width :"), wxDefaultPosition, wxDefaultSize, 0);
-	itemStaticText18->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
-	itemGridSizerWindow->Add(itemStaticText18, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    wxStaticText* itemStaticText18 = new wxStaticText;
+    itemStaticText18->Create(itemDialogAbstraction, wxID_STATIC, _("Width :"), wxDefaultPosition, wxDefaultSize, 0);
+    itemStaticText18->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+    itemGridSizerWindow->Add(itemStaticText18, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-	m_abstractionWidth = new wxStaticText;
-	m_abstractionWidth->Create(itemDialogAbstraction, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(200, -1), 0);
-	itemGridSizerWindow->Add(m_abstractionWidth, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    m_abstractionWidth = new wxStaticText;
+    m_abstractionWidth->Create(itemDialogAbstraction, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(200, -1), 0);
+    itemGridSizerWindow->Add(m_abstractionWidth, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-	
-	
-	// Page
+    
+    
+    // Page
 
-	wxStaticText* itemStaticText22 = new wxStaticText;
-	itemStaticText22->Create(itemDialogAbstraction, wxID_STATIC, _("Register page :"), wxDefaultPosition, wxDefaultSize, 0);
-	itemStaticText22->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
-	itemGridSizerWindow->Add(itemStaticText22, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    wxStaticText* itemStaticText22 = new wxStaticText;
+    itemStaticText22->Create(itemDialogAbstraction, wxID_STATIC, _("Register page :"), wxDefaultPosition, wxDefaultSize, 0);
+    itemStaticText22->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+    itemGridSizerWindow->Add(itemStaticText22, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-	m_abstractionRegisterPage = new wxStaticText;
-	m_abstractionRegisterPage->Create(itemDialogAbstraction, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(200, -1), 0);
-	itemGridSizerWindow->Add(m_abstractionRegisterPage, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    m_abstractionRegisterPage = new wxStaticText;
+    m_abstractionRegisterPage->Create(itemDialogAbstraction, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(200, -1), 0);
+    itemGridSizerWindow->Add(m_abstractionRegisterPage, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-	
-	
-	// Offset
+    
+    
+    // Offset
 
-	wxStaticText* itemStaticText26 = new wxStaticText;
-	itemStaticText26->Create(itemDialogAbstraction, wxID_STATIC, _("Register Offset :"), wxDefaultPosition, wxDefaultSize, 0);
-	itemStaticText26->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
-	itemGridSizerWindow->Add(itemStaticText26, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    wxStaticText* itemStaticText26 = new wxStaticText;
+    itemStaticText26->Create(itemDialogAbstraction, wxID_STATIC, _("Register Offset :"), wxDefaultPosition, wxDefaultSize, 0);
+    itemStaticText26->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+    itemGridSizerWindow->Add(itemStaticText26, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-	m_abstractionRegisterOffset = new wxStaticText;
-	m_abstractionRegisterOffset->Create(itemDialogAbstraction, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(200, -1), 0);
-	itemGridSizerWindow->Add(m_abstractionRegisterOffset, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    m_abstractionRegisterOffset = new wxStaticText;
+    m_abstractionRegisterOffset->Create(itemDialogAbstraction, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(200, -1), 0);
+    itemGridSizerWindow->Add(m_abstractionRegisterOffset, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-	
-	
-	// Description text
+    
+    
+    // Description text
 
-	wxStaticText* itemStaticText30 = new wxStaticText;
-	itemStaticText30->Create(itemDialogAbstraction, wxID_STATIC, _("Description :"), wxDefaultPosition, wxDefaultSize, 0);
-	itemStaticText30->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
-	itemGridSizerWindow->Add(itemStaticText30, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    wxStaticText* itemStaticText30 = new wxStaticText;
+    itemStaticText30->Create(itemDialogAbstraction, wxID_STATIC, _("Description :"), wxDefaultPosition, wxDefaultSize, 0);
+    itemStaticText30->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+    itemGridSizerWindow->Add(itemStaticText30, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-	m_abstractionDescription = new wxStaticText;
-	m_abstractionDescription->Create( itemDialogAbstraction, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(500, 20), 0);
-	//m_abstractionDescription->Wrap(500);
-	itemGridSizerWindow->Add(m_abstractionDescription, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    m_abstractionDescription = new wxStaticText;
+    m_abstractionDescription->Create( itemDialogAbstraction, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(500, 20), 0);
+    //m_abstractionDescription->Wrap(500);
+    itemGridSizerWindow->Add(m_abstractionDescription, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-	
-	
-	// Help text
-	
-	wxStaticText* itemStaticText34 = new wxStaticText;
-	itemStaticText34->Create(itemDialogAbstraction, wxID_STATIC, _("Help :"), wxDefaultPosition, wxDefaultSize, 0);
-	itemStaticText34->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
-	itemGridSizerWindow->Add(itemStaticText34, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    
+    
+    // Help text
+    
+    wxStaticText* itemStaticText34 = new wxStaticText;
+    itemStaticText34->Create(itemDialogAbstraction, wxID_STATIC, _("Help :"), wxDefaultPosition, wxDefaultSize, 0);
+    itemStaticText34->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+    itemGridSizerWindow->Add(itemStaticText34, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-	m_abstractionHelp = new wxStaticText;
-	m_abstractionHelp->Create(itemDialogAbstraction, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(500, 20), 0);
-	itemGridSizerWindow->Add(m_abstractionHelp, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
-	
-	
+    m_abstractionHelp = new wxStaticText;
+    m_abstractionHelp->Create(itemDialogAbstraction, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(500, 20), 0);
+    itemGridSizerWindow->Add(m_abstractionHelp, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    
+    
 
-	// Access rights
+    // Access rights
 
-	wxStaticText* itemStaticText38 = new wxStaticText;
-	itemStaticText38->Create(itemDialogAbstraction, wxID_STATIC, _("Access rights :"), wxDefaultPosition, wxDefaultSize, 0);
-	itemStaticText38->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
-	itemGridSizerWindow->Add(itemStaticText38, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    wxStaticText* itemStaticText38 = new wxStaticText;
+    itemStaticText38->Create(itemDialogAbstraction, wxID_STATIC, _("Access rights :"), wxDefaultPosition, wxDefaultSize, 0);
+    itemStaticText38->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+    itemGridSizerWindow->Add(itemStaticText38, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-	m_abstractionAccessRights = new wxStaticText;
-	m_abstractionAccessRights->Create(itemDialogAbstraction, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(200, -1), 0);
-	itemGridSizerWindow->Add(m_abstractionAccessRights, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
-	
-	
-	
-	// Default
+    m_abstractionAccessRights = new wxStaticText;
+    m_abstractionAccessRights->Create(itemDialogAbstraction, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(200, -1), 0);
+    itemGridSizerWindow->Add(m_abstractionAccessRights, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    
+    
+    
+    // Default
 
-	wxStaticText* itemStaticText42 = new wxStaticText;
-	itemStaticText42->Create(itemDialogAbstraction, wxID_STATIC, _("Default value :"), wxDefaultPosition, wxDefaultSize, 0);
-	itemStaticText42->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
-	itemGridSizerWindow->Add(itemStaticText42, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    wxStaticText* itemStaticText42 = new wxStaticText;
+    itemStaticText42->Create(itemDialogAbstraction, wxID_STATIC, _("Default value :"), wxDefaultPosition, wxDefaultSize, 0);
+    itemStaticText42->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+    itemGridSizerWindow->Add(itemStaticText42, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-	m_abstractionDefaultValue = new wxStaticText;
-	m_abstractionDefaultValue->Create(itemDialogAbstraction, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(170, -1), 0);
-	itemGridSizerWindow->Add(m_abstractionDefaultValue, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    m_abstractionDefaultValue = new wxStaticText;
+    m_abstractionDefaultValue->Create(itemDialogAbstraction, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(170, -1), 0);
+    itemGridSizerWindow->Add(m_abstractionDefaultValue, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-	
-	
-	// Single Value
+    
+    
+    // Single Value
 
-	m_singleValueLabel = new wxStaticText;
-	m_singleValueLabel->Create(itemDialogAbstraction, wxID_STATIC, _("Value :"), wxDefaultPosition, wxDefaultSize, 0);
-	m_singleValueLabel->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
-	itemGridSizerWindow->Add( m_singleValueLabel, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1 );
-	
-	wxBoxSizer* itemBoxSizerValue = new wxBoxSizer(wxHORIZONTAL);
-	itemGridSizerWindow->Add( itemBoxSizerValue, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1 );
+    m_singleValueLabel = new wxStaticText;
+    m_singleValueLabel->Create(itemDialogAbstraction, wxID_STATIC, _("Value :"), wxDefaultPosition, wxDefaultSize, 0);
+    m_singleValueLabel->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+    itemGridSizerWindow->Add( m_singleValueLabel, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1 );
+    
+    wxBoxSizer* itemBoxSizerValue = new wxBoxSizer(wxHORIZONTAL);
+    itemGridSizerWindow->Add( itemBoxSizerValue, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1 );
 
-	m_abstractionValue = new wxTextCtrl;
-	m_abstractionValue->Create(itemDialogAbstraction, ID_TEXTCTRL_ABSTRACTION_VALUE, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
-	itemBoxSizerValue->Add( m_abstractionValue, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1 );
-	
-	wxButton* itemButtonDefault = new wxButton;
-	itemButtonDefault->Create(itemDialogAbstraction, ID_BUTTON18, _("Set default value"), wxDefaultPosition, wxDefaultSize, 0);
-	itemBoxSizerValue->Add( itemButtonDefault, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 0);
+    m_abstractionValue = new wxTextCtrl;
+    m_abstractionValue->Create(itemDialogAbstraction, ID_TEXTCTRL_ABSTRACTION_VALUE, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
+    itemBoxSizerValue->Add( m_abstractionValue, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1 );
+    
+    wxButton* itemButtonDefault = new wxButton;
+    itemButtonDefault->Create(itemDialogAbstraction, ID_BUTTON18, _("Set default value"), wxDefaultPosition, wxDefaultSize, 0);
+    itemBoxSizerValue->Add( itemButtonDefault, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 0);
 
 
-	
-	// Select value
+    
+    // Select value
 
-	m_multipleValueLabel = new wxStaticText;
-	m_multipleValueLabel->Create(itemDialogAbstraction, wxID_STATIC, _("Value :"), wxDefaultPosition, wxDefaultSize, 0);
-	m_multipleValueLabel->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
-	itemGridSizerWindow->Add(m_multipleValueLabel, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    m_multipleValueLabel = new wxStaticText;
+    m_multipleValueLabel->Create(itemDialogAbstraction, wxID_STATIC, _("Value :"), wxDefaultPosition, wxDefaultSize, 0);
+    m_multipleValueLabel->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+    itemGridSizerWindow->Add(m_multipleValueLabel, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-	wxArrayString m_abstractionComboValueStrings;
-	m_abstractionComboValue = new wxChoice;
-	m_abstractionComboValue->Create(itemDialogAbstraction, ID_CHOICE1, wxDefaultPosition, wxDefaultSize, m_abstractionComboValueStrings, 0);
-	itemGridSizerWindow->Add(m_abstractionComboValue, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    wxArrayString m_abstractionComboValueStrings;
+    m_abstractionComboValue = new wxChoice;
+    m_abstractionComboValue->Create(itemDialogAbstraction, ID_CHOICE1, wxDefaultPosition, wxDefaultSize, m_abstractionComboValueStrings, 0);
+    itemGridSizerWindow->Add(m_abstractionComboValue, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-	
-	
-	
-	// OK/CANCEL buttons
+    
+    
+    
+    // OK/CANCEL buttons
 
-	wxButton* itemButton54 = new wxButton;
-	itemButton54->Create(itemDialogAbstraction, wxID_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0);
-	itemGridSizerWindow->Add(itemButton54, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+    wxButton* itemButton54 = new wxButton;
+    itemButton54->Create(itemDialogAbstraction, wxID_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0);
+    itemGridSizerWindow->Add(itemButton54, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
-	wxButton* itemButton55 = new wxButton;
-	itemButton55->Create(itemDialogAbstraction, wxID_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0);
-	itemGridSizerWindow->Add(itemButton55, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
-	
-	itemGridSizerWindow->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5); 
-	itemGridSizerWindow->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5); 
+    wxButton* itemButton55 = new wxButton;
+    itemButton55->Create(itemDialogAbstraction, wxID_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0);
+    itemGridSizerWindow->Add(itemButton55, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+    
+    itemGridSizerWindow->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5); 
+    itemGridSizerWindow->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5); 
 }
 
 
@@ -348,7 +348,7 @@ void DialogAbstractionEdit::CreateControls()
 
 bool DialogAbstractionEdit::ShowToolTips()
 {
-	return true;
+    return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -357,9 +357,9 @@ bool DialogAbstractionEdit::ShowToolTips()
 
 wxBitmap DialogAbstractionEdit::GetBitmapResource( const wxString& name )
 {
-	// Bitmap retrieval
-	wxUnusedVar(name);
-	return wxNullBitmap;
+    // Bitmap retrieval
+    wxUnusedVar(name);
+    return wxNullBitmap;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -368,9 +368,9 @@ wxBitmap DialogAbstractionEdit::GetBitmapResource( const wxString& name )
 
 wxIcon DialogAbstractionEdit::GetIconResource( const wxString& name )
 {
-	// Icon retrieval
-	wxUnusedVar(name);
-	return wxNullIcon;
+    // Icon retrieval
+    wxUnusedVar(name);
+    return wxNullIcon;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -379,170 +379,170 @@ wxIcon DialogAbstractionEdit::GetIconResource( const wxString& name )
 
 bool DialogAbstractionEdit::TransferDataToWindow( CMDF_Abstraction *pAbstraction, wxString &strValue )
 {
-	wxString str;
+    wxString str;
 
-	if ( NULL != pAbstraction) {
+    if ( NULL != pAbstraction) {
 
-		// Save the abstraction
-		m_pAbstraction = pAbstraction;
+        // Save the abstraction
+        m_pAbstraction = pAbstraction;
 
-		// Fill in the data
-		m_abstractionName->SetLabel( pAbstraction->m_strName );
+        // Fill in the data
+        m_abstractionName->SetLabel( pAbstraction->m_strName );
 
-		m_abstractionId->SetLabel( pAbstraction->m_strID );
+        m_abstractionId->SetLabel( pAbstraction->m_strID );
 
-		wxString strType;
-		switch ( pAbstraction->m_nType ) {
+        wxString strType;
+        switch ( pAbstraction->m_nType ) {
 
-		case type_string: 
-			strType = _("String");
-			break;
+        case type_string: 
+            strType = _("String");
+            break;
 
-		case type_bitfield:
-			strType = _("Bitfield");
-			break;
+        case type_bitfield:
+            strType = _("Bitfield");
+            break;
 
-		case type_boolval:
-			strType = _("Boolean");
-			break;
+        case type_boolval:
+            strType = _("Boolean");
+            break;
 
-		case type_int8_t:
-			strType = _("Signed 8-bit integer");
-			break;
+        case type_int8_t:
+            strType = _("Signed 8-bit integer");
+            break;
 
-		case type_uint8_t:
-			strType = _("Unsigned 8-bit integer");
-			break;
+        case type_uint8_t:
+            strType = _("Unsigned 8-bit integer");
+            break;
 
-		case type_int16_t:
-			strType = _("Signed 16-bit integer");
-			break;
+        case type_int16_t:
+            strType = _("Signed 16-bit integer");
+            break;
 
-		case type_uint16_t:
-			strType = _("Unsigned 16-bit integer");
-			break;
+        case type_uint16_t:
+            strType = _("Unsigned 16-bit integer");
+            break;
 
-		case type_int32_t:
-			strType = _("Signed 32-bit integer");
-			break;
+        case type_int32_t:
+            strType = _("Signed 32-bit integer");
+            break;
 
-		case type_uint32_t:
-			strType = _("Unsigned 32-bit integer");
-			break;
+        case type_uint32_t:
+            strType = _("Unsigned 32-bit integer");
+            break;
 
-		case type_int64_t:
-			strType = _("Signed 64-bit integer");
-			break;
+        case type_int64_t:
+            strType = _("Signed 64-bit integer");
+            break;
 
-		case type_uint64_t:
-			strType = _("Unsigned 64-bit integer");
-			break;
+        case type_uint64_t:
+            strType = _("Unsigned 64-bit integer");
+            break;
 
-		case type_float:
-			strType = _("Float");
-			break;
+        case type_float:
+            strType = _("Float");
+            break;
 
-		case type_double:
-			strType = _("Double");
-			break;
+        case type_double:
+            strType = _("Double");
+            break;
 
-		case type_date:
-			strType = _("Date");
-			break;
+        case type_date:
+            strType = _("Date");
+            break;
 
-		case type_time:
-			strType = _("Time");
-			break;
+        case type_time:
+            strType = _("Time");
+            break;
 
-		case type_guid:
-			strType = _("GUID");
-			break;
+        case type_guid:
+            strType = _("GUID");
+            break;
 
-		case type_unknown:
+        case type_unknown:
 
-		default:
-			strType = _("Unknown Type");
-			break;
-		}
+        default:
+            strType = _("Unknown Type");
+            break;
+        }
 
 
-		str.Printf(_("%d"), pAbstraction->m_nType );
-		m_abstractionType->SetLabel( str + _(" - ") + strType );
+        str.Printf(_("%d"), pAbstraction->m_nType );
+        m_abstractionType->SetLabel( str + _(" - ") + strType );
 
-		str.Printf(_("%d"), pAbstraction->m_nWidth );
-		m_abstractionWidth->SetLabel( str );
+        str.Printf(_("%d"), pAbstraction->m_nWidth );
+        m_abstractionWidth->SetLabel( str );
 
-		str.Printf(_("%d"), pAbstraction->m_nPage );
-		m_abstractionRegisterPage->SetLabel( str );
+        str.Printf(_("%d"), pAbstraction->m_nPage );
+        m_abstractionRegisterPage->SetLabel( str );
 
-		str.Printf(_("%d"), pAbstraction->m_nOffset );
-		m_abstractionRegisterOffset->SetLabel( str );
+        str.Printf(_("%d"), pAbstraction->m_nOffset );
+        m_abstractionRegisterOffset->SetLabel( str );
 
-		m_abstractionDescription->SetLabel( pAbstraction->m_strDescription );
-		m_abstractionDescription->SetToolTip( pAbstraction->m_strDescription ); 
+        m_abstractionDescription->SetLabel( pAbstraction->m_strDescription );
+        m_abstractionDescription->SetToolTip( pAbstraction->m_strDescription ); 
 
-		m_abstractionHelp->SetLabel( pAbstraction->m_strHelp );
-		m_abstractionHelp->SetToolTip( pAbstraction->m_strDescription ); 
+        m_abstractionHelp->SetLabel( pAbstraction->m_strHelp );
+        m_abstractionHelp->SetToolTip( pAbstraction->m_strDescription ); 
 
-		if ( pAbstraction->m_strDefault.Length() ) {
-			m_abstractionDefaultValue->SetLabel( pAbstraction->m_strDefault );
-		}
-		else {
+        if ( pAbstraction->m_strDefault.Length() ) {
+            m_abstractionDefaultValue->SetLabel( pAbstraction->m_strDefault );
+        }
+        else {
             m_abstractionDefaultValue->SetLabel( strValue );
-		}
+        }
 
-		// Access
-		str = _("");
-		if ( pAbstraction->m_nAccess & MDF_ACCESS_READ ){
-			str = _("r");
-		}
-		if ( pAbstraction->m_nAccess & MDF_ACCESS_WRITE ){
-			str += _("w");
-		}
-		m_abstractionAccessRights->SetLabel( str );
+        // Access
+        str = _("");
+        if ( pAbstraction->m_nAccess & MDF_ACCESS_READ ){
+            str = _("r");
+        }
+        if ( pAbstraction->m_nAccess & MDF_ACCESS_WRITE ){
+            str += _("w");
+        }
+        m_abstractionAccessRights->SetLabel( str );
 
-		// Set value to read only if value is not writable
-		if ( wxNOT_FOUND == str.Find(_("w")) ) {
-			m_abstractionValue->SetEditable( false );
-			//m_abstractionComboValue->SetEditable( false );
-		}
-		else {
-			m_abstractionValue->SetEditable( true );
-		}
+        // Set value to read only if value is not writable
+        if ( wxNOT_FOUND == str.Find(_("w")) ) {
+            m_abstractionValue->SetEditable( false );
+            //m_abstractionComboValue->SetEditable( false );
+        }
+        else {
+            m_abstractionValue->SetEditable( true );
+        }
 
-		// Check if value only is selectable from a list of 
-		// values
-		if ( pAbstraction->m_list_value.GetCount() ) {
+        // Check if value only is selectable from a list of 
+        // values
+        if ( pAbstraction->m_list_value.GetCount() ) {
 
-			// Hide the single value static
-			m_abstractionValue->Show( false );
-			m_singleValueLabel->Show( false );
+            // Hide the single value static
+            m_abstractionValue->Show( false );
+            m_singleValueLabel->Show( false );
 
-			// Fill possible values into combo
-			MDF_VALUE_LIST::iterator iter;
-			for ( iter = pAbstraction->m_list_value.begin(); 
-				iter != pAbstraction->m_list_value.end(); ++iter ) {
-					CMDF_ValueListValue *pMdfValue = *iter;
-					m_abstractionComboValue->Append( pMdfValue->m_strValue );
-					m_abstractionComboValue->SetStringSelection( strValue );
-			}
+            // Fill possible values into combo
+            MDF_VALUE_LIST::iterator iter;
+            for ( iter = pAbstraction->m_list_value.begin(); 
+                iter != pAbstraction->m_list_value.end(); ++iter ) {
+                    CMDF_ValueListValue *pMdfValue = *iter;
+                    m_abstractionComboValue->Append( pMdfValue->m_strValue );
+                    m_abstractionComboValue->SetStringSelection( strValue );
+            }
 
-		}
-		// Just single value
-		else {
+        }
+        // Just single value
+        else {
 
-			// Hide the multiple value combo
-			m_abstractionComboValue->Show( false );
-			m_multipleValueLabel->Show( false );
+            // Hide the multiple value combo
+            m_abstractionComboValue->Show( false );
+            m_multipleValueLabel->Show( false );
 
-			m_abstractionValue->SetValue( strValue );
+            m_abstractionValue->SetValue( strValue );
 
-		}
+        }
 
-	}
+    }
 
-	return true;
-	//return wxDialog::TransferDataToWindow();
+    return true;
+    //return wxDialog::TransferDataToWindow();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -551,20 +551,20 @@ bool DialogAbstractionEdit::TransferDataToWindow( CMDF_Abstraction *pAbstraction
 
 bool DialogAbstractionEdit::TransferDataFromWindow( wxString &strValue )
 {
-	strValue = _("");
+    strValue = _("");
 
-	if ( NULL != m_pAbstraction ) {
+    if ( NULL != m_pAbstraction ) {
 
-		if ( m_abstractionComboValue->GetCount() ) {
-			strValue = m_abstractionComboValue->GetStringSelection();
-		}
-		else {
-			strValue = m_abstractionValue->GetValue();
-		}
+        if ( m_abstractionComboValue->GetCount() ) {
+            strValue = m_abstractionComboValue->GetStringSelection();
+        }
+        else {
+            strValue = m_abstractionValue->GetValue();
+        }
 
-	} // Valid pointer
+    } // Valid pointer
 
-	return wxDialog::TransferDataFromWindow();
+    return wxDialog::TransferDataFromWindow();
 }
 
 
@@ -574,18 +574,18 @@ bool DialogAbstractionEdit::TransferDataFromWindow( wxString &strValue )
 
 void DialogAbstractionEdit::OnButtonDefaultClick( wxCommandEvent& event )
 {
-	if ( m_abstractionComboValue->GetCount() ) {
-		for ( unsigned int i=0; i<m_pAbstraction->m_list_value.GetCount(); i++ ) {
-			if ( wxNOT_FOUND != m_abstractionComboValue->GetString( i )
-				.Find( m_abstractionDefaultValue->GetLabel() ) ) {
-					m_abstractionComboValue->SetSelection( i );
-			}
-		}
-	}
-	else {
-		m_abstractionValue->SetLabel( m_abstractionDefaultValue->GetLabel() );
-	}
+    if ( m_abstractionComboValue->GetCount() ) {
+        for ( unsigned int i=0; i<m_pAbstraction->m_list_value.GetCount(); i++ ) {
+            if ( wxNOT_FOUND != m_abstractionComboValue->GetString( i )
+                .Find( m_abstractionDefaultValue->GetLabel() ) ) {
+                    m_abstractionComboValue->SetSelection( i );
+            }
+        }
+    }
+    else {
+        m_abstractionValue->SetLabel( m_abstractionDefaultValue->GetLabel() );
+    }
 
-	event.Skip();
+    event.Skip();
 }
 

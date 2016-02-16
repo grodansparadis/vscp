@@ -66,13 +66,13 @@ VSCPUDPClientThread::VSCPUDPClientThread()
     //OutputDebugString( "TCP ClientThread: Create");
     m_bQuit = false;
     m_pCtrlObject = NULL;
-	m_pClientItem = NULL;
+    m_pClientItem = NULL;
 }
 
 
 VSCPUDPClientThread::~VSCPUDPClientThread()
 {
-	;
+    ;
 }
 
 
@@ -82,62 +82,62 @@ VSCPUDPClientThread::~VSCPUDPClientThread()
 
 void *VSCPUDPClientThread::Entry()
 {
-	// Check pointers
-	if ( NULL == m_pCtrlObject ) return NULL;
+    // Check pointers
+    if ( NULL == m_pCtrlObject ) return NULL;
 
-	// We need to create a clientobject and add this object to the list
-	m_pClientItem = new CClientItem;
-	if ( NULL == m_pClientItem ) {
-		m_pCtrlObject->logMsg ( _T ( "[UDP Client] Unable to allocate memory for client.\n" ), DAEMON_LOGMSG_ERROR );
-		return NULL;
-	}
+    // We need to create a clientobject and add this object to the list
+    m_pClientItem = new CClientItem;
+    if ( NULL == m_pClientItem ) {
+        m_pCtrlObject->logMsg ( _T ( "[UDP Client] Unable to allocate memory for client.\n" ), DAEMON_LOGMSG_ERROR );
+        return NULL;
+    }
 
-	// This is now an active Client
-	m_pClientItem->m_bOpen = true; 
-	m_pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP;
-	m_pClientItem->m_strDeviceName = _("Remote UDP Client Listner. Started at ");
-	wxDateTime now = wxDateTime::Now(); 
-	m_pClientItem->m_strDeviceName += now.FormatISODate();
-	m_pClientItem->m_strDeviceName += _(" ");
-	m_pClientItem->m_strDeviceName += now.FormatISOTime();
+    // This is now an active Client
+    m_pClientItem->m_bOpen = true; 
+    m_pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP;
+    m_pClientItem->m_strDeviceName = _("Remote UDP Client Listner. Started at ");
+    wxDateTime now = wxDateTime::Now(); 
+    m_pClientItem->m_strDeviceName += now.FormatISODate();
+    m_pClientItem->m_strDeviceName += _(" ");
+    m_pClientItem->m_strDeviceName += now.FormatISOTime();
 
-	// Add the client to the Client List
-	m_pCtrlObject->m_wxClientMutex.Lock();
-	m_pCtrlObject->addClient( m_pClientItem );
-	m_pCtrlObject->m_wxClientMutex.Unlock();
+    // Add the client to the Client List
+    m_pCtrlObject->m_wxClientMutex.Lock();
+    m_pCtrlObject->addClient( m_pClientItem );
+    m_pCtrlObject->m_wxClientMutex.Unlock();
 
-	// Clear the filter (Allow everything )
-	vscp_clearVSCPFilter( &m_pClientItem->m_filterVSCP );
+    // Clear the filter (Allow everything )
+    vscp_clearVSCPFilter( &m_pClientItem->m_filterVSCP );
 
-	ns_mgr_init( &m_pCtrlObject->m_mgrTcpIpServer, this, VSCPClientThread::ev_handler );
+    ns_mgr_init( &m_pCtrlObject->m_mgrTcpIpServer, this, VSCPClientThread::ev_handler );
 
-	//const char *port1 = "udp://:9598";
-	m_pCtrlObject->m_strUDPInterfaceAddress.Trim();
-	m_pCtrlObject->m_strUDPInterfaceAddress.Trim( false );
-	wxStringTokenizer tkz( m_pCtrlObject->m_strUDPInterfaceAddress, _(" ") );
-	while ( tkz.HasMoreTokens() ) {
-		
-		wxString str = tkz.GetNextToken();
-		str.Trim();
-		str.Trim( false );
-		if ( 0 == str.Length() ) continue;
+    //const char *port1 = "udp://:9598";
+    m_pCtrlObject->m_strUDPInterfaceAddress.Trim();
+    m_pCtrlObject->m_strUDPInterfaceAddress.Trim( false );
+    wxStringTokenizer tkz( m_pCtrlObject->m_strUDPInterfaceAddress, _(" ") );
+    while ( tkz.HasMoreTokens() ) {
+        
+        wxString str = tkz.GetNextToken();
+        str.Trim();
+        str.Trim( false );
+        if ( 0 == str.Length() ) continue;
 
-		if ( wxNOT_FOUND  != str.Find(_("udp://") ) ) {
-			str = _("udp://") + str;
-		}
+        if ( wxNOT_FOUND  != str.Find(_("udp://") ) ) {
+            str = _("udp://") + str;
+        }
 
-		// Bind to this interface
-		ns_bind( &m_pCtrlObject->m_mgrTcpIpServer, str.mbc_str(), NULL ); //
-	}
+        // Bind to this interface
+        ns_bind( &m_pCtrlObject->m_mgrTcpIpServer, str.mbc_str(), NULL ); //
+    }
 
-	m_pCtrlObject->logMsg(_T("UDP Client: Thread started.\n"), DAEMON_LOGMSG_INFO);
+    m_pCtrlObject->logMsg(_T("UDP Client: Thread started.\n"), DAEMON_LOGMSG_INFO);
 
-	while ( !TestDestroy() && !m_bQuit ) {
-		ns_mgr_poll( &m_pCtrlObject->m_mgrTcpIpServer, 50 );
-	}
+    while ( !TestDestroy() && !m_bQuit ) {
+        ns_mgr_poll( &m_pCtrlObject->m_mgrTcpIpServer, 50 );
+    }
 
-	// release the server
-	ns_mgr_free( &m_pCtrlObject->m_mgrTcpIpServer );
+    // release the server
+    ns_mgr_free( &m_pCtrlObject->m_mgrTcpIpServer );
 
     m_pCtrlObject->logMsg( _T( "UDP ClientThread: Quit.\n" ), DAEMON_LOGMSG_INFO );
 
@@ -151,12 +151,12 @@ void *VSCPUDPClientThread::Entry()
 
 void VSCPUDPClientThread::OnExit()
 {
-	if ( NULL != m_pClientItem ) {
-		// Add the client to the Client List
-		m_pCtrlObject->m_wxClientMutex.Lock();
-		m_pCtrlObject->removeClient( m_pClientItem );
-		m_pCtrlObject->m_wxClientMutex.Unlock();
-	}
+    if ( NULL != m_pClientItem ) {
+        // Add the client to the Client List
+        m_pCtrlObject->m_wxClientMutex.Lock();
+        m_pCtrlObject->removeClient( m_pClientItem );
+        m_pCtrlObject->m_wxClientMutex.Unlock();
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -166,113 +166,113 @@ void VSCPUDPClientThread::OnExit()
 void 
 VSCPUDPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void *pUser) 
 {
-	struct iobuf *io = &conn->recv_iobuf;
-	VSCPUDPClientThread *pUDPClientThread = (VSCPUDPClientThread *)conn->mgr->user_data;
+    struct iobuf *io = &conn->recv_iobuf;
+    VSCPUDPClientThread *pUDPClientThread = (VSCPUDPClientThread *)conn->mgr->user_data;
 
-	switch (ev) {
+    switch (ev) {
 
-		case NS_CLOSE:
-			break;
+        case NS_CLOSE:
+            break;
 
-		case NS_RECV: 
-			{
-				// user;md5-password-hash;head;vscpclass;vscptype;obid;time-stamp;GUID,data1,data2,data2....
-				char buf[1024];
-				wxString strUser, strPassword, vscpevent;
-				wxStringTokenizer tkz;
+        case NS_RECV: 
+            {
+                // user;md5-password-hash;head;vscpclass;vscptype;obid;time-stamp;GUID,data1,data2,data2....
+                char buf[1024];
+                wxString strUser, strPassword, vscpevent;
+                wxStringTokenizer tkz;
 
-				memset( buf, 0, sizeof( buf ) );
-				memcpy( buf, io->buf, io->len );
-				iobuf_remove(io, io->len);        // Discard message from recv buffer
-				tkz.SetString( wxString::FromAscii( buf ), _(";") );
-				
-				if ( !tkz.HasMoreTokens() ) {
-					pUDPClientThread->m_pCtrlObject->logMsg ( _T ( "[UDP Client] UDP datagram does not have a valid format (user;password;event).\n" ), DAEMON_LOGMSG_ERROR );
-					return;
-				}
+                memset( buf, 0, sizeof( buf ) );
+                memcpy( buf, io->buf, io->len );
+                iobuf_remove(io, io->len);        // Discard message from recv buffer
+                tkz.SetString( wxString::FromAscii( buf ), _(";") );
+                
+                if ( !tkz.HasMoreTokens() ) {
+                    pUDPClientThread->m_pCtrlObject->logMsg ( _T ( "[UDP Client] UDP datagram does not have a valid format (user;password;event).\n" ), DAEMON_LOGMSG_ERROR );
+                    return;
+                }
 
-				// Get username
-				strUser = tkz.GetNextToken();
+                // Get username
+                strUser = tkz.GetNextToken();
 
-				if ( !tkz.HasMoreTokens() ) {
-					pUDPClientThread->m_pCtrlObject->logMsg ( _T ( "[UDP Client] UDP datagram does not have a valid format (user;password;event).\n" ), DAEMON_LOGMSG_ERROR );
-					return;
-				}
+                if ( !tkz.HasMoreTokens() ) {
+                    pUDPClientThread->m_pCtrlObject->logMsg ( _T ( "[UDP Client] UDP datagram does not have a valid format (user;password;event).\n" ), DAEMON_LOGMSG_ERROR );
+                    return;
+                }
 
-				// Get password hash
-				strPassword = tkz.GetNextToken();
+                // Get password hash
+                strPassword = tkz.GetNextToken();
 
-				if ( !tkz.HasMoreTokens() ) {
-					pUDPClientThread->m_pCtrlObject->logMsg ( _T ( "[UDP Client] UDP datagram does not have a valid format (user;password;event).\n" ), DAEMON_LOGMSG_ERROR );
-					return;
-				}
+                if ( !tkz.HasMoreTokens() ) {
+                    pUDPClientThread->m_pCtrlObject->logMsg ( _T ( "[UDP Client] UDP datagram does not have a valid format (user;password;event).\n" ), DAEMON_LOGMSG_ERROR );
+                    return;
+                }
 
-				// Get event
-				vscpevent = tkz.GetNextToken();
+                // Get event
+                vscpevent = tkz.GetNextToken();
 
-				// Check if user is valid
-				// Calculate MD5 for username:autdomain:password
-				strncpy( buf, strUser.mbc_str(), strUser.Length() );
-				strncat( buf, ":", sizeof( buf ) - strlen( buf ) - 1 );
-				strncat( buf, pUDPClientThread->m_pCtrlObject->m_authDomain.mbc_str(),
-								pUDPClientThread->m_pCtrlObject->m_authDomain.Length() );
-				strncat( buf, ":", sizeof( buf ) - strlen( buf) - 1);
-				strncat( (char *)buf, strPassword.mb_str(), strPassword.Length() );
-	
-				Cmd5 md5 ( (unsigned char *)buf );
-				if ( NULL == md5.getDigest() ) return; 
-				wxString md5Password = wxString( md5.getDigest(), wxConvUTF8 );
-				pUDPClientThread->m_pCtrlObject->m_mutexUserList.Lock();
-				//::wxLogDebug( _("Username: ") + m_wxUserName );
-				//::wxLogDebug( _("Password: ") + strPassword );
-				//::wxLogDebug( _("MD5 of Password: ") + md5Password );
-				pUDPClientThread->m_pClientItem->m_pUserItem = 
-						pUDPClientThread->m_pCtrlObject->m_userList.checkUser( strUser, strPassword );
-				pUDPClientThread->m_pCtrlObject->m_mutexUserList.Unlock();
+                // Check if user is valid
+                // Calculate MD5 for username:autdomain:password
+                strncpy( buf, strUser.mbc_str(), strUser.Length() );
+                strncat( buf, ":", sizeof( buf ) - strlen( buf ) - 1 );
+                strncat( buf, pUDPClientThread->m_pCtrlObject->m_authDomain.mbc_str(),
+                                pUDPClientThread->m_pCtrlObject->m_authDomain.Length() );
+                strncat( buf, ":", sizeof( buf ) - strlen( buf) - 1);
+                strncat( (char *)buf, strPassword.mb_str(), strPassword.Length() );
+    
+                Cmd5 md5 ( (unsigned char *)buf );
+                if ( NULL == md5.getDigest() ) return; 
+                wxString md5Password = wxString( md5.getDigest(), wxConvUTF8 );
+                pUDPClientThread->m_pCtrlObject->m_mutexUserList.Lock();
+                //::wxLogDebug( _("Username: ") + m_wxUserName );
+                //::wxLogDebug( _("Password: ") + strPassword );
+                //::wxLogDebug( _("MD5 of Password: ") + md5Password );
+                pUDPClientThread->m_pClientItem->m_pUserItem = 
+                        pUDPClientThread->m_pCtrlObject->m_userList.checkUser( strUser, strPassword );
+                pUDPClientThread->m_pCtrlObject->m_mutexUserList.Unlock();
 
-				if ( NULL == pUDPClientThread->m_pClientItem->m_pUserItem ) {
+                if ( NULL == pUDPClientThread->m_pClientItem->m_pUserItem ) {
                     wxString strErr = 
                         wxString::Format( _("[UDP Client] User [%s] allowed to connect.\n"), 
 #ifdef WIN32						
                                                 pUDPClientThread->m_pClientItem->m_UserName );
 #else 
-												(const char *)pUDPClientThread->m_pClientItem->m_UserName.mbc_str() );
+                                                (const char *)pUDPClientThread->m_pClientItem->m_UserName.mbc_str() );
 #endif					
-	                    pUDPClientThread->m_pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
+                        pUDPClientThread->m_pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
 #if wxMAJOR_VERSION >= 3
-					wxLogDebug( _("Password/Username failure.") );		
+                    wxLogDebug( _("Password/Username failure.") );		
 #else						
-					::wxLogDebug( _("Password/Username failure.") );
+                    ::wxLogDebug( _("Password/Username failure.") );
 #endif						
-					ns_send( conn,  MSG_PASSWORD_ERROR, strlen ( MSG_PASSWORD_ERROR ) );
-					return;
-				}
+                    ns_send( conn,  MSG_PASSWORD_ERROR, strlen ( MSG_PASSWORD_ERROR ) );
+                    return;
+                }
 
-				// Get remte address
-				wxString remoteaddr = wxString::FromAscii( inet_ntoa( conn->sa.sin.sin_addr )  );
+                // Get remte address
+                wxString remoteaddr = wxString::FromAscii( inet_ntoa( conn->sa.sin.sin_addr )  );
 
-				// Check if this user is allowed to connect from this location
-				pUDPClientThread->m_pCtrlObject->m_mutexUserList.Lock();
-				bool bValidHost = 
-						pUDPClientThread->m_pClientItem->m_pUserItem->isAllowedToConnect( remoteaddr );
-				pUDPClientThread->m_pCtrlObject->m_mutexUserList.Unlock();
+                // Check if this user is allowed to connect from this location
+                pUDPClientThread->m_pCtrlObject->m_mutexUserList.Lock();
+                bool bValidHost = 
+                        pUDPClientThread->m_pClientItem->m_pUserItem->isAllowedToConnect( remoteaddr );
+                pUDPClientThread->m_pCtrlObject->m_mutexUserList.Unlock();
 
-				if ( !bValidHost ) {
-					wxString strErr = wxString::Format(_("[UDP Client] Host [%s] not allowed to connect.\n"), 
+                if ( !bValidHost ) {
+                    wxString strErr = wxString::Format(_("[UDP Client] Host [%s] not allowed to connect.\n"), 
 #ifdef WIN32
-						                                     remoteaddr );
+                                                             remoteaddr );
 #else 
-						                                     (const char *)remoteaddr.mbc_str() );					
+                                                             (const char *)remoteaddr.mbc_str() );					
 #endif					
-					pUDPClientThread->m_pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO );
-					ns_send( conn,  MSG_INVALID_REMOTE_ERROR, strlen ( MSG_INVALID_REMOTE_ERROR ) );
-					return;
-				}
+                    pUDPClientThread->m_pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO );
+                    ns_send( conn,  MSG_INVALID_REMOTE_ERROR, strlen ( MSG_INVALID_REMOTE_ERROR ) );
+                    return;
+                }
 
-				// Copy in the user filter
-				memcpy( &pUDPClientThread->m_pClientItem->m_filterVSCP, 
-							&pUDPClientThread->m_pClientItem->m_pUserItem->m_filterVSCP, 
-							sizeof( vscpEventFilter ) );
+                // Copy in the user filter
+                memcpy( &pUDPClientThread->m_pClientItem->m_filterVSCP, 
+                            &pUDPClientThread->m_pClientItem->m_pUserItem->m_filterVSCP, 
+                            sizeof( vscpEventFilter ) );
 
                 wxString strErr = 
                             wxString::Format( _("[UDP Client] Host [%s] User [%s] allowed to connect.\n"), 
@@ -280,19 +280,19 @@ VSCPUDPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, vo
                                                 remoteaddr, 
                                                 pUDPClientThread->m_pClientItem->m_UserName );
 #else 
-												(const char *)remoteaddr.mbc_str(), 
+                                                (const char *)remoteaddr.mbc_str(), 
                                                 (const char *)pUDPClientThread->m_pClientItem->m_UserName.mbc_str() );
 #endif				
-	            pUDPClientThread->m_pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
-			}
-			break;
+                pUDPClientThread->m_pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
+            }
+            break;
 
-		case NS_POLL:
-			break;
+        case NS_POLL:
+            break;
 
-		default:
-			break;
-	}
+        default:
+            break;
+    }
 }
 
 

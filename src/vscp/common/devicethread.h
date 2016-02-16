@@ -45,39 +45,39 @@ class CDeviceItem;
 class deviceThread;
 
 /*!
-	This class implement a thread that write data
-	to a blocking CANAL driver
+    This class implement a thread that write data
+    to a blocking CANAL driver
 */
 
 class deviceCanalWriteThread : public wxThread
 {
 
 public:
-	
-	/// Constructor
-	deviceCanalWriteThread();
+    
+    /// Constructor
+    deviceCanalWriteThread();
 
-	/// Destructor
-	virtual ~deviceCanalWriteThread();
+    /// Destructor
+    virtual ~deviceCanalWriteThread();
 
-	/*!
-		Thread code entry point
-	*/
-	virtual void *Entry();
+    /*!
+        Thread code entry point
+    */
+    virtual void *Entry();
 
-	/*! 
-		called when the thread exits - whether it terminates normally or is
-		stopped with Delete() (but not when it is Kill()ed!)
-	*/
-	virtual void OnExit();
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+    */
+    virtual void OnExit();
 
-	/*!
-		Pointer to master thread.
-	*/
-	deviceThread *m_pMainThreadObj;
+    /*!
+        Pointer to master thread.
+    */
+    deviceThread *m_pMainThreadObj;
 
   /*!
-    Termination control
+        Termination control
   */
   bool m_bQuit;
 
@@ -86,40 +86,40 @@ public:
 
 
 /*!
-	This class implement a thread that read data
-	from a blocking CANAL driver
+    This class implement a thread that read data
+    from a blocking CANAL driver
 */
 
 class deviceCanalReceiveThread : public wxThread
 {
 
 public:
-	
-	/// Constructor
-	deviceCanalReceiveThread();
 
-	/// Destructor
-	virtual ~deviceCanalReceiveThread();
+    /// Constructor
+    deviceCanalReceiveThread();
 
-	/*!
-		Thread code entry point
-	*/
-	virtual void *Entry();
+    /// Destructor
+    virtual ~deviceCanalReceiveThread();
+
+    /*!
+        Thread code entry point
+    */
+    virtual void *Entry();
 
 
-	/*! 
-		called when the thread exits - whether it terminates normally or is
-		stopped with Delete() (but not when it is Kill()ed!)
-	*/
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+    */
     virtual void OnExit();
 
-	/*!
-		Pointer to master thread.
-	*/
-	deviceThread *m_pMainThreadObj;
+    /*!
+        Pointer to master thread.
+    */
+    deviceThread *m_pMainThreadObj;
 
   /*!
-    Termination control
+        Termination control
   */
   bool m_bQuit;
 
@@ -127,36 +127,36 @@ public:
 
 
 /*!
-	This class implement a thread that write data
-	to a blocking VSCP Level II driver
+    This class implement a thread that write data
+    to a blocking VSCP Level II driver
 */
 
 class deviceLevel2WriteThread : public wxThread
 {
 
 public:
-	
-	/// Constructor
-	deviceLevel2WriteThread();
 
-	/// Destructor
-	virtual ~deviceLevel2WriteThread();
+    /// Constructor
+    deviceLevel2WriteThread();
 
-	/*!
-		Thread code entry point
-	*/
-	virtual void *Entry();
+    /// Destructor
+    virtual ~deviceLevel2WriteThread();
 
-	/*! 
-		called when the thread exits - whether it terminates normally or is
-		stopped with Delete() (but not when it is Kill()ed!)
-	*/
-	virtual void OnExit();
+    /*!
+        Thread code entry point
+    */
+    virtual void *Entry();
 
-	/*!
-		Pointer to master thread.
-	*/
-	deviceThread *m_pMainThreadObj;
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+    */
+    virtual void OnExit();
+
+    /*!
+        Pointer to master thread.
+    */
+    deviceThread *m_pMainThreadObj;
 
   /*!
     Termination control
@@ -168,40 +168,40 @@ public:
 
 
 /*!
-	This class implement a thread that read data
-	from a blocking VSCP Level II driver
+    This class implement a thread that read data
+    from a blocking VSCP Level II driver
 */
 
 class deviceLevel2ReceiveThread : public wxThread
 {
 
 public:
-	
-	/// Constructor
-	deviceLevel2ReceiveThread();
+    
+    /// Constructor
+    deviceLevel2ReceiveThread();
 
-	/// Destructor
-	virtual ~deviceLevel2ReceiveThread();
+    /// Destructor
+    virtual ~deviceLevel2ReceiveThread();
 
-	/*!
-		Thread code entry point
-	*/
-	virtual void *Entry();
+    /*!
+        Thread code entry point
+    */
+    virtual void *Entry();
 
 
-	/*! 
-		called when the thread exits - whether it terminates normally or is
-		stopped with Delete() (but not when it is Kill()ed!)
-	*/
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+    */
     virtual void OnExit();
 
-	/*!
-		Pointer to master thread.
-	*/
-	deviceThread *m_pMainThreadObj;
+    /*!
+        Pointer to master thread.
+    */
+    deviceThread *m_pMainThreadObj;
 
   /*!
-    Termination control
+        Termination control
   */
   bool m_bQuit;
 
@@ -209,90 +209,89 @@ public:
 
 
 /*!
-	This class implement a one of thread that look
-	for specific events and react on them appropriately .
-
+    This class implement a one of thread that look
+    for specific events and react on them appropriately .
 */
 
 class deviceThread : public wxThread
 {
 
 public:
-	
-	/// Constructor
-	deviceThread();
 
-	/// Destructor
-	virtual ~deviceThread();
+    /// Constructor
+    deviceThread();
 
-	/*!
-		Thread code entry point
-	*/
-	virtual void *Entry();
+    /// Destructor
+    virtual ~deviceThread();
 
-
-	/*! 
-		called when the thread exits - whether it terminates normally or is
-		stopped with Delete() (but not when it is Kill()ed!)
-	*/
-  virtual void OnExit();
+    /*!
+        Thread code entry point
+    */
+    virtual void *Entry();
 
 
-	/// dl/dll handler
-	wxDynamicLibrary m_wxdll;
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+    */
+    virtual void OnExit();
 
-	/*!
-		DeviceItem for device to control	
-	*/
-	CDeviceItem *m_pDeviceItem;
 
-	/*!
-		Control object that invoked thread
-	*/
-	CControlObject *m_pCtrlObject;
+    /// dl/dll handler
+    wxDynamicLibrary m_wxdll;
 
-	/*!
-		Holder for CANAL receive thread
-	*/
-	deviceCanalReceiveThread *m_preceiveThread;
+    /*!
+        DeviceItem for device to control	
+    */
+    CDeviceItem *m_pDeviceItem;
 
-	/*!
-		Holder for CANAL write thread
-	*/
-	deviceCanalWriteThread *m_pwriteThread;
-	
-	
-	/*!
-		Holder for VSCP Level II receive thread
-	*/
-	deviceLevel2ReceiveThread *m_preceiveLevel2Thread;
+    /*!
+        Control object that invoked thread
+    */
+    CControlObject *m_pCtrlObject;
 
-	/*!
-		Holder for VSCP Level II write thread
-	*/
-	deviceLevel2WriteThread *m_pwriteLevel2Thread;
+    /*!
+        Holder for CANAL receive thread
+    */
+    deviceCanalReceiveThread *m_preceiveThread;
 
-	/*!
-		Check filter/mask to see if filter should be delivered
+    /*!
+        Holder for CANAL write thread
+    */
+    deviceCanalWriteThread *m_pwriteThread;
+    
+    
+    /*!
+        Holder for VSCP Level II receive thread
+    */
+    deviceLevel2ReceiveThread *m_preceiveLevel2Thread;
 
-		The filter have the following matrix
+    /*!
+        Holder for VSCP Level II write thread
+    */
+    deviceLevel2WriteThread *m_pwriteLevel2Thread;
 
-		mask bit n	|	filter bit n	| msg id bit	|	result
-		===========================================================
-			0				X					X			Accept
-			1				0					0			Accept
-			1				0					1			Reject
-			1				1					0			Reject
-			1				1					1			Accept
+    /*!
+        Check filter/mask to see if filter should be delivered
 
-			Formula is !( ( filter �d ) & mask )
+        The filter have the following matrix
 
-		@param pclientItem Pointer to client item
-		@param pcanalMsg Pointer to can message
-		@return True if message is accepted false if rejected
-		TODO
-	*/
-		
+        mask bit n	|	filter bit n	| msg id bit	|	result
+        ===========================================================
+            0               X                   X           Accept
+            1               0                   0           Accept
+            1               0                   1           Reject
+            1               1                   0           Reject
+            1               1                   1           Accept
+
+            Formula is !( ( filter �d ) & mask )
+
+        @param pclientItem Pointer to client item
+        @param pcanalMsg Pointer to can message
+        @return True if message is accepted false if rejected
+        TODO
+    */
+        
 };
 
 

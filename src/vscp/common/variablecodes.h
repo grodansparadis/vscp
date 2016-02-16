@@ -33,7 +33,7 @@
 #define VSCP_DAEMON_VARIABLE_CODE_INTEGER                   3   // Integer value
 #define VSCP_DAEMON_VARIABLE_CODE_LONG                      4   // Long value
 #define VSCP_DAEMON_VARIABLE_CODE_DOUBLE                    5   // Floating point value
-#define VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT			6   // VSCP data coding
+#define VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT          6   // VSCP data coding
 #define VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT                7   // VSCP event (Level II)
 #define VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID           8   // VSCP event GUID
 #define VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA           9   // VSCP event data

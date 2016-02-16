@@ -108,13 +108,13 @@ CDeviceItem::CDeviceItem()
     
     // VSCP Level II
     m_proc_VSCPOpen = NULL;
-	m_proc_VSCPClose = NULL;
-	m_proc_VSCPBlockingSend = NULL;
-	m_proc_VSCPBlockingReceive = NULL;
+    m_proc_VSCPClose = NULL;
+    m_proc_VSCPBlockingSend = NULL;
+    m_proc_VSCPBlockingReceive = NULL;
     m_proc_VSCPGetLevel = NULL;
     m_proc_VSCPGetVersion = NULL;
-	m_proc_VSCPGetDllVersion = NULL;
-	m_proc_VSCPGetVendorString = NULL;
+    m_proc_VSCPGetDllVersion = NULL;
+    m_proc_VSCPGetVendorString = NULL;
     m_proc_VSCPGetdriverInfo = NULL;
     m_proc_VSCPGetWebPageTemplate = NULL;
     m_proc_VSCPGetWebPageInfo = NULL;
@@ -254,7 +254,7 @@ bool CDeviceList::addItem(wxString strName,
             pDeviceItem->m_DeviceFlags = flags;
 
         } 
-		else {
+        else {
             //wxGetApp.logMsg(_("Driver does not exist."), DAEMON_LOGMSG_INFO );
             delete pDeviceItem;
             rv = false;

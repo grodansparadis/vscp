@@ -88,10 +88,20 @@ class dlgVscpInterfaceSettings: public wxPropertySheetDialog
 public:
   /// Constructors
   dlgVscpInterfaceSettings();
-  dlgVscpInterfaceSettings( wxWindow* parent, wxWindowID id = SYMBOL_DLGVSCPINTERFACESETTINGS_IDNAME, const wxString& caption = SYMBOL_DLGVSCPINTERFACESETTINGS_TITLE, const wxPoint& pos = SYMBOL_DLGVSCPINTERFACESETTINGS_POSITION, const wxSize& size = SYMBOL_DLGVSCPINTERFACESETTINGS_SIZE, long style = SYMBOL_DLGVSCPINTERFACESETTINGS_STYLE );
+  dlgVscpInterfaceSettings( wxWindow* parent, 
+                                wxWindowID id = SYMBOL_DLGVSCPINTERFACESETTINGS_IDNAME, 
+                                const wxString& caption = SYMBOL_DLGVSCPINTERFACESETTINGS_TITLE, 
+                                const wxPoint& pos = SYMBOL_DLGVSCPINTERFACESETTINGS_POSITION, 
+                                const wxSize& size = SYMBOL_DLGVSCPINTERFACESETTINGS_SIZE, 
+                                long style = SYMBOL_DLGVSCPINTERFACESETTINGS_STYLE );
 
   /// Creation
-  bool Create( wxWindow* parent, wxWindowID id = SYMBOL_DLGVSCPINTERFACESETTINGS_IDNAME, const wxString& caption = SYMBOL_DLGVSCPINTERFACESETTINGS_TITLE, const wxPoint& pos = SYMBOL_DLGVSCPINTERFACESETTINGS_POSITION, const wxSize& size = SYMBOL_DLGVSCPINTERFACESETTINGS_SIZE, long style = SYMBOL_DLGVSCPINTERFACESETTINGS_STYLE );
+  bool Create( wxWindow* parent, 
+                    wxWindowID id = SYMBOL_DLGVSCPINTERFACESETTINGS_IDNAME, 
+                    const wxString& caption = SYMBOL_DLGVSCPINTERFACESETTINGS_TITLE, 
+                    const wxPoint& pos = SYMBOL_DLGVSCPINTERFACESETTINGS_POSITION, 
+                    const wxSize& size = SYMBOL_DLGVSCPINTERFACESETTINGS_SIZE, 
+                    long style = SYMBOL_DLGVSCPINTERFACESETTINGS_STYLE );
 
   /// Destructor
   ~dlgVscpInterfaceSettings();

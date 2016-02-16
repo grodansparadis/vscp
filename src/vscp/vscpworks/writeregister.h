@@ -86,10 +86,20 @@ class WriteRegister: public wxDialog
 public:
   /// Constructors
   WriteRegister();
-  WriteRegister( wxWindow* parent, wxWindowID id = SYMBOL_WRITEREGISTER_IDNAME, const wxString& caption = SYMBOL_WRITEREGISTER_TITLE, const wxPoint& pos = SYMBOL_WRITEREGISTER_POSITION, const wxSize& size = SYMBOL_WRITEREGISTER_SIZE, long style = SYMBOL_WRITEREGISTER_STYLE );
+  WriteRegister( wxWindow* parent, 
+                    wxWindowID id = SYMBOL_WRITEREGISTER_IDNAME, 
+                    const wxString& caption = SYMBOL_WRITEREGISTER_TITLE, 
+                    const wxPoint& pos = SYMBOL_WRITEREGISTER_POSITION, 
+                    const wxSize& size = SYMBOL_WRITEREGISTER_SIZE, 
+                    long style = SYMBOL_WRITEREGISTER_STYLE );
 
   /// Creation
-  bool Create( wxWindow* parent, wxWindowID id = SYMBOL_WRITEREGISTER_IDNAME, const wxString& caption = SYMBOL_WRITEREGISTER_TITLE, const wxPoint& pos = SYMBOL_WRITEREGISTER_POSITION, const wxSize& size = SYMBOL_WRITEREGISTER_SIZE, long style = SYMBOL_WRITEREGISTER_STYLE );
+  bool Create( wxWindow* parent, 
+                wxWindowID id = SYMBOL_WRITEREGISTER_IDNAME, 
+                const wxString& caption = SYMBOL_WRITEREGISTER_TITLE, 
+                const wxPoint& pos = SYMBOL_WRITEREGISTER_POSITION, 
+                const wxSize& size = SYMBOL_WRITEREGISTER_SIZE, 
+                long style = SYMBOL_WRITEREGISTER_STYLE );
 
   /// Destructor
   ~WriteRegister();

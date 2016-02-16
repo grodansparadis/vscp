@@ -383,7 +383,12 @@ WriteRegister::WriteRegister()
   Init();
 }
 
-WriteRegister::WriteRegister( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+WriteRegister::WriteRegister( wxWindow* parent, 
+                                wxWindowID id, 
+                                const wxString& caption, 
+                                const wxPoint& pos, 
+                                const wxSize& size, 
+                                long style )
 {
   Init();
   Create(parent, id, caption, pos, size, style);
@@ -394,7 +399,12 @@ WriteRegister::WriteRegister( wxWindow* parent, wxWindowID id, const wxString& c
 // WriteRegister creator
 //
 
-bool WriteRegister::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+bool WriteRegister::Create( wxWindow* parent, 
+                                wxWindowID id, 
+                                const wxString& caption, 
+                                const wxPoint& pos, 
+                                const wxSize& size, 
+                                long style )
 {
 ////@begin WriteRegister creation
   SetExtraStyle(wxWS_EX_BLOCK_EVENTS);

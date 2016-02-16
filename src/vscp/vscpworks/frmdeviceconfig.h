@@ -63,10 +63,10 @@
 #include <register.h>
 #include <mdf.h>
 
-#define MAX_CONFIG_REGISTER_PAGE	22
+#define MAX_CONFIG_REGISTER_PAGE    22
 
-#define STATUSBAR_STATUS_RIGHT		1
-#define STATUSBAR_STATUS_LEFT		0
+#define STATUSBAR_STATUS_RIGHT      1
+#define STATUSBAR_STATUS_LEFT       0
 
 class wxToggleButton;
 class wxToolbook;
@@ -86,16 +86,16 @@ class wxHtmlWindow;
 DECLARE_EVENT_TYPE(wxVSCP_STATUS_CHANGE_EVENT, wxID_ANY )       // status change
 
 enum {
-	Menu_Popup_Read_Value = 2000,
-	Menu_Popup_Write_Value,
-	Menu_Popup_Update,
-	Menu_Popup_Load_MDF,
-	Menu_Popup_Undo,
-	Menu_Popup_Default,
-	Menu_Popup_dm_enable_row,
-	Menu_Popup_dm_disable_row,
-	Menu_Popup_dm_row_wizard,
-	Menu_Popup_go_VSCP
+    Menu_Popup_Read_Value = 2000,
+    Menu_Popup_Write_Value,
+    Menu_Popup_Update,
+    Menu_Popup_Load_MDF,
+    Menu_Popup_Undo,
+    Menu_Popup_Default,
+    Menu_Popup_dm_enable_row,
+    Menu_Popup_dm_disable_row,
+    Menu_Popup_dm_row_wizard,
+    Menu_Popup_go_VSCP
 };
 
 
@@ -104,143 +104,143 @@ enum {
 #define GRID_COLUMN_DESCRIPTION     3
 
 class frmDeviceConfig : public wxFrame {
-	DECLARE_CLASS(frmDeviceConfig)
-	DECLARE_EVENT_TABLE()
+    DECLARE_CLASS(frmDeviceConfig)
+    DECLARE_EVENT_TABLE()
 
 public:
-	/// Constructors
-	frmDeviceConfig();
-	frmDeviceConfig( wxWindow* parent, 
+    /// Constructors
+    frmDeviceConfig();
+    frmDeviceConfig( wxWindow* parent, 
                         wxWindowID id = SYMBOL_FRMDEVICECONFIG_IDNAME, 
                         const wxString& caption = SYMBOL_FRMDEVICECONFIG_TITLE, 
                         const wxPoint& pos = SYMBOL_FRMDEVICECONFIG_POSITION, 
                         const wxSize& size = SYMBOL_FRMDEVICECONFIG_SIZE, 
                         long style = SYMBOL_FRMDEVICECONFIG_STYLE);
 
-	bool Create( wxWindow* parent, 
+    bool Create( wxWindow* parent, 
                     wxWindowID id = SYMBOL_FRMDEVICECONFIG_IDNAME, 
                     const wxString& caption = SYMBOL_FRMDEVICECONFIG_TITLE, 
                     const wxPoint& pos = SYMBOL_FRMDEVICECONFIG_POSITION, 
                     const wxSize& size = SYMBOL_FRMDEVICECONFIG_SIZE, 
                     long style = SYMBOL_FRMDEVICECONFIG_STYLE );
 
-	/// Destructor
-	~frmDeviceConfig();
+    /// Destructor
+    ~frmDeviceConfig();
 
-	/// Initialises member variables
-	void Init();
+    /// Initialises member variables
+    void Init();
 
-	/// Creates the controls and sizers
-	void CreateControls();
+    /// Creates the controls and sizers
+    void CreateControls();
 
-	/*!
-	    Enable communication interface
-	    @return true on success
-	 */
-	bool enableInterface(void);
+    /*!
+        Enable communication interface
+        @return true on success
+     */
+    bool enableInterface(void);
 
-	/*!
-	    Disable communication interface
-	    @return true on success
-	 */
-	bool disableInterface(void);
-
-
-	/*!
-	    Write status infiormation
-	 */
-	void writeStatusInfo(void);
+    /*!
+        Disable communication interface
+        @return true on success
+     */
+    bool disableInterface(void);
 
 
-	/*!
-	    Read all Level 1 registers for anode
-	    @return True on success, false on failure.
-	 */
-	//bool readAllLevel2Registers( void );
-
-	bool writeChangedLevel1Registers(unsigned char nodeid);
-
-	bool writeChangedLevel2Registers(void);
+    /*!
+        Write status infiormation
+     */
+    void writeStatusInfo(void);
 
 
-	/*!
-	    Clear grid and other data content
-	 */
-	void clearAllContent(void);
+    /*!
+        Read all Level 1 registers for anode
+        @return True on success, false on failure.
+     */
+    //bool readAllLevel2Registers( void );
 
-	/*!
-	    Read value for selected row
-	 */
-	void readValueSelectedRow(wxCommandEvent& event);
+    bool writeChangedLevel1Registers(unsigned char nodeid);
 
-	/*!
-	    Write value for selected row
-	 */
-	void writeValueSelectedRow(wxCommandEvent& event);
+    bool writeChangedLevel2Registers(void);
 
-	/*!
-	    Undo value for selected row
-	 */
-	void undoValueSelectedRow(wxCommandEvent& event);
 
-	/*!
-	    Default value for selected row
-	 */
-	void defaultValueSelectedRow(wxCommandEvent& event);
+    /*!
+        Clear grid and other data content
+     */
+    void clearAllContent(void);
 
-	/*! 
-	    Update the DM grid
-	 */
-	void updateDmGrid(void);
+    /*!
+        Read value for selected row
+     */
+    void readValueSelectedRow(wxCommandEvent& event);
 
-	/*!
-	    Update decision matrix grid if a certain page:row is part 
-	    of it.
-	 */
-	void updateDmGridConditional(uint16_t reg, uint32_t page);
+    /*!
+        Write value for selected row
+     */
+    void writeValueSelectedRow(wxCommandEvent& event);
 
-	/*!
-	    Update the abstraction grid
-	 */
-	void updateAbstractionGrid(void);
+    /*!
+        Undo value for selected row
+     */
+    void undoValueSelectedRow(wxCommandEvent& event);
 
-	/*!
-	    Update abstraction grid if a certain page:row is part 
-	    of it.
-	 */
-	void updateAbstractionGridConditional(uint16_t reg, uint32_t page);
+    /*!
+        Default value for selected row
+     */
+    void defaultValueSelectedRow(wxCommandEvent& event);
 
-	/*!
-	    Enable selected DM row
-	 */
-	void dmEnableSelectedRow(wxCommandEvent& event);
+    /*! 
+        Update the DM grid
+     */
+    void updateDmGrid(void);
 
-	/*!
-	    Disable selected DM row
-	 */
-	void dmDisableSelectedRow(wxCommandEvent& event);
+    /*!
+        Update decision matrix grid if a certain page:row is part 
+        of it.
+     */
+    void updateDmGridConditional(uint16_t reg, uint32_t page);
 
-	/*!
-	    Start wizard that help users to set up a DM row
-	 */
-	void dmRowWizard(wxCommandEvent& event);
+    /*!
+        Update the abstraction grid
+     */
+    void updateAbstractionGrid(void);
 
-	/*!
-	    Get register from cell
-	    @return Register
-	 */
-	uint32_t getRegFromCell(int row);
+    /*!
+        Update abstraction grid if a certain page:row is part 
+        of it.
+     */
+    void updateAbstractionGridConditional(uint16_t reg, uint32_t page);
 
-	/*!
-	    Get page from cell
-	    @return Page
-	 */
-	uint16_t getPageFromCell(int row);
+    /*!
+        Enable selected DM row
+     */
+    void dmEnableSelectedRow(wxCommandEvent& event);
 
-	/*!
-	    Fill grid with standard registers
-	 */
-	void fillStandardRegisters(void);
+    /*!
+        Disable selected DM row
+     */
+    void dmDisableSelectedRow(wxCommandEvent& event);
+
+    /*!
+        Start wizard that help users to set up a DM row
+     */
+    void dmRowWizard(wxCommandEvent& event);
+
+    /*!
+        Get register from cell
+        @return Register
+     */
+    uint32_t getRegFromCell(int row);
+
+    /*!
+        Get page from cell
+        @return Page
+     */
+    uint16_t getPageFromCell(int row);
+
+    /*!
+        Fill grid with standard registers
+     */
+    void fillStandardRegisters(void);
 
 
     /*!
@@ -248,29 +248,29 @@ public:
     */
     void doUpdate( void );
 
-	/*!
-	    Get formatted value according to set configuration
+    /*!
+        Get formatted value according to set configuration
 
-	    @param val Value to format
-	    @return Formatted value.
-	 */
-	wxString getFormattedValue(uint8_t val);
+        @param val Value to format
+        @return Formatted value.
+     */
+    wxString getFormattedValue(uint8_t val);
 
-	/*!
-	    Return the row for a register:page
-	    @param reg Register to look for.
-	    @aram page Page to look for.
-	    @return Grid row where register:page is located. -1 is
-	    retuned if row is not found.
-	 */
-	int getRegisterGridRow(uint32_t reg, uint16_t page);
+    /*!
+        Return the row for a register:page
+        @param reg Register to look for.
+        @aram page Page to look for.
+        @return Grid row where register:page is located. -1 is
+        retuned if row is not found.
+     */
+    int getRegisterGridRow(uint32_t reg, uint16_t page);
 
-	/*!
-	    Fetch the GUID for a daemon interface from it's name
-	    @param VSCP daemon interface structure for TCP/IP interface.
-	    @return True on success.
-	 */
-	bool fetchIterfaceGUID(void);
+    /*!
+        Fetch the GUID for a daemon interface from it's name
+        @param VSCP daemon interface structure for TCP/IP interface.
+        @return True on success.
+     */
+    bool fetchIterfaceGUID(void);
 
     /*!
         Message handler that sets status messages on statusbar
@@ -370,121 +370,121 @@ public:
     /// Retrieves icon resources
     wxIcon GetIconResource( const wxString& name );
 
-	// Array with GUID's
-	wxArrayString m_guidarray;
+    // Array with GUID's
+    wxArrayString m_guidarray;
 
-	/// Flag for first read
-	bool m_bFirstRead;
+    /// Flag for first read
+    bool m_bFirstRead;
 
-	/// Interface type
-	int m_interfaceType;
+    /// Interface type
+    int m_interfaceType;
 
-	/*! 
+    /*! 
         GUID for interface or all
-	    zero if no interface selected
-	    uint8_t m_interfaceGUID[ 16 ];
+        zero if no interface selected
+        uint8_t m_interfaceGUID[ 16 ];
      */
-	cguid m_ifguid;
+    cguid m_ifguid;
 
-	/*! 
+    /*! 
         Name of interface or NULL string if
-	    interface is not used.
-	    wxString m_interfaceName;
+        interface is not used.
+        wxString m_interfaceName;
     */
-	
-	/*!
-		Data for the selected device
-		id holds type of i/f (DLL, TCP/IP
+    
+    /*!
+        Data for the selected device
+        id holds type of i/f (DLL, TCP/IP
     */
-	canal_interface m_canalif;
-	vscp_interface m_vscpif;
+    canal_interface m_canalif;
+    vscp_interface m_vscpif;
 
-	/*!
-	    CANAL driver level
-	 */
-	unsigned char m_driverLevel;
+    /*!
+        CANAL driver level
+     */
+    unsigned char m_driverLevel;
 
-	/*!
-	    The wrapper for the CANAL 
-	    functionality.
-	 */
-	CCanalSuperWrapper m_csw;
+    /*!
+        The wrapper for the CANAL 
+        functionality.
+     */
+    CCanalSuperWrapper m_csw;
 
-	/// Standard registers
-	CStandardRegisters m_stdRegisters;
+    /// Standard registers
+    CStandardRegisters m_stdRegisters;
 
     /// User registers
     CUserRegisters m_userRegisters;
 
-	/// Module description file functionality
-	CMDF m_mdf;
+    /// Module description file functionality
+    CMDF m_mdf;
 
-	//static const int m_constGridRegisterWidth = 70;
+    //static const int m_constGridRegisterWidth = 70;
 
-	enum {
-		m_constGridRegisterDefaultWidth = 70
-	};
+    enum {
+        m_constGridRegisterDefaultWidth = 70
+    };
 
-	enum {
-		m_constGridAccessRightDefaultWidth = 20
-	};
+    enum {
+        m_constGridAccessRightDefaultWidth = 20
+    };
 
-	enum {
-		m_constGridContentdefaultWidth = 80
-	};
+    enum {
+        m_constGridContentdefaultWidth = 80
+    };
 
-	enum {
-		m_constGridDescriptionDefaultWidth = 570
-	};
+    enum {
+        m_constGridDescriptionDefaultWidth = 570
+    };
 
-	enum {
-		m_constGridAbstractionNameDefaultWidth = 230
-	};
+    enum {
+        m_constGridAbstractionNameDefaultWidth = 230
+    };
 
-	enum {
-		m_constGridAbstractionTypeDefaultWidth = 170
-	};
+    enum {
+        m_constGridAbstractionTypeDefaultWidth = 170
+    };
 
-	enum {
-		m_constGridAbstractionAccessDefaultWidth = 50
-	};
+    enum {
+        m_constGridAbstractionAccessDefaultWidth = 50
+    };
 
-	enum {
-		m_constGridAbstractionContentdefaultWidth = 80
-	};
+    enum {
+        m_constGridAbstractionContentdefaultWidth = 80
+    };
 
-	enum {
-		m_constGridAbstractionDescriptionDefaultWidth = 700
-	};
+    enum {
+        m_constGridAbstractionDescriptionDefaultWidth = 700
+    };
 
-	enum {
-		m_constGridDMOrigAddressDefaultWidth = 90
-	};
+    enum {
+        m_constGridDMOrigAddressDefaultWidth = 90
+    };
 
-	enum {
-		m_constGridDMFlagsDefaultWidth = 90
-	};
+    enum {
+        m_constGridDMFlagsDefaultWidth = 90
+    };
 
-	enum {
-		m_constGridDMMasksDefaultWidth = 90
-	};
+    enum {
+        m_constGridDMMasksDefaultWidth = 90
+    };
 
-	enum {
-		m_constGridDMActionDefaultWidth = 90
-	};
+    enum {
+        m_constGridDMActionDefaultWidth = 90
+    };
 
-	enum {
-		m_constGridDMActionParamDefaultWidth = 90
-	};
+    enum {
+        m_constGridDMActionParamDefaultWidth = 90
+    };
 
-	/// Last left click column
-	int m_lastLeftClickCol;
+    /// Last left click column
+    int m_lastLeftClickCol;
 
-	/// Last left click row
-	int m_lastLeftClickRow;
+    /// Last left click row
+    int m_lastLeftClickRow;
 
-	/// Should we show tooltips?
-	static bool ShowToolTips();
+    /// Should we show tooltips?
+    static bool ShowToolTips();
 
     wxStatusBar* m_pitemStatusBar;
     wxComboBox* m_comboNodeID;

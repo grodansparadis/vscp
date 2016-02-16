@@ -87,10 +87,20 @@ class DialogSetfiltermask: public wxDialog
 public:
   /// Constructors
   DialogSetfiltermask();
-  DialogSetfiltermask( wxWindow* parent, wxWindowID id = SYMBOL_DIALOGSETFILTERMASK_IDNAME, const wxString& caption = SYMBOL_DIALOGSETFILTERMASK_TITLE, const wxPoint& pos = SYMBOL_DIALOGSETFILTERMASK_POSITION, const wxSize& size = SYMBOL_DIALOGSETFILTERMASK_SIZE, long style = SYMBOL_DIALOGSETFILTERMASK_STYLE );
+  DialogSetfiltermask( wxWindow* parent, 
+                            wxWindowID id = SYMBOL_DIALOGSETFILTERMASK_IDNAME, 
+                            const wxString& caption = SYMBOL_DIALOGSETFILTERMASK_TITLE, 
+                            const wxPoint& pos = SYMBOL_DIALOGSETFILTERMASK_POSITION, 
+                            const wxSize& size = SYMBOL_DIALOGSETFILTERMASK_SIZE, 
+                            long style = SYMBOL_DIALOGSETFILTERMASK_STYLE );
 
   /// Creation
-  bool Create( wxWindow* parent, wxWindowID id = SYMBOL_DIALOGSETFILTERMASK_IDNAME, const wxString& caption = SYMBOL_DIALOGSETFILTERMASK_TITLE, const wxPoint& pos = SYMBOL_DIALOGSETFILTERMASK_POSITION, const wxSize& size = SYMBOL_DIALOGSETFILTERMASK_SIZE, long style = SYMBOL_DIALOGSETFILTERMASK_STYLE );
+  bool Create( wxWindow* parent, 
+                    wxWindowID id = SYMBOL_DIALOGSETFILTERMASK_IDNAME, 
+                    const wxString& caption = SYMBOL_DIALOGSETFILTERMASK_TITLE, 
+                    const wxPoint& pos = SYMBOL_DIALOGSETFILTERMASK_POSITION, 
+                    const wxSize& size = SYMBOL_DIALOGSETFILTERMASK_SIZE, 
+                    long style = SYMBOL_DIALOGSETFILTERMASK_STYLE );
 
   /// Destructor
   ~DialogSetfiltermask();

@@ -941,6 +941,9 @@ CWrkThread::Entry()
                         
                         case VSCP_CLASS2_MEASUREMENT_STR:
                         {
+                            if ( VSCP_CLASS2_MEASUREMENT_STR != pEvent->vscp_class ) {
+                                break;
+                            }
 
                             // There must be at least one 
                             // character in the string
@@ -1045,7 +1048,8 @@ CWrkThread::Entry()
                                 break;
                             }
                             
-                            vscp_getVSCPMeasurementAsString( pEvent, str );
+                            //vscp_getVSCPMeasurementAsString( pEvent, str );
+                            vscp_writeVscpEventToString( pEvent, str );
                             goto PUBLISH;
                             
                         /*    

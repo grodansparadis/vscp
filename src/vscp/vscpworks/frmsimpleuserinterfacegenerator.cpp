@@ -451,7 +451,12 @@ SimpleUserInterfaceGenerator::SimpleUserInterfaceGenerator()
   Init();
 }
 
-SimpleUserInterfaceGenerator::SimpleUserInterfaceGenerator( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+SimpleUserInterfaceGenerator::SimpleUserInterfaceGenerator( wxWindow* parent, 
+                                                                wxWindowID id, 
+                                                                const wxString& caption, 
+                                                                const wxPoint& pos, 
+                                                                const wxSize& size, 
+                                                                long style )
 {
   Init();
   Create( parent, id, caption, pos, size, style );
@@ -462,7 +467,12 @@ SimpleUserInterfaceGenerator::SimpleUserInterfaceGenerator( wxWindow* parent, wx
 // SimpleUserInterfaceGenerator creator
 //
 
-bool SimpleUserInterfaceGenerator::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+bool SimpleUserInterfaceGenerator::Create( wxWindow* parent, 
+                                                wxWindowID id, 
+                                                const wxString& caption, 
+                                                const wxPoint& pos, 
+                                                const wxSize& size, 
+                                                long style )
 {
 ////@begin SimpleUserInterfaceGenerator creation
   wxFrame::Create( parent, id, caption, pos, size, style );

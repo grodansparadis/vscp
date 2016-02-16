@@ -497,7 +497,12 @@ frmCANALSession::frmCANALSession()
     Init();
 }
 
-frmCANALSession::frmCANALSession( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+frmCANALSession::frmCANALSession( wxWindow* parent, 
+                                    wxWindowID id, 
+                                    const wxString& caption, 
+                                    const wxPoint& pos, 
+                                    const wxSize& size, 
+                                    long style )
 {
     Init();
     Create( parent, id, caption, pos, size, style );
@@ -508,7 +513,12 @@ frmCANALSession::frmCANALSession( wxWindow* parent, wxWindowID id, const wxStrin
  * frmCANALSessionNoMIDI creator
  */
 
-bool frmCANALSession::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+bool frmCANALSession::Create( wxWindow* parent, 
+                                wxWindowID id, 
+                                const wxString& caption, 
+                                const wxPoint& pos, 
+                                const wxSize& size, 
+                                long style )
 {
 ////@begin frmCANALSession creation
   wxFrame::Create( parent, id, caption, pos, size, style );

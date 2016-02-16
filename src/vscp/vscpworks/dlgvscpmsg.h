@@ -93,10 +93,20 @@ class dlgVSCPMsg: public wxDialog
 public:
     /// Constructors
     dlgVSCPMsg();
-    dlgVSCPMsg( wxWindow* parent, wxWindowID id = SYMBOL_DLGVSCPMSG_IDNAME, const wxString& caption = SYMBOL_DLGVSCPMSG_TITLE, const wxPoint& pos = SYMBOL_DLGVSCPMSG_POSITION, const wxSize& size = SYMBOL_DLGVSCPMSG_SIZE, long style = SYMBOL_DLGVSCPMSG_STYLE );
+    dlgVSCPMsg( wxWindow* parent, 
+                    wxWindowID id = SYMBOL_DLGVSCPMSG_IDNAME, 
+                    const wxString& caption = SYMBOL_DLGVSCPMSG_TITLE, 
+                    const wxPoint& pos = SYMBOL_DLGVSCPMSG_POSITION, 
+                    const wxSize& size = SYMBOL_DLGVSCPMSG_SIZE, 
+                    long style = SYMBOL_DLGVSCPMSG_STYLE );
 
     /// Creation
-    bool Create( wxWindow* parent, wxWindowID id = SYMBOL_DLGVSCPMSG_IDNAME, const wxString& caption = SYMBOL_DLGVSCPMSG_TITLE, const wxPoint& pos = SYMBOL_DLGVSCPMSG_POSITION, const wxSize& size = SYMBOL_DLGVSCPMSG_SIZE, long style = SYMBOL_DLGVSCPMSG_STYLE );
+    bool Create( wxWindow* parent, 
+                    wxWindowID id = SYMBOL_DLGVSCPMSG_IDNAME, 
+                    const wxString& caption = SYMBOL_DLGVSCPMSG_TITLE, 
+                    const wxPoint& pos = SYMBOL_DLGVSCPMSG_POSITION, 
+                    const wxSize& size = SYMBOL_DLGVSCPMSG_SIZE, 
+                    long style = SYMBOL_DLGVSCPMSG_STYLE );
 
     /// Destructor
     ~dlgVSCPMsg();

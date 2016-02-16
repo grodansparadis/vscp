@@ -40,7 +40,7 @@
 #define MSG_PASSWORD_OK                     "+OK - Ready to work.\r\n"
 #define MSG_QUEUE_CLEARED                   "+OK - All events cleared.\r\n"
 #define MSG_RECEIVE_LOOP                    "+OK - Receive loop entered. QUITLOOP to terminate.\r\n"
-#define MSG_QUIT_LOOP						"+OK - Quit receive loop.\r\n"
+#define MSG_QUIT_LOOP                       "+OK - Quit receive loop.\r\n"
 #define MSG_CAN_MODE                        "+OK - CAN mode set.\r\n"
 
 #define MSG_ERROR                           "-OK - Error\r\n"
@@ -73,74 +73,74 @@
 typedef const char * ( * COMMAND_METHOD) (  void );
 
 /*!
-	Class that defines one command
+    Class that defines one command
 */
 typedef struct {
-	wxString m_strCmd;                  // Command name
-	uint8_t m_securityLevel;            // Security level for command (0-15)
-	wxProcess *m_pfnCommand;            // Function to execute
+    wxString m_strCmd;                  // Command name
+    uint8_t m_securityLevel;            // Security level for command (0-15)
+    wxProcess *m_pfnCommand;            // Function to execute
 } structUDPCommand;
 
 
 
 /*!
-	This class implement the listen thread for
-	the vscpd connections on the UDP interface
+    This class implement the listen thread for
+    the vscpd connections on the UDP interface
 */
 
 class VSCPUDPClientThread : public wxThread
 {
 
 public:
-	
-	/// Constructor
-	VSCPUDPClientThread();
+    
+    /// Constructor
+    VSCPUDPClientThread();
 
-	/// Destructor
-	~VSCPUDPClientThread();
+    /// Destructor
+    ~VSCPUDPClientThread();
 
-	/*!
-		Thread code entry point
-	*/
-	virtual void *Entry();
+    /*!
+        Thread code entry point
+    */
+    virtual void *Entry();
 
-	/*!
-		TCP/IP handler
-	*/
-	static void ev_handler(struct ns_connection *conn, enum ns_event ev, void *p);
+    /*!
+        TCP/IP handler
+    */
+    static void ev_handler(struct ns_connection *conn, enum ns_event ev, void *p);
 
-	/*! 
-		called when the thread exits - whether it terminates normally or is
-		stopped with Delete() (but not when it is Kill()ed!)
-	*/
-	virtual void OnExit();
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+    */
+    virtual void OnExit();
 
 
 // --- Member variables ---
 
-	/*!
-		Termination control
-	*/
-	bool m_bQuit;
+    /*!
+        Termination control
+    */
+    bool m_bQuit;
 
-	/*!
-		Pointer to ower owner
-	*/
-	CControlObject *m_pCtrlObject;
+    /*!
+        Pointer to ower owner
+    */
+    CControlObject *m_pCtrlObject;
 
-	/*!
-		UDP Client
-	*/
-	CClientItem *m_pClientItem;
+    /*!
+        UDP Client
+    */
+    CClientItem *m_pClientItem;
 
-	/// Last connand executed
-	wxString m_lastCommand;
+    /// Last connand executed
+    wxString m_lastCommand;
 
-	// Current command
-	wxString m_currentCommand;
+    // Current command
+    wxString m_currentCommand;
 
-	/// Current command i all upper case
-	wxString m_currentCommandUC;
+    /// Current command i all upper case
+    wxString m_currentCommandUC;
 
 };
 
@@ -148,41 +148,41 @@ public:
 
 
 /*!
-	This class implement a worker thread that
-	logs UDP received data.
+    This class implement a worker thread that
+    logs UDP received data.
 */
 
 class UDPWorkerThread : public wxThread
 {
 
 public:
-	
-	/// Constructor
-	UDPWorkerThread();
+    
+    /// Constructor
+    UDPWorkerThread();
 
-	/// Destructor
-	~UDPWorkerThread();
+    /// Destructor
+    ~UDPWorkerThread();
 
-	/*!
-		Thread code entry point
-	*/
-	virtual void *Entry();
+    /*!
+        Thread code entry point
+    */
+    virtual void *Entry();
 
-	/*! 
-		called when the thread exits - whether it terminates normally or is
-		stopped with Delete() (but not when it is Kill()ed!)
-	*/
-	virtual void OnExit();
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+    */
+    virtual void OnExit();
 
 
 // --- Member variables ---
 
-	/*!
-		Termination control
-	*/
-	bool m_bQuit;
+    /*!
+        Termination control
+    */
+    bool m_bQuit;
 
-	
+    
 
 };
 

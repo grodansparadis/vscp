@@ -47,28 +47,28 @@ static CDllDrvObj *theApp = NULL;
 BOOL APIENTRY DllMain( HANDLE hInstDll, 
                        DWORD  ul_reason_for_call, 
                        LPVOID lpReserved
-					 )
+                     )
 {
-	switch( ul_reason_for_call ) {
+    switch( ul_reason_for_call ) {
 
-		case DLL_PROCESS_ATTACH:
-			hThisInstDll = hInstDll;
-			theApp = new CDllDrvObj();
-			theApp->InitInstance();
-			break;
+        case DLL_PROCESS_ATTACH:
+            hThisInstDll = hInstDll;
+            theApp = new CDllDrvObj();
+            theApp->InitInstance();
+            break;
 
-		case DLL_THREAD_ATTACH:
-			break;
+        case DLL_THREAD_ATTACH:
+            break;
 
-		case DLL_THREAD_DETACH:
- 			break;
+        case DLL_THREAD_DETACH:
+            break;
 
-		case DLL_PROCESS_DETACH:
-			if ( NULL != theApp ) delete theApp;
- 			break;
+        case DLL_PROCESS_DETACH:
+            if ( NULL != theApp ) delete theApp;
+            break;
    }
 
-	return TRUE;
+    return TRUE;
 
 }
 
@@ -86,25 +86,25 @@ extern "C" long WINAPI EXPORT CanalOpen( const char *pDevice, unsigned long flag
 extern "C" long CanalOpen( const char *pDevice, unsigned long flags )
 #endif
 {
-	long h = 0;
-	
-	CZanthicObj *pdrvObj = new CZanthicObj();
-	if ( NULL != pdrvObj ) {
+    long h = 0;
+    
+    CZanthicObj *pdrvObj = new CZanthicObj();
+    if ( NULL != pdrvObj ) {
 
-		if ( pdrvObj->open( pDevice, flags ) ){
+        if ( pdrvObj->open( pDevice, flags ) ){
 
-			if ( !( h = theApp->addDriverObject( pdrvObj ) ) ) {
-				delete pdrvObj;
-			}
+            if ( !( h = theApp->addDriverObject( pdrvObj ) ) ) {
+                delete pdrvObj;
+            }
 
-		}
-		else {
-			delete pdrvObj;
-		}
+        }
+        else {
+            delete pdrvObj;
+        }
 
-	}
+    }
  
-	return h;
+    return h;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -117,14 +117,14 @@ extern "C" int  WINAPI EXPORT CanalClose( long handle )
 extern "C" int CanalClose( long handle )
 #endif
 {
-	int rv = 0;
+    int rv = 0;
 
-	CZanthicObj *pdrvObj =  theApp->getDriverObject( handle );
-	if ( NULL == pdrvObj ) return 0;
-	pdrvObj->close();
-	theApp->removeDriverObject( handle );
-	
-	return CANAL_ERROR_SUCCESS;
+    CZanthicObj *pdrvObj =  theApp->getDriverObject( handle );
+    if ( NULL == pdrvObj ) return 0;
+    pdrvObj->close();
+    theApp->removeDriverObject( handle );
+    
+    return CANAL_ERROR_SUCCESS;
 }
 
 
@@ -138,7 +138,7 @@ extern "C" unsigned long WINAPI EXPORT CanalGetLevel( long handle )
 extern "C" unsigned long CanalGetLevel( long handle )
 #endif
 {
-	return CANAL_LEVEL_STANDARD;
+    return CANAL_LEVEL_STANDARD;
 }
 
 
@@ -152,9 +152,9 @@ extern "C" int WINAPI EXPORT CanalSend( long handle, PCANALMSG pCanalMsg  )
 extern "C" int CanalSend( long handle, PCANALMSG pCanalMsg  )
 #endif
 {
-	CZanthicObj *pdrvObj =  theApp->getDriverObject( handle );
-	if ( NULL == pdrvObj ) return 0;
-	return ( pdrvObj->writeMsg( pCanalMsg ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC );
+    CZanthicObj *pdrvObj =  theApp->getDriverObject( handle );
+    if ( NULL == pdrvObj ) return 0;
+    return ( pdrvObj->writeMsg( pCanalMsg ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -167,9 +167,9 @@ extern "C" int WINAPI EXPORT CanalReceive( long handle, PCANALMSG pCanalMsg  )
 extern "C" int CanalReceive( long handle, PCANALMSG pCanalMsg  )
 #endif
 {
-	CZanthicObj *pdrvObj =  theApp->getDriverObject( handle );
-	if ( NULL == pdrvObj ) return 0;
-	return ( pdrvObj->readMsg( pCanalMsg ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC );
+    CZanthicObj *pdrvObj =  theApp->getDriverObject( handle );
+    if ( NULL == pdrvObj ) return 0;
+    return ( pdrvObj->readMsg( pCanalMsg ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -182,9 +182,9 @@ extern "C" int WINAPI EXPORT CanalDataAvailable( long handle  )
 extern "C" int CanalDataAvailable( long handle  )
 #endif
 {
-	CZanthicObj *pdrvObj =  theApp->getDriverObject( handle );
-	if ( NULL == pdrvObj ) return 0;
-	return pdrvObj->dataAvailable();
+    CZanthicObj *pdrvObj =  theApp->getDriverObject( handle );
+    if ( NULL == pdrvObj ) return 0;
+    return pdrvObj->dataAvailable();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -197,9 +197,9 @@ extern "C" int WINAPI EXPORT CanalGetStatus( long handle, PCANALSTATUS pCanalSta
 extern "C" int CanalGetStatus( long handle, PCANALSTATUS pCanalStatus  )
 #endif
 {
-	CZanthicObj *pdrvObj =  theApp->getDriverObject( handle );
-	if ( NULL == pdrvObj ) return 0;
-	return ( pdrvObj->getStatus( pCanalStatus ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC );
+    CZanthicObj *pdrvObj =  theApp->getDriverObject( handle );
+    if ( NULL == pdrvObj ) return 0;
+    return ( pdrvObj->getStatus( pCanalStatus ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -212,9 +212,9 @@ extern "C" int WINAPI EXPORT CanalGetStatistics( long handle, PCANALSTATISTICS p
 extern "C" int CanalGetStatistics( long handle, PCANALSTATISTICS pCanalStatistics  )
 #endif
 {
-	CZanthicObj *pdrvObj =  theApp->getDriverObject( handle );
-	if ( NULL == pdrvObj ) return 0;
-	return ( pdrvObj->getStatistics( pCanalStatistics ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC );
+    CZanthicObj *pdrvObj =  theApp->getDriverObject( handle );
+    if ( NULL == pdrvObj ) return 0;
+    return ( pdrvObj->getStatistics( pCanalStatistics ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -227,9 +227,9 @@ extern "C" int WINAPI EXPORT CanalSetFilter( long handle, unsigned long filter )
 extern "C" int CanalSetFilter( long handle, unsigned long filter )
 #endif
 {
-	CZanthicObj *pdrvObj =  theApp->getDriverObject( handle );
-	if ( NULL == pdrvObj ) return 0;
-	return ( pdrvObj->setFilter( filter ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC );
+    CZanthicObj *pdrvObj =  theApp->getDriverObject( handle );
+    if ( NULL == pdrvObj ) return 0;
+    return ( pdrvObj->setFilter( filter ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -242,9 +242,9 @@ extern "C" int WINAPI EXPORT CanalSetMask( long handle, unsigned long mask )
 extern "C" int CanalSetMask( long handle, unsigned long mask )
 #endif
 {
-	CZanthicObj *pdrvObj =  theApp->getDriverObject( handle );
-	if ( NULL == pdrvObj ) return 0;
-	return ( pdrvObj->setMask( mask ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC );
+    CZanthicObj *pdrvObj =  theApp->getDriverObject( handle );
+    if ( NULL == pdrvObj ) return 0;
+    return ( pdrvObj->setMask( mask ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -257,8 +257,8 @@ extern "C" int WINAPI EXPORT CanalSetBaudrate( long handle, unsigned long baudra
 extern "C" int CanalSetBaudrate( long handle, unsigned long baudrate )
 #endif
 {	
-	// Not supported in this DLL
-	return CANAL_ERROR_NOT_SUPPORTED;
+    // Not supported in this DLL
+    return CANAL_ERROR_NOT_SUPPORTED;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -271,14 +271,14 @@ extern "C" unsigned long WINAPI EXPORT CanalGetVersion( void )
 extern "C" unsigned long CanalGetVersion( void )
 #endif
 {
-	unsigned long version;
-	unsigned char *p = (unsigned char *)&version;
+    unsigned long version;
+    unsigned char *p = (unsigned char *)&version;
 
-	*p = CANAL_MAIN_VERSION;
-	*(p+1) = CANAL_MINOR_VERSION;
-	*(p+2) = CANAL_SUB_VERSION;
-	*(p+3) = 0;
-	return version;
+    *p = CANAL_MAIN_VERSION;
+    *(p+1) = CANAL_MINOR_VERSION;
+    *(p+2) = CANAL_SUB_VERSION;
+    *(p+3) = 0;
+    return version;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -291,7 +291,7 @@ extern "C" unsigned long WINAPI EXPORT CanalGetDllVersion( void )
 extern "C" unsigned long CanalGetDllVersion( void )
 #endif
 {
-	return DLL_VERSION;
+    return DLL_VERSION;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -304,7 +304,7 @@ extern "C" const char * WINAPI EXPORT CanalGetVendorString( void )
 extern "C" const char * CanalGetVendorString( void )
 #endif
 {
-	return CANAL_DLL_VENDOR;
+    return CANAL_DLL_VENDOR;
 }
 
 

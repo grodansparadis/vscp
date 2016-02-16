@@ -79,80 +79,80 @@
  */
 
 class DialogAbstractionEdit : public wxDialog {
-	DECLARE_DYNAMIC_CLASS(DialogAbstractionEdit)
-	DECLARE_EVENT_TABLE()
+    DECLARE_DYNAMIC_CLASS(DialogAbstractionEdit)
+    DECLARE_EVENT_TABLE()
 
 public:
-	/// Constructors
-	DialogAbstractionEdit();
-	DialogAbstractionEdit(wxWindow* parent, wxWindowID id = SYMBOL_DIALOGABSTRACTIONEDIT_IDNAME, const wxString& caption = SYMBOL_DIALOGABSTRACTIONEDIT_TITLE, const wxPoint& pos = SYMBOL_DIALOGABSTRACTIONEDIT_POSITION, const wxSize& size = SYMBOL_DIALOGABSTRACTIONEDIT_SIZE, long style = SYMBOL_DIALOGABSTRACTIONEDIT_STYLE);
+    /// Constructors
+    DialogAbstractionEdit();
+    DialogAbstractionEdit(wxWindow* parent, wxWindowID id = SYMBOL_DIALOGABSTRACTIONEDIT_IDNAME, const wxString& caption = SYMBOL_DIALOGABSTRACTIONEDIT_TITLE, const wxPoint& pos = SYMBOL_DIALOGABSTRACTIONEDIT_POSITION, const wxSize& size = SYMBOL_DIALOGABSTRACTIONEDIT_SIZE, long style = SYMBOL_DIALOGABSTRACTIONEDIT_STYLE);
 
-	/// Creation
-	bool Create(wxWindow* parent, wxWindowID id = SYMBOL_DIALOGABSTRACTIONEDIT_IDNAME, const wxString& caption = SYMBOL_DIALOGABSTRACTIONEDIT_TITLE, const wxPoint& pos = SYMBOL_DIALOGABSTRACTIONEDIT_POSITION, const wxSize& size = SYMBOL_DIALOGABSTRACTIONEDIT_SIZE, long style = SYMBOL_DIALOGABSTRACTIONEDIT_STYLE);
+    /// Creation
+    bool Create(wxWindow* parent, wxWindowID id = SYMBOL_DIALOGABSTRACTIONEDIT_IDNAME, const wxString& caption = SYMBOL_DIALOGABSTRACTIONEDIT_TITLE, const wxPoint& pos = SYMBOL_DIALOGABSTRACTIONEDIT_POSITION, const wxSize& size = SYMBOL_DIALOGABSTRACTIONEDIT_SIZE, long style = SYMBOL_DIALOGABSTRACTIONEDIT_STYLE);
 
-	/// Destructor
-	~DialogAbstractionEdit();
+    /// Destructor
+    ~DialogAbstractionEdit();
 
-	/// Initialises member variables
-	void Init();
+    /// Initialises member variables
+    void Init();
 
-	/// Creates the controls and sizers
-	void CreateControls();
+    /// Creates the controls and sizers
+    void CreateControls();
 
-	/// Transfers data to the window
-	bool TransferDataToWindow(CMDF_Abstraction *pAbstraction, wxString &strValue);
+    /// Transfers data to the window
+    bool TransferDataToWindow(CMDF_Abstraction *pAbstraction, wxString &strValue);
 
-	/// Transfers data from the window
-	bool TransferDataFromWindow(wxString &strValue);
+    /// Transfers data from the window
+    bool TransferDataFromWindow(wxString &strValue);
 
-	/// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON18
-	void OnButtonDefaultClick(wxCommandEvent& event);
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON18
+    void OnButtonDefaultClick(wxCommandEvent& event);
 
-	int GetTest() const
-	{
-		return m_nType;
-	}
+    int GetTest() const
+    {
+        return m_nType;
+    }
 
-	void SetTest(int value)
-	{
-		m_nType = value;
-	}
+    void SetTest(int value)
+    {
+        m_nType = value;
+    }
 
-	/// Retrieves bitmap resources
-	wxBitmap GetBitmapResource(const wxString& name);
+    /// Retrieves bitmap resources
+    wxBitmap GetBitmapResource(const wxString& name);
 
-	/// Retrieves icon resources
-	wxIcon GetIconResource(const wxString& name);
+    /// Retrieves icon resources
+    wxIcon GetIconResource(const wxString& name);
 
-	/// Should we show tooltips?
-	static bool ShowToolTips();
+    /// Should we show tooltips?
+    static bool ShowToolTips();
 
-	/// Pointer to the abstraction we are working with
-	CMDF_Abstraction *m_pAbstraction;
+    /// Pointer to the abstraction we are working with
+    CMDF_Abstraction *m_pAbstraction;
 
-	wxStaticText* m_abstractionName;
-	wxStaticText* m_abstractionId;
-	wxStaticText* m_abstractionType;
-	wxStaticText* m_abstractionWidth;
-	wxStaticText* m_abstractionRegisterPage;
-	wxStaticText* m_abstractionRegisterOffset;
-	wxStaticText* m_abstractionDescription;
-	wxStaticText* m_abstractionHelp;
-	wxStaticText* m_abstractionAccessRights;
-	wxStaticText* m_abstractionDefaultValue;
-	wxStaticText* m_singleValueLabel;
-	wxTextCtrl* m_abstractionValue;
-	wxStaticText* m_multipleValueLabel;
-	wxChoice* m_abstractionComboValue;
-	int m_nType; // Abstraction type
-	/// Control identifiers
+    wxStaticText* m_abstractionName;
+    wxStaticText* m_abstractionId;
+    wxStaticText* m_abstractionType;
+    wxStaticText* m_abstractionWidth;
+    wxStaticText* m_abstractionRegisterPage;
+    wxStaticText* m_abstractionRegisterOffset;
+    wxStaticText* m_abstractionDescription;
+    wxStaticText* m_abstractionHelp;
+    wxStaticText* m_abstractionAccessRights;
+    wxStaticText* m_abstractionDefaultValue;
+    wxStaticText* m_singleValueLabel;
+    wxTextCtrl* m_abstractionValue;
+    wxStaticText* m_multipleValueLabel;
+    wxChoice* m_abstractionComboValue;
+    int m_nType; // Abstraction type
+    /// Control identifiers
 
-	enum {
-		ID_DIALOGABSTRACTIONEDIT = 10042,
-		ID_BUTTON18 = 10145,
-		ID_TEXTCTRL_ABSTRACTION_VALUE = 10002,
-		ID_CHOICE1 = 10043
-	};
+    enum {
+        ID_DIALOGABSTRACTIONEDIT = 10042,
+        ID_BUTTON18 = 10145,
+        ID_TEXTCTRL_ABSTRACTION_VALUE = 10002,
+        ID_CHOICE1 = 10043
+    };
 };
 
 #endif

@@ -89,10 +89,20 @@ class dlgVSCPFilter: public wxDialog
 public:
   /// Constructors
   dlgVSCPFilter();
-  dlgVSCPFilter( wxWindow* parent, wxWindowID id = SYMBOL_DLGVSCPFILTER_IDNAME, const wxString& caption = SYMBOL_DLGVSCPFILTER_TITLE, const wxPoint& pos = SYMBOL_DLGVSCPFILTER_POSITION, const wxSize& size = SYMBOL_DLGVSCPFILTER_SIZE, long style = SYMBOL_DLGVSCPFILTER_STYLE );
+  dlgVSCPFilter( wxWindow* parent, 
+                    wxWindowID id = SYMBOL_DLGVSCPFILTER_IDNAME, 
+                    const wxString& caption = SYMBOL_DLGVSCPFILTER_TITLE, 
+                    const wxPoint& pos = SYMBOL_DLGVSCPFILTER_POSITION, 
+                    const wxSize& size = SYMBOL_DLGVSCPFILTER_SIZE, 
+                    long style = SYMBOL_DLGVSCPFILTER_STYLE );
 
   /// Creation
-  bool Create( wxWindow* parent, wxWindowID id = SYMBOL_DLGVSCPFILTER_IDNAME, const wxString& caption = SYMBOL_DLGVSCPFILTER_TITLE, const wxPoint& pos = SYMBOL_DLGVSCPFILTER_POSITION, const wxSize& size = SYMBOL_DLGVSCPFILTER_SIZE, long style = SYMBOL_DLGVSCPFILTER_STYLE );
+  bool Create( wxWindow* parent, 
+                wxWindowID id = SYMBOL_DLGVSCPFILTER_IDNAME, 
+                const wxString& caption = SYMBOL_DLGVSCPFILTER_TITLE, 
+                const wxPoint& pos = SYMBOL_DLGVSCPFILTER_POSITION, 
+                const wxSize& size = SYMBOL_DLGVSCPFILTER_SIZE, 
+                long style = SYMBOL_DLGVSCPFILTER_STYLE );
 
   /// Destructor
   ~dlgVSCPFilter();
