@@ -55,17 +55,17 @@ enum  {
 
 // This structure is located at the start of the main file.
 struct _vscpFileHead {
-    uint8_t id[2];              // File id (main: 0x55,0xaa  index 0xaa,0x55
-    uint8_t type;               // VSCP_TABLE_NORMAL/VSCP_TABLE_STATIC
-    char nameTable[64];         // Name of table - Used to reference it
-    char descriptionTable[512];	// Description of table
-    char nameXLabel[128];       // Label for X-axis
-    char nameYLabel[128];       // Label for Y-axis
-    uint16_t vscp_class;        // Should be 10 but in future can be 11/12/13...
-    uint16_t vscp_type;         // Measurement type: temp, current etc
-    uint8_t vscp_unit;          // Measurement unit: e.g. 
-                                // Celsius(1)/Fahrenheit(2)/Kelvin(0) 
-                                && for temperature class=10/Type=6
+    uint8_t id[2];                      // File id (main: 0x55,0xaa  index 0xaa,0x55
+    uint8_t type;                       // VSCP_TABLE_NORMAL/VSCP_TABLE_STATIC
+    char nameTable[64];                 // Name of table - Used to reference it
+    char descriptionTable[512];         // Description of table
+    char nameXLabel[128];               // Label for X-axis
+    char nameYLabel[128];               // Label for Y-axis
+    uint16_t vscp_class;                // Should be 10 but in future can be 11/12/13...
+    uint16_t vscp_type;                 // Measurement type: temp, current etc
+    uint8_t vscp_unit;                  // Measurement unit: e.g. 
+                                        // Celsius(1)/Fahrenheit(2)/Kelvin(0) 
+                                        // && for temperature class=10/Type=6
 
     long unsigned int dummy;            // Next read position for static file   
                                         // !!! NOT USED !!!
