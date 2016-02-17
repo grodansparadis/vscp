@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CodeLite_Workspace Name="codelite_vscpd" Database="">
-  <Project Name="codelite_vscpd" Path="codelite_vscpd.project" Active="No"/>
+  <Project Name="codelite_vscpd" Path="codelite_vscpd.project" Active="Yes"/>
   <Environment>
     <![CDATA[]]>
   </Environment>
   <Project Name="codelite_helperlib" Path="../../../helperlib/linux/codelite_helperlib.project" Active="No"/>
   <Project Name="vscp2drv_wire1" Path="../../../drivers/level2/wire1/linux/vscp2drv_wire1.project" Active="No"/>
-  <Project Name="mqtt-driver" Path="../../../drivers/level2/mqtt/linux/mqtt-driver/mqtt-driver.project" Active="Yes"/>
+  <Project Name="mqtt-driver" Path="../../../drivers/level2/mqtt/linux/mqtt-driver/mqtt-driver.project" Active="No"/>
   <Project Name="codelite_vscpworks" Path="../../../vscpworks/codelite_vscpworks.project" Active="No"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug" Selected="yes">

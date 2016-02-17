@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Session Name="/home/akhe/development/VSCP/vscp/src/vscp/daemon/linux/codelite_vscpd/codelite_vscpd.workspace">
+<Session Name="/home/akhe/development/VSCP/dev/vscp/src/vscp/daemon/linux/codelite_vscpd/codelite_vscpd.workspace">
   <int Value="0" Name="m_selectedTab"/>
-  <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/daemon/linux/codelite_vscpd/codelite_vscpd.workspace" Name="m_workspaceName"/>
+  <wxString Value="/home/akhe/development/VSCP/dev/vscp/src/vscp/daemon/linux/codelite_vscpd/codelite_vscpd.workspace" Name="m_workspaceName"/>
   <TabInfoArray Name="TabInfoArray"/>
   <SerializedObject Name="m_breakpoints">
     <long Value="2" Name="Count"/>
