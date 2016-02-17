@@ -59,7 +59,7 @@
 //#include <winsock.h>
 #include "canal_win32_ipc.h"
 
-#else 	// UNIX
+#else   // UNIX
 
 #define _POSIX
 #include <stdio.h>
@@ -107,7 +107,6 @@
 
 #include <slre.h>
 #include <frozen.h>
-#include <net_skeleton.h>
 #include <mongoose.h>
 
 #include <canal_macro.h>
@@ -139,7 +138,7 @@ using namespace std;
 #endif
 
 ///////////////////////////////////////////////////
-//		          WEBSERVER
+//                WEBSERVER
 ///////////////////////////////////////////////////
 
 // Linked list of all active sessions. (webserv.h)
@@ -2434,8 +2433,10 @@ VSCPWebServerThread::websrv_check_password( const char *method,
 // websrv_event_handler
 //
 
-int 
-VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_event ev )
+void websrv_event_handler(struct ns_connection *conn, int ev, void *pUser)
+
+//int 
+//VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_event ev )
 {
     static time_t cleanupTime = time(NULL);
     const char *hdr;
@@ -2445,7 +2446,7 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
     char user[256], nonce[256],
             uri[32768], cnonce[256], 
             resp[256], qop[256], nc[256];
-    CUserItem *pUser;
+    CUserItem *pUserItem;
     char *cookie = NULL;
     bool bValidHost;
 
@@ -2460,8 +2461,8 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
         case MG_AUTH:
             
             // http://en.wikipedia.org/wiki/Digest_access_authentication
-            if (conn->is_websocket) {	
-                return MG_TRUE;	// Always accept websocket connections
+            if (conn->is_websocket) {
+                return MG_TRUE;     // Always accept websocket connections
             }
             
             // Validate REST interface user.
@@ -2488,19 +2489,19 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
             if ( !pObject->m_bDisableSecurityWebServer ) {
 
                 // Check if user is valid			
-                pUser = pObject->m_userList.getUser( wxString::FromAscii( user ) );
-                if ( NULL == pUser ) return MG_FALSE;
+                pUserItem = pObject->m_userList.getUser( wxString::FromAscii( user ) );
+                if ( NULL == pUserItem ) return MG_FALSE;
 
                 // Check if remote ip is valid
                 pObject->m_mutexUserList.Lock();
-                bValidHost = pUser->isAllowedToConnect( wxString::FromAscii( conn->remote_ip ) );
+                bValidHost = pUserItem->isAllowedToConnect( wxString::FromAscii( conn->remote_ip ) );
                 pObject->m_mutexUserList.Unlock();
                 if ( !bValidHost ) {
                     // Host wrong
                     strErr =
                         wxString::Format( _( "[Webserver Client] Host [%s] NOT allowed to connect. User [%s]\n" ),
                         wxString::FromAscii( ( const char * )conn->remote_ip ).wx_str(),
-                        pUser->m_user.wx_str() );
+                        pUserItem->m_user.wx_str() );
                     pObject->logMsg( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
                     return MG_FALSE;
                 }
@@ -2508,7 +2509,7 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
                 // Check digest
                 if ( MG_TRUE !=
                      pObject->getWebServer()->websrv_check_password( conn->request_method,
-                                                                        ( const char * )pUser->m_md5Password.mbc_str(),
+                                                                        ( const char * )pUserItem->m_md5Password.mbc_str(),
                                                                         uri, 
                                                                         nonce, 
                                                                         nc, 
@@ -2519,7 +2520,7 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
                     strErr =
                         wxString::Format( _( "[Webserver Client] Host [%s] User [%s] NOT allowed to connect.\n" ),
                         wxString::FromAscii( ( const char * )conn->remote_ip ).wx_str(),
-                        pUser->m_user.wx_str() );
+                        pUserItem->m_user.wx_str() );
                     pObject->logMsg( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
                     return MG_FALSE;
                 }
@@ -2541,7 +2542,7 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
             // Valid credentials
             strErr = wxString::Format( _("[Webserver Client] Host [%s] User [%s] allowed to connect.\n"), 
                                             wxString::FromAscii( (const char *)conn->remote_ip ).wx_str(), 
-                                            pUser->m_user.wx_str() );			
+                                            pUserItem->m_user.wx_str() );
             
             pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY ); 
             

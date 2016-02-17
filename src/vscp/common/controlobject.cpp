@@ -124,7 +124,6 @@
 
 #include <slre.h>
 #include <frozen.h>
-#include <net_skeleton.h>
 #include <mongoose.h>
 
 #include "canal_macro.h"
@@ -134,7 +133,7 @@
 #include <tables.h>
 #include <configfile.h>
 #include <crc.h>
-#include <md5.h>
+//#include <md5.h>
 #include <randpassword.h>
 #include <version.h>
 #include "variablecodes.h"
@@ -557,11 +556,16 @@ bool CControlObject::init(wxString& strcfgfile)
     
     memset( buf, 0, sizeof( buf ) );
     strncpy( buf,(const char *)driverhash.mbc_str(), driverhash.Length() );
-    Cmd5 md5( (unsigned char *)buf );
     
+    unsigned char digest[16];
+    MD5_CTX md5;
+    //Cmd5 md5( (unsigned char *)buf );
+    MD5_Init( &md5 );
+    MD5_Update( &md5, (unsigned char *)buf, strlen( buf ) );
+    MD5_Final( digest,&md5 );
 
     m_userList.addUser( m_driverUsername,
-                            wxString::FromAscii( md5.getDigest() ),
+                            digest,
                             _("admin"),
                             NULL,
                             _(""),

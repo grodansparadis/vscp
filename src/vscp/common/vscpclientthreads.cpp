@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     Thu 18 Dec 2007 10:05:16 CEST
 // RCS-ID:      
-// Copyright:   (C) 2000-2014 
+// Copyright:   (C) 2000-2016 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
@@ -232,7 +232,7 @@ void ctrlObj::stopWorkerThreads( void )
         m_pDeviceWorkerThread->Wait();
       delete m_pDeviceWorkerThread;
       m_pDeviceWorkerThread = NULL;
-        }	
+        }
     }
   
 }

@@ -44,15 +44,8 @@
 #include <vscp.h>
 #include <guid.h>
 #include <vscphelper.h>
-
-#ifdef USE_FOSSA
-#include <fossa.h>
-#else
-#include <net_skeleton.h>
-#endif
+#include <mongoose.h>
 #include "wx/datetime.h"
-
-
 
 //---------------------------------------------------------------------------
 
@@ -117,11 +110,7 @@ public:
     /*!
         TCP/IP handler
      */
-#ifdef USE_FOSSA
-    static void ev_handler(struct ns_connection *conn, int ev, void *pUser);
-#else
-    static void ev_handler(struct ns_connection *conn, enum ns_event ev, void *p);
-#endif
+    static void ev_handler(struct mg_connection *conn, int ev, void *pUser);
     /*! 
         called when the thread exits - whether it terminates normally or is
         stopped with Delete() (but not when it is Kill()ed!)
@@ -135,7 +124,7 @@ public:
     wxString m_hostname;
 
     /// net_skeleton structure
-    struct ns_mgr m_mgrTcpIpConnection;
+    struct mg_mgr m_mgrTcpIpConnection;
 
     /// Pointer to the TCP/IP interface that owns the thread
     VscpRemoteTcpIf *m_pvscpRemoteTcpIpIf;

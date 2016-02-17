@@ -58,7 +58,7 @@
 #include <vscpdlldef.h>
 #include <vscphelper.h>
 #include <dllist.h>
-#include <md5.h>
+//#include <md5.h>
 #include <controlobject.h>
 #include "devicethread.h"
 

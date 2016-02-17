@@ -66,7 +66,7 @@ typedef int BOOL;
 "</config>"
 
 // Max number of open connections
-#define VSCP_TCPIPLINK_DRIVER_MAX_OPEN	    256
+#define VSCP_TCPIPLINK_DRIVER_MAX_OPEN                      256
 
 /////////////////////////////////////////////////////////////////////////////
 // CVSCPDrvApp
@@ -77,51 +77,51 @@ class CVSCPDrvApp
 
 public:
 
-	/// Constructor
-	CVSCPDrvApp();
-	
-	/// Destructor
-	~CVSCPDrvApp();
+    /// Constructor
+    CVSCPDrvApp();
+    
+    /// Destructor
+    ~CVSCPDrvApp();
 
-	/*!
-		Add a driver object
+    /*!
+        Add a driver object
 
-		@parm plog Object to add
-		@return handle or 0 for error
-	*/	
-	long addDriverObject( CTcpipLink *psockcan );
+        @parm plog Object to add
+        @return handle or 0 for error
+    */
+    long addDriverObject( CTcpipLink *psockcan );
 
-	/*!
-		Get a driver object from its handle
+    /*!
+        Get a driver object from its handle
 
-		@param handle for object
-		@return pointer to object or NULL if invalid
-				handle.
-	*/
-	CTcpipLink *getDriverObject( long h );
+        @param handle for object
+        @return pointer to object or NULL if invalid
+                handle.
+    */
+    CTcpipLink *getDriverObject( long h );
 
-	/*!
-		Remove a driver object
+    /*!
+        Remove a driver object
 
-		@parm handle for object.
-	*/
-	void removeDriverObject( long h );
+        @parm handle for object.
+    */
+    void removeDriverObject( long h );
 
-	/*!
-		The log file object
-		This is the array with driver objects (max 256 objects
-	*/
-	CTcpipLink *m_ptcpiplinkArray[ VSCP_TCPIPLINK_DRIVER_MAX_OPEN ];
-	
-	
-	/// Mutex for open/close
-	pthread_mutex_t m_objMutex;
+    /*!
+        The log file object
+        This is the array with driver objects (max 256 objects
+    */
+    CTcpipLink *m_ptcpiplinkArray[ VSCP_TCPIPLINK_DRIVER_MAX_OPEN ];
+    
+    
+    /// Mutex for open/close
+    pthread_mutex_t m_objMutex;
 
-	/// Counter for users of the interface
-	unsigned long m_instanceCounter;
+    /// Counter for users of the interface
+    unsigned long m_instanceCounter;
 
 public:
-	BOOL InitInstance();
+    BOOL InitInstance();
 
 };
 
@@ -131,7 +131,7 @@ public:
 
 extern "C"
 {
-	CVSCPDrvApp *CreateObject( void );
+    CVSCPDrvApp *CreateObject( void );
 }
 
 #endif // !defined(AFX_VSCPL1_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_)

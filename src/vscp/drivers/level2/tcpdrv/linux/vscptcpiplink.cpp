@@ -66,11 +66,11 @@
 
 CTcpipLink::CTcpipLink()
 {
-	m_bQuit = false;
-	m_pthreadSend = NULL;
+    m_bQuit = false;
+    m_pthreadSend = NULL;
     m_pthreadReceive = NULL;
-	vscp_clearVSCPFilter(&m_vscpfilter); // Accept all events
-	::wxInitialize();
+    vscp_clearVSCPFilter(&m_vscpfilter); // Accept all events
+    ::wxInitialize();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -79,8 +79,8 @@ CTcpipLink::CTcpipLink()
 
 CTcpipLink::~CTcpipLink()
 {
-	close();
-	::wxUninitialize();
+    close();
+    ::wxUninitialize();
 }
 
 
@@ -97,160 +97,160 @@ CTcpipLink::open(const char *pUsername,
                     const char *pPrefix,
                     const char *pConfig)
 {
-	bool rv = true;
-	wxString wxstr = wxString::FromAscii(pConfig);
+    bool rv = true;
+    wxString wxstr = wxString::FromAscii(pConfig);
 
-	m_usernameLocal = wxString::FromAscii(pUsername);
-	m_passwordLocal = wxString::FromAscii(pPassword);
-	m_hostLocal = wxString::FromAscii(pHost);
-	m_portLocal = port;
-	m_prefix = wxString::FromAscii(pPrefix);
+    m_usernameLocal = wxString::FromAscii(pUsername);
+    m_passwordLocal = wxString::FromAscii(pPassword);
+    m_hostLocal = wxString::FromAscii(pHost);
+    m_portLocal = port;
+    m_prefix = wxString::FromAscii(pPrefix);
 
-	// Parse the configuration string. It should
-	// have the following form
-	// path
-	// 
-	wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";\n"));
+    // Parse the configuration string. It should
+    // have the following form
+    // path
+    // 
+    wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";\n"));
 
-	// Check for remote host in configuration string
-	if (tkz.HasMoreTokens()) {
-		// Interface
-		m_hostRemote = tkz.GetNextToken();
-	}
-	
-	// Check for remote port in configuration string
-	if (tkz.HasMoreTokens()) {
-		// Interface
-		m_portRemote = vscp_readStringValue(tkz.GetNextToken());
-	}
-	
-	// Check for remote user in configuration string
-	if (tkz.HasMoreTokens()) {
-		// Interface
-		m_usernameRemote = tkz.GetNextToken();
-	}
-	
-	// Check for remote password in configuration string
-	if (tkz.HasMoreTokens()) {
-		// Interface
-		m_passwordRemote = tkz.GetNextToken();
-	}
-	
-	wxString strFilter;
-	// Check for filter in configuration string
-	if (tkz.HasMoreTokens()) {
-		// Interface
-		strFilter = tkz.GetNextToken();
-		vscp_readFilterFromString(&m_vscpfilter, strFilter);
-	}
-	
-	// Check for mask in configuration string
-	wxString strMask;
-	if (tkz.HasMoreTokens()) {
-		// Interface
-		strMask = tkz.GetNextToken();
-		vscp_readMaskFromString(&m_vscpfilter, strMask);
-	}
-	
-	// First log on to the host and get configuration 
-	// variables
+    // Check for remote host in configuration string
+    if (tkz.HasMoreTokens()) {
+        // Interface
+        m_hostRemote = tkz.GetNextToken();
+    }
+    
+    // Check for remote port in configuration string
+    if (tkz.HasMoreTokens()) {
+        // Interface
+        m_portRemote = vscp_readStringValue(tkz.GetNextToken());
+    }
+    
+    // Check for remote user in configuration string
+    if (tkz.HasMoreTokens()) {
+        // Interface
+        m_usernameRemote = tkz.GetNextToken();
+    }
+    
+    // Check for remote password in configuration string
+    if (tkz.HasMoreTokens()) {
+        // Interface
+        m_passwordRemote = tkz.GetNextToken();
+    }
+    
+    wxString strFilter;
+    // Check for filter in configuration string
+    if (tkz.HasMoreTokens()) {
+        // Interface
+        strFilter = tkz.GetNextToken();
+        vscp_readFilterFromString(&m_vscpfilter, strFilter);
+    }
+    
+    // Check for mask in configuration string
+    wxString strMask;
+    if (tkz.HasMoreTokens()) {
+        // Interface
+        strMask = tkz.GetNextToken();
+        vscp_readMaskFromString(&m_vscpfilter, strMask);
+    }
+    
+    // First log on to the host and get configuration 
+    // variables
 
-	if ( VSCP_ERROR_SUCCESS !=  m_srvLocal.doCmdOpen(m_hostLocal,
+    if ( VSCP_ERROR_SUCCESS !=  m_srvLocal.doCmdOpen(m_hostLocal,
                                                         m_usernameLocal,
                                                         m_passwordLocal ) ) {
-		syslog(LOG_ERR,
-				"%s",
-				(const char *) "Unable to connect to VSCP TCP/IP interface. Terminating!");
-		return false;
-	}
+        syslog(LOG_ERR,
+                "%s",
+                (const char *) "Unable to connect to VSCP TCP/IP interface. Terminating!");
+        return false;
+    }
 
-	// Find the channel id
-	uint32_t ChannelID;
-	m_srvLocal.doCmdGetChannelID(&ChannelID);
+    // Find the channel id
+    uint32_t ChannelID;
+    m_srvLocal.doCmdGetChannelID(&ChannelID);
 
-	// The server should hold configuration data 
-	// 
-	// We look for 
-	//
-	//	 _host_remote		- The remote host to which we should connect
-	//
-	//	 _port_remote		- The port to connect to at the remote host.
-	//
-	//	 _user_remote		- Username to login at remote host
-	//
-	//	 _password_remote	- Username to login at remote host
-	//
-	//   _filter - Standard VSCP filter in string form. 
-	//				   1,0x0000,0x0006,
-	//				   ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
-	//				as priority,class,type,GUID
-	//				Used to filter what events that is received from 
-	//				the socketcan interface. If not give all events 
-	//				are received.
-	//	 _mask - Standard VSCP mask in string form.
-	//				   1,0x0000,0x0006,
-	//				   ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
-	//				as priority,class,type,GUID
-	//				Used to filter what events that is received from 
-	//				the socketcan interface. If not give all events 
-	//				are received. 
-	//
+    // The server should hold configuration data 
+    // 
+    // We look for 
+    //
+    //   _host_remote       - The remote host to which we should connect
+    //
+    //   _port_remote       - The port to connect to at the remote host.
+    //
+    //   _user_remote       - Username to login at remote host
+    //
+    //   _password_remote   - Username to login at remote host
+    //
+    //   _filter - Standard VSCP filter in string form. 
+    //             1,0x0000,0x0006,
+    //                 ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
+    //              as priority,class,type,GUID
+    //              Used to filter what events that is received from 
+    //              the socketcan interface. If not give all events 
+    //              are received.
+    //  _mask - Standard VSCP mask in string form.
+    //              1,0x0000,0x0006,
+    //                 ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
+    //              as priority,class,type,GUID
+    //              Used to filter what events that is received from 
+    //              the socketcan interface. If not give all events 
+    //              are received. 
+    //
 
-	wxString str;
-	wxString strName = m_prefix +
-			wxString::FromAscii("_host_remote");
-	m_srvLocal.getVariableString(strName, &m_hostRemote);
-	
-	strName = m_prefix +
-			wxString::FromAscii("_port_remote");
-	m_srvLocal.getVariableInt(strName, &m_portRemote);
-	
-	strName = m_prefix +
-			wxString::FromAscii("_user_remote");
-	m_srvLocal.getVariableString(strName, &m_usernameRemote);
-	
-	strName = m_prefix +
-			wxString::FromAscii("_password_remote");
-	m_srvLocal.getVariableString(strName, &m_passwordRemote);
+    wxString str;
+    wxString strName = m_prefix +
+            wxString::FromAscii("_host_remote");
+    m_srvLocal.getVariableString(strName, &m_hostRemote);
+    
+    strName = m_prefix +
+            wxString::FromAscii("_port_remote");
+    m_srvLocal.getVariableInt(strName, &m_portRemote);
+    
+    strName = m_prefix +
+            wxString::FromAscii("_user_remote");
+    m_srvLocal.getVariableString(strName, &m_usernameRemote);
+    
+    strName = m_prefix +
+            wxString::FromAscii("_password_remote");
+    m_srvLocal.getVariableString(strName, &m_passwordRemote);
 
-	strName = m_prefix +
-			wxString::FromAscii("_filter");
-	if (VSCP_ERROR_SUCCESS == m_srvLocal.getVariableString(strName, &str)) {
-		vscp_readFilterFromString(&m_vscpfilter, str);
-	}
+    strName = m_prefix +
+            wxString::FromAscii("_filter");
+    if (VSCP_ERROR_SUCCESS == m_srvLocal.getVariableString(strName, &str)) {
+        vscp_readFilterFromString(&m_vscpfilter, str);
+    }
 
-	strName = m_prefix +
-			wxString::FromAscii("_mask");
-	if (VSCP_ERROR_SUCCESS == m_srvLocal.getVariableString(strName, &str)) {
-		vscp_readMaskFromString(&m_vscpfilter, str);
-	}
+    strName = m_prefix +
+            wxString::FromAscii("_mask");
+    if (VSCP_ERROR_SUCCESS == m_srvLocal.getVariableString(strName, &str)) {
+        vscp_readMaskFromString(&m_vscpfilter, str);
+    }
 
-	// start the workerthread
-	m_pthreadSend = new CWrkSendTread();
-	if (NULL != m_pthreadSend) {
-		m_pthreadSend->m_pObj = this;
-		m_pthreadSend->Create();
-		m_pthreadSend->Run();
-	} 
-	else {
-		rv = false;
-	}
+    // start the workerthread
+    m_pthreadSend = new CWrkSendTread();
+    if (NULL != m_pthreadSend) {
+        m_pthreadSend->m_pObj = this;
+        m_pthreadSend->Create();
+        m_pthreadSend->Run();
+    } 
+    else {
+        rv = false;
+    }
     
     // start the worker thread
-	m_pthreadReceive = new CWrkReceiveTread();
-	if (NULL != m_pthreadReceive) {
-		m_pthreadReceive->m_pObj = this;
-		m_pthreadReceive->Create();
-		m_pthreadReceive->Run();
-	} 
-	else {
-		rv = false;
-	}
+    m_pthreadReceive = new CWrkReceiveTread();
+    if (NULL != m_pthreadReceive) {
+        m_pthreadReceive->m_pObj = this;
+        m_pthreadReceive->Create();
+        m_pthreadReceive->Run();
+    } 
+    else {
+        rv = false;
+    }
 
-	// Close the channel
-	m_srvLocal.doCmdClose();
+    // Close the channel
+    m_srvLocal.doCmdClose();
 
-	return rv;
+    return rv;
 }
 
 
@@ -261,11 +261,11 @@ CTcpipLink::open(const char *pUsername,
 void
 CTcpipLink::close(void)
 {
-	// Do nothing if already terminated
-	if (m_bQuit) return;
+    // Do nothing if already terminated
+    if (m_bQuit) return;
 
-	m_bQuit = true; // terminate the thread
-	wxSleep(1); // Give the thread some time to terminate
+    m_bQuit = true; // terminate the thread
+    wxSleep(1); // Give the thread some time to terminate
 }
 
 
@@ -278,8 +278,8 @@ CTcpipLink::addEvent2SendQueue(const vscpEvent *pEvent)
 {
     m_mutexSendQueue.Lock();
     m_sendList.push_back((vscpEvent *)pEvent);
-	m_semSendQueue.Post();
-	m_mutexSendQueue.Unlock();
+    m_semSendQueue.Post();
+    m_mutexSendQueue.Unlock();
     return true;
 }
 
@@ -289,12 +289,12 @@ CTcpipLink::addEvent2SendQueue(const vscpEvent *pEvent)
 
 CWrkSendTread::CWrkSendTread()
 {
-	m_pObj = NULL;
+    m_pObj = NULL;
 }
 
 CWrkSendTread::~CWrkSendTread()
 {
-	;
+    ;
 }
 
 
@@ -305,59 +305,59 @@ CWrkSendTread::~CWrkSendTread()
 void *
 CWrkSendTread::Entry()
 {
-	bool bRemoteConnectionLost = false;
+    bool bRemoteConnectionLost = false;
 
-	::wxInitialize();
-			
-	// Check pointers
-	if (NULL == m_pObj) return NULL;
-	
-	// Open remote interface
-	if (m_srvRemote.doCmdOpen(m_pObj->m_hostRemote,
+    ::wxInitialize();
+            
+    // Check pointers
+    if (NULL == m_pObj) return NULL;
+    
+    // Open remote interface
+    if (m_srvRemote.doCmdOpen(m_pObj->m_hostRemote,
                                 m_pObj->m_usernameRemote,
                                 m_pObj->m_passwordRemote) <= 0) {
-		syslog(LOG_ERR,
-				"%s",
-				(const char *) "Error while opening remote VSCP TCP/IP interface. Terminating!");
-		return NULL;
-	}
+        syslog(LOG_ERR,
+                "%s",
+                (const char *) "Error while opening remote VSCP TCP/IP interface. Terminating!");
+        return NULL;
+    }
     
     // Find the channel id
-	m_srvRemote.doCmdGetChannelID(&m_pObj->txChannelID);
+    m_srvRemote.doCmdGetChannelID(&m_pObj->txChannelID);
 
-	vscpEventEx eventEx;
-	while (!TestDestroy() && !m_pObj->m_bQuit) {
+    vscpEventEx eventEx;
+    while (!TestDestroy() && !m_pObj->m_bQuit) {
 
-		// Make sure the remote connection is up
-		if ( !m_srvRemote.isConnected() ) {
+        // Make sure the remote connection is up
+        if ( !m_srvRemote.isConnected() ) {
 
-			if (!bRemoteConnectionLost) {
-				bRemoteConnectionLost = true;
-				m_srvRemote.doCmdClose();
-				syslog(LOG_ERR,
-						"%s",
-						(const char *) "Lost connection to remote host.");
-			}
+            if (!bRemoteConnectionLost) {
+                bRemoteConnectionLost = true;
+                m_srvRemote.doCmdClose();
+                syslog(LOG_ERR,
+                        "%s",
+                        (const char *) "Lost connection to remote host.");
+            }
 
-			// Wait five seconds before we try to connect again
-			::wxSleep(5);
+            // Wait five seconds before we try to connect again
+            ::wxSleep(5);
 
-			if (m_srvRemote.doCmdOpen(m_pObj->m_hostRemote,
+            if (m_srvRemote.doCmdOpen(m_pObj->m_hostRemote,
                                         m_pObj->m_usernameRemote,
                                         m_pObj->m_passwordRemote)) {
-				syslog(LOG_ERR,
-						"%s",
-						(const char *) "Reconnected to remote host.");
+                syslog(LOG_ERR,
+                        "%s",
+                        (const char *) "Reconnected to remote host.");
                 
                 // Find the channel id
                 m_srvRemote.doCmdGetChannelID(&m_pObj->txChannelID);
     
-				bRemoteConnectionLost = false;
-			}
+                bRemoteConnectionLost = false;
+            }
             
             continue;
 
-		}
+        }
 
         if ( wxSEMA_TIMEOUT == m_pObj->m_semSendQueue.WaitTimeout(500)) continue;
         
@@ -371,22 +371,22 @@ CWrkSendTread::Entry()
             m_pObj->m_mutexSendQueue.Unlock();
 
             if (NULL == pEvent) continue;
-			
-			// Yes there are data to send
-			// Send it out to the remote server
-				
-			m_srvRemote.doCmdSendEx(&eventEx);
-			
-		}
-		
-		
-		
-	}
+            
+            // Yes there are data to send
+            // Send it out to the remote server
+                
+            m_srvRemote.doCmdSendEx(&eventEx);
+            
+        }
+        
+        
+        
+    }
 
-	// Close the channel
-	m_srvRemote.doCmdClose();
+    // Close the channel
+    m_srvRemote.doCmdClose();
 
-	return NULL;
+    return NULL;
 
 }
 
@@ -397,7 +397,7 @@ CWrkSendTread::Entry()
 void
 CWrkSendTread::OnExit()
 {
-	;
+    ;
 }
 
 
@@ -409,12 +409,12 @@ CWrkSendTread::OnExit()
 
 CWrkReceiveTread::CWrkReceiveTread()
 {
-	m_pObj = NULL;
+    m_pObj = NULL;
 }
 
 CWrkReceiveTread::~CWrkReceiveTread()
 {
-	;
+    ;
 }
 
 
@@ -425,61 +425,61 @@ CWrkReceiveTread::~CWrkReceiveTread()
 void *
 CWrkReceiveTread::Entry()
 {
-	bool bRemoteConnectionLost = false;
+    bool bRemoteConnectionLost = false;
     bool bActivity = false;
 
-	::wxInitialize();
-			
-	// Check pointers
-	if (NULL == m_pObj) return NULL;
+    ::wxInitialize();
+            
+    // Check pointers
+    if (NULL == m_pObj) return NULL;
 
-	// Open remote interface
-	if (m_srvRemote.doCmdOpen(m_pObj->m_hostRemote,
+    // Open remote interface
+    if (m_srvRemote.doCmdOpen(m_pObj->m_hostRemote,
                                 m_pObj->m_usernameRemote,
                                 m_pObj->m_passwordRemote) <= 0) {
-		syslog(LOG_ERR,
-				"%s",
-				(const char *) "Error while opening remote VSCP TCP/IP interface. Terminating!");
-		return NULL;
-	}
+        syslog(LOG_ERR,
+                "%s",
+                (const char *) "Error while opening remote VSCP TCP/IP interface. Terminating!");
+        return NULL;
+    }
     
     // Enter the receive loop
     m_srvRemote.doCmdEnterReceiveLoop();
 
-	vscpEventEx eventEx;
-	while (!TestDestroy() && !m_pObj->m_bQuit) {
+    vscpEventEx eventEx;
+    while (!TestDestroy() && !m_pObj->m_bQuit) {
 
-		// Make sure the remote connection is up
-		if (!m_srvRemote.isConnected()) {
+        // Make sure the remote connection is up
+        if (!m_srvRemote.isConnected()) {
 
-			if (!bRemoteConnectionLost) {
-				bRemoteConnectionLost = true;
-				m_srvRemote.doCmdClose();
-				syslog(LOG_ERR,
-						"%s",
-						(const char *) "Lost connection to remote host.");
-			}
+            if (!bRemoteConnectionLost) {
+                bRemoteConnectionLost = true;
+                m_srvRemote.doCmdClose();
+                syslog(LOG_ERR,
+                        "%s",
+                        (const char *) "Lost connection to remote host.");
+            }
 
-			// Wait five seconds before we try to connect again
-			::wxSleep(5);
+            // Wait five seconds before we try to connect again
+            ::wxSleep(5);
 
-			if (m_srvRemote.doCmdOpen(m_pObj->m_hostRemote,
+            if (m_srvRemote.doCmdOpen(m_pObj->m_hostRemote,
                                         m_pObj->m_usernameRemote,
                                         m_pObj->m_passwordRemote)) {
-				syslog(LOG_ERR,
-						"%s",
-						(const char *) "Reconnected to remote host.");
-				bRemoteConnectionLost = false;
-			}
+                syslog(LOG_ERR,
+                        "%s",
+                        (const char *) "Reconnected to remote host.");
+                bRemoteConnectionLost = false;
+            }
             
             // Enter the receive loop
             m_srvRemote.doCmdEnterReceiveLoop();
             
             continue;
 
-		}   
-		
-		// Check if remote server has something to send
+        }   
+        
+        // Check if remote server has something to send
         vscpEvent *pEvent = new vscpEvent;
         if (NULL != pEvent) {
             
@@ -504,13 +504,13 @@ CWrkReceiveTread::Entry()
                 vscp_deleteVSCPevent(pEvent);
             }
         }
-				
-	}
+                
+    }
 
-	// Close the channel
-	m_srvRemote.doCmdClose();
+    // Close the channel
+    m_srvRemote.doCmdClose();
 
-	return NULL;
+    return NULL;
 
 }
 
@@ -521,7 +521,7 @@ CWrkReceiveTread::Entry()
 void
 CWrkReceiveTread::OnExit()
 {
-	;
+    ;
 }
 
 

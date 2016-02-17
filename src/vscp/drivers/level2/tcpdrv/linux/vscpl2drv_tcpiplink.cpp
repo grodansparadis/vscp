@@ -53,12 +53,12 @@ void _fini() __attribute__((destructor));
 
 void _init()
 {
-	printf("initializing\n");
+    printf("initializing\n");
 }
 
 void _fini()
 {
-	printf("finishing\n");
+    printf("finishing\n");
 }
 
 
@@ -68,36 +68,36 @@ void _fini()
 
 CVSCPDrvApp::CVSCPDrvApp()
 {
-	m_instanceCounter = 0;
-	pthread_mutex_init(&m_objMutex, NULL);
+    m_instanceCounter = 0;
+    pthread_mutex_init(&m_objMutex, NULL);
 
-	// Init the driver array
-	for (int i = 0; i < VSCP_TCPIPLINK_DRIVER_MAX_OPEN; i++) {
-		m_ptcpiplinkArray[ i ] = NULL;
-	}
+    // Init the driver array
+    for (int i = 0; i < VSCP_TCPIPLINK_DRIVER_MAX_OPEN; i++) {
+        m_ptcpiplinkArray[ i ] = NULL;
+    }
 
-	UNLOCK_MUTEX(m_objMutex);
+    UNLOCK_MUTEX(m_objMutex);
 }
 
 CVSCPDrvApp::~CVSCPDrvApp()
 {
-	LOCK_MUTEX(m_objMutex);
+    LOCK_MUTEX(m_objMutex);
 
-	for (int i = 0; i < VSCP_TCPIPLINK_DRIVER_MAX_OPEN; i++) {
+    for (int i = 0; i < VSCP_TCPIPLINK_DRIVER_MAX_OPEN; i++) {
 
-		if (NULL != m_ptcpiplinkArray[ i ]) {
+        if (NULL != m_ptcpiplinkArray[ i ]) {
 
-			CTcpipLink *psockcan = getDriverObject(i);
-			if (NULL != psockcan) {
-				psockcan->close();
-				delete m_ptcpiplinkArray[ i ];
-				m_ptcpiplinkArray[ i ] = NULL;
-			}
-		}
-	}
+            CTcpipLink *psockcan = getDriverObject(i);
+            if (NULL != psockcan) {
+                psockcan->close();
+                delete m_ptcpiplinkArray[ i ];
+                m_ptcpiplinkArray[ i ] = NULL;
+            }
+        }
+    }
 
-	UNLOCK_MUTEX(m_objMutex);
-	pthread_mutex_destroy(&m_objMutex);
+    UNLOCK_MUTEX(m_objMutex);
+    pthread_mutex_destroy(&m_objMutex);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -118,24 +118,24 @@ CVSCPDrvApp theApp;
 
 long CVSCPDrvApp::addDriverObject(CTcpipLink *psockcan)
 {
-	long h = 0;
+    long h = 0;
 
-	LOCK_MUTEX(m_objMutex);
-	for (int i = 0; i < VSCP_TCPIPLINK_DRIVER_MAX_OPEN; i++) {
+    LOCK_MUTEX(m_objMutex);
+    for (int i = 0; i < VSCP_TCPIPLINK_DRIVER_MAX_OPEN; i++) {
 
-		if (NULL == m_ptcpiplinkArray[ i ]) {
+        if (NULL == m_ptcpiplinkArray[ i ]) {
 
-			m_ptcpiplinkArray[ i ] = psockcan;
-			h = i + 1681;
-			break;
+            m_ptcpiplinkArray[ i ] = psockcan;
+            h = i + 1681;
+            break;
 
-		}
+        }
 
-	}
+    }
 
-	UNLOCK_MUTEX(m_objMutex);
+    UNLOCK_MUTEX(m_objMutex);
 
-	return h;
+    return h;
 }
 
 
@@ -145,12 +145,12 @@ long CVSCPDrvApp::addDriverObject(CTcpipLink *psockcan)
 
 CTcpipLink *CVSCPDrvApp::getDriverObject(long h)
 {
-	long idx = h - 1681;
+    long idx = h - 1681;
 
-	// Check if valid handle
-	if (idx < 0) return NULL;
-	if (idx >= VSCP_TCPIPLINK_DRIVER_MAX_OPEN) return NULL;
-	return m_ptcpiplinkArray[ idx ];
+    // Check if valid handle
+    if (idx < 0) return NULL;
+    if (idx >= VSCP_TCPIPLINK_DRIVER_MAX_OPEN) return NULL;
+    return m_ptcpiplinkArray[ idx ];
 }
 
 
@@ -160,16 +160,16 @@ CTcpipLink *CVSCPDrvApp::getDriverObject(long h)
 
 void CVSCPDrvApp::removeDriverObject(long h)
 {
-	long idx = h - 1681;
+    long idx = h - 1681;
 
-	// Check if valid handle
-	if (idx < 0) return;
-	if (idx >= VSCP_TCPIPLINK_DRIVER_MAX_OPEN) return;
+    // Check if valid handle
+    if (idx < 0) return;
+    if (idx >= VSCP_TCPIPLINK_DRIVER_MAX_OPEN) return;
 
-	LOCK_MUTEX(m_objMutex);
-	if (NULL != m_ptcpiplinkArray[ idx ]) delete m_ptcpiplinkArray[ idx ];
-	m_ptcpiplinkArray[ idx ] = NULL;
-	UNLOCK_MUTEX(m_objMutex);
+    LOCK_MUTEX(m_objMutex);
+    if (NULL != m_ptcpiplinkArray[ idx ]) delete m_ptcpiplinkArray[ idx ];
+    m_ptcpiplinkArray[ idx ] = NULL;
+    UNLOCK_MUTEX(m_objMutex);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -177,8 +177,8 @@ void CVSCPDrvApp::removeDriverObject(long h)
 
 BOOL CVSCPDrvApp::InitInstance()
 {
-	m_instanceCounter++;
-	return TRUE;
+    m_instanceCounter++;
+    return TRUE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -198,30 +198,30 @@ VSCPOpen(const char *pUsername,
             const char *pParameter,
             unsigned long flags)
 {
-	long h = 0;
+    long h = 0;
 
-	CTcpipLink *pdrvObj = new CTcpipLink();
-	if (NULL != pdrvObj) {
+    CTcpipLink *pdrvObj = new CTcpipLink();
+    if (NULL != pdrvObj) {
 
-		if (pdrvObj->open(pUsername,
+        if (pdrvObj->open(pUsername,
                             pPassword,
                             pHost,
                             port,
                             pPrefix,
                             pParameter)) {
 
-			if (!(h = theApp.addDriverObject(pdrvObj))) {
-				delete pdrvObj;
-			}
+            if (!(h = theApp.addDriverObject(pdrvObj))) {
+                delete pdrvObj;
+            }
 
-		} 
+        } 
         else {
-			delete pdrvObj;
-		}
+            delete pdrvObj;
+        }
 
-	}
+    }
 
-	return h;
+    return h;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -231,14 +231,14 @@ VSCPOpen(const char *pUsername,
 extern "C" int
 VSCPClose(long handle)
 {
-	int rv = 0;
+    int rv = 0;
 
-	CTcpipLink *pdrvObj = theApp.getDriverObject(handle);
-	if (NULL == pdrvObj) return 0;
-	pdrvObj->close();
-	theApp.removeDriverObject(handle);
-	rv = 1;
-	return CANAL_ERROR_SUCCESS;
+    CTcpipLink *pdrvObj = theApp.getDriverObject(handle);
+    if (NULL == pdrvObj) return 0;
+    pdrvObj->close();
+    theApp.removeDriverObject(handle);
+    rv = 1;
+    return CANAL_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -248,14 +248,14 @@ VSCPClose(long handle)
 extern "C" int
 VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
 {
-	int rv = 0;
+    int rv = 0;
 
-	CTcpipLink *pdrvObj = theApp.getDriverObject(handle);
-	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
+    CTcpipLink *pdrvObj = theApp.getDriverObject(handle);
+    if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
     
     pdrvObj->addEvent2SendQueue( pEvent );
     
-	return CANAL_ERROR_SUCCESS;
+    return CANAL_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -265,13 +265,13 @@ VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
 extern "C" int
 VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
 {
-	int rv = 0;
+    int rv = 0;
  
     // Check pointer
     if ( NULL == pEvent) return CANAL_ERROR_PARAMETER;
     
-	CTcpipLink *pdrvObj = theApp.getDriverObject(handle);
-	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
+    CTcpipLink *pdrvObj = theApp.getDriverObject(handle);
+    if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
     
     if ( wxSEMA_TIMEOUT == pdrvObj->m_semReceiveQueue.WaitTimeout( timeout ) ) {
         return CANAL_ERROR_TIMEOUT;
@@ -279,19 +279,19 @@ VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
     
     //VSCPEVENTLIST_RECEIVE::compatibility_iterator nodeClient;
 
-	pdrvObj->m_mutexReceiveQueue.Lock();
-	//nodeClient = pdrvObj->m_receiveQueue.GetFirst();
-	//vscpEvent *pLocalEvent = nodeClient->GetData();
+    pdrvObj->m_mutexReceiveQueue.Lock();
+    //nodeClient = pdrvObj->m_receiveQueue.GetFirst();
+    //vscpEvent *pLocalEvent = nodeClient->GetData();
     vscpEvent *pLocalEvent = pdrvObj->m_receiveList.front();
     pdrvObj->m_receiveList.pop_front();
-	pdrvObj->m_mutexReceiveQueue.Unlock();
+    pdrvObj->m_mutexReceiveQueue.Unlock();
     if (NULL == pLocalEvent) return CANAL_ERROR_MEMORY;
     
     vscp_copyVSCPEvent( pEvent, pLocalEvent );
     //pdrvObj->m_receiveQueue.DeleteNode(nodeClient);
     vscp_deleteVSCPevent( pLocalEvent );
-	
-	return CANAL_ERROR_SUCCESS;
+    
+    return CANAL_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -301,7 +301,7 @@ VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
 extern "C" unsigned long
 VSCPGetLevel(void)
 {
-	return CANAL_LEVEL_USES_TCPIP;
+    return CANAL_LEVEL_USES_TCPIP;
 }
 
 
@@ -312,7 +312,7 @@ VSCPGetLevel(void)
 extern "C" unsigned long
 VSCPGetDllVersion(void)
 {
-	return VSCP_DLL_VERSION;
+    return VSCP_DLL_VERSION;
 }
 
 
@@ -323,7 +323,7 @@ VSCPGetDllVersion(void)
 extern "C" const char *
 VSCPGetVendorString(void)
 {
-	return VSCP_DLL_VENDOR;
+    return VSCP_DLL_VENDOR;
 }
 
 
@@ -334,7 +334,7 @@ VSCPGetVendorString(void)
 extern "C" const char *
 VSCPGetDriverInfo(void)
 {
-	return VSCP_TCPIPLINK_DRIVERINFO;
+    return VSCP_TCPIPLINK_DRIVERINFO;
 }
 
 
@@ -348,7 +348,7 @@ VSCPGetWebPageTemplate( long handle, const char *url, char *page )
     page = NULL;
     
     // Not implemented
-	return -1;
+    return -1;
 }
 
 
@@ -360,7 +360,7 @@ extern "C" int
 VSCPGetWebPageInfo( long handle, const struct vscpextwebpageinfo *info )
 {
     // Not implemented
-	return -1;
+    return -1;
 }
 
 
@@ -372,6 +372,6 @@ extern "C" int
 VSCPWebPageupdate( long handle, const char *url )
 {
     // Not implemented
-	return -1;
+    return -1;
 }
 

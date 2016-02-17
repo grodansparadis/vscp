@@ -222,8 +222,9 @@ public:
         @param ev Weberserver event
         @return MG_TRUE on success or MG_FALSE on failure.
     */
-    static int 
-    websrv_event_handler( struct mg_connection *conn, enum mg_event ev );
+    static void websrv_event_handler(struct ns_connection *conn, int ev, void *pUser);
+    //static int 
+    //websrv_event_handler( struct mg_connection *conn, enum mg_event ev );
 
 
     //////////////////////////////////////////////////////////////////////////////

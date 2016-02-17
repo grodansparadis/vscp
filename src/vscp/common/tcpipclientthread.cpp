@@ -45,8 +45,8 @@
 #include <canal.h>
 #include <vscphelper.h>
 #include <dllist.h>
-#include <md5.h>
-#include <net_skeleton.h>
+//#include <md5.h>
+#include <mongoose.h>
 #include <version.h>
 #include <controlobject.h>
 
@@ -86,10 +86,10 @@ void *VSCPClientThread::Entry()
     // Check pointers
     if ( NULL == m_pCtrlObject ) return NULL;
 
-    ns_mgr_init( &m_pCtrlObject->m_mgrTcpIpServer, 
-                    m_pCtrlObject, 
-                    VSCPClientThread::ev_handler );
-
+    mg_mgr_init( &m_pCtrlObject->m_mgrTcpIpServer, m_pCtrlObject );
+                    
+    // Construct bind interface address                
+    //[PROTO://][IP_ADDRESS]:PORT where host part is optional
     m_pCtrlObject->m_strTcpInterfaceAddress.Trim();
     m_pCtrlObject->m_strTcpInterfaceAddress.Trim( false );
     wxStringTokenizer tkz( m_pCtrlObject->m_strTcpInterfaceAddress, _(" ") );
@@ -101,18 +101,21 @@ void *VSCPClientThread::Entry()
         if ( 0 == str.Length() ) continue;
 
         // Bind to this interface
-        ns_bind( &m_pCtrlObject->m_mgrTcpIpServer, (const char *)str.mbc_str(), NULL ); 
+        mg_bind( &m_pCtrlObject->m_mgrTcpIpServer, 
+                    (const char *)str.mbc_str(), 
+                    VSCPClientThread::ev_handler );
+ 
     }
 
     m_pCtrlObject->logMsg(_T("TCP Client: Thread started.\n"), DAEMON_LOGMSG_INFO);
 
     while ( !TestDestroy() && !m_bQuit ) {
-        ns_mgr_poll( &m_pCtrlObject->m_mgrTcpIpServer, 50 );
+        mg_mgr_poll( &m_pCtrlObject->m_mgrTcpIpServer, 50 );
         Yield();
     }
 
     // release the server
-    ns_mgr_free( &m_pCtrlObject->m_mgrTcpIpServer );
+    mg_mgr_free( &m_pCtrlObject->m_mgrTcpIpServer );
 
     m_pCtrlObject->logMsg( _T( "TCP ClientThread: Quit.\n" ), DAEMON_LOGMSG_INFO );
 
@@ -133,13 +136,14 @@ void VSCPClientThread::OnExit()
 // ev_handler
 //
 
-void 
-VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void *pUser) 
+void ev_handler(struct mg_connection *conn, int ev, void *pUser)
+//void 
+//VSCPClientThread::ev_handler(struct mg_connection *conn, enum ns_event ev, void *pUser) 
 {
     char rbuf[ 2048 ];
     int pos4lf; 
 
-    struct iobuf *io = NULL;
+    //struct mbuf *io = NULL;
     CControlObject *pCtrlObject = NULL;
     CClientItem *pClientItem = NULL;
     
@@ -147,22 +151,23 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
         return;
     }
     
-    io = &conn->recv_iobuf;
+    //io = &conn->recv_iobuf;
+    //io = conn->recv_mbuf;
     pClientItem = ( CClientItem * )conn->user_data;
 
     if ( ( NULL == conn->mgr ) || ( NULL == conn->mgr->user_data ) ) {
-    conn->flags |= NSF_CLOSE_IMMEDIATELY; // Close connection
-    return;
+        conn->flags |= MG_F_CLOSE_IMMEDIATELY; // Close connection
+        return;
     }
     pCtrlObject = ( CControlObject * )conn->mgr->user_data;
 
     switch (ev) {
     
-        case NS_CONNECT: // connect() succeeded or failed. int *success_status
+        case MG_EV_CONNECT: // connect() succeeded or failed. int *success_status
             pCtrlObject->logMsg(_T("TCP Client: Connect.\n"), DAEMON_LOGMSG_INFO);
             break;
 
-        case NS_ACCEPT:	// New connection accept()-ed. union socket_address *remote_addr
+        case MG_EV_ACCEPT:	// New connection accept()-ed. union socket_address *remote_addr
             {
                 pCtrlObject->logMsg(_T("TCP Client: --Accept.\n"), DAEMON_LOGMSG_INFO);
 
@@ -170,7 +175,7 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
                 pClientItem = new CClientItem;
                 if ( NULL == pClientItem ) {
                     pCtrlObject->logMsg ( _T ( "[TCP/IP Client] Unable to allocate memory for client.\n" ), DAEMON_LOGMSG_ERROR );
-                    conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
+                    conn->flags |= MG_F_CLOSE_IMMEDIATELY;	// Close connection
                     return;
                 }
 
@@ -202,17 +207,17 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
                 str += _(VSCPD_COPYRIGHT);
                 str += _("\r\n");
                 str += _(MSG_OK);
-                ns_send( conn, (const char*)str.mbc_str(), str.Length() );	 
+                mg_send( conn, (const char*)str.mbc_str(), str.Length() );	 
 
                 pCtrlObject->logMsg(_T("TCP Client: Ready to serve client.\n"), DAEMON_LOGMSG_DEBUG);
             }
             break;
 
-        case NS_CLOSE:
+        case MG_EV_CLOSE:
 
             // Close client
             pClientItem->m_bOpen = false;
-            conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
+            conn->flags |= MG_F_CLOSE_IMMEDIATELY;   // Close connection
             
             // Remove the client from the Client List
             pCtrlObject->m_wxClientMutex.Lock();
@@ -222,49 +227,50 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
             conn->user_data = NULL;
             break;
 
-        case NS_RECV:
+        case MG_EV_RECV:
 
             if ( NULL == pClientItem ) {
                 pCtrlObject->logMsg( _T( "[TCP/IP Client] Remote client died\n" ), DAEMON_LOGMSG_ERROR );
-                conn->flags |= NSF_CLOSE_IMMEDIATELY; // Close connection
+                conn->flags |= MG_F_CLOSE_IMMEDIATELY; // Close connection
                 return;
             }
 
-            if ( sizeof( rbuf ) < io->len ) {
+            if ( sizeof( rbuf ) < conn->recv_mbuf.len ) {
                 pCtrlObject->logMsg( _T( "[TCP/IP Client] Received io->buf size exceeds limit.\n" ), DAEMON_LOGMSG_ERROR );
-                conn->flags |= NSF_CLOSE_IMMEDIATELY; // Close connection
+                conn->flags |= MG_F_CLOSE_IMMEDIATELY; // Close connection
                 return;
             }
 
             // Read new data
             memset( rbuf, 0, sizeof( rbuf ) );
-            memcpy( rbuf, io->buf, io->len );
-            iobuf_remove(io, io->len); 
+            memcpy( rbuf, conn->recv_mbuf.buf, conn->recv_mbuf.len );
+            //iobuf_remove(io, io->len); conn->recv_mbuf
+            mbuf_remove( &conn->recv_mbuf, conn->recv_mbuf.len );
             pClientItem->m_readBuffer += wxString::FromUTF8( rbuf );
 
             // Check if command already in buffer
             while ( wxNOT_FOUND != ( pos4lf = pClientItem->m_readBuffer.Find ( (const char)0x0a ) ) ) {
                 wxString strCmdGo = pClientItem->m_readBuffer.Mid( 0, pos4lf );
                 pCtrlObject->getTCPIPServer()->CommandHandler( conn, 
-                                        pCtrlObject, 
-                                        strCmdGo );
+                                                                pCtrlObject, 
+                                                                strCmdGo );
                 pClientItem->m_readBuffer = pClientItem->m_readBuffer.Right( pClientItem->m_readBuffer.Length()-pos4lf-1 );
             }
             break;
 
-        case NS_SEND:
+        case MG_EV_SEND:
             break;
 
-        case NS_POLL:
-            if ( conn->flags & NSF_USER_1) {
+        case MG_EV_POLL:
+            if ( conn->flags & MG_F_USER_1) {
                 
                 pCtrlObject->getTCPIPServer()->sendOneEventFromQueue( conn, pCtrlObject, false );
                 
                 // Send '+OK<CR><LF>' every two seconds to indicate that the
-                // link is open		
+                // link is open
                 if ( ( wxGetUTCTime()-pClientItem->m_timeRcvLoop ) > 2 ) {
                     pClientItem->m_timeRcvLoop = wxGetUTCTime();
-                    ns_send( conn, "+OK\r\n", 5 );
+                    mg_send( conn, "+OK\r\n", 5 );
                 }
             }
             break;
@@ -280,7 +286,9 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
 //
 
 void 
-VSCPClientThread::CommandHandler( struct ns_connection *conn, CControlObject *pCtrlObject, wxString& strCommand )
+VSCPClientThread::CommandHandler( struct mg_connection *conn, 
+                                    CControlObject *pCtrlObject, 
+                                    wxString& strCommand )
 {
     CClientItem *pClientItem = NULL;
     bool repeat = false;
@@ -291,13 +299,13 @@ VSCPClientThread::CommandHandler( struct ns_connection *conn, CControlObject *pC
     pClientItem = ( CClientItem * )conn->user_data;
     
     if ( NULL == pCtrlObject ) {
-        conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
+        conn->flags |= MG_F_CLOSE_IMMEDIATELY;	// Close connection
         return;
     }
 
     if ( NULL == pClientItem ) {
         pCtrlObject->logMsg ( _T ( "[TCP/IP Client] ClientItem pointer is NULL in command handler.\n" ), DAEMON_LOGMSG_ERROR );
-        conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
+        conn->flags |= MG_F_CLOSE_IMMEDIATELY;	// Close connection
         return;
     }
 
@@ -308,7 +316,7 @@ VSCPClientThread::CommandHandler( struct ns_connection *conn, CControlObject *pC
 
     // If nothing to handle just return
     if ( 0 == pClientItem->m_currentCommand.Length() ) {
-        ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );      
+        mg_send( conn,  MSG_OK, strlen ( MSG_OK ) );      
         return;
     }
     
@@ -324,7 +332,7 @@ REPEAT_COMMAND:
     //                            No Operation
     //*********************************************************************
     if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "NOOP" ) ) ) {
-        ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );
+        mg_send( conn,  MSG_OK, strlen ( MSG_OK ) );
     }
 
     //*********************************************************************
@@ -457,7 +465,7 @@ REPEAT_COMMAND:
             pCtrlObject->logMsg ( _( "[TCP/IP Clinet] Command: Password. Not authorized.\n" ), 
                                     DAEMON_LOGMSG_INFO, 
                                     DAEMON_LOGTYPE_SECURITY );
-            conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
+            conn->flags |= MG_F_CLOSE_IMMEDIATELY;  // Close connection
             return;
         }
     }  
@@ -487,19 +495,20 @@ REPEAT_COMMAND:
     //*********************************************************************
     else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "QUITLOOP" ) ) ) {
         // Turn of receive loop
-        conn->flags &= ~(unsigned int)NSF_USER_1;
-        ns_send( conn, MSG_QUIT_LOOP, strlen ( MSG_QUIT_LOOP ) );
+        conn->flags &= ~(unsigned int)MG_F_USER_1;
+        mg_send( conn, MSG_QUIT_LOOP, strlen ( MSG_QUIT_LOOP ) );
     }
 
     // *********************************************************************
     //                                 QUIT
     // *********************************************************************
     else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "QUIT" ) ) ) {
-        //long test = NSF_CLOSE_IMMEDIATELY;
+        //long test = MG_F_CLOSE_IMMEDIATELY;
         pCtrlObject->logMsg( _( "[TCP/IP Client] Command: Close.\n" ), 
                                 DAEMON_LOGMSG_INFO );
-        ns_send( conn, MSG_GOODBY, strlen ( MSG_GOODBY ) );
-        conn->flags = NSF_FINISHED_SENDING_DATA;	// Close connection
+        mg_send( conn, MSG_GOODBY, strlen ( MSG_GOODBY ) );
+        //conn->flags = NSF_FINISHED_SENDING_DATA;    // Close connection
+        conn->flags = MG_F_SEND_AND_CLOSE;  // Close connection
         return;
     }
 
@@ -619,7 +628,7 @@ REPEAT_COMMAND:
     //                                Que?
     //*********************************************************************
     else {
-        ns_send( conn,  MSG_UNKNOWN_COMMAND, strlen ( MSG_UNKNOWN_COMMAND ) );
+        mg_send( conn,  MSG_UNKNOWN_COMMAND, strlen ( MSG_UNKNOWN_COMMAND ) );
     }
 
     pClientItem->m_lastCommand = pClientItem->m_currentCommand;
@@ -631,7 +640,7 @@ REPEAT_COMMAND:
 // handleClientCapabilityRquest
 //
 
-void VSCPClientThread::handleClientCapabilityRquest( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientCapabilityRquest( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
 
 }
@@ -641,13 +650,13 @@ void VSCPClientThread::handleClientCapabilityRquest( struct ns_connection *conn,
 // isVerified
 //
 
-bool VSCPClientThread::isVerified( struct ns_connection *conn, CControlObject *pCtrlObject )
+bool VSCPClientThread::isVerified( struct mg_connection *conn, CControlObject *pCtrlObject )
 { 
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
-        ns_send( conn, MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
+        mg_send( conn, MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
         return false;
     }
 
@@ -658,23 +667,23 @@ bool VSCPClientThread::isVerified( struct ns_connection *conn, CControlObject *p
 // checkPrivilege
 //
 
-bool VSCPClientThread::checkPrivilege( struct ns_connection *conn, CControlObject *pCtrlObject, unsigned char reqiredPrivilege )
+bool VSCPClientThread::checkPrivilege( struct mg_connection *conn, CControlObject *pCtrlObject, unsigned char reqiredPrivilege )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be loged on
     if ( !pClientItem->m_bAuthorized ) {
-        ns_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
+        mg_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
         return false;
     }
 
     if ( NULL == pClientItem->m_pUserItem ) {
-        ns_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
+        mg_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
         return false;
     }
 
     if ( (pClientItem->m_pUserItem->m_userRights & 0xf) < reqiredPrivilege ) {
-        ns_send( conn,  MSG_LOW_PRIVILEGE_ERROR, strlen ( MSG_LOW_PRIVILEGE_ERROR ) );
+        mg_send( conn,  MSG_LOW_PRIVILEGE_ERROR, strlen ( MSG_LOW_PRIVILEGE_ERROR ) );
         return false;	
     }
 
@@ -686,7 +695,7 @@ bool VSCPClientThread::checkPrivilege( struct ns_connection *conn, CControlObjec
 // handleClientSend
 //
 
-void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientSend( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     bool bSent = false;
     bool bVariable = false;
@@ -698,20 +707,20 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
     }
 
     if ( NULL == pCtrlObject ) {
-        ns_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
+        mg_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
         return;
     }
     
     pClientItem = ( CClientItem * )conn->user_data;
 
     if ( NULL == pClientItem ) {
-        ns_send( conn, MSG_INTERNAL_ERROR, strlen( MSG_INTERNAL_ERROR ) );
+        mg_send( conn, MSG_INTERNAL_ERROR, strlen( MSG_INTERNAL_ERROR ) );
         return;
     }
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
-        ns_send( conn, MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
+        mg_send( conn, MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
 
@@ -736,13 +745,13 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
             nameVariable.MakeUpper();
             
             if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( nameVariable ) ) ) {
-                ns_send( conn, MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
+                mg_send( conn, MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
                 return;
             }
 
             // Must be event type
             if ( VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT != pVariable->getType() ) {
-                ns_send( conn, MSG_VARIABLE_MUST_BE_EVENT_TYPE, strlen ( MSG_VARIABLE_MUST_BE_EVENT_TYPE ) );
+                mg_send( conn, MSG_VARIABLE_MUST_BE_EVENT_TYPE, strlen ( MSG_VARIABLE_MUST_BE_EVENT_TYPE ) );
                 return;
             }
 
@@ -752,7 +761,7 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
         }
     }
     else {
-        ns_send( conn, MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+        mg_send( conn, MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
         return;	
     }
 
@@ -764,7 +773,7 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
             event.vscp_class = vscp_readStringValue( str );
         }
         else {
-            ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
             return;	
         }
     
@@ -774,7 +783,7 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
             event.vscp_type = vscp_readStringValue( str );
         }
         else {
-            ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
             return;	
         }
 
@@ -784,7 +793,7 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
             event.obid = vscp_readStringValue( str );
         }   
         else {
-            ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
             return;	
         }
 
@@ -797,7 +806,7 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
             }
         }
         else {
-            ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
             return;	
         }
 
@@ -817,13 +826,13 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
 
         }
         else {
-            ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
             return;	
         }
 
         // Handle data
         if ( 512 < tkz.CountTokens() ) {
-            ns_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
+            mg_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
 
@@ -836,7 +845,7 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
             event.pdata = new uint8_t[ event.sizeData ];
             
             if ( NULL == event.pdata ) {
-                ns_send( conn, MSG_INTERNAL_MEMORY_ERROR, strlen( MSG_INTERNAL_MEMORY_ERROR ) );
+                mg_send( conn, MSG_INTERNAL_MEMORY_ERROR, strlen( MSG_INTERNAL_MEMORY_ERROR ) );
                 return;
             }
            
@@ -846,7 +855,7 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
             }
             
             if ( tkz.HasMoreTokens() ) {
-                ns_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
+                mg_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
                 return;
             }
         }
@@ -866,7 +875,7 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
         
         pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
         
-        ns_send( conn, MSG_MOT_ALLOWED_TO_SEND_EVENT, strlen ( MSG_MOT_ALLOWED_TO_SEND_EVENT ) );
+        mg_send( conn, MSG_MOT_ALLOWED_TO_SEND_EVENT, strlen ( MSG_MOT_ALLOWED_TO_SEND_EVENT ) );
 
         if ( NULL != event.pdata ) {
             delete[] event.pdata;
@@ -982,28 +991,28 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
                 pClientItem->m_statistics.cntOverruns++;
 
                 vscp_deleteVSCPevent( pEvent );
-                ns_send( conn,  MSG_BUFFER_FULL, strlen ( MSG_BUFFER_FULL ) );
+                mg_send( conn,  MSG_BUFFER_FULL, strlen ( MSG_BUFFER_FULL ) );
             }
 
         }
 
     } // Valid pEvent
 
-   ns_send( conn, MSG_OK, strlen ( MSG_OK ) );
+   mg_send( conn, MSG_OK, strlen ( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientReceive
 //
 
-void VSCPClientThread::handleClientReceive ( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientReceive ( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     unsigned short cnt = 0;	// # of messages to read
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
-        ns_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
+        mg_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
 
@@ -1019,7 +1028,7 @@ void VSCPClientThread::handleClientReceive ( struct ns_connection *conn, CContro
         wxString strOut;
 
         if ( !pClientItem->m_bOpen ) {
-            ns_send( conn,  MSG_NO_MSG, strlen ( MSG_NO_MSG ) );
+            mg_send( conn,  MSG_NO_MSG, strlen ( MSG_NO_MSG ) );
             return;
         }
         else {
@@ -1032,7 +1041,7 @@ void VSCPClientThread::handleClientReceive ( struct ns_connection *conn, CContro
 
     } // while
 
-    ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );
+    mg_send( conn,  MSG_OK, strlen ( MSG_OK ) );
 
 }
 
@@ -1040,7 +1049,7 @@ void VSCPClientThread::handleClientReceive ( struct ns_connection *conn, CContro
 // sendOneEventFromQueue
 //
 
-bool VSCPClientThread::sendOneEventFromQueue( struct ns_connection *conn, CControlObject *pCtrlObject, bool bStatusMsg )
+bool VSCPClientThread::sendOneEventFromQueue( struct mg_connection *conn, CControlObject *pCtrlObject, bool bStatusMsg )
 {
     wxString strOut;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -1089,7 +1098,7 @@ bool VSCPClientThread::sendOneEventFromQueue( struct ns_connection *conn, CContr
         }
 
         strOut += _("\r\n");
-        ns_send( conn,  strOut.mb_str(), strlen ( strOut.mb_str() ) );
+        mg_send( conn,  strOut.mb_str(), strlen ( strOut.mb_str() ) );
 
         //delete pqueueEvent;
         vscp_deleteVSCPevent( pqueueEvent );
@@ -1099,7 +1108,7 @@ bool VSCPClientThread::sendOneEventFromQueue( struct ns_connection *conn, CContr
     }
     else {
         if ( bStatusMsg ) {
-            ns_send( conn,  MSG_NO_MSG, strlen ( MSG_NO_MSG ) );
+            mg_send( conn,  MSG_NO_MSG, strlen ( MSG_NO_MSG ) );
         }
 
         return false;
@@ -1116,14 +1125,14 @@ bool VSCPClientThread::sendOneEventFromQueue( struct ns_connection *conn, CContr
 // handleClientDataAvailable
 //
 
-void VSCPClientThread::handleClientDataAvailable ( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientDataAvailable ( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     char outbuf[ 1024 ];
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
-        ns_send( conn,  MSG_NOT_ACCREDITED,
+        mg_send( conn,  MSG_NOT_ACCREDITED,
             strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
@@ -1132,7 +1141,7 @@ void VSCPClientThread::handleClientDataAvailable ( struct ns_connection *conn, C
         "%zd\r\n%s",
         pClientItem->m_clientInputQueue.GetCount(),
         MSG_OK );
-    ns_send( conn,  outbuf, strlen ( outbuf ) );
+    mg_send( conn,  outbuf, strlen ( outbuf ) );
 
 
 }
@@ -1141,13 +1150,13 @@ void VSCPClientThread::handleClientDataAvailable ( struct ns_connection *conn, C
 // handleClientClearInputQueue
 //
 
-void VSCPClientThread::handleClientClearInputQueue ( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientClearInputQueue ( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
-        ns_send( conn,  MSG_NOT_ACCREDITED,
+        mg_send( conn,  MSG_NOT_ACCREDITED,
             strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
@@ -1156,7 +1165,7 @@ void VSCPClientThread::handleClientClearInputQueue ( struct ns_connection *conn,
     pClientItem->m_clientInputQueue.Clear();
     pClientItem->m_mutexClientInputQueue.Unlock();
 
-    ns_send( conn,  MSG_QUEUE_CLEARED, strlen ( MSG_QUEUE_CLEARED ) );
+    mg_send( conn,  MSG_QUEUE_CLEARED, strlen ( MSG_QUEUE_CLEARED ) );
 }
 
 
@@ -1164,14 +1173,14 @@ void VSCPClientThread::handleClientClearInputQueue ( struct ns_connection *conn,
 // handleClientGetStatistics
 //
 
-void VSCPClientThread::handleClientGetStatistics ( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientGetStatistics ( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     char outbuf[ 1024 ];
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
-        ns_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
+        mg_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
 
@@ -1186,7 +1195,7 @@ void VSCPClientThread::handleClientGetStatistics ( struct ns_connection *conn, C
         MSG_OK );
 
 
-    ns_send( conn, outbuf, strlen ( outbuf ) );
+    mg_send( conn, outbuf, strlen ( outbuf ) );
 
 }
 
@@ -1194,14 +1203,14 @@ void VSCPClientThread::handleClientGetStatistics ( struct ns_connection *conn, C
 // handleClientGetStatus
 //
 
-void VSCPClientThread::handleClientGetStatus ( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientGetStatus ( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     char outbuf[ 1024 ];
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
-        ns_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
+        mg_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
 
@@ -1212,7 +1221,7 @@ void VSCPClientThread::handleClientGetStatus ( struct ns_connection *conn, CCont
         pClientItem->m_status.lasterrorstr,
         MSG_OK );
 
-    ns_send( conn, outbuf, strlen ( outbuf ) );
+    mg_send( conn, outbuf, strlen ( outbuf ) );
 
 
 }
@@ -1221,21 +1230,21 @@ void VSCPClientThread::handleClientGetStatus ( struct ns_connection *conn, CCont
 // handleClientGetChannelID
 //
 
-void VSCPClientThread::handleClientGetChannelID ( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientGetChannelID ( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     char outbuf[ 1024 ];
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
-        ns_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
+        mg_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
 
     sprintf ( outbuf, "%lu\r\n%s",
         (unsigned long)pClientItem->m_clientID, MSG_OK );
 
-    ns_send( conn,  outbuf, strlen ( outbuf ) );
+    mg_send( conn,  outbuf, strlen ( outbuf ) );
 
 }
 
@@ -1244,13 +1253,13 @@ void VSCPClientThread::handleClientGetChannelID ( struct ns_connection *conn, CC
 // handleClientSetChannelGUID
 //
 
-void VSCPClientThread::handleClientSetChannelGUID ( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientSetChannelGUID ( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
-        ns_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
+        mg_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
 
@@ -1264,14 +1273,14 @@ void VSCPClientThread::handleClientSetChannelGUID ( struct ns_connection *conn, 
 
     pClientItem->m_guid.getFromString(str);
 
-    ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );
+    mg_send( conn,  MSG_OK, strlen ( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientGetChannelGUID
 //
 
-void VSCPClientThread::handleClientGetChannelGUID ( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientGetChannelGUID ( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     wxString strBuf;
     //char outbuf[ 1024 ];
@@ -1281,7 +1290,7 @@ void VSCPClientThread::handleClientGetChannelGUID ( struct ns_connection *conn, 
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
-        ns_send( conn, MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
+        mg_send( conn, MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
 
@@ -1290,7 +1299,7 @@ void VSCPClientThread::handleClientGetChannelGUID ( struct ns_connection *conn, 
     strBuf += _("\r\n");
     strBuf += _(MSG_OK);
 
-    ns_send( conn, strBuf.mb_str(), strlen( strBuf.mb_str() ) );
+    mg_send( conn, strBuf.mb_str(), strlen( strBuf.mb_str() ) );
 
 }
 
@@ -1298,7 +1307,7 @@ void VSCPClientThread::handleClientGetChannelGUID ( struct ns_connection *conn, 
 // handleClientGetVersion
 //
 
-void VSCPClientThread::handleClientGetVersion ( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientGetVersion ( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     char outbuf[ 1024 ];
 
@@ -1306,7 +1315,7 @@ void VSCPClientThread::handleClientGetVersion ( struct ns_connection *conn, CCon
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
-        ns_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
+        mg_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
 
@@ -1318,7 +1327,7 @@ void VSCPClientThread::handleClientGetVersion ( struct ns_connection *conn, CCon
                 VSCPD_SUB_VERSION,
                 MSG_OK );
 
-    ns_send( conn,  outbuf, strlen ( outbuf ) );
+    mg_send( conn,  outbuf, strlen ( outbuf ) );
 
 }
 
@@ -1326,13 +1335,13 @@ void VSCPClientThread::handleClientGetVersion ( struct ns_connection *conn, CCon
 // handleClientSetFilter
 //
 
-void VSCPClientThread::handleClientSetFilter ( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientSetFilter ( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
-        ns_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
+        mg_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
 
@@ -1351,7 +1360,7 @@ void VSCPClientThread::handleClientSetFilter ( struct ns_connection *conn, CCont
         pClientItem->m_filterVSCP.filter_priority = vscp_readStringValue( str );
     }
     else {
-        ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+        mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
         return;	
     }
 
@@ -1361,7 +1370,7 @@ void VSCPClientThread::handleClientSetFilter ( struct ns_connection *conn, CCont
         pClientItem->m_filterVSCP.filter_class = vscp_readStringValue( str );
     }
     else {
-        ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+        mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
         return;	
     }
 
@@ -1372,7 +1381,7 @@ void VSCPClientThread::handleClientSetFilter ( struct ns_connection *conn, CCont
         pClientItem->m_filterVSCP.filter_type = vscp_readStringValue( str );
     }
     else {
-        ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+        mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
         return;	
     }
 
@@ -1382,11 +1391,11 @@ void VSCPClientThread::handleClientSetFilter ( struct ns_connection *conn, CCont
         vscp_getGuidFromStringToArray( pClientItem->m_filterVSCP.filter_GUID, str );
     }
     else {
-        ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+        mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
         return;	
     }
 
-    ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );
+    mg_send( conn,  MSG_OK, strlen ( MSG_OK ) );
 
 }
 
@@ -1394,13 +1403,13 @@ void VSCPClientThread::handleClientSetFilter ( struct ns_connection *conn, CCont
 // handleClientSetMask
 //
 
-void VSCPClientThread::handleClientSetMask ( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientSetMask ( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
-        ns_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
+        mg_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
 
@@ -1419,7 +1428,7 @@ void VSCPClientThread::handleClientSetMask ( struct ns_connection *conn, CContro
         pClientItem->m_filterVSCP.mask_priority = vscp_readStringValue( str );
     }
     else {
-        ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+        mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
         return;	
     }
 
@@ -1429,7 +1438,7 @@ void VSCPClientThread::handleClientSetMask ( struct ns_connection *conn, CContro
         pClientItem->m_filterVSCP.mask_class = vscp_readStringValue( str );
     }
     else {
-        ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+        mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
         return;	
     }
 
@@ -1440,7 +1449,7 @@ void VSCPClientThread::handleClientSetMask ( struct ns_connection *conn, CContro
         pClientItem->m_filterVSCP.mask_type = vscp_readStringValue( str );
     }
     else {
-        ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+        mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
         return;	
     }
 
@@ -1450,11 +1459,11 @@ void VSCPClientThread::handleClientSetMask ( struct ns_connection *conn, CContro
         vscp_getGuidFromStringToArray( pClientItem->m_filterVSCP.mask_GUID, str );
     }
     else {
-        ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+        mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
         return;	
     }
 
-    ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );
+    mg_send( conn,  MSG_OK, strlen ( MSG_OK ) );
 
 }
 
@@ -1462,12 +1471,12 @@ void VSCPClientThread::handleClientSetMask ( struct ns_connection *conn, CContro
 // handleClientUser
 //
 
-void VSCPClientThread::handleClientUser ( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientUser ( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     if ( pClientItem->m_bAuthorized ) {
-        ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );
+        mg_send( conn,  MSG_OK, strlen ( MSG_OK ) );
         return;
     }
 
@@ -1475,11 +1484,11 @@ void VSCPClientThread::handleClientUser ( struct ns_connection *conn, CControlOb
     pClientItem->m_UserName.Trim();			// Trim right side	
     pClientItem->m_UserName.Trim( false ); 	// Trim left
     if ( pClientItem->m_UserName.IsEmpty() ) {
-        ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+        mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
         return;
     }
 
-    ns_send( conn,  MSG_USENAME_OK, strlen ( MSG_USENAME_OK ) );
+    mg_send( conn,  MSG_USENAME_OK, strlen ( MSG_USENAME_OK ) );
 
 }
 
@@ -1487,18 +1496,18 @@ void VSCPClientThread::handleClientUser ( struct ns_connection *conn, CControlOb
 // handleClientPassword
 //
 
-bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CControlObject *pCtrlObject )
+bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     if ( pClientItem->m_bAuthorized ) {
-        ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );
+        mg_send( conn,  MSG_OK, strlen ( MSG_OK ) );
         return true;
     }
 
     // Must have username before password can be entered.
     if ( 0 == pClientItem->m_UserName.Length() ) {
-        ns_send( conn,  MSG_NEED_USERNAME, strlen ( MSG_NEED_USERNAME ) );
+        mg_send( conn,  MSG_NEED_USERNAME, strlen ( MSG_NEED_USERNAME ) );
         return true;
     }
 
@@ -1507,7 +1516,7 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
     strPassword.Trim( false );      // Trim left
     if ( strPassword.IsEmpty() ) {
         pClientItem->m_UserName = _("");
-        ns_send( conn,  MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
+        mg_send( conn,  MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
         return false;
     }
 
@@ -1520,9 +1529,15 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
     strncat( buf, ":", 1 );
     strncat( (char *)buf, strPassword.mbc_str(), strPassword.Length() );
     
-    Cmd5 md5 ( (unsigned char *)buf );
-    if ( NULL == md5.getDigest() ) return false; 
-    wxString md5Password = wxString( md5.getDigest(), wxConvUTF8 );
+    //Cmd5 md5 ( (unsigned char *)buf );
+    unsigned char digest[16];
+    MD5_CTX md5;
+    //Cmd5 md5( (unsigned char *)buf );
+    MD5_Init( &md5 );
+    MD5_Update( &md5, (unsigned char *)buf, strlen( buf ) );
+    MD5_Final( digest,&md5 );
+    //if ( NULL == &digest ) return false; 
+    wxString md5Password = wxString( digest, wxConvUTF8 );
     m_pCtrlObject->m_mutexUserList.Lock();
 #if  0 
     ::wxLogDebug( _("Username: ") + m_UserName );
@@ -1543,7 +1558,7 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
             (const char *)pClientItem->m_UserName.c_str(), (const char *)strPassword.c_str() );
 
         pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
-        ns_send( conn,  MSG_PASSWORD_ERROR, strlen ( MSG_PASSWORD_ERROR ) );
+        mg_send( conn,  MSG_PASSWORD_ERROR, strlen ( MSG_PASSWORD_ERROR ) );
         return false;
     }
 
@@ -1565,7 +1580,7 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
             (const char *)remoteaddr.c_str() );
         
         pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
-        ns_send( conn,  MSG_INVALID_REMOTE_ERROR, strlen ( MSG_INVALID_REMOTE_ERROR ) );
+        mg_send( conn,  MSG_INVALID_REMOTE_ERROR, strlen ( MSG_INVALID_REMOTE_ERROR ) );
         return false;
     }
 
@@ -1582,7 +1597,7 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
     pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
 
     pClientItem->m_bAuthorized = true;
-    ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );
+    mg_send( conn,  MSG_OK, strlen ( MSG_OK ) );
 
     return true;
 
@@ -1593,14 +1608,14 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
 // handleClientRcvLoop
 //
 
-void VSCPClientThread::handleClientRcvLoop( struct ns_connection *conn, CControlObject *pCtrlObject  )
+void VSCPClientThread::handleClientRcvLoop( struct mg_connection *conn, CControlObject *pCtrlObject  )
 {
 /*
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 */
 
-    ns_send( conn,  MSG_RECEIVE_LOOP, strlen ( MSG_RECEIVE_LOOP ) );
-    conn->flags |= NSF_USER_1;	// Mark socket as being in receive loop
+    mg_send( conn,  MSG_RECEIVE_LOOP, strlen ( MSG_RECEIVE_LOOP ) );
+    conn->flags |= MG_F_USER_1; // Mark socket as being in receive loop
 /*
     // Loop until the connection is lost
     while ( !TestDestroy() && !m_bQuit && (conn->flags & NSF_USER_1 ) ) {
@@ -1610,7 +1625,7 @@ void VSCPClientThread::handleClientRcvLoop( struct ns_connection *conn, CControl
         // Wait for event
         if ( wxSEMA_TIMEOUT == 
             pClientItem->m_semClientInputQueue.WaitTimeout( 1000 ) ) {
-                ns_send( conn, "+OK\r\n", 5 );
+                mg_send( conn, "+OK\r\n", 5 );
                 continue;
         }
 
@@ -1626,7 +1641,7 @@ void VSCPClientThread::handleClientRcvLoop( struct ns_connection *conn, CControl
 // handleClientHelp
 //
 
-void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientHelp( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
     
@@ -1669,111 +1684,111 @@ void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObj
                 str += _("INTERFACE       - Interface manipulation. \r\n");
                 str += _("DM              - Decision Matrix manipulation.\r\n");
                 str += _("VARIABLE        - Variable handling. \r\n");
-                ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+                mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( _("+") == strcmd ) {
         wxString str = _("'+' repeats the last given command.\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( _("NOOP") == strcmd ) {
         wxString str = _("'NOOP' Does absolutly nothing but giving a success in return.\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( _("QUIT") == strcmd ) {
         wxString str = _("'QUIT' Quit a session with the VSCP daemon and closes the connection.\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( _("USER") == strcmd ) {
         wxString str = _("'USER' Used to login to the system together with PASS. Connection will be closed if bad credentials are given.\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( _("PASS") == strcmd ) {
         wxString str = _("'PASS' Used to login to the system together with USER. Connection will be closed if bad credentials are given.\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( _("QUIT") == strcmd ) {
         wxString str = _("'QUIT' Quit a session with the VSCP daemon and closes the connection.\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( _("SEND") == strcmd ) {
         wxString str = _("'SEND event'.\r\nThe event is given as 'head,class,type,obid,time-stamp,GUID,data1,data2,data3....' \r\n");
         str += _("Normally set 'head' and 'obid' to zero. \r\nIf timestamp is set to zero it will be set by the server. \r\nIf GUID is given as '-' ");
         str += _("the GUID of the interface will be used. \r\nThe GUID should be given on the form MSB-byte:MSB-byte-1:MSB-byte-2. \r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( _("RETR") == strcmd ) {
         wxString str = _("'RETR count' - Retrieve one (if no argument) or 'count' event(s). ");
         str += _("Events are retrived on the form head,class,type,obid,time-stamp,GUID,data0,data1,data2,...........\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( _("RCVLOOP") == strcmd ) {
         wxString str = _("'RCVLOOP' - Enter the receive loop and receive events continously or until ");
         str += _("terminated with 'QUITLOOP'. Events are retrived on the form head,class,type,obid,time-stamp,GUID,data0,data1,data2,...........\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( _("QUITLOOP") == strcmd ) {
         wxString str = _("'QUITLOOP' - End 'RCVLOOP' event receives.\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( ( _("CDTA") == strcmd ) || ( ( _("CHKDATA") == strcmd ) ) ) {
         wxString str = _("'CDTA' or 'CHKDATA' - Check if there is events in the input queue.\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( ( _("CLRA") == strcmd ) || ( ( _("CLRALL") == strcmd ) ) ) {
         wxString str = _("'CLRA' or 'CLRALL' - Clear input queue.\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( _("STAT") == strcmd ) {
         wxString str = _("'STAT' - Get statistical information.\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( _("INFO") == strcmd ) {
         wxString str = _("'INFO' - Get status information.\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( ( _("CHID") == strcmd ) || ( ( _("GETCHID") == strcmd ) ) ) {
         wxString str = _("'CHID' or 'GETCHID' - Get channel id.\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( ( _("SGID") == strcmd ) || ( ( _("SETGUID") == strcmd ) ) ) {
         wxString str = _("'SGID' or 'SETGUID' - Set GUID for channel.\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( ( _("GGID") == strcmd ) || ( ( _("GETGUID") == strcmd ) ) ) {
         wxString str = _("'GGID' or 'GETGUID' - Get GUID for channel.\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( ( _("VERS") == strcmd ) || ( ( _("VERSION") == strcmd ) ) ) {
         wxString str = _("'VERS' or 'VERSION' - Get version of VSCP daemon.\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( ( _("SFLT") == strcmd ) || ( ( _("SETFILTER") == strcmd ) ) ) {
         wxString str = _("'SFLT' or 'SETFILTER' - Set filter for channel. ");
         str += _("The format is 'filter-priority, filter-class, filter-type, filter-GUID' \r\n");
         str += _("Example:  \r\nSETFILTER 1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( ( _("SMSK") == strcmd ) || ( ( _("SETMASK") == strcmd ) ) ) {
         wxString str = _("'SMSK' or 'SETMASK' - Set mask for channel. ");
         str += _("The format is 'mask-priority, mask-class, mask-type, mask-GUID' \r\n");
         str += _("Example:  \r\nSETMASK 0x0f,0xffff,0x00ff,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00 \r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( _("HELP") == strcmd ) {
         wxString str = _("'HELP [command]' This command. Gives help about available commands and the usage.\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( _("TEST") == strcmd ) {
         wxString str = _("'TEST [sequency]' Test command for debugging.\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( _("SHUTDOWN") == strcmd ) {
         wxString str = _("'SHUTDOWN' Shutdown the daemon.\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( _("RESTART") == strcmd ) {
         wxString str = _("'RESTART' Restart the daemon.\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( _("DRIVER") == strcmd ) {
         wxString str = _("'DRIVER' Handle (load/unload/update/start/stop) Level I/Level II drivers.\r\n");
@@ -1783,7 +1798,7 @@ void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObj
         str += _("'DRIVER start package' .\r\n");
         str += _("'DRIVER stop package' .\r\n");
         str += _("'DRIVER reload package' .\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( _("FILE") == strcmd ) {
         wxString str = _("'FILE' Handle daemon files.\r\n");
@@ -1792,13 +1807,13 @@ void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObj
         str += _("'FILE move'.\r\n");
         str += _("'FILE delete'.\r\n");
         str += _("'FILE list'.\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( _("UDP") == strcmd ) {
         wxString str = _("'UDP' Handle UDP interface.\r\n");
         str += _("'UDP enable'.\r\n");
         str += _("'UDP disable' .\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( _("REMOTE") == strcmd ) {
         wxString str = _("'REMOTE' User management.\r\n");
@@ -1811,13 +1826,13 @@ void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObj
         str += _("'REMOTE event-list 'username','event-list''.\r\n");
         str += _("'REMOTE filter 'username','filter''.\r\n");
         str += _("'REMOTE mask 'username','mask''.\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( _("INTERFACE") == strcmd ) {
         wxString str = _("'INTERFACE' Handle interfaces on the daemon.\r\n");
         str += _("'INTERFACE list'.\r\n");
         str += _("'INTERFACE close'.\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( _("DM") == strcmd ) {
         wxString str = _("'DM' Handle decision matrix on the daemon.\r\n");
@@ -1831,7 +1846,7 @@ void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObj
         str += _("'DM clrerr'.\r\n");
         str += _("'DM load'.\r\n");
         str += _("'DM save'.\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( _("VARIABLE") == strcmd ) {
         wxString str = _("'VARIABLE' Handle variables on the daemon.\r\n");
@@ -1844,10 +1859,10 @@ void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObj
         str += _("'VARIABLE readremove'.\r\n");
         str += _("'VARIABLE length'.\r\n");
         str += _("'VARIABLE save'.\r\n");
-        ns_send( conn, (const char *)str.mbc_str(), str.Length() );
+        mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
 
-    ns_send( conn, MSG_OK, strlen(MSG_OK) );
+    mg_send( conn, MSG_OK, strlen(MSG_OK) );
     return;
 }
 
@@ -1856,9 +1871,9 @@ void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObj
 // handleClientTest
 //
 
-void VSCPClientThread::handleClientTest ( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientTest ( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
-    ns_send( conn, MSG_OK, strlen ( MSG_OK ) );
+    mg_send( conn, MSG_OK, strlen ( MSG_OK ) );
     return;
 }
 
@@ -1867,9 +1882,9 @@ void VSCPClientThread::handleClientTest ( struct ns_connection *conn, CControlOb
 // handleClientRestart
 //
 
-void VSCPClientThread::handleClientRestart ( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientRestart ( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
-    ns_send( conn, MSG_OK, strlen ( MSG_OK ) );
+    mg_send( conn, MSG_OK, strlen ( MSG_OK ) );
     return;
 }
 
@@ -1878,16 +1893,16 @@ void VSCPClientThread::handleClientRestart ( struct ns_connection *conn, CContro
 // handleClientShutdown
 //
 
-void VSCPClientThread::handleClientShutdown ( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientShutdown ( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     if ( !pClientItem->m_bAuthorized ) {
-        ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );
+        mg_send( conn,  MSG_OK, strlen ( MSG_OK ) );
     }
 
-    ns_send( conn,  MSG_GOODBY, strlen ( MSG_GOODBY ) );
-    conn->flags |= NSF_CLOSE_IMMEDIATELY;
+    mg_send( conn,  MSG_GOODBY, strlen ( MSG_GOODBY ) );
+    conn->flags |= MG_F_CLOSE_IMMEDIATELY;
     //m_pCtrlObject->m_bQuit = true;
     //m_bRun = false;
 }
@@ -1897,7 +1912,7 @@ void VSCPClientThread::handleClientShutdown ( struct ns_connection *conn, CContr
 // handleClientRemote
 //
 
-void VSCPClientThread::handleClientRemote( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientRemote( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     return;
 }
@@ -1911,7 +1926,7 @@ void VSCPClientThread::handleClientRemote( struct ns_connection *conn, CControlO
 // normal 	Normal access to interfaces. Full format is INTERFACE NORMAL id
 // close		Close interfaces. Full format is INTERFACE CLOSE id
 
-void VSCPClientThread::handleClientInterface( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientInterface( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
@@ -1936,7 +1951,7 @@ void VSCPClientThread::handleClientInterface( struct ns_connection *conn, CContr
 // handleClientInterface_List
 //
 
-void VSCPClientThread::handleClientInterface_List( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientInterface_List( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     wxString strGUID;
     wxString strBuf;
@@ -1958,12 +1973,12 @@ void VSCPClientThread::handleClientInterface_List( struct ns_connection *conn, C
             strBuf += pItem->m_strDeviceName;
             strBuf += _("\r\n");
 
-            ns_send( conn,  strBuf.mb_str(),
+            mg_send( conn,  strBuf.mb_str(),
                                     strlen( strBuf.mb_str() ) );
 
     }
 
-    ns_send( conn, MSG_OK, strlen ( MSG_OK ) );
+    mg_send( conn, MSG_OK, strlen ( MSG_OK ) );
 
     m_pCtrlObject->m_wxClientMutex.Unlock();
 }
@@ -1972,7 +1987,7 @@ void VSCPClientThread::handleClientInterface_List( struct ns_connection *conn, C
 // handleClientInterface_Unique
 //
 
-void VSCPClientThread::handleClientInterface_Unique( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientInterface_Unique( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     unsigned char ifGUID[ 16 ];
     memset( ifGUID, 0, 16 );
@@ -1986,7 +2001,7 @@ void VSCPClientThread::handleClientInterface_Unique( struct ns_connection *conn,
     // Add the client to the Client List
     // TODO
 
-    ns_send( conn, MSG_INTERFACE_NOT_FOUND, strlen( MSG_INTERFACE_NOT_FOUND ) );
+    mg_send( conn, MSG_INTERFACE_NOT_FOUND, strlen( MSG_INTERFACE_NOT_FOUND ) );
 
 }
 
@@ -1994,7 +2009,7 @@ void VSCPClientThread::handleClientInterface_Unique( struct ns_connection *conn,
 // handleClientInterface_Normal
 //
 
-void VSCPClientThread::handleClientInterface_Normal( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientInterface_Normal( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     // TODO
 }
@@ -2003,7 +2018,7 @@ void VSCPClientThread::handleClientInterface_Normal( struct ns_connection *conn,
 // handleClientInterface_Close
 //
 
-void VSCPClientThread::handleClientInterface_Close( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientInterface_Close( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     // TODO
 }
@@ -2013,7 +2028,7 @@ void VSCPClientThread::handleClientInterface_Close( struct ns_connection *conn, 
 // handleClientUdp
 //
 
-void VSCPClientThread::handleClientUdp( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientUdp( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     // TODO
 }
@@ -2023,7 +2038,7 @@ void VSCPClientThread::handleClientUdp( struct ns_connection *conn, CControlObje
 // handleClientFile
 //
 
-void VSCPClientThread::handleClientFile( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientFile( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     // TODO
 }
@@ -2033,7 +2048,7 @@ void VSCPClientThread::handleClientFile( struct ns_connection *conn, CControlObj
 // handleClientVariable
 //
 
-void VSCPClientThread::handleClientVariable( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientVariable( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
@@ -2081,7 +2096,7 @@ void VSCPClientThread::handleClientVariable( struct ns_connection *conn, CContro
         handleVariable_Save( conn, pCtrlObject );
     }
     else {
-        ns_send( conn, MSG_UNKNOWN_COMMAND, strlen( MSG_UNKNOWN_COMMAND ) );
+        mg_send( conn, MSG_UNKNOWN_COMMAND, strlen( MSG_UNKNOWN_COMMAND ) );
     }
 }
 
@@ -2095,7 +2110,7 @@ void VSCPClientThread::handleClientVariable( struct ns_connection *conn, CContro
 // variable list name*	- Name with wildcard.
 //
 
-void VSCPClientThread::handleVariable_List( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleVariable_List( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     CVSCPVariable *pVariable;
     wxString str;
@@ -2148,7 +2163,7 @@ void VSCPClientThread::handleVariable_List( struct ns_connection *conn, CControl
                 str += strWork;
                 str += _("\r\n");
 
-                ns_send( conn,  str.mb_str(), str.Length() );
+                mg_send( conn,  str.mb_str(), str.Length() );
         }
 
         m_pCtrlObject->m_variableMutex.Unlock();
@@ -2257,7 +2272,7 @@ void VSCPClientThread::handleVariable_List( struct ns_connection *conn, CControl
                                     str += strWork;
                                     str += _("\r\n");
 
-                                    ns_send( conn,  str.mb_str(), str.Length() );
+                                    mg_send( conn,  str.mb_str(), str.Length() );
 
                             }
 
@@ -2296,7 +2311,7 @@ void VSCPClientThread::handleVariable_List( struct ns_connection *conn, CControl
                             str += strWork;
                             str += _("\r\n");
 
-                            ns_send( conn, str.mb_str(), str.Length() );
+                            mg_send( conn, str.mb_str(), str.Length() );
 
                         }
 
@@ -2310,14 +2325,14 @@ void VSCPClientThread::handleVariable_List( struct ns_connection *conn, CControl
 
     }
 
-    ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );
+    mg_send( conn,  MSG_OK, strlen ( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleVariable_Write
 //
 
-void VSCPClientThread::handleVariable_Write( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleVariable_Write( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     wxString strName;
     wxString strValue;
@@ -2340,7 +2355,7 @@ void VSCPClientThread::handleVariable_Write( struct ns_connection *conn, CContro
         strName.MakeUpper();
     }
     else {
-        ns_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
+        mg_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
         return;	
     }
 
@@ -2352,7 +2367,7 @@ void VSCPClientThread::handleVariable_Write( struct ns_connection *conn, CContro
         strType.MakeUpper();
     }
     else {
-        ns_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
+        mg_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
         return;	
     }
 
@@ -2365,7 +2380,7 @@ void VSCPClientThread::handleVariable_Write( struct ns_connection *conn, CContro
         }
     }
     else {
-        ns_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
+        mg_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
         return;	
     }
 
@@ -2374,7 +2389,7 @@ void VSCPClientThread::handleVariable_Write( struct ns_connection *conn, CContro
         strValue = tkz.GetString();
     }
     else {
-        ns_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
+        mg_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
         return;	
     }
 
@@ -2385,14 +2400,14 @@ void VSCPClientThread::handleVariable_Write( struct ns_connection *conn, CContro
     // Save decision matrix
     m_pCtrlObject->m_dm.save();
 
-    ns_send( conn, MSG_OK, strlen( MSG_OK ) );
+    mg_send( conn, MSG_OK, strlen( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleVariable_Read
 //
 
-void VSCPClientThread::handleVariable_Read( struct ns_connection *conn, CControlObject *pCtrlObject, bool bOKResponse )
+void VSCPClientThread::handleVariable_Read( struct mg_connection *conn, CControlObject *pCtrlObject, bool bOKResponse )
 {
     wxString str;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -2404,22 +2419,22 @@ void VSCPClientThread::handleVariable_Read( struct ns_connection *conn, CControl
     CVSCPVariable * pVariable;
 
     if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommandUC ) ) ) {
-        ns_send( conn, MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
+        mg_send( conn, MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
         return;
     }
 
     pVariable->writeValueToString( str );
     str += _("\r\n");
-    ns_send( conn,  str.ToAscii(), strlen( str.ToAscii() ) );
+    mg_send( conn,  str.ToAscii(), strlen( str.ToAscii() ) );
 
-    ns_send( conn, MSG_OK, strlen ( MSG_OK ) );
+    mg_send( conn, MSG_OK, strlen ( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleVariable_Reset
 //
 
-void VSCPClientThread::handleVariable_Reset( struct ns_connection *conn, CControlObject *pCtrlObject  )
+void VSCPClientThread::handleVariable_Reset( struct mg_connection *conn, CControlObject *pCtrlObject  )
 {
     wxString str;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -2440,21 +2455,21 @@ void VSCPClientThread::handleVariable_Reset( struct ns_connection *conn, CContro
 
         // Try again, Should be possible to find now
         if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommandUC ) ) ) {
-            ns_send( conn, MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            mg_send( conn, MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
             return;
         }
     }
 
     pVariable->Reset();
 
-    ns_send( conn, MSG_OK, strlen( MSG_OK ) );	
+    mg_send( conn, MSG_OK, strlen( MSG_OK ) );	
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleVariable_ReadReset
 //
 
-void VSCPClientThread::handleVariable_ReadReset( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleVariable_ReadReset( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     wxString str;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -2474,14 +2489,14 @@ void VSCPClientThread::handleVariable_ReadReset( struct ns_connection *conn, CCo
                                                 false );
         // Try again, Should be possible to find now
         if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommandUC ) ) ) {
-            ns_send( conn, MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            mg_send( conn, MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
             return;
         }
     }
 
     pVariable->writeValueToString( str );
     str += _("\r\n");
-    ns_send( conn,  str.ToAscii(), str.Length() );
+    mg_send( conn,  str.ToAscii(), str.Length() );
 
     handleVariable_Reset(conn, pCtrlObject);
 }
@@ -2491,7 +2506,7 @@ void VSCPClientThread::handleVariable_ReadReset( struct ns_connection *conn, CCo
 // handleVariable_Remove
 //
 
-void VSCPClientThread::handleVariable_Remove( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleVariable_Remove( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     wxString str;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -2504,7 +2519,7 @@ void VSCPClientThread::handleVariable_Remove( struct ns_connection *conn, CContr
     m_pCtrlObject->m_VSCP_Variables.remove( pClientItem->m_currentCommandUC );
     m_pCtrlObject->m_variableMutex.Unlock();
 
-    ns_send( conn, MSG_OK, strlen( MSG_OK ) );
+    mg_send( conn, MSG_OK, strlen( MSG_OK ) );
 }
 
 
@@ -2512,7 +2527,7 @@ void VSCPClientThread::handleVariable_Remove( struct ns_connection *conn, CContr
 // handleVariable_ReadRemove
 //
 
-void VSCPClientThread::handleVariable_ReadRemove( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleVariable_ReadRemove( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     wxString str;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -2532,14 +2547,14 @@ void VSCPClientThread::handleVariable_ReadRemove( struct ns_connection *conn, CC
                                                 false );
         // Try again, Should be possible to find now
         if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommandUC ) ) ) {
-            ns_send( conn, MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            mg_send( conn, MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
             return;
         }
     }
 
     pVariable->writeValueToString( str );
     str += _("\r\n");
-    ns_send( conn,  str.ToAscii(), str.Length() );
+    mg_send( conn,  str.ToAscii(), str.Length() );
 
     handleVariable_Remove( conn, pCtrlObject );
 }
@@ -2548,7 +2563,7 @@ void VSCPClientThread::handleVariable_ReadRemove( struct ns_connection *conn, CC
 // handleVariable_Length
 //
 
-void VSCPClientThread::handleVariable_Length( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleVariable_Length( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     wxString str;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -2568,20 +2583,20 @@ void VSCPClientThread::handleVariable_Length( struct ns_connection *conn, CContr
                                                 false );
         // Try again, Should be possible to find now
         if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommandUC ) ) ) {
-            ns_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
+            mg_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
     }
 
     if ( pVariable->getType() ) {
         str.Printf( _("%d\r\n"), pVariable->m_strValue.Length()  );
-        ns_send( conn,  str.mb_str(), str.Length() );
+        mg_send( conn,  str.mb_str(), str.Length() );
     }
     else {
-        ns_send( conn, "0\r\n", strlen( "0\r\n" ) );	
+        mg_send( conn, "0\r\n", strlen( "0\r\n" ) );	
     }
 
-    ns_send( conn,  MSG_OK, strlen( MSG_OK ) );
+    mg_send( conn,  MSG_OK, strlen( MSG_OK ) );
 }
 
 
@@ -2590,11 +2605,11 @@ void VSCPClientThread::handleVariable_Length( struct ns_connection *conn, CContr
 // handleVariable_Load
 //
 
-void VSCPClientThread::handleVariable_Load( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleVariable_Load( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     m_pCtrlObject->m_VSCP_Variables.load();
 
-    ns_send( conn, MSG_OK, strlen( MSG_OK ) );
+    mg_send( conn, MSG_OK, strlen( MSG_OK ) );
 }
 
 
@@ -2602,7 +2617,7 @@ void VSCPClientThread::handleVariable_Load( struct ns_connection *conn, CControl
 // handleVariable_Save
 //
 
-void VSCPClientThread::handleVariable_Save( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleVariable_Save( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     wxString path;
     //wxStandardPaths stdPath;
@@ -2613,7 +2628,7 @@ void VSCPClientThread::handleVariable_Save( struct ns_connection *conn, CControl
 
     m_pCtrlObject->m_VSCP_Variables.save( path );
 
-    ns_send( conn, MSG_OK, strlen( MSG_OK ) );
+    mg_send( conn, MSG_OK, strlen( MSG_OK ) );
 }
 
 
@@ -2627,7 +2642,7 @@ void VSCPClientThread::handleVariable_Save( struct ns_connection *conn, CControl
 // handleClientDm
 //
 
-void VSCPClientThread::handleClientDm( struct ns_connection *conn, CControlObject *pCtrlObject  )
+void VSCPClientThread::handleClientDm( struct mg_connection *conn, CControlObject *pCtrlObject  )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
@@ -2669,7 +2684,7 @@ void VSCPClientThread::handleClientDm( struct ns_connection *conn, CControlObjec
 // handleDM_Enable
 //
 
-void VSCPClientThread::handleDM_Enable( struct ns_connection *conn, CControlObject *pCtrlObject  )
+void VSCPClientThread::handleDM_Enable( struct mg_connection *conn, CControlObject *pCtrlObject  )
 {
     unsigned short pos;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -2696,7 +2711,7 @@ void VSCPClientThread::handleDM_Enable( struct ns_connection *conn, CControlObje
         m_pCtrlObject->m_dm.m_mutexDM.Lock();
 
         if ( pos > ( m_pCtrlObject->m_dm.m_DMList.GetCount() - 1 ) ) {
-            ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
             m_pCtrlObject->m_dm.m_mutexDM.Unlock();
             return;
         }
@@ -2707,7 +2722,7 @@ void VSCPClientThread::handleDM_Enable( struct ns_connection *conn, CControlObje
 
     }
 
-    ns_send( conn, MSG_OK, strlen( MSG_OK ) );
+    mg_send( conn, MSG_OK, strlen( MSG_OK ) );
 
 }
 
@@ -2715,7 +2730,7 @@ void VSCPClientThread::handleDM_Enable( struct ns_connection *conn, CControlObje
 // handleDM_Disable
 //
 
-void VSCPClientThread::handleDM_Disable( struct ns_connection *conn, CControlObject *pCtrlObject  )
+void VSCPClientThread::handleDM_Disable( struct mg_connection *conn, CControlObject *pCtrlObject  )
 {
     unsigned short pos;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -2746,7 +2761,7 @@ void VSCPClientThread::handleDM_Disable( struct ns_connection *conn, CControlObj
             m_pCtrlObject->m_dm.m_mutexDM.Lock();
 
             if ( pos > ( m_pCtrlObject->m_dm.m_DMList.GetCount() - 1 ) ) {
-                ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+                mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
                 m_pCtrlObject->m_dm.m_mutexDM.Unlock();
                 return;
             }
@@ -2760,14 +2775,14 @@ void VSCPClientThread::handleDM_Disable( struct ns_connection *conn, CControlObj
 
     }
 
-    ns_send( conn, MSG_OK, strlen( MSG_OK ) );
+    mg_send( conn, MSG_OK, strlen( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleDM_List
 //
 
-void VSCPClientThread::handleDM_List( struct ns_connection *conn, CControlObject *pCtrlObject  )
+void VSCPClientThread::handleDM_List( struct mg_connection *conn, CControlObject *pCtrlObject  )
 {
     // Valid commands at this point
     // dm list
@@ -2800,7 +2815,7 @@ void VSCPClientThread::handleDM_List( struct ns_connection *conn, CControlObject
             dmElement *pDMItem = *iter;
             wxString strRow = pDMItem->getAsRealText();
 
-            ns_send( conn,  strRow.mb_str(),
+            mg_send( conn,  strRow.mb_str(),
                                         strlen ( strRow.mb_str() ) );
 
         }	
@@ -2825,7 +2840,7 @@ void VSCPClientThread::handleDM_List( struct ns_connection *conn, CControlObject
     }
 
 
-    ns_send( conn, MSG_OK, strlen ( MSG_OK ) );
+    mg_send( conn, MSG_OK, strlen ( MSG_OK ) );
 
 }
 
@@ -2833,7 +2848,7 @@ void VSCPClientThread::handleDM_List( struct ns_connection *conn, CControlObject
 // handleDM_Add
 //
 
-void VSCPClientThread::handleDM_Add( struct ns_connection *conn, CControlObject *pCtrlObject  )
+void VSCPClientThread::handleDM_Add( struct mg_connection *conn, CControlObject *pCtrlObject  )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
     dmElement *pDMItem = new dmElement;
@@ -2873,14 +2888,14 @@ void VSCPClientThread::handleDM_Add( struct ns_connection *conn, CControlObject 
     m_pCtrlObject->m_dm.addElement ( pDMItem );
     m_pCtrlObject->m_dm.m_mutexDM.Unlock();
 
-    ns_send( conn, MSG_OK, strlen( MSG_OK ) );
+    mg_send( conn, MSG_OK, strlen( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleDM_Delete
 //
 
-void VSCPClientThread::handleDM_Delete( struct ns_connection *conn, CControlObject *pCtrlObject  )
+void VSCPClientThread::handleDM_Delete( struct mg_connection *conn, CControlObject *pCtrlObject  )
 {
     unsigned short pos;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -2911,7 +2926,7 @@ void VSCPClientThread::handleDM_Delete( struct ns_connection *conn, CControlObje
             m_pCtrlObject->m_dm.m_mutexDM.Lock();
 
             if ( pos > ( m_pCtrlObject->m_dm.m_DMList.GetCount() - 1 ) ) {
-                ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+                mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
                 m_pCtrlObject->m_dm.m_mutexDM.Unlock();
                 return;
             }
@@ -2927,26 +2942,26 @@ void VSCPClientThread::handleDM_Delete( struct ns_connection *conn, CControlObje
 
     }
 
-    ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );
+    mg_send( conn,  MSG_OK, strlen ( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleDM_Reset
 //
 
-void VSCPClientThread::handleDM_Reset( struct ns_connection *conn, CControlObject *pCtrlObject  )
+void VSCPClientThread::handleDM_Reset( struct mg_connection *conn, CControlObject *pCtrlObject  )
 {
     m_pCtrlObject->stopDaemonWorkerThread();
     m_pCtrlObject->startDaemonWorkerThread();
 
-    ns_send( conn, MSG_OK, strlen( MSG_OK ) );
+    mg_send( conn, MSG_OK, strlen( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleDM_Trigger
 //
 
-void VSCPClientThread::handleDM_Trigger( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleDM_Trigger( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     unsigned short pos;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -2960,7 +2975,7 @@ void VSCPClientThread::handleDM_Trigger( struct ns_connection *conn, CControlObj
         m_pCtrlObject->m_dm.m_mutexDM.Lock();
 
         if ( pos > ( m_pCtrlObject->m_dm.m_DMList.GetCount() - 1 ) ) {
-            ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
             m_pCtrlObject->m_dm.m_mutexDM.Unlock();
             return;
         }
@@ -2973,7 +2988,7 @@ void VSCPClientThread::handleDM_Trigger( struct ns_connection *conn, CControlObj
 
     }
 
-    ns_send( conn, MSG_OK, strlen( MSG_OK ) );
+    mg_send( conn, MSG_OK, strlen( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2981,7 +2996,7 @@ void VSCPClientThread::handleDM_Trigger( struct ns_connection *conn, CControlObj
 //
 
 
-void VSCPClientThread::handleDM_ClearTriggerCount( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleDM_ClearTriggerCount( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     unsigned short pos;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -3012,7 +3027,7 @@ void VSCPClientThread::handleDM_ClearTriggerCount( struct ns_connection *conn, C
             m_pCtrlObject->m_dm.m_mutexDM.Lock();
 
             if ( pos > ( m_pCtrlObject->m_dm.m_DMList.GetCount() - 1 ) ) {
-                ns_send( conn,  MSG_PARAMETER_ERROR,
+                mg_send( conn,  MSG_PARAMETER_ERROR,
                     strlen ( MSG_PARAMETER_ERROR ) );
                 m_pCtrlObject->m_dm.m_mutexDM.Unlock();
                 return;
@@ -3028,7 +3043,7 @@ void VSCPClientThread::handleDM_ClearTriggerCount( struct ns_connection *conn, C
 
     }
 
-    ns_send( conn, MSG_OK, strlen( MSG_OK ) );
+    mg_send( conn, MSG_OK, strlen( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3036,7 +3051,7 @@ void VSCPClientThread::handleDM_ClearTriggerCount( struct ns_connection *conn, C
 //
 
 
-void VSCPClientThread::handleDM_ClearErrorCount( struct ns_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleDM_ClearErrorCount( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
     unsigned short pos;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -3067,7 +3082,7 @@ void VSCPClientThread::handleDM_ClearErrorCount( struct ns_connection *conn, CCo
             m_pCtrlObject->m_dm.m_mutexDM.Lock();
 
             if ( pos > ( m_pCtrlObject->m_dm.m_DMList.GetCount() - 1 ) ) {
-                ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+                mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
                 m_pCtrlObject->m_dm.m_mutexDM.Unlock();
                 return;
             }
@@ -3082,16 +3097,16 @@ void VSCPClientThread::handleDM_ClearErrorCount( struct ns_connection *conn, CCo
 
     }
 
-    ns_send( conn, MSG_OK, strlen( MSG_OK ) );
+    mg_send( conn, MSG_OK, strlen( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientList
 //
 
-void VSCPClientThread::handleClientList( struct ns_connection *conn, CControlObject *pCtrlObject  )
+void VSCPClientThread::handleClientList( struct mg_connection *conn, CControlObject *pCtrlObject  )
 {
-    ns_send( conn, MSG_OK, strlen ( MSG_OK ) );
+    mg_send( conn, MSG_OK, strlen ( MSG_OK ) );
 }
 
 
@@ -3099,7 +3114,7 @@ void VSCPClientThread::handleClientList( struct ns_connection *conn, CControlObj
 // handleClientDriver
 //
 
-void VSCPClientThread::handleClientDriver( struct ns_connection *conn, CControlObject *pCtrlObject  )
+void VSCPClientThread::handleClientDriver( struct mg_connection *conn, CControlObject *pCtrlObject  )
 {
 
 }

@@ -55,6 +55,8 @@
 #include <vscp.h>
 #include <vscpremotetcpif.h>
 
+class mg_poll_server;
+class mg_poll_server;
 WX_DEFINE_LIST( EVENT_RX_QUEUE );
 WX_DEFINE_LIST( EVENT_TX_QUEUE );
 
@@ -83,39 +85,25 @@ clientTcpIpWorkerThread::~clientTcpIpWorkerThread()
 // tcpip_event_handler
 //
 
-#ifdef USE_FOSSA
-void clientTcpIpWorkerThread::ev_handler( struct ns_connection *conn, 
+void clientTcpIpWorkerThread::ev_handler( struct mg_connection *conn, 
                                             int ev, 
                                             void *pUser) 
-#else
-void clientTcpIpWorkerThread::ev_handler( struct ns_connection *conn, 
-                                            enum ns_event ev, 
-                                            void *pUser) 
-#endif
 {
     char rbuf[ 2048 ];
     int pos4lf = 0;
-#ifdef USE_FOSSA
     struct mbuf *io = NULL;
-#else
-    struct iobuf *io = NULL;
-#endif
     VscpRemoteTcpIf *pTcpIfSession = NULL;
     
     if ( NULL == conn ) return;
 
-#ifdef USE_FOSSA
     io = &conn->recv_mbuf;
-#else
-    io = &conn->recv_iobuf;
-#endif
     pTcpIfSession = ( VscpRemoteTcpIf * )conn->mgr->user_data;
 
     if ( NULL == pTcpIfSession ) return;
 
     switch (ev) {
 
-        case NS_CONNECT: // connect() succeeded or failed. int *success_status
+        case MG_EV_CONNECT: // connect() succeeded or failed. int *success_status
             {
                 int connect_status = 0;
                 if ( NULL == pUser ) return;
@@ -124,12 +112,12 @@ void clientTcpIpWorkerThread::ev_handler( struct ns_connection *conn,
                 if (connect_status == 0) {
 
                     wxLogDebug( _("ev_handler: TCP/IP connect OK.") );
-                    if ( 2 != ns_send( conn, "\r\n", 2 ) ) {
-                        wxLogDebug( _("ev_handler: ns_send failed.") );
+                    if ( 2 != mg_send( conn, "\r\n", 2 ) ) {
+                        wxLogDebug( _("ev_handler: mg_send failed.") );
                     }
                     pTcpIfSession->m_semConnected.Post();
                     pTcpIfSession->m_bConnected = true;
-                    conn->flags |= NSF_USER_1;  // We should terminate
+                    conn->flags |= MG_F_USER_1;  // We should terminate
                 } 
                 else {
                     wxLogDebug( _("ev_handler: TCP/IP connect fail.") );
@@ -137,12 +125,12 @@ void clientTcpIpWorkerThread::ev_handler( struct ns_connection *conn,
             }
             break;
 
-        case NS_CLOSE:
+        case MG_EV_CLOSE:
             wxLogDebug( _("ev_handler: TCP/IP close.") );
             pTcpIfSession->m_bConnected = false;
             break;
 
-        case NS_RECV:
+        case MG_EV_RECV:
 
             wxLogDebug( _("ev_handler: TCP/IP receive.") );
 
@@ -154,11 +142,8 @@ void clientTcpIpWorkerThread::ev_handler( struct ns_connection *conn,
                 if ( sizeof( rbuf ) < io->len ) return;
 
                 memcpy( rbuf, io->buf, io->len );
-#ifdef USE_FOSSA
                 mbuf_remove(io, io->len); 
-#else
-                iobuf_remove( io, io->len );
-#endif
+
                 pTcpIfSession->m_readBuffer += wxString::FromUTF8( rbuf );
                 wxLogDebug( wxString::FromUTF8( rbuf ) );
 
@@ -204,22 +189,12 @@ void *clientTcpIpWorkerThread::Entry()
     wxLogDebug( _("clientTcpIpWorkerThread: Starting.") );
     
     // Set up the net_skeleton communication engine
-#ifdef USE_FOSSA
-    ns_mgr_init( &m_mgrTcpIpConnection, m_pvscpRemoteTcpIpIf );
-#else
-    ns_mgr_init( &m_mgrTcpIpConnection, m_pvscpRemoteTcpIpIf, clientTcpIpWorkerThread::ev_handler );
-#endif
+    mg_mgr_init( &m_mgrTcpIpConnection, m_pvscpRemoteTcpIpIf );
     
-    
-#ifdef USE_FOSSA
-    if ( NULL == ns_connect( &m_mgrTcpIpConnection, 
+    if ( NULL == mg_connect( &m_mgrTcpIpConnection, 
                                 (const char *)m_hostname.mbc_str(),
                                  clientTcpIpWorkerThread::ev_handler ) ) {
-#else
-    if ( NULL == ns_connect( &m_mgrTcpIpConnection, 
-                                (const char *)m_hostname.mbc_str(),
-                                 m_pvscpRemoteTcpIpIf ) ) {
-#endif
+
         wxLogDebug( _("clientTcpIpWorkerThread: Connect failed!") );
         return NULL;
     }
@@ -228,13 +203,13 @@ void *clientTcpIpWorkerThread::Entry()
 
     // Event loop
     while ( !TestDestroy() && m_bRun ) {
-        ns_mgr_poll( &m_mgrTcpIpConnection, 10 );
+        mg_mgr_poll( &m_mgrTcpIpConnection, 10 );
         //Yield();
         wxMilliSleep( 10 );
     }
 
     // Free resources
-    ns_mgr_free( &m_mgrTcpIpConnection );
+    mg_mgr_free( &m_mgrTcpIpConnection );
 
     wxLogDebug( _("clientTcpIpWorkerThread: Terminating.") );
     return NULL;
@@ -337,7 +312,7 @@ int VscpRemoteTcpIf::doCommand( wxString& cmd )
     wxLogDebug( _("doCommand: ") + cmd );
         
     doClrInputQueue();    
-    if ( cmd.Length() != ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
+    if ( cmd.Length() != mg_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
                                   cmd.mbc_str(),
                                   cmd.Length() ) ) {
         wxLogDebug( _("doCommand: failed to send command") );
@@ -541,7 +516,7 @@ int VscpRemoteTcpIf::doCmdClose( void )
     if ( m_bConnected ) {    
         // Try to behave
         wxString strCmd(_("QUIT\r\n"));
-        (void)ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
+        (void)mg_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
                        strCmd.mbc_str(),
                        strCmd.Length() );
 

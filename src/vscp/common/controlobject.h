@@ -36,7 +36,6 @@
 #include <wx/thread.h>
 #include <wx/filename.h>
 
-#include <net_skeleton.h>
 #include <mongoose.h>
 
 #include <devicelist.h>
@@ -483,7 +482,7 @@ public:
     /////////////////////////////////////////////////////////
 
     /// net_skeleton structure
-    struct ns_mgr m_mgrTcpIpServer;
+    struct mg_mgr m_mgrTcpIpServer;
 
     /// Interface(s) used for TCP/IP connection
     wxString m_strTcpInterfaceAddress;
