@@ -20,28 +20,24 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: canal_win32_ipc.h,v $                                       
-// $Date: 2005/09/06 21:19:10 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.6 $ 
 
 /// Names of mutex's
-#define CANAL_RECEIVE_OBJ_MUTEX				_T("____CANAL_RECEIVE_OBJ_MUTEX____")
-#define CANAL_UDP_OBJ_MUTEX					_T("____CANAL_UDP_OBJ_MUTEX____")
-#define CANAL_CLIENT_MUTEX					_T("__CANAL_CLIENT_MUTEX__")
+#define CANAL_RECEIVE_OBJ_MUTEX             _T("____CANAL_RECEIVE_OBJ_MUTEX____")
+#define CANAL_UDP_OBJ_MUTEX                 _T("____CANAL_UDP_OBJ_MUTEX____")
+#define CANAL_CLIENT_MUTEX                  _T("__CANAL_CLIENT_MUTEX__")
 
-#define CANAL_LISTEN_SHARED_MEMORY_MUTEX	_T("CANAL_LISTEN_SHARED_MEMORY_MUTEX")
+#define CANAL_LISTEN_SHARED_MEMORY_MUTEX    _T("CANAL_LISTEN_SHARED_MEMORY_MUTEX")
 
 /// Shared memory  
-#define CANAL_LISTEN_SHM_NAME				_T("CANAL_LISTEN_SHARED_MEMORY_SEMAPHORE")
-#define CANAL_LISTEN_CLIENT_SHM_TEMPLATE	_T("CANAL_LISTEN_CLIENT_%lu")
+#define CANAL_LISTEN_SHM_NAME               _T("CANAL_LISTEN_SHARED_MEMORY_SEMAPHORE")
+#define CANAL_LISTEN_CLIENT_SHM_TEMPLATE    _T("CANAL_LISTEN_CLIENT_%lu")
 
 /// Semaphores
-#define CANAL_LISTEN_COMMAND_SEM			_T("CANAL_LISTEN_COMMAND_SEMAPHORE")
-#define CANAL_LISTEN_DONE_SEM				_T("CANAL_LISTEN_DONE_SEMAPHORE")
+#define CANAL_LISTEN_COMMAND_SEM            _T("CANAL_LISTEN_COMMAND_SEMAPHORE")
+#define CANAL_LISTEN_DONE_SEM               _T("CANAL_LISTEN_DONE_SEMAPHORE")
 
-#define CANAL_CLIENT_COMMAND_SEM_TEMPLATE	_T("CANAL_CLIENT_COMMAND_SEMAPHORE%lu")
-#define CANAL_CLIENT_DONE_SEM_TEMPLATE		_T("CANAL_CLIENT_DONE_SEMAPHORE%lu")
+#define CANAL_CLIENT_COMMAND_SEM_TEMPLATE   _T("CANAL_CLIENT_COMMAND_SEMAPHORE%lu")
+#define CANAL_CLIENT_DONE_SEM_TEMPLATE      _T("CANAL_CLIENT_DONE_SEMAPHORE%lu")
 
 
 

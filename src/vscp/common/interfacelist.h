@@ -40,27 +40,27 @@ class CInterfaceItem
 
 public:
 
-	/// Constructor
-	CInterfaceItem( void );
+    /// Constructor
+    CInterfaceItem( void );
 
-	/// Destructor
-	virtual ~CInterfaceItem( void );
+    /// Destructor
+    virtual ~CInterfaceItem( void );
 
-	/// IP Address for interface
-	wxIPV4address m_ipaddress;
+    /// IP Address for interface
+    wxIPV4address m_ipaddress;
 
-	/// MAC address for interface
-	wxString m_macaddress;
+    /// MAC address for interface
+    wxString m_macaddress;
 
-	/// GUID for interface
-	uint8_t m_GUID[16];
+    /// GUID for interface
+    uint8_t m_GUID[16];
 
 protected:
 
-	/*!
-		System assigned ID for interface
-	*/
-	uint32_t m_interfaceID;
+    /*!
+        System assigned ID for interface
+    */
+    uint32_t m_interfaceID;
 
 };
 
@@ -72,27 +72,27 @@ class CInterfaceList
 {
 public:
 
-	/// Constructor
-	CInterfaceList( void );
+    /// Constructor
+    CInterfaceList( void );
 
-	/// Destructor
-	virtual ~CInterfaceList( void );
+    /// Destructor
+    virtual ~CInterfaceList( void );
 
-	/*!
-		Add interface
-		@param ip IP address for interface.
-		@param mac MAC address for interface.
-		@param guid GUID for interface.
-		@return true on sucess, false on failure.
-	*/
-	bool addInterface( wxString ip, wxString mac, wxString guid );
+    /*!
+        Add interface
+        @param ip IP address for interface.
+        @param mac MAC address for interface.
+        @param guid GUID for interface.
+        @return true on sucess, false on failure.
+    */
+    bool addInterface( wxString ip, wxString mac, wxString guid );
 
 protected:
 
-	/*!
-		List with interface items
-	*/
-	TCPClientList m_tcpclientlist;
+    /*!
+        List with interface items
+    */
+    TCPClientList m_tcpclientlist;
 
 };
 

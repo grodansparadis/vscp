@@ -86,7 +86,9 @@ void *VSCPClientThread::Entry()
     // Check pointers
     if ( NULL == m_pCtrlObject ) return NULL;
 
-    ns_mgr_init( &m_pCtrlObject->m_mgrTcpIpServer, m_pCtrlObject, VSCPClientThread::ev_handler );
+    ns_mgr_init( &m_pCtrlObject->m_mgrTcpIpServer, 
+                    m_pCtrlObject, 
+                    VSCPClientThread::ev_handler );
 
     m_pCtrlObject->m_strTcpInterfaceAddress.Trim();
     m_pCtrlObject->m_strTcpInterfaceAddress.Trim( false );

@@ -62,8 +62,8 @@ bool Comm::open( char *szDevice )
     else {
         if ( -1 == ( m_fd = ::open( m_szDevice, O_RDWR | O_NONBLOCK ) ) ) {	
             return false;
-        }	
-    } 	
+        }
+    }
   
     flock( m_fd, LOCK_EX );
     return true;
@@ -102,54 +102,54 @@ void Comm::setParam( char *baud,
     switch( newbaud )  {
         case 0:
 #ifdef B0
-            spd = B0;	
+            spd = B0;
             break;
 #else
-            spd = 0;	
+            spd = 0;
             break;
 #endif
-        case 3:		
-            spd = B300;	
+        case 3:
+            spd = B300;
             break;
-			
-        case 6:		
+
+        case 6:
             spd = B600;	
             break;
-			
-        case 12:	
-            spd = B1200;	
+    
+        case 12:
+            spd = B1200;
             break;
       
-        case 24:	
-            spd = B2400;	
+        case 24:
+            spd = B2400;
             break;
             
-        case 48:	
-            spd = B4800;	
+        case 48:
+            spd = B4800;
             break;
             
-        case 96:	
-            spd = B9600;	
+        case 96:
+            spd = B9600;
             break;
             
 #ifdef B19200
-        case 192:	
-            spd = B19200;	
+        case 192:
+            spd = B19200;
             break;
 #else /* B19200 */
 #  ifdef EXTA
-  case 192:	
-    spd = EXTA;	
+  case 192:
+    spd = EXTA;
     break;
 #   else /* EXTA */
-  case 192:	
-    spd = B9600;	
+  case 192:
+    spd = B9600;
     break;
 #   endif /* EXTA */
-#endif	 /* B19200 */
+#endif   /* B19200 */
 #ifdef B38400
-        case 384:	
-            spd = B38400;	
+        case 384:
+            spd = B38400;
             break;
 #else /* B38400 */
 #  ifdef EXTB
@@ -158,18 +158,18 @@ void Comm::setParam( char *baud,
     break;
 #   else /* EXTB */
   case 384:	
-    spd = B9600;	
+    spd = B9600;
     break;
 #   endif /* EXTB */
-#endif	 /* B38400 */
+#endif   /* B38400 */
 #ifdef B57600
-        case 576:	
-            spd = B57600;	
+        case 576:
+            spd = B57600;
             break;
 #endif
 #ifdef B115200
-        case 1152:	
-            spd = B115200;	
+        case 1152:
+            spd = B115200;
             break;
 #endif
     } // Switch
@@ -188,7 +188,7 @@ void Comm::setParam( char *baud,
         case '6':
             tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS6;
             break;
-			
+            
         case '7':
             tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS7;
             break;
@@ -232,7 +232,7 @@ void Comm::setParam( char *baud,
     setHWFlow( HWFlow );
 #endif
 }
-	
+    
 
 ///////////////////////////////////////////////////////////////////////////////
 // comm_gets
@@ -268,7 +268,7 @@ int Comm::comm_gets( char *Buffer, int nChars, long timeout )
     int cnt;
     int us_to = 0;
     int s_to = 0;
-	
+    
     if ( timeout > 1000000 ) {
         s_to = ( timeout/1000000 );
     
@@ -278,7 +278,7 @@ int Comm::comm_gets( char *Buffer, int nChars, long timeout )
     else {
         us_to = timeout;	
     }
-	
+    
     // loop to wait until each byte is available and read it
     for ( cnt = 0; cnt < nChars; cnt++ ) {
         // set a descriptor to wait for a character available
@@ -317,7 +317,7 @@ int Comm::comm_puts(char *Buffer, bool bDrain )
     if ( bDrain ) {
         Drain();
     }
-	
+    
     return rv;
 }
 
@@ -329,11 +329,11 @@ int Comm::comm_puts(char *Buffer, bool bDrain )
 int Comm::comm_puts( char *Buffer, int len, bool bDrain )
 {
     int rv = write( m_fd, Buffer, len );		
-	
+    
     if ( bDrain ) {
         Drain();
     }
-	
+    
     return rv;
 }
 
@@ -536,7 +536,7 @@ void Comm::DtrOn()
 //
 // Turn off DTR.
 //
-	
+    
 void Comm::DtrOff()
 {
     int f;
@@ -549,20 +549,20 @@ void Comm::DtrOff()
 //
 // Turn on RTS.
 //
-	
+    
 void Comm::RtsOn()
 {
     int f;
     f = TIOCM_RTS;
     ioctl( m_fd, TIOCMBIS, &f );
 }
-	
+    
 ///////////////////////////////////////////////////////////////////////////////
 // RtsOff
 //
 // Turn off RTS.
 //
-	
+    
 void Comm::RtsOff()
 {
     int f;

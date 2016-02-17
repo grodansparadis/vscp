@@ -54,9 +54,9 @@ WX_DEFINE_LIST(TCPClientList);
 
 CInterfaceItem::CInterfaceItem( void )
 {
-	m_ipaddress.Hostname(_("127.0.0.1"));
-	m_macaddress = _("");
-	memset( m_GUID, 0, sizeof( m_GUID ) );
+    m_ipaddress.Hostname(_("127.0.0.1"));
+    m_macaddress = _("");
+    memset( m_GUID, 0, sizeof( m_GUID ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -70,7 +70,7 @@ CInterfaceItem::~CInterfaceItem( void )
 
 
 //*****************************************************************************
-//							 CInterfaceList
+//                          CInterfaceList
 //*****************************************************************************
 
 
@@ -97,24 +97,24 @@ CInterfaceList::~CInterfaceList( void )
 //
 bool CInterfaceList::addInterface( wxString ip, wxString mac, wxString guid )
 {
-	unsigned long var;
+    unsigned long var;
 
-	CInterfaceItem *pItem = new CInterfaceItem;
-	if ( NULL == pItem ) return false;
+    CInterfaceItem *pItem = new CInterfaceItem;
+    if ( NULL == pItem ) return false;
 
-	pItem->m_ipaddress.Hostname( ip );
-	pItem->m_macaddress = mac;
-	
-	wxStringTokenizer tkz( guid , wxT(":") );
-	for ( int i=0; i<16; i++ ) {
-		tkz.GetNextToken().ToULong( &var, 16 );
-		pItem->m_GUID[ i ] = (uint8_t)var;
-		// If no tokens left no use to continue
-		if ( !tkz.HasMoreTokens() ) break;
-	}
+    pItem->m_ipaddress.Hostname( ip );
+    pItem->m_macaddress = mac;
+    
+    wxStringTokenizer tkz( guid , wxT(":") );
+    for ( int i=0; i<16; i++ ) {
+        tkz.GetNextToken().ToULong( &var, 16 );
+        pItem->m_GUID[ i ] = (uint8_t)var;
+        // If no tokens left no use to continue
+        if ( !tkz.HasMoreTokens() ) break;
+    }
 
-	// Add the user
-	m_tcpclientlist.Append( pItem );
-	
-	return true;
+    // Add the user
+    m_tcpclientlist.Append( pItem );
+    
+    return true;
 }

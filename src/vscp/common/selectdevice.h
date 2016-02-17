@@ -66,71 +66,71 @@
 class CSelectDevice  
 {
 public:
-	
-	CSelectDevice( wxListBox* plist = NULL );
+    
+    CSelectDevice( wxListBox* plist = NULL );
 
-	virtual ~CSelectDevice();
+    virtual ~CSelectDevice();
 
-	/*!
-		Get a numerical data value (hex or decimal) from a string
-		@param szData Strng containing value in string form
-		@return The converted number
-	*/
-	unsigned long getDataValue( const char *szData );
-
-
-	/*!
-		Fill the device listbox with availabe devices
-	*/
-	void fillListBox( void );
+    /*!
+        Get a numerical data value (hex or decimal) from a string
+        @param szData Strng containing value in string form
+        @return The converted number
+    */
+    unsigned long getDataValue( const char *szData );
 
 
-	/*!
-		Load device data from the registry
-	*/
-	void loadRegistryDeviceData( void );
+    /*!
+        Fill the device listbox with availabe devices
+    */
+    void fillListBox( void );
 
 
-	/*!
-		Get selected device
-	*/
-	void getSelectedDevice( int idx, devItem** pItem );
+    /*!
+        Load device data from the registry
+    */
+    void loadRegistryDeviceData( void );
 
 
-	/*!
-		Get device profile
-		@param pDev Device item structure
-		@return true on success.
-	*/
-	bool getDeviceProfile( int idx, devItem* pDev );
+    /*!
+        Get selected device
+    */
+    void getSelectedDevice( int idx, devItem** pItem );
 
-	/*!
-		Edit device
-	*/
-	void OnButtonEditDevice();
 
-	/*!
-		Add device
-	*/
-	void OnButtonAddDevice() ;
+    /*!
+        Get device profile
+        @param pDev Device item structure
+        @return true on success.
+    */
+    bool getDeviceProfile( int idx, devItem* pDev );
 
-	/*!
-		Remove device
-	*/
-	void OnButtonRemoveDevice();
+    /*!
+        Edit device
+    */
+    void OnButtonEditDevice();
+
+    /*!
+        Add device
+    */
+    void OnButtonAddDevice() ;
+
+    /*!
+        Remove device
+    */
+    void OnButtonRemoveDevice();
 
 
 private:
 
-	/*!
-		List with device profiles from the registry
-	*/
-	devItem *m_deviceList[ 256 ];
+    /*!
+        List with device profiles from the registry
+    */
+    devItem *m_deviceList[ 256 ];
 
-	/*!
-		Listbox for the devices
-	*/
-	wxListBox* m_plistBox;
+    /*!
+        Listbox for the devices
+    */
+    wxListBox* m_plistBox;
 };
 
 #endif // !defined(AFX_SELECTDEVICE_H__FC69EC9B_C8E4_4EBD_AEE6_1E0C277D5820__INCLUDED_)

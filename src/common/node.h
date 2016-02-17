@@ -61,17 +61,17 @@ class CNodeObject
 {
 
  public:
-	
+    
   /**
      Constructor
   */
   CNodeObject();
-	
+    
   /**
      destructor
   */
   ~CNodeObject();
-	
+    
  public:
 
   /**
@@ -99,12 +99,12 @@ class CNode
      Constructor
   */
   CNode( void );
-	
+    
   /**
      Destructor
   */
   virtual ~CNode( void );
-	
+    
   /**
      Get object embedded in node.
      
@@ -312,7 +312,7 @@ class CDoubleLinkedList
      Pointer to the tail of the linked list
   */
   CNode * m_pTail;
-	
+    
 };
 
 #endif // H_NODE_H

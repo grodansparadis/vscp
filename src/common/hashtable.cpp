@@ -19,13 +19,13 @@
 
 CHashTable::CHashTable()
 {
-	// Create the double linked lists
-	for (int i = 0; i < HASH_TABLE_SIZE_PRIME; i++) {
-		m_hashtbl[ i ] = new CDoubleLinkedList(CDoubleLinkedList::SORT_STRING);
-	}
+    // Create the double linked lists
+    for (int i = 0; i < HASH_TABLE_SIZE_PRIME; i++) {
+        m_hashtbl[ i ] = new CDoubleLinkedList(CDoubleLinkedList::SORT_STRING);
+    }
 
-	// Create the id list
-	m_pidlist = new CDoubleLinkedList(CDoubleLinkedList::SORT_NUMERIC);
+    // Create the id list
+    m_pidlist = new CDoubleLinkedList(CDoubleLinkedList::SORT_NUMERIC);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -33,19 +33,19 @@ CHashTable::CHashTable()
 
 CHashTable::~CHashTable()
 {
-	// Remove all nodes	
-	removeAllNodes();
+    // Remove all nodes	
+    removeAllNodes();
 
-	// Delete all elements
-	for (int i = 0; i < HASH_TABLE_SIZE_PRIME; i++) {
-		if (NULL != m_hashtbl[ i ]) {
-			delete m_hashtbl[ i ];
-		}
-	}
+    // Delete all elements
+    for (int i = 0; i < HASH_TABLE_SIZE_PRIME; i++) {
+        if (NULL != m_hashtbl[ i ]) {
+            delete m_hashtbl[ i ];
+        }
+    }
 
-	if (NULL != m_pidlist) {
-		delete m_pidlist;
-	}
+    if (NULL != m_pidlist) {
+        delete m_pidlist;
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -53,14 +53,14 @@ CHashTable::~CHashTable()
 
 unsigned short CHashTable::hash(char * p)
 {
-	int h = 0;
+    int h = 0;
 
-	while (*p) {
-		h = ((64 * h + *p) % HASH_TABLE_SIZE_PRIME);
-		p++;
-	}
+    while (*p) {
+        h = ((64 * h + *p) % HASH_TABLE_SIZE_PRIME);
+        p++;
+    }
 
-	return h;
+    return h;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -68,7 +68,7 @@ unsigned short CHashTable::hash(char * p)
 
 CDoubleLinkedList *CHashTable::getListfromHash(char * p)
 {
-	return m_hashtbl[ hash(p) ];
+    return m_hashtbl[ hash(p) ];
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -76,24 +76,24 @@ CDoubleLinkedList *CHashTable::getListfromHash(char * p)
 
 bool CHashTable::addNode(CNodeObject *pObject)
 {
-	// Must be valid object
-	if (NULL == pObject) return false;
+    // Must be valid object
+    if (NULL == pObject) return false;
 
-	if (NULL != findNode(pObject)) {
-		// Node is already there
-		return false;
-	} else {
-		// Add the node
-		if (m_hashtbl[ hash(pObject->m_pstrSortKey) ]->addNode(pObject)) {
+    if (NULL != findNode(pObject)) {
+        // Node is already there
+        return false;
+    } else {
+        // Add the node
+        if (m_hashtbl[ hash(pObject->m_pstrSortKey) ]->addNode(pObject)) {
 
-			// Object Added - also add to numerical id list
-			m_pidlist->addNode(pObject);
-		} else {
-			return false;
-		}
-	}
+            // Object Added - also add to numerical id list
+            m_pidlist->addNode(pObject);
+        } else {
+            return false;
+        }
+    }
 
-	return true;
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -101,7 +101,7 @@ bool CHashTable::addNode(CNodeObject *pObject)
 
 CNode *CHashTable::findNode(unsigned long nID)
 {
-	return m_pidlist->findNode(nID);
+    return m_pidlist->findNode(nID);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -109,7 +109,7 @@ CNode *CHashTable::findNode(unsigned long nID)
 
 CNode *CHashTable::findNode(char * strID)
 {
-	return m_hashtbl[ hash(strID) ]->findNode(strID);
+    return m_hashtbl[ hash(strID) ]->findNode(strID);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -117,13 +117,13 @@ CNode *CHashTable::findNode(char * strID)
 
 bool CHashTable::removeNode(CNode *pNode)
 {
-	// Must have something to work on
-	if (NULL == pNode) return false;
+    // Must have something to work on
+    if (NULL == pNode) return false;
 
-	// Get the object
-	CNodeObject *pObject = pNode->getObject();
+    // Get the object
+    CNodeObject *pObject = pNode->getObject();
 
-	return removeNode(pObject);
+    return removeNode(pObject);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -131,10 +131,10 @@ bool CHashTable::removeNode(CNode *pNode)
 
 bool CHashTable::removeNode(CNodeObject *pObject)
 {
-	// Must have something to work on
-	if (NULL == pObject) return false;
+    // Must have something to work on
+    if (NULL == pObject) return false;
 
-	return removeNode(pObject->m_pstrSortKey);
+    return removeNode(pObject->m_pstrSortKey);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -142,7 +142,7 @@ bool CHashTable::removeNode(CNodeObject *pObject)
 
 bool CHashTable::removeNode(unsigned long nID)
 {
-	return removeNode(findNode(nID));
+    return removeNode(findNode(nID));
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -150,30 +150,30 @@ bool CHashTable::removeNode(unsigned long nID)
 
 bool CHashTable::removeNode(char * strID)
 {
-	CNode *pNode = findNode(strID);
+    CNode *pNode = findNode(strID);
 
-	// Must have something to work on
-	if (NULL == pNode) return false;
+    // Must have something to work on
+    if (NULL == pNode) return false;
 
-	CNodeObject *pObject = pNode->getObject();
-	if (NULL != pObject) {
-		// Note that the node object should not be removed here as
-		// this is the same object as in the hash list. The removal should
-		// be done in the hash list instead. To prevent this we set
-		// assign a NULL pointer for the  node object before we delete the
-		// node.
-		CNode *pNodeNumeric = m_pidlist->findNode(*pObject->m_pKey);
-		if (NULL != pNodeNumeric) {
-			pNodeNumeric->setObject(NULL);
-			// Now its safe to remove the node.	
-			m_pidlist->removeNode(pNodeNumeric);
-		}
-	}
+    CNodeObject *pObject = pNode->getObject();
+    if (NULL != pObject) {
+        // Note that the node object should not be removed here as
+        // this is the same object as in the hash list. The removal should
+        // be done in the hash list instead. To prevent this we set
+        // assign a NULL pointer for the  node object before we delete the
+        // node.
+        CNode *pNodeNumeric = m_pidlist->findNode(*pObject->m_pKey);
+        if (NULL != pNodeNumeric) {
+            pNodeNumeric->setObject(NULL);
+            // Now its safe to remove the node.	
+            m_pidlist->removeNode(pNodeNumeric);
+        }
+    }
 
-	// Remove the string id node and driver object
-	m_hashtbl[ hash(strID) ]->removeNode(pNode);
+    // Remove the string id node and driver object
+    m_hashtbl[ hash(strID) ]->removeNode(pNode);
 
-	return true;
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -181,24 +181,24 @@ bool CHashTable::removeNode(char * strID)
 
 void CHashTable::removeAllNodes(void)
 {
-	CNode *pNode;
+    CNode *pNode;
 
-	// Remove the numerical id double linked list
-	if (NULL != m_pidlist) {
+    // Remove the numerical id double linked list
+    if (NULL != m_pidlist) {
 
-		// Assign a NULL pointer to  all node objects
-		// so the object can be removed in the hash routines
-		while (NULL != (pNode = m_pidlist->getHeadNode())) {
-			pNode->setObject(NULL);
-			m_pidlist->removeNode(pNode);
-		}
+        // Assign a NULL pointer to  all node objects
+        // so the object can be removed in the hash routines
+        while (NULL != (pNode = m_pidlist->getHeadNode())) {
+            pNode->setObject(NULL);
+            m_pidlist->removeNode(pNode);
+        }
 
-		// And finally remove all nodes
-		m_pidlist->removeAllNodes();
-	}
+        // And finally remove all nodes
+        m_pidlist->removeAllNodes();
+    }
 
-	// Remove the hash list for string ID's
-	for (int i = 0; i < HASH_TABLE_SIZE_PRIME; i++) {
-		m_hashtbl[ i ]->removeAllNodes();
-	}
+    // Remove the hash list for string ID's
+    for (int i = 0; i < HASH_TABLE_SIZE_PRIME; i++) {
+        m_hashtbl[ i ]->removeAllNodes();
+    }
 }

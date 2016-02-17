@@ -20,28 +20,28 @@ int gettimeofday(struct timeval *tv, struct timezone *tz)
  
   if (NULL != tv)
   {
-	GetSystemTimeAsFileTime(&ft);
+    GetSystemTimeAsFileTime(&ft);
  
-	tmpres |= ft.dwHighDateTime;
-	tmpres <<= 32;
-	tmpres |= ft.dwLowDateTime;
+    tmpres |= ft.dwHighDateTime;
+    tmpres <<= 32;
+    tmpres |= ft.dwLowDateTime;
  
-	/*converting file time to unix epoch*/
-	tmpres -= DELTA_EPOCH_IN_MICROSECS; 
-	tmpres /= 10;  /*convert into microseconds*/
-	tv->tv_sec = (long)(tmpres / 1000000UL);
-	tv->tv_usec = (long)(tmpres % 1000000UL);
+    /*converting file time to unix epoch*/
+    tmpres -= DELTA_EPOCH_IN_MICROSECS; 
+    tmpres /= 10;  /*convert into microseconds*/
+    tv->tv_sec = (long)(tmpres / 1000000UL);
+    tv->tv_usec = (long)(tmpres % 1000000UL);
   }
  
   if (NULL != tz)
   {
-	if (!tzflag)
-	{
-	  _tzset();
-	  tzflag++;
-	}
-	tz->tz_minuteswest = _timezone / 60;
-	tz->tz_dsttime = _daylight;
+    if (!tzflag)
+    {
+      _tzset();
+      tzflag++;
+    }
+    tz->tz_minuteswest = _timezone / 60;
+    tz->tz_dsttime = _daylight;
   }
  
   return 0;

@@ -69,7 +69,7 @@ typedef struct {
     wxString m_strPath;                 // Path to driver
     wxString m_strConfig;               // Driver configuration string
     unsigned long m_flags;              // Driver flags
-        unsigned char m_GUID[16];       // GUID for interface
+    unsigned char m_GUID[16];       // GUID for interface
 } canal_interface;
 
 // Structure for VSCP drivers

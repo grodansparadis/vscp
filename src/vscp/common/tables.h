@@ -63,9 +63,12 @@ struct _vscpFileHead {
     char nameYLabel[128];       // Label for Y-axis
     uint16_t vscp_class;        // Should be 10 but in future can be 11/12/13...
     uint16_t vscp_type;         // Measurement type: temp, current etc
-    uint8_t vscp_unit;          // Measurement unit: e.g. Celsius(1)/Fahrenheit(2)/Kelvin(0) for temperature class=10/Type=6
+    uint8_t vscp_unit;          // Measurement unit: e.g. 
+                                // Celsius(1)/Fahrenheit(2)/Kelvin(0) 
+                                && for temperature class=10/Type=6
 
-    long unsigned int dummy;            // Next read position for static file   !!! NOT USED !!!
+    long unsigned int dummy;            // Next read position for static file   
+                                        // !!! NOT USED !!!
     long unsigned int posStaticWrite;   // Next write position for static file
 
     unsigned long staticSize;           // Number of records in static file

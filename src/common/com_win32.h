@@ -51,21 +51,21 @@ class CCommParams
 {
 
 public:
-	
-	/// The port number to use
-	unsigned char m_nPort;
-	
-	/// The baudrate to use
-	DWORD m_nBaudRate;
-	
-	/// # of stopbits to use
-	unsigned char m_nDatabits;
-	
-	/// Patity to use
-	unsigned char m_nParity;
+    
+    /// The port number to use
+    unsigned char m_nPort;
+    
+    /// The baudrate to use
+    DWORD m_nBaudRate;
+    
+    /// # of stopbits to use
+    unsigned char m_nDatabits;
+    
+    /// Patity to use
+    unsigned char m_nParity;
 
-	/// # of stopbits to use
-	unsigned char m_nStopbits;
+    /// # of stopbits to use
+    unsigned char m_nStopbits;
 
 };
 
@@ -82,114 +82,114 @@ class CComm
 
 public:
 
-	/// Constructor
-	CComm();
+    /// Constructor
+    CComm();
 
-	/// Destructor
-	virtual ~CComm();
+    /// Destructor
+    virtual ~CComm();
 
-	/*! 
-		Initialise the serial communication port
+    /*! 
+        Initialise the serial communication port
 
-		\param nComPort Index for communication port (default to COM1).
-		\param nBaudRate Baudrate for the selected port (defaults to 9600).
-		\param nDatabits Number of databits ( defeaults to 8 ).
-		\param nParity Parity (defaults to no parity ).
-		\param nStopbits Number of stopbits (defaults to one stopbit).
-		\return True on success.
-	*/
-	bool init( unsigned char nComPort=1, 
-							DWORD nBaudRate = CBR_9600, 
-							unsigned char nDatabits = 8, 
-							unsigned char nParity= NOPARITY, 
-							unsigned char nStopbits=ONESTOPBIT,
-							unsigned char nHandshake = HANDSHAKE_NONE );
+        \param nComPort Index for communication port (default to COM1).
+        \param nBaudRate Baudrate for the selected port (defaults to 9600).
+        \param nDatabits Number of databits ( defeaults to 8 ).
+        \param nParity Parity (defaults to no parity ).
+        \param nStopbits Number of stopbits (defaults to one stopbit).
+        \return True on success.
+    */
+    bool init( unsigned char nComPort=1, 
+                            DWORD nBaudRate = CBR_9600, 
+                            unsigned char nDatabits = 8, 
+                            unsigned char nParity= NOPARITY, 
+                            unsigned char nStopbits=ONESTOPBIT,
+                            unsigned char nHandshake = HANDSHAKE_NONE );
 
-	/*!
-		Read a byte from the port (if one is available).
+    /*!
+        Read a byte from the port (if one is available).
 
-		\param cnt pointer to variable holding number of characters read. 
-		\return Character read from comm port depending on param
-	*/
-	char readChar( int* cnt );
+        \param cnt pointer to variable holding number of characters read. 
+        \return Character read from comm port depending on param
+    */
+    char readChar( int* cnt );
 
-	/*!
-		Read a number of bytes from the port (if available) within a 
-		certain time.
+    /*!
+        Read a number of bytes from the port (if available) within a 
+        certain time.
 
-		\param  Pointer to buffer that receives data.
-		\param	Size for buffer.
-		\param  cntRead nr of character we want or if a negative number return
-				when CR is found.
-		\return Number of characters read or zero on timeout.
-	*/
-	unsigned short readBuf( char *p, 
-							unsigned short size, 
-							short cntRead = -1, 
-							unsigned long timeout = 500 );
+        \param  Pointer to buffer that receives data.
+        \param	Size for buffer.
+        \param  cntRead nr of character we want or if a negative number return
+                when CR is found.
+        \return Number of characters read or zero on timeout.
+    */
+    unsigned short readBuf( char *p, 
+                            unsigned short size, 
+                            short cntRead = -1, 
+                            unsigned long timeout = 500 );
 
-	/*!
-		Write a string of charcters to the communication port.
+    /*!
+        Write a string of charcters to the communication port.
 
-		@param str String to send.
-		@param bCRLF If true a CRLF will be sent after the string has been sent.
-		@param bNoLF If true only CR is sent instead of CRLF.
-	*/
-	void write( char *str, bool bCRLF = false, bool bNoLF = false );
+        @param str String to send.
+        @param bCRLF If true a CRLF will be sent after the string has been sent.
+        @param bNoLF If true only CR is sent instead of CRLF.
+    */
+    void write( char *str, bool bCRLF = false, bool bNoLF = false );
 
-	/*!
-		Write a buffer to the channel
+    /*!
+        Write a buffer to the channel
 
-		\param p Pointer to buffer that holds data that should be written.
-		\param cnt Number of bytes to send.
-		\return If the function succeeds, the return value is nonzero.
-		\return	If the function fails, the return value is zero.  
-	*/
-	BOOL writebuf( unsigned char * p, unsigned short cnt );
+        \param p Pointer to buffer that holds data that should be written.
+        \param cnt Number of bytes to send.
+        \return If the function succeeds, the return value is nonzero.
+        \return	If the function fails, the return value is zero.  
+    */
+    BOOL writebuf( unsigned char * p, unsigned short cnt );
 
-	/*!
-		Send a byte to the communication port.
+    /*!
+        Send a byte to the communication port.
 
-		\param b byte to send.
-	*/
-	void writeChar( unsigned char b );
+        \param b byte to send.
+    */
+    void writeChar( unsigned char b );
 
-	/*!
-		Drain the input queue
-	*/
-	void drainInput( void );
-	
-	/*!
-		Close the communication channel.
-	*/
-	void close( void );
+    /*!
+        Drain the input queue
+    */
+    void drainInput( void );
+    
+    /*!
+        Close the communication channel.
+    */
+    void close( void );
 
-	/*!
-		sendCmd
+    /*!
+        sendCmd
 
-	*/
-	bool sendCommand( char * pCmd, char *pResponse,  unsigned long timeout = 500 );
+    */
+    bool sendCommand( char * pCmd, char *pResponse,  unsigned long timeout = 500 );
 
-	/*!
-		Get the handle to the communication port.
+    /*!
+        Get the handle to the communication port.
 
-		\return handle to an open communication port or NULL if
-		\return	the port is't open.
-	*/
-	HANDLE getHandle( void ) { return m_hCommPort; };
+        \return handle to an open communication port or NULL if
+        \return	the port is't open.
+    */
+    HANDLE getHandle( void ) { return m_hCommPort; };
 
 
-	/*!
-		Return true if port is open
-	*/
-	bool isOpen( void ) { return  ( ( NULL != getHandle() ) ? true : false ); };
+    /*!
+        Return true if port is open
+    */
+    bool isOpen( void ) { return  ( ( NULL != getHandle() ) ? true : false ); };
 
 private :	
-	
-	/*!
-		Handle to the communication port
-	*/
-	HANDLE m_hCommPort;
+    
+    /*!
+        Handle to the communication port
+    */
+    HANDLE m_hCommPort;
 
 };
 

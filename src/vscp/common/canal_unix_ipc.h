@@ -21,19 +21,15 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-// $RCSfile: canal_unix_ipc.h,v $                                       
-// $Date: 2005/03/14 22:58:20 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.3 $ 
 
 // Shared memory objects
-#define IPC_LISTEN_SHM_KEY		2901
+#define IPC_LISTEN_SHM_KEY      2901
 
 // Semaphores
-#define IPC_LISTEN_SEM_KEY		2902
-#define LISTEN_SEM_RESOURCE		0	// semaphore 0 - Listentread resources
-#define LISTEN_SEM_COMMAND		1	// seamphore 1 - Command
+#define IPC_LISTEN_SEM_KEY      2902
+#define LISTEN_SEM_RESOURCE     0   // semaphore 0 - Listentread resources
+#define LISTEN_SEM_COMMAND      1   // seamphore 1 - Command
 
 //#define IPC_CLIENTCMD_SEM_KEY	2903
-#define CLIENT_CMD_SEM			0	// Semaphore 0 - Client command
-#define CLIENT_DONE_SEM			1	// Semaphore 1 - Command done
+#define CLIENT_CMD_SEM          0   // Semaphore 0 - Client command
+#define CLIENT_DONE_SEM         1   // Semaphore 1 - Command done

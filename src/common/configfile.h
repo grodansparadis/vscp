@@ -27,44 +27,44 @@
 #include <stdlib.h>
 
 /**
-	A class for configure file handling
+    A class for configure file handling
 */
 
 class Config
 {
 
 public:
-	/**
-		Constructor
+    /**
+        Constructor
 
-		@param name Name (including path) of configuration file.
-	*/
-	Config( char *name = NULL );
-	/// Destructor
-	virtual ~Config();
-	
-	/// Open Configuration filr
-	FILE * open( char *name );
-	
-	/**
-		Load a string with a maximum length from a key
+        @param name Name (including path) of configuration file.
+    */
+    Config( char *name = NULL );
+    /// Destructor
+    virtual ~Config();
+    
+    /// Open Configuration filr
+    FILE * open( char *name );
+    
+    /**
+        Load a string with a maximum length from a key
 
-		@param key pointer to string containing key name
-		@param value pointer to buffer to hold string value of key
-		@param max Buffer size for value.
-	*/
-	bool LoadKey( char *key, char *value, int max );
-	
-	bool LoadKey( char *key, int &value );
-	bool LoadKey( char *key, long &value );
+        @param key pointer to string containing key name
+        @param value pointer to buffer to hold string value of key
+        @param max Buffer size for value.
+    */
+    bool LoadKey( char *key, char *value, int max );
+    
+    bool LoadKey( char *key, int &value );
+    bool LoadKey( char *key, long &value );
 
 private:
-	char *ScanKey( char *key );
-	void Clean( void );
-	
+    char *ScanKey( char *key );
+    void Clean( void );
+    
 private:	
-	FILE *m_fIn;
-	char *m_pBuffer;
+    FILE *m_fIn;
+    char *m_pBuffer;
 };
 
 

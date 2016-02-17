@@ -63,7 +63,7 @@ CNodeObject::CNodeObject()
 {
   // Nothing has been assigned yet
   m_pstrSortKey = NULL;
-  m_pKey = NULL;	
+  m_pKey = NULL;
 }
 
 
@@ -81,7 +81,7 @@ CNodeObject::~CNodeObject()
     delete m_pKey;	
   }	
 }
-							
+                            
 // * * * CNode * * *
 
 
@@ -148,7 +148,7 @@ void CDoubleLinkedList::addNodeHead( CNodeObject * pObject )
   pNode->setPrevNode( NULL );
 
 
-	
+    
   // if there already where nodes in the list let
   // previous node point at this one
   if ( NULL != m_pHead ) {
@@ -169,7 +169,7 @@ void CDoubleLinkedList::addNodeTail( CNodeObject * pObject )
  
   pNode->setNextNode( NULL );
   pNode->setPrevNode( m_pTail );
- 	
+    
   // if there already where nodes in the list let
   // previous node point at this one
   if ( NULL != m_pTail ) {
@@ -192,7 +192,7 @@ void CDoubleLinkedList::addNodeTail( CNodeObject * pObject )
 void CDoubleLinkedList::addNodeBefore( CNode * pNode2, CNodeObject * pObject )
 {
   CNode * pNode1 = pNode2->getPrevNode();
-	
+    
   if ( NULL == pNode1 ) {
     // There is no nodes before this node
     addNodeHead( pObject ); 	
@@ -209,7 +209,7 @@ void CDoubleLinkedList::addNodeBefore( CNode * pNode2, CNodeObject * pObject )
 void CDoubleLinkedList::addNodeAfter( CNode * pNode1, CNodeObject * pObject )
 {
   CNode * pNode2 = pNode1->getNextNode();
-	
+    
   if ( NULL == pNode2 ) {
     // There is no nodes after this one
     addNodeTail( pObject ); 	
@@ -227,7 +227,7 @@ bool CDoubleLinkedList::addNode( CNodeObject * pObject )
 {
   int nsearchResult = 0;
   CNode * pNode = m_pHead;
-	
+    
   if ( m_nSort == SORT_NONE ) {
     // No sorting just add as last element
     addNodeTail( pObject );
@@ -247,31 +247,31 @@ bool CDoubleLinkedList::addNode( CNodeObject * pObject )
     
     while (pNode != NULL ) {
       if ( ( m_nSort == SORT_STRING ) && ( NULL != pObject->m_pstrSortKey ) ) {
-	nsearchResult =  strcmp( pNode->getObject()->m_pstrSortKey,
-				 pObject->m_pstrSortKey );
+    nsearchResult =  strcmp( pNode->getObject()->m_pstrSortKey,
+                 pObject->m_pstrSortKey );
       }
       else if ( ( m_nSort == SORT_NUMERIC ) ) {
-	if ( *pObject->m_pKey == *pNode->getObject()->m_pKey ) {
-	  nsearchResult = 0;
-	}
-	else if ( *pObject->m_pKey > *pNode->getObject()->m_pKey ) {
-	  nsearchResult = 2;
-	}
-	else {
-	  nsearchResult = -1;
-	}
+    if ( *pObject->m_pKey == *pNode->getObject()->m_pKey ) {
+      nsearchResult = 0;
+    }
+    else if ( *pObject->m_pKey > *pNode->getObject()->m_pKey ) {
+      nsearchResult = 2;
+    }
+    else {
+      nsearchResult = -1;
+    }
       }
       
       if ( 0 == nsearchResult ) {
-	// Entry already in table - Not allowed
-	return false;
+    // Entry already in table - Not allowed
+    return false;
       }
       else if ( nsearchResult > 0 ) {
-	// Add before current item
-	addNodeBefore( pNode, pObject );
-	return true;
+    // Add before current item
+    addNodeBefore( pNode, pObject );
+    return true;
       }
-		
+        
       pNode = pNode->getNextNode();
     }
   }
@@ -287,19 +287,19 @@ bool CDoubleLinkedList::addNode( CNodeObject * pObject )
 // insertNode
 
 void CDoubleLinkedList::insertNode( CNode * pNode1, 
-				    CNode * pNode2,
-				    CNodeObject * pObject )
+                    CNode * pNode2,
+                    CNodeObject * pObject )
 {
   CNode * pNode = new CNode();
   pNode->setObject( pObject );
-	
+    
   // First link in the new node
   pNode->setPrevNode( pNode2 );
   pNode->setNextNode( pNode1 );
-	
+    
   // Fix up the node before
   pNode1->setNextNode( pNode );
-	
+    
   // Fix up the node after
   pNode2->setPrevNode( pNode );
 }
@@ -326,7 +326,7 @@ void CDoubleLinkedList::removeNode( CNode * pNode )
     else {
       m_pHead = m_pNext;	
     }
-		
+        
     if ( NULL != m_pNext ) {
       m_pNext->setPrevNode( m_pPrev );
     }
@@ -374,7 +374,7 @@ CNode * CDoubleLinkedList::findNode( unsigned long  nID )
 {
   CNode * pRV = NULL;
   CNode * pNode = m_pHead;
-	
+    
   while (pNode != NULL ) {
     if ( nID == *pNode->getObject()->m_pKey ) {
       pRV = pNode;		
@@ -395,7 +395,7 @@ CNode * CDoubleLinkedList::findNode( char * strID )
 {
   CNode * pRV = NULL;
   CNode * pNode = m_pHead;
-	
+    
   while (pNode != NULL ) {
     if ( 0 == strcmp( strID, pNode->getObject()->m_pstrSortKey ) ) {
       pRV = pNode;	

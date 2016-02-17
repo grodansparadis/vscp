@@ -149,7 +149,7 @@ static struct websrv_Session *gp_websrv_sessions;
 struct websrv_rest_session *gp_websrv_rest_sessions;
 
 ///////////////////////////////////////////////////
-//					WEBSOCKETS
+//                 WEBSOCKETS
 ///////////////////////////////////////////////////
 
 // Linked list of websocket sessions
@@ -157,7 +157,7 @@ static struct websock_session *gp_websock_sessions;
 
 
 ///////////////////////////////////////////////////
-//					HELPERS
+//                  HELPERS
 ///////////////////////////////////////////////////
 
 

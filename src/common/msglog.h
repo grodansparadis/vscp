@@ -64,115 +64,115 @@ class CMsgLog
 
 public:
 
-	/// Constructor
-	CMsgLog();
-	
-	/// Destructor
-	virtual ~CMsgLog();
+    /// Constructor
+    CMsgLog();
+    
+    /// Destructor
+    virtual ~CMsgLog();
 
-	
-	/*!
-		Filter message
+    
+    /*!
+        Filter message
 
-		@param pcanalMsg Pointer to CAN message
-		@return True if message is accepted false if rejected
-	*/
-	bool doFilter( canalMsg *pcanalMsg );
+        @param pcanalMsg Pointer to CAN message
+        @return True if message is accepted false if rejected
+    */
+    bool doFilter( canalMsg *pcanalMsg );
 
-	
-	/*!
-		Set Filter
-	*/
-	void setFilter( unsigned long filter );
-
-
-	/*!
-		Set Mask
-	*/
-	void setMask( unsigned long mask);
+    
+    /*!
+        Set Filter
+    */
+    void setFilter( unsigned long filter );
 
 
-	/*! 
-		Open/create the logfile
+    /*!
+        Set Mask
+    */
+    void setMask( unsigned long mask);
 
-		@param szFileName the name of the log file
-		@param flags 	bit 1 = 0 Append, bit 1 = 1 Rewrite
-		@return True on success.
-	*/
-	bool open( const char * szFileName, unsigned long flags = 0 );
 
-	/*!
-		Flush and close the log file
-	*/
-	void close( void );
+    /*! 
+        Open/create the logfile
 
-	/*!
-		Write a message out to the file
-		@param pcanalMsg Pointer to CAN message
-		@return True on success.
-	*/
-	bool writeMsg( canalMsg *pMsg );
+        @param szFileName the name of the log file
+        @param flags 	bit 1 = 0 Append, bit 1 = 1 Rewrite
+        @return True on success.
+    */
+    bool open( const char * szFileName, unsigned long flags = 0 );
 
-	/*!
-		Get decimal or hex data value as unsigned long
-		@param String representation of number.
-		@return Converted number.
-	*/
-	unsigned long getDataValue( const char *szData );
+    /*!
+        Flush and close the log file
+    */
+    void close( void );
+
+    /*!
+        Write a message out to the file
+        @param pcanalMsg Pointer to CAN message
+        @return True on success.
+    */
+    bool writeMsg( canalMsg *pMsg );
+
+    /*!
+        Get decimal or hex data value as unsigned long
+        @param String representation of number.
+        @return Converted number.
+    */
+    unsigned long getDataValue( const char *szData );
 
 public:
 
-	/// Run flag
-	bool m_bRun;
+    /// Run flag
+    bool m_bRun;
 
-	/// The log file handle
-	FILE *m_flog;
+    /// The log file handle
+    FILE *m_flog;
 
-	/*! 
-		Log queue
+    /*! 
+        Log queue
 
-		This is the log queue for messages going out to the
-		log file.
-	*/
-	DoubleLinkedList m_logList;
+        This is the log queue for messages going out to the
+        log file.
+    */
+    DoubleLinkedList m_logList;
 
-	/*!
-		Tread id
-	*/
+    /*!
+        Tread id
+    */
 #ifdef WIN32
-	HANDLE m_hTread;
+    HANDLE m_hTread;
 #else
-	pthread_t m_threadId;
+    pthread_t m_threadId;
 #endif
 
-	/*!
-		Mutex for list.
-	*/
+    /*!
+        Mutex for list.
+    */
 #ifdef WIN32	
-	HANDLE m_logMutex;
+    HANDLE m_logMutex;
 #else
-	pthread_mutex_t m_logMutex;
+    pthread_mutex_t m_logMutex;
 #endif
 
-	/*!
-		Filter for outgoing messages
+    /*!
+        Filter for outgoing messages
 
-		mask bit n	|	filter bit n	| msg id bit	|	result
-		===========================================================
-			0				X					X			Accept				
-			1				0					0			Accept
-			1				0					1			Reject
-			1				1					0			Reject
-			1				1					1			Accept
+        mask bit n	|	filter bit n	| msg id bit	|	result
+        ===========================================================
+            0				X					X			Accept				
+            1				0					0			Accept
+            1				0					1			Reject
+            1				1					0			Reject
+            1				1					1			Accept
 
-		Formula is !( ( filter �d ) & mask )
-	*/
-	uint32_t m_filter;
+        Formula is !( ( filter �d ) & mask )
+    */
+    uint32_t m_filter;
 
-	/*!
-		Mask for outgoing messages	
-	*/
-	uint32_t m_mask;
+    /*!
+        Mask for outgoing messages	
+    */
+    uint32_t m_mask;
 };
 
 #endif // !defined(AFX_LOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)

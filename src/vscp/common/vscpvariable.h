@@ -34,7 +34,7 @@
 #include "vscphelper.h"
 
 // Class that holds one VSCP variable
-// 		Peristant variables should have names staring with $
+// Peristant variables should have names staring with $
 
 class CVSCPVariable {
 public:

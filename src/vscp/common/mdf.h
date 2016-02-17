@@ -63,11 +63,11 @@ enum vscp_abstraction_type {
     type_uint32_t,
     type_int64_t,
     type_uint64_t,
-	type_float,
-	type_double,
+    type_float,
+    type_double,
     type_date,
     type_time,
-	type_guid,
+    type_guid,
     type_index8_int16_t,
     type_index8_uint16_t,
     type_index8_int32_t,
@@ -130,11 +130,11 @@ public:
     */
     void clearStorage( void );
 
-	/*!
-		Get real text escription of type
-		@param type Abstraction type
-		@return Real text description of type.
-	*/
+    /*!
+        Get real text escription of type
+        @param type Abstraction type
+        @return Real text description of type.
+    */
     wxString getAbstractionValueType( void );
 
 
@@ -160,7 +160,7 @@ public:
   
     uint8_t m_nAccess;                  // Access rights
 
-	bool m_bIndexed;					// True of indexed storage
+    bool m_bIndexed;					// True of indexed storage
 
     uint32_t m_bgcolor;                 // Cell background color. Default = white.
     uint32_t m_fgcolor;                 // Cell forground color. Default = black.
@@ -267,10 +267,10 @@ public:
     MDF_BIT_LIST  m_list_bit;			// dll list with bit defines
     MDF_VALUE_LIST  m_list_value;		// dll list with selectable values
 
-	// For VSCP Works
+    // For VSCP Works
     long m_rowInGrid;                   // Helper for display (row reg is displayed on)
-	uint8_t m_value;					// Initial value read. This is the value
-										// that will be restored.
+    uint8_t m_value;					// Initial value read. This is the value
+                                        // that will be restored.
     uint32_t m_bgcolor;                 // Cell background color. Default = white.
     uint32_t m_fgcolor;                 // Cell forground color. Default = black.
 };
@@ -377,7 +377,7 @@ public:
     uint16_t m_nStartOffset;
     uint16_t m_nRowCount;
     uint16_t m_nRowSize;
-	bool m_bIndexed;
+    bool m_bIndexed;
 
     MDF_ACTION_LIST  m_list_action; // Action description
 };
@@ -653,16 +653,16 @@ public:
     bool downLoadMDF( wxString& remoteFile, wxString& tempFile );
 
 
-	/*!
-		Load MDF from local or remote storage and parse it into
-		a MDF structure.
-		@param Filename or URL to MDF file. If empty and bSilent is false
-				the method will ask for this parameter.
-		@param bSilent No dialogs are shown if set to true.
-		@param blocalFile Asks for a local file if set to true.
-		@return returns true on success, false on failure.
-	*/
-	bool load( wxString& remoteFile, bool bLocalFile = false, bool bSilent = false );
+    /*!
+        Load MDF from local or remote storage and parse it into
+        a MDF structure.
+        @param Filename or URL to MDF file. If empty and bSilent is false
+                the method will ask for this parameter.
+        @param bSilent No dialogs are shown if set to true.
+        @param blocalFile Asks for a local file if set to true.
+        @return returns true on success, false on failure.
+    */
+    bool load( wxString& remoteFile, bool bLocalFile = false, bool bSilent = false );
 
     /*!
         Format an MDF description so it can be shown
@@ -678,28 +678,28 @@ public:
     */
     bool parseMDF( wxString& path );
 
-	// Helpers
+    // Helpers
 
-	/*!
-		Get number of defined registers
-		@param page Register page to check
-		@return Number of registers used.
-	*/
-	uint32_t getNumberOfRegisters( uint32_t page );
+    /*!
+        Get number of defined registers
+        @param page Register page to check
+        @return Number of registers used.
+    */
+    uint32_t getNumberOfRegisters( uint32_t page );
 
-	/*!
-		Get number of register pages used
-		@return Number of regsiter pages used.
-	*/
-	uint32_t getPages( wxArrayLong& arraylong );
+    /*!
+        Get number of register pages used
+        @return Number of regsiter pages used.
+    */
+    uint32_t getPages( wxArrayLong& arraylong );
 
-	/*!
-		Return register class from register + page
-		@param register Register to search for.
-		@param page Page top search for.
-		@return Pointer to CMDF_Register class if found else NULL.
-	*/
-	CMDF_Register *getMDFRegister( uint8_t reg, uint16_t page );
+    /*!
+        Return register class from register + page
+        @param register Register to search for.
+        @param page Page top search for.
+        @return Pointer to CMDF_Register class if found else NULL.
+    */
+    CMDF_Register *getMDFRegister( uint8_t reg, uint16_t page );
 
     /*
         Return temporary file path

@@ -67,10 +67,10 @@ extern "C" {
 
     enum VSCPInformationFormat {
         DEFAULT, 
-    WITH_DECIMAL_PREFIX, 
-    WITH_HEX_PREFIX, 
-    WITH_DECIMAL_SUFFIX, 
-    WITH_HEX_SUFFIX
+        WITH_DECIMAL_PREFIX, 
+        WITH_HEX_PREFIX, 
+        WITH_DECIMAL_SUFFIX, 
+        WITH_HEX_SUFFIX
     };
 
 

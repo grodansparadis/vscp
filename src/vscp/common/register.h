@@ -40,47 +40,47 @@ class CDecisionMatrix
 
 public:
 
-	/*! 
+    /*! 
         Default Constructor
     */
     CDecisionMatrix( CMDF_DecisionMatrix *pdm, bool bIndexed = false );
 
-	/*! 
+    /*! 
         Default Destructor
     */
     ~CDecisionMatrix( void );
 
-	/*!
-		
-	*/
-	bool loadMatrix();
+    /*!
+        
+    */
+    bool loadMatrix();
 
-	/*!
-		Load a DM row
-		@param row Row to load.
-		@param pRow Pointer t array which must hold eight bytes and
-					will receive the row.
-	*/
-	bool getRow( uint32_t row, uint8_t *pRow );
-	
+    /*!
+        Load a DM row
+        @param row Row to load.
+        @param pRow Pointer t array which must hold eight bytes and
+                    will receive the row.
+    */
+    bool getRow( uint32_t row, uint8_t *pRow );
+    
 
 private:
 
-	/*!
-		True if the matrix is indexed. That is if it consist
-		of one row precided by an index into the matrix.
-	*/
-	bool m_bIndexedDM;
+    /*!
+        True if the matrix is indexed. That is if it consist
+        of one row precided by an index into the matrix.
+    */
+    bool m_bIndexedDM;
 
-	/*!
-		A memory array holding the full decision matrix
-	*/
-	uint8_t *m_pdm;
+    /*!
+        A memory array holding the full decision matrix
+    */
+    uint8_t *m_pdm;
 
-	/*!
-		Pointer to decsion matrix info from MDF
-	*/
-	CMDF_DecisionMatrix *m_pmdfdm;
+    /*!
+        Pointer to decsion matrix info from MDF
+    */
+    CMDF_DecisionMatrix *m_pmdfdm;
 };
 
 
@@ -102,58 +102,58 @@ public:
     */
     CStandardRegisters( void );
 
-	/*! 
+    /*! 
         Default Destructor
     */
     ~CStandardRegisters( void );
 
-	void getMDF( wxString& remoteFile );
+    void getMDF( wxString& remoteFile );
 
-	const uint8_t *getGUID( void ) { return ( m_reg + 0xD0 - 0x80 ); };
-	
-	void getGUID( cguid *pguid ) { pguid->getFromArray( m_reg + 0xD0 - 0x80 ); };
+    const uint8_t *getGUID( void ) { return ( m_reg + 0xD0 - 0x80 ); };
+    
+    void getGUID( cguid *pguid ) { pguid->getFromArray( m_reg + 0xD0 - 0x80 ); };
 
-	uint8_t getBufferSize( void ) { return m_reg[ 0x98 - 0x80 ]; };
+    uint8_t getBufferSize( void ) { return m_reg[ 0x98 - 0x80 ]; };
 
-	uint8_t getBootloaderAlgorithm( void ) { return m_reg[ 0x97 - 0x80 ]; };
+    uint8_t getBootloaderAlgorithm( void ) { return m_reg[ 0x97 - 0x80 ]; };
 
-	uint8_t getMajorVersion( void ) { return m_reg[ 0x94 - 0x80 ]; };
+    uint8_t getMajorVersion( void ) { return m_reg[ 0x94 - 0x80 ]; };
 
-	uint8_t getMinorVersion( void ) { return m_reg[ 0x95 - 0x80 ]; };
+    uint8_t getMinorVersion( void ) { return m_reg[ 0x95 - 0x80 ]; };
 
-	uint8_t getSubMinorVersion( void ) { return m_reg[ 0x96 - 0x80 ]; };
+    uint8_t getSubMinorVersion( void ) { return m_reg[ 0x96 - 0x80 ]; };
 
-	wxString getFirmwareVersionString( void );
+    wxString getFirmwareVersionString( void );
 
-	uint16_t getPage( void ) { return ( m_reg[ 0x92 - 0x80 ] * 256 +
-									m_reg[ 0x93 - 0x80 ] ); };
+    uint16_t getPage( void ) { return ( m_reg[ 0x92 - 0x80 ] * 256 +
+                                    m_reg[ 0x93 - 0x80 ] ); };
 
-	uint8_t getNickname( void ) { return m_reg[ 0x91 - 0x80 ]; };
+    uint8_t getNickname( void ) { return m_reg[ 0x91 - 0x80 ]; };
 
-	uint8_t getAlarm( void ) { return m_reg[ 0x80 - 0x80 ]; };
+    uint8_t getAlarm( void ) { return m_reg[ 0x80 - 0x80 ]; };
 
-	uint8_t getConfirmanceVersionMajor( void ) { return m_reg[ 0x81 - 0x80 ]; };
+    uint8_t getConfirmanceVersionMajor( void ) { return m_reg[ 0x81 - 0x80 ]; };
 
-	uint8_t getConfirmanceVersonMinor( void ) { return m_reg[ 0x82 - 0x80 ]; };
+    uint8_t getConfirmanceVersonMinor( void ) { return m_reg[ 0x82 - 0x80 ]; };
 
-	uint8_t getNodeControl( void ) { return m_reg[ 0x83 - 0x80 ]; };
+    uint8_t getNodeControl( void ) { return m_reg[ 0x83 - 0x80 ]; };
 
-	uint8_t getNumberOfRegisterPages( void ) { return m_reg[ 0x99 - 0x80 ]; };
+    uint8_t getNumberOfRegisterPages( void ) { return m_reg[ 0x99 - 0x80 ]; };
 
-	uint32_t getManufacturerSubDeviceID( void ) 
-								{ return ( ( m_reg[ 0x8D - 0x80 ] << 24 ) +
-											( m_reg[ 0x8E - 0x80 ] << 16 ) +
-											( m_reg[ 0x8F - 0x80 ] << 8 ) +
-											( m_reg[ 0x90 - 0x80 ] ) ); };
+    uint32_t getManufacturerSubDeviceID( void ) 
+                                { return ( ( m_reg[ 0x8D - 0x80 ] << 24 ) +
+                                            ( m_reg[ 0x8E - 0x80 ] << 16 ) +
+                                            ( m_reg[ 0x8F - 0x80 ] << 8 ) +
+                                            ( m_reg[ 0x90 - 0x80 ] ) ); };
 
-	uint32_t getManufacturerDeviceID( void ) 
-								{ return ( ( m_reg[ 0x89 - 0x80 ] << 24 ) +
-											( m_reg[ 0x8A - 0x80 ] << 16 ) +
-											( m_reg[ 0x8B - 0x80 ] << 8 ) +
-											( m_reg[ 0x8C - 0x80 ] ) ); };
+    uint32_t getManufacturerDeviceID( void ) 
+                                { return ( ( m_reg[ 0x89 - 0x80 ] << 24 ) +
+                                            ( m_reg[ 0x8A - 0x80 ] << 16 ) +
+                                            ( m_reg[ 0x8B - 0x80 ] << 8 ) +
+                                            ( m_reg[ 0x8C - 0x80 ] ) ); };
 
 
-	uint8_t getStandardReg( uint8_t reg );
+    uint8_t getStandardReg( uint8_t reg );
 
     /*!
         Return a pointer to the register storage
@@ -177,8 +177,8 @@ public:
 
 private:
 
-	/// Standard register storage
-	uint8_t m_reg[ 128 ];
+    /// Standard register storage
+    uint8_t m_reg[ 128 ];
 
 };
 

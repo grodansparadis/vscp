@@ -25,18 +25,18 @@
 
 Config::Config( char *name )
 {
-	m_fIn = NULL;
-	m_pBuffer = NULL;
-	
-	if ( NULL != name ) {
-		if ( NULL == ( m_fIn = fopen( name, "rb" ) ) ) {
-			m_fIn = NULL;
-			return;
-		}
-	}
-	
-	m_pBuffer = new char[255];
-	
+    m_fIn = NULL;
+    m_pBuffer = NULL;
+    
+    if ( NULL != name ) {
+        if ( NULL == ( m_fIn = fopen( name, "rb" ) ) ) {
+            m_fIn = NULL;
+            return;
+        }
+    }
+    
+    m_pBuffer = new char[255];
+    
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -44,8 +44,8 @@ Config::Config( char *name )
 
 Config::~Config()
 {
-	if ( NULL != m_fIn ) fclose( m_fIn );
-	if ( NULL != m_pBuffer ) delete m_pBuffer;
+    if ( NULL != m_fIn ) fclose( m_fIn );
+    if ( NULL != m_pBuffer ) delete m_pBuffer;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -53,7 +53,7 @@ Config::~Config()
 
 FILE * Config::open( char *name )
 {
-	return ( m_fIn = fopen( name, "rb" ));	
+    return ( m_fIn = fopen( name, "rb" ));	
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -61,26 +61,26 @@ FILE * Config::open( char *name )
 
 char *Config::ScanKey( char *key )
 {
-	char *eq;
-	
-	// Configuratin file must be open
-	if ( NULL == m_fIn ) return NULL;
-	
-	rewind( m_fIn );
-	while( !feof( m_fIn ) ) {
-		char *p = fgets( m_pBuffer, 255, m_fIn );
-		Clean();
-		
-		// Scan for the =
-		eq = strchr( m_pBuffer, '=' );
-		if ( eq != NULL ) {
-			*eq = 0;
-			if ( 0 == strncmp( m_pBuffer, key, strlen( key ) ) ) {
-				return eq + 1;
-			}
-		}
-	}
-	return NULL;
+    char *eq;
+    
+    // Configuratin file must be open
+    if ( NULL == m_fIn ) return NULL;
+    
+    rewind( m_fIn );
+    while( !feof( m_fIn ) ) {
+        char *p = fgets( m_pBuffer, 255, m_fIn );
+        Clean();
+        
+        // Scan for the =
+        eq = strchr( m_pBuffer, '=' );
+        if ( eq != NULL ) {
+            *eq = 0;
+            if ( 0 == strncmp( m_pBuffer, key, strlen( key ) ) ) {
+                return eq + 1;
+            }
+        }
+    }
+    return NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -88,17 +88,17 @@ char *Config::ScanKey( char *key )
 
 void Config::Clean(void)
 {
-	char *p;
-	p = strchr( m_pBuffer, ';' );
-	if (p)
-	{
-		*p=0;
-	}
-	p = strchr( m_pBuffer, '\n' );
-	if ( p )
-	{
-		*p=0;
-	}
+    char *p;
+    p = strchr( m_pBuffer, ';' );
+    if (p)
+    {
+        *p=0;
+    }
+    p = strchr( m_pBuffer, '\n' );
+    if ( p )
+    {
+        *p=0;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -106,44 +106,44 @@ void Config::Clean(void)
 
 bool Config::LoadKey( char *key, char *value, int max )
 {
-	char *f,*a,*b;
+    char *f,*a,*b;
 
-	// Configuration file must be open
-	if ( NULL == m_fIn ) return false;
-			
-	f = ScanKey( key );
-	
-	if ( f == NULL )
-	{
-		//throw("Key Not Found.");
-		//printf("Key not found\n");
-		return false;
-	}
-	a = strchr(f,'"');
-	
-	if ( a == NULL )
-	{
-		//throw("Key Not Text.");
-		//printf("Key Not Text.\n");
-		return false;
-	}
-	a++;
-	b = strchr(a,'"');
-	
-	if ( b == NULL )
-	{
-		//throw("No closing quote");
-		//printf("No closing quote.\n");
-		return false;
-	}
-	f = value;
-	
-	while ( ( a != b ) && ( ( f - value ) < max ) )
-	{
-		*f++ = *a++;
-	}
-	*f=0;
-	return true;
+    // Configuration file must be open
+    if ( NULL == m_fIn ) return false;
+            
+    f = ScanKey( key );
+    
+    if ( f == NULL )
+    {
+        //throw("Key Not Found.");
+        //printf("Key not found\n");
+        return false;
+    }
+    a = strchr(f,'"');
+    
+    if ( a == NULL )
+    {
+        //throw("Key Not Text.");
+        //printf("Key Not Text.\n");
+        return false;
+    }
+    a++;
+    b = strchr(a,'"');
+    
+    if ( b == NULL )
+    {
+        //throw("No closing quote");
+        //printf("No closing quote.\n");
+        return false;
+    }
+    f = value;
+    
+    while ( ( a != b ) && ( ( f - value ) < max ) )
+    {
+        *f++ = *a++;
+    }
+    *f=0;
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -151,18 +151,18 @@ bool Config::LoadKey( char *key, char *value, int max )
 
 bool Config::LoadKey( char *key, long int &num )
 {
-	// Configuration file must be open
-	if ( NULL == m_fIn ) return false;
-	
-	char *a = ScanKey(key);
-	
-	if ( a == NULL )
-	{
-		return false;
-	}
-	
-	num = strtol( a, NULL, 0 );
-	return true;
+    // Configuration file must be open
+    if ( NULL == m_fIn ) return false;
+    
+    char *a = ScanKey(key);
+    
+    if ( a == NULL )
+    {
+        return false;
+    }
+    
+    num = strtol( a, NULL, 0 );
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -170,13 +170,13 @@ bool Config::LoadKey( char *key, long int &num )
 
 bool Config::LoadKey( char *key, int &num )
 {
-	long v;
-	
-	// Configuration file must be open
-	if ( NULL == m_fIn ) return false;
-	
-	LoadKey( key, v );
-	
-	num = v;
-	return true;
+    long v;
+    
+    // Configuration file must be open
+    if ( NULL == m_fIn ) return false;
+    
+    LoadKey( key, v );
+    
+    num = v;
+    return true;
 }

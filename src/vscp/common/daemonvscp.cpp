@@ -81,7 +81,7 @@ WX_DEFINE_LIST(DISCOVERYLIST);
 //
 
 daemonVSCPThread::daemonVSCPThread()
-		 : wxThread( wxTHREAD_JOINABLE )
+         : wxThread( wxTHREAD_JOINABLE )
 {
     m_bQuit = false;
     m_pCtrlObject = NULL;
@@ -293,7 +293,7 @@ void *daemonVSCPThread::Entry()
         int rv = pClientItem->m_clientInputQueue.GetCount();
         // Wait for incoming event
         if ( wxSEMA_TIMEOUT == pClientItem->m_semClientInputQueue.WaitTimeout( 100 ) ) continue;
-	
+    
         if ( pClientItem->m_clientInputQueue.GetCount() ) {
 
             pClientItem->m_mutexClientInputQueue.Lock();

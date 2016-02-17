@@ -31,42 +31,42 @@ class Cmd5
 
 public:
 
-	/*!
-		Default constructor
-	*/
-	Cmd5( void );
+    /*!
+        Default constructor
+    */
+    Cmd5( void );
 
-	/*!
-		Constructor
-		@param pstr string to encrypt.
-	*/
-	Cmd5( unsigned char *pstr );
-	
-	/*!
-		Destructor
-	*/
-	virtual ~Cmd5();
+    /*!
+        Constructor
+        @param pstr string to encrypt.
+    */
+    Cmd5( unsigned char *pstr );
+    
+    /*!
+        Destructor
+    */
+    virtual ~Cmd5();
 
-	/*!
-		Perform MD5
-		@param pstr string to encrypt.
-		@return Encrypted data.
-	*/
-	char *digest( unsigned char *pstr );
+    /*!
+        Perform MD5
+        @param pstr string to encrypt.
+        @return Encrypted data.
+    */
+    char *digest( unsigned char *pstr );
 
-	/*!
-		Perform MD5
-		@return Encrypted data.
-	*/
-	char *getDigest( void ) { return m_szDigest; };
+    /*!
+        Perform MD5
+        @return Encrypted data.
+    */
+    char *getDigest( void ) { return m_szDigest; };
 
 
 private:
-	
-	/*!
-		MD5 data
-	*/
-	char m_szDigest[128];
+    
+    /*!
+        MD5 data
+    */
+    char m_szDigest[128];
 };
 
 #ifdef  __cplusplus

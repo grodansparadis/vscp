@@ -64,12 +64,12 @@
 /*
 CDecisionMatrix::CDecisionMatrix( CMDF_DecisionMatrix *pdm )
 {
-	m_pdm = NULL;
+    m_pdm = NULL;
 
-	// Check if this matrix is indexed
-	if ( ( 1 == pdm->m_nLevel ) && ( 120 == pdm->m_nStartOffset ) ) {
-		m_bIndexed = true;
-	}
+    // Check if this matrix is indexed
+    if ( ( 1 == pdm->m_nLevel ) && ( 120 == pdm->m_nStartOffset ) ) {
+        m_bIndexed = true;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -78,7 +78,7 @@ CDecisionMatrix::CDecisionMatrix( CMDF_DecisionMatrix *pdm )
 
 CDecisionMatrix::~CDecisionMatrix( void )
 {
-	if ( NULL != m_pdm ) delete m_pdm;
+    if ( NULL != m_pdm ) delete m_pdm;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -87,7 +87,7 @@ CDecisionMatrix::~CDecisionMatrix( void )
 
 bool getRow( uint32_t row, uint8_t *pRow )
 {
-	
+    
 }
 */
 
@@ -103,7 +103,7 @@ bool getRow( uint32_t row, uint8_t *pRow )
 
 CStandardRegisters::CStandardRegisters()
 {
-	memset( m_reg, 0, sizeof( m_reg ) );
+    memset( m_reg, 0, sizeof( m_reg ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -121,12 +121,12 @@ CStandardRegisters::~CStandardRegisters()
 
 wxString CStandardRegisters::getFirmwareVersionString( void )
 {
-	wxString str;
+    wxString str;
 
-	str = str.Format( _("%d.%d.%d"), m_reg[ 0x94 - 0x80 ],
-									m_reg[ 0x95 - 0x80 ],
-									m_reg[ 0x96 - 0x80 ] ); 
-	return str;
+    str = str.Format( _("%d.%d.%d"), m_reg[ 0x94 - 0x80 ],
+                                    m_reg[ 0x95 - 0x80 ],
+                                    m_reg[ 0x96 - 0x80 ] ); 
+    return str;
 }
 
 
@@ -141,7 +141,7 @@ void CStandardRegisters::getMDF( wxString& remoteFile )
     memset( url, 0, sizeof( url ) );
     memcpy( url, ( m_reg + 0xe0 - 0x80 ), 32 );
     remoteFile = _("http://");
-	remoteFile += wxString::From8BitData( url );
+    remoteFile += wxString::From8BitData( url );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -150,9 +150,9 @@ void CStandardRegisters::getMDF( wxString& remoteFile )
 
 uint8_t CStandardRegisters::getStandardReg( uint8_t reg )
 {
-	if ( reg < 128 ) return 0;
+    if ( reg < 128 ) return 0;
 
-	return m_reg[ reg-0x80 ];
+    return m_reg[ reg-0x80 ];
 }
 
 
@@ -167,7 +167,7 @@ uint8_t CStandardRegisters::getStandardReg( uint8_t reg )
 
 CUserRegisters::CUserRegisters()
 {
-	m_reg = NULL;
+    m_reg = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -189,7 +189,7 @@ CUserRegisters::~CUserRegisters()
 
 void CUserRegisters::init( wxArrayLong &pagesArray )
 {
-	m_arrayPages = pagesArray;
+    m_arrayPages = pagesArray;
 
     // Delete possible previous allocation
     if ( NULL != m_reg ) {
@@ -253,7 +253,7 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
                                                     wxString &strValue,
                                                     uint8_t format )
 {
-	bool rv = false;
+    bool rv = false;
     uint8_t *pReg;
 
     if ( NULL == pAbstraction ) return false;
@@ -261,65 +261,65 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
     // Get register page
     if ( NULL == ( pReg = getRegs4Page( pAbstraction->m_nPage ) ) ) return false;
 
-	switch ( pAbstraction->m_nType ) {
+    switch ( pAbstraction->m_nType ) {
 
-	case type_string: 
+    case type_string: 
         {            
-		    uint8_t *pStr;
+            uint8_t *pStr;
             
-	        pStr = new uint8_t[ pAbstraction->m_nWidth + 1 ];
+            pStr = new uint8_t[ pAbstraction->m_nWidth + 1 ];
             if ( NULL == pStr ) return false;
-	        memset( pStr, 0, pAbstraction->m_nWidth + 1 );                
+            memset( pStr, 0, pAbstraction->m_nWidth + 1 );                
             memcpy( pStr, pReg + pAbstraction->m_nOffset, pAbstraction->m_nWidth );
             strValue.From8BitData( (const char *)pStr );
             delete [] pStr;
             return true;
         }
-		break;
+        break;
 
-	case type_boolval:
-		{
-			strValue = (pReg[pAbstraction->m_nOffset] ? _("true") : _("false") );
-		}
-		break;
+    case type_boolval:
+        {
+            strValue = (pReg[pAbstraction->m_nOffset] ? _("true") : _("false") );
+        }
+        break;
 
-	case type_bitfield:
-		for ( int i=0; i<pAbstraction->m_nWidth; i++ ) {
-		    for ( int j=7; j>0; j-- ) {
-			    if ( *(pReg + pAbstraction->m_nOffset + i) & (1 << j) ) {
-				    strValue += _("1");
-			    }
-			    else {
-				    strValue += _("0");
-			    }
-		    }
-	    }
-		break;
+    case type_bitfield:
+        for ( int i=0; i<pAbstraction->m_nWidth; i++ ) {
+            for ( int j=7; j>0; j-- ) {
+                if ( *(pReg + pAbstraction->m_nOffset + i) & (1 << j) ) {
+                    strValue += _("1");
+                }
+                else {
+                    strValue += _("0");
+                }
+            }
+        }
+        break;
 
-	case type_int8_t:
-		{
+    case type_int8_t:
+        {
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
                 strValue.Printf( _( "%d" ), *( pReg + pAbstraction->m_nOffset ) );
             }
             else {
                 strValue.Printf( _( "0x%02x" ), *( pReg + pAbstraction->m_nOffset ) );
             }
-		}
-		break;
+        }
+        break;
 
-	case type_uint8_t:
-		{
+    case type_uint8_t:
+        {
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
                 strValue.Printf( _( "%ud" ), *( pReg + pAbstraction->m_nOffset ) );
             }
             else {
                 strValue.Printf( _( "0x%02x" ), *( pReg + pAbstraction->m_nOffset ) );
             }
-		}
-		break;
+        }
+        break;
 
-	case type_int16_t:
-		{
+    case type_int16_t:
+        {
             uint8_t *p = pReg + pAbstraction->m_nOffset;
             int16_t val = ( p[0] << 8 ) + p[1];
 
@@ -329,11 +329,11 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
             else {
                 strValue.Printf( _( "0x%04x" ), val );
             }
-		}
-		break;
+        }
+        break;
 
-	case type_uint16_t:
-		{
+    case type_uint16_t:
+        {
             uint8_t *p = pReg + pAbstraction->m_nOffset;
             uint16_t val = ( p[0] << 8 ) + p[1];
 
@@ -343,11 +343,11 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
             else {
                 strValue.Printf( _( "0x%04x" ), val );
             }
-		}
-		break;
+        }
+        break;
 
-	case type_int32_t:
-		{
+    case type_int32_t:
+        {
             uint8_t *p = pReg + pAbstraction->m_nOffset;
             int32_t val = ( p[0] << 24 ) + ( p[1] << 16 ) + ( p[2] << 8 ) + p[3];
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
@@ -356,11 +356,11 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
             else {
                 strValue.Printf( _( "0x%08lx" ), *( pReg + pAbstraction->m_nOffset ) );
             }
-		}
-		break;
+        }
+        break;
 
-	case type_uint32_t:
-		{
+    case type_uint32_t:
+        {
             uint8_t *p = pReg + pAbstraction->m_nOffset;
             uint32_t val = ( p[0] << 24 ) + ( p[1] << 16 ) + ( p[2] << 8 ) + p[3];
 
@@ -370,11 +370,11 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
             else {
                 strValue.Printf( _( "0x%08lx" ), val );
             }
-		}
-		break;
+        }
+        break;
 
-	case type_int64_t:
-		{
+    case type_int64_t:
+        {
             uint8_t *p = pReg + pAbstraction->m_nOffset;
             wxUINT64_SWAP_ON_LE( p );
 
@@ -384,11 +384,11 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
             else {
                 strValue.Printf( _( "0x%llx" ), *p );
             }
-		}
-		break;
+        }
+        break;
 
-	case type_uint64_t:
-		{
+    case type_uint64_t:
+        {
             uint8_t *p = pReg + pAbstraction->m_nOffset;
             wxUINT64_SWAP_ON_LE( p );
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
@@ -397,59 +397,59 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
             else {
                 strValue.Printf( _( "0x%ullx" ), *p );
             }
-		}
-		break;
+        }
+        break;
 
-	case type_float:
-		{
+    case type_float:
+        {
             float f = *((float *)(pReg + pAbstraction->m_nOffset )); 
             wxINT32_SWAP_ON_BE( f );
-			strValue.Printf( _("%f"), f );
-		}
-		break;
+            strValue.Printf( _("%f"), f );
+        }
+        break;
 
-	case type_double:
-		{
+    case type_double:
+        {
             double f = *((double *)(pReg + pAbstraction->m_nOffset ));
-			strValue.Printf( _("%g"), f );
-		}
-		break;
+            strValue.Printf( _("%g"), f );
+        }
+        break;
 
-	case type_date:
-		{
-			wxDateTime date;
-			uint8_t *p = pReg + pAbstraction->m_nOffset;
-	        uint8_t year = ( p[ 0 ] << 8 ) + p[ 1 ];
-	        date.SetYear( year );
-	        date.SetMonth( wxDateTime::Month( p[ 2 ] ) );
-	        date.SetDay( p[ 3 ] );
-			strValue = date.FormatISODate();
-		}
-		break;
+    case type_date:
+        {
+            wxDateTime date;
+            uint8_t *p = pReg + pAbstraction->m_nOffset;
+            uint8_t year = ( p[ 0 ] << 8 ) + p[ 1 ];
+            date.SetYear( year );
+            date.SetMonth( wxDateTime::Month( p[ 2 ] ) );
+            date.SetDay( p[ 3 ] );
+            strValue = date.FormatISODate();
+        }
+        break;
 
-	case type_time:
-		{
-			wxDateTime time;
-			time.SetHour( *(pReg + pAbstraction->m_nOffset ) );
-	        time.SetMinute( *(pReg + pAbstraction->m_nOffset + 1 ) );
-	        time.SetSecond( *(pReg + pAbstraction->m_nOffset + 2 ) );
-			strValue = time.FormatISOTime();
-		}
-		break;
+    case type_time:
+        {
+            wxDateTime time;
+            time.SetHour( *(pReg + pAbstraction->m_nOffset ) );
+            time.SetMinute( *(pReg + pAbstraction->m_nOffset + 1 ) );
+            time.SetSecond( *(pReg + pAbstraction->m_nOffset + 2 ) );
+            strValue = time.FormatISOTime();
+        }
+        break;
 
-	case type_guid:
-		{
-			cguid val;
-			val.getFromArray( pReg + pAbstraction->m_nOffset );
-			val.toString( strValue );
-		}
-		break;
+    case type_guid:
+        {
+            cguid val;
+            val.getFromArray( pReg + pAbstraction->m_nOffset );
+            val.toString( strValue );
+        }
+        break;
 
-	case type_unknown:
-	default:
-		strValue = _("");
-		break;
-	}
+    case type_unknown:
+    default:
+        strValue = _("");
+        break;
+    }
 
-	return rv;
+    return rv;
 }

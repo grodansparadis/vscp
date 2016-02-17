@@ -73,7 +73,7 @@ void hash_cleanup( struct HashTable *pht )
 unsigned short hash( struct HashTable *pht, char * p )
 {
   int h = 0;
-	
+    
   while ( *p ) {
     h = ( (64*h + *p ) % HASH_TABLE_SIZE_PRIME );
     p++;
@@ -97,7 +97,7 @@ BOOL hash_addNode(  struct HashTable *pht, struct dllnode *pNode )
 {
   // Must be valid object
   if ( NULL == pNode ) return FALSE;
-	
+    
   /*if ( NULL != dll_findNodeFromString( pNode ) ) {
     // Node is already there
     return FALSE;
@@ -129,12 +129,12 @@ struct Node *hash_findNode( struct HashTable *pht, struct node *pNode )
 // findNode - find node form numeric id
 
 struct Node *hash_findNodeFromNumericID(  struct HashTable *pht,
-				     unsigned long nID )
+                     unsigned long nID )
 {	
   //return pht->pidlist->dll_findNodeFromID( nID );
   return NULL;
 }
-	
+    
 //////////////////////////////////////////////////////////////////////////////
 // findNode -  find node form string ID
 
@@ -151,7 +151,7 @@ BOOL hash_removeNode( struct HashTable *pht, struct dllnode *pNode )
 {
   // Must have something to work on
   if ( NULL == pNode ) return FALSE;
-	
+    
   // Get and remove the object
   if ( NULL != pNode->pObject ) {
     free( pNode->pObject );
@@ -206,7 +206,7 @@ void hash_removeAllNodes( struct HashTable *pht )
 {
   //struct node *pNode;
   int i;
-	
+    
   // Remove the numerical id double linked list
   if ( NULL != pht->pidlist ) {
 

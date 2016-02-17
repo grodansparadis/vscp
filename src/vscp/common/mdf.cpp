@@ -133,61 +133,61 @@ void CMDF_Abstraction::clearStorage( void )
 
 wxString CMDF_Abstraction::getAbstractionValueType( void )
 {
-	switch ( m_nType ) {
+    switch ( m_nType ) {
 
-	case type_string: 
-		return( wxString(_("String")) );
+    case type_string: 
+        return( wxString(_("String")) );
 
-	case type_boolval:
-		return( wxString(_("Boolean")) );
+    case type_boolval:
+        return( wxString(_("Boolean")) );
 
-	case type_bitfield:
-		return( wxString(_("Bitfield")) );
+    case type_bitfield:
+        return( wxString(_("Bitfield")) );
 
-	case type_int8_t:
-		return( wxString(_("Signed 8-bit integer")) );
+    case type_int8_t:
+        return( wxString(_("Signed 8-bit integer")) );
 
-	case type_uint8_t:
-		return( wxString(_("Unsigned 8-bit integer")) );
+    case type_uint8_t:
+        return( wxString(_("Unsigned 8-bit integer")) );
 
-	case type_int16_t:
-		return( wxString(_("Signed 16-bit integer")) );
+    case type_int16_t:
+        return( wxString(_("Signed 16-bit integer")) );
 
-	case type_uint16_t:
-		return( wxString(_("Unsigned 16-bit integer")) );
+    case type_uint16_t:
+        return( wxString(_("Unsigned 16-bit integer")) );
 
-	case type_int32_t:
-		return( wxString(_("Signed 32-bit integer")) );
+    case type_int32_t:
+        return( wxString(_("Signed 32-bit integer")) );
 
 
-	case type_uint32_t:
-		return( wxString(_("Unsigned 32-bit integer")) );
+    case type_uint32_t:
+        return( wxString(_("Unsigned 32-bit integer")) );
 
-	case type_int64_t:
-		return( wxString(_("Signed 64-bit integer")) );
+    case type_int64_t:
+        return( wxString(_("Signed 64-bit integer")) );
 
-	case type_uint64_t:
-		return( wxString(_("Unsigned 64-bit integer")) );
+    case type_uint64_t:
+        return( wxString(_("Unsigned 64-bit integer")) );
 
-	case type_float:
-		return( wxString(_("float")) );
+    case type_float:
+        return( wxString(_("float")) );
 
-	case type_double:
-		return( wxString(_("double")) );
+    case type_double:
+        return( wxString(_("double")) );
 
-	case type_date:
-		return( wxString(_("Date")) );
+    case type_date:
+        return( wxString(_("Date")) );
 
-	case type_time:
-		return( wxString(_("Time")) );
+    case type_time:
+        return( wxString(_("Time")) );
 
-	case type_guid:
-		return( wxString(_("GUID")) );
+    case type_guid:
+        return( wxString(_("GUID")) );
 
-	case type_unknown:
-	default:
-		return( wxString(_("Unknown Type")) );
-	}
+    case type_unknown:
+    default:
+        return( wxString(_("Unknown Type")) );
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -423,7 +423,7 @@ CMDF_DecisionMatrix::CMDF_DecisionMatrix()
     m_nStartOffset = 0;
     m_nRowCount = 0;
     m_nRowSize = 8;
-	m_bIndexed = false;
+    m_bIndexed = false;
 }
 
 CMDF_DecisionMatrix::~CMDF_DecisionMatrix()
@@ -845,29 +845,29 @@ bool CMDF::downLoadMDF( wxString& remoteFile, wxString &tempFileName )
 
 bool CMDF::load( wxString& remoteFile, bool bLocalFile, bool bSilent  )
 {
-	wxString localFile = remoteFile;
+    wxString localFile = remoteFile;
 
-	if ( wxNOT_FOUND == remoteFile.Find( _("http://") ) ) {
-		wxString str;
-		str = _("http://");
-		str += remoteFile;
-		remoteFile = str;
-	}
+    if ( wxNOT_FOUND == remoteFile.Find( _("http://") ) ) {
+        wxString str;
+        str = _("http://");
+        str += remoteFile;
+        remoteFile = str;
+    }
 
-	// Get URL from user if not given
-	if ( !bSilent && !bLocalFile && !remoteFile.Length() ) {
+    // Get URL from user if not given
+    if ( !bSilent && !bLocalFile && !remoteFile.Length() ) {
 #if wxUSE_GUI!=0
-		remoteFile = ::wxGetTextFromUser( _("Please enter URI to MDF file on server ") );
+        remoteFile = ::wxGetTextFromUser( _("Please enter URI to MDF file on server ") );
 #else
         return false;
 #endif
 
-	}
-	// Get filename from user if not given
-	else if ( !bSilent && bLocalFile && !remoteFile.Length() ) {
+    }
+    // Get filename from user if not given
+    else if ( !bSilent && bLocalFile && !remoteFile.Length() ) {
 
 #if wxUSE_GUI!=0
-		// Load MDF from local file
+        // Load MDF from local file
         wxFileDialog dlg( NULL,
                             _("Choose file to load MDF from "),
                             wxStandardPaths::Get().GetUserDataDir(),
@@ -882,41 +882,41 @@ bool CMDF::load( wxString& remoteFile, bool bLocalFile, bool bSilent  )
 #else
         return false;
 #endif
-	
-	}
+    
+    }
 
-	// Must have a path at this point
-	if ( 0 == remoteFile.Length() ) {
-	
-		if ( !bSilent && bLocalFile ) {
+    // Must have a path at this point
+    if ( 0 == remoteFile.Length() ) {
+    
+        if ( !bSilent && bLocalFile ) {
 #if wxUSE_GUI!=0
-			::wxMessageBox( _("A filename must be entered."), _("VSCP Works"), wxICON_ERROR );
+            ::wxMessageBox( _("A filename must be entered."), _("VSCP Works"), wxICON_ERROR );
 #endif
-		}
-		else if ( !bSilent ) {
+        }
+        else if ( !bSilent ) {
 #if wxUSE_GUI!=0
-			::wxMessageBox( _("A URI must be entered."), _("VSCP Works"), wxICON_ERROR );
+            ::wxMessageBox( _("A URI must be entered."), _("VSCP Works"), wxICON_ERROR );
 #endif
-		}
+        }
 
-		return false;
+        return false;
 
-	}
+    }
 
-	if ( !bLocalFile ) {
-		
-		if ( !downLoadMDF( remoteFile, localFile ) ) {
+    if ( !bLocalFile ) {
+        
+        if ( !downLoadMDF( remoteFile, localFile ) ) {
 #if wxUSE_GUI!=0
-			if ( !bSilent ) ::wxMessageBox( _("Unable to download MDF."), 
-												_("VSCP Works"), 
-												wxICON_ERROR );
+            if ( !bSilent ) ::wxMessageBox( _("Unable to download MDF."), 
+                                                _("VSCP Works"), 
+                                                wxICON_ERROR );
 #endif
-			return false;
-		}
+            return false;
+        }
 
-	}
+    }
 
-	return parseMDF( localFile );
+    return parseMDF( localFile );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1308,13 +1308,13 @@ bool CMDF::parseMDF( wxString& path )
                             pAbstraction->m_fgcolor >>= 8;
                             pAbstraction->m_bgcolor >>= 8;
                             
-							stridx.Lower();
-							if ( wxNOT_FOUND != stridx.Find(_("true")) ) {
-								pAbstraction->m_bIndexed = true;
-							}
-							else {
-								pAbstraction->m_bIndexed = false;
-							}
+                            stridx.Lower();
+                            if ( wxNOT_FOUND != stridx.Find(_("true")) ) {
+                                pAbstraction->m_bIndexed = true;
+                            }
+                            else {
+                                pAbstraction->m_bIndexed = false;
+                            }
                          
                             wxString strType =  child3->GetAttribute( _( "type" ), _("") );                            
 
@@ -1378,7 +1378,7 @@ bool CMDF::parseMDF( wxString& path )
                             else if ( strType.IsSameAs(_("time")) ) {
                                 pAbstraction->m_nType = type_time;
                             }
-							else if ( strType.IsSameAs(_("guid")) ) {
+                            else if ( strType.IsSameAs(_("guid")) ) {
                                 pAbstraction->m_nType = type_guid;
                             }
                             else if ( strType.IsSameAs(_("index8_int16_t")) ) {
@@ -1898,16 +1898,16 @@ bool CMDF::parseMDF( wxString& path )
                         else if ( child3->GetName() == wxT("start") ) {                           
                             m_dmInfo.m_nStartPage =  vscp_readStringValue( child3->GetAttribute( _( "page" ), _("0") ) );                           
                             m_dmInfo.m_nStartOffset = vscp_readStringValue( child3->GetAttribute( _( "offset" ), _("0") ) );							                         
-							wxString stridx = child3->GetAttribute( _( "indexed" ), _("false") );
+                            wxString stridx = child3->GetAttribute( _( "indexed" ), _("false") );
                            
                             
-							stridx.Lower();
-							if ( wxNOT_FOUND != stridx.Find(_("true")) ) {
-								m_dmInfo.m_bIndexed = true;
-							}
-							else {
-								m_dmInfo.m_bIndexed = false;
-							}
+                            stridx.Lower();
+                            if ( wxNOT_FOUND != stridx.Find(_("true")) ) {
+                                m_dmInfo.m_bIndexed = true;
+                            }
+                            else {
+                                m_dmInfo.m_bIndexed = false;
+                            }
                         }
                         else if ( child3->GetName() == wxT("rowcnt") ) {
                             m_dmInfo.m_nRowCount = vscp_readStringValue( child3->GetNodeContent() );
@@ -1915,7 +1915,7 @@ bool CMDF::parseMDF( wxString& path )
                         else if ( child3->GetName() == wxT("rowsize") ) {
                             m_dmInfo.m_nRowSize = vscp_readStringValue( child3->GetNodeContent() );
                         }
-						else if ( child3->GetName() == wxT("action") ) {
+                        else if ( child3->GetName() == wxT("action") ) {
 
                             CMDF_Action *pAction = new CMDF_Action;
                             wxASSERT( NULL != pAction );
@@ -2544,13 +2544,13 @@ bool CMDF::parseMDF( wxString& path )
 
     } // while Child1
 
-	// If a Level I dm is placed at location 126 on the first
-	// page it will be automatically set to indexed
-	if ( ( 1 == m_dmInfo.m_nLevel ) && 
-			( 126 == m_dmInfo.m_nStartOffset ) &&
-			( 0 == m_dmInfo.m_nStartPage ) ) {
-		m_dmInfo.m_bIndexed = true;
-	}
+    // If a Level I dm is placed at location 126 on the first
+    // page it will be automatically set to indexed
+    if ( ( 1 == m_dmInfo.m_nLevel ) && 
+            ( 126 == m_dmInfo.m_nStartOffset ) &&
+            ( 0 == m_dmInfo.m_nStartPage ) ) {
+        m_dmInfo.m_bIndexed = true;
+    }
     return rv;
 }
 
@@ -2561,19 +2561,19 @@ bool CMDF::parseMDF( wxString& path )
 
 uint32_t CMDF::getNumberOfRegisters( uint32_t page ) 
 { 
-	uint32_t nregisters = 0;
+    uint32_t nregisters = 0;
 
-	MDF_REGISTER_LIST::iterator iterValue;
+    MDF_REGISTER_LIST::iterator iterValue;
     for ( iterValue = m_list_register.begin(); 
-			iterValue != m_list_register.end(); 
-			++iterValue) {
-		CMDF_Register *pRecordValue = *iterValue;
+            iterValue != m_list_register.end(); 
+            ++iterValue) {
+        CMDF_Register *pRecordValue = *iterValue;
         if ( NULL != pRecordValue ) {
-			if ( page == pRecordValue->m_nPage ) nregisters++;
-		}
+            if ( page == pRecordValue->m_nPage ) nregisters++;
+        }
     }
 
-	return nregisters;
+    return nregisters;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2582,29 +2582,29 @@ uint32_t CMDF::getNumberOfRegisters( uint32_t page )
 
 uint32_t CMDF::getPages( wxArrayLong& arraylong ) 
 { 
-	bool bFound;
+    bool bFound;
 
-	MDF_REGISTER_LIST::iterator iterValue;
+    MDF_REGISTER_LIST::iterator iterValue;
     for ( iterValue = m_list_register.begin(); 
-			iterValue != m_list_register.end();
-			++iterValue) {
-		CMDF_Register *pRecordValue = *iterValue;
-		if ( NULL != pRecordValue ) {
+            iterValue != m_list_register.end();
+            ++iterValue) {
+        CMDF_Register *pRecordValue = *iterValue;
+        if ( NULL != pRecordValue ) {
 
-			bFound = false;
-			for ( uint32_t i=0; i<arraylong.Count(); i++ ) {
-				if ( pRecordValue->m_nPage== arraylong.Index( i ) ) {
-					bFound = true;
-					break;
-				}
-			}
+            bFound = false;
+            for ( uint32_t i=0; i<arraylong.Count(); i++ ) {
+                if ( pRecordValue->m_nPage== arraylong.Index( i ) ) {
+                    bFound = true;
+                    break;
+                }
+            }
 
-			if (!bFound ) arraylong.Add( pRecordValue->m_nPage );
+            if (!bFound ) arraylong.Add( pRecordValue->m_nPage );
 
-		}
+        }
     }
 
-	return arraylong.Count();
+    return arraylong.Count();
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2613,16 +2613,16 @@ uint32_t CMDF::getPages( wxArrayLong& arraylong )
 
 CMDF_Register * CMDF::getMDFRegister( uint8_t reg, uint16_t page )
 {
-	MDF_REGISTER_LIST::iterator iter;
-	for ( iter = m_list_register.begin(); iter != m_list_register.end(); ++iter ) {
+    MDF_REGISTER_LIST::iterator iter;
+    for ( iter = m_list_register.begin(); iter != m_list_register.end(); ++iter ) {
 
-		CMDF_Register *preg = *iter;
-		if ( ( reg == preg->m_nOffset ) && ( page == preg->m_nPage ) ) {
-			return preg;
-		}
-	}
+        CMDF_Register *preg = *iter;
+        if ( ( reg == preg->m_nOffset ) && ( page == preg->m_nPage ) ) {
+            return preg;
+        }
+    }
 
-	return NULL;
+    return NULL;
 }
 
 

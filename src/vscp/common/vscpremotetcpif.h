@@ -60,9 +60,9 @@
 
 
 /*! 
-        \def DEFAULT_RESPONSE_TIMEOUT
-        Default response timeout for communication with the
-        tcp/ip interface of the daemon in seconds
+    \def DEFAULT_RESPONSE_TIMEOUT
+    Default response timeout for communication with the
+    tcp/ip interface of the daemon in seconds
  */
 #define TCPIP_DEFAULT_RESPONSE_TIMEOUT          3000
 
@@ -75,13 +75,13 @@
 #define TCPIP_REGISTER_READ_MAX_TRIES           3
 
 /*!
-        \def TCPIP_DLL_VERSION
-        Pseudo version string
+    \def TCPIP_DLL_VERSION
+    Pseudo version string
  */
 #define TCPIP_DLL_VERSION                       0x00000006
 /*! 
-        \def TCPIP_VENDOR_STRING
-        Pseudo vendor string
+    \def TCPIP_VENDOR_STRING
+    Pseudo vendor string
  */
 #define TCPIP_VENDOR_STRING                     "Paradise of the Frog AB, Sweden"
 

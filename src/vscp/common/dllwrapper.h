@@ -45,9 +45,9 @@
 
 // Default values for read/write register functions
 // used in device config and scan.
-#define DLL_REGISTER_READ_RESEND_TIMEOUT	5000
-#define DLL_REGISTER_READ_ERROR_TIMEOUT		2000
-#define DLL_REGISTER_READ_MAX_TRIES			3
+#define DLL_REGISTER_READ_RESEND_TIMEOUT    5000
+#define DLL_REGISTER_READ_ERROR_TIMEOUT     2000
+#define DLL_REGISTER_READ_MAX_TRIES         3
 
 // This structure holds info about found methods
 typedef struct structFoundMetods {
