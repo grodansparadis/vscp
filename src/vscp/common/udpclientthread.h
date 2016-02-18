@@ -107,9 +107,7 @@ public:
     /*!
         TCP/IP handler
     */
-    static void ev_handler( struct ns_connection *conn, 
-                                int ev, 
-                                void *pUser);
+    static void ev_handler( struct mg_connection *nc, int ev, void *p );
 
     /*! 
         called when the thread exits - whether it terminates normally or is

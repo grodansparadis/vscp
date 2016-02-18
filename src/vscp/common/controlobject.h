@@ -557,50 +557,75 @@ public:
     //            websocket/webserver interface
     //*****************************************************
 
+    // Path to SSL certificate
+    char m_pathCert[ MAX_PATH_SIZE ];
+
     // Enable/disable full webserver
     bool m_bWebServer;
 
     /*!
         If true web server security is disabled and checks
-        will nt be performed on user nor remote address.
+        will not be performed on user nor remote address.
     */
     bool m_bDisableSecurityWebServer;
 
-    struct mg_server *m_pwebserver;
-
-    /// Extra mime types on the form "extension1=type1,extension2=type2,..."
-    wxString m_extraMimeTypes;
+    //struct mg_mgr *m_pwebserver;     // Was mg_server
     
     // Path to web root
-    wxString m_pathWebRoot;
-
+    char m_pathWebRoot[ MAX_PATH_SIZE ];
+    
     // Domain for webserver and other net services
-    wxString m_authDomain;
+    char m_authDomain[ MAX_PATH_SIZE ];
+    
+    char m_extraMimeTypes[ MAX_PATH_SIZE ];
+
+    /// Extra mime types on the form "extension1=type1,extension2=type2,..."
+    char m_ssi_pattern[ MAX_PATH_SIZE ];
+    
+    // IP ACL. By default, NULL, meaning all IPs are allowed to connect
+    char m_ip_acl[ MAX_PATH_SIZE ];
+    
+    // CGI interpreter to use
+    char m_cgiInterpreter[ MAX_PATH_SIZE ];
+    
+    // CGI Pattern
+    char m_cgiPattern[ MAX_PATH_SIZE ];
+    
+    // Enable directory listing "yes"/"no"
+    char m_EnableDirectoryListings[ 5 ];
+    
+    // Hide file pattern
+    char m_hideFilePatterns[ MAX_PATH_SIZE ];
+    
+    // DAV document root. If NULL, DAV requests are going to fail.
+    char m_dav_document_root[ MAX_PATH_SIZE ];
+    
+    // Index files
+    char m_indexFiles[ MAX_PATH_SIZE ];
+
+    // URL rewrites
+    char m_urlRewrites[ MAX_PATH_SIZE ];
+    
+    // Leave as NULL to disable authentication.
+    // To enable directory protection with authentication, set this to ".htpasswd"
+    // Then, creating ".htpasswd" file in any directory automatically protects
+    // it with digest authentication.
+    // Use `mongoose` web server binary, or `htdigest` Apache utility to
+    // create/manipulate passwords file.
+    // Make sure `auth_domain` is set to a valid domain name.
+    char m_per_directory_auth_file[ MAX_PATH_SIZE ];
+    
+    // Leave as NULL to disable authentication.
+    // Normally, only selected directories in the document root are protected.
+    // If absolutely every access to the web server needs to be authenticated,
+    // regardless of the URI, set this option to the path to the passwords file.
+    // Format of that file is the same as ".htpasswd" file. Make sure that file
+    // is located outside document root to prevent people fetching it.
+    char m_global_auth_file[ MAX_PATH_SIZE ];
 
     // webserver port as port "8080" or address + port "127.0.0.1:8080"
     // If only port will bind to all interfaces,
     wxString m_portWebServer;	// defaults to "8080"
-
-    // Path to SSL certificate
-    wxString m_pathCert;
-
-    // CGI interpreter to use
-    wxString m_cgiInterpreter;
-
-    // CGI Pattern
-    wxString m_cgiPattern;
-
-    // Enable directory listing
-    bool bEnableDirectoryListing;
-
-    // Hide file pattern
-    wxString m_hideFilePatterns;
-
-    // Index files
-    wxString m_indexFiles;
-
-    // URL rewrites
-    wxString m_urlRewrites;
 
     // Run as user
     wxString m_runAsUserWeb;

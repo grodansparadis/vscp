@@ -202,7 +202,7 @@ CControlObject::CControlObject()
     m_bDisableSecurityWebServer = false;
 
     // Local domain
-    m_authDomain = _("mydomain.com");
+    strcpy( m_authDomain, "mydomain.com" );
 
     // Set Default Log Level
     m_logLevel = 0;
@@ -211,7 +211,8 @@ CControlObject::CControlObject()
     m_bLogGeneralEnable = true;
 
 #ifdef WIN32
-    m_logGeneralFileName.SetName( wxStandardPaths::Get().GetConfigDir() + _("/vscp/logs/vscp_log_general.txt") );
+    m_logGeneralFileName.SetName( wxStandardPaths::Get().GetConfigDir() + 
+                                        _("/vscp/logs/vscp_log_general.txt") );
 #else
     m_logGeneralFileName.SetName( _("/srv/vscp/logs/vscp_log_general") );
 #endif
@@ -220,7 +221,8 @@ CControlObject::CControlObject()
     m_bLogSecurityEnable = true;
 
 #ifdef WIN32
-    m_logSecurityFileName.SetName( wxStandardPaths::Get().GetConfigDir() + _("/vscp/vscp_log_security.txt") );
+    m_logSecurityFileName.SetName( wxStandardPaths::Get().GetConfigDir() + 
+                                            _("/vscp/vscp_log_security.txt") );
 #else
     m_logSecurityFileName.SetName( _("/srv/vscp/logs/vscp_log_security") );
 #endif
@@ -278,17 +280,33 @@ CControlObject::CControlObject()
     // Websocket interface
     m_bWebSockets = true;       // websocket interface ia active
     m_bAuthWebsockets = true;   // Authentication is needed
-    m_pathCert.Empty();
+    memset( m_pathCert, 0, sizeof( m_pathCert ) );
     
     // Webserver interface
     m_portWebServer = _("8080");
     m_bWebServer = true;
 
 #ifdef WIN32
-    m_pathWebRoot = _("/programdata/vscp/www");
+    //m_pathWebRoot = _("/programdata/vscp/www");
+    strcpy( m_pathWebRoot, "/programdata/vscp/www" );
 #else
-    m_pathWebRoot = _("/srv/vscp/www");
+    //m_pathWebRoot = _("/srv/vscp/www");
+    strcpy( m_pathWebRoot, "/srv/vscp/www" );
 #endif
+
+    memset( m_cgiInterpreter, 0, sizeof( m_cgiInterpreter ) );
+    memset( m_cgiPattern, 0, sizeof( m_cgiPattern ) );
+    memset( m_hideFilePatterns, 0, sizeof( m_hideFilePatterns ) );
+    memset( m_indexFiles, 0, sizeof( m_indexFiles ) );
+    memset( m_urlRewrites, 0, sizeof( m_urlRewrites ) );
+    memset( per_directory_auth_file, 0, sizeof( per_directory_auth_file ) );
+    memset( global_auth_file, 0, sizeof( global_auth_file ) );
+    memset( m_ssi_pattern, 0, sizeof( m_ssi_pattern ) );
+    memset( m_ip_acl, 0, sizeof( m_ip_acl ) );
+    memset( m_dav_document_root, 0, sizeof( m_dav_document_root ) );
+    
+    // Directory listings on by default
+    strcpy( m_EnableDirectoryListings, "yes" ); 
 
     // Set control object
     m_dm.setControlObject(this);
@@ -1866,62 +1884,112 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                         m_portWebServer = attribute;
                     }
 
-                    m_extraMimeTypes = subchild->GetAttribute(wxT("extra_mime_types"), wxT(""));
-                    m_extraMimeTypes.Trim();
-                    m_extraMimeTypes.Trim(false);
+                    attribute = subchild->GetAttribute(wxT("extra_mime_types"), wxT(""));
+                    attribute.Trim();
+                    attribute.Trim(false);
+                    if ( attribute.Length() ) {
+                        //m_pathWebRoot = attribute;
+                        strcpy( m_extraMimeTypes, attribute.mbc_str() );
+                    }
 
                     attribute = subchild->GetAttribute(wxT("webrootpath"), wxT(""));
                     attribute.Trim();
                     attribute.Trim(false);
                     if ( attribute.Length() ) {
-                        m_pathWebRoot = attribute;
+                        //m_pathWebRoot = attribute;
+                        strcpy( m_pathWebRoot, attribute.mbc_str() );
                     }
 
                     attribute = subchild->GetAttribute(wxT("authdoamin"), wxT(""));
                     attribute.Trim();
                     attribute.Trim(false);
                     if ( attribute.Length() ) {
-                        m_authDomain = attribute;
+                        strcpy( m_authDomain, attribute.mbc_str() );
                     }
 
                     attribute = subchild->GetAttribute(wxT("pathcert"), wxT(""));
                     attribute.Trim();
                     attribute.Trim(false);
-                    m_pathCert = attribute;
+                    if ( attribute.Length() ) {
+                        strcpy( m_pathCert, attribute.mbc_str() );
+                    }
 
                     attribute = subchild->GetAttribute(wxT("cgi_interpreter"), wxT(""));
                     attribute.Trim();
                     attribute.Trim(false);
-                    m_cgiInterpreter = attribute;
+                    if ( attribute.Length() ) {
+                        strcpy( m_cgiInterpreter, attribute.mbc_str() );                    }
 
                     attribute = subchild->GetAttribute(wxT("cgi_pattern"), wxT(""));
                     attribute.Trim();
                     attribute.Trim(false);
-                    m_cgiPattern = attribute;
+                    if ( attribute.Length() ) {
+                        strcpy( m_cgiPattern, attribute.mbc_str() );
+                    }
 
-                    bEnableDirectoryListing = true;
                     attribute = subchild->GetAttribute(wxT("enable_directory_listing"), wxT("true"));
                     attribute.Trim();
                     attribute.Trim(false);
                     attribute.MakeUpper();
                     if ( attribute.IsSameAs(_("FALSE"), false ) ) {
-                        bEnableDirectoryListing = false;    
+                        strcpy( m_EnableDirectoryListings, "no" ); 
                     }
 
-                    attribute = subchild->GetAttribute(wxT("hilde_file_patterns"), wxT(""));
+                    attribute = subchild->GetAttribute(wxT("hide_file_patterns"), wxT(""));
                     attribute.Trim();
                     attribute.Trim(false);
-                    m_hideFilePatterns = attribute;
+                    if ( attribute.Length() ) {
+                        strcpy( m_hideFilePatterns, attribute.mbc_str() );
+                    }
                     
                     attribute = subchild->GetAttribute(wxT("index_files"), wxT(""));
                     attribute.Trim();
                     attribute.Trim(false);
-                    m_indexFiles = attribute;
+                    if ( attribute.Length() ) {
+                        strcpy( m_indexFiles, attribute.mbc_str() );
+                    }
 
                     attribute = subchild->GetAttribute(wxT("url_rewrites"), wxT(""));
                     attribute.Trim();
                     attribute.Trim(false);
-                    m_urlRewrites = attribute;
+                    if ( attribute.Length() ) {
+                        strcpy( m_urlRewrites, attribute.mbc_str() );
+                    }
+                    
+                    attribute = subchild->GetAttribute(wxT("per_directory_auth_file"), wxT(""));
+                    attribute.Trim();
+                    attribute.Trim(false);
+                    if ( attribute.Length() ) {
+                        strcpy( per_directory_auth_file, attribute.mbc_str() );
+                    }
+                    
+                    attribute = subchild->GetAttribute(wxT("global_auth_file"), wxT(""));
+                    attribute.Trim();
+                    attribute.Trim(false);
+                    if ( attribute.Length() ) {
+                        strcpy( global_auth_file, attribute.mbc_str() );
+                    }
+                    
+                    attribute = subchild->GetAttribute(wxT("ssi_pattern"), wxT(""));
+                    attribute.Trim();
+                    attribute.Trim(false);
+                    if ( attribute.Length() ) {
+                        strcpy( m_ssi_pattern, attribute.mbc_str() );
+                    }
+                    
+                    attribute = subchild->GetAttribute(wxT("ip_acl"), wxT(""));
+                    attribute.Trim();
+                    attribute.Trim(false);
+                    if ( attribute.Length() ) {
+                        strcpy( m_ip_acl, attribute.mbc_str() );
+                    }
+                    
+                    attribute = subchild->GetAttribute(wxT("dav_document_root"), wxT(""));
+                    attribute.Trim();
+                    attribute.Trim(false);
+                    if ( attribute.Length() ) {
+                        strcpy( m_dav_document_root, attribute.mbc_str() );
+                    }
 
                     attribute = subchild->GetAttribute(wxT("run_as_user"), wxT(""));
                     attribute.Trim();

@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2014 
+// Copyright (C) 2000-2016 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -126,25 +126,25 @@
 #define WEB_COMMON_HEAD_END_BODY_START "</head><body>"
 
 // End with footer
-#define WEB_COMMON_END "<br><br><br><br><div id=\"footer\"> Copyright &copy; 2000-2014 VSCP & Friends,<a href=\"mailto:info@paradiseofthefrog.com\">Ake Hedman</a><a href=\"http://www.paradiseofthefrog.com\"> Paradise of the Frog.</a></div></div></body></html>"
+#define WEB_COMMON_END "<br><br><br><br><div id=\"footer\"> Copyright &copy; 2000-2016 VSCP & Friends,<a href=\"mailto:info@paradiseofthefrog.com\">Ake Hedman</a><a href=\"http://www.paradiseofthefrog.com\"> Paradise of the Frog.</a></div></div></body></html>"
 
 // List navigation - 
-// Action url			- string
-// First shown record	- integer
-// Last shown record	- integer
-// total records		- integer
-// count to show		- integer
+// Action url           - string
+// First shown record   - integer
+// Last shown record    - integer
+// total records        - integer
+// count to show    - integer
 #define WEB_COMMON_LIST_NAVIGATION "<br><div style=\"text-align:center\">\
-						<form method=\"get\" action=\"%s\" name=\"PageSelect\">\
-						<button type=\"submit\" value=\"first\" name=\"navbtn\">&lt;&lt;</button>\
-						<button type=\"submit\" value=\"previous\" name=\"navbtn\">&lt;</button>\
-						<button type=\"submit\" value=\"next\" name=\"navbtn\">&gt;</button>\
-						<button type=\"submit\" value=\"last\" name=\"navbtn\">&gt;&gt;</button>\
-						<span style=\"font-weight:bold\"> %lu - %lu</span> of \
-						<span style=\"font-weight:bold\">%lu</span> Show: \
-						<input name=\"count\" value=\"%lu\" size=\"3\">\
-						<input name=\"from\" value=\"%lu\" type=\"hidden\">\
-						<input name=\"light\" value=\"%s\" type=\"hidden\"></form><br></div> "
+                        <form method=\"get\" action=\"%s\" name=\"PageSelect\">\
+                        <button type=\"submit\" value=\"first\" name=\"navbtn\">&lt;&lt;</button>\
+                        <button type=\"submit\" value=\"previous\" name=\"navbtn\">&lt;</button>\
+                        <button type=\"submit\" value=\"next\" name=\"navbtn\">&gt;</button>\
+                        <button type=\"submit\" value=\"last\" name=\"navbtn\">&gt;&gt;</button>\
+                        <span style=\"font-weight:bold\"> %lu - %lu</span> of \
+                        <span style=\"font-weight:bold\">%lu</span> Show: \
+                        <input name=\"count\" value=\"%lu\" size=\"3\">\
+                        <input name=\"from\" value=\"%lu\" type=\"hidden\">\
+                        <input name=\"light\" value=\"%s\" type=\"hidden\"></form><br></div> "
 
 // Clickable/navigational table rows
 // Fill in Navigation url

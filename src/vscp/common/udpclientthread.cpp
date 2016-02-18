@@ -44,8 +44,8 @@
 #include <canal.h>
 #include <vscphelper.h>
 #include <dllist.h>
-#include <md5.h>
-#include <net_skeleton.h>
+//#include <md5.h>
+#include <mongoose.h>
 #include <version.h>
 #include <controlobject.h>
 
@@ -82,6 +82,9 @@ VSCPUDPClientThread::~VSCPUDPClientThread()
 
 void *VSCPUDPClientThread::Entry()
 {
+    struct mg_mgr mgr;
+    struct mg_connection *nc;
+  
     // Check pointers
     if ( NULL == m_pCtrlObject ) return NULL;
 
@@ -109,7 +112,8 @@ void *VSCPUDPClientThread::Entry()
     // Clear the filter (Allow everything )
     vscp_clearVSCPFilter( &m_pClientItem->m_filterVSCP );
 
-    ns_mgr_init( &m_pCtrlObject->m_mgrTcpIpServer, this, VSCPClientThread::ev_handler );
+    //ns_mgr_init( &m_pCtrlObject->m_mgrTcpIpServer, this, VSCPClientThread::ev_handler );
+    mg_mgr_init( &mgr, this );
 
     //const char *port1 = "udp://:9598";
     m_pCtrlObject->m_strUDPInterfaceAddress.Trim();
@@ -127,17 +131,21 @@ void *VSCPUDPClientThread::Entry()
         }
 
         // Bind to this interface
-        ns_bind( &m_pCtrlObject->m_mgrTcpIpServer, str.mbc_str(), NULL ); //
+        //ns_bind( &m_pCtrlObject->m_mgrTcpIpServer, str.mbc_str(), NULL );
+        nc = mg_bind( &mgr, str.mbc_str(), VSCPClientThread::ev_handler );
+        
     }
 
     m_pCtrlObject->logMsg(_T("UDP Client: Thread started.\n"), DAEMON_LOGMSG_INFO);
 
     while ( !TestDestroy() && !m_bQuit ) {
-        ns_mgr_poll( &m_pCtrlObject->m_mgrTcpIpServer, 50 );
+        //ns_mgr_poll( &m_pCtrlObject->m_mgrTcpIpServer, 50 );
+        mg_mgr_poll( &mgr, 50 );
     }
 
     // release the server
-    ns_mgr_free( &m_pCtrlObject->m_mgrTcpIpServer );
+    //ns_mgr_free( &m_pCtrlObject->m_mgrTcpIpServer );
+    mg_mgr_free( &mgr );
 
     m_pCtrlObject->logMsg( _T( "UDP ClientThread: Quit.\n" ), DAEMON_LOGMSG_INFO );
 
@@ -164,7 +172,7 @@ void VSCPUDPClientThread::OnExit()
 //
 
 void 
-VSCPUDPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void *pUser) 
+VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p) 
 {
     struct iobuf *io = &conn->recv_iobuf;
     VSCPUDPClientThread *pUDPClientThread = (VSCPUDPClientThread *)conn->mgr->user_data;
