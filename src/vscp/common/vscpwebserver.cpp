@@ -9971,7 +9971,9 @@ VSCPWebServerThread::websrv_table( struct mg_connection *nc,
         "HTTP/1.1 200 OK\r\n"
         "Transfer-Encoding: chunked\r\n"
         "Content-Type: text/html; charset=utf-8\r\n"
-        "Cache-Control: max-age=0,  post-check=0, pre-check=0, no-store, no-cache, must-revalidate\r\n\r\n");
+        "Cache-Control: max-age=0,  "
+        "post-check=0, pre-check=0, "
+        "no-store, no-cache, must-revalidate\r\n\r\n");
 
     wxString buildPage;
     buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Table view"));
