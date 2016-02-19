@@ -49,6 +49,8 @@ VSCPD_OBJECTS =  vscpd.o \
 	../../common/vscpremotetcpif.o \
 	../../common/guid.o \
 	../../common/vscpwebserver.o \
+	../../common/vscprestserver.o \
+	../../common/vscpwebsocketserver.o \
 	../../common/udpclientthread.o \
 	../../common/tables.o \
 	../../common/vscpautomation.o \
