@@ -136,7 +136,7 @@ void VSCPClientThread::OnExit()
 // ev_handler
 //
 
-void ev_handler(struct mg_connection *conn, int ev, void *pUser)
+void VSCPClientThread::ev_handler(struct mg_connection *conn, int ev, void *pUser)
 //void 
 //VSCPClientThread::ev_handler(struct mg_connection *conn, enum ns_event ev, void *pUser) 
 {
@@ -1525,7 +1525,7 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn, CContr
     memset( buf, 0, sizeof( buf ) );
     strncpy( buf, (const char *)pClientItem->m_UserName.mbc_str(), pClientItem->m_UserName.Length() );
     strncat( buf, ":", 1 );
-    strncat( buf, (const char *)pCtrlObject->m_authDomain.mbc_str(), pCtrlObject->m_authDomain.Length() );
+    strncat( buf, (const char *)pCtrlObject->m_authDomain, strlen( pCtrlObject->m_authDomain ) );
     strncat( buf, ":", 1 );
     strncat( (char *)buf, strPassword.mbc_str(), strPassword.Length() );
     
@@ -1550,9 +1550,9 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn, CContr
     if ( NULL == pClientItem->m_pUserItem ) {
 #if wxMAJOR_VERSION >= 3
         wxLogDebug( _("Password/Username failure.") );
-#else		
+#else
         ::wxLogDebug( _("Password/Username failure.") );
-#endif		
+#endif
         wxString strErr = 
             wxString::Format(_("[TCP/IP Client] User [%s][%s] not allowed to connect.\n"), 	
             (const char *)pClientItem->m_UserName.c_str(), (const char *)strPassword.c_str() );

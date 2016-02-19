@@ -174,15 +174,15 @@ void VSCPUDPClientThread::OnExit()
 void 
 VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p) 
 {
-    struct iobuf *io = &conn->recv_iobuf;
-    VSCPUDPClientThread *pUDPClientThread = (VSCPUDPClientThread *)conn->mgr->user_data;
+    struct mbuf *io = &nc->recv_mbuf;
+    VSCPUDPClientThread *pUDPClientThread = (VSCPUDPClientThread *)nc->mgr->user_data;
 
     switch (ev) {
 
-        case NS_CLOSE:
+        case MG_EV_CLOSE:
             break;
 
-        case NS_RECV: 
+        case MG_EV_RECV: 
             {
                 // user;md5-password-hash;head;vscpclass;vscptype;obid;time-stamp;GUID,data1,data2,data2....
                 char buf[1024];
@@ -191,7 +191,7 @@ VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p)
 
                 memset( buf, 0, sizeof( buf ) );
                 memcpy( buf, io->buf, io->len );
-                iobuf_remove(io, io->len);        // Discard message from recv buffer
+                mbuf_remove(io, io->len);        // Discard message from recv buffer
                 tkz.SetString( wxString::FromAscii( buf ), _(";") );
                 
                 if ( !tkz.HasMoreTokens() ) {
@@ -222,14 +222,21 @@ VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p)
                 // Calculate MD5 for username:autdomain:password
                 strncpy( buf, strUser.mbc_str(), strUser.Length() );
                 strncat( buf, ":", sizeof( buf ) - strlen( buf ) - 1 );
-                strncat( buf, pUDPClientThread->m_pCtrlObject->m_authDomain.mbc_str(),
-                                pUDPClientThread->m_pCtrlObject->m_authDomain.Length() );
-                strncat( buf, ":", sizeof( buf ) - strlen( buf) - 1);
+                strncat( buf, pUDPClientThread->m_pCtrlObject->m_authDomain,
+                                strlen( pUDPClientThread->m_pCtrlObject->m_authDomain ) );
+                strncat( buf, ":", sizeof( buf ) - strlen( buf) - 1 );
                 strncat( (char *)buf, strPassword.mb_str(), strPassword.Length() );
     
-                Cmd5 md5 ( (unsigned char *)buf );
-                if ( NULL == md5.getDigest() ) return; 
-                wxString md5Password = wxString( md5.getDigest(), wxConvUTF8 );
+                //Cmd5 md5 ( (unsigned char *)buf );
+                //if ( NULL == md5.getDigest() ) return; 
+                
+                unsigned char digest[16];
+                MD5_CTX md5;
+                MD5_Init( &md5 );
+                MD5_Update( &md5, (unsigned char *)buf, strlen( buf ) );
+                MD5_Final( digest,&md5 );
+                wxString md5Password = wxString( digest, wxConvUTF8 );
+                
                 pUDPClientThread->m_pCtrlObject->m_mutexUserList.Lock();
                 //::wxLogDebug( _("Username: ") + m_wxUserName );
                 //::wxLogDebug( _("Password: ") + strPassword );
@@ -252,12 +259,12 @@ VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p)
 #else						
                     ::wxLogDebug( _("Password/Username failure.") );
 #endif						
-                    ns_send( conn,  MSG_PASSWORD_ERROR, strlen ( MSG_PASSWORD_ERROR ) );
+                    mg_send( nc,  MSG_PASSWORD_ERROR, strlen ( MSG_PASSWORD_ERROR ) );
                     return;
                 }
 
                 // Get remte address
-                wxString remoteaddr = wxString::FromAscii( inet_ntoa( conn->sa.sin.sin_addr )  );
+                wxString remoteaddr = wxString::FromAscii( inet_ntoa( nc->sa.sin.sin_addr )  );
 
                 // Check if this user is allowed to connect from this location
                 pUDPClientThread->m_pCtrlObject->m_mutexUserList.Lock();
@@ -273,7 +280,7 @@ VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p)
                                                              (const char *)remoteaddr.mbc_str() );					
 #endif					
                     pUDPClientThread->m_pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO );
-                    ns_send( conn,  MSG_INVALID_REMOTE_ERROR, strlen ( MSG_INVALID_REMOTE_ERROR ) );
+                    mg_send( nc,  MSG_INVALID_REMOTE_ERROR, strlen ( MSG_INVALID_REMOTE_ERROR ) );
                     return;
                 }
 
@@ -295,7 +302,7 @@ VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p)
             }
             break;
 
-        case NS_POLL:
+        case MG_EV_POLL:
             break;
 
         default:

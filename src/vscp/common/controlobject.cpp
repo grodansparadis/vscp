@@ -299,8 +299,8 @@ CControlObject::CControlObject()
     memset( m_hideFilePatterns, 0, sizeof( m_hideFilePatterns ) );
     memset( m_indexFiles, 0, sizeof( m_indexFiles ) );
     memset( m_urlRewrites, 0, sizeof( m_urlRewrites ) );
-    memset( per_directory_auth_file, 0, sizeof( per_directory_auth_file ) );
-    memset( global_auth_file, 0, sizeof( global_auth_file ) );
+    memset( m_per_directory_auth_file, 0, sizeof( m_per_directory_auth_file ) );
+    memset( m_global_auth_file, 0, sizeof( m_global_auth_file ) );
     memset( m_ssi_pattern, 0, sizeof( m_ssi_pattern ) );
     memset( m_ip_acl, 0, sizeof( m_ip_acl ) );
     memset( m_dav_document_root, 0, sizeof( m_dav_document_root ) );
@@ -1960,14 +1960,14 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     attribute.Trim();
                     attribute.Trim(false);
                     if ( attribute.Length() ) {
-                        strcpy( per_directory_auth_file, attribute.mbc_str() );
+                        strcpy( m_per_directory_auth_file, attribute.mbc_str() );
                     }
                     
                     attribute = subchild->GetAttribute(wxT("global_auth_file"), wxT(""));
                     attribute.Trim();
                     attribute.Trim(false);
                     if ( attribute.Length() ) {
-                        strcpy( global_auth_file, attribute.mbc_str() );
+                        strcpy( m_global_auth_file, attribute.mbc_str() );
                     }
                     
                     attribute = subchild->GetAttribute(wxT("ssi_pattern"), wxT(""));

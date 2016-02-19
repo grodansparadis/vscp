@@ -61,7 +61,7 @@
 #include "vscphelper.h"
 #include "clientlist.h"
 #include <dllist.h>
-#include <md5.h>
+//#include <md5.h>
 #include <crc8.h>
 #include "controlobject.h"
 #include "guid.h"

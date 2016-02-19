@@ -11,7 +11,7 @@ top_builddir = @top_builddir@
 top_wxbuilddir = @top_wxbuilddir@
 CXX = @CXX@
 CXXFLAGS =  @CXXFLAGS@ 
-CPPFLAGS = -DNOEMBED_NET_SKELETON @CPPFLAGS@ -I../../common -I../../../common
+CPPFLAGS = @CPPFLAGS@ -I../../common -I../../../common
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
 STRIP = strip
@@ -61,7 +61,6 @@ VSCPD_OBJECTS =  vscpd.o \
 	../../../common/crc8.o \
 	../../../common/md5.o \
 	../../../common/randpassword.o \
-	../../../common/net_skeleton.o \
 	../../../common/mongoose.o  \
 	../../../common/slre.o \
 	../../../common/frozen.o \
