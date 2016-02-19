@@ -192,7 +192,7 @@ bool CBootDevice_PIC1::loadBinaryFile( const wxString& path,
 
             recType = strtoul( szData, &endptr, 16 );
 
-            fullAddr = ( highAddr * 0xffff ) + lowAddr;
+            fullAddr = ( highAddr << 16 ) + lowAddr;
 
             // Decode the record type
             switch ( recType ) {
