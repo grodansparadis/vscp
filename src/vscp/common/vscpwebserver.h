@@ -165,7 +165,7 @@ public:
         @param reponse
         @return MG_FALSE on failure to validate user or MG_TRUE on success
     */
-    int 
+    static int 
     websrv_check_password( const char *method, 
                                 const char *ha1, 
                                 const char *uri,
