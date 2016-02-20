@@ -133,7 +133,6 @@
 #include <tables.h>
 #include <configfile.h>
 #include <crc.h>
-//#include <md5.h>
 #include <randpassword.h>
 #include <version.h>
 #include "variablecodes.h"
@@ -577,7 +576,6 @@ bool CControlObject::init(wxString& strcfgfile)
     
     unsigned char digest[16];
     MD5_CTX md5;
-    //Cmd5 md5( (unsigned char *)buf );
     MD5_Init( &md5 );
     MD5_Update( &md5, (unsigned char *)buf, strlen( buf ) );
     MD5_Final( digest,&md5 );

@@ -31,7 +31,7 @@
 
 #define VSCPD_SUB_SUB_VERSION   26
 
-#define VSCPD_DISPLAY_VERSION "1.2.0.0 Boron"
+#define VSCPD_DISPLAY_VERSION "1.12.0.0 Magnesium"
 
 #define VSCPD_COPYRIGHT "Copyright (C) 2000-2016, Grodans Paradis AB, http://www.paradiseofthefrog.com"
 #define VSCPD_COPYRIGHT_HTML "Copyright (C) 2000-2016, <a href=\"mailto:info@paradiseofthefrog.com\">Paradise of the Frog</a>, <a href=\"http://www.paradiseofthefrog.com\">http://www.paradiseofthefrog.com</a>"

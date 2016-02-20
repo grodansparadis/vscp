@@ -192,6 +192,7 @@ public:
      */
     websrv_Session *
     websrv_add_session_cookie( struct mg_connection *nc, 
+                                struct http_message *hm,
                                 const char * pUser );
 
     /*!

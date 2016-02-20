@@ -116,8 +116,6 @@
 #include <tables.h>
 #include <configfile.h>
 #include <crc.h>
-//#include <md5.h>
-//#include <xml2json.hpp>
 #include <randpassword.h>
 #include <version.h>
 #include <variablecodes.h>
@@ -198,15 +196,6 @@ void webserv_util_sendheader( struct mg_connection *nc,
                                 "pre-check=0, no-store, no-cache, must-revalidate", // !!!! Should no end with new line
                                 content, 
                                 date );
-
-    /*mg_send_status( nc, returncode );
-    mg_send_header( nc, "Content-Type", content );
-    mg_send_header( nc, "Date", date );
-    mg_send_header( nc, "Connection", "keep-alive" );
-    mg_send_header( nc, "Transfer-Encoding", "chunked" );
-    mg_send_header(nc, "Cache-Control", 
-                                "max-age=0, post-check=0, "
-                                "pre-check=0, no-store, no-cache, must-revalidate");*/
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -219,91 +208,113 @@ int webserv_url_decode( const char *src, int src_len,
   int i, j, a, b;
 #define HEXTOI(x) (isdigit(x) ? x - '0' : x - 'W')
 
-  for (i = j = 0; i < src_len && j < dst_len - 1; i++, j++) {
-    if (src[i] == '%') {
-      if (i < src_len - 2 && isxdigit(*(const unsigned char *) (src + i + 1)) &&
-          isxdigit(*(const unsigned char *) (src + i + 2))) {
-        a = tolower(*(const unsigned char *) (src + i + 1));
-        b = tolower(*(const unsigned char *) (src + i + 2));
-        dst[j] = (char) ((HEXTOI(a) << 4) | HEXTOI(b));
-        i += 2;
-      } else {
-        return -1;
-      }
-    } else if (is_form_url_encoded && src[i] == '+') {
-      dst[j] = ' ';
-    } else {
-      dst[j] = src[i];
+    for (i = j = 0; i < src_len && j < dst_len - 1; i++, j++) {
+        if (src[i] == '%') {
+            if (i < src_len - 2 && isxdigit(*(const unsigned char *) (src + i + 1)) &&
+                    isxdigit(*(const unsigned char *) (src + i + 2))) {
+                a = tolower(*(const unsigned char *) (src + i + 1));
+                b = tolower(*(const unsigned char *) (src + i + 2));
+                dst[j] = (char) ((HEXTOI(a) << 4) | HEXTOI(b));
+                i += 2;
+            } 
+            else {
+                return -1;
+            }
+        } 
+        else if (is_form_url_encoded && src[i] == '+') {
+            dst[j] = ' ';
+        }    
+        else {
+            dst[j] = src[i];
+        }
     }
-  }
 
-  dst[j] = '\0'; /* Null-terminate the destination */
+    dst[j] = '\0'; /* Null-terminate the destination */
 
-  return i >= src_len ? j : -1;
+    return i >= src_len ? j : -1;
 }
 
-/*
- * Stringify binary data. Output buffer size must be 2 * size_of_input + 1
- * because each byte of input takes 2 bytes in string representation
- * plus 1 byte for the terminating \0 character.
- */
-static void bin2str(char *to, const unsigned char *p, size_t len) {
-  static const char *hex = "0123456789abcdef";
+///////////////////////////////////////////////////////////////////////////////
+// bin2str 
+//
+//  Stringify binary data. Output buffer size must be 2 * size_of_input + 1
+//  because each byte of input takes 2 bytes in string representation
+//  plus 1 byte for the terminating \0 character.
+//
 
-  for (; len--; p++) {
-    *to++ = hex[p[0] >> 4];
-    *to++ = hex[p[0] & 0x0f];
-  }
-  *to = '\0';
+static void bin2str( char *to, const unsigned char *p, size_t len ) 
+{
+    static const char *hex = "0123456789abcdef";
+
+    for (; len--; p++) {
+        *to++ = hex[p[0] >> 4];
+        *to++ = hex[p[0] & 0x0f];
+    }
+    *to = '\0';
 }
 
 
-/*
- * Check for authentication timeout.
- * Clients send time stamp encoded in nonce. Make sure it is not too old,
- * to prevent replay attacks.
- * Assumption: nonce is a hexadecimal number of seconds since 1970.
- */
-static int check_nonce(const char *nonce) {
-  unsigned long now = (unsigned long) time(NULL);
-  unsigned long val = (unsigned long) strtoul(nonce, NULL, 16);
-  return 1 || now < val || now - val < 3600;
+///////////////////////////////////////////////////////////////////////////////
+// mkmd5resp 
+//
+// Check for authentication timeout.
+// Clients send time stamp encoded in nonce. Make sure it is not too old,
+// to prevent replay attacks.
+// Assumption: nonce is a hexadecimal number of seconds since 1970.
+//
+
+static int check_nonce( const char *nonce ) 
+{
+    unsigned long now = (unsigned long) time(NULL);
+    unsigned long val = (unsigned long) strtoul(nonce, NULL, 16);
+    return 1 || now < val || now - val < 3600;
 }
 
-static char *do_md5(char *buf, ...) {
-  unsigned char hash[16];
-  const unsigned char *p;
-  va_list ap;
-  MD5_CTX ctx;
 
-  MD5_Init(&ctx);
+///////////////////////////////////////////////////////////////////////////////
+// do_md5 
+//
 
-  va_start(ap, buf);
-  while ((p = va_arg(ap, const unsigned char *) ) != NULL) {
-    size_t len = va_arg(ap, size_t);
-    MD5_Update(&ctx, p, len);
-  }
-  va_end(ap);
+static char *do_md5(char *buf, ...) 
+{
+    unsigned char hash[16];
+    const unsigned char *p;
+    va_list ap;
+    MD5_CTX ctx;
 
-  MD5_Final(hash, &ctx);
-  bin2str(buf, hash, sizeof(hash));
+    MD5_Init( &ctx );
 
-  return buf;
+    va_start( ap, buf );
+    while ( ( p = va_arg(ap, const unsigned char *) ) != NULL ) {
+        size_t len = va_arg(ap, size_t);
+        MD5_Update(&ctx, p, len);
+    }
+    va_end( ap );
+
+    MD5_Final(hash, &ctx);
+    bin2str(buf, hash, sizeof(hash));
+
+    return buf;
 }
 
-static void mkmd5resp(const char *method, size_t method_len, const char *uri,
-                      size_t uri_len, const char *ha1, size_t ha1_len,
-                      const char *nonce, size_t nonce_len, const char *nc,
-                      size_t nc_len, const char *cnonce, size_t cnonce_len,
-                      const char *qop, size_t qop_len, char *resp) {
-  static const char colon[] = ":";
-  static const size_t one = 1;
-  char ha2[33];
+///////////////////////////////////////////////////////////////////////////////
+// mkmd5resp 
+//
 
-  do_md5(ha2, method, method_len, colon, one, uri, uri_len, NULL);
-  do_md5(resp, ha1, ha1_len, colon, one, nonce, nonce_len, colon, one, nc,
-         nc_len, colon, one, cnonce, cnonce_len, colon, one, qop, qop_len,
-         colon, one, ha2, sizeof(ha2) - 1, NULL);
+static void mkmd5resp( const char *method, size_t method_len, const char *uri,
+                        size_t uri_len, const char *ha1, size_t ha1_len,
+                        const char *nonce, size_t nonce_len, const char *nc,
+                        size_t nc_len, const char *cnonce, size_t cnonce_len,
+                        const char *qop, size_t qop_len, char *resp ) 
+{
+    static const char colon[] = ":";
+    static const size_t one = 1;
+    char ha2[33];
+
+    do_md5( ha2, method, method_len, colon, one, uri, uri_len, NULL);
+    do_md5( resp, ha1, ha1_len, colon, one, nonce, nonce_len, colon, one, nc,
+            nc_len, colon, one, cnonce, cnonce_len, colon, one, qop, qop_len,
+            colon, one, ha2, sizeof(ha2) - 1, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -316,7 +327,6 @@ static int is_authorized( struct mg_connection *conn,
     
     CUserItem *pUserItem;
     bool bValidHost;
-    char resp[256];
     
     // Check pointers
     if ( NULL == hm ) return FALSE;
@@ -325,7 +335,6 @@ static int is_authorized( struct mg_connection *conn,
     struct mg_str *hdr;
     char buf[128], f_user[sizeof(buf)], f_ha1[sizeof(buf)], f_domain[sizeof(buf)];
     char user[50], cnonce[20], response[40], uri[200], qop[20], nc[20], nonce[30];
-    char expected_response[33];
 
     // Parse "Authorization:" header, fail fast on parse error 
     if ( ( hdr = mg_get_http_header(hm, "Authorization")) == NULL ||
@@ -348,7 +357,8 @@ static int is_authorized( struct mg_connection *conn,
 
         // Check if remote ip is valid
         pObject->m_mutexUserList.Lock();
-        bValidHost = pUserItem->isAllowedToConnect( wxString::FromAscii((const char *)inet_ntoa( conn->sa.sin.sin_addr ) ).wx_str() );
+        bValidHost = pUserItem->isAllowedToConnect( wxString::FromAscii( 
+                (const char *)inet_ntoa( conn->sa.sin.sin_addr ) ).wx_str() );
         pObject->m_mutexUserList.Unlock();
         if ( !bValidHost ) {
             // Host wrong
@@ -360,16 +370,20 @@ static int is_authorized( struct mg_connection *conn,
                 return 0;
         }
 
+        char method[32];
+        memset( method, 0, sizeof( method ) );
+        strncpy( method, hm->method.p, hm->method.len );
+
         // Check digest
         if ( MG_TRUE !=
-            pObject->getWebServer()->websrv_check_password( hm->method,
+            pObject->getWebServer()->websrv_check_password( method,
                             ( const char * )pUserItem->m_md5Password.mbc_str(),
                             uri, 
                             nonce, 
                             nc, 
                             cnonce, 
                             qop, 
-                            resp ) ) {
+                            response ) ) {
             // Username/password wrong
             wxString strErr =
                 wxString::Format( _( "[Webserver Client] Host [%s] User [%s] NOT allowed to connect.\n" ),
@@ -417,6 +431,9 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
     switch (ev) {
         
         case MG_EV_ACCEPT:  // New connection accepted. union socket_address 
+            break;
+            
+        case MG_EV_RECV:    // Data has been received. int *num_bytes 
             break;
             
         case MG_EV_POLL:    // Sent to each connection on each mg_mgr_poll() call
@@ -520,16 +537,26 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
 */
         case MG_EV_HTTP_REQUEST:
         
-            // Must be autorized
-            if ( !is_authorized( nc, phm, pObject ) ) {
-                mg_printf( nc,
-                            "HTTP/1.1 401 Unauthorized\r\n"
-                            "WWW-Authenticate: Digest qop=\"auth\", "
-                            "realm=\"%s\", nonce=\"%lu\"\r\n"
-                            "Content-Length: 0\r\n\r\n",
-                            pObject->m_authDomain, (unsigned long) time( NULL ) );
-            return;
-            }        
+            // Don't authorize here for rest calls
+            if ( 0 != strncmp(phm->uri.p, "/vscp/rest", 10 ) ) {
+             
+                // Must be autorized
+                if ( !is_authorized( nc, phm, pObject ) ) {
+                    mg_printf( nc,
+                                "HTTP/1.1 401 Unauthorized\r\n"
+                                "WWW-Authenticate: Digest qop=\"auth\", "
+                                "realm=\"%s\", nonce=\"%lu\"\r\n"
+                                "Content-Length: 0\r\n\r\n",
+                                pObject->m_authDomain, (unsigned long) time( NULL ) );
+                return;
+                }
+            }  
+
+            // Get Session object
+            if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( nc, phm ) ) ) {            
+                pObject->getWebServer()->websrv_add_session_cookie( nc, phm, user );
+                return;
+            }
 
             if ( 0 /* nc->is_websocket */ ) { // TODO
                 // pObject->getWebServer()->websrv_websocket_message( nc ); // TODO
@@ -1042,33 +1069,36 @@ VSCPWebServerThread::websrv_get_session( struct mg_connection *nc,
 {
     char buf[512];
     struct websrv_Session *ret = NULL;
-    const char *cookie = NULL;
-/* TODO
+
     // Get the session cookie
     struct mg_str *pheader = mg_get_http_header( hm, "cookie" ); 
+    if ( NULL == pheader ) return NULL;
     if ( 0 == pheader->len ) return NULL;
 
-    if ( MG_FALSE == 
-        mg_parse_header( pheader, "session", buf, sizeof( buf ) ) ) return NULL;
-    cookie = buf;
-    
-    if (cookie != NULL) {
-        
-        // find existing session 
-        ret = gp_websrv_sessions;
-        while (NULL != ret) {
-            if (0 == strcmp(cookie, ret->m_sid))
-                break;
-            ret = ret->m_next;
-        }
-        
-        if (NULL != ret) {
-            ret->m_referenceCount++;
-            ret->lastActiveTime = time( NULL );
-            return ret;
-        }
+    // Get session
+    if ( !mg_http_parse_header( pheader, 
+                                    "session",
+                                    buf, 
+                                    sizeof( buf ) ) ) {
+        return NULL;
     }
-*/        
+                                                        
+    // find existing session 
+    ret = gp_websrv_sessions;
+    while (NULL != ret) {
+
+        if (0 == strcmp( buf, ret->m_sid ) )
+            break;
+            ret = ret->m_next;
+            
+    }
+        
+    if (NULL != ret) {
+        ret->m_referenceCount++;
+        ret->lastActiveTime = time( NULL );
+        return ret;
+    }
+        
     return ret;
 }
 
@@ -1079,6 +1109,7 @@ VSCPWebServerThread::websrv_get_session( struct mg_connection *nc,
 
 websrv_Session *
 VSCPWebServerThread::websrv_add_session_cookie( struct mg_connection *nc, 
+                                                    struct http_message *hm,
                                                     const char *pUser )
 {
     char buf[512];
@@ -1089,7 +1120,7 @@ VSCPWebServerThread::websrv_add_session_cookie( struct mg_connection *nc,
 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
     if (NULL == pObject) return NULL;
-/* TODO
+
     // Create fresh session 
     ret = (struct websrv_Session *)calloc(1, sizeof(struct websrv_Session));
     if  (NULL == ret ) {
@@ -1111,9 +1142,12 @@ VSCPWebServerThread::websrv_add_session_cookie( struct mg_connection *nc,
                 (unsigned int)rand(), 
                 1337 );
 
-    Cmd5 md5( (unsigned char *)buf );
-    strcpy( ret->m_sid, md5.getDigest() );
-    
+    //Cmd5 md5( (unsigned char *)buf );
+    //strcpy( ret->m_sid, md5.getDigest() );
+    char digest[16];
+    do_md5( digest, buf, strlen( buf ), NULL );
+    strcpy( ret->m_sid, (const char *)digest );
+#if 0    
     sprintf( buf, "session=%s; max-age=3600; http-only;", ret->m_sid );
     mg_send_header( nc, "Set-Cookie", buf );
     
@@ -1122,13 +1156,20 @@ VSCPWebServerThread::websrv_add_session_cookie( struct mg_connection *nc,
 
     strcpy( buf, "original_url=/; max-age=0;" );
     mg_send_header( nc, "Set-Cookie", buf );
-    
-#if 0
-    mg_printf( nc, "HTTP/1.1 200 OK\r\n"
-               "Set-Cookie: session=%s; max-age=3600; http-only;\r\n"
-               "Set-Cookie: user=%s;\r\n"
-               "Set-Cookie: original_url=/; max-age=0;\r\n"
-               "Set-Cookie: allow=yes;\r\n\r\n", ret->m_sid, pUser );
+#endif    
+#if 1
+    char uri[2048];
+    memset( uri, 0, sizeof(uri) );
+    strncpy( uri, hm->uri.p, hm->uri.len );
+    mg_printf( nc, "HTTP/1.1 302 Found\r\n"
+               "Set-Cookie: session=%s; max-age=3600; http-only\r\n"
+               "Set-Cookie: user=%s\r\n"
+               "Set-Cookie: original_url=%s; max-age=0\r\n"
+               "Set-Cookie: allow=yes\r\n"
+               "Location: %s\r\n\r\n", 
+               ret->m_sid, 
+               pUser,
+               uri, uri );
 #endif
     
     ret->m_pUserItem = pObject->m_userList.getUser( wxString::FromAscii( pUser ) );
@@ -1138,7 +1179,7 @@ VSCPWebServerThread::websrv_add_session_cookie( struct mg_connection *nc,
     ret->lastActiveTime = time( NULL );
     ret->m_next = gp_websrv_sessions;
     gp_websrv_sessions = ret;
-*/
+
     return ret;
 }
 
@@ -1150,7 +1191,7 @@ struct websrv_Session *
 VSCPWebServerThread::websrv_GetCreateSession( struct mg_connection *nc,
                                                 struct http_message *hm )
 {
-    const char *hdr;
+    struct mg_str *pheader;
     char user[256];
     struct websrv_Session *rv = NULL;
 
@@ -1159,22 +1200,22 @@ VSCPWebServerThread::websrv_GetCreateSession( struct mg_connection *nc,
 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
     if (NULL == pObject) return NULL;
-/*
-    if ( NULL == ( rv =  pObject->getWebServer()->websrv_get_session( nc ) ) ) {
 
-        if ( NULL == ( hdr = mg_get_http_header( nc, "Authorization") ) ||
-                        ( vscp_strncasecmp( hdr, "Digest ", 7 ) != 0 ) ) {
+    if ( NULL == ( rv =  pObject->getWebServer()->websrv_get_session( nc, hm ) ) ) {
+
+        if ( NULL == ( pheader = mg_get_http_header( hm, "Authorization") ) ||
+                        ( vscp_strncasecmp( pheader->p, "Digest ", 7 ) != 0 ) ) {
             return NULL;
         }
                 
-        if (!mg_parse_header(hdr, "username", user, sizeof(user))) {
+        if (!mg_http_parse_header(pheader, "username", user, sizeof(user))) {
             return NULL;
         }
 
         // Add session cookie
-        rv = pObject->getWebServer()->websrv_add_session_cookie( nc, user );
+        rv = pObject->getWebServer()->websrv_add_session_cookie( nc, hm, user );
     }
-*/
+
     return rv;
 }
 
@@ -1246,9 +1287,24 @@ VSCPWebServerThread::websrv_check_password( const char *method,
     }
 #endif
 
-    do_md5(ha2, method, ":", uri, NULL);
-    do_md5(expected_response, ha1, ":", nonce, ":", nc,
-                    ":", cnonce, ":", qop, ":", ha2, NULL);
+    do_md5( ha2, 
+                method, strlen(method), 
+                ":", 1, 
+                uri, strlen(uri), 
+                NULL);
+    do_md5( expected_response, 
+                ha1, strlen(ha1),
+                ":", 1,
+                nonce, strlen(nonce),
+                ":", 1,
+                nc, strlen(nc),
+                ":", 1,
+                cnonce, strlen(cnonce),
+                ":", 1, 
+                qop, strlen(qop),
+                ":", 1,
+                ha2, strlen(ha2),
+                NULL );
 
     return ( vscp_strcasecmp( response, expected_response ) == 0 ) ? MG_TRUE : MG_FALSE;
 

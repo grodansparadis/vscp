@@ -61,11 +61,9 @@ VSCPD_OBJECTS =  vscpd.o \
 	../../../common/configfile.o \
 	../../../common/crc.o \
 	../../../common/crc8.o \
-	../../../common/md5.o \
 	../../../common/randpassword.o \
 	../../../common/mongoose.o  \
 	../../../common/slre.o \
-	../../../common/frozen.o \
 
 # Add object files that always should be built here
 ALWAYS_BUILD = ../../common/vscphelper.o \
@@ -78,12 +76,9 @@ ALWAYS_BUILD = ../../common/vscphelper.o \
 	../../../common/configfile.o \
 	../../../common/crc.o \
 	../../../common/crc8.o \
-	../../../common/md5.o \
 	../../../common/randpassword.o \
-	../../../common/net_skeleton.o \
 	../../../common/mongoose.o  \
 	../../../common/slre.o \
-	../../../common/frozen.o \
 
 ### Targets: ###
 
