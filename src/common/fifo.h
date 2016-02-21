@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// 							Header for fifo implementation
+//                  Header for fifo implementation
 ///////////////////////////////////////////////////////////////////////////////
 
 // Define to prevent recursive inclusion -------------------------------------
@@ -11,10 +11,10 @@
 #endif 
 
 typedef struct {
-	uint8_t *buf;
-	uint16_t head;
-	uint16_t tail;
-	uint16_t size;
+    uint8_t *buf;
+    uint16_t head;
+    uint16_t tail;
+    uint16_t size;
 } fifo_t;
 
 

@@ -29,13 +29,13 @@
 
 CPDU::CPDU(void)
 {
-    m_pduTpvp	= 0;		// default is 5 min.
-    m_bTP_RP	= false;
-    m_bTP_UDHI	= false;
-    m_bTP_SRI	= false;
-    m_bTP_MMS	= false;
+    m_pduTpvp   = 0;        // default is 5 min.
+    m_bTP_RP    = false;
+    m_bTP_UDHI  = false;
+    m_bTP_SRI   = false;
+    m_bTP_MMS   = false;
     m_wayTP_MMI = ESMSWay_UNKNOW;
-    m_eMethod	= EEncode_UNKNOW;
+    m_eMethod   = EEncode_UNKNOW;
 }
 
 CPDU::~CPDU(void)
@@ -68,14 +68,14 @@ int CPDU::Compose(CPDU::pdudata& pdu,
 
     // Start build the phone part
     std::stringstream ssPhone;
-    ssPhone << "1100";			// The static phone part header, see document for detail
+    ssPhone << "1100";              // The static phone part header, see document for detail
     pdudata pduPhone;
-    ssPhone << std::hex << std::setw(2) << std::setfill('0') << EncodePDUNumber(phone, pduPhone);	// Number length
-    ssPhone << "91" << pduPhone;	// phone and 91 prefix
+    ssPhone << std::hex << std::setw(2) << std::setfill('0') << EncodePDUNumber(phone, pduPhone);   // Number length
+    ssPhone << "91" << pduPhone;    // phone and 91 prefix
 
-    ssPhone << "00";				// The Protocol identifier 00 for SMS.
+    ssPhone << "00";                // The Protocol identifier 00 for SMS.
     ssPhone << std::hex << std::setw(2) << std::setfill('0') << eMethod;
-    ssPhone  << std::hex << std::setw(2) << std::setfill('0') << m_pduTpvp;				// The validity period
+    ssPhone  << std::hex << std::setw(2) << std::setfill('0') << m_pduTpvp;         // The validity period
 
 
     // Start build the USERDATA part

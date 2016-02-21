@@ -8,7 +8,7 @@
 // 
 // the EDA deamon.
 //
-// Copyright (C) 2000-2008 Ake Hedman, eurosource, <akhe@eurosource.se>
+// Copyright (C) 2000-2016 Grodans Paradis AB, akhe@grodansparadis.com
 //
 // This software is placed into
 // the public domain and may be used for any purpose.  However, this

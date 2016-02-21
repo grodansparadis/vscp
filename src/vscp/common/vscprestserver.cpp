@@ -330,7 +330,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
     if (NULL == nc) return;
     
     // Get method
-    char method[32];
+    char method[33];
     memset( method, 0, sizeof( method ) );
     strncpy( method, hm->method.p, hm->method.len );
 
@@ -813,7 +813,6 @@ VSCPWebServerThread::webserv_rest_error( struct mg_connection *nc,
     else if ( REST_FORMAT_CSV == format ) {
 
         webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_CSV );     
-        memset( buf, 0, sizeof( buf ));
         mg_send_http_chunk( nc, rest_errors[errorcode][REST_FORMAT_CSV], strlen( rest_errors[errorcode][REST_FORMAT_CSV] )  );
         mg_send_http_chunk( nc, "", 0 );   // Terminator
         return;
@@ -822,7 +821,6 @@ VSCPWebServerThread::webserv_rest_error( struct mg_connection *nc,
     else if ( REST_FORMAT_XML == format ) {
 
         webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_XML );
-        memset( buf, 0, sizeof( buf ) );
         mg_send_http_chunk( nc, XML_HEADER, strlen( XML_HEADER ) );            
         mg_send_http_chunk( nc, rest_errors[errorcode][REST_FORMAT_XML], strlen( rest_errors[errorcode][REST_FORMAT_XML] ) );
         mg_send_http_chunk( nc, "", 0 );   // Terminator
@@ -832,7 +830,6 @@ VSCPWebServerThread::webserv_rest_error( struct mg_connection *nc,
     else if ( REST_FORMAT_JSON == format ) {
 
         webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_JSON );
-        memset( buf, 0, sizeof( buf ) );
         mg_send_http_chunk( nc, rest_errors[errorcode][REST_FORMAT_JSON], strlen( rest_errors[errorcode][REST_FORMAT_JSON] ) );
         mg_send_http_chunk( nc, "", 0 );   // Terminator
         return;
@@ -841,7 +838,6 @@ VSCPWebServerThread::webserv_rest_error( struct mg_connection *nc,
     else if ( REST_FORMAT_JSONP == format ) {
 
         webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_JSONP );
-        memset( buf, 0, sizeof( buf ) );
         mg_send_http_chunk( nc, rest_errors[errorcode][REST_FORMAT_JSONP], strlen( rest_errors[errorcode][REST_FORMAT_JSONP] ) );
         mg_send_http_chunk( nc, "", 0 );   // Terminator
         return;
@@ -850,7 +846,6 @@ VSCPWebServerThread::webserv_rest_error( struct mg_connection *nc,
     else {
 
         webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_PLAIN );
-        memset( buf, 0, sizeof( buf ) );
         mg_send_http_chunk( nc, REST_PLAIN_ERROR_UNSUPPORTED_FORMAT, strlen( REST_PLAIN_ERROR_UNSUPPORTED_FORMAT ) );
         mg_send_http_chunk( nc, "", 0 );   // Terminator
         return;
@@ -1436,10 +1431,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
                                 wxString str;
                                 if ( vscp_writeVscpEventToString( pEvent, str ) ) {
 
-                                    memset( buf, 0, sizeof( buf ) );
-
                                     // Write it out
-                                    memset((char *) wrkbuf, 0, sizeof( wrkbuf ));
                                     strcpy((char *) wrkbuf, (const char*) "- ");
                                     strcat((char *) wrkbuf, (const char*) str.mb_str(wxConvUTF8));
                                     strcat((char *) wrkbuf, "\r\n" );
@@ -1447,13 +1439,11 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
                             
                                 }
                                 else {
-                                    memset( buf, 0, sizeof( buf ) );
                                     strcpy((char *) wrkbuf, "- Malformed event (intenal error)\r\n" );
                                     mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
                                 }
                             }
                             else {
-                                memset( buf, 0, sizeof( buf ) );
                                 strcpy((char *) wrkbuf, "- Event filtered out\r\n" );
                                 mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
                             }
@@ -1463,14 +1453,12 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
 
                         } // Valid pEvent pointer
                         else {
-                            memset( buf, 0, sizeof( buf ) );
                             strcpy((char *) wrkbuf, "- Event could not be fetched (intenal error)\r\n" );
                             mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
                         }
                     } // for
                 }
                 else {   // no events available
-                    memset( buf, 0, sizeof( buf ));
                     sprintf( wrkbuf, REST_PLAIN_ERROR_INPUT_QUEUE_EMPTY"\r\n");
                     mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
                 }
@@ -1519,9 +1507,6 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
 
                                 wxString str;
                                 if ( vscp_writeVscpEventToString(pEvent, str) ) {
-
-                                    memset( buf, 0, sizeof( buf ) );
-                                    memset( wrkbuf, 0, sizeof( wrkbuf ) );
 
                                     // Write it out
                                     memset((char *) wrkbuf, 0, sizeof( wrkbuf ));
@@ -1600,8 +1585,6 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
 
                                 wxString str;
 
-                                memset( buf, 0, sizeof( buf ) );
-
                                 // Write it out
                                 strcpy((char *)wrkbuf, (const char*) "<event>");
 
@@ -1662,9 +1645,6 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
                         }
                     } // for
 
-                    memset( buf, 0, sizeof( buf ) );
-                    memset( wrkbuf, 0, sizeof( wrkbuf ) );
-
                     strcpy((char *) wrkbuf, (const char*) "<filtered>");
                     strcat((char *) wrkbuf, wxString::Format( _("%d"), filtered ).mbc_str() );
                     strcat((char *) wrkbuf, (const char*) "</filtered>");
@@ -1681,9 +1661,6 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
 
                 }     
                 else {   // no events available
-                    
-                    memset( buf, 0, sizeof( buf ) );
-                    memset( wrkbuf, 0, sizeof( wrkbuf ) );
 
                     sprintf( wrkbuf, REST_XML_ERROR_INPUT_QUEUE_EMPTY"\r\n");
                     mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
@@ -1873,8 +1850,6 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
 
                 } // if open and data 
                 else {   // no events available
-                    
-                    memset( buf, 0, sizeof( buf ) );
 
                     if ( REST_FORMAT_JSON == format ) {
                         sprintf( wrkbuf, REST_JSON_ERROR_INPUT_QUEUE_EMPTY"\r\n");
@@ -2012,7 +1987,6 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
                 sprintf( wrkbuf, "1 1 Success \r\n");
                 mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
 
-                memset( buf, 0, sizeof( buf ));
                 sprintf( wrkbuf, 
                                 "variable=%s type=%d persistent=%s value='%s' note='%s'\r\n", 
                                 (const char *)pvar->getName().mbc_str(), 
@@ -2495,7 +2469,6 @@ VSCPWebServerThread::websrc_rest_renderTableData( struct mg_connection *nc,
             wxString strDateTime = 
                             dt.FormatISODate() + _( " " ) + dt.FormatISOTime();
 
-            memset( buf, 0, sizeof( buf ) );
             sprintf( wrkbuf,
                      "%ld - Date=%s,Value=%f\r\n",
                      i,
@@ -2514,14 +2487,12 @@ VSCPWebServerThread::websrc_rest_renderTableData( struct mg_connection *nc,
                  "success-code, error-code, message, description, EvenL\r\n1, 1, Success, Success., NULL\r\n" );
         mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ) );
 
-        memset( buf, 0, sizeof( buf ) );
         sprintf( wrkbuf,
                  "1, 2, Info, Success %ld records will be returned from table %s.,NULL\r\n",
                  nfetchedRecords,
                  ( const char * )strName.mbc_str() );
         mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ) );
 
-        memset( buf, 0, sizeof( buf ) );
         sprintf( wrkbuf,
                  "1, 4, Count, %ld, NULL\r\n",
                  nfetchedRecords );
@@ -2533,7 +2504,6 @@ VSCPWebServerThread::websrc_rest_renderTableData( struct mg_connection *nc,
             dt.Set( ( time_t )pRecords[ i ].timestamp );
             wxString strDateTime = dt.FormatISODate() + _( " " ) + dt.FormatISOTime();
 
-            memset( buf, 0, sizeof( buf ) );
             sprintf( wrkbuf,
                      "1,3,Data,Table,%ld - Date=%s,Value=%f\r\n",
                      i,
@@ -2552,7 +2522,6 @@ VSCPWebServerThread::websrc_rest_renderTableData( struct mg_connection *nc,
                  "<vscp-rest success=\"true\" code=\"1\" message=\"Success\" description=\"Success.\">\r\n" );
         mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ) );
 
-        memset( buf, 0, sizeof( buf ) );
         sprintf( wrkbuf,
                  "<count>%ld</count>\r\n<info>Fetched %ld elements of table %s</info>\r\n",
                  nfetchedRecords,
@@ -2566,7 +2535,6 @@ VSCPWebServerThread::websrc_rest_renderTableData( struct mg_connection *nc,
             dt.Set( ( time_t )pRecords[ i ].timestamp );
             wxString strDateTime = dt.FormatISODate() + _( " " ) + dt.FormatISOTime();
 
-            memset( buf, 0, sizeof( buf ) );
             sprintf( wrkbuf,
                      "<data id=\"%ld\" date=\"%s\" value=\"%f\"></data>\r\n",
                      i,
@@ -2576,7 +2544,6 @@ VSCPWebServerThread::websrc_rest_renderTableData( struct mg_connection *nc,
 
         }
 
-        memset( buf, 0, sizeof( buf ) );
         sprintf( wrkbuf,
                  "</vscp-rest>\r\n" );
         mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ) );
@@ -2835,7 +2802,6 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *nc,
                     dt.Set( ( time_t )pRecords[ i ].timestamp );
                     wxString strDateTime = dt.FormatISODate() + _( " " ) + dt.FormatISOTime();
 
-                    memset( buf, 0, sizeof( buf ) );
                     sprintf( wrkbuf,
                              "%ld - Date=%s,Value=%f\r\n",
                              i,
@@ -2855,14 +2821,12 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *nc,
                          "success-code, error-code, message, description, EvenL\r\n1, 1, Success, Success., NULL\r\n" );
                 mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ) );
 
-                memset( buf, 0, sizeof( buf ) );
                 sprintf( wrkbuf,
                          "1, 2, Info, Success %d records will be returned from table %s.,NULL\r\n",
                          nfetchedRecords,
                          ( const char * )strName.mbc_str() );
                 mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf )  );
 
-                memset( buf, 0, sizeof( buf ) );
                 sprintf( wrkbuf,
                          "1, 4, Count, %d, NULL\r\n",
                          nfetchedRecords );
@@ -2874,7 +2838,6 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *nc,
                     dt.Set( ( time_t )pRecords[ i ].timestamp );
                     wxString strDateTime = dt.FormatISODate() + _( " " ) + dt.FormatISOTime();
 
-                    memset( buf, 0, sizeof( buf ) );
                     sprintf( wrkbuf,
                              "1,3,Data,Table,%d - Date=%s,Value=%f\r\n",
                              i,
@@ -2894,7 +2857,6 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *nc,
                          "<vscp-rest success=\"true\" code=\"1\" message=\"Success\" description=\"Success.\">\r\n" );
                 mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ) );
 
-                memset( buf, 0, sizeof( buf ) );
                 sprintf( wrkbuf,
                             "<count>%d</count>\r\n<info>Fetched %d elements of table %s</info>\r\n",
                             nfetchedRecords,
@@ -2908,7 +2870,6 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *nc,
                     dt.Set( ( time_t )pRecords[ i ].timestamp );
                     wxString strDateTime = dt.FormatISODate() + _( " " ) + dt.FormatISOTime();
 
-                    memset( buf, 0, sizeof( buf ) );
                     sprintf( wrkbuf,
                              "<data id=\"%d\" date=\"%s\" value=\"%f\"></data>\r\n",
                              i,
@@ -2918,7 +2879,6 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *nc,
 
                 }
 
-                memset( buf, 0, sizeof( buf ) );
                 sprintf( wrkbuf,
                          "</vscp-rest>\r\n" );
                 mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ));
@@ -2934,7 +2894,6 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *nc,
                     webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSONP );
                 }
 
-                memset( buf, 0, sizeof( buf ) );
                 char *p = wrkbuf;
 
                 if ( REST_FORMAT_JSONP == format ) {
@@ -2959,7 +2918,6 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *nc,
                 p += json_emit_quoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "table", 5 );
                 p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":[", 2 );
 
-                memset( buf, 0, sizeof( buf ) );
                 mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ) );
                 p = wrkbuf;
                

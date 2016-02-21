@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 // 
-// Copyright (c) 2000-2015 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// Copyright (c) 2000-2016 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,8 +37,8 @@
 #include <canal.h>
 #include <crc.h>
 
-#define MDF_ACCESS_READ		1
-#define MDF_ACCESS_WRITE	2
+#define MDF_ACCESS_READ         1
+#define MDF_ACCESS_WRITE        2
 
 #define REGISTER_TYPE_STANDARD  0
 #define REGISTER_TYPE_DMATRIX1  1

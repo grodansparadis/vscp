@@ -14,7 +14,7 @@
 // This file is part is part of CANAL (CAN Abstraction Layer)
 // http://www.vscp.org)
 //
-// Copyright (C) 2000-2014 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2016 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This software is placed into
 // the public domain and may be used for any purpose.  However, this
@@ -34,9 +34,9 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#define HANDSHAKE_NONE		0
-#define HANDSHAKE_HARDWARE	1
-#define HANDSHAKE_SOFTWARE	2
+#define HANDSHAKE_NONE      0
+#define HANDSHAKE_HARDWARE  1
+#define HANDSHAKE_SOFTWARE  2
 
 /*! 
  *	\class CCommParams

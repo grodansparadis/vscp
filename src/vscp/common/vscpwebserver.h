@@ -144,9 +144,10 @@ public:
         @param nc Webserver connection handle
         @return TRUE on success or FALSE on failure.
     */
-    int 
+    bool 
     websrv_websocket_message( struct mg_connection *nc,
-                                struct http_message *hm );
+                                struct http_message *hm,
+                                struct websocket_message *wm );
     
     /*!
         Web server event handler
@@ -345,7 +346,7 @@ public:
     /*!
         Handle websocket send event
     */
-    int
+    bool
     websock_sendevent( struct mg_connection *nc, 
                             struct websock_session *pSession, 
                             vscpEvent *pEvent );
@@ -359,8 +360,9 @@ public:
             VSCP standard password hash =
             "admin:mydomain.com:secret" = 5ebe2294ecd0e0f08eab7690d2a6ee69
     */
-    int
-    websock_authentication( struct mg_connection *nc, 
+    bool
+    websock_authentication( struct mg_connection *nc,
+                                struct http_message *hm,
                                 struct websock_session *pSession, 
                                 wxString& strUser, wxString& strKey );
 
@@ -368,8 +370,10 @@ public:
         Handle incoming websocket command
         @param nc Webserver connection handle
     */
-    int
-    websock_command( struct mg_connection *nc, 
+    void
+    websock_command( struct mg_connection *nc,
+                        struct http_message *hm,
+                        struct websocket_message *wm,
                         struct websock_session *pSession, 
                         wxString& strCommand );
 
@@ -381,7 +385,8 @@ public:
         @return websock object or NULL if failure
     */
     struct websock_session *
-    websock_new_session( struct mg_connection *nc, 
+    websock_new_session( struct mg_connection *nc,
+                            struct http_message *hm,
                             const char * pKey, 
                             const char * pVer );
 
@@ -391,13 +396,15 @@ public:
         @return websock object or NULL if failure.
     */
     static struct websock_session *
-    websock_get_session( struct mg_connection *nc );
+    websock_get_session( struct mg_connection *nc,
+                            struct http_message *hm );
 
     /*!
         Remove staled sessions
     */
     void
-    websock_expire_sessions( struct mg_connection *nc );
+    websock_expire_sessions( struct mg_connection *nc,
+                                struct http_message *hm );
 
     /*!
         Post incomming event on open websockets

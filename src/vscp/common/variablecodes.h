@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2014
+// Copyright (C) 2000-2016
 // Ake Hedman, eurosource, <akhe@eurosource.se>
 // 
 // This file is distributed in the hope that it will be useful,

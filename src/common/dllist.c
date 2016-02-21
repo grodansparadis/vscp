@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // dllist.c - Double Linked List
 //
-//  Copyright (C) 2000-2015 Ake Hedman, Grodans Paradis AB, akhe@grodansparadis.com 
+//  Copyright (C) 2000-2016 Ake Hedman, Grodans Paradis AB, akhe@grodansparadis.com 
 //
 // This software is placed into
 // the public domain and may be used for any purpose.  However, this

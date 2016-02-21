@@ -416,6 +416,9 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
 
     // Check pointer
     if ( NULL == nc ) return;
+    
+    // Web socket data
+    struct websocket_message *wm = (struct websocket_message *)p;
 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
     if ( NULL == pObject ) return;
@@ -434,7 +437,7 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
         case MG_EV_POLL:    // Sent to each connection on each mg_mgr_poll() call
             if ( ( cleanupTime - time(NULL) ) > 60 ) {
                 pObject->getWebServer()->websrv_expire_sessions( nc, phm );
-                pObject->getWebServer()->websock_expire_sessions( nc );
+                pObject->getWebServer()->websock_expire_sessions( nc, phm );
                 pObject->getWebServer()->websrv_expire_rest_sessions( nc );
                 cleanupTime = time(NULL);
             }
@@ -443,10 +446,10 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
         case MG_EV_CLOSE:   // Connection is closed. NULL 
             if ( is_websocket( nc ) ) {
                 //nc->connection_param = NULL;
-                pWebSockSession = websock_get_session( nc );
+                pWebSockSession = websock_get_session( nc, phm );
                 if ( NULL != pWebSockSession ) {
                     pWebSockSession->lastActiveTime  = 0;   // Mark as staled
-                    pObject->getWebServer()->websock_expire_sessions( nc );
+                    pObject->getWebServer()->websock_expire_sessions( nc, phm );
                 }
             }
             break;
@@ -578,6 +581,13 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
                 mg_serve_http( nc, phm, s_http_server_opts );
             }
             break;
+            
+        case MG_EV_HTTP_REPLY:  // Will not happen as we are server
+            break;    
+
+        case MG_EV_WEBSOCKET_FRAME:
+            pObject->getWebServer()->websrv_websocket_message( nc, phm, wm );
+            break;
 
         case MG_EV_WEBSOCKET_HANDSHAKE_REQUEST:
             if ( NULL != ( hdr = mg_get_http_header( phm, "Sec-WebSocket-Protocol") ) ) {
@@ -616,41 +626,38 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
             break;
 
         case MG_EV_WEBSOCKET_HANDSHAKE_DONE:
-/* TODO
-            // New websocket connection. Send connection ID back to the client.
-            //if ( nc->is_websocket ) {
 
-                // Get session
-                pWebSockSession = websock_get_session( nc );
-                if ( NULL == pWebSockSession ) {
-                    mg_printf_websocket_frame( nc, 
+            // New websocket connection. Send connection ID back to the client.
+
+            // Get session
+            pWebSockSession = websock_get_session( nc, phm );
+            if ( NULL == pWebSockSession ) {
+                mg_printf_websocket_frame( nc, 
                                             WEBSOCKET_OP_TEXT, 
                                             "-;%d;%s",
                                             WEBSOCK_ERROR_NOT_AUTHORIZED,
                                             WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
-                }
+            }
 
-                if ( pObject->m_bAuthWebsockets ) {
+            if ( pObject->m_bAuthWebsockets ) {
 
-                    // Start authentication
-                    mg_printf_websocket_frame( nc, 
+                // Start authentication
+                mg_printf_websocket_frame( nc, 
                                             WEBSOCKET_OP_TEXT, 
                                             "+;AUTH0;%s", 
                                             pWebSockSession->m_sid );
-                }
-                else {
-                    // No authentication will be performed
+            }
+            else {
+                // No authentication will be performed
                     
-                    pWebSockSession->bAuthenticated = true;	// Authenticated
-                    mg_printf_websocket_frame( nc, 
+                pWebSockSession->bAuthenticated = true;	// Authenticated
+                mg_printf_websocket_frame( nc, 
                                             WEBSOCKET_OP_TEXT, 
                                             "+;AUTH1" );
-                }
-            //}
- */           
+            } 
             break;
-
-        case MG_EV_HTTP_REPLY:
+            
+        case MG_EV_WEBSOCKET_CONTROL_FRAME:
             break;
 
         default: 

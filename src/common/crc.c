@@ -5,8 +5,8 @@
  * Description: Slow and fast implementations of the CRC standards.
  *
  * Notes:       The parameters for each supported CRC standard are
- *				defined in the header file crc.h.  The implementations
- *				here should stand up to further additions to that list.
+ *              defined in the header file crc.h.  The implementations
+ *              here should stand up to further additions to that list.
  *
  * 
  * Copyright (c) 2000 by Michael Barr.  This software is placed into

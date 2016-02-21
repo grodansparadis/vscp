@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP project (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2015 
+// Copyright (C) 2000-2016 
 // Ake Hedman, Paradise of the Frog, <akhe@paradiseofthefrog.com>
 // 
 // This file is distributed in the hope that it will be useful,

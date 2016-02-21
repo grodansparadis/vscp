@@ -1,9 +1,9 @@
 //
-// config.h	
-//			class Config - Read parameters from config file.
+// config.h
+//          class Config - Read parameters from config file.
 //
 //
-// Copyright (C) 2000-2008 Ake Hedman, eurosource, <akhe@eurosource.se>
+// Copyright (C) 2000-2016 Ake Hedman, eurosource, <akhe@eurosource.se>
 //
 // This software is placed into
 // the public domain and may be used for any purpose.  However, this
@@ -12,11 +12,6 @@
 //
 //  AH  981224  started this project.
 //
-//
-// $RCSfile: configfile.h,v $
-// $Date: 2005/08/30 11:00:13 $
-// $Author: akhe $
-// $Revision: 1.17 $
 //
 
 #ifndef H_CONFIG_H

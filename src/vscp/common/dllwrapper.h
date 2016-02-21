@@ -5,7 +5,7 @@
 //
 // The MIT License (MIT)
 // 
-// Copyright (c) 2000-2015 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// Copyright (c) 2000-2016 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,16 +30,16 @@
 
 #include "wx/wx.h"
 #include <wx/dynlib.h>
-#include "canaldlldef.h"	// Holds the function declarations
+#include "canaldlldef.h"    // Holds the function declarations
 
 /*!
-	\file dllwrapper.h
-	\brief This class encapsulates the CANAL dll/dl(so) interface. 
-	\details The class have all 
-	methods of the CANAL interface specification implemented in an easy to handle form.
-	Use the class if you want to talk directly to CANAL dll/dl(so) drivers. A better
-	choice may be to use CanalSuperWrapper wich can talk to both a dll/dl(so) and to a tvp/ip
-	interface.
+    \file dllwrapper.h
+    \brief This class encapsulates the CANAL dll/dl(so) interface. 
+    \details The class have all 
+    methods of the CANAL interface specification implemented in an easy to handle form.
+    Use the class if you want to talk directly to CANAL dll/dl(so) drivers. A better
+    choice may be to use CanalSuperWrapper wich can talk to both a dll/dl(so) and to a tvp/ip
+    interface.
 */
 
 
@@ -72,13 +72,13 @@ typedef struct structFoundMetods {
 } foundMetods;
 
 /*!
-	\class CDllWrapper
-	\brief Encapsulates the CANAL dll/dl(so) interface.
-	\details The class have all 
-	methods of the CANAL interface specification implemented in an easy to handle form.
-	Use the class if you want to talk directly to CANAL dll/dl(so) drivers. A better
-	choice may be to use CanalSuperWrapper wich can talk to both a dll/dl(so) and to a tvp/ip
-	interface.
+    \class CDllWrapper
+    \brief Encapsulates the CANAL dll/dl(so) interface.
+    \details The class have all 
+    methods of the CANAL interface specification implemented in an easy to handle form.
+    Use the class if you want to talk directly to CANAL dll/dl(so) drivers. A better
+    choice may be to use CanalSuperWrapper wich can talk to both a dll/dl(so) and to a tvp/ip
+    interface.
 */
 
 
@@ -87,10 +87,10 @@ class CDllWrapper
 
 public:
 
-	/// Constructor
+    /// Constructor
     CDllWrapper();
 
-	/// Destructor
+    /// Destructor
     virtual ~CDllWrapper();
   
     /*!
@@ -115,7 +115,7 @@ public:
         Open communication channel.
      
         @param strConfiguration is name of channel.
-	    @param flags CANAL flags for the channel.
+        @param flags CANAL flags for the channel.
         @return Channel handler on success. -1 on error.
     */
     long doCmdOpen( const wxString& strConfiguration = ( _( "" ) ), unsigned long flags = 0L );
@@ -176,13 +176,13 @@ public:
     */
     int doCmdReceive( canalMsg *pMsg );
   
-	/*!
+    /*!
         Receive a CAN message
-	    @param pMsg Poniter to CAN message that receive received message.
+        @param pMsg Poniter to CAN message that receive received message.
         @param timeout Time to wait in milliseconds or zero to wait forever.
         @return CANAL_ERROR_SUCCESS on success or CANAL error if failure. 
-					Return CANAL_ERROR_NOT_SUPPORTED if blocking operations is not
-					supported.
+                    Return CANAL_ERROR_NOT_SUPPORTED if blocking operations is not
+                    supported.
     */
     int doCmdBlockingReceive( canalMsg *pMsg, unsigned long timeout );
   
@@ -241,77 +241,77 @@ public:
     */
     const char *doCmdVendorString( void );
 
-	/*!
-		Get driver information
-		@return Pointer to driver information string or NULL
-			if no driver info is available.
-	*/
-	const char *doCmdGetDriverInfo( void );
-
-
-	// Extended functionality
-
-
-	/*!
-		Check if blocking is supported
-		@param bRead Set to true to check receive blocking
-		@param bWrite Set to true to check send blocking
-		@return Returns true if blocking is supported.
-	*/
-	bool isBlockingSupported( bool bRead = true, bool bWrite = true );
-	
-	
-	
-	///////////////////////////////////////////////////////////////////////////
-	//                         V S C P  S p e c i f i c
-	///////////////////////////////////////////////////////////////////////////
-	
-	
     /*!
-	    Set read timeout
-	    @param to Read timeout in milliseconds
-	*/
-	void setReadTimeout( unsigned long to ) { m_registerReadErrorTimeout = to; };
+        Get driver information
+        @return Pointer to driver information string or NULL
+            if no driver info is available.
+    */
+    const char *doCmdGetDriverInfo( void );
+
+
+    // Extended functionality
+
 
     /*!
-	    Get read timeout
-	    @return Read timeout in milliseconds
-	*/
-	unsigned long getReadTimeout( void) { return m_registerReadErrorTimeout; };
-
-	/*!
-	    Set read resend timeout
-	    @param to Read resend timeout in milliseconds
-	*/
-	void setReadResendTimeout( unsigned long to ) { m_registerReadResendTimeout = to; };
+        Check if blocking is supported
+        @param bRead Set to true to check receive blocking
+        @param bWrite Set to true to check send blocking
+        @return Returns true if blocking is supported.
+    */
+    bool isBlockingSupported( bool bRead = true, bool bWrite = true );
+    
+    
+    
+    ///////////////////////////////////////////////////////////////////////////
+    //                         V S C P  S p e c i f i c
+    ///////////////////////////////////////////////////////////////////////////
+    
+    
+    /*!
+        Set read timeout
+        @param to Read timeout in milliseconds
+    */
+    void setReadTimeout( unsigned long to ) { m_registerReadErrorTimeout = to; };
 
     /*!
-	    Get resend timeout
-	    @return Resend timeout in milliseconds
-	*/
-	unsigned long getReadResendTimeout( void) { return m_registerReadResendTimeout; };
-
-	/*!
-	    Set max read retries
-	    @param n Number of retries before giving up
-	*/
-	void setMaxRetries( unsigned short n ) { m_registerReadMaxRetries = n; };
+        Get read timeout
+        @return Read timeout in milliseconds
+    */
+    unsigned long getReadTimeout( void) { return m_registerReadErrorTimeout; };
 
     /*!
-	    Get max read retries
-	    @return Number of retries before giving up
-	*/
-	unsigned short getMaxRetries( void ) { return m_registerReadMaxRetries; };
+        Set read resend timeout
+        @param to Read resend timeout in milliseconds
+    */
+    void setReadResendTimeout( unsigned long to ) { m_registerReadResendTimeout = to; };
 
-	/*!
+    /*!
+        Get resend timeout
+        @return Resend timeout in milliseconds
+    */
+    unsigned long getReadResendTimeout( void) { return m_registerReadResendTimeout; };
+
+    /*!
+        Set max read retries
+        @param n Number of retries before giving up
+    */
+    void setMaxRetries( unsigned short n ) { m_registerReadMaxRetries = n; };
+
+    /*!
+        Get max read retries
+        @return Number of retries before giving up
+    */
+    unsigned short getMaxRetries( void ) { return m_registerReadMaxRetries; };
+
+    /*!
         Read level I register
         @param nodeid Nickname for node to read register on
         @param page Page to use
-	    @param reg Register to read.
-	    @param pval Pointer to value read
-	    @return CANAL_ERROR_SUCCESS on success, errocode on failure.
+        @param reg Register to read.
+        @param pval Pointer to value read
+        @return CANAL_ERROR_SUCCESS on success, errocode on failure.
     */
-	int readLevel1Register( unsigned char nodeid,
+    int readLevel1Register( unsigned char nodeid,
                                 unsigned short page,
                                 unsigned char reg, 
                                 unsigned char *pcontent );
@@ -331,17 +331,17 @@ public:
                                             unsigned char *pRegs );
 
     /*!
-	    Write level I register
-	    @param nodeid Nickname for node to write register on
+        Write level I register
+        @param nodeid Nickname for node to write register on
         @param page Page to use
-	    @param reg Register to write to.
-	    @param val Register value to write
-	    @return CANAL_ERROR_SUCCESS on success, errocode on failure.
-	*/
-	int writeLevel1Register( unsigned char nodeid,
+        @param reg Register to write to.
+        @param val Register value to write
+        @return CANAL_ERROR_SUCCESS on success, errocode on failure.
+    */
+    int writeLevel1Register( unsigned char nodeid,
                                 unsigned short page,
-								unsigned char reg, 
-								unsigned char *pval );
+                                unsigned char reg, 
+                                unsigned char *pval );
 
    
 
@@ -358,22 +358,22 @@ public:
 
 protected:
 
-	/*!
-		Path to CANAL driver
-	*/
-	wxString m_strPath;
+    /*!
+        Path to CANAL driver
+    */
+    wxString m_strPath;
   
-	/// dl/dll handler
-	wxDynamicLibrary m_wxdll;
+    /// dl/dll handler
+    wxDynamicLibrary m_wxdll;
   
-	/// device id from open call
-	long m_devid;
+    /// device id from open call
+    long m_devid;
   
-	/*!
-		Flag that indicates that a sucessfull initialization
-		has been performed.
-	*/
-	bool m_bInit;
+    /*!
+        Flag that indicates that a sucessfull initialization
+        has been performed.
+    */
+    bool m_bInit;
 
     /// Error timeout for register read/write operations
     unsigned long m_registerReadErrorTimeout;
@@ -384,27 +384,27 @@ protected:
     /// Man number of read/write retries
     unsigned short m_registerReadMaxRetries;
   
-	//@{
-	/// CANAL methods
-	LPFNDLL_CANALOPEN				m_proc_CanalOpen;
-	LPFNDLL_CANALCLOSE				m_proc_CanalClose;
-	LPFNDLL_CANALGETLEVEL			m_proc_CanalGetLevel;
-	LPFNDLL_CANALSEND				m_proc_CanalSend;
-	LPFNDLL_CANALRECEIVE			m_proc_CanalReceive;
-	LPFNDLL_CANALDATAAVAILABLE		m_proc_CanalDataAvailable;
-	LPFNDLL_CANALGETSTATUS			m_proc_CanalGetStatus;
-	LPFNDLL_CANALGETSTATISTICS		m_proc_CanalGetStatistics;
-	LPFNDLL_CANALSETFILTER			m_proc_CanalSetFilter;
-	LPFNDLL_CANALSETMASK			m_proc_CanalSetMask;
-	LPFNDLL_CANALSETBAUDRATE		m_proc_CanalSetBaudrate;
-	LPFNDLL_CANALGETVERSION			m_proc_CanalGetVersion;
-	LPFNDLL_CANALGETDLLVERSION		m_proc_CanalGetDllVersion;
-	LPFNDLL_CANALGETVENDORSTRING	m_proc_CanalGetVendorString;
-	// Generation 2
-	LPFNDLL_CANALBLOCKINGSEND		m_proc_CanalBlockingSend;
-	LPFNDLL_CANALBLOCKINGRECEIVE	m_proc_CanalBlockingReceive;
-	LPFNDLL_CANALGETDRIVERINFO	m_proc_CanalGetdriverInfo;
-	//@}
+    //@{
+    /// CANAL methods
+    LPFNDLL_CANALOPEN				m_proc_CanalOpen;
+    LPFNDLL_CANALCLOSE				m_proc_CanalClose;
+    LPFNDLL_CANALGETLEVEL			m_proc_CanalGetLevel;
+    LPFNDLL_CANALSEND				m_proc_CanalSend;
+    LPFNDLL_CANALRECEIVE			m_proc_CanalReceive;
+    LPFNDLL_CANALDATAAVAILABLE		m_proc_CanalDataAvailable;
+    LPFNDLL_CANALGETSTATUS			m_proc_CanalGetStatus;
+    LPFNDLL_CANALGETSTATISTICS		m_proc_CanalGetStatistics;
+    LPFNDLL_CANALSETFILTER			m_proc_CanalSetFilter;
+    LPFNDLL_CANALSETMASK			m_proc_CanalSetMask;
+    LPFNDLL_CANALSETBAUDRATE		m_proc_CanalSetBaudrate;
+    LPFNDLL_CANALGETVERSION			m_proc_CanalGetVersion;
+    LPFNDLL_CANALGETDLLVERSION		m_proc_CanalGetDllVersion;
+    LPFNDLL_CANALGETVENDORSTRING	m_proc_CanalGetVendorString;
+    // Generation 2
+    LPFNDLL_CANALBLOCKINGSEND		m_proc_CanalBlockingSend;
+    LPFNDLL_CANALBLOCKINGRECEIVE	m_proc_CanalBlockingReceive;
+    LPFNDLL_CANALGETDRIVERINFO	m_proc_CanalGetdriverInfo;
+    //@}
 };
 
 #endif // !defined(AFX_DLLWRAPPER_H__66E4FA3F_1CA1_405D_AAF1_5F9B1272D75A__INCLUDED_)
