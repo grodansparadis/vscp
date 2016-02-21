@@ -105,8 +105,7 @@
 #include "web_js.h"
 #include "web_template.h"
 
-#include <slre.h>
-#include <frozen.h>
+//#include <slre.h>
 #include <mongoose.h>
 
 #include <canal_macro.h>
@@ -128,16 +127,14 @@
 #include "vscpwebserver.h"
 #include <controlobject.h>
 #include <webserver.h>
+#include <webserver_websocket.h>
+//#include <webserver_rest.h>
 
 using namespace std;
 
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
 #endif
-
-// TODO fom net_skeleton - SHOULD BE REMOVED!!!
-#define MG_TRUE     1
-#define MG_FALSE    0
 
 ///////////////////////////////////////////////////
 //                WEBSERVER
@@ -153,26 +150,13 @@ static struct websrv_Session *gp_websrv_sessions;
 struct websrv_rest_session *gp_websrv_rest_sessions;
 
 
+
+
 ///////////////////////////////////////////////////
 //                  HELPERS
 ///////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-// make_chunk
-//
 
-void webserv_util_make_chunk( char *obuf, const char *buf, int len ) 
-{
-  char chunk_size[512];
-#ifdef WIN32
-  int n = _snprintf( chunk_size, sizeof(chunk_size), "%X\r\n", len);
-#else
-  int n = snprintf( chunk_size, sizeof(chunk_size), "%X\r\n", len);
-#endif
-  strncat( obuf, chunk_size, n);
-  strncat( obuf, buf, len);
-  strncat( obuf, "\r\n", 2);
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // webserv_util_sendheader
@@ -182,20 +166,23 @@ void webserv_util_sendheader( struct mg_connection *nc,
                                         const int returncode, 
                                         const char *content )
 {
-    wxString strExtraHeaders;
+    char buf[ 2048 ];
     char date[64];
     time_t curtime = time(NULL);
     vscp_getTimeString( date, sizeof(date), &curtime );
 
-    strExtraHeaders.Format( "Content-Type: %s\r"
+    int n = sprintf( buf, "HTTP/1.1 %d OK\r\n" 
+                                "Content-Type: %s\r\n"
                                 "Date: %s\r"
-                                "Connection: keep-alive\r"
-                                "Transfer-Encoding: chunked\r"
-                                "Cache-Control\r", 
-                                "max-age=0, post-check=0,\r"
-                                "pre-check=0, no-store, no-cache, must-revalidate", // !!!! Should no end with new line
+                                "Connection: keep-alive\r\n"
+                                "Transfer-Encoding: chunked\r\n"
+                                "Cache-Control\r\n" 
+                                "max-age=0, post-check=0,\r\n"
+                                "pre-check=0, no-store, no-cache, must-revalidate\r\n\r\n",
+                                returncode,
                                 content, 
                                 date );
+    mg_send( nc, buf, n );                                
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -272,13 +259,14 @@ static int check_nonce( const char *nonce )
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// do_md5 
+// vscp_md5 
 //
 
-static char *do_md5(char *buf, ...) 
+char *vscp_md5(char *buf, ...) 
 {
     unsigned char hash[16];
     const unsigned char *p;
+    
     va_list ap;
     MD5_CTX ctx;
 
@@ -311,8 +299,8 @@ static void mkmd5resp( const char *method, size_t method_len, const char *uri,
     static const size_t one = 1;
     char ha2[33];
 
-    do_md5( ha2, method, method_len, colon, one, uri, uri_len, NULL);
-    do_md5( resp, ha1, ha1_len, colon, one, nonce, nonce_len, colon, one, nc,
+    vscp_md5( ha2, method, method_len, colon, one, uri, uri_len, NULL);
+    vscp_md5( resp, ha1, ha1_len, colon, one, nonce, nonce_len, colon, one, nc,
             nc_len, colon, one, cnonce, cnonce_len, colon, one, qop, qop_len,
             colon, one, ha2, sizeof(ha2) - 1, NULL);
 }
@@ -375,7 +363,7 @@ static int is_authorized( struct mg_connection *conn,
         strncpy( method, hm->method.p, hm->method.len );
 
         // Check digest
-        if ( MG_TRUE !=
+        if ( TRUE !=
             pObject->getWebServer()->websrv_check_password( method,
                             ( const char * )pUserItem->m_md5Password.mbc_str(),
                             uri, 
@@ -398,6 +386,14 @@ static int is_authorized( struct mg_connection *conn,
     return TRUE;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// is_websocket 
+//
+
+static int is_websocket( const struct mg_connection *nc ) 
+{
+    return nc->flags & MG_F_IS_WEBSOCKET;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // websrv_event_handler 
@@ -417,7 +413,6 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
             resp[256], qop[256], ncc[256];
     
     char *cookie = NULL;
-    
 
     // Check pointer
     if ( NULL == nc ) return;
@@ -437,104 +432,25 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
             break;
             
         case MG_EV_POLL:    // Sent to each connection on each mg_mgr_poll() call
+            if ( ( cleanupTime - time(NULL) ) > 60 ) {
+                pObject->getWebServer()->websrv_expire_sessions( nc, phm );
+                pObject->getWebServer()->websock_expire_sessions( nc );
+                pObject->getWebServer()->websrv_expire_rest_sessions( nc );
+                cleanupTime = time(NULL);
+            }
             break;
             
         case MG_EV_CLOSE:   // Connection is closed. NULL 
+            if ( is_websocket( nc ) ) {
+                //nc->connection_param = NULL;
+                pWebSockSession = websock_get_session( nc );
+                if ( NULL != pWebSockSession ) {
+                    pWebSockSession->lastActiveTime  = 0;   // Mark as staled
+                    pObject->getWebServer()->websock_expire_sessions( nc );
+                }
+            }
             break;
 
- /*       
-        case MG_AUTH:
-            
-            // http://en.wikipedia.org/wiki/Digest_access_authentication
-            if (nc->is_websocket) {
-                return MG_TRUE;     // Always accept websocket connections
-            }
-            
-            // Validate REST interface user.
-            if ( 0 == strncmp(phm->uri.p, "/vscp/rest", 10 ) ) {
-                return MG_TRUE;	 // Always accept websocket connections
-            }
-
-            // Check if a session is available. If so everything is OK.
-            if ( NULL != ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( nc ) ) ) return MG_TRUE;
-
-            if ( NULL == ( hdr = mg_get_http_header( nc, "Authorization") ) ||
-                                ( vscp_strncasecmp( hdr, "Digest ", 7 ) != 0 ) ) {
-                return MG_FALSE;
-            }
-
-            if (!mg_parse_header(hdr, "username", user, sizeof(user))) return MG_FALSE;
-            if (!mg_parse_header(hdr, "cnonce", cnonce, sizeof(cnonce))) return MG_FALSE;
-            if (!mg_parse_header(hdr, "response", resp, sizeof(resp))) return MG_FALSE;
-            if (!mg_parse_header(hdr, "uri", uri, sizeof(uri))) return MG_FALSE;
-            if (!mg_parse_header(hdr, "qop", qop, sizeof(qop))) return MG_FALSE;
-            if (!mg_parse_header(hdr, "nc", nc, sizeof(nc))) return MG_FALSE;
-            if (!mg_parse_header(hdr, "nonce", nonce, sizeof(nonce))) return MG_FALSE;
-
-            if ( !pObject->m_bDisableSecurityWebServer ) {
-
-                // Check if user is valid
-                pUserItem = pObject->m_userList.getUser( wxString::FromAscii( user ) );
-                if ( NULL == pUserItem ) return MG_FALSE;
-
-                // Check if remote ip is valid
-                pObject->m_mutexUserList.Lock();
-                bValidHost = pUserItem->isAllowedToConnect( wxString::FromAscii( inet_ntoa( nc->sa.sin.sin_addr ) ) );
-                pObject->m_mutexUserList.Unlock();
-                if ( !bValidHost ) {
-                    // Host wrong
-                    strErr =
-                        wxString::Format( _( "[Webserver Client] Host [%s] NOT allowed to connect. User [%s]\n" ),
-                        wxString::FromAscii( ( const char * )inet_ntoa( nc->sa.sin.sin_addr ) ).wx_str(),
-                        pUserItem->m_user.wx_str() );
-                    pObject->logMsg( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
-                    return MG_FALSE;
-                }
-
-                // Check digest
-                if ( MG_TRUE !=
-                     pObject->getWebServer()->websrv_check_password( nc->request_method,
-                                                                        ( const char * )pUserItem->m_md5Password.mbc_str(),
-                                                                        uri, 
-                                                                        nonce, 
-                                                                        nc, 
-                                                                        cnonce, 
-                                                                        qop, 
-                                                                        resp ) ) {
-                    // Username/password wrong
-                    strErr =
-                        wxString::Format( _( "[Webserver Client] Host [%s] User [%s] NOT allowed to connect.\n" ),
-                        wxString::FromAscii( ( const char * )inet_ntoa( nc->sa.sin.sin_addr ) ).wx_str(),
-                        pUserItem->m_user.wx_str() );
-                    pObject->logMsg( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
-                    return MG_FALSE;
-                }
-
-            }
-
-#if 0
-            mg_parse_header( hdr, "cookie", cookie, sizeof( cookie ) );
-            if ( cookie == NULL || sscanf( cookie, "uri=%99s", uri ) != 1 ) {
-                ( void )strcpy( uri, "/" );
-            }
-            // Set allow=yes cookie, which is expected by authorize() 
-            mg_printf( nc, "HTTP/1.1 301 Moved Permanently\r\n"
-                       "Location: %s\r\n"
-                       "Set-Cookie: allow=yes;\r\n\r\n", uri );
-#endif                       
-*/ 
-/*
-            pObject->getWebServer()->websrv_add_session_cookie( nc, user );
-
-            // Valid credentials
-            strErr = wxString::Format( _("[Webserver Client] Host [%s] User [%s] allowed to connect.\n"), 
-                                            wxString::FromAscii( (const char *)inet_ntoa( nc->sa.sin.sin_addr ) ).wx_str(), 
-                                            pUserItem->m_user.wx_str() );
-            
-            pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY ); 
-            
-            return MG_TRUE;
-*/
         case MG_EV_HTTP_REQUEST:
         
             // Don't authorize here for rest calls
@@ -558,160 +474,108 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
                 return;
             }
 
-            if ( 0 /* nc->is_websocket */ ) { // TODO
-                // pObject->getWebServer()->websrv_websocket_message( nc ); // TODO
-            }
-            else {
-
-                // Log access
-                strErr = 
-                wxString::Format( _("Webserver: Host=[%s] - req=[%s] query=[%s] method=[%s] \n"), 
+            // Log access
+            strErr = 
+            wxString::Format( _("Webserver: Host=[%s] - req=[%s] query=[%s] method=[%s] \n"), 
                                     wxString::FromAscii((const char *)inet_ntoa( nc->sa.sin.sin_addr ) ).wx_str(),
                                     wxString::FromAscii((const char *)phm->uri.p).wx_str(), 
                                     wxString::FromAscii((const char *)phm->query_string.p).wx_str(), 
                                     wxString::FromAscii((const char *)phm->method.p).wx_str() );
-                pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_ACCESS );
+            pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_ACCESS );
 
-                char uri[ 2048 ];
-                memset( uri, 0, sizeof(uri) );
-                strncpy( uri, phm->uri.p, phm->uri.len );
+            char uri[ 2048 ];
+            memset( uri, 0, sizeof(uri) );
+            strncpy( uri, phm->uri.p, phm->uri.len );
                 
-                if ( ( 0 == strcmp( uri, "/vscp" ) ) || ( 0 == strcmp( uri, "/vscp/" ) ) ) {
-                    //if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( nc ) ) ) return MG_FALSE;  
-                    
-                    pObject->getWebServer()->websrv_mainpage( nc, phm );
-                }
-                else if ( 0 == strcmp( uri, "/test") ) {
-                    //if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( nc ) ) ) return MG_FALSE;
-                    mg_printf( nc, "HTTP/1.1 200 OK\r\n"
+            if ( ( 0 == strcmp( uri, "/vscp" ) ) || ( 0 == strcmp( uri, "/vscp/" ) ) ) {
+                pObject->getWebServer()->websrv_mainpage( nc, phm );
+            }
+            else if ( 0 == strcmp( uri, "/test") ) {
+                mg_printf( nc, "HTTP/1.1 200 OK\r\n"
                                         "Transfer-Encoding: chunked\r\n"
                                         "Content-Type: text/html; charset=utf-8\r\n"
-                                        "Cache-Control: max-age=0,  post-check=0, pre-check=0, no-store, no-cache, must-revalidate\r\n\r\n");
-                    mg_printf_http_chunk( nc, "%s", html_form );
-                    mg_send_http_chunk( nc, "", 0); // Tell the client we're finished
-                }
-                else if ( 0 == strcmp( uri, "/vscp/interfaces") ) {
-                    //if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( nc ) ) ) return MG_FALSE;
-                    
-                    pObject->getWebServer()->websrv_interfaces( nc, phm );
-                }
-                else if ( 0 == strcmp( uri, "/vscp/dm") ) {
-                    //if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( nc ) ) ) return MG_FALSE;
-                    
-                    pObject->getWebServer()->websrv_dmlist( nc, phm );
-                }
-                else if ( 0 == strcmp( uri, "/vscp/dmedit") ) {
-                    //if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( nc ) ) ) return MG_FALSE;
-                    
-                    pObject->getWebServer()->websrv_dmedit( nc, phm );
-                }
-                else if ( 0 == strcmp( uri, "/vscp/dmpost") ) {
-                    //if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( nc ) ) ) return MG_FALSE;
-                    
-                    pObject->getWebServer()->websrv_dmpost( nc, phm );
-                }
-                else if ( 0 == strcmp( uri, "/vscp/dmdelete") ) {
-                    //if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( nc ) ) ) return MG_FALSE;
-                    
-                    pObject->getWebServer()->websrv_dmdelete( nc, phm );
-                }
-                else if ( 0 == strcmp( uri, "/vscp/variables") ) {
-                    //if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( nc ) ) ) return MG_FALSE;
-                    
-                    pObject->getWebServer()->websrv_variables_list( nc, phm );
-                }
-                else if ( 0 == strcmp( uri, "/vscp/varedit") ) {
-                    //if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( nc ) ) ) return MG_FALSE;
-                    
-                    pObject->getWebServer()->websrv_variables_edit( nc, phm );
-                }
-                else if ( 0 == strcmp( uri, "/vscp/varpost") ) {
-                    //if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( nc ) ) ) return MG_FALSE;
-                    
-                    pObject->getWebServer()->websrv_variables_post( nc, phm );
-                }
-                else if ( 0 == strcmp( uri, "/vscp/vardelete") ) {
-                    //if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( nc ) ) ) return MG_FALSE;
-                    
-                    pObject->getWebServer()->websrv_variables_delete( nc, phm );
-                }
-                else if ( 0 == strcmp( uri, "/vscp/varnew") ) {
-                    //if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( nc ) ) ) return MG_FALSE;
-                    
-                    pObject->getWebServer()->websrv_variables_new( nc, phm );
-                }
-                else if ( 0 == strcmp( uri, "/vscp/discovery") ) {
-                    //if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( nc ) ) ) return MG_FALSE;
-                    
-                    pObject->getWebServer()->websrv_discovery( nc, phm );
-                }
-                else if ( 0 == strcmp( uri, "/vscp/session") ) {
-                    //if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( nc ) ) ) return MG_FALSE;
-                    
-                    pObject->getWebServer()->websrv_session( nc, phm );
-                }
-                else if ( 0 == strcmp( uri, "/vscp/configure") ) {
-                    //if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( nc ) ) ) return MG_FALSE;
-                    
-                    pObject->getWebServer()->websrv_configure( nc, phm );
-                }
-                else if ( 0 == strcmp( uri, "/vscp/bootload") ) {
-                    //if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( nc ) ) ) return MG_FALSE;
-                    
-                    pObject->getWebServer()->websrv_bootload( nc, phm );
-                }
-                else if ( 0 == strncmp( uri, "/vscp/log/general",17) ) {
-                    //if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( nc ) ) ) return MG_FALSE;
-                    wxString header = _("Log File 'General'");
-                    pObject->getWebServer()->websrv_listFile( nc, 
+                                        "Cache-Control: max-age=0,  post-check=0, pre-check=0, no-store, no-cache, must-revalidate\r\n\r\nTEST!");
+                mg_printf_http_chunk( nc, "%s", html_form );
+                mg_send_http_chunk( nc, "", 0); // Tell the client we're finished
+            }
+            else if ( 0 == strcmp( uri, "/vscp/interfaces") ) {
+                pObject->getWebServer()->websrv_interfaces( nc, phm );
+            }
+            else if ( 0 == strcmp( uri, "/vscp/dm") ) {
+                pObject->getWebServer()->websrv_dmlist( nc, phm );
+            }
+            else if ( 0 == strcmp( uri, "/vscp/dmedit") ) {
+                pObject->getWebServer()->websrv_dmedit( nc, phm );
+            }
+            else if ( 0 == strcmp( uri, "/vscp/dmpost") ) {
+                pObject->getWebServer()->websrv_dmpost( nc, phm );
+            }
+            else if ( 0 == strcmp( uri, "/vscp/dmdelete") ) {
+                pObject->getWebServer()->websrv_dmdelete( nc, phm );
+            }
+            else if ( 0 == strcmp( uri, "/vscp/variables") ) {
+                pObject->getWebServer()->websrv_variables_list( nc, phm );
+            }
+            else if ( 0 == strcmp( uri, "/vscp/varedit") ) {
+                pObject->getWebServer()->websrv_variables_edit( nc, phm );
+            }
+            else if ( 0 == strcmp( uri, "/vscp/varpost") ) {
+                pObject->getWebServer()->websrv_variables_post( nc, phm );
+            }
+            else if ( 0 == strcmp( uri, "/vscp/vardelete") ) {
+                pObject->getWebServer()->websrv_variables_delete( nc, phm );
+            }
+            else if ( 0 == strcmp( uri, "/vscp/varnew") ) {
+                pObject->getWebServer()->websrv_variables_new( nc, phm );
+            }
+            else if ( 0 == strcmp( uri, "/vscp/discovery") ) {
+                pObject->getWebServer()->websrv_discovery( nc, phm );
+            }
+            else if ( 0 == strcmp( uri, "/vscp/session") ) {
+                pObject->getWebServer()->websrv_session( nc, phm );
+            }
+            else if ( 0 == strcmp( uri, "/vscp/configure") ) {
+                pObject->getWebServer()->websrv_configure( nc, phm );
+            }
+            else if ( 0 == strcmp( uri, "/vscp/bootload") ) {
+                pObject->getWebServer()->websrv_bootload( nc, phm );
+            }
+            else if ( 0 == strncmp( uri, "/vscp/log/general",17) ) {
+                wxString header = _("Log File 'General'");
+                pObject->getWebServer()->websrv_listFile( nc, 
                                                             pObject->m_logGeneralFileName, 
                                                             header );
-                }
-                else if ( 0 == strncmp( uri, "/vscp/log/security",18) ) {   
-                    //if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( nc ) ) ) return MG_FALSE;
-                    wxString header = _("Log File 'Security'");
-                    pObject->getWebServer()->websrv_listFile( nc, 
+            }
+            else if ( 0 == strncmp( uri, "/vscp/log/security",18) ) {   
+                wxString header = _("Log File 'Security'");
+                pObject->getWebServer()->websrv_listFile( nc, 
                                                             pObject->m_logSecurityFileName, 
                                                             header );
-                }
-                else if ( 0 == strncmp( uri, "/vscp/log/access",16) ) {
-                    //if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( nc ) ) ) return MG_FALSE;
-                    wxString header = _("Log File 'Security'");
-                    pObject->getWebServer()->websrv_listFile( nc, 
+            }
+            else if ( 0 == strncmp( uri, "/vscp/log/access",16) ) {
+                wxString header = _("Log File 'Security'");
+                pObject->getWebServer()->websrv_listFile( nc, 
                                                             pObject->m_logAccessFileName, 
                                                             header );
-                }
-                else if ( 0 == strncmp( uri, "/vscp/log/dm",12) ) {
-                    //if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( nc ) ) ) return MG_FALSE;
-                    wxString header = _("Log File 'Decision Matrix'");
-                    pObject->getWebServer()->websrv_listFile( nc, 
+            }
+            else if ( 0 == strncmp( uri, "/vscp/log/dm",12) ) {
+                wxString header = _("Log File 'Decision Matrix'");
+                pObject->getWebServer()->websrv_listFile( nc, 
                                                             pObject->m_dm.m_logFileName, 
                                                             header );
-                }
-                else if ( 0 == strncmp( uri, "/vscp/table",12) ) {
-                    //if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( nc ) ) ) return MG_FALSE;
-                    pObject->getWebServer()->websrv_table( nc, phm );
-                }
-
-
-                else if ( 0 == strncmp( uri, "/vscp/tablelist",12) ) {
-                    //if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( nc ) ) ) return MG_FALSE;
-                    pObject->getWebServer()->websrv_tablelist( nc, phm );
-                }
-                
-                else if ( 0 == strncmp( uri, "/vscp/rest",10) ) {
-                    pObject->getWebServer()->websrv_restapi( nc, phm );
-                }
-                /*
-                else {
-                    wxString path = pObject->m_pathRoot + wxString::FromAscii( phm->uri.p );
-                    mg_send_file( nc, "index.html" );
-                    return MG_TRUE;
-                }*/
-                else {
-                    // Server standard page
-                    mg_serve_http( nc, phm, s_http_server_opts );
-                }
+            }
+            else if ( 0 == strncmp( uri, "/vscp/table",12) ) {
+                pObject->getWebServer()->websrv_table( nc, phm );
+            }
+            else if ( 0 == strncmp( uri, "/vscp/tablelist",12) ) {
+                pObject->getWebServer()->websrv_tablelist( nc, phm );
+            } 
+            else if ( 0 == strncmp( uri, "/vscp/rest",10) ) {
+                pObject->getWebServer()->websrv_restapi( nc, phm );
+            }
+            else {
+                // Server standard page
+                mg_serve_http( nc, phm, s_http_server_opts );
             }
             break;
 
@@ -789,40 +653,6 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
         case MG_EV_HTTP_REPLY:
             break;
 
-/* TODO
-        case MG_POLL:
-            if ( ( cleanupTime - time(NULL) ) > 60 ) {
-                pObject->getWebServer()->websrv_expire_sessions( nc );
-                pObject->getWebServer()->websock_expire_sessions( nc );
-                pObject->getWebServer()->websrv_expire_rest_sessions( nc );
-                cleanupTime = time(NULL);
-            }
-            break;
-*/            
-
-/* TODO
-        case MG_HTTP_ERROR:
-            {
-                pObject->logMsg( _("WEBServer: Error \r\n"), DAEMON_LOGMSG_DEBUG );
-                //mg_send_status( nc, 304);
-                //mg_send_header(nc, "Content-Type", "text/html");
-            }
-            break;
-*/
-/* TODO
-        case MG_CLOSE:
-            //if ( nc->is_websocket ) {
-                //	free( nc->connection_param );
-                nc->connection_param = NULL;
-                pWebSockSession = websock_get_session( nc );
-                if ( NULL != pWebSockSession ) {
-                    pWebSockSession->lastActiveTime  = 0;	// Mark as staled
-                    pObject->getWebServer()->websock_expire_sessions( nc );
-                }
-            //}
-            break;
-*/
-
         default: 
             break;
     }
@@ -867,6 +697,23 @@ void *VSCPWebServerThread::Entry()
     nc = mg_bind( &mgr, 
                     m_pCtrlObject->m_portWebServer.mbc_str(), 
                     VSCPWebServerThread::websrv_event_handler );
+        
+    // Unable to bind to port
+    if ( NULL == nc ) {
+#ifndef WIN32
+        syslog( LOG_ERR, 
+                "Webserver: Could not use port %s (%s). Terminating\n",
+                (const char *)m_pCtrlObject->m_portWebServer.mbc_str(),
+                strerror( errno ) );
+#endif
+        wxString strErr = 
+                 wxString::Format( _("Webserver: Could not use port %s (%s). Terminating\n"), 
+                                        (const char *)m_pCtrlObject->m_portWebServer.mbc_str(),
+                                        strerror( errno ) );
+                m_pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
+
+        return NULL;
+    }
         
     // Set up HTTP server parameters
     mg_set_protocol_http_websocket( nc );
@@ -1142,22 +989,11 @@ VSCPWebServerThread::websrv_add_session_cookie( struct mg_connection *nc,
                 (unsigned int)rand(), 
                 1337 );
 
-    //Cmd5 md5( (unsigned char *)buf );
-    //strcpy( ret->m_sid, md5.getDigest() );
-    char digest[16];
-    do_md5( digest, buf, strlen( buf ), NULL );
+    char digest[33];
+    memset( digest, 0, sizeof( digest ) ); 
+    vscp_md5( digest, buf, strlen( buf ), NULL );
     strcpy( ret->m_sid, (const char *)digest );
-#if 0    
-    sprintf( buf, "session=%s; max-age=3600; http-only;", ret->m_sid );
-    mg_send_header( nc, "Set-Cookie", buf );
-    
-    sprintf( buf, "user=%s;", pUser );
-    mg_send_header( nc, "Set-Cookie", buf );
 
-    strcpy( buf, "original_url=/; max-age=0;" );
-    mg_send_header( nc, "Set-Cookie", buf );
-#endif    
-#if 1
     char uri[2048];
     memset( uri, 0, sizeof(uri) );
     strncpy( uri, hm->uri.p, hm->uri.len );
@@ -1170,7 +1006,6 @@ VSCPWebServerThread::websrv_add_session_cookie( struct mg_connection *nc,
                ret->m_sid, 
                pUser,
                uri, uri );
-#endif
     
     ret->m_pUserItem = pObject->m_userList.getUser( wxString::FromAscii( pUser ) );
     
@@ -1287,12 +1122,12 @@ VSCPWebServerThread::websrv_check_password( const char *method,
     }
 #endif
 
-    do_md5( ha2, 
+    vscp_md5( ha2, 
                 method, strlen(method), 
                 ":", 1, 
                 uri, strlen(uri), 
                 NULL);
-    do_md5( expected_response, 
+    vscp_md5( expected_response, 
                 ha1, strlen(ha1),
                 ":", 1,
                 nonce, strlen(nonce),
@@ -1306,28 +1141,25 @@ VSCPWebServerThread::websrv_check_password( const char *method,
                 ha2, strlen(ha2),
                 NULL );
 
-    return ( vscp_strcasecmp( response, expected_response ) == 0 ) ? MG_TRUE : MG_FALSE;
+    return ( vscp_strcasecmp( response, expected_response ) == 0 ) ? TRUE : FALSE;
 
 }
-
-
-
-
-
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // websrv_listFile
 //
 
-int VSCPWebServerThread::websrv_listFile( struct mg_connection *nc, 
+void VSCPWebServerThread::websrv_listFile( struct mg_connection *nc, 
                                             wxFileName& logfile, 
                                             wxString& textHeader )
 {
     mg_printf( nc, "HTTP/1.1 200 OK\r\n"
                         "Transfer-Encoding: chunked\r\n"
                         "Content-Type: text/html; charset=utf-8\r\n"
-                        "Cache-Control: max-age=0,  post-check=0, pre-check=0, no-store, no-cache, must-revalidate\r\n\r\n");
+                        "Cache-Control: max-age=0,  "
+                        "post-check=0, pre-check=0, "
+                        "no-store, no-cache, must-revalidate\r\n\r\n");
 
     bool bFirstRow = false;
     wxString buildPage;
@@ -1393,32 +1225,8 @@ int VSCPWebServerThread::websrv_listFile( struct mg_connection *nc,
     mg_send_http_chunk( nc, buildPage.ToAscii(), buildPage.Length() );
     mg_send_http_chunk( nc, "", 0); // Tell the client we're finished
 
-    return MG_TRUE;
+    return;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-//                                WEB Server
-///////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
 
 
 
@@ -1426,17 +1234,17 @@ int VSCPWebServerThread::websrv_listFile( struct mg_connection *nc,
 // websrv_mainpage
 //
 
-int
+void
 VSCPWebServerThread::websrv_mainpage( struct mg_connection *nc,
                                         struct http_message *hm )
 {
     wxString strHost;
 
     // Check pointer
-    if (NULL == nc) return MG_FALSE;
+    if (NULL == nc) return;
 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return MG_FALSE;
+    if (NULL == pObject) return;
     
     // Get hostname
     mg_str *mgstr = mg_get_http_header( hm, "Host" ); // nc->local_ip; //_("http://localhost:8080");
@@ -1478,7 +1286,7 @@ VSCPWebServerThread::websrv_mainpage( struct mg_connection *nc,
     mg_send_http_chunk( nc, buildPage.ToAscii(), buildPage.Length() );
     mg_send_http_chunk( nc, "", 0 );
 
-    return MG_TRUE;	
+    return;	
 }
 
 
@@ -1486,15 +1294,15 @@ VSCPWebServerThread::websrv_mainpage( struct mg_connection *nc,
 // websrv_interfaces
 //
 
-int 
+void 
 VSCPWebServerThread::websrv_interfaces( struct mg_connection *nc,
                                             struct http_message *hm  )
 {
     // Check pointer
-    if (NULL == nc) return MG_FALSE;
+    if (NULL == nc) return;
 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return MG_FALSE;
+    if (NULL == pObject) return;
     
     mg_printf( nc, 
         "HTTP/1.1 200 OK\r\n"
@@ -1587,7 +1395,7 @@ VSCPWebServerThread::websrv_interfaces( struct mg_connection *nc,
     mg_send_http_chunk( nc, buildPage.ToAscii(), buildPage.Length() );
     mg_send_http_chunk( nc, "", 0 );
 
-    return MG_TRUE;	
+    return;
 }
 
 
@@ -1596,7 +1404,7 @@ VSCPWebServerThread::websrv_interfaces( struct mg_connection *nc,
 // websrv_dmlist
 //
 
-int
+void
 VSCPWebServerThread::websrv_dmlist( struct mg_connection *nc,
                                         struct http_message *hm  )
 {
@@ -1604,10 +1412,10 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *nc,
     VSCPInformation vscpinfo;
 
     // Check pointer
-    if (NULL == nc) return MG_FALSE;
+    if (NULL == nc) return;
 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return MG_FALSE;
+    if (NULL == pObject) return;
         
     // light
     bool bLight = false;
@@ -1920,14 +1728,14 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *nc,
     mg_send_http_chunk( nc, buildPage.ToAscii(), buildPage.Length() );
     mg_send_http_chunk( nc, "", 0 );
 
-    return MG_TRUE;	
+    return;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // websrv_dmedit
 //
 
-int 
+void 
 VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
                                         struct http_message *hm  )
 {
@@ -1937,10 +1745,10 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
     dmElement *pElement = NULL;
 
     // Check pointer
-    if (NULL == nc) return MG_FALSE;
+    if (NULL == nc) return;
 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return MG_FALSE;
+    if (NULL == pObject) return;
 
     // id
     long id = -1;
@@ -2558,7 +2366,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
     mg_send_http_chunk( nc, buildPage.ToAscii(), buildPage.Length() );
     mg_send_http_chunk( nc, "", 0 );
 
-    return MG_TRUE;	
+    return;
 }
 
 
@@ -2566,7 +2374,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
 // websrv_dmpost
 //
 
-int 
+void 
 VSCPWebServerThread::websrv_dmpost( struct mg_connection *nc,
                                         struct http_message *hm  )
 {
@@ -2576,10 +2384,10 @@ VSCPWebServerThread::websrv_dmpost( struct mg_connection *nc,
     dmElement *pElement = NULL;
 
     // Check pointer
-    if (NULL == nc) return MG_FALSE;
+    if (NULL == nc) return;
 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return MG_FALSE;
+    if (NULL == pObject) return;
     
     // id
     long id = -1;
@@ -2932,7 +2740,7 @@ VSCPWebServerThread::websrv_dmpost( struct mg_connection *nc,
     mg_send_http_chunk( nc, buildPage.ToAscii(), buildPage.Length() );
     mg_send_http_chunk( nc, "", 0 );
 
-    return MG_TRUE;	
+    return;	
 }
 
 
@@ -2940,7 +2748,7 @@ VSCPWebServerThread::websrv_dmpost( struct mg_connection *nc,
 // websrv_dmdelete
 //
 
-int 
+void 
 VSCPWebServerThread::websrv_dmdelete( struct mg_connection *nc,
                                         struct http_message *hm  )
 {
@@ -2949,10 +2757,10 @@ VSCPWebServerThread::websrv_dmdelete( struct mg_connection *nc,
     VSCPInformation vscpinfo;
 
     // Check pointer
-    if (NULL == nc) return MG_FALSE;
+    if (NULL == nc) return;
 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return MG_FALSE;
+    if (NULL == pObject) return;
    
     // id
     long id = -1;
@@ -3011,7 +2819,7 @@ VSCPWebServerThread::websrv_dmdelete( struct mg_connection *nc,
     mg_send_http_chunk( nc, buildPage.ToAscii(), buildPage.Length() );
     mg_send_http_chunk( nc, "", 0 );
     
-    return MG_TRUE;	
+    return;
 }
 
 
@@ -3019,7 +2827,7 @@ VSCPWebServerThread::websrv_dmdelete( struct mg_connection *nc,
 // websrv_variables_list
 //
 
-int
+void
 VSCPWebServerThread::websrv_variables_list( struct mg_connection *nc,
                                         struct http_message *hm  )
 {
@@ -3028,10 +2836,10 @@ VSCPWebServerThread::websrv_variables_list( struct mg_connection *nc,
     //unsigned long upperLimit = 50;
 
     // Check pointer
-    if (NULL == nc) return MG_FALSE;
+    if (NULL == nc) return;
 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return MG_FALSE;
+    if (NULL == pObject) return;
               
     // From
     long nFrom = 0;
@@ -3282,14 +3090,14 @@ VSCPWebServerThread::websrv_variables_list( struct mg_connection *nc,
     mg_send_http_chunk( nc, "", 0 );
     
 
-    return MG_TRUE;	
+    return;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // websrv_variables_edit
 //
 
-int
+void
 VSCPWebServerThread::websrv_variables_edit( struct mg_connection *nc,
                                         struct http_message *hm  )
 {
@@ -3299,10 +3107,10 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *nc,
     CVSCPVariable *pVariable = NULL;
 
     // Check pointer
-    if (NULL == nc) return MG_FALSE;
+    if (NULL == nc) return;
 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return MG_FALSE;
+    if (NULL == pObject) return;
         
     // id
     long id = -1;
@@ -3811,7 +3619,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *nc,
     mg_send_http_chunk( nc, buildPage.ToAscii(), buildPage.Length() );
     mg_send_http_chunk( nc, "", 0 );
 
-    return MG_TRUE;	
+    return;
 }
 
 
@@ -3819,7 +3627,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *nc,
 // websrv_variables_post
 //
 
-int
+void
 VSCPWebServerThread::websrv_variables_post( struct mg_connection *nc,
                                         struct http_message *hm  )
 {
@@ -3829,10 +3637,10 @@ VSCPWebServerThread::websrv_variables_post( struct mg_connection *nc,
     CVSCPVariable *pVariable = NULL;
     
     // Check pointer
-    if (NULL == nc) return MG_FALSE;
+    if (NULL == nc) return;
 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return MG_FALSE;
+    if (NULL == pObject) return;
 
     // id
     long id = -1;
@@ -4117,7 +3925,7 @@ VSCPWebServerThread::websrv_variables_post( struct mg_connection *nc,
     mg_send_http_chunk( nc, buildPage.ToAscii(), buildPage.Length() );
     mg_send_http_chunk( nc, "", 0 );
 
-    return MG_TRUE;	
+    return;
 }
 
 
@@ -4125,7 +3933,7 @@ VSCPWebServerThread::websrv_variables_post( struct mg_connection *nc,
 // websrv_variables_new
 //
 
-int
+void
 VSCPWebServerThread::websrv_variables_new( struct mg_connection *nc,
                                         struct http_message *hm  )
 {
@@ -4134,10 +3942,10 @@ VSCPWebServerThread::websrv_variables_new( struct mg_connection *nc,
     VSCPInformation vscpinfo;
 
     // Check pointer
-    if (NULL == nc) return MG_FALSE;
+    if (NULL == nc) return;
 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return MG_FALSE;
+    if (NULL == pObject) return;
 
     // Count
     uint16_t nCount = 50;
@@ -4216,7 +4024,7 @@ VSCPWebServerThread::websrv_variables_new( struct mg_connection *nc,
     mg_send_http_chunk( nc, buildPage.ToAscii(), buildPage.Length() );
     mg_send_http_chunk( nc, "", 0 );
     
-    return MG_TRUE;	
+    return;
 }
 
 
@@ -4224,7 +4032,7 @@ VSCPWebServerThread::websrv_variables_new( struct mg_connection *nc,
 // websrv_variables_delete
 //
 
-int
+void
 VSCPWebServerThread::websrv_variables_delete( struct mg_connection *nc,
                                         struct http_message *hm  )
 {
@@ -4234,10 +4042,10 @@ VSCPWebServerThread::websrv_variables_delete( struct mg_connection *nc,
     CVSCPVariable *pVariable = NULL;
 
     // Check pointer
-    if (NULL == nc) return MG_FALSE;
+    if (NULL == nc) return;
 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return MG_FALSE;
+    if (NULL == pObject) return;
 
     // id
     long id = -1;
@@ -4298,7 +4106,7 @@ VSCPWebServerThread::websrv_variables_delete( struct mg_connection *nc,
     mg_send_http_chunk( nc, buildPage.ToAscii(), buildPage.Length() );
     mg_send_http_chunk( nc, "", 0 );
 
-    return MG_TRUE;	
+    return;
 }
 
 
@@ -4306,7 +4114,7 @@ VSCPWebServerThread::websrv_variables_delete( struct mg_connection *nc,
 // websrv_discovery
 //
 
-int
+void
 VSCPWebServerThread::websrv_discovery( struct mg_connection *nc,
                                         struct http_message *hm  )
 {
@@ -4315,10 +4123,10 @@ VSCPWebServerThread::websrv_discovery( struct mg_connection *nc,
     VSCPInformation vscpinfo;
 
     // Check pointer
-    if (NULL == nc) return MG_FALSE;
+    if (NULL == nc) return;
 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return MG_FALSE;
+    if (NULL == pObject) return;
     
     mg_printf( nc, 
         "HTTP/1.1 200 OK\r\n"
@@ -4344,7 +4152,7 @@ VSCPWebServerThread::websrv_discovery( struct mg_connection *nc,
     mg_send_http_chunk( nc, buildPage.ToAscii(), buildPage.Length() );
     mg_send_http_chunk( nc, "", 0 );
 
-    return MG_TRUE;	
+    return;
 }
 
 
@@ -4352,7 +4160,7 @@ VSCPWebServerThread::websrv_discovery( struct mg_connection *nc,
 // websrv_session
 //
 
-int
+void
 VSCPWebServerThread::websrv_session( struct mg_connection *nc,
                                         struct http_message *hm  )
 {
@@ -4361,10 +4169,10 @@ VSCPWebServerThread::websrv_session( struct mg_connection *nc,
     VSCPInformation vscpinfo;
 
     // Check pointer
-    if (NULL == nc) return MG_FALSE;
+    if (NULL == nc) return;
 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return MG_FALSE;
+    if (NULL == pObject) return;
     
     mg_printf( nc, 
         "HTTP/1.1 200 OK\r\n"
@@ -4392,7 +4200,7 @@ VSCPWebServerThread::websrv_session( struct mg_connection *nc,
     mg_send_http_chunk( nc, buildPage.ToAscii(), buildPage.Length() );
     mg_send_http_chunk( nc, "", 0 );
 
-    return MG_TRUE;	
+    return;
 }
 
 
@@ -4400,7 +4208,7 @@ VSCPWebServerThread::websrv_session( struct mg_connection *nc,
 // websrv_configure
 //
 
-int
+void
 VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
                                         struct http_message *hm  )
 {
@@ -4408,10 +4216,10 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     VSCPInformation vscpinfo;
 
     // Check pointer
-    if (NULL == nc) return MG_FALSE;
+    if (NULL == nc) return;
 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return MG_FALSE;
+    if (NULL == pObject) return;
     
     mg_printf( nc, 
         "HTTP/1.1 200 OK\r\n"
@@ -4456,7 +4264,7 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     
 
 #ifndef WIN32
-/*	
+/*
     buildPage += _("<div id=\"small\">");
     wxLinuxDistributionInfo info = wxGetLinuxDistributionInfo();
     buildPage += _("<span style=\"color: blue;\"><b>Linux distribution Info:</b></span><br>");
@@ -4999,7 +4807,7 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     mg_send_http_chunk( nc, buildPage.ToAscii(), buildPage.Length() );
     mg_send_http_chunk( nc, "", 0 );
 
-    return MG_TRUE;	
+    return;
 }
 
 
@@ -5008,7 +4816,7 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
 // websrv_bootload
 //
 
-int
+void
 VSCPWebServerThread::websrv_bootload( struct mg_connection *nc,
                                         struct http_message *hm  )
 {
@@ -5017,10 +4825,10 @@ VSCPWebServerThread::websrv_bootload( struct mg_connection *nc,
     VSCPInformation vscpinfo;
 
     // Check pointer
-    if (NULL == nc) return MG_FALSE;
+    if (NULL == nc) return;
 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return MG_FALSE;
+    if (NULL == pObject) return;
     
     mg_printf( nc, 
         "HTTP/1.1 200 OK\r\n"
@@ -5048,7 +4856,7 @@ VSCPWebServerThread::websrv_bootload( struct mg_connection *nc,
     mg_send_http_chunk( nc, buildPage.ToAscii(), buildPage.Length() );
     mg_send_http_chunk( nc, "", 0 );
 
-    return MG_TRUE;	
+    return;
 }
 
 
@@ -5056,7 +4864,7 @@ VSCPWebServerThread::websrv_bootload( struct mg_connection *nc,
 // websrv_table
 //
 
-int
+void
 VSCPWebServerThread::websrv_table( struct mg_connection *nc,
                                         struct http_message *hm  )
 {
@@ -5064,10 +4872,10 @@ VSCPWebServerThread::websrv_table( struct mg_connection *nc,
     VSCPInformation vscpinfo;
 
     // Check pointer
-    if (NULL == nc) return MG_FALSE;
+    if (NULL == nc) return;
 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return MG_FALSE;
+    if (NULL == pObject) return;
     
     mg_printf( nc, 
         "HTTP/1.1 200 OK\r\n"
@@ -5173,7 +4981,7 @@ VSCPWebServerThread::websrv_table( struct mg_connection *nc,
     mg_send_http_chunk( nc, buildPage.ToAscii(), buildPage.Length() );
     mg_send_http_chunk( nc, "", 0 );
 
-    return MG_TRUE;	
+    return;
 }
 
 
@@ -5182,7 +4990,7 @@ VSCPWebServerThread::websrv_table( struct mg_connection *nc,
 // websrv_tablelist
 //
 
-int
+void
 VSCPWebServerThread::websrv_tablelist( struct mg_connection *nc,
                                         struct http_message *hm  )
 {
@@ -5191,10 +4999,10 @@ VSCPWebServerThread::websrv_tablelist( struct mg_connection *nc,
     VSCPInformation vscpinfo;
 
     // Check pointer
-    if (NULL == nc) return MG_FALSE;
+    if (NULL == nc) return;
 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return MG_FALSE;
+    if (NULL == pObject) return;
 
     // From
     long nFrom = 0;
@@ -5339,5 +5147,5 @@ VSCPWebServerThread::websrv_tablelist( struct mg_connection *nc,
     mg_send_http_chunk( nc, buildPage.ToAscii(), buildPage.Length() );
     mg_send_http_chunk( nc, "", 0 );
 
-    return MG_TRUE;	
+    return;
 }

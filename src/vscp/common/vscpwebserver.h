@@ -54,7 +54,7 @@ public:
 
 
     /*! 
-        called when the thread exits - whether it terminates normally or is
+        Called when the thread exits - whether it terminates normally or is
         stopped with Delete() (but not when it is Kill()ed!)
     */
     virtual void OnExit();
@@ -69,11 +69,271 @@ public:
         @return Returns true on success false on failure.
      */
     bool readMimeTypes(wxString& path);
+    
+    
+    
+    
+    /////////////////////////////////////////////////
+    //                 WEB SERVER
+    /////////////////////////////////////////////////
+
+
+
+    /*!
+        Check web server password
+        @param method
+        @param ha1
+        @param uri
+        @param nonce
+        @param nc
+        @param cnonce
+        @param qop
+        @param reponse
+        @return FALSE on failure to validate user or TRUE on success
+    */
+    static int 
+    websrv_check_password( const char *method, 
+                                const char *ha1, 
+                                const char *uri,
+                                const char *nonce, 
+                                const char *nc, 
+                                const char *cnonce,
+                                const char *qop, 
+                                const char *response );
+
+    /*!
+        Return the session handle for this connection, or 
+        create one if this is a new user.
+    */
+    struct websrv_Session *
+    websrv_get_session( struct mg_connection *nc,
+                            struct http_message *hm );
+
+    /**
+     * Add header to response to set a session cookie.
+     *
+     * @param nc Webserver connection handle
+     * @param session session to use
+     * @param response response to modify
+     */
+    websrv_Session *
+    websrv_add_session_cookie( struct mg_connection *nc, 
+                                struct http_message *hm,
+                                const char * pUser );
+
+    /*!
+        Get/Create web session
+        @param session session to use
+        @return Pointer to session or NULL if failure to get or create session 
+    */
+    struct websrv_Session * 
+    websrv_GetCreateSession( struct mg_connection *nc,
+                                struct http_message *hm );
+    
+    /**
+        Clean up handles of sessions that have been idle for
+        too long.
+    */
+    void
+    websrv_expire_sessions( struct mg_connection *nc,
+                                struct http_message *hm );
+
+
+    /*!
+        Handle websocket message
+        @param nc Webserver connection handle
+        @return TRUE on success or FALSE on failure.
+    */
+    int 
+    websrv_websocket_message( struct mg_connection *nc,
+                                struct http_message *hm );
+    
+    /*!
+        Web server event handler
+        @param nc Webserver connection handle
+        @param ev Weberserver event
+        @return TRUE on success or FALSE on failure.
+    */
+    static void websrv_event_handler( struct mg_connection *nc, 
+                                        int ev, 
+                                        void *pUser );
+                                        
+                                        
+    //////////////////////////////////////////////////////////////////////////////
+    //                           ADMIN INTERFACE                                //
+    //////////////////////////////////////////////////////////////////////////////
+    
+
+    /*!
+        List text file content. Built to display logfiles
+        @param nc Webserver connection handle.
+        @param file File to display
+        @param textHeader Headtext to display
+    */
+    void websrv_listFile( struct mg_connection *nc, 
+                            wxFileName& logfile, 
+                            wxString& textHeader );
+
+
+    /*!
+        websrv_mainpage - Web server main page renderer.
+        @param nc Webserver connection handle.
+    */
+    void
+    websrv_mainpage( struct mg_connection *nc,
+                        struct http_message *hm );
+
+    /**
+     * websrv_interfaces -  that displays the available interfaces.
+     *
+     * @param nc Webserver connection handle.
+     */
+    void
+    websrv_interfaces( struct mg_connection *nc,
+                        struct http_message *hm );
+    
+    /**
+     * websrv_dmlist -  that displays the decision matrix list 
+     *
+     * @param nc Webserver connection handle.
+     */
+    void
+    websrv_dmlist( struct mg_connection *nc,
+                    struct http_message *hm );
+    
+    /**
+     * websrv_dmedit - edit of one decision matrix entry 
+     *
+     * @param nc Webserver connection handle.
+     */
+    void
+    websrv_dmedit( struct mg_connection *nc,
+                    struct http_message *hm );
+    
+    /**
+     * websrv_dmpost - post of one decision matrix entry 
+     *
+     * @param nc Webserver connection handle.
+     */
+    void 
+    websrv_dmpost( struct mg_connection *nc,
+                    struct http_message *hm );
+    
+    /**
+     * websrv_dmdelete - Delete DMe entries 
+     *
+     * @param nc Webserver connection handle.
+     */
+    void 
+    websrv_dmdelete( struct mg_connection *nc,
+                        struct http_message *hm );
+    
+    /**
+     * websrv_variables_list - that displays the variable list 
+     *
+     * @param nc Webserver connection handle.
+     */
+    void
+    websrv_variables_list( struct mg_connection *nc,
+                            struct http_message *hm );
+    
+    /**
+     * websrv_variables_edit -  edit of one variable entry 
+     *
+     * @param nc Webserver connection handle.
+     */
+    void
+    websrv_variables_edit( struct mg_connection *nc,
+                            struct http_message *hm );
+    
+    /**
+     * websrv_variables_post -  post of one variable entry 
+     *
+     * @param nc Webserver connection handle.
+     */
+    void 
+    websrv_variables_post( struct mg_connection *nc,
+                            struct http_message *hm );
+    
+   /**
+     * websrv_variables_new - New variable initial type selection state 
+     *
+     * @param nc Webserver connection handle.
+     */
+    void 
+    websrv_variables_new( struct mg_connection *nc,
+                            struct http_message *hm );
+    
+    /**
+     * websrv_variables_delete - Delete DMe entries 
+     *
+     * @param nc Webserver connection handle.
+     */
+    void 
+    websrv_variables_delete( struct mg_connection *nc,
+                                struct http_message *hm );
+
+    /**
+     * websrv_render_variables_delete - Discover nodes 
+     *
+     * @param nc Webserver connection handle.
+     */
+    void 
+    websrv_discovery( struct mg_connection *nc,
+                        struct http_message *hm );
+
+    /**
+     * websrv_session - Communication session
+     *
+     * @param nc Webserver connection handle.
+     */
+    void 
+    websrv_session( struct mg_connection *nc,
+                        struct http_message *hm );
+
+    /**
+     * websrv_configure - Server configuration
+     *
+     * @param nc Webserver connection handle.
+     */
+    void 
+    websrv_configure( struct mg_connection *nc,
+                        struct http_message *hm );
+
+    /**
+     * websrv_bootload - Device bootload
+     *
+     * @param nc Webserver connection handle.
+     */
+    void 
+    websrv_bootload( struct mg_connection *nc,
+                        struct http_message *hm );
+
+    /**
+     * websrv_table - View infor about defined tables
+     *
+     * @param nc Webserver connection handle.
+     */
+    void
+    websrv_table( struct mg_connection *nc,
+                    struct http_message *hm );
+
+
+    /**
+     * websrv_tablelist - List table
+     *
+     * @param nc Webserver connection handle.
+     */
+    void
+    websrv_tablelist( struct mg_connection *nc,
+                        struct http_message *hm );
+
 
 
     /////////////////////////////////////////////////
     //                  WEBSOCKETS
     /////////////////////////////////////////////////
+
 
 
     /*!
@@ -146,96 +406,11 @@ public:
     websock_post_incomingEvents( void );
 
 
-    
-    /////////////////////////////////////////////////
-    //                 WEB SERVER
-    /////////////////////////////////////////////////
-
-
-
-    /*!
-        Check web server password
-        @param method
-        @param ha1
-        @param uri
-        @param nonce
-        @param nc
-        @param cnonce
-        @param qop
-        @param reponse
-        @return MG_FALSE on failure to validate user or MG_TRUE on success
-    */
-    static int 
-    websrv_check_password( const char *method, 
-                                const char *ha1, 
-                                const char *uri,
-                                const char *nonce, 
-                                const char *nc, 
-                                const char *cnonce,
-                                const char *qop, 
-                                const char *response );
-
-    /*!
-        Return the session handle for this connection, or 
-        create one if this is a new user.
-    */
-    struct websrv_Session *
-    websrv_get_session( struct mg_connection *nc,
-                            struct http_message *hm );
-
-    /**
-     * Add header to response to set a session cookie.
-     *
-     * @param nc Webserver connection handle
-     * @param session session to use
-     * @param response response to modify
-     */
-    websrv_Session *
-    websrv_add_session_cookie( struct mg_connection *nc, 
-                                struct http_message *hm,
-                                const char * pUser );
-
-    /*!
-        Get/Create web session
-        @param session session to use
-        @return Pointer to session or NULL if failure to get or create session 
-    */
-    struct websrv_Session * 
-    websrv_GetCreateSession( struct mg_connection *nc,
-                                struct http_message *hm );
-    
-    /**
-        Clean up handles of sessions that have been idle for
-        too long.
-    */
-    void
-    websrv_expire_sessions( struct mg_connection *nc,
-                                struct http_message *hm );
-
-
-    /*!
-        Handle websocket message
-        @param nc Webserver connection handle
-        @return MG_TRUE on success or MG_FALSE on failure.
-    */
-    int 
-    websrv_websocket_message( struct mg_connection *nc,
-                                struct http_message *hm );
-    
-    /*!
-        Web server event handler
-        @param nc Webserver connection handle
-        @param ev Weberserver event
-        @return MG_TRUE on success or MG_FALSE on failure.
-    */
-    static void websrv_event_handler( struct mg_connection *nc, 
-                                        int ev, 
-                                        void *pUser );  
-
 
     //////////////////////////////////////////////////////////////////////////////
     //                           REST INTERFACE                                 //
     //////////////////////////////////////////////////////////////////////////////
+
 
 
     /*!
@@ -266,21 +441,19 @@ public:
     /**
         websrv_restapi - REST interface main handler
         @param nc Webserver connection handle.
-        @return MG_TRUE on success or MG_FALSE on failure.
     */
-    int
+    void
     websrv_restapi( struct mg_connection *nc,
                         struct http_message *hm );
 
     /*!
-        webserv_rest_doStatus - Get session ststua
+        webserv_rest_doStatus - Get session status
         @param nc Webserver connection handle.
         @param pSession Active session or NULL if no session active
         @param format The format output should be formated in, plain, 
          *      csv, xml, json, jsonp
-        @return MG_TRUE on success or MG_FALSE on failure.
     */
-    int
+    void
     webserv_rest_doStatus( struct mg_connection *nc, 
                             struct websrv_rest_session *pSession, 
                             int format );
@@ -291,9 +464,8 @@ public:
         @param pSession Active session or NULL if no session active
         @param format The format output should be formated in, plain, csv, 
          *          xml, json, jsonp
-        @return MG_TRUE on success or MG_FALSE on failure.
     */
-    int
+    void
     webserv_rest_doOpen( struct mg_connection *nc, 
                             struct websrv_rest_session *pSession, 
                             CUserItem *pUser, int format );
@@ -305,9 +477,8 @@ public:
         @param pSession Active session or NULL if no session active
         @param format The format output should be formated in, plain, csv, 
                 xml, json, jsonp
-        @return MG_TRUE on success or MG_FALSE on failure.
     */
-    int
+    void
     webserv_rest_doClose( struct mg_connection *nc, 
                             struct websrv_rest_session *pSession, 
                             int format );
@@ -321,9 +492,8 @@ public:
                     xml, json, jsonp
         @param pEvent Pointer to VSCP event to send. The framework handels 
                 deletion of this pointer.
-        @return MG_TRUE on success or MG_FALSE on failure.
     */
-    int
+    void
     webserv_rest_doSendEvent( struct mg_connection *nc, 
                                             struct websrv_rest_session *pSession, 
                                             int format,
@@ -336,9 +506,8 @@ public:
         @param format The format output should be formated in, plain, csv, 
                 xml, json, jsonp
         @param count Number of events to read.
-        @return MG_TRUE on success or MG_FALSE on failure.
     */
-    int
+    void
     webserv_rest_doReceiveEvent( struct mg_connection *nc, 
                                             struct websrv_rest_session *pSession, 
                                             int format,
@@ -351,9 +520,8 @@ public:
         @param format The format output should be formated in, plain, csv, 
                     xml, json, jsonp
         @param vscpfilter Filter to set.
-        @return MG_TRUE on success or MG_FALSE on failure.
     */
-    int
+    void
     webserv_rest_doSetFilter( struct mg_connection *nc, 
                                             struct websrv_rest_session *pSession, 
                                             int format,
@@ -364,9 +532,8 @@ public:
         @param nc Webserver connection handle.
         @param pSession Active session or NULL if no session active
         @param format The format output should be formated in, plain, csv, xml, json, jsonp
-        @return MG_TRUE on success or MG_FALSE on failure.
     */
-    int
+    void
     webserv_rest_doClearQueue( struct mg_connection *nc, 
                                     struct websrv_rest_session *pSession, 
                                     int format );
@@ -378,9 +545,8 @@ public:
         @param format The format output should be formated in, plain, csv, 
                 xml, json, jsonp
         @param strVariableName Name of variable to read
-        @return MG_TRUE on success or MG_FALSE on failure.
     */
-    int
+    void
     webserv_rest_doReadVariable( struct mg_connection *nc, 
                                     struct websrv_rest_session *pSession, 
                                     int format,
@@ -394,9 +560,8 @@ public:
           csv, xml, json, jsonp
         @param strVariableName Name of variable to write new value to.
         @param strValue Value for variable variable
-        @return MG_TRUE on success or MG_FALSE on failure.
     */
-    int
+    void
     webserv_rest_doWriteVariable( struct mg_connection *nc, 
                                         struct websrv_rest_session *pSession, 
                                         int format,
@@ -415,9 +580,8 @@ public:
         @param strValue Value of variable to create
         @param strPersistent Should be set to "true" if variable should be 
            persistent
-        @return MG_TRUE on success or MG_FALSE on failure.
     */
-    int
+    void
     webserv_rest_doCreateVariable( struct mg_connection *nc, 
                                         struct websrv_rest_session *pSession, 
                                         int format,
@@ -440,9 +604,8 @@ public:
         @param strZone Zone to use
         @param strSubZone SubZone to use
         @param eventFormat Can be string or float
-        @return MG_TRUE on success or MG_FALSE on failure.
     */
-    int
+    void
     webserv_rest_doWriteMeasurement( struct mg_connection *nc, 
                                                 struct websrv_rest_session *pSession, 
                                                 int format,
@@ -477,9 +640,9 @@ public:
         @param name Name of table
         @param from Date/time from which data should be collected
         @param to Date/time to which data should be collected
-        @return MG_TRUE on success or MG_FALSE on failure.
+        @return TRUE on success or FALSE on failure.
     */
-    int
+    void
     webserv_rest_doGetTableData( struct mg_connection *nc, 
                                                 struct websrv_rest_session *pSession, 
                                                 int format,
@@ -493,9 +656,9 @@ public:
         @param pSession Active session or NULL if no session active
         @param format The format output should be formated in, plain, csv, xml, json, jsonp
         @param strURL URL for MDF.
-        @return MG_TRUE on success or MG_FALSE on failure.
+        @return TRUE on success or FALSE on failure.
     */
-    int
+    void
     webserv_rest_doFetchMDF( struct mg_connection *nc,
                                 struct websrv_rest_session *pSession,
                                 int format,
@@ -526,191 +689,7 @@ public:
                                  int returncode );
     
 
-    //////////////////////////////////////////////////////////////////////////////
-    //                           ADMIN INTERFACE                                //
-    //////////////////////////////////////////////////////////////////////////////
-
-    /*!
-        List text file content. Built to display logfiles
-        @param nc Webserver connection handle.
-        @param file File to display
-        @param textHeader Headtext to display
-        @return MG_TRUE on success or MG_FALSE on failure.
-    */
-    int websrv_listFile( struct mg_connection *nc, 
-                            wxFileName& logfile, 
-                            wxString& textHeader );
-
-
-    /*!
-        websrv_mainpage - Web server main page renderer.
-        @param nc Webserver connection handle.
-        @return MG_TRUE on success or MG_FALSE on failure.
-    */
-    int
-    websrv_mainpage( struct mg_connection *nc,
-                        struct http_message *hm );
-
-    /**
-     * websrv_interfaces -  that displays the available interfaces.
-     *
-     * @param nc Webserver connection handle.
-     * @return MG_TRUE on success or MG_FALSE on failure.
-     */
-    int
-    websrv_interfaces( struct mg_connection *nc,
-                        struct http_message *hm );
     
-    /**
-     * websrv_dmlist -  that displays the decision matrix list 
-     *
-     * @param nc Webserver connection handle.
-     * @return MG_TRUE on success or MG_FALSE on failure.
-     */
-    int
-    websrv_dmlist( struct mg_connection *nc,
-                    struct http_message *hm );
-    
-    /**
-     * websrv_dmedit - edit of one decision matrix entry 
-     *
-     * @param nc Webserver connection handle.
-     * @return MG_TRUE on success or MG_FALSE on failure.
-     */
-    int
-    websrv_dmedit( struct mg_connection *nc,
-                    struct http_message *hm );
-    
-    /**
-     * websrv_dmpost - post of one decision matrix entry 
-     *
-     * @param nc Webserver connection handle.
-     * @return MG_TRUE on success or MG_FALSE on failure.
-     */
-    int 
-    websrv_dmpost( struct mg_connection *nc,
-                    struct http_message *hm );
-    
-    /**
-     * websrv_dmdelete - Delete DMe entries 
-     *
-     * @param nc Webserver connection handle.
-     * @return MG_TRUE on success or MG_FALSE on failure.
-     */
-    int 
-    websrv_dmdelete( struct mg_connection *nc,
-                        struct http_message *hm );
-    
-    /**
-     * websrv_variables_list - that displays the variable list 
-     *
-     * @param nc Webserver connection handle.
-     * @return MG_TRUE on success or MG_FALSE on failure.
-     */
-    int
-    websrv_variables_list( struct mg_connection *nc,
-                            struct http_message *hm );
-    
-    /**
-     * websrv_variables_edit -  edit of one variable entry 
-     *
-     * @param nc Webserver connection handle.
-     * @return MG_TRUE on success or MG_FALSE on failure.
-     */
-    int
-    websrv_variables_edit( struct mg_connection *nc,
-                            struct http_message *hm );
-    
-    /**
-     * websrv_variables_post -  post of one variable entry 
-     *
-     * @param nc Webserver connection handle.
-     * @return MG_TRUE on success or MG_FALSE on failure.
-     */
-    int 
-    websrv_variables_post( struct mg_connection *nc,
-                            struct http_message *hm );
-    
-   /**
-     * websrv_variables_new - New variable initial type selection state 
-     *
-     * @param nc Webserver connection handle.
-     * @return MG_TRUE on success or MG_FALSE on failure.
-     */
-    int 
-    websrv_variables_new( struct mg_connection *nc,
-                            struct http_message *hm );
-    
-    /**
-     * websrv_variables_delete - Delete DMe entries 
-     *
-     * @param nc Webserver connection handle.
-     * @return MG_TRUE on success or MG_FALSE on failure.
-     */
-    int 
-    websrv_variables_delete( struct mg_connection *nc,
-                                struct http_message *hm );
-
-    /**
-     * websrv_render_variables_delete - Discover nodes 
-     *
-     * @param nc Webserver connection handle.
-     * @return MG_TRUE on success or MG_FALSE on failure.
-     */
-    int 
-    websrv_discovery( struct mg_connection *nc,
-                        struct http_message *hm );
-
-    /**
-     * websrv_session - Communication session
-     *
-     * @param nc Webserver connection handle.
-     * @return MG_TRUE on success or MG_FALSE on failure.
-     */
-    int 
-    websrv_session( struct mg_connection *nc,
-                        struct http_message *hm );
-
-    /**
-     * websrv_configure - Server configuration
-     *
-     * @param nc Webserver connection handle.
-     * @return MG_TRUE on success or MG_FALSE on failure.
-     */
-    int 
-    websrv_configure( struct mg_connection *nc,
-                        struct http_message *hm );
-
-    /**
-     * websrv_bootload - Device bootload
-     *
-     * @param nc Webserver connection handle.
-     * @return MG_TRUE on success or MG_FALSE on failure.
-     */
-    int 
-    websrv_bootload( struct mg_connection *nc,
-                        struct http_message *hm );
-
-    /**
-     * websrv_table - View infor about defined tables
-     *
-     * @param nc Webserver connection handle.
-     * @return MG_TRUE on success or MG_FALSE on failure.
-     */
-    int
-    websrv_table( struct mg_connection *nc,
-                    struct http_message *hm );
-
-
-    /**
-     * websrv_tablelist - List table
-     *
-     * @param nc Webserver connection handle.
-     * @return MG_TRUE on success or MG_FALSE on failure.
-     */
-    int
-    websrv_tablelist( struct mg_connection *nc,
-                        struct http_message *hm );
 
 
 // --- Member variables ---

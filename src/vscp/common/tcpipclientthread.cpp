@@ -53,6 +53,9 @@
 
 //WX_DEFINE_LIST(TCPCLIENTS);
 
+// Prototypes
+char *vscp_md5(char *buf, ...);       // webserver
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // VSCPWebServerThread
@@ -1529,14 +1532,9 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn, CContr
     strncat( buf, ":", 1 );
     strncat( (char *)buf, strPassword.mbc_str(), strPassword.Length() );
     
-    //Cmd5 md5 ( (unsigned char *)buf );
-    unsigned char digest[16];
-    MD5_CTX md5;
-    //Cmd5 md5( (unsigned char *)buf );
-    MD5_Init( &md5 );
-    MD5_Update( &md5, (unsigned char *)buf, strlen( buf ) );
-    MD5_Final( digest,&md5 );
-    //if ( NULL == &digest ) return false; 
+    char digest[33];
+    memset( digest, 0, sizeof( digest ) ); 
+    vscp_md5( digest, buf, strlen( buf ), NULL );
     wxString md5Password = wxString( digest, wxConvUTF8 );
     m_pCtrlObject->m_mutexUserList.Lock();
 #if  0 
@@ -1555,7 +1553,7 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn, CContr
 #endif
         wxString strErr = 
             wxString::Format(_("[TCP/IP Client] User [%s][%s] not allowed to connect.\n"), 	
-            (const char *)pClientItem->m_UserName.c_str(), (const char *)strPassword.c_str() );
+            (const char *)pClientItem->m_UserName.mbc_str(), (const char *)strPassword.mbc_str() );
 
         pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
         mg_send( conn,  MSG_PASSWORD_ERROR, strlen ( MSG_PASSWORD_ERROR ) );

@@ -7,7 +7,7 @@
 //
 // This file is part of the VSCP (http://www.vscp.org)
 //
-// Copyright (C) 2000-2015 Ake Hedman, 
+// Copyright (C) 2000-2016 Ake Hedman, 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This file is distributed in the hope that it will be useful,
@@ -122,8 +122,6 @@
 #include "web_js.h"
 #include "web_template.h"
 
-#include <slre.h>
-#include <frozen.h>
 #include <mongoose.h>
 
 #include "canal_macro.h"
@@ -174,6 +172,9 @@ WORD wVersionRequested = MAKEWORD(1, 1);    // WSA functions
 WSADATA wsaData;                            // WSA functions
 
 #endif
+
+// Prototypes
+char *vscp_md5(char *buf, ...);       // webserver
 
 
 //////////////////////////////////////////////////////////////////////
@@ -574,11 +575,9 @@ bool CControlObject::init(wxString& strcfgfile)
     memset( buf, 0, sizeof( buf ) );
     strncpy( buf,(const char *)driverhash.mbc_str(), driverhash.Length() );
     
-    unsigned char digest[16];
-    MD5_CTX md5;
-    MD5_Init( &md5 );
-    MD5_Update( &md5, (unsigned char *)buf, strlen( buf ) );
-    MD5_Final( digest,&md5 );
+    char digest[33];
+    memset( digest, 0, sizeof( digest ) ); 
+    vscp_md5( digest, buf, strlen( buf ), NULL );
 
     m_userList.addUser( m_driverUsername,
                             digest,
@@ -1056,7 +1055,7 @@ bool CControlObject::startWebServerThread(void)
     /////////////////////////////////////////////////////////////////////////////
     // Run the WebServer server thread  
     /////////////////////////////////////////////////////////////////////////////
-    if (m_bWebServer) {
+    if ( m_bWebServer) {
         
         m_pwebServerThread = new VSCPWebServerThread;
 

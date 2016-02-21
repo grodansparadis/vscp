@@ -105,8 +105,7 @@
 #include "web_js.h"
 #include "web_template.h"
 
-#include <slre.h>
-#include <frozen.h>
+//#include <slre.h>
 #include <mongoose.h>
 
 #include <canal_macro.h>
@@ -148,8 +147,8 @@ extern struct websrv_Session *gp_websrv_sessions;
 extern struct websrv_rest_session *gp_websrv_rest_sessions;
 
 
-// Helpers from main file
-void webserv_util_make_chunk( char *obuf, const char *buf, int len );
+// Prototypes
+char *vscp_md5(char *buf, ...);       // webserver
 
 int webserv_url_decode( const char *src, int src_len, 
                             char *dst, int dst_len,
@@ -1758,8 +1757,9 @@ VSCPWebServerThread::websock_new_session( struct mg_connection *nc,
                 (unsigned int)rand(), 
                 1337 );
 
-    Cmd5 md5( (unsigned char *)buf );
-    strcpy( ret->m_sid, md5.getDigest() );
+    char digest[33];
+    memset( digest, 0, sizeof( digest ) ); 
+    vscp_md5( digest, buf, strlen( buf ), NULL );
     
     // Init
     strcpy( ret->m_key, pKey );             // Save key
