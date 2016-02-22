@@ -136,6 +136,9 @@ using namespace std;
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
+// Weberver
+extern struct mg_mgr gmgr;
+
 // Linked list of all active sessions. (webserv.h)
 extern struct websrv_Session *gp_websrv_sessions;
 
@@ -160,20 +163,10 @@ void webserv_util_sendheader( struct mg_connection *nc,
 // Linked list of websocket sessions
 static struct websock_session *gp_websock_sessions;                                        
                                         
-                                        
+                                    
 ///////////////////////////////////////////////////////////////////////////////
 //                               WEBSOCKET
 ///////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-
-
-
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1275,7 +1268,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
                                     WEBSOCK_ERROR_TABLE_ERROR_READING,
                                     WEBSOCK_STR_ERROR_TABLE_ERROR_READING );
                     wxString strErr = 
-                         wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), tblName.wx_str() );					
+                         wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), tblName.wx_str() );
                     pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
                     return;
                 }
@@ -1531,11 +1524,11 @@ VSCPWebServerThread::websrv_websocket_message( struct mg_connection *nc,
     // Copy data
     if ( wm->size ) memcpy( buf, wm->data, MIN(wm->size, sizeof( buf ) ) );
 
-    pSession = websock_get_session( nc, hm );
+    pSession = (struct websock_session *)nc->user_data;
     if (NULL == pSession) return false;
 
     // Keep connection alive
-    if ( wm->flags | WEBSOCKET_OP_PING ) {
+    /*if ( wm->flags | WEBSOCKET_OP_PING ) {
         mg_send_websocket_frame( nc, 
                                 WEBSOCKET_OP_PONG, 
                                 wm->data, 
@@ -1543,12 +1536,12 @@ VSCPWebServerThread::websrv_websocket_message( struct mg_connection *nc,
         return true;
     }
     else if ( wm->flags |WEBSOCKET_OP_PONG  ) {
-        /*mg_send_websocket_frame( nc, 
+        mg_send_websocket_frame( nc, 
                                 WEBSOCKET_OP_PING, 
                                 wm->data, 
-                                wm->size );*/
+                                wm->size );
         return true;
-    }
+    }*/
 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
     if (NULL == pObject) return false;
@@ -1592,7 +1585,7 @@ VSCPWebServerThread::websrv_websocket_message( struct mg_connection *nc,
                     wxString strErr = 
                         wxString::Format( _("websocket] User [%s] not allowed to send event class=%d type=%d.\n"), 
                                                 pSession->m_pClientItem->m_pUserItem->m_user.wx_str(), 
-                                                vscp_event.vscp_class, vscp_event.vscp_type );			
+                                                vscp_event.vscp_class, vscp_event.vscp_type );
         
                     pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
                 }
@@ -1649,6 +1642,7 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *nc,
 
     // Check pointer
     if (NULL == nc) return false;
+    if (NULL == hm) return false;
     if (NULL == pSession) return false;
     
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
@@ -1700,9 +1694,9 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *nc,
 
             // Log valid login
             wxString strErr = 
-                        wxString::Format( _("[Websocket Client] Host [%s] User [%s] allowed to connect.\n"), 
-                                                 wxString::FromAscii( (const char *)inet_ntoa( nc->sa.sin.sin_addr ) ).wx_str(), 
-                                                 strUser.wx_str() );			
+                wxString::Format( _("[Websocket Client] Host [%s] User [%s] allowed to connect.\n"), 
+                                    wxString::FromAscii( (const char *)inet_ntoa( nc->sa.sin.sin_addr ) ).wx_str(), 
+                                    strUser.wx_str() );
         
             pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
 
@@ -1726,11 +1720,11 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *nc,
 
 websock_session *
 VSCPWebServerThread::websock_new_session( struct mg_connection *nc,
-                                            struct http_message *hm,
-                                            const char * pKey, 
-                                            const char * pVer )
+                                            struct http_message *hm )
 {
     char buf[512];
+    char ws_version[10];
+    char ws_key[33];
     struct websock_session *ret;
 
     // Check pointer
@@ -1738,10 +1732,21 @@ VSCPWebServerThread::websock_new_session( struct mg_connection *nc,
 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
     if (NULL == pObject) return NULL;
+    
+    mg_str *phdr;
 
+    // user
+    if ( NULL != ( phdr = mg_get_http_header( hm, "Sec-WebSocket-Version" ) ) ) {
+        memset( ws_version, 0, sizeof( ws_version ) );
+        strncpy( ws_version, phdr->p, MIN( phdr->len, sizeof( ws_version ) ) );
+    }
+    if ( NULL != ( phdr = mg_get_http_header( hm, "Sec-WebSocket-Key" ) ) ) {
+        memset( ws_key, 0, sizeof( ws_key ) );
+        strncpy( ws_key, phdr->p, MIN( phdr->len, sizeof( ws_key ) ) );
+    }
 
     // create fresh session 
-    ret = (struct websock_session *)calloc(1, sizeof(struct websock_session));
+    ret = (struct websock_session *)calloc(1, sizeof( struct websock_session ) );
     if  (NULL == ret ) {
 #ifndef WIN32
         syslog( LOG_ERR, "calloc error: %s\n", strerror(errno));
@@ -1757,7 +1762,7 @@ VSCPWebServerThread::websock_new_session( struct mg_connection *nc,
     t = time( NULL );
     sprintf( buf,
                 "__%s_%X%X%X%X_be_hungry_stay_foolish_%X%X",
-                pKey,
+                ws_key,
                 (unsigned int)rand(),
                 (unsigned int)rand(),
                 (unsigned int)rand(),
@@ -1765,14 +1770,13 @@ VSCPWebServerThread::websock_new_session( struct mg_connection *nc,
                 (unsigned int)rand(), 
                 1337 );
 
-    char digest[33];
-    memset( digest, 0, sizeof( digest ) ); 
-    vscp_md5( digest, buf, strlen( buf ), NULL );
+    memset( ret->m_sid, 0, sizeof( ret->m_sid ) ); 
+    vscp_md5( ret->m_sid, buf, strlen( buf ), NULL );
     
     // Init
-    strcpy( ret->m_key, pKey );             // Save key
+    strcpy( ret->m_key, ws_key );           // Save key
     ret->bAuthenticated = false;            // Not authenticated in yet
-    ret->m_version = atoi( pVer );          // Store protocol version
+    ret->m_version = atoi( ws_version );    // Store protocol version
     ret->m_pClientItem = new CClientItem(); // Create client        
     vscp_clearVSCPFilter(&ret->m_pClientItem->m_filterVSCP);    // Clear filter
     ret->bTrigger = false;
@@ -1799,59 +1803,6 @@ VSCPWebServerThread::websock_new_session( struct mg_connection *nc,
     gp_websock_sessions = ret;
 
     return ret;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// websock_get_session
-//
-
-struct websock_session *
-VSCPWebServerThread::websock_get_session( struct mg_connection *nc,
-                                            struct http_message *hm )
-{
-    struct websock_session *ret = NULL;
-
-    // Check pointer
-    if (NULL == nc) return NULL;
-
-    CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return NULL;
-
-    // Get the session key
-    mg_str *pKey = mg_get_http_header( hm, "sec-websocket-key" ); 
-    if ( NULL == pKey) return NULL;
-
-    // Get protocol version
-    mg_str *pVer = mg_get_http_header( hm, "sec-websocket-version" ); 
-    if ( NULL == pVer) return NULL;
-        
-    // find existing session 
-    ret = gp_websock_sessions;
-    while (NULL != ret) {
-        if ( 0 == strncmp( pKey->p, ret->m_key, pKey->len ) ) {
-            break;
-        }
-        ret = ret->m_next;
-    }
-        
-    if ( NULL != ret ) {
-        ret->m_referenceCount++;
-        ret->lastActiveTime = time(NULL);
-        return ret;
-    }
-
-    
-    // Return new session
-    char key[512];
-    memset( key, 0, sizeof(key) );
-    strncpy( key, pKey->p, pKey->len );
-    
-    char ver[512];
-    memset( key, 0, sizeof(ver) );
-    strncpy( key, pVer->p, pVer->len );
-    
-    return pObject->getWebServer()->websock_new_session( nc, hm, key, ver );
 }
 
 
@@ -1917,15 +1868,17 @@ void
 VSCPWebServerThread::websock_post_incomingEvents( void )
 {
     struct mg_connection *nc;
-/* TODO
-    // Iterate over all connections, and push current time message to websocket ones.
-    for ( nc = mg_next( m_pCtrlObject->m_pwebserver, NULL); 
-               nc != NULL; 
-               nc = mg_next(m_pCtrlObject->m_pwebserver, nc)) {
-        
-        if ( nc->is_websocket ) {
 
-            websock_session *pSession = websock_get_session( nc );
+    // Iterate over all connections, and push current time message to websocket ones.
+    for ( nc = mg_next( &gmgr, NULL); 
+               nc != NULL; 
+               nc = mg_next( &gmgr, nc)) {
+        
+        if ( NULL == nc ) return;   // This should not happen
+                   
+        if ( nc->flags | MG_F_IS_WEBSOCKET ) {
+
+            websock_session *pSession = (websock_session *)nc->user_data;
             if ( NULL == pSession) continue;
 
             if ( pSession->m_pClientItem->m_bOpen &&
@@ -1952,7 +1905,7 @@ VSCPWebServerThread::websock_post_incomingEvents( void )
                             memset((char *) buf, 0, sizeof( buf));
                             strcpy((char *) buf, (const char*) "E;");
                             strcat((char *) buf, (const char*) str.mb_str(wxConvUTF8));
-                            mg_websocket_write(nc, 1, buf, strlen(buf) );
+                            mg_send_websocket_frame(nc, WEBSOCKET_OP_TEXT, buf, strlen(buf) );
                             
                         }
                     }
@@ -1965,7 +1918,6 @@ VSCPWebServerThread::websock_post_incomingEvents( void )
         } // websocket
     } // for
 
- */
  }
                                             
                                             

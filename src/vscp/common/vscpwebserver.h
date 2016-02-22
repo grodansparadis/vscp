@@ -118,8 +118,7 @@ public:
      */
     websrv_Session *
     websrv_add_session_cookie( struct mg_connection *nc, 
-                                struct http_message *hm,
-                                const char * pUser );
+                                struct http_message *hm );
 
     /*!
         Get/Create web session
@@ -380,23 +379,10 @@ public:
     /*!
         Create a new websocket session
         @param nc Webserver connection handle
-        @param pKey Sec-WebSocket-Key
-        @param pVer Sec-WebSocket-Version
         @return websock object or NULL if failure
     */
     struct websock_session *
     websock_new_session( struct mg_connection *nc,
-                            struct http_message *hm,
-                            const char * pKey, 
-                            const char * pVer );
-
-    /*!
-        Get new websocket session structure
-        @param nc Webserver connection handle
-        @return websock object or NULL if failure.
-    */
-    static struct websock_session *
-    websock_get_session( struct mg_connection *nc,
                             struct http_message *hm );
 
     /*!

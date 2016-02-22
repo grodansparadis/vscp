@@ -143,6 +143,9 @@ using namespace std;
 // Options
 static struct mg_serve_http_opts s_http_server_opts;
 
+// Webserver
+struct mg_mgr gmgr;
+
 // Linked list of all active sessions. (webserv.h)
 static struct websrv_Session *gp_websrv_sessions;
 
@@ -446,7 +449,7 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
         case MG_EV_CLOSE:   // Connection is closed. NULL 
             if ( is_websocket( nc ) ) {
                 //nc->connection_param = NULL;
-                pWebSockSession = websock_get_session( nc, phm );
+                pWebSockSession = (struct websock_session *)nc->user_data;
                 if ( NULL != pWebSockSession ) {
                     pWebSockSession->lastActiveTime  = 0;   // Mark as staled
                     pObject->getWebServer()->websock_expire_sessions( nc, phm );
@@ -460,7 +463,7 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
             if ( 0 != strncmp(phm->uri.p, "/vscp/rest", 10 ) ) {
              
                 // Must be autorized
-                if ( !is_authorized( nc, phm, pObject ) ) {
+                if ( !is_authorized( nc, phm, pObject ) ) {                    
                     mg_printf( nc,
                                 "HTTP/1.1 401 Unauthorized\r\n"
                                 "WWW-Authenticate: Digest qop=\"auth\", "
@@ -473,7 +476,7 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
 
             // Get Session object
             if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( nc, phm ) ) ) {            
-                pObject->getWebServer()->websrv_add_session_cookie( nc, phm, user );
+                pObject->getWebServer()->websrv_add_session_cookie( nc, phm );
                 return;
             }
 
@@ -590,10 +593,11 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
             break;
 
         case MG_EV_WEBSOCKET_HANDSHAKE_REQUEST:
-            if ( NULL != ( hdr = mg_get_http_header( phm, "Sec-WebSocket-Protocol") ) ) {
-                    if ( 0 == vscp_strncasecmp( hdr->p, "very-simple-control-protocol", 28 ) ) {
-                        //mg_send_header( nc, "Set-Sec-WebSocket-Protocol", "very-simple-control-protocol" );
-                    /*
+        
+            // New websocket connection. Create a session
+            nc->user_data = pObject->getWebServer()->websock_new_session( nc, phm );
+            
+            /*
                 Currently it is impossible to request a specific protocol
                 This is what would be needed to do so.
                 
@@ -619,10 +623,8 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
                          mg_send(nc, buf, strlen(buf));
                          
                     }
-                }*/
-
-                    }
-            }
+                }
+            */
             break;
 
         case MG_EV_WEBSOCKET_HANDSHAKE_DONE:
@@ -630,7 +632,8 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
             // New websocket connection. Send connection ID back to the client.
 
             // Get session
-            pWebSockSession = websock_get_session( nc, phm );
+            return;
+            pWebSockSession = (struct websock_session *)nc->user_data;
             if ( NULL == pWebSockSession ) {
                 mg_printf_websocket_frame( nc, 
                                             WEBSOCKET_OP_TEXT, 
@@ -697,11 +700,10 @@ void *VSCPWebServerThread::Entry()
 {
     clock_t ticks,oldus;
     struct mg_serve_http_opts opts;     // Server options
-    struct mg_mgr mgr;
     struct mg_connection *nc;
     
-    mg_mgr_init( &mgr, m_pCtrlObject );
-    nc = mg_bind( &mgr, 
+    mg_mgr_init( &gmgr, m_pCtrlObject );
+    nc = mg_bind( &gmgr, 
                     m_pCtrlObject->m_portWebServer.mbc_str(), 
                     VSCPWebServerThread::websrv_event_handler );
         
@@ -824,7 +826,7 @@ void *VSCPWebServerThread::Entry()
         gettimeofday(&tv, NULL);
 #endif
         
-        mg_mgr_poll( &mgr, 50 );
+        mg_mgr_poll( &gmgr, 50 );
         websock_post_incomingEvents();
 
 #ifdef WIN32
@@ -836,7 +838,7 @@ void *VSCPWebServerThread::Entry()
     }
 
     // Kill web server
-    mg_mgr_free( &mgr );
+    mg_mgr_free( &gmgr );
 
     return NULL;
 }
@@ -963,10 +965,10 @@ VSCPWebServerThread::websrv_get_session( struct mg_connection *nc,
 
 websrv_Session *
 VSCPWebServerThread::websrv_add_session_cookie( struct mg_connection *nc, 
-                                                    struct http_message *hm,
-                                                    const char *pUser )
+                                                    struct http_message *hm )
 {
     char buf[512];
+    char user[50];
     struct websrv_Session *ret;
 
     // Check pointer
@@ -974,9 +976,17 @@ VSCPWebServerThread::websrv_add_session_cookie( struct mg_connection *nc,
 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
     if (NULL == pObject) return NULL;
+    
+    struct mg_str *hdr;
+    memset( user, 0, sizeof( user ) );
+    // Parse "Authorization:" header, fail fast on parse error 
+    if ( ( hdr = mg_get_http_header(hm, "Authorization")) == NULL ||
+        mg_http_parse_header(hdr, "username", user, sizeof(user)) == 0 ) {
+        return NULL;
+    }
 
     // Create fresh session 
-    ret = (struct websrv_Session *)calloc(1, sizeof(struct websrv_Session));
+    ret = (struct websrv_Session *)calloc( 1, sizeof( struct websrv_Session ) );
     if  (NULL == ret ) {
 #ifndef WIN32
         syslog(LOG_ERR, "calloc error: %s\n", strerror(errno));
@@ -988,13 +998,14 @@ VSCPWebServerThread::websrv_add_session_cookie( struct mg_connection *nc,
     time_t t;
     t = time( NULL );
     sprintf( buf,
-                "__VSCP__DAEMON_%X%X%X%X_be_hungry_stay_foolish_%X%X",
+                "__VSCP__DAEMON_%X%X%X%X_be_hungry_stay_foolish_%X%X%s",
                 (unsigned int)rand(),
                 (unsigned int)rand(),
                 (unsigned int)rand(),
                 (unsigned int)t,
                 (unsigned int)rand(), 
-                1337 );
+                1337,
+                user );
 
     char digest[33];
     memset( digest, 0, sizeof( digest ) ); 
@@ -1004,17 +1015,19 @@ VSCPWebServerThread::websrv_add_session_cookie( struct mg_connection *nc,
     char uri[2048];
     memset( uri, 0, sizeof(uri) );
     strncpy( uri, hm->uri.p, hm->uri.len );
-    mg_printf( nc, "HTTP/1.1 302 Found\r\n"
-               "Set-Cookie: session=%s; max-age=3600; http-only\r\n"
-               "Set-Cookie: user=%s\r\n"
-               "Set-Cookie: original_url=%s; max-age=0\r\n"
-               "Set-Cookie: allow=yes\r\n"
-               "Location: %s\r\n\r\n", 
-               ret->m_sid, 
-               pUser,
-               uri, uri );
+    mg_printf( nc, 
+                "HTTP/1.1 301 Found\r\n"
+                "Set-Cookie: session=%s; max-age=3600; http-only\r\n"
+                "Set-Cookie: user=%s\r\n"
+                "Set-Cookie: original_url=%s; max-age=3600; allow=yes\r\n"
+                "Location: %s\r\n"
+                "Content-Length: 0r\n\r\n", 
+                ret->m_sid, 
+                user,
+                uri, 
+                uri );
     
-    ret->m_pUserItem = pObject->m_userList.getUser( wxString::FromAscii( pUser ) );
+    ret->m_pUserItem = pObject->m_userList.getUser( wxString::FromAscii( user ) );
     
     // Add to linked list
     ret->m_referenceCount++;
@@ -1055,7 +1068,7 @@ VSCPWebServerThread::websrv_GetCreateSession( struct mg_connection *nc,
         }
 
         // Add session cookie
-        rv = pObject->getWebServer()->websrv_add_session_cookie( nc, hm, user );
+        rv = pObject->getWebServer()->websrv_add_session_cookie( nc, hm );
     }
 
     return rv;
