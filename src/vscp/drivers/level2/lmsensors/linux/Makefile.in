@@ -11,7 +11,7 @@ top_builddir = @top_builddir@
 top_wxbuilddir = @top_wxbuilddir@
 CXX = @CXX@
 CXXFLAGS = @CXXFLAGS@ -D__LINUX__ -fPIC -I../../../../common -I../../../../../common
-CPPFLAGS = @CPPFLAGS@ -D__LINUX__ -DUSE_FOSSA  -fPIC -I../../../../common -I../../../../../common
+CPPFLAGS = @CPPFLAGS@ -D__LINUX__ -D MG_ENABLE_THREADS  -fPIC -I../../../../common -I../../../../../common
 CFLAGS = >-D__LINUX__ -fPIC -I../../../../common -I../../../../../common
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
@@ -35,8 +35,8 @@ DLLPREFIX = lib
 WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-LMSENSOROBJ =  lmsensors.o ../../../../../common/crc.o ../../../../../common/crc8.o ../../../../../common/fossa.o ../../../../common/vscpremotetcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
-PROJOBJS = lmsensors.o ../../../../../common/crc.o  ../../../../../common/crc8.o ../../../../../common/fossa.o ../../../../common/vscptcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o 
+LMSENSOROBJ =  lmsensors.o ../../../../../common/crc.o ../../../../../common/crc8.o ../../../../../common/mongoose.o ../../../../common/vscpremotetcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
+PROJOBJS = lmsensors.o ../../../../../common/crc.o  ../../../../../common/crc8.o ../../../../../common/mongoose.o ../../../../common/vscptcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o 
 
 
 
