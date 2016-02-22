@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     Fri 26 Oct 2007 11:57:04 CEST
 // RCS-ID:      
-// Copyright:   (C) 2007-2015 
+// Copyright:   (C) 2007-2016 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
@@ -452,7 +452,7 @@ void dlgVscpInterfaceSettings::OnButtonVscpSetConfigurationClick( wxCommandEvent
     wxCharBuffer wxbuf = strDrvInfo.ToUTF8();
 
     int baselen = strlen( wxbuf.data() );
-    int len = ns_base64_decode( (const unsigned char *)wxbuf.data(), baselen, buf );
+    int len = mg_base64_decode( (const unsigned char *)wxbuf.data(), baselen, buf );
     
     if ( len != baselen ) {
         wxMessageBox( _( "The configurationd ata was either in the wrong form (should have been base64 encoded xml) or it was absent." ) );

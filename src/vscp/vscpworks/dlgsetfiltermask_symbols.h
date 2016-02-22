@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     12/05/2009 18:38:39
 // RCS-ID:      
-// Copyright:   (C) 2007-2014 
+// Copyright:   (C) 2007-2016 
 // Ake Hedman, eurosource, <akhe@eurosource.se>
 // Licence:     
 // This program is free software; you can redistribute it and/or

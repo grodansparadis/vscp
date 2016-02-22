@@ -7,7 +7,7 @@
 // RCS-ID:      
 // Copyright:   (C) 2007-2016 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
-//				(C) 2012 Dinesh Guleria
+//              (C) 2012 Dinesh Guleria
 // Licence:     
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -55,14 +55,14 @@
 /*
 // Not used anywhere
 typedef struct _bootclientItem {
-	unsigned char m_nickname;       // Nickname for node
-	unsigned char m_bootalgorithm;  // Bootloader algorithm to use
-	unsigned char m_pageMSB;        // MSB of current page
-	unsigned char m_pageLSB;        // LSB of current page
-	unsigned char m_GUID0;          // GUID byte 0
-	unsigned char m_GUID3;          // GUID byte 3
-	unsigned char m_GUID5;          // GUID byte 5
-	unsigned char m_GUID7;          // GUID byte 7
+    unsigned char m_nickname;       // Nickname for node
+    unsigned char m_bootalgorithm;  // Bootloader algorithm to use
+    unsigned char m_pageMSB;        // MSB of current page
+    unsigned char m_pageLSB;        // LSB of current page
+    unsigned char m_GUID0;          // GUID byte 0
+    unsigned char m_GUID3;          // GUID byte 3
+    unsigned char m_GUID5;          // GUID byte 5
+    unsigned char m_GUID7;          // GUID byte 7
 } bootclientItem;
 
 */

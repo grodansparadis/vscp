@@ -7,7 +7,7 @@
 // RCS-ID:      
 // Copyright:   (C) 2007-2016 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
-//				(C) 2012 Dinesh Guleria
+//              (C) 2012 Dinesh Guleria
 // Licence:     
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
