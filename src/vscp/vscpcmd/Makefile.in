@@ -11,7 +11,7 @@ top_builddir = @top_builddir@
 top_wxbuilddir = @top_wxbuilddir@
 CXX = @CXX@
 CXXFLAGS = @CXXFLAGS@
-CPPFLAGS = @CPPFLAGS@ -I../common -I../../common
+CPPFLAGS = @CPPFLAGS@ -D MG_ENABLE_THREADS -I../common -I../../common
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
 STRIP = strip
@@ -39,16 +39,14 @@ CANCMD_OBJECTS =  vscpcmd.o\
 	../../common/crc.o\
 	../../common/crc8.o\
 	../common/guid.o\
-	../../common/net_skeleton.o\
-	../../common/frozen.o\
+	../../common/mongoose.o\
 
 ALWAYS_BUILD = ../common/vscpremotetcpif.o\
 	../common/vscphelper.o\
 	../common/guid.o\
 	../../common/crc.o\
 	../../common/crc8.o\
-	../../common/net_skeleton.o\
-	../../common/frozen.o\
+	../../common/mongoose.o\
 
 ### Targets: ###
 
