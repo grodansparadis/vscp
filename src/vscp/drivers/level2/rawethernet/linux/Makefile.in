@@ -11,7 +11,7 @@ top_builddir = @top_builddir@
 top_wxbuilddir = @top_wxbuilddir@
 CXX = @CXX@
 CXXFLAGS = @CXXFLAGS@ -fPIC -I../../../../common -I../../../../../common
-CPPFLAGS = -I include  @CPPFLAGS@ -D__LINUX__ -DUSE_FOSSA -fPIC -I../../../../common -I../../../../../common
+CPPFLAGS = -I include  @CPPFLAGS@ -D__LINUX__ -D MG_ENABLE_THREADS -fPIC -I../../../../common -I../../../../../common
 CFLAGS = -D__LINUX__ -fPIC -I../../../../common -I../../../../../common
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
@@ -36,7 +36,7 @@ WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
 RAWETH_OBJECTS = dlldrvobj.o\
-	../../../../../common/fossa.o\
+	../../../../../common/mongoose.o\
 	../../../../common/vscpremotetcpif.o\
 	../../../../common/vscphelper.o\
 	../../../../common/guid.o\
@@ -48,7 +48,7 @@ PROJOBJS =  ../../../../common/vscpremotetcpif.o\
 	../../../../common/guid.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
-	../../../../../common/fossa.o
+	../../../../../common/mongoose.o
 
 
 ALWAYS_BUILD = ../../../../common/vscpremotetcpif.o\
@@ -56,7 +56,7 @@ ALWAYS_BUILD = ../../../../common/vscpremotetcpif.o\
 	../../../../common/guid.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
-	../../../../../common/fossa.o
+	../../../../../common/mongoose.o
 
 ### Targets: ###
 
