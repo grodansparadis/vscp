@@ -48,7 +48,7 @@
 
 #endif
 
-#include <fossa.h>
+#include <mongoose.h>
 
 #include <wx/file.h>
 #include <wx/wfstream.h>
@@ -149,7 +149,7 @@ public:
         Structure for subscription topics. Will only hold
         one entry for this driver.
     */
-    struct ns_mqtt_topic_expression m_topic_list[ 1 ];
+    struct mg_mqtt_topic_expression m_topic_list[ 1 ];
 
     /*!
         Event simplification

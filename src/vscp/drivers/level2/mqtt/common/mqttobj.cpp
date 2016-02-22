@@ -54,7 +54,7 @@
 #include <wx/tokenzr.h>
 #include <wx/datetime.h>
 
-#include <fossa.h>
+#include <mongoose.h>
 
 #include <vscphelper.h>
 #include <vscpremotetcpif.h>
@@ -67,18 +67,18 @@
 // ev_handler
 //
 
-static void ev_handler( struct ns_connection *nc, int ev, void *p )
+static void ev_handler( struct mg_connection *nc, int ev, void *p )
 {
-    struct ns_mqtt_message *msg = ( struct ns_mqtt_message * )p;
+    struct mg_mqtt_message *msg = ( struct mg_mqtt_message * )p;
     Cmqttobj *pmqttobj = ( Cmqttobj *)nc->mgr->user_data;
 
     switch ( ev ) {
 
-        case NS_CONNECT:
+        case MG_EV_CONNECT:
         {
-            struct ns_send_mqtt_handshake_opts opts;
+            struct mg_send_mqtt_handshake_opts opts;
             
-            opts.flags = NS_MQTT_CLEAN_SESSION;
+            opts.flags = MG_MQTT_CLEAN_SESSION;
             opts.keep_alive = pmqttobj->m_keepalive;
             
             // Username
@@ -88,7 +88,7 @@ static void ev_handler( struct ns_connection *nc, int ev, void *p )
             }
             else {
                 opts.user_name = bufferedUserName;
-                opts.flags |= NS_MQTT_HAS_USER_NAME;
+                opts.flags |= MG_MQTT_HAS_USER_NAME;
             }
             
             // Password
@@ -98,10 +98,10 @@ static void ev_handler( struct ns_connection *nc, int ev, void *p )
             }
             else {
                 opts.password = bufferedPassword;
-                opts.flags |= NS_MQTT_HAS_PASSWORD;
+                opts.flags |= MG_MQTT_HAS_PASSWORD;
             }
             
-            ns_set_protocol_mqtt( nc );
+            mg_set_protocol_mqtt( nc );
         
             if ( pmqttobj->m_bSubscribe ) {
             
@@ -112,16 +112,16 @@ static void ev_handler( struct ns_connection *nc, int ev, void *p )
             }
             else {
                 
-                opts.flags = NS_MQTT_CLEAN_SESSION;
+                opts.flags = MG_MQTT_CLEAN_SESSION;
                 opts.keep_alive = 60;
                 opts.password = NULL;
                 opts.user_name = NULL;
                 
-                //ns_send_mqtt_handshake( nc, pmqttobj->m_sessionid.mbc_str() );
+                //mg_send_mqtt_handshake( nc, pmqttobj->m_sessionid.mbc_str() );
                 
             }
             
-            ns_send_mqtt_handshake_opt( nc, 
+            mg_send_mqtt_handshake_opt( nc, 
                                             pmqttobj->m_sessionid.mbc_str(), 
                                             opts );
         
@@ -133,8 +133,8 @@ static void ev_handler( struct ns_connection *nc, int ev, void *p )
         }       
         break;
 
-        case NS_MQTT_CONNACK:
-            if ( msg->connack_ret_code != NS_MQTT_CONNACK_ACCEPTED ) {              
+        case MG_EV_MQTT_CONNACK:
+            if ( msg->connack_ret_code != MG_EV_MQTT_CONNACK_ACCEPTED ) {
 #ifndef WIN32
                 syslog(LOG_ERR,
                     "VSCP MQTT Driver - Got MQTT connection error: %d\n",
@@ -145,24 +145,24 @@ static void ev_handler( struct ns_connection *nc, int ev, void *p )
             }
             
             pmqttobj->m_bConnected = true;
-
+            
             if ( pmqttobj->m_bSubscribe ) {
-                ns_mqtt_subscribe( nc, pmqttobj->m_topic_list, 1, 42 );
+                mg_mqtt_subscribe( nc, pmqttobj->m_topic_list, 1, 42 );
             }
             break;
 
-        case NS_MQTT_PUBACK:
+        case MG_EV_MQTT_PUBACK:
             break;
 
-        case NS_MQTT_SUBACK:
+        case MG_EV_MQTT_SUBACK:
             break;
-            
-        case NS_MQTT_PINGREQ:
-            ns_mqtt_pong( nc );
+
+        case MG_EV_MQTT_PINGREQ:
+            mg_mqtt_pong( nc );
             break;
 
         // Incoming message
-        case NS_MQTT_PUBLISH:
+        case MG_EV_MQTT_PUBLISH:
         {            
             vscpEventEx eventEx;
             
@@ -347,7 +347,7 @@ FEED_EVENT:
         }
         break;
 
-        case NS_CLOSE:
+        case MG_EV_CLOSE:
         
 #ifndef WIN32
         syslog(LOG_INFO,
@@ -853,15 +853,15 @@ CWrkThread::Entry()
 {
     int cnt_poll = 0;
     wxString str;
-    struct ns_connection *nc;
-    struct ns_mgr *pmgr = new ns_mgr;
+    struct mg_connection *nc;
+    struct mg_mgr *pmgr = new mg_mgr;
     assert( NULL != pmgr );
     uint16_t msgid = 0;
 
     //mgr.user_data = m_pObj;
-    ns_mgr_init( pmgr, m_pObj );
+    mg_mgr_init( pmgr, m_pObj );
 
-    if ( NULL == ( nc = ns_connect( pmgr, 
+    if ( NULL == ( nc = mg_connect( pmgr, 
                                     (const char *)m_pObj->m_hostMQTT.mbc_str(), 
                                     ev_handler ) ) ) {
 #ifdef DEBUG                                        
@@ -881,13 +881,13 @@ CWrkThread::Entry()
         while ( !TestDestroy() && !m_pObj->m_bQuit ) {
             
                 
-            ns_mgr_poll( pmgr, 100 );
+            mg_mgr_poll( pmgr, 100 );
             cnt_poll++;
             
             
             // Keep the connection alive
             if ( cnt_poll > 600 ) {
-                ns_mqtt_pong( nc );
+                mg_mqtt_pong( nc );
                 cnt_poll = 0;
             }
             
@@ -916,7 +916,7 @@ CWrkThread::Entry()
         
         while ( !TestDestroy() && !m_pObj->m_bQuit ) {
 
-            ns_mgr_poll( pmgr, 100 );
+            mg_mgr_poll( pmgr, 100 );
 
             // Wait for connection
             if ( !m_pObj->m_bConnected ) {
@@ -1095,10 +1095,10 @@ CWrkThread::Entry()
                     
 PUBLISH:                    
                     
-                    ns_mqtt_publish( nc, 
+                    mg_mqtt_publish( nc, 
                                         m_pObj->m_topic.mbc_str(), 
                                         msgid++, 
-                                        NS_MQTT_QOS( m_pObj->m_topic_list[0].qos ), 
+                                        MG_MQTT_QOS( m_pObj->m_topic_list[0].qos ), 
                                         (const char *)str.mbc_str(), 
                                         str.Length() );
                 }
@@ -1120,7 +1120,7 @@ PUBLISH:
 
     // Disconnect if we are connected.
     if ( m_pObj->m_bConnected ) {
-        ns_mqtt_disconnect( nc );
+        mg_mqtt_disconnect( nc );
     }
     
     delete pmgr;

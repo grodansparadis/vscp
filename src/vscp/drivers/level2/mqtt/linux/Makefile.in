@@ -11,7 +11,7 @@ top_builddir = @top_builddir@
 top_wxbuilddir = @top_wxbuilddir@
 CXX = @CXX@
 CXXFLAGS = @CXXFLAGS@ -fPIC -I../../../../common -I../../../../../common
-CPPFLAGS = -I include  @CPPFLAGS@ -DUSE_FOSSA -fPIC -I../../../../common -I../../../../../common
+CPPFLAGS = -I include  @CPPFLAGS@ -D MG_ENABLE_THREADS -fPIC -I../../../../common -I../../../../../common
 CFLAGS = -fPIC -I../../../../common -I../../../../../common
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
@@ -41,7 +41,7 @@ MQTT_OBJECTS = ../common/mqttobj.o\
 	../../../../common/guid.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
-	../../../../../common/fossa.o\
+	../../../../../common/mongoose.o\
 
 	
 PROJOBJS =  ../common/mqttobj.o\
@@ -50,14 +50,14 @@ PROJOBJS =  ../common/mqttobj.o\
 	../../../../common/guid.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
-	../../../../../common/fossa.o\
+	../../../../../common/mongoose.o\
 
 ALWAYS_BUILD = 	../../../../common/vscpremotetcpif.o\
 	../../../../common/vscphelper.o\
 	../../../../common/guid.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
-	../../../../../common/fossa.o\
+	../../../../../common/mongoose.o\
 
 ### Targets: ###
 
