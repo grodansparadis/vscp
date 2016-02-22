@@ -11,7 +11,7 @@ top_builddir = @top_builddir@
 top_wxbuilddir = @top_wxbuilddir@
 CXX = @CXX@
 CXXFLAGS = @CXXFLAGS@ -fPIC -D__LINUX__ -I../../common -I../../../common
-CPPFLAGS = @CPPFLAGS@ -fPIC -DUSE_FOSSA -D NS_ENABLE_THREADS -I../../common -I../../../common
+CPPFLAGS = @CPPFLAGS@ -fPIC -D MG_ENABLE_THREADS -I../../common -I../../../common
 CFLAGS = -fPIC -D__LINUX__ 
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
@@ -42,7 +42,7 @@ VSCPHELPER_OBJECTS =  libvscphelper.o\
 	../../common/guid.o\
 	../../../common/crc.o\
 	../../../common/crc8.o\
-	../../../common/fossa.o
+	../../../common/mongoose.o
 
 PROJOBJS = ../vscphelperlib.h\
 	../../common/vscpremotetcpif.o\
@@ -50,14 +50,14 @@ PROJOBJS = ../vscphelperlib.h\
 	../../../common/crc.o\
 	../../common/guid.o\
 	../../../common/crc8.o\
-	../../../common/fossa.o
+	../../../common/mongoose.o
 
 ALWAYS_BUILD = ../../common/vscpremotetcpif.o\
 	../../common/vscphelper.o\
 	../../common/guid.o\
 	../../../common/crc.o\
 	../../../common/crc8.o\
-	../../../common/fossa.o
+	../../../common/mongoose.o
 
 ### Targets: ###
 
