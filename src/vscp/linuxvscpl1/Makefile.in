@@ -41,21 +41,21 @@ VSCPL1_OBJECTS =  vscpl1.o\
 	../common/guid.o\
 	../../common/crc.o\
 	../../common/crc8.o\
-	../../common/net_skeleton.o
+	../../common/mongoose.o
 	
 PROJOBJS  =  ../common/vscpremotetcpif.o\
 	../common/vscphelper.o\
 	../common/guid.o\
 	../../common/crc.o\
 	../../common/crc8.o\
-	../../common/net_skeleton.o
+	../../common/mongoose.o
 
 ALWAYS_BUILD = ../common/vscpremotetcpif.o\
 	../common/vscphelper.o\
 	../common/guid.o\
 	../../common/crc.o\
 	../../common/crc8.o\
-	../../common/net_skeleton.o
+	../../common/mongoose.o
 
 ### Targets: ###
 
