@@ -11,7 +11,7 @@ top_builddir = @top_builddir@
 top_wxbuilddir = @top_wxbuilddir@
 CXX = @CXX@
 CXXFLAGS = @CXXFLAGS@ -D__LINUX__ -fPIC -I../../../../common -I../../../../../common
-CPPFLAGS = @CPPFLAGS@ -DUSE_FOSSA  -fPIC -I../../../../common -I../../../../../common
+CPPFLAGS = @CPPFLAGS@ -D MG_ENABLE_THREADS  -fPIC -I../../../../common -I../../../../../common
 CFLAGS = @CFLAGS@ -D__LINUX__ -fPIC -I../../../../common -I../../../../../common
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
@@ -41,7 +41,7 @@ VSCPL2LOGGER_OBJECTS =  ../common/log.o\
 	../../../../common/guid.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
-	../../../../../common/fossa.o
+	../../../../../common/mongoose.o
 
 PROJOBJS = ../common/log.o\
 	../../../../common/vscpremotetcpif.o\
@@ -49,14 +49,14 @@ PROJOBJS = ../common/log.o\
 	../../../../common/guid.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
-	../../../../../common/fossa.o
+	../../../../../common/mongoose.o
 
 ALWAYS_BUILD = ../../../../common/vscpremotetcpif.o\
 	../../../../common/vscphelper.o\
 	../../../../common/guid.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
-	../../../../../common/fossa.o
+	../../../../../common/mongoose.o
 
 ### Targets: ###
 
