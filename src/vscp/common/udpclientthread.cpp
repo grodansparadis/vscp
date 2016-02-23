@@ -44,11 +44,12 @@
 #include <canal.h>
 #include <vscphelper.h>
 #include <dllist.h>
-//#include <md5.h>
 #include <mongoose.h>
 #include <version.h>
 #include <controlobject.h>
 
+// Prototypes
+char *vscp_md5(char *buf, ...);
 
 //WX_DEFINE_LIST(TCPCLIENTS);
 
@@ -227,16 +228,11 @@ VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p)
                 strncat( buf, ":", sizeof( buf ) - strlen( buf) - 1 );
                 strncat( (char *)buf, strPassword.mb_str(), strPassword.Length() );
     
-                //Cmd5 md5 ( (unsigned char *)buf );
-                //if ( NULL == md5.getDigest() ) return; 
-                
-                /*char digest[33];
-                MD5_CTX md5;
-                MD5_Init( &md5 );
-                MD5_Update( &md5, (unsigned char *)buf, strlen( buf ) );
-                MD5_Final( digest,&md5 );
+                char digest[33];
+                memset( digest, 0, sizeof( digest ) ); 
+                vscp_md5( digest, buf, strlen( buf ), NULL );
                 wxString md5Password = wxString::FromUTF8( digest);
-                */
+                
                 pUDPClientThread->m_pCtrlObject->m_mutexUserList.Lock();
                 //::wxLogDebug( _("Username: ") + m_wxUserName );
                 //::wxLogDebug( _("Password: ") + strPassword );
