@@ -4583,40 +4583,40 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
         }
         buildPage += _("<br>");
         buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Rootfolder:</b> ");
-        buildPage += pObject->m_pathWebRoot;
+        buildPage += wxString::FromUTF8( pObject->m_pathWebRoot );
         buildPage += _("<br>");
         buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Authdomain:</b> ");
-        buildPage += pObject->m_authDomain;
+        buildPage += wxString::FromUTF8( pObject->m_authDomain );
         if ( 0 == strlen( pObject->m_authDomain ) ) {
             buildPage += _("Set to default.");
         }
         buildPage += _("<br>");
         buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>ExtraMimeTypes:</b> ");
-        buildPage += pObject->m_extraMimeTypes;
+        buildPage += wxString::FromUTF8( pObject->m_extraMimeTypes );
         if ( 0 == strlen( pObject->m_extraMimeTypes ) ) {
             buildPage += _("Set to default.");
         }
         buildPage += _("<br>");
         buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>CgiInterpreter:</b> ");
-        buildPage += pObject->m_cgiInterpreter;
+        buildPage += wxString::FromUTF8( pObject->m_cgiInterpreter );
         if ( 0 == strlen( pObject->m_cgiInterpreter ) ) {
             buildPage += _("Set to default.");
         }
         buildPage += _("<br>");
         buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>CgiPattern:</b> ");
-        buildPage += pObject->m_cgiPattern;
+        buildPage += wxString::FromUTF8( pObject->m_cgiPattern );
         if ( 0 == strlen( pObject->m_cgiPattern ) ) {
             buildPage += _("Set to default.");
         }
         buildPage += _("<br>");
         buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>HiddenFilePatterns:</b> ");
-        buildPage += pObject->m_hideFilePatterns;
+        buildPage += wxString::FromUTF8( pObject->m_hideFilePatterns );
         if ( 0 == strlen( pObject->m_hideFilePatterns ) ) {
             buildPage += _("Set to default.");
         }
         buildPage += _("<br>");
         buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>IndeFiles:</b> ");
-        buildPage += pObject->m_indexFiles;
+        buildPage += wxString::FromUTF8( pObject->m_indexFiles );
         if ( 0 == strlen( pObject->m_indexFiles ) ) {
             buildPage += _("Set to default.");
         }
@@ -4629,7 +4629,7 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
         }
         buildPage += _("<br>");
         buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>UrlReqrites:</b> ");
-        buildPage += pObject->m_urlRewrites;
+        buildPage += wxString::FromUTF8( pObject->m_urlRewrites );
         if ( 0 == strlen( pObject->m_urlRewrites ) ) {
             buildPage += _("Set to default.");
         }

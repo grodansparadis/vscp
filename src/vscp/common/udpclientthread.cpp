@@ -230,13 +230,13 @@ VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p)
                 //Cmd5 md5 ( (unsigned char *)buf );
                 //if ( NULL == md5.getDigest() ) return; 
                 
-                unsigned char digest[16];
+                /*char digest[33];
                 MD5_CTX md5;
                 MD5_Init( &md5 );
                 MD5_Update( &md5, (unsigned char *)buf, strlen( buf ) );
                 MD5_Final( digest,&md5 );
-                wxString md5Password = wxString( digest, wxConvUTF8 );
-                
+                wxString md5Password = wxString::FromUTF8( digest);
+                */
                 pUDPClientThread->m_pCtrlObject->m_mutexUserList.Lock();
                 //::wxLogDebug( _("Username: ") + m_wxUserName );
                 //::wxLogDebug( _("Password: ") + strPassword );

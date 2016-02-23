@@ -373,15 +373,15 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
         // get parameters for get
 
         if ( 0 < mg_get_http_var( &hm->query_string, "vscpuser", buf, sizeof( buf ) ) ) {
-            keypairs[ "VSCPUSER" ] = wxString::FromUTF8( buf );
+            keypairs[ _("VSCPUSER") ] = wxString::FromUTF8( buf );
         }
         
         if ( 0 < mg_get_http_var( &hm->query_string, "vscpsecret", buf, sizeof( buf ) ) ) {
-            keypairs[ "VSCPSECRET" ] = wxString::FromUTF8( buf );
+            keypairs[ _("VSCPSECRET") ] = wxString::FromUTF8( buf );
         }
         
         if ( 0 < mg_get_http_var( &hm->query_string, "vscpsession", buf, sizeof( buf ) ) ) {
-            keypairs[ "VSCPSESSION" ] = wxString::FromUTF8( buf );
+            keypairs[ _("VSCPSESSION") ] = wxString::FromUTF8( buf );
         }
     }
 

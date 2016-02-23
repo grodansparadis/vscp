@@ -568,9 +568,11 @@ bool CControlObject::init(wxString& strcfgfile)
     pw.generatePassword(32, buf);
     m_driverPassword = wxString::FromAscii( buf );
     
-    wxString driverhash = m_driverUsername + _(":") +
-                            m_authDomain + _(":") +
-                            m_driverPassword;
+    wxString driverhash = m_driverUsername;
+    driverhash += _(":");
+    driverhash += wxString::FromUTF8( m_authDomain );
+    driverhash += _(":");
+    driverhash += m_driverPassword;
     
     memset( buf, 0, sizeof( buf ) );
     strncpy( buf,(const char *)driverhash.mbc_str(), driverhash.Length() );
@@ -580,7 +582,7 @@ bool CControlObject::init(wxString& strcfgfile)
     vscp_md5( digest, buf, strlen( buf ), NULL );
 
     m_userList.addUser( m_driverUsername,
-                            digest,
+                            wxString::FromUTF8( digest ),
                             _("admin"),
                             NULL,
                             _(""),
