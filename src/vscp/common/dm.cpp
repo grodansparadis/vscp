@@ -44,8 +44,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef VSCP_ENABLE_LUA
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+#endif
+
 #include <vscp.h>
-#include  <version.h>
+#include <version.h>
 #include <vscphelper.h>
 #include <vscpeventhelper.h>
 #include <actioncodes.h>
@@ -59,6 +65,10 @@ WX_DEFINE_LIST( PLUGINLIST );
 WX_DEFINE_LIST( DMLIST );
 WX_DEFINE_LIST( ACTIONTIME );
 
+#ifdef VSCP_ENABLE_LUA
+// the Lua interpreter 
+lua_State* L;
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // actionThreadURL

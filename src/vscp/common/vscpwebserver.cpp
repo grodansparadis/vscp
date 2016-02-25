@@ -351,7 +351,8 @@ static int is_authorized( struct mg_connection *conn,
         char ipstr[INET6_ADDRSTRLEN];
         int port;
 
-        len = sizeof addr;
+        /* Fix when moongose (6.0) misbehaved)
+         * len = sizeof addr;
         getpeername( conn->sock, (struct sockaddr*)&addr, &len);
         
         // deal with both IPv4 and IPv6:
@@ -364,7 +365,7 @@ static int is_authorized( struct mg_connection *conn,
             struct sockaddr_in6 *s = (struct sockaddr_in6 *)&addr;
             port = ntohs(s->sin6_port);
             inet_ntop(AF_INET6, &s->sin6_addr, ipstr, sizeof ipstr);
-        }
+        }*/
 
         // Check if remote ip is valid
         pObject->m_mutexUserList.Lock();
