@@ -139,7 +139,9 @@ void VSCPClientThread::OnExit()
 // ev_handler
 //
 
-void VSCPClientThread::ev_handler(struct mg_connection *conn, int ev, void *pUser)
+void VSCPClientThread::ev_handler( struct mg_connection *conn, 
+                                    int ev, 
+                                    void *pUser)
 {
     char rbuf[ 2048 ];
     int pos4lf; 

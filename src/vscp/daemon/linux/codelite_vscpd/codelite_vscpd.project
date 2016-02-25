@@ -78,6 +78,8 @@
     <File Name="../../../common/web_js.h"/>
     <File Name="../../../common/web_template.h"/>
     <File Name="../../../common/webserver.h"/>
+    <File Name="../../../../common/mongoose.c"/>
+    <File Name="../../../../common/mongoose.h"/>
   </VirtualDirectory>
   <VirtualDirectory Name="linux">
     <File Name="../vscpd.cpp"/>

@@ -112,9 +112,6 @@ void clientTcpIpWorkerThread::ev_handler( struct mg_connection *conn,
                 if (connect_status == 0) {
 
                     wxLogDebug( _("ev_handler: TCP/IP connect OK.") );
-                    if ( 2 != mg_send( conn, "\r\n", 2 ) ) {
-                        wxLogDebug( _("ev_handler: mg_send failed.") );
-                    }
                     pTcpIfSession->m_semConnected.Post();
                     pTcpIfSession->m_bConnected = true;
                     conn->flags |= MG_F_USER_1;  // We should terminate
@@ -312,12 +309,9 @@ int VscpRemoteTcpIf::doCommand( wxString& cmd )
     wxLogDebug( _("doCommand: ") + cmd );
         
     doClrInputQueue();    
-    if ( cmd.Length() != mg_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
+    mg_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
                                   cmd.mbc_str(),
-                                  cmd.Length() ) ) {
-        wxLogDebug( _("doCommand: failed to send command") );
-        return VSCP_ERROR_ERROR;
-    }
+                                  cmd.Length() );
     
     // Give the server some time to deliver data
     //wxMilliSleep( m_afterCommandSleep  );
