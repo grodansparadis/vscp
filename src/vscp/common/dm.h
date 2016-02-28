@@ -63,150 +63,7 @@ enum {
 // Forward declaration
 class CDM;
 
-class actionThreadURL : public wxThread
-{
 
-public:
-
-    static enum accessmethod_t {
-        GET = 0,
-        PUT,
-        POST,
-        OPTIONS,
-        DEL,
-        PATCH
-    } accessmethod;
-
-    /*!
-        Constructor
-        @param pCtrlObject Pointer to main object
-        @param url URL to access
-        @param nAccessMethod 0 for GET, 1 for PUT and 2 for POST
-        @param putdata Data if PUT is used as accessmethod.
-        @param extraheaders Optional extra headers
-        @param proxy Optional proxy to use on the form <hostname>:<port number>
-        @param kind Threadtype.
-    */
-    actionThreadURL( CControlObject *pCtrlObject, 
-                      wxString& url,
-                      accessmethod_t nAccessMethod,
-                      wxString& putdata,
-                      wxString& extraheaders,
-                      wxString& proxy,
-                      wxThreadKind kind = wxTHREAD_DETACHED );
-  
-    /// Destructor
-    ~actionThreadURL();
-
-    virtual void *Entry();
-
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-    */
-    virtual void OnExit();
-
-private:
-
-    /*!
-        Control object pointer
-    */
-    CControlObject *m_pCtrlObject;
-
-    /*!
-        URL to access  
-    */
-    wxURL m_url;
-  
-    /*!
-        Accessmethod for HTTP call
-    */
-    accessmethod_t m_acessMethod;
-
-    /*!
-        Data for PUT
-    */
-    wxString m_putdata;
-    
-    /*!
-        Optional Extra headers
-     */
-    wxString m_extraheaders;
-    
-    // Is set to true if initialization went OK
-    bool m_bOK;
-};
-
-
-
-class actionThreadVSCPSrv : public wxThread
-{
-
-public:
-
-  /*!
-    Constructor
-    @param pCtrlObject Pointer to main object
-    @param strHostname Host to connect to.
-    @param port TCP/IP port to use.
-    @param strUsername Username.
-    @param strUsername Username.
-    @param strEvent Event to send
-    @param kind Threadtype.
-  */
-  actionThreadVSCPSrv( CControlObject *pCtrlObject, 
-                          wxString& strHostname, 
-                          short port, 
-                          wxString& strUsername, 
-                          wxString& strPassword,
-                          wxString& strEvent,
-                          wxThreadKind kind = wxTHREAD_DETACHED );
-  
-  /// Destructor
-  ~actionThreadVSCPSrv();
-
-  virtual void *Entry();
-
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-    */
-    virtual void OnExit();
-
-private:
-
-
-    /*!
-        Control object pointer
-    */
-    CControlObject *m_pCtrlObject;
-
-  /*!
-    Hostname  
-  */
-  wxString m_strHostname;
-
-  /*!
-    port to access server at
-  */
-  short m_port;
-
-  /*!
-    username to login with  
-  */
-  wxString m_strUsername;
-
-  /*!
-    Password to login with  
-  */
-  wxString m_strPassword;
-
-  /*!
-    The event to send  
-  */
-  vscpEventEx m_eventThe;
-
-};
 
 
 
@@ -946,6 +803,208 @@ public:
 
 };
 
+
+////////////////////////////////////////////////////////////////////////////////
+//                            ACTION TREADS
+////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////
+// actionThread_URL
+//
+
+class actionThread_URL : public wxThread
+{
+
+public:
+
+    static enum accessmethod_t {
+        GET = 0,
+        PUT,
+        POST,
+        OPTIONS,
+        DEL,
+        PATCH
+    } accessmethod;
+
+    /*!
+        Constructor
+        @param pCtrlObject Pointer to main object
+        @param url URL to access
+        @param nAccessMethod 0 for GET, 1 for PUT and 2 for POST
+        @param putdata Data if PUT is used as accessmethod.
+        @param extraheaders Optional extra headers
+        @param proxy Optional proxy to use on the form <hostname>:<port number>
+        @param kind Threadtype.
+    */
+    actionThread_URL( CControlObject *pCtrlObject, 
+                      wxString& url,
+                      accessmethod_t nAccessMethod,
+                      wxString& putdata,
+                      wxString& extraheaders,
+                      wxString& proxy,
+                      wxThreadKind kind = wxTHREAD_DETACHED );
+  
+    /// Destructor
+    ~actionThread_URL();
+
+    virtual void *Entry();
+
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+    */
+    virtual void OnExit();
+
+private:
+
+    /*!
+        Control object pointer
+    */
+    CControlObject *m_pCtrlObject;
+
+    /*!
+        URL to access  
+    */
+    wxURL m_url;
+  
+    /*!
+        Accessmethod for HTTP call
+    */
+    accessmethod_t m_acessMethod;
+
+    /*!
+        Data for PUT
+    */
+    wxString m_putdata;
+    
+    /*!
+        Optional Extra headers
+     */
+    wxString m_extraheaders;
+    
+    // Is set to true if initialization went OK
+    bool m_bOK;
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
+// actionThread_VSCPSrv
+//
+
+class actionThread_VSCPSrv : public wxThread
+{
+
+public:
+
+    /*!
+        Constructor
+        @param pCtrlObject Pointer to main object
+        @param strHostname Host to connect to.
+        @param port TCP/IP port to use.
+        @param strUsername Username.
+        @param strUsername Username.
+        @param strEvent Event to send
+        @param kind Threadtype.
+    */
+    actionThread_VSCPSrv( CControlObject *pCtrlObject, 
+                            wxString& strHostname, 
+                            short port, 
+                            wxString& strUsername, 
+                            wxString& strPassword,
+                            wxString& strEvent,
+                            wxThreadKind kind = wxTHREAD_DETACHED );
+  
+    /// Destructor
+    ~actionThread_VSCPSrv();
+
+    virtual void *Entry();
+
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+    */
+    virtual void OnExit();
+
+private:
+
+
+    /*!
+        Control object pointer
+    */
+    CControlObject *m_pCtrlObject;
+
+    /*!
+        Hostname  
+    */
+    wxString m_strHostname;
+
+    /*!
+        port to access server at
+    */
+    short m_port;
+
+    /*!
+        username to login with  
+    */
+    wxString m_strUsername;
+
+    /*!
+        Password to login with  
+    */
+    wxString m_strPassword;
+
+    /*!
+        The event to send  
+    */
+    vscpEventEx m_eventThe;
+
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
+// actionThread_LUA
+//
+
+class actionThread_LUA : public wxThread {
+    
+public:
+
+    /// Constructor
+    actionThread_LUA( CControlObject *pCtrlObject,
+                          wxString& strScript,
+                          wxThreadKind kind = wxTHREAD_DETACHED );
+
+    /// Destructor
+    virtual ~actionThread_LUA();
+
+    /*!
+        Thread code entry point
+     */
+    virtual void *Entry();
+
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+     */
+    virtual void OnExit();
+
+    /*!
+        Termination control
+     */
+    bool m_bQuit;
+
+    /*!
+        Pointer to control object.
+     */
+    CControlObject *m_pCtrlObject;
+    
+    /*!
+     * Script
+     */
+    wxString m_wxstrScript;
+
+};
 
 
 

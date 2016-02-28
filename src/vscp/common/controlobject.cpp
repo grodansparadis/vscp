@@ -188,7 +188,7 @@ CControlObject::CControlObject()
     gpctrlObj = this;           // needed by websocket static callbacks
 
     m_maxItemsInClientReceiveQueue = MAX_ITEMS_CLIENT_RECEIVE_QUEUE;
-
+    
     // Nill the GUID
     m_guid.clear();
 

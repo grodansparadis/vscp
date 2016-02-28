@@ -70,10 +70,10 @@ void help(char *szPrgname);
 
 void sighandler(int sig)
 {
-	gpobj->m_bQuit = true;
-	gbStopDaemon = true;
-	syslog(LOG_CRIT, "vscpd: signal received, forced to stop.: %m");
-	wxLogError(_("vscpd: signal received, forced to stop.: %m"));
+    gpobj->m_bQuit = true;
+    gbStopDaemon = true;
+    syslog(LOG_CRIT, "vscpd: signal received, forced to stop.: %m");
+    wxLogError(_("vscpd: signal received, forced to stop.: %m"));
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -85,7 +85,7 @@ void sighandler(int sig)
 
 VSCPApp::VSCPApp()
 {
-	;
+    ;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -93,84 +93,85 @@ VSCPApp::VSCPApp()
 
 int main(int argc, char **argv)
 {
-	int arg = 0;
-	wxString strcfgfile;
+    int arg = 0;
+    wxString strcfgfile;
 
         // Ignore return value from defunct processes
-	signal(SIGCHLD, SIG_IGN);
+    signal(SIGCHLD, SIG_IGN);
         
-	crcInit();
-	/*	
-	  unsigned char ttt[ 50 ];
-	  for ( int m=0; m<50; m++ ) {
-	  ttt[ m ] = m+8;
-	  }	
+    crcInit();
     
-	 *((unsigned short *)(ttt + 48 )) = crcFast( ttt, 48 );
-	  ttt[ 48 ] = 0x9f; 
-	  ttt[ 49 ] = 0x87;
-	  printf( "CRC for data = %X\n", crcFast( ttt, 48 ) );
-	  printf( "CRC for all = %X\n", crcFast( ttt, 50 ) );
-	*/
+    /*
+      unsigned char ttt[ 50 ];
+      for ( int m=0; m<50; m++ ) {
+      ttt[ m ] = m+8;
+      }
+    
+     *((unsigned short *)(ttt + 48 )) = crcFast( ttt, 48 );
+      ttt[ 48 ] = 0x9f; 
+      ttt[ 49 ] = 0x87;
+      printf( "CRC for data = %X\n", crcFast( ttt, 48 ) );
+      printf( "CRC for all = %X\n", crcFast( ttt, 50 ) );
+    */
 
-	wxInitializer initializer;
-	if (!::wxInitialize()) {
-		fprintf(stderr, "Failed to initialize the wxWindows library, aborting.");
+    wxInitializer initializer;
+    if (!::wxInitialize()) {
+        fprintf(stderr, "Failed to initialize the wxWindows library, aborting.");
 
-		return -1;
-	}
-	
-	gpobj = new CControlObject();
+        return -1;
+    }
+    
+    gpobj = new CControlObject();
 
-	//wxStandardPaths *strpath = wxStandardPaths::Get();
-	//strcfgFile =  _("/etc/vscp/vscpd.conf" );     // default config path
-	strcfgfile = wxStandardPaths::Get().GetConfigDir() + _("/vscp/vscpd.conf");
-	gbStopDaemon = false;
+    //wxStandardPaths *strpath = wxStandardPaths::Get();
+    //strcfgFile =  _("/etc/vscp/vscpd.conf" );     // default config path
+    strcfgfile = wxStandardPaths::Get().GetConfigDir() + _("/vscp/vscpd.conf");
+    gbStopDaemon = false;
 
-	VSCPApp theApp;
-	//IMPLEMENT_APP(theApp)
+    VSCPApp theApp;
+    //IMPLEMENT_APP(theApp)
     
         wxSocketBase::Initialize();
 
-	while ((arg = getopt(argc, argv, "d:c:hgs")) != EOF) {
+    while ((arg = getopt(argc, argv, "d:c:hgs")) != EOF) {
 
-		switch (arg) {
+        switch (arg) {
 
-		case 's':
-			wxPrintf(_("Be hungry, stay foolish my friend!\n"));
-			wxPrintf(_("I will ***NOT*** run as daemon! (ctrl+c to terminate)\n"));
-			gbDontRunAsDaemon = true;
-			break;
+        case 's':
+            wxPrintf(_("Be hungry, stay foolish my friend!\n"));
+            wxPrintf(_("I will ***NOT*** run as daemon! (ctrl+c to terminate)\n"));
+            gbDontRunAsDaemon = true;
+            break;
 
-		case 'c':
-			strcfgfile = wxString(optarg, wxConvUTF8);
-			//wxMBConvUTF8 cnv;
-			//cnv.MB2WC( strcfgfile, optarg, 10 );
-			break;
+        case 'c':
+            strcfgfile = wxString(optarg, wxConvUTF8);
+            //wxMBConvUTF8 cnv;
+            //cnv.MB2WC( strcfgfile, optarg, 10 );
+            break;
 
-		case 'd':
-			gnDebugLevel = atoi(optarg);
-			break;
+        case 'd':
+            gnDebugLevel = atoi(optarg);
+            break;
 
-		case 'g':
-			copyleft();
-			exit(0);
-			break;
+        case 'g':
+            copyleft();
+            exit(0);
+            break;
 
-		default:
-		case 'h':
-			help(argv[0]);
-			exit(-1);
-		}
-	}
+        default:
+        case 'h':
+            help(argv[0]);
+            exit(-1);
+        }
+    }
 
-	wxLogDebug(_("ControlObject: Configfile =") + strcfgfile);
-	if ( !theApp.init( strcfgfile ) ) {
-		printf("ControlObject: Failed to configure. Terminating.");
-		wxLogDebug(_("ControlObject: Failed to configure. Terminating."));
-	}
-	
-	delete gpobj;
+    wxLogDebug(_("ControlObject: Configfile =") + strcfgfile);
+    if ( !theApp.init( strcfgfile ) ) {
+        printf("ControlObject: Failed to configure. Terminating.");
+        wxLogDebug(_("ControlObject: Failed to configure. Terminating."));
+    }
+    
+    delete gpobj;
 
 }
 
@@ -182,109 +183,109 @@ int main(int argc, char **argv)
 BOOL VSCPApp::init(wxString& strcfgfile)
 {
    
-	if (!gbDontRunAsDaemon) {
+    if (!gbDontRunAsDaemon) {
 
-		pid_t pid, sid;
+        pid_t pid, sid;
 
-		// Fork child	
-		if (0 > (pid = fork())) {
-			// Failure
-			printf("Failed to fork.");
-			return -1;
-		} 
-		else if (0 != pid) {
-			exit(0); // Parent goes by by.
-		}
+        // Fork child	
+        if (0 > (pid = fork())) {
+            // Failure
+            printf("Failed to fork.");
+            return -1;
+        } 
+        else if (0 != pid) {
+            exit(0); // Parent goes by by.
+        }
 
-		sid = setsid(); // Become session leader
-		if (sid < 0) {
-			// Failure 
-			printf("Failed to become session leader.");
-			return -1;
-		}
+        sid = setsid(); // Become session leader
+        if (sid < 0) {
+            // Failure 
+            printf("Failed to become session leader.");
+            return -1;
+        }
 
-		// Write pid to file
-		FILE *pFile;
-		pFile = fopen("/var/run/vscpd/vscpd.pid", "w");
-		if (NULL != pFile) {
-			fprintf(pFile, "%d\n", sid);
-			fclose(pFile);
-		}
+        // Write pid to file
+        FILE *pFile;
+        pFile = fopen("/var/run/vscpd/vscpd.pid", "w");
+        if (NULL != pFile) {
+            fprintf(pFile, "%d\n", sid);
+            fclose(pFile);
+        }
 
-		if ( chdir("/") ) { // Change working directory
-			syslog( LOG_WARNING, "VSCPD: Failed to change dir to rootdir");
-		}
+        if ( chdir("/") ) { // Change working directory
+            syslog( LOG_WARNING, "VSCPD: Failed to change dir to rootdir");
+        }
 
-		umask(0); // Clear out file mode creation mask
+        umask(0); // Clear out file mode creation mask
 
-		// Close out the standard file descriptors 
-		close(STDIN_FILENO);
-		close(STDOUT_FILENO);
-		close(STDERR_FILENO);
+        // Close out the standard file descriptors 
+        close(STDIN_FILENO);
+        close(STDOUT_FILENO);
+        close(STDERR_FILENO);
 
-		if (open("/", 0)) {
-			syslog(LOG_CRIT, "VSCPD: open / not 0: %m");
-		}
+        if (open("/", 0)) {
+            syslog(LOG_CRIT, "VSCPD: open / not 0: %m");
+        }
 
-		dup2(0, 1);
-		dup2(0, 2);
+        dup2(0, 1);
+        dup2(0, 2);
 
-		struct sigaction my_action;
+        struct sigaction my_action;
 
-		// Ignore SIGPIPE
-		my_action.sa_handler = SIG_IGN;
-		my_action.sa_flags = SA_RESTART;
-		sigaction(SIGPIPE, &my_action, NULL);
+        // Ignore SIGPIPE
+        my_action.sa_handler = SIG_IGN;
+        my_action.sa_flags = SA_RESTART;
+        sigaction(SIGPIPE, &my_action, NULL);
 
-		// Redirect SIGQUIT
-		my_action.sa_handler = sighandler;
-		my_action.sa_flags = SA_RESTART;
-		sigaction(SIGQUIT, &my_action, NULL);
+        // Redirect SIGQUIT
+        my_action.sa_handler = sighandler;
+        my_action.sa_flags = SA_RESTART;
+        sigaction(SIGQUIT, &my_action, NULL);
 
-		// Redirect SIGABRT
-		my_action.sa_handler = sighandler;
-		my_action.sa_flags = SA_RESTART;
-		sigaction(SIGABRT, &my_action, NULL);
+        // Redirect SIGABRT
+        my_action.sa_handler = sighandler;
+        my_action.sa_flags = SA_RESTART;
+        sigaction(SIGABRT, &my_action, NULL);
 
-		// Redirect SIGINT
-		my_action.sa_handler = sighandler;
-		my_action.sa_flags = SA_RESTART;
-		sigaction(SIGINT, &my_action, NULL);
+        // Redirect SIGINT
+        my_action.sa_handler = sighandler;
+        my_action.sa_flags = SA_RESTART;
+        sigaction(SIGINT, &my_action, NULL);
 
-		// Redirect SIGTERM
-		my_action.sa_handler = sighandler;
-		my_action.sa_flags = SA_RESTART;
-		sigaction(SIGTERM, &my_action, NULL);
+        // Redirect SIGTERM
+        my_action.sa_handler = sighandler;
+        my_action.sa_flags = SA_RESTART;
+        sigaction(SIGTERM, &my_action, NULL);
 
-	}
+    }
 
-	//wxFile
+    //wxFile
 
 
-	wxLogDebug(_("VSCPD: init"));
-	if ( !gpobj->init( strcfgfile ) ) {
-		printf("Can't initialize daemon. Exiting.");
-		syslog(LOG_CRIT, "Can't initialize daemon. Exiting.");
-		return FALSE;
-	}
+    wxLogDebug(_("VSCPD: init"));
+    if ( !gpobj->init( strcfgfile ) ) {
+        printf("Can't initialize daemon. Exiting.");
+        syslog(LOG_CRIT, "Can't initialize daemon. Exiting.");
+        return FALSE;
+    }
 
-	wxLogDebug(_("VSCPD: run"));
-	if (!gpobj->run()) {
-		printf("Unable to start the VSCPD application. Exiting.");
-		syslog(LOG_CRIT, "Unable to start the VSCPD application. Exiting.");
-	}
+    wxLogDebug(_("VSCPD: run"));
+    if (!gpobj->run()) {
+        printf("Unable to start the VSCPD application. Exiting.");
+        syslog(LOG_CRIT, "Unable to start the VSCPD application. Exiting.");
+    }
 
-	wxLogDebug(_("VSCPD: cleanup"));
-	if (!gpobj->cleanup()) {
-		printf("Unable to clean up the VSCPD application.");
-		syslog(LOG_CRIT, "Unable to clean up the VSCPD application.");
-	}
+    wxLogDebug(_("VSCPD: cleanup"));
+    if (!gpobj->cleanup()) {
+        printf("Unable to clean up the VSCPD application.");
+        syslog(LOG_CRIT, "Unable to clean up the VSCPD application.");
+    }
 
-	// Remove the pid file
-	unlink("/var/run/vscp/vscpd/vscpd.pid");
-	
+    // Remove the pid file
+    unlink("/var/run/vscp/vscpd/vscpd.pid");
+    
 
-	return FALSE;
+    return FALSE;
 }
 
 
@@ -295,27 +296,27 @@ BOOL VSCPApp::init(wxString& strcfgfile)
 
 void copyleft(void)
 {
-	wxPrintf(_("\n\n"));
-	wxPrintf(_("vscpd - "));
-	wxPrintf(_(VSCPD_DISPLAY_VERSION));
-	wxPrintf(_("\n"));
-	wxPrintf(_(VSCPD_COPYRIGHT));
-	wxPrintf(_("\n"));
-	wxPrintf(_("\n"));
-	wxPrintf(_("This program is free software; you can redistribute it and/or \n"));
-	wxPrintf(_("modify it under the terms of the GNU General Public License as \n"));
-	wxPrintf(_("published by the Free Software Foundation; either version 2 of \n"));
-	wxPrintf(_("the License, or ( at your option ) any later version.\n"));
-	wxPrintf(_("\n"));
-	wxPrintf(_("This program is distributed in the hope that it will be useful,\n"));
-	wxPrintf(_("but WITHOUT ANY WARRANTY; without even the implied warranty of\n"));
-	wxPrintf(_("MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"));
-	wxPrintf(_("\n"));
-	wxPrintf(_("GNU General Public License for more details.\n"));
-	wxPrintf(_("\n"));
-	wxPrintf(_("You should have received a copy of the GNU General Public License\n"));
-	wxPrintf(_("along with this program; if not, write to the Free Software\n"));
-	wxPrintf(_("Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n\n"));
+    wxPrintf(_("\n\n"));
+    wxPrintf(_("vscpd - "));
+    wxPrintf(_(VSCPD_DISPLAY_VERSION));
+    wxPrintf(_("\n"));
+    wxPrintf(_(VSCPD_COPYRIGHT));
+    wxPrintf(_("\n"));
+    wxPrintf(_("\n"));
+    wxPrintf(_("This program is free software; you can redistribute it and/or \n"));
+    wxPrintf(_("modify it under the terms of the GNU General Public License as \n"));
+    wxPrintf(_("published by the Free Software Foundation; either version 2 of \n"));
+    wxPrintf(_("the License, or ( at your option ) any later version.\n"));
+    wxPrintf(_("\n"));
+    wxPrintf(_("This program is distributed in the hope that it will be useful,\n"));
+    wxPrintf(_("but WITHOUT ANY WARRANTY; without even the implied warranty of\n"));
+    wxPrintf(_("MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"));
+    wxPrintf(_("\n"));
+    wxPrintf(_("GNU General Public License for more details.\n"));
+    wxPrintf(_("\n"));
+    wxPrintf(_("You should have received a copy of the GNU General Public License\n"));
+    wxPrintf(_("along with this program; if not, write to the Free Software\n"));
+    wxPrintf(_("Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n\n"));
 }
 
 
@@ -324,13 +325,13 @@ void copyleft(void)
 
 void help(char *szPrgname)
 {
-	fprintf(stderr, "Usage: %s [-ahg] [-c command-file] -dn\n", szPrgname);
-	fprintf(stderr, "\t-h\tThis help message.\n");
-	fprintf(stderr, "\t-s\tStandalone (don't run as daemon)..\n");
-	fprintf(stderr, "\t-c\tSpecify a configuration file \n");
-	fprintf(stderr, "\t-d\tDebug level. 0=None, 99=Don't run as daemon. ");
-	fprintf(stderr, "that should be used (default: /etc/canalworks.conf).\n");
-	fprintf(stderr, "\t-g\tPrint the GNU copyleft info.\n");
+    fprintf(stderr, "Usage: %s [-ahg] [-c command-file] -dn\n", szPrgname);
+    fprintf(stderr, "\t-h\tThis help message.\n");
+    fprintf(stderr, "\t-s\tStandalone (don't run as daemon)..\n");
+    fprintf(stderr, "\t-c\tSpecify a configuration file \n");
+    fprintf(stderr, "\t-d\tDebug level. 0=None, 99=Don't run as daemon. ");
+    fprintf(stderr, "that should be used (default: /etc/canalworks.conf).\n");
+    fprintf(stderr, "\t-g\tPrint the GNU copyleft info.\n");
 }
 
 
