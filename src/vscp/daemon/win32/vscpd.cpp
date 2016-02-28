@@ -8,7 +8,7 @@
 //
 // This file is part of the CANAL (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2015 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2016 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -20,6 +20,9 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
+
+#define XSTR(x) STR(x)
+//#define STR(x) #x
 
 #include <signal.h>
 
@@ -74,6 +77,10 @@ int main(int argc, char **argv)
     (void) signal( SIGABRT, doabort ); 
     (void) signal( SIGTERM, doabort );  
     (void) signal( SIGINT, doabort );
+
+#if defined( _MSC_VER ) && _MSC_VER < 1600
+#pragma message ( "Visual studio version = "  STR(_MSC_VER) )
+#endif
 
 #if wxUSE_UNICODE
     wxChar **wxArgv = new wxChar *[argc + 1];

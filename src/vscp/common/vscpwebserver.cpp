@@ -324,7 +324,7 @@ static int is_authorized( struct mg_connection *conn,
     if ( NULL == pObject ) return 0;
     
     struct mg_str *hdr;
-    char buf[128], f_user[sizeof(buf)], f_ha1[sizeof(buf)], f_domain[sizeof(buf)];
+    //char buf[128], f_user[sizeof(buf)], f_ha1[sizeof(buf)], f_domain[sizeof(buf)];
     char user[50], cnonce[20], response[40], uri[200], qop[20], nc[20], nonce[30];
 
     // Parse "Authorization:" header, fail fast on parse error 
@@ -346,12 +346,16 @@ static int is_authorized( struct mg_connection *conn,
         pUserItem = pObject->m_userList.getUser( wxString::FromAscii( user ) );
         if ( NULL == pUserItem ) return 0;
         
+        /* 
+            Fix when moongose (6.0) misbehaved)
+            Does not work on windows
+
         socklen_t len;
         struct sockaddr_storage addr;
         char ipstr[INET6_ADDRSTRLEN];
         int port;
 
-        /* Fix when moongose (6.0) misbehaved)
+        
          * len = sizeof addr;
         getpeername( conn->sock, (struct sockaddr*)&addr, &len);
         
@@ -432,9 +436,9 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
     wxString strErr;
     struct websock_session *pWebSockSession;
     struct websrv_Session * pWebSrvSession;
-    char user[256], nonce[256],
+    /*char user[256], nonce[256],
             uri[32768], cnonce[256], 
-            resp[256], qop[256], ncc[256];
+            resp[256], qop[256], ncc[256];*/
     
     char *cookie = NULL;
 
