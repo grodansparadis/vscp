@@ -46,12 +46,6 @@
 
 //#ifdef VSCP_ENABLE_LUA
 #include <lua.hpp>
-//extern "C" {
-//#include "lua.h"
-//#include "lualib.h"
-//#include "lauxlib.h"
-//}
-//#endif
 
 #include <vscp.h>
 #include <version.h>

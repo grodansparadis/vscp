@@ -724,7 +724,6 @@ VSCPWebServerThread::~VSCPWebServerThread()
 void *VSCPWebServerThread::Entry()
 {
     clock_t ticks,oldus;
-    struct mg_serve_http_opts opts;     // Server options
     struct mg_connection *nc;
     
     mg_mgr_init( &gmgr, m_pCtrlObject );
