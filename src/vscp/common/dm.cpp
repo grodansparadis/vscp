@@ -44,11 +44,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef VSCP_ENABLE_LUA
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
-#endif
+//#ifdef VSCP_ENABLE_LUA
+#include <lua.hpp>
+//extern "C" {
+//#include "lua.h"
+//#include "lualib.h"
+//#include "lauxlib.h"
+//}
+//#endif
 
 #include <vscp.h>
 #include <version.h>
@@ -64,376 +67,6 @@
 WX_DEFINE_LIST( PLUGINLIST );
 WX_DEFINE_LIST( DMLIST );
 WX_DEFINE_LIST( ACTIONTIME );
-
-#ifdef VSCP_ENABLE_LUA
-// the Lua interpreter 
-lua_State* L;
-#endif
-
-///////////////////////////////////////////////////////////////////////////////
-// actionThreadURL
-//
-// This thread connects to a HTTP server on a specified port
-//
-
-actionThreadURL::actionThreadURL( CControlObject *pCtrlObject, 
-                                    wxString& url,
-                                    accessmethod_t nAccessMethod,
-                                    wxString& putdata,
-                                    wxString& extraheaders,
-                                    wxString& proxy,
-                                    wxThreadKind kind )
-                                    : wxThread( kind )
-{
-    m_bOK = true;
-    
-    //OutputDebugString( "actionThreadURL: Create");
-    m_pCtrlObject = pCtrlObject;
-
-    // Set URL
-    if (  wxURL_NOERR != m_url.SetURL( url ) ) {
-        m_bOK = false;
-    }
-    
-    m_extraheaders.Empty();
-    
-    int pos;
-    wxString wxwrk = extraheaders;
-    while ( wxNOT_FOUND != ( pos = wxwrk.Find( _("\\n") ) ) ) {
-        m_extraheaders += wxwrk.Left( pos );
-        m_extraheaders += _("\r\n");
-        wxwrk = wxwrk.Right( wxwrk.Length()-pos-2 );
-    }
-
-    m_acessMethod = nAccessMethod;
-    m_putdata = putdata;
-
-    m_url.SetProxy( proxy );
-}
-
-actionThreadURL::~actionThreadURL()
-{
-    ;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// Entry
-//
-// http://www.jmarshall.com/easy/http/
-//
-
-void *actionThreadURL::Entry()
-{
-    //m_pCtrlObject->logMsg ( _T ( "TCP actionThreadURL: Quit.\n" ), DAEMON_LOGMSG_INFO );
-    
-    wxIPV4address addr;
-    wxSocketClient sock;
-
-    addr.Hostname( m_url.GetServer() );
-    addr.Service( m_url.GetPort() );
-
-    if ( sock.Connect( addr ) ) {
-
-        wxString wxstr;
-        wxString wxwork;
-
-        // Check if access method is GET
-        if ( actionThreadURL::GET == m_acessMethod ) {
-            
-            wxstr = wxT("GET ");
-            wxstr += m_url.GetPath();
-            wxstr += wxT("?");
-            wxstr += m_url.GetQuery();
-            wxstr += wxT(" ");
-            wxstr += wxT("HTTP/1.1\r\n");
-            wxstr += wxT("Host: ");
-            wxstr += m_url.GetServer();
-            wxstr += wxT(":");
-            wxstr += m_url.GetPort();
-            wxstr += wxT("\r\n");
-            wxstr += wxString::Format( wxT("User-Agent: VSCPD/%s\r\n"),
-                                        VSCPD_DISPLAY_VERSION );
-            
-            // Add extra headers if there are any
-            if ( m_extraheaders.Length() ) {
-                wxstr += m_extraheaders;
-            }
-            wxstr += wxT("\r\n\r\n");
-                                            
-        }
-        // OK the access method is POST
-        else if ( actionThreadURL::POST == m_acessMethod ) {
-            
-            wxstr = wxT("POST ");
-            wxstr += m_url.GetPath();
-            wxstr += wxT(" ");
-            wxstr += wxT("HTTP/1.1\r\n");
-            wxstr += wxT("Host: ");
-            wxstr += m_url.GetServer();
-            wxstr += wxT(":");
-            wxstr += m_url.GetPort();
-            wxstr += wxT("\r\n");
-            wxstr += wxString::Format( wxT("User-Agent: VSCPD/%s\r\n"),
-                                        VSCPD_DISPLAY_VERSION );
-            // Add extra headers if there are any
-            if ( m_extraheaders.Length() ) {
-                wxstr += m_extraheaders;
-            }
-            
-            wxstr += wxT("Accept: */*\r\n");
-            wxstr += wxT("Content-Type: application/x-www-form-urlencoded\r\n");            
-            wxstr += wxT("Content-Length: ");
-            wxstr += wxString::Format(_("%ld"),m_putdata.Length());
-            wxstr += wxT("\r\n\r\n");
-            wxstr += m_putdata;
-            wxstr += wxT("\r\n");
-            
-        }
-        // OK the access method is PUT
-        else if ( actionThreadURL::PUT == m_acessMethod ) {
-            
-            wxstr = wxT("PUT ");
-            wxstr += m_url.GetPath();
-            wxstr += wxT(" ");
-            wxstr += wxT("HTTP/1.1\r\n");
-            wxstr += wxT("Host: ");
-            wxstr += m_url.GetServer();
-            wxstr += wxT(":");
-            wxstr += m_url.GetPort();
-            wxstr += wxT("\r\n");
-            wxstr += wxString::Format( wxT("User-Agent: VSCPD/%s\r\n"),
-                                        VSCPD_DISPLAY_VERSION );
-                                        
-            // Add extra headers if there are any
-            if ( m_extraheaders.Length() ) {
-                wxstr += m_extraheaders;
-            }
-            
-            wxstr += wxT("Content-Type: application/x-www-form-urlencoded\r\n");
-            wxstr += wxT("Content-Length: ");
-            wxstr += wxString::Format(_("%ld"),m_putdata.Length());
-            wxstr += wxT("\r\n\r\n");
-            wxstr += m_putdata;
-            wxstr += wxT("\r\n");
-            
-        }
-        else {
-            
-            // Invalid method
-            m_pCtrlObject->logMsg( _T ( "actionThreadURL: Invalid http access method: " ) +
-                m_url.GetServer() + 
-                wxT(",") + 
-                m_url.GetPort() +
-                wxT(",") + 
-                m_url.GetPath() +
-                wxT(",") +
-                wxString::Format( _("acessMethod = %d" ), m_acessMethod ) +
-                wxT(" \n"), 
-                DAEMON_LOGMSG_ERROR );
-                
-        }
-        
-        m_pCtrlObject->logMsg( _T ( "actionThreadURL: Request: \n" ) +
-                wxstr, 
-                DAEMON_LOGMSG_DEBUG );        
-        
-        // Send the request 
-        sock.Write( wxstr, wxstr.Length() );
-#if  wxMAJOR_VERSION >=3
-        if ( sock.Error() || (  wxstr.Length() != sock.LastWriteCount() ) ) {
-#else
-	if ( sock.Error() ) {
-#endif
-            // There was an error
-            m_pCtrlObject->logMsg( _T ( "actionThreadURL: Error writing request: " ) +
-                m_url.GetServer() + 
-                wxT(",") + 
-                m_url.GetPort() +
-                wxT(",") + 
-                m_url.GetPath() +
-                wxT(",") +
-                wxString::Format( _("acessMethod = %d" ), m_acessMethod ) +
-                wxT(" \n"), 
-                DAEMON_LOGMSG_ERROR );
-        }
-
-        // Get the response
-        char buffer[ 8192 ];
-        wxString strReponse;
-        
-        //while ( !sock.Read( buffer, sizeof( buffer ) ).LastReadCount() );
-        sock.Read( buffer, sizeof( buffer ) );
-        if ( !sock.Error() ) {
-
-            // OK, Check the response
-            strReponse = wxString::FromUTF8( buffer );
-            
-            // Log response
-            m_pCtrlObject->logMsg( _T ( "actionThreadURL: OK Response: " ) +
-                strReponse + 
-                wxT(" \n"), 
-                DAEMON_LOGMSG_ERROR );
-
-            wxStringTokenizer tkz( strReponse );
-            if ( tkz.HasMoreTokens() ) {
-                
-                wxString str = tkz.GetNextToken();
-                if ( wxNOT_FOUND != str.Find( wxT("OK") ) ) {
-                    
-                    // Something is wrong
-                    m_pCtrlObject->logMsg ( _T ( "actionThreadURL: Error reading respons: " ) +
-                        m_url.GetServer() + 
-                        wxT(",") + 
-                        m_url.GetPort() +
-                        wxT(",") + 
-                        m_url.GetPath() +
-                        wxT(",") +
-                        wxString::Format( _("acessMethod = %d" ), m_acessMethod ) +
-                        wxT(", Response = ") +
-                        strReponse +
-                        wxT(" \n"), 
-                        DAEMON_LOGMSG_ERROR );
-                        
-                }
-            }
-
-        }
-        else {
-            // There was an error
-            m_pCtrlObject->logMsg ( _T ( "actionThreadURL: Error reading respons: " ) +
-                m_url.GetServer() + 
-                wxT(",") + 
-                m_url.GetPort() +
-                wxT(",") + 
-                m_url.GetPath() +
-                wxT(",") +
-                ( m_acessMethod ? wxT("PUT") : wxT("GET") ) +
-                wxT(" \n"), 
-                DAEMON_LOGMSG_ERROR );
-        }
-
-        // Close the socket
-        sock.Close();
-
-    }
-    else {
-        // There was an error connecting
-        m_pCtrlObject->logMsg( wxT( "actionThreadURL: Unable to connect: " ) +
-                                m_url.GetServer() + 
-                                wxT(",") + 
-                                m_url.GetPort() +
-                                wxT(",") + 
-                                m_url.GetPath() +
-                                wxT(",") +
-                                wxString::Format( _("acessMethod = %d" ), m_acessMethod ) +
-                                wxT(" \n"), 
-                                DAEMON_LOGMSG_ERROR );
-    }
-
-    return NULL;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// OnExit
-//
-
-void actionThreadURL::OnExit()
-{
-
-}
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// actionThreadVSCPSrv
-//
-// This thread connects to a ODBC database and execute a SQL expression.
-//
-
-actionThreadVSCPSrv::actionThreadVSCPSrv( CControlObject *pCtrlObject, 
-                                            wxString& strHostname, 
-                                            short port, 
-                                            wxString& strUsername, 
-                                            wxString& strPassword,
-                                            wxString& strEvent,
-                                            wxThreadKind kind )
-                                            : wxThread( kind )
-{
-    //OutputDebugString( "actionThreadURL: Create");
-    m_pCtrlObject = pCtrlObject;
-    m_strHostname = strHostname;
-    m_port = port;
-    m_strUsername = strUsername;
-    m_strPassword = strPassword;
-    vscp_setVscpEventExFromString( &m_eventThe, strEvent );
-}
-
-actionThreadVSCPSrv::~actionThreadVSCPSrv()
-{
-
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// Entry
-//
-// 
-
-void *actionThreadVSCPSrv::Entry()
-{
-    //m_pCtrlObject->logMsg ( _T ( "TCP actionThreadURL: Quit.\n" ), DAEMON_LOGMSG_INFO );
-    VscpRemoteTcpIf client;
-
-    if ( CANAL_ERROR_SUCCESS != client.doCmdOpen( m_strHostname,  
-        m_strUsername, 
-        m_strPassword ) ) {
-            // Failed to connect
-            m_pCtrlObject->logMsg( wxT( "actionThreadVSCPSrv: Unable to connect to remote server : " ) +
-                m_strHostname +
-                wxT(" \n"), 
-                DAEMON_LOGMSG_ERROR );
-    }
-
-    // Connected
-    if ( CANAL_ERROR_SUCCESS != client.doCmdSendEx( &m_eventThe ) ) {
-        // Failed to send event
-        m_pCtrlObject->logMsg( wxT( "actionThreadVSCPSrv: Unable to send event to remote server : " ) +
-            m_strHostname +
-            wxT(" \n"), 
-            DAEMON_LOGMSG_ERROR );
-    }
-
-    return NULL;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// OnExit
-//
-
-void actionThreadVSCPSrv::OnExit()
-{
-
-}
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -475,7 +108,7 @@ dmTimer::~dmTimer()
 actionTime::actionTime()
 {
     for ( int i=0; i<7; i++ ) {
-        m_weekDay[ i ] = true;	// Allow for all weekdays	
+        m_weekDay[ i ] = true;  // Allow for all weekdays
     }
 
     // Allow from the beginning of time
@@ -902,9 +535,9 @@ bool actionTime::ShouldWeDoAction( void )
                 if ( **iter == wxDateTime::Now().GetYear() ) {
                     bMatch = true;
                     break;
-                }	
+                }
             }
-        }	
+        }
 
         // Fail if no match found
         if ( !bMatch ) return false;
@@ -1772,14 +1405,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
     switch ( m_action ) {
 
-    case VSCP_DAEMON_ACTION_CODE_NOOP:
-        // We do nothing
-        logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_NOOP.") ); // Log
-        m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-        m_pDM->logMsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
-        vscp_writeVscpEventToString( pEvent, logStr );
-        m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
-        break;
+    
 
     case  VSCP_DAEMON_ACTION_CODE_EXECUTE:
         
@@ -1956,7 +1582,47 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
         doActionWriteTable( pEvent );
         break;
+        
+    case VSCP_DAEMON_ACTION_CODE_RUN_LUA:
 
+        logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_RUN_LUA.") ); // Log
+        m_pDM->logMsg( logStr, LOG_DM_NORMAL );
+        m_pDM->logMsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
+        vscp_writeVscpEventToString( pEvent, logStr );
+        m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+
+        {
+            // Write in possible escapes
+            wxString wxstr = m_actionparam;
+            handleEscapes( pEvent, wxstr );
+        
+            actionThread_LUA *pThread = 
+                new actionThread_LUA( m_pDM->m_pCtrlObject, wxstr );
+
+            wxThreadError err;
+            if (wxTHREAD_NO_ERROR == (err = pThread->Create())) {
+                pThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
+                if (wxTHREAD_NO_ERROR != (err = pThread->Run())) {
+                    m_pDM->logMsg(_("Unable to run actionThread_LUA client thread."), DAEMON_LOGMSG_CRITICAL);
+                }
+            } 
+            else {
+                m_pDM->logMsg(_("Unable to create actionThread_LUA client thread."), DAEMON_LOGMSG_CRITICAL);
+            }
+            
+        }
+        break;
+
+    default:
+    case VSCP_DAEMON_ACTION_CODE_NOOP:
+        // We do nothing
+        logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_NOOP.") ); // Log
+        m_pDM->logMsg( logStr, LOG_DM_NORMAL );
+        m_pDM->logMsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
+        vscp_writeVscpEventToString( pEvent, logStr );
+        m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+        break;
+        
     }
 
     return true;
@@ -2459,14 +2125,14 @@ bool dmElement::doActionGetURL( vscpEvent *pDMEvent )
     }
     
     // Access method
-    actionThreadURL::accessmethod_t nAccessMethod = actionThreadURL::GET;
+    actionThread_URL::accessmethod_t nAccessMethod = actionThread_URL::GET;
     wxString access = tkz.GetNextToken();
     access.MakeUpper();
     if ( wxNOT_FOUND != access.Find(wxT("PUT") ) ) {
-        nAccessMethod = actionThreadURL::PUT;
+        nAccessMethod = actionThread_URL::PUT;
     }
     else if ( wxNOT_FOUND != access.Find(wxT("POST") ) ) {
-        nAccessMethod = actionThreadURL::POST;
+        nAccessMethod = actionThread_URL::POST;
     }
 
     // Get URL
@@ -2502,8 +2168,8 @@ bool dmElement::doActionGetURL( vscpEvent *pDMEvent )
     }
 
     // Go do your work mate
-    actionThreadURL *thread = 
-            new actionThreadURL( m_pDM->m_pCtrlObject,
+    actionThread_URL *thread = 
+            new actionThread_URL( m_pDM->m_pCtrlObject,
                                     url,
                                     nAccessMethod,
                                     putdata,
@@ -4241,6 +3907,439 @@ bool CDM::stopTimer( int idTimer )
     pTimer->stopTimer();
 
     return true;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// actionThreadURL
+//
+// This thread connects to a HTTP server on a specified port
+//
+
+actionThread_URL::actionThread_URL( CControlObject *pCtrlObject, 
+                                    wxString& url,
+                                    accessmethod_t nAccessMethod,
+                                    wxString& putdata,
+                                    wxString& extraheaders,
+                                    wxString& proxy,
+                                    wxThreadKind kind )
+                                    : wxThread( kind )
+{
+    m_bOK = true;
+    
+    //OutputDebugString( "actionThreadURL: Create");
+    m_pCtrlObject = pCtrlObject;
+
+    // Set URL
+    if (  wxURL_NOERR != m_url.SetURL( url ) ) {
+        m_bOK = false;
+    }
+    
+    m_extraheaders.Empty();
+    
+    int pos;
+    wxString wxwrk = extraheaders;
+    while ( wxNOT_FOUND != ( pos = wxwrk.Find( _("\\n") ) ) ) {
+        m_extraheaders += wxwrk.Left( pos );
+        m_extraheaders += _("\r\n");
+        wxwrk = wxwrk.Right( wxwrk.Length()-pos-2 );
+    }
+
+    m_acessMethod = nAccessMethod;
+    m_putdata = putdata;
+
+    m_url.SetProxy( proxy );
+}
+
+actionThread_URL::~actionThread_URL()
+{
+    ;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Entry
+//
+// http://www.jmarshall.com/easy/http/
+//
+
+void *actionThread_URL::Entry()
+{
+    //m_pCtrlObject->logMsg ( _T ( "TCP actionThreadURL: Quit.\n" ), DAEMON_LOGMSG_INFO );
+    
+    wxIPV4address addr;
+    wxSocketClient sock;
+
+    addr.Hostname( m_url.GetServer() );
+    addr.Service( m_url.GetPort() );
+
+    if ( sock.Connect( addr ) ) {
+
+        wxString wxstr;
+        wxString wxwork;
+
+        // Check if access method is GET
+        if ( actionThread_URL::GET == m_acessMethod ) {
+            
+            wxstr = wxT("GET ");
+            wxstr += m_url.GetPath();
+            wxstr += wxT("?");
+            wxstr += m_url.GetQuery();
+            wxstr += wxT(" ");
+            wxstr += wxT("HTTP/1.1\r\n");
+            wxstr += wxT("Host: ");
+            wxstr += m_url.GetServer();
+            wxstr += wxT(":");
+            wxstr += m_url.GetPort();
+            wxstr += wxT("\r\n");
+            wxstr += wxString::Format( wxT("User-Agent: VSCPD/%s\r\n"),
+                                        VSCPD_DISPLAY_VERSION );
+            
+            // Add extra headers if there are any
+            if ( m_extraheaders.Length() ) {
+                wxstr += m_extraheaders;
+            }
+            wxstr += wxT("\r\n\r\n");
+                                            
+        }
+        // OK the access method is POST
+        else if ( actionThread_URL::POST == m_acessMethod ) {
+            
+            wxstr = wxT("POST ");
+            wxstr += m_url.GetPath();
+            wxstr += wxT(" ");
+            wxstr += wxT("HTTP/1.1\r\n");
+            wxstr += wxT("Host: ");
+            wxstr += m_url.GetServer();
+            wxstr += wxT(":");
+            wxstr += m_url.GetPort();
+            wxstr += wxT("\r\n");
+            wxstr += wxString::Format( wxT("User-Agent: VSCPD/%s\r\n"),
+                                        VSCPD_DISPLAY_VERSION );
+            // Add extra headers if there are any
+            if ( m_extraheaders.Length() ) {
+                wxstr += m_extraheaders;
+            }
+            
+            wxstr += wxT("Accept: */*\r\n");
+            wxstr += wxT("Content-Type: application/x-www-form-urlencoded\r\n");            
+            wxstr += wxT("Content-Length: ");
+            wxstr += wxString::Format(_("%ld"),m_putdata.Length());
+            wxstr += wxT("\r\n\r\n");
+            wxstr += m_putdata;
+            wxstr += wxT("\r\n");
+            
+        }
+        // OK the access method is PUT
+        else if ( actionThread_URL::PUT == m_acessMethod ) {
+            
+            wxstr = wxT("PUT ");
+            wxstr += m_url.GetPath();
+            wxstr += wxT(" ");
+            wxstr += wxT("HTTP/1.1\r\n");
+            wxstr += wxT("Host: ");
+            wxstr += m_url.GetServer();
+            wxstr += wxT(":");
+            wxstr += m_url.GetPort();
+            wxstr += wxT("\r\n");
+            wxstr += wxString::Format( wxT("User-Agent: VSCPD/%s\r\n"),
+                                        VSCPD_DISPLAY_VERSION );
+                                        
+            // Add extra headers if there are any
+            if ( m_extraheaders.Length() ) {
+                wxstr += m_extraheaders;
+            }
+            
+            wxstr += wxT("Content-Type: application/x-www-form-urlencoded\r\n");
+            wxstr += wxT("Content-Length: ");
+            wxstr += wxString::Format(_("%ld"),m_putdata.Length());
+            wxstr += wxT("\r\n\r\n");
+            wxstr += m_putdata;
+            wxstr += wxT("\r\n");
+            
+        }
+        else {
+            
+            // Invalid method
+            m_pCtrlObject->logMsg( _T ( "actionThreadURL: Invalid http access method: " ) +
+                m_url.GetServer() + 
+                wxT(",") + 
+                m_url.GetPort() +
+                wxT(",") + 
+                m_url.GetPath() +
+                wxT(",") +
+                wxString::Format( _("acessMethod = %d" ), m_acessMethod ) +
+                wxT(" \n"), 
+                DAEMON_LOGMSG_ERROR );
+                
+        }
+        
+        m_pCtrlObject->logMsg( _T ( "actionThreadURL: Request: \n" ) +
+                wxstr, 
+                DAEMON_LOGMSG_DEBUG );        
+        
+        // Send the request 
+        sock.Write( wxstr, wxstr.Length() );
+#if  wxMAJOR_VERSION >=3
+        if ( sock.Error() || (  wxstr.Length() != sock.LastWriteCount() ) ) {
+#else
+	if ( sock.Error() ) {
+#endif
+            // There was an error
+            m_pCtrlObject->logMsg( _T ( "actionThreadURL: Error writing request: " ) +
+                m_url.GetServer() + 
+                wxT(",") + 
+                m_url.GetPort() +
+                wxT(",") + 
+                m_url.GetPath() +
+                wxT(",") +
+                wxString::Format( _("acessMethod = %d" ), m_acessMethod ) +
+                wxT(" \n"), 
+                DAEMON_LOGMSG_ERROR );
+        }
+
+        // Get the response
+        char buffer[ 8192 ];
+        wxString strReponse;
+        
+        //while ( !sock.Read( buffer, sizeof( buffer ) ).LastReadCount() );
+        sock.Read( buffer, sizeof( buffer ) );
+        if ( !sock.Error() ) {
+
+            // OK, Check the response
+            strReponse = wxString::FromUTF8( buffer );
+            
+            // Log response
+            m_pCtrlObject->logMsg( _T ( "actionThreadURL: OK Response: " ) +
+                strReponse + 
+                wxT(" \n"), 
+                DAEMON_LOGMSG_ERROR );
+
+            wxStringTokenizer tkz( strReponse );
+            if ( tkz.HasMoreTokens() ) {
+                
+                wxString str = tkz.GetNextToken();
+                if ( wxNOT_FOUND != str.Find( wxT("OK") ) ) {
+                    
+                    // Something is wrong
+                    m_pCtrlObject->logMsg ( _T ( "actionThreadURL: Error reading respons: " ) +
+                        m_url.GetServer() + 
+                        wxT(",") + 
+                        m_url.GetPort() +
+                        wxT(",") + 
+                        m_url.GetPath() +
+                        wxT(",") +
+                        wxString::Format( _("acessMethod = %d" ), m_acessMethod ) +
+                        wxT(", Response = ") +
+                        strReponse +
+                        wxT(" \n"), 
+                        DAEMON_LOGMSG_ERROR );
+                        
+                }
+            }
+
+        }
+        else {
+            // There was an error
+            m_pCtrlObject->logMsg ( _T ( "actionThreadURL: Error reading respons: " ) +
+                m_url.GetServer() + 
+                wxT(",") + 
+                m_url.GetPort() +
+                wxT(",") + 
+                m_url.GetPath() +
+                wxT(",") +
+                ( m_acessMethod ? wxT("PUT") : wxT("GET") ) +
+                wxT(" \n"), 
+                DAEMON_LOGMSG_ERROR );
+        }
+
+        // Close the socket
+        sock.Close();
+
+    }
+    else {
+        // There was an error connecting
+        m_pCtrlObject->logMsg( wxT( "actionThreadURL: Unable to connect: " ) +
+                                m_url.GetServer() + 
+                                wxT(",") + 
+                                m_url.GetPort() +
+                                wxT(",") + 
+                                m_url.GetPath() +
+                                wxT(",") +
+                                wxString::Format( _("acessMethod = %d" ), m_acessMethod ) +
+                                wxT(" \n"), 
+                                DAEMON_LOGMSG_ERROR );
+    }
+
+    return NULL;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// OnExit
+//
+
+void actionThread_URL::OnExit()
+{
+
+}
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// actionThread_VSCPSrv
+//
+// This thread connects to a ODBC database and execute a SQL expression.
+//
+
+actionThread_VSCPSrv::actionThread_VSCPSrv( CControlObject *pCtrlObject, 
+                                                wxString& strHostname, 
+                                                short port, 
+                                                wxString& strUsername, 
+                                                wxString& strPassword,
+                                                wxString& strEvent,
+                                                wxThreadKind kind )
+                                                : wxThread( kind )
+{
+    //OutputDebugString( "actionThreadURL: Create");
+    m_pCtrlObject = pCtrlObject;
+    m_strHostname = strHostname;
+    m_port = port;
+    m_strUsername = strUsername;
+    m_strPassword = strPassword;
+    vscp_setVscpEventExFromString( &m_eventThe, strEvent );
+}
+
+actionThread_VSCPSrv::~actionThread_VSCPSrv()
+{
+
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Entry
+//
+// 
+
+void *actionThread_VSCPSrv::Entry()
+{
+    //m_pCtrlObject->logMsg ( _T ( "TCP actionThreadURL: Quit.\n" ), DAEMON_LOGMSG_INFO );
+    VscpRemoteTcpIf client;
+
+    if ( CANAL_ERROR_SUCCESS != client.doCmdOpen( m_strHostname,  
+        m_strUsername, 
+        m_strPassword ) ) {
+            // Failed to connect
+            m_pCtrlObject->logMsg( wxT( "actionThreadVSCPSrv: Unable to connect to remote server : " ) +
+                m_strHostname +
+                wxT(" \n"), 
+                DAEMON_LOGMSG_ERROR );
+    }
+
+    // Connected
+    if ( CANAL_ERROR_SUCCESS != client.doCmdSendEx( &m_eventThe ) ) {
+        // Failed to send event
+        m_pCtrlObject->logMsg( wxT( "actionThreadVSCPSrv: Unable to send event to remote server : " ) +
+            m_strHostname +
+            wxT(" \n"), 
+            DAEMON_LOGMSG_ERROR );
+    }
+
+    return NULL;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// OnExit
+//
+
+void actionThread_VSCPSrv::OnExit()
+{
+
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// actionThread_LUA
+//
+// This thread executes a LUA script
+//
+
+actionThread_LUA::actionThread_LUA( CControlObject *pCtrlObject, 
+                                        wxString& strScript,
+                                        wxThreadKind kind )
+                                            : wxThread( kind )
+{
+    //OutputDebugString( "actionThreadURL: Create");
+    m_pCtrlObject = pCtrlObject;
+    m_wxstrScript = strScript;
+}
+
+actionThread_LUA::~actionThread_LUA()
+{
+
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Entry
+//
+// 
+ 
+void *actionThread_LUA::Entry()
+{
+    // the Lua interpreter 
+    lua_State* L;
+
+    //m_pCtrlObject->logMsg ( _T ( "actionThread_LUA: Quit.\n" ), DAEMON_LOGMSG_INFO );
+    
+   
+    // initialize Lua 
+    L = luaL_newstate();            // opens Lua   
+    luaL_openlibs(L);               // opens the standard libraries 
+
+    // load Lua base libraries 
+    //luaL_baselibopen(L);
+
+    // run the script 
+    luaL_dofile(L, "/tmp/add.lua");
+    // luaL_loadstring
+    // luaL_loadfile 
+    // luaL_dostring 
+    // luaL_dofile
+
+    // cleanup Lua 
+    lua_close(L);
+
+    return NULL;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// OnExit
+//
+
+void actionThread_LUA::OnExit()
+{
+
 }
 
 

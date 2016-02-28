@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2015 
+// Copyright (C) 2000-2016 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -154,37 +154,41 @@
 // Format: timerid;settime
 // timerid is any numerical id > 0
 // Settime is set as HH:MM:SS:MS
-#define VSCP_DAEMON_ACTION_CODE_START_TIMER					0x00000060  // Start timer
+#define VSCP_DAEMON_ACTION_CODE_START_TIMER                 0x00000060  // Start timer
 
 // Pause a timer
 // Format: timerid
 // timerid is any numerical id > 0
-#define VSCP_DAEMON_ACTION_CODE_PAUSE_TIMER					0x00000061  // Pause timer
+#define VSCP_DAEMON_ACTION_CODE_PAUSE_TIMER                 0x00000061  // Pause timer
 
 // Stop a timer
 // Format: timerid
 // timerid is any numerical id > 0
-#define VSCP_DAEMON_ACTION_CODE_STOP_TIMER					0x00000062  // Stop timer
+#define VSCP_DAEMON_ACTION_CODE_STOP_TIMER                  0x00000062  // Stop timer
 
 // Resume a timer
 // Format: timerid
 // timerid is any numerical id > 0
-#define VSCP_DAEMON_ACTION_CODE_RESUME_TIMER				0x00000063  // Resume timer
+#define VSCP_DAEMON_ACTION_CODE_RESUME_TIMER                0x00000063  // Resume timer
 
 // Write to file
 // Format: timerid
 // timerid is any numerical id > 0
-#define VSCP_DAEMON_ACTION_CODE_WRITE_FILE					0x00000070  // Write file
+#define VSCP_DAEMON_ACTION_CODE_WRITE_FILE                  0x00000070  // Write file
 
 // Get/Post URL
 // Format: url
 // 
-#define VSCP_DAEMON_ACTION_CODE_GET_PUT_POST_URL			0x00000075  // Get/Post URL
+#define VSCP_DAEMON_ACTION_CODE_GET_PUT_POST_URL            0x00000075  // Get/Post URL
 
 // Write to table
 // Format: tablename,date,float
 // Example: temperature_furnice,%unixtime,%measurement.float 
-#define VSCP_DAEMON_ACTION_CODE_WRITE_TABLE					0x00000080  // Write Table
+#define VSCP_DAEMON_ACTION_CODE_WRITE_TABLE	                0x00000080  // Write Table
+
+// Run LUA script
+// Format: script(params);rv
+#define VSCP_DAEMON_ACTION_CODE_RUN_LUA                     0x00000100  // Run LUA Script
 
 
 #endif
