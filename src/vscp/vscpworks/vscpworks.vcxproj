@@ -242,7 +242,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\common\crc.h" />
-    <ClInclude Include="..\..\common\fossa.h" />
+    <ClInclude Include="..\..\common\mongoose.h" />
     <ClInclude Include="..\common\canal.h" />
     <ClInclude Include="..\common\canalconfobj.h" />
     <ClInclude Include="..\common\canaldlldef.h" />
@@ -306,7 +306,7 @@
     <ClCompile Include="..\..\common\base64-decode.c" />
     <ClCompile Include="..\..\common\crc.c" />
     <ClCompile Include="..\..\common\crc8.c" />
-    <ClCompile Include="..\..\common\fossa.c" />
+    <ClCompile Include="..\..\common\mongoose.c" />
     <ClCompile Include="..\common\canalconfobj.cpp" />
     <ClCompile Include="..\common\canalsuperwrapper.cpp" />
     <ClCompile Include="..\common\dllwrapper.cpp" />
