@@ -136,6 +136,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <signal.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -268,6 +269,7 @@ struct dirent *readdir(DIR *dir);
 #include <errno.h>
 #include <fcntl.h>
 #include <inttypes.h>
+#include <limits.h>
 #include <math.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -563,6 +565,10 @@ void cs_log_set_level(enum cs_log_level level);
 
 #ifndef CS_DISABLE_STDIO
 
+#ifdef CS_LOG_TS_DIFF
+extern double cs_log_ts;
+#endif
+
 void cs_log_printf(const char *fmt, ...);
 
 #define LOG(l, x)                        \
@@ -810,13 +816,17 @@ extern "C" {
 
 int c_snprintf(char *buf, size_t buf_size, const char *format, ...);
 int c_vsnprintf(char *buf, size_t buf_size, const char *format, va_list ap);
+/*
+ * Find the first occurrence of find in s, where the search is limited to the
+ * first slen characters of s.
+ */
+const char *c_strnstr(const char *s, const char *find, size_t slen);
 
-
-#if ( (!(defined(_XOPEN_SOURCE) && _XOPEN_SOURCE >= 700) &&         \
+#if (!(defined(_XOPEN_SOURCE) && _XOPEN_SOURCE >= 700) &&           \
      !(defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200809L) &&   \
      !(defined(__DARWIN_C_LEVEL) && __DARWIN_C_LEVEL >= 200809L) && \
-     !defined(RTOS_SDK) ) &&                                         \
-    (defined(_MSC_VER) && _MSC_VER < 1600 ) /*Visual Studio 2010*/)
+     !defined(RTOS_SDK)) ||                                         \
+    (defined(_MSC_VER) && _MSC_VER < 1600 /*Visual Studio 2010*/)
 #define _MG_PROVIDE_STRNLEN
 size_t strnlen(const char *s, size_t maxlen);
 #endif
@@ -824,6 +834,7 @@ size_t strnlen(const char *s, size_t maxlen);
 #ifdef __cplusplus
 }
 #endif
+
 #endif
 /*
  * Copyright (c) 2004-2013 Sergey Lyubka <valenok@gmail.com>
@@ -1062,8 +1073,11 @@ struct mg_connection {
   void *user_data;                  /* User-specific data */
   void *priv_1;                     /* Used by mg_enable_multithreading() */
   void *priv_2;                     /* Used by mg_enable_multithreading() */
+  struct mbuf endpoints;            /* Used by mg_register_http_endpoint */
   void *mgr_data; /* Implementation-specific event manager's data. */
-
+#ifdef MG_ENABLE_HTTP_STREAMING_MULTIPART
+  struct mbuf strm_state; /* Used by multi-part streaming */
+#endif
   unsigned long flags;
 /* Flags set by Mongoose */
 #define MG_F_LISTENING (1 << 0)          /* This connection is listening */
@@ -1186,6 +1200,11 @@ struct mg_bind_opts {
   void *user_data;           /* Initial value for connection's user_data */
   unsigned int flags;        /* Extra connection flags */
   const char **error_string; /* Placeholder for the error string */
+#ifdef MG_ENABLE_SSL
+  /* SSL settings. */
+  const char *ssl_cert;    /* Server certificate to present to clients */
+  const char *ssl_ca_cert; /* Verify client certificates with this CA bundle */
+#endif
 };
 
 /*
@@ -1212,14 +1231,29 @@ struct mg_connection *mg_bind(struct mg_mgr *, const char *,
  * Return a new listening connection, or `NULL` on error.
  * NOTE: Connection remains owned by the manager, do not free().
  */
-struct mg_connection *mg_bind_opt(struct mg_mgr *, const char *,
-                                  mg_event_handler_t, struct mg_bind_opts);
+struct mg_connection *mg_bind_opt(struct mg_mgr *mgr, const char *address,
+                                  mg_event_handler_t handler,
+                                  struct mg_bind_opts opts);
 
 /* Optional parameters to mg_connect_opt() */
 struct mg_connect_opts {
   void *user_data;           /* Initial value for connection's user_data */
   unsigned int flags;        /* Extra connection flags */
   const char **error_string; /* Placeholder for the error string */
+#ifdef MG_ENABLE_SSL
+  /* SSL settings. */
+  const char *ssl_cert;    /* Client certificate to present to the server */
+  const char *ssl_ca_cert; /* Verify server certificate using this CA bundle */
+
+  /*
+   * Server name verification. If ssl_ca_cert is set and the certificate has
+   * passed verification, its subject will be verified against this string.
+   * By default (if ssl_server_name is NULL) hostname part of the address will
+   * be used. Wildcard matching is supported. A special value of "*" disables
+   * name verification.
+   */
+  const char *ssl_server_name;
+#endif
 };
 
 /*
@@ -1227,8 +1261,8 @@ struct mg_connect_opts {
  *
  * See `mg_connect_opt()` for full documentation.
  */
-struct mg_connection *mg_connect(struct mg_mgr *, const char *,
-                                 mg_event_handler_t);
+struct mg_connection *mg_connect(struct mg_mgr *mgr, const char *address,
+                                 mg_event_handler_t handler);
 
 /*
  * Connect to a remote host.
@@ -1279,9 +1313,9 @@ struct mg_connection *mg_connect(struct mg_mgr *, const char *,
  *   mg_connect(mgr, "my_site.com:80", ev_handler);
  * ----
  */
-struct mg_connection *mg_connect_opt(struct mg_mgr *, const char *,
-                                     mg_event_handler_t,
-                                     struct mg_connect_opts);
+struct mg_connection *mg_connect_opt(struct mg_mgr *mgr, const char *address,
+                                     mg_event_handler_t handler,
+                                     struct mg_connect_opts opts);
 
 /*
  * Enable SSL for a given connection.
@@ -1449,11 +1483,16 @@ void mg_if_connect_cb(struct mg_connection *nc, int err);
 
 /* Set up a listening TCP socket on a given address. rv = 0 -> ok. */
 int mg_if_listen_tcp(struct mg_connection *nc, union socket_address *sa);
-/* Deliver a new TCP connection. Returns NULL in case on error (unable to
- * create connection, in which case interface state should be discarded. */
-struct mg_connection *mg_if_accept_tcp_cb(struct mg_connection *lc,
-                                          union socket_address *sa,
-                                          size_t sa_len);
+
+/*
+ * Deliver a new TCP connection. Returns NULL in case on error (unable to
+ * create connection, in which case interface state should be discarded.
+ * This is phase 1 of the two-phase process - MG_EV_ACCEPT will be delivered
+ * when mg_if_accept_tcp_cb is invoked.
+ */
+struct mg_connection *mg_if_accept_new_conn(struct mg_connection *lc);
+void mg_if_accept_tcp_cb(struct mg_connection *nc, union socket_address *sa,
+                         size_t sa_len);
 
 /* Request that a "listening" UDP socket be created. */
 int mg_if_listen_udp(struct mg_connection *nc, union socket_address *sa);
@@ -1468,7 +1507,6 @@ void mg_if_sent_cb(struct mg_connection *nc, int num_sent);
  * Receive callback.
  * buf must be heap-allocated and ownership is transferred to the core.
  * Core will acknowledge consumption by calling mg_if_recved.
- * No more than one chunk of data can be unacknowledged at any time.
  */
 void mg_if_recv_tcp_cb(struct mg_connection *nc, void *buf, int len);
 void mg_if_recv_udp_cb(struct mg_connection *nc, void *buf, int len,
@@ -1753,10 +1791,13 @@ const char *mg_next_comma_list_entry(const char *list, struct mg_str *val,
                                      struct mg_str *eq_val);
 
 /*
- * Match 0-terminated string against a glob pattern.
+ * Match 0-terminated string (mg_match_prefix) or string with given length
+ * mg_match_prefix_n against a glob pattern.
  * Match is case-insensitive. Return number of bytes matched, or -1 if no match.
  */
 int mg_match_prefix(const char *pattern, int pattern_len, const char *str);
+int mg_match_prefix_n(const char *pattern, int pattern_len, const char *str,
+                      int str_len);
 
 /* A helper function for creating mg_str struct from plain C string */
 struct mg_str mg_mk_str(const char *s);
@@ -1855,6 +1896,12 @@ struct websocket_message {
   unsigned char flags;
 };
 
+struct mg_http_multipart_part {
+  const char *file_name;
+  const char *var_name;
+  struct mg_str data;
+};
+
 /* HTTP and websocket events. void *ev_data is described in a comment. */
 #define MG_EV_HTTP_REQUEST 100 /* struct http_message * */
 #define MG_EV_HTTP_REPLY 101   /* struct http_message * */
@@ -1866,13 +1913,25 @@ struct websocket_message {
 #define MG_EV_WEBSOCKET_FRAME 113             /* struct websocket_message * */
 #define MG_EV_WEBSOCKET_CONTROL_FRAME 114     /* struct websocket_message * */
 
+#ifdef MG_ENABLE_HTTP_STREAMING_MULTIPART
+#define MG_EV_HTTP_MULTIPART_REQUEST 121 /* struct http_message */
+#define MG_EV_HTTP_PART_BEGIN 122        /* struct mg_http_multipart_part */
+#define MG_EV_HTTP_PART_DATA 123         /* struct mg_http_multipart_part */
+#define MG_EV_HTTP_PART_END 124          /* struct mg_http_multipart_part */
+#endif
+
 /*
  * Attach built-in HTTP event handler to the given connection.
  * User-defined event handler will receive following extra events:
  *
- * - MG_EV_HTTP_REQUEST: HTTP request has arrived. Parsed HTTP request is passed
- *as
+ * - MG_EV_HTTP_REQUEST: HTTP request has arrived. Parsed HTTP request
+ *  is passed as
  *   `struct http_message` through the handler's `void *ev_data` pointer.
+ * - MG_EV_HTTP_MULTIPART_REQUEST: A multipart POST request has received.
+ *   This event is sent before body is parsed. After this user
+ *   should expect a sequence of MG_EV_HTTP_PART_BEGIN/DATA/END requests.
+ *   This is also the last time when headers and other request fields are
+ *   accessible.
  * - MG_EV_HTTP_REPLY: HTTP reply has arrived. Parsed HTTP reply is passed as
  *   `struct http_message` through the handler's `void *ev_data` pointer.
  * - MG_EV_HTTP_CHUNK: HTTP chunked-encoding chunk has arrived.
@@ -1893,6 +1952,16 @@ struct websocket_message {
  *   `ev_data` is `NULL`.
  * - MG_EV_WEBSOCKET_FRAME: new websocket frame has arrived. `ev_data` is
  *   `struct websocket_message *`
+ * - MG_EV_HTTP_PART_BEGIN: new part of multipart message is started,
+ *   extra parameters are passed in mg_http_multipart_part
+ * - MG_EV_HTTP_PART_DATA: new portion of data from multiparted message
+ *   no additional headers are available, only data and data size
+ * - MG_EV_HTTP_PART_END: final boundary received, analogue to maybe used to
+ *   find the end of packet
+ *   Note: Mongoose should be compiled with MG_ENABLE_HTTP_STREAMING_MULTIPART
+ *   to enable MG_EV_HTTP_MULTIPART_REQUEST, MG_EV_HTTP_REQUEST_END,
+ *   MG_EV_HTTP_REQUEST_CANCEL, MG_EV_HTTP_PART_BEGIN, MG_EV_HTTP_PART_DATA,
+ *   MG_EV_HTTP_PART_END constants
  */
 void mg_set_protocol_http_websocket(struct mg_connection *nc);
 
@@ -2290,6 +2359,38 @@ struct mg_serve_http_opts {
 void mg_serve_http(struct mg_connection *nc, struct http_message *hm,
                    struct mg_serve_http_opts opts);
 
+/*
+ * Register callback for specified http endpoint
+ * Note: if callback is registered it is called instead of
+ * callback provided in mg_bind
+ *
+ * Example code snippet:
+ *
+ * [source,c]
+ * .web_server.c
+ * ----
+ * static void handle_hello1(struct mg_connection *nc, int ev, void *ev_data) {
+ *   (void) ev; (void) ev_data;
+ *   mg_printf(nc, "HTTP/1.0 200 OK\r\n\r\n[I am Hello1]");
+ *  nc->flags |= MG_F_SEND_AND_CLOSE;
+ * }
+ *
+ * static void handle_hello1(struct mg_connection *nc, int ev, void *ev_data) {
+ *  (void) ev; (void) ev_data;
+ *   mg_printf(nc, "HTTP/1.0 200 OK\r\n\r\n[I am Hello2]");
+ *  nc->flags |= MG_F_SEND_AND_CLOSE;
+ * }
+ *
+ * void init() {
+ *   nc = mg_bind(&mgr, local_addr, cb1);
+ *   mg_register_http_endpoint(nc, "/hello1", handle_hello1);
+ *   mg_register_http_endpoint(nc, "/hello1/hello2", handle_hello2);
+ * }
+ * ----
+ */
+
+void mg_register_http_endpoint(struct mg_connection *nc, const char *uri_path,
+                               mg_event_handler_t handler);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
