@@ -53,6 +53,10 @@
 #include <sstream>
 #include <fstream>
 
+#ifndef VSCP_DISABLE_LUA
+#include <lua.hpp>
+#endif
+
 #ifdef WIN32
 
 #include <winsock2.h>
@@ -140,7 +144,7 @@ using namespace std;
 ///////////////////////////////////////////////////
 
 // Options
-static struct mg_serve_http_opts s_http_server_opts;
+static struct mg_serve_http_opts g_http_server_opts;
 
 // Webserver
 struct mg_mgr gmgr;
@@ -159,11 +163,64 @@ struct websrv_rest_session *gp_websrv_rest_sessions;
 ///////////////////////////////////////////////////
 
 
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
-// trimWhiteSpace
+// vscp_stristr
 //
 
-char *trimWhiteSpace(char *str)
+static char* vscp_stristr( char* str1, const char* str2 )
+{
+    char* p1 = str1 ;
+    const char* p2 = str2 ;
+    char* r = *p2 == 0 ? str1 : 0 ;
+
+    while( *p1 != 0 && *p2 != 0 ) {
+        if( tolower( *p1 ) == tolower( *p2 ) ) {
+            if( r == 0 ) {
+                r = p1 ;
+            }
+
+            p2++ ;
+        }
+        else {
+            p2 = str2 ;
+            if( tolower( *p1 ) == tolower( *p2 ) ) {
+                r = p1 ;
+                p2++ ;
+            }
+            else {
+                r = 0 ;
+            }
+        }
+
+        p1++ ;
+    }
+
+    return *p2 == 0 ? r : 0 ;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_get_mtime
+//
+
+static time_t vscp_get_mtime( const char *path )
+{
+    struct stat statbuf;
+    if (stat(path, &statbuf) == -1) {
+        perror(path);
+        exit(1);
+    }
+    return statbuf.st_mtime;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_trimWhiteSpace
+//
+
+static char *vscp_trimWhiteSpace(char *str)
 {
     char *end;
 
@@ -248,14 +305,14 @@ int webserv_url_decode( const char *src, int src_len,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// bin2str 
+// vscp_bin2str 
 //
 //  Stringify binary data. Output buffer size must be 2 * size_of_input + 1
 //  because each byte of input takes 2 bytes in string representation
 //  plus 1 byte for the terminating \0 character.
 //
 
-static void bin2str( char *to, const unsigned char *p, size_t len ) 
+static void vscp_bin2str( char *to, const unsigned char *p, size_t len ) 
 {
     static const char *hex = "0123456789abcdef";
 
@@ -276,10 +333,10 @@ static void bin2str( char *to, const unsigned char *p, size_t len )
 // Assumption: nonce is a hexadecimal number of seconds since 1970.
 //
 
-static int check_nonce( const char *nonce ) 
+static int vscp_check_nonce( const char *nonce ) 
 {
-    unsigned long now = (unsigned long) time(NULL);
-    unsigned long val = (unsigned long) strtoul(nonce, NULL, 16);
+    unsigned long now = (unsigned long) time( NULL );
+    unsigned long val = (unsigned long) strtoul( nonce, NULL, 16 );
     return 1 || now < val || now - val < 3600;
 }
 
@@ -306,16 +363,16 @@ char *vscp_md5(char *buf, ...)
     va_end( ap );
 
     MD5_Final(hash, &ctx);
-    bin2str(buf, hash, sizeof(hash));
+    vscp_bin2str(buf, hash, sizeof(hash));
 
     return buf;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// mkmd5resp 
+// vscp_mkmd5resp 
 //
 
-static void mkmd5resp( const char *method, size_t method_len, const char *uri,
+static void vscp_mkmd5resp( const char *method, size_t method_len, const char *uri,
                         size_t uri_len, const char *ha1, size_t ha1_len,
                         const char *nonce, size_t nonce_len, const char *nc,
                         size_t nc_len, const char *cnonce, size_t cnonce_len,
@@ -332,12 +389,12 @@ static void mkmd5resp( const char *method, size_t method_len, const char *uri,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// is_authorized 
+// vscp_is_authorized 
 //
 
-static int is_authorized( struct mg_connection *conn,
-                            struct http_message *hm, 
-                            CControlObject *pObject ) {
+static int vscp_is_authorized( struct mg_connection *conn,
+                                struct http_message *hm, 
+                                CControlObject *pObject ) {
     
     CUserItem *pUserItem;
     bool bValidHost;
@@ -358,7 +415,7 @@ static int is_authorized( struct mg_connection *conn,
         mg_http_parse_header(hdr, "qop", qop, sizeof(qop)) == 0 ||
         mg_http_parse_header(hdr, "nc", nc, sizeof(nc)) == 0 ||
         mg_http_parse_header(hdr, "nonce", nonce, sizeof(nonce)) == 0 ||
-        check_nonce( nonce ) == 0 ) {
+        vscp_check_nonce( nonce ) == 0 ) {
         return 0;
     }
     
@@ -437,13 +494,23 @@ static int is_authorized( struct mg_connection *conn,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// is_websocket 
+// vscp_is_websocket 
 //
 
-static int is_websocket( const struct mg_connection *nc ) 
+static int vscp_is_websocket( const struct mg_connection *nc ) 
 {
     return nc->flags & MG_F_IS_WEBSOCKET;
 }
+
+
+static void construct_etag(char *buf, size_t buf_len, const cs_stat_t *st) {
+  snprintf(buf, buf_len, "\"%lx.%" INT64_FMT "\"", (unsigned long) st->st_mtime,
+           (int64_t) st->st_size);
+}
+static void gmt_time_string(char *buf, size_t buf_len, time_t *t) {
+  strftime(buf, buf_len, "%a, %d %b %Y %H:%M:%S GMT", gmtime(t));
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // websrv_event_handler 
@@ -493,7 +560,7 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
             break;
             
         case MG_EV_CLOSE:   // Connection is closed. NULL 
-            if ( is_websocket( nc ) ) {
+            if ( vscp_is_websocket( nc ) ) {
                 //nc->connection_param = NULL;
                 pWebSockSession = (struct websock_session *)nc->user_data;
                 if ( NULL != pWebSockSession ) {
@@ -509,7 +576,7 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
             if ( 0 != strncmp(phm->uri.p, "/vscp/rest", 10 ) ) {
              
                 // Must be autorized
-                if ( !is_authorized( nc, phm, pObject ) ) {                    
+                if ( !vscp_is_authorized( nc, phm, pObject ) ) {                    
                     mg_printf( nc,
                                 "HTTP/1.1 401 Unauthorized\r\n"
                                 "WWW-Authenticate: Digest qop=\"auth\", "
@@ -538,7 +605,7 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
             
             memset( uri, 0, sizeof(uri) );
             strncpy( uri, phm->uri.p, phm->uri.len );
-            pstr = trimWhiteSpace( uri );
+            pstr = vscp_trimWhiteSpace( uri );
             strcpy( uri, pstr );
                 
             if ( ( 0 == strcmp( uri, "/vscp" ) ) || ( 0 == strcmp( uri, "/vscp/" ) ) ) {
@@ -630,7 +697,150 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
             else {
                 // uri ends with ".vscp"
                 if ( ( NULL != ( pstr = strstr( uri, ".vscp") ) ) && ( 0 == *(pstr+5))  ) {
-                    printf("1");
+                    
+                    FILE * pFile;
+                    int code;
+                    
+                    if ( NULL == ( pFile = fopen( "/tmp/test.vscp", "rb") ) ) {    
+                    
+                        switch ( errno ) {
+                            
+                            case EACCES:
+                                code = 403;
+                                break;
+                                
+                            case ENOENT:
+                                code = 404;
+                                break;
+                                
+                            default:
+                                code = 500;
+                        }
+                        
+                        //send_http_error(nc, code, "Open failed");
+                        
+                    }
+                    else {
+                        
+                        char path[ MAX_PATH_SIZE ];
+                        strcpy( path, "/tmp/test.vscp" );
+                        char etag[50], current_time[50], last_modified[50], range[50];
+                        time_t t = time(NULL);
+                        int64_t r1 = 0, r2 = 0, cl = 0;
+                        int status_code = 200;
+                        
+                        // Get file size
+                        fseek( pFile, 0, SEEK_END );
+                        cl = ftell( pFile );
+                        fseek( pFile, 0, SEEK_SET );
+                        
+                        gmt_time_string( current_time, 
+                                            sizeof( current_time ), 
+                                            &t );
+                        time_t modtime =  vscp_get_mtime( path );                  
+                        gmt_time_string( last_modified, 
+                                            sizeof( last_modified ), 
+                                            &modtime );
+
+                        mg_printf( nc,
+                                    "HTTP/1.1 200 OK\r\n"
+                                    "Transfer-Encoding: chunked\r\n"
+                                    "Date: %s\r\n"
+                                    "Last-Modified: %s\r\n"
+                                    "Content-Type: text/html\r\n"
+                                    "\r\n",
+                                        current_time, 
+                                        last_modified ); 
+
+                        char *p;
+                        char *pTagContent = NULL;
+                        char *pbuf = new char[ cl+1 ];
+                        memset( pbuf, 0, sizeof( pbuf ) );
+                        size_t nRead;
+                        
+                        if ( ( nRead = fread( pbuf, 1, cl, pFile ) ) > 0 ) {
+                            
+                            while ( true  ) {
+                            
+                                if ( NULL != ( p = vscp_stristr( pbuf, "<?VSCP" ) ) ) {
+                                    
+                                    *p = 0;
+                                    //*(p + 6) = 0;   // Terminate string
+                                    pTagContent = p + 6;
+                                    
+                                    // Send this chunk
+                                    mg_send_http_chunk( nc, pbuf, strlen( pbuf ) );
+                                    
+                                    // Copy down remaining content
+                                    strcpy( pbuf, pTagContent );
+                                    
+                                    
+                                    // Search end tag
+                                    char *pEnd;
+                                    if ( NULL != ( pEnd = vscp_stristr( pbuf, " ?>" ) ) ) {
+                                        
+                                        *pEnd = 0;      // Mark tag content end
+                                        p = pEnd + 3;   // Point at next chunk
+                                        // If we had a beginning tag - work on it
+                                        if ( NULL != pbuf ) {
+                                            
+                                            vscp_trimWhiteSpace( pbuf );
+
+                                            vscpEvent e;
+                                            // Lets add some dummy information just for fun
+                                            e.vscp_class = VSCP_CLASS1_MEASUREMENT;
+                                            VSCP_TYPE_MEASUREMENT_TEMPERATURE;
+                                            e.vscp_type = VSCP_TYPE_MEASUREMENT_TEMPERATURE;
+                                            vscp_getGuidFromString( &e, 
+                                                    wxString::FromUTF8("FF:FF:FF:FF:FF:FF:FF:FE:00:16:D4:C0:00:02:00:01") );
+                                            e.pdata[0] = 0x8A;
+                                            e.pdata[1] = 0x82;
+                                            e.pdata[2] = 0x0E;
+                                            e.pdata[3] = 0x5D;
+                                            e.sizeData = 4;
+                                            dmElement dm;
+                                            dm.m_pDM = &pObject->m_dm; // Needed
+                                            wxString wxstr = wxString::FromUTF8( pbuf );
+                                            dm.handleEscapes( &e, wxstr );
+                                            mg_send_http_chunk( nc, wxstr.mbc_str(), wxstr.Length() );
+                                            pTagContent = NULL;  // Prepare for next tag
+                                            
+                                        }
+                                        
+                                        // Copy down remaining content
+                                        strcpy( pbuf, p );
+                                        
+                                    }
+                                    
+                                }
+                                else {
+                                    // Send last chunk
+                                    if ( strlen( pbuf ) ) {
+                                        mg_send_http_chunk( nc, pbuf, strlen( pbuf ) );
+                                    }
+                                    break;  // We are done
+                                }
+                            
+                            }
+                        }
+                        else {
+                            // Problems
+                            
+                        }
+
+                        delete [] pbuf;
+                        
+                        fclose( pFile );
+                        
+                        //mg_send_http_chunk( nc, buildPage.ToAscii(), buildPage.Length() );
+                        mg_send_http_chunk( nc, "", 0); // Tell the client we're finished
+                        
+                    }
+                    
+                    
+                    
+                    
+                    
                 }
                 // uri ends with ".lua"
                 else if ( ( NULL != ( pstr = strstr( uri, ".lua") ) ) && ( 0 == *(pstr+4))  ) {
@@ -638,7 +848,7 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
                 }
                 else {
                     // Server standard page
-                    mg_serve_http( nc, phm, s_http_server_opts );
+                    mg_serve_http( nc, phm, g_http_server_opts );
                 
                 }
             }
@@ -788,21 +998,21 @@ void *VSCPWebServerThread::Entry()
     // Set options
     
     // Path to web root
-    s_http_server_opts.document_root = m_pCtrlObject->m_pathWebRoot;
+    g_http_server_opts.document_root = m_pCtrlObject->m_pathWebRoot;
     
     // Set index files to look for
-    s_http_server_opts.index_files = m_pCtrlObject->m_indexFiles;
+    g_http_server_opts.index_files = m_pCtrlObject->m_indexFiles;
     
     // Authorization domain (domain name of this web server)
-    s_http_server_opts.auth_domain = m_pCtrlObject->m_authDomain;
+    g_http_server_opts.auth_domain = m_pCtrlObject->m_authDomain;
     
     // Enable/disable directory listings
-    s_http_server_opts.enable_directory_listing = 
+    g_http_server_opts.enable_directory_listing = 
                                     m_pCtrlObject->m_EnableDirectoryListings;
                                     
     // SSI files pattern. If not set, "**.shtml$|**.shtm$" is used.
     if ( strlen( m_pCtrlObject->m_ssi_pattern ) ) {
-        s_http_server_opts.ssi_pattern = 
+        g_http_server_opts.ssi_pattern = 
                                         m_pCtrlObject->m_ssi_pattern;
     }
     
@@ -819,38 +1029,38 @@ void *VSCPWebServerThread::Entry()
     // HOST header of the request. If they are equal, Mongoose sets document root
     // to `file_or_directory_path`, implementing virtual hosts support.
     if ( strlen( m_pCtrlObject->m_urlRewrites ) ) {
-        s_http_server_opts.url_rewrites = 
+        g_http_server_opts.url_rewrites = 
                                         m_pCtrlObject->m_urlRewrites;
     }
     
     // DAV document root. If NULL, DAV requests are going to fail.
     if ( strlen( m_pCtrlObject->m_dav_document_root ) ) {
-        s_http_server_opts.dav_document_root = 
+        g_http_server_opts.dav_document_root = 
                                         m_pCtrlObject->m_dav_document_root;
     }
     
     // Glob pattern for the files to hide.
     if ( strlen( m_pCtrlObject->m_hideFilePatterns ) ) {
-        s_http_server_opts.hidden_file_pattern = 
+        g_http_server_opts.hidden_file_pattern = 
                                         m_pCtrlObject->m_hideFilePatterns;
     }
     
     // Set to non-NULL to enable CGI, e.g. **.cgi$|**.php$"
     if ( strlen( m_pCtrlObject->m_cgiPattern ) ) {
-        s_http_server_opts.cgi_file_pattern = 
+        g_http_server_opts.cgi_file_pattern = 
                                         m_pCtrlObject->m_cgiPattern;
     }
     
     // If not NULL, ignore CGI script hashbang and use this interpreter
     if ( strlen( m_pCtrlObject->m_cgiInterpreter ) ) {
-        s_http_server_opts.cgi_interpreter = 
+        g_http_server_opts.cgi_interpreter = 
                                         m_pCtrlObject->m_cgiInterpreter;
     }
     
     // Comma-separated list of Content-Type overrides for path suffixes, e.g.
     // * ".txt=text/plain; charset=utf-8,.c=text/plain"
     if ( strlen( m_pCtrlObject->m_extraMimeTypes ) ) {
-        s_http_server_opts.custom_mime_types = 
+        g_http_server_opts.custom_mime_types = 
                                         m_pCtrlObject->m_extraMimeTypes;
     }
     
@@ -858,18 +1068,18 @@ void *VSCPWebServerThread::Entry()
     if ( !m_pCtrlObject->m_bDisableSecurityWebServer ) {
         
         if ( strlen( m_pCtrlObject->m_per_directory_auth_file ) ) {
-            s_http_server_opts.per_directory_auth_file = 
+            g_http_server_opts.per_directory_auth_file = 
                                         m_pCtrlObject->m_per_directory_auth_file;
         }
         
         if  ( strlen( m_pCtrlObject->m_global_auth_file ) ) {
-            s_http_server_opts.global_auth_file = 
+            g_http_server_opts.global_auth_file = 
                                         m_pCtrlObject->m_global_auth_file;
         }
         
         // IP ACL. By default, NULL, meaning all IPs are allowed to connect 
         if ( strlen( m_pCtrlObject->m_ip_acl ) ) {
-            s_http_server_opts.ip_acl = m_pCtrlObject->m_ip_acl;
+            g_http_server_opts.ip_acl = m_pCtrlObject->m_ip_acl;
         }
         
     }
@@ -4374,15 +4584,31 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     buildPage += _("<br>");
     buildPage += _("</div>");
     
+    buildPage += _("<hr>");
+    
     buildPage += _("<div id=\"small\">");
     buildPage += _("<b>wxWidgets version:</b> ");
-    buildPage += wxString::Format(_("%d.%d.%d.%d"), 
+    buildPage += wxString::Format(_("%d.%d.%d.%d" " Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al"), 
                         wxMAJOR_VERSION,
                         wxMINOR_VERSION,
                         wxRELEASE_NUMBER,
                         wxSUBRELEASE_NUMBER );	
     buildPage += _("<br>");
     buildPage += _("</div>");
+    
+    buildPage += _("<div id=\"small\">");
+    buildPage += _("<b>Mongoose version:</b> ");
+    buildPage += wxString::FromUTF8( MG_VERSION " Copyright (c) 2013-2015 Cesanta Software Limited" );
+    buildPage += _("<br>");
+    buildPage += _("</div>");
+    
+#ifndef VSCP_DISABLE_LUA    
+    buildPage += _("<div id=\"small\">");
+    buildPage += _("<b>LUA version:</b> ");
+    buildPage += wxString::FromUTF8( LUA_COPYRIGHT );
+    buildPage += _("<br>");
+    buildPage += _("</div>");
+#endif    
 
     buildPage += _("<hr>");
 

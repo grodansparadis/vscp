@@ -44,8 +44,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-//#ifdef VSCP_ENABLE_LUA
+#ifndef VSCP_DISABLE_LUA
 #include <lua.hpp>
+#endif
 
 #include <vscp.h>
 #include <version.h>

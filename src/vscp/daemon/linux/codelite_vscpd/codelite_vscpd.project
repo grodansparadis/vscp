@@ -80,6 +80,7 @@
     <File Name="../../../common/webserver.h"/>
     <File Name="../../../../common/mongoose.c"/>
     <File Name="../../../../common/mongoose.h"/>
+    <File Name="../../../common/vscphelper.h"/>
   </VirtualDirectory>
   <VirtualDirectory Name="linux">
     <File Name="../vscpd.cpp"/>
