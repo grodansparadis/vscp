@@ -105,7 +105,6 @@
 #include "web_js.h"
 #include "web_template.h"
 
-//#include <slre.h>
 #include <mongoose.h>
 
 #include <canal_macro.h>
@@ -160,6 +159,30 @@ struct websrv_rest_session *gp_websrv_rest_sessions;
 ///////////////////////////////////////////////////
 
 
+////////////////////////////////////////////////////////////////////////////////
+// trimWhiteSpace
+//
+
+char *trimWhiteSpace(char *str)
+{
+    char *end;
+
+    // Trim leading space
+    while(isspace(*str)) str++;
+
+    if( 0 == *str ) {  // All spaces?
+        return str;        
+    }
+
+    // Trim trailing space
+    end = str + strlen(str) - 1;
+    while(end > str && isspace(*end)) end--;
+
+    // Write new null terminator
+    *(end+1) = 0;
+
+    return str;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // webserv_util_sendheader
@@ -435,9 +458,8 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
     wxString strErr;
     struct websock_session *pWebSockSession;
     struct websrv_Session * pWebSrvSession;
-    /*char user[256], nonce[256],
-            uri[32768], cnonce[256], 
-            resp[256], qop[256], ncc[256];*/
+    char uri[ 2048 ];
+    char *pstr;
     
     char *cookie = NULL;
 
@@ -513,9 +535,11 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
                                     wxString::FromAscii((const char *)phm->method.p).wx_str() );
             pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_ACCESS );
 
-            char uri[ 2048 ];
+            
             memset( uri, 0, sizeof(uri) );
             strncpy( uri, phm->uri.p, phm->uri.len );
+            pstr = trimWhiteSpace( uri );
+            strcpy( uri, pstr );
                 
             if ( ( 0 == strcmp( uri, "/vscp" ) ) || ( 0 == strcmp( uri, "/vscp/" ) ) ) {
                 pObject->getWebServer()->websrv_mainpage( nc, phm );
@@ -604,8 +628,19 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
                 pObject->getWebServer()->websrv_restapi( nc, phm );
             }
             else {
-                // Server standard page
-                mg_serve_http( nc, phm, s_http_server_opts );
+                // uri ends with ".vscp"
+                if ( ( NULL != ( pstr = strstr( uri, ".vscp") ) ) && ( 0 == *(pstr+5))  ) {
+                    printf("1");
+                }
+                // uri ends with ".lua"
+                else if ( ( NULL != ( pstr = strstr( uri, ".lua") ) ) && ( 0 == *(pstr+4))  ) {
+                    printf("2");
+                }
+                else {
+                    // Server standard page
+                    mg_serve_http( nc, phm, s_http_server_opts );
+                
+                }
             }
             break;
             

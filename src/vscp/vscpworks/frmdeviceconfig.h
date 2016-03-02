@@ -79,7 +79,7 @@ class wxHtmlWindow;
 #ifdef WIN32
 #define SYMBOL_FRMDEVICECONFIG_SIZE wxSize(870, 710)
 #else
-#define SYMBOL_FRMDEVICECONFIG_SIZE wxSize(940, 750)
+#define SYMBOL_FRMDEVICECONFIG_SIZE wxSize(940, 790)
 #endif
 #define SYMBOL_FRMDEVICECONFIG_POSITION wxDefaultPosition
 
@@ -357,6 +357,9 @@ public:
 
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON16
     void OnButtonUpdateClick( wxCommandEvent& event );
+    
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON16
+    void OnButtonUpdateAllClick( wxCommandEvent& event );
 
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON17
     void OnButtonLoadDefaultsClick( wxCommandEvent& event );
@@ -491,10 +494,11 @@ public:
     wxCheckBox* m_bLevel2;
     wxToggleButton* m_BtnActivateInterface;
     wxToolbook* m_choiceBook;
-    wxPanel* m_panel0;
+    wxPanel* m_panelRegisters;
     wxGrid* m_gridRegisters;
     wxGrid* m_gridAbstractions;
     wxGrid* m_gridDM;
+    wxGrid* m_gridWizard;
     wxHtmlWindow* m_StatusWnd;
     wxCheckBox* m_chkFullUpdate;
     wxCheckBox* m_chkMdfFromFile;
@@ -536,15 +540,21 @@ public:
         ID_PANEL_ABSTRACTIONS = 19030,
         ID_GRID_ABSTRACTIONS = 19031,
         ID_PANEL_DM = 19032,
-        ID_GRID_DM = 19033,
-        ID_HTMLWINDOW1 = 19034,
-        ID_CHECKBOX_FULL_UPDATE = 19035,
-        ID_CHECKBOX_MDF_FROM_FILE = 19036,
-        ID_BUTTON16 = 19037,
-        ID_BUTTON17 = 19038,
-        ID_BUTTON19 = 19039,
-        ID_STATUSBAR = 19040,
-        ID_MENUITEM_SET_MANUFACTURER_INFO = 19041
+        ID_PANEL_WIZARD = 19033,
+        ID_GRID_DM = 19034,
+        ID_GRID_WIZARD = 19035,
+        ID_HTMLWINDOW1 = 19036,
+        ID_CHECKBOX_FULL_UPDATE = 19037,
+        ID_CHECKBOX_MDF_FROM_FILE = 19038,
+        ID_BUTTON_UPDATE = 19039,
+        ID_BUTTON_LOAD_DEFAULTS = 19040,
+        ID_BUTTON_WIZARD = 19041,
+        ID_STATUSBAR = 19042,
+        ID_MENUITEM_SET_MANUFACTURER_INFO = 19043,
+        ID_MENUITEM_UPDATE = 19044,
+        ID_MENUITEM_UPDATE_ALL = 19045,
+        ID_MENUITEM_LOAD_DEFAULTS = 19046,
+        ID_MENUITEM_WIZARD = 19047,
     };
 
 };

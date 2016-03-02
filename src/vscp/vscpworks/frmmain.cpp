@@ -830,7 +830,7 @@ void frmMain::OnMenuitemOpenVscpSessionClick( wxCommandEvent& event )
     event.Skip( false );  
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // OnMenuitemOpenConfigSessionClick
 //
 
@@ -867,11 +867,11 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
 
                         // Init node id combo
                         wxRect rc = subframe->m_comboNodeID->GetRect();
-#ifdef WIN32						
+#ifdef WIN32
                         rc.SetWidth( 60 );	
 #else
                         rc.SetWidth( 80 );
-#endif						
+#endif
                         subframe->m_comboNodeID->SetSize( rc );
                         wxArrayString strings;
                         for ( int i=1; i<256; i++ ) {
@@ -880,7 +880,8 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
                         subframe->m_comboNodeID->Append( strings );
 
                         subframe->m_comboNodeID->SetValue(_("0x01"));
-                        subframe->SetTitle(_("VSCP Registers (CANAL) - ") +  pBoth->m_pcanalif->m_strDescription );
+                        subframe->SetTitle(_("VSCP Registers (CANAL) - ") +  
+                                    pBoth->m_pcanalif->m_strDescription );
 
                         subframe->m_csw.setInterface( pBoth->m_pcanalif->m_strDescription,
                                                         pBoth->m_pcanalif->m_strPath,

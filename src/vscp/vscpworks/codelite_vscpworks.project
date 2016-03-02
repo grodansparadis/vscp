@@ -44,7 +44,6 @@
     <File Name="../../common/node.cpp"/>
     <File Name="../../common/strtk.hpp"/>
     <File Name="../../common/hashtable.cpp"/>
-    <File Name="../../common/fossa.c"/>
     <File Name="../../common/engine.c"/>
     <File Name="../../common/md5.cpp"/>
     <File Name="../../common/slre.c"/>
@@ -55,7 +54,6 @@
     <File Name="../../common/slre.h"/>
     <File Name="../../common/fifo.c"/>
     <File Name="../../common/ntservice.h"/>
-    <File Name="../../common/fossa.h"/>
     <File Name="../../common/v7.h"/>
     <File Name="../../common/hashtable.h"/>
     <File Name="../../common/msglog.cpp"/>
@@ -64,9 +62,7 @@
     <File Name="../../common/hashtable.c"/>
     <File Name="../../common/net_skeleton.h"/>
     <File Name="../../common/log.cpp"/>
-    <File Name="../../common/mongoose.c"/>
     <File Name="../../common/com_linux.h"/>
-    <File Name="../../common/frozen.h"/>
     <File Name="../../common/crc8.c"/>
     <File Name="../../common/com.cpp"/>
     <File Name="../../common/msglog.h"/>
@@ -75,12 +71,10 @@
     <File Name="../../common/md5.h"/>
     <File Name="../../common/Rijndael.h"/>
     <File Name="../../common/crc8.h"/>
-    <File Name="../../common/mongoose.h"/>
     <File Name="../../common/v7.c"/>
     <File Name="../../common/stdafx.h"/>
     <File Name="../../common/crc.c"/>
     <File Name="../../common/com_win32.cpp"/>
-    <File Name="../../common/frozen.c"/>
     <File Name="../common/selectdevice.h"/>
     <File Name="../common/canal_win32_ipc.h"/>
     <File Name="../common/register.h"/>
