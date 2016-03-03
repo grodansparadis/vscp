@@ -2393,7 +2393,7 @@ void VSCPClientThread::handleVariable_Write( struct mg_connection *conn, CContro
 
     // If the variable exist change value
     // if not add it. This is handled in add.
-    m_pCtrlObject->m_VSCP_Variables.addWithStringType( strName, strValue, strType, bPersistence );
+    m_pCtrlObject->m_VSCP_Variables.addWithStringType( strName, strValue, strType, bPersistence, true );
     
     // Save decision matrix
     m_pCtrlObject->m_dm.save();

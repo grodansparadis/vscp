@@ -30,8 +30,10 @@
 #include <wx/hashset.h>
 #include <wx/datetime.h>
 #include <wx/tokenzr.h>
+#include <guid.h>
 #include "variablecodes.h"
 #include "vscphelper.h"
+
 
 // Class that holds one VSCP variable
 // Peristant variables should have names staring with $
@@ -132,8 +134,8 @@ public:
     static uint8_t getVariableTypeFromString(const wxString& strVariableType);
 
     /*!
-    Check if a variable is persistent
-    @return true if persistent else false.
+        Check if a variable is persistent
+        @return true if persistent else false.
      */
     bool isPersistent(void)
     {
@@ -141,15 +143,31 @@ public:
     };
 
     /*!
-    Set persistence
-
-    @param b True if the variable should be persistent
+        Set persistence
+        @param b True if the variable should be persistent
      */
     void setPersistent(bool b)
     {
         m_bPersistent = b;
     };
 
+    /*!
+        Check if a variable is writable
+        @return true if writable else false.
+     */
+    bool isWritable(void)
+    {
+        return m_brw;
+    };
+
+    /*!
+        Set R/W permissions
+        @param b True if the variable should be writable
+     */
+    void makeWritable(bool b)
+    {
+        m_brw = b;
+    };
 
     /*!
     Set variable value from string
@@ -375,17 +393,18 @@ public:
         A "GUID" variable is stored in the VSCP event.
         A VSCP data variables s stored in the VSCP event.
      */
-    wxString m_strValue;			// String
-    vscpEvent m_event;				// VSCP event
-    bool m_boolValue;				// Logical values
-    long m_longValue;				// Byte, Integer and long values
-    double m_floatValue;			// Floating point values
-    uint8_t m_normIntSize;			// Size for Normalised integer	
-    uint8_t m_normInteger[8];		// Normalised integer data
-    unsigned char m_GUID[16];		// GUID
-    wxDateTime m_timestamp;			// Timestamp
+    wxString m_strValue;            // String
+    vscpEvent m_event;              // VSCP event
+    bool m_boolValue;               // Logical values
+    long m_longValue;               // Byte, Integer and long values
+    double m_floatValue;            // Floating point values
+    uint8_t m_normIntSize;          // Size for Normalised integer	
+    uint8_t m_normInteger[8];       // Normalised integer data
+    unsigned char m_GUID[16];       // GUID
+    wxDateTime m_timestamp;         // Timestamp
 
-    wxString m_persistant;			// Original value is here
+    wxString m_persistant;          // Original value is here
+    bool m_brw;                     // True if variable is writable
 };
 
 
@@ -395,6 +414,8 @@ WX_DECLARE_HASH_MAP(wxString, CVSCPVariable*, wxStringHash, wxStringEqual, VscpV
 // Variable list
 //	This is needed because the iteration through the map does not work!!!
 WX_DECLARE_LIST(CVSCPVariable, listVscpVariable);
+
+
 
 class CVariableStorage {
 public:
@@ -437,20 +458,22 @@ public:
     bool add(const wxString& varName,
                     const wxString& value,
                     uint8_t type = VSCP_DAEMON_VARIABLE_CODE_STRING,
-                    bool bPersistent = false);
+                    bool bPersistent = false,
+                    bool brw = true );
 
     // Variant of the above with string as type
     bool addWithStringType(const wxString& varName,
                             const wxString& value,
                             const wxString& strType,
-                            bool bPersistent = false);
+                            bool bPersistent = false,
+                            bool brw = true );
 
     /*!
       Add a variable.
       @param var Pointer to variable object.
       @return true on success, false on failure.
      */
-    bool add(CVSCPVariable *pVar);
+    bool add( CVSCPVariable *pVar );
 
     /*!
     Remove named variable
@@ -484,6 +507,7 @@ public:
       @return Returns true on success false on failure.
      */
     bool save(wxString& path);
+
 
     /// Hash table for variables with variable name as key
     VscpVariableHash m_hashVariable;

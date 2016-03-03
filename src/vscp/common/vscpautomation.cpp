@@ -77,6 +77,9 @@ static double SunDia = 0.53; // Sunradius degrees
 
 static double AirRefr = 34.0 / 60.0; // athmospheric refraction degrees //
 
+
+
+
 //-----------------------------------------------------------------------------
 //                       End of sunset/sunrise functions
 //-----------------------------------------------------------------------------
@@ -95,7 +98,7 @@ CVSCPAutomation::CVSCPAutomation( void )
     m_subzone = 0;
 
     // Take me the freedom to use my own place as reference
-    m_longitude =  15.1604167;
+    m_longitude =  15.1604167;  // Home sweet home
     m_latitude = 61.7441833;
     m_timezone = 1;
 
@@ -191,10 +194,10 @@ int CVSCPAutomation::getTimeZoneDiffHours( void )
 
 double CVSCPAutomation::FNday(int y, int m, int d, float h)
 {
-	long int luku = -7 * (y + (m + 9) / 12) / 4 + 275 * m / 9 + d;
-	// type casting necessary on PC DOS and TClite to avoid overflow
-	luku += (long int) y * 367;
-	return(double) luku - 730531.5 + h / 24.0;
+    long int luku = -7 * (y + (m + 9) / 12) / 4 + 275 * m / 9 + d;
+    // type casting necessary on PC DOS and TClite to avoid overflow
+    luku += (long int) y * 367;
+    return(double) luku - 730531.5 + h / 24.0;
 };
 
 
@@ -207,10 +210,10 @@ double CVSCPAutomation::FNday(int y, int m, int d, float h)
 
 double CVSCPAutomation::FNrange(double x)
 {
-	double b = 0.5 * x / pi;
-	double a = 2.0 * pi * (b - (long) (b));
-	if (a < 0) a = 2.0 * pi + a;
-	return a;
+    double b = 0.5 * x / pi;
+    double a = 2.0 * pi * (b - (long) (b));
+    if (a < 0) a = 2.0 * pi + a;
+    return a;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -221,14 +224,14 @@ double CVSCPAutomation::FNrange(double x)
 
 double CVSCPAutomation::f0(double lat, double declin)
 {
-	double fo, dfo;
-	// Correction: different sign at S HS
-	dfo = rads * (0.5 * SunDia + AirRefr);
-	if (lat < 0.0) dfo = -dfo;
-	fo = tan(declin + dfo) * tan(lat * rads);
-	if (fo > 0.99999) fo = 1.0; // to avoid overflow //
-	fo = asin(fo) + pi / 2.0;
-	return fo;
+    double fo, dfo;
+    // Correction: different sign at S HS
+    dfo = rads * (0.5 * SunDia + AirRefr);
+    if (lat < 0.0) dfo = -dfo;
+    fo = tan(declin + dfo) * tan(lat * rads);
+    if (fo > 0.99999) fo = 1.0; // to avoid overflow //
+    fo = asin(fo) + pi / 2.0;
+    return fo;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -239,14 +242,14 @@ double CVSCPAutomation::f0(double lat, double declin)
 
 double CVSCPAutomation::f1(double lat, double declin)
 {
-	double fi, df1;
-	// Correction: different sign at S HS
-	df1 = rads * 6.0;
-	if (lat < 0.0) df1 = -df1;
-	fi = tan(declin + df1) * tan(lat * rads);
-	if (fi > 0.99999) fi = 1.0; // to avoid overflow //
-	fi = asin(fi) + pi / 2.0;
-	return fi;
+    double fi, df1;
+    // Correction: different sign at S HS
+    df1 = rads * 6.0;
+    if (lat < 0.0) df1 = -df1;
+    fi = tan(declin + df1) * tan(lat * rads);
+    if (fi > 0.99999) fi = 1.0; // to avoid overflow //
+    fi = asin(fi) + pi / 2.0;
+    return fi;
 };
 
 
@@ -258,14 +261,14 @@ double CVSCPAutomation::f1(double lat, double declin)
 double CVSCPAutomation::FNsun(double d)
 {
 
-	//   mean longitude of the Sun
-	L = FNrange(280.461 * rads + .9856474 * rads * d);
+    //   mean longitude of the Sun
+    L = FNrange(280.461 * rads + .9856474 * rads * d);
 
-	//   mean anomaly of the Sun
-	g = FNrange(357.528 * rads + .9856003 * rads * d);
+    //   mean anomaly of the Sun
+    g = FNrange(357.528 * rads + .9856003 * rads * d);
 
-	//   Ecliptic longitude of the Sun
-	return FNrange(L + 1.915 * rads * sin(g) + .02 * rads * sin(2 * g));
+    //   Ecliptic longitude of the Sun
+    return FNrange(L + 1.915 * rads * sin(g) + .02 * rads * sin(2 * g));
 };
 
 
@@ -277,8 +280,8 @@ double CVSCPAutomation::FNsun(double d)
 
 void CVSCPAutomation::convert2HourMinute( double floatTime, int *pHours, int *pMinutes )
 {
-	*pHours = (int)floatTime;
-	*pMinutes = (floatTime - (double)*pHours)*60;
+    *pHours = (int)floatTime;
+    *pMinutes = (floatTime - (double)*pHours)*60;
 };
 
 
@@ -289,11 +292,11 @@ void CVSCPAutomation::convert2HourMinute( double floatTime, int *pHours, int *pM
 void CVSCPAutomation::calcSun( void )
 {
     double year, month, day, hour; 
-	double d, lambda;
-	double obliq, alpha, delta, LL, equation, ha, hb, twx;
-	double twilightSunraise, maxAltitude, noonTime, sunsetTime, sunriseTime, twilightSunset;
-	time_t sekunnit;
-	struct tm *p;
+    double d, lambda;
+    double obliq, alpha, delta, LL, equation, ha, hb, twx;
+    double twilightSunraise, maxAltitude, noonTime, sunsetTime, sunriseTime, twilightSunset;
+    time_t sekunnit;
+    struct tm *p;
     double tzone = m_timezone;
 
     if ( isDaylightSavingTime() < 0 ) {
@@ -312,77 +315,77 @@ void CVSCPAutomation::calcSun( void )
         }
     }
 
-	degs = 180.0 / pi;
-	rads = pi / 180.0;
+    degs = 180.0 / pi;
+    rads = pi / 180.0;
 
-	// get the date and time from the user
-	// read system date and extract the year
+    // get the date and time from the user
+    // read system date and extract the year
 
-	// First get time 
-	time( &sekunnit );
+    // First get time 
+    time( &sekunnit );
 
-	// Next get localtime 
-	p = localtime(&sekunnit);
+    // Next get localtime 
+    p = localtime(&sekunnit);
 
-	year = p->tm_year;
-	year += 1900;
-	month = p->tm_mon + 1;
+    year = p->tm_year;
+    year += 1900;
+    month = p->tm_mon + 1;
 
-	day = p->tm_mday;
+    day = p->tm_mday;
 
-	hour = 12;
+    hour = 12;
 
-	d = FNday(year, month, day, hour);
+    d = FNday(year, month, day, hour);
 
-	//   Use FNsun to find the ecliptic longitude of the
-	//   Sun
-	lambda = FNsun(d);
+    //   Use FNsun to find the ecliptic longitude of the
+    //   Sun
+    lambda = FNsun(d);
 
-	//   Obliquity of the ecliptic
-	obliq = 23.439 * rads - 0.0000004 * rads * d;
+    //   Obliquity of the ecliptic
+    obliq = 23.439 * rads - 0.0000004 * rads * d;
 
-	//   Find the RA and DEC of the Sun
-	alpha = atan2(cos(obliq) * sin(lambda), cos(lambda));
-	delta = asin(sin(obliq) * sin(lambda));
+    //   Find the RA and DEC of the Sun
+    alpha = atan2(cos(obliq) * sin(lambda), cos(lambda));
+    delta = asin(sin(obliq) * sin(lambda));
 
-	// Find the Equation of Time
-	// in minutes
-	// Correction suggested by David Smith
-	LL = L - alpha;
-	if (L < pi) LL += 2.0 * pi;
-	equation = 1440.0 * (1.0 - LL / pi / 2.0);
-	ha = f0(m_latitude, delta);
-	hb = f1(m_latitude, delta);
-	twx = hb - ha;          // length of twilight in radians
-	twx = 12.0 * twx / pi;  // length of twilight in hours
+    // Find the Equation of Time
+    // in minutes
+    // Correction suggested by David Smith
+    LL = L - alpha;
+    if (L < pi) LL += 2.0 * pi;
+    equation = 1440.0 * (1.0 - LL / pi / 2.0);
+    ha = f0(m_latitude, delta);
+    hb = f1(m_latitude, delta);
+    twx = hb - ha;          // length of twilight in radians
+    twx = 12.0 * twx / pi;  // length of twilight in hours
 
-	// Conversion of angle to hours and minutes
-	daylen = degs * ha / 7.5;
-	if (daylen < 0.0001) {
-		daylen = 0.0;
-	}
+    // Conversion of angle to hours and minutes
+    daylen = degs * ha / 7.5;
+    if (daylen < 0.0001) {
+        daylen = 0.0;
+    }
 
-	// arctic winter 
-	sunriseTime = 12.0 - 12.0 * ha / pi + tzone - m_longitude / 15.0 + equation / 60.0;
-	sunsetTime = 12.0 + 12.0 * ha / pi + tzone - m_longitude / 15.0 + equation / 60.0;
-	noonTime = sunriseTime + 12.0 * ha / pi;
-	maxAltitude = 90.0 + delta * degs - m_latitude;
-	// Correction for S HS suggested by David Smith
-	// to express altitude as degrees from the N horizon
-	if (m_latitude < delta * degs) maxAltitude = 180.0 - maxAltitude;
+    // arctic winter 
+    sunriseTime = 12.0 - 12.0 * ha / pi + tzone - m_longitude / 15.0 + equation / 60.0;
+    sunsetTime = 12.0 + 12.0 * ha / pi + tzone - m_longitude / 15.0 + equation / 60.0;
+    noonTime = sunriseTime + 12.0 * ha / pi;
+    maxAltitude = 90.0 + delta * degs - m_latitude;
+    // Correction for S HS suggested by David Smith
+    // to express altitude as degrees from the N horizon
+    if (m_latitude < delta * degs) maxAltitude = 180.0 - maxAltitude;
 
-	twilightSunraise = sunriseTime - twx;   // morning twilight begin
-	twilightSunset = sunsetTime + twx;      // evening twilight end
+    twilightSunraise = sunriseTime - twx;   // morning twilight begin
+    twilightSunset = sunsetTime + twx;      // evening twilight end
 
-	if (sunriseTime > 24.0) sunriseTime -= 24.0;
-	if (sunsetTime > 24.0) sunsetTime -= 24.0;
+    if (sunriseTime > 24.0) sunriseTime -= 24.0;
+    if (sunsetTime > 24.0) sunsetTime -= 24.0;
 
     m_declination = delta * degs;
     m_daylength = daylen;
     m_SunMaxAltitude = maxAltitude;
 
-	// Set last calculated time
-	m_lastCalculation = wxDateTime::Now();
+    // Set last calculated time
+    m_lastCalculation = wxDateTime::Now();
 
     int intHour, intMinute;
 
@@ -434,21 +437,21 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
 
     // Calculate Sunrise/sunset parameters once a day
     if ( !m_bCalulationHasBeenDone && 
-			( 0 == wxDateTime::Now().GetHour() ) ) {
+            ( 0 == wxDateTime::Now().GetHour() ) ) {
         calcSun();     
         m_bCalulationHasBeenDone = true;
     }
-	
-	// Trigger for next noon calculation
-	if ( 0 != wxDateTime::Now().GetHour() ) {
-		m_bCalulationHasBeenDone = false;
-	}		
+    
+    // Trigger for next noon calculation
+    if ( 0 != wxDateTime::Now().GetHour() ) {
+        m_bCalulationHasBeenDone = false;
+    }
 
     // Sunrise Time
     if ( ( now.GetYear() == m_SunriseTime.GetYear() ) && 
-		 ( now.GetMonth() == m_SunriseTime.GetMonth() ) &&
-		 ( now.GetDay() == m_SunriseTime.GetDay() ) &&
-		 ( now.GetHour() == m_SunriseTime.GetHour() ) && 
+         ( now.GetMonth() == m_SunriseTime.GetMonth() ) &&
+         ( now.GetDay() == m_SunriseTime.GetDay() ) &&
+         ( now.GetHour() == m_SunriseTime.GetHour() ) && 
          ( now.GetMinute() == m_SunriseTime.GetMinute() ) ) {
 
         m_SunriseTime += span24;   // Add 24h's
@@ -470,9 +473,9 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
 
     // Civil Twilight Sunrise Time
     if ( ( now.GetYear() == m_civilTwilightSunriseTime.GetYear() ) && 
-		 ( now.GetMonth() == m_civilTwilightSunriseTime.GetMonth() ) &&
-		 ( now.GetDay() == m_civilTwilightSunriseTime.GetDay() ) && 
-		 ( now.GetHour() == m_civilTwilightSunriseTime.GetHour() ) && 
+         ( now.GetMonth() == m_civilTwilightSunriseTime.GetMonth() ) &&
+         ( now.GetDay() == m_civilTwilightSunriseTime.GetDay() ) && 
+         ( now.GetHour() == m_civilTwilightSunriseTime.GetHour() ) && 
          ( now.GetMinute() == m_civilTwilightSunriseTime.GetMinute() ) ) {
 
         m_civilTwilightSunriseTime += span24;   // Add 24h's
@@ -499,11 +502,11 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
          ( now.GetHour() == m_SunsetTime.GetHour() ) &&
          ( now.GetMinute() == m_SunsetTime.GetMinute() ) ) {
 
-        m_SunsetTime += span24;   // Add 24h's
+        m_SunsetTime += span24;     // Add 24h's
         m_SunsetTime_sent = wxDateTime::Now();
 
         // Send VSCP_CLASS1_INFORMATION, Type=45/VSCP_TYPE_INFORMATION_SUNSET
-        pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
+        pEventEx->obid = 0;         // IMPORTANT Must be set by caller before event is sent
         pEventEx->head = 0;
         pEventEx->vscp_class = VSCP_CLASS1_INFORMATION;
         pEventEx->vscp_type = VSCP_TYPE_INFORMATION_SUNSET;
@@ -518,9 +521,9 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
 
     // Civil Twilight Sunset Time
     if ( ( now.GetYear() == m_civilTwilightSunsetTime.GetYear() ) && 
-		 ( now.GetMonth() == m_civilTwilightSunsetTime.GetMonth() ) &&
-		 ( now.GetDay() == m_civilTwilightSunsetTime.GetDay() ) &&
-		 ( now.GetHour() == m_civilTwilightSunsetTime.GetHour() ) && 
+         ( now.GetMonth() == m_civilTwilightSunsetTime.GetMonth() ) &&
+         ( now.GetDay() == m_civilTwilightSunsetTime.GetDay() ) &&
+         ( now.GetHour() == m_civilTwilightSunsetTime.GetHour() ) && 
          ( now.GetMinute() == m_civilTwilightSunsetTime.GetMinute() ) ) {
 
         m_civilTwilightSunsetTime += span24;   // Add 24h's
@@ -542,9 +545,9 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
 
     // Noon Time
     if ( ( now.GetYear() == m_noonTime.GetYear() ) && 
-		 ( now.GetMonth() == m_noonTime.GetMonth() ) &&
-		 ( now.GetDay() == m_noonTime.GetDay() ) &&
-		 ( now.GetHour() == m_noonTime.GetHour() ) && 
+         ( now.GetMonth() == m_noonTime.GetMonth() ) &&
+         ( now.GetDay() == m_noonTime.GetDay() ) &&
+         ( now.GetHour() == m_noonTime.GetHour() ) && 
          ( now.GetMinute() == m_noonTime.GetMinute() ) ) {
 
         m_noonTime += span24;   // Add 24h's

@@ -122,6 +122,10 @@
 #include "web_js.h"
 #include "web_template.h"
 
+#ifndef VSCP_DISABLE_LUA
+#include <lua.hpp>
+#endif
+
 #include <mongoose.h>
 
 #include "canal_macro.h"
@@ -660,6 +664,11 @@ bool CControlObject::init(wxString& strcfgfile)
     else {
         logMsg(_("Variables disabled.\n"), DAEMON_LOGMSG_INFO);
     }
+    
+    // Add stock variables if enables
+    if ( m_bVariables ) {
+        addStockVariables();    
+    }
 
     // Start daemon internal client worker thread
     startClientWorkerThread();
@@ -744,7 +753,8 @@ bool CControlObject::run(void)
     CClientItem *pClientItem = new CClientItem;
     if ( NULL == pClientItem ) {
         wxLogDebug(_("ControlObject: Unable to allocate Client item, Ending"));
-        logMsg(_("Unable to allocate Client item, Ending."), DAEMON_LOGMSG_CRITICAL);
+        logMsg( _("Unable to allocate Client item, Ending."), 
+                    DAEMON_LOGMSG_CRITICAL);
         return false;
     }
 
@@ -752,7 +762,9 @@ bool CControlObject::run(void)
     m_dm.m_pClientItem = pClientItem;
 
     // Set Filter/Mask for full DM table
-    memcpy(&pClientItem->m_filterVSCP, &m_dm.m_DM_Table_filter, sizeof( vscpEventFilter));
+    memcpy( &pClientItem->m_filterVSCP, 
+                &m_dm.m_DM_Table_filter, 
+                sizeof( vscpEventFilter ) );
 
     // This is an active client
     pClientItem->m_bOpen = true;
@@ -765,7 +777,7 @@ bool CControlObject::run(void)
 
     // Add the client to the Client List
     m_wxClientMutex.Lock();
-    addClient(pClientItem);
+    addClient( pClientItem );
     m_wxClientMutex.Unlock();
 
     // Feed startup event
@@ -773,11 +785,11 @@ bool CControlObject::run(void)
 
 
     //-------------------------------------------------------------------------
-    //                                    LOOP
+    //                            MAIN - LOOP
     //-------------------------------------------------------------------------
     
     // DM Loop
-    while (!m_bQuit) {
+    while ( !m_bQuit ) {
     
         // CLOCKS_PER_SEC 
         clock_t ticks,oldus;
@@ -789,7 +801,7 @@ bool CControlObject::run(void)
         // Put the LOOP event on the queue
         // Garanties at least one lop event between every other
         // event feed to the queue
-        m_dm.feed(&EventLoop);
+        m_dm.feed( &EventLoop );
 
 
         // Autosave variables
@@ -800,7 +812,8 @@ bool CControlObject::run(void)
         m_variableMutex.Unlock();
 
         // Wait for event
-        if (wxSEMA_TIMEOUT == pClientItem->m_semClientInputQueue.WaitTimeout(10)) {
+        if ( wxSEMA_TIMEOUT == 
+                pClientItem->m_semClientInputQueue.WaitTimeout( 100 ) ) {
 
             // Put the LOOP event on the queue
             m_dm.feed( &EventLoop );
@@ -812,7 +825,7 @@ bool CControlObject::run(void)
         //                         Event received here
         //---------------------------------------------------------------------------
 
-        if (pClientItem->m_clientInputQueue.GetCount()) {
+        if ( pClientItem->m_clientInputQueue.GetCount() ) {
 
             vscpEvent *pEvent;
 
@@ -822,11 +835,11 @@ bool CControlObject::run(void)
             pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
             pClientItem->m_mutexClientInputQueue.Unlock();
 
-            if (NULL != pEvent) {
+            if ( NULL != pEvent ) {
 
-                if (vscp_doLevel2Filter(pEvent, &m_dm.m_DM_Table_filter)) {
+                if ( vscp_doLevel2Filter( pEvent, &m_dm.m_DM_Table_filter ) ) {
                     // Feed event through matrix
-                    m_dm.feed(pEvent);
+                    m_dm.feed( pEvent );
                 }
 
                 // Remove the event
@@ -839,11 +852,11 @@ bool CControlObject::run(void)
     }  // LOOP
 
     // Do shutdown event
-    m_dm.feed(&EventShutDown);
+    m_dm.feed( &EventShutDown );
 
     // Remove messages in the client queues
     m_wxClientMutex.Lock();
-    removeClient(pClientItem);
+    removeClient( pClientItem );
     m_wxClientMutex.Unlock();
 
     wxLogDebug(_("ControlObject: Done"));
@@ -1208,8 +1221,8 @@ bool CControlObject::stopDeviceWorkerThreads(void)
 // sendEventToClient
 //
 
-void CControlObject::sendEventToClient(CClientItem *pClientItem,
-        vscpEvent *pEvent)
+void CControlObject::sendEventToClient( CClientItem *pClientItem,
+                                            vscpEvent *pEvent)
 {
     // Must be valid pointers
     if (NULL == pClientItem) return;
@@ -1260,7 +1273,8 @@ void CControlObject::sendEventToClient(CClientItem *pClientItem,
 // sendEventAllClients
 //
 
-void CControlObject::sendEventAllClients(vscpEvent *pEvent, uint32_t excludeID)
+void CControlObject::sendEventAllClients( vscpEvent *pEvent, 
+                                            uint32_t excludeID )
 {
     CClientItem *pClientItem;
     VSCPCLIENTLIST::iterator it;
@@ -1272,7 +1286,9 @@ void CControlObject::sendEventAllClients(vscpEvent *pEvent, uint32_t excludeID)
             pEvent->obid, excludeID);
     
     m_wxClientMutex.Lock();
-    for (it = m_clientList.m_clientItemList.begin(); it != m_clientList.m_clientItemList.end(); ++it) {
+    for ( it = m_clientList.m_clientItemList.begin(); 
+            it != m_clientList.m_clientItemList.end(); 
+            ++it) {
         pClientItem = *it;
 
         if ( NULL != pClientItem ) {
@@ -1310,7 +1326,7 @@ void CControlObject::sendEventAllClients(vscpEvent *pEvent, uint32_t excludeID)
 //  getClientMapFromId
 //
 
-uint32_t CControlObject::getClientMapFromId(uint32_t clid)
+uint32_t CControlObject::getClientMapFromId( uint32_t clid )
 {
     for (uint32_t i = 0; i < VSCP_MAX_CLIENTS; i++) {
         if (clid == m_clientMap[ i ]) return i;
@@ -1324,7 +1340,7 @@ uint32_t CControlObject::getClientMapFromId(uint32_t clid)
 //  getClientMapFromIndex
 //
 
-uint32_t CControlObject::getClientMapFromIndex(uint32_t idx)
+uint32_t CControlObject::getClientMapFromIndex( uint32_t idx )
 {
     return m_clientMap[ idx ];
 }
@@ -1334,7 +1350,7 @@ uint32_t CControlObject::getClientMapFromIndex(uint32_t idx)
 //  addIdToClientMap
 //
 
-uint32_t CControlObject::addIdToClientMap(uint32_t clid)
+uint32_t CControlObject::addIdToClientMap( uint32_t clid )
 {
     for (uint32_t i = 1; i < VSCP_MAX_CLIENTS; i++) {
         if (0 == m_clientMap[ i ]) {
@@ -1351,7 +1367,7 @@ uint32_t CControlObject::addIdToClientMap(uint32_t clid)
 //  removeIdFromClientMap
 //
 
-bool CControlObject::removeIdFromClientMap(uint32_t clid)
+bool CControlObject::removeIdFromClientMap( uint32_t clid )
 {
     for (uint32_t i = 0; i < VSCP_MAX_CLIENTS; i++) {
         if (clid == m_clientMap[ i ]) {
@@ -1368,7 +1384,8 @@ bool CControlObject::removeIdFromClientMap(uint32_t clid)
 // addClient
 //
 
-void CControlObject::addClient(CClientItem *pClientItem, uint32_t id)
+void CControlObject::addClient( CClientItem *pClientItem, 
+                                    uint32_t id )
 {
     // Add client to client list
     m_clientList.addClient(pClientItem, id);
@@ -1388,7 +1405,7 @@ void CControlObject::addClient(CClientItem *pClientItem, uint32_t id)
 // removeClient
 //
 
-void CControlObject::removeClient(CClientItem *pClientItem)
+void CControlObject::removeClient( CClientItem *pClientItem )
 {
     // Remove the mapped item
     removeIdFromClientMap(pClientItem->m_clientID);
@@ -1401,7 +1418,9 @@ void CControlObject::removeClient(CClientItem *pClientItem)
 // addKnowNode
 //
 
-void CControlObject::addKnownNode( cguid& guid, cguid& ifguid, wxString& name )
+void CControlObject::addKnownNode( cguid& guid, 
+                                    cguid& ifguid, 
+                                    wxString& name )
 {
     ;
 }
@@ -1410,7 +1429,7 @@ void CControlObject::addKnownNode( cguid& guid, cguid& ifguid, wxString& name )
 //  getMacAddress
 //
 
-bool CControlObject::getMacAddress(cguid& guid)
+bool CControlObject::getMacAddress( cguid& guid )
 {
 #ifdef WIN32
 
@@ -1493,7 +1512,8 @@ bool CControlObject::getMacAddress(cguid& guid)
     // Clear the GUID
     guid.clear();
 
-    fd = socket(PF_INET, SOCK_RAW, htons(ETH_P_ALL));
+    fd = socket( PF_INET, SOCK_RAW, htons( ETH_P_ALL ) );
+    if ( -1 == fd ) return false;
     memset(&ifr, 0, sizeof( ifr));
     strncpy(ifr.ifr_name, "eth0", sizeof( ifr.ifr_name));
     if (ioctl(fd, SIOCGIFHWADDR, &ifr) >= 0) {
@@ -1541,7 +1561,7 @@ bool CControlObject::getMacAddress(cguid& guid)
 //  getIPAddress
 //
 
-bool CControlObject::getIPAddress(cguid& guid)
+bool CControlObject::getIPAddress( cguid& guid )
 {
     // Clear the GUID
     guid.clear();
@@ -1593,12 +1613,374 @@ bool CControlObject::getIPAddress(cguid& guid)
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// addStockVariables
+//
+
+void CControlObject::addStockVariables( void )
+{
+    wxString wxstr;
+    cguid guid;
+    
+    m_VSCP_Variables.add( _("vscp.version.major"), 
+                wxString::Format( "%d", VSCPD_MAJOR_VERSION ), 
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                false, 
+                false );
+                
+    m_VSCP_Variables.add( _("vscp.version.minor"), 
+                wxString::Format( "%d", VSCPD_MINOR_VERSION ), 
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                false, 
+                false );
+                
+    m_VSCP_Variables.add( _("vscp.version.sub"), 
+                wxString::Format( "%d", VSCPD_SUB_VERSION ), 
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                false, 
+                false );
+                
+    m_VSCP_Variables.add( _("vscp.version.build"), 
+                wxString::Format( "%d", VSCPD_BUILD_VERSION ), 
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                false, 
+                false );                
+                
+    m_VSCP_Variables.add( _("vscp.version.str"), 
+                wxString::Format( "%s", VSCPD_DISPLAY_VERSION ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                false, 
+                false );
+                
+    m_VSCP_Variables.add( _("vscp.version.wxwidgets.str"), 
+                wxString::Format( "%s", wxVERSION_STRING ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                false, 
+                false ); 
+
+    m_VSCP_Variables.add( _("vscp.version.wxwidgets.major"), 
+                wxString::Format( "%d", wxMAJOR_VERSION ), 
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                false, 
+                false );
+                
+    m_VSCP_Variables.add( _("vscp.version.wxwidgets.minor"), 
+                wxString::Format( "%d", wxMINOR_VERSION ), 
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                false, 
+                false );
+
+    m_VSCP_Variables.add( _("vscp.version.wxwidgets.release"), 
+                wxString::Format( "%d", wxRELEASE_NUMBER ), 
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                false, 
+                false );
+
+    m_VSCP_Variables.add( _("vscp.version.wxwidgets.sub"), 
+                wxString::Format( "%d", wxSUBRELEASE_NUMBER ), 
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                false, 
+                false );
+
+    m_VSCP_Variables.add( _("vscp.copyright"), 
+                wxString::Format( "%s", VSCPD_COPYRIGHT ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                false, 
+                false ); 
+                
+    m_VSCP_Variables.add( _("vscp.copyright.vscp"), 
+                wxString::Format( "%s", VSCPD_COPYRIGHT ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                false, 
+                false ); 
+
+    m_VSCP_Variables.add( _("vscp.copyright.wxwidgets"), 
+                wxString::Format( "%s", 
+                    "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al" ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                false, 
+                false ); 
+
+    m_VSCP_Variables.add( _("vscp.copyright.mongoose"), 
+                wxString::Format( "%s", 
+                    "Copyright (c) 2013-2015 Cesanta Software Limited" ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                false, 
+                false ); 
+
+    m_VSCP_Variables.add( _("vscp.version.mongoose.str"), 
+                wxString::Format( "%s", MG_VERSION ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                false, 
+                false );      
+
+#ifndef VSCP_DISABLE_LUA 
+    m_VSCP_Variables.add( _("vscp.copyright.lua"), 
+                wxString::Format( "%s", LUA_COPYRIGHT ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                false, 
+                false );
+                
+    m_VSCP_Variables.add( _("vscp.version.lua.str"), 
+                wxString::Format( "%s", LUA_RELEASE ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                false, 
+                false );            
+                
+    m_VSCP_Variables.add( _("vscp.version.lua.major"), 
+                wxString::Format( "%s", LUA_VERSION_MAJOR ), 
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                false, 
+                false ); 
+
+    m_VSCP_Variables.add( _("vscp.version.lua.minor"), 
+                wxString::Format( "%s", LUA_VERSION_MINOR), 
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                false, 
+                false );  
+
+    m_VSCP_Variables.add( _("vscp.version.lua.release"), 
+                wxString::Format( "%s", LUA_VERSION_RELEASE ), 
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                false, 
+                false );         
+#endif     
+
+    m_VSCP_Variables.add( _("vscp.os.str"), 
+                wxGetOsDescription(), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                false, 
+                false ); 
+          
+    if ( wxIsPlatform64Bit() ) {
+        wxstr = _("64-bit ");
+    }
+    else {
+        wxstr = _("32-bit ");
+    }
+      
+    m_VSCP_Variables.add( _("vscp.os.width.str"), 
+                wxstr, 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                false, 
+                false );                
+    
+    m_VSCP_Variables.add( _("vscp.os.width.is64bit"), 
+                wxIsPlatform64Bit() ? "true" : "false", 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                false, 
+                false );
+                
+    m_VSCP_Variables.add( _("vscp.os.width.is32bit"), 
+                !wxIsPlatform64Bit() ? "true" : "false", 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                false, 
+                false ); 
+
+    if ( wxIsPlatformLittleEndian() ) {
+        wxstr = _("Little endian ");
+    }
+    else {
+        wxstr = _("Big endian ");
+    }  
+
+    m_VSCP_Variables.add( _("vscp.os.endiness.str"), 
+                wxstr, 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                false, 
+                false ); 
+
+    m_VSCP_Variables.add( _("vscp.os.endiness.isLittleEndian"), 
+                wxIsPlatformLittleEndian() ? "true" : "false", 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                false, 
+                false );   
+
+   m_VSCP_Variables.add( _("vscp.host.fullname"), 
+                wxGetFullHostName(), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                false, 
+                false );  
+
+    if ( getIPAddress( guid ) ) {
+        m_VSCP_Variables.add( _("vscp.host.ip"), 
+                wxString::Format( "%d.%d.%d.%d", 
+                            guid.getAt( 11 ),
+                            guid.getAt( 10 ),
+                            guid.getAt( 9 ),
+                            guid.getAt( 8 ) ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                false, 
+                false );
+    }
+    
+    if ( getMacAddress( guid ) ) {
+        m_VSCP_Variables.add( _("vscp.host.mac"), 
+                wxString::Format( "%02X:%02X:%02X:%02X:%02X:%02X", 
+                            guid.getAt( 13 ),
+                            guid.getAt( 12 ),
+                            guid.getAt( 11 ),
+                            guid.getAt( 10 ),
+                            guid.getAt( 9 ),
+                            guid.getAt( 8 ) ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                false, 
+                false );  
+    }
+                
+    m_VSCP_Variables.add( _("vscp.host.userid"), 
+                wxGetUserId(), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                false, 
+                false );  
+
+
+    m_VSCP_Variables.add( _("vscp.host.userid"), 
+                wxGetUserId(), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                false, 
+                false );    
+
+    m_VSCP_Variables.add( _("vscp.host.username"), 
+                wxGetUserName(), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                false, 
+                false );      
+                 
+    m_guid.toString( wxstr );
+    m_VSCP_Variables.add( _("vscp.host.guid"), 
+                wxstr, 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                false, 
+                false );
+                
+    m_guid.toString( wxstr );
+    m_VSCP_Variables.add( _("vscp.loglevel"), 
+                wxString::Format(_("%d "), m_logLevel ), 
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                false, 
+                false );
+                
+    switch ( m_logLevel  ) {
+        case DAEMON_LOGMSG_NONE:
+            wxstr = _("None");
+            break;
+        case DAEMON_LOGMSG_DEBUG:
+            wxstr = _("Debug");
+            break;
+        case DAEMON_LOGMSG_INFO:
+            wxstr = _("Info");
+            break;
+        case DAEMON_LOGMSG_NOTICE:
+            wxstr = _("Notice");
+            break;
+        case DAEMON_LOGMSG_WARNING:
+            wxstr = _("Warning");
+            break;
+        case DAEMON_LOGMSG_ERROR:
+            wxstr = _("Error");
+            break;
+        case DAEMON_LOGMSG_CRITICAL:
+            wxstr = _("Critical");
+            break;
+        case DAEMON_LOGMSG_ALERT:
+            wxstr = _("Alert");
+            break;
+        case DAEMON_LOGMSG_EMERGENCY:
+            wxstr = _("Emergency");
+            break;
+        default:
+            wxstr = _("Unknown");
+            break;
+    }
+
+    m_VSCP_Variables.add( _("vscp.loglevel.str"), 
+                wxstr, 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                false, 
+                false );         
+
+    
+    m_VSCP_Variables.add( _("vscp.client.ReceiveQueue.Max"), 
+                wxString::Format(_("%d"), m_maxItemsInClientReceiveQueue ), 
+                VSCP_DAEMON_VARIABLE_CODE_LONG,
+                false, 
+                false );  
+                
+    m_VSCP_Variables.add( _("vscp.tcpip.isEnabled"), 
+                m_bTCPInterface ? _("true") : _("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                false, 
+                false );             
+
+    m_VSCP_Variables.add( _("vscp.tcpip.addess"), 
+                m_strTcpInterfaceAddress, 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                false, 
+                false );  
+
+    m_VSCP_Variables.add( _("vscp.udp.isEnabled"), 
+                m_bUDPInterface ? _("true") : _("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                false, 
+                false );             
+
+    m_VSCP_Variables.add( _("vscp.udp.addess"), 
+                m_strUDPInterfaceAddress, 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                false, 
+                false ); 
+              
+    m_VSCP_Variables.add( _("vscp.discovery.isEnabled"), 
+                m_bVSCPDaemon ? _("true") : _("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                false, 
+                false ); 
+
+    m_VSCP_Variables.add( _("vscp.discovery.isEnabled"), 
+                m_bVSCPDaemon ? _("true") : _("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                false, 
+                false ); 
+                
+    m_VSCP_Variables.add( _("vscp.automation.isEnabled"), 
+                m_automation.isAutomationEnabled() ? _("true") : _("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                false, 
+                false );   
+
+    if ( m_automation.isAutomationEnabled() ) {  
+
+        m_VSCP_Variables.add( _("vscp.automation.heartbeat.isEnabled"), 
+                m_automation.isSendHeartbeat() ? _("true") : _("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                false, 
+                false );       
+                
+        m_VSCP_Variables.add( _("vscp.automation.heartbeat.period"), 
+                wxString::Format( _( "%ld" ), m_automation.getIntervalHeartbeat() ), 
+                VSCP_DAEMON_VARIABLE_CODE_LONG,
+                false, 
+                false ); 
+
+        wxstr = m_automation.getHeartbeatSent().FormatISODate();
+        wxstr += _( " " );
+        wxstr += m_automation.getHeartbeatSent().FormatISOTime();
+        m_VSCP_Variables.add( _("vscp.automation.heartbeat.last"), 
+                wxstr, 
+                VSCP_DAEMON_VARIABLE_CODE_DATETIME,
+                false, 
+                false );
+    }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 // readConfiguration
 //
 // Read the configuration XML file
 //
 
-bool CControlObject::readConfiguration(wxString& strcfgfile)
+bool CControlObject::readConfiguration( wxString& strcfgfile )
 {
     unsigned long val;
     wxXmlDocument doc;

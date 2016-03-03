@@ -297,7 +297,7 @@ public:
 
         @param pGUID Pointer to GUID class
      */
-    bool getIPAddress(cguid& guid);
+    bool getIPAddress( cguid& guid );
 
     /*!
         Read configuration data
@@ -355,6 +355,11 @@ public:
         @return Pointer to the VSCP TCP/IP thread thread
     */ 
     VSCPClientThread *getTCPIPServer( void ) { return m_pVSCPClientThread; };
+    
+    /*!
+     * Add stock variables
+    */
+    void addStockVariables( void );
 
 public:
 
@@ -467,7 +472,7 @@ public:
     bool m_bEnableLevel2Drivers;
 
     /*!
-        Enable VSCP Daemon functionality
+        Enable VSCP Daemon functionality (Disovery)
      */
     bool m_bVSCPDaemon;
 

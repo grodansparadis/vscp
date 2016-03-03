@@ -46,10 +46,18 @@
 #include <wx/xml/xml.h>
 #include <wx/stdpaths.h>
 
+#include <mongoose.h>
+
 #include <wx/listimpl.cpp>
 
+#ifndef VSCP_DISABLE_LUA
+#include <lua.hpp>
+#endif
+
 #include <vscp.h>
+#include <version.h>
 #include <vscphelper.h>
+#include <guid.h>
 #include <variablecodes.h>
 #include <vscpvariable.h>
 
@@ -64,6 +72,7 @@ CVSCPVariable::CVSCPVariable( void )
     m_type = VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED;
     m_bPersistent = false;          // Not persistent by default
     m_bArray = false;               // Nor an array by default
+    m_brw = true;                   // Writable
 
     m_boolValue = false;
     m_event.pdata = NULL;
@@ -344,7 +353,8 @@ bool CVSCPVariable::writeValueToString( wxString& strValueOut )
 // setValueFromString
 //
 
-bool CVSCPVariable::setValueFromString( CVSCPVariable::vartype type, const wxString& strValue )
+bool CVSCPVariable::setValueFromString( CVSCPVariable::vartype type, 
+                                            const wxString& strValue )
 {
     return setValueFromString( (int)type, strValue );
 }
@@ -450,11 +460,12 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue )
 
 bool CVSCPVariable::getVariableFromString( const wxString& strVariable )
 {
-    wxString strName;			      // Name of variable
-    wxString strValue;				  // Variable value
-    int		 typeVariable;			  // Type of variable;
-    bool	 bPersistent = false;	  // Persistence of variable		
-
+    wxString strName;               // Name of variable
+    wxString strValue;              // Variable value
+    int      typeVariable;          // Type of variable;
+    bool     bPersistent = false;   // Persistence of variable
+    bool     brw = true;            // Writable    
+    
     // Update lastchanged
     setLastChangedToNow();
 
@@ -473,7 +484,7 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable )
         typeVariable = CVSCPVariable::getVariableTypeFromString( tkz.GetNextToken() );
     }
     else {
-        return false;	
+        return false;
     }
 
     // Get the persistence of the variable
@@ -485,7 +496,7 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable )
         }
     }
     else {
-        return false;	
+        return false;
     }
 
     // Get the value of the variable
@@ -494,7 +505,7 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable )
         strValue.Upper();
     }
     else {
-        return false;	
+        return false;
     }
 
     // Set values
@@ -679,7 +690,7 @@ void CVSCPVariable::setFalse( void )
 
 
 //*****************************************************************************
-//								CVariableStorage
+//                            CVariableStorage
 //*****************************************************************************
 
 
@@ -697,9 +708,9 @@ CVariableStorage::CVariableStorage()
 #ifdef WIN32
     m_configPath = wxStandardPaths::Get().GetConfigDir();
     m_configPath += _("/vscp/variables.xml");
-#else	
+#else
     m_configPath = _("/srv/vscp/variables.xml");
-#endif	
+#endif
 #endif    
 
     // Autosave variables every five minutes.
@@ -789,7 +800,8 @@ CVSCPVariable * CVariableStorage::find( const wxString& name )
 bool CVariableStorage::add( const wxString& varName, 
                                     const wxString& value, 
                                     uint8_t type, 
-                                    bool bPersistent )
+                                    bool bPersistent,
+                                    bool brw )
 {
     // Name is always upper case
     wxString name = varName.Upper();
@@ -811,7 +823,7 @@ bool CVariableStorage::add( const wxString& varName,
     // Update lastchanged
     pVar->setLastChangedToNow();
 
-    pVar->setType( type );			// Store the type
+    pVar->setType( type );          // Store the type
 
     // Store persistence
     if ( bPersistent ) {
@@ -819,6 +831,14 @@ bool CVariableStorage::add( const wxString& varName,
     }
     else {
         pVar->setPersistent( false );
+    }
+    
+    // Writable
+    if ( brw ) {
+        pVar->makeWritable( true );
+    }
+    else {
+        pVar->makeWritable( false );
     }
 
     pVar->setName( name );
@@ -836,7 +856,7 @@ bool CVariableStorage::add( const wxString& varName,
         // The variable is there already - just change value
         m_hashVariable[ name ]->setValueFromString( m_hashVariable[ name ]->getType(), value );
 
-        delete pVar;	// No use for the variable
+        delete pVar;    // No use for the variable
 
     }
     else {
@@ -855,13 +875,15 @@ bool CVariableStorage::add( const wxString& varName,
 bool CVariableStorage::addWithStringType(const wxString& varName,
                         const wxString& value,
                         const wxString& strType,
-                        bool bPersistent ) 
+                        bool bPersistent,
+                        bool brw ) 
 {
     uint8_t type = CVSCPVariable::getVariableTypeFromString( strType );
     return add(varName,
                 value,
                 type,
-                bPersistent ); 
+                bPersistent,
+                brw ); 
 }
 
 
@@ -1433,7 +1455,7 @@ bool CVariableStorage::save( wxString& path )
                     pFileStream->Write( "  </variable>\n\n", strlen("  </variable>\n\n") );
                     break;
 
-            }	
+            }
 
         }
         

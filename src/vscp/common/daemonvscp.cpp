@@ -164,7 +164,7 @@ void *daemonVSCPThread::Entry()
     // construct a multicast address structure 
     memset( &mc_addr, 0, sizeof( mc_addr ) );
     mc_addr.sin_family = AF_INET;
-    mc_addr.sin_addr.s_addr = inet_addr( "224.0.23.158" );
+    mc_addr.sin_addr.s_addr = inet_addr( VSCP_MULTICAST_IPV4_ADDRESS_STR );
     mc_addr.sin_port = htons( mc_port );
 
 #endif
@@ -258,7 +258,9 @@ void *daemonVSCPThread::Entry()
                           ( VSCP2_TYPE_INFORMATION_HEART_BEAT == eventEx.vscp_type ) ) {
 
                     // Copy in server name.
-                    memcpy( eventEx.data, m_pCtrlObject->m_strServerName.mbc_str(), MAX( 64, m_pCtrlObject->m_strServerName.Length() ) );
+                    memcpy( eventEx.data, 
+                                m_pCtrlObject->m_strServerName.mbc_str(), 
+                                MAX( 64, m_pCtrlObject->m_strServerName.Length() ) );
 
                     // Send event on multicast information channel
                     sendMulticastEventEx( sock_mc, &eventEx, mc_port );
@@ -537,7 +539,8 @@ CNodeInformation * daemonVSCPThread::addNodeIfNotKnown( vscpEvent *pEvent )
                                                                 clientID );
                     pNode->m_strNodeName += _( "_" );
                     pNode->m_strNodeName += wxString::Format( _( "%u" ), 
-                                                ( pEvent->GUID[ 14 ] << 8 ) + pEvent->GUID[ 15 ] );
+                                                ( pEvent->GUID[ 14 ] << 8 ) + 
+                                                    pEvent->GUID[ 15 ] );
                 }
 
                 // Now let the discovery thread do the rest of the work
@@ -563,9 +566,14 @@ CNodeInformation * daemonVSCPThread::addNodeIfNotKnown( vscpEvent *pEvent )
                 // 'client_clientid_nickname'
                 if ( pNode->m_strNodeName.IsEmpty() ) {
                     pNode->m_strNodeName = _( "client_" );
-                    pNode->m_strNodeName += wxString::Format( _( "%lu" ), pClientItem->m_clientID );
+                    pNode->m_strNodeName += 
+                        wxString::Format( _( "%lu" ), 
+                                            pClientItem->m_clientID );
                     pNode->m_strNodeName += _( "_" );
-                    pNode->m_strNodeName += wxString::Format( _( "%u" ), ( pEvent->GUID[ 14 ] << 8 ) + pEvent->GUID[ 15 ] );
+                    pNode->m_strNodeName += 
+                        wxString::Format( _( "%u" ), 
+                                            ( pEvent->GUID[ 14 ] << 8 ) + 
+                                                pEvent->GUID[ 15 ] );
                 }
 
 

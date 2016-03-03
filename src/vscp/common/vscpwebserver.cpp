@@ -4580,7 +4580,7 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
 
     buildPage += _("<div id=\"small\">");
     buildPage += _("<b>Hostname:</b> ");
-    buildPage += wxGetFullHostName();	
+    buildPage += wxGetFullHostName();
     buildPage += _("<br>");
     buildPage += _("</div>");
     
