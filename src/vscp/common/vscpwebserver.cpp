@@ -345,7 +345,7 @@ static int vscp_check_nonce( const char *nonce )
 // vscp_md5 
 //
 
-char *vscp_md5(char *buf, ...) 
+char *vscp_md5(char buf[33], ...) 
 {
     unsigned char hash[16];
     const unsigned char *p;
@@ -357,12 +357,17 @@ char *vscp_md5(char *buf, ...)
 
     va_start( ap, buf );
     while ( ( p = va_arg(ap, const unsigned char *) ) != NULL ) {
+        wxPrintf("MD5A\n");
         size_t len = va_arg(ap, size_t);
+        wxPrintf("MD5B %zu\n", len );
+	wxPrintf( wxString::FromAscii( p ) );
         MD5_Update(&ctx, p, len);
+        wxPrintf("MD5C\n");
     }
     va_end( ap );
 
     MD5_Final(hash, &ctx);
+    wxPrintf("MD5\n");
     vscp_bin2str(buf, hash, sizeof(hash));
 
     return buf;
