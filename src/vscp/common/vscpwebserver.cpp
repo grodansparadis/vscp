@@ -325,7 +325,7 @@ static void vscp_bin2str( char *to, const unsigned char *p, size_t len )
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// mkmd5resp 
+// vscp_check_nonce 
 //
 // Check for authentication timeout.
 // Clients send time stamp encoded in nonce. Make sure it is not too old,
@@ -337,7 +337,7 @@ static int vscp_check_nonce( const char *nonce )
 {
     unsigned long now = (unsigned long) time( NULL );
     unsigned long val = (unsigned long) strtoul( nonce, NULL, 16 );
-    return 1 || now < val || now - val < 3600;
+    return ( 1 || ( now < val ) || ( ( now - val ) < 3600 ) );
 }
 
 
@@ -387,12 +387,13 @@ static void vscp_mkmd5resp( const char *method, size_t method_len, const char *u
 {
     static const char colon[] = ":";
     static const size_t one = 1;
+    static const size_t len_32 = 32;
     char ha2[33];
 
     vscp_md5( ha2, method, method_len, colon, one, uri, uri_len, NULL);
     vscp_md5( resp, ha1, ha1_len, colon, one, nonce, nonce_len, colon, one, nc,
             nc_len, colon, one, cnonce, cnonce_len, colon, one, qop, qop_len,
-            colon, one, ha2, sizeof(ha2) - 1, NULL);
+            colon, one, ha2, len_32, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -411,17 +412,17 @@ static int vscp_is_authorized( struct mg_connection *conn,
     if ( NULL == pObject ) return 0;
     
     struct mg_str *hdr;
-    char user[50], cnonce[33], response[40], uri[200], qop[20], nc[20], nonce[30];
+    char user[50], cnonce[50], response[40], uri[200], qop[20], nc[20], nonce[50];
 
     // Parse "Authorization:" header, fail fast on parse error 
-    if ( ( hdr = mg_get_http_header(hm, "Authorization")) == NULL ||
-        mg_http_parse_header(hdr, "username", user, sizeof(user)) == 0 ||
-        mg_http_parse_header(hdr, "cnonce", cnonce, sizeof(cnonce)) == 0 ||
-        mg_http_parse_header(hdr, "response", response, sizeof(response)) == 0 ||
-        mg_http_parse_header(hdr, "uri", uri, sizeof(uri)) == 0 ||
-        mg_http_parse_header(hdr, "qop", qop, sizeof(qop)) == 0 ||
-        mg_http_parse_header(hdr, "nc", nc, sizeof(nc)) == 0 ||
-        mg_http_parse_header(hdr, "nonce", nonce, sizeof(nonce)) == 0 ||
+    if ( ( hdr = mg_get_http_header( hm, "Authorization" ) ) == NULL ||
+        mg_http_parse_header(hdr, "username", user, sizeof( user ) ) == 0 ||
+        mg_http_parse_header(hdr, "cnonce", cnonce, sizeof( cnonce ) ) == 0 ||
+        mg_http_parse_header(hdr, "response", response, sizeof( response ) ) == 0 ||
+        mg_http_parse_header(hdr, "uri", uri, sizeof( uri ) ) == 0 ||
+        mg_http_parse_header(hdr, "qop", qop, sizeof( qop ) ) == 0 ||
+        mg_http_parse_header(hdr, "nc", nc, sizeof( nc ) ) == 0 ||
+        mg_http_parse_header(hdr, "nonce", nonce, sizeof( nonce ) ) == 0 ||
         vscp_check_nonce( nonce ) == 0 ) {
         return 0;
     }
@@ -472,7 +473,7 @@ static int vscp_is_authorized( struct mg_connection *conn,
                 return 0;
         }
 
-        char method[32];
+        char method[33];
         memset( method, 0, sizeof( method ) );
         strncpy( method, hm->method.p, hm->method.len );
 
@@ -486,6 +487,7 @@ static int vscp_is_authorized( struct mg_connection *conn,
                             cnonce, 
                             qop, 
                             response ) ) {
+                                
             // Username/password wrong
             wxString strErr =
                 wxString::Format( _( "[Webserver Client] Host [%s] User [%s] NOT allowed to connect.\n" ),
@@ -1401,52 +1403,45 @@ VSCPWebServerThread::websrv_expire_sessions( struct mg_connection *nc,
 
 int 
 VSCPWebServerThread::websrv_check_password( const char *method, 
-                                            const char *ha1, 
-                                            const char *uri,
-                                            const char *nonce, 
-                                            const char *nc, 
-                                            const char *cnonce,
-                                            const char *qop, 
-                                            const char *response )
+                                                const char *ha1, 
+                                                const char *uri,
+                                                const char *nonce, 
+                                                const char *nc, 
+                                                const char *cnonce,
+                                                const char *qop, 
+                                                const char *response )
 {
-    char ha2[32 + 1], expected_response[32 + 1];
+    char ha2[33], expected_response[33];
 
 #if 0
     // Check for authentication timeout
-    if ((unsigned long) time(NULL) - (unsigned long) to64(nonce) > 3600 * 2) {
+    if ( ( (unsigned long)time(NULL) - (unsigned long)to64( nonce ) ) > 3600 * 2) {
         return 0;
     }
 #endif
 
     static const char colon[] = ":";
     static const size_t one = 1;        // !!!!! Length must be size_t  !!!!!     
-    static const size_t n32 = 32;       // !!!!! Length must be size_t  !!!!!
-    static const size_t len_method = strlen( method );
-    static const size_t len_uri = strlen( uri );
-    static const size_t len_ha1 = strlen( ha1 );
-    static const size_t len_nonce = strlen( nonce );
-    static const size_t len_nc  = strlen( nc );
-    static const size_t len_cnonce  = strlen( cnonce );
-    static const size_t len_qop = strlen( qop );
-    static const size_t len_ha2 = strlen( ha2 );
-    
+    static const size_t len_32 = 32;    // !!!!! Length must be size_t  !!!!!
+   
     vscp_md5( ha2, 
-                method, len_method, 
+                method, strlen( method ), 
                 colon, one, 
-                uri, len_uri, 
-                NULL);
+                uri, strlen( uri ), 
+                NULL );
+                
     vscp_md5( expected_response, 
-                ha1, len_ha1,
+                ha1, len_32,
                 colon, one,
-                nonce, len_nonce,
+                nonce, strlen( nonce ),
                 colon, one,
-                nc, len_nc,
+                nc, strlen( nc ),
                 colon, one,
-                cnonce, len_cnonce,
+                cnonce, strlen( cnonce ),
                 colon, one, 
-                qop, len_qop,
+                qop, strlen( qop ),
                 colon, one,
-                ha2, len_ha2,
+                ha2, len_32,
                 NULL );
 
     return ( vscp_strcasecmp( response, expected_response ) == 0 ) ? TRUE : FALSE;
