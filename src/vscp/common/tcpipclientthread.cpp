@@ -1534,7 +1534,8 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn, CContr
     
     char digest[33];
     memset( digest, 0, sizeof( digest ) ); 
-    vscp_md5( digest, buf, strlen( buf ), NULL );
+    static const size_t len_buf = strlen( buf );
+    vscp_md5( digest, buf, len_buf, NULL );
     wxString md5Password = wxString( digest, wxConvUTF8 );
     m_pCtrlObject->m_mutexUserList.Lock();
 #if  0 

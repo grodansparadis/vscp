@@ -217,6 +217,10 @@ void *daemonVSCPThread::Entry()
     }
     while ( ( NULL != pAddr ) && ( cntAddr < 16 ) );
 
+
+    //                * * *  L O O P  * * *
+
+
     CLIENTEVENTLIST::compatibility_iterator nodeClient;
     while ( !TestDestroy() && !m_bQuit ) {
 

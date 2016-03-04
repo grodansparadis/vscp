@@ -583,7 +583,8 @@ bool CControlObject::init(wxString& strcfgfile)
     
     char digest[33];
     memset( digest, 0, sizeof( digest ) ); 
-    vscp_md5( digest, buf, strlen( buf ), NULL );
+    static const size_t len_buf = strlen( buf );
+    vscp_md5( digest, buf, len_buf, NULL );
 
     m_userList.addUser( m_driverUsername,
                             wxString::FromUTF8( digest ),

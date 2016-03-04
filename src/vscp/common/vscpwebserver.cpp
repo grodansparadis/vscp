@@ -344,6 +344,12 @@ static int vscp_check_nonce( const char *nonce )
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_md5 
 //
+// "string", length,
+// "string", length,
+// "string", length,
+// "string", length,
+// NULL
+// // !!!!! Length must be size_t  !!!!!
 
 char *vscp_md5(char buf[33], ...) 
 {
@@ -357,18 +363,14 @@ char *vscp_md5(char buf[33], ...)
 
     va_start( ap, buf );
     while ( ( p = va_arg(ap, const unsigned char *) ) != NULL ) {
-        wxPrintf("MD5A\n");
         size_t len = va_arg(ap, size_t);
-        wxPrintf("MD5B %zu\n", len );
-	wxPrintf( wxString::FromAscii( p ) );
         MD5_Update(&ctx, p, len);
-        wxPrintf("MD5C\n");
     }
     va_end( ap );
 
     MD5_Final(hash, &ctx);
-    wxPrintf("MD5\n");
-    vscp_bin2str(buf, hash, sizeof(hash));
+
+    vscp_bin2str( buf, hash, sizeof( hash ) );
 
     return buf;
 }
@@ -1282,7 +1284,8 @@ VSCPWebServerThread::websrv_add_session_cookie( struct mg_connection *nc,
 
     char digest[33];
     memset( digest, 0, sizeof( digest ) ); 
-    vscp_md5( digest, buf, strlen( buf ), NULL );
+    size_t len_buf = strlen( buf );
+    vscp_md5( digest, buf, len_buf, NULL );
     strcpy( ret->m_sid, (const char *)digest );
 
     char uri[2048];
@@ -1415,23 +1418,35 @@ VSCPWebServerThread::websrv_check_password( const char *method,
     }
 #endif
 
+    static const char colon[] = ":";
+    static const size_t one = 1;        // !!!!! Length must be size_t  !!!!!     
+    static const size_t n32 = 32;       // !!!!! Length must be size_t  !!!!!
+    static const size_t len_method = strlen( method );
+    static const size_t len_uri = strlen( uri );
+    static const size_t len_ha1 = strlen( ha1 );
+    static const size_t len_nonce = strlen( nonce );
+    static const size_t len_nc  = strlen( nc );
+    static const size_t len_cnonce  = strlen( cnonce );
+    static const size_t len_qop = strlen( qop );
+    static const size_t len_ha2 = strlen( ha2 );
+    
     vscp_md5( ha2, 
-                method, strlen(method), 
-                ":", 1, 
-                uri, strlen(uri), 
+                method, len_method, 
+                colon, one, 
+                uri, len_uri, 
                 NULL);
     vscp_md5( expected_response, 
-                ha1, strlen(ha1),
-                ":", 1,
-                nonce, strlen(nonce),
-                ":", 1,
-                nc, strlen(nc),
-                ":", 1,
-                cnonce, strlen(cnonce),
-                ":", 1, 
-                qop, strlen(qop),
-                ":", 1,
-                ha2, strlen(ha2),
+                ha1, len_ha1,
+                colon, one,
+                nonce, len_nonce,
+                colon, one,
+                nc, len_nc,
+                colon, one,
+                cnonce, len_cnonce,
+                colon, one, 
+                qop, len_qop,
+                colon, one,
+                ha2, len_ha2,
                 NULL );
 
     return ( vscp_strcasecmp( response, expected_response ) == 0 ) ? TRUE : FALSE;

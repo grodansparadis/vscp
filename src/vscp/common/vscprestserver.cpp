@@ -199,7 +199,8 @@ VSCPWebServerThread::websrv_new_rest_session( struct mg_connection *nc,
 
     char digest[33];
     memset( digest, 0, sizeof( digest ) ); 
-    vscp_md5( digest, buf, strlen( buf ), NULL );
+    static const size_t len_buf = strlen( buf );
+    vscp_md5( digest, buf, len_buf, NULL );
     strcpy( ret->sid, (const char *)digest );
 
     // New client
@@ -2205,23 +2206,38 @@ VSCPWebServerThread::webserv_rest_doCreateVariable( struct mg_connection *nc,
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
     
     if (NULL == pObject) {
-        webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_CREATED ); 
+        webserv_rest_error( nc, 
+                                pSession, 
+                                format, 
+                                REST_ERROR_CODE_VARIABLE_NOT_CREATED ); 
         return;
     }
 
     if ( NULL != pSession ) {
 
         // Add the variable
-        if ( !pObject->m_VSCP_Variables.add( strVariable, strValue, type, bPersistence  ) ) {
-            webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_CREATED );
+        if ( !pObject->m_VSCP_Variables.add( strVariable, 
+                                                strValue, 
+                                                type, 
+                                                bPersistence  ) ) {
+            webserv_rest_error( nc, 
+                                    pSession, 
+                                    format, 
+                                    REST_ERROR_CODE_VARIABLE_NOT_CREATED );
             return;
         }
 
-        webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_SUCCESS );
+        webserv_rest_error( nc, 
+                                pSession, 
+                                format, 
+                                REST_ERROR_CODE_SUCCESS );
 
     }
     else {
-        webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_INVALID_SESSION );
+        webserv_rest_error( nc, 
+                                pSession, 
+                                format, 
+                                REST_ERROR_CODE_INVALID_SESSION );
     }
 
     return;

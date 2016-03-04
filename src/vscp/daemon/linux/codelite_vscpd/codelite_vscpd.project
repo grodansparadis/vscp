@@ -81,6 +81,10 @@
     <File Name="../../../../common/mongoose.c"/>
     <File Name="../../../../common/mongoose.h"/>
     <File Name="../../../common/vscphelper.h"/>
+    <File Name="../../../common/vscprestserver.cpp"/>
+    <File Name="../../../common/vscprestserver.o"/>
+    <File Name="../../../common/vscpwebsocketserver.cpp"/>
+    <File Name="../../../common/webserver_websocket.h"/>
   </VirtualDirectory>
   <VirtualDirectory Name="linux">
     <File Name="../vscpd.cpp"/>

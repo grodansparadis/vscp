@@ -1640,7 +1640,6 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *nc,
     char expected_response[33];
     bool bValidHost = false;
 
-    wxPrintf( _("--IN1 ") + _("\n") );
     memset( response, 0, sizeof( response ) );
     memset( expected_response, 0, sizeof( expected_response ) );
 
@@ -1649,23 +1648,19 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *nc,
     if (NULL == hm) return false;
     if (NULL == pSession) return false;
    
-	wxPrintf( _("--IN2 ") + _("\n") ); 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
     if (NULL == pObject) return false;
 
     if ( pObject->m_bAuthWebsockets ) {
 
-	wxPrintf( _("--IN3 ") + _("\n") );
         // Check if user is valid
         CUserItem *pUser = pObject->m_userList.getUser( strUser );
         if ( NULL == pUser ) return false;
 
-	wxPrintf( _("--IN4 ") + _("\n") );
-
         // Check if remote ip is valid
         bValidHost = pUser->isAllowedToConnect( wxString::FromAscii( inet_ntoa( nc->sa.sin.sin_addr ) ) );
-       wxPrintf( _("--IN5 ") + _("\n") );
-	 if (!bValidHost) {
+       
+        if (!bValidHost) {
             // Log valid login
             wxString strErr = 
             wxString::Format( _("[Websocket Client] Host [%s] NOT allowed to connect.\n"),
@@ -1676,21 +1671,18 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *nc,
         }
 
         strncpy( response, strKey.mbc_str(), MIN( sizeof(response), strKey.Length() ) );
-	wxPrintf( _("--IN6 ") + strUser + _("\n") );
-	wxPrintf( _("--IN6.5 ") + pUser->m_md5Password  + _("\n") );
-        wxPrintf( _("--IN6.7 ") + pSession->m_sid  + _("\n") );
-        wxPrintf( wxString::FromAscii( pSession->m_sid  ) );
-	size_t one = 1;
-        size_t t2 = 32;
+        
+        static const char colon[] = ":";
+        static const size_t one = 1;        // !!!!! Length must be size_t  !!!!!     
+        static const size_t n32 = 32;       // !!!!! Length must be size_t  !!!!!
         vscp_md5( expected_response,
                     (const char *)strUser.mbc_str(), strUser.Length(),
-                    ":", one,
+                    colon, one,
                     (const char *)pUser->m_md5Password.mbc_str(), pUser->m_md5Password.Length(),
-                    ":", one,
-                    pSession->m_sid, t2,
+                    colon, one,
+                    pSession->m_sid, n32,
                     NULL );
 
-	wxPrintf( _("--IN7 ") + _("\n") );
         rv = ( vscp_strcasecmp( response, expected_response ) == 0 ) ? true : false;
 
         if (  rv ) {
