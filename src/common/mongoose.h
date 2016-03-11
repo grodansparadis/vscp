@@ -142,6 +142,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <time.h>
+#include <direct.h>
+#include <io.h>
 
 #define random() rand()
 #ifdef _MSC_VER
@@ -167,6 +170,7 @@
 #define to64(x) _atoi64(x)
 #define popen(x, y) _popen((x), (y))
 #define pclose(x) _pclose(x)
+#define rmdir _rmdir
 #if defined(_MSC_VER) && _MSC_VER >= 1400
 #define fseeko(x, y, z) _fseeki64((x), (y), (z))
 #else
@@ -285,6 +289,15 @@ struct dirent *readdir(DIR *dir);
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+/*
+ * osx correctly avoids defining strtoll when compiling in strict ansi mode.
+ * We require strtoll, and if your embedded pre-c99 compiler lacks one, please
+ * implement a shim.
+ */
+#if !(defined(__DARWIN_C_LEVEL) && __DARWIN_C_LEVEL >= 200809L)
+long long strtoll(const char *, char **, int);
+#endif
 
 typedef int sock_t;
 #define INVALID_SOCKET (-1)
@@ -826,7 +839,7 @@ const char *c_strnstr(const char *s, const char *find, size_t slen);
      !(defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200809L) &&   \
      !(defined(__DARWIN_C_LEVEL) && __DARWIN_C_LEVEL >= 200809L) && \
      !defined(RTOS_SDK)) &&                                         \
-    (defined(_MSC_VER) && _MSC_VER < 1600 /*Visual Studio 2010*/)
+     !(defined(_MSC_VER) && _MSC_VER >= 1600 /* MSVC2013+ has strnlen */)
 #define _MG_PROVIDE_STRNLEN
 size_t strnlen(const char *s, size_t maxlen);
 #endif
@@ -1014,9 +1027,6 @@ struct mg_str {
   size_t len;    /* Memory chunk length */
 };
 
-#define MG_STR(str_literal) \
-  { str_literal, sizeof(str_literal) - 1 }
-
 /*
  * Callback function (event handler) prototype, must be defined by user.
  * Mongoose calls event handler, passing events defined below.
@@ -1069,15 +1079,19 @@ struct mg_connection {
   double ev_timer_time;             /* Timestamp of the future MG_EV_TIMER */
   mg_event_handler_t proto_handler; /* Protocol-specific event handler */
   void *proto_data;                 /* Protocol-specific data */
-  mg_event_handler_t handler;       /* Event handler function */
-  void *user_data;                  /* User-specific data */
-  void *priv_1;                     /* Used by mg_enable_multithreading() */
-  void *priv_2;                     /* Used by mg_enable_multithreading() */
-  struct mbuf endpoints;            /* Used by mg_register_http_endpoint */
+  void (*proto_data_destructor)(void *proto_data);
+  mg_event_handler_t handler; /* Event handler function */
+  void *user_data;            /* User-specific data */
+  union {
+    void *v;
+    /*
+     * the C standard is fussy about fitting function pointers into
+     * void pointers, since some archs might have fat pointers for functions.
+     */
+    mg_event_handler_t f;
+  } priv_1;       /* Used by mg_enable_multithreading() */
+  void *priv_2;   /* Used by mg_enable_multithreading() */
   void *mgr_data; /* Implementation-specific event manager's data. */
-#ifdef MG_ENABLE_HTTP_STREAMING_MULTIPART
-  struct mbuf strm_state; /* Used by multi-part streaming */
-#endif
   unsigned long flags;
 /* Flags set by Mongoose */
 #define MG_F_LISTENING (1 << 0)          /* This connection is listening */
@@ -1799,8 +1813,15 @@ int mg_match_prefix(const char *pattern, int pattern_len, const char *str);
 int mg_match_prefix_n(const char *pattern, int pattern_len, const char *str,
                       int str_len);
 
-/* A helper function for creating mg_str struct from plain C string */
+/*
+ * A helper function for creating mg_str struct from plain C string.
+ * NULL is allowed and becomes {NULL, 0}.
+ */
 struct mg_str mg_mk_str(const char *s);
+
+/* Macro for initializing mg_str. */
+#define MG_MK_STR(str_literal) \
+  { str_literal, sizeof(str_literal) - 1 }
 
 #ifdef __cplusplus
 }
@@ -1839,8 +1860,8 @@ extern "C" {
 #endif
 #endif
 
-#ifndef MG_MAX_HTTP_SEND_IOBUF
-#define MG_MAX_HTTP_SEND_IOBUF 4096
+#ifndef MG_MAX_HTTP_SEND_MBUF
+#define MG_MAX_HTTP_SEND_MBUF 4096
 #endif
 
 #ifndef MG_WEBSOCKET_PING_INTERVAL_SECONDS
@@ -1900,6 +1921,7 @@ struct mg_http_multipart_part {
   const char *file_name;
   const char *var_name;
   struct mg_str data;
+  int status; /* <0 on error */
 };
 
 /* HTTP and websocket events. void *ev_data is described in a comment. */
@@ -1972,9 +1994,55 @@ void mg_set_protocol_http_websocket(struct mg_connection *nc);
  * to fetch, extra_headers` is extra HTTP headers to send or `NULL`.
  *
  * This function is intended to be used by websocket client.
+ *
+ * Note that the Host header is mandatory in HTTP/1.1 and must be
+ * included in `extra_headers`. `mg_send_websocket_handshake2` offers
+ * a better API for that.
+ *
+ * Deprecated in favour of `mg_send_websocket_handshake2`
  */
 void mg_send_websocket_handshake(struct mg_connection *nc, const char *uri,
                                  const char *extra_headers);
+
+/*
+ * Send websocket handshake to the server.
+ *
+ * `nc` must be a valid connection, connected to a server. `uri` is an URI
+ * to fetch, `host` goes into the `Host` header, `protocol` goes into the
+ * `Sec-WebSocket-Proto` header (NULL to omit), extra_headers` is extra HTTP
+ * headers to send or `NULL`.
+ *
+ * This function is intended to be used by websocket client.
+ */
+void mg_send_websocket_handshake2(struct mg_connection *nc, const char *path,
+                                  const char *host, const char *protocol,
+                                  const char *extra_headers);
+
+/*
+ * Helper function that creates an outbound WebSocket connection.
+ *
+ * `url` is a URL to connect to. It must be properly URL-encoded, e.g. have
+ * no spaces, etc. By default, `mg_connect_ws()` sends Connection and
+ * Host headers. `extra_headers` is an extra HTTP headers to send, e.g.
+ * `"User-Agent: my-app\r\n"`.
+ * If `protocol` is not NULL, then a `Sec-WebSocket-Protocol` header is sent.
+ *
+ * Examples:
+ *
+ * [source,c]
+ * ----
+ *   nc1 = mg_connect_ws(mgr, ev_handler_1, "ws://echo.websocket.org", NULL,
+ *                       NULL);
+ *   nc2 = mg_connect_ws(mgr, ev_handler_1, "wss://echo.websocket.org", NULL,
+ *                       NULL);
+ *   nc3 = mg_connect_ws(mgr, ev_handler_1, "ws://api.cesanta.com",
+ *                       "clubby.cesanta.com", NULL);
+ * ----
+ */
+struct mg_connection *mg_connect_ws(struct mg_mgr *mgr,
+                                    mg_event_handler_t event_handler,
+                                    const char *url, const char *protocol,
+                                    const char *extra_headers);
 
 /*
  * Send websocket frame to the remote end.

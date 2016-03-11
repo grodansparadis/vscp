@@ -18,6 +18,8 @@
       <itemPath>../../../../common/guid.cpp</itemPath>
       <itemPath>../../../../common/guid.h</itemPath>
       <itemPath>../../../../common/mdf.h</itemPath>
+      <itemPath>../../../../../common/mongoose.c</itemPath>
+      <itemPath>../../../../../common/mongoose.h</itemPath>
       <itemPath>../common/mqttobj.cpp</itemPath>
       <itemPath>../common/mqttobj.h</itemPath>
       <itemPath>../../../../../common/net_skeleton.c</itemPath>
@@ -75,7 +77,6 @@
               <pElem>include</pElem>
             </incDir>
             <preprocessorList>
-              <Elem>USE_FOSSA</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__WXGTK__</Elem>
@@ -96,28 +97,34 @@
       <item path="../../../../../common/crc.c" ex="false" tool="0" flavor2="0">
         <cTool flags="1">
           <incDir>
-            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
+            <pElem>/usr/local/include/wx-3.1</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>VSCP_ENABLE_LUA</Elem>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
           </preprocessorList>
         </cTool>
       </item>
       <item path="../../../../../common/crc8.c" ex="false" tool="0" flavor2="0">
         <cTool flags="1">
           <incDir>
-            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
+            <pElem>/usr/local/include/wx-3.1</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>VSCP_ENABLE_LUA</Elem>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
           </preprocessorList>
         </cTool>
       </item>
-      <item path="../../../../../common/fossa.c" ex="false" tool="0" flavor2="0">
+      <item path="../../../../../common/fossa.c" ex="false" tool="0" flavor2="2">
         <cTool flags="1">
           <incDir>
             <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
@@ -126,6 +133,22 @@
           </incDir>
           <preprocessorList>
             <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>USE_FOSSA</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="../../../../../common/mongoose.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="1">
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
+            <pElem>/usr/local/include/wx-3.1</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>.</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>VSCP_ENABLE_LUA</Elem>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -139,6 +162,9 @@
             <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>USE_FOSSA</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="../../../../common/guid.cpp" ex="false" tool="1" flavor2="4">
@@ -147,13 +173,15 @@
             <pElem>../../../../common</pElem>
             <pElem>../../../../../common</pElem>
             <pElem>include</pElem>
-            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
+            <pElem>/usr/local/include/wx-3.1</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-            <Elem>USE_FOSSA</Elem>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>VSCP_ENABLE_LUA</Elem>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -164,13 +192,15 @@
             <pElem>../../../../common</pElem>
             <pElem>../../../../../common</pElem>
             <pElem>include</pElem>
-            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
+            <pElem>/usr/local/include/wx-3.1</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-            <Elem>USE_FOSSA</Elem>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>VSCP_ENABLE_LUA</Elem>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -184,13 +214,15 @@
             <pElem>../../../../common</pElem>
             <pElem>../../../../../common</pElem>
             <pElem>include</pElem>
-            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
+            <pElem>/usr/local/include/wx-3.1</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-            <Elem>USE_FOSSA</Elem>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>VSCP_ENABLE_LUA</Elem>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -217,13 +249,15 @@
             <pElem>../../../../common</pElem>
             <pElem>../../../../../common</pElem>
             <pElem>include</pElem>
-            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
+            <pElem>/usr/local/include/wx-3.1</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-            <Elem>USE_FOSSA</Elem>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>VSCP_ENABLE_LUA</Elem>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -231,11 +265,14 @@
       <folder path="0">
         <cTool>
           <incDir>
-            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
+            <pElem>/usr/local/include/wx-3.1</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>VSCP_ENABLE_LUA</Elem>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
           </preprocessorList>
         </cTool>
         <ccTool>
@@ -245,8 +282,6 @@
             <pElem>include</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-            <Elem>USE_FOSSA</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -257,6 +292,10 @@
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>USE_FOSSA</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="test.c" ex="false" tool="0" flavor2="2">
@@ -266,9 +305,15 @@
       <item path="vscpl2drv_mqtt.cpp" ex="false" tool="1" flavor2="0">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
+            <pElem>/usr/local/include/wx-3.1</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>VSCP_ENABLE_LUA</Elem>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
     </conf>

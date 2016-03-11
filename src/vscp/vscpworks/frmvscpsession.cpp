@@ -1796,9 +1796,10 @@ bool frmVSCPSession::addToTxGrid(VscpTXObj *pObj, int selrow)
     m_ctrlGridTransmission->SetCellEditor( row - 1, 
                                             0, 
                                             new wxGridCellBoolEditor);
-    m_ctrlGridTransmission->SetCellAlignment( wxALIGN_CENTRE, 
-                                                row - 1, 
-                                                0 );
+    m_ctrlGridTransmission->SetCellAlignment( row - 1, 
+                                                0, 
+                                                wxALIGN_CENTRE, 
+                                                wxALIGN_CENTRE );
 
     // Name
     m_ctrlGridTransmission->SetCellValue( row - 1, 
@@ -1816,7 +1817,10 @@ bool frmVSCPSession::addToTxGrid(VscpTXObj *pObj, int selrow)
     m_ctrlGridTransmission->SetCellRenderer( row - 1, 
                                                 2, 
                                                 new wxGridCellStringRenderer );
-    m_ctrlGridTransmission->SetCellAlignment(wxALIGN_CENTRE, row - 1, 2);
+    m_ctrlGridTransmission->SetCellAlignment( row - 1, 
+                                                2,
+                                                wxALIGN_CENTRE, 
+                                                wxALIGN_CENTRE );
 
     // Count
     m_ctrlGridTransmission->SetCellValue( row - 1, 
