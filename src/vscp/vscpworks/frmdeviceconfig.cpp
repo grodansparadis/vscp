@@ -82,6 +82,7 @@
 #include "frmdeviceconfig_images.h"
 #include "frmdeviceconfig.h"
 
+class itemStaticNodeID;
 extern appConfiguration g_Config;
 
 
@@ -129,7 +130,11 @@ BEGIN_EVENT_TABLE(frmDeviceConfig, wxFrame)
     EVT_GRID_CELL_LEFT_CLICK( frmDeviceConfig::OnCellLeftClick )
     EVT_GRID_CELL_RIGHT_CLICK( frmDeviceConfig::OnCellRightClick )
     EVT_GRID_CELL_LEFT_DCLICK( frmDeviceConfig::OnLeftDClick )
+#if ( ( wxMAJOR_VERSION >= 3 ) && ( wxMINOR_VERSION >= 1 ) )
+    EVT_GRID_CELL_CHANGED( frmDeviceConfig::OnRegisterEdited )
+#else    
     EVT_GRID_CELL_CHANGE( frmDeviceConfig::OnRegisterEdited )
+#endif    
     EVT_HTML_LINK_CLICKED( ID_HTMLWINDOW1, frmDeviceConfig::OnHtmlwindowCellClicked )
     EVT_BUTTON( ID_BUTTON_UPDATE, frmDeviceConfig::OnButtonUpdateClick )
     EVT_BUTTON( ID_BUTTON_LOAD_DEFAULTS, frmDeviceConfig::OnButtonLoadDefaultsClick )
@@ -426,12 +431,16 @@ void frmDeviceConfig::CreateControls() {
                                 wxDefaultPosition, 
                                 wxDefaultSize, 
                                 0 );
+#if ( ( wxMAJOR_VERSION >= 3 ) && ( wxMINOR_VERSION >= 1 ) )
+    itemStaticNodeID->SetFont( wxFont( wxFontInfo(8).FaceName("Tahoma").Bold() ) );
+#else                                
     itemStaticNodeID->SetFont( wxFont( 8, 
                                         wxSWISS, 
                                         wxNORMAL, 
                                         wxBOLD, 
                                         false, 
                                         wxT("Tahoma") ) );
+#endif                                        
     itemToolBar->AddControl( itemStaticNodeID );
 
     wxArrayString m_comboNodeIDStrings;
@@ -561,12 +570,16 @@ void frmDeviceConfig::CreateControls() {
                                 wxSize(400, 340), 
                                 wxSUNKEN_BORDER | wxHSCROLL | wxVSCROLL );
     m_gridRegisters->SetBackgroundColour(wxColour(240, 240, 240));
+#if ( ( wxMAJOR_VERSION >= 3 ) && ( wxMINOR_VERSION >= 1 ) )
+    itemStaticNodeID->SetFont( wxFont( wxFontInfo(8).FaceName("Tahoma").Bold() ) );
+#else     
     m_gridRegisters->SetFont( wxFont( 8, 
                                         wxSWISS, 
                                         wxNORMAL, 
                                         wxBOLD, 
                                         false, 
                                         wxT("Tahoma") ) );
+#endif
     m_gridRegisters->SetDefaultColSize( 50 );
     m_gridRegisters->SetDefaultRowSize( 18 );
     m_gridRegisters->SetColLabelSize( 18 );
@@ -601,12 +614,16 @@ void frmDeviceConfig::CreateControls() {
                                     wxSize(400, 340), 
                                     wxSUNKEN_BORDER | wxHSCROLL | wxVSCROLL );
     m_gridAbstractions->SetBackgroundColour(wxColour(240, 240, 240));
+ #if ( ( wxMAJOR_VERSION >= 3 ) && ( wxMINOR_VERSION >= 1 ) )
+    itemStaticNodeID->SetFont( wxFont( wxFontInfo(8).FaceName("Tahoma").Bold() ) );
+#else    
     m_gridAbstractions->SetFont(wxFont( 8, 
                                             wxSWISS, 
                                             wxNORMAL, 
                                             wxBOLD, 
                                             false, 
                                             wxT("Tahoma") ) );
+#endif                                            
     m_gridAbstractions->SetDefaultColSize(50);
     m_gridAbstractions->SetDefaultRowSize(18);
     m_gridAbstractions->SetColLabelSize(18);
@@ -649,12 +666,16 @@ void frmDeviceConfig::CreateControls() {
                         wxSize(400, 340), 
                         wxSUNKEN_BORDER | wxHSCROLL | wxVSCROLL );
     m_gridDM->SetBackgroundColour( wxColour(240, 240, 240) );
+#if ( ( wxMAJOR_VERSION >= 3 ) && ( wxMINOR_VERSION >= 1 ) )
+    itemStaticNodeID->SetFont( wxFont( wxFontInfo(8).FaceName("Tahoma").Bold() ) );
+#else     
     m_gridDM->SetFont(wxFont( 8, 
                                 wxSWISS, 
                                 wxNORMAL, 
                                 wxBOLD, 
                                 false, 
                                 wxT("Tahoma") ) );
+#endif
     m_gridDM->SetDefaultColSize(50);
     m_gridDM->SetDefaultRowSize(18);
     m_gridDM->SetColLabelSize(18);
@@ -695,12 +716,16 @@ void frmDeviceConfig::CreateControls() {
                             wxSize(400, 340), 
                             wxSUNKEN_BORDER | wxHSCROLL | wxVSCROLL );
     m_gridWizard->SetBackgroundColour( wxColour(240, 240, 240) );
+#if ( ( wxMAJOR_VERSION >= 3 ) && ( wxMINOR_VERSION >= 1 ) )
+    itemStaticNodeID->SetFont( wxFont( wxFontInfo(8).FaceName("Tahoma").Bold() ) );
+#else     
     m_gridWizard->SetFont(wxFont( 8, 
                                     wxSWISS, 
                                     wxNORMAL, 
                                     wxBOLD, 
                                     false, 
                                     wxT("Tahoma") ) );
+#endif                                    
     m_gridWizard->SetDefaultColSize(50);
     m_gridWizard->SetDefaultRowSize(18);
     m_gridWizard->SetColLabelSize(18);
@@ -1431,7 +1456,9 @@ bool frmDeviceConfig::writeChangedLevel1Registers(unsigned char nodeid)
                 // Update display
                 strBuf = getFormattedValue(val);
                 m_gridRegisters->SetCellValue(i, 2, strBuf);
-                m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, i, 2);
+                m_gridRegisters->SetCellAlignment( i, 2,
+                                                    wxALIGN_CENTRE,
+                                                    wxALIGN_CENTRE );
                 m_gridRegisters->SetCellTextColour(i, 2, *wxBLUE);
                 m_gridRegisters->SelectRow(i);
                 m_gridRegisters->MakeCellVisible(i, 2);
@@ -1527,7 +1554,10 @@ bool frmDeviceConfig::writeChangedLevel2Registers(void)
                 // Update display
                 strBuf = getFormattedValue(val);
                 m_gridRegisters->SetCellValue(i, 2, strBuf);
-                m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, i, 2);
+                m_gridRegisters->SetCellAlignment(i, 
+                                                    2,
+                                                    wxALIGN_CENTRE, 
+                                                    wxALIGN_CENTRE );
                 m_gridRegisters->SetCellTextColour(i, 2, *wxBLUE);
                 m_gridRegisters->SelectRow(i);
                 m_gridRegisters->MakeCellVisible(i, 2);
@@ -2002,29 +2032,44 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFF80");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 
+                                            0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE );
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0x80)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 
+                                            2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
-    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Alarm Status Register"));
-    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
-    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows() - 1, 
+                                    3, 
+                                    _("Alarm Status Register"));
+    m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows() - 1, 
+                                    3, 
+                                    fontBold);
+    m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows() - 1, 
+                                    3 );
     
     // Make all parts of the row visible
     m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
-        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0xd2));
+        m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows() - 1, 
+                                                    i, 
+                                                    wxColour(0xff, 0xff, 0xd2) );
     }
 
     m_gridRegisters->AppendRows(1);
@@ -2035,18 +2080,27 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFF81");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 
+                                            0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 
+                                            1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE );
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0x81)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 
+                                        2, 
+                                        wxALIGN_CENTRE,
+                                        wxALIGN_CENTRE );
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("VSCP Major version number"));
@@ -2068,18 +2122,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFF82");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0x82)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("VSCP Minor version number"));
@@ -2102,18 +2162,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFF83");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("rw"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0x83)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Node Control Flags\r test"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
@@ -2134,18 +2200,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFF84");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("rw"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0x84)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("User ID 0"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
@@ -2166,18 +2238,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFF85");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("rw"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0x85)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("User ID 1"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
@@ -2198,18 +2276,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFF86");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("rw"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0x86)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("User ID 2"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
@@ -2219,7 +2303,9 @@ void frmDeviceConfig::fillStandardRegisters()
     m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
-        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+        m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows() - 1, 
+                                                    i, 
+                                                    wxColour(0xff, 0xff, 0x12) );
     }
 
 
@@ -2231,18 +2317,25 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFF87");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 
+                                            0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("rw"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0x87)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("User ID 3"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
@@ -2264,18 +2357,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFF88");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("rw"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0x88)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("User ID 4"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
@@ -2297,18 +2396,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFF89");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0x89)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Manufacturer device id 0"));
@@ -2331,18 +2436,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFF8A");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0x8A)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Manufacturer device id 1"));
@@ -2365,18 +2476,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFF8B");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0x8B)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Manufacturer device id 2"));
@@ -2399,18 +2516,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFF8C");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0x8C)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Manufacturer device id 3"));
@@ -2433,18 +2556,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFF8D");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0x8D)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Manufacturer sub device id 0"));
@@ -2467,18 +2596,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFF8E");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0x8E)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Manufacturer sub device id 1"));
@@ -2501,18 +2636,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFF8F");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0x8F)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Manufacturer sub device id 2"));
@@ -2535,18 +2676,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFF90");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0x90)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Manufacturer sub device id 3"));
@@ -2569,18 +2716,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFF91");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0x91)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Nickname id"));
@@ -2603,18 +2756,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFF92");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("rw"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0x92)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Page select register MSB"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
@@ -2636,18 +2795,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFF93");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("rw"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0x93)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Page select register LSB"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
@@ -2669,18 +2834,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFF94");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0x94)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Firmware major version number"));
@@ -2703,18 +2874,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFF95");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0x95)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Firmware minor version number"));
@@ -2737,18 +2914,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFF96");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0x96)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Firmware sub minor version number"));
@@ -2771,18 +2954,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFF97");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0x97)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Boot loader algorithm"));
@@ -2804,18 +2993,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFF98");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0x98)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Buffer Size"));
@@ -2838,18 +3033,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFF99");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0x99)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Number of register pages used."));
@@ -2871,18 +3072,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFFD0");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0xD0)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 15 MSB"));
@@ -2912,18 +3119,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFFD1");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment(  m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0xD1)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 14"));
@@ -2946,18 +3159,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFFD2");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0xD2)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 13"));
@@ -2981,18 +3200,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFFD3");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0xD3)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 12"));
@@ -3015,18 +3240,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFFD4");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0xD4)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 11"));
@@ -3050,18 +3281,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFFD5");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0xD5)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 10"));
@@ -3084,18 +3321,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFFD6");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0xD6)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 9"));
@@ -3118,18 +3361,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFFD7");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0xD7)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 8"));
@@ -3153,18 +3402,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFFD8");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0xD8)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 7"));
@@ -3187,18 +3442,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFFD9");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0xD9)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 6"));
@@ -3221,18 +3482,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFFDA");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0xDA)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 5"));
@@ -3255,18 +3522,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFFDB");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0xDB)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 4"));
@@ -3289,18 +3562,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFFDC");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0xDC)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 3"));
@@ -3323,18 +3602,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFFDD");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0xDD)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 2"));
@@ -3357,18 +3642,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFFDE");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0xDE)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 1"));
@@ -3391,18 +3682,24 @@ void frmDeviceConfig::fillStandardRegisters()
         strBuf = _("FFFFFFDF");
     }
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
             getFormattedValue(m_stdRegisters.getStandardReg(0xDF)));
-    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 0, LSB"));
@@ -3436,18 +3733,24 @@ void frmDeviceConfig::fillStandardRegisters()
             strBuf.Printf(_("%08lX"), 0xFFFFFFE0 + i);
         }
         m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
-        m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+        m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
         m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
         m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
 
         m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
-        m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+        m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
         m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
 
         m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
                 2,
                 getFormattedValue(m_stdRegisters.getStandardReg(0xE0 + i)));
-        m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+        m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE);
         m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
         if (0 == i) {
@@ -3718,7 +4021,9 @@ read_pageregs1_again:
                 }
 
                 m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows() - 1, 0, strBuf );
-                m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0 );
+                m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE );
                 m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows() - 1, 0, fontBold );
                 m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows() - 1, 0 );
                 
@@ -3728,7 +4033,9 @@ read_pageregs1_again:
                 m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows() - 1,
                                                2,
                                                getFormattedValue( pReg->m_value ) );
-                m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2 );
+                m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE );
                 m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows() - 1, 2, fontBold );
 
                 str = pReg->m_strName + _( "\n" ) + pReg->m_strDescription;
@@ -3894,7 +4201,9 @@ read_pageregs1_again:
                     wxColour bgcolor( reg->m_bgcolor );
 
                     m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows() - 1, 0, strBuf );
-                    m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0 );
+                    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 0, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE );
                     m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows() - 1, 0, fontBold );
                     m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows() - 1, 0 );
                     m_gridRegisters->SetCellTextColour( m_gridRegisters->GetNumberRows() - 1, 0, fgcolor );
@@ -3904,7 +4213,9 @@ read_pageregs1_again:
                     m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows() - 1,
                                                    2,
                                                    getFormattedValue( reg->m_value ) );
-                    m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2 );
+                    m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE );
                     m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows() - 1, 2, fontBold );
                     m_gridRegisters->SetCellTextColour( m_gridRegisters->GetNumberRows() - 1, 2, fgcolor );
                     m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows() - 1, 2, bgcolor );
@@ -5433,9 +5744,10 @@ void frmDeviceConfig::updateAbstractionGrid(void)
         m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows()-1, 
                                             0,
                                             _( " " ) + pAbstraction->m_strName );
-        m_gridAbstractions->SetCellAlignment( wxALIGN_LEFT,
-                                                m_gridAbstractions->GetNumberRows()-1,
-                                                0 );
+        m_gridAbstractions->SetCellAlignment( m_gridAbstractions->GetNumberRows()-1,
+                                                0, 
+                                                wxALIGN_LEFT,
+                                                wxALIGN_CENTRE );
         m_gridAbstractions->SetReadOnly(m_gridAbstractions->GetNumberRows() - 1, 0);
 
 
@@ -5444,9 +5756,10 @@ void frmDeviceConfig::updateAbstractionGrid(void)
         m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows()-1,
                                             1,
                                             pAbstraction->m_strName );
-        m_gridAbstractions->SetCellAlignment( wxALIGN_CENTER,
-                                                m_gridAbstractions->GetNumberRows()-1,
-                                                1 );
+        m_gridAbstractions->SetCellAlignment( m_gridAbstractions->GetNumberRows()-1,
+                                                1, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE );
         m_gridAbstractions->SetReadOnly(m_gridAbstractions->GetNumberRows() - 1, 1);
 
 
@@ -5463,9 +5776,10 @@ void frmDeviceConfig::updateAbstractionGrid(void)
         m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows()-1,
                                             2,
                                             strBuf );
-        m_gridAbstractions->SetCellAlignment( wxALIGN_CENTER,
-                                                m_gridAbstractions->GetNumberRows()-1,
-                                                2 );
+        m_gridAbstractions->SetCellAlignment( m_gridAbstractions->GetNumberRows()-1,
+                                                2, 
+                                            wxALIGN_CENTRE,
+                                            wxALIGN_CENTRE );
         m_gridAbstractions->SetReadOnly( m_gridAbstractions->GetNumberRows()-1, 2);
 
 
@@ -5476,9 +5790,10 @@ void frmDeviceConfig::updateAbstractionGrid(void)
                                             4,
                                             _( " " ) + pAbstraction->m_strDescription );
 
-        m_gridAbstractions->SetCellAlignment( wxALIGN_LEFT,
-                                                m_gridAbstractions->GetNumberRows()-1,
-                                                4 );
+        m_gridAbstractions->SetCellAlignment( m_gridAbstractions->GetNumberRows()-1,
+                                                4, 
+                                                wxALIGN_LEFT,
+                                                wxALIGN_CENTRE );
         m_gridAbstractions->SetReadOnly(m_gridAbstractions->GetNumberRows()-1, 4);
         m_gridRegisters->AutoSizeRow(m_gridAbstractions->GetNumberRows()-1);
 
@@ -5500,9 +5815,10 @@ void frmDeviceConfig::updateAbstractionGrid(void)
                                             3,
                                             strValue );
 
-        m_gridAbstractions->SetCellAlignment( wxALIGN_CENTER,
-                                                m_gridAbstractions->GetNumberRows()-1,
-                                                3 );
+        m_gridAbstractions->SetCellAlignment( m_gridAbstractions->GetNumberRows()-1,
+                                                3, 
+                                                wxALIGN_CENTRE,
+                                                wxALIGN_CENTRE );
         m_gridAbstractions->SetCellFont( m_gridAbstractions->GetNumberRows()-1, 3, fontBold );
         m_gridAbstractions->SetReadOnly( m_gridAbstractions->GetNumberRows()-1, 3 );
 
@@ -5569,7 +5885,9 @@ void frmDeviceConfig::updateDmGrid(void)
                                     VSCP_LEVEL1_DM_OFFSET_OADDR,
                                     m_gridRegisters->GetCellValue( row + VSCP_LEVEL1_DM_OFFSET_OADDR, 
                                                                     2 ) );
-        m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 0);
+        m_gridDM->SetCellAlignment(m_gridDM->GetNumberRows() - 1, 0,
+                                        wxALIGN_CENTRE,
+                                        wxALIGN_CENTRE );
         m_gridDM->SetReadOnly( m_gridDM->GetNumberRows()-1, 0);
 
         // Flags
@@ -5577,7 +5895,9 @@ void frmDeviceConfig::updateDmGrid(void)
                                     VSCP_LEVEL1_DM_OFFSET_FLAGS,
                                     m_gridRegisters->GetCellValue( row + VSCP_LEVEL1_DM_OFFSET_FLAGS,
                                                                     2 ) );
-        m_gridDM->SetCellAlignment( wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 1);
+        m_gridDM->SetCellAlignment( m_gridDM->GetNumberRows() - 1, 1,
+                                        wxALIGN_CENTRE,
+                                        wxALIGN_CENTRE );
         m_gridDM->SetReadOnly( m_gridDM->GetNumberRows()-1, 1);
 
         // Class Mask
@@ -5585,7 +5905,9 @@ void frmDeviceConfig::updateDmGrid(void)
                                     VSCP_LEVEL1_DM_OFFSET_CLASS_MASK,
                                     m_gridRegisters->GetCellValue( row + VSCP_LEVEL1_DM_OFFSET_CLASS_MASK,
                                                                     2 ) );
-        m_gridDM->SetCellAlignment( wxALIGN_CENTRE, m_gridDM->GetNumberRows()-1, 2);
+        m_gridDM->SetCellAlignment( m_gridDM->GetNumberRows()-1, 2,
+                                        wxALIGN_CENTRE,
+                                        wxALIGN_CENTRE );
         m_gridDM->SetReadOnly(m_gridDM->GetNumberRows()-1, 2);
 
         // Class Filter
@@ -5593,7 +5915,9 @@ void frmDeviceConfig::updateDmGrid(void)
                                         VSCP_LEVEL1_DM_OFFSET_CLASS_FILTER,
                                         m_gridRegisters->GetCellValue( row + VSCP_LEVEL1_DM_OFFSET_CLASS_FILTER,
                                                                         2 ) );
-        m_gridDM->SetCellAlignment( wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 3 );
+        m_gridDM->SetCellAlignment( m_gridDM->GetNumberRows() - 1, 3,
+                                        wxALIGN_CENTRE,
+                                        wxALIGN_CENTRE  );
         m_gridDM->SetReadOnly( m_gridDM->GetNumberRows()-1, 3);
 
         // Type Mask
@@ -5601,7 +5925,9 @@ void frmDeviceConfig::updateDmGrid(void)
                                     VSCP_LEVEL1_DM_OFFSET_TYPE_MASK,
                                     m_gridRegisters->GetCellValue( row + VSCP_LEVEL1_DM_OFFSET_TYPE_MASK,
                                                                     2 ) );
-        m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 4);
+        m_gridDM->SetCellAlignment( m_gridDM->GetNumberRows() - 1, 4,
+                                        wxALIGN_CENTRE,
+                                        wxALIGN_CENTRE );
         m_gridDM->SetReadOnly( m_gridDM->GetNumberRows()-1, 4);
 
         // Type Filter
@@ -5609,7 +5935,9 @@ void frmDeviceConfig::updateDmGrid(void)
                                     VSCP_LEVEL1_DM_OFFSET_TYPE_FILTER,
                                     m_gridRegisters->GetCellValue( row + VSCP_LEVEL1_DM_OFFSET_TYPE_FILTER,
                                                                     2 ) );
-        m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 5);
+        m_gridDM->SetCellAlignment( m_gridDM->GetNumberRows() - 1, 5,
+                                        wxALIGN_CENTRE,
+                                        wxALIGN_CENTRE );
         m_gridDM->SetReadOnly(m_gridDM->GetNumberRows()-1, 5);
 
         // Action
@@ -5617,7 +5945,9 @@ void frmDeviceConfig::updateDmGrid(void)
                                     VSCP_LEVEL1_DM_OFFSET_ACTION,
                                     m_gridRegisters->GetCellValue( row + VSCP_LEVEL1_DM_OFFSET_ACTION,
                                                                     2 ) );
-        m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 6);
+        m_gridDM->SetCellAlignment( m_gridDM->GetNumberRows() - 1, 6,
+                                        wxALIGN_CENTRE,
+                                        wxALIGN_CENTRE );
         m_gridDM->SetReadOnly(m_gridDM->GetNumberRows()-1, 6);
 
         // Action Parameter
@@ -5625,7 +5955,9 @@ void frmDeviceConfig::updateDmGrid(void)
                                     VSCP_LEVEL1_DM_OFFSET_ACTION_PARAM,
                                     m_gridRegisters->GetCellValue( row + VSCP_LEVEL1_DM_OFFSET_ACTION_PARAM,
                                                                     2 ) );
-        m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 7);
+        m_gridDM->SetCellAlignment( m_gridDM->GetNumberRows() - 1, 7,
+                                        wxALIGN_CENTRE,
+                                        wxALIGN_CENTRE );
         m_gridDM->SetReadOnly(m_gridDM->GetNumberRows()-1, 7);
 
         m_gridDM->Update();
@@ -6154,7 +6486,11 @@ wxString frmDeviceConfig::getFormattedValue(uint8_t val)
 
 int frmDeviceConfig::getRegisterGridRow(uint32_t reg, uint16_t page) 
 {
+#if ( ( wxMAJOR_VERSION >= 3 ) && ( wxMINOR_VERSION >= 1 ) )
+    for (int i = 0; i < m_gridRegisters->GetNumberRows(); i++) {
+#else    
     for (int i = 0; i < m_gridRegisters->GetRows(); i++) {
+#endif        
         if ((page == getPageFromCell(i)) &&
                 (reg == getRegFromCell(i))) {
             return i;

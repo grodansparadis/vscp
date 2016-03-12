@@ -1623,124 +1623,124 @@ void CControlObject::addStockVariables( void )
     cguid guid;
     
     m_VSCP_Variables.add( _("vscp.version.major"), 
-                wxString::Format( "%d", VSCPD_MAJOR_VERSION ), 
+                wxString::Format( _("%d"), VSCPD_MAJOR_VERSION ), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
                 false, 
                 false );
                 
     m_VSCP_Variables.add( _("vscp.version.minor"), 
-                wxString::Format( "%d", VSCPD_MINOR_VERSION ), 
+                wxString::Format( _("%d"), VSCPD_MINOR_VERSION ), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
                 false, 
                 false );
                 
     m_VSCP_Variables.add( _("vscp.version.sub"), 
-                wxString::Format( "%d", VSCPD_SUB_VERSION ), 
+                wxString::Format( _("%d"), VSCPD_SUB_VERSION ), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
                 false, 
                 false );
                 
     m_VSCP_Variables.add( _("vscp.version.build"), 
-                wxString::Format( "%d", VSCPD_BUILD_VERSION ), 
+                wxString::Format( _("%d"), VSCPD_BUILD_VERSION ), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
                 false, 
                 false );                
                 
     m_VSCP_Variables.add( _("vscp.version.str"), 
-                wxString::Format( "%s", VSCPD_DISPLAY_VERSION ), 
+                wxString::Format( _("%s"), VSCPD_DISPLAY_VERSION ), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 false, 
                 false );
                 
     m_VSCP_Variables.add( _("vscp.version.wxwidgets.str"), 
-                wxString::Format( "%s", wxVERSION_STRING ), 
+                wxString::Format( _("%s"), wxVERSION_STRING ), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 false, 
                 false ); 
 
     m_VSCP_Variables.add( _("vscp.version.wxwidgets.major"), 
-                wxString::Format( "%d", wxMAJOR_VERSION ), 
+                wxString::Format( _("%d"), wxMAJOR_VERSION ), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
                 false, 
                 false );
                 
     m_VSCP_Variables.add( _("vscp.version.wxwidgets.minor"), 
-                wxString::Format( "%d", wxMINOR_VERSION ), 
+                wxString::Format( _("%d"), wxMINOR_VERSION ), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
                 false, 
                 false );
 
     m_VSCP_Variables.add( _("vscp.version.wxwidgets.release"), 
-                wxString::Format( "%d", wxRELEASE_NUMBER ), 
+                wxString::Format( _("%d"), wxRELEASE_NUMBER ), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
                 false, 
                 false );
 
     m_VSCP_Variables.add( _("vscp.version.wxwidgets.sub"), 
-                wxString::Format( "%d", wxSUBRELEASE_NUMBER ), 
+                wxString::Format( _("%d"), wxSUBRELEASE_NUMBER ), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
                 false, 
                 false );
 
     m_VSCP_Variables.add( _("vscp.copyright"), 
-                wxString::Format( "%s", VSCPD_COPYRIGHT ), 
+                wxString::Format( _("%s"), VSCPD_COPYRIGHT ), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 false, 
                 false ); 
                 
     m_VSCP_Variables.add( _("vscp.copyright.vscp"), 
-                wxString::Format( "%s", VSCPD_COPYRIGHT ), 
+                wxString::Format( _("%s"), VSCPD_COPYRIGHT ), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 false, 
                 false ); 
 
     m_VSCP_Variables.add( _("vscp.copyright.wxwidgets"), 
-                wxString::Format( "%s", 
+                wxString::Format( _("%s"), 
                     "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al" ), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 false, 
                 false ); 
 
     m_VSCP_Variables.add( _("vscp.copyright.mongoose"), 
-                wxString::Format( "%s", 
+                wxString::Format( _("%s"), 
                     "Copyright (c) 2013-2015 Cesanta Software Limited" ), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 false, 
                 false ); 
 
     m_VSCP_Variables.add( _("vscp.version.mongoose.str"), 
-                wxString::Format( "%s", MG_VERSION ), 
+                wxString::Format( _("%s"), MG_VERSION ), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 false, 
                 false );      
 
 #ifndef VSCP_DISABLE_LUA 
     m_VSCP_Variables.add( _("vscp.copyright.lua"), 
-                wxString::Format( "%s", LUA_COPYRIGHT ), 
+                wxString::Format( _("%s"), LUA_COPYRIGHT ), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 false, 
                 false );
                 
     m_VSCP_Variables.add( _("vscp.version.lua.str"), 
-                wxString::Format( "%s", LUA_RELEASE ), 
+                wxString::Format( _("%s"), LUA_RELEASE ), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 false, 
                 false );            
                 
     m_VSCP_Variables.add( _("vscp.version.lua.major"), 
-                wxString::Format( "%s", LUA_VERSION_MAJOR ), 
+                wxString::Format( _("%s"), LUA_VERSION_MAJOR ), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
                 false, 
                 false ); 
 
     m_VSCP_Variables.add( _("vscp.version.lua.minor"), 
-                wxString::Format( "%s", LUA_VERSION_MINOR), 
+                wxString::Format( _("%s"), LUA_VERSION_MINOR), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
                 false, 
                 false );  
 
     m_VSCP_Variables.add( _("vscp.version.lua.release"), 
-                wxString::Format( "%s", LUA_VERSION_RELEASE ), 
+                wxString::Format( _("%s"), LUA_VERSION_RELEASE ), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
                 false, 
                 false );         
@@ -1791,7 +1791,7 @@ void CControlObject::addStockVariables( void )
                 false ); 
 
     m_VSCP_Variables.add( _("vscp.os.endiness.isLittleEndian"), 
-                wxIsPlatformLittleEndian() ? "true" : "false", 
+                wxIsPlatformLittleEndian() ? _("true") : _("false"), 
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
                 false, 
                 false );   
@@ -1804,7 +1804,7 @@ void CControlObject::addStockVariables( void )
 
     if ( getIPAddress( guid ) ) {
         m_VSCP_Variables.add( _("vscp.host.ip"), 
-                wxString::Format( "%d.%d.%d.%d", 
+                wxString::Format( _("%d.%d.%d.%d"), 
                             guid.getAt( 11 ),
                             guid.getAt( 10 ),
                             guid.getAt( 9 ),
@@ -1816,7 +1816,7 @@ void CControlObject::addStockVariables( void )
     
     if ( getMacAddress( guid ) ) {
         m_VSCP_Variables.add( _("vscp.host.mac"), 
-                wxString::Format( "%02X:%02X:%02X:%02X:%02X:%02X", 
+                wxString::Format( _("%02X:%02X:%02X:%02X:%02X:%02X"), 
                             guid.getAt( 13 ),
                             guid.getAt( 12 ),
                             guid.getAt( 11 ),
@@ -1856,7 +1856,7 @@ void CControlObject::addStockVariables( void )
                 
     m_guid.toString( wxstr );
     m_VSCP_Variables.add( _("vscp.loglevel"), 
-                wxString::Format(_("%d "), m_logLevel ), 
+                wxString::Format( _("%d "), m_logLevel ), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
                 false, 
                 false );
@@ -1902,7 +1902,7 @@ void CControlObject::addStockVariables( void )
 
     
     m_VSCP_Variables.add( _("vscp.client.ReceiveQueue.Max"), 
-                wxString::Format(_("%d"), m_maxItemsInClientReceiveQueue ), 
+                wxString::Format( _("%d"), m_maxItemsInClientReceiveQueue ), 
                 VSCP_DAEMON_VARIABLE_CODE_LONG,
                 false, 
                 false );  
@@ -1958,7 +1958,7 @@ void CControlObject::addStockVariables( void )
                 false );       
                 
         m_VSCP_Variables.add( _("vscp.automation.heartbeat.period"), 
-                wxString::Format( _( "%ld" ), m_automation.getIntervalHeartbeat() ), 
+                wxString::Format( _("%ld"), m_automation.getIntervalHeartbeat() ), 
                 VSCP_DAEMON_VARIABLE_CODE_LONG,
                 false, 
                 false ); 

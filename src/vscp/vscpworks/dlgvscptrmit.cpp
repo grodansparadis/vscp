@@ -221,7 +221,11 @@ void dlgVSCPTrmitElement::CreateControls()
     wxStaticText* itemStaticText10 = new wxStaticText;
     itemStaticText10->Create( itemDialogTxEdit, wxID_STATIC, _("Name :"), wxDefaultPosition, wxDefaultSize, 0 );
     itemStaticText10->SetFont(wxFont(8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Tahoma")));
-    itemFlexGridSizer->Add(itemStaticText10, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL|wxADJUST_MINSIZE, 1);
+#if ( ( wxMAJOR_VERSION >= 3 ) && ( wxMINOR_VERSION >= 1 ) )    
+    itemFlexGridSizer->Add(itemStaticText10, 0, wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL | wxALL, 1);
+#else
+    itemFlexGridSizer->Add(itemStaticText10, 0, wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL | wxALL | wxADJUST_MINSIZE, 1);
+#endif    
 
     m_wxStrName = new wxTextCtrl;
     m_wxStrName->Create( itemDialogTxEdit, ID_StrName, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
@@ -239,7 +243,11 @@ void dlgVSCPTrmitElement::CreateControls()
     wxStaticText* itemStaticText14 = new wxStaticText;
     itemStaticText14->Create( itemDialogTxEdit, wxID_STATIC, _("Class :"), wxDefaultPosition, wxDefaultSize, 0 );
     itemStaticText14->SetFont(wxFont(8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Tahoma")));
-    itemFlexGridSizer->Add(itemStaticText14, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL|wxADJUST_MINSIZE, 1);
+#if ( ( wxMAJOR_VERSION >= 3 ) && ( wxMINOR_VERSION >= 1 ) )   
+    itemFlexGridSizer->Add(itemStaticText14, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+#else
+    itemFlexGridSizer->Add(itemStaticText14, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL | wxADJUST_MINSIZE, 1);
+#endif   
 
     wxArrayString m_wxComboClassStrings;
     m_wxComboClass = new wxComboBox;
@@ -251,7 +259,11 @@ void dlgVSCPTrmitElement::CreateControls()
     wxStaticText* itemStaticText16 = new wxStaticText;
     itemStaticText16->Create( itemDialogTxEdit, wxID_STATIC, _("Type :"), wxDefaultPosition, wxDefaultSize, 0 );
     itemStaticText16->SetFont(wxFont(8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Tahoma")));
+#if ( ( wxMAJOR_VERSION >= 3 ) && ( wxMINOR_VERSION >= 1 ) )     
+    itemFlexGridSizer->Add(itemStaticText16, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+#else
     itemFlexGridSizer->Add(itemStaticText16, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL|wxADJUST_MINSIZE, 1);
+#endif    
 
     wxArrayString m_wxComboTypeStrings;
     m_wxComboType = new wxComboBox;
@@ -263,7 +275,11 @@ void dlgVSCPTrmitElement::CreateControls()
     wxStaticText* itemStaticText18 = new wxStaticText;
     itemStaticText18->Create( itemDialogTxEdit, wxID_STATIC, _("Priority :"), wxDefaultPosition, wxDefaultSize, 0 );
     itemStaticText18->SetFont(wxFont(8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Tahoma")));
+#if ( ( wxMAJOR_VERSION >= 3 ) && ( wxMINOR_VERSION >= 1 ) )     
+    itemFlexGridSizer->Add(itemStaticText18, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+#else
     itemFlexGridSizer->Add(itemStaticText18, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL|wxADJUST_MINSIZE, 1);
+#endif    
 
     wxArrayString m_wxChoicePriorityStrings;
     m_wxChoicePriorityStrings.Add(_("0 - Highest"));
@@ -289,7 +305,11 @@ void dlgVSCPTrmitElement::CreateControls()
     wxStaticText* itemStaticText23 = new wxStaticText;
     itemStaticText23->Create( itemDialogTxEdit, wxID_STATIC, _("Originating GUID"), wxDefaultPosition, wxDefaultSize, 0 );
     itemStaticText23->SetFont(wxFont(8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Tahoma")));
+#if ( ( wxMAJOR_VERSION >= 3 ) && ( wxMINOR_VERSION >= 1 ) )    
+    itemFlexGridSizer->Add(itemStaticText23, 1, wxALIGN_LEFT|wxALIGN_TOP|wxALL, 0);
+#else
     itemFlexGridSizer->Add(itemStaticText23, 1, wxALIGN_LEFT|wxALIGN_TOP|wxALL|wxADJUST_MINSIZE, 0);
+#endif    
 
     itemFlexGridSizer->Add(5, 5, 0, wxALIGN_LEFT|wxALIGN_TOP|wxRIGHT|wxTOP|wxBOTTOM, 2);
 
@@ -302,7 +322,11 @@ void dlgVSCPTrmitElement::CreateControls()
     wxStaticText* itemStaticText26 = new wxStaticText;
     itemStaticText26->Create( itemDialogTxEdit, wxID_STATIC, _("15 - 8 :"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT );
     itemStaticText26->SetFont(wxFont(8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Tahoma")));
+#if ( ( wxMAJOR_VERSION >= 3 ) && ( wxMINOR_VERSION >= 1 ) )     
+    itemFlexGridSizer->Add(itemStaticText26, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+#else
     itemFlexGridSizer->Add(itemStaticText26, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL|wxADJUST_MINSIZE, 1);
+#endif    
 
     wxBoxSizer* itemBoxSizer27 = new wxBoxSizer(wxHORIZONTAL);
     itemFlexGridSizer->Add(itemBoxSizer27, 1, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
@@ -358,7 +382,11 @@ void dlgVSCPTrmitElement::CreateControls()
     wxStaticText* itemStaticText36 = new wxStaticText;
     itemStaticText36->Create( itemDialogTxEdit, wxID_STATIC, _("7 - 0 :"), wxDefaultPosition, wxDefaultSize, 0 );
     itemStaticText36->SetFont(wxFont(8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Tahoma")));
+#if ( ( wxMAJOR_VERSION >= 3 ) && ( wxMINOR_VERSION >= 1 ) )    
+    itemFlexGridSizer->Add(itemStaticText36, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+#else
     itemFlexGridSizer->Add(itemStaticText36, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL|wxADJUST_MINSIZE, 1);
+#endif    
 
     wxBoxSizer* itemBoxSizer37 = new wxBoxSizer(wxHORIZONTAL);
     itemFlexGridSizer->Add(itemBoxSizer37, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 1);
@@ -415,7 +443,11 @@ void dlgVSCPTrmitElement::CreateControls()
     wxStaticText* itemStaticText46 = new wxStaticText;
     itemStaticText46->Create( itemDialogTxEdit, wxID_STATIC, _("Data :"), wxDefaultPosition, wxDefaultSize, 0 );
     itemStaticText46->SetFont(wxFont(8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Tahoma")));
+#if ( ( wxMAJOR_VERSION >= 3 ) && ( wxMINOR_VERSION >= 1 ) )       
+    itemFlexGridSizer->Add(itemStaticText46, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+#else
     itemFlexGridSizer->Add(itemStaticText46, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL|wxADJUST_MINSIZE, 1);
+#endif    
 
     m_wxStrData = new wxTextCtrl;
     m_wxStrData->Create( itemDialogTxEdit, ID_StrVscpData, wxEmptyString, wxDefaultPosition, wxSize(-1, 50), wxTE_MULTILINE );
@@ -430,7 +462,11 @@ void dlgVSCPTrmitElement::CreateControls()
     wxStaticText* itemStaticText50 = new wxStaticText;
     itemStaticText50->Create( itemDialogTxEdit, wxID_STATIC, _("Count :"), wxDefaultPosition, wxDefaultSize, 0 );
     itemStaticText50->SetFont(wxFont(8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Tahoma")));
+#if ( ( wxMAJOR_VERSION >= 3 ) && ( wxMINOR_VERSION >= 1 ) )    
+    itemFlexGridSizer->Add(itemStaticText50, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+#else
     itemFlexGridSizer->Add(itemStaticText50, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL|wxADJUST_MINSIZE, 1);
+#endif    
 
     m_wxStrCount = new wxTextCtrl;
     m_wxStrCount->Create( itemDialogTxEdit, ID_StrCount, _("1"), wxDefaultPosition, wxSize(60, 25), 0 );
@@ -441,7 +477,11 @@ void dlgVSCPTrmitElement::CreateControls()
     wxStaticText* itemStaticText52 = new wxStaticText;
     itemStaticText52->Create( itemDialogTxEdit, wxID_STATIC, _("Period :"), wxDefaultPosition, wxDefaultSize, 0 );
     itemStaticText52->SetFont(wxFont(8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Tahoma")));
+#if ( ( wxMAJOR_VERSION >= 3 ) && ( wxMINOR_VERSION >= 1 ) )    
+    itemFlexGridSizer->Add(itemStaticText52, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+#else
     itemFlexGridSizer->Add(itemStaticText52, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL|wxADJUST_MINSIZE, 1);
+#endif    
 
     m_wxStrPeriod = new wxTextCtrl;
     m_wxStrPeriod->Create( itemDialogTxEdit, ID_StrPeriod, _("0"), wxDefaultPosition, wxSize(60, 25), 0 );
@@ -452,7 +492,11 @@ void dlgVSCPTrmitElement::CreateControls()
     wxStaticText* itemStaticText54 = new wxStaticText;
     itemStaticText54->Create( itemDialogTxEdit, wxID_STATIC, _("Trigger :"), wxDefaultPosition, wxDefaultSize, 0 );
     itemStaticText54->SetFont(wxFont(8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Tahoma")));
+#if ( ( wxMAJOR_VERSION >= 3 ) && ( wxMINOR_VERSION >= 1 ) )    
+    itemFlexGridSizer->Add(itemStaticText54, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+#else
     itemFlexGridSizer->Add(itemStaticText54, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL|wxADJUST_MINSIZE, 1);
+#endif    
 
     wxArrayString m_wxComboTriggerStrings;
     m_wxComboTrigger = new wxComboBox;

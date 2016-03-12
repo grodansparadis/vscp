@@ -1830,9 +1830,10 @@ bool frmVSCPSession::addToTxGrid(VscpTXObj *pObj, int selrow)
     m_ctrlGridTransmission->SetCellRenderer( row - 1, 
                                                 3, 
                                                 new wxGridCellStringRenderer);
-    m_ctrlGridTransmission->SetCellAlignment( wxALIGN_CENTRE, 
-                                                row - 1, 
-                                                3 );
+    m_ctrlGridTransmission->SetCellAlignment( row - 1, 
+                                                3,
+                                                wxALIGN_CENTRE,
+                                                wxALIGN_CENTRE );
 
     // Trigger
     m_ctrlGridTransmission->SetCellValue( row - 1, 
@@ -1842,7 +1843,10 @@ bool frmVSCPSession::addToTxGrid(VscpTXObj *pObj, int selrow)
     m_ctrlGridTransmission->SetCellRenderer( row - 1, 
                                                 4, 
                                                 new wxGridCellStringRenderer );
-    m_ctrlGridTransmission->SetCellAlignment(wxALIGN_CENTRE, row - 1, 4);
+    m_ctrlGridTransmission->SetCellAlignment( row - 1, 
+                                                4,
+                                                wxALIGN_CENTRE,
+                                                wxALIGN_CENTRE );
 
     // Event
     str.Printf(_("class=%d type=%d dsize=%d \ndata="),
