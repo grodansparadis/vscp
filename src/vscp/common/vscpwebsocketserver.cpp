@@ -245,7 +245,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
     //-------------------------------------------------------------------------
     // AUTH;user;hash
     else if (0 == strTok.Find(_("AUTH"))) {
-        wxPrintf( _("--AUTH1 ") + _("\n") );
+        
 	wxString strUser = tkz.GetNextToken();
         wxString strKey = tkz.GetNextToken();
         if ( pCtrlObject->getWebServer()->websock_authentication( nc,
@@ -253,10 +253,10 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
                                                                     pSession, 
                                                                     strUser, 
                                                                     strKey ) ) {
-            wxPrintf( _("--AUTH2 ") + _("\n") );
+            
 	    mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, "+;AUTH1" );
             pSession->bAuthenticated = true;    // Authenticated
-		wxPrintf( _("--AUTH3 ") + _("\n") );
+            
         }
         else {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, 
