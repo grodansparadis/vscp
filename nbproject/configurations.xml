@@ -1,0 +1,1700 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="97">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <df root="." name="0">
+      <df name="src">
+        <df name="common">
+          <in>com.cpp</in>
+          <in>configfile.cpp</in>
+          <in>crc.c</in>
+          <in>crc8.c</in>
+          <in>dllist.c</in>
+          <in>md5.cpp</in>
+          <in>mongoose.c</in>
+          <in>randpassword.cpp</in>
+          <in>slre.c</in>
+        </df>
+        <df name="vscp">
+          <df name="common">
+            <in>canalconfobj.cpp</in>
+            <in>canalsuperwrapper.cpp</in>
+            <in>clientlist.cpp</in>
+            <in>controlobject.cpp</in>
+            <in>daemonvscp.cpp</in>
+            <in>devicelist.cpp</in>
+            <in>devicethread.cpp</in>
+            <in>dllwrapper.cpp</in>
+            <in>dm.cpp</in>
+            <in>guid.cpp</in>
+            <in>interfacelist.cpp</in>
+            <in>knownnodes.cpp</in>
+            <in>mdf.cpp</in>
+            <in>register.cpp</in>
+            <in>tables.cpp</in>
+            <in>tcpipclientthread.cpp</in>
+            <in>udpclientthread.cpp</in>
+            <in>userlist.cpp</in>
+            <in>vscpautomation.cpp</in>
+            <in>vscpeventhelper.cpp</in>
+            <in>vscphelper.cpp</in>
+            <in>vscpmulticast.cpp</in>
+            <in>vscpremotetcpif.cpp</in>
+            <in>vscprestserver.cpp</in>
+            <in>vscpvariable.cpp</in>
+            <in>vscpwebserver.cpp</in>
+            <in>vscpwebsocketserver.cpp</in>
+          </df>
+          <df name="daemon">
+            <df name="linux">
+              <in>vscpd.cpp</in>
+            </df>
+          </df>
+          <df name="drivers">
+            <df name="level1">
+              <df name="can232">
+                <df name="linux">
+                  <in>can232obj.cpp</in>
+                  <in>test.cpp</in>
+                  <in>vscpl1_can232drv.cpp</in>
+                </df>
+              </df>
+              <df name="can4vscp">
+                <df name="common">
+                  <in>can4vscpobj.cpp</in>
+                </df>
+                <df name="linux">
+                  <in>test.cpp</in>
+                  <in>vscpl1_can4vscpdrv.cpp</in>
+                </df>
+              </df>
+              <df name="logger">
+                <df name="common">
+                  <in>log.cpp</in>
+                </df>
+                <df name="linux">
+                  <in>test.cpp</in>
+                  <in>vscpl1_loggerdrv.cpp</in>
+                </df>
+              </df>
+              <df name="socketcan">
+                <df name="linux">
+                  <in>socketcanobj.cpp</in>
+                  <in>test.cpp</in>
+                  <in>vscpl1_socketcandrv.cpp</in>
+                </df>
+              </df>
+              <df name="xap">
+                <df name="common">
+                  <in>xapobj.cpp</in>
+                </df>
+                <df name="linux">
+                  <in>test.cpp</in>
+                  <in>vscpl1_xapdrv.cpp</in>
+                </df>
+              </df>
+            </df>
+            <df name="level2">
+              <df name="lmsensors">
+                <df name="linux">
+                  <in>lmsensors.cpp</in>
+                  <in>vscpl2drv_lmsensors.cpp</in>
+                </df>
+              </df>
+              <df name="logger">
+                <df name="common">
+                  <in>log.cpp</in>
+                </df>
+                <df name="linux">
+                  <in>test.cpp</in>
+                  <in>vscpl2drv_logger.cpp</in>
+                </df>
+              </df>
+              <df name="mqtt">
+                <df name="common">
+                  <in>mqttobj.cpp</in>
+                </df>
+                <df name="linux">
+                  <in>test.c</in>
+                  <in>vscpl2drv_mqtt.cpp</in>
+                </df>
+              </df>
+              <df name="rawethernet">
+                <df name="linux">
+                  <in>dlldrvobj.cpp</in>
+                  <in>test.c</in>
+                  <in>vscpl2drv_raweth.cpp</in>
+                </df>
+              </df>
+              <df name="sim">
+                <df name="common">
+                  <in>simulation.cpp</in>
+                </df>
+                <df name="linux">
+                  <in>test.c</in>
+                  <in>vscpl2drv_sim.cpp</in>
+                </df>
+              </df>
+              <df name="socketcan">
+                <df name="linux">
+                  <in>socketcan.cpp</in>
+                  <in>test.c</in>
+                  <in>vscpl2drv_socketcan.cpp</in>
+                </df>
+              </df>
+              <df name="tcpdrv">
+                <df name="linux">
+                  <in>test.c</in>
+                  <in>vscpl2drv_tcpiplink.cpp</in>
+                  <in>vscptcpiplink.cpp</in>
+                </df>
+              </df>
+              <df name="wire1">
+                <df name="linux">
+                  <in>test.c</in>
+                  <in>vscpl2drv_wire1.cpp</in>
+                  <in>wire1.cpp</in>
+                </df>
+              </df>
+            </df>
+          </df>
+          <df name="helperlib">
+            <df name="linux">
+              <in>libvscphelper.cpp</in>
+              <in>test.c</in>
+            </df>
+            <in>vscphelperlib.cpp</in>
+          </df>
+          <df name="linuxvscpl1">
+            <in>test.c</in>
+            <in>vscpl1.cpp</in>
+          </df>
+          <df name="mkpasswd">
+            <in>mkpasswd.cpp</in>
+          </df>
+          <df name="uvscpd">
+            <in>base64_enc.c</in>
+            <in>sha1.c</in>
+            <in>uvscpd.c</in>
+            <in>websocket.c</in>
+          </df>
+          <df name="vscpcmd">
+            <in>vscpcmd.cpp</in>
+          </df>
+          <df name="vscpworks">
+            <in>bootdevice.cpp</in>
+            <in>bootdevice_pic1.cpp</in>
+            <in>bootdevice_vscp.cpp</in>
+            <in>devicebootloaderwizard.cpp</in>
+            <in>dlgabout.cpp</in>
+            <in>dlgabstractionedit.cpp</in>
+            <in>dlgclasstypeselect.cpp</in>
+            <in>dlgconfiguration.cpp</in>
+            <in>dlgeditlevel1dmrow.cpp</in>
+            <in>dlgeventfilter.cpp</in>
+            <in>dlgnewvscpsession.cpp</in>
+            <in>dlgselectdaemoninterface.cpp</in>
+            <in>dlgsetfiltermask.cpp</in>
+            <in>dlgsetmanufactdata.cpp</in>
+            <in>dlgvscpfilter.cpp</in>
+            <in>dlgvscpinterfacesettings.cpp</in>
+            <in>dlgvscpmsg.cpp</in>
+            <in>dlgvscptrmit.cpp</in>
+            <in>frmdaemondecisionmartrixeditor.cpp</in>
+            <in>frmdaemonvariableeditor.cpp</in>
+            <in>frmdeviceconfig.cpp</in>
+            <in>frmmain.cpp</in>
+            <in>frmmdfeditor.cpp</in>
+            <in>frmscanfordevices.cpp</in>
+            <in>frmsimpleuserinterfacegenerator.cpp</in>
+            <in>frmvscpsession.cpp</in>
+            <in>gridtable.cpp</in>
+            <in>merlin.cpp</in>
+            <in>threadvscpwork.cpp</in>
+            <in>vscpbootloader.cpp</in>
+            <in>vscptxobj.cpp</in>
+            <in>vscpworks.cpp</in>
+          </df>
+        </df>
+      </df>
+    </df>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+      <itemPath>configure</itemPath>
+      <itemPath>nbproject/private/launcher.properties</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
+  <sourceRootList>
+    <Elem>.</Elem>
+  </sourceRootList>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Default" type="0">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <flagsDictionary>
+        <element flagsID="0" commonFlags="-fPIC"/>
+        <element flagsID="1" commonFlags="-fPIC -fPIC"/>
+      </flagsDictionary>
+      <codeAssistance>
+      </codeAssistance>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>${MAKE} -f Makefile</buildCommand>
+          <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
+          <executablePath></executablePath>
+          <cTool>
+            <preprocessorList>
+              <Elem>VSCP_ENABLE_LUA</Elem>
+              <Elem>VSCP_ENABLE_SQLITE3</Elem>
+              <Elem>WXUSINGDLL</Elem>
+              <Elem>_FILE_OFFSET_BITS=64</Elem>
+              <Elem>__WXGTK__</Elem>
+            </preprocessorList>
+          </cTool>
+        </makeTool>
+        <preBuild>
+          <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
+          <preBuildCommand>./configure CC=${IDE_CC} CXX=${IDE_CXX} CFLAGS="-g3 -gdwarf-2" CXXFLAGS="-g3 -gdwarf-2"</preBuildCommand>
+        </preBuild>
+      </makefileType>
+      <folder path="0/src/common">
+        <ccTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_LUA</Elem>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+            <Elem>WXUSINGDLL</Elem>
+            <Elem>_FILE_OFFSET_BITS=64</Elem>
+            <Elem>__WXGTK__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/common">
+        <ccTool>
+          <preprocessorList>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>VSCP_ENABLE_LUA</Elem>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+            <Elem>WXUSINGDLL</Elem>
+            <Elem>_FILE_OFFSET_BITS=64</Elem>
+            <Elem>__WXGTK__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/daemon">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>VSCP_ENABLE_LUA</Elem>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+            <Elem>WXUSINGDLL</Elem>
+            <Elem>_FILE_OFFSET_BITS=64</Elem>
+            <Elem>__WXGTK__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/drivers">
+        <cTool>
+          <preprocessorList>
+            <Elem>MG_ENABLE_THREADS</Elem>
+          </preprocessorList>
+        </cTool>
+        <ccTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_LUA</Elem>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+            <Elem>WXUSINGDLL</Elem>
+            <Elem>_FILE_OFFSET_BITS=64</Elem>
+            <Elem>__WXGTK__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/drivers/level1">
+        <ccTool>
+          <incDir>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>__LINUX__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/drivers/level1/can232">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/drivers/level1/can4vscp">
+        <ccTool>
+          <incDir>
+            <pElem>src/vscp/drivers/level1/can4vscp/linux/include</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/drivers/level1/can4vscp/common">
+        <ccTool>
+          <incDir>
+            <pElem>src/vscp/drivers/level1/can4vscp/linux</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/drivers/level1/logger">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/drivers/level1/logger/common">
+        <ccTool>
+          <incDir>
+            <pElem>src/vscp/drivers/level1/logger/linux</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/drivers/level1/socketcan">
+        <ccTool>
+          <incDir>
+            <pElem>src/vscp/drivers/level1/socketcan/linux/include</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/drivers/level1/xap">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/drivers/level1/xap/common">
+        <ccTool>
+          <incDir>
+            <pElem>src/vscp/drivers/level1/xap/linux</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/drivers/level2">
+        <ccTool>
+          <preprocessorList>
+            <Elem>MG_ENABLE_THREADS</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/drivers/level2/lmsensors">
+        <ccTool>
+          <incDir>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>__LINUX__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/drivers/level2/logger">
+        <ccTool>
+          <incDir>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>__LINUX__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/drivers/level2/logger/common">
+        <ccTool>
+          <incDir>
+            <pElem>src/vscp/drivers/level2/logger/linux</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/drivers/level2/mqtt">
+        <cTool>
+          <incDir>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/drivers/level2/mqtt/linux/include</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+        </cTool>
+        <ccTool>
+          <incDir>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/drivers/level2/mqtt/linux/include</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/drivers/level2/mqtt/common">
+        <ccTool>
+          <incDir>
+            <pElem>src/vscp/drivers/level2/mqtt/linux</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/drivers/level2/rawethernet">
+        <cTool>
+          <incDir>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/drivers/level2/rawethernet/linux/include</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>__LINUX__</Elem>
+          </preprocessorList>
+        </cTool>
+        <ccTool>
+          <incDir>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/drivers/level2/rawethernet/linux/include</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>__LINUX__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/drivers/level2/sim">
+        <cTool>
+          <incDir>
+            <pElem>src/vscp/drivers/level2/sim/linux</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/drivers/level2/sim/linux/include</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>__LINUX__</Elem>
+          </preprocessorList>
+        </cTool>
+        <ccTool>
+          <incDir>
+            <pElem>src/vscp/drivers/level2/sim/linux</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/drivers/level2/sim/linux/include</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>__LINUX__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/drivers/level2/socketcan">
+        <cTool>
+          <incDir>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/drivers/level2/socketcan/linux/include</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+        </cTool>
+        <ccTool>
+          <incDir>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/drivers/level2/socketcan/linux/include</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/drivers/level2/tcpdrv">
+        <cTool>
+          <incDir>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/drivers/level2/tcpdrv/linux/include</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>__LINUX__</Elem>
+          </preprocessorList>
+        </cTool>
+        <ccTool>
+          <incDir>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/drivers/level2/tcpdrv/linux/include</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>__LINUX__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/drivers/level2/wire1">
+        <cTool>
+          <incDir>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/drivers/level2/wire1/linux/include</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>_REENTRANT</Elem>
+          </preprocessorList>
+        </cTool>
+        <ccTool>
+          <incDir>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/drivers/level2/wire1/linux/include</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>_REENTRANT</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/helperlib">
+        <cTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>__LINUX__</Elem>
+          </preprocessorList>
+        </cTool>
+        <ccTool>
+          <incDir>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>VSCP_ENABLE_LUA</Elem>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+            <Elem>WXUSINGDLL</Elem>
+            <Elem>_FILE_OFFSET_BITS=64</Elem>
+            <Elem>__LINUX__</Elem>
+            <Elem>__WXGTK__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/linuxvscpl1">
+        <cTool>
+          <incDir>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+        </cTool>
+        <ccTool>
+          <incDir>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_LUA</Elem>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+            <Elem>WXUSINGDLL</Elem>
+            <Elem>_FILE_OFFSET_BITS=64</Elem>
+            <Elem>__WXGTK__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/mkpasswd">
+        <ccTool>
+          <incDir>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_LUA</Elem>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+            <Elem>WXUSINGDLL</Elem>
+            <Elem>_FILE_OFFSET_BITS=64</Elem>
+            <Elem>__WXGTK__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/uvscpd">
+        <cTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+          </incDir>
+        </cTool>
+      </folder>
+      <folder path="0/src/vscp/vscpcmd">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>VSCP_ENABLE_LUA</Elem>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+            <Elem>WXUSINGDLL</Elem>
+            <Elem>_FILE_OFFSET_BITS=64</Elem>
+            <Elem>__WXGTK__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
+      <folder path="0/src/vscp/vscpworks">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/vscpworks</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>VSCP_ENABLE_LUA</Elem>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+            <Elem>WXUSINGDLL</Elem>
+            <Elem>_FILE_OFFSET_BITS=64</Elem>
+            <Elem>__WXGTK__</Elem>
+            <Elem>wxUSE_GUI=1</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
+      <item path="src/common/com.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/drivers/level1/can4vscp/linux/include</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/drivers/level1/can4vscp/linux</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>__LINUX__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="src/common/configfile.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/daemon/linux</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>MG_ENABLE_THREADS</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="src/common/crc.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="1">
+          <incDir>
+            <pElem>src/vscp/drivers/level2/sim/linux</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/drivers/level2/sim/linux/include</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>__LINUX__</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="src/common/crc8.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="1">
+          <incDir>
+            <pElem>src/vscp/drivers/level2/sim/linux</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/drivers/level2/sim/linux/include</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>__LINUX__</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="src/common/dllist.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+          <incDir>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/drivers/level1/can4vscp/linux/include</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>src/vscp/drivers/level1/can4vscp/linux</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="src/common/md5.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/mkpasswd</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="src/common/mongoose.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="1">
+          <incDir>
+            <pElem>src/vscp/drivers/level2/sim/linux</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/drivers/level2/sim/linux/include</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>__LINUX__</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="src/common/randpassword.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/daemon/linux</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>MG_ENABLE_THREADS</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="src/common/slre.c" ex="false" tool="0" flavor2="0">
+        <cTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/daemon/linux</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>MG_ENABLE_THREADS</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="src/vscp/common/canalconfobj.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/vscpworks</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>wxUSE_GUI=1</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="src/vscp/common/canalsuperwrapper.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/vscpworks</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>wxUSE_GUI=1</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="src/vscp/common/clientlist.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/daemon/linux</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="src/vscp/common/controlobject.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/daemon/linux</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="src/vscp/common/daemonvscp.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/daemon/linux</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="src/vscp/common/devicelist.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/daemon/linux</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="src/vscp/common/devicethread.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/daemon/linux</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="src/vscp/common/dllwrapper.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/vscpworks</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>wxUSE_GUI=1</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="src/vscp/common/dm.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/daemon/linux</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="src/vscp/common/guid.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="1">
+          <incDir>
+            <pElem>src/vscp/drivers/level2/sim/linux</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/drivers/level2/sim/linux/include</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>__LINUX__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="src/vscp/common/interfacelist.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/daemon/linux</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="src/vscp/common/knownnodes.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/daemon/linux</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="src/vscp/common/mdf.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/vscpworks</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>wxUSE_GUI=1</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="src/vscp/common/register.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/vscpworks</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>wxUSE_GUI=1</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="src/vscp/common/tables.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/daemon/linux</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="src/vscp/common/tcpipclientthread.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/daemon/linux</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="src/vscp/common/udpclientthread.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/daemon/linux</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="src/vscp/common/userlist.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/daemon/linux</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="src/vscp/common/vscpautomation.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/daemon/linux</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="src/vscp/common/vscpeventhelper.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/vscpworks</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>wxUSE_GUI=1</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="src/vscp/common/vscphelper.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="1">
+          <incDir>
+            <pElem>src/vscp/drivers/level2/sim/linux</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/drivers/level2/sim/linux/include</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>__LINUX__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="src/vscp/common/vscpmulticast.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/vscpworks</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>wxUSE_GUI=1</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="src/vscp/common/vscpremotetcpif.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="1">
+          <incDir>
+            <pElem>src/vscp/drivers/level2/sim/linux</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/drivers/level2/sim/linux/include</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>__LINUX__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="src/vscp/common/vscprestserver.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/daemon/linux</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="src/vscp/common/vscpvariable.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/daemon/linux</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="src/vscp/common/vscpwebserver.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/daemon/linux</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="src/vscp/common/vscpwebsocketserver.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>src/vscp/common</pElem>
+            <pElem>src/common</pElem>
+            <pElem>src/vscp/daemon/linux</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="src/vscp/daemon/linux/vscpd.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="src/vscp/drivers/level1/can232/linux/can232obj.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level1/can232/linux/test.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level1/can232/linux/vscpl1_can232drv.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level1/can4vscp/common/can4vscpobj.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level1/can4vscp/linux/test.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level1/can4vscp/linux/vscpl1_can4vscpdrv.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level1/logger/common/log.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level1/logger/linux/test.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level1/logger/linux/vscpl1_loggerdrv.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level1/socketcan/linux/socketcanobj.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level1/socketcan/linux/test.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level1/socketcan/linux/vscpl1_socketcandrv.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level1/xap/common/xapobj.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level1/xap/linux/test.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level1/xap/linux/vscpl1_xapdrv.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level2/lmsensors/linux/lmsensors.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level2/lmsensors/linux/vscpl2drv_lmsensors.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level2/logger/common/log.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level2/logger/linux/test.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level2/logger/linux/vscpl2drv_logger.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level2/mqtt/common/mqttobj.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level2/mqtt/linux/test.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+        <cTool flags="1">
+        </cTool>
+      </item>
+      <item path="src/vscp/drivers/level2/mqtt/linux/vscpl2drv_mqtt.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level2/rawethernet/linux/dlldrvobj.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level2/rawethernet/linux/test.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+        <cTool flags="1">
+        </cTool>
+      </item>
+      <item path="src/vscp/drivers/level2/rawethernet/linux/vscpl2drv_raweth.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level2/sim/common/simulation.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level2/sim/linux/test.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+        <cTool flags="1">
+        </cTool>
+      </item>
+      <item path="src/vscp/drivers/level2/sim/linux/vscpl2drv_sim.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level2/socketcan/linux/socketcan.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level2/socketcan/linux/test.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+        <cTool flags="1">
+        </cTool>
+      </item>
+      <item path="src/vscp/drivers/level2/socketcan/linux/vscpl2drv_socketcan.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level2/tcpdrv/linux/test.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+        <cTool flags="1">
+        </cTool>
+      </item>
+      <item path="src/vscp/drivers/level2/tcpdrv/linux/vscpl2drv_tcpiplink.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level2/tcpdrv/linux/vscptcpiplink.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level2/wire1/linux/test.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+        <cTool flags="1">
+        </cTool>
+      </item>
+      <item path="src/vscp/drivers/level2/wire1/linux/vscpl2drv_wire1.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/vscp/drivers/level2/wire1/linux/wire1.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/vscp/helperlib/linux/libvscphelper.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/vscp/helperlib/linux/test.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="1">
+        </cTool>
+      </item>
+      <item path="src/vscp/helperlib/vscphelperlib.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="1">
+          <incDir>
+            <pElem>src/vscp/helperlib/linux</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="src/vscp/linuxvscpl1/test.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="1">
+        </cTool>
+      </item>
+      <item path="src/vscp/linuxvscpl1/vscpl1.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/vscp/mkpasswd/mkpasswd.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="src/vscp/uvscpd/base64_enc.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/vscp/uvscpd/sha1.c" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="src/vscp/uvscpd/uvscpd.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/vscp/uvscpd/websocket.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/vscp/vscpcmd/vscpcmd.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/bootdevice.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/bootdevice_pic1.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/bootdevice_vscp.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/devicebootloaderwizard.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/dlgabout.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/dlgabstractionedit.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/dlgclasstypeselect.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/dlgconfiguration.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/dlgeditlevel1dmrow.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/dlgeventfilter.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/dlgnewvscpsession.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/dlgselectdaemoninterface.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/dlgsetfiltermask.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/dlgsetmanufactdata.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/dlgvscpfilter.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/dlgvscpinterfacesettings.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/dlgvscpmsg.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/dlgvscptrmit.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/frmdaemondecisionmartrixeditor.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/frmdaemonvariableeditor.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/frmdeviceconfig.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/frmmain.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/frmmdfeditor.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/frmscanfordevices.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/frmsimpleuserinterfacegenerator.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/frmvscpsession.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/gridtable.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/merlin.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/threadvscpwork.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/vscpbootloader.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/vscptxobj.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="src/vscp/vscpworks/vscpworks.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>

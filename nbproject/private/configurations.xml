@@ -1,0 +1,2227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="97">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <df root="." name="0">
+      <df name="autom4te.cache">
+      </df>
+      <df name="autotools">
+      </df>
+      <df name="config_examples">
+        <df name="actions">
+        </df>
+        <df name="certs">
+        </df>
+        <df name="driver">
+        </df>
+        <df name="simulation">
+        </df>
+        <df name="web">
+          <df name="css">
+          </df>
+          <df name="images">
+            <df name="logo">
+            </df>
+          </df>
+          <df name="lib">
+            <df name="bootstrap">
+              <df name="css">
+              </df>
+              <df name="fonts">
+              </df>
+              <df name="js">
+              </df>
+            </df>
+            <df name="widgets">
+              <df name="button">
+              </df>
+              <df name="button_variable">
+              </df>
+              <df name="digit">
+              </df>
+              <df name="doors_windows">
+              </df>
+              <df name="info">
+              </df>
+              <df name="key">
+              </df>
+              <df name="keybord">
+              </df>
+              <df name="knob">
+              </df>
+              <df name="led">
+              </df>
+              <df name="light">
+              </df>
+              <df name="lightbulb">
+              </df>
+              <df name="lock">
+              </df>
+              <df name="measurement">
+              </df>
+              <df name="misc">
+              </df>
+              <df name="multimedia">
+              </df>
+              <df name="newkey">
+              </df>
+              <df name="room">
+              </df>
+              <df name="texture">
+              </df>
+              <df name="thermometer">
+              </df>
+            </df>
+          </df>
+          <df name="testws">
+            <df name="images">
+            </df>
+          </df>
+        </df>
+      </df>
+      <df name="debian">
+        <df name="source">
+        </df>
+      </df>
+      <df name="doc-pak">
+      </df>
+      <df name="dok-pak">
+      </df>
+      <df name="m4">
+      </df>
+      <df name="man">
+      </df>
+      <df name="src">
+        <df name="common">
+          <df name="dl">
+            <df name="cygwin">
+              <in>base.h</in>
+              <in>child1.cpp</in>
+              <in>child1.h</in>
+              <in>glue.c</in>
+              <in>test1.cpp</in>
+              <in>test2.cpp</in>
+            </df>
+            <in>base.h</in>
+            <in>child1.cpp</in>
+            <in>child1.h</in>
+            <in>test.cpp</in>
+          </df>
+          <df name="kwxIndControlSource-0.3.0">
+            <df name="Doc">
+            </df>
+            <df name="res">
+            </df>
+            <in>AngularMeter.cpp</in>
+            <in>AngularMeter.h</in>
+            <in>AngularRegulator.cpp</in>
+            <in>AngularRegulator.h</in>
+            <in>BitmapButton.cpp</in>
+            <in>BitmapButton.h</in>
+            <in>BmpCheckBox.cpp</in>
+            <in>BmpCheckBox.h</in>
+            <in>BmpSwitcher.cpp</in>
+            <in>BmpSwitcher.h</in>
+            <in>ClockThread.cpp</in>
+            <in>ClockThread.h</in>
+            <in>KPrec.h</in>
+            <in>LCDClock.cpp</in>
+            <in>LCDClock.h</in>
+            <in>LCDWindow.cpp</in>
+            <in>LCDWindow.h</in>
+            <in>LinearMeter.cpp</in>
+            <in>LinearMeter.h</in>
+            <in>LinearRegulator.cpp</in>
+            <in>LinearRegulator.h</in>
+            <in>NewWidget.cpp</in>
+            <in>NewWidget.h</in>
+            <in>TestdcApp.cpp</in>
+            <in>TestdcApp.h</in>
+            <in>TestdcFrm.cpp</in>
+            <in>TestdcFrm.h</in>
+            <in>TimeAlarm.cpp</in>
+            <in>TimeAlarm.h</in>
+            <in>kwxNewWidget.cpp</in>
+            <in>kwxNewWidget.h</in>
+            <in>resource.h</in>
+            <in>wxprec.cpp</in>
+          </df>
+          <df name="rapidjson">
+            <df name="error">
+              <in>en.h</in>
+              <in>error.h</in>
+            </df>
+            <df name="internal">
+              <in>biginteger.h</in>
+              <in>diyfp.h</in>
+              <in>dtoa.h</in>
+              <in>ieee754.h</in>
+              <in>itoa.h</in>
+              <in>meta.h</in>
+              <in>pow10.h</in>
+              <in>stack.h</in>
+              <in>strfunc.h</in>
+              <in>strtod.h</in>
+            </df>
+            <df name="msinttypes">
+              <in>inttypes.h</in>
+              <in>stdint.h</in>
+            </df>
+            <in>allocators.h</in>
+            <in>document.h</in>
+            <in>encodedstream.h</in>
+            <in>encodings.h</in>
+            <in>filereadstream.h</in>
+            <in>filewritestream.h</in>
+            <in>memorybuffer.h</in>
+            <in>memorystream.h</in>
+            <in>pointer.h</in>
+            <in>prettywriter.h</in>
+            <in>rapidjson.h</in>
+            <in>reader.h</in>
+            <in>stringbuffer.h</in>
+            <in>writer.h</in>
+          </df>
+          <df name="rapidxml">
+            <in>rapidxml.hpp</in>
+            <in>rapidxml_iterators.hpp</in>
+            <in>rapidxml_print.hpp</in>
+            <in>rapidxml_utils.hpp</in>
+          </df>
+          <df name="SendRawPacket">
+            <df name="NDIS Driver">
+              <df name="src">
+                <in>excallbk.c</in>
+                <in>macros.h</in>
+                <in>ndisbind.c</in>
+                <in>ndisprot.h</in>
+                <in>ntdisp.c</in>
+                <in>nuiouser.h</in>
+                <in>precomp.h</in>
+                <in>recv.c</in>
+                <in>send.c</in>
+              </df>
+            </df>
+            <df name="RawEthernet">
+            </df>
+          </df>
+          <df name="zlib">
+            <in>adler32.c</in>
+            <in>compress.c</in>
+            <in>crc32.c</in>
+            <in>crc32.h</in>
+            <in>deflate.c</in>
+            <in>deflate.h</in>
+            <in>gzclose.c</in>
+            <in>gzguts.h</in>
+            <in>gzio.c</in>
+            <in>gzlib.c</in>
+            <in>gzread.c</in>
+            <in>gzwrite.c</in>
+            <in>infback.c</in>
+            <in>inffast.c</in>
+            <in>inffast.h</in>
+            <in>inffixed.h</in>
+            <in>inflate.c</in>
+            <in>inflate.h</in>
+            <in>inftrees.c</in>
+            <in>inftrees.h</in>
+            <in>trees.c</in>
+            <in>trees.h</in>
+            <in>uncompr.c</in>
+            <in>zconf.h</in>
+            <in>zlib.h</in>
+            <in>zutil.c</in>
+            <in>zutil.h</in>
+          </df>
+          <in>Rijndael.h</in>
+          <in>_endian.h</in>
+          <in>aes.c</in>
+          <in>aes.h</in>
+          <in>base64-decode.c</in>
+          <in>base64_decode.h</in>
+          <in>com.cpp</in>
+          <in>com.h</in>
+          <in>com_linux.cpp</in>
+          <in>com_linux.h</in>
+          <in>com_win32.cpp</in>
+          <in>com_win32.h</in>
+          <in>comm.cpp</in>
+          <in>comm.h</in>
+          <in>configfile.cpp</in>
+          <in>configfile.h</in>
+          <in>crc.c</in>
+          <in>crc.h</in>
+          <in>crc8.c</in>
+          <in>crc8.h</in>
+          <in>date.cpp</in>
+          <in>date.h</in>
+          <in>datetime_utils.hpp</in>
+          <in>dllist.c</in>
+          <in>dllist.h</in>
+          <in>duktape.c</in>
+          <in>duktape.h</in>
+          <in>engine.c</in>
+          <in>fifo.c</in>
+          <in>fifo.h</in>
+          <in>gettimeofday.c</in>
+          <in>gettimeofday.h</in>
+          <in>hashtable.c</in>
+          <in>hashtable.cpp</in>
+          <in>hashtable.h</in>
+          <in>log.cpp</in>
+          <in>log.h</in>
+          <in>luawrapper.h</in>
+          <in>luawrapperutil.h</in>
+          <in>md5.cpp</in>
+          <in>md5.h</in>
+          <in>mongoose.c</in>
+          <in>mongoose.h</in>
+          <in>msglog.cpp</in>
+          <in>msglog.h</in>
+          <in>node.cpp</in>
+          <in>node.h</in>
+          <in>ntservice.cpp</in>
+          <in>ntservice.h</in>
+          <in>ntservmsg.h</in>
+          <in>pdu.cpp</in>
+          <in>pdu.h</in>
+          <in>randpassword.cpp</in>
+          <in>randpassword.h</in>
+          <in>rijndael.cpp</in>
+          <in>rscalc.c</in>
+          <in>sha-1.c</in>
+          <in>slre.c</in>
+          <in>slre.h</in>
+          <in>stdafx.h</in>
+          <in>strtk.hpp</in>
+          <in>v7.c</in>
+          <in>v7.h</in>
+          <in>xml2json.cpp</in>
+          <in>xml2json.hpp</in>
+        </df>
+        <df name="labview">
+          <df name="apps">
+          </df>
+          <df name="libs">
+            <df name="win">
+            </df>
+          </df>
+        </df>
+        <df name="vscp">
+          <df name=".nuget">
+          </df>
+          <df name="actionscripts">
+            <df name="cosm.com">
+            </df>
+            <df name="database">
+              <df name="node.js">
+              </df>
+            </df>
+            <df name="misc">
+            </df>
+            <df name="open.sen.se">
+            </df>
+            <df name="Tellstick">
+            </df>
+            <df name="xively">
+            </df>
+          </df>
+          <df name="android">
+            <df name="HelloDroid">
+              <df name="build">
+                <df name="classes">
+                  <df name="org">
+                    <df name="me">
+                      <df name="hellodroid">
+                      </df>
+                      <df name="testVSCP">
+                      </df>
+                    </df>
+                  </df>
+                </df>
+              </df>
+              <df name="dist">
+              </df>
+              <df name="res">
+                <df name="layout">
+                </df>
+                <df name="values">
+                </df>
+              </df>
+              <df name="src">
+                <df name="org">
+                  <df name="me">
+                    <df name="hellodroid">
+                    </df>
+                    <df name="testVSCP">
+                    </df>
+                  </df>
+                </df>
+              </df>
+            </df>
+            <df name="vscp1">
+              <df name="build">
+                <df name="classes">
+                  <df name="org">
+                    <df name="me">
+                      <df name="vscp1">
+                      </df>
+                    </df>
+                  </df>
+                  <df name="vscp">
+                    <df name="util">
+                    </df>
+                  </df>
+                </df>
+              </df>
+              <df name="dist">
+              </df>
+              <df name="res">
+                <df name="layout">
+                </df>
+                <df name="values">
+                </df>
+              </df>
+              <df name="src">
+                <df name="org">
+                  <df name="me">
+                    <df name="vscp1">
+                    </df>
+                  </df>
+                </df>
+              </df>
+            </df>
+          </df>
+          <df name="build-VSCPWorksPlus-Desktop_Qt_5_2_1_MSVC2010_32bit-Debug">
+            <in>ui_mainwindow.h</in>
+          </df>
+          <df name="bumblebee">
+            <df name="tcpipsim">
+              <in>main.c</in>
+            </df>
+          </df>
+          <df name="common">
+            <df name="old">
+              <in>StdAfx.cpp</in>
+              <in>StdAfx.h</in>
+              <in>canalpipecmd.h</in>
+              <in>canalshmem_level1_unix.cpp</in>
+              <in>canalshmem_level1_unix.h</in>
+              <in>canalshmem_level1_win32.cpp</in>
+              <in>canalshmem_level1_win32.h</in>
+              <in>canalshmem_level2_unix.cpp</in>
+              <in>canalshmem_level2_unix.h</in>
+              <in>canalshmem_level2_win32.cpp</in>
+              <in>canalshmem_level2_win32.h</in>
+              <in>clientlist.cpp</in>
+              <in>clientlist.h</in>
+              <in>clientthread.cpp</in>
+              <in>clientthread_control_unix.cpp</in>
+              <in>clientthread_level1_unix.cpp</in>
+              <in>clientthread_level1_win32.cpp</in>
+              <in>clientthread_level2_unix.cpp</in>
+              <in>clientthread_level2_win32.cpp</in>
+              <in>controlobject.cpp</in>
+              <in>controlobject.h</in>
+              <in>devicethread_unix.cpp</in>
+              <in>devicethread_win32.cpp</in>
+              <in>listenthread.cpp</in>
+              <in>listenthread_unix.cpp</in>
+              <in>listenthread_win32.cpp</in>
+              <in>main.c</in>
+              <in>pipecmd.h</in>
+              <in>terminationthread.cpp</in>
+              <in>udpHandler.cpp</in>
+              <in>udpHandler.h</in>
+              <in>udpReceiveThread.cpp</in>
+              <in>udpreceivethread_unix.cpp</in>
+              <in>udpreceivethread_win32.cpp</in>
+              <in>vscppipe.cpp</in>
+              <in>vscppipe.h</in>
+            </df>
+            <df name="win32helpers">
+              <df name="sys">
+                <in>socket.h</in>
+                <in>time.h</in>
+              </df>
+              <in>getopt.c</in>
+              <in>getopt.h</in>
+              <in>getopt_long.c</in>
+              <in>gettimeofday.c</in>
+              <in>gettimeofday.h</in>
+              <in>netdb.h</in>
+              <in>strings.h</in>
+              <in>syslog.h</in>
+              <in>unistd.h</in>
+              <in>websock-w32.c</in>
+              <in>websock-w32.h</in>
+            </df>
+            <in>actioncodes.h</in>
+            <in>canal.h</in>
+            <in>canal_macro.h</in>
+            <in>canal_unix_ipc.h</in>
+            <in>canal_win32_ipc.h</in>
+            <in>canalconfobj.cpp</in>
+            <in>canalconfobj.h</in>
+            <in>canaldlldef.h</in>
+            <in>canalsuperwrapper.cpp</in>
+            <in>canalsuperwrapper.h</in>
+            <in>clientlist.cpp</in>
+            <in>clientlist.h</in>
+            <in>controlobject.cpp</in>
+            <in>controlobject.h</in>
+            <in>daemonvscp.cpp</in>
+            <in>daemonvscp.h</in>
+            <in>devicelist.cpp</in>
+            <in>devicelist.h</in>
+            <in>devicethread.cpp</in>
+            <in>devicethread.h</in>
+            <in>devitem.h</in>
+            <in>dllwrapper.cpp</in>
+            <in>dllwrapper.h</in>
+            <in>dm.cpp</in>
+            <in>dm.h</in>
+            <in>guid.cpp</in>
+            <in>guid.h</in>
+            <in>interfacelist.cpp</in>
+            <in>interfacelist.h</in>
+            <in>knownnodes.cpp</in>
+            <in>knownnodes.h</in>
+            <in>local_inttypes.h</in>
+            <in>mdf.cpp</in>
+            <in>mdf.h</in>
+            <in>options.h</in>
+            <in>register.cpp</in>
+            <in>register.h</in>
+            <in>selectdevice.cpp</in>
+            <in>selectdevice.h</in>
+            <in>stdafx.h</in>
+            <in>tables.cpp</in>
+            <in>tables.h</in>
+            <in>tcpipclientthread.cpp</in>
+            <in>tcpipclientthread.h</in>
+            <in>thread.h</in>
+            <in>udpclientthread.cpp</in>
+            <in>udpclientthread.h</in>
+            <in>udpthread.cpp</in>
+            <in>udpthread.h</in>
+            <in>userlist.cpp</in>
+            <in>userlist.h</in>
+            <in>variablecodes.h</in>
+            <in>version.h</in>
+            <in>vscp.h</in>
+            <in>vscp_class.h</in>
+            <in>vscp_serial.h</in>
+            <in>vscp_type.h</in>
+            <in>vscpautomation.cpp</in>
+            <in>vscpautomation.h</in>
+            <in>vscpclientthreads.cpp</in>
+            <in>vscpclientthreads.h</in>
+            <in>vscpd_caps.h</in>
+            <in>vscpdlldef.h</in>
+            <in>vscpeventhelper.cpp</in>
+            <in>vscpeventhelper.h</in>
+            <in>vscphelper.cpp</in>
+            <in>vscphelper.h</in>
+            <in>vscpmulticast.cpp</in>
+            <in>vscpmulticast.h</in>
+            <in>vscpremotetcpif.cpp</in>
+            <in>vscpremotetcpif.h</in>
+            <in>vscprestserver.cpp</in>
+            <in>vscpvariable.cpp</in>
+            <in>vscpvariable.h</in>
+            <in>vscpwebserver.cpp</in>
+            <in>vscpwebserver.h</in>
+            <in>vscpwebsocketserver.cpp</in>
+            <in>web_css.h</in>
+            <in>web_js.h</in>
+            <in>web_template.h</in>
+            <in>webserver.h</in>
+            <in>webserver_rest.h</in>
+            <in>webserver_websocket.h</in>
+            <in>xml2json.cpp</in>
+            <in>xmllib.cpp</in>
+            <in>xmllib.h</in>
+          </df>
+          <df name="components">
+            <df name="cmdtcpip">
+              <in>testvscp.c</in>
+            </df>
+            <df name="digitemp">
+              <df name="dtgraph-0.2">
+                <df name="bin">
+                  <df name="old">
+                  </df>
+                </df>
+                <df name="SQL">
+                </df>
+                <df name="www">
+                  <df name="admin">
+                  </df>
+                  <df name="Driver">
+                  </df>
+                  <df name="images">
+                  </df>
+                </df>
+              </df>
+              <df name="linux">
+              </df>
+              <df name="vscpgraph">
+                <df name="images">
+                </df>
+              </df>
+            </df>
+            <df name="gen_winampvscp">
+              <df name="id3lib">
+              </df>
+              <in>StdAfx.cpp</in>
+              <in>StdAfx.h</in>
+              <in>array.h</in>
+              <in>commands.cpp</in>
+              <in>commands.h</in>
+              <in>configdialog.cpp</in>
+              <in>configdialog.h</in>
+              <in>configinfo.cpp</in>
+              <in>configinfo.h</in>
+              <in>configmanager.cpp</in>
+              <in>configmanager.h</in>
+              <in>gen_winampvscp.cpp</in>
+              <in>gen_winampvscp.h</in>
+              <in>pluginmanager.cpp</in>
+              <in>pluginmanager.h</in>
+              <in>resource.h</in>
+              <in>util.cpp</in>
+              <in>util.h</in>
+            </df>
+            <df name="imonc">
+            </df>
+            <df name="winamp_plugin">
+              <in>commands.cpp</in>
+              <in>commands.h</in>
+              <in>pluginmanager.cpp</in>
+              <in>pluginmanager.h</in>
+              <in>vscp_plugin.cpp</in>
+              <in>vscp_plugin.h</in>
+            </df>
+          </df>
+          <df name="contrib">
+            <df name="odb2_vscp_parser">
+            </df>
+            <df name="tiziano_bootloader">
+              <df name="bootloader">
+                <df name="inc">
+                  <in>LPC23xx.h</in>
+                  <in>buff.h</in>
+                  <in>can.h</in>
+                  <in>cangaf.h</in>
+                  <in>config.h</in>
+                  <in>crc.h</in>
+                  <in>edt_mng.h</in>
+                  <in>emem.h</in>
+                  <in>evt.h</in>
+                  <in>flash.h</in>
+                  <in>i2c.h</in>
+                  <in>inttypes.h</in>
+                  <in>irq.h</in>
+                  <in>key.h</in>
+                  <in>led.h</in>
+                  <in>spiflash.h</in>
+                  <in>ssp.h</in>
+                  <in>tmr.h</in>
+                  <in>uart.h</in>
+                  <in>upload.h</in>
+                  <in>utils.h</in>
+                  <in>vic.h</in>
+                  <in>vscp.h</in>
+                  <in>vscp_class.h</in>
+                  <in>vscp_events.h</in>
+                  <in>vscp_main.h</in>
+                  <in>vscp_type.h</in>
+                </df>
+                <df name="prj">
+                </df>
+                <df name="src">
+                  <in>Startarm.s</in>
+                  <in>buff.c</in>
+                  <in>can.c</in>
+                  <in>crc.c</in>
+                  <in>emem.c</in>
+                  <in>evt.c</in>
+                  <in>flash.c</in>
+                  <in>handlers.c</in>
+                  <in>i2c.c</in>
+                  <in>init_cpu.c</in>
+                  <in>key.c</in>
+                  <in>led.c</in>
+                  <in>main.c</in>
+                  <in>spiflash.c</in>
+                  <in>ssp.c</in>
+                  <in>tmr.c</in>
+                  <in>uart.c</in>
+                  <in>upload.c</in>
+                  <in>utils.c</in>
+                  <in>vic.c</in>
+                  <in>vscp.c</in>
+                  <in>vscp_events.c</in>
+                  <in>vscp_main.c</in>
+                </df>
+              </df>
+              <df name="wxwidgets_interface">
+                <in>ctrlupdate.cpp</in>
+                <in>ctrlupdate.h</in>
+                <in>threadupdate.cpp</in>
+                <in>threadupdate.h</in>
+              </df>
+            </df>
+          </df>
+          <df name="daemon">
+            <df name="install">
+            </df>
+            <df name="linux">
+              <df name=".codelite">
+              </df>
+              <df name="carambola">
+                <df name="include">
+                  <df name="linux">
+                    <df name="can">
+                      <in>bcm.h</in>
+                      <in>core.h</in>
+                      <in>dev.h</in>
+                      <in>error.h</in>
+                      <in>gw.h</in>
+                      <in>isotp.h</in>
+                      <in>netlink.h</in>
+                      <in>raw.h</in>
+                    </df>
+                    <in>can.h</in>
+                  </df>
+                  <df name="socketcan">
+                    <df name="can">
+                      <in>bcm.h</in>
+                      <in>error.h</in>
+                      <in>gw.h</in>
+                      <in>ioctl.h</in>
+                      <in>isotp.h</in>
+                      <in>netlink.h</in>
+                      <in>raw.h</in>
+                    </df>
+                    <in>can.h</in>
+                  </df>
+                </df>
+                <df name="www">
+                </df>
+                <in>SelectDevice.h</in>
+                <in>actioncodes.h</in>
+                <in>canal.h</in>
+                <in>canal_macro.h</in>
+                <in>canal_unix_ipc.h</in>
+                <in>canal_win32_ipc.h</in>
+                <in>canaldlldef.h</in>
+                <in>canalsuperwrapper.h</in>
+                <in>clientlist.cpp</in>
+                <in>clientlist.h</in>
+                <in>configfile.cpp</in>
+                <in>controlobject.cpp</in>
+                <in>controlobject.h</in>
+                <in>crc.c</in>
+                <in>daemonvscp.cpp</in>
+                <in>daemonvscp.h</in>
+                <in>devicelist.cpp</in>
+                <in>devicelist.h</in>
+                <in>devicethread.cpp</in>
+                <in>devicethread.h</in>
+                <in>devitem.h</in>
+                <in>dlldrvobj.cpp</in>
+                <in>dlldrvobj.h</in>
+                <in>dllist.c</in>
+                <in>dllwrapper.h</in>
+                <in>dm.cpp</in>
+                <in>dm.h</in>
+                <in>guid.cpp</in>
+                <in>guid.h</in>
+                <in>interfacelist.cpp</in>
+                <in>interfacelist.h</in>
+                <in>md5.cpp</in>
+                <in>mdf.h</in>
+                <in>options.h</in>
+                <in>randPassword.cpp</in>
+                <in>socketcandrv.cpp</in>
+                <in>socketcandrv.h</in>
+                <in>socketcanobj.cpp</in>
+                <in>socketcanobj.h</in>
+                <in>stdafx.h</in>
+                <in>tcpipclientthread.cpp</in>
+                <in>tcpipclientthread.h</in>
+                <in>udpthread.cpp</in>
+                <in>udpthread.h</in>
+                <in>userlist.cpp</in>
+                <in>userlist.h</in>
+                <in>variablecodes.h</in>
+                <in>version.h</in>
+                <in>vscp.h</in>
+                <in>vscp_class.h</in>
+                <in>vscp_type.h</in>
+                <in>vscpclientthreads.h</in>
+                <in>vscpd.cpp</in>
+                <in>vscpd.h</in>
+                <in>vscpdlldef.h</in>
+                <in>vscphelper.cpp</in>
+                <in>vscphelper.h</in>
+                <in>vscptcpif.cpp</in>
+                <in>vscptcpif.h</in>
+                <in>vscpvariable.cpp</in>
+                <in>vscpvariable.h</in>
+              </df>
+              <df name="codelite_vscpd">
+                <df name=".clang">
+                </df>
+                <df name=".codelite">
+                  <df name="tabgroups">
+                  </df>
+                </df>
+              </df>
+              <df name="html">
+              </df>
+              <df name="latex">
+              </df>
+              <df name="openwrt">
+                <df name="www">
+                </df>
+              </df>
+              <df name="xml">
+              </df>
+              <in>vscpd.cpp</in>
+              <in>vscpd.h</in>
+            </df>
+            <df name="res">
+            </df>
+            <df name="win32">
+              <df name="service">
+                <in>StdAfx.cpp</in>
+                <in>StdAfx.h</in>
+                <in>app.cpp</in>
+                <in>app.h</in>
+                <in>ntserv.cpp</in>
+                <in>ntserv.h</in>
+                <in>ntservCmdLineInfo.cpp</in>
+                <in>ntservCmdLineInfo.h</in>
+                <in>ntservDefines.h</in>
+                <in>ntservEventLog.cpp</in>
+                <in>ntservEventLog.h</in>
+                <in>ntservEventLogRecord.cpp</in>
+                <in>ntservEventLogRecord.h</in>
+                <in>ntservEventLogSource.cpp</in>
+                <in>ntservEventLogSource.h</in>
+                <in>ntservScmService.cpp</in>
+                <in>ntservScmService.h</in>
+                <in>ntservServiceControlManager.cpp</in>
+                <in>ntservServiceControlManager.h</in>
+                <in>ntserv_msg.h</in>
+                <in>resource.h</in>
+              </df>
+              <df name="wx">
+                <df name="msw">
+                </df>
+              </df>
+              <in>resource.h</in>
+              <in>vscpd.cpp</in>
+              <in>vscpd.h</in>
+            </df>
+          </df>
+          <df name="drivers">
+            <df name="level1">
+              <df name="apox">
+                <df name="common">
+                  <in>apoxobj.cpp</in>
+                  <in>apoxobj.h</in>
+                  <in>callback.h</in>
+                  <in>dlldrvobj.cpp</in>
+                  <in>dlldrvobj.h</in>
+                </df>
+                <df name="linux">
+                </df>
+                <df name="win32">
+                  <in>apoxdrv.cpp</in>
+                </df>
+              </df>
+              <df name="can232">
+                <df name="common">
+                  <in>can232obj.cpp</in>
+                  <in>can232obj.h</in>
+                  <in>dlldrvobj.cpp</in>
+                  <in>dlldrvobj.h</in>
+                </df>
+                <df name="linux">
+                  <df name="external_code">
+                    <df name="univers">
+                    </df>
+                    <in>acramr_calc.c</in>
+                    <in>acramr_calc_simple.c</in>
+                    <in>acramr_rev_calc.c</in>
+                    <in>canterminal.c</in>
+                    <in>cantest.c</in>
+                    <in>cleanfile.c</in>
+                    <in>csv2txt.c</in>
+                  </df>
+                  <in>can232obj.cpp</in>
+                  <in>can232obj.h</in>
+                  <in>config.h</in>
+                  <in>test.cpp</in>
+                  <in>vscpl1_can232drv.cpp</in>
+                  <in>vscpl1_can232drv.h</in>
+                </df>
+                <df name="win32">
+                  <df name="can232drv">
+                    <df name="Template">
+                    </df>
+                    <in>can232drv.cpp</in>
+                  </df>
+                  <df name="Test">
+                    <df name="res">
+                    </df>
+                    <in>CAN232Drv.cpp</in>
+                    <in>StdAfx.cpp</in>
+                    <in>StdAfx.h</in>
+                    <in>can232drvTest.cpp</in>
+                    <in>can232drvTest.h</in>
+                    <in>can232drvTestDlg.cpp</in>
+                    <in>can232drvTestDlg.h</in>
+                    <in>resource.h</in>
+                  </df>
+                </df>
+              </df>
+              <df name="can4vscp">
+                <df name="common">
+                  <in>callback.h</in>
+                  <in>can4vscpobj.cpp</in>
+                  <in>can4vscpobj.h</in>
+                  <in>dlldrvobj.cpp</in>
+                  <in>dlldrvobj.h</in>
+                </df>
+                <df name="linux">
+                  <in>test.cpp</in>
+                  <in>vscpl1_can4vscpdrv.cpp</in>
+                  <in>vscpl1_can4vscpdrv.h</in>
+                </df>
+                <df name="win32">
+                  <df name="Template">
+                  </df>
+                  <in>can4vscpdrv.cpp</in>
+                </df>
+              </df>
+              <df name="candrv">
+                <df name="linux">
+                  <in>lincan.cpp</in>
+                  <in>lincan.h</in>
+                  <in>test.cpp</in>
+                </df>
+              </df>
+              <df name="ccsdrv">
+                <df name="common">
+                  <in>ccsobj.cpp</in>
+                  <in>ccsobj.h</in>
+                  <in>dlldrvobj.cpp</in>
+                  <in>dlldrvobj.h</in>
+                </df>
+                <df name="win32">
+                  <df name="ccsdrv">
+                    <df name="Template">
+                    </df>
+                    <in>ccsdrv.cpp</in>
+                  </df>
+                  <df name="ccsdrvTest">
+                    <df name="res">
+                    </df>
+                    <in>StdAfx.cpp</in>
+                    <in>StdAfx.h</in>
+                    <in>ccsdrvTest.cpp</in>
+                    <in>ccsdrvTest.h</in>
+                    <in>ccsdrvTestDlg.cpp</in>
+                    <in>ccsdrvTestDlg.h</in>
+                    <in>resource.h</in>
+                  </df>
+                </df>
+              </df>
+              <df name="genericdrv">
+                <df name="win32">
+                  <df name="res">
+                  </df>
+                  <in>Resource.h</in>
+                  <in>StdAfx.cpp</in>
+                  <in>StdAfx.h</in>
+                  <in>genericdll.cpp</in>
+                  <in>genericdll.h</in>
+                </df>
+              </df>
+              <df name="ixxat_vc2">
+                <df name="common">
+                  <in>callback.h</in>
+                  <in>dlldrvobj.cpp</in>
+                  <in>dlldrvobj.h</in>
+                  <in>ixxobj.cpp</in>
+                  <in>ixxobj.h</in>
+                </df>
+                <df name="linux">
+                </df>
+                <df name="win32">
+                  <df name="Template">
+                  </df>
+                  <df name="Test">
+                    <df name="res">
+                    </df>
+                    <in>StdAfx.cpp</in>
+                    <in>StdAfx.h</in>
+                    <in>ixxatTest.cpp</in>
+                    <in>ixxatTest.h</in>
+                    <in>ixxatTestDlg.cpp</in>
+                    <in>ixxatTestDlg.h</in>
+                    <in>resource.h</in>
+                  </df>
+                  <in>ixxatvcidrv.cpp</in>
+                </df>
+              </df>
+              <df name="lincan">
+                <df name="common">
+                  <in>lincanobj.cpp</in>
+                  <in>lincanobj.h</in>
+                </df>
+                <df name="linux">
+                  <in>lincan.cpp</in>
+                  <in>lincan.h</in>
+                  <in>test.cpp</in>
+                </df>
+              </df>
+              <df name="lirc">
+                <df name="common">
+                  <in>dlldrvobj.cpp</in>
+                  <in>dlldrvobj.h</in>
+                  <in>lircobj.cpp</in>
+                  <in>lircobj.h</in>
+                </df>
+                <df name="windows">
+                  <df name="Template">
+                  </df>
+                  <df name="test">
+                    <in>ControlObject.cpp</in>
+                    <in>ControlObject.h</in>
+                    <in>automtn.cpp</in>
+                    <in>lirctest.cpp</in>
+                    <in>lirctest.h</in>
+                  </df>
+                  <df name="winlirc0651">
+                    <in>confdlg.cpp</in>
+                    <in>confdlg.h</in>
+                    <in>config.cpp</in>
+                    <in>config.h</in>
+                    <in>drvdlg.cpp</in>
+                    <in>drvdlg.h</in>
+                    <in>dumpcfg.cpp</in>
+                    <in>dumpcfg.h</in>
+                    <in>globals.cpp</in>
+                    <in>globals.h</in>
+                    <in>irconfig.cpp</in>
+                    <in>irconfig.h</in>
+                    <in>irdriver.cpp</in>
+                    <in>irdriver.h</in>
+                    <in>learndlg.cpp</in>
+                    <in>learndlg.h</in>
+                    <in>remote.cpp</in>
+                    <in>remote.h</in>
+                    <in>resource.h</in>
+                    <in>server.cpp</in>
+                    <in>server.h</in>
+                    <in>stdafx.h</in>
+                    <in>transmit.cpp</in>
+                    <in>trayicon.cpp</in>
+                    <in>trayicon.h</in>
+                    <in>version.h</in>
+                    <in>winlirc.cpp</in>
+                    <in>winlirc.h</in>
+                  </df>
+                  <in>lircdrv.cpp</in>
+                </df>
+              </df>
+              <df name="logger">
+                <df name="common">
+                  <in>dlldrvobj.cpp</in>
+                  <in>dlldrvobj.h</in>
+                  <in>log.cpp</in>
+                  <in>log.h</in>
+                </df>
+                <df name="linux">
+                  <in>config.h</in>
+                  <in>test.cpp</in>
+                  <in>vscpl1_loggerdrv.cpp</in>
+                  <in>vscpl1_loggerdrv.h</in>
+                </df>
+                <df name="win32">
+                  <df name="Template">
+                  </df>
+                  <in>canallogger.cpp</in>
+                </df>
+              </df>
+              <df name="parallel">
+                <df name="standard">
+                  <df name="docs">
+                    <in>parcon.c</in>
+                  </df>
+                </df>
+              </df>
+              <df name="peak">
+                <df name="common">
+                  <in>dlldrvobj.cpp</in>
+                  <in>dlldrvobj.h</in>
+                  <in>peakobj.cpp</in>
+                  <in>peakobj.h</in>
+                </df>
+                <df name="win32">
+                  <df name="Template">
+                  </df>
+                  <df name="testpcan">
+                    <df name="res">
+                    </df>
+                    <in>StdAfx.cpp</in>
+                    <in>StdAfx.h</in>
+                    <in>resource.h</in>
+                    <in>testpcan.cpp</in>
+                    <in>testpcan.h</in>
+                    <in>testpcanDlg.cpp</in>
+                    <in>testpcanDlg.h</in>
+                  </df>
+                  <in>peakdrv.cpp</in>
+                </df>
+              </df>
+              <df name="proximity">
+                <df name="bluetooth">
+                  <df name="docs">
+                  </df>
+                  <df name="linux">
+                    <in>btproximity.c</in>
+                  </df>
+                </df>
+              </df>
+              <df name="rs485">
+                <df name="common">
+                  <in>dlldrvobj.cpp</in>
+                  <in>dlldrvobj.h</in>
+                  <in>rs485obj.cpp</in>
+                  <in>rs485obj.h</in>
+                </df>
+                <df name="win32">
+                  <df name="rs485">
+                    <in>rs485.cpp</in>
+                  </df>
+                  <df name="test">
+                    <df name="res">
+                    </df>
+                    <in>StdAfx.cpp</in>
+                    <in>StdAfx.h</in>
+                    <in>resource.h</in>
+                    <in>rs485drv.cpp</in>
+                    <in>rs485drvtest.cpp</in>
+                    <in>rs485drvtest.h</in>
+                    <in>rs485drvtestdlg.cpp</in>
+                    <in>rs485drvtestdlg.h</in>
+                  </df>
+                </df>
+              </df>
+              <df name="serialvscp">
+                <df name="common">
+                  <in>dos_can.h</in>
+                  <in>dos_can232.h</in>
+                </df>
+                <df name="win32">
+                  <in>StdAfx.cpp</in>
+                  <in>StdAfx.h</in>
+                  <in>commclass.h</in>
+                  <in>serialdrv.cpp</in>
+                  <in>serialdrv.h</in>
+                  <in>vscp_compiler.h</in>
+                  <in>vscp_projdefs.h</in>
+                </df>
+              </df>
+              <df name="simulation">
+                <df name="simdrv">
+                  <df name="win32">
+                    <df name="res">
+                    </df>
+                    <in>Resource.h</in>
+                    <in>StdAfx.cpp</in>
+                    <in>StdAfx.h</in>
+                    <in>simdll.cpp</in>
+                    <in>simdll.h</in>
+                  </df>
+                </df>
+              </df>
+              <df name="socketcan">
+                <df name="common">
+                  <in>dlldrvobj.cpp</in>
+                  <in>dlldrvobj.h</in>
+                  <in>socketcan.cpp</in>
+                  <in>socketcan.h</in>
+                </df>
+                <df name="linux">
+                  <df name="include">
+                    <df name="linux">
+                      <df name="can">
+                        <in>bcm.h</in>
+                        <in>core.h</in>
+                        <in>dev.h</in>
+                        <in>error.h</in>
+                        <in>gw.h</in>
+                        <in>isotp.h</in>
+                        <in>netlink.h</in>
+                        <in>raw.h</in>
+                      </df>
+                      <in>can.h</in>
+                    </df>
+                    <df name="socketcan">
+                      <df name="can">
+                        <in>bcm.h</in>
+                        <in>error.h</in>
+                        <in>gw.h</in>
+                        <in>ioctl.h</in>
+                        <in>isotp.h</in>
+                        <in>netlink.h</in>
+                        <in>raw.h</in>
+                      </df>
+                      <in>can.h</in>
+                    </df>
+                  </df>
+                  <in>config.h</in>
+                  <in>socketcanobj.cpp</in>
+                  <in>socketcanobj.h</in>
+                  <in>test.cpp</in>
+                  <in>vscpl1_socketcandrv.cpp</in>
+                  <in>vscpl1_socketcandrv.h</in>
+                </df>
+              </df>
+              <df name="syslogdrv">
+                <df name="common">
+                  <in>dlldrvobj.cpp</in>
+                  <in>dlldrvobj.h</in>
+                  <in>syslogobj.cpp</in>
+                  <in>syslogobj.h</in>
+                </df>
+                <df name="windows">
+                  <df name="Template">
+                  </df>
+                  <df name="test">
+                    <in>syslogtest.cpp</in>
+                    <in>syslogtest.h</in>
+                  </df>
+                  <in>syslog.cpp</in>
+                  <in>syslogdrv.cpp</in>
+                </df>
+              </df>
+              <df name="tellstick">
+                <df name="common">
+                  <in>dlldrvobj.cpp</in>
+                  <in>dlldrvobj.h</in>
+                  <in>tellstickobj.cpp</in>
+                  <in>tellstickobj.h</in>
+                </df>
+                <df name="win32">
+                  <df name="adaptercheck">
+                    <df name="res">
+                    </df>
+                    <in>StdAfx.cpp</in>
+                    <in>StdAfx.h</in>
+                    <in>adaptercheck.cpp</in>
+                    <in>adaptercheck.h</in>
+                    <in>adaptercheckDlg.cpp</in>
+                    <in>adaptercheckDlg.h</in>
+                    <in>resource.h</in>
+                  </df>
+                  <df name="old">
+                    <in>find_telldus.c</in>
+                    <in>ftdi.c</in>
+                    <in>rfcmd.c</in>
+                  </df>
+                  <in>tellstickdrv.cpp</in>
+                </df>
+              </df>
+              <df name="usb2can">
+                <df name="notes">
+                </df>
+                <df name="usb2can">
+                  <df name="common">
+                    <in>callback.h</in>
+                    <in>dlldrvobj.cpp</in>
+                    <in>dlldrvobj.h</in>
+                    <in>enum.cpp</in>
+                    <in>enum.h</in>
+                    <in>usb2canobj.cpp</in>
+                    <in>usb2canobj.h</in>
+                  </df>
+                  <df name="vscp_common">
+                    <in>canal.h</in>
+                    <in>canal_macro.h</in>
+                    <in>dllist.c</in>
+                    <in>dllist.h</in>
+                  </df>
+                  <df name="win32">
+                    <in>targetver.h</in>
+                    <in>usb2candrv.cpp</in>
+                  </df>
+                </df>
+              </df>
+              <df name="vector">
+                <df name="common">
+                  <in>callback.h</in>
+                  <in>dlldrvobj.cpp</in>
+                  <in>dlldrvobj.h</in>
+                  <in>vectorobj.cpp</in>
+                  <in>vectorobj.h</in>
+                </df>
+                <df name="win32">
+                  <in>vectordrv.cpp</in>
+                </df>
+              </df>
+              <df name="vectorxl">
+                <df name="common">
+                  <in>callback.h</in>
+                  <in>dlldrvobj.cpp</in>
+                  <in>dlldrvobj.h</in>
+                  <in>vectorxlobj.cpp</in>
+                  <in>vectorxlobj.h</in>
+                </df>
+                <df name="win32">
+                  <in>vectorxldrv.cpp</in>
+                </df>
+              </df>
+              <df name="xap">
+                <df name="common">
+                  <in>callback.h</in>
+                  <in>dlldrvobj.cpp</in>
+                  <in>dlldrvobj.h</in>
+                  <in>xapobj.cpp</in>
+                  <in>xapobj.h</in>
+                </df>
+                <df name="linux">
+                  <df name="m4">
+                  </df>
+                  <df name="xml">
+                  </df>
+                  <in>config.h</in>
+                  <in>test.cpp</in>
+                  <in>vscpl1_xapdrv.cpp</in>
+                  <in>vscpl1_xapdrv.h</in>
+                </df>
+                <df name="win32">
+                  <in>xapdrv.cpp</in>
+                </df>
+              </df>
+              <df name="zanthic">
+                <df name="common">
+                  <in>dlldrvobj.cpp</in>
+                  <in>dlldrvobj.h</in>
+                  <in>zanthicobj.cpp</in>
+                  <in>zanthicobj.h</in>
+                </df>
+                <df name="win32">
+                  <in>zanthicdrv.cpp</in>
+                </df>
+              </df>
+            </df>
+            <df name="level2">
+              <df name="btdetect">
+                <df name="common">
+                  <in>dlldrvobj.cpp</in>
+                  <in>dlldrvobj.h</in>
+                </df>
+                <df name="win32">
+                  <df name="test">
+                    <df name="bttest">
+                      <df name="bttest">
+                        <in>bttest.cpp</in>
+                        <in>stdafx.cpp</in>
+                        <in>stdafx.h</in>
+                        <in>targetver.h</in>
+                      </df>
+                    </df>
+                  </df>
+                  <in>vscpbtdetect.cpp</in>
+                  <in>vscpbtdetect.h</in>
+                </df>
+              </df>
+              <df name="lmsensors">
+                <df name="common">
+                  <in>dlldrvobj.cpp</in>
+                  <in>dlldrvobj.h</in>
+                </df>
+                <df name="linux">
+                  <in>config.h</in>
+                  <in>lmsensors.cpp</in>
+                  <in>lmsensors.h</in>
+                  <in>test.cpp</in>
+                  <in>vscpl2drv_lmsensors.cpp</in>
+                  <in>vscpl2drv_lmsensors.h</in>
+                </df>
+              </df>
+              <df name="logger">
+                <df name="common">
+                  <in>dlldrvobj.cpp</in>
+                  <in>dlldrvobj.h</in>
+                  <in>log.cpp</in>
+                  <in>log.h</in>
+                </df>
+                <df name="install">
+                </df>
+                <df name="linux">
+                  <in>config.h</in>
+                  <in>test.cpp</in>
+                  <in>vscpl2drv_logger.cpp</in>
+                  <in>vscpl2drv_logger.h</in>
+                </df>
+                <df name="win32">
+                  <in>vscplogger.cpp</in>
+                </df>
+              </df>
+              <df name="mqtt">
+                <df name="common">
+                  <in>mqttobj.cpp</in>
+                  <in>mqttobj.h</in>
+                </df>
+                <df name="linux">
+                  <df name="mqtt-driver">
+                  </df>
+                  <in>config.h</in>
+                  <in>old_mqtt.cpp</in>
+                  <in>old_mqtt.h</in>
+                  <in>publish.c</in>
+                  <in>test.c</in>
+                  <in>vscpl2drv_mqtt.cpp</in>
+                  <in>vscpl2drv_mqtt.h</in>
+                </df>
+                <df name="win32">
+                  <in>vscpl2drv_mqtt.cpp</in>
+                  <in>vscpl2drv_mqtt.h</in>
+                </df>
+              </df>
+              <df name="rawethernet">
+                <df name="common">
+                  <in>dlldrvobj.cpp</in>
+                  <in>dlldrvobj.h</in>
+                </df>
+                <df name="linux">
+                  <in>dlldrvobj.cpp</in>
+                  <in>dlldrvobj.h</in>
+                  <in>test.c</in>
+                  <in>vscpl2drv_raweth.cpp</in>
+                  <in>vscpl2drv_raweth.h</in>
+                </df>
+                <df name="win32">
+                  <in>dlldrvobj.cpp</in>
+                  <in>dlldrvobj.h</in>
+                  <in>rawethernet.cpp</in>
+                  <in>rawethernet.h</in>
+                </df>
+              </df>
+              <df name="rpigpio">
+                <df name="common">
+                  <in>dlldrvobj.cpp</in>
+                  <in>dlldrvobj.h</in>
+                </df>
+                <df name="docs">
+                </df>
+                <df name="linux">
+                  <in>gpio.cpp</in>
+                  <in>gpio.h</in>
+                  <in>test.c</in>
+                  <in>vscp2drv_gpio.cpp</in>
+                  <in>vscp2drv_gpio.h</in>
+                </df>
+              </df>
+              <df name="sim">
+                <df name="common">
+                  <in>simulation.cpp</in>
+                  <in>simulation.h</in>
+                </df>
+                <df name="linux">
+                  <in>test.c</in>
+                  <in>vscpl2drv_sim.cpp</in>
+                  <in>vscpl2drv_sim.h</in>
+                </df>
+                <df name="mdf">
+                </df>
+                <df name="win32">
+                  <in>simdrv.cpp</in>
+                  <in>simdrv.h</in>
+                </df>
+              </df>
+              <df name="smsdrv">
+              </df>
+              <df name="socketcan">
+                <df name="common">
+                  <in>dlldrvobj.cpp</in>
+                  <in>dlldrvobj.h</in>
+                </df>
+                <df name="linux">
+                  <df name="include">
+                    <df name="linux">
+                      <df name="can">
+                        <in>bcm.h</in>
+                        <in>core.h</in>
+                        <in>dev.h</in>
+                        <in>error.h</in>
+                        <in>gw.h</in>
+                        <in>isotp.h</in>
+                        <in>netlink.h</in>
+                        <in>raw.h</in>
+                      </df>
+                      <in>can.h</in>
+                    </df>
+                    <df name="socketcan">
+                      <df name="can">
+                        <in>bcm.h</in>
+                        <in>error.h</in>
+                        <in>gw.h</in>
+                        <in>ioctl.h</in>
+                        <in>isotp.h</in>
+                        <in>netlink.h</in>
+                        <in>raw.h</in>
+                      </df>
+                      <in>can.h</in>
+                    </df>
+                  </df>
+                  <in>readsock.c</in>
+                  <in>socketcan.cpp</in>
+                  <in>socketcan.h</in>
+                  <in>test.c</in>
+                  <in>vscpl2drv_socketcan.cpp</in>
+                  <in>vscpl2drv_socketcan.h</in>
+                </df>
+              </df>
+              <df name="tcpdrv">
+                <df name="common">
+                  <in>vscptcpiplink.cpp</in>
+                  <in>vscptcpiplink.h</in>
+                </df>
+                <df name="linux">
+                  <in>config.h</in>
+                  <in>test.c</in>
+                  <in>vscpl2drv_tcpiplink.cpp</in>
+                  <in>vscpl2drv_tcpiplink.h</in>
+                  <in>vscptcpiplink.cpp</in>
+                  <in>vscptcpiplink.h</in>
+                </df>
+                <df name="win32">
+                  <in>tcpiplinkdrv.cpp</in>
+                  <in>tcpiplinkdrv.h</in>
+                </df>
+              </df>
+              <df name="tellstick">
+                <df name="docs">
+                </df>
+              </df>
+              <df name="udpdrv">
+                <df name="common">
+                  <in>dlldrvobj.cpp</in>
+                  <in>dlldrvobj.h</in>
+                </df>
+                <df name="win32">
+                  <in>udpdrv.cpp</in>
+                  <in>udpdrv.h</in>
+                </df>
+              </df>
+              <df name="wire1">
+                <df name="common">
+                  <in>dlldrvobj.cpp</in>
+                  <in>dlldrvobj.h</in>
+                </df>
+                <df name="linux">
+                  <in>test.c</in>
+                  <in>vscpl2drv_wire1.cpp</in>
+                  <in>vscpl2drv_wire1.h</in>
+                  <in>wire1.cpp</in>
+                  <in>wire1.h</in>
+                </df>
+              </df>
+            </df>
+          </df>
+          <df name="helperlib">
+            <df name="linux">
+              <df name="examples">
+                <df name="bigtest_codelite">
+                  <df name=".codelite">
+                  </df>
+                </df>
+                <df name="ttt">
+                  <in>calc_mean.c</in>
+                  <in>calc_mean.h</in>
+                  <in>main.c</in>
+                </df>
+                <in>bigtest.c</in>
+                <in>example1.c</in>
+              </df>
+              <df name="old">
+                <in>vscphelperexport.cpp</in>
+                <in>vscphelperexport.h</in>
+              </df>
+              <in>libvscphelper.cpp</in>
+              <in>libvscphelper.h</in>
+              <in>test.c</in>
+            </df>
+            <df name="python">
+              <in>vscphelper.c</in>
+            </df>
+            <df name="windows">
+              <df name="cSharp_testVSCPDll">
+                <df name="cSharp_testVSCPDll">
+                  <df name="Properties">
+                  </df>
+                </df>
+              </df>
+              <df name="res">
+              </df>
+              <df name="test">
+                <in>targetver.h</in>
+                <in>test.cpp</in>
+              </df>
+              <in>Resource.h</in>
+              <in>dlldrvobj.cpp</in>
+              <in>dlldrvobj.h</in>
+              <in>targetver.h</in>
+              <in>vscphelperdll.cpp</in>
+              <in>vscphelperdll.h</in>
+            </df>
+            <in>vscphelperlib.cpp</in>
+            <in>vscphelperlib.h</in>
+          </df>
+          <df name="linuxvscpl1">
+            <in>config.h</in>
+            <in>test.c</in>
+            <in>vscpl1.cpp</in>
+            <in>vscpl1.h</in>
+          </df>
+          <df name="mkpasswd">
+            <df name="html">
+            </df>
+            <df name="latex">
+            </df>
+            <df name="xml">
+            </df>
+            <in>mkpasswd.cpp</in>
+            <in>mkpasswd.h</in>
+            <in>test.c</in>
+          </df>
+          <df name="samples">
+            <df name="autoself">
+              <df name="images">
+              </df>
+              <in>autoself.cpp</in>
+              <in>autoself.h</in>
+              <in>dlgabout.cpp</in>
+              <in>dlgabout.h</in>
+              <in>dlgabout_symbols.h</in>
+              <in>dlgmain.cpp</in>
+              <in>dlgmain.h</in>
+              <in>dlgnodeinfo.cpp</in>
+              <in>dlgnodeinfo.h</in>
+              <in>dlgnodeinfo_symbols.h</in>
+              <in>dlgnodelist.cpp</in>
+              <in>dlgnodelist.h</in>
+              <in>dlgnodelist_symbols.h</in>
+              <in>dlgselectunit.cpp</in>
+              <in>dlgselectunit.h</in>
+              <in>dlgselectunit_symbols.h</in>
+              <in>dlgsettings.cpp</in>
+              <in>dlgsettings.h</in>
+              <in>dlgsettings_symbols.h</in>
+              <in>frmNode.cpp</in>
+              <in>frmNode.h</in>
+              <in>frmNode_symbols.h</in>
+              <in>frmmain.cpp</in>
+              <in>frmmain.h</in>
+              <in>frmmain_symbols.h</in>
+              <in>frmmessagelog.cpp</in>
+              <in>frmmessagelog.h</in>
+              <in>frmmessagelog_symbols.h</in>
+              <in>frmselectunit_symbols.h</in>
+              <in>pictures.h</in>
+              <in>platform.h</in>
+              <in>threadvscpwork.cpp</in>
+              <in>threadvscpwork.h</in>
+            </df>
+            <df name="button_node">
+            </df>
+            <df name="fli4lcid">
+              <in>fli4lcidapp.cpp</in>
+              <in>fli4lcidapp.h</in>
+              <in>fli4lcidtest.cpp</in>
+              <in>fli4lcidtest.h</in>
+              <in>fli4lcidtest_symbols.h</in>
+            </df>
+            <df name="html5">
+              <df name="echotest">
+              </df>
+            </df>
+            <df name="multicast">
+              <in>multicast_listen.c</in>
+              <in>multicast_send.c</in>
+            </df>
+            <df name="node_js">
+              <df name="docs">
+              </df>
+              <df name="node-red-node-vscp-events">
+                <df name="icons">
+                </df>
+              </df>
+            </df>
+            <df name="python">
+            </df>
+            <df name="rest">
+              <df name="Linux">
+              </df>
+              <df name="web">
+              </df>
+              <df name="windows">
+              </df>
+            </df>
+            <df name="samples">
+              <df name="win32">
+                <df name="mfc">
+                  <df name="CanalDiagnostic">
+                    <df name="res">
+                    </df>
+                    <in>CanalDiagnostic.cpp</in>
+                    <in>CanalDiagnostic.h</in>
+                    <in>CanalDiagnosticDoc.cpp</in>
+                    <in>CanalDiagnosticDoc.h</in>
+                    <in>CanalDiagnosticView.cpp</in>
+                    <in>CanalDiagnosticView.h</in>
+                    <in>ChildFrm.cpp</in>
+                    <in>ChildFrm.h</in>
+                    <in>DocumentProperties.cpp</in>
+                    <in>DocumentProperties.h</in>
+                    <in>MainFrm.cpp</in>
+                    <in>MainFrm.h</in>
+                    <in>NewDocument.cpp</in>
+                    <in>NewDocument.h</in>
+                    <in>SendBurst.cpp</in>
+                    <in>SendBurst.h</in>
+                    <in>Splash.cpp</in>
+                    <in>Splash.h</in>
+                    <in>StdAfx.cpp</in>
+                    <in>StdAfx.h</in>
+                    <in>resource.h</in>
+                  </df>
+                  <df name="loggerwnd">
+                    <df name="res">
+                    </df>
+                    <in>StdAfx.cpp</in>
+                    <in>StdAfx.h</in>
+                    <in>dlgfilter.cpp</in>
+                    <in>dlgfilter.h</in>
+                    <in>loggerwnd.cpp</in>
+                    <in>loggerwnd.h</in>
+                    <in>loggerwnddlg.cpp</in>
+                    <in>loggerwnddlg.h</in>
+                    <in>resource.h</in>
+                  </df>
+                </df>
+              </df>
+            </df>
+            <df name="server">
+              <df name="res">
+              </df>
+              <in>StdAfx.cpp</in>
+              <in>StdAfx.h</in>
+              <in>resource.h</in>
+              <in>server.cpp</in>
+              <in>server.h</in>
+              <in>serverDlg.cpp</in>
+              <in>serverDlg.h</in>
+            </df>
+            <df name="testinterface">
+              <df name="VCProjectDebug">
+              </df>
+              <in>testinterface.cpp</in>
+              <in>testinterface.h</in>
+              <in>testinterfaceapp.cpp</in>
+              <in>testinterfaceapp.h</in>
+            </df>
+            <df name="testsuite">
+              <df name="simplebutton">
+                <df name="wx">
+                  <df name="msw">
+                  </df>
+                </df>
+                <in>OptionDialog.cpp</in>
+                <in>OptionDialog.h</in>
+                <in>resource.h</in>
+                <in>simplebutton.cpp</in>
+                <in>simplebutton.h</in>
+              </df>
+              <df name="simpledimmer">
+                <df name="wx">
+                  <df name="msw">
+                  </df>
+                </df>
+                <in>OptionDialog.cpp</in>
+                <in>OptionDialog.h</in>
+                <in>resource.h</in>
+                <in>simpledimmer.cpp</in>
+                <in>simpledimmer.h</in>
+              </df>
+              <df name="simplelamp">
+                <df name="wx">
+                  <df name="msw">
+                  </df>
+                </df>
+                <in>OptionDialog.cpp</in>
+                <in>OptionDialog.h</in>
+                <in>resource.h</in>
+                <in>simplelamp.cpp</in>
+                <in>simplelamp.h</in>
+              </df>
+            </df>
+            <df name="twilio">
+            </df>
+            <df name="vscpbutton">
+              <in>configuration.cpp</in>
+              <in>configuration.h</in>
+              <in>configuration_symbols.h</in>
+              <in>vscpbutton.cpp</in>
+              <in>vscpbutton.h</in>
+              <in>vscpbutton_symbols.h</in>
+              <in>vscpbuttonapp.cpp</in>
+              <in>vscpbuttonapp.h</in>
+            </df>
+            <df name="vscpsimnode">
+              <in>defaultsettings.cpp</in>
+              <in>defaultsettings.h</in>
+              <in>defaultsettings_symbols.h</in>
+              <in>dlgsimulatedvscpnode.cpp</in>
+              <in>dlgsimulatedvscpnode.h</in>
+              <in>dlgsimulatedvscpnode_symbols.h</in>
+              <in>vscpsimnodeapp.cpp</in>
+              <in>vscpsimnodeapp.h</in>
+            </df>
+            <df name="websockets">
+            </df>
+            <df name="win32">
+              <df name="mfc">
+                <df name="CanalDiagnostic">
+                  <df name="res">
+                  </df>
+                  <in>CanalDiagnostic.cpp</in>
+                  <in>CanalDiagnostic.h</in>
+                  <in>CanalDiagnosticDoc.cpp</in>
+                  <in>CanalDiagnosticDoc.h</in>
+                  <in>CanalDiagnosticView.cpp</in>
+                  <in>CanalDiagnosticView.h</in>
+                  <in>ChildFrm.cpp</in>
+                  <in>ChildFrm.h</in>
+                  <in>DocumentProperties.cpp</in>
+                  <in>DocumentProperties.h</in>
+                  <in>MainFrm.cpp</in>
+                  <in>MainFrm.h</in>
+                  <in>NewDocument.cpp</in>
+                  <in>NewDocument.h</in>
+                  <in>SendBurst.cpp</in>
+                  <in>SendBurst.h</in>
+                  <in>Splash.cpp</in>
+                  <in>Splash.h</in>
+                  <in>StdAfx.cpp</in>
+                  <in>StdAfx.h</in>
+                  <in>resource.h</in>
+                </df>
+                <df name="loggerwnd">
+                  <df name="res">
+                  </df>
+                  <in>StdAfx.cpp</in>
+                  <in>StdAfx.h</in>
+                  <in>dlgfilter.cpp</in>
+                  <in>dlgfilter.h</in>
+                  <in>loggerwnd.cpp</in>
+                  <in>loggerwnd.h</in>
+                  <in>loggerwnddlg.cpp</in>
+                  <in>loggerwnddlg.h</in>
+                  <in>resource.h</in>
+                </df>
+                <df name="vc6_simple_button">
+                  <df name="res">
+                  </df>
+                  <in>StdAfx.cpp</in>
+                  <in>StdAfx.h</in>
+                  <in>resource.h</in>
+                  <in>vc6_simple_button.cpp</in>
+                  <in>vc6_simple_button.h</in>
+                  <in>vc6_simple_buttonDlg.cpp</in>
+                  <in>vc6_simple_buttonDlg.h</in>
+                </df>
+                <df name="vc6_simple_lamp">
+                  <df name="res">
+                  </df>
+                  <in>StdAfx.cpp</in>
+                  <in>StdAfx.h</in>
+                  <in>resource.h</in>
+                  <in>vc6_simple_lamp.cpp</in>
+                  <in>vc6_simple_lamp.h</in>
+                  <in>vc6_simple_lampDlg.cpp</in>
+                  <in>vc6_simple_lampDlg.h</in>
+                </df>
+              </df>
+            </df>
+          </df>
+          <df name="testtools">
+            <df name="canallogwnd">
+            </df>
+            <df name="rawEthernet">
+              <df name="iflist">
+                <in>iflist.c</in>
+              </df>
+              <df name="rawReceive">
+                <df name="rawReceive">
+                  <df name="rawReceive">
+                    <in>rawReceive.cpp</in>
+                    <in>stdafx.cpp</in>
+                    <in>stdafx.h</in>
+                    <in>targetver.h</in>
+                  </df>
+                </df>
+              </df>
+              <df name="sendRaw">
+                <in>sendraw.c</in>
+              </df>
+            </df>
+            <df name="tesifdll">
+              <df name="res">
+              </df>
+              <in>Resource.h</in>
+              <in>StdAfx.cpp</in>
+              <in>StdAfx.h</in>
+              <in>tesifdll.cpp</in>
+              <in>tesifdll.h</in>
+              <in>tesifdllDlg.cpp</in>
+              <in>tesifdllDlg.h</in>
+            </df>
+            <df name="testDaemon">
+              <df name="res">
+              </df>
+              <in>StdAfx.cpp</in>
+              <in>StdAfx.h</in>
+              <in>resource.h</in>
+              <in>testDaemon.cpp</in>
+              <in>testDaemon.h</in>
+              <in>testDaemonDlg.cpp</in>
+              <in>testDaemonDlg.h</in>
+            </df>
+            <df name="testIf">
+              <df name="res">
+              </df>
+              <in>StdAfx.cpp</in>
+              <in>StdAfx.h</in>
+              <in>resource.h</in>
+              <in>testIf.cpp</in>
+              <in>testIf.h</in>
+              <in>testIfDlg.cpp</in>
+              <in>testIfDlg.h</in>
+            </df>
+            <df name="testifdll">
+              <df name="res">
+              </df>
+              <in>Resource.h</in>
+              <in>StdAfx.cpp</in>
+              <in>StdAfx.h</in>
+              <in>testifdll.cpp</in>
+              <in>testifdll.h</in>
+              <in>testifdllDlg.cpp</in>
+              <in>testifdllDlg.h</in>
+            </df>
+            <df name="testtcpinterface">
+              <df name="res">
+              </df>
+              <in>StdAfx.cpp</in>
+              <in>StdAfx.h</in>
+              <in>resource.h</in>
+              <in>testtcpinterface.cpp</in>
+              <in>testtcpinterface.h</in>
+              <in>testtcpinterfaceDlg.cpp</in>
+              <in>testtcpinterfaceDlg.h</in>
+            </df>
+          </df>
+          <df name="utils">
+            <df name="vscp_bootloader">
+              <df name="build-vscp_bootloader-Desktop_Qt_5_2_0_MinGW_32bit-Debug">
+                <in>ui_wndbootloader.h</in>
+              </df>
+              <df name="build-vscp_bootloader-Desktop_Qt_5_2_1_MSVC2010_32bit-Debug">
+                <in>ui_wndbootloader.h</in>
+              </df>
+              <df name="vscp_bootloader">
+                <df name="resources">
+                </df>
+                <in>main.cpp</in>
+                <in>wndbootloader.cpp</in>
+                <in>wndbootloader.h</in>
+              </df>
+            </df>
+          </df>
+          <df name="uvscpd">
+            <in>base64_enc.c</in>
+            <in>base64_enc.h</in>
+            <in>sha1.c</in>
+            <in>sha1.h</in>
+            <in>uvscpd.c</in>
+            <in>uvscpd.h</in>
+            <in>websocket.c</in>
+            <in>websocket.h</in>
+          </df>
+          <df name="vscp_analyzer_windows">
+            <df name="vscp_analyzer">
+              <df name="Properties">
+              </df>
+            </df>
+          </df>
+          <df name="vscpcmd">
+            <in>vscpcmd.cpp</in>
+            <in>vscpcmd.h</in>
+          </df>
+          <df name="vscpservice">
+            <df name="res">
+            </df>
+            <in>VSCPServApp.cpp</in>
+            <in>VSCPServApp.h</in>
+            <in>resource.h</in>
+            <in>stdafx.h</in>
+            <in>vscpservice.cpp</in>
+            <in>vscpservice.h</in>
+          </df>
+          <df name="vscpworks">
+            <df name="bitmaps">
+            </df>
+            <df name="docs">
+            </df>
+            <df name="icons">
+              <df name="aquablend-PNG">
+                <df name="General">
+                </df>
+                <df name="Smooth Blue">
+                </df>
+                <df name="Smooth Graphite">
+                </df>
+                <df name="Stripped Blue">
+                </df>
+                <df name="Stripped Graphite">
+                </df>
+              </df>
+              <df name="png">
+                <df name="128x128">
+                </df>
+                <df name="16x16">
+                </df>
+                <df name="24x24">
+                </df>
+                <df name="32x32">
+                </df>
+                <df name="48x48">
+                </df>
+                <df name="64x64">
+                </df>
+              </df>
+            </df>
+            <df name="wx">
+              <df name="msw">
+              </df>
+            </df>
+            <in>bootdevice.cpp</in>
+            <in>bootdevice.h</in>
+            <in>bootdevice_pic1.cpp</in>
+            <in>bootdevice_pic1.h</in>
+            <in>bootdevice_vscp.cpp</in>
+            <in>bootdevice_vscp.h</in>
+            <in>bootdevice_vscp_defs.h</in>
+            <in>decsionmatrixeditor.cpp</in>
+            <in>decsionmatrixeditor.h</in>
+            <in>deveicebootloaderwizard.h</in>
+            <in>devicebootloaderwizard.cpp</in>
+            <in>devicebootloaderwizard.h</in>
+            <in>devicebootloaderwizard_images.h</in>
+            <in>dialogeditlevelidmrow_images.h</in>
+            <in>dlgCanalRowEdit.cpp</in>
+            <in>dlgCanalRowEdit.h</in>
+            <in>dlgCanalRowEdit_symbols.h</in>
+            <in>dlgMain_symbols.h</in>
+            <in>dlgabout.cpp</in>
+            <in>dlgabout.h</in>
+            <in>dlgabout_symbols.h</in>
+            <in>dlgabstractionedit.cpp</in>
+            <in>dlgabstractionedit.h</in>
+            <in>dlgabstractionedit_symbols.h</in>
+            <in>dlgcanalinterfacesettings.cpp</in>
+            <in>dlgcanalinterfacesettings.h</in>
+            <in>dlgcanalinterfacesettings_symbols.h</in>
+            <in>dlgcanalmsg.cpp</in>
+            <in>dlgcanalmsg.h</in>
+            <in>dlgcanalmsg_symbols.h</in>
+            <in>dlgcanmsg.cpp</in>
+            <in>dlgcanmsg.h</in>
+            <in>dlgcanmsg_symbols.h</in>
+            <in>dlgclasstypeselect.cpp</in>
+            <in>dlgclasstypeselect.h</in>
+            <in>dlgconfiguration.cpp</in>
+            <in>dlgconfiguration.h</in>
+            <in>dlgconfiguration_images.h</in>
+            <in>dlgconfiguration_symbols.h</in>
+            <in>dlgeditlevel1dmrow.cpp</in>
+            <in>dlgeditlevel1dmrow.h</in>
+            <in>dlgeditlevel1dmrow_symbols.h</in>
+            <in>dlgeventfilter.cpp</in>
+            <in>dlgeventfilter.h</in>
+            <in>dlgifsettings.cpp</in>
+            <in>dlgifsettings.h</in>
+            <in>dlgifsettings_symbols.h</in>
+            <in>dlgnewcanalsession.cpp</in>
+            <in>dlgnewcanalsession.h</in>
+            <in>dlgnewcanalsession_symbols.h</in>
+            <in>dlgnewsession_symbols.h</in>
+            <in>dlgnewvscpsession.cpp</in>
+            <in>dlgnewvscpsession.h</in>
+            <in>dlgnewvscpsession_images.h</in>
+            <in>dlgnewvscpsession_symbols.h</in>
+            <in>dlgselectdaemoninterface.cpp</in>
+            <in>dlgselectdaemoninterface.h</in>
+            <in>dlgselectdaemoninterface_symbols.h</in>
+            <in>dlgsetfiltermask.cpp</in>
+            <in>dlgsetfiltermask.h</in>
+            <in>dlgsetfiltermask_symbols.h</in>
+            <in>dlgsetmanufactdata.cpp</in>
+            <in>dlgsetmanufactdata.h</in>
+            <in>dlgvscpfilter.cpp</in>
+            <in>dlgvscpfilter.h</in>
+            <in>dlgvscpfilter_symbols.h</in>
+            <in>dlgvscpinterfacesettings.cpp</in>
+            <in>dlgvscpinterfacesettings.h</in>
+            <in>dlgvscpinterfacesettings_symbols.h</in>
+            <in>dlgvscpmsg.cpp</in>
+            <in>dlgvscpmsg.h</in>
+            <in>dlgvscpmsg_symbols.h</in>
+            <in>dlgvscptrmit.cpp</in>
+            <in>dlgvscptrmit.h</in>
+            <in>dlgvscptrmit_images.h</in>
+            <in>dlgvscptrmit_symbols.h</in>
+            <in>frmcanalsession.cpp</in>
+            <in>frmcanalsession.h</in>
+            <in>frmcanalsession_symbols.h</in>
+            <in>frmcansession.cpp</in>
+            <in>frmcansession.h</in>
+            <in>frmcansession_symbols.h</in>
+            <in>frmdaemondecisionmartrixeditor.cpp</in>
+            <in>frmdaemondecisionmartrixeditor.h</in>
+            <in>frmdaemonvariableeditor.cpp</in>
+            <in>frmdaemonvariableeditor.h</in>
+            <in>frmdeviceconfig.cpp</in>
+            <in>frmdeviceconfig.h</in>
+            <in>frmdeviceconfig_images.h</in>
+            <in>frmdeviceconfig_symbols.h</in>
+            <in>frmmain.cpp</in>
+            <in>frmmain.h</in>
+            <in>frmmain_images.h</in>
+            <in>frmmain_symbols.h</in>
+            <in>frmmainnomidi_symbols.h</in>
+            <in>frmmdfeditor.cpp</in>
+            <in>frmmdfeditor.h</in>
+            <in>frmmdfeditor_symbols.h</in>
+            <in>frmmdfheader_images.h</in>
+            <in>frmscanfordevices.cpp</in>
+            <in>frmscanfordevices.h</in>
+            <in>frmscanfordevices_images.h</in>
+            <in>frmscanfordevices_symbols.h</in>
+            <in>frmsimpleuserinterfacegenerator.cpp</in>
+            <in>frmsimpleuserinterfacegenerator.h</in>
+            <in>frmvscpsession.cpp</in>
+            <in>frmvscpsession.h</in>
+            <in>frmvscpsession_images.h</in>
+            <in>frmvscpsession_symbols.h</in>
+            <in>gridtable.cpp</in>
+            <in>gridtable.h</in>
+            <in>merlin.cpp</in>
+            <in>merlin.h</in>
+            <in>platform.h</in>
+            <in>readguid.cpp</in>
+            <in>readguid.h</in>
+            <in>readguid_symbols.h</in>
+            <in>readmdffile.cpp</in>
+            <in>readmdffile.h</in>
+            <in>readmdffile_symbols.h</in>
+            <in>readmsfurl.cpp</in>
+            <in>readmsfurl.h</in>
+            <in>readmsfurl_symbols.h</in>
+            <in>readregister.cpp</in>
+            <in>readregister.h</in>
+            <in>readregister_symbols.h</in>
+            <in>threadvscpwork.cpp</in>
+            <in>threadvscpwork.h</in>
+            <in>vscp_images.h</in>
+            <in>vscpbootloader.cpp</in>
+            <in>vscpbootloader.h</in>
+            <in>vscpbootloader_symbols.h</in>
+            <in>vscptxobj.cpp</in>
+            <in>vscptxobj.h</in>
+            <in>vscpworks.cpp</in>
+            <in>vscpworks.h</in>
+            <in>writeregister.cpp</in>
+            <in>writeregister.h</in>
+            <in>writeregister_symbols.h</in>
+          </df>
+          <df name="xml">
+          </df>
+        </df>
+      </df>
+      <df name="tests">
+      </df>
+      <in>config.h</in>
+    </df>
+  </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Default" type="0">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <platform>2</platform>
+      </toolsSet>
+      <compile>
+        <compiledirpicklist>
+          <compiledirpicklistitem>.</compiledirpicklistitem>
+          <compiledirpicklistitem>${AUTO_FOLDER}</compiledirpicklistitem>
+        </compiledirpicklist>
+        <compiledir>${AUTO_FOLDER}</compiledir>
+        <compilecommandpicklist>
+          <compilecommandpicklistitem>${MAKE} ${ITEM_NAME}.o</compilecommandpicklistitem>
+          <compilecommandpicklistitem>${AUTO_COMPILE}</compilecommandpicklistitem>
+        </compilecommandpicklist>
+        <compilecommand>${AUTO_COMPILE}</compilecommand>
+      </compile>
+      <dbx_gdbdebugger version="1">
+        <gdb_pathmaps>
+        </gdb_pathmaps>
+        <gdb_interceptlist>
+          <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
+        </gdb_interceptlist>
+        <gdb_options>
+          <DebugOptions>
+          </DebugOptions>
+        </gdb_options>
+        <gdb_buildfirst gdb_buildfirst_overriden="false" gdb_buildfirst_old="false"/>
+      </dbx_gdbdebugger>
+      <nativedebugger version="1">
+        <engine>gdb</engine>
+      </nativedebugger>
+      <runprofile version="9">
+        <runcommandpicklist>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"</runcommandpicklistitem>
+        </runcommandpicklist>
+        <runcommand>"${OUTPUT_PATH}"</runcommand>
+        <rundir>.</rundir>
+        <buildfirst>false</buildfirst>
+        <terminal-type>0</terminal-type>
+        <remove-instrumentation>0</remove-instrumentation>
+        <environment>
+        </environment>
+      </runprofile>
+    </conf>
+  </confs>
+</configurationDescriptor>
