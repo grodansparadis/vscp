@@ -1408,11 +1408,11 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             }
 #ifndef VSCP_DISABLE_LUA             
             else if (  str.StartsWith( _("%vscp.copyright.lua"), &str ) ) {
-                strResult += wxString::Format( "%s", LUA_COPYRIGHT );
+                strResult += wxString::Format( _("%s"), LUA_COPYRIGHT );
             }
 #endif            
             else if (  str.StartsWith( wxT("%vscp.copyright.mongoose"), &str ) ) {
-                strResult += wxString::Format( "%s", "Copyright (c) 2013-2015 Cesanta Software Limited" );
+                strResult += wxString::Format( _("%s"), "Copyright (c) 2013-2015 Cesanta Software Limited" );
             }
             else if (  str.StartsWith( wxT("%vscp.os.str"), &str ) ) {
                 strResult += wxGetOsDescription();
