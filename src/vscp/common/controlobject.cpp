@@ -1766,13 +1766,13 @@ void CControlObject::addStockVariables( void )
                 false );                
     
     m_VSCP_Variables.add( _("vscp.os.width.is64bit"), 
-                wxIsPlatform64Bit() ? "true" : "false", 
+                wxIsPlatform64Bit() ? _("true") : _("false"), 
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
                 false, 
                 false );
                 
     m_VSCP_Variables.add( _("vscp.os.width.is32bit"), 
-                !wxIsPlatform64Bit() ? "true" : "false", 
+                !wxIsPlatform64Bit() ? _("true") : _("false"), 
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
                 false, 
                 false ); 
