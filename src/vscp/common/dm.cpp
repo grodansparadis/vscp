@@ -1377,37 +1377,37 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             ////////////////////////////////////////////////////////////////////
             
             else if (  str.StartsWith( wxT("%vscp.version.major"), &str ) ) {
-                strResult += wxString::Format( "%d", VSCPD_MAJOR_VERSION );
+                strResult += wxString::Format( _("%d"), VSCPD_MAJOR_VERSION );
             }
             else if (  str.StartsWith( wxT("%vscp.version.minor"), &str ) ) {
-                strResult += wxString::Format( "%d", VSCPD_MINOR_VERSION );
+                strResult += wxString::Format( _("%d"), VSCPD_MINOR_VERSION );
             }
             else if (  str.StartsWith( wxT("%vscp.version.sub"), &str ) ) {
-                strResult += wxString::Format( "%d", VSCPD_SUB_VERSION );
+                strResult += wxString::Format( _("%d"), VSCPD_SUB_VERSION );
             }
             else if (  str.StartsWith( wxT("%vscp.version.build"), &str ) ) {
-                strResult += wxString::Format( "%d", VSCPD_BUILD_VERSION );
+                strResult += wxString::Format( _("%d"), VSCPD_BUILD_VERSION );
             }
             else if (  str.StartsWith( wxT("%vscp.version.str"), &str ) ) {
-                strResult += wxString::Format( "%s", VSCPD_DISPLAY_VERSION );
+                strResult += wxString::Format( _("%s"), VSCPD_DISPLAY_VERSION );
             }
             else if (  str.StartsWith( wxT("%vscp.version.wxwidgets"), &str ) ) {
-                strResult += wxString::Format( "%s", wxVERSION_STRING );
+                strResult += wxString::Format( _("%s"), wxVERSION_STRING );
             }
             else if (  str.StartsWith( wxT("%vscp.version.wxwidgets.str"), &str ) ) {
-                strResult += wxString::Format( "%s", wxVERSION_STRING );
+                strResult += wxString::Format( _("%s"), wxVERSION_STRING );
             }
             else if (  str.StartsWith( wxT("%vscp.copyright"), &str ) ) {
-                strResult += wxString::Format( "%s", VSCPD_COPYRIGHT );
+                strResult += wxString::Format( _("%s"), VSCPD_COPYRIGHT );
             }
             else if (  str.StartsWith( wxT("%vscp.copyright.vscp"), &str ) ) {
-                strResult += wxString::Format( "%s", VSCPD_COPYRIGHT );
+                strResult += wxString::Format( _("%s"), VSCPD_COPYRIGHT );
             }
             else if (  str.StartsWith( wxT("%vscp.copyright.wxwidgets"), &str ) ) {
-                strResult += wxString::Format( "%s", " Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al" );
+                strResult += wxString::Format( _("%s"), " Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al" );
             }
 #ifndef VSCP_DISABLE_LUA             
-            else if (  str.StartsWith( wxT("%vscp.copyright.lua"), &str ) ) {
+            else if (  str.StartsWith( _("%vscp.copyright.lua"), &str ) ) {
                 strResult += wxString::Format( "%s", LUA_COPYRIGHT );
             }
 #endif            
