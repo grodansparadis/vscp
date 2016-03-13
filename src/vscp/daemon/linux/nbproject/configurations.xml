@@ -5,141 +5,44 @@
       <in>vscpd.cpp</in>
     </df>
     <logicalFolder name="src" displayName="src" projectFiles="true" root="..">
-      <logicalFolder name="common" displayName="high-common" projectFiles="true">
-        <logicalFolder name="rapidjson" displayName="rapidjson" projectFiles="true">
-          <logicalFolder name="error" displayName="error" projectFiles="true">
-            <itemPath>../../../common/rapidjson/error/en.h</itemPath>
-            <itemPath>../../../common/rapidjson/error/error.h</itemPath>
-          </logicalFolder>
-          <logicalFolder name="internal" displayName="internal" projectFiles="true">
-            <itemPath>../../../common/rapidjson/internal/biginteger.h</itemPath>
-            <itemPath>../../../common/rapidjson/internal/diyfp.h</itemPath>
-            <itemPath>../../../common/rapidjson/internal/dtoa.h</itemPath>
-            <itemPath>../../../common/rapidjson/internal/ieee754.h</itemPath>
-            <itemPath>../../../common/rapidjson/internal/itoa.h</itemPath>
-            <itemPath>../../../common/rapidjson/internal/meta.h</itemPath>
-            <itemPath>../../../common/rapidjson/internal/pow10.h</itemPath>
-            <itemPath>../../../common/rapidjson/internal/stack.h</itemPath>
-            <itemPath>../../../common/rapidjson/internal/strfunc.h</itemPath>
-            <itemPath>../../../common/rapidjson/internal/strtod.h</itemPath>
-          </logicalFolder>
-          <itemPath>../../../common/rapidjson/allocators.h</itemPath>
-          <itemPath>../../../common/rapidjson/document.h</itemPath>
-          <itemPath>../../../common/rapidjson/encodedstream.h</itemPath>
-          <itemPath>../../../common/rapidjson/encodings.h</itemPath>
-          <itemPath>../../../common/rapidjson/filereadstream.h</itemPath>
-          <itemPath>../../../common/rapidjson/filewritestream.h</itemPath>
-          <itemPath>../../../common/rapidjson/prettywriter.h</itemPath>
-          <itemPath>../../../common/rapidjson/rapidjson.h</itemPath>
-          <itemPath>../../../common/rapidjson/reader.h</itemPath>
-          <itemPath>../../../common/rapidjson/stringbuffer.h</itemPath>
-          <itemPath>../../../common/rapidjson/writer.h</itemPath>
-        </logicalFolder>
-        <logicalFolder name="rapidxml" displayName="rapidxml" projectFiles="true">
-          <itemPath>../../../common/rapidxml/rapidxml.hpp</itemPath>
-          <itemPath>../../../common/rapidxml/rapidxml_print.hpp</itemPath>
-          <itemPath>../../../common/rapidxml/rapidxml_utils.hpp</itemPath>
-        </logicalFolder>
-        <itemPath>../../../common/configfile.cpp</itemPath>
-        <itemPath>../../../common/configfile.h</itemPath>
-        <itemPath>../../../common/crc.c</itemPath>
-        <itemPath>../../../common/crc.h</itemPath>
-        <itemPath>../../../common/crc8.c</itemPath>
-        <itemPath>../../../common/crc8.h</itemPath>
-        <itemPath>../../../common/dllist.c</itemPath>
-        <itemPath>../../../common/dllist.h</itemPath>
-        <itemPath>../../../common/mongoose.c</itemPath>
-        <itemPath>../../../common/mongoose.h</itemPath>
-        <itemPath>../../../common/randpassword.cpp</itemPath>
-        <itemPath>../../../common/randpassword.h</itemPath>
-        <itemPath>../../../common/slre.c</itemPath>
-        <itemPath>../../../common/slre.h</itemPath>
-        <itemPath>../../../common/xml2json.hpp</itemPath>
-      </logicalFolder>
-      <logicalFolder name="f1" displayName="low-common" projectFiles="true">
-        <logicalFolder name="common" displayName="common" projectFiles="true">
-          <logicalFolder name="old" displayName="old" projectFiles="true">
-            <itemPath>../../common/old/StdAfx.cpp</itemPath>
-            <itemPath>../../common/old/StdAfx.h</itemPath>
-            <itemPath>../../common/old/canalpipecmd.h</itemPath>
-            <itemPath>../../common/old/canalshmem_level1_unix.cpp</itemPath>
-            <itemPath>../../common/old/canalshmem_level1_unix.h</itemPath>
-            <itemPath>../../common/old/canalshmem_level1_win32.cpp</itemPath>
-            <itemPath>../../common/old/canalshmem_level1_win32.h</itemPath>
-            <itemPath>../../common/old/canalshmem_level2_unix.cpp</itemPath>
-            <itemPath>../../common/old/canalshmem_level2_unix.h</itemPath>
-            <itemPath>../../common/old/canalshmem_level2_win32.cpp</itemPath>
-            <itemPath>../../common/old/canalshmem_level2_win32.h</itemPath>
-            <itemPath>../../common/old/clientlist.cpp</itemPath>
-            <itemPath>../../common/old/clientlist.h</itemPath>
-            <itemPath>../../common/old/clientthread.cpp</itemPath>
-            <itemPath>../../common/old/clientthread_control_unix.cpp</itemPath>
-            <itemPath>../../common/old/clientthread_level1_unix.cpp</itemPath>
-            <itemPath>../../common/old/clientthread_level1_win32.cpp</itemPath>
-            <itemPath>../../common/old/clientthread_level2_unix.cpp</itemPath>
-            <itemPath>../../common/old/clientthread_level2_win32.cpp</itemPath>
-            <itemPath>../../common/old/controlobject.cpp</itemPath>
-            <itemPath>../../common/old/controlobject.h</itemPath>
-            <itemPath>../../common/old/devicethread_unix.cpp</itemPath>
-            <itemPath>../../common/old/devicethread_win32.cpp</itemPath>
-            <itemPath>../../common/old/listenthread.cpp</itemPath>
-            <itemPath>../../common/old/listenthread_unix.cpp</itemPath>
-            <itemPath>../../common/old/listenthread_win32.cpp</itemPath>
-            <itemPath>../../common/old/main.c</itemPath>
-            <itemPath>../../common/old/pipecmd.h</itemPath>
-            <itemPath>../../common/old/terminationthread.cpp</itemPath>
-            <itemPath>../../common/old/udpHandler.cpp</itemPath>
-            <itemPath>../../common/old/udpHandler.h</itemPath>
-            <itemPath>../../common/old/udpReceiveThread.cpp</itemPath>
-            <itemPath>../../common/old/udpreceivethread_unix.cpp</itemPath>
-            <itemPath>../../common/old/udpreceivethread_win32.cpp</itemPath>
-            <itemPath>../../common/old/vscp.d</itemPath>
-            <itemPath>../../common/old/vscppipe.cpp</itemPath>
-            <itemPath>../../common/old/vscppipe.h</itemPath>
-          </logicalFolder>
-          <logicalFolder name="win32helpers"
-                         displayName="win32helpers"
-                         projectFiles="true">
-            <logicalFolder name="sys" displayName="sys" projectFiles="true">
-              <itemPath>../../common/win32helpers/sys/socket.h</itemPath>
-              <itemPath>../../common/win32helpers/sys/time.h</itemPath>
-            </logicalFolder>
-            <itemPath>../../common/win32helpers/getopt.c</itemPath>
-            <itemPath>../../common/win32helpers/getopt.h</itemPath>
-            <itemPath>../../common/win32helpers/getopt_long.c</itemPath>
-            <itemPath>../../common/win32helpers/gettimeofday.c</itemPath>
-            <itemPath>../../common/win32helpers/gettimeofday.h</itemPath>
-            <itemPath>../../common/win32helpers/netdb.h</itemPath>
-            <itemPath>../../common/win32helpers/strings.h</itemPath>
-            <itemPath>../../common/win32helpers/syslog.h</itemPath>
-            <itemPath>../../common/win32helpers/unistd.h</itemPath>
-            <itemPath>../../common/win32helpers/websock-w32.c</itemPath>
-            <itemPath>../../common/win32helpers/websock-w32.h</itemPath>
-          </logicalFolder>
-          <itemPath>../../common/canal_unix_ipc.h</itemPath>
-          <itemPath>../../common/canalconfobj.cpp</itemPath>
-          <itemPath>../../common/canalconfobj.h</itemPath>
-          <itemPath>../../common/canalsuperwrapper.cpp</itemPath>
-          <itemPath>../../common/canalsuperwrapper.h</itemPath>
-          <itemPath>../../common/devitem.h</itemPath>
-          <itemPath>../../common/dllwrapper.cpp</itemPath>
-          <itemPath>../../common/dllwrapper.h</itemPath>
-          <itemPath>../../common/local_inttypes.h</itemPath>
-          <itemPath>../../common/options.h</itemPath>
-          <itemPath>../../common/selectdevice.cpp</itemPath>
-          <itemPath>../../common/selectdevice.h</itemPath>
-          <itemPath>../../common/stdafx.h</itemPath>
-          <itemPath>../../common/thread.h</itemPath>
-          <itemPath>../../common/udpthread.cpp</itemPath>
-          <itemPath>../../common/vscp_serial.h</itemPath>
-          <itemPath>../../common/vscpclientthreads.cpp</itemPath>
-          <itemPath>../../common/vscpclientthreads.h</itemPath>
-          <itemPath>../../common/vscpmulticast.cpp</itemPath>
-          <itemPath>../../common/vscpmulticast.h</itemPath>
-          <itemPath>../../common/xml2json.cpp</itemPath>
-          <itemPath>../../common/xmllib.cpp</itemPath>
-          <itemPath>../../common/xmllib.h</itemPath>
-        </logicalFolder>
+      <logicalFolder name="old" displayName="old" projectFiles="true">
+        <itemPath>../../common/old/StdAfx.cpp</itemPath>
+        <itemPath>../../common/old/StdAfx.h</itemPath>
+        <itemPath>../../common/old/canalpipecmd.h</itemPath>
+        <itemPath>../../common/old/canalshmem_level1_unix.cpp</itemPath>
+        <itemPath>../../common/old/canalshmem_level1_unix.h</itemPath>
+        <itemPath>../../common/old/canalshmem_level1_win32.cpp</itemPath>
+        <itemPath>../../common/old/canalshmem_level1_win32.h</itemPath>
+        <itemPath>../../common/old/canalshmem_level2_unix.cpp</itemPath>
+        <itemPath>../../common/old/canalshmem_level2_unix.h</itemPath>
+        <itemPath>../../common/old/canalshmem_level2_win32.cpp</itemPath>
+        <itemPath>../../common/old/canalshmem_level2_win32.h</itemPath>
+        <itemPath>../../common/old/clientlist.cpp</itemPath>
+        <itemPath>../../common/old/clientlist.h</itemPath>
+        <itemPath>../../common/old/clientthread.cpp</itemPath>
+        <itemPath>../../common/old/clientthread_control_unix.cpp</itemPath>
+        <itemPath>../../common/old/clientthread_level1_unix.cpp</itemPath>
+        <itemPath>../../common/old/clientthread_level1_win32.cpp</itemPath>
+        <itemPath>../../common/old/clientthread_level2_unix.cpp</itemPath>
+        <itemPath>../../common/old/clientthread_level2_win32.cpp</itemPath>
+        <itemPath>../../common/old/controlobject.cpp</itemPath>
+        <itemPath>../../common/old/controlobject.h</itemPath>
+        <itemPath>../../common/old/devicethread_unix.cpp</itemPath>
+        <itemPath>../../common/old/devicethread_win32.cpp</itemPath>
+        <itemPath>../../common/old/listenthread.cpp</itemPath>
+        <itemPath>../../common/old/listenthread_unix.cpp</itemPath>
+        <itemPath>../../common/old/listenthread_win32.cpp</itemPath>
+        <itemPath>../../common/old/main.c</itemPath>
+        <itemPath>../../common/old/pipecmd.h</itemPath>
+        <itemPath>../../common/old/terminationthread.cpp</itemPath>
+        <itemPath>../../common/old/udpHandler.cpp</itemPath>
+        <itemPath>../../common/old/udpHandler.h</itemPath>
+        <itemPath>../../common/old/udpReceiveThread.cpp</itemPath>
+        <itemPath>../../common/old/udpreceivethread_unix.cpp</itemPath>
+        <itemPath>../../common/old/udpreceivethread_win32.cpp</itemPath>
+        <itemPath>../../common/old/vscp.d</itemPath>
+        <itemPath>../../common/old/vscppipe.cpp</itemPath>
+        <itemPath>../../common/old/vscppipe.h</itemPath>
       </logicalFolder>
       <logicalFolder name="vscp" displayName="vscp" projectFiles="true">
         <logicalFolder name="common" displayName="common" projectFiles="true">
@@ -208,12 +111,55 @@
           <itemPath>../../common/webserver_websocket.h</itemPath>
         </logicalFolder>
       </logicalFolder>
+      <logicalFolder name="win32helpers"
+                     displayName="win32helpers"
+                     projectFiles="true">
+        <logicalFolder name="sys" displayName="sys" projectFiles="true">
+          <itemPath>../../common/win32helpers/sys/socket.h</itemPath>
+          <itemPath>../../common/win32helpers/sys/time.h</itemPath>
+        </logicalFolder>
+        <itemPath>../../common/win32helpers/getopt.c</itemPath>
+        <itemPath>../../common/win32helpers/getopt.h</itemPath>
+        <itemPath>../../common/win32helpers/getopt_long.c</itemPath>
+        <itemPath>../../common/win32helpers/gettimeofday.c</itemPath>
+        <itemPath>../../common/win32helpers/gettimeofday.h</itemPath>
+        <itemPath>../../common/win32helpers/netdb.h</itemPath>
+        <itemPath>../../common/win32helpers/strings.h</itemPath>
+        <itemPath>../../common/win32helpers/syslog.h</itemPath>
+        <itemPath>../../common/win32helpers/unistd.h</itemPath>
+        <itemPath>../../common/win32helpers/websock-w32.c</itemPath>
+        <itemPath>../../common/win32helpers/websock-w32.h</itemPath>
+      </logicalFolder>
+      <itemPath>../../common/canal_unix_ipc.h</itemPath>
+      <itemPath>../../common/canalconfobj.cpp</itemPath>
+      <itemPath>../../common/canalconfobj.h</itemPath>
+      <itemPath>../../common/canalsuperwrapper.cpp</itemPath>
+      <itemPath>../../common/canalsuperwrapper.h</itemPath>
+      <itemPath>../../common/devitem.h</itemPath>
+      <itemPath>../../common/dllwrapper.cpp</itemPath>
+      <itemPath>../../common/dllwrapper.h</itemPath>
+      <itemPath>../../common/local_inttypes.h</itemPath>
+      <itemPath>../../common/options.h</itemPath>
+      <itemPath>../../common/selectdevice.cpp</itemPath>
+      <itemPath>../../common/selectdevice.h</itemPath>
+      <itemPath>../../common/stdafx.h</itemPath>
+      <itemPath>../../common/thread.h</itemPath>
+      <itemPath>../../common/udpthread.cpp</itemPath>
+      <itemPath>../../common/vscp_serial.h</itemPath>
+      <itemPath>../../common/vscpclientthreads.cpp</itemPath>
+      <itemPath>../../common/vscpclientthreads.h</itemPath>
+      <itemPath>../../common/vscpmulticast.cpp</itemPath>
+      <itemPath>../../common/vscpmulticast.h</itemPath>
+      <itemPath>../../common/xml2json.cpp</itemPath>
+      <itemPath>../../common/xmllib.cpp</itemPath>
+      <itemPath>../../common/xmllib.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
                    projectFiles="false"
                    kind="IMPORTANT_FILES_FOLDER">
       <itemPath>Makefile</itemPath>
+      <itemPath>Makefile.in</itemPath>
       <itemPath>nbproject/private/launcher.properties</itemPath>
     </logicalFolder>
   </logicalFolder>
@@ -257,13 +203,6 @@
             </preprocessorList>
           </cTool>
           <ccTool>
-            <incDir>
-              <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
-              <pElem>/usr/include/wx-3.0</pElem>
-              <pElem>/usr/include/lua5.2</pElem>
-              <pElem>../../common</pElem>
-              <pElem>../../../common</pElem>
-            </incDir>
             <preprocessorList>
               <Elem>MG_ENABLE_THREADS</Elem>
               <Elem>VSCP_ENABLE_LUA</Elem>
@@ -279,29 +218,9 @@
           <preBuildCommand></preBuildCommand>
         </preBuild>
       </makefileType>
-      <item path="../../../common/configfile.cpp" ex="false" tool="1" flavor2="0">
+      <item path="../../common/canalconfobj.cpp" ex="false" tool="1" flavor2="4">
       </item>
-      <item path="../../../common/crc.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="../../../common/crc8.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="../../../common/dllist.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="../../../common/mongoose.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="../../../common/randpassword.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="../../../common/slre.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="../../common/canal_unix_ipc.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../common/canalconfobj.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="../../common/canalconfobj.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../common/canalsuperwrapper.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="../../common/canalsuperwrapper.h" ex="false" tool="3" flavor2="0">
+      <item path="../../common/canalsuperwrapper.cpp" ex="false" tool="1" flavor2="4">
       </item>
       <item path="../../common/clientlist.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -313,11 +232,7 @@
       </item>
       <item path="../../common/devicethread.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="../../common/devitem.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../common/dllwrapper.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="../../common/dllwrapper.h" ex="false" tool="3" flavor2="0">
+      <item path="../../common/dllwrapper.cpp" ex="false" tool="1" flavor2="4">
       </item>
       <item path="../../common/dm.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -327,184 +242,132 @@
       </item>
       <item path="../../common/knownnodes.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="../../common/local_inttypes.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="../../common/mdf.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="../../common/old/StdAfx.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="../../common/old/StdAfx.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../common/old/canalpipecmd.h" ex="false" tool="3" flavor2="0">
+      <item path="../../common/old/StdAfx.cpp" ex="false" tool="1" flavor2="4">
       </item>
       <item path="../../common/old/canalshmem_level1_unix.cpp"
             ex="false"
             tool="1"
-            flavor2="0">
-      </item>
-      <item path="../../common/old/canalshmem_level1_unix.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
+            flavor2="4">
       </item>
       <item path="../../common/old/canalshmem_level1_win32.cpp"
             ex="false"
             tool="1"
-            flavor2="0">
-      </item>
-      <item path="../../common/old/canalshmem_level1_win32.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
+            flavor2="4">
       </item>
       <item path="../../common/old/canalshmem_level2_unix.cpp"
             ex="false"
             tool="1"
-            flavor2="0">
-      </item>
-      <item path="../../common/old/canalshmem_level2_unix.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
+            flavor2="4">
       </item>
       <item path="../../common/old/canalshmem_level2_win32.cpp"
             ex="false"
             tool="1"
-            flavor2="0">
+            flavor2="4">
       </item>
-      <item path="../../common/old/canalshmem_level2_win32.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
+      <item path="../../common/old/clientlist.cpp" ex="false" tool="1" flavor2="4">
       </item>
-      <item path="../../common/old/clientlist.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="../../common/old/clientlist.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../common/old/clientthread.cpp" ex="false" tool="1" flavor2="0">
+      <item path="../../common/old/clientthread.cpp" ex="false" tool="1" flavor2="4">
       </item>
       <item path="../../common/old/clientthread_control_unix.cpp"
             ex="false"
             tool="1"
-            flavor2="0">
+            flavor2="4">
       </item>
       <item path="../../common/old/clientthread_level1_unix.cpp"
             ex="false"
             tool="1"
-            flavor2="0">
+            flavor2="4">
       </item>
       <item path="../../common/old/clientthread_level1_win32.cpp"
             ex="false"
             tool="1"
-            flavor2="0">
+            flavor2="4">
       </item>
       <item path="../../common/old/clientthread_level2_unix.cpp"
             ex="false"
             tool="1"
-            flavor2="0">
+            flavor2="4">
       </item>
       <item path="../../common/old/clientthread_level2_win32.cpp"
             ex="false"
             tool="1"
-            flavor2="0">
+            flavor2="4">
       </item>
-      <item path="../../common/old/controlobject.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="../../common/old/controlobject.h" ex="false" tool="3" flavor2="0">
+      <item path="../../common/old/controlobject.cpp" ex="false" tool="1" flavor2="4">
       </item>
       <item path="../../common/old/devicethread_unix.cpp"
             ex="false"
             tool="1"
-            flavor2="0">
+            flavor2="4">
       </item>
       <item path="../../common/old/devicethread_win32.cpp"
             ex="false"
             tool="1"
-            flavor2="0">
+            flavor2="4">
       </item>
-      <item path="../../common/old/listenthread.cpp" ex="false" tool="1" flavor2="0">
+      <item path="../../common/old/listenthread.cpp" ex="false" tool="1" flavor2="4">
       </item>
       <item path="../../common/old/listenthread_unix.cpp"
             ex="false"
             tool="1"
-            flavor2="0">
+            flavor2="4">
       </item>
       <item path="../../common/old/listenthread_win32.cpp"
             ex="false"
             tool="1"
-            flavor2="0">
+            flavor2="4">
       </item>
-      <item path="../../common/old/main.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="../../common/old/pipecmd.h" ex="false" tool="3" flavor2="0">
+      <item path="../../common/old/main.c" ex="false" tool="0" flavor2="2">
       </item>
       <item path="../../common/old/terminationthread.cpp"
             ex="false"
             tool="1"
-            flavor2="0">
+            flavor2="4">
       </item>
-      <item path="../../common/old/udpHandler.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="../../common/old/udpHandler.h" ex="false" tool="3" flavor2="0">
+      <item path="../../common/old/udpHandler.cpp" ex="false" tool="1" flavor2="4">
       </item>
       <item path="../../common/old/udpReceiveThread.cpp"
             ex="false"
             tool="1"
-            flavor2="0">
+            flavor2="4">
       </item>
       <item path="../../common/old/udpreceivethread_unix.cpp"
             ex="false"
             tool="1"
-            flavor2="0">
+            flavor2="4">
       </item>
       <item path="../../common/old/udpreceivethread_win32.cpp"
             ex="false"
             tool="1"
-            flavor2="0">
+            flavor2="4">
       </item>
-      <item path="../../common/old/vscp.d" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../common/old/vscppipe.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="../../common/old/vscppipe.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../common/options.h" ex="false" tool="3" flavor2="0">
+      <item path="../../common/old/vscppipe.cpp" ex="false" tool="1" flavor2="4">
       </item>
       <item path="../../common/register.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="../../common/selectdevice.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="../../common/selectdevice.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../common/stdafx.h" ex="false" tool="3" flavor2="0">
+      <item path="../../common/selectdevice.cpp" ex="false" tool="1" flavor2="4">
       </item>
       <item path="../../common/tables.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="../../common/tcpipclientthread.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="../../common/thread.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="../../common/udpclientthread.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="../../common/udpthread.cpp" ex="false" tool="1" flavor2="0">
+      <item path="../../common/udpthread.cpp" ex="false" tool="1" flavor2="4">
       </item>
       <item path="../../common/userlist.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="../../common/vscp_serial.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="../../common/vscpautomation.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="../../common/vscpclientthreads.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="../../common/vscpclientthreads.h" ex="false" tool="3" flavor2="0">
+      <item path="../../common/vscpclientthreads.cpp" ex="false" tool="1" flavor2="4">
       </item>
       <item path="../../common/vscpeventhelper.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="../../common/vscphelper.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="../../common/vscpmulticast.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="../../common/vscpmulticast.h" ex="false" tool="3" flavor2="0">
+      <item path="../../common/vscpmulticast.cpp" ex="false" tool="1" flavor2="4">
       </item>
       <item path="../../common/vscpremotetcpif.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -519,66 +382,53 @@
             tool="1"
             flavor2="0">
       </item>
-      <item path="../../common/win32helpers/getopt.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="../../common/win32helpers/getopt.h" ex="false" tool="3" flavor2="0">
+      <item path="../../common/win32helpers/getopt.c" ex="false" tool="0" flavor2="2">
       </item>
       <item path="../../common/win32helpers/getopt_long.c"
             ex="false"
             tool="0"
-            flavor2="0">
+            flavor2="2">
       </item>
       <item path="../../common/win32helpers/gettimeofday.c"
             ex="false"
             tool="0"
-            flavor2="0">
-      </item>
-      <item path="../../common/win32helpers/gettimeofday.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="../../common/win32helpers/netdb.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../common/win32helpers/strings.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="../../common/win32helpers/sys/socket.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="../../common/win32helpers/sys/time.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="../../common/win32helpers/syslog.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../common/win32helpers/unistd.h" ex="false" tool="3" flavor2="0">
+            flavor2="2">
       </item>
       <item path="../../common/win32helpers/websock-w32.c"
             ex="false"
             tool="0"
-            flavor2="0">
+            flavor2="2">
       </item>
-      <item path="../../common/win32helpers/websock-w32.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
+      <item path="../../common/xml2json.cpp" ex="false" tool="1" flavor2="4">
       </item>
-      <item path="../../common/xml2json.cpp" ex="false" tool="1" flavor2="0">
+      <item path="../../common/xmllib.cpp" ex="false" tool="1" flavor2="4">
       </item>
-      <item path="../../common/xmllib.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="../../common/xmllib.h" ex="false" tool="3" flavor2="0">
-      </item>
+      <folder path="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>../../common</pElem>
+            <pElem>../../../common</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
       <folder path="src">
         <ccTool>
           <incDir>
             <pElem>.</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
+      <folder path="src/vscp">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>../../common</pElem>
+            <pElem>../../../common</pElem>
           </incDir>
         </ccTool>
       </folder>

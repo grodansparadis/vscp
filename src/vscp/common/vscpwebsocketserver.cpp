@@ -147,8 +147,6 @@ extern struct websrv_rest_session *gp_websrv_rest_sessions;
 
 
 // Prototypes
-char *vscp_md5(char *buf, ...);       // webserver
-
 int webserv_url_decode( const char *src, int src_len, 
                             char *dst, int dst_len,
                             int is_form_url_encoded );
@@ -1675,7 +1673,7 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *nc,
         static const char colon[] = ":";
         static const size_t one = 1;        // !!!!! Length must be size_t  !!!!!     
         static const size_t n32 = 32;       // !!!!! Length must be size_t  !!!!!
-        vscp_md5( expected_response,
+        cs_md5( expected_response,
                     (const char *)strUser.mbc_str(), strUser.Length(),
                     colon, one,
                     (const char *)pUser->m_md5Password.mbc_str(), pUser->m_md5Password.Length(),
@@ -1776,7 +1774,7 @@ VSCPWebServerThread::websock_new_session( struct mg_connection *nc,
                 1337 );
 
     memset( ret->m_sid, 0, sizeof( ret->m_sid ) ); 
-    vscp_md5( ret->m_sid, buf, strlen( buf ), NULL );
+    cs_md5( ret->m_sid, buf, strlen( buf ), NULL );
     
     // Init
     strcpy( ret->m_key, ws_key );           // Save key

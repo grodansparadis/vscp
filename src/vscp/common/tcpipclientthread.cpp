@@ -45,7 +45,6 @@
 #include <canal.h>
 #include <vscphelper.h>
 #include <dllist.h>
-//#include <md5.h>
 #include <mongoose.h>
 #include <version.h>
 #include <controlobject.h>
@@ -54,13 +53,13 @@
 //WX_DEFINE_LIST(TCPCLIENTS);
 
 // Prototypes
-char *vscp_md5(char *buf, ...);       // webserver
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // VSCPWebServerThread
 //
-// This thread listens for conection on a TCP socket and starts a new thread
+// This thread listens for connection on a TCP socket and starts a new thread
 // to handle client requests
 //
 
@@ -167,17 +166,18 @@ void VSCPClientThread::ev_handler( struct mg_connection *conn,
     switch (ev) {
     
         case MG_EV_CONNECT: // connect() succeeded or failed. int *success_status
-            pCtrlObject->logMsg(_T("TCP Client: Connect.\n"), DAEMON_LOGMSG_INFO);
+            pCtrlObject->logMsg(_("TCP Client: Connect.\n"), DAEMON_LOGMSG_INFO);
             break;
 
         case MG_EV_ACCEPT:	// New connection accept()-ed. union socket_address *remote_addr
             {
-                pCtrlObject->logMsg(_T("TCP Client: --Accept.\n"), DAEMON_LOGMSG_INFO);
+                pCtrlObject->logMsg(_("TCP Client: --Accept.\n"), DAEMON_LOGMSG_INFO);
 
                 // We need to create a clientobject and add this object to the list
                 pClientItem = new CClientItem;
                 if ( NULL == pClientItem ) {
-                    pCtrlObject->logMsg ( _T ( "[TCP/IP Client] Unable to allocate memory for client.\n" ), DAEMON_LOGMSG_ERROR );
+                    pCtrlObject->logMsg ( _( "[TCP/IP Client] Unable to allocate memory for client.\n" ), 
+                                            DAEMON_LOGMSG_ERROR );
                     conn->flags |= MG_F_CLOSE_IMMEDIATELY;	// Close connection
                     return;
                 }
@@ -212,7 +212,8 @@ void VSCPClientThread::ev_handler( struct mg_connection *conn,
                 str += _(MSG_OK);
                 mg_send( conn, (const char*)str.mbc_str(), str.Length() );	 
 
-                pCtrlObject->logMsg(_T("TCP Client: Ready to serve client.\n"), DAEMON_LOGMSG_DEBUG);
+                pCtrlObject->logMsg(_("TCP Client: Ready to serve client.\n"), 
+                                        DAEMON_LOGMSG_DEBUG);
             }
             break;
 
@@ -233,13 +234,15 @@ void VSCPClientThread::ev_handler( struct mg_connection *conn,
         case MG_EV_RECV:
 
             if ( NULL == pClientItem ) {
-                pCtrlObject->logMsg( _T( "[TCP/IP Client] Remote client died\n" ), DAEMON_LOGMSG_ERROR );
+                pCtrlObject->logMsg( _( "[TCP/IP Client] Remote client died\n" ), 
+                                    DAEMON_LOGMSG_ERROR );
                 conn->flags |= MG_F_CLOSE_IMMEDIATELY; // Close connection
                 return;
             }
 
             if ( sizeof( rbuf ) < conn->recv_mbuf.len ) {
-                pCtrlObject->logMsg( _T( "[TCP/IP Client] Received io->buf size exceeds limit.\n" ), DAEMON_LOGMSG_ERROR );
+                pCtrlObject->logMsg( _("[TCP/IP Client] Received io->buf size exceeds limit.\n" ), 
+                                        DAEMON_LOGMSG_ERROR );
                 conn->flags |= MG_F_CLOSE_IMMEDIATELY; // Close connection
                 return;
             }
@@ -257,7 +260,8 @@ void VSCPClientThread::ev_handler( struct mg_connection *conn,
                 pCtrlObject->getTCPIPServer()->CommandHandler( conn, 
                                                                 pCtrlObject, 
                                                                 strCmdGo );
-                pClientItem->m_readBuffer = pClientItem->m_readBuffer.Right( pClientItem->m_readBuffer.Length()-pos4lf-1 );
+                pClientItem->m_readBuffer = 
+                        pClientItem->m_readBuffer.Right( pClientItem->m_readBuffer.Length()-pos4lf-1 );
             }
             break;
 
@@ -307,7 +311,8 @@ VSCPClientThread::CommandHandler( struct mg_connection *conn,
     }
 
     if ( NULL == pClientItem ) {
-        pCtrlObject->logMsg ( _T ( "[TCP/IP Client] ClientItem pointer is NULL in command handler.\n" ), DAEMON_LOGMSG_ERROR );
+        pCtrlObject->logMsg ( _( "[TCP/IP Client] ClientItem pointer is NULL in command handler.\n" ), 
+                                DAEMON_LOGMSG_ERROR );
         conn->flags |= MG_F_CLOSE_IMMEDIATELY;	// Close connection
         return;
     }
@@ -1499,7 +1504,8 @@ void VSCPClientThread::handleClientUser ( struct mg_connection *conn, CControlOb
 // handleClientPassword
 //
 
-bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn, CControlObject *pCtrlObject )
+bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn, 
+                                                CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
@@ -1514,7 +1520,8 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn, CContr
         return true;
     }
 
-    wxString strPassword = pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length() - 4 );
+    wxString strPassword = 
+            pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length() - 4 );
     strPassword.Trim();             // Trim right side	
     strPassword.Trim( false );      // Trim left
     if ( strPassword.IsEmpty() ) {
@@ -1526,16 +1533,25 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn, CContr
     // Calculate MD5 for username:autdomain:password
     char buf[2148];
     memset( buf, 0, sizeof( buf ) );
-    strncpy( buf, (const char *)pClientItem->m_UserName.mbc_str(), pClientItem->m_UserName.Length() );
+    strncpy( buf, 
+                (const char *)pClientItem->m_UserName.mbc_str(), 
+                pClientItem->m_UserName.Length() );
     strncat( buf, ":", 1 );
-    strncat( buf, (const char *)pCtrlObject->m_authDomain, strlen( pCtrlObject->m_authDomain ) );
+    strncat( buf, 
+                (const char *)pCtrlObject->m_authDomain, 
+                strlen( pCtrlObject->m_authDomain ) );
     strncat( buf, ":", 1 );
     strncat( (char *)buf, strPassword.mbc_str(), strPassword.Length() );
     
+    MD5_CTX ctx;
+    MD5_Init( &ctx );
+    MD5_Update( &ctx, (const unsigned char *)buf, strlen( buf ) );
+    unsigned char bindigest[16];
+    MD5_Final( bindigest, &ctx );
     char digest[33];
-    memset( digest, 0, sizeof( digest ) ); 
-    static const size_t len_buf = strlen( buf );
-    vscp_md5( digest, buf, len_buf, NULL );
+    memset( digest, 0, sizeof( digest ) );
+    cs_to_hex( digest, bindigest, 16 );
+    
     wxString md5Password = wxString( digest, wxConvUTF8 );
     m_pCtrlObject->m_mutexUserList.Lock();
 #if  0 
@@ -1547,11 +1563,7 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn, CContr
     m_pCtrlObject->m_mutexUserList.Unlock();
 
     if ( NULL == pClientItem->m_pUserItem ) {
-#if wxMAJOR_VERSION >= 3
-        wxLogDebug( _("Password/Username failure.") );
-#else
-        ::wxLogDebug( _("Password/Username failure.") );
-#endif
+
         wxString strErr = 
             wxString::Format(_("[TCP/IP Client] User [%s][%s] not allowed to connect.\n"), 	
             (const char *)pClientItem->m_UserName.mbc_str(), (const char *)strPassword.mbc_str() );

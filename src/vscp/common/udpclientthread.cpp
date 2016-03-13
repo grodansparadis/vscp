@@ -49,7 +49,7 @@
 #include <controlobject.h>
 
 // Prototypes
-char *vscp_md5(char *buf, ...);
+
 
 //WX_DEFINE_LIST(TCPCLIENTS);
 
@@ -227,10 +227,15 @@ VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p)
                                 strlen( pUDPClientThread->m_pCtrlObject->m_authDomain ) );
                 strncat( buf, ":", sizeof( buf ) - strlen( buf) - 1 );
                 strncat( (char *)buf, strPassword.mb_str(), strPassword.Length() );
-    
+                   
+                MD5_CTX ctx;
+                MD5_Init( &ctx );
+                MD5_Update( &ctx, (const unsigned char *)buf, strlen( buf ) );
+                unsigned char bindigest[16];
+                MD5_Final( bindigest, &ctx );
                 char digest[33];
-                memset( digest, 0, sizeof( digest ) ); 
-                vscp_md5( digest, buf, strlen( buf ), NULL );
+                memset( digest, 0, sizeof( digest ) );
+                
                 wxString md5Password = wxString::FromUTF8( digest);
                 
                 pUDPClientThread->m_pCtrlObject->m_mutexUserList.Lock();

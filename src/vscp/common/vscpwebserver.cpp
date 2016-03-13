@@ -312,6 +312,7 @@ int webserv_url_decode( const char *src, int src_len,
 //  plus 1 byte for the terminating \0 character.
 //
 
+/*
 static void vscp_bin2str( char *to, const unsigned char *p, size_t len ) 
 {
     static const char *hex = "0123456789abcdef";
@@ -321,7 +322,7 @@ static void vscp_bin2str( char *to, const unsigned char *p, size_t len )
         *to++ = hex[p[0] & 0x0f];
     }
     *to = '\0';
-}
+}*/
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -350,7 +351,7 @@ static int vscp_check_nonce( const char *nonce )
 // "string", length,
 // NULL
 // // !!!!! Length must be size_t  !!!!!
-
+/*
 char *vscp_md5(char buf[33], ...) 
 {
     unsigned char hash[16];
@@ -373,7 +374,7 @@ char *vscp_md5(char buf[33], ...)
     vscp_bin2str( buf, hash, sizeof( hash ) );
 
     return buf;
-}
+}*/
 
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_mkmd5resp 
@@ -390,8 +391,8 @@ static void vscp_mkmd5resp( const char *method, size_t method_len, const char *u
     static const size_t len_32 = 32;
     char ha2[33];
 
-    vscp_md5( ha2, method, method_len, colon, one, uri, uri_len, NULL);
-    vscp_md5( resp, ha1, ha1_len, colon, one, nonce, nonce_len, colon, one, nc,
+    cs_md5( ha2, method, method_len, colon, one, uri, uri_len, NULL);
+    cs_md5( resp, ha1, ha1_len, colon, one, nonce, nonce_len, colon, one, nc,
             nc_len, colon, one, cnonce, cnonce_len, colon, one, qop, qop_len,
             colon, one, ha2, len_32, NULL);
 }
@@ -1283,13 +1284,16 @@ VSCPWebServerThread::websrv_add_session_cookie( struct mg_connection *nc,
                 (unsigned int)rand(), 
                 1337,
                 user );
-
+    
+    MD5_CTX ctx;
+    MD5_Init( &ctx );
+    MD5_Update( &ctx, (const unsigned char *)buf, strlen( buf ) );
+    unsigned char bindigest[16];
+    MD5_Final( bindigest, &ctx );
     char digest[33];
-    memset( digest, 0, sizeof( digest ) ); 
-    size_t len_buf = strlen( buf );
-    vscp_md5( digest, buf, len_buf, NULL );
-    strcpy( ret->m_sid, (const char *)digest );
-
+    memset( digest, 0, sizeof( digest ) );
+    cs_to_hex( ret->m_sid, bindigest, 16 );
+    
     char uri[2048];
     memset( uri, 0, sizeof(uri) );
     strncpy( uri, hm->uri.p, hm->uri.len );
@@ -1424,13 +1428,13 @@ VSCPWebServerThread::websrv_check_password( const char *method,
     static const size_t one = 1;        // !!!!! Length must be size_t  !!!!!     
     static const size_t len_32 = 32;    // !!!!! Length must be size_t  !!!!!
    
-    vscp_md5( ha2, 
+    cs_md5( ha2, 
                 method, strlen( method ), 
                 colon, one, 
                 uri, strlen( uri ), 
                 NULL );
                 
-    vscp_md5( expected_response, 
+    cs_md5( expected_response, 
                 ha1, len_32,
                 colon, one,
                 nonce, strlen( nonce ),

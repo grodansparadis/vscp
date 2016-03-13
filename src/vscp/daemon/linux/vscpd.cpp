@@ -165,7 +165,8 @@ int main(int argc, char **argv)
         }
     }
 
-    wxLogDebug(_("ControlObject: Configfile =") + strcfgfile);
+    //wxLogDebug(_("ControlObject: Configfile =") + strcfgfile);
+    gpobj->logMsg( _("ControlObject: Configfile =") + strcfgfile, DAEMON_LOGMSG_INFO );
     if ( !theApp.init( strcfgfile ) ) {
         printf("ControlObject: Failed to configure. Terminating.");
         wxLogDebug(_("ControlObject: Failed to configure. Terminating."));

@@ -37,6 +37,7 @@
 #include <wx/filename.h>
 
 #include <mongoose.h>
+#include <sqlite3.h> 
 
 #include <devicelist.h>
 #include <clientlist.h>
@@ -517,6 +518,15 @@ public:
         Mutex to protect variables
      */
     wxMutex m_variableMutex;
+    
+    
+    
+    /////////////////////////////////////////////////////////
+    //                     SQLite3
+    /////////////////////////////////////////////////////////
+    
+    sqlite3 *m_db;
+    
 
     /*!
         Event source for NT event reporting

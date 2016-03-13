@@ -143,7 +143,7 @@ extern struct websrv_rest_session *gp_websrv_rest_sessions;
 
 
 // Prototypes
-char *vscp_md5(char *buf, ...);       // webserver
+
 
 
 int webserv_url_decode( const char *src, int src_len, 
@@ -196,12 +196,15 @@ VSCPWebServerThread::websrv_new_rest_session( struct mg_connection *nc,
                 (unsigned int)t,
                 (unsigned int)rand(), 
                 1337 );
-
+    
+    MD5_CTX ctx;
+    MD5_Init( &ctx );
+    MD5_Update( &ctx, (const unsigned char *)buf, strlen( buf ) );
+    unsigned char bindigest[16];
+    MD5_Final( bindigest, &ctx );
     char digest[33];
-    memset( digest, 0, sizeof( digest ) ); 
-    static const size_t len_buf = strlen( buf );
-    vscp_md5( digest, buf, len_buf, NULL );
-    strcpy( ret->sid, (const char *)digest );
+    memset( digest, 0, sizeof( digest ) );
+    cs_to_hex( ret->sid, bindigest, 16 );
 
     // New client
     ret->pClientItem = new CClientItem();   // Create client        

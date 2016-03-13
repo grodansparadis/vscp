@@ -41,13 +41,23 @@
 #define VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE           11  // VSCP event type
 #define VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP      12  // VSCP event timestamp
 #define VSCP_DAEMON_VARIABLE_CODE_DATETIME                  13  // Date + Time in iso format 
+#define VSCP_DAEMON_VARIABLE_CODE_BASE64                    14  // Base64 encoded data
+
+#define VSCP_DAEMON_VARIABLE_CODE_MIME                      100 // Mime type (mime-type;base64 encoded content)
+#define VSCP_DAEMON_VARIABLE_CODE_HTML                      101 // HTML Page
+#define VSCP_DAEMON_VARIABLE_CODE_JAVASCRIPT                102 // Javascript code
+
+#define VSCP_DAEMON_VARIABLE_CODE_LUA                       200 // LUA script
+#define VSCP_DAEMON_VARIABLE_CODE_LUA_RESULT                201 // LUA executed script result string
+
+#define VSCP_DAEMON_VARIABLE_CODE_UX_TYPE1                  300 // Contains XML file for User interface
 
 // A non persistent variable is stored with the name as the hash value.
 // A persistent variable is stored with $ + its name as the hash value.
 // A non persistent array is stored with @ + its name as hash value.
 // A persistent array is stored with $ + @ + its name as hash value.
 #define VSCP_DAEMON_VARIABLE_PREFIX_PERSISTENT              '$' // Prefix for persistent variablename
-#define VSCP_DAEMON_VARIABLE_PREFIX_ARRAY                   '@' // Prefix for persistent variablename
+#define VSCP_DAEMON_VARIABLE_PREFIX_ARRAY                   '@' // Prefix for array
 
 
 #endif
