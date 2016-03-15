@@ -87,9 +87,10 @@ AC_SUBST(PROJ_SUBDIRS_GUI)
 dnl
 dnl SSL mode
 dnl
-vscp_ssl=no
+
+vscp_ssl=yes
 AC_ARG_ENABLE(ssl,
-[  --enable-ssl            ssl build (default disabled)],
+[  --enable-ssl            ssl build (default enabled)],
 [vscp_ssl=yes])
 dnl test "${vscp_ssl}" != "yes" && vscp_ssl="no"
 
@@ -107,6 +108,7 @@ dnl test "${vscp_debug}" != "yes" && vscp_debug="no"
 dnl
 dnl LUA
 dnl
+
 vscp_lua=yes
 AC_ARG_ENABLE(lua,
 [  --enable-lua            LUA build (default enabled)],

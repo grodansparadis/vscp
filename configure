@@ -1338,7 +1338,7 @@ Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
-  --enable-ssl            ssl build (default disabled)
+  --enable-ssl            ssl build (default enabled)
   --enable-debug          debug mode (default disabled)
   --enable-lua            LUA build (default enabled)
   --enable-sqlite2          SQLite3 build (default enabled)
@@ -6165,7 +6165,8 @@ PROJ_SUBDIRS="src/vscp/drivers/level1/can4vscp/linux src/vscp/drivers/level2/wir
 PROJ_SUBDIRS_GUI="src/vscp/vscpworks"
 
 
-vscp_ssl=no
+
+vscp_ssl=yes
 # Check whether --enable-ssl was given.
 if test "${enable_ssl+set}" = set; then :
   enableval=$enable_ssl; vscp_ssl=yes
@@ -6179,6 +6180,7 @@ vscp_debug=no
 if test "${enable_debug+set}" = set; then :
   enableval=$enable_debug; vscp_debug=yes
 fi
+
 
 
 vscp_lua=yes
