@@ -1,7 +1,7 @@
 dnl Autoconf settings for VSCP
 dnl $Id: configure.in,v 1.5 2005/10/03 16:30:06 akhe Exp $
 
-AC_INIT(vscp, [1.12.5], [info@grodansparadis.com])
+AC_INIT(vscp, [1.12.9], [info@grodansparadis.com])
 
 CONFIGURE_LINE="$0 $*"
 CODENAME="Ant"
@@ -256,7 +256,7 @@ dnl Give user some feedback
 echo
 echo   "           VSCP configuration"
 echo   "--------------------------------------------"
-echo   "VSCP version          : ${PACKAGE_VERSION}"
+echo   "VSCP version          : `./echo-version` (${PACKAGE_VERSION})" 
 echo   "System                : `uname -a` "
 echo   "Architecture          : $(arch)"
 echo   "VSCP GUI Build        : ${vscp_gui}"

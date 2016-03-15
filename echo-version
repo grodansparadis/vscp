@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "`cat src/vscp/common/version.h | grep -Po 'VSCPD_DISPLAY_VERSION "\K[^"]*'`" 

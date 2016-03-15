@@ -304,26 +304,6 @@ int webserv_url_decode( const char *src, int src_len,
     return i >= src_len ? j : -1;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// vscp_bin2str 
-//
-//  Stringify binary data. Output buffer size must be 2 * size_of_input + 1
-//  because each byte of input takes 2 bytes in string representation
-//  plus 1 byte for the terminating \0 character.
-//
-
-/*
-static void vscp_bin2str( char *to, const unsigned char *p, size_t len ) 
-{
-    static const char *hex = "0123456789abcdef";
-
-    for (; len--; p++) {
-        *to++ = hex[p[0] >> 4];
-        *to++ = hex[p[0] & 0x0f];
-    }
-    *to = '\0';
-}*/
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_check_nonce 
@@ -341,40 +321,6 @@ static int vscp_check_nonce( const char *nonce )
     return ( 1 || ( now < val ) || ( ( now - val ) < 3600 ) );
 }
 
-
-///////////////////////////////////////////////////////////////////////////////
-// vscp_md5 
-//
-// "string", length,
-// "string", length,
-// "string", length,
-// "string", length,
-// NULL
-// // !!!!! Length must be size_t  !!!!!
-/*
-char *vscp_md5(char buf[33], ...) 
-{
-    unsigned char hash[16];
-    const unsigned char *p;
-    
-    va_list ap;
-    MD5_CTX ctx;
-
-    MD5_Init( &ctx );
-
-    va_start( ap, buf );
-    while ( ( p = va_arg(ap, const unsigned char *) ) != NULL ) {
-        size_t len = va_arg(ap, size_t);
-        MD5_Update(&ctx, p, len);
-    }
-    va_end( ap );
-
-    MD5_Final(hash, &ctx);
-
-    vscp_bin2str( buf, hash, sizeof( hash ) );
-
-    return buf;
-}*/
 
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_mkmd5resp 

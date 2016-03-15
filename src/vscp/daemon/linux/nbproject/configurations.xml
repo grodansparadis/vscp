@@ -1,6 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configurationDescriptor version="97">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="common"
+                   displayName="common"
+                   projectFiles="true"
+                   root="../../../common">
+      <logicalFolder name="rapidjson" displayName="rapidjson" projectFiles="true">
+        <logicalFolder name="error" displayName="error" projectFiles="true">
+          <itemPath>../../../common/rapidjson/error/en.h</itemPath>
+          <itemPath>../../../common/rapidjson/error/error.h</itemPath>
+        </logicalFolder>
+        <logicalFolder name="internal" displayName="internal" projectFiles="true">
+          <itemPath>../../../common/rapidjson/internal/biginteger.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/diyfp.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/dtoa.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/ieee754.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/itoa.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/meta.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/pow10.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/stack.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/strfunc.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/strtod.h</itemPath>
+        </logicalFolder>
+        <itemPath>../../../common/rapidjson/allocators.h</itemPath>
+        <itemPath>../../../common/rapidjson/document.h</itemPath>
+        <itemPath>../../../common/rapidjson/encodedstream.h</itemPath>
+        <itemPath>../../../common/rapidjson/encodings.h</itemPath>
+        <itemPath>../../../common/rapidjson/filereadstream.h</itemPath>
+        <itemPath>../../../common/rapidjson/filewritestream.h</itemPath>
+        <itemPath>../../../common/rapidjson/prettywriter.h</itemPath>
+        <itemPath>../../../common/rapidjson/rapidjson.h</itemPath>
+        <itemPath>../../../common/rapidjson/reader.h</itemPath>
+        <itemPath>../../../common/rapidjson/stringbuffer.h</itemPath>
+        <itemPath>../../../common/rapidjson/writer.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="rapidxml" displayName="rapidxml" projectFiles="true">
+        <itemPath>../../../common/rapidxml/rapidxml.hpp</itemPath>
+        <itemPath>../../../common/rapidxml/rapidxml_print.hpp</itemPath>
+        <itemPath>../../../common/rapidxml/rapidxml_utils.hpp</itemPath>
+      </logicalFolder>
+      <itemPath>../../../common/configfile.cpp</itemPath>
+      <itemPath>../../../common/configfile.h</itemPath>
+      <itemPath>../../../common/crc.c</itemPath>
+      <itemPath>../../../common/crc.h</itemPath>
+      <itemPath>../../../common/crc8.c</itemPath>
+      <itemPath>../../../common/crc8.h</itemPath>
+      <itemPath>../../../common/dllist.c</itemPath>
+      <itemPath>../../../common/dllist.h</itemPath>
+      <itemPath>../../../common/mongoose.c</itemPath>
+      <itemPath>../../../common/mongoose.h</itemPath>
+      <itemPath>../../../common/randpassword.cpp</itemPath>
+      <itemPath>../../../common/randpassword.h</itemPath>
+      <itemPath>../../../common/slre.c</itemPath>
+      <itemPath>../../../common/slre.h</itemPath>
+      <itemPath>../../../common/xml2json.hpp</itemPath>
+    </logicalFolder>
     <df root="." name="0">
       <in>vscpd.cpp</in>
     </df>
@@ -176,6 +230,9 @@
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
+      <flagsDictionary>
+        <element flagsID="0" commonFlags="-mtune=generic -march=x86-64"/>
+      </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
       <makefileType>
@@ -204,12 +261,12 @@
           </cTool>
           <ccTool>
             <preprocessorList>
-              <Elem>MG_ENABLE_THREADS</Elem>
-              <Elem>VSCP_ENABLE_LUA</Elem>
-              <Elem>VSCP_ENABLE_SQLITE3</Elem>
-              <Elem>WXUSINGDLL</Elem>
+              <Elem>MG_ENABLE_THREADS=1</Elem>
+              <Elem>VSCP_ENABLE_LUA=1</Elem>
+              <Elem>VSCP_ENABLE_SQLITE3=1</Elem>
+              <Elem>WXUSINGDLL=1</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
-              <Elem>__WXGTK__</Elem>
+              <Elem>__WXGTK__=1</Elem>
             </preprocessorList>
           </ccTool>
         </makeTool>
@@ -218,31 +275,198 @@
           <preBuildCommand></preBuildCommand>
         </preBuild>
       </makefileType>
+      <item path="../../../common/configfile.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
+      <item path="../../../common/crc.c" ex="false" tool="0" flavor2="2">
+      </item>
+      <item path="../../../common/crc8.c" ex="false" tool="0" flavor2="2">
+      </item>
+      <item path="../../../common/dllist.c" ex="false" tool="0" flavor2="2">
+      </item>
+      <item path="../../../common/mongoose.c" ex="false" tool="0" flavor2="2">
+      </item>
+      <item path="../../../common/randpassword.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
+      <item path="../../../common/slre.c" ex="false" tool="0" flavor2="2">
+      </item>
       <item path="../../common/canalconfobj.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/canalsuperwrapper.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/clientlist.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/unix</pElem>
+            <pElem>../../../common</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/controlobject.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/include/wx-3.0/wx/xml</pElem>
+            <pElem>../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
+            <pElem>../../../common</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/unix</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>/usr/include/wx-3.0/wx/protocol</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/daemonvscp.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
+            <pElem>../../../common</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/unix</pElem>
+            <pElem>/usr/include/wx-3.0/wx/protocol</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/devicelist.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/unix</pElem>
+            <pElem>/usr/include/wx-3.0/wx/xml</pElem>
+            <pElem>../../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/protocol</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/devicethread.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/unix</pElem>
+            <pElem>../../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/protocol</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/dllwrapper.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/dm.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/include/wx-3.0/wx/xml</pElem>
+            <pElem>../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/unix</pElem>
+            <pElem>/usr/include/wx-3.0/wx/protocol</pElem>
+            <pElem>../../../common</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/guid.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/unix</pElem>
+            <pElem>../../../common</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/interfacelist.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
+            <pElem>/usr/include/wx-3.0/wx/xml</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/unix</pElem>
+            <pElem>../../../common</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/knownnodes.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/unix</pElem>
+            <pElem>../../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/protocol</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/mdf.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/include/wx-3.0/wx/xml</pElem>
+            <pElem>../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/unix</pElem>
+            <pElem>/usr/include/wx-3.0/wx/protocol</pElem>
+            <pElem>../../../common</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/old/StdAfx.cpp" ex="false" tool="1" flavor2="4">
       </item>
@@ -346,41 +570,239 @@
       <item path="../../common/old/vscppipe.cpp" ex="false" tool="1" flavor2="4">
       </item>
       <item path="../../common/register.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/unix</pElem>
+            <pElem>/usr/include/wx-3.0/wx/xml</pElem>
+            <pElem>/usr/include/wx-3.0/wx/protocol</pElem>
+            <pElem>../../../common</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/selectdevice.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/tables.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/unix</pElem>
+            <pElem>/usr/include/wx-3.0/wx/xml</pElem>
+            <pElem>../../../common</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/tcpipclientthread.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
+            <pElem>../../../common</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/unix</pElem>
+            <pElem>/usr/include/wx-3.0/wx/protocol</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/udpclientthread.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
+            <pElem>../../../common</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/unix</pElem>
+            <pElem>/usr/include/wx-3.0/wx/protocol</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/udpthread.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/userlist.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
+            <pElem>/usr/include/wx-3.0/wx/xml</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/unix</pElem>
+            <pElem>../../../common</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/vscpautomation.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/unix</pElem>
+            <pElem>/usr/include/wx-3.0/wx/xml</pElem>
+            <pElem>../../../common</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/vscpclientthreads.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/vscpeventhelper.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/unix</pElem>
+            <pElem>/usr/include/wx-3.0/wx/xml</pElem>
+            <pElem>../../../common</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/vscphelper.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
+            <pElem>/usr/include/wx-3.0/wx/xml</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/unix</pElem>
+            <pElem>../../../common</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/vscpmulticast.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/vscpremotetcpif.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
+            <pElem>../../../common</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/unix</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/vscprestserver.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../common</pElem>
+            <pElem>../../../common/rapidxml</pElem>
+            <pElem>../../../common/rapidjson</pElem>
+            <pElem>../../../common/rapidjson/internal</pElem>
+            <pElem>../../../common/rapidjson/error</pElem>
+            <pElem>../../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/unix</pElem>
+            <pElem>/usr/include/wx-3.0/wx/xml</pElem>
+            <pElem>/usr/include/wx-3.0/wx/protocol</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/vscpvariable.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/include/wx-3.0/wx/xml</pElem>
+            <pElem>../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/unix</pElem>
+            <pElem>../../../common</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/vscpwebserver.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/include/wx-3.0/wx/xml</pElem>
+            <pElem>../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
+            <pElem>../../../common</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/unix</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>/usr/include/wx-3.0/wx/protocol</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/vscpwebsocketserver.cpp"
             ex="false"
             tool="1"
             flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
+            <pElem>../../../common</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/unix</pElem>
+            <pElem>/usr/include/wx-3.0/wx/xml</pElem>
+            <pElem>/usr/include/wx-3.0/wx/protocol</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/win32helpers/getopt.c" ex="false" tool="0" flavor2="2">
       </item>
@@ -400,21 +822,65 @@
             flavor2="2">
       </item>
       <item path="../../common/xml2json.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/xmllib.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <folder path="0">
         <ccTool>
           <incDir>
-            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/include/wx-3.0</pElem>
-            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>/usr/include/wx-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
+            <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
+            <pElem>/usr/include/wx-3.0/wx/meta</pElem>
             <pElem>../../common</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/unix</pElem>
             <pElem>../../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx/protocol</pElem>
+            <pElem>/usr/include/wx-3.0</pElem>
+            <pElem>.</pElem>
+            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>__REGISTER_PREFIX__=</Elem>
+            <Elem>__USER_LABEL_PREFIX__=</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
+      <folder path="common">
+        <ccTool>
+          <incDir>
+            <pElem>../../../common</pElem>
+            <pElem>.</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>__REGISTER_PREFIX__=</Elem>
+            <Elem>__USER_LABEL_PREFIX__=</Elem>
+          </preprocessorList>
         </ccTool>
       </folder>
       <folder path="src">
+        <ccTool>
+          <preprocessorList>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>VSCP_ENABLE_LUA</Elem>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+            <Elem>WXUSINGDLL</Elem>
+            <Elem>__WXGTK__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
+      <folder path="src/old">
         <ccTool>
           <incDir>
             <pElem>.</pElem>
@@ -424,15 +890,19 @@
       <folder path="src/vscp">
         <ccTool>
           <incDir>
-            <pElem>/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/include/wx-3.0</pElem>
-            <pElem>/usr/include/lua5.2</pElem>
-            <pElem>../../common</pElem>
-            <pElem>../../../common</pElem>
+            <pElem>/usr/include/wx-3.0/wx</pElem>
+            <pElem>/usr/include/wx-3.0/wx/generic</pElem>
+            <pElem>/usr/include/wx-3.0/wx/gtk</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>__REGISTER_PREFIX__=</Elem>
+            <Elem>__USER_LABEL_PREFIX__=</Elem>
+          </preprocessorList>
         </ccTool>
       </folder>
       <item path="vscpd.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
       </item>
     </conf>
   </confs>
