@@ -8611,5 +8611,10 @@ To build VSCP and friends, type \'make\' followed by \'make install\'
  use --disable-sglite3 to build without SQLite3
  use --disable-unicode to build an Ansi version; Unicode is default.
 
+ \"make\" -- builds VSCP & Friends.
+ \"make install\" -- builds VSCP & Friends and install system.
+ \"make config\" -- installs/restores configuration files.
+ \"make web-files\" -- installs web demo content including websocket examples.
+
 "
 

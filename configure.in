@@ -304,10 +304,15 @@ You can tune the compiler flags in vscp-config.
 To build VSCP and friends, type \'make\' followed by \'make install\'
 
  use --enable-debug to build a debug version; release is default.
- use --disable-ssl to build a SSL version of executables; Non SSL is default.
- use --disable-lua to build with LUA support.
- use --disable-sglite3 to build without SQLite3
- use --disable-unicode to build an Ansi version; Unicode is default.
+ use --disable-ssl to build a non SSL version of executables. SSL is default.
+ use --disable-lua to build without LUA support. LUA support is default.
+ use --disable-sglite3 to build without SQLite3 SQLite3 support is default.
+ use --disable-unicode to build an ANSI version. Unicode is default.
+
+ \"make\" -- builds VSCP & Friends.
+ \"make install\" -- builds VSCP & Friends and install system.
+ \"make config\" -- install/restore configuration files.
+ \"make web-files\" -- install/restore web demo content including websocket examples.
 
 "
 dnl vi: set et sts=4 sw=4 com=\:dnl
