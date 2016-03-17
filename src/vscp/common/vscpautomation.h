@@ -26,6 +26,7 @@
 #if !defined(VSCPAUTOMATION__INCLUDED_)
 #define VSCPAUTOMATION__INCLUDED_
 
+class ControlObject;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Class that holds one VSCP vautomation
@@ -40,6 +41,11 @@ public:
 
     // Destructor
     virtual ~CVSCPAutomation(void);
+    
+    /*!
+     * Initialize control object
+     */
+    void setControlObject( CControlObject *pCtrlObj ) { m_pCtrlObj = pCtrlObj; };
 
     /*!        
         \return Greater than zero if Daylight Saving Time is in effect, 
@@ -348,6 +354,11 @@ private:
         time is 12:00
     */
     bool m_bCalulationHasBeenDone;
+    
+    /*!
+     * Pointer to control object
+     */
+    CControlObject *m_pCtrlObj;
 
 };
 

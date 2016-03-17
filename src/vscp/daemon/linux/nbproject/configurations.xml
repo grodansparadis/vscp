@@ -1,59 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configurationDescriptor version="97">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
-    <logicalFolder name="common"
-                   displayName="common"
-                   projectFiles="true"
-                   root="../../../common">
-      <logicalFolder name="rapidjson" displayName="rapidjson" projectFiles="true">
-        <logicalFolder name="error" displayName="error" projectFiles="true">
-          <itemPath>../../../common/rapidjson/error/en.h</itemPath>
-          <itemPath>../../../common/rapidjson/error/error.h</itemPath>
-        </logicalFolder>
-        <logicalFolder name="internal" displayName="internal" projectFiles="true">
-          <itemPath>../../../common/rapidjson/internal/biginteger.h</itemPath>
-          <itemPath>../../../common/rapidjson/internal/diyfp.h</itemPath>
-          <itemPath>../../../common/rapidjson/internal/dtoa.h</itemPath>
-          <itemPath>../../../common/rapidjson/internal/ieee754.h</itemPath>
-          <itemPath>../../../common/rapidjson/internal/itoa.h</itemPath>
-          <itemPath>../../../common/rapidjson/internal/meta.h</itemPath>
-          <itemPath>../../../common/rapidjson/internal/pow10.h</itemPath>
-          <itemPath>../../../common/rapidjson/internal/stack.h</itemPath>
-          <itemPath>../../../common/rapidjson/internal/strfunc.h</itemPath>
-          <itemPath>../../../common/rapidjson/internal/strtod.h</itemPath>
-        </logicalFolder>
-        <itemPath>../../../common/rapidjson/allocators.h</itemPath>
-        <itemPath>../../../common/rapidjson/document.h</itemPath>
-        <itemPath>../../../common/rapidjson/encodedstream.h</itemPath>
-        <itemPath>../../../common/rapidjson/encodings.h</itemPath>
-        <itemPath>../../../common/rapidjson/filereadstream.h</itemPath>
-        <itemPath>../../../common/rapidjson/filewritestream.h</itemPath>
-        <itemPath>../../../common/rapidjson/prettywriter.h</itemPath>
-        <itemPath>../../../common/rapidjson/rapidjson.h</itemPath>
-        <itemPath>../../../common/rapidjson/reader.h</itemPath>
-        <itemPath>../../../common/rapidjson/stringbuffer.h</itemPath>
-        <itemPath>../../../common/rapidjson/writer.h</itemPath>
+    <logicalFolder name="common" displayName="common" projectFiles="true">
+      <logicalFolder name="old" displayName="old" projectFiles="true">
       </logicalFolder>
-      <logicalFolder name="rapidxml" displayName="rapidxml" projectFiles="true">
-        <itemPath>../../../common/rapidxml/rapidxml.hpp</itemPath>
-        <itemPath>../../../common/rapidxml/rapidxml_print.hpp</itemPath>
-        <itemPath>../../../common/rapidxml/rapidxml_utils.hpp</itemPath>
+      <logicalFolder name="win32helpers"
+                     displayName="win32helpers"
+                     projectFiles="true">
+        <logicalFolder name="sys" displayName="sys" projectFiles="true">
+        </logicalFolder>
       </logicalFolder>
-      <itemPath>../../../common/configfile.cpp</itemPath>
-      <itemPath>../../../common/configfile.h</itemPath>
-      <itemPath>../../../common/crc.c</itemPath>
-      <itemPath>../../../common/crc.h</itemPath>
-      <itemPath>../../../common/crc8.c</itemPath>
-      <itemPath>../../../common/crc8.h</itemPath>
-      <itemPath>../../../common/dllist.c</itemPath>
-      <itemPath>../../../common/dllist.h</itemPath>
-      <itemPath>../../../common/mongoose.c</itemPath>
-      <itemPath>../../../common/mongoose.h</itemPath>
-      <itemPath>../../../common/randpassword.cpp</itemPath>
-      <itemPath>../../../common/randpassword.h</itemPath>
-      <itemPath>../../../common/slre.c</itemPath>
-      <itemPath>../../../common/slre.h</itemPath>
-      <itemPath>../../../common/xml2json.hpp</itemPath>
     </logicalFolder>
     <df root="." name="0">
       <in>vscpd.cpp</in>
@@ -208,6 +164,287 @@
       <itemPath>../../common/xmllib.cpp</itemPath>
       <itemPath>../../common/xmllib.h</itemPath>
     </logicalFolder>
+    <logicalFolder name="common"
+                   displayName="top_common"
+                   projectFiles="true"
+                   root="../../../common">
+      <logicalFolder name="dl" displayName="dl" projectFiles="true">
+        <logicalFolder name="cygwin" displayName="cygwin" projectFiles="true">
+          <itemPath>../../../common/dl/cygwin/Makefile</itemPath>
+          <itemPath>../../../common/dl/cygwin/Makefile.DLLs</itemPath>
+          <itemPath>../../../common/dl/cygwin/base.h</itemPath>
+          <itemPath>../../../common/dl/cygwin/child1.cpp</itemPath>
+          <itemPath>../../../common/dl/cygwin/child1.h</itemPath>
+          <itemPath>../../../common/dl/cygwin/glue.c</itemPath>
+          <itemPath>../../../common/dl/cygwin/readme</itemPath>
+          <itemPath>../../../common/dl/cygwin/test1.cpp</itemPath>
+          <itemPath>../../../common/dl/cygwin/test2.cpp</itemPath>
+        </logicalFolder>
+        <itemPath>../../../common/dl/Makefile</itemPath>
+        <itemPath>../../../common/dl/Makefile.sun</itemPath>
+        <itemPath>../../../common/dl/base.h</itemPath>
+        <itemPath>../../../common/dl/child1.cpp</itemPath>
+        <itemPath>../../../common/dl/child1.h</itemPath>
+        <itemPath>../../../common/dl/test</itemPath>
+        <itemPath>../../../common/dl/test.cpp</itemPath>
+      </logicalFolder>
+      <logicalFolder name="kwxIndControlSource-0.3.0"
+                     displayName="kwxIndControlSource-0.3.0"
+                     projectFiles="true">
+        <logicalFolder name="Doc" displayName="Doc" projectFiles="true">
+          <itemPath>../../../common/kwxIndControlSource-0.3.0/Doc/kwxindustrialcontrols.doc</itemPath>
+        </logicalFolder>
+        <logicalFolder name="res" displayName="res" projectFiles="true">
+          <itemPath>../../../common/kwxIndControlSource-0.3.0/res/Testdc.ico</itemPath>
+          <itemPath>../../../common/kwxIndControlSource-0.3.0/res/Testdc.xpm</itemPath>
+          <itemPath>../../../common/kwxIndControlSource-0.3.0/res/Testdc32x32.xpm</itemPath>
+          <itemPath>../../../common/kwxIndControlSource-0.3.0/res/but.xpm</itemPath>
+          <itemPath>../../../common/kwxIndControlSource-0.3.0/res/buton.xpm</itemPath>
+          <itemPath>../../../common/kwxIndControlSource-0.3.0/res/butpress.xpm</itemPath>
+          <itemPath>../../../common/kwxIndControlSource-0.3.0/res/exefile.xpm</itemPath>
+          <itemPath>../../../common/kwxIndControlSource-0.3.0/res/false.xpm</itemPath>
+          <itemPath>../../../common/kwxIndControlSource-0.3.0/res/help.bmp</itemPath>
+          <itemPath>../../../common/kwxIndControlSource-0.3.0/res/help.xpm</itemPath>
+          <itemPath>../../../common/kwxIndControlSource-0.3.0/res/koan200.xpm</itemPath>
+          <itemPath>../../../common/kwxIndControlSource-0.3.0/res/lampoff.xpm</itemPath>
+          <itemPath>../../../common/kwxIndControlSource-0.3.0/res/lampoffsel.xpm</itemPath>
+          <itemPath>../../../common/kwxIndControlSource-0.3.0/res/lampon.xpm</itemPath>
+          <itemPath>../../../common/kwxIndControlSource-0.3.0/res/lamponsel.xpm</itemPath>
+          <itemPath>../../../common/kwxIndControlSource-0.3.0/res/ohsmile.xpm</itemPath>
+          <itemPath>../../../common/kwxIndControlSource-0.3.0/res/reset_green.xpm</itemPath>
+          <itemPath>../../../common/kwxIndControlSource-0.3.0/res/reset_orange.xpm</itemPath>
+          <itemPath>../../../common/kwxIndControlSource-0.3.0/res/sadsmile.xpm</itemPath>
+          <itemPath>../../../common/kwxIndControlSource-0.3.0/res/smile.xpm</itemPath>
+          <itemPath>../../../common/kwxIndControlSource-0.3.0/res/submit_green.xpm</itemPath>
+          <itemPath>../../../common/kwxIndControlSource-0.3.0/res/submit_orange.xpm</itemPath>
+          <itemPath>../../../common/kwxIndControlSource-0.3.0/res/test.xpm</itemPath>
+          <itemPath>../../../common/kwxIndControlSource-0.3.0/res/true.xpm</itemPath>
+        </logicalFolder>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/AngularMeter.cpp</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/AngularMeter.h</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/AngularRegulator.cpp</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/AngularRegulator.h</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/BitmapButton.cpp</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/BitmapButton.h</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/BmpCheckBox.cpp</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/BmpCheckBox.h</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/BmpSwitcher.cpp</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/BmpSwitcher.h</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/CHANGES</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/CREDITS</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/ClockThread.cpp</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/ClockThread.h</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/KPrec.h</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/KWIC-LICENSE</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/LCDClock.cpp</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/LCDClock.h</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/LCDWindow.cpp</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/LCDWindow.h</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/LinearMeter.cpp</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/LinearMeter.h</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/LinearRegulator.cpp</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/LinearRegulator.h</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/NewWidget.cpp</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/NewWidget.h</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/TODO</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/Testdc.dsp</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/Testdc.dsw</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/Testdc.ilk</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/Testdc.rc</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/TestdcApp.cpp</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/TestdcApp.h</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/TestdcFrm.cpp</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/TestdcFrm.h</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/TimeAlarm.cpp</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/TimeAlarm.h</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/kwxNewWidget.cpp</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/kwxNewWidget.h</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/makefile</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/makefile.gtk</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/makefile.mtf</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/resource.h</itemPath>
+        <itemPath>../../../common/kwxIndControlSource-0.3.0/wxprec.cpp</itemPath>
+      </logicalFolder>
+      <logicalFolder name="old" displayName="old" projectFiles="true">
+      </logicalFolder>
+      <logicalFolder name="rapidjson" displayName="rapidjson" projectFiles="true">
+        <logicalFolder name="error" displayName="error" projectFiles="true">
+          <itemPath>../../../common/rapidjson/error/en.h</itemPath>
+          <itemPath>../../../common/rapidjson/error/error.h</itemPath>
+        </logicalFolder>
+        <logicalFolder name="internal" displayName="internal" projectFiles="true">
+          <itemPath>../../../common/rapidjson/internal/biginteger.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/diyfp.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/dtoa.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/ieee754.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/itoa.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/meta.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/pow10.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/stack.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/strfunc.h</itemPath>
+          <itemPath>../../../common/rapidjson/internal/strtod.h</itemPath>
+        </logicalFolder>
+        <logicalFolder name="msinttypes" displayName="msinttypes" projectFiles="true">
+          <itemPath>../../../common/rapidjson/msinttypes/inttypes.h</itemPath>
+          <itemPath>../../../common/rapidjson/msinttypes/stdint.h</itemPath>
+        </logicalFolder>
+        <itemPath>../../../common/rapidjson/allocators.h</itemPath>
+        <itemPath>../../../common/rapidjson/document.h</itemPath>
+        <itemPath>../../../common/rapidjson/encodedstream.h</itemPath>
+        <itemPath>../../../common/rapidjson/encodings.h</itemPath>
+        <itemPath>../../../common/rapidjson/filereadstream.h</itemPath>
+        <itemPath>../../../common/rapidjson/filewritestream.h</itemPath>
+        <itemPath>../../../common/rapidjson/memorybuffer.h</itemPath>
+        <itemPath>../../../common/rapidjson/memorystream.h</itemPath>
+        <itemPath>../../../common/rapidjson/pointer.h</itemPath>
+        <itemPath>../../../common/rapidjson/prettywriter.h</itemPath>
+        <itemPath>../../../common/rapidjson/rapidjson.h</itemPath>
+        <itemPath>../../../common/rapidjson/reader.h</itemPath>
+        <itemPath>../../../common/rapidjson/stringbuffer.h</itemPath>
+        <itemPath>../../../common/rapidjson/writer.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="rapidxml" displayName="rapidxml" projectFiles="true">
+        <itemPath>../../../common/rapidxml/license.txt</itemPath>
+        <itemPath>../../../common/rapidxml/manual.html</itemPath>
+        <itemPath>../../../common/rapidxml/rapidxml.hpp</itemPath>
+        <itemPath>../../../common/rapidxml/rapidxml_iterators.hpp</itemPath>
+        <itemPath>../../../common/rapidxml/rapidxml_print.hpp</itemPath>
+        <itemPath>../../../common/rapidxml/rapidxml_utils.hpp</itemPath>
+      </logicalFolder>
+      <logicalFolder name="SendRawPacket"
+                     displayName="SendRawPacket"
+                     projectFiles="true">
+        <logicalFolder name="NDIS Driver" displayName="NDIS Driver" projectFiles="true">
+          <logicalFolder name="src" displayName="src" projectFiles="true">
+            <itemPath>../../../common/SendRawPacket/NDIS Driver/src/README.txt</itemPath>
+            <itemPath>../../../common/SendRawPacket/NDIS Driver/src/excallbk.c</itemPath>
+            <itemPath>../../../common/SendRawPacket/NDIS Driver/src/macros.h</itemPath>
+            <itemPath>../../../common/SendRawPacket/NDIS Driver/src/makefile</itemPath>
+            <itemPath>../../../common/SendRawPacket/NDIS Driver/src/ndisbind.c</itemPath>
+            <itemPath>../../../common/SendRawPacket/NDIS Driver/src/ndisprot.h</itemPath>
+            <itemPath>../../../common/SendRawPacket/NDIS Driver/src/ndisprot.rc</itemPath>
+            <itemPath>../../../common/SendRawPacket/NDIS Driver/src/ntdisp.c</itemPath>
+            <itemPath>../../../common/SendRawPacket/NDIS Driver/src/nuiouser.h</itemPath>
+            <itemPath>../../../common/SendRawPacket/NDIS Driver/src/precomp.h</itemPath>
+            <itemPath>../../../common/SendRawPacket/NDIS Driver/src/recv.c</itemPath>
+            <itemPath>../../../common/SendRawPacket/NDIS Driver/src/send.c</itemPath>
+          </logicalFolder>
+          <itemPath>../../../common/SendRawPacket/NDIS Driver/ndisprot.inf</itemPath>
+          <itemPath>../../../common/SendRawPacket/NDIS Driver/ndisprot.sys</itemPath>
+        </logicalFolder>
+        <logicalFolder name="RawEthernet" displayName="RawEthernet" projectFiles="true">
+          <itemPath>../../../common/SendRawPacket/RawEthernet/App.ico</itemPath>
+          <itemPath>../../../common/SendRawPacket/RawEthernet/AssemblyInfo.cs</itemPath>
+          <itemPath>../../../common/SendRawPacket/RawEthernet/RawEthernet.cs</itemPath>
+          <itemPath>../../../common/SendRawPacket/RawEthernet/RawEthernet.csproj</itemPath>
+          <itemPath>../../../common/SendRawPacket/RawEthernet/RawEthernet.sln</itemPath>
+        </logicalFolder>
+        <itemPath>../../../common/SendRawPacket/directories.txt</itemPath>
+      </logicalFolder>
+      <logicalFolder name="win32helpers"
+                     displayName="win32helpers"
+                     projectFiles="true">
+        <logicalFolder name="sys" displayName="sys" projectFiles="true">
+        </logicalFolder>
+      </logicalFolder>
+      <logicalFolder name="zlib" displayName="zlib" projectFiles="true">
+        <itemPath>../../../common/zlib/ZLib.vcxproj</itemPath>
+        <itemPath>../../../common/zlib/adler32.c</itemPath>
+        <itemPath>../../../common/zlib/compress.c</itemPath>
+        <itemPath>../../../common/zlib/crc32.c</itemPath>
+        <itemPath>../../../common/zlib/crc32.h</itemPath>
+        <itemPath>../../../common/zlib/deflate.c</itemPath>
+        <itemPath>../../../common/zlib/deflate.h</itemPath>
+        <itemPath>../../../common/zlib/gzclose.c</itemPath>
+        <itemPath>../../../common/zlib/gzguts.h</itemPath>
+        <itemPath>../../../common/zlib/gzio.c</itemPath>
+        <itemPath>../../../common/zlib/gzlib.c</itemPath>
+        <itemPath>../../../common/zlib/gzread.c</itemPath>
+        <itemPath>../../../common/zlib/gzwrite.c</itemPath>
+        <itemPath>../../../common/zlib/infback.c</itemPath>
+        <itemPath>../../../common/zlib/inffast.c</itemPath>
+        <itemPath>../../../common/zlib/inffast.h</itemPath>
+        <itemPath>../../../common/zlib/inffixed.h</itemPath>
+        <itemPath>../../../common/zlib/inflate.c</itemPath>
+        <itemPath>../../../common/zlib/inflate.h</itemPath>
+        <itemPath>../../../common/zlib/inftrees.c</itemPath>
+        <itemPath>../../../common/zlib/inftrees.h</itemPath>
+        <itemPath>../../../common/zlib/trees.c</itemPath>
+        <itemPath>../../../common/zlib/trees.h</itemPath>
+        <itemPath>../../../common/zlib/uncompr.c</itemPath>
+        <itemPath>../../../common/zlib/zconf.h</itemPath>
+        <itemPath>../../../common/zlib/zlib.h</itemPath>
+        <itemPath>../../../common/zlib/zutil.c</itemPath>
+        <itemPath>../../../common/zlib/zutil.h</itemPath>
+      </logicalFolder>
+      <itemPath>../../../common/MSG00001.bin</itemPath>
+      <itemPath>../../../common/Rijndael.h</itemPath>
+      <itemPath>../../../common/_endian.h</itemPath>
+      <itemPath>../../../common/aes.c</itemPath>
+      <itemPath>../../../common/aes.h</itemPath>
+      <itemPath>../../../common/base64-decode.c</itemPath>
+      <itemPath>../../../common/base64_decode.h</itemPath>
+      <itemPath>../../../common/com.cpp</itemPath>
+      <itemPath>../../../common/com.h</itemPath>
+      <itemPath>../../../common/com_linux.cpp</itemPath>
+      <itemPath>../../../common/com_linux.h</itemPath>
+      <itemPath>../../../common/com_win32.cpp</itemPath>
+      <itemPath>../../../common/com_win32.h</itemPath>
+      <itemPath>../../../common/comm.cpp</itemPath>
+      <itemPath>../../../common/comm.h</itemPath>
+      <itemPath>../../../common/configfile.cpp</itemPath>
+      <itemPath>../../../common/configfile.h</itemPath>
+      <itemPath>../../../common/crc.c</itemPath>
+      <itemPath>../../../common/crc.h</itemPath>
+      <itemPath>../../../common/crc8.c</itemPath>
+      <itemPath>../../../common/crc8.h</itemPath>
+      <itemPath>../../../common/date.cpp</itemPath>
+      <itemPath>../../../common/date.h</itemPath>
+      <itemPath>../../../common/datetime_utils.hpp</itemPath>
+      <itemPath>../../../common/dllist.c</itemPath>
+      <itemPath>../../../common/dllist.h</itemPath>
+      <itemPath>../../../common/duktape.c</itemPath>
+      <itemPath>../../../common/duktape.h</itemPath>
+      <itemPath>../../../common/engine.c</itemPath>
+      <itemPath>../../../common/fifo.c</itemPath>
+      <itemPath>../../../common/fifo.h</itemPath>
+      <itemPath>../../../common/gettimeofday.c</itemPath>
+      <itemPath>../../../common/gettimeofday.h</itemPath>
+      <itemPath>../../../common/hashtable.c</itemPath>
+      <itemPath>../../../common/hashtable.cpp</itemPath>
+      <itemPath>../../../common/hashtable.h</itemPath>
+      <itemPath>../../../common/log.cpp</itemPath>
+      <itemPath>../../../common/log.h</itemPath>
+      <itemPath>../../../common/luawrapper.h</itemPath>
+      <itemPath>../../../common/luawrapperutil.h</itemPath>
+      <itemPath>../../../common/md5.cpp</itemPath>
+      <itemPath>../../../common/md5.h</itemPath>
+      <itemPath>../../../common/mongoose.c</itemPath>
+      <itemPath>../../../common/mongoose.h</itemPath>
+      <itemPath>../../../common/msglog.cpp</itemPath>
+      <itemPath>../../../common/msglog.h</itemPath>
+      <itemPath>../../../common/node.cpp</itemPath>
+      <itemPath>../../../common/node.h</itemPath>
+      <itemPath>../../../common/ntservice.cpp</itemPath>
+      <itemPath>../../../common/ntservice.h</itemPath>
+      <itemPath>../../../common/ntservmsg.h</itemPath>
+      <itemPath>../../../common/ntservmsg.rc</itemPath>
+      <itemPath>../../../common/pdu.cpp</itemPath>
+      <itemPath>../../../common/pdu.h</itemPath>
+      <itemPath>../../../common/randpassword.cpp</itemPath>
+      <itemPath>../../../common/randpassword.h</itemPath>
+      <itemPath>../../../common/rijndael.cpp</itemPath>
+      <itemPath>../../../common/rscalc.c</itemPath>
+      <itemPath>../../../common/sha-1.c</itemPath>
+      <itemPath>../../../common/slre.c</itemPath>
+      <itemPath>../../../common/slre.h</itemPath>
+      <itemPath>../../../common/stdafx.h</itemPath>
+      <itemPath>../../../common/strtk.hpp</itemPath>
+      <itemPath>../../../common/v7.c</itemPath>
+      <itemPath>../../../common/v7.h</itemPath>
+      <itemPath>../../../common/xml2json.cpp</itemPath>
+      <itemPath>../../../common/xml2json.hpp</itemPath>
+    </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
                    projectFiles="false"
@@ -221,6 +458,7 @@
   <sourceRootList>
     <Elem>.</Elem>
     <Elem>../../common</Elem>
+    <Elem>../../../common</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -267,6 +505,136 @@
           <preBuildCommand></preBuildCommand>
         </preBuild>
       </makefileType>
+      <item path="../../../common/MSG00001.bin" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/Rijndael.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/SendRawPacket/NDIS Driver/ndisprot.inf"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/SendRawPacket/NDIS Driver/ndisprot.sys"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/SendRawPacket/NDIS Driver/src/README.txt"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/SendRawPacket/NDIS Driver/src/excallbk.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../../common/SendRawPacket/NDIS Driver/src/macros.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/SendRawPacket/NDIS Driver/src/makefile"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/SendRawPacket/NDIS Driver/src/ndisbind.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../../common/SendRawPacket/NDIS Driver/src/ndisprot.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/SendRawPacket/NDIS Driver/src/ndisprot.rc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/SendRawPacket/NDIS Driver/src/ntdisp.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../../common/SendRawPacket/NDIS Driver/src/nuiouser.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/SendRawPacket/NDIS Driver/src/precomp.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/SendRawPacket/NDIS Driver/src/recv.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../../common/SendRawPacket/NDIS Driver/src/send.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../../common/SendRawPacket/RawEthernet/App.ico"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/SendRawPacket/RawEthernet/AssemblyInfo.cs"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/SendRawPacket/RawEthernet/RawEthernet.cs"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/SendRawPacket/RawEthernet/RawEthernet.csproj"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/SendRawPacket/RawEthernet/RawEthernet.sln"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/SendRawPacket/directories.txt"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/_endian.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/aes.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../../common/aes.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/base64-decode.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../../common/base64_decode.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/com.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../../common/com.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/com_linux.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../../common/com_linux.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/com_win32.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../../common/com_win32.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/comm.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../../common/comm.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="../../../common/configfile.cpp" ex="false" tool="1" flavor2="0">
         <ccTool flags="0">
         </ccTool>
@@ -275,15 +643,574 @@
       </item>
       <item path="../../../common/crc8.c" ex="false" tool="0" flavor2="2">
       </item>
+      <item path="../../../common/date.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../../common/date.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/datetime_utils.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/dl/Makefile" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/dl/Makefile.sun" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/dl/base.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/dl/child1.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../../common/dl/child1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/dl/cygwin/Makefile" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/dl/cygwin/Makefile.DLLs"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/dl/cygwin/base.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/dl/cygwin/child1.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="../../../common/dl/cygwin/child1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/dl/cygwin/glue.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../../common/dl/cygwin/readme" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/dl/cygwin/test1.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="../../../common/dl/cygwin/test2.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="../../../common/dl/test" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/dl/test.cpp" ex="false" tool="1" flavor2="0">
+      </item>
       <item path="../../../common/dllist.c" ex="false" tool="0" flavor2="2">
       </item>
+      <item path="../../../common/duktape.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../../common/duktape.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/engine.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../../common/fifo.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../../common/fifo.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/gettimeofday.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../../common/gettimeofday.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/hashtable.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../../common/hashtable.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../../common/hashtable.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/AngularMeter.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/AngularMeter.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/AngularRegulator.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/AngularRegulator.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/BitmapButton.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/BitmapButton.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/BmpCheckBox.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/BmpCheckBox.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/BmpSwitcher.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/BmpSwitcher.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/CHANGES"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/CREDITS"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/ClockThread.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/ClockThread.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/Doc/kwxindustrialcontrols.doc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/KPrec.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/KWIC-LICENSE"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/LCDClock.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/LCDClock.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/LCDWindow.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/LCDWindow.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/LinearMeter.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/LinearMeter.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/LinearRegulator.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/LinearRegulator.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/NewWidget.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/NewWidget.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/TODO"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/Testdc.dsp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/Testdc.dsw"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/Testdc.ilk"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/Testdc.rc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/TestdcApp.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/TestdcApp.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/TestdcFrm.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/TestdcFrm.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/TimeAlarm.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/TimeAlarm.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/kwxNewWidget.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/kwxNewWidget.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/makefile"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/makefile.gtk"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/makefile.mtf"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/res/Testdc.ico"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/res/Testdc.xpm"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/res/Testdc32x32.xpm"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/res/but.xpm"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/res/buton.xpm"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/res/butpress.xpm"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/res/exefile.xpm"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/res/false.xpm"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/res/help.bmp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/res/help.xpm"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/res/koan200.xpm"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/res/lampoff.xpm"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/res/lampoffsel.xpm"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/res/lampon.xpm"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/res/lamponsel.xpm"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/res/ohsmile.xpm"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/res/reset_green.xpm"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/res/reset_orange.xpm"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/res/sadsmile.xpm"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/res/smile.xpm"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/res/submit_green.xpm"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/res/submit_orange.xpm"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/res/test.xpm"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/res/true.xpm"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/resource.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/kwxIndControlSource-0.3.0/wxprec.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="../../../common/log.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../../common/log.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/luawrapper.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/luawrapperutil.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/md5.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../../common/md5.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="../../../common/mongoose.c" ex="false" tool="0" flavor2="2">
+      </item>
+      <item path="../../../common/msglog.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../../common/msglog.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/node.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../../common/node.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/ntservice.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../../common/ntservice.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/ntservmsg.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/ntservmsg.rc" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/pdu.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../../common/pdu.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../../common/randpassword.cpp" ex="false" tool="1" flavor2="0">
         <ccTool flags="0">
         </ccTool>
       </item>
+      <item path="../../../common/rapidjson/memorybuffer.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/rapidjson/memorystream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/rapidjson/msinttypes/inttypes.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/rapidjson/msinttypes/stdint.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/rapidjson/pointer.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/rapidxml/license.txt"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/rapidxml/manual.html"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/rapidxml/rapidxml_iterators.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../../common/rijndael.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../../common/rscalc.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../../common/sha-1.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="../../../common/slre.c" ex="false" tool="0" flavor2="2">
+      </item>
+      <item path="../../../common/stdafx.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/strtk.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/v7.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../../common/v7.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/xml2json.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/ZLib.vcxproj" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/adler32.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/compress.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/crc32.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/crc32.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/deflate.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/deflate.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/gzclose.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/gzguts.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/gzio.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/gzlib.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/gzread.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/gzwrite.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/infback.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/inffast.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/inffast.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/inffixed.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/inflate.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/inflate.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/inftrees.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/inftrees.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/trees.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/trees.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/uncompr.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/zconf.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/zlib.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/zutil.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../../common/zlib/zutil.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../common/canalconfobj.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>

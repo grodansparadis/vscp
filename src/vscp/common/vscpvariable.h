@@ -34,6 +34,10 @@
 #include "variablecodes.h"
 #include "vscphelper.h"
 
+#define VSCP_VAR_PERSISTENT     true
+#define VSCP_VAR_NON_PERISTENT  false
+#define VSCP_VAR_READ_WRITE     true
+#define VSCP_VAR_READ_ONLY      false
 
 // Class that holds one VSCP variable
 // Peristant variables should have names staring with $

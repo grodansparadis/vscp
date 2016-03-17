@@ -74,7 +74,7 @@
 //#include <winsock.h>
 #include "canal_win32_ipc.h"
 
-#else 	// UNIX
+#else   // UNIX
 
 #define _POSIX
 #include <stdio.h>
@@ -124,6 +124,10 @@
 
 #ifndef VSCP_DISABLE_LUA
 #include <lua.hpp>
+#endif
+
+#ifndef VSCP_DISABLE_SQLITE
+#include <sqlite3.h> 
 #endif
 
 #include <mongoose.h>
@@ -189,6 +193,8 @@ CControlObject::CControlObject()
     int i;
     m_bQuit = false;            // true if we should quit
     gpctrlObj = this;           // needed by websocket static callbacks
+    
+    m_automation.setControlObject( this );
 
     m_maxItemsInClientReceiveQueue = MAX_ITEMS_CLIENT_RECEIVE_QUEUE;
     
@@ -1624,132 +1630,189 @@ void CControlObject::addStockVariables( void )
     m_VSCP_Variables.add( _("vscp.version.major"), 
                 wxString::Format( _("%d"), VSCPD_MAJOR_VERSION ), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                false, 
-                false );
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY );
                 
     m_VSCP_Variables.add( _("vscp.version.minor"), 
                 wxString::Format( _("%d"), VSCPD_MINOR_VERSION ), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                false, 
-                false );
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY );
                 
     m_VSCP_Variables.add( _("vscp.version.sub"), 
                 wxString::Format( _("%d"), VSCPD_SUB_VERSION ), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                false, 
-                false );
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY );
                 
     m_VSCP_Variables.add( _("vscp.version.build"), 
                 wxString::Format( _("%d"), VSCPD_BUILD_VERSION ), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                false, 
-                false );                
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY );                
                 
     m_VSCP_Variables.add( _("vscp.version.str"), 
                 wxString::Format( _("%s"), VSCPD_DISPLAY_VERSION ), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                false, 
-                false );
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY );
                 
     m_VSCP_Variables.add( _("vscp.version.wxwidgets.str"), 
                 wxString::Format( _("%s"), wxVERSION_STRING ), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                false, 
-                false ); 
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY ); 
 
     m_VSCP_Variables.add( _("vscp.version.wxwidgets.major"), 
                 wxString::Format( _("%d"), wxMAJOR_VERSION ), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                false, 
-                false );
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY );
                 
     m_VSCP_Variables.add( _("vscp.version.wxwidgets.minor"), 
                 wxString::Format( _("%d"), wxMINOR_VERSION ), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                false, 
-                false );
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY );
 
     m_VSCP_Variables.add( _("vscp.version.wxwidgets.release"), 
                 wxString::Format( _("%d"), wxRELEASE_NUMBER ), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                false, 
-                false );
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY );
 
     m_VSCP_Variables.add( _("vscp.version.wxwidgets.sub"), 
                 wxString::Format( _("%d"), wxSUBRELEASE_NUMBER ), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                false, 
-                false );
-
-    m_VSCP_Variables.add( _("vscp.copyright"), 
-                wxString::Format( _("%s"), VSCPD_COPYRIGHT ), 
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                false, 
-                false ); 
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY );
                 
     m_VSCP_Variables.add( _("vscp.copyright.vscp"), 
                 wxString::Format( _("%s"), VSCPD_COPYRIGHT ), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                false, 
-                false ); 
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY ); 
+                
+// *****************************************************************************
+//                               wxWidgets
+// *****************************************************************************                
 
     m_VSCP_Variables.add( _("vscp.copyright.wxwidgets"), 
                 wxString::Format( _("%s"), 
                     "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al" ), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                false, 
-                false ); 
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY ); 
+                
+// *****************************************************************************
+//                               Mongoose
+// *****************************************************************************                
 
     m_VSCP_Variables.add( _("vscp.copyright.mongoose"), 
                 wxString::Format( _("%s"), 
                     "Copyright (c) 2013-2015 Cesanta Software Limited" ), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                false, 
-                false ); 
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY );      
 
-    m_VSCP_Variables.add( _("vscp.version.mongoose.str"), 
-                wxString::Format( _("%s"), MG_VERSION ), 
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                false, 
-                false );      
+// *****************************************************************************
+//                                 LUA
+// *****************************************************************************
 
 #ifndef VSCP_DISABLE_LUA 
+
     m_VSCP_Variables.add( _("vscp.copyright.lua"), 
                 wxString::Format( _("%s"), LUA_COPYRIGHT ), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                false, 
-                false );
-                
-    m_VSCP_Variables.add( _("vscp.version.lua.str"), 
-                wxString::Format( _("%s"), LUA_RELEASE ), 
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                false, 
-                false );            
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY );
+                         
                 
     m_VSCP_Variables.add( _("vscp.version.lua.major"), 
                 wxString::Format( _("%s"), LUA_VERSION_MAJOR ), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                false, 
-                false ); 
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY ); 
 
     m_VSCP_Variables.add( _("vscp.version.lua.minor"), 
                 wxString::Format( _("%s"), LUA_VERSION_MINOR), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                false, 
-                false );  
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY );  
 
     m_VSCP_Variables.add( _("vscp.version.lua.release"), 
                 wxString::Format( _("%s"), LUA_VERSION_RELEASE ), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                false, 
-                false );         
-#endif     
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY );   
+
+    m_VSCP_Variables.add( _("vscp.version.lua.str"), 
+                wxString::Format( _("%d.%d.%d"), LUA_VERSION_MAJOR, LUA_VERSION_MINOR, LUA_VERSION_RELEASE ), 
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY ); 
+     
+#endif
+
+
+// *****************************************************************************
+//                                SQLite
+// *****************************************************************************
+    
+#ifndef VSCP_DISABLE_SQLITE
+    
+    int major, minor, sub, build;
+    sscanf( SQLITE_VERSION,
+            "%d.%d.%d.%d",
+            &major, &minor, &sub, &build );
+            
+    m_VSCP_Variables.add( _("vscp.version.sqlite.major"), 
+                wxString::Format( _("%d"), major ), 
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY ); 
+
+    m_VSCP_Variables.add( _("vscp.version.sqlite.minor"), 
+                wxString::Format( _("%d"), minor ), 
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY );  
+
+    m_VSCP_Variables.add( _("vscp.version.sqlite.release"), 
+                wxString::Format( _("%d"), sub ), 
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY ); 
+
+    m_VSCP_Variables.add( _("vscp.version.sqlite.builed"), 
+                wxString::Format( _("%d"), build ), 
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY );        
+    
+    m_VSCP_Variables.add( _("vscp.version.sqllite.str"), 
+                _(SQLITE_VERSION), 
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY );
+    
+#endif 
+
+// *****************************************************************************
+//                                OPENSSL
+// *****************************************************************************
+
+    m_VSCP_Variables.add( _("vscp.version.openssl.str"), 
+                _(OPENSSL_VERSION_TEXT), 
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY );
 
     m_VSCP_Variables.add( _("vscp.os.str"), 
                 wxGetOsDescription(), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                false, 
-                false ); 
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY ); 
           
     if ( wxIsPlatform64Bit() ) {
         wxstr = _("64-bit ");
@@ -1757,48 +1820,54 @@ void CControlObject::addStockVariables( void )
     else {
         wxstr = _("32-bit ");
     }
+    
+    m_VSCP_Variables.add( _("vscp.os.wordwidth"), 
+                wxIsPlatform64Bit() ? _("64") : _("32"), 
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY );
       
-    m_VSCP_Variables.add( _("vscp.os.width.str"), 
+    m_VSCP_Variables.add( _("vscp.os.wordwidth.str"), 
                 wxstr, 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                false, 
-                false );                
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY );                
     
     m_VSCP_Variables.add( _("vscp.os.width.is64bit"), 
                 wxIsPlatform64Bit() ? _("true") : _("false"), 
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                false, 
-                false );
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY );
                 
     m_VSCP_Variables.add( _("vscp.os.width.is32bit"), 
                 !wxIsPlatform64Bit() ? _("true") : _("false"), 
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                false, 
-                false ); 
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY ); 
 
     if ( wxIsPlatformLittleEndian() ) {
-        wxstr = _("Little endian ");
+        wxstr = _("Little endian");
     }
     else {
-        wxstr = _("Big endian ");
+        wxstr = _("Big endian");
     }  
 
     m_VSCP_Variables.add( _("vscp.os.endiness.str"), 
                 wxstr, 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                false, 
-                false ); 
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY ); 
 
     m_VSCP_Variables.add( _("vscp.os.endiness.isLittleEndian"), 
                 wxIsPlatformLittleEndian() ? _("true") : _("false"), 
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                false, 
-                false );   
+                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_READ_ONLY );   
 
    m_VSCP_Variables.add( _("vscp.host.fullname"), 
                 wxGetFullHostName(), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                false, 
+                VSCP_VAR_READ_ONLY, 
                 false );  
 
     if ( getIPAddress( guid ) ) {
@@ -1809,7 +1878,7 @@ void CControlObject::addStockVariables( void )
                             guid.getAt( 9 ),
                             guid.getAt( 8 ) ), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                false, 
+                VSCP_VAR_READ_ONLY, 
                 false );
     }
     
@@ -1823,41 +1892,35 @@ void CControlObject::addStockVariables( void )
                             guid.getAt( 9 ),
                             guid.getAt( 8 ) ), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                false, 
+                VSCP_VAR_READ_ONLY, 
                 false );  
     }
                 
     m_VSCP_Variables.add( _("vscp.host.userid"), 
                 wxGetUserId(), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                false, 
+                VSCP_VAR_READ_ONLY, 
                 false );  
 
-
-    m_VSCP_Variables.add( _("vscp.host.userid"), 
-                wxGetUserId(), 
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                false, 
-                false );    
 
     m_VSCP_Variables.add( _("vscp.host.username"), 
                 wxGetUserName(), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                false, 
+                VSCP_VAR_READ_ONLY, 
                 false );      
                  
     m_guid.toString( wxstr );
     m_VSCP_Variables.add( _("vscp.host.guid"), 
                 wxstr, 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                false, 
+                VSCP_VAR_READ_ONLY, 
                 false );
                 
     m_guid.toString( wxstr );
     m_VSCP_Variables.add( _("vscp.loglevel"), 
                 wxString::Format( _("%d "), m_logLevel ), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                false, 
+                VSCP_VAR_READ_ONLY, 
                 false );
                 
     switch ( m_logLevel  ) {
@@ -1896,80 +1959,110 @@ void CControlObject::addStockVariables( void )
     m_VSCP_Variables.add( _("vscp.loglevel.str"), 
                 wxstr, 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                false, 
+                VSCP_VAR_READ_ONLY, 
                 false );         
 
     
     m_VSCP_Variables.add( _("vscp.client.ReceiveQueue.Max"), 
                 wxString::Format( _("%d"), m_maxItemsInClientReceiveQueue ), 
                 VSCP_DAEMON_VARIABLE_CODE_LONG,
-                false, 
+                VSCP_VAR_READ_ONLY, 
                 false );  
                 
     m_VSCP_Variables.add( _("vscp.tcpip.isEnabled"), 
                 m_bTCPInterface ? _("true") : _("false"), 
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                false, 
+                VSCP_VAR_READ_ONLY, 
                 false );             
 
     m_VSCP_Variables.add( _("vscp.tcpip.addess"), 
                 m_strTcpInterfaceAddress, 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                false, 
+                VSCP_VAR_READ_ONLY, 
                 false );  
 
     m_VSCP_Variables.add( _("vscp.udp.isEnabled"), 
                 m_bUDPInterface ? _("true") : _("false"), 
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                false, 
+                VSCP_VAR_READ_ONLY, 
                 false );             
 
     m_VSCP_Variables.add( _("vscp.udp.addess"), 
                 m_strUDPInterfaceAddress, 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                false, 
+                VSCP_VAR_READ_ONLY, 
                 false ); 
               
     m_VSCP_Variables.add( _("vscp.discovery.isEnabled"), 
                 m_bVSCPDaemon ? _("true") : _("false"), 
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                false, 
-                false ); 
-
-    m_VSCP_Variables.add( _("vscp.discovery.isEnabled"), 
-                m_bVSCPDaemon ? _("true") : _("false"), 
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                false, 
-                false ); 
+                VSCP_VAR_READ_ONLY, 
+                false );
                 
     m_VSCP_Variables.add( _("vscp.automation.isEnabled"), 
                 m_automation.isAutomationEnabled() ? _("true") : _("false"), 
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                false, 
-                false );   
+                VSCP_VAR_READ_ONLY, 
+                false );
 
     if ( m_automation.isAutomationEnabled() ) {  
 
         m_VSCP_Variables.add( _("vscp.automation.heartbeat.isEnabled"), 
                 m_automation.isSendHeartbeat() ? _("true") : _("false"), 
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                false, 
+                VSCP_VAR_READ_ONLY, 
                 false );       
                 
         m_VSCP_Variables.add( _("vscp.automation.heartbeat.period"), 
                 wxString::Format( _("%ld"), m_automation.getIntervalHeartbeat() ), 
                 VSCP_DAEMON_VARIABLE_CODE_LONG,
-                false, 
+                VSCP_VAR_READ_ONLY, 
                 false ); 
 
         wxstr = m_automation.getHeartbeatSent().FormatISODate();
-        wxstr += _( " " );
+        wxstr += _( "T" );
         wxstr += m_automation.getHeartbeatSent().FormatISOTime();
         m_VSCP_Variables.add( _("vscp.automation.heartbeat.last"), 
                 wxstr, 
                 VSCP_DAEMON_VARIABLE_CODE_DATETIME,
-                false, 
+                VSCP_VAR_READ_ONLY, 
                 false );
+                
+        m_VSCP_Variables.add( _("vscp.automation.segctrl-heartbeat.isEnabled"), 
+                m_automation.isSendSegmentControllerHeartbeat() ? _("true") : _("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY, 
+                false );        
+                
+        m_VSCP_Variables.add( _("vscp.automation.segctrl.heartbeat.period"), 
+                wxString::Format( _("%ld"), m_automation.getIntervalSegmentControllerHeartbeat() ), 
+                VSCP_DAEMON_VARIABLE_CODE_LONG,
+                VSCP_VAR_READ_ONLY, 
+                false );  
+
+        wxstr = m_automation.getSegmentControllerHeartbeatSent().FormatISODate();
+        wxstr += _( "T" );
+        wxstr += m_automation.getSegmentControllerHeartbeatSent().FormatISOTime();
+        m_VSCP_Variables.add( _("vscp.automation.segctrl.heartbeat.last"), 
+                wxstr, 
+                VSCP_DAEMON_VARIABLE_CODE_DATETIME,
+                VSCP_VAR_READ_ONLY, 
+                false );       
+                
+        m_VSCP_Variables.add( _("vscp.automation.longitude"), 
+                wxString::Format( _("%f"), m_automation.getLongitude() ), 
+                VSCP_DAEMON_VARIABLE_CODE_DOUBLE,
+                VSCP_VAR_READ_ONLY, 
+                false ); 
+ 
+        m_VSCP_Variables.add( _("vscp.automation.latitude"), 
+                wxString::Format( _("%f"), m_automation.getLatitude() ), 
+                VSCP_DAEMON_VARIABLE_CODE_DOUBLE,
+                VSCP_VAR_READ_ONLY, 
+                false );
+                
+        
+                
     }
 }
 

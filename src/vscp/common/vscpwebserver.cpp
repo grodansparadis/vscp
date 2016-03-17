@@ -4724,7 +4724,7 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     int hours, minutes;
     pObject->m_automation.convert2HourMinute( pObject->m_automation.getDayLength(), &hours, &minutes );
     buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Length of day</b>: " );
-    buildPage += wxString::Format( _( "%d:%d" ), hours, minutes ) + _( "<br>" );
+    buildPage += wxString::Format( _( "%02d:%02d" ), hours, minutes ) + _( "<br>" );
 
     buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Declination</b>: " );
     buildPage += wxString::Format( _( "%f" ), pObject->m_automation.getDeclination() ) + _( "<br>" );
