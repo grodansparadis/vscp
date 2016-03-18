@@ -1028,6 +1028,7 @@ VSCPInformation::VSCPInformation( void )
     m_hashType[ MAKE_CLASSTYPE_LONG(65535, 27) ] = _("TIMER_RESUMED");
     m_hashType[ MAKE_CLASSTYPE_LONG(65535, 28) ] = _("TIMER_STOPPED");
     m_hashType[ MAKE_CLASSTYPE_LONG(65535, 29) ] = _("TIMER_ELLPSED");
+    m_hashType[ MAKE_CLASSTYPE_LONG(65535, 30) ] = _("NEW_CALCULATIONS");
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1074,5 +1074,6 @@
 #define VSCP2_TYPE_VSCPD_TIMER_RESUMED                          27
 #define VSCP2_TYPE_VSCPD_TIMER_STOPPED                          28
 #define VSCP2_TYPE_VSCPD_TIMER_ELLAPSED                         29
+#define VSCP2_TYPE_VSCPD_NEW_CALCULATION                        30
 
 #endif

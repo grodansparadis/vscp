@@ -442,6 +442,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
     // Calculate Sunrise/sunset parameters once a day
     if ( !m_bCalulationHasBeenDone && 
             ( 0 == wxDateTime::Now().GetHour() ) ) {
+                
         calcSun();     
         m_bCalulationHasBeenDone = true;
         
@@ -464,6 +465,25 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
                 VSCP_DAEMON_VARIABLE_CODE_DOUBLE,
                 VSCP_VAR_READ_ONLY, 
                 false );
+                
+        wxstr = m_pCtrlObj->m_automation.getLastCalculation().FormatISODate();
+        wxstr += _( "T" );
+        wxstr += m_pCtrlObj->m_automation.getLastCalculation().FormatISOTime();        
+        m_pCtrlObj->m_VSCP_Variables.add( _("vscp.automation.calc.last"), 
+                wxstr, 
+                VSCP_DAEMON_VARIABLE_CODE_DATETIME,
+                VSCP_VAR_READ_ONLY, 
+                false );    
+
+        // Send VSCP_CLASS2_VSCPD, Type=30/VSCP2_TYPE_VSCPD_NEW_CALCULATION
+        pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
+        pEventEx->head = 0;
+        pEventEx->vscp_class = VSCP_CLASS2_VSCPD;
+        pEventEx->vscp_type = VSCP2_TYPE_VSCPD_NEW_CALCULATION;
+        pEventEx->sizeData = 0;
+        
+        // IMPORTANT - GUID must be set by caller before event is sent
+                
     }
     
     // Trigger for next noon calculation
