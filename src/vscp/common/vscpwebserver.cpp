@@ -4736,7 +4736,7 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     buildPage += pObject->m_automation.getLastCalculation().FormatISODate() + _( " " );
     buildPage += pObject->m_automation.getLastCalculation().FormatISOTime() + _("<br>");
 
-    if ( pObject->m_automation.isSendSunriseEvent() ) {
+    if ( pObject->m_automation.isSendSunriseTwilightEvent() ) {
         buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;Sunrise twilight event should be sent.<br>" );
     }
     else {
@@ -4840,6 +4840,9 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
             buildPage += _("Set to default.");
         }
         buildPage += _("<br>");
+        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Path certs:</b> ");
+        buildPage += wxString::FromUTF8( pObject->m_pathCert );
+        buildPage += _("<br>");
         buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>ExtraMimeTypes:</b> ");
         buildPage += wxString::FromUTF8( pObject->m_extraMimeTypes );
         if ( 0 == strlen( pObject->m_extraMimeTypes ) ) {
@@ -4864,7 +4867,7 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
             buildPage += _("Set to default.");
         }
         buildPage += _("<br>");
-        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>IndeFiles:</b> ");
+        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>IndexFiles:</b> ");
         buildPage += wxString::FromUTF8( pObject->m_indexFiles );
         if ( 0 == strlen( pObject->m_indexFiles ) ) {
             buildPage += _("Set to default.");

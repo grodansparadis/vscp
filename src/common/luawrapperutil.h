@@ -8,7 +8,7 @@
 //
 // This is a set of utility functions that add to the functionalit of
 // LuaWrapper. Over time I found myself repeating a few patterns, such as
-// writing many trvial getter and setter functions, and wanting pass ownership
+// writing many trivial getter and setter functions, and wanting pass ownership
 // of one object to another and have the Lua script properly handle that case.
 //
 // This file contains the additional functions that I've added but that do

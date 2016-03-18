@@ -572,9 +572,6 @@ public:
     //            websocket/webserver interface
     //*****************************************************
 
-    // Path to SSL certificate
-    char m_pathCert[ MAX_PATH_SIZE ];
-
     // Enable/disable full webserver
     bool m_bWebServer;
 
@@ -592,6 +589,10 @@ public:
     // Domain for webserver and other net services
     char m_authDomain[ MAX_PATH_SIZE ];
     
+    // Path to SSL certificate
+    char m_pathCert[ MAX_PATH_SIZE ];
+    
+    /// Extra mime types
     char m_extraMimeTypes[ MAX_PATH_SIZE ];
 
     /// Extra mime types on the form "extension1=type1,extension2=type2,..."
@@ -640,10 +641,12 @@ public:
 
     // webserver port as port "8080" or address + port "127.0.0.1:8080"
     // If only port will bind to all interfaces,
-    wxString m_portWebServer;	// defaults to "8080"
+    wxString m_portWebServer;   // defaults to "8080"
 
     // Run as user
     wxString m_runAsUserWeb;
+    
+    
 
     // * * Websockets * *
 

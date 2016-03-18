@@ -474,6 +474,34 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
                 VSCP_DAEMON_VARIABLE_CODE_DATETIME,
                 VSCP_VAR_READ_ONLY, 
                 false );    
+                
+        wxstr = m_pCtrlObj->m_automation.getCivilTwilightSunriseTime().FormatISOTime();        
+        m_pCtrlObj->m_VSCP_Variables.add( _("vscp.automation.CivilTwilightSunriseTime"), 
+                wxstr, 
+                VSCP_DAEMON_VARIABLE_CODE_TIME,
+                VSCP_VAR_READ_ONLY, 
+                false );
+
+        wxstr = m_pCtrlObj->m_automation.getSunriseTime().FormatISOTime();        
+        m_pCtrlObj->m_VSCP_Variables.add( _("vscp.automation.CivilSunriseTime"), 
+                wxstr, 
+                VSCP_DAEMON_VARIABLE_CODE_TIME,
+                VSCP_VAR_READ_ONLY, 
+                false );    
+
+        wxstr = m_pCtrlObj->m_automation.getSunsetTime().FormatISOTime();        
+        m_pCtrlObj->m_VSCP_Variables.add( _("vscp.automation.CivilSunsetTime"), 
+                wxstr, 
+                VSCP_DAEMON_VARIABLE_CODE_TIME,
+                VSCP_VAR_READ_ONLY, 
+                false );
+                
+        wxstr = m_pCtrlObj->m_automation.getCivilTwilightSunsetTime().FormatISOTime();        
+        m_pCtrlObj->m_VSCP_Variables.add( _("vscp.automation.CivilTwilightSunsetTime"), 
+                wxstr, 
+                VSCP_DAEMON_VARIABLE_CODE_TIME,
+                VSCP_VAR_READ_ONLY, 
+                false );        
 
         // Send VSCP_CLASS2_VSCPD, Type=30/VSCP2_TYPE_VSCPD_NEW_CALCULATION
         pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
@@ -483,6 +511,8 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         pEventEx->sizeData = 0;
         
         // IMPORTANT - GUID must be set by caller before event is sent
+        
+        return true;
                 
     }
     

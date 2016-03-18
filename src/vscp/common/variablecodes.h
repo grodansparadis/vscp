@@ -42,6 +42,8 @@
 #define VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP      12  // VSCP event timestamp
 #define VSCP_DAEMON_VARIABLE_CODE_DATETIME                  13  // Date + Time in iso format 
 #define VSCP_DAEMON_VARIABLE_CODE_BASE64                    14  // Base64 encoded data
+#define VSCP_DAEMON_VARIABLE_CODE_DATE                      15  // Date in iso format 
+#define VSCP_DAEMON_VARIABLE_CODE_TIME                      16  // Time in iso format 
 
 #define VSCP_DAEMON_VARIABLE_CODE_MIME                      100 // Mime type (mime-type;base64 encoded content)
 #define VSCP_DAEMON_VARIABLE_CODE_HTML                      101 // HTML Page

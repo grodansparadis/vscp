@@ -171,6 +171,15 @@ uint8_t CVSCPVariable::getVariableTypeFromString( const wxString& strVariableTyp
         else if ( 0 == str.Find( _("DATETIME") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_DATETIME;
         }
+        else if ( 0 == str.Find( _("DATE") ) ) {
+            type = VSCP_DAEMON_VARIABLE_CODE_DATE;
+        }
+        else if ( 0 == str.Find( _("TIME") ) ) {
+            type = VSCP_DAEMON_VARIABLE_CODE_TIME;
+        }
+        else if ( 0 == str.Find( _("BASE64") ) ) {
+            type = VSCP_DAEMON_VARIABLE_CODE_BASE64;
+        }
         else if ( 0 == str.Find( _("EVENT") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT;
         }
@@ -232,6 +241,15 @@ const char * CVSCPVariable::getVariableTypeAsString( int type )
 
         case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
             return "DateTime";
+            
+        case VSCP_DAEMON_VARIABLE_CODE_BASE64:
+            return "BASE64";
+
+        case VSCP_DAEMON_VARIABLE_CODE_DATE:
+            return "Date";
+            
+        case VSCP_DAEMON_VARIABLE_CODE_TIME:
+            return "Time";    
 
         default:
             return "Unknown";
@@ -332,9 +350,21 @@ bool CVSCPVariable::writeValueToString( wxString& strValueOut )
 
         case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
             strValueOut = m_timestamp.FormatISODate();
-            strValueOut += wxT(" ");
+            strValueOut += wxT("T");
             strValueOut += m_timestamp.FormatISOTime();
             break;
+            
+        case VSCP_DAEMON_VARIABLE_CODE_BASE64:
+            strValueOut = m_strValue;
+            break;  
+
+        case VSCP_DAEMON_VARIABLE_CODE_DATE:
+            strValueOut = m_timestamp.FormatISODate();
+            break;
+            
+        case VSCP_DAEMON_VARIABLE_CODE_TIME:
+            strValueOut = m_timestamp.FormatISOTime();
+            break;    
 
         case VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED:
 
@@ -439,6 +469,18 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue )
         case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
             m_timestamp.ParseDateTime( strValue );
             break;
+            
+        case VSCP_DAEMON_VARIABLE_CODE_BASE64:
+            m_strValue = strValue;
+            break;   
+
+        case VSCP_DAEMON_VARIABLE_CODE_DATE:
+            m_timestamp.ParseDate( strValue );
+            break;
+            
+         case VSCP_DAEMON_VARIABLE_CODE_TIME:
+            m_timestamp.ParseTime( strValue );
+            break;   
 
         case VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED:
             
@@ -592,9 +634,15 @@ void CVSCPVariable::Reset( void )
                 m_event.timestamp = 0;
                 break;
 
+            case VSCP_DAEMON_VARIABLE_CODE_DATE:
+            case VSCP_DAEMON_VARIABLE_CODE_TIME:
             case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
                 m_timestamp = wxDateTime::Now();
                 break;
+                
+            case VSCP_DAEMON_VARIABLE_CODE_BASE64:
+                m_strValue = _("");
+                break;    
 
             case VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED:
             
@@ -997,7 +1045,8 @@ bool CVariableStorage::load( void )
             pVar->setLastChangedToNow();
 
             // Get variable type - String is default           
-            pVar->setType( pVar->getVariableTypeFromString( child->GetAttribute( wxT("type"), wxT("string") ) ) );            
+            pVar->setType( pVar->getVariableTypeFromString( child->GetAttribute( wxT("type"), 
+                                                            wxT("string") ) ) );            
 
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
@@ -1014,7 +1063,8 @@ bool CVariableStorage::load( void )
                     pVar->setName( strName );
                 }
                 else if (subchild->GetName() == wxT("value")) {
-                    pVar->setValueFromString( pVar->getType(), subchild->GetNodeContent() );
+                    pVar->setValueFromString( pVar->getType(), 
+                                                subchild->GetNodeContent() );
                     pVar->setPersistatValue( subchild->GetNodeContent() );
                 }
                 else if (subchild->GetName() == wxT("note")) {
@@ -1428,7 +1478,6 @@ bool CVariableStorage::save( wxString& path )
 
                     str.Printf( _("  <variable type=\"datetime\">\n") );
                     pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
-                    vscp_writeGuidToString( &pVariable->m_event, str );
 
                     // Write name
                     pFileStream->Write( "    <name>", strlen("    <name>") );
@@ -1444,10 +1493,84 @@ bool CVariableStorage::save( wxString& path )
 
                     // Write value
                     pFileStream->Write( "    <value>", strlen("    <value>") );
-                    //pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
-                    //str = pVariable->m_timestamp.FormatISODate();
-                    //str += _(" ");
-                    //str = pVariable->m_timestamp.FormatISOTime();
+                    pVariable->writeValueToString( str );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</value>\n", strlen("</value>\n") );
+
+                    pFileStream->Write( "  </variable>\n\n", strlen("  </variable>\n\n") );
+                    break;
+                    
+                case VSCP_DAEMON_VARIABLE_CODE_BASE64:
+
+                    str.Printf( _("  <variable type=\"base64\">\n"), pVariable->getType() );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+
+                    // Write name
+                    pFileStream->Write( "    <name>", strlen("    <name>") );
+                    str = pVariable->getName();
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</name>\n", strlen("</name>\n") );
+
+                    // Write note
+                    pFileStream->Write( "    <note>", strlen("    <note>") );
+                    str = pVariable->getNote();
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</note>\n", strlen("</note>\n") );
+
+                    // Write value
+                    pFileStream->Write( "    <value>", strlen("    <value>") );
+                    pFileStream->Write( pVariable->m_strValue.mb_str(), 
+                            strlen( pVariable->m_strValue.mb_str() ) );
+                    pFileStream->Write( "</value>\n", strlen("</value>\n") );
+
+                    pFileStream->Write( "  </variable>\n\n", strlen("  </variable>\n\n") );
+                    break;
+                    
+                case VSCP_DAEMON_VARIABLE_CODE_DATE:
+
+                    str.Printf( _("  <variable type=\"date\">\n") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+
+                    // Write name
+                    pFileStream->Write( "    <name>", strlen("    <name>") );
+                    str = pVariable->getName();
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</name>\n", strlen("</name>\n") );
+
+                    // Write note
+                    pFileStream->Write( "    <note>", strlen("    <note>") );
+                    str = pVariable->getNote();
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</note>\n", strlen("</note>\n") );
+
+                    // Write value
+                    pFileStream->Write( "    <value>", strlen("    <value>") );
+                    pVariable->writeValueToString( str );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</value>\n", strlen("</value>\n") );
+
+                    pFileStream->Write( "  </variable>\n\n", strlen("  </variable>\n\n") );
+                    break;
+
+                case VSCP_DAEMON_VARIABLE_CODE_TIME:
+
+                    str.Printf( _("  <variable type=\"time\">\n") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+
+                    // Write name
+                    pFileStream->Write( "    <name>", strlen("    <name>") );
+                    str = pVariable->getName();
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</name>\n", strlen("</name>\n") );
+
+                    // Write note
+                    pFileStream->Write( "    <note>", strlen("    <note>") );
+                    str = pVariable->getNote();
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</note>\n", strlen("</note>\n") );
+
+                    // Write value
+                    pFileStream->Write( "    <value>", strlen("    <value>") );
                     pVariable->writeValueToString( str );
                     pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
                     pFileStream->Write( "</value>\n", strlen("</value>\n") );

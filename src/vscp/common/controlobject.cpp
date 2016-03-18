@@ -2004,6 +2004,12 @@ void CControlObject::addStockVariables( void )
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
                 VSCP_VAR_READ_ONLY, 
                 false );
+                
+    m_VSCP_Variables.add( _("vscp.websrv.isEnabled"), 
+                m_bWebServer ? _("true") : _("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY, 
+                false );            
 
     if ( m_automation.isAutomationEnabled() ) {  
 
@@ -2061,9 +2067,320 @@ void CControlObject::addStockVariables( void )
                 VSCP_VAR_READ_ONLY, 
                 false );
                 
+        m_VSCP_Variables.add( _("vscp.automation.isSendTwilightSunriseEvent"), 
+                m_automation.isSendSunriseTwilightEvent() ? _("true") : _("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY, 
+                false );
         
+        m_VSCP_Variables.add( _("vscp.automation.isSendSunriseEvent"), 
+                m_automation.isSendSunriseEvent() ? _("true") : _("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY, 
+                false );
+                
+        m_VSCP_Variables.add( _("vscp.automation.isSendSunsetEvent"), 
+                m_automation.isSendSunsetEvent() ? _("true") : _("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY, 
+                false );
+
+        m_VSCP_Variables.add( _("vscp.automation.isSendTwilightSunsetEvent"), 
+                m_automation.isSendSunsetTwilightEvent() ? _("true") : _("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY, 
+                false );    
+             
+        m_VSCP_Variables.add( _("vscp.WorkingFolder"), 
+                wxGetCwd(), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY, 
+                false );       
                 
     }
+    
+// *****************************************************************************
+//                                WEB-Server   
+// *****************************************************************************
+    
+    if ( m_bWebServer ) {
+    
+        m_VSCP_Variables.add( _("vscp.websrv.address"), 
+                m_portWebServer, 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY, 
+                false );
+                
+        m_VSCP_Variables.add( _("vscp.websrv.authenticationOn"), 
+                !m_bDisableSecurityWebServer ? _("true") : _("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY, 
+                false );
+        
+        m_VSCP_Variables.add( _("vscp.websrv.root.path"), 
+                wxString::FromUTF8( m_pathWebRoot ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY, 
+                false );
+                
+        m_VSCP_Variables.add( _("vscp.websrv.authdomain"), 
+                ( 0 == strlen( m_authDomain ) ) ?
+                    wxString::FromAscii( "mydomain.com" ) :
+                    wxString::FromUTF8( m_authDomain ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY, 
+                false );  
+
+        m_VSCP_Variables.add( _("vscp.websrv.cert.path"), 
+                wxString::FromUTF8( m_pathCert ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY, 
+                false );
+                
+        m_VSCP_Variables.add( _("vscp.websrv.extramimetypes"), 
+                wxString::FromUTF8( m_extraMimeTypes ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY, 
+                false );  
+
+        m_VSCP_Variables.add( _("vscp.websrv.ssipatterns"), 
+                wxString::FromUTF8( m_ssi_pattern ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY, 
+                false );
+                
+        m_VSCP_Variables.add( _("vscp.websrv.ipacl"), 
+                wxString::FromUTF8( m_ip_acl ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY, 
+                false ); 
+
+        m_VSCP_Variables.add( _("vscp.websrv.cgi.interpreter"), 
+                wxString::FromUTF8( m_cgiInterpreter ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY, 
+                false );
+                
+        m_VSCP_Variables.add( _("vscp.websrv.cgi.pattern"), 
+                wxString::FromUTF8( m_cgiPattern ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY, 
+                false );  
+                
+        m_VSCP_Variables.add( _("vscp.websrv.directorylistings.enable"), 
+                ( NULL != strstr( m_EnableDirectoryListings,"yes" ) ) ? _("true") : _("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY, 
+                false );        
+
+        m_VSCP_Variables.add( _("vscp.websrv.hidefile.pattern"), 
+                wxString::FromUTF8( m_hideFilePatterns ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY, 
+                false );
+                
+        m_VSCP_Variables.add( _("vscp.websrv.indexfiles"), 
+                wxString::FromUTF8( m_indexFiles ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY, 
+                false ); 
+
+        m_VSCP_Variables.add( _("vscp.websrv.urlrewrites"), 
+                wxString::FromUTF8( m_urlRewrites ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY, 
+                false );
+                
+        m_VSCP_Variables.add( _("vscp.websrv.auth.file.directory"), 
+                wxString::FromUTF8( m_per_directory_auth_file ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY, 
+                false );
+
+        m_VSCP_Variables.add( _("vscp.websrv.auth.file.global"), 
+                wxString::FromUTF8( m_per_directory_auth_file ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY, 
+                false );
+
+        m_VSCP_Variables.add( _(""), 
+                wxString::FromUTF8( m_per_directory_auth_file ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY, 
+                false );
+        
+    }
+    
+// *****************************************************************************
+//                            Websocket-Server   
+// *****************************************************************************
+    
+    m_VSCP_Variables.add( _("vscp.websocket.enable"), 
+                m_bWebSockets ? _("true") : _("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY, 
+                false );
+    
+    if ( m_bWebSockets ) {
+    
+        m_VSCP_Variables.add( _("vscp.websocket.auth.enable"), 
+                m_bAuthWebsockets ? _("true") : _("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY, 
+                false );
+        
+    }
+
+// *****************************************************************************
+//                            Decision Matrix   
+// *****************************************************************************    
+    
+    m_VSCP_Variables.add( _("vscp.dm.enable"), 
+                m_bDM ? _("true") : _("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY, 
+                false );
+    
+    if ( m_bDM ) {
+        
+        m_VSCP_Variables.add( _("vscp.dm.logging.enable"), 
+                m_dm.m_bLogEnable ? _("true") : _("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY, 
+                false );
+                
+        if ( m_dm.m_bLogEnable ) {
+            
+            m_VSCP_Variables.add( _("vscp.dm.logging.path"), 
+                m_dm.m_logFileName.GetFullPath(), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY, 
+                false );
+            
+        }        
+                
+                
+        m_VSCP_Variables.add( _("vscp.dm.static.path"), 
+                wxString::FromUTF8( m_dm.m_configPath ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY, 
+                false );               
+        
+    }
+    
+    
+// *****************************************************************************
+//                             Variables   
+// *****************************************************************************
+    
+    m_VSCP_Variables.add( _("vscp.variable.enable"), 
+                _("true"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY, 
+                false );
+                
+    m_VSCP_Variables.add( _("vscp.variable.path"), 
+                m_VSCP_Variables.m_configPath, 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY, 
+                false ); 
+
+    m_VSCP_Variables.add( _("vscp.variable.interval.save"), 
+                wxString::Format( _("%ud"), m_VSCP_Variables.m_autosaveInterval ), 
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                VSCP_VAR_READ_ONLY, 
+                false );
+    
+// *****************************************************************************
+//                              Log files   
+// *****************************************************************************
+    
+    // General
+    m_VSCP_Variables.add( _("vscp.log.general.enable"), 
+                m_bLogGeneralEnable ? _("true") : _("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY, 
+                false );
+                
+    if ( m_bLogGeneralEnable ) {
+        
+        m_VSCP_Variables.add( _("vscp.log.general.path"), 
+                wxString::FromUTF8( m_logGeneralFileName.GetFullPath() ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY, 
+                false );
+                
+    }
+    
+    // Access
+    m_VSCP_Variables.add( _("vscp.log.access.enable"), 
+                m_bLogAccessEnable ? _("true") : _("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY, 
+                false );
+                
+    if ( m_bLogAccessEnable ) {
+        
+        m_VSCP_Variables.add( _("vscp.log.access.path"), 
+                wxString::FromUTF8( m_logAccessFileName.GetFullPath() ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY, 
+                false );
+                
+    }
+                
+    // Security
+    m_VSCP_Variables.add( _("vscp.log.access.enable"), 
+                m_bLogAccessEnable ? _("true") : _("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY, 
+                false );
+                
+    if ( m_bLogAccessEnable ) {
+        
+        m_VSCP_Variables.add( _("vscp.log.access.path"), 
+                wxString::FromUTF8( m_logAccessFileName.GetFullPath() ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY, 
+                false );
+                
+    }   
+    
+    // Security
+    m_VSCP_Variables.add( _("vscp.log.security.enable"), 
+                m_bLogSecurityEnable ? _("true") : _("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY, 
+                false );
+                
+    if ( m_bLogSecurityEnable ) {
+        
+        m_VSCP_Variables.add( _("vscp.log.security.path"), 
+                wxString::FromUTF8( m_logSecurityFileName.GetFullPath() ), 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY, 
+                false );
+                
+    } 
+    
+// *****************************************************************************
+//                              Drivers   
+// *****************************************************************************    
+         
+   
+   m_VSCP_Variables.add( _("vscp.driver.level1.enable"), 
+                m_bEnableLevel1Drivers ? _("true") : _("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY, 
+                false );
+                
+        
+    m_VSCP_Variables.add( _("vscp.driver.level2.enable"), 
+                m_bEnableLevel2Drivers ? _("true") : _("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY, 
+                false );    
+         
 }
 
 
