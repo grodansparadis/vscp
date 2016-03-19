@@ -2261,7 +2261,7 @@ void CControlObject::addStockVariables( void )
                 
                 
         m_VSCP_Variables.add( _("vscp.dm.static.path"), 
-                wxString::FromUTF8( m_dm.m_configPath ), 
+                m_dm.m_configPath, 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 VSCP_VAR_READ_ONLY, 
                 false );               
@@ -2305,7 +2305,7 @@ void CControlObject::addStockVariables( void )
     if ( m_bLogGeneralEnable ) {
         
         m_VSCP_Variables.add( _("vscp.log.general.path"), 
-                wxString::FromUTF8( m_logGeneralFileName.GetFullPath() ), 
+                m_logGeneralFileName.GetFullPath(), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 VSCP_VAR_READ_ONLY, 
                 false );
@@ -2322,7 +2322,7 @@ void CControlObject::addStockVariables( void )
     if ( m_bLogAccessEnable ) {
         
         m_VSCP_Variables.add( _("vscp.log.access.path"), 
-                wxString::FromUTF8( m_logAccessFileName.GetFullPath() ), 
+                m_logAccessFileName.GetFullPath(), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 VSCP_VAR_READ_ONLY, 
                 false );
@@ -2339,7 +2339,7 @@ void CControlObject::addStockVariables( void )
     if ( m_bLogAccessEnable ) {
         
         m_VSCP_Variables.add( _("vscp.log.access.path"), 
-                wxString::FromUTF8( m_logAccessFileName.GetFullPath() ), 
+                m_logAccessFileName.GetFullPath(), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 VSCP_VAR_READ_ONLY, 
                 false );
@@ -2356,7 +2356,7 @@ void CControlObject::addStockVariables( void )
     if ( m_bLogSecurityEnable ) {
         
         m_VSCP_Variables.add( _("vscp.log.security.path"), 
-                wxString::FromUTF8( m_logSecurityFileName.GetFullPath() ), 
+                m_logSecurityFileName.GetFullPath(), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 VSCP_VAR_READ_ONLY, 
                 false );
