@@ -85,6 +85,10 @@
     <File Name="../../../common/vscprestserver.o"/>
     <File Name="../../../common/vscpwebsocketserver.cpp"/>
     <File Name="../../../common/webserver_websocket.h"/>
+    <File Name="../../../common/vscpcoapserver.cpp"/>
+    <File Name="../../../common/vscpcoapserver.h"/>
+    <File Name="../../../common/vscpmqttbroker.cpp"/>
+    <File Name="../../../common/vscpmqttbroker.h"/>
   </VirtualDirectory>
   <VirtualDirectory Name="linux">
     <File Name="../vscpd.cpp"/>

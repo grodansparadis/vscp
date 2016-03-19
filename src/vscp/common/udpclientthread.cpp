@@ -114,9 +114,6 @@ void *VSCPUDPClientThread::Entry()
     // Clear the filter (Allow everything )
     vscp_clearVSCPFilter( &m_pClientItem->m_filterVSCP );
 
-    //ns_mgr_init( &m_pCtrlObject->m_mgrTcpIpServer, 
-                    this, 
-                    VSCPClientThread::ev_handler);
     mg_mgr_init( &mgr, this );
 
     //const char *port1 = "udp://:9598";

@@ -499,7 +499,7 @@ public:
     // ttl for multicast announce
     uint8_t m_ttlMultiCastAnnounce;
 
-    /// INterface(s) to use for UDP
+    /// Interface(s) to use for UDP
     wxString m_strUDPInterfaceAddress;
 
     

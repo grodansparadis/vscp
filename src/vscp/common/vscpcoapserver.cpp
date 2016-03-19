@@ -1,4 +1,4 @@
-// udpclientthread.cpp
+// vscpcoapserver.cpp
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -47,9 +47,11 @@
 #include <dllist.h>
 #include <version.h>
 #include <controlobject.h>
-#include <vscpmqttbroker.h>
+#include <vscpcoapserver.h>
 
 // Prototypes
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // VSCPMQTTBrokerThread
@@ -58,7 +60,7 @@
 // to handle client requests
 //
 
-VSCPMQTTBrokerThread::VSCPMQTTBrokerThread()
+VSCPCoAPServerThread::VSCPCoAPServerThread()
 : wxThread(wxTHREAD_JOINABLE)
 {
     m_bQuit = false;
@@ -67,7 +69,7 @@ VSCPMQTTBrokerThread::VSCPMQTTBrokerThread()
 }
 
 
-VSCPMQTTBrokerThread::~VSCPMQTTBrokerThread()
+VSCPCoAPServerThread::~VSCPCoAPServerThread()
 {
     ;
 }
@@ -77,12 +79,11 @@ VSCPMQTTBrokerThread::~VSCPMQTTBrokerThread()
 // Entry
 //
 
-void *VSCPMQTTBrokerThread::Entry()
+void *VSCPCoAPServerThread::Entry()
 {
     struct mg_mgr mgr;
     struct mg_connection *nc;
-    struct mg_mqtt_broker brk;
-    const char *address = "0.0.0.0:1883";
+    const char *address = "udp://:5683";
   
     // Check pointers
     if ( NULL == m_pCtrlObject ) return NULL;
@@ -90,7 +91,7 @@ void *VSCPMQTTBrokerThread::Entry()
     // We need to create a clientobject and add this object to the list
     m_pClientItem = new CClientItem;
     if ( NULL == m_pClientItem ) {
-        m_pCtrlObject->logMsg( _( "[VSCP MQTT Broker] Unable to allocate memory for client.\n" ), 
+        m_pCtrlObject->logMsg( _( "[VSCP CoAP Server] Unable to allocate memory for client.\n" ), 
                                 DAEMON_LOGMSG_ERROR );
         return NULL;
     }
@@ -98,7 +99,7 @@ void *VSCPMQTTBrokerThread::Entry()
     // This is now an active Client
     m_pClientItem->m_bOpen = true; 
     m_pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP;
-    m_pClientItem->m_strDeviceName = _("VSCP MQTT Broker: Started at ");
+    m_pClientItem->m_strDeviceName = _("VSCP CoAP Server: Started at ");
     wxDateTime now = wxDateTime::Now(); 
     m_pClientItem->m_strDeviceName += now.FormatISODate();
     m_pClientItem->m_strDeviceName += _(" ");
@@ -112,17 +113,16 @@ void *VSCPMQTTBrokerThread::Entry()
     // Clear the filter (Allow everything )
     vscp_clearVSCPFilter( &m_pClientItem->m_filterVSCP );
     mg_mgr_init( &mgr, this );
-    mg_mqtt_broker_init( &brk, NULL );
     
     if ( ( nc = mg_bind( &mgr, address, mg_mqtt_broker ) ) == NULL) {
-        m_pCtrlObject->logMsg( _("VSCP MQTT Broker: Faild to bind to requested address.\n"), 
+        m_pCtrlObject->logMsg( _("VSCP CoAP Server: Faild to bind to requested address.\n"), 
                                 DAEMON_LOGMSG_CRITICAL );
         return NULL;
     }
     
-    nc->user_data = &brk;
+    mg_set_protocol_coap( nc );
 
-    m_pCtrlObject->logMsg( _("VSCP MQTT Broker: Thread started.\n"), 
+    m_pCtrlObject->logMsg( _("VSCP CoAP Server: Thread started.\n"), 
                             DAEMON_LOGMSG_INFO );
 
     while ( !TestDestroy() && !m_bQuit ) {
@@ -133,7 +133,7 @@ void *VSCPMQTTBrokerThread::Entry()
     //ns_mgr_free( &m_pCtrlObject->m_mgrTcpIpServer );
     mg_mgr_free( &mgr );
 
-    m_pCtrlObject->logMsg( _( "VSCP MQTT Broker: Quit.\n" ), 
+    m_pCtrlObject->logMsg( _( "VSCP CoAP Server: Quit.\n" ), 
                             DAEMON_LOGMSG_INFO );
 
     return NULL;
@@ -144,7 +144,7 @@ void *VSCPMQTTBrokerThread::Entry()
 // OnExit
 //
 
-void VSCPMQTTBrokerThread::OnExit()
+void VSCPCoAPServerThread::OnExit()
 {
     if ( NULL != m_pClientItem ) {
         // Add the client to the Client List
@@ -159,26 +159,40 @@ void VSCPMQTTBrokerThread::OnExit()
 //
 
 void 
-VSCPMQTTBrokerThread::ev_handler(struct mg_connection *nc, int ev, void *p) 
+VSCPCoAPServerThread::ev_handler(struct mg_connection *nc, int ev, void *p) 
 {
     struct mbuf *io = &nc->recv_mbuf;
     struct mg_mqtt_broker *pbrk = 
                             (struct mg_mqtt_broker *)nc->user_data;
 
-    switch (ev) {
-
-        case MG_EV_CLOSE:
-            break;
-
-        case MG_EV_RECV: 
-            break;
-
-        case MG_EV_POLL:
-            break;
-
-        default:
-            break;
+    switch ( ev ) {
+        
+    case MG_EV_COAP_CON: {
+      
+        uint32_t res;
+      
+        struct mg_coap_message *cm = (struct mg_coap_message *) p;
+        printf("CON with msg_id = %d received\n", cm->msg_id);
+        res = mg_coap_send_ack(nc, cm->msg_id);
+        if ( 0 == res ) {
+            printf("Successfully sent ACK for message with msg_id = %d\n",
+                    cm->msg_id);
+        }  
+        else {
+            printf("Error: %d\n", res);
+        }
+        break;
     }
+    
+    case MG_EV_COAP_NOC:
+    case MG_EV_COAP_ACK:
+    case MG_EV_COAP_RST: {
+        struct mg_coap_message *cm = (struct mg_coap_message *) p;
+        printf("ACK/RST/NOC with msg_id = %d received\n", cm->msg_id);
+        break;
+    }
+    
+  }
 }
 
 

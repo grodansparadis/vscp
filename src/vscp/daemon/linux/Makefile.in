@@ -11,7 +11,7 @@ top_builddir = @top_builddir@
 top_wxbuilddir = @top_wxbuilddir@
 CXX = @CXX@
 CXXFLAGS =  @CXXFLAGS@ 
-CPPFLAGS = @CPPFLAGS@ -D MG_ENABLE_THREADS -I../../common -I../../../common
+CPPFLAGS = @CPPFLAGS@ -D MG_ENABLE_THREADS -D MG_ENABLE_MQTT_BROKER -D MG_ENABLE_COAP -I../../common -I../../../common
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
 STRIP = strip
@@ -57,7 +57,8 @@ VSCPD_OBJECTS =  vscpd.o \
 	../../common/mdf.o \
 	../../common/register.o \
 	../../common/knownnodes.o \
-	../../common/vscpmqttbroker \
+	../../common/vscpmqttbroker.o \
+	../../common/vscpcoapserver.o \
 	../../../common/dllist.o \
 	../../../common/configfile.o \
 	../../../common/crc.o \
