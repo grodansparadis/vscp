@@ -92,7 +92,8 @@ void *VSCPUDPClientThread::Entry()
     // We need to create a clientobject and add this object to the list
     m_pClientItem = new CClientItem;
     if ( NULL == m_pClientItem ) {
-        m_pCtrlObject->logMsg ( _T ( "[UDP Client] Unable to allocate memory for client.\n" ), DAEMON_LOGMSG_ERROR );
+        m_pCtrlObject->logMsg( _( "[UDP Client] Unable to allocate memory for client.\n" ), 
+                                DAEMON_LOGMSG_ERROR );
         return NULL;
     }
 
@@ -113,7 +114,9 @@ void *VSCPUDPClientThread::Entry()
     // Clear the filter (Allow everything )
     vscp_clearVSCPFilter( &m_pClientItem->m_filterVSCP );
 
-    //ns_mgr_init( &m_pCtrlObject->m_mgrTcpIpServer, this, VSCPClientThread::ev_handler );
+    //ns_mgr_init( &m_pCtrlObject->m_mgrTcpIpServer, 
+                    this, 
+                    VSCPClientThread::ev_handler);
     mg_mgr_init( &mgr, this );
 
     //const char *port1 = "udp://:9598";
@@ -137,7 +140,8 @@ void *VSCPUDPClientThread::Entry()
         
     }
 
-    m_pCtrlObject->logMsg(_T("UDP Client: Thread started.\n"), DAEMON_LOGMSG_INFO);
+    m_pCtrlObject->logMsg( _("UDP Client: Thread started.\n"), 
+                            DAEMON_LOGMSG_INFO);
 
     while ( !TestDestroy() && !m_bQuit ) {
         //ns_mgr_poll( &m_pCtrlObject->m_mgrTcpIpServer, 50 );
@@ -148,7 +152,8 @@ void *VSCPUDPClientThread::Entry()
     //ns_mgr_free( &m_pCtrlObject->m_mgrTcpIpServer );
     mg_mgr_free( &mgr );
 
-    m_pCtrlObject->logMsg( _T( "UDP ClientThread: Quit.\n" ), DAEMON_LOGMSG_INFO );
+    m_pCtrlObject->logMsg( _( "UDP ClientThread: Quit.\n" ), 
+                            DAEMON_LOGMSG_INFO );
 
     return NULL;
 }
@@ -176,7 +181,8 @@ void
 VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p) 
 {
     struct mbuf *io = &nc->recv_mbuf;
-    VSCPUDPClientThread *pUDPClientThread = (VSCPUDPClientThread *)nc->mgr->user_data;
+    VSCPUDPClientThread *pUDPClientThread = 
+                            (VSCPUDPClientThread *)nc->mgr->user_data;
 
     switch (ev) {
 
@@ -196,7 +202,9 @@ VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p)
                 tkz.SetString( wxString::FromAscii( buf ), _(";") );
                 
                 if ( !tkz.HasMoreTokens() ) {
-                    pUDPClientThread->m_pCtrlObject->logMsg ( _T ( "[UDP Client] UDP datagram does not have a valid format (user;password;event).\n" ), DAEMON_LOGMSG_ERROR );
+                    pUDPClientThread->m_pCtrlObject->logMsg ( _( "[UDP Client]"
+                    " UDP datagram does not have a valid format (user;password;event).\n" ), 
+                    DAEMON_LOGMSG_ERROR );
                     return;
                 }
 
@@ -204,7 +212,9 @@ VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p)
                 strUser = tkz.GetNextToken();
 
                 if ( !tkz.HasMoreTokens() ) {
-                    pUDPClientThread->m_pCtrlObject->logMsg ( _T ( "[UDP Client] UDP datagram does not have a valid format (user;password;event).\n" ), DAEMON_LOGMSG_ERROR );
+                    pUDPClientThread->m_pCtrlObject->logMsg ( _( "[UDP Client]" 
+                    " UDP datagram does not have a valid format (user;password;event).\n" ), 
+                    DAEMON_LOGMSG_ERROR );
                     return;
                 }
 
@@ -212,7 +222,9 @@ VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p)
                 strPassword = tkz.GetNextToken();
 
                 if ( !tkz.HasMoreTokens() ) {
-                    pUDPClientThread->m_pCtrlObject->logMsg ( _T ( "[UDP Client] UDP datagram does not have a valid format (user;password;event).\n" ), DAEMON_LOGMSG_ERROR );
+                    pUDPClientThread->m_pCtrlObject->logMsg ( _( "[UDP Client] UDP"
+                    " datagram does not have a valid format (user;password;event).\n" ), 
+                    DAEMON_LOGMSG_ERROR );
                     return;
                 }
 
@@ -249,17 +261,17 @@ VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p)
                 if ( NULL == pUDPClientThread->m_pClientItem->m_pUserItem ) {
                     wxString strErr = 
                         wxString::Format( _("[UDP Client] User [%s] allowed to connect.\n"), 
-#ifdef WIN32						
+#ifdef WIN32
                                                 pUDPClientThread->m_pClientItem->m_UserName );
 #else 
                                                 (const char *)pUDPClientThread->m_pClientItem->m_UserName.mbc_str() );
-#endif					
+#endif
                         pUDPClientThread->m_pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
 #if wxMAJOR_VERSION >= 3
-                    wxLogDebug( _("Password/Username failure.") );		
-#else						
+                    wxLogDebug( _("Password/Username failure.") );
+#else
                     ::wxLogDebug( _("Password/Username failure.") );
-#endif						
+#endif
                     mg_send( nc,  MSG_PASSWORD_ERROR, strlen ( MSG_PASSWORD_ERROR ) );
                     return;
                 }
@@ -278,8 +290,8 @@ VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p)
 #ifdef WIN32
                                                              remoteaddr );
 #else 
-                                                             (const char *)remoteaddr.mbc_str() );					
-#endif					
+                                                             (const char *)remoteaddr.mbc_str() );
+#endif
                     pUDPClientThread->m_pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO );
                     mg_send( nc,  MSG_INVALID_REMOTE_ERROR, strlen ( MSG_INVALID_REMOTE_ERROR ) );
                     return;
@@ -298,7 +310,7 @@ VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p)
 #else 
                                                 (const char *)remoteaddr.mbc_str(), 
                                                 (const char *)pUDPClientThread->m_pClientItem->m_UserName.mbc_str() );
-#endif				
+#endif
                 pUDPClientThread->m_pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
             }
             break;

@@ -57,6 +57,7 @@ VSCPD_OBJECTS =  vscpd.o \
 	../../common/mdf.o \
 	../../common/register.o \
 	../../common/knownnodes.o \
+	../../common/vscpmqttbroker \
 	../../../common/dllist.o \
 	../../../common/configfile.o \
 	../../../common/crc.o \

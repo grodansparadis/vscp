@@ -827,9 +827,9 @@ bool CControlObject::run(void)
 
         }
 
-        //---------------------------------------------------------------------------
+        //----------------------------------------------------------------------
         //                         Event received here
-        //---------------------------------------------------------------------------
+        //----------------------------------------------------------------------
 
         if ( pClientItem->m_clientInputQueue.GetCount() ) {
 
@@ -930,13 +930,16 @@ bool CControlObject::startClientWorkerThread(void)
         if (wxTHREAD_NO_ERROR == (err = m_pclientMsgWorkerThread->Create())) {
             //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
             if (wxTHREAD_NO_ERROR != (err = m_pclientMsgWorkerThread->Run())) {
-                logMsg(_("Unable to run controlobject client thread."), DAEMON_LOGMSG_CRITICAL);
+                logMsg( _("Unable to run controlobject client thread."), 
+                        DAEMON_LOGMSG_CRITICAL);
             }
         } else {
-            logMsg(_("Unable to create controlobject client thread."), DAEMON_LOGMSG_CRITICAL);
+            logMsg( _("Unable to create controlobject client thread."), 
+                    DAEMON_LOGMSG_CRITICAL);
         }
     } else {
-        logMsg(_("Unable to allocate memory for controlobject client thread."), DAEMON_LOGMSG_CRITICAL);
+        logMsg( _("Unable to allocate memory for controlobject client thread."), 
+                    DAEMON_LOGMSG_CRITICAL);
     }
 
     return true;
@@ -982,11 +985,13 @@ bool CControlObject::startTcpWorkerThread(void)
                 }
             } 
             else {
-                logMsg(_("Unable to create TCP thread."), DAEMON_LOGMSG_CRITICAL);
+                logMsg( _("Unable to create TCP thread."), 
+                        DAEMON_LOGMSG_CRITICAL);
             }
         } 
         else {
-            logMsg(_("Unable to allocate memory for TCP thread."), DAEMON_LOGMSG_CRITICAL);
+            logMsg(_("Unable to allocate memory for TCP thread."), 
+                        DAEMON_LOGMSG_CRITICAL);
         }
     }
 
@@ -1033,15 +1038,18 @@ bool CControlObject::startUDPWorkerThread(void)
             if (wxTHREAD_NO_ERROR == (err = m_pVSCPClientUDPThread->Create())) {
                 //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
                 if (wxTHREAD_NO_ERROR != (err = m_pVSCPClientUDPThread->Run())) {
-                    logMsg(_("Unable to run TCP thread."), DAEMON_LOGMSG_CRITICAL);
+                    logMsg( _("Unable to run TCP thread."), 
+                                DAEMON_LOGMSG_CRITICAL);
                 }
             } 
             else {
-                logMsg(_("Unable to create TCP thread."), DAEMON_LOGMSG_CRITICAL);
+                logMsg( _("Unable to create TCP thread."), 
+                            DAEMON_LOGMSG_CRITICAL);
             }
         } 
         else {
-            logMsg(_("Unable to allocate memory for TCP thread."), DAEMON_LOGMSG_CRITICAL);
+            logMsg( _("Unable to allocate memory for TCP thread."), 
+                        DAEMON_LOGMSG_CRITICAL);
         }
     }
 
@@ -1086,15 +1094,18 @@ bool CControlObject::startWebServerThread(void)
             if (wxTHREAD_NO_ERROR == (err = m_pwebServerThread->Create())) {
                 //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
                 if (wxTHREAD_NO_ERROR != (err = m_pwebServerThread->Run())) {
-                    logMsg(_("Unable to run WeServer thread."), DAEMON_LOGMSG_CRITICAL);
+                    logMsg( _("Unable to run WeServer thread."), 
+                                DAEMON_LOGMSG_CRITICAL);
                 }
             } 
             else {
-                logMsg(_("Unable to create WebServer thread."), DAEMON_LOGMSG_CRITICAL);
+                logMsg( _("Unable to create WebServer thread."), 
+                            DAEMON_LOGMSG_CRITICAL);
             }
         } 
         else {
-            logMsg(_("Unable to allocate memory for WebServer thread."), DAEMON_LOGMSG_CRITICAL);
+            logMsg( _("Unable to allocate memory for WebServer thread."), 
+                        DAEMON_LOGMSG_CRITICAL);
         }
     }
 
@@ -1139,15 +1150,18 @@ bool CControlObject::startDaemonWorkerThread(void)
             if (wxTHREAD_NO_ERROR == (err = m_pdaemonVSCPThread->Create())) {
                 m_pdaemonVSCPThread->SetPriority(WXTHREAD_DEFAULT_PRIORITY);
                 if (wxTHREAD_NO_ERROR != (err = m_pdaemonVSCPThread->Run())) {
-                    logMsg(_("Unable to start TCP VSCP daemon thread."), DAEMON_LOGMSG_CRITICAL);
+                    logMsg( _("Unable to start TCP VSCP daemon thread."), 
+                                DAEMON_LOGMSG_CRITICAL);
                 }
             } 
             else {
-                logMsg(_("Unable to create TCP VSCP daemon thread."), DAEMON_LOGMSG_CRITICAL);
+                logMsg( _("Unable to create TCP VSCP daemon thread."), 
+                            DAEMON_LOGMSG_CRITICAL);
             }
         } 
         else {
-            logMsg(_("Unable to start VSCP daemon thread."), DAEMON_LOGMSG_CRITICAL);
+            logMsg( _("Unable to start VSCP daemon thread."), 
+                        DAEMON_LOGMSG_CRITICAL);
         }
 
     } // daemon enabled
@@ -1172,7 +1186,7 @@ bool CControlObject::stopDaemonWorkerThread(void)
     return true;
 }
 
-/////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //  
 //
 
@@ -1199,11 +1213,11 @@ bool CControlObject::startDeviceWorkerThreads(void)
     return true;
 }
 
-/////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // stopDeviceWorkerThreads
 //
 
-bool CControlObject::stopDeviceWorkerThreads(void)
+bool CControlObject::stopDeviceWorkerThreads( void )
 {
     CDeviceItem *pDeviceItem;
 
@@ -1358,7 +1372,7 @@ uint32_t CControlObject::getClientMapFromIndex( uint32_t idx )
 
 uint32_t CControlObject::addIdToClientMap( uint32_t clid )
 {
-    for (uint32_t i = 1; i < VSCP_MAX_CLIENTS; i++) {
+    for ( uint32_t i = 1; i < VSCP_MAX_CLIENTS; i++ ) {
         if (0 == m_clientMap[ i ]) {
             m_clientMap[ i ] = clid;
             return clid;
@@ -1375,8 +1389,8 @@ uint32_t CControlObject::addIdToClientMap( uint32_t clid )
 
 bool CControlObject::removeIdFromClientMap( uint32_t clid )
 {
-    for (uint32_t i = 0; i < VSCP_MAX_CLIENTS; i++) {
-        if (clid == m_clientMap[ i ]) {
+    for ( uint32_t i = 0; i < VSCP_MAX_CLIENTS; i++ ) {
+        if ( clid == m_clientMap[ i ] ) {
             m_clientMap[ i ] = 0;
             return true;
         }
@@ -1550,7 +1564,8 @@ bool CControlObject::getMacAddress( cguid& guid )
         guid.setAt( 15, 0 );
     } 
     else {
-        logMsg(_("Failed to get hardware address (must be root?).\n"), DAEMON_LOGMSG_WARNING);
+        logMsg( _("Failed to get hardware address (must be root?).\n"), 
+                    DAEMON_LOGMSG_WARNING);
         rv = false;
     }
 
@@ -1747,7 +1762,10 @@ void CControlObject::addStockVariables( void )
                 VSCP_VAR_READ_ONLY );   
 
     m_VSCP_Variables.add( _("vscp.version.lua.str"), 
-                wxString::Format( _("%d.%d.%d"), LUA_VERSION_MAJOR, LUA_VERSION_MINOR, LUA_VERSION_RELEASE ), 
+                wxString::Format( _("%d.%d.%d"), 
+                                    LUA_VERSION_MAJOR, 
+                                    LUA_VERSION_MINOR, 
+                                    LUA_VERSION_RELEASE ), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
                 VSCP_VAR_NON_PERISTENT, 
                 VSCP_VAR_READ_ONLY ); 
