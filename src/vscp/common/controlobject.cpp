@@ -1969,12 +1969,13 @@ void CControlObject::addStockVariables( void )
 // *****************************************************************************
 //                                OPENSSL
 // *****************************************************************************
-
+#ifndef WIN32
     m_VSCP_Variables.add( _("vscp.version.openssl.str"), 
                 _(OPENSSL_VERSION_TEXT), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
                 VSCP_VAR_NON_PERISTENT, 
                 VSCP_VAR_READ_ONLY );
+#endif
 
     m_VSCP_Variables.add( _("vscp.os.str"), 
                 wxGetOsDescription(), 
