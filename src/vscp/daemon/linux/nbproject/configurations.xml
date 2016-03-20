@@ -474,6 +474,9 @@
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
+      <flagsDictionary>
+        <element flagsID="0" commonFlags="-O2"/>
+      </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
       <makefileType>
@@ -486,7 +489,6 @@
             <preprocessorList>
               <Elem>MG_ENABLE_THREADS</Elem>
               <Elem>VSCP_ENABLE_LUA</Elem>
-              <Elem>VSCP_ENABLE_SQLITE3</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__WXGTK__</Elem>
@@ -496,7 +498,6 @@
             <preprocessorList>
               <Elem>MG_ENABLE_THREADS</Elem>
               <Elem>VSCP_ENABLE_LUA</Elem>
-              <Elem>VSCP_ENABLE_SQLITE3</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__WXGTK__</Elem>
@@ -534,19 +535,49 @@
             flavor2="2">
       </item>
       <item path="../../../common/aes.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
       <item path="../../../common/base64-decode.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
       <item path="../../../common/com.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="../../../common/com_linux.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="../../../common/com_win32.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="../../../common/comm.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="../../../common/configfile.cpp" ex="false" tool="1" flavor2="0">
-        <ccTool>
+        <ccTool flags="0">
           <preprocessorList>
             <Elem>MG_ENABLE_COAP</Elem>
             <Elem>MG_ENABLE_MQTT_BROKER</Elem>
@@ -570,6 +601,11 @@
         </cTool>
       </item>
       <item path="../../../common/date.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="../../../common/dl/child1.cpp" ex="false" tool="1" flavor2="4">
       </item>
@@ -601,16 +637,46 @@
         </cTool>
       </item>
       <item path="../../../common/duktape.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
       <item path="../../../common/engine.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
       <item path="../../../common/fifo.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
       <item path="../../../common/gettimeofday.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
       <item path="../../../common/hashtable.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
       <item path="../../../common/hashtable.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="../../../common/kwxIndControlSource-0.3.0/AngularMeter.cpp"
             ex="false"
@@ -693,8 +759,18 @@
             flavor2="4">
       </item>
       <item path="../../../common/log.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="../../../common/md5.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="../../../common/mongoose.c" ex="false" tool="0" flavor2="2">
         <cTool>
@@ -705,15 +781,35 @@
         </cTool>
       </item>
       <item path="../../../common/msglog.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="../../../common/node.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="../../../common/ntservice.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="../../../common/pdu.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="../../../common/randpassword.cpp" ex="false" tool="1" flavor2="0">
-        <ccTool>
+        <ccTool flags="0">
           <preprocessorList>
             <Elem>MG_ENABLE_COAP</Elem>
             <Elem>MG_ENABLE_MQTT_BROKER</Elem>
@@ -721,10 +817,25 @@
         </ccTool>
       </item>
       <item path="../../../common/rijndael.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="../../../common/rscalc.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
       <item path="../../../common/sha-1.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
       <item path="../../../common/slre.c" ex="false" tool="0" flavor2="2">
         <cTool>
@@ -743,8 +854,18 @@
         </cTool>
       </item>
       <item path="../../../common/v7.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
       <item path="../../../common/xml2json.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="../../../common/zlib/adler32.c" ex="false" tool="0" flavor2="2">
       </item>
@@ -783,6 +904,9 @@
           <incDir>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/canalsuperwrapper.cpp" ex="false" tool="1" flavor2="4">
@@ -790,34 +914,60 @@
           <incDir>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/clientlist.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../common/controlobject.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../common/daemonvscp.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../common/devicelist.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../common/devicethread.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../common/dllwrapper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
           <incDir>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/dm.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../common/guid.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../common/interfacelist.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../common/knownnodes.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../common/mdf.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../common/old/StdAfx.cpp" ex="false" tool="1" flavor2="4">
       </item>
@@ -921,65 +1071,107 @@
       <item path="../../common/old/vscppipe.cpp" ex="false" tool="1" flavor2="4">
       </item>
       <item path="../../common/register.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../common/selectdevice.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
           <incDir>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/tables.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../common/tcpipclientthread.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../common/udpclientthread.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../common/udpthread.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
           <incDir>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/userlist.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../common/vscpautomation.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../common/vscpclientthreads.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
           <incDir>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/vscpcoapserver.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../common/vscpeventhelper.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../common/vscphelper.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../common/vscpmqttbroker.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../common/vscpmulticast.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
           <incDir>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/vscpremotetcpif.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../common/vscprestserver.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../common/vscpvariable.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../common/vscpwebserver.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../common/vscpwebsocketserver.cpp"
             ex="false"
             tool="1"
             flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../common/win32helpers/getopt.c" ex="false" tool="0" flavor2="2">
       </item>
@@ -1003,6 +1195,9 @@
           <incDir>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/xmllib.cpp" ex="false" tool="1" flavor2="4">
@@ -1010,6 +1205,9 @@
           <incDir>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <folder path="0">
@@ -1056,6 +1254,39 @@
           </preprocessorList>
         </ccTool>
       </folder>
+      <folder path="common/SendRawPacket">
+        <cTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </cTool>
+      </folder>
+      <folder path="common/dl">
+        <cTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </cTool>
+        <ccTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
+      <folder path="common/kwxIndControlSource-0.3.0">
+        <ccTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
+      <folder path="common/zlib">
+        <cTool>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
+        </cTool>
+      </folder>
       <folder path="src">
         <cTool>
           <incDir>
@@ -1066,6 +1297,9 @@
             <pElem>../../../common</pElem>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
         </cTool>
       </folder>
       <folder path="src/old">
@@ -1073,6 +1307,9 @@
           <incDir>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_SQLITE3</Elem>
+          </preprocessorList>
         </ccTool>
       </folder>
       <folder path="src/vscp">
@@ -1093,6 +1330,8 @@
         </ccTool>
       </folder>
       <item path="vscpd.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
     </conf>
   </confs>

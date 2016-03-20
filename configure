@@ -708,7 +708,6 @@ enable_option_checking
 enable_ssl
 enable_debug
 enable_lua
-enable_sqlite3
 enable_unicode
 with_wxdir
 with_wx_config
@@ -1341,7 +1340,6 @@ Optional Features:
   --disable-ssl           ssl build (default enabled)
   --enable-debug          debug mode (default disabled)
   --disable-lua            LUA build (default enabled)
-  --disable-sqlite2          SQLite3 build (default enabled)
   --enable-unicode        UNICODE build (default Unicode build)
 
 Optional Packages:
@@ -4394,51 +4392,6 @@ _ACEOF
 
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for sqlite3_open in -lsqlite3" >&5
-$as_echo_n "checking for sqlite3_open in -lsqlite3... " >&6; }
-if ${ac_cv_lib_sqlite3_sqlite3_open+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lsqlite3  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char sqlite3_open ();
-int
-main ()
-{
-return sqlite3_open ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_sqlite3_sqlite3_open=yes
-else
-  ac_cv_lib_sqlite3_sqlite3_open=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_sqlite3_sqlite3_open" >&5
-$as_echo "$ac_cv_lib_sqlite3_sqlite3_open" >&6; }
-if test "x$ac_cv_lib_sqlite3_sqlite3_open" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBSQLITE3 1
-_ACEOF
-
-  LIBS="-lsqlite3 $LIBS"
-
-fi
-
 
 # Checks for header files.
 ac_header_dirent=no
@@ -6195,13 +6148,6 @@ fi
 
 
 
-# Check whether --enable-sqlite3 was given.
-if test "${enable_sqlite3+set}" = set; then :
-  enableval=$enable_sqlite3; vscp_sqlite3=no
-else
-  vscp_sqlite3=yes
-fi
-
 
 
 
@@ -7236,7 +7182,6 @@ fi
 if test "${vscp_sqlite3}" = yes ; then
    CPPFLAGS="$CPPFLAGS -D VSCP_ENABLE_SQLITE3"
    CFLAGS="$CFLAGS -D VSCP_ENABLE_SQLITE3"
-   EXTRALIBS="$EXTRALIBS -lsqlite3"
 fi
 
 
@@ -8606,15 +8551,15 @@ You can tune the compiler flags in vscp-config.
 To build VSCP and friends, type \'make\' followed by \'make install\'
 
  use --enable-debug to build a debug version; release is default.
- use --disable-ssl to build a SSL version of executables; Non SSL is default.
- use --disable-lua to build with LUA support.
- use --disable-sglite3 to build without SQLite3
- use --disable-unicode to build an Ansi version; Unicode is default.
+ use --disable-ssl to build a non SSL version of executables. SSL is default.
+ use --disable-lua to build without LUA support. LUA support is default.
+ use --disable-sglite3 to build without SQLite3 SQLite3 support is default.
+ use --disable-unicode to build an ANSI version. Unicode is default.
 
  \"make\" -- builds VSCP & Friends.
  \"make install\" -- builds VSCP & Friends and install system.
- \"make config\" -- installs/restores configuration files.
- \"make web-files\" -- installs web demo content including websocket examples.
+ \"make config\" -- install/restore configuration files.
+ \"make web-files\" -- install/restore web demo content including websocket examples.
 
 "
 
