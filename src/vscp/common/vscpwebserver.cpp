@@ -261,7 +261,8 @@ void webserv_util_sendheader( struct mg_connection *nc,
                                 "Transfer-Encoding: chunked\r\n"
                                 "Cache-Control\r\n" 
                                 "max-age=0, post-check=0,\r\n"
-                                "pre-check=0, no-store, no-cache, must-revalidate\r\n\r\n",
+                                "pre-check=0, no-store, no-cache,"
+                                "must-revalidate\r\n\r\n",
                                 returncode,
                                 content, 
                                 date );
@@ -388,7 +389,6 @@ static int vscp_is_authorized( struct mg_connection *conn,
         struct sockaddr_storage addr;
         char ipstr[INET6_ADDRSTRLEN];
         int port;
-
         
          * len = sizeof addr;
         getpeername( conn->sock, (struct sockaddr*)&addr, &len);
@@ -538,7 +538,8 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
                                 "WWW-Authenticate: Digest qop=\"auth\", "
                                 "realm=\"%s\", nonce=\"%lu\"\r\n"
                                 "Content-Length: 0\r\n\r\n",
-                                pObject->m_authDomain, (unsigned long) time( NULL ) );
+                                pObject->m_authDomain, 
+                                (unsigned long)time( NULL ) );
                 return;
                 }
             }  
@@ -2833,11 +2834,13 @@ VSCPWebServerThread::websrv_dmpost( struct mg_connection *nc,
     
     wxString strActionParameter;
     if ( mg_get_http_var( &hm->query_string, "actionparameter", buf, sizeof( buf ) ) > 0 ) {
+        vscp_toXMLEscape( buf );
         strActionParameter = wxString::FromAscii( buf );
     }
     
     wxString strComment;
     if ( mg_get_http_var( &hm->query_string, "comment", buf, sizeof( buf ) ) > 0 ) {
+        vscp_toXMLEscape( buf );
         strComment = wxString::FromAscii( buf );
     }
     

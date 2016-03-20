@@ -63,6 +63,7 @@ VSCPD_OBJECTS =  vscpd.o \
 	../../../common/configfile.o \
 	../../../common/crc.o \
 	../../../common/crc8.o \
+	../../../common/sqlite3.o \
 	../../../common/randpassword.o \
 	../../../common/mongoose.o  \
 	../../../common/slre.o \

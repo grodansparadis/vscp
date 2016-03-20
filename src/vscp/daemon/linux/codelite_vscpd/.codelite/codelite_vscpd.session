@@ -1,26 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Session Name="/home/akhe/development/VSCP/vscp/src/vscp/daemon/linux/codelite_vscpd/codelite_vscpd.workspace">
-  <int Value="6" Name="m_selectedTab"/>
+  <int Value="0" Name="m_selectedTab"/>
   <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/daemon/linux/codelite_vscpd/codelite_vscpd.workspace" Name="m_workspaceName"/>
   <TabInfoArray Name="TabInfoArray">
     <TabInfo>
-      <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/common/udpclientthread.cpp" Name="FileName"/>
-      <int Value="42" Name="FirstVisibleLine"/>
-      <int Value="50" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
       <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/common/vscpwebserver.cpp" Name="FileName"/>
-      <int Value="982" Name="FirstVisibleLine"/>
-      <int Value="995" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/home/akhe/development/VSCP/vscp/src/common/luawrapperutil.h" Name="FileName"/>
-      <int Value="36" Name="FirstVisibleLine"/>
-      <int Value="844" Name="CurrentLine"/>
+      <int Value="515" Name="FirstVisibleLine"/>
+      <int Value="542" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>
@@ -47,15 +33,8 @@
     </TabInfo>
     <TabInfo>
       <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/common/controlobject.cpp" Name="FileName"/>
-      <int Value="1954" Name="FirstVisibleLine"/>
-      <int Value="1979" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/frmdeviceconfig.cpp" Name="FileName"/>
-      <int Value="700" Name="FirstVisibleLine"/>
-      <int Value="724" Name="CurrentLine"/>
+      <int Value="201" Name="FirstVisibleLine"/>
+      <int Value="242" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>
@@ -66,12 +45,26 @@
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>
+    <TabInfo>
+      <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.cpp" Name="FileName"/>
+      <int Value="165" Name="FirstVisibleLine"/>
+      <int Value="176" Name="CurrentLine"/>
+      <wxArrayString Name="Bookmarks"/>
+      <IntVector Name="CollapsedFolds"/>
+    </TabInfo>
+    <TabInfo>
+      <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.h" Name="FileName"/>
+      <int Value="128" Name="FirstVisibleLine"/>
+      <int Value="149" Name="CurrentLine"/>
+      <wxArrayString Name="Bookmarks"/>
+      <IntVector Name="CollapsedFolds"/>
+    </TabInfo>
   </TabInfoArray>
   <SerializedObject Name="m_breakpoints">
-    <long Value="3" Name="Count"/>
+    <long Value="8" Name="Count"/>
     <SerializedObject Name="Breakpoint0">
       <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/common/vscpwebserver.cpp" Name="file"/>
-      <int Value="728" Name="lineno"/>
+      <int Value="359" Name="lineno"/>
       <wxString Value="" Name="function_name"/>
       <wxString Value="" Name="memory_address"/>
       <int Value="1" Name="bp_type"/>
@@ -87,7 +80,7 @@
     </SerializedObject>
     <SerializedObject Name="Breakpoint1">
       <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/common/vscpwebserver.cpp" Name="file"/>
-      <int Value="755" Name="lineno"/>
+      <int Value="378" Name="lineno"/>
       <wxString Value="" Name="function_name"/>
       <wxString Value="" Name="memory_address"/>
       <int Value="1" Name="bp_type"/>
@@ -102,6 +95,86 @@
       <int Value="0" Name="origin"/>
     </SerializedObject>
     <SerializedObject Name="Breakpoint2">
+      <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/common/vscpwebserver.cpp" Name="file"/>
+      <int Value="532" Name="lineno"/>
+      <wxString Value="" Name="function_name"/>
+      <wxString Value="" Name="memory_address"/>
+      <int Value="1" Name="bp_type"/>
+      <int Value="0" Name="watchpoint_type"/>
+      <wxString Value="" Name="watchpt_data"/>
+      <CData Name="commandlist"/>
+      <bool Value="0" Name="regex"/>
+      <bool Value="0" Name="is_temp"/>
+      <bool Value="1" Name="is_enabled"/>
+      <int Value="0" Name="ignore_number"/>
+      <wxString Value="" Name="conditions"/>
+      <int Value="0" Name="origin"/>
+    </SerializedObject>
+    <SerializedObject Name="Breakpoint3">
+      <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/common/vscpwebserver.cpp" Name="file"/>
+      <int Value="543" Name="lineno"/>
+      <wxString Value="" Name="function_name"/>
+      <wxString Value="" Name="memory_address"/>
+      <int Value="1" Name="bp_type"/>
+      <int Value="0" Name="watchpoint_type"/>
+      <wxString Value="" Name="watchpt_data"/>
+      <CData Name="commandlist"/>
+      <bool Value="0" Name="regex"/>
+      <bool Value="0" Name="is_temp"/>
+      <bool Value="1" Name="is_enabled"/>
+      <int Value="0" Name="ignore_number"/>
+      <wxString Value="" Name="conditions"/>
+      <int Value="0" Name="origin"/>
+    </SerializedObject>
+    <SerializedObject Name="Breakpoint4">
+      <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/common/vscpwebserver.cpp" Name="file"/>
+      <int Value="544" Name="lineno"/>
+      <wxString Value="" Name="function_name"/>
+      <wxString Value="" Name="memory_address"/>
+      <int Value="1" Name="bp_type"/>
+      <int Value="0" Name="watchpoint_type"/>
+      <wxString Value="" Name="watchpt_data"/>
+      <CData Name="commandlist"/>
+      <bool Value="0" Name="regex"/>
+      <bool Value="0" Name="is_temp"/>
+      <bool Value="1" Name="is_enabled"/>
+      <int Value="0" Name="ignore_number"/>
+      <wxString Value="" Name="conditions"/>
+      <int Value="0" Name="origin"/>
+    </SerializedObject>
+    <SerializedObject Name="Breakpoint5">
+      <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/common/vscpwebserver.cpp" Name="file"/>
+      <int Value="548" Name="lineno"/>
+      <wxString Value="" Name="function_name"/>
+      <wxString Value="" Name="memory_address"/>
+      <int Value="1" Name="bp_type"/>
+      <int Value="0" Name="watchpoint_type"/>
+      <wxString Value="" Name="watchpt_data"/>
+      <CData Name="commandlist"/>
+      <bool Value="0" Name="regex"/>
+      <bool Value="0" Name="is_temp"/>
+      <bool Value="1" Name="is_enabled"/>
+      <int Value="0" Name="ignore_number"/>
+      <wxString Value="" Name="conditions"/>
+      <int Value="0" Name="origin"/>
+    </SerializedObject>
+    <SerializedObject Name="Breakpoint6">
+      <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/common/vscpwebserver.cpp" Name="file"/>
+      <int Value="756" Name="lineno"/>
+      <wxString Value="" Name="function_name"/>
+      <wxString Value="" Name="memory_address"/>
+      <int Value="1" Name="bp_type"/>
+      <int Value="0" Name="watchpoint_type"/>
+      <wxString Value="" Name="watchpt_data"/>
+      <CData Name="commandlist"/>
+      <bool Value="0" Name="regex"/>
+      <bool Value="0" Name="is_temp"/>
+      <bool Value="1" Name="is_enabled"/>
+      <int Value="0" Name="ignore_number"/>
+      <wxString Value="" Name="conditions"/>
+      <int Value="0" Name="origin"/>
+    </SerializedObject>
+    <SerializedObject Name="Breakpoint7">
       <wxString Value="/home/akhe/vscp_software/src/vscp/vscpworks/frmdeviceconfig.cpp" Name="file"/>
       <int Value="4139" Name="lineno"/>
       <wxString Value="" Name="function_name"/>

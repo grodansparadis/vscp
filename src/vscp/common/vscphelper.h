@@ -139,6 +139,15 @@ extern "C" {
         Get GMT time // http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3
     */
     void vscp_getTimeString( char *buf, size_t buf_len, time_t *t ); 
+    
+    
+    /*!
+     *  Escape XML string 
+     *
+     *  @param Buffer holding input string. Buffer size must be large enough to
+     *          hold expanded result.
+     */ 
+    void vscp_toXMLEscape( char *temp_str );
 
     // ***************************************************************************
     //                                Data Coding Helpers

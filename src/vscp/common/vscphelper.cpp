@@ -167,12 +167,63 @@ void vscp_getTimeString( char *buf, size_t buf_len, time_t *t )
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+// vscp_toXMLEscape
+//
+// Escape invalid XML characters for insert in XML file.
+// Note: Must be room in original buffer for result
+//
+
+void vscp_toXMLEscape( char *temp_str )
+{
+    const char cEscapeChars[6]={'&','\'','\"','>','<','\0'};
+    const char * const pEscapedSeqTable[] =
+                        {
+                            "&amp;",
+                            "&apos;",
+                            "&quot;",
+                            "&gt;",
+                            "&lt;",
+                        };
+    
+    unsigned int i, j, k;
+    unsigned int nRef = 0;
+    unsigned int nEscapeCharsLen = strlen( cEscapeChars );
+    unsigned int str_len = strlen( temp_str );
+    int nShifts = 0; 
+
+    for ( i=0; i<str_len; i++ ) {
+        
+        for ( nRef=0; nRef < nEscapeCharsLen; nRef++ ) {
+            
+            if ( temp_str[ i ] == cEscapeChars[ nRef ] ) {
+                
+                if ( ( nShifts = strlen( pEscapedSeqTable[ nRef ] ) - 1 ) > 0 ) {
+                    
+                    memmove( temp_str + i + nShifts, 
+                                temp_str + i, 
+                                str_len - i + nShifts ); 
+                    
+                    for ( j=i, k=0; j<=i+nShifts, k<=nShifts; j++,k++ ) {
+                        temp_str[ j ] = pEscapedSeqTable[ nRef ][ k ];
+                    }
+                    
+                    str_len += nShifts;
+                }
+            }
+        }  
+    }
+    
+    temp_str[ str_len ] = '\0';
+}
+
+
 // ***************************************************************************
 //                                Data Coding Helpers
 // ***************************************************************************
 
 
-uint8_t vscp_getMeasurementDataCoding(const vscpEvent *pEvent)
+uint8_t vscp_getMeasurementDataCoding( const vscpEvent *pEvent )
 {
     uint8_t datacoding_byte = -1;
     
@@ -195,8 +246,8 @@ uint8_t vscp_getMeasurementDataCoding(const vscpEvent *pEvent)
 // getDataCodingBitArray
 //
 
-uint64_t vscp_getDataCodingBitArray(const uint8_t *pCode,
-                                        const uint8_t length)
+uint64_t vscp_getDataCodingBitArray( const uint8_t *pCode,
+                                        const uint8_t length )
 {
     uint64_t bitArray = 0;
 
@@ -216,7 +267,7 @@ uint64_t vscp_getDataCodingBitArray(const uint8_t *pCode,
 // vscp_getDataCodingInteger
 //
 
-int64_t vscp_getDataCodingInteger(const uint8_t *pCode, uint8_t length )
+int64_t vscp_getDataCodingInteger( const uint8_t *pCode, uint8_t length )
 {
     int64_t value64 = 0;
     //uint8_t byteArray[8];
@@ -244,7 +295,7 @@ int64_t vscp_getDataCodingInteger(const uint8_t *pCode, uint8_t length )
 // getDataCodingNormalizedInteger
 //
 
-double vscp_getDataCodingNormalizedInteger(const uint8_t *pCode,
+double vscp_getDataCodingNormalizedInteger( const uint8_t *pCode,
                                                 uint8_t length )
 {
     uint8_t valarray[ 8 ];

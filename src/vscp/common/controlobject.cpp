@@ -195,7 +195,6 @@ CControlObject::CControlObject()
     gpctrlObj = this;           // needed by websocket static callbacks
     
     m_automation.setControlObject( this );
-
     m_maxItemsInClientReceiveQueue = MAX_ITEMS_CLIENT_RECEIVE_QUEUE;
     
     // Nill the GUID
@@ -240,7 +239,8 @@ CControlObject::CControlObject()
     m_bLogAccessEnable = true;
 
 #ifdef WIN32
-    m_logAccessFileName.SetName( wxStandardPaths::Get().GetConfigDir() + _("/vscp/vscp_log_access.txt") );
+    m_logAccessFileName.SetName( wxStandardPaths::Get().GetConfigDir() + 
+                                            _("/vscp/vscp_log_access.txt") );
 #else
     m_logAccessFileName.SetName( _("/srv/vscp/logs/vscp_log_access") );
 #endif
@@ -251,7 +251,7 @@ CControlObject::CControlObject()
     // Multicast annouce 
     m_bMulticastAnnounce = true;
 
-    // Control UDP INterface
+    // Control UDP Interface
     m_bUDP = false;
     
     // Enable MQTT broker
