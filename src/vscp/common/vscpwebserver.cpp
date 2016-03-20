@@ -553,10 +553,10 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
             // Log access
             strErr = 
             wxString::Format( _("Webserver: Host=[%s] - req=[%s] query=[%s] method=[%s] \n"), 
-                                    wxString::FromAscii((const char *)inet_ntoa( nc->sa.sin.sin_addr ) ).wx_str(),
-                                    wxString::FromAscii((const char *)phm->uri.p).wx_str(), 
-                                    wxString::FromAscii((const char *)phm->query_string.p).wx_str(), 
-                                    wxString::FromAscii((const char *)phm->method.p).wx_str() );
+                                    wxString::FromUTF8((const char *)inet_ntoa( nc->sa.sin.sin_addr ) ).wx_str(),
+                                    wxString::FromUTF8((const char *)phm->uri.p).wx_str(),
+                                    wxString::FromUTF8((const char *)phm->query_string.p).wx_str(),
+                                    wxString::FromUTF8((const char *)phm->method.p).wx_str() );
             pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_ACCESS );
 
             
@@ -1502,7 +1502,7 @@ VSCPWebServerThread::websrv_mainpage( struct mg_connection *nc,
     
     // Get hostname
     mg_str *mgstr = mg_get_http_header( hm, "Host" ); // nc->local_ip; //_("http://localhost:8080");
-    strHost.FromAscii( mgstr->p );
+    strHost.FromUTF8( mgstr->p );
 
     wxString buildPage;
     

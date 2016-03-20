@@ -552,7 +552,18 @@ bool CControlObject::init(wxString& strcfgfile)
     //wxLog::AddTraceMask( _( "wxTRACE_vscpd_dm" ) );
 
     // Change locale to get the correct decimal point
-    setlocale( LC_NUMERIC, "English_United States.1252" );  // Why not!
+    //setlocale( LC_NUMERIC, "English_United States.1252" );  // Why not!
+    // Set locale
+    int sys_lang = wxLocale::GetSystemLanguage();
+    if ( sys_lang != wxLANGUAGE_DEFAULT )
+    {
+        m_locale.Init( sys_lang );         // set custom locale
+        m_locale.AddCatalogLookupPathPrefix( "locale" );   // set "locale" prefix
+        m_locale.AddCatalog( "wxproton" );            // our private domain
+        m_locale.AddCatalog( "wxstd" );            // wx common domain is default
+                                                   // Restore "C" numeric locale
+        setlocale( LC_NUMERIC, "C" );
+    }
 
     // A configuration file must be available
     if (!wxFile::Exists(strcfgfile)) {
@@ -1912,11 +1923,11 @@ void CControlObject::addStockVariables( void )
                 VSCP_VAR_READ_ONLY );   
 
     m_VSCP_Variables.add( _("vscp.version.lua.str"), 
-                wxString::Format( _("%d.%d.%d"), 
+                wxString::Format( _("%s.%s.%s"), 
                                     LUA_VERSION_MAJOR, 
                                     LUA_VERSION_MINOR, 
                                     LUA_VERSION_RELEASE ), 
-                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
                 VSCP_VAR_NON_PERISTENT, 
                 VSCP_VAR_READ_ONLY ); 
      
@@ -2391,12 +2402,6 @@ void CControlObject::addStockVariables( void )
                 false );
 
         m_VSCP_Variables.add( _("vscp.websrv.auth.file.global"), 
-                wxString::FromUTF8( m_per_directory_auth_file ), 
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
-                false );
-
-        m_VSCP_Variables.add( _(""), 
                 wxString::FromUTF8( m_per_directory_auth_file ), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 VSCP_VAR_READ_ONLY, 

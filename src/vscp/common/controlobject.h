@@ -390,6 +390,8 @@ public:
     HANDLE m_hEvntSource;
 #endif
 
+    wxLocale m_locale;
+
     /*!
         true if we should quit
      */
