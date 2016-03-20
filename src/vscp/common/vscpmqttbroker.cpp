@@ -114,7 +114,9 @@ void *VSCPMQTTBrokerThread::Entry()
     mg_mgr_init( &mgr, this );
     mg_mqtt_broker_init( &brk, NULL );
     
-    if ( ( nc = mg_bind( &mgr, address, mg_mqtt_broker ) ) == NULL) {
+    if ( ( nc = mg_bind( &mgr, 
+                            m_pCtrlObject->m_strMQTTBrokerInterfaceAddress.mbc_str(), 
+                            mg_mqtt_broker ) ) == NULL) {
         m_pCtrlObject->logMsg( _("VSCP MQTT Broker: Faild to bind to requested address.\n"), 
                                 DAEMON_LOGMSG_CRITICAL );
         return NULL;

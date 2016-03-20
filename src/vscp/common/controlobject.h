@@ -49,6 +49,8 @@
 #include <vscpautomation.h>
 #include <tcpipclientthread.h>
 #include <udpclientthread.h>
+#include <vscpmqttbroker.h>
+#include <vscpcoapserver.h>
 #include <udpthread.h>
 #include <daemonvscp.h>
 #include <dm.h>
@@ -236,6 +238,26 @@ public:
         Stop the UDP Workerthread
     */
     bool stopUDPWorkerThread(void);
+    
+    /*!
+     *  Start MQTT broker
+     */
+    bool startMQTTBrokerThread(void);
+
+    /*!
+     * Stop MQTT broker
+     */    
+    bool stopMQTTBrokerThread(void);
+    
+    /*!
+     * Start CoAP server
+     */    
+    bool startCoAPServerThread(void);
+    
+    /*!
+     *  Stop CoAP server
+     */    
+    bool stopCoAPServerThread(void);
 
     /*!
         Starting WebServer worker thread
@@ -445,12 +467,22 @@ public:
     /*!
         Enable control (TCP/IP) interface
      */
-    bool m_bTCPInterface;
+    bool m_bTCP;
 
     /*!
         Enable UDP interface
     */
-    bool m_bUDPInterface;
+    bool m_bUDP;
+    
+    /*!
+        Enable MQTT broker
+    */
+    bool m_bMQTTBroker;
+    
+    /*!
+        Enable CoAP server
+    */
+    bool m_bCoAPServer;
 
     /*!
         Multicast announce interface
@@ -502,7 +534,11 @@ public:
     /// Interface(s) to use for UDP
     wxString m_strUDPInterfaceAddress;
 
+    /// Interface(s) to use for MQTT broker
+    wxString m_strMQTTBrokerInterfaceAddress;
     
+    /// Interface(s) to use for CoAP Server
+    wxString m_strCoAPServerInterfaceAddress;
 
 
     /////////////////////////////////////////////////////////
@@ -759,6 +795,18 @@ private:
 
     //wxMutex m_mutexudpSendThread;
     //wxMutex m_mutexudpReceiveThread;
+    
+    /*!
+        The server thread for the MQTT Broker
+     */
+    VSCPMQTTBrokerThread *m_pMQTTBrookerThread;
+    wxMutex m_mutexMQTTBrokerThread;
+    
+    /*!
+        The server thread for the CoAP server
+     */
+    VSCPCoAPServerThread *m_pCoAPServerThread;
+    wxMutex m_mutexCoAPServerThread;
 };
 
 

@@ -246,13 +246,19 @@ CControlObject::CControlObject()
 #endif
 
     // Control TCP/IP Interface
-    m_bTCPInterface = true;
+    m_bTCP = true;
 
     // Multicast annouce 
     m_bMulticastAnnounce = true;
 
     // Control UDP INterface
-    m_bUDPInterface = false;
+    m_bUDP = false;
+    
+    // Enable MQTT broker
+    m_bMQTTBroker = true;
+    
+    // Enable CoAP server
+    m_bCoAPServer = true;
 
     // Default TCP/IP interface
     m_strTcpInterfaceAddress = _("9598");
@@ -265,6 +271,12 @@ CControlObject::CControlObject()
 
     // Default UDP interface
     m_strUDPInterfaceAddress = _("udp://:9598");
+    
+    // Default MQTT broker interface
+    m_strMQTTBrokerInterfaceAddress = _("1883");
+    
+    // Default CoAP server interface
+    m_strCoAPServerInterfaceAddress = _("udp://:5683");
 
     // Level I (Canal) drivers
     m_bEnableLevel1Drivers = true;
@@ -285,6 +297,8 @@ CControlObject::CControlObject()
     m_pVSCPClientThread = NULL;
     m_pdaemonVSCPThread = NULL;
     m_pwebServerThread = NULL;
+    m_pMQTTBrookerThread = NULL;
+    m_pCoAPServerThread = NULL;
     
     // Websocket interface
     m_bWebSockets = true;       // websocket interface ia active
@@ -680,7 +694,7 @@ bool CControlObject::init(wxString& strcfgfile)
     startClientWorkerThread();
 
     // Start TCP/IP interface if enabled
-    if ( m_bTCPInterface ) {
+    if ( m_bTCP ) {
         logMsg(_("TCP/IP interface enabled.\n"), DAEMON_LOGMSG_INFO);
         startTcpWorkerThread();
     }
@@ -709,6 +723,24 @@ bool CControlObject::init(wxString& strcfgfile)
     }
     else {
         logMsg(_("Level I drivers disabled.\n"), DAEMON_LOGMSG_INFO);
+    }
+    
+    // Start MQTT Broker if enabled
+    if ( m_bMQTTBroker ) {
+        logMsg(_("MQTT Broker enabled.\n"), DAEMON_LOGMSG_INFO);
+        startMQTTBrokerThread();
+    }
+    else {
+        logMsg(_("MQTTBroker disabled.\n"), DAEMON_LOGMSG_INFO);
+    }
+    
+    // Start CoAP server if enabled
+    if ( m_bCoAPServer ) {
+        logMsg(_("CoAP Server enabled.\n"), DAEMON_LOGMSG_INFO);
+        startCoAPServerThread();
+    }
+    else {
+        logMsg(_("CoAP Server disabled.\n"), DAEMON_LOGMSG_INFO);
     }
 
     return true;
@@ -971,7 +1003,7 @@ bool CControlObject::startTcpWorkerThread(void)
     /////////////////////////////////////////////////////////////////////////////
     // Run the TCP server thread 
     /////////////////////////////////////////////////////////////////////////////
-    if (m_bTCPInterface) {
+    if ( m_bTCP ) {
         
         m_pVSCPClientThread = new VSCPClientThread;
 
@@ -1026,9 +1058,9 @@ bool CControlObject::stopTcpWorkerThread(void)
 bool CControlObject::startUDPWorkerThread(void)
 {
     /////////////////////////////////////////////////////////////////////////////
-    // Run the TCP server thread 
+    // Run the UDP server thread 
     /////////////////////////////////////////////////////////////////////////////
-    if ( m_bUDPInterface ) {
+    if ( m_bUDP ) {
         
         m_pVSCPClientUDPThread = new VSCPUDPClientThread;
 
@@ -1231,6 +1263,119 @@ bool CControlObject::stopDeviceWorkerThreads( void )
             pDeviceItem->stopDriver();
         }
 
+    }
+
+    return true;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+// startMQTTBrokerWorkerThread
+//
+
+bool CControlObject::startMQTTBrokerThread(void)
+{
+    /////////////////////////////////////////////////////////////////////////////
+    // Run the MQTT Broker thread if enabled
+    /////////////////////////////////////////////////////////////////////////////
+    if ( m_bMQTTBroker ) {
+        
+        m_pMQTTBrookerThread = new VSCPMQTTBrokerThread;
+
+        if (NULL != m_pMQTTBrookerThread) {
+            m_pMQTTBrookerThread->m_pCtrlObject = this;
+            wxThreadError err;
+            if (wxTHREAD_NO_ERROR == (err = m_pMQTTBrookerThread->Create())) {
+                //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
+                if (wxTHREAD_NO_ERROR != (err = m_pMQTTBrookerThread->Run())) {
+                    logMsg( _("Unable to run TCP thread."), 
+                                DAEMON_LOGMSG_CRITICAL);
+                }
+            } 
+            else {
+                logMsg( _("Unable to create TCP thread."), 
+                            DAEMON_LOGMSG_CRITICAL);
+            }
+        } 
+        else {
+            logMsg( _("Unable to allocate memory for TCP thread."), 
+                        DAEMON_LOGMSG_CRITICAL);
+        }
+    }
+
+    return true;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// stopMQTTBrokerWorkerThread
+//
+
+bool CControlObject::stopMQTTBrokerThread(void)
+{
+    if ( NULL != m_pMQTTBrookerThread ) {
+        m_mutexMQTTBrokerThread.Lock();
+        m_pMQTTBrookerThread->m_bQuit = true;
+        m_pMQTTBrookerThread->Wait();
+        delete m_pVSCPClientThread;
+        m_mutexMQTTBrokerThread.Unlock();
+    }
+
+    return true;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// startCoAPServerWorkerThread
+//
+
+bool CControlObject::startCoAPServerThread(void)
+{
+    /////////////////////////////////////////////////////////////////////////////
+    // Run the CoAP Server thread if enabled 
+    /////////////////////////////////////////////////////////////////////////////
+    if ( m_bCoAPServer ) {
+        
+        m_pCoAPServerThread = new VSCPCoAPServerThread;
+
+        if (NULL != m_pCoAPServerThread) {
+            m_pCoAPServerThread->m_pCtrlObject = this;
+            wxThreadError err;
+            if (wxTHREAD_NO_ERROR == (err = m_pCoAPServerThread->Create())) {
+                //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
+                if (wxTHREAD_NO_ERROR != (err = m_pCoAPServerThread->Run())) {
+                    logMsg( _("Unable to run TCP thread."), 
+                                DAEMON_LOGMSG_CRITICAL);
+                }
+            } 
+            else {
+                logMsg( _("Unable to create TCP thread."), 
+                            DAEMON_LOGMSG_CRITICAL);
+            }
+        } 
+        else {
+            logMsg( _("Unable to allocate memory for TCP thread."), 
+                        DAEMON_LOGMSG_CRITICAL);
+        }
+    }
+
+    return true;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// stopCoAPServerWorkerThread
+//
+
+bool CControlObject::stopCoAPServerThread(void)
+{
+    if ( NULL != m_pCoAPServerThread ) {
+        m_mutexCoAPServerThread.Lock();
+        m_pCoAPServerThread->m_bQuit = true;
+        m_pCoAPServerThread->Wait();
+        delete m_pVSCPClientThread;
+        m_mutexCoAPServerThread.Unlock();
     }
 
     return true;
@@ -1462,11 +1607,11 @@ bool CControlObject::getMacAddress( cguid& guid )
     // Clear the GUID
     guid.clear();
 
-    memset(&Ncb, 0, sizeof( Ncb));
+    memset( &Ncb, 0, sizeof( Ncb ) );
     Ncb.ncb_command = NCBENUM;
     Ncb.ncb_buffer = (UCHAR *) & lenum;
     Ncb.ncb_length = sizeof( lenum);
-    uRetCode = Netbios(&Ncb);
+    uRetCode = Netbios( &Ncb );
     //printf( "The NCBENUM return code is: 0x%x \n", uRetCode );
 
     for (i = 0; i < lenum.length; i++) {
@@ -1524,28 +1669,33 @@ bool CControlObject::getMacAddress( cguid& guid )
     return rv;
 
 #else
-
+    // cat /sys/class/net/eth0/address
     bool rv = true;
-    struct ifreq ifr;
+    struct ifreq s;
     int fd;
 
     // Clear the GUID
     guid.clear();
-
-    fd = socket( PF_INET, SOCK_RAW, htons( ETH_P_ALL ) );
+    
+    fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
     if ( -1 == fd ) return false;
-    memset(&ifr, 0, sizeof( ifr));
-    strncpy(ifr.ifr_name, "eth0", sizeof( ifr.ifr_name));
-    if (ioctl(fd, SIOCGIFHWADDR, &ifr) >= 0) {
+    
+    memset( &s, 0, sizeof( s ) );
+    strcpy( s.ifr_name, "eth0");
+    
+    if ( 0 == ioctl( fd, SIOCGIFHWADDR, &s ) ) {
+
         unsigned char *ptr;
-        ptr = (unsigned char *) &ifr.ifr_ifru.ifru_hwaddr.sa_data[ 0 ];
-        logMsg(wxString::Format(_(" Ethernet MAC address: %02x:%02x:%02x:%02x:%02x:%02x\n"),
-                *ptr,
-                *(ptr + 1),
-                *(ptr + 2),
-                *(ptr + 3),
-                *(ptr + 4),
-                *(ptr + 5)), DAEMON_LOGMSG_INFO);
+        ptr = (unsigned char *) &s.ifr_ifru.ifru_hwaddr.sa_data[ 0 ];
+        logMsg( wxString::Format( _(" Ethernet MAC address: %02x:%02x:%02x:%02x:%02x:%02x\n"),
+                                        s.ifr_addr.sa_data[ 0 ],
+                                        s.ifr_addr.sa_data[ 1 ],
+                                        s.ifr_addr.sa_data[ 2 ],
+                                        s.ifr_addr.sa_data[ 3 ],
+                                        s.ifr_addr.sa_data[ 4 ],
+                                        s.ifr_addr.sa_data[ 5 ] ),
+                                    DAEMON_LOGMSG_INFO );
+                                    
         guid.setAt( 0, 0xff );
         guid.setAt( 1, 0xff );
         guid.setAt( 2, 0xff );
@@ -1554,15 +1704,15 @@ bool CControlObject::getMacAddress( cguid& guid )
         guid.setAt( 5, 0xff );
         guid.setAt( 6, 0xff );
         guid.setAt( 7, 0xfe );
-        guid.setAt( 8, *ptr );
-        guid.setAt( 9, *(ptr + 1) );
-        guid.setAt( 10, *(ptr + 2) );
-        guid.setAt( 11, *(ptr + 3) );
-        guid.setAt( 12, *(ptr + 4));
-        guid.setAt( 13, *(ptr + 5) );
+        guid.setAt( 8, s.ifr_addr.sa_data[ 0 ] );
+        guid.setAt( 9, s.ifr_addr.sa_data[ 1 ] );
+        guid.setAt( 10, s.ifr_addr.sa_data[ 2 ] );
+        guid.setAt( 11, s.ifr_addr.sa_data[ 3 ] );
+        guid.setAt( 12, s.ifr_addr.sa_data[ 4 ] );
+        guid.setAt( 13, s.ifr_addr.sa_data[ 5 ] );
         guid.setAt( 14, 0 );
         guid.setAt( 15, 0 );
-    } 
+    }
     else {
         logMsg( _("Failed to get hardware address (must be root?).\n"), 
                     DAEMON_LOGMSG_WARNING);
@@ -1988,7 +2138,7 @@ void CControlObject::addStockVariables( void )
                 false );  
                 
     m_VSCP_Variables.add( _("vscp.tcpip.isEnabled"), 
-                m_bTCPInterface ? _("true") : _("false"), 
+                m_bTCP ? _("true") : _("false"), 
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
                 VSCP_VAR_READ_ONLY, 
                 false );             
@@ -2000,7 +2150,7 @@ void CControlObject::addStockVariables( void )
                 false );  
 
     m_VSCP_Variables.add( _("vscp.udp.isEnabled"), 
-                m_bUDPInterface ? _("true") : _("false"), 
+                m_bUDP ? _("true") : _("false"), 
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
                 VSCP_VAR_READ_ONLY, 
                 false );             
@@ -2010,6 +2160,30 @@ void CControlObject::addStockVariables( void )
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 VSCP_VAR_READ_ONLY, 
                 false ); 
+                
+    m_VSCP_Variables.add( _("vscp.mqtt.broker.isEnabled"), 
+                m_bMQTTBroker ? _("true") : _("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY, 
+                false );             
+
+    m_VSCP_Variables.add( _("vscp.mqtt.broker.addess"), 
+                m_strMQTTBrokerInterfaceAddress, 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY, 
+                false ); 
+
+    m_VSCP_Variables.add( _("vscp.coap.server.isEnabled"), 
+                m_bCoAPServer ? _("true") : _("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY, 
+                false );             
+
+    m_VSCP_Variables.add( _("vscp.coap.server.addess"), 
+                m_strCoAPServerInterfaceAddress, 
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY, 
+                false );        
               
     m_VSCP_Variables.add( _("vscp.discovery.isEnabled"), 
                 m_bVSCPDaemon ? _("true") : _("false"), 
@@ -2534,10 +2708,10 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true")); 
                     attribute.MakeLower();
                     if (attribute.IsSameAs(_("false"), false)) {
-                        m_bTCPInterface = false;
+                        m_bTCP = false;
                     }
                     else {
-                        m_bTCPInterface = true;
+                        m_bTCP = true;
                     }
 
                     m_strTcpInterfaceAddress = subchild->GetAttribute(wxT("interface"), wxT(""));
@@ -2563,15 +2737,41 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     wxString attribut = subchild->GetAttribute(wxT("enable"), wxT("true")); 
                     attribut.MakeLower();
                     if (attribut.IsSameAs(_("false"), false)) {
-                        m_bUDPInterface = false;
+                        m_bUDP = false;
                     }
                     else {
-                        m_bUDPInterface = true;
+                        m_bUDP = true;
                     }
 
                     m_strUDPInterfaceAddress = subchild->GetAttribute(wxT("interface"), wxT(""));
 
                 } 
+                else if (subchild->GetName() == wxT("mqttbroker")) {
+                    wxString attribut = subchild->GetAttribute(wxT("enable"), wxT("true")); 
+                    attribut.MakeLower();
+                    if (attribut.IsSameAs(_("false"), false)) {
+                        m_bMQTTBroker = false;
+                    }
+                    else {
+                        m_bMQTTBroker = true;
+                    }
+
+                    m_strMQTTBrokerInterfaceAddress = subchild->GetAttribute(wxT("interface"), wxT(""));
+
+                }
+                else if (subchild->GetName() == wxT("coapsrv")) {
+                    wxString attribut = subchild->GetAttribute(wxT("enable"), wxT("true")); 
+                    attribut.MakeLower();
+                    if (attribut.IsSameAs(_("false"), false)) {
+                        m_bCoAPServer = false;
+                    }
+                    else {
+                        m_bCoAPServer = true;
+                    }
+
+                    m_strCoAPServerInterfaceAddress = subchild->GetAttribute(wxT("interface"), wxT(""));
+
+                }
                 else if (subchild->GetName() == wxT("dm")) {
                     // Should the internal DM be disabled
                   

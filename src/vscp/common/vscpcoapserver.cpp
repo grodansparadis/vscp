@@ -79,11 +79,11 @@ VSCPCoAPServerThread::~VSCPCoAPServerThread()
 // Entry
 //
 
-void *VSCPCoAPServerThread::Entry()
+void 
+*VSCPCoAPServerThread::Entry()
 {
     struct mg_mgr mgr;
     struct mg_connection *nc;
-    const char *address = "udp://:5683";
   
     // Check pointers
     if ( NULL == m_pCtrlObject ) return NULL;
@@ -114,7 +114,9 @@ void *VSCPCoAPServerThread::Entry()
     vscp_clearVSCPFilter( &m_pClientItem->m_filterVSCP );
     mg_mgr_init( &mgr, this );
     
-    if ( ( nc = mg_bind( &mgr, address, mg_mqtt_broker ) ) == NULL) {
+    if ( ( nc = mg_bind( &mgr, 
+                            m_pCtrlObject->m_strCoAPServerInterfaceAddress.mbc_str(), 
+                            mg_mqtt_broker ) ) == NULL) {
         m_pCtrlObject->logMsg( _("VSCP CoAP Server: Faild to bind to requested address.\n"), 
                                 DAEMON_LOGMSG_CRITICAL );
         return NULL;
@@ -144,7 +146,8 @@ void *VSCPCoAPServerThread::Entry()
 // OnExit
 //
 
-void VSCPCoAPServerThread::OnExit()
+void 
+VSCPCoAPServerThread::OnExit()
 {
     if ( NULL != m_pClientItem ) {
         // Add the client to the Client List
@@ -167,34 +170,31 @@ VSCPCoAPServerThread::ev_handler(struct mg_connection *nc, int ev, void *p)
 
     switch ( ev ) {
         
-    case MG_EV_COAP_CON: {
+        case MG_EV_COAP_CON: {
       
-        uint32_t res;
+            uint32_t res;
       
-        struct mg_coap_message *cm = (struct mg_coap_message *) p;
-        printf("CON with msg_id = %d received\n", cm->msg_id);
-        res = mg_coap_send_ack(nc, cm->msg_id);
-        if ( 0 == res ) {
-            printf("Successfully sent ACK for message with msg_id = %d\n",
-                    cm->msg_id);
-        }  
-        else {
-            printf("Error: %d\n", res);
+            struct mg_coap_message *cm = (struct mg_coap_message *) p;
+            printf("CON with msg_id = %d received\n", cm->msg_id);
+            res = mg_coap_send_ack(nc, cm->msg_id);
+            if ( 0 == res ) {
+                printf("Successfully sent ACK for message with msg_id = %d\n",
+                        cm->msg_id);
+            }  
+            else {
+                printf("Error: %d\n", res);
+            }
+            break;
         }
-        break;
+    
+        case MG_EV_COAP_NOC:
+        case MG_EV_COAP_ACK:
+        case MG_EV_COAP_RST: {
+            struct mg_coap_message *cm = (struct mg_coap_message *) p;
+            printf("ACK/RST/NOC with msg_id = %d received\n", cm->msg_id);
+            break;
+        }
+    
     }
     
-    case MG_EV_COAP_NOC:
-    case MG_EV_COAP_ACK:
-    case MG_EV_COAP_RST: {
-        struct mg_coap_message *cm = (struct mg_coap_message *) p;
-        printf("ACK/RST/NOC with msg_id = %d received\n", cm->msg_id);
-        break;
-    }
-    
-  }
 }
-
-
-
-

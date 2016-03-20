@@ -4633,7 +4633,7 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     // TCP/IP interface
     buildPage += _("<div id=\"small\">");
     buildPage += _("<b>TCP/IP interface:</b> ");
-    if ( pObject->m_bTCPInterface ) {
+    if ( pObject->m_bTCP ) {
         buildPage += _("enabled on <b>interface:</b> '");
         buildPage += pObject->m_strTcpInterfaceAddress;
         buildPage += _("'");
@@ -4649,9 +4649,41 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     // UDP interface
     buildPage += _("<div id=\"small\">");
     buildPage += _("<b>UDP interface:</b> ");
-    if ( pObject->m_bUDPInterface ) {
+    if ( pObject->m_bUDP ) {
         buildPage += _("enabled on <b>interface:</b> '");
         buildPage += pObject->m_strUDPInterfaceAddress;
+        buildPage += _("'");
+    }
+    else {
+        buildPage += _("disabled");
+    }
+    buildPage += _("<br>");
+    buildPage += _("</div>");
+
+    buildPage += _("<hr>");
+    
+    // MQTT Broker
+    buildPage += _("<div id=\"small\">");
+    buildPage += _("<b>MQTT broker:</b> ");
+    if ( pObject->m_bMQTTBroker ) {
+        buildPage += _("enabled on <b>interface:</b> '");
+        buildPage += pObject->m_strMQTTBrokerInterfaceAddress;
+        buildPage += _("'");
+    }
+    else {
+        buildPage += _("disabled");
+    }
+    buildPage += _("<br>");
+    buildPage += _("</div>");
+
+    buildPage += _("<hr>");
+    
+    // CoAP Server
+    buildPage += _("<div id=\"small\">");
+    buildPage += _("<b>CoAP Server:</b> ");
+    if ( pObject->m_bCoAPServer ) {
+        buildPage += _("enabled on <b>interface:</b> '");
+        buildPage += pObject->m_strCoAPServerInterfaceAddress;
         buildPage += _("'");
     }
     else {
