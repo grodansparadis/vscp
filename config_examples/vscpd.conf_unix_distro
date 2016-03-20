@@ -1,22 +1,22 @@
 <?xml version = "1.0" encoding = "UTF-8" ?>
 
-<!-- Version 0.5.0	   2014-09-19 		              -->
-<!-- Example configuration file Unix		              -->
-<!-- Ake Hedman, akhe@grodansparadis.com                      -->
-<!-- http://www.grodansparadis.com	                      -->
-<!-- Documentation for this configuration file is available   -->
-<!-- in the specification section 14.4 which can be found     -->
-<!-- here http://vscp.org/docs.php                            -->
+<!-- Version 0.5.0      2014-09-19                              -->
+<!-- Example configuration file Unix                            -->
+<!-- Ake Hedman, akhe@grodansparadis.com                        -->
+<!-- http://www.grodansparadis.com                              -->
+<!-- Documentation for this configuration file is available     -->
+<!-- in the specification section 14.4 which can be found       -->
+<!-- here http://vscp.org/docs.php                              -->
 
 <vscpconfig>
 
     <general>
     
-        <!-- Set the detail of logging you want -->
+        <!-- Set the detail of logging you want                 -->
 
         <loglevel>debug</loglevel>
         
-        <!-- The user to run as on Unix         -->
+        <!-- The user to run as on Unix                         -->
         <runasuser></runasuser>
         
         <!-- Set GUID for daemon                                  -->
@@ -27,9 +27,9 @@
         <guid>
             00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00
         </guid>
-		
-		<!-- Set symbolic server name for daemon -->
-		<servername>Unix VSCP Server</servername>
+        
+        <!-- Set symbolic server name for daemon -->
+        <servername>Unix VSCP Server</servername>
         
         <!-- Set to true to enable VSCP high end functionality           -->
         <!-- If disabled also automation will be disabled                -->
@@ -59,26 +59,47 @@
         
         <accesslogfile enable="true">/var/log/vscp/vscp_log_access</accesslogfile>
 
-        <!-- It is possible to enable/disable the TCP/IP interface       -->
-        <!-- You can open TCP/IP interfaces on several ports or on       -->
-        <!-- on a specific port or on every interface of the computer    -->
-        <!-- Default 9598 will listen on all interfaces while            -->
-        <!-- "127.0.0.1:9598" only will listen on the specified interface.-->
-        <!-- To specify several interfaces just enter them with a space  -->
-        <!-- between them.                                               -->
+        <!-- It is possible to enable/disable the TCP/IP interface          -->
+        <!-- You can open TCP/IP interfaces on several ports or on          -->
+        <!-- on a specific port or on every interface of the computer       -->
+        <!-- Default 9598 will listen on all interfaces while               -->
+        <!-- "127.0.0.1:9598" only will listen on the specified interface.  -->
+        <!-- To specify several interfaces just enter them with a space     -->
+        <!-- between them.                                                  -->
 
         <tcpip enable="true" interface="9598" />
-		
-        <!-- It is possible to enable/disable the UDP interface          -->
-        <!-- You can open UDP interfaces on several ports or on          -->
-        <!-- on a specific port or on every interface of the computer    -->
-        <!-- Default "UDP://:9598" will listen on all interfaces while   -->
-        <!-- "UDP://127.0.0.1:9598" only will listen on the specified    -->
-        <!-- interface. To specify several interfaces just enter them    -->
-        <!-- with a space between them. If interface is not preceded with -->
-        <!-- "UDP://" it will be added.                                  -->
-		
+        
+        <!-- It is possible to enable/disable the UDP interface             -->
+        <!-- You can open UDP interfaces on several ports or on             -->
+        <!-- on a specific port or on every interface of the computer       -->
+        <!-- Default "UDP://:9598" will listen on all interfaces while      -->
+        <!-- "UDP://127.0.0.1:9598" only will listen on the specified       -->
+        <!-- interface. To specify several interfaces just enter them       -->
+        <!-- with a space between them. If interface is not preceded with   -->
+        <!-- "UDP://" it will be added.                                     -->
+        
         <udp enable="true" interface="udp://9598"/>
+
+
+        <!-- It is possible to enable/disable the MQTT Broker               -->
+        <!-- You can open the MQTT broker interfaces on several ports or on -->
+        <!-- on a specific port or on every interface of the computer       -->
+        <!-- Default "1883" will listen on all interfaces while             -->
+        <!-- "UDP://127.0.0.1:1883" only will listen on the specified       -->
+        <!-- interface. To specify several interfaces just enter them       -->
+        <!-- with a space between them.                                     -->
+        
+        <mqttbroker enable="true" interface="1883"/>
+
+        <!-- It is possible to enable/disable the CoAP Server               -->
+        <!-- You can open the CoAP server interfaces on several ports or on -->
+        <!-- on a specific port or on every interface of the computer       -->
+        <!-- Default "udp://:5683" will listen on all interfaces while      -->
+        <!-- "udp://127.0.0.1:5683" only will listen on the specified       -->
+        <!-- interface. To specify several interfaces just enter them       -->
+        <!-- with a space between them.                                     -->
+        
+        <coapserver enable="true" interface="udp://:5683"/>
 
         <!-- Set to true to enable decision matrix                         -->
         <!-- Set to false to disable.                                      -->
@@ -94,15 +115,15 @@
                 loglevel="debug" 
                 logpath="/var/log/vscp/vscp_log_dm"  />      
 
-        <!-- Set to true to enable daemon variables         -->
-        <!-- Set to false to disable.                       -->
-        <!-- Path to variables storage.                     -->
+        <!-- Set to true to enable daemon variables                         -->
+        <!-- Set to false to disable.                                       -->
+        <!-- Path to variables storage.                                     -->
 
         <variables enable="true" path="/srv/vscp/variables.xml" autosave="5" />
 
-        <!-- Enable disable the webserver interface.          -->
-        <!-- Set the port to use for the webserver interface  -->
-        <!-- default is 8080.                                 -->
+        <!-- Enable disable the webserver interface.                        -->
+        <!-- Set the port to use for the webserver interface                -->
+        <!-- default is 8080.                                               -->
 
         <webserver enable="true" 
                     webrootpath="/srv/vscp/web"
@@ -128,11 +149,11 @@
     </general>
 
   
-    <!-- Holds information about one (at least) or more users      --> 
-    <!-- Use mkpassword to generate a new password                 -->
-    <!-- Privilege is admin/user                                   -->
-    <!-- Same information is used for accessing the daemon         -->
-    <!-- through the TCP/IP interface as through the web-interface -->
+    <!-- Holds information about one (at least) or more users               --> 
+    <!-- Use mkpassword to generate a new password                          -->
+    <!-- Privilege is admin/user                                            -->
+    <!-- Same information is used for accessing the daemon                  -->
+    <!-- through the TCP/IP interface as through the web-interface          -->
 
     <remoteuser> 
         <user>
@@ -151,8 +172,8 @@
         </user>	
     </remoteuser>
 
-    <!-- Here are settings that affect the internal VSCP functionality -->
-    <!-- of the server.                                                -->
+    <!-- Here are settings that affect the internal VSCP functionality      -->
+    <!-- of the server.                                                     -->
  
     <automation enable="true">
         <!-- zone/subzone server use    -->
@@ -169,12 +190,12 @@
         <timezone>1</timezone>
         <daylightsavingtime-start>2014-03-30 02:00:00</daylightsavingtime-start>
         <daylightsavingtime-end>2014-10-26 02:00:00</daylightsavingtime-end>
-	<!-- High level events -->
+        <!-- High level events -->
         <segmentcontoller-event enable="true" interval="60" />
         <heartbeat-event enable="true" interval="60" />
     </automation>
-	
-    <!-- List level I/CANAL drivers here                            -->
+    
+    <!-- List level I/CANAL drivers here                                    -->
 
     <level1driver enable="true" >
 
@@ -207,9 +228,9 @@
 
     </level1driver>
 
-	<!-- List level II VSCP drivers here                            -->
+    <!-- List level II VSCP drivers here                                    -->
 
-    <level2driver enable="true">	 	
+    <level2driver enable="true">
 
         <!-- Level II Logger  -->
         <driver enable="true" >
@@ -218,7 +239,7 @@
              <config>/tmp/vscp_level2.log</config> 		
              <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
- 	
+    
         <!-- Level II lmsensors  -->
         <driver enable="false" >
             <name>VCCP Level II LM-sensors driver 1</name>
@@ -228,7 +249,7 @@
         </driver>
 
         <!-- Level II socketcan  -->
-	    <driver enable="false" >
+        <driver enable="false" >
             <name>VSCP Level II SocketCAN Driver 1</name>
             <path>/usr/local/lib/vscpl2drv_socketcan.so</path>
             <config>can0</config>
@@ -259,15 +280,15 @@
         </driver>
 
        <!-- Level II simulation  -->
-        <driver enable="true"> 		   	 			
-            <name>sim1</name> 		   	 		
+        <driver enable="true">
+            <name>sim1</name>
             <config>1</config>
             <guid>FF:FF:FF:FF:FF:FF:FF:F7:03:00:00:00:00:00:00:00</guid>
             <path>/usr/local/lib/vscpl2drv_sim.so</path>
         </driver>
 
-	<!-- Level II 1-wire driver  -->
-        <driver enable="false"> 		   	 			
+    <!-- Level II 1-wire driver  -->
+        <driver enable="false">
             <name>VSCP Level II 1-wire Driver 1</name>
             <config>eth0</config>
             <path>/usr/local/lib/vscpl2drv_wire1.so</path>

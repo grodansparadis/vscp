@@ -1393,7 +1393,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
             char buf[32000];
             char wrkbuf[32000];
             wxString out;
-            uint32_t cntAvailable = pSession->pClientItem->m_clientInputQueue.GetCount();
+            size_t cntAvailable = pSession->pClientItem->m_clientInputQueue.GetCount();
 
             // Plain
             if ( REST_FORMAT_PLAIN == format ) {

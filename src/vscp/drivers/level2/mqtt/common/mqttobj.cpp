@@ -127,7 +127,7 @@ static void ev_handler( struct mg_connection *nc, int ev, void *p )
         
 #ifndef WIN32
         syslog(LOG_INFO,
-                "VSCP MQTT Driver - Connection opened: %d\n" );
+                "VSCP MQTT Driver - Connection opened.\n" );
 #endif   
 
         }       
@@ -351,7 +351,7 @@ FEED_EVENT:
         
 #ifndef WIN32
         syslog(LOG_INFO,
-                "VSCP MQTTT Driver - Connection closed: %d\n" );
+                "VSCP MQTT Driver - Connection closed.\n" );
 #endif           
             pmqttobj->m_bConnected = false;
             pmqttobj->m_bQuit = true;
