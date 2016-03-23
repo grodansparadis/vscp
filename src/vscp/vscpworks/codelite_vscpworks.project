@@ -284,8 +284,6 @@
     <File Name="dlgnewcanalsession.cpp"/>
     <File Name="dlgabout_symbols.h"/>
     <File Name="frmmain_symbols.h"/>
-    <File Name="Makefile"/>
-    <File Name="Makefile.in"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>
@@ -377,4 +375,8 @@ make</RebuildCommand>
   </Settings>
   <Dependencies Name="Debug"/>
   <Dependencies Name="Release"/>
+  <VirtualDirectory Name="Importan Files">
+    <File Name="Makefile"/>
+    <File Name="Makefile.in"/>
+  </VirtualDirectory>
 </CodeLite_Project>

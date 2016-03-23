@@ -47,16 +47,16 @@
 #define MEMREG_EEPROM_START             0xf00000
 #define MEMREG_EEPROM_END               0xffffff
 
-#define BUFFER_SIZE_PROGRAM             0x10000
-#define BUFFER_SIZE_CONFIG              0x2000
+#define BUFFER_SIZE_PROGRAM             0x200000
+#define BUFFER_SIZE_USERID              0x200
+#define BUFFER_SIZE_CONFIG              0x200
 #define BUFFER_SIZE_EEPROM              0x400
-
 
 #define INTEL_LINETYPE_DATA             0   // Data record.
 #define INTEL_LINETYPE_EOF              1   // End Of File record.
 #define INTEL_LINETYPE_EXTENDED_SEGMENT 2   // Extended segment address	record.
 #define INTEL_LINETYPE_RESERVED         3   // Not used
-#define INTEL_LINETYPE_EXTENDED_LINEAR  4   // Extended linear address record.	
+#define INTEL_LINETYPE_EXTENDED_LINEAR  4   // Extended linear address record.
 
 #ifndef MAX_PATH
 #define MAX_PATH                        512
@@ -69,9 +69,9 @@
 // CONTROL is defined as follows
 //
 // Bit 0:   MODE_WRT_UNLCK      Set this to allow write and erase to memory. 
-// Bit 1:   MODE_ERASE_ONLY     Set this to only erase program memory on a put command. 					
+// Bit 1:   MODE_ERASE_ONLY     Set this to only erase program memory on a put command.
 //                              Must be on a 64-bit boundary.
-// Bit 2:   MODE_AUTO_ERASE     Set this to automatically erase program memory while writing 					
+// Bit 2:   MODE_AUTO_ERASE     Set this to automatically erase program memory while writing
 //                              data.
 // Bit 3:   MODE_AUTO_INC       Set this to automatically increment the pointer after a write.
 // Bit 4:   MODE_ACK            Set to get acknowledge.
@@ -94,9 +94,10 @@
                                             // then clear the last location of EEDATA.	
 
 // Memory Type
-#define	MEM_TYPE_PROGRAM            0x00
-#define MEM_TYPE_CONFIG             0x01
-#define MEM_TYPE_EEPROM             0x02
+#define	MEM_TYPE_PROGRAM            0x00    // < 0x200000
+#define MEM_TYPE_CONFIG             0x01    // 0x300000
+#define MEM_TYPE_EEPROM             0x02    // 0xF00000
+#define MEM_TYPE_USERID             0x03    // 0x200000
 
 // CAN message ID's
 #define ID_PUT_BASE_INFO            0x00001000  // Write address information.
@@ -110,18 +111,18 @@
 #define ID_RESPONSE_GET_DATA        0x00001500  // Response for get data request.
 
 // USed VSCP commands
-#define VSCP_READ_REGISTER          0x09
-#define VSCP_RW_RESPONSE            0x0A
-#define VSCP_WRITE_REGISTER         0x0B
-#define VSCP_ENTER_BOOTLODER_MODE   0x0C
+#define VSCP_READ_REGISTER                  0x09
+#define VSCP_RW_RESPONSE                    0x0A
+#define VSCP_WRITE_REGISTER                 0x0B
+#define VSCP_ENTER_BOOTLODER_MODE           0x0C
 
 // Used VSCP registers
-#define VSCP_REG_PAGE_SELECT_MSB    0x92
-#define VSCP_REG_PAGE_SELECT_LSB    0x93
-#define VSCP_REG_GUID0              0xD0
-#define VSCP_REG_GUID3              0xD3
-#define VSCP_REG_GUID5              0xD5
-#define VSCP_REG_GUID7              0xD7
+#define VSCP_REG_PAGE_SELECT_MSB            0x92
+#define VSCP_REG_PAGE_SELECT_LSB            0x93
+#define VSCP_REG_GUID0                      0xD0
+#define VSCP_REG_GUID3                      0xD3
+#define VSCP_REG_GUID5                      0xD5
+#define VSCP_REG_GUID7                      0xD7
 
 #define PIC_BOOTLOADER_RESPONSE_TIMEOUT     5
 

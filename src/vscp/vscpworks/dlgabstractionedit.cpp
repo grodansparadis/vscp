@@ -181,7 +181,7 @@ void DialogAbstractionEdit::CreateControls()
 
     wxStaticText* itemStaticText10 = new wxStaticText;
     itemStaticText10->Create(itemDialogAbstraction, wxID_STATIC, _("Id :"), wxDefaultPosition, wxDefaultSize, 0);
-    itemStaticText10->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+    itemStaticText10->SetFont(wxFont( wxFontInfo(-1).FaceName("Tahoma").Bold() ) );
     itemGridSizerWindow->Add(itemStaticText10, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     m_abstractionId = new wxStaticText;
@@ -192,7 +192,7 @@ void DialogAbstractionEdit::CreateControls()
 
     wxStaticText* itemStaticText14 = new wxStaticText;
     itemStaticText14->Create(itemDialogAbstraction, wxID_STATIC, _("Type :"), wxDefaultPosition, wxDefaultSize, 0);
-    itemStaticText14->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+    itemStaticText14->SetFont(wxFont( wxFontInfo(-1).FaceName("Tahoma").Bold()));
     itemGridSizerWindow->Add(itemStaticText14, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     m_abstractionType = new wxStaticText;
@@ -204,7 +204,7 @@ void DialogAbstractionEdit::CreateControls()
 
     wxStaticText* itemStaticText18 = new wxStaticText;
     itemStaticText18->Create(itemDialogAbstraction, wxID_STATIC, _("Width :"), wxDefaultPosition, wxDefaultSize, 0);
-    itemStaticText18->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+    itemStaticText18->SetFont(wxFont( wxFontInfo(-1).FaceName("Tahoma").Bold()));
     itemGridSizerWindow->Add(itemStaticText18, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     m_abstractionWidth = new wxStaticText;
@@ -217,7 +217,7 @@ void DialogAbstractionEdit::CreateControls()
 
     wxStaticText* itemStaticText22 = new wxStaticText;
     itemStaticText22->Create(itemDialogAbstraction, wxID_STATIC, _("Register page :"), wxDefaultPosition, wxDefaultSize, 0);
-    itemStaticText22->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+    itemStaticText22->SetFont(wxFont( wxFontInfo(-1).FaceName("Tahoma").Bold()));
     itemGridSizerWindow->Add(itemStaticText22, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     m_abstractionRegisterPage = new wxStaticText;
@@ -230,7 +230,7 @@ void DialogAbstractionEdit::CreateControls()
 
     wxStaticText* itemStaticText26 = new wxStaticText;
     itemStaticText26->Create(itemDialogAbstraction, wxID_STATIC, _("Register Offset :"), wxDefaultPosition, wxDefaultSize, 0);
-    itemStaticText26->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+    itemStaticText26->SetFont(wxFont( wxFontInfo(-1).FaceName("Tahoma").Bold()));
     itemGridSizerWindow->Add(itemStaticText26, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     m_abstractionRegisterOffset = new wxStaticText;
@@ -243,7 +243,7 @@ void DialogAbstractionEdit::CreateControls()
 
     wxStaticText* itemStaticText30 = new wxStaticText;
     itemStaticText30->Create(itemDialogAbstraction, wxID_STATIC, _("Description :"), wxDefaultPosition, wxDefaultSize, 0);
-    itemStaticText30->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+    itemStaticText30->SetFont(wxFont( wxFontInfo(-1).FaceName("Tahoma").Bold()));
     itemGridSizerWindow->Add(itemStaticText30, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     m_abstractionDescription = new wxStaticText;
@@ -257,7 +257,7 @@ void DialogAbstractionEdit::CreateControls()
     
     wxStaticText* itemStaticText34 = new wxStaticText;
     itemStaticText34->Create(itemDialogAbstraction, wxID_STATIC, _("Help :"), wxDefaultPosition, wxDefaultSize, 0);
-    itemStaticText34->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+    itemStaticText34->SetFont(wxFont( wxFontInfo(-1).FaceName("Tahoma").Bold()));
     itemGridSizerWindow->Add(itemStaticText34, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     m_abstractionHelp = new wxStaticText;
@@ -270,7 +270,7 @@ void DialogAbstractionEdit::CreateControls()
 
     wxStaticText* itemStaticText38 = new wxStaticText;
     itemStaticText38->Create(itemDialogAbstraction, wxID_STATIC, _("Access rights :"), wxDefaultPosition, wxDefaultSize, 0);
-    itemStaticText38->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+    itemStaticText38->SetFont(wxFont(wxFontInfo(-1).FaceName("Tahoma").Bold()));
     itemGridSizerWindow->Add(itemStaticText38, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     m_abstractionAccessRights = new wxStaticText;
@@ -283,7 +283,7 @@ void DialogAbstractionEdit::CreateControls()
 
     wxStaticText* itemStaticText42 = new wxStaticText;
     itemStaticText42->Create(itemDialogAbstraction, wxID_STATIC, _("Default value :"), wxDefaultPosition, wxDefaultSize, 0);
-    itemStaticText42->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+    itemStaticText42->SetFont(wxFont(wxFontInfo(-1).FaceName("Tahoma").Bold()));
     itemGridSizerWindow->Add(itemStaticText42, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     m_abstractionDefaultValue = new wxStaticText;
@@ -296,7 +296,7 @@ void DialogAbstractionEdit::CreateControls()
 
     m_singleValueLabel = new wxStaticText;
     m_singleValueLabel->Create(itemDialogAbstraction, wxID_STATIC, _("Value :"), wxDefaultPosition, wxDefaultSize, 0);
-    m_singleValueLabel->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+    m_singleValueLabel->SetFont(wxFont(wxFontInfo(-1).FaceName("Tahoma").Bold()));
     itemGridSizerWindow->Add( m_singleValueLabel, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1 );
     
     wxBoxSizer* itemBoxSizerValue = new wxBoxSizer(wxHORIZONTAL);
@@ -316,7 +316,7 @@ void DialogAbstractionEdit::CreateControls()
 
     m_multipleValueLabel = new wxStaticText;
     m_multipleValueLabel->Create(itemDialogAbstraction, wxID_STATIC, _("Value :"), wxDefaultPosition, wxDefaultSize, 0);
-    m_multipleValueLabel->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+    m_multipleValueLabel->SetFont(wxFont(wxFontInfo(-1).FaceName("Tahoma").Bold()));
     itemGridSizerWindow->Add(m_multipleValueLabel, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxArrayString m_abstractionComboValueStrings;

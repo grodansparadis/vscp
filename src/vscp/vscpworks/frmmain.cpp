@@ -463,7 +463,7 @@ void frmMain::CreateControls()
                                wxDefaultPosition,
                                wxDefaultSize,0 );
     itemStaticTextTop->SetForegroundColour( wxColour( 0, 128, 0 ) );
-    itemStaticTextTop->SetFont( wxFont( 10, wxSWISS, wxNORMAL, wxBOLD, false, wxT( "Tahoma" ) ) );
+    itemStaticTextTop->SetFont( wxFont( wxFontInfo(10).FaceName("Tahoma").Bold() ) );
     itemSizerVertical->Add( itemStaticTextTop, 0, wxALIGN_LEFT | wxALL, 5 );
 
     m_nodeTree = new wxTreeCtrl;

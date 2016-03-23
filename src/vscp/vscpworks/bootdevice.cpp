@@ -94,6 +94,11 @@ CBootDevice::~CBootDevice( void )
         m_pbufPrg = NULL;
     }
 
+    if ( NULL != m_pbufUserID ) {
+        delete [] m_pbufUserID;
+        m_pbufUserID = NULL;
+    }
+    
     if ( NULL != m_pbufCfg ) {
         delete [] m_pbufCfg;
         m_pbufCfg = NULL;
@@ -117,6 +122,7 @@ void CBootDevice::init( void )
     m_totalCntData = 0;
 
     m_pbufPrg = NULL;
+    m_pbufUserID = NULL;
     m_pbufCfg = NULL;
     m_pbufEEPROM = NULL;
 

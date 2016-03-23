@@ -163,7 +163,7 @@ protected:
 
     /*! 
         Set if VSCP Device found. If set to false then the VSCP daevice is
-        not found but can still be a device without firmware taht can be 
+        not found but can still be a device without firmware that can be 
         loaded.
     */
     bool m_bDeviceFound;
@@ -172,32 +172,43 @@ protected:
     uint32_t m_checksum;
 
      /*!
-        Flag for flash memory programming or not	
+        Flag for flash memory programming or not
     */
     bool m_bFlashMemory;
+    
+    /*!
+        Flag for UserID memory programming or not
+    */
+    bool m_bUserIDMemory;
 
     /*!
-        Flag for config memory programming or not		
+        Flag for config memory programming or not
     */
     bool m_bConfigMemory;
 
     /*!
-        Flag for EEPROM memory programming or not		
+        Flag for EEPROM memory programming or not
     */
     bool m_bEEPROMMemory;
 
-    /// Program memory buffer
+    /// Program memory buffer <0x200000
     uint8_t *m_pbufPrg;
+    
+    /// Userid memory buffer 0x200000
+    uint8_t *m_pbufUserID;
 
-    /// Config memory buffer
+    /// Config memory buffer 0x300000
     uint8_t *m_pbufCfg;
 
-    /// EEPROM memory buffer
+    /// EEPROM memory buffer 0xF00000
     uint8_t *m_pbufEEPROM;
 
     /// True if there is at least one program data byte
     bool m_bPrgData;
 
+    /// True if there is at least one UserID data byte
+    bool m_bUserIDData;
+    
     /// True if there is at least one config data byte
     bool m_bConfigData;
 
@@ -209,6 +220,12 @@ protected:
 
     /// Highest flash address
     unsigned long m_maxFlashAddr;
+    
+    /// Lowest config address
+    unsigned long m_minUserIDAddr;
+
+    /// Highest config address
+    unsigned long m_maxUserIDAddr;
 
     /// Lowest config address
     unsigned long m_minConfigAddr;

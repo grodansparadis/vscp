@@ -170,7 +170,7 @@ void DialogEditLevelIDMrow::CreateControls()
     wxStaticText* itemStaticText4 = new wxStaticText;
     itemStaticText4->Create( itemDialog1, wxID_STATIC, _("Decision Matrix row"), wxDefaultPosition, wxDefaultSize, 0 );
     itemStaticText4->SetForegroundColour(wxColour(0, 128, 255));
-    itemStaticText4->SetFont(wxFont(8, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+    itemStaticText4->SetFont( wxFont( wxFontInfo(8).FaceName("Tahoma").Bold() ) );
     itemBoxSizer3->Add(itemStaticText4, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     wxBoxSizer* itemBoxSizer5 = new wxBoxSizer(wxHORIZONTAL);

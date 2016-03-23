@@ -78,6 +78,8 @@
           </df>
         </df>
       </df>
+      <df name="database">
+      </df>
       <df name="debian">
         <df name="source">
         </df>
@@ -110,6 +112,28 @@
             <df name="Doc">
             </df>
             <df name="res">
+              <in>Testdc.xpm</in>
+              <in>Testdc32x32.xpm</in>
+              <in>but.xpm</in>
+              <in>buton.xpm</in>
+              <in>butpress.xpm</in>
+              <in>exefile.xpm</in>
+              <in>false.xpm</in>
+              <in>help.xpm</in>
+              <in>koan200.xpm</in>
+              <in>lampoff.xpm</in>
+              <in>lampoffsel.xpm</in>
+              <in>lampon.xpm</in>
+              <in>lamponsel.xpm</in>
+              <in>ohsmile.xpm</in>
+              <in>reset_green.xpm</in>
+              <in>reset_orange.xpm</in>
+              <in>sadsmile.xpm</in>
+              <in>smile.xpm</in>
+              <in>submit_green.xpm</in>
+              <in>submit_orange.xpm</in>
+              <in>test.xpm</in>
+              <in>true.xpm</in>
             </df>
             <in>AngularMeter.cpp</in>
             <in>AngularMeter.h</in>
@@ -290,8 +314,12 @@
           <in>rijndael.cpp</in>
           <in>rscalc.c</in>
           <in>sha-1.c</in>
+          <in>shell.c</in>
           <in>slre.c</in>
           <in>slre.h</in>
+          <in>sqlite3.c</in>
+          <in>sqlite3.h</in>
+          <in>sqlite3ext.h</in>
           <in>stdafx.h</in>
           <in>strtk.hpp</in>
           <in>v7.c</in>
@@ -517,12 +545,16 @@
             <in>vscpautomation.h</in>
             <in>vscpclientthreads.cpp</in>
             <in>vscpclientthreads.h</in>
+            <in>vscpcoapserver.cpp</in>
+            <in>vscpcoapserver.h</in>
             <in>vscpd_caps.h</in>
             <in>vscpdlldef.h</in>
             <in>vscpeventhelper.cpp</in>
             <in>vscpeventhelper.h</in>
             <in>vscphelper.cpp</in>
             <in>vscphelper.h</in>
+            <in>vscpmqttbroker.cpp</in>
+            <in>vscpmqttbroker.h</in>
             <in>vscpmulticast.cpp</in>
             <in>vscpmulticast.h</in>
             <in>vscpremotetcpif.cpp</in>
@@ -823,6 +855,7 @@
                 <df name="msw">
                 </df>
               </df>
+              <in>mondrian.xpm</in>
               <in>resource.h</in>
               <in>vscpd.cpp</in>
               <in>vscpd.h</in>
@@ -1007,6 +1040,7 @@
                     <in>automtn.cpp</in>
                     <in>lirctest.cpp</in>
                     <in>lirctest.h</in>
+                    <in>mondrian.xpm</in>
                   </df>
                   <df name="winlirc0651">
                     <in>confdlg.cpp</in>
@@ -1207,6 +1241,7 @@
                   <df name="Template">
                   </df>
                   <df name="test">
+                    <in>mondrian.xpm</in>
                     <in>syslogtest.cpp</in>
                     <in>syslogtest.h</in>
                   </df>
@@ -1609,6 +1644,7 @@
           <df name="samples">
             <df name="autoself">
               <df name="images">
+                <in>wxwin32x32.xpm</in>
               </df>
               <in>autoself.cpp</in>
               <in>autoself.h</in>
@@ -1643,6 +1679,7 @@
               <in>platform.h</in>
               <in>threadvscpwork.cpp</in>
               <in>threadvscpwork.h</in>
+              <in>wxwin32x321.xpm</in>
             </df>
             <df name="button_node">
             </df>
@@ -1750,6 +1787,7 @@
                 </df>
                 <in>OptionDialog.cpp</in>
                 <in>OptionDialog.h</in>
+                <in>mondrian.xpm</in>
                 <in>resource.h</in>
                 <in>simplebutton.cpp</in>
                 <in>simplebutton.h</in>
@@ -1761,6 +1799,7 @@
                 </df>
                 <in>OptionDialog.cpp</in>
                 <in>OptionDialog.h</in>
+                <in>mondrian.xpm</in>
                 <in>resource.h</in>
                 <in>simpledimmer.cpp</in>
                 <in>simpledimmer.h</in>
@@ -1772,6 +1811,7 @@
                 </df>
                 <in>OptionDialog.cpp</in>
                 <in>OptionDialog.h</in>
+                <in>mondrian.xpm</in>
                 <in>resource.h</in>
                 <in>simplelamp.cpp</in>
                 <in>simplelamp.h</in>
@@ -1992,6 +2032,14 @@
           </df>
           <df name="vscpworks">
             <df name="bitmaps">
+              <in>copy.xpm</in>
+              <in>cut.xpm</in>
+              <in>help.xpm</in>
+              <in>new.xpm</in>
+              <in>paste.xpm</in>
+              <in>preview.xpm</in>
+              <in>print.xpm</in>
+              <in>save.xpm</in>
             </df>
             <df name="docs">
             </df>
@@ -2027,6 +2075,16 @@
               <df name="msw">
               </df>
             </df>
+            <in>ENVELOPE.xpm</in>
+            <in>Folder-Add.xpm</in>
+            <in>Help.xpm</in>
+            <in>Home.xpm</in>
+            <in>Info.xpm</in>
+            <in>NEW.xpm</in>
+            <in>New1.xpm</in>
+            <in>PAINT.xpm</in>
+            <in>Preview.xpm</in>
+            <in>Print.xpm</in>
             <in>bootdevice.cpp</in>
             <in>bootdevice.h</in>
             <in>bootdevice_pic1.cpp</in>
@@ -2034,8 +2092,13 @@
             <in>bootdevice_vscp.cpp</in>
             <in>bootdevice_vscp.h</in>
             <in>bootdevice_vscp_defs.h</in>
+            <in>copy.prv.xpm</in>
+            <in>copy.xpm</in>
+            <in>cut.xpm</in>
             <in>decsionmatrixeditor.cpp</in>
             <in>decsionmatrixeditor.h</in>
+            <in>deffile.xpm</in>
+            <in>delete.xpm</in>
             <in>deveicebootloaderwizard.h</in>
             <in>devicebootloaderwizard.cpp</in>
             <in>devicebootloaderwizard.h</in>
@@ -2103,6 +2166,8 @@
             <in>dlgvscptrmit.h</in>
             <in>dlgvscptrmit_images.h</in>
             <in>dlgvscptrmit_symbols.h</in>
+            <in>filesaveas.xpm</in>
+            <in>find.xpm</in>
             <in>frmcanalsession.cpp</in>
             <in>frmcanalsession.h</in>
             <in>frmcanalsession_symbols.h</in>
@@ -2138,8 +2203,13 @@
             <in>frmvscpsession_symbols.h</in>
             <in>gridtable.cpp</in>
             <in>gridtable.h</in>
+            <in>helpicon.xpm</in>
             <in>merlin.cpp</in>
             <in>merlin.h</in>
+            <in>open.xpm</in>
+            <in>open1.xpm</in>
+            <in>paste.xpm</in>
+            <in>paste1.xpm</in>
             <in>platform.h</in>
             <in>readguid.cpp</in>
             <in>readguid.h</in>
@@ -2153,8 +2223,12 @@
             <in>readregister.cpp</in>
             <in>readregister.h</in>
             <in>readregister_symbols.h</in>
+            <in>redo.xpm</in>
+            <in>save.xpm</in>
             <in>threadvscpwork.cpp</in>
             <in>threadvscpwork.h</in>
+            <in>tipicon.xpm</in>
+            <in>undo.xpm</in>
             <in>vscp_images.h</in>
             <in>vscpbootloader.cpp</in>
             <in>vscpbootloader.h</in>
@@ -2166,6 +2240,7 @@
             <in>writeregister.cpp</in>
             <in>writeregister.h</in>
             <in>writeregister_symbols.h</in>
+            <in>wxwin32x32.xpm</in>
           </df>
           <df name="xml">
           </df>

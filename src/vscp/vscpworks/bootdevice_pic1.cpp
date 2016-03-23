@@ -65,7 +65,8 @@ CBootDevice( ptcpip, guid, ifguid, bDeviceFound )
 
 CBootDevice_PIC1::~CBootDevice_PIC1( void )
 {
-    ;
+    // Clean up buffer allocations is done in base class
+
 }
 
 
@@ -77,6 +78,7 @@ void CBootDevice_PIC1::init( void )
 {
     // Create buffers
     m_pbufPrg = new unsigned char[ BUFFER_SIZE_PROGRAM ];
+    m_pbufUserID = new unsigned char[ BUFFER_SIZE_USERID ];
     m_pbufCfg = new unsigned char[ BUFFER_SIZE_CONFIG ];
     m_pbufEEPROM = new unsigned char[ BUFFER_SIZE_EEPROM ];
 
@@ -120,6 +122,15 @@ bool CBootDevice_PIC1::loadBinaryFile( const wxString& path,
     if ( NULL == m_pbufPrg ) return false;
     memset( m_pbufPrg, 0xff, BUFFER_SIZE_PROGRAM );
 
+    // Init. User ID memory pointers
+    m_minUserIDAddr = 0xffffffff;
+    m_maxUserIDAddr = 0;
+    m_bUserIDData = false;
+    m_bUserIDMemory = true; // Config memory should be programmed
+    
+    // Init UserID memory buffer
+    if ( NULL == m_pbufUserID ) return false;
+    memset( m_pbufUserID, 0xff, BUFFER_SIZE_USERID );
 
     // Init. config memory pointers
     m_minConfigAddr = 0xffffffff;
@@ -262,7 +273,7 @@ bool CBootDevice_PIC1::loadBinaryFile( const wxString& path,
                     break;
 
                 case INTEL_LINETYPE_EOF:
-                    bRun = false;	// We are done
+                    bRun = false;   // We are done
                     rv = true;
                     break;
 
@@ -352,6 +363,35 @@ void CBootDevice_PIC1::showInfo( wxHtmlWindow *phtmlWnd )
 
     phtmlWnd->AppendToPage(
                 _("<br><br>") );
+                
+    // * * * UserID Memory * * *
+
+    phtmlWnd->AppendToPage( 
+                _("<b><u>UserID Memory</u></b><br>") );
+
+    phtmlWnd->AppendToPage(
+                _("<b>Start :</b>") );
+                
+    strInfo.Printf( _("<font color=\"#005CB9\">0x%08X</font>"), m_minUserIDAddr );
+    phtmlWnd->AppendToPage(  strInfo );            
+
+    phtmlWnd->AppendToPage( 
+                _("<b> End :</b>") );
+                
+    strInfo.Printf( _("<font color=\"#005CB9\">0x%08X<br></font>"), m_maxUserIDAddr );
+    phtmlWnd->AppendToPage(  strInfo );            
+                
+    if ( m_bUserIDMemory ) {
+        phtmlWnd->AppendToPage( 
+                _("<font color=\"#348017\">Will be programmed</font><br>") );
+    }
+    else {
+        phtmlWnd->AppendToPage( 
+                _("<font color=\"#F6358A\">Will not be programmed</font><br>") );
+    }            
+
+    phtmlWnd->AppendToPage(
+                _("<br><br>") );            
 
     // * * * Config Memory * * *
 
@@ -465,13 +505,15 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
                     m_pdll->doCmdReceive( &rcvmsg );
 
                     // Is this a read/write reply from the node?
-                    if ( ( rcvmsg.id & 0xffffff ) == (uint32_t)( ID_RESPONSE_PUT_BASE_INFO + m_nodeid ) ) {
+                    if ( ( rcvmsg.id & 0xffffff ) == 
+                        (uint32_t)( ID_RESPONSE_PUT_BASE_INFO + m_nodeid ) ) {
                         // yes already in bootmode - return
                         return true;
                     }
 
                     // Is this a read/write reply from the node?
-                    if ( ( rcvmsg.id & 0xffffff ) == (uint32_t)( ID_RESPONSE_PUT_DATA + m_nodeid ) ) {
+                    if ( ( rcvmsg.id & 0xffffff ) == 
+                        (uint32_t)( ID_RESPONSE_PUT_DATA + m_nodeid ) ) {
                         // yes already in bootmode - return
                         return true;
                     }
@@ -773,7 +815,7 @@ bool CBootDevice_PIC1::doFirmwareLoad( void )
         nFlashPackets = ( m_maxFlashAddr - m_minFlashAddr )/8;
 
         if ( 0 != ( ( m_maxFlashAddr - m_minFlashAddr ) % 8 ) ) {
-            nFlashPackets++;		
+            nFlashPackets++;
         }
     }
 
@@ -782,7 +824,7 @@ bool CBootDevice_PIC1::doFirmwareLoad( void )
         nConfigPackets = ( m_maxConfigAddr - m_minConfigAddr )/8;
 
         if ( 0 != ( ( m_maxConfigAddr - m_minConfigAddr ) % 8 ) ) {
-            nConfigPackets++;		
+            nConfigPackets++;
         }
     }
 
@@ -791,7 +833,7 @@ bool CBootDevice_PIC1::doFirmwareLoad( void )
         nEEPROMPackets = ( m_maxEEPROMAddr - m_minEEPROMAddr )/8;
 
         if ( 0 != ( ( m_maxEEPROMAddr - m_minEEPROMAddr ) % 8 ) ) {
-            nEEPROMPackets++;		
+            nEEPROMPackets++;
         }
     }
 
@@ -1058,15 +1100,20 @@ bool CBootDevice_PIC1::writeFrimwareSector( void )
                 b = m_pbufPrg[ m_pAddr ];
                 m_checksum += m_pbufPrg[ m_pAddr ];
                 break;
+                
+            case MEM_TYPE_USERID:
+                b = m_pbufUserID[ m_pAddr-0x200000 ];
+                m_checksum += m_pbufUserID[ m_pAddr-0x200000 ];
+                break;    
 
             case MEM_TYPE_CONFIG:
-                b = m_pbufCfg[ m_pAddr ];
-                m_checksum += m_pbufCfg[ m_pAddr ];
+                b = m_pbufCfg[ m_pAddr-0x300000 ];
+                m_checksum += m_pbufCfg[ m_pAddr-0x300000 ];
                 break;
 
             case MEM_TYPE_EEPROM:
-                b = m_pbufEEPROM[ m_pAddr ]; 
-                m_checksum += m_pbufEEPROM[ m_pAddr ];
+                b = m_pbufEEPROM[ m_pAddr-0xf00000 ]; 
+                m_checksum += m_pbufEEPROM[ m_pAddr-0xf00000 ];
                 break;
 
             default:
@@ -1115,7 +1162,7 @@ bool CBootDevice_PIC1::writeFrimwareSector( void )
                 rv = false;
             }   
         }
-    }				
+    }
 
     return rv;
 }
