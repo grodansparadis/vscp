@@ -557,11 +557,11 @@ bool CControlObject::init(wxString& strcfgfile)
     int sys_lang = wxLocale::GetSystemLanguage();
     if ( sys_lang != wxLANGUAGE_DEFAULT )
     {
-        m_locale.Init( sys_lang );         // set custom locale
+        m_locale.Init( sys_lang );                  // set custom locale
         m_locale.AddCatalogLookupPathPrefix( _("locale") );   // set "locale" prefix
-        m_locale.AddCatalog( "wxproton" );         // our private domain
-        m_locale.AddCatalog( "wxstd" );            // wx common domain is default
-                                                   // Restore "C" numeric locale
+        m_locale.AddCatalog( "wxproton" );          // our private domain
+        m_locale.AddCatalog( "wxstd" );             // wx common domain is default
+                                                    // Restore "C" numeric locale
         setlocale( LC_NUMERIC, "C" );
     }
 
