@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CodeLite_Workspace Name="codelite_vscpd" Database="">
-  <Project Name="codelite_vscpd" Path="codelite_vscpd.project" Active="Yes"/>
+  <Project Name="codelite_vscpd" Path="codelite_vscpd.project" Active="No"/>
   <Environment>
     <![CDATA[]]>
   </Environment>
@@ -8,6 +8,7 @@
   <Project Name="vscp2drv_wire1" Path="../../../drivers/level2/wire1/linux/vscp2drv_wire1.project" Active="No"/>
   <Project Name="mqtt-driver" Path="../../../drivers/level2/mqtt/linux/mqtt-driver/mqtt-driver.project" Active="No"/>
   <Project Name="codelite_vscpworks" Path="../../../vscpworks/codelite_vscpworks.project" Active="No"/>
+  <Project Name="Driver_CAN4VSCP" Path="../../../drivers/level1/can4vscp/linux/Driver_CAN4VSCP/Driver_CAN4VSCP.project" Active="Yes"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug" Selected="yes">
       <Environment/>
@@ -16,6 +17,7 @@
       <Project Name="codelite_helperlib" ConfigName="Debug"/>
       <Project Name="mqtt-driver" ConfigName="Debug"/>
       <Project Name="codelite_vscpworks" ConfigName="Debug"/>
+      <Project Name="Driver_CAN4VSCP" ConfigName="Debug"/>
     </WorkspaceConfiguration>
     <WorkspaceConfiguration Name="Release" Selected="yes">
       <Environment/>
@@ -24,6 +26,7 @@
       <Project Name="vscp2drv_wire1" ConfigName="Release"/>
       <Project Name="mqtt-driver" ConfigName="Release"/>
       <Project Name="codelite_vscpworks" ConfigName="Release"/>
+      <Project Name="Driver_CAN4VSCP" ConfigName="Release"/>
     </WorkspaceConfiguration>
   </BuildMatrix>
 </CodeLite_Workspace>
