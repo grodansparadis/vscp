@@ -2254,7 +2254,7 @@ void DaemonDecisionMartrixEditor::CreateControls()
 #if  wxCHECK_VERSION(2, 9, 5)  
   m_gridDM->SetFont(wxFont(wxFontInfo(8).FaceName("Tahoma").Bold() ) );
 #else
-    m_gridDM->SetFont(wxFont(wxFont( 8, wxSWISS, wxNORMAL, wxBOLD, false, wxT( "Tahoma" ) ) );
+    m_gridDM->SetFont( wxFont( 8, wxSWISS, wxNORMAL, wxBOLD, false, wxT( "Tahoma" ) ) );
 #endif  
   m_gridDM->SetDefaultColSize(50);
   m_gridDM->SetDefaultRowSize(18);
