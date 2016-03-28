@@ -168,7 +168,7 @@ void DialogAbstractionEdit::CreateControls()
 
     wxStaticText* itemStaticText6 = new wxStaticText;
     itemStaticText6->Create(itemDialogAbstraction, wxID_STATIC, _("Name :"), wxDefaultPosition, wxDefaultSize, 0);
-    itemStaticText6->SetFont(wxFont(-1, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+    itemStaticText6->SetFont( wxFontInfo(-1).FaceName("Tahoma").Bold() ));
     itemGridSizerWindow->Add( itemStaticText6, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     m_abstractionName = new wxStaticText;

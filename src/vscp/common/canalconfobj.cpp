@@ -920,7 +920,7 @@ void WizardPageCanalConfig::CreateControls()
                                     wxDefaultPosition,
                                     /*wxDefaultSize*/wxSize( DEFAULT_STOCK_TEXT_WIDTH, -1 ),
                                     0 );
-    itemStaticTextHeader->SetFont( wxFont( 16, wxSWISS, wxNORMAL, wxBOLD, false, wxT( "Tahoma" ) ) );
+    itemStaticTextHeader->SetFont( wxFontInfo(16).FaceName("Tahoma").Bold() ) );
     itemBoxSizer->Add( itemStaticTextHeader, 0, wxALIGN_LEFT | wxALL, 5 );
 
     wxStaticText* itemStaticTextDescription = new wxStaticText;
@@ -1224,7 +1224,7 @@ void WizardPageFlagsConfig::CreateControls()
                                   wxDefaultPosition,
                                   /*wxDefaultSize*/wxSize( DEFAULT_STOCK_TEXT_WIDTH, -1 ),
                                   0 );
-    itemStaticTextHeader->SetFont( wxFont( 16, wxSWISS, wxNORMAL, wxBOLD, false, wxT( "Tahoma" ) ) );
+    itemStaticTextHeader->SetFont( wxFont( wxFontInfo(16).FaceName("Tahoma").Bold() ) );
     itemBoxSizer->Add( itemStaticTextHeader, 0, wxALIGN_LEFT | wxALL, 5 );
 
     wxStaticText* itemStaticTextDescription = new wxStaticText;
