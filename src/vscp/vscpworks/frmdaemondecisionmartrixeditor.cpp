@@ -2205,7 +2205,11 @@ void DaemonDecisionMartrixEditor::CreateControls()
   m_gridRegisters = new wxGrid;
   m_gridRegisters->Create( m_panel0, ID_GRID_REGISTERS, wxDefaultPosition, wxSize(400, 340), wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
   m_gridRegisters->SetBackgroundColour(wxColour(240, 240, 240));
+#if  wxCHECK_VERSION(2, 9, 5)  
   m_gridRegisters->SetFont(wxFont(wxFontInfo(8).FaceName("Tahoma").Bold()));
+#else
+  m_gridRegisters->SetFont(wxFont( 8, wxSWISS, wxNORMAL, wxBOLD, false, wxT( "Tahoma" ) ));          
+#endif  
   m_gridRegisters->SetDefaultColSize(50);
   m_gridRegisters->SetDefaultRowSize(18);
   m_gridRegisters->SetColLabelSize(18);
@@ -2224,7 +2228,11 @@ void DaemonDecisionMartrixEditor::CreateControls()
   m_gridAbstractions = new wxGrid;
   m_gridAbstractions->Create( itemPanel15, ID_GRID_ABSTRACTIONS, wxDefaultPosition, wxSize(400, 340), wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
   m_gridAbstractions->SetBackgroundColour(wxColour(240, 240, 240));
+#if  wxCHECK_VERSION(2, 9, 5)  
   m_gridAbstractions->SetFont(wxFont(wxFontInfo(8).FaceName("Tahoma").Bold() ) );
+#else
+     m_gridAbstractions->SetFont(wxFont( 8, wxSWISS, wxNORMAL, wxBOLD, false, wxT( "Tahoma" ) ) );
+#endif  
   m_gridAbstractions->SetDefaultColSize(50);
   m_gridAbstractions->SetDefaultRowSize(18);
   m_gridAbstractions->SetColLabelSize(18);
@@ -2243,7 +2251,11 @@ void DaemonDecisionMartrixEditor::CreateControls()
   m_gridDM = new wxGrid;
   m_gridDM->Create( itemPanel18, ID_GRID_DM, wxDefaultPosition, wxSize(400, 340), wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
   m_gridDM->SetBackgroundColour(wxColour(240, 240, 240));
+#if  wxCHECK_VERSION(2, 9, 5)  
   m_gridDM->SetFont(wxFont(wxFontInfo(8).FaceName("Tahoma").Bold() ) );
+#else
+    m_gridDM->SetFont(wxFont(wxFont( 8, wxSWISS, wxNORMAL, wxBOLD, false, wxT( "Tahoma" ) ) );
+#endif  
   m_gridDM->SetDefaultColSize(50);
   m_gridDM->SetDefaultRowSize(18);
   m_gridDM->SetColLabelSize(18);
