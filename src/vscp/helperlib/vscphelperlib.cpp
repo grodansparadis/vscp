@@ -24,6 +24,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#ifdef WIN32
+#include <winsock2.h>
+#endif
 
 #include "wx/wxprec.h"
 #include "wx/wx.h"

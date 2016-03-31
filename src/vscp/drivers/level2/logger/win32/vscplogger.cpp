@@ -22,6 +22,10 @@
 // Boston, MA 02111-1307, USA.
 // 
 
+#ifdef WIN32
+#include <winsock2.h>
+#endif
+
 #include "wx/wxprec.h"
 #include "wx/wx.h"
 #include "wx/defs.h"

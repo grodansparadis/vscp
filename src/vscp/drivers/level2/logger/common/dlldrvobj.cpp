@@ -28,6 +28,10 @@
 // =====
 // device1 = logger,c:\vscp_log,txt,d:\winnr\system32\vscplogger.dll,64,64,1
 
+#ifdef WIN32
+#include <winsock2.h>
+#endif
+
 #include "stdio.h"
 #include "stdlib.h"
 #include "dlldrvobj.h"

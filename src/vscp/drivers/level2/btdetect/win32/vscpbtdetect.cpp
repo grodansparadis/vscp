@@ -8,7 +8,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2015 
+// Copyright (C) 2000-2016 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -21,6 +21,10 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 // 
+
+#ifdef WIN32
+#include <winsock2.h>
+#endif
 
 //#define WIN32_LEAN_AND_MEAN
 // For compilers that support precompilation, includes "wx.h".

@@ -26,6 +26,10 @@
 // SOFTWARE.
 //
 
+#ifdef WIN32
+#include <winsock2.h>
+#endif
+
 #include "wx/wx.h"
 #include "wx/defs.h"
 #if wxUSE_GUI != 0

@@ -30,6 +30,10 @@
     //#pragma implementation
 #endif
 
+#ifdef WIN32
+#include <winsock2.h>
+#endif
+
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -39,11 +43,6 @@
 
 #ifdef __WXMSW__
     #include  "wx/ownerdrw.h"
-#endif
-
-#ifdef WIN32
-//#include <winsock2.h>
-#include "winsock.h"
 #endif
 
 #include <wx/thread.h>

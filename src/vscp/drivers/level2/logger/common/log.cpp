@@ -23,6 +23,10 @@
 
 
 #ifdef WIN32
+#include <winsock2.h>
+#endif
+
+#ifdef WIN32
 
 #include <stdio.h>
 
