@@ -437,7 +437,7 @@ public:
     };
 
     enum {
-        m_constGridDescriptionDefaultWidth = 570
+        m_constGridDescriptionDefaultWidth = 4000
     };
 
     enum {
@@ -453,11 +453,11 @@ public:
     };
 
     enum {
-        m_constGridAbstractionContentdefaultWidth = 80
+        m_constGridAbstractionContentdefaultWidth = 100
     };
 
     enum {
-        m_constGridAbstractionDescriptionDefaultWidth = 700
+        m_constGridAbstractionDescriptionDefaultWidth = 4000
     };
 
     enum {

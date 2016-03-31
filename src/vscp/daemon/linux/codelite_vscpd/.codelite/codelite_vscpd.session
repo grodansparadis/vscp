@@ -1,22 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Session Name="/home/akhe/development/VSCP/vscp/src/vscp/daemon/linux/codelite_vscpd/codelite_vscpd.workspace">
-  <int Value="8" Name="m_selectedTab"/>
+  <int Value="4" Name="m_selectedTab"/>
   <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/daemon/linux/codelite_vscpd/codelite_vscpd.workspace" Name="m_workspaceName"/>
   <TabInfoArray Name="TabInfoArray">
-    <TabInfo>
-      <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/common/vscpwebserver.cpp" Name="FileName"/>
-      <int Value="523" Name="FirstVisibleLine"/>
-      <int Value="542" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.cpp" Name="FileName"/>
-      <int Value="165" Name="FirstVisibleLine"/>
-      <int Value="176" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
     <TabInfo>
       <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/frmdeviceconfig.cpp" Name="FileName"/>
       <int Value="422" Name="FirstVisibleLine"/>
@@ -49,27 +35,6 @@
       <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/bootdevice_pic1.h" Name="FileName"/>
       <int Value="37" Name="FirstVisibleLine"/>
       <int Value="50" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/common/controlobject.cpp" Name="FileName"/>
-      <int Value="544" Name="FirstVisibleLine"/>
-      <int Value="564" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/drivers/level1/can4vscp/common/can4vscpobj.cpp" Name="FileName"/>
-      <int Value="1271" Name="FirstVisibleLine"/>
-      <int Value="1295" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/drivers/level1/can4vscp/common/can4vscpobj.h" Name="FileName"/>
-      <int Value="301" Name="FirstVisibleLine"/>
-      <int Value="314" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>

@@ -272,10 +272,18 @@ void DialogAbstractionEdit::CreateControls()
 #else
     itemStaticText30->SetFont(wxFont( -1, wxSWISS, wxNORMAL, wxBOLD, false, wxT( "Tahoma" ) ));
 #endif    
-    itemGridSizerWindow->Add(itemStaticText30, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerWindow->Add( itemStaticText30, 
+                                0, 
+                                wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL | wxALL, 
+                                1);
 
     m_abstractionDescription = new wxStaticText;
-    m_abstractionDescription->Create( itemDialogAbstraction, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(500, 20), 0);
+    m_abstractionDescription->Create( itemDialogAbstraction, 
+                                        wxID_STATIC, 
+                                        _("-----"), 
+                                        wxDefaultPosition, 
+                                        wxSize(500, 20), 
+                                        wxST_ELLIPSIZE_END );
     //m_abstractionDescription->Wrap(500);
     itemGridSizerWindow->Add(m_abstractionDescription, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
@@ -284,19 +292,33 @@ void DialogAbstractionEdit::CreateControls()
     // Help text
     
     wxStaticText* itemStaticText34 = new wxStaticText;
-    itemStaticText34->Create(itemDialogAbstraction, wxID_STATIC, _("Help :"), wxDefaultPosition, wxDefaultSize, 0);
+    itemStaticText34->Create( itemDialogAbstraction, 
+                                wxID_STATIC, 
+                                _("Help :"), 
+                                wxDefaultPosition, 
+                                wxDefaultSize, 
+                                0 );
 #if  wxCHECK_VERSION(2, 9, 5)     
     itemStaticText34->SetFont(wxFont( wxFontInfo(-1).FaceName("Tahoma").Bold()));
 #else
     itemStaticText34->SetFont(wxFont( -1, wxSWISS, wxNORMAL, wxBOLD, false, wxT( "Tahoma" ) ));
 #endif    
-    itemGridSizerWindow->Add(itemStaticText34, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerWindow->Add( itemStaticText34, 
+                                0, 
+                                wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL | wxALL, 
+                                1 );
 
     m_abstractionHelp = new wxStaticText;
-    m_abstractionHelp->Create(itemDialogAbstraction, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(500, 20), 0);
-    itemGridSizerWindow->Add(m_abstractionHelp, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
-    
-    
+    m_abstractionHelp->Create( itemDialogAbstraction, 
+                                wxID_STATIC, 
+                                _("-----"), 
+                                wxDefaultPosition, 
+                                wxSize(500, 60), 
+                                wxST_ELLIPSIZE_END );
+    itemGridSizerWindow->Add( m_abstractionHelp, 
+                                0, 
+                                wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxALL, 
+                                1 );
 
     // Access rights
 
@@ -437,8 +459,10 @@ bool DialogAbstractionEdit::TransferDataToWindow( CMDF_Abstraction *pAbstraction
 
         // Fill in the data
         m_abstractionName->SetLabel( pAbstraction->m_strName );
+        m_abstractionName->SetToolTip( pAbstraction->m_strDescription );
 
         m_abstractionId->SetLabel( pAbstraction->m_strID );
+        m_abstractionId->SetToolTip( pAbstraction->m_strDescription );
 
         wxString strType;
         switch ( pAbstraction->m_nType ) {
@@ -531,7 +555,7 @@ bool DialogAbstractionEdit::TransferDataToWindow( CMDF_Abstraction *pAbstraction
         m_abstractionDescription->SetToolTip( pAbstraction->m_strDescription ); 
 
         m_abstractionHelp->SetLabel( pAbstraction->m_strHelp );
-        m_abstractionHelp->SetToolTip( pAbstraction->m_strDescription ); 
+        m_abstractionHelp->SetToolTip( pAbstraction->m_strHelp ); 
 
         if ( pAbstraction->m_strDefault.Length() ) {
             m_abstractionDefaultValue->SetLabel( pAbstraction->m_strDefault );
@@ -547,6 +571,12 @@ bool DialogAbstractionEdit::TransferDataToWindow( CMDF_Abstraction *pAbstraction
         }
         if ( pAbstraction->m_nAccess & MDF_ACCESS_WRITE ){
             str += _("w");
+        }
+        else {
+            // Read only
+            m_abstractionComboValue->Enable( false );
+            m_multipleValueLabel->Enable( false );
+            m_abstractionValue->Enable( false );
         }
         m_abstractionAccessRights->SetLabel( str );
 

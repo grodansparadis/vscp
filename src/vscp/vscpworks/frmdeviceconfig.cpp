@@ -431,7 +431,7 @@ void frmDeviceConfig::CreateControls() {
                                 wxDefaultPosition, 
                                 wxDefaultSize, 
                                 0 );
-#if ( ( wxMAJOR_VERSION >= 3 ) && ( wxMINOR_VERSION >= 1 ) )
+#if wxCHECK_VERSION( 3, 1, 0 )
     itemStaticNodeID->SetFont( wxFont( wxFontInfo(8).FaceName("Tahoma").Bold() ) );
 #else                                
     itemStaticNodeID->SetFont( wxFont( 8, 
@@ -490,7 +490,7 @@ void frmDeviceConfig::CreateControls() {
         m_bLevel2->SetToolTip( _("Mark this interface as a full Level II interface") );
     }
 
-    itemToolBar->AddControl(m_bLevel2);
+    itemToolBar->AddControl( m_bLevel2 );
     itemToolBar->AddSeparator();
 
     m_BtnActivateInterface = new wxToggleButton;
@@ -500,9 +500,9 @@ void frmDeviceConfig::CreateControls() {
                                         wxDefaultPosition, 
                                         wxSize(120, -1), 
                                         0 );
-    m_BtnActivateInterface->SetValue(true);
+    m_BtnActivateInterface->SetValue( true );
     if ( frmDeviceConfig::ShowToolTips() ) {
-        m_BtnActivateInterface->SetToolTip( _("Acticate/Deactivate the interface") );
+        m_BtnActivateInterface->SetToolTip( _("Activate/Deactivate the interface") );
     }
     
     //m_BtnActivateInterface->SetForegroundColour(wxColour(255, 255, 255));
@@ -519,12 +519,20 @@ void frmDeviceConfig::CreateControls() {
                             wxDefaultPosition, 
                             wxDefaultSize, 
                             wxSUNKEN_BORDER | wxTAB_TRAVERSAL );
+    
+    
+    
+    
+    // * * * * Choice book * * * * *
+    
+    
+    
 
     wxBoxSizer* itemBoxSizerMain = new wxBoxSizer( wxVERTICAL );
     itemPanel->SetSizer( itemBoxSizerMain );
 
-    wxBoxSizer* itemBoxSizerSelectIcons = new wxBoxSizer( wxVERTICAL );
-    itemBoxSizerMain->Add( itemBoxSizerSelectIcons, 0, wxGROW | wxALL, 5);
+    wxBoxSizer* itemBoxSizerChoiceBook = new wxBoxSizer( wxVERTICAL );
+    itemBoxSizerMain->Add( itemBoxSizerChoiceBook, 30, wxGROW | wxALL, 5);
 
     m_choiceBook = new wxToolbook;
     m_choiceBook->Create( itemPanel, 
@@ -560,17 +568,22 @@ void frmDeviceConfig::CreateControls() {
                                 wxDefaultSize, 
                                 wxSUNKEN_BORDER | wxTAB_TRAVERSAL );
     m_panelRegisters->Show(false);
+    
+    //wxBoxSizer* itemBoxSizerPanel = new wxBoxSizer( wxVERTICAL );
+    //m_panelRegisters->SetSizer( itemBoxSizerPanel );
+    //itemBoxSizerMain->Add( m_panelRegisters, 99, wxGROW | wxALL, 5 );
     wxBoxSizer* itemBoxSizerRegisters = new wxBoxSizer( wxVERTICAL );
     m_panelRegisters->SetSizer( itemBoxSizerRegisters );
+    //itemBoxChoiceBook->Add( itemBoxSizerRegisters, 99, wxGROW | wxALL, 5 );
 
     m_gridRegisters = new wxGrid;
     m_gridRegisters->Create( m_panelRegisters, 
                                 ID_GRID_REGISTERS, 
                                 wxDefaultPosition, 
-                                wxSize(400, 340), 
-                                wxSUNKEN_BORDER | wxHSCROLL | wxVSCROLL );
-    m_gridRegisters->SetBackgroundColour(wxColour(240, 240, 240));
-#if ( ( wxMAJOR_VERSION >= 3 ) && ( wxMINOR_VERSION >= 1 ) )
+                                wxSize(2048, 340), 
+                                /*wxSUNKEN_BORDER |*/ wxHSCROLL | wxVSCROLL );
+    m_gridRegisters->SetBackgroundColour( wxColour( 240, 240, 240 ) );
+#if wxCHECK_VERSION( 3, 1, 0 )
     itemStaticNodeID->SetFont( wxFont( wxFontInfo(8).FaceName("Tahoma").Bold() ) );
 #else     
     m_gridRegisters->SetFont( wxFont( 8, 
@@ -584,8 +597,9 @@ void frmDeviceConfig::CreateControls() {
     m_gridRegisters->SetDefaultRowSize( 18 );
     m_gridRegisters->SetColLabelSize( 18 );
     m_gridRegisters->SetRowLabelSize( 40 );
+    m_gridRegisters->SetColLabelAlignment( wxALIGN_LEFT, wxALIGN_CENTRE );
     m_gridRegisters->CreateGrid( 1, 4, wxGrid::wxGridSelectRows );
-    itemBoxSizerRegisters->Add( m_gridRegisters, 10, wxGROW | wxALL | wxEXPAND, 5 );
+    itemBoxSizerRegisters->Add( m_gridRegisters, 90, wxGROW | wxALL, 5 );
 
     m_choiceBook->AddPage( m_panelRegisters, _("Registers"), false, 0 );
     
@@ -604,35 +618,36 @@ void frmDeviceConfig::CreateControls() {
                                     wxDefaultSize, 
                                     wxSUNKEN_BORDER | wxTAB_TRAVERSAL );
     itemPanelAbstractions->Show(false);
-    wxBoxSizer* itemBoxSizerAbstraction = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer* itemBoxSizerAbstraction = new wxBoxSizer( wxVERTICAL );
     itemPanelAbstractions->SetSizer( itemBoxSizerAbstraction );
 
     m_gridAbstractions = new wxGrid;
     m_gridAbstractions->Create( itemPanelAbstractions, 
                                     ID_GRID_ABSTRACTIONS, 
                                     wxDefaultPosition, 
-                                    wxSize(400, 340), 
-                                    wxSUNKEN_BORDER | wxHSCROLL | wxVSCROLL );
+                                    wxSize(2048, 340), 
+                                    /*wxSUNKEN_BORDER |*/ wxHSCROLL | wxVSCROLL );
     m_gridAbstractions->SetBackgroundColour(wxColour(240, 240, 240));
- #if ( ( wxMAJOR_VERSION >= 3 ) && ( wxMINOR_VERSION >= 1 ) )
+ #if wxCHECK_VERSION( 3, 1, 0 )
     itemStaticNodeID->SetFont( wxFont( wxFontInfo(8).FaceName("Tahoma").Bold() ) );
 #else    
-    m_gridAbstractions->SetFont(wxFont( 8, 
+    m_gridAbstractions->SetFont( wxFont( 8, 
                                             wxSWISS, 
                                             wxNORMAL, 
                                             wxBOLD, 
                                             false, 
                                             wxT("Tahoma") ) );
 #endif                                            
-    m_gridAbstractions->SetDefaultColSize(50);
-    m_gridAbstractions->SetDefaultRowSize(18);
-    m_gridAbstractions->SetColLabelSize(18);
-    m_gridAbstractions->SetRowLabelSize(40);
+    m_gridAbstractions->SetDefaultColSize( 50 );
+    m_gridAbstractions->SetDefaultRowSize( 18 );
+    m_gridAbstractions->SetColLabelSize( 18 );
+    m_gridAbstractions->SetRowLabelSize( 40 );
+    m_gridAbstractions->SetColLabelAlignment( wxALIGN_LEFT, wxALIGN_CENTRE );
     m_gridAbstractions->CreateGrid( 1, 
-                                        5, 
-                                        wxGrid::wxGridSelectRows );
+                                    5, 
+                                    wxGrid::wxGridSelectRows );
     itemBoxSizerAbstraction->Add( m_gridAbstractions, 
-                                    0, 
+                                    90, 
                                     wxGROW | wxALL, 
                                     5 );
 
@@ -666,7 +681,7 @@ void frmDeviceConfig::CreateControls() {
                         wxSize(400, 340), 
                         wxSUNKEN_BORDER | wxHSCROLL | wxVSCROLL );
     m_gridDM->SetBackgroundColour( wxColour(240, 240, 240) );
-#if ( ( wxMAJOR_VERSION >= 3 ) && ( wxMINOR_VERSION >= 1 ) )
+#if wxCHECK_VERSION( 3, 1, 0 )
     itemStaticNodeID->SetFont( wxFont( wxFontInfo(8).FaceName("Tahoma").Bold() ) );
 #else     
     m_gridDM->SetFont(wxFont( 8, 
@@ -680,10 +695,11 @@ void frmDeviceConfig::CreateControls() {
     m_gridDM->SetDefaultRowSize(18);
     m_gridDM->SetColLabelSize(18);
     m_gridDM->SetRowLabelSize(40);
+    m_gridDM->SetColLabelAlignment( wxALIGN_LEFT, wxALIGN_CENTRE );
     m_gridDM->CreateGrid( 1, 
                             8, 
                             wxGrid::wxGridSelectRows );
-    itemBoxSizerDM->Add( m_gridDM, 0, wxGROW | wxALL, 5 );
+    itemBoxSizerDM->Add( m_gridDM, 90, wxGROW | wxALL, 5 );
 
     m_choiceBook->AddPage( itemPanelDM, 
                             _("Decision Matrix"), 
@@ -716,7 +732,7 @@ void frmDeviceConfig::CreateControls() {
                             wxSize(400, 340), 
                             wxSUNKEN_BORDER | wxHSCROLL | wxVSCROLL );
     m_gridWizard->SetBackgroundColour( wxColour(240, 240, 240) );
-#if ( ( wxMAJOR_VERSION >= 3 ) && ( wxMINOR_VERSION >= 1 ) )
+#if wxCHECK_VERSION( 3, 1, 0 )
     itemStaticNodeID->SetFont( wxFont( wxFontInfo(8).FaceName("Tahoma").Bold() ) );
 #else     
     m_gridWizard->SetFont(wxFont( 8, 
@@ -733,19 +749,21 @@ void frmDeviceConfig::CreateControls() {
     m_gridWizard->CreateGrid( 1, 
                                 8, 
                                 wxGrid::wxGridSelectRows );
-    itemBoxSizerDM->Add( m_gridWizard, 0, wxGROW | wxALL, 5 );
+    itemBoxSizerWizard->Add( m_gridWizard, 90, wxGROW | wxALL, 5 );
 
     m_choiceBook->AddPage( itemPanelWizard, 
                             _("Wizards"), 
                             false, 
                             3 );
                             
-                            
+                       
+    itemBoxSizerChoiceBook->Add( m_choiceBook, 99, wxGROW | wxALL, 5 );
+    
                             
     // ---------------------------------------------------------------                            
                             
         
-    itemBoxSizerSelectIcons->Add( m_choiceBook, 0, wxGROW | wxALL, 5 );
+    
 
 
 
@@ -760,7 +778,7 @@ void frmDeviceConfig::CreateControls() {
 
 
     wxBoxSizer* itemBoxSizerLowerHorisontal = new wxBoxSizer( wxHORIZONTAL );
-    itemBoxSizerMain->Add( itemBoxSizerLowerHorisontal, 0, wxGROW | wxALL | wxEXPAND, 5 );
+    itemBoxSizerMain->Add( itemBoxSizerLowerHorisontal, 20, wxGROW | wxALL | wxEXPAND, 3 );
                             
     itemBoxSizerLowerHorisontal->AddSpacer( 10 );
 
@@ -897,17 +915,19 @@ void frmDeviceConfig::CreateControls() {
     m_gridAbstractions->SetColLabelValue(1, _("Type"));
 
     m_gridAbstractions->SetColSize(2, m_constGridAbstractionAccessDefaultWidth);
-    m_gridAbstractions->SetColLabelValue(2, _("Access"));
+    m_gridAbstractions->SetColLabelValue(2, _(" "));
+    m_gridAbstractions->AutoSizeColumn( 2 );
 
-    m_gridAbstractions->SetColSize(3, m_constGridAbstractionContentdefaultWidth);
+    m_gridAbstractions->SetColSize(3, m_constGridAbstractionContentdefaultWidth );
     m_gridAbstractions->SetColLabelValue(3, _("Content"));
+    m_gridAbstractions->AutoSizeColumn( 3 );
 
     m_gridAbstractions->SetColSize(4, m_constGridAbstractionDescriptionDefaultWidth);
     m_gridAbstractions->SetColLabelValue(4, _("Description"));
-
+    
     m_gridAbstractions->DeleteRows(0);
 
-    // Register Page Decsion Matrix
+    // Register Page Decision Matrix
     m_gridDM->SetColSize(0, m_constGridDMOrigAddressDefaultWidth);
     m_gridDM->SetColLabelValue(0, _("O-addr."));
 
@@ -4957,8 +4977,7 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
         wxString strBuf;
         uint8_t val = 0;
 
-        DialogAbstractionEdit dlg(this);
-
+        DialogAbstractionEdit dlg( this );
         
         // Get value (in string form)
         strValue = m_gridAbstractions->GetCellValue( event.GetRow(), 3 );
@@ -4968,7 +4987,7 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 
         m_gridAbstractions->SelectRow( event.GetRow() );
 
-        //int row;
+        // int row;
         if (wxID_OK == dlg.ShowModal()) {
 
             wxString newValue;
@@ -5725,14 +5744,13 @@ void frmDeviceConfig::updateAbstractionGrid(void)
 
         CMDF_Abstraction *pAbstraction = *iter; 
 
-
         // Add a row
         m_gridAbstractions->AppendRows( 1 );
 
         wxColour fgcolor( pAbstraction->m_fgcolor );
         wxColour bgcolor( pAbstraction->m_bgcolor );
 
-        // Set foreground and background colors.
+        // Set foreground and background colours.
         for ( int i = 0; i < 5; i++ ) {
             m_gridAbstractions->SetCellTextColour( m_gridAbstractions->GetNumberRows() - 1, i, fgcolor );
             m_gridAbstractions->SetCellBackgroundColour( m_gridAbstractions->GetNumberRows() - 1, i, bgcolor );
@@ -5749,7 +5767,7 @@ void frmDeviceConfig::updateAbstractionGrid(void)
                                                 wxALIGN_LEFT,
                                                 wxALIGN_CENTRE );
         m_gridAbstractions->SetReadOnly(m_gridAbstractions->GetNumberRows() - 1, 0);
-
+        m_gridAbstractions->SetCellFont( m_gridAbstractions->GetNumberRows()-1, 0, fontBold );
 
 
         // Type
@@ -5824,11 +5842,16 @@ void frmDeviceConfig::updateAbstractionGrid(void)
 
 
 
-
         // Type
         m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows()-1,
                                             1,
                                             strType );
+        
+        m_gridAbstractions->AutoSizeColumn( 0 );
+        m_gridAbstractions->AutoSizeColumn( 1 );
+        m_gridAbstractions->AutoSizeColumn( 2 );
+        //m_gridAbstractions->AutoSizeColumn( 3 );
+        // m_gridAbstractions->AutoSizeColumns();
 
         // Make all parts of the row visible
         m_gridAbstractions->AutoSizeRow( m_gridAbstractions->GetNumberRows()-1 );

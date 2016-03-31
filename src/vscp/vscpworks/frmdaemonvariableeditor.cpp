@@ -2,9 +2,6 @@
 // Name:        frmdaemonvariableeditor.cpp
 // Purpose:     
 // Author:      Ake Hedman
-// Modified by: 
-// Created:     24/10/2012 14:36:40
-// RCS-ID:      
 // Copyright:   (C) 2007-2016 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
@@ -2057,14 +2054,14 @@ static const char *database_down_xpm[] = {
 ////@end XPM images
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // DaemonVariableEditor type definition
 //
 
 IMPLEMENT_CLASS( DaemonVariableEditor, wxFrame )
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // DaemonVariableEditor event table definition
 //
 
@@ -2079,7 +2076,7 @@ BEGIN_EVENT_TABLE( DaemonVariableEditor, wxFrame )
 END_EVENT_TABLE()
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // DaemonVariableEditor constructors
 //
 
@@ -2100,7 +2097,7 @@ DaemonVariableEditor::DaemonVariableEditor( wxWindow* parent,
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // DaemonVariableEditor creator
 //
 
@@ -2121,7 +2118,7 @@ bool DaemonVariableEditor::Create( wxWindow* parent,
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // DaemonVariableEditor destructor
 //
 
@@ -2132,7 +2129,7 @@ DaemonVariableEditor::~DaemonVariableEditor()
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // Member initialisation
 //
 
@@ -2153,7 +2150,7 @@ void DaemonVariableEditor::Init()
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // Control creation for DaemonVariableEditor
 //
 
@@ -2175,7 +2172,11 @@ void DaemonVariableEditor::CreateControls()
   itemFrame1->SetToolBar(itemToolBar7);
 
   wxPanel* itemPanel8 = new wxPanel;
-  itemPanel8->Create( itemFrame1, ID_PANEL2, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+  itemPanel8->Create( itemFrame1, 
+                        ID_PANEL2, 
+                        wxDefaultPosition, 
+                        wxDefaultSize, 
+                        wxSUNKEN_BORDER | wxTAB_TRAVERSAL );
 
   wxBoxSizer* itemBoxSizer9 = new wxBoxSizer(wxVERTICAL);
   itemPanel8->SetSizer(itemBoxSizer9);
@@ -2184,10 +2185,14 @@ void DaemonVariableEditor::CreateControls()
   itemBoxSizer9->Add(itemBoxSizer10, 0, wxGROW|wxALL, 5);
 
   m_choiceBook = new wxToolbook;
-  m_choiceBook->Create( itemPanel8, ID_CHOICEBOOK, wxDefaultPosition, wxSize(600, 400), wxBK_DEFAULT );
+  m_choiceBook->Create( itemPanel8, 
+                            ID_CHOICEBOOK, 
+                            wxDefaultPosition, 
+                            wxSize(600, 400), 
+                            wxBK_DEFAULT );
   wxImageList* m_choiceBookImageList = new wxImageList(32, 32, true, 3);
   {
-    wxIcon m_choiceBookIcon0(itemFrame1->GetIconResource(wxT("icons/png/32x32/database_process.png")));
+    wxIcon m_choiceBookIcon0( itemFrame1->GetIconResource(wxT("icons/png/32x32/database_process.png")));
     m_choiceBookImageList->Add(m_choiceBookIcon0);
     wxIcon m_choiceBookIcon1(itemFrame1->GetIconResource(wxT("icons/png/32x32/database_accept.png")));
     m_choiceBookImageList->Add(m_choiceBookIcon1);
@@ -2197,18 +2202,31 @@ void DaemonVariableEditor::CreateControls()
   m_choiceBook->AssignImageList(m_choiceBookImageList);
 
   m_panel0 = new wxPanel;
-  m_panel0->Create( m_choiceBook, ID_PANEL_REGISTERS, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+  m_panel0->Create( m_choiceBook, 
+                        ID_PANEL_REGISTERS, 
+                        wxDefaultPosition, 
+                        wxDefaultSize, 
+                        wxSUNKEN_BORDER | wxTAB_TRAVERSAL );
   m_panel0->Show(false);
   wxBoxSizer* itemBoxSizer13 = new wxBoxSizer(wxVERTICAL);
   m_panel0->SetSizer(itemBoxSizer13);
 
   m_gridRegisters = new wxGrid;
-  m_gridRegisters->Create( m_panel0, ID_GRID_REGISTERS, wxDefaultPosition, wxSize(400, 340), wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
+  m_gridRegisters->Create( m_panel0, 
+                            ID_GRID_REGISTERS, 
+                            wxDefaultPosition, 
+                            wxSize(400, 340), 
+                            wxSUNKEN_BORDER | wxHSCROLL | wxVSCROLL );
   m_gridRegisters->SetBackgroundColour(wxColour(240, 240, 240));
 #if  wxCHECK_VERSION(2, 9, 5)  
   m_gridRegisters->SetFont(wxFont(wxFontInfo(8).FaceName("Tahoma").Bold()));
 #else
-    m_gridRegisters->SetFont(wxFont( 8, wxSWISS, wxNORMAL, wxBOLD, false, wxT( "Tahoma" ) ));
+    m_gridRegisters->SetFont(wxFont( 8, 
+                                        wxSWISS, 
+                                        wxNORMAL, 
+                                        wxBOLD, 
+                                        false, 
+                                        wxT( "Tahoma" ) ) );
 #endif  
   m_gridRegisters->SetDefaultColSize(50);
   m_gridRegisters->SetDefaultRowSize(18);
@@ -2220,18 +2238,31 @@ void DaemonVariableEditor::CreateControls()
   m_choiceBook->AddPage(m_panel0, _("Registers"), false, 0);
 
   wxPanel* itemPanel15 = new wxPanel;
-  itemPanel15->Create( m_choiceBook, ID_PANEL_ABSTRACTIONS, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+  itemPanel15->Create( m_choiceBook, 
+                        ID_PANEL_ABSTRACTIONS, 
+                        wxDefaultPosition, 
+                        wxDefaultSize, 
+                        wxSUNKEN_BORDER | wxTAB_TRAVERSAL );
   itemPanel15->Show(false);
   wxBoxSizer* itemBoxSizer16 = new wxBoxSizer(wxVERTICAL);
   itemPanel15->SetSizer(itemBoxSizer16);
 
   m_gridAbstractions = new wxGrid;
-  m_gridAbstractions->Create( itemPanel15, ID_GRID_ABSTRACTIONS, wxDefaultPosition, wxSize(400, 340), wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
+  m_gridAbstractions->Create( itemPanel15, 
+                                ID_GRID_ABSTRACTIONS, 
+                                wxDefaultPosition, 
+                                wxSize(400, 340), 
+                                wxSUNKEN_BORDER | wxHSCROLL | wxVSCROLL );
   m_gridAbstractions->SetBackgroundColour(wxColour(240, 240, 240));
 #if  wxCHECK_VERSION(2, 9, 5)  
   m_gridAbstractions->SetFont(wxFont( wxFontInfo(8).FaceName("Tahoma").Bold()));
 #else
-    m_gridAbstractions->SetFont(wxFont( 8, wxSWISS, wxNORMAL, wxBOLD, false, wxT( "Tahoma" ) ));
+    m_gridAbstractions->SetFont(wxFont( 8, 
+                                            wxSWISS, 
+                                            wxNORMAL, 
+                                            wxBOLD, 
+                                            false, 
+                                            wxT( "Tahoma" ) ) );
 #endif  
   m_gridAbstractions->SetDefaultColSize(50);
   m_gridAbstractions->SetDefaultRowSize(18);
@@ -2243,18 +2274,31 @@ void DaemonVariableEditor::CreateControls()
   m_choiceBook->AddPage(itemPanel15, _("Abstraction"), false, 1);
 
   wxPanel* itemPanel18 = new wxPanel;
-  itemPanel18->Create( m_choiceBook, ID_PANEL_DM, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+  itemPanel18->Create( m_choiceBook, 
+                            ID_PANEL_DM, 
+                            wxDefaultPosition, 
+                            wxDefaultSize, 
+                            wxSUNKEN_BORDER | wxTAB_TRAVERSAL );
   itemPanel18->Show(false);
   wxBoxSizer* itemBoxSizer19 = new wxBoxSizer(wxVERTICAL);
   itemPanel18->SetSizer(itemBoxSizer19);
 
   m_gridDM = new wxGrid;
-  m_gridDM->Create( itemPanel18, ID_GRID_DM, wxDefaultPosition, wxSize(400, 340), wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
+  m_gridDM->Create( itemPanel18, 
+                        ID_GRID_DM, 
+                        wxDefaultPosition, 
+                        wxSize(400, 340), 
+                        wxSUNKEN_BORDER | wxHSCROLL|wxVSCROLL );
   m_gridDM->SetBackgroundColour(wxColour(240, 240, 240));
 #if  wxCHECK_VERSION(2, 9, 5)  
   m_gridDM->SetFont(wxFont( wxFontInfo(8).FaceName("Tahoma").Bold() ) );
 #else
-    m_gridDM->SetFont( wxFont( 8, wxSWISS, wxNORMAL, wxBOLD, false, wxT( "Tahoma" ) ));
+    m_gridDM->SetFont( wxFont( 8, 
+                                wxSWISS, 
+                                wxNORMAL, 
+                                wxBOLD, 
+                                false, 
+                                wxT( "Tahoma" ) ));
 #endif  
   m_gridDM->SetDefaultColSize(50);
   m_gridDM->SetDefaultRowSize(18);
@@ -2282,44 +2326,80 @@ void DaemonVariableEditor::CreateControls()
   itemBoxSizer22->Add(itemBoxSizer25, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
   m_StatusWnd = new wxHtmlWindow;
-  m_StatusWnd->Create( itemPanel8, ID_HTMLWINDOW1, wxDefaultPosition, wxSize(680, 180), wxHW_SCROLLBAR_AUTO|wxRAISED_BORDER|wxWANTS_CHARS|wxHSCROLL|wxVSCROLL );
+  m_StatusWnd->Create( itemPanel8, 
+                            ID_HTMLWINDOW1, 
+                            wxDefaultPosition, 
+                            wxSize(680, 180), 
+                            wxHW_SCROLLBAR_AUTO | wxRAISED_BORDER | 
+                                wxWANTS_CHARS | wxHSCROLL | wxVSCROLL );
   itemBoxSizer25->Add(m_StatusWnd, 0, wxALIGN_RIGHT|wxALL, 0);
 
   wxBoxSizer* itemBoxSizer27 = new wxBoxSizer(wxVERTICAL);
   itemBoxSizer22->Add(itemBoxSizer27, 0, wxALIGN_TOP|wxALL, 5);
 
   m_chkFullUppdate = new wxCheckBox;
-  m_chkFullUppdate->Create( itemPanel8, ID_CHECKBOX_FULL_UPDATE, _("Full Uppdate"), wxDefaultPosition, wxDefaultSize, 0 );
+  m_chkFullUppdate->Create( itemPanel8, 
+                                ID_CHECKBOX_FULL_UPDATE, 
+                                _("Full Uppdate"), 
+                                wxDefaultPosition, 
+                                wxDefaultSize, 
+                                0 );
   m_chkFullUppdate->SetValue(false);
   itemBoxSizer27->Add(m_chkFullUppdate, 0, wxALIGN_LEFT|wxALL, 5);
 
   m_chkMdfFromFile = new wxCheckBox;
-  m_chkMdfFromFile->Create( itemPanel8, ID_CHECKBOX_MDF_FROM_FILE, _("Use local MDF"), wxDefaultPosition, wxDefaultSize, 0 );
+  m_chkMdfFromFile->Create( itemPanel8, 
+                                ID_CHECKBOX_MDF_FROM_FILE, 
+                                _("Use local MDF"), 
+                                wxDefaultPosition, 
+                                wxDefaultSize, 
+                                0 );
   m_chkMdfFromFile->SetValue(false);
   itemBoxSizer27->Add(m_chkMdfFromFile, 0, wxALIGN_LEFT|wxALL, 5);
 
   wxButton* itemButton30 = new wxButton;
-  itemButton30->Create( itemPanel8, ID_BUTTON16, _("Update"), wxDefaultPosition, wxDefaultSize, 0 );
+  itemButton30->Create( itemPanel8, 
+                            ID_BUTTON16, 
+                            _("Update"), 
+                            wxDefaultPosition, 
+                            wxDefaultSize, 
+                            0 );
   itemButton30->SetDefault();
   itemBoxSizer27->Add(itemButton30, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 1);
 
   m_ctrlButtonLoadMDF = new wxButton;
-  m_ctrlButtonLoadMDF->Create( itemPanel8, ID_BUTTON17, _("Load defaults"), wxDefaultPosition, wxDefaultSize, 0 );
+  m_ctrlButtonLoadMDF->Create( itemPanel8, 
+                                ID_BUTTON17, 
+                                _("Load defaults"), 
+                                wxDefaultPosition, 
+                                wxDefaultSize, 
+                                0 );
   m_ctrlButtonLoadMDF->Enable(false);
-  itemBoxSizer27->Add(m_ctrlButtonLoadMDF, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 1);
+  itemBoxSizer27->Add( m_ctrlButtonLoadMDF, 
+                        0, 
+                        wxALIGN_CENTER_HORIZONTAL | wxALL, 
+                        1 );
 
   itemBoxSizer27->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
   m_ctrlButtonWizard = new wxButton;
-  m_ctrlButtonWizard->Create( itemPanel8, ID_BUTTON19, _("Wizard"), wxDefaultPosition, wxDefaultSize, 0 );
+  m_ctrlButtonWizard->Create( itemPanel8, 
+                                ID_BUTTON19, 
+                                _("Wizard"), 
+                                wxDefaultPosition, 
+                                wxDefaultSize, 
+                                0 );
   m_ctrlButtonWizard->Enable(false);
-  itemBoxSizer27->Add(m_ctrlButtonWizard, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+  itemBoxSizer27->Add( m_ctrlButtonWizard, 
+                            0, 
+                            wxALIGN_CENTER_HORIZONTAL | wxALL, 
+                            5 );
 
 ////@end DaemonVariableEditor content construction
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // Should we show tooltips?
 //
 
@@ -2328,7 +2408,7 @@ bool DaemonVariableEditor::ShowToolTips()
   return true;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // Get bitmap resources
 //
 
@@ -2341,7 +2421,7 @@ wxBitmap DaemonVariableEditor::GetBitmapResource( const wxString& name )
 ////@end DaemonVariableEditor bitmap retrieval
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // Get icon resources
 //
 
@@ -2370,7 +2450,7 @@ wxIcon DaemonVariableEditor::GetIconResource( const wxString& name )
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // wxEVT_GRID_CELL_RIGHT_CLICK event handler for ID_GRID_REGISTERS
 //
 
@@ -2383,7 +2463,7 @@ void DaemonVariableEditor::OnCellRightClick( wxGridEvent& event )
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // wxEVT_GRID_CELL_LEFT_DCLICK event handler for ID_GRID_REGISTERS
 //
 

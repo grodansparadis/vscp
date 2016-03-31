@@ -932,6 +932,8 @@
                   <in>dlldrvobj.h</in>
                 </df>
                 <df name="linux">
+                  <df name="Driver_CAN4VSCP">
+                  </df>
                   <in>test.cpp</in>
                   <in>vscpl1_can4vscpdrv.cpp</in>
                   <in>vscpl1_can4vscpdrv.h</in>
