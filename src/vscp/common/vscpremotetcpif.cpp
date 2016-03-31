@@ -42,6 +42,7 @@
 #endif
 
 #ifdef WIN32
+//#include <winsock2.h>
 #include "winsock.h"
 #endif
 
