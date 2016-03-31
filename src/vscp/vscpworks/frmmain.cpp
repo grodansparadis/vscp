@@ -142,8 +142,8 @@ void RenderTimer::Notify()
         bRefresh = true;    // We should update stuff
 
         VSCP_HASH_KNOWN_NODES::iterator it;
-        for ( it = m_multicastThread->m_knownNodes.m_nodes.begin(); it != m_multicastThread->m_knownNodes.m_nodes.end(); ++it )
-        {
+        for ( it = m_multicastThread->m_knownNodes.m_nodes.begin(); 
+                it != m_multicastThread->m_knownNodes.m_nodes.end(); ++it ) {
             wxString key = it->first;
             CNodeInformation *pNodeInfo = it->second;
             
@@ -189,8 +189,8 @@ void RenderTimer::Notify()
         bRefresh = true;    // We should update stuff
 
         VSCP_HASH_KNOWN_SERVERS::iterator it;
-        for ( it = m_multicastThread->m_knownNodes.m_servers.begin(); it != m_multicastThread->m_knownNodes.m_servers.end(); ++it )
-        {
+        for ( it = m_multicastThread->m_knownNodes.m_servers.begin(); 
+                it != m_multicastThread->m_knownNodes.m_servers.end(); ++it ) {
             wxString key = it->first;
             CVSCPServerInformation *pNodeInfo = it->second;
  
@@ -318,10 +318,10 @@ void frmMain::Init()
 {
     if ( !::wxDirExists( wxStandardPaths::Get().GetUserDataDir() ) ) {
         if ( !::wxMkdir( wxStandardPaths::Get().GetUserDataDir() ) ) {
-            wxMessageBox(_("Failed to create directory. ") + wxStandardPaths::Get().GetUserDataDir() );
+            wxMessageBox( _("Failed to create directory. ") + 
+                            wxStandardPaths::Get().GetUserDataDir() );
         }
     }
-
 }
 
 
@@ -427,8 +427,11 @@ void frmMain::CreateControls()
     itemMainFrame->SetStatusBar( m_pitemStatusBar );
 
     // Toolbar
-    wxToolBar* itemToolBar = CreateToolBar( wxTB_FLAT | wxTB_HORIZONTAL | wxTB_NODIVIDER, 
-                                                ID_TOOLBAR );
+    wxToolBar* itemToolBar = 
+                CreateToolBar( wxTB_FLAT | 
+                                    wxTB_HORIZONTAL | 
+                                    wxTB_NODIVIDER, 
+                                    ID_TOOLBAR );
     wxBitmap itemtool34Bitmap( itemMainFrame->GetBitmapResource( wxT("open.xpm") ) );
     wxBitmap itemtool34BitmapDisabled;
     itemToolBar->AddTool( ID_TOOL,
@@ -475,7 +478,11 @@ void frmMain::CreateControls()
                             ID_TREECTRL, 
                             wxDefaultPosition, 
                             wxDefaultSize, 
-                            wxTR_HAS_BUTTONS | wxTR_FULL_ROW_HIGHLIGHT | wxTR_LINES_AT_ROOT | wxTR_ROW_LINES | wxTR_SINGLE );
+                            wxTR_HAS_BUTTONS | 
+                                wxTR_FULL_ROW_HIGHLIGHT | 
+                                wxTR_LINES_AT_ROOT | 
+                                wxTR_ROW_LINES | 
+                                wxTR_SINGLE );
     itemSizerVertical->Add( m_nodeTree, 10, wxGROW | wxALL, 2 );
 
     m_htmlInfoWnd = new wxHtmlWindow;
@@ -483,13 +490,24 @@ void frmMain::CreateControls()
                             ID_HTMLWINDOW2, 
                             wxDefaultPosition, 
                             wxSize( -1, 150 ), 
-                            wxHW_SCROLLBAR_AUTO | wxSUNKEN_BORDER | wxHSCROLL | wxVSCROLL );
+                            wxHW_SCROLLBAR_AUTO | 
+                                wxSUNKEN_BORDER | 
+                                wxHSCROLL | 
+                                wxVSCROLL );
     m_htmlInfoWnd->SetPage( _( "<html><h4>Node information</h4>This area will contain extended information about known (discovered) nodes. This is work in progress so information is sparse (and may be wrong) at the moment. Click on a discovered node to display info about it in this area.</html>" ) );
     itemSizerVertical->Add( m_htmlInfoWnd, 0, wxGROW | wxALL, 5 );
     
     // Connect events and objects
-    m_nodeTree->Connect( ID_TREECTRL, wxEVT_LEFT_DOWN, wxMouseEventHandler( frmMain::OnLeftDown ), NULL, this );
-    m_nodeTree->Connect( ID_TREECTRL, wxEVT_LEFT_DCLICK, wxMouseEventHandler( frmMain::OnLeftDClick ), NULL, this );
+    m_nodeTree->Connect( ID_TREECTRL, 
+                            wxEVT_LEFT_DOWN, 
+                            wxMouseEventHandler( frmMain::OnLeftDown ), 
+                            NULL, 
+                            this );
+    m_nodeTree->Connect( ID_TREECTRL, 
+                            wxEVT_LEFT_DCLICK, 
+                            wxMouseEventHandler( frmMain::OnLeftDClick ), 
+                            NULL, 
+                            this );
 
     wxImageList* itemImageList = new wxImageList( 16, 16, true, 5 );
     {
@@ -531,7 +549,7 @@ void frmMain::CreateControls()
         
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // ShowToolTips
 //
 
@@ -540,7 +558,7 @@ bool frmMain::ShowToolTips()
     return true;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // GetBitmapResource
 //
 
@@ -561,7 +579,7 @@ wxBitmap frmMain::GetBitmapResource( const wxString& name )
     
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // GetIconResource
 //
 
@@ -577,7 +595,7 @@ wxIcon frmMain::GetIconResource( const wxString& name )
     return wxNullIcon;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // OnCloseWindow
 //
 
@@ -587,17 +605,17 @@ void frmMain::OnCloseWindow( wxCloseEvent& event )
 
     // Save frame size and position
     wxRect rc = GetRect();
-    g_Config.m_xpos = rc.x;  
-    g_Config.m_ypos = rc.y;
-    //g_Config.m_sizeWidth = rc.width;
-    //g_Config.m_sizeHeight = rc.height;
+    g_Config.m_xposMainFrame = rc.x;  
+    g_Config.m_yposMainFrame = rc.y;
+    g_Config.m_sizeMainFrameWidth = rc.width;
+    g_Config.m_sizeMainFrameHeight = rc.height;
 
     event.Skip();
 }
 
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // OnTreectrlSelChanged
 //
 
@@ -680,7 +698,7 @@ void frmMain::OnTreectrlSelChanged( wxTreeEvent& event )
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // OnLeftDown
 //
 
@@ -691,7 +709,7 @@ void frmMain::OnLeftDown( wxMouseEvent& event )
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // OnLeftDClick
 //
 
@@ -701,7 +719,7 @@ void frmMain::OnLeftDClick( wxMouseEvent& event )
     event.Skip();
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // addDefaultContent
 //
 
@@ -742,7 +760,7 @@ void frmMain::addDefaultContent( void )
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // OnMenuitemOpenVscpSessionClick
 //
 
@@ -802,6 +820,11 @@ void frmMain::OnMenuitemOpenVscpSessionClick( wxCommandEvent& event )
 
                         // Start the worker threads
                         subframe->startWorkerThreads( subframe );
+                        
+                        subframe->SetSize(  -1, 
+                                            -1, 
+                                            g_Config.m_sizeSessionFrameWidth, 
+                                            g_Config.m_sizeSessionFrameHeight );
                        
                         // Show the VSCP session windows
                         subframe->Show( true );
@@ -872,7 +895,7 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
                         // Init node id combo
                         wxRect rc = subframe->m_comboNodeID->GetRect();
 #ifdef WIN32
-                        rc.SetWidth( 60 );	
+                        rc.SetWidth( 60 );
 #else
                         rc.SetWidth( 80 );
 #endif
@@ -899,12 +922,18 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
 
                         // Connect to device bus
                         if ( subframe->enableInterface() ) {
+                            
+                            subframe->SetSize(  -1, 
+                                                -1, 
+                                                g_Config.m_sizeConfigurationFrameWidth, 
+                                                g_Config.m_sizeConfigurationFrameHeight );
 
                             // Move window on top
                             subframe->Raise();
 
                             // Show the VSCP configuration windows
                             subframe->Show( true );
+                            
                         }
                         else {
                             // Failed to connect - terminate
@@ -962,6 +991,11 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
 
                         // Connect to host
                         if ( subframe->enableInterface() ) {
+                            
+                            subframe->SetSize(  0, 
+                                                0, 
+                                                g_Config.m_sizeConfigurationFrameWidth, 
+                                                g_Config.m_sizeConfigurationFrameHeight );
 
                             // Show the VSCP configuration windows
                             subframe->Show( true );
@@ -995,7 +1029,7 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
     event.Skip( false );
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // OnMenuitemScanClick
 //
 
@@ -1146,7 +1180,7 @@ void frmMain::OnMenuitemScanClick( wxCommandEvent& event )
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // OnMenuitemBootloaderWizardClick
 //
 
@@ -1175,7 +1209,7 @@ void frmMain::OnMenuitemBootloaderWizardClick( wxCommandEvent& event )
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // OnMenuitemAppExitClick
 //
 
@@ -1186,7 +1220,7 @@ void frmMain::OnMenuitemAppExitClick( wxCommandEvent& event )
     event.Skip( false );
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // OnMenuitemAboutClick
 //
 
@@ -1200,7 +1234,7 @@ void frmMain::OnMenuitemAboutClick( wxCommandEvent& event )
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // OnMenuitemConfigurationClick
 //
 
@@ -1215,7 +1249,7 @@ void frmMain::OnMenuitemConfigurationClick( wxCommandEvent& event )
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // OnMenuitemHelpClick
 // 
 
@@ -1227,7 +1261,7 @@ void frmMain::OnMenuitemHelpClick( wxCommandEvent& event )
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // OnMenuitemFaqClick
 // 
 
@@ -1239,7 +1273,7 @@ void frmMain::OnMenuitemFaqClick( wxCommandEvent& event )
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // OnMenuitemShortcutsClick
 //
 
@@ -1251,7 +1285,7 @@ void frmMain::OnMenuitemShortcutsClick( wxCommandEvent& event )
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // OnMenuitemThanksClick
 //
 
@@ -1263,7 +1297,7 @@ void frmMain::OnMenuitemThanksClick( wxCommandEvent& event )
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // OnMenuitemCrediitsClick
 //
 
@@ -1275,7 +1309,7 @@ void frmMain::OnMenuitemCrediitsClick( wxCommandEvent& event )
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // OnMenuitemVSCPSiteClick
 //
 
@@ -1287,7 +1321,7 @@ void frmMain::OnMenuitemVSCPSiteClick( wxCommandEvent& event )
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // OnMenuitemMdfEditorClick
 //
 
@@ -1302,7 +1336,7 @@ void frmMain::OnMenuitemMdfEditorClick( wxCommandEvent& event )
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // OnMenuitemMerlinClick
 //
 
@@ -1315,7 +1349,7 @@ void frmMain::OnMenuitemMerlinClick( wxCommandEvent& event )
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // OnMenuitemOpenSimpleUIdesignerClick
 //
 
@@ -1328,7 +1362,7 @@ void frmMain::OnMenuitemOpenSimpleUIdesignerClick( wxCommandEvent& event )
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // OnMenuitemOpenDaemonDMEditorClick
 //
 
@@ -1341,7 +1375,7 @@ void frmMain::OnMenuitemOpenDaemonDMEditorClick( wxCommandEvent& event )
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // OnMenuitemOpenDaemonVaraibleEditorClick
 //
 

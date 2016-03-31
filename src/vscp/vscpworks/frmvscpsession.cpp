@@ -468,6 +468,11 @@ void frmVSCPSession::Init()
 void frmVSCPSession::OnCloseWindow(wxCloseEvent& event)
 {
     wxBusyCursor wait;
+    
+    // Save frame size and position
+    wxRect rc = GetRect();
+    g_Config.m_sizeSessionFrameWidth = rc.width;
+    g_Config.m_sizeSessionFrameHeight = rc.height;
 
     wxProgressDialog progressDlg(_("VSCP Works"),
             _("Clearing VSCP events..."),

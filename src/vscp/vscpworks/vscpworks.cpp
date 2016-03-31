@@ -58,7 +58,7 @@
 #endif
 
 // Configuration stuff
-#include <wx/config.h>
+#include <wx/config.h> 
 #include <wx/confbase.h>
 #include <wx/fileconf.h>
 #include <wx/wfstream.h>
@@ -92,6 +92,8 @@
 #include <vscpeventhelper.h>
 #include <vscpmulticast.h>
 #include <mdf.h>
+#include <frmdeviceconfig.h>
+#include <frmvscpsession.h>
 #include <vscp_class.h>
 #include <vscp_type.h>
 #include "vscpworks.h"
@@ -247,8 +249,8 @@ void VscpworksApp::Init()
     g_cntCanalNodes = 0;  // No nodes yet
     g_cntVscpNodes = 0;   // No nodes yet
 
-    g_Config.m_sizeWidth = VSCPWORKS_MAIN_WINDOW_DEFAULT_WIDTH;
-    g_Config.m_sizeHeight = VSCPWORKS_MAIN_WINDOW_DEFAULT_HEGHT;
+    g_Config.m_sizeMainFrameWidth = VSCPWORKS_MAIN_WINDOW_DEFAULT_WIDTH;
+    g_Config.m_sizeMainFrameHeight = VSCPWORKS_MAIN_WINDOW_DEFAULT_HEGHT;
 
     g_Config.m_VscpTrmitShowField[0] = true;
     g_Config.m_VscpTrmitShowField[1] = true;
@@ -381,7 +383,10 @@ bool VscpworksApp::OnInit()
     mainWindow->Show(true);
 
     //Move( g_Config.m_xpos, g_Config.m_ypos );
-    mainWindow->SetSize(  g_Config.m_xpos, g_Config.m_ypos, g_Config.m_sizeWidth, g_Config.m_sizeHeight );
+    mainWindow->SetSize(  g_Config.m_xposMainFrame, 
+                            g_Config.m_yposMainFrame, 
+                            g_Config.m_sizeMainFrameWidth, 
+                            g_Config.m_sizeMainFrameHeight );
     return true;
 }
 
@@ -633,12 +638,12 @@ wxLogDebug( wxstr );
 // Username
 pconfig->Read( _("username"), &wxstr, _("admin") );
 g_Config.m_strUsername = wxstr;
-wxLogDebug( wxstr );	
+wxLogDebug( wxstr );
 
 // Password
 pconfig->Read( _("password"), &wxstr, _("secret") );
 g_Config.m_strPassword = wxstr;
-wxLogDebug( wxstr );	
+wxLogDebug( wxstr );
 
 
 
@@ -1605,47 +1610,101 @@ bool VscpworksApp::readConfiguration( void )
             while (subchild) {
 
                 g_Config.m_strPathTemp = _("/tmp");
-                if (subchild->GetName() == _("width")) {
+                if (subchild->GetName() == _("MainFrameWidth")) {
 
                     unsigned long val;
                     if ( subchild->GetNodeContent().ToULong( &val, 10 ) ) {
                         if ( val ) {
-                            g_Config.m_sizeWidth = val;
+                            g_Config.m_sizeMainFrameWidth = val;
                         }
                         else {
-                            g_Config.m_sizeWidth = 400;
+                            g_Config.m_sizeMainFrameWidth = 400;
                         }
                     }
 
                 }
-                else if (subchild->GetName() == _("height")) {
+                else if (subchild->GetName() == _("MainFrameHeight")) {
 
                     unsigned long val;
                     if ( subchild->GetNodeContent().ToULong( &val, 10 ) ) {
                         if ( val ) {
-                            g_Config.m_sizeHeight = val;
+                            g_Config.m_sizeMainFrameHeight = val;
                         }
                         else {
-                            g_Config.m_sizeHeight = 300;
+                            g_Config.m_sizeMainFrameHeight = 300;
                         }
                     }
 
                 }
-                else if (subchild->GetName() == _("xpos")) {
+                else if (subchild->GetName() == _("MainFramexpos")) {
 
                     unsigned long val;
-                    g_Config.m_xpos = 0;
+                    g_Config.m_xposMainFrame = 0;
                     if ( subchild->GetNodeContent().ToULong( &val, 10 ) ) {
-                        g_Config.m_xpos = val;
+                        g_Config.m_xposMainFrame = val;
                     }
 
                 }
-                else if (subchild->GetName() == _("ypos")) {
+                else if (subchild->GetName() == _("MainFrameypos")) {
 
                     unsigned long val;
-                    g_Config.m_ypos = 0;
+                    g_Config.m_yposMainFrame = 0;
                     if ( subchild->GetNodeContent().ToULong( &val, 10 ) ) {
-                        g_Config.m_ypos = val;
+                        g_Config.m_yposMainFrame = val;
+                    }
+
+                }
+                else if (subchild->GetName() == _("SessionFrameWidth")) {
+
+                    unsigned long val;
+                    if ( subchild->GetNodeContent().ToULong( &val, 10 ) ) {
+                        if ( val ) {
+                            g_Config.m_sizeSessionFrameWidth = val;
+                        }
+                        else {
+                            g_Config.m_sizeSessionFrameWidth = 400;
+                        }
+                    }
+
+                }
+                else if (subchild->GetName() == _("SessionFrameHeight")) {
+
+                    unsigned long val;
+                    if ( subchild->GetNodeContent().ToULong( &val, 10 ) ) {
+                        if ( val ) {
+                            g_Config.m_sizeSessionFrameHeight = val;
+                        }
+                        else {
+                            g_Config.m_sizeSessionFrameHeight = 300;
+                        }
+                    }
+
+                }
+                else if (subchild->GetName() == _("ConfigurationFrameWidth")) {
+
+                    unsigned long val;
+                    if ( subchild->GetNodeContent().ToULong( &val, 10 ) ) {
+                        if ( val ) {
+                            g_Config.m_sizeConfigurationFrameWidth = val;
+                        }
+                        else {
+                            g_Config.m_sizeConfigurationFrameWidth = 
+                                SYMBOL_FRMDEVICECONFIG_SIZE.GetWidth();
+                        }
+                    }
+
+                }
+                else if (subchild->GetName() == _("ConfigurationFrameHeight")) {
+
+                    unsigned long val;
+                    if ( subchild->GetNodeContent().ToULong( &val, 10 ) ) {
+                        if ( val ) {
+                            g_Config.m_sizeConfigurationFrameHeight = val;
+                        }
+                        else {
+                            g_Config.m_sizeConfigurationFrameHeight = 
+                                SYMBOL_FRMDEVICECONFIG_SIZE.GetHeight();
+                        }
                     }
 
                 }
@@ -2428,29 +2487,53 @@ bool VscpworksApp::writeConfiguration( void )
     // General
     pFileStream->Write( "<general>\n", strlen( "<general>\n" ) );
 
-    // Width// General
-    pFileStream->Write( "<width>", strlen( "<width>" ) );
-    buf.Printf( _( "%d" ), g_Config.m_sizeWidth );
+    // Width MainFrame
+    pFileStream->Write( "<MainFrameWidth>", strlen( "<MainFrameWidth>" ) );
+    buf.Printf( _( "%d" ), g_Config.m_sizeMainFrameWidth );
     pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
-    pFileStream->Write( "</width>\n", strlen( "</width>\n" ) );
+    pFileStream->Write( "</MainFrameWidth>\n", strlen( "</MainFrameWidth>\n" ) );
 
-    // Height
-    pFileStream->Write( "<height>", strlen( "<height>" ) );
-    buf.Printf( _( "%d" ), g_Config.m_sizeHeight );
+    // Height MainFrame
+    pFileStream->Write( "<MainFrameHeight>", strlen( "<MainFrameHeight>" ) );
+    buf.Printf( _( "%d" ), g_Config.m_sizeMainFrameHeight );
     pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
-    pFileStream->Write( "</height>\n", strlen( "</height>\n" ) );
+    pFileStream->Write( "</MainFrameHeight>\n", strlen( "</MainFrameHeight>\n" ) );
 
-    // Xpos
-    pFileStream->Write( "<xpos>", strlen( "<xpos>" ) );
-    buf.Printf( _( "%d" ), g_Config.m_xpos );
+    // Xpos MainFrame
+    pFileStream->Write( "<MainFramexpos>", strlen( "<MainFramexpos>" ) );
+    buf.Printf( _( "%d" ), g_Config.m_xposMainFrame );
     pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
-    pFileStream->Write( "</xpos>\n", strlen( "</xpos>\n" ) );
+    pFileStream->Write( "</MainFramexpos>\n", strlen( "</MainFramexpos>\n" ) );
 
-    // Ypos
-    pFileStream->Write( "<ypos>", strlen( "<ypos>" ) );
-    buf.Printf( _( "%d" ), g_Config.m_ypos );
+    // Ypos MainFrame
+    pFileStream->Write( "<MainFrameypos>", strlen( "<MainFrameypos>" ) );
+    buf.Printf( _( "%d" ), g_Config.m_yposMainFrame );
     pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
-    pFileStream->Write( "</ypos>\n", strlen( "</ypos>\n" ) );
+    pFileStream->Write( "</MainFrameypos>\n", strlen( "</MainFrameypos>\n" ) );
+    
+    // Width Session Frame
+    pFileStream->Write( "<SessionFrameWidth>", strlen( "<SessionFrameWidth>" ) );
+    buf.Printf( _( "%d" ), g_Config.m_sizeSessionFrameWidth );
+    pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+    pFileStream->Write( "</SessionFrameWidth>\n", strlen( "</SessionFrameWidth>\n" ) );
+
+    // Height Session Frame
+    pFileStream->Write( "<SessionFrameHeight>", strlen( "<SessionFrameHeight>" ) );
+    buf.Printf( _( "%d" ), g_Config.m_sizeSessionFrameHeight );
+    pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+    pFileStream->Write( "</SessionFrameHeight>\n", strlen( "</SessionFrameHeight>\n" ) );
+    
+    // Width Configuration Frame
+    pFileStream->Write( "<ConfigurationFrameWidth>", strlen( "<ConfigurationFrameWidth>" ) );
+    buf.Printf( _( "%d" ), g_Config.m_sizeConfigurationFrameWidth );
+    pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+    pFileStream->Write( "</ConfigurationFrameWidth>\n", strlen( "</ConfigurationFrameWidth>\n" ) );
+
+    // Height Configuration Frame
+    pFileStream->Write( "<ConfigurationFrameHeight>", strlen( "<ConfigurationFrameHeight>" ) );
+    buf.Printf( _( "%d" ), g_Config.m_sizeConfigurationFrameHeight );
+    pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+    pFileStream->Write( "</ConfigurationFrameHeight>\n", strlen( "</ConfigurationFrameHeight>\n" ) );
 
     // Path2TempFile
     pFileStream->Write( "<path2tempfile>", strlen( "<path2tempfile>" ) );
@@ -3105,7 +3188,7 @@ bool VscpworksApp::writeLevel1Register( CCanalSuperWrapper *pcsw,
             if ( CANAL_ERROR_SUCCESS == pcsw->doCmdReceive( &canalEvent ) ) {   // Valid event
                 if ( (unsigned short)( canalEvent.id & 0xffff ) ==
                     ( 0x0a00 + nodeid ) ) {         // Read reply?
-                        if ( canalEvent.data[ 0 ] == reg ) {                        // Requested register?
+                        if ( canalEvent.data[ 0 ] == reg ) {                    // Requested register?
 
                             if ( *pcontent != canalEvent.data[ 1 ] ) rv = false;
                             // Save read value
@@ -3189,7 +3272,7 @@ bool VscpworksApp::readLevel2Register( CCanalSuperWrapper *pcsw,
         event.sizeData = 16 + 2;                    // Interface GUID + nodeid + register to read
         
         for ( i=0; i<16; i++ ) {
-            event.data[ i ] = interfaceGUID[ 15 - i ];	
+            event.data[ i ] = interfaceGUID[ 15 - i ];
         }
             
         event.data[16] = interfaceGUID[0];          // nodeid
@@ -3212,18 +3295,18 @@ bool VscpworksApp::readLevel2Register( CCanalSuperWrapper *pcsw,
             event.vscp_class = VSCP_CLASS2_PROTOCOL;
             event.vscp_type = VSCP2_TYPE_PROTOCOL_READ_REGISTER;
         
-            memset( event.GUID, 0, 16 );		// We use GUID for interface 
+            memset( event.GUID, 0, 16 );        // We use GUID for interface 
 
-            event.sizeData = 22;				// nodeid + register to read
+            event.sizeData = 22;                // nodeid + register to read
         
-            for ( i=0; i<16; i++ ) {			// Destination GUID
+            for ( i=0; i<16; i++ ) {            // Destination GUID
                 event.data[ i ] = pdestGUID[ 15 - i ];	
             }	
-            event.data[ 16 ] = 0x00;			// Register to read
+            event.data[ 16 ] = 0x00;            // Register to read
             event.data[ 17 ] = 0x00;
             event.data[ 18 ] = 0x00;
             event.data[ 19 ] = reg;
-            event.data[ 20 ] = 0x00;			// Read one register
+            event.data[ 20 ] = 0x00;            // Read one register
             event.data[ 21 ] = 0x01;
         
         }
@@ -3235,15 +3318,14 @@ bool VscpworksApp::readLevel2Register( CCanalSuperWrapper *pcsw,
             event.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
             event.vscp_type = VSCP_TYPE_PROTOCOL_READ_REGISTER;
         
-            memset( event.GUID, 0, 16 );				// We use GUID for interface 
-
-            event.sizeData = 16 + 2;					// nodeid + register to read
+            memset( event.GUID, 0, 16 );                // We use GUID for interface 
+            event.sizeData = 16 + 2;                    // nodeid + register to read
 
             for ( i=0; i<16; i++ ) {
-                event.data[ i ] = pdestGUID[ 15 - i ];	
+                event.data[ i ] = pdestGUID[ 15 - i ];
             }
             
-            event.data[16] = 0x00;						// nodeid
+            event.data[16] = 0x00;                      // nodeid
             event.data[17] = reg;                       // Register to read
             
         }
@@ -3394,7 +3476,7 @@ bool VscpworksApp::writeLevel2Register( CCanalSuperWrapper *pcsw,
         event.sizeData = 16 + 3;                  // Interface GUID + nodeid + register to read + valied
         
         for ( i=0; i<16; i++ ) {
-            event.data[ i ] = interfaceGUID[ 15 - i ];	
+            event.data[ i ] = interfaceGUID[ 15 - i ];
         }
         event.data[16] = interfaceGUID[ 0 ];      // nodeid
         event.data[17] = reg;                     // Register to write
@@ -3412,19 +3494,19 @@ bool VscpworksApp::writeLevel2Register( CCanalSuperWrapper *pcsw,
             event.vscp_class = VSCP_CLASS2_PROTOCOL;
             event.vscp_type = VSCP2_TYPE_PROTOCOL_WRITE_REGISTER;
 
-            memset( event.GUID, 0, 16 );		// We use interface GUID
+            memset( event.GUID, 0, 16 );        // We use interface GUID
         
-            event.sizeData = 21;				// nodeid + register to read
+            event.sizeData = 21;                // nodeid + register to read
         
-            for ( i=0; i<16; i++ ) {			// Destination GUID
-                event.data[ i ] = pdestGUID[ 15 - i ];	
+            for ( i=0; i<16; i++ ) {            // Destination GUID
+                event.data[ i ] = pdestGUID[ 15 - i ];
             }
                 
-            event.data[ 16 ] = 0x00;			// Register to write
+            event.data[ 16 ] = 0x00;            // Register to write
             event.data[ 17 ] = 0x00;
             event.data[ 18 ] = 0x00;
             event.data[ 19 ] = reg;
-            event.data[ 20 ] = *pcontent;		// Data to write
+            event.data[ 20 ] = *pcontent;       // Data to write
         
         }
         else {
@@ -3435,12 +3517,12 @@ bool VscpworksApp::writeLevel2Register( CCanalSuperWrapper *pcsw,
             event.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
             event.vscp_type = VSCP_TYPE_PROTOCOL_WRITE_REGISTER;
 
-            memset( event.GUID, 0, 16 );			// We use interface GUID
+            memset( event.GUID, 0, 16 );            // We use interface GUID
         
-            event.sizeData = 16 + 3;				
+            event.sizeData = 16 + 3;
 
-            for ( i=0; i<16; i++ ) {		
-                event.data[ i ] = interfaceGUID[ 15 - i ];	
+            for ( i=0; i<16; i++ ) {
+                event.data[ i ] = interfaceGUID[ 15 - i ];
             }
 
             event.data[16] = interfaceGUID[0];        // nodeid

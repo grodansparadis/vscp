@@ -158,16 +158,16 @@ typedef struct {
 } canal_interface;
 
 // Structure for VSCP drivers
-typedef struct {	
-    wxString m_strDescription;		// Description of VSCP interface
-    wxString m_strHost;				// Host where server lives
-    wxString m_strUser;				// Username
-    wxString m_strPassword;			// Password
-	bool m_bLevel2;					// Full Level II communication
-    //unsigned long m_port;			// Port to use on server
-	wxString m_strInterfaceName;	// Name for remote interface
-    unsigned char m_GUID[16];		// GUID for interface
-	vscpEventFilter m_vscpfilter;	// Filter to apply
+typedef struct {
+    wxString m_strDescription;      // Description of VSCP interface
+    wxString m_strHost;             // Host where server lives
+    wxString m_strUser;             // Username
+    wxString m_strPassword;         // Password
+    bool m_bLevel2;                 // Full Level II communication
+    //unsigned long m_port;         // Port to use on server
+    wxString m_strInterfaceName;    // Name for remote interface
+    unsigned char m_GUID[16];       // GUID for interface
+    vscpEventFilter m_vscpfilter;   // Filter to apply
 } vscp_interface;
 
 #define INTERFACE_CANAL   0
@@ -188,18 +188,26 @@ WX_DECLARE_LIST(vscp_interface, LIST_VSCP_IF );
 typedef struct {
 
     // General
-    int m_sizeWidth;    		    // Initial main frame width
-    int m_sizeHeight;   		    // Initial main frame height
-    int m_xpos;         		    // Initial main frame x position
-    int m_ypos;         		    // Initial main frame y position
-    
     wxString m_strPathTemp;         // Path to temporary storage
     
     // Logfile
     bool m_bEnableLog;              // True for writes to logfile
     wxString m_strPathLogFile;      // Path to logfile
-	uint8_t m_logLevel;			    // Log level
+    uint8_t m_logLevel;             // Log level
     
+    // Mainframe
+    int m_sizeMainFrameWidth;       // Initial main frame width
+    int m_sizeMainFrameHeight;      // Initial main frame height
+    int m_xposMainFrame;            // Initial main frame x position
+    int m_yposMainFrame;            // Initial main frame y position
+    
+    // Session window
+    int m_sizeSessionFrameWidth;    // Initial session frame width
+    int m_sizeSessionFrameHeight;   // Initial session frame height
+    
+    // Configuration window
+    int m_sizeConfigurationFrameWidth;    // Initial configuration frame width
+    int m_sizeConfigurationFrameHeight;   // Initial configuration frame height
     
 /*
     // CANAL Frames
@@ -260,23 +268,22 @@ typedef struct {
     LIST_VSCP_IF m_vscpIfList;
 
     // DLL communication settings
-    uint8_t	m_CANALRegMaxRetries;		        // Max number of retries to read a register.
-    uint32_t m_CANALRegResendTimeout;	        // Timeout before register read retries    
-    uint32_t m_CANALRegErrorTimeout;	        // Timeout before register read is considered and error
+    uint8_t  m_CANALRegMaxRetries;              // Max number of retries to read a register.
+    uint32_t m_CANALRegResendTimeout;           // Timeout before register read retries    
+    uint32_t m_CANALRegErrorTimeout;            // Timeout before register read is considered and error
 
     // TCP/IP communication settings
-    uint32_t m_TCPIP_ResponseTimeout;           // General repons time in seconds (for all communiction)
+    uint32_t m_TCPIP_ResponseTimeout;           // General response time in seconds (for all communication)
     uint32_t m_TCPIP_SleepAfterCommand;         // Wait after a command has been sent
-    uint8_t	m_TCPIPRegMaxRetries;		        // Max number of retries to read a register.
-    uint32_t m_TCPIPRegResendTimeout;	        // Timeout before register read retries
-    uint32_t m_TCPIPRegErrorTimeout;	        // Timeout before register read is considered and error
+    uint8_t	m_TCPIPRegMaxRetries;               // Max number of retries to read a register.
+    uint32_t m_TCPIPRegResendTimeout;           // Timeout before register read retries
+    uint32_t m_TCPIPRegErrorTimeout;            // Timeout before register read is considered and error
     
+    // device configuration
+    uint8_t m_Numberbase;                       // Number base for register values
 
-	// device configuration
-	uint8_t m_Numberbase;						// Number base for register values
-
-	// Confirm switch 
-	bool m_bConfirmDelete;						// Must confirm session rx/tx etc list delete
+    // Confirm switch 
+    bool m_bConfirmDelete;                      // Must confirm session rx/tx etc list delete
 
     MdfProxyHash m_mfProxyHashTable;            // Translate devices stored URL to whatever is read from
                                                 // configuration file
@@ -396,8 +403,8 @@ public:
                             uint8_t *interfaceGUID, 
                             uint32_t reg = 0xd0, 
                             uint8_t *pcontent = NULL,
-							uint8_t *pdestGUID = NULL,
-							bool bLevel2 = false );  
+                            uint8_t *pdestGUID = NULL,
+                            bool bLevel2 = false );  
                             
   /*!
     Write a level 2 register
@@ -412,16 +419,16 @@ public:
                               uint8_t *interfaceGUID, 
                               uint32_t reg, 
                               uint8_t *pcontent,
-							  uint8_t *pdestGUID = NULL,
-							  bool bLevel2 = false );   
+                              uint8_t *pdestGUID = NULL,
+                              bool bLevel2 = false );   
 
-	/*!
-		Make a string look nicer with linebreaks etc
-		@param str String to make look nicer
-		@param width Linewidth to maintain.
-		@return Fromated string.
-	*/
-	wxString formatString( const wxString& str, const unsigned int width = 80 );
+    /*!
+        Make a string look nicer with linebreaks etc
+        @param str String to make look nicer
+        @param width Linewidth to maintain.
+        @return Fromated string.
+    */
+    wxString formatString( const wxString& str, const unsigned int width = 80 );
 
 
     
@@ -446,7 +453,7 @@ public:
   bool getLevel2DmInfo( CCanalSuperWrapper *pcsw,
                           unsigned char *interfaceGUID, 
                           unsigned char *pdata,
-						  bool bLevel2 = false );
+                          bool bLevel2 = false );
   
   /*!
     Get a HTML string with clear text register information
@@ -458,63 +465,63 @@ public:
                                 const uint8_t *registers );
 
   /*!
-	Load and parse mdf from device
+    Load and parse mdf from device
     @param pwnd Pointer to window (ownder usually this) that called this method.
-	@param pcsw Pointer to CANAL super wrapper
-	@param pmdf Pointer to mdf class that will receive result
-	@param url Pointer to url that have the mdf file. If this file
-	contains "://" as in "http://" it is expected to be a remote file. If
-	empty registers will be read.
-	if not a local path.
-	@param pid A pointer to an interface GUID for Level II node or node id for Level I node.
-	@return true on success.
+    @param pcsw Pointer to CANAL super wrapper
+    @param pmdf Pointer to mdf class that will receive result
+    @param url Pointer to url that have the mdf file. If this file
+    contains "://" as in "http://" it is expected to be a remote file. If
+    empty registers will be read.
+    if not a local path.
+    @param pid A pointer to an interface GUID for Level II node or node id for Level I node.
+    @return true on success.
   */
   bool loadMDF( wxWindow *pwnd, CCanalSuperWrapper *pcsw, CMDF *pmdf, wxString& url, uint8_t *pid );
 
   /*!
-	Load level I register content into an array
-	@param pwnd Pointer to window (owner usually this) that called this method.
-	@param pcsw Pointer to CANAL super wrapper
-	@param pregisters Pointer to an array of 256 8-bit registers.
-	@param nodeid nodeid The node whos registers should be read.
-	@param bQuite No progress information if sett to true. (default is false)
+    Load level I register content into an array
+    @param pwnd Pointer to window (owner usually this) that called this method.
+    @param pcsw Pointer to CANAL super wrapper
+    @param pregisters Pointer to an array of 256 8-bit registers.
+    @param nodeid nodeid The node whos registers should be read.
+    @param bQuite No progress information if sett to true. (default is false)
   */
   bool readAllLevel1Registers( wxWindow *pwnd,
-									CCanalSuperWrapper *pcsw,
-									uint8_t *pregisters,
-									uint8_t nodeid );
+                                    CCanalSuperWrapper *pcsw,
+                                    uint8_t *pregisters,
+                                    uint8_t nodeid );
 
   /*!
-	Load level II register content into an array
-	@param pwnd Pointer to window (owner usually this) that called this method.
-	@param pcsw Pointer to CANAL super wrapper
-	@param pregisters Pointer to an array of 256 8-bit registers.
-	@param nodeid nodeid The node whos registers should be read.
-	@param bQuite No progress information if sett to true. (default is false)
-	return true on success.
+    Load level II register content into an array
+    @param pwnd Pointer to window (owner usually this) that called this method.
+    @param pcsw Pointer to CANAL super wrapper
+    @param pregisters Pointer to an array of 256 8-bit registers.
+    @param nodeid nodeid The node whos registers should be read.
+    @param bQuite No progress information if sett to true. (default is false)
+    return true on success.
   */
   bool readAllLevel2Registers( wxWindow *pwnd,
-									CCanalSuperWrapper *pcsw,
-									uint8_t *pregisters,
-									uint8_t *pinterfaceGUID );
+                                    CCanalSuperWrapper *pcsw,
+                                    uint8_t *pregisters,
+                                    uint8_t *pinterfaceGUID );
 
   /*!
-		Get MDf file from device registers
-		@param pcsw Pointer to CANAL super wrapper
-		@param pid Pointer to id. Either a one byte nickname if bLevel = false
-				or a 16 byte GUID if bLevel2 = true.
-		@param bLevel2 True if pid points to a full  GUID false if pid points to one 
-				byte nickname.
+        Get MDf file from device registers
+        @param pcsw Pointer to CANAL super wrapper
+        @param pid Pointer to id. Either a one byte nickname if bLevel = false
+                or a 16 byte GUID if bLevel2 = true.
+        @param bLevel2 True if pid points to a full  GUID false if pid points to one 
+                byte nickname.
   */
   wxString getMDFfromDevice( CCanalSuperWrapper *pcsw, 
-								uint8_t *pid, 
-								bool bLevel2 = false,
-								bool bSilent = false );
+                                uint8_t *pid, 
+                                bool bLevel2 = false,
+                                bool bSilent = false );
 
   /*!
-	Get MDF info.
-	@param pmdf Pointer to MDF object holding information
-	@return With MDF information in HTML format.
+    Get MDF info.
+    @param pmdf Pointer to MDF object holding information
+    @return With MDF information in HTML format.
 
   */
   wxString addMDFInfo( CMDF *pmdf );

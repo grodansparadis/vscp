@@ -94,7 +94,7 @@ EVT_BUTTON(ID_BUTTON, dlgNewVSCPSession::OnButtonCloneClick)
 END_EVENT_TABLE()
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////// 
 // ctor
 //
 
@@ -103,7 +103,7 @@ dlgNewVSCPSession::dlgNewVSCPSession()
     Init();
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////// 
 // ctor
 //
 
@@ -118,7 +118,7 @@ dlgNewVSCPSession::dlgNewVSCPSession( wxWindow* parent,
     Create(parent, id, caption, pos, size, style);
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////// 
 // Create
 //
 
@@ -142,7 +142,7 @@ bool dlgNewVSCPSession::Create( wxWindow* parent,
     return true;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////// 
 // dtor
 //
 
@@ -151,7 +151,7 @@ dlgNewVSCPSession::~dlgNewVSCPSession()
     
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////// 
 // Init
 //
 
@@ -161,7 +161,7 @@ void dlgNewVSCPSession::Init()
     m_bShowUnconnectedMode = true;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////// 
 // CreateControls
 //
 
@@ -174,21 +174,39 @@ void dlgNewVSCPSession::CreateControls()
 
     wxArrayString m_ctrlListInterfacesStrings;
     m_ctrlListInterfaces = new wxListBox;
-    m_ctrlListInterfaces->Create(itemDialog1, ID_LISTBOX_INTERFACES, wxDefaultPosition, wxSize(300, -1), m_ctrlListInterfacesStrings, wxLB_SINGLE);
+    m_ctrlListInterfaces->Create( itemDialog1, 
+                                    ID_LISTBOX_INTERFACES, 
+                                    wxDefaultPosition, 
+                                    wxSize(300, -1), 
+                                    m_ctrlListInterfacesStrings, 
+                                    wxLB_SINGLE);
     itemBoxSizer2->Add(m_ctrlListInterfaces, 0, wxGROW | wxALL, 5);
 
     wxBoxSizer* itemBoxSizer4 = new wxBoxSizer(wxVERTICAL);
     itemBoxSizer2->Add(itemBoxSizer4, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
 
     wxButton* itemButton5 = new wxButton;
-    itemButton5->Create(itemDialog1, wxID_OK, _("&OK"), wxDefaultPosition, wxDefaultSize, 0);
+    itemButton5->Create( itemDialog1, 
+                            wxID_OK, 
+                            _("&OK"), 
+                            wxDefaultPosition, 
+                            wxDefaultSize, 
+                            0 );
     itemButton5->SetDefault();
     if (dlgNewVSCPSession::ShowToolTips())
         itemButton5->SetToolTip(_("Use selected interface"));
-    itemBoxSizer4->Add(itemButton5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 1);
+    itemBoxSizer4->Add( itemButton5, 
+                            0, 
+                            wxALIGN_CENTER_HORIZONTAL | wxALL, 
+                            1 );
 
     wxButton* itemButton6 = new wxButton;
-    itemButton6->Create(itemDialog1, wxID_CANCEL, _("&Cancel"), wxDefaultPosition, wxDefaultSize, 0);
+    itemButton6->Create( itemDialog1, 
+                            wxID_CANCEL, 
+                            _("&Cancel"), 
+                            wxDefaultPosition, 
+                            wxDefaultSize, 
+                            0 );
     if (dlgNewVSCPSession::ShowToolTips())
         itemButton6->SetToolTip(_("Go back without selecting any interface"));
     itemBoxSizer4->Add(itemButton6, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 1);
@@ -196,36 +214,60 @@ void dlgNewVSCPSession::CreateControls()
     itemBoxSizer4->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
 
     wxButton* itemButton8 = new wxButton;
-    itemButton8->Create(itemDialog1, ID_BUTTON_ADD, _("Add..."), wxDefaultPosition, wxDefaultSize, 0);
+    itemButton8->Create( itemDialog1, 
+                            ID_BUTTON_ADD, 
+                            _("Add..."), 
+                            wxDefaultPosition, 
+                            wxDefaultSize, 
+                            0 );
     if (dlgNewVSCPSession::ShowToolTips())
         itemButton8->SetToolTip(_("Add new interface"));
     itemBoxSizer4->Add(itemButton8, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 1);
 
     wxButton* itemButton9 = new wxButton;
-    itemButton9->Create(itemDialog1, ID_BUTTON_EDIT, _("Edit..."), wxDefaultPosition, wxDefaultSize, 0);
+    itemButton9->Create( itemDialog1, 
+                            ID_BUTTON_EDIT, 
+                            _("Edit..."), 
+                            wxDefaultPosition, 
+                            wxDefaultSize, 
+                            0 );
     itemButton9->SetDefault();
     if (dlgNewVSCPSession::ShowToolTips())
         itemButton9->SetToolTip(_("Edit selected interface"));
     itemBoxSizer4->Add(itemButton9, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 1);
 
     wxButton* itemButton10 = new wxButton;
-    itemButton10->Create(itemDialog1, ID_BUTTON_REMOVE, _("Remove"), wxDefaultPosition, wxDefaultSize, 0);
+    itemButton10->Create( itemDialog1, 
+                            ID_BUTTON_REMOVE, 
+                            _("Remove"), 
+                            wxDefaultPosition, 
+                            wxDefaultSize, 
+                            0 );
     if (dlgNewVSCPSession::ShowToolTips())
         itemButton10->SetToolTip(_("Remove selected interface"));
     itemBoxSizer4->Add(itemButton10, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 1);
 
     wxButton* itemButton11 = new wxButton;
-    itemButton11->Create(itemDialog1, ID_BUTTON, _("Clone"), wxDefaultPosition, wxDefaultSize, 0);
+    itemButton11->Create( itemDialog1, 
+                            ID_BUTTON, 
+                            _("Clone"), 
+                            wxDefaultPosition, 
+                            wxDefaultSize, 
+                            0 );
     if (dlgNewVSCPSession::ShowToolTips())
         itemButton11->SetToolTip(_("Remove selected interface"));
     itemBoxSizer4->Add(itemButton11, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 1);
 
     // Connect events and objects
-    itemDialog1->Connect(ID_DIALOG_NEW_VSCP_SESSION, wxEVT_DESTROY, wxWindowDestroyEventHandler(dlgNewVSCPSession::OnDestroy), NULL, this);
+    itemDialog1->Connect( ID_DIALOG_NEW_VSCP_SESSION, 
+                            wxEVT_DESTROY, 
+                            wxWindowDestroyEventHandler( dlgNewVSCPSession::OnDestroy), 
+                                                            NULL, 
+                                                            this );
 
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////// 
 // OnInitDialog
 //
 
@@ -236,7 +278,7 @@ void dlgNewVSCPSession::OnInitDialog(wxInitDialogEvent& event)
     fillListBox( wxString(_("") ) );
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////// 
 // OnDestroy
 //
 
@@ -481,7 +523,8 @@ void dlgNewVSCPSession::OnButtonRemoveClick(wxCommandEvent& event)
             if (wxYES == wxMessageBox(_("Do you really want to remove interface?"),
                     _("Confirm"),
                     wxYES_NO | wxCANCEL)) {
-                both_interface *pBoth = (both_interface *) m_ctrlListInterfaces->GetClientData(selidx);
+                both_interface *pBoth = 
+                    (both_interface *) m_ctrlListInterfaces->GetClientData(selidx);
                 if (NULL != pBoth) {
                     if ((INTERFACE_CANAL == pBoth->m_type) && (NULL != pBoth->m_pcanalif)) {
                         if (g_Config.m_canalIfList.DeleteObject(pBoth->m_pcanalif)) {
@@ -490,7 +533,8 @@ void dlgNewVSCPSession::OnButtonRemoveClick(wxCommandEvent& event)
                             ::wxGetApp().writeConfiguration();
                         }
                     } 
-                    else if ((INTERFACE_VSCP == pBoth->m_type) && (NULL != pBoth->m_pvscpif)) {
+                    else if ( ( INTERFACE_VSCP == pBoth->m_type ) && 
+                                ( NULL != pBoth->m_pvscpif ) ) {
                         if (g_Config.m_vscpIfList.DeleteObject(pBoth->m_pvscpif)) {
                             delete pBoth->m_pvscpif;
                             fillListBox(wxString(_("")));
@@ -528,42 +572,50 @@ void dlgNewVSCPSession::fillListBox(const wxString& strDecription)
 
     // Start with CANAL 
     LIST_CANAL_IF::iterator iterCanal;
-    for (iterCanal = g_Config.m_canalIfList.begin(); iterCanal != g_Config.m_canalIfList.end(); ++iterCanal) {
+    for ( iterCanal = g_Config.m_canalIfList.begin(); 
+            iterCanal != g_Config.m_canalIfList.end(); 
+            ++iterCanal ) {
         canal_interface *pIf = *iterCanal;
         both_interface *pBoth = new both_interface;
-        if (NULL != pBoth) {
+        if ( NULL != pBoth ) {
             pBoth->m_type = INTERFACE_CANAL;
             pBoth->m_pcanalif = pIf;
-            m_ctrlListInterfaces->Append(_("CANAL: ") + pIf->m_strDescription, pBoth);
+            m_ctrlListInterfaces->Append( _("CANAL: ") + 
+                                            pIf->m_strDescription, pBoth );
         }
     }
 
     // VSCP TCP/IP interface
     LIST_VSCP_IF::iterator iterTcpip;
-    for (iterTcpip = g_Config.m_vscpIfList.begin(); iterTcpip != g_Config.m_vscpIfList.end(); ++iterTcpip) {
+    for ( iterTcpip = g_Config.m_vscpIfList.begin(); 
+            iterTcpip != g_Config.m_vscpIfList.end(); 
+            ++iterTcpip ) {
         vscp_interface *pIf = *iterTcpip;
         both_interface *pBoth = new both_interface;
         if (NULL != pBoth) {
             pBoth->m_type = INTERFACE_VSCP;
             pBoth->m_pvscpif = pIf;
-            m_ctrlListInterfaces->Append(_("TCP/IP: ") + pIf->m_strDescription, pBoth);
+            m_ctrlListInterfaces->Append( _("TCP/IP: ") + 
+                                            pIf->m_strDescription, pBoth );
         }
     }
 
-    if (!strDecription.IsEmpty()) {
-        if (!m_ctrlListInterfaces->SetStringSelection(_("CANAL: ") + strDecription)) {
-            m_ctrlListInterfaces->SetStringSelection(_("TCP/IP: ") + strDecription);
+    if ( !strDecription.IsEmpty() ) {
+        if ( !m_ctrlListInterfaces->SetStringSelection( _("CANAL: ") + 
+                                                        strDecription ) ) {
+            m_ctrlListInterfaces->SetStringSelection( _("TCP/IP: ") + 
+                                                        strDecription);
         }
     } else {
         // Select first item in list if items are available
-        if (m_ctrlListInterfaces->GetCount()) {
+        if ( m_ctrlListInterfaces->GetCount() ) {
             m_ctrlListInterfaces->Select(0);
         }
     }
 
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // OnButtonCloneClick
 //
 
@@ -578,7 +630,8 @@ void dlgNewVSCPSession::OnButtonCloneClick(wxCommandEvent& event)
         } 
         else {
 
-            both_interface *pBoth = (both_interface *) m_ctrlListInterfaces->GetClientData(selidx);
+            both_interface *pBoth = 
+                (both_interface *) m_ctrlListInterfaces->GetClientData(selidx);
             if (NULL != pBoth) {
 
                 if (INTERFACE_CANAL == pBoth->m_type) {
@@ -613,7 +666,8 @@ void dlgNewVSCPSession::OnButtonCloneClick(wxCommandEvent& event)
 
                 } 
                 else {
-                    wxMessageBox(_("Unknown interface type!"), _("Edit Interface"), wxICON_STOP);
+                    wxMessageBox( _("Unknown interface type!"), 
+                                    _("Edit Interface"), wxICON_STOP);
                     return;
                 }
 
@@ -626,7 +680,8 @@ void dlgNewVSCPSession::OnButtonCloneClick(wxCommandEvent& event)
 
             } 
             else {
-                wxMessageBox(_("No data associated with listbox line"), _("Edit Interface"), wxICON_STOP);
+                wxMessageBox( _("No data associated with listbox line"), 
+                                _("Edit Interface"), wxICON_STOP);
             }
         } // 0 == selidx
     }
@@ -650,7 +705,8 @@ void dlgNewVSCPSession::cleanupListbox(void)
     if (0 == (n = m_ctrlListInterfaces->GetCount())) return;
 
     for (unsigned int i = 0; i < m_ctrlListInterfaces->GetCount(); i++) {
-        both_interface *pBoth = (both_interface *) m_ctrlListInterfaces->GetClientData(i);
+        both_interface *pBoth = 
+                    (both_interface *) m_ctrlListInterfaces->GetClientData(i);
         if (NULL != pBoth) delete pBoth;
     }
 
@@ -658,7 +714,7 @@ void dlgNewVSCPSession::cleanupListbox(void)
     m_ctrlListInterfaces->Clear();
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////// 
 // wxEVT_COMMAND_LISTBOX_SELECTED event handler for ID_LISTBOX_INTERFACES
 //
 
@@ -668,7 +724,7 @@ void dlgNewVSCPSession::OnListboxInterfacesSelected(wxCommandEvent& event)
     event.Skip();
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////// 
 // wxEVT_COMMAND_LISTBOX_DOUBLECLICKED event handler for ID_LISTBOX_INTERFACES
 //
 

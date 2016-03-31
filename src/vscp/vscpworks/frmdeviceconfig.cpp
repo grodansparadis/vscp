@@ -966,6 +966,11 @@ void frmDeviceConfig::CreateControls() {
 void frmDeviceConfig::OnCloseWindow(wxCloseEvent& event) 
 {
     wxBusyCursor wait;
+    
+    // Save frame size and position
+    wxRect rc = GetRect();
+    g_Config.m_sizeConfigurationFrameWidth = rc.width;
+    g_Config.m_sizeConfigurationFrameHeight = rc.height;
 
     m_pitemStatusBar->SetStatusText( _("Closing window..."), STATUSBAR_STATUS_LEFT );
 
