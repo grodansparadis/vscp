@@ -370,7 +370,7 @@ void dlgNewVSCPSession::OnButtonAddClick(wxCommandEvent& event)
 
             }
         } 
-		else if (dlg.m_RemoteServerDescription->GetValue().Length()) {
+        else if (dlg.m_RemoteServerDescription->GetValue().Length()) {
 
             // A new remote host
             vscp_interface *pInfo = new vscp_interface;
@@ -493,7 +493,7 @@ void dlgNewVSCPSession::OnButtonEditClick(wxCommandEvent& event)
                     m_ctrlListInterfaces->SetSelection(selidx);
                 }
             } 
-			else {
+            else {
                 wxMessageBox(_("No data associated with listbox line"), _("Edit Interface"), wxICON_STOP);
             }
         } // 0 == selidx
