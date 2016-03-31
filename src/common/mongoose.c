@@ -3863,17 +3863,16 @@ int mg_socketpair(sock_t sp[2], int sock_type) {
 }
 #endif /* MG_DISABLE_SOCKETPAIR */
 
+#ifndef MG_CC3200
 static void mg_sock_get_addr(sock_t sock, int remote,
                              union socket_address *sa) {
   socklen_t slen = sizeof(*sa);
   memset(sa, 0, slen);
-#ifndef MG_CC3200
   if (remote) {
     getpeername(sock, &sa->sa, &slen);
   } else {
     getsockname(sock, &sa->sa, &slen);
   }
-#endif
 }
 
 void mg_sock_to_str(sock_t sock, char *buf, size_t len, int flags) {
@@ -3881,10 +3880,18 @@ void mg_sock_to_str(sock_t sock, char *buf, size_t len, int flags) {
   mg_sock_get_addr(sock, flags & MG_SOCK_STRINGIFY_REMOTE, &sa);
   mg_sock_addr_to_str(&sa, buf, len, flags);
 }
+#endif
 
 void mg_if_get_conn_addr(struct mg_connection *nc, int remote,
                          union socket_address *sa) {
+#ifndef MG_CC3200
   mg_sock_get_addr(nc->sock, remote, sa);
+#else
+  /* SimpleLink does not provide a way to get socket's peer address after
+   * accept or connect. Address hould have been preserved in the connection,
+   * so we do our best here by using it. */
+  if (remote) memcpy(sa, &nc->sa, sizeof(*sa));
+#endif
 }
 
 #endif /* !MG_DISABLE_SOCKET_IF */
@@ -4754,6 +4761,7 @@ static void mg_ws_mask_frame(struct mbuf *mbuf, struct ws_mask_ctx *ctx) {
 void mg_send_websocket_frame(struct mg_connection *nc, int op, const void *data,
                              size_t len) {
   struct ws_mask_ctx ctx;
+  DBG(("%p %d %d", nc, op, (int) len));
   mg_send_ws_header(nc, op, len, &ctx);
   mg_send(nc, data, len);
 
@@ -4846,6 +4854,7 @@ static void mg_ws_handshake(struct mg_connection *nc,
             "Connection: Upgrade\r\n"
             "Sec-WebSocket-Accept: ",
             b64_sha, "\r\n\r\n");
+  DBG(("%p %.*s %s", nc, (int) key->len, key->p, b64_sha));
 }
 
 #endif /* MG_DISABLE_HTTP_WEBSOCKET */
@@ -5231,6 +5240,7 @@ void mg_http_handler(struct mg_connection *nc, int ev, void *ev_data) {
 #endif /* MG_ENABLE_HTTP_STREAMING_MULTIPART */
     }
   }
+  (void) pd;
 }
 
 static size_t mg_get_line_len(const char *buf, size_t buf_len) {
@@ -5864,7 +5874,12 @@ static void mg_http_send_file2(struct mg_connection *nc, const char *path,
         snprintf(range, sizeof(range), "Content-Range: bytes %" INT64_FMT
                                        "-%" INT64_FMT "/%" INT64_FMT "\r\n",
                  r1, r1 + cl - 1, (int64_t) st->st_size);
+#if _FILE_OFFSET_BITS == 64 || _POSIX_C_SOURCE >= 200112L || \
+    _XOPEN_SOURCE >= 600
         fseeko(pd->file.fp, r1, SEEK_SET);
+#else
+        fseek(pd->file.fp, r1, SEEK_SET);
+#endif
       }
     }
 
@@ -6659,13 +6674,8 @@ static int mg_http_send_port_based_redirect(
   struct mg_str a, b;
   char local_port[20] = {'%'};
 
-#ifndef MG_ESP8266
-  mg_sock_to_str(c->sock, local_port + 1, sizeof(local_port) - 1,
-                 MG_SOCK_STRINGIFY_PORT);
-#else
-  /* TODO(lsm): remove when mg_sock_to_str() is implemented in LWIP codepath */
-  snprintf(local_port, sizeof(local_port), "%s", "%0");
-#endif
+  mg_conn_addr_to_str(c, local_port + 1, sizeof(local_port) - 1,
+                      MG_SOCK_STRINGIFY_PORT);
 
   while ((rewrites = mg_next_comma_list_entry(rewrites, &a, &b)) != NULL) {
     if (mg_vcmp(&a, local_port) == 0) {
@@ -7392,13 +7402,6 @@ MG_INTERNAL void mg_send_http_file(struct mg_connection *nc, char *path,
   /* If we have path_info, the only way to handle it is CGI. */
   if (path_info->len > 0 && !is_cgi) {
     mg_http_send_http_error(nc, 501, NULL);
-    return;
-  } else if (is_cgi) {
-#if !defined(MG_DISABLE_CGI)
-    mg_handle_cgi(nc, index_file ? index_file : path, path_info, hm, opts);
-#else
-    mg_http_send_http_error(nc, 501, NULL);
-#endif /* MG_DISABLE_CGI */
     MG_FREE(index_file);
     return;
   }
@@ -7410,6 +7413,12 @@ MG_INTERNAL void mg_send_http_file(struct mg_connection *nc, char *path,
              !mg_is_authorized(hm, path, is_directory, opts->auth_domain,
                                opts->per_directory_auth_file, 0)) {
     mg_http_send_digest_auth_request(nc, opts->auth_domain);
+  } else if (is_cgi) {
+#if !defined(MG_DISABLE_CGI)
+    mg_handle_cgi(nc, index_file ? index_file : path, path_info, hm, opts);
+#else
+    mg_http_send_http_error(nc, 501, NULL);
+#endif /* MG_DISABLE_CGI */
   } else if ((!exists ||
               mg_is_file_hidden(path, opts, 0 /* specials are ok */)) &&
              !mg_is_creation_request(hm)) {
