@@ -92,8 +92,8 @@ This is the "original" project and includes all sub-projects.
 	Expat is also needed for the level I lirc driver which interfaces http://winlirc.sourceforge.net/ 
         
 11.) To build the vectorxl driver (vectorxldrv) an environment variable (VECTORDRV) vectorxl must be defined so it 
-	points to the dll folder of the installation (C:\Users\akhe\development\Vector_CANLIB\dll). The low level driver from vectorxl must be installed 
-	for the CANAL driver to work. Current the old driver is used which can be found here 
+	points to the dll folder of the installation (C:\Users\akhe\development\Vector_CANLIB\dll). The low level driver 
+	from vectorxl must be installed for the CANAL driver to work. Current the old driver is used which can be found here 
 	http://download.vectorxl.com/drivers/xl_lib90.zip
 
 12.) To build the rawethernet driver the wpcap library and include files need to be installed on the system. A

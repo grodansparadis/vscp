@@ -123,7 +123,11 @@ int main(int argc, char **argv)
 
    
     strCfgFile = wxStandardPaths::Get().GetConfigDir();
+#ifdef WIN32
+    strCfgFile += _( "\\vscpd.conf" );
+#else
     strCfgFile += _("/vscp/vscpd.conf");
+#endif
 
     wxCmdLineParser *pparser = new wxCmdLineParser( cmdLineDesc, argc, argv );
     
