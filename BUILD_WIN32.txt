@@ -45,7 +45,6 @@ This is the "original" project and includes all sub-projects.
 	variable called VSCP_INSTALL should be created (C:\Users\grodansparadis\development\vscp_install_win32). It
 	will contain all binaries after a release build (32-bit/64-bit). Just point it to a temporary folder or
 	something if no need for this.
-	
 
 2.) Install and build wxWidgets 3.1.0 or higher but others will probably 
     do to. You find the build files in the build folder of the wxWidgets project.
@@ -82,7 +81,6 @@ This is the "original" project and includes all sub-projects.
 	that points to the ixxat version 2 vsci folder (C:\Users\akhe\development\ixxat_v2). Make sure 
 	the IXXAT VCI driver version 2 is installed (http://www.ixxat.com/download_vci_en.html) 
 	(C:\Program Files\IXXAT\VCI 2.20).
-	
 
 9.) To build the CANAL PEAK driver you need to install the PEAK driver and support libraries 
     from here http://www.peak-system.com/Support.55.0.html?&L=1 You need the driver and the PCAN-Basic API.
@@ -93,9 +91,9 @@ This is the "original" project and includes all sub-projects.
     libexpat root folder. Expat is available here http://sourceforge.net/projects/expat/  
 	Expat is also needed for the level I lirc driver which interfaces http://winlirc.sourceforge.net/ 
         
-11.) To build the vectorxl driver (vectorxldrv) and environment variable vectorxl must be defined so it points to the dll folder
-    of the installation. The low level driver from vectorxl must be installed for 
-    the CANAL driver to work. Current the old driver is used which can be found here 
+11.) To build the vectorxl driver (vectorxldrv) an environment variable (VECTORDRV) vectorxl must be defined so it 
+	points to the dll folder of the installation (C:\Users\akhe\development\Vector_CANLIB\dll). The low level driver from vectorxl must be installed 
+	for the CANAL driver to work. Current the old driver is used which can be found here 
 	http://download.vectorxl.com/drivers/xl_lib90.zip
 
 12.) To build the rawethernet driver the wpcap library and include files need to be installed on the system. A
