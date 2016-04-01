@@ -251,7 +251,7 @@ bool CIxxObj::open( const char *szFileName, unsigned long flags )
 	int ret;
 	const char *p;
 	unsigned long busspeed = 125;
-	unsigned char btr0 = 0, btr1 = 0;
+	int btr0 = 0, btr1 = 0;
 	char szDrvParams[ MAX_PATH ];
 	m_initFlag = flags;
 

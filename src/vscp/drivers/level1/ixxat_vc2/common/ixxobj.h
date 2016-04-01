@@ -353,7 +353,7 @@ public:
 	/*!
 		CAN channel on board
 	*/
-	uint8_t m_channel;			
+	int m_channel;			
 	
 	/*!
 		IXXAT filter for outgoing messages
