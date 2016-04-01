@@ -77,7 +77,9 @@
 /* If not specified explicitly, we guess platform by defines. */
 #ifndef CS_PLATFORM
 
-#if defined(__unix__) || defined(__APPLE__)
+#ifdef cc3200
+#define CS_PLATFORM CS_P_CC3200
+#elif defined(__unix__) || defined(__APPLE__)
 #define CS_PLATFORM CS_P_UNIX
 #elif defined(_WIN32)
 #define CS_PLATFORM CS_P_WINDOWS
@@ -385,12 +387,22 @@ unsigned long os_random(void);
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
-#include <fcntl.h>
 #include <inttypes.h>
 #include <stdint.h>
 #include <time.h>
 
-#include <simplelink.h>
+#ifndef __TI_COMPILER_VERSION__
+#include <fcntl.h>
+#include <sys/time.h>
+#endif
+
+#define MG_SOCKET_SIMPLELINK 1
+#define MG_DISABLE_SOCKETPAIR 1
+#define MG_DISABLE_SYNC_RESOLVER 1
+#define MG_DISABLE_POPEN 1
+#define MG_DISABLE_CGI 1
+
+#include <simplelink/include/simplelink.h>
 
 #define SOMAXCONN 8
 
@@ -487,7 +499,9 @@ unsigned long os_random(void);
 #define IP_DROP_MEMBERSHIP                  SL_IP_DROP_MEMBERSHIP
 
 #define socklen_t                           SlSocklen_t
+#ifdef __TI_COMPILER_VERSION__
 #define timeval                             SlTimeval_t
+#endif
 #define sockaddr                            SlSockAddr_t
 #define in6_addr                            SlIn6Addr_t
 #define sockaddr_in6                        SlSockAddrIn6_t
@@ -503,7 +517,6 @@ unsigned long os_random(void);
 #define fd_set                              SlFdSet_t
 
 #define socket                              sl_Socket
-#define close                               sl_Close
 #define accept                              sl_Accept
 #define bind                                sl_Bind
 #define listen                              sl_Listen
@@ -534,7 +547,9 @@ typedef struct stat cs_stat_t;
 #define INT64_X_FMT PRIx64
 #define __cdecl
 
-#define closesocket(x) close(x)
+#define closesocket(x) sl_Close(x)
+
+#define fileno(x) -1
 
 /* Some functions we implement for Mongoose. */
 
@@ -542,21 +557,54 @@ const char *inet_ntop(int af, const void *src, char *dst, socklen_t size);
 char *inet_ntoa(struct in_addr in);
 int inet_pton(int af, const char *src, void *dst);
 
-void cc3200_set_non_blocking_mode(int fd);
-
-struct hostent {
-  char *h_name;       /* official name of host */
-  char **h_aliases;   /* alias list */
-  int h_addrtype;     /* host address type */
-  int h_length;       /* length of address */
-  char **h_addr_list; /* list of addresses */
-};
-struct hostent *gethostbyname(const char *name);
-
 struct timeval;
 int gettimeofday(struct timeval *t, void *tz);
 
 long int random(void);
+
+#undef select
+#define select(nfds, rfds, wfds, efds, tout) \
+  sl_Select((nfds), (rfds), (wfds), (efds), (struct SlTimeval_t *) (tout))
+
+/* TI's libc does not have stat & friends, add them. */
+#ifdef __TI_COMPILER_VERSION__
+
+#include <file.h>
+
+typedef unsigned int mode_t;
+typedef size_t _off_t;
+typedef long ssize_t;
+
+struct stat {
+  int st_ino;
+  mode_t st_mode;
+  int st_nlink;
+  time_t st_mtime;
+  off_t st_size;
+};
+
+int _stat(const char *pathname, struct stat *st);
+#define stat(a, b) _stat(a, b)
+
+#define __S_IFMT 0170000
+
+#define __S_IFDIR 0040000
+#define __S_IFCHR 0020000
+#define __S_IFREG 0100000
+
+#define __S_ISTYPE(mode, mask) (((mode) & __S_IFMT) == (mask))
+
+#define S_IFDIR __S_IFDIR
+#define S_IFCHR __S_IFCHR
+#define S_IFREG __S_IFREG
+#define S_ISDIR(mode) __S_ISTYPE((mode), __S_IFDIR)
+#define S_ISREG(mode) __S_ISTYPE((mode), __S_IFREG)
+
+/* As of 5.2.7, TI compiler does not support va_copy() yet. */
+#define va_copy(apc, ap) ((apc) = (ap))
+
+#endif /* __TI_COMPILER_VERSION__ */
+
 
 #ifdef CC3200_FS_SPIFFS
 #include <common/spiffs/spiffs.h>
@@ -596,29 +644,30 @@ enum cs_log_level {
   _LL_MAX = 5,
 };
 
-extern enum cs_log_level s_cs_log_level;
 void cs_log_set_level(enum cs_log_level level);
 
 #ifndef CS_DISABLE_STDIO
 
-#ifdef CS_LOG_TS_DIFF
-extern double cs_log_ts;
-#endif
+#include <stdio.h>
 
+void cs_log_set_file(FILE *file);
+
+extern enum cs_log_level cs_log_level;
+void cs_log_print_prefix(const char *func);
 void cs_log_printf(const char *fmt, ...);
 
-#define LOG(l, x)                        \
-  if (s_cs_log_level >= l) {             \
-    fprintf(stderr, "%-20s ", __func__); \
-    cs_log_printf x;                     \
+#define LOG(l, x)                  \
+  if (cs_log_level >= l) {         \
+    cs_log_print_prefix(__func__); \
+    cs_log_printf x;               \
   }
 
 #ifndef CS_NDEBUG
 
-#define DBG(x)                              \
-  if (s_cs_log_level >= LL_VERBOSE_DEBUG) { \
-    fprintf(stderr, "%-20s ", __func__);    \
-    cs_log_printf x;                        \
+#define DBG(x)                            \
+  if (cs_log_level >= LL_VERBOSE_DEBUG) { \
+    cs_log_print_prefix(__func__);        \
+    cs_log_printf x;                      \
   }
 
 #else /* NDEBUG */
@@ -1839,8 +1888,7 @@ const char *mg_next_comma_list_entry(const char *list, struct mg_str *val,
  * Match is case-insensitive. Return number of bytes matched, or -1 if no match.
  */
 int mg_match_prefix(const char *pattern, int pattern_len, const char *str);
-int mg_match_prefix_n(const char *pattern, int pattern_len, const char *str,
-                      int str_len);
+int mg_match_prefix_n(const struct mg_str pattern, const struct mg_str str);
 
 /*
  * A helper function for creating mg_str struct from plain C string.
@@ -1953,6 +2001,7 @@ struct mg_http_multipart_part {
   const char *var_name;
   struct mg_str data;
   int status; /* <0 on error */
+  void *user_data;
 };
 
 /* HTTP and websocket events. void *ev_data is described in a comment. */
@@ -2485,6 +2534,46 @@ void mg_serve_http(struct mg_connection *nc, struct http_message *hm,
 
 void mg_register_http_endpoint(struct mg_connection *nc, const char *uri_path,
                                mg_event_handler_t handler);
+
+#ifdef MG_ENABLE_HTTP_STREAMING_MULTIPART
+/*
+ * File upload handler.
+ * This handler can be used to implement file uploads with minimum code.
+ * This handler will process MG_EV_HTTP_PART_* events and store file data into
+ * a local file.
+ * `local_name_fn` will be invoked with whatever name was provided by the client
+ * and will expect the name of the local file to open. Return value of NULL will
+ * abort file upload (client will get a "403 Forbidden" response). If non-null,
+ * the returned string must be heap-allocated and will be freed by the caller.
+ * Exception: it is ok to return the same string verbatim.
+ *
+ * Example:
+ *
+ * ```c
+ * struct mg_str upload_fname(struct mg_connection *nc, struct mg_str fname) {
+ *   // Just return the same filename. Do not actually do this except in test!
+ *   // fname is user-controlled and needs to be sanitized.
+ *   return fname;
+ * }
+ * void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
+ *   switch (ev) {
+ *     ...
+ *     case MG_EV_HTTP_PART_BEGIN:
+ *     case MG_EV_HTTP_PART_DATA:
+ *     case MG_EV_HTTP_PART_END:
+ *       mg_file_upload_handler(nc, ev, ev_data, upload_fname);
+ *       break;
+ *   }
+ * }
+ * ```
+ */
+
+typedef struct mg_str (*mg_fu_fname_fn)(struct mg_connection *nc,
+                                        struct mg_str fname);
+void mg_file_upload_handler(struct mg_connection *nc, int ev, void *ev_data,
+                            mg_fu_fname_fn local_name_fn);
+#endif /* MG_ENABLE_HTTP_STREAMING_MULTIPART */
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
@@ -3409,3 +3498,35 @@ uint32_t mg_coap_compose(struct mg_coap_message *cm, struct mbuf *io);
 #endif /* MG_ENABLE_COAP */
 
 #endif /* CS_MONGOOSE_SRC_COAP_H_ */
+/*
+ * Copyright (c) 2014-2016 Cesanta Software Limited
+ * All rights reserved
+ */
+
+#ifndef CS_SMARTJS_PLATFORMS_CC3200_CC3200_FS_SLFS_H_
+#define CS_SMARTJS_PLATFORMS_CC3200_CC3200_FS_SLFS_H_
+
+#if CS_PLATFORM == CS_P_CC3200 && defined(CC3200_FS_SLFS)
+
+#include <stdio.h>
+#ifndef __TI_COMPILER_VERSION__
+#include <unistd.h>
+#include <sys/stat.h>
+#endif
+
+#define MAX_OPEN_SLFS_FILES 8
+
+/* Indirect libc interface - same functions, different names. */
+int fs_slfs_open(const char *pathname, int flags, mode_t mode);
+int fs_slfs_close(int fd);
+ssize_t fs_slfs_read(int fd, void *buf, size_t count);
+ssize_t fs_slfs_write(int fd, const void *buf, size_t count);
+int fs_slfs_stat(const char *pathname, struct stat *s);
+int fs_slfs_fstat(int fd, struct stat *s);
+off_t fs_slfs_lseek(int fd, off_t offset, int whence);
+int fs_slfs_unlink(const char *filename);
+int fs_slfs_rename(const char *from, const char *to);
+
+#endif /* CS_PLATFORM == CS_P_CC3200 && defined(CC3200_FS_SLFS) */
+
+#endif /* CS_SMARTJS_PLATFORMS_CC3200_CC3200_FS_SLFS_H_ */

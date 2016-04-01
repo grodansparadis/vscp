@@ -283,7 +283,12 @@ void DialogAbstractionEdit::CreateControls()
                                         _("-----"), 
                                         wxDefaultPosition, 
                                         wxSize(500, 20), 
+#if wxCHECK_VERSION(2, 3, 0)                                       
                                         wxST_ELLIPSIZE_END );
+#else
+                                        0 );    
+#endif                                        
+                                        
     //m_abstractionDescription->Wrap(500);
     itemGridSizerWindow->Add(m_abstractionDescription, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
