@@ -322,7 +322,7 @@ void DialogAbstractionEdit::CreateControls()
 #if wxCHECK_VERSION(3, 1, 0)            
                                 wxST_ELLIPSIZE_END );
 #else
-                                wxST_ELLIPSIZE_END );
+                                0 );
 #endif    
     itemGridSizerWindow->Add( m_abstractionHelp, 
                                 0, 
