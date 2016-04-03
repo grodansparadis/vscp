@@ -279,11 +279,11 @@ void DialogAbstractionEdit::CreateControls()
 
     m_abstractionDescription = new wxStaticText;
     m_abstractionDescription->Create( itemDialogAbstraction, 
-                                        wxID_STATIC, 
-                                        _("-----"), 
+                                        wxID_STATIC,
+                                        _("-----"),
                                         wxDefaultPosition, 
                                         wxSize(500, 20), 
-#if wxCHECK_VERSION(2, 3, 0)                                       
+#if wxCHECK_VERSION(3, 1, 0)                                       
                                         wxST_ELLIPSIZE_END );
 #else
                                         0 );    
