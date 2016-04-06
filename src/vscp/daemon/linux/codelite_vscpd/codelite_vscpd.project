@@ -188,4 +188,7 @@
   </Settings>
   <Dependencies Name="Debug"/>
   <Dependencies Name="Release"/>
+  <VirtualDirectory Name="top_common">
+    <File Name="../../../../common/sqlite3.c"/>
+  </VirtualDirectory>
 </CodeLite_Project>
