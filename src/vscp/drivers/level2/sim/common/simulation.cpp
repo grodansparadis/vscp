@@ -1388,8 +1388,9 @@ dumb_fill_data:
 
             // We are done with the event
             vscp_deleteVSCPevent( pEvent );
+            pEvent = NULL;
 			
-		}
+		} // Send list size
 		
 	} // while
 

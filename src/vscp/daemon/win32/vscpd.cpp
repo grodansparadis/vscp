@@ -124,6 +124,16 @@ int main(int argc, char **argv)
    
     strCfgFile = wxStandardPaths::Get().GetConfigDir();
 #ifdef WIN32
+    // The following needed because wx 3.1 add "vscpd" to standardpath
+    int pos;
+    if ( pos = strCfgFile.Find( _( "vscpd" ) ) ) {
+        strCfgFile = strCfgFile.Left( strCfgFile.Length() - 5 );
+        strCfgFile += _("vscp");
+    }
+    else if ( pos = strCfgFile.Find( _( "vscpd32" ) ) ) {
+        strCfgFile = strCfgFile.Left( strCfgFile.Length() - 7 );
+        strCfgFile += _( "vscp" );
+    }
     strCfgFile += _( "\\vscpd.conf" );
 #else
     strCfgFile += _("/vscp/vscpd.conf");
