@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="97">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <df root="." name="0">
+      <df name="bitmaps">
+        <in>copy.xpm</in>
+        <in>cut.xpm</in>
+        <in>help.xpm</in>
+        <in>new.xpm</in>
+        <in>paste.xpm</in>
+        <in>preview.xpm</in>
+        <in>print.xpm</in>
+        <in>save.xpm</in>
+      </df>
+      <df name="docs">
+      </df>
+      <df name="icons">
+        <df name="aquablend-PNG">
+          <df name="General">
+          </df>
+          <df name="Smooth Blue">
+          </df>
+          <df name="Smooth Graphite">
+          </df>
+          <df name="Stripped Blue">
+          </df>
+          <df name="Stripped Graphite">
+          </df>
+        </df>
+        <df name="png">
+          <df name="128x128">
+          </df>
+          <df name="16x16">
+          </df>
+          <df name="24x24">
+          </df>
+          <df name="32x32">
+          </df>
+          <df name="48x48">
+          </df>
+          <df name="64x64">
+          </df>
+        </df>
+      </df>
+      <df name="wx">
+        <df name="msw">
+        </df>
+      </df>
+      <in>ENVELOPE.xpm</in>
+      <in>Folder-Add.xpm</in>
+      <in>Help.xpm</in>
+      <in>Home.xpm</in>
+      <in>Info.xpm</in>
+      <in>NEW.xpm</in>
+      <in>New1.xpm</in>
+      <in>PAINT.xpm</in>
+      <in>Preview.xpm</in>
+      <in>Print.xpm</in>
+      <in>bootdevice.cpp</in>
+      <in>bootdevice.h</in>
+      <in>bootdevice_pic1.cpp</in>
+      <in>bootdevice_pic1.h</in>
+      <in>bootdevice_vscp.cpp</in>
+      <in>bootdevice_vscp.h</in>
+      <in>bootdevice_vscp_defs.h</in>
+      <in>copy.prv.xpm</in>
+      <in>copy.xpm</in>
+      <in>cut.xpm</in>
+      <in>decsionmatrixeditor.cpp</in>
+      <in>decsionmatrixeditor.h</in>
+      <in>deffile.xpm</in>
+      <in>delete.xpm</in>
+      <in>deveicebootloaderwizard.h</in>
+      <in>devicebootloaderwizard.cpp</in>
+      <in>devicebootloaderwizard.h</in>
+      <in>devicebootloaderwizard_images.h</in>
+      <in>dialogeditlevelidmrow_images.h</in>
+      <in>dlgCanalRowEdit.cpp</in>
+      <in>dlgCanalRowEdit.h</in>
+      <in>dlgCanalRowEdit_symbols.h</in>
+      <in>dlgMain_symbols.h</in>
+      <in>dlgabout.cpp</in>
+      <in>dlgabout.h</in>
+      <in>dlgabout_symbols.h</in>
+      <in>dlgabstractionedit.cpp</in>
+      <in>dlgabstractionedit.h</in>
+      <in>dlgabstractionedit_symbols.h</in>
+      <in>dlgcanalinterfacesettings.cpp</in>
+      <in>dlgcanalinterfacesettings.h</in>
+      <in>dlgcanalinterfacesettings_symbols.h</in>
+      <in>dlgcanalmsg.cpp</in>
+      <in>dlgcanalmsg.h</in>
+      <in>dlgcanalmsg_symbols.h</in>
+      <in>dlgcanmsg.cpp</in>
+      <in>dlgcanmsg.h</in>
+      <in>dlgcanmsg_symbols.h</in>
+      <in>dlgclasstypeselect.cpp</in>
+      <in>dlgclasstypeselect.h</in>
+      <in>dlgconfiguration.cpp</in>
+      <in>dlgconfiguration.h</in>
+      <in>dlgconfiguration_images.h</in>
+      <in>dlgconfiguration_symbols.h</in>
+      <in>dlgeditlevel1dmrow.cpp</in>
+      <in>dlgeditlevel1dmrow.h</in>
+      <in>dlgeditlevel1dmrow_symbols.h</in>
+      <in>dlgeventfilter.cpp</in>
+      <in>dlgeventfilter.h</in>
+      <in>dlgifsettings.cpp</in>
+      <in>dlgifsettings.h</in>
+      <in>dlgifsettings_symbols.h</in>
+      <in>dlgnewcanalsession.cpp</in>
+      <in>dlgnewcanalsession.h</in>
+      <in>dlgnewcanalsession_symbols.h</in>
+      <in>dlgnewsession_symbols.h</in>
+      <in>dlgnewvscpsession.cpp</in>
+      <in>dlgnewvscpsession.h</in>
+      <in>dlgnewvscpsession_images.h</in>
+      <in>dlgnewvscpsession_symbols.h</in>
+      <in>dlgselectdaemoninterface.cpp</in>
+      <in>dlgselectdaemoninterface.h</in>
+      <in>dlgselectdaemoninterface_symbols.h</in>
+      <in>dlgsetfiltermask.cpp</in>
+      <in>dlgsetfiltermask.h</in>
+      <in>dlgsetfiltermask_symbols.h</in>
+      <in>dlgsetmanufactdata.cpp</in>
+      <in>dlgsetmanufactdata.h</in>
+      <in>dlgvscpfilter.cpp</in>
+      <in>dlgvscpfilter.h</in>
+      <in>dlgvscpfilter_symbols.h</in>
+      <in>dlgvscpinterfacesettings.cpp</in>
+      <in>dlgvscpinterfacesettings.h</in>
+      <in>dlgvscpinterfacesettings_symbols.h</in>
+      <in>dlgvscpmsg.cpp</in>
+      <in>dlgvscpmsg.h</in>
+      <in>dlgvscpmsg_symbols.h</in>
+      <in>dlgvscptrmit.cpp</in>
+      <in>dlgvscptrmit.h</in>
+      <in>dlgvscptrmit_images.h</in>
+      <in>dlgvscptrmit_symbols.h</in>
+      <in>filesaveas.xpm</in>
+      <in>find.xpm</in>
+      <in>frmcanalsession.cpp</in>
+      <in>frmcanalsession.h</in>
+      <in>frmcanalsession_symbols.h</in>
+      <in>frmcansession.cpp</in>
+      <in>frmcansession.h</in>
+      <in>frmcansession_symbols.h</in>
+      <in>frmdaemondecisionmartrixeditor.cpp</in>
+      <in>frmdaemondecisionmartrixeditor.h</in>
+      <in>frmdaemonvariableeditor.cpp</in>
+      <in>frmdaemonvariableeditor.h</in>
+      <in>frmdeviceconfig.cpp</in>
+      <in>frmdeviceconfig.h</in>
+      <in>frmdeviceconfig_images.h</in>
+      <in>frmdeviceconfig_symbols.h</in>
+      <in>frmmain.cpp</in>
+      <in>frmmain.h</in>
+      <in>frmmain_images.h</in>
+      <in>frmmain_symbols.h</in>
+      <in>frmmainnomidi_symbols.h</in>
+      <in>frmmdfeditor.cpp</in>
+      <in>frmmdfeditor.h</in>
+      <in>frmmdfeditor_symbols.h</in>
+      <in>frmmdfheader_images.h</in>
+      <in>frmscanfordevices.cpp</in>
+      <in>frmscanfordevices.h</in>
+      <in>frmscanfordevices_images.h</in>
+      <in>frmscanfordevices_symbols.h</in>
+      <in>frmsimpleuserinterfacegenerator.cpp</in>
+      <in>frmsimpleuserinterfacegenerator.h</in>
+      <in>frmvscpsession.cpp</in>
+      <in>frmvscpsession.h</in>
+      <in>frmvscpsession_images.h</in>
+      <in>frmvscpsession_symbols.h</in>
+      <in>gridtable.cpp</in>
+      <in>gridtable.h</in>
+      <in>helpicon.xpm</in>
+      <in>merlin.cpp</in>
+      <in>merlin.h</in>
+      <in>open.xpm</in>
+      <in>open1.xpm</in>
+      <in>paste.xpm</in>
+      <in>paste1.xpm</in>
+      <in>platform.h</in>
+      <in>readguid.cpp</in>
+      <in>readguid.h</in>
+      <in>readguid_symbols.h</in>
+      <in>readmdffile.cpp</in>
+      <in>readmdffile.h</in>
+      <in>readmdffile_symbols.h</in>
+      <in>readmsfurl.cpp</in>
+      <in>readmsfurl.h</in>
+      <in>readmsfurl_symbols.h</in>
+      <in>readregister.cpp</in>
+      <in>readregister.h</in>
+      <in>readregister_symbols.h</in>
+      <in>redo.xpm</in>
+      <in>save.xpm</in>
+      <in>threadvscpwork.cpp</in>
+      <in>threadvscpwork.h</in>
+      <in>tipicon.xpm</in>
+      <in>undo.xpm</in>
+      <in>vscp_images.h</in>
+      <in>vscpbootloader.cpp</in>
+      <in>vscpbootloader.h</in>
+      <in>vscpbootloader_symbols.h</in>
+      <in>vscptxobj.cpp</in>
+      <in>vscptxobj.h</in>
+      <in>vscpworks.cpp</in>
+      <in>vscpworks.h</in>
+      <in>writeregister.cpp</in>
+      <in>writeregister.h</in>
+      <in>writeregister_symbols.h</in>
+      <in>wxwin32x32.xpm</in>
+    </df>
+  </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Default" type="0">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <platform>2</platform>
+      </toolsSet>
+      <compile>
+        <compiledirpicklist>
+          <compiledirpicklistitem>.</compiledirpicklistitem>
+          <compiledirpicklistitem>${AUTO_FOLDER}</compiledirpicklistitem>
+        </compiledirpicklist>
+        <compiledir>${AUTO_FOLDER}</compiledir>
+        <compilecommandpicklist>
+          <compilecommandpicklistitem>${MAKE} ${ITEM_NAME}.o</compilecommandpicklistitem>
+          <compilecommandpicklistitem>${AUTO_COMPILE}</compilecommandpicklistitem>
+        </compilecommandpicklist>
+        <compilecommand>${AUTO_COMPILE}</compilecommand>
+      </compile>
+      <dbx_gdbdebugger version="1">
+        <gdb_pathmaps>
+        </gdb_pathmaps>
+        <gdb_interceptlist>
+          <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
+        </gdb_interceptlist>
+        <gdb_options>
+          <DebugOptions>
+          </DebugOptions>
+        </gdb_options>
+        <gdb_buildfirst gdb_buildfirst_overriden="false" gdb_buildfirst_old="false"/>
+      </dbx_gdbdebugger>
+      <nativedebugger version="1">
+        <engine>gdb</engine>
+      </nativedebugger>
+      <runprofile version="9">
+        <runcommandpicklist>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"</runcommandpicklistitem>
+        </runcommandpicklist>
+        <runcommand>"${OUTPUT_PATH}"</runcommand>
+        <rundir>.</rundir>
+        <buildfirst>false</buildfirst>
+        <terminal-type>0</terminal-type>
+        <remove-instrumentation>0</remove-instrumentation>
+        <environment>
+        </environment>
+      </runprofile>
+    </conf>
+  </confs>
+</configurationDescriptor>
