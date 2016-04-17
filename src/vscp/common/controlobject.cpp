@@ -555,8 +555,7 @@ bool CControlObject::init(wxString& strcfgfile)
     //setlocale( LC_NUMERIC, "English_United States.1252" );  // Why not!
     // Set locale
     int sys_lang = wxLocale::GetSystemLanguage();
-    if ( sys_lang != wxLANGUAGE_DEFAULT )
-    {
+    if ( sys_lang != wxLANGUAGE_DEFAULT ) {
         m_locale.Init( sys_lang );              // set custom locale
         m_locale.AddCatalogLookupPathPrefix( _("locale") );   // set "locale" prefix
         m_locale.AddCatalog( _("wxproton") );   // our private domain

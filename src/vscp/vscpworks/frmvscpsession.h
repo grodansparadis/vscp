@@ -95,8 +95,13 @@ class wxHtmlWindow;
 #define SYMBOL_FRMVSCPSESSION_STYLE wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU | wxCLOSE_BOX
 #define SYMBOL_FRMVSCPSESSION_TITLE _("VSCP Session")
 #define SYMBOL_FRMVSCPSESSION_IDNAME ID_FRMVSCPSESSION
-#define SYMBOL_FRMVSCPSESSION_SIZE wxSize(880, 600)
-#define SYMBOL_FRMVSCPSESSION_POSITION wxPoint(100, 100)
+#ifdef WIN32
+#define VSCPWORKS_SESSION_SIZE wxSize(880, 600)
+#define VSCPWORKS_SESSION_POSITION wxPoint(100, 100)
+#else
+#define VSCPWORKS_SESSION_SIZE wxSize(880, 600)
+#define VSCPWORKS_SESSION_POSITION wxPoint(100, 100) 
+#endif
 
 DECLARE_EVENT_TYPE(wxVSCP_IN_EVENT, wxID_ANY)                   // Received event
 DECLARE_EVENT_TYPE(wxVSCP_OUT_EVENT, wxID_ANY)                  // Transmitted event
@@ -522,15 +527,15 @@ public:
     frmVSCPSession( wxWindow* parent, 
                         wxWindowID id = SYMBOL_FRMVSCPSESSION_IDNAME, 
                         const wxString& caption = SYMBOL_FRMVSCPSESSION_TITLE, 
-                        const wxPoint& pos = SYMBOL_FRMVSCPSESSION_POSITION, 
-                        const wxSize& size = SYMBOL_FRMVSCPSESSION_SIZE, 
+                        const wxPoint& pos = VSCPWORKS_SESSION_POSITION,
+                        const wxSize& size = VSCPWORKS_SESSION_SIZE,
                         long style = SYMBOL_FRMVSCPSESSION_STYLE );
 
     bool Create( wxWindow* parent, 
                         wxWindowID id = SYMBOL_FRMVSCPSESSION_IDNAME, 
                         const wxString& caption = SYMBOL_FRMVSCPSESSION_TITLE, 
-                        const wxPoint& pos = SYMBOL_FRMVSCPSESSION_POSITION, 
-                        const wxSize& size = SYMBOL_FRMVSCPSESSION_SIZE, 
+                        const wxPoint& pos = VSCPWORKS_SESSION_POSITION,
+                        const wxSize& size = VSCPWORKS_SESSION_SIZE,
                         long style = SYMBOL_FRMVSCPSESSION_STYLE );
 
     // Destructor

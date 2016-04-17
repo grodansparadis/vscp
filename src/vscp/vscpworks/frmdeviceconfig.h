@@ -76,12 +76,13 @@ class wxHtmlWindow;
 #define SYMBOL_FRMDEVICECONFIG_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX
 #define SYMBOL_FRMDEVICECONFIG_TITLE _("frmDeviceConfig")
 #define SYMBOL_FRMDEVICECONFIG_IDNAME ID_FRMDEVICECONFIG
+
 #ifdef WIN32
-#define SYMBOL_FRMDEVICECONFIG_SIZE wxSize(870, 710)
+#define VSCPWORKS_DEVICECONFIG_SIZE wxSize(1020, 724)
 #else
-#define SYMBOL_FRMDEVICECONFIG_SIZE wxSize(940, 790)
+#define VSCPWORKS_DEVICECONFIG_SIZE wxSize(940, 790)
 #endif
-#define SYMBOL_FRMDEVICECONFIG_POSITION wxDefaultPosition
+#define VSCPWORKS_DEVICECONFIG_POSITION wxDefaultPosition
 
 DECLARE_EVENT_TYPE(wxVSCP_STATUS_CHANGE_EVENT, wxID_ANY )       // status change
 
@@ -113,15 +114,15 @@ public:
     frmDeviceConfig( wxWindow* parent, 
                         wxWindowID id = SYMBOL_FRMDEVICECONFIG_IDNAME, 
                         const wxString& caption = SYMBOL_FRMDEVICECONFIG_TITLE, 
-                        const wxPoint& pos = SYMBOL_FRMDEVICECONFIG_POSITION, 
-                        const wxSize& size = SYMBOL_FRMDEVICECONFIG_SIZE, 
+                        const wxPoint& pos = VSCPWORKS_DEVICECONFIG_POSITION,
+                        const wxSize& size = VSCPWORKS_DEVICECONFIG_SIZE,
                         long style = SYMBOL_FRMDEVICECONFIG_STYLE);
 
     bool Create( wxWindow* parent, 
                     wxWindowID id = SYMBOL_FRMDEVICECONFIG_IDNAME, 
                     const wxString& caption = SYMBOL_FRMDEVICECONFIG_TITLE, 
-                    const wxPoint& pos = SYMBOL_FRMDEVICECONFIG_POSITION, 
-                    const wxSize& size = SYMBOL_FRMDEVICECONFIG_SIZE, 
+                    const wxPoint& pos = VSCPWORKS_DEVICECONFIG_POSITION,
+                    const wxSize& size = VSCPWORKS_DEVICECONFIG_SIZE,
                     long style = SYMBOL_FRMDEVICECONFIG_STYLE );
 
     /// Destructor

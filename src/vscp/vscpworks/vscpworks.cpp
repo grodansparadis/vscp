@@ -256,6 +256,12 @@ void VscpworksApp::Init()
     g_Config.m_sizeMainFrameWidth = VSCPWORKS_MAIN_WINDOW_DEFAULT_WIDTH;
     g_Config.m_sizeMainFrameHeight = VSCPWORKS_MAIN_WINDOW_DEFAULT_HEGHT;
 
+    g_Config.m_sizeConfigurationFrameWidth = VSCPWORKS_DEVICECONFIG_SIZE.GetWidth();
+    g_Config.m_sizeConfigurationFrameHeight = VSCPWORKS_DEVICECONFIG_SIZE.GetHeight();
+
+    g_Config.m_sizeSessionFrameWidth = VSCPWORKS_SESSION_SIZE.GetWidth();
+    g_Config.m_sizeSessionFrameWidth = VSCPWORKS_SESSION_SIZE.GetHeight();
+
     g_Config.m_VscpTrmitShowField[0] = true;
     g_Config.m_VscpTrmitShowField[1] = true;
     g_Config.m_VscpTrmitShowField[2] = true;
@@ -1693,7 +1699,7 @@ bool VscpworksApp::readConfiguration( void )
                         }
                         else {
                             g_Config.m_sizeConfigurationFrameWidth = 
-                                SYMBOL_FRMDEVICECONFIG_SIZE.GetWidth();
+                                VSCPWORKS_DEVICECONFIG_SIZE.GetWidth();
                         }
                     }
 
@@ -1707,7 +1713,7 @@ bool VscpworksApp::readConfiguration( void )
                         }
                         else {
                             g_Config.m_sizeConfigurationFrameHeight = 
-                                SYMBOL_FRMDEVICECONFIG_SIZE.GetHeight();
+                                VSCPWORKS_DEVICECONFIG_SIZE.GetHeight();
                         }
                     }
 
