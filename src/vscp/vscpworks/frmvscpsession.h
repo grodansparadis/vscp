@@ -96,11 +96,11 @@ class wxHtmlWindow;
 #define SYMBOL_FRMVSCPSESSION_TITLE _("VSCP Session")
 #define SYMBOL_FRMVSCPSESSION_IDNAME ID_FRMVSCPSESSION
 #ifdef WIN32
-#define VSCPWORKS_SESSION_SIZE wxSize(880, 600)
-#define VSCPWORKS_SESSION_POSITION wxPoint(100, 100)
+#define VSCPWORKS_SESSION_SIZE          wxSize(880, 600)
+#define VSCPWORKS_SESSION_POSITION      wxDefaultPosition
 #else
-#define VSCPWORKS_SESSION_SIZE wxSize(880, 600)
-#define VSCPWORKS_SESSION_POSITION wxPoint(100, 100) 
+#define VSCPWORKS_SESSION_SIZE          wxSize(920, 600)
+#define VSCPWORKS_SESSION_POSITION      wxDefaultPosition
 #endif
 
 DECLARE_EVENT_TYPE(wxVSCP_IN_EVENT, wxID_ANY)                   // Received event

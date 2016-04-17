@@ -109,7 +109,7 @@ int g_cntCanalNodes;
 int g_cntVscpNodes;
 
 appConfiguration g_Config;
-VSCPInformation g_vscpinfo;
+VSCPInformation g_vscpinfo; 
 
 // Lists for interfaces
 WX_DEFINE_LIST(LIST_CANAL_IF);
@@ -260,7 +260,7 @@ void VscpworksApp::Init()
     g_Config.m_sizeConfigurationFrameHeight = VSCPWORKS_DEVICECONFIG_SIZE.GetHeight();
 
     g_Config.m_sizeSessionFrameWidth = VSCPWORKS_SESSION_SIZE.GetWidth();
-    g_Config.m_sizeSessionFrameWidth = VSCPWORKS_SESSION_SIZE.GetHeight();
+    g_Config.m_sizeSessionFrameHeight = VSCPWORKS_SESSION_SIZE.GetHeight();
 
     g_Config.m_VscpTrmitShowField[0] = true;
     g_Config.m_VscpTrmitShowField[1] = true;

@@ -777,7 +777,12 @@ void frmMain::OnMenuitemOpenVscpSessionClick( wxCommandEvent& event )
 
         if ( wxNOT_FOUND != ( selidx = dlg.m_ctrlListInterfaces->GetSelection() ) ) {
 
-            frmVSCPSession *subframe = new frmVSCPSession( this );
+            frmVSCPSession *subframe = new frmVSCPSession( this,
+                                                            frmVSCPSession::ID_FRMVSCPSESSION,
+                                                            SYMBOL_FRMVSCPSESSION_TITLE,
+                                                            VSCPWORKS_SESSION_POSITION,
+                                                            wxSize( g_Config.m_sizeConfigurationFrameWidth, 
+                                                                        g_Config.m_sizeConfigurationFrameHeight ) );
 
             if ( NULL != subframe ) {
 
@@ -786,7 +791,7 @@ void frmMain::OnMenuitemOpenVscpSessionClick( wxCommandEvent& event )
                     both_interface *pBoth = 
                         (both_interface *)dlg.m_ctrlListInterfaces->GetClientData( selidx );
 
-                    if ( NULL != pBoth ) {  
+                    if ( NULL != pBoth ) {
 
                         // set type so session window is aware of it
                         subframe->m_CtrlObject.m_interfaceType = pBoth->m_type;
@@ -824,11 +829,12 @@ void frmMain::OnMenuitemOpenVscpSessionClick( wxCommandEvent& event )
 
                         // Start the worker threads
                         subframe->startWorkerThreads( subframe );
-                        
+/*                        
                         subframe->SetSize(  -1, 
                                             -1, 
                                             g_Config.m_sizeSessionFrameWidth, 
                                             g_Config.m_sizeSessionFrameHeight );
+*/                        
                        
                         // Show the VSCP session windows
                         subframe->Show( true );
@@ -880,7 +886,12 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
 
         if ( wxNOT_FOUND != ( selidx = dlg.m_ctrlListInterfaces->GetSelection() ) ) {
 
-            frmDeviceConfig *subframe = new frmDeviceConfig( this );
+            frmDeviceConfig *subframe = new frmDeviceConfig( this,
+                                                                frmDeviceConfig::ID_FRMDEVICECONFIG,
+                                                                SYMBOL_FRMDEVICECONFIG_TITLE,
+                                                                VSCPWORKS_DEVICECONFIG_POSITION,
+                                                                wxSize( g_Config.m_sizeConfigurationFrameWidth, 
+                                                                            g_Config.m_sizeConfigurationFrameHeight ) );
             if ( NULL != subframe ) {
 
                 both_interface *pBoth = 
@@ -893,10 +904,10 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
 
                     if ( INTERFACE_CANAL == pBoth->m_type ) {
 
-                        // Hide the Level II checkbox
+                        // Hide the Level II check box
                         subframe->m_bLevel2->Show( false );
 
-                        // Init node id combo
+                        // Init. node id combo
                         wxRect rc = subframe->m_comboNodeID->GetRect();
 #ifdef WIN32
                         rc.SetWidth( 60 );
@@ -926,11 +937,6 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
 
                         // Connect to device bus
                         if ( subframe->enableInterface() ) {
-                            
-                            subframe->SetSize(  -1, 
-                                                -1, 
-                                                g_Config.m_sizeConfigurationFrameWidth, 
-                                                g_Config.m_sizeConfigurationFrameHeight );
 
                             // Move window on top
                             subframe->Raise();
@@ -995,11 +1001,6 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
 
                         // Connect to host
                         if ( subframe->enableInterface() ) {
-                            
-                            subframe->SetSize(  0, 
-                                                0, 
-                                                g_Config.m_sizeConfigurationFrameWidth, 
-                                                g_Config.m_sizeConfigurationFrameHeight );
 
                             // Show the VSCP configuration windows
                             subframe->Show( true );
@@ -1020,12 +1021,12 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
 
                 } // pBoth valid
 
-            } // valid subframe pointer
+            } // valid sub frame pointer
 
         } // selection made
 
 
-        // Clean up listbox
+        // Clean up list box
         dlg.cleanupListbox();
 
     } // dialog

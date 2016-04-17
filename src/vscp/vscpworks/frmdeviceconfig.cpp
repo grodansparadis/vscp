@@ -48,12 +48,12 @@
 #include <winsock2.h>
 #endif
 
-// For compilers that support precompilation, includes "wx/wx.h".
+// For compilers that support precompilation, includes "wx/wx.h". 
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
 #pragma hdrstop
-#endif
+#endif 
 
 #ifndef WX_PRECOMP
 #include "wx/wx.h"
@@ -83,7 +83,7 @@
 #include "dlgabstractionedit.h"
 #include "readregister.h"
 #include "dlgsetmanufactdata.h"
-#include "frmdeviceconfig_images.h"
+#include "frmdeviceconfig_images.h"     
 #include "frmdeviceconfig.h"
 
 class itemStaticNodeID;
@@ -248,7 +248,7 @@ void frmDeviceConfig::CreateControls() {
 
     frmDeviceConfig* itemFrameConfig = this;
 
-    // Statusbar
+    // Status bar
     m_pitemStatusBar = new wxStatusBar;
     m_pitemStatusBar->Create( itemFrameConfig, 
                                 ID_STATUSBAR, 

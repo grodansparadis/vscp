@@ -79,10 +79,12 @@ class wxHtmlWindow;
 
 #ifdef WIN32
 #define VSCPWORKS_DEVICECONFIG_SIZE wxSize(1020, 724)
-#else
-#define VSCPWORKS_DEVICECONFIG_SIZE wxSize(940, 790)
-#endif
 #define VSCPWORKS_DEVICECONFIG_POSITION wxDefaultPosition
+#else
+#define VSCPWORKS_DEVICECONFIG_SIZE wxSize(1040, 790)
+#define VSCPWORKS_DEVICECONFIG_POSITION wxDefaultPosition
+#endif
+
 
 DECLARE_EVENT_TYPE(wxVSCP_STATUS_CHANGE_EVENT, wxID_ANY )       // status change
 

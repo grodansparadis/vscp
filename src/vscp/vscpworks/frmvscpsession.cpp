@@ -48,7 +48,7 @@
 #include <winsock2.h>
 #endif
 
-// For compilers that support precompilation, includes "wx/wx.h".
+// For compilers that support precompilation, includes "wx/wx.h". 
 #include "wx/wxprec.h"
 
 #ifndef WX_PRECOMP
@@ -56,7 +56,7 @@
 #endif
 
 #include <wx/app.h>
-#include <wx/listimpl.cpp>
+#include <wx/listimpl.cpp> 
 #include <wx/stdpaths.h>
 #include <wx/wfstream.h>
 #include <wx/xml/xml.h>

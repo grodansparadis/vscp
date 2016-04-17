@@ -26,10 +26,9 @@
         <group>
             <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/vscpworks.h</file>
             <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/frmmain.cpp</file>
-            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/register.cpp</file>
-            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/dlgabstractionedit.h</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/frmvscpsession.cpp</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/frmvscpsession.h</file>
             <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/version.h</file>
-            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/dlgabstractionedit.cpp</file>
             <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/frmdeviceconfig.cpp</file>
             <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/frmdeviceconfig.h</file>
             <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/vscpworks.cpp</file>
