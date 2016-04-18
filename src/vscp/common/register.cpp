@@ -327,7 +327,8 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
                 strValue.Printf( _( "%d" ), val );
             }
             else {
-                strValue.Printf( _( "0x%04x" ), val );
+                strValue.Printf( _( "%04x" ), val );
+                strValue = _("0x") + strValue.Right( 4 ); // Handles negative numbers correct
             }
         }
         break;
@@ -354,7 +355,8 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
                 strValue.Printf( _( "%ld" ), *( pReg + pAbstraction->m_nOffset ) );
             }
             else {
-                strValue.Printf( _( "0x%08lx" ), *( pReg + pAbstraction->m_nOffset ) );
+                strValue.Printf( _( "%08lx" ), *( pReg + pAbstraction->m_nOffset ) );
+                strValue = _("0x") + strValue.Right( 8 ); // Handles negative numbers correct
             }
         }
         break;
@@ -382,7 +384,8 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
                 strValue.Printf( _( "%lld" ), *p );
             }
             else {
-                strValue.Printf( _( "0x%llx" ), *p );
+                strValue.Printf( _( "%llx" ), *p );
+                strValue = _("0x") + strValue.Right( 8 ); // Handles negative numbers correct
             }
         }
         break;
@@ -411,6 +414,7 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
     case type_double:
         {
             double f = *((double *)(pReg + pAbstraction->m_nOffset ));
+            wxINT64_SWAP_ON_BE( f );
             strValue.Printf( _("%g"), f );
         }
         break;

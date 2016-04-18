@@ -1647,7 +1647,7 @@ void frmDeviceConfig::writeStatusInfo(void)
 
     strHTML += _("<b>MDF URL</b>: ");
     strHTML += _("<a href=\"");
-	m_stdRegisters.getMDF( str );
+    m_stdRegisters.getMDF( str );
     strHTML += str;
     strHTML += _("\">");
     strHTML += str;
@@ -3971,9 +3971,9 @@ read_stdregs1_again:
             // Load and parse the MDF
             progressDlg.Update( 20, _( "Loading and parsing MDF. [2/8]" ) );
             if ( !m_mdf.load( strPath, m_chkMdfFromFile->GetValue() ) ) {
-				// We try to continue anyway
+                // We try to continue anyway
                 wxMessageBox( _( "Failed to load MDF but will try to continue anyway." ) );
-			}
+            }
 
             wxArrayLong pageArray;
             uint32_t nPages = m_mdf.getPages( pageArray );
@@ -4465,13 +4465,13 @@ void frmDeviceConfig::readValueSelectedRow( wxCommandEvent& WXUNUSED( event ) )
     }
 
     if ( m_gridRegisters->GetNumberRows() ) {
-		
-		// Must do this hack to handle rows selected by clicking a
-		// cell instead of the border.
-		if ( 0 == m_gridRegisters->GetSelectedRows().GetCount() ) {
-			// Select the row
-			m_gridRegisters->SelectRow( m_lastLeftClickRow );
-		}
+        
+        // Must do this hack to handle rows selected by clicking a
+        // cell instead of the border.
+        if ( 0 == m_gridRegisters->GetSelectedRows().GetCount() ) {
+            // Select the row
+            m_gridRegisters->SelectRow( m_lastLeftClickRow );
+        }
 
         wxArrayInt selrows = m_gridRegisters->GetSelectedRows();
 
@@ -4527,10 +4527,10 @@ void frmDeviceConfig::readValueSelectedRow( wxCommandEvent& WXUNUSED( event ) )
                     if ( VSCP_ERROR_SUCCESS == 
                         m_csw.getTcpIpInterface()->readLevel2Registers( reg,
                                                                             page,
-	                                                                        1,
+                                                                            1,
                                                                             &val,
                                                                             m_ifguid,
-	                                                                        &destGUID ) ) {
+                                                                            &destGUID ) ) {
 
                         // Set value
                         m_userRegisters.setValue( page, reg, val );
@@ -4601,13 +4601,13 @@ void frmDeviceConfig::writeValueSelectedRow(wxCommandEvent& WXUNUSED(event))
 
 
     if ( m_gridRegisters->GetNumberRows() ) {
-		
-		// Must do this hack to handle rows selected by clicking a
-		// cell instead of the border.
-		if ( 0 == m_gridRegisters->GetSelectedRows().GetCount() ) {
-			// Select the row
-			m_gridRegisters->SelectRow( m_lastLeftClickRow );
-		}
+        
+        // Must do this hack to handle rows selected by clicking a
+        // cell instead of the border.
+        if ( 0 == m_gridRegisters->GetSelectedRows().GetCount() ) {
+            // Select the row
+            m_gridRegisters->SelectRow( m_lastLeftClickRow );
+        }
 
         wxArrayInt selrows = m_gridRegisters->GetSelectedRows();
 
@@ -4726,13 +4726,13 @@ void frmDeviceConfig::undoValueSelectedRow(wxCommandEvent& WXUNUSED(event))
     }
 
     if ( m_gridRegisters->GetNumberRows() ) {
-		
-		// Must do this hack to handle rows selected by clicking a
-		// cell instead of the border.
-		if ( 0 == m_gridRegisters->GetSelectedRows().GetCount() ) {
-			// Select the row
-			m_gridRegisters->SelectRow( m_lastLeftClickRow );
-		}
+        
+        // Must do this hack to handle rows selected by clicking a
+        // cell instead of the border.
+        if ( 0 == m_gridRegisters->GetSelectedRows().GetCount() ) {
+            // Select the row
+            m_gridRegisters->SelectRow( m_lastLeftClickRow );
+        }
 
         wxArrayInt selrows = m_gridRegisters->GetSelectedRows();
 
@@ -4850,13 +4850,13 @@ void frmDeviceConfig::defaultValueSelectedRow(wxCommandEvent& WXUNUSED(event))
     }
 
     if ( m_gridRegisters->GetNumberRows() ) {
-		
-		// Must do this hack to handle rows selected by clicking a
-		// cell instead of the border.
-		if ( 0 == m_gridRegisters->GetSelectedRows().GetCount() ) {
-			// Select the row
-			m_gridRegisters->SelectRow( m_lastLeftClickRow );
-		}
+        
+        // Must do this hack to handle rows selected by clicking a
+        // cell instead of the border.
+        if ( 0 == m_gridRegisters->GetSelectedRows().GetCount() ) {
+            // Select the row
+            m_gridRegisters->SelectRow( m_lastLeftClickRow );
+        }
 
         wxArrayInt selrows = m_gridRegisters->GetSelectedRows();
 
@@ -5001,7 +5001,7 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 
             wxString newValue;
             dlg.TransferDataFromWindow( newValue );
-			
+            
             // If value is not changed do nothing.
             if ( newValue == strValue ) goto error;
             strValue = newValue;
@@ -5753,7 +5753,8 @@ void frmDeviceConfig::updateAbstractionGrid(void)
 
         CMDF_Abstraction *pAbstraction = *iter; 
 
-        // Add a row
+        // * * * Add a row * * * 
+        
         m_gridAbstractions->AppendRows( 1 );
 
         wxColour fgcolor( pAbstraction->m_fgcolor );
@@ -5767,7 +5768,8 @@ void frmDeviceConfig::updateAbstractionGrid(void)
 
 
 
-        // Name
+        // * * * Name * * * 
+        
         m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows()-1, 
                                             0,
                                             _( " " ) + pAbstraction->m_strName );
@@ -5779,7 +5781,8 @@ void frmDeviceConfig::updateAbstractionGrid(void)
         m_gridAbstractions->SetCellFont( m_gridAbstractions->GetNumberRows()-1, 0, fontBold );
 
 
-        // Type
+        // * * * Type * * * 
+        
         m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows()-1,
                                             1,
                                             pAbstraction->m_strName );
@@ -5790,7 +5793,8 @@ void frmDeviceConfig::updateAbstractionGrid(void)
         m_gridAbstractions->SetReadOnly(m_gridAbstractions->GetNumberRows() - 1, 1);
 
 
-        // Access
+        // * * * Access rights * * * 
+        
         strBuf = _("");
         if ( pAbstraction->m_nAccess & MDF_ACCESS_READ ) {
             strBuf = _("r");
@@ -5812,7 +5816,8 @@ void frmDeviceConfig::updateAbstractionGrid(void)
 
 
         
-        // Description
+        // * * * Description * * * 
+        
         m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows()-1,
                                             4,
                                             _( " " ) + pAbstraction->m_strDescription );
@@ -5837,7 +5842,8 @@ void frmDeviceConfig::updateAbstractionGrid(void)
 
 
         
-        // Value
+        // * * * Value * * * 
+        
         m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows()-1,
                                             3,
                                             strValue );
