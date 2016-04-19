@@ -297,7 +297,7 @@ static void ev_handler( struct mg_connection *nc, int ev, void *p )
                                     // point number * * *
                                     float val = atof( str.mbc_str() );
                                     
-                                    wxUINT32_SWAP_ON_LE( val );
+                                    val = wxUINT32_SWAP_ON_LE( val );
                                     memcpy( eventEx.data + 1, (uint8_t *)&val, 4 );
                                     
                                     eventEx.data[ 0 ] = VSCP_DATACODING_SINGLE |
@@ -1060,7 +1060,8 @@ CWrkThread::Entry()
                             if ( VSCP_DATACODING_SINGLE == 
                                 ( pEvent->pdata[ 0 ] & VSCP_MASK_DATACODING_TYPE ) ) {
                                         
-                                wxUINT32_SWAP_ON_LE( *( (uint32_t *)( pEvent->pdata + 1 ) ) );                                
+                                uint32_t temp = wxUINT32_SWAP_ON_LE( *( (uint32_t *)( pEvent->pdata + 1 ) ) ); 
+                                memcpy( pEvent->pdata + 1, (void *)&temp, 4 ); 
                                 float val = *( (float *)( pEvent->pdata + 1 ) );
                                 char buf[80];
                                 sprintf( buf, "%f", val );

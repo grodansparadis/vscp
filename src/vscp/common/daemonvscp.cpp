@@ -645,7 +645,7 @@ bool daemonVSCPThread::sendMulticastEvent( int sock_mc,
 
     // Timestamp
     uint32_t timestamp = pEvent->timestamp;
-    wxUINT32_SWAP_ON_LE( timestamp );
+    timestamp = wxUINT32_SWAP_ON_LE( timestamp );
     buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 0 ] = ( pEvent->timestamp >> 24 ) & 0xff;
     buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 1 ] = ( timestamp >> 16 ) & 0xff;
     buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] = ( timestamp >> 8 ) & 0xff;
@@ -653,13 +653,13 @@ bool daemonVSCPThread::sendMulticastEvent( int sock_mc,
 
     // VSCP class
     uint16_t vscp_class = pEvent->vscp_class;
-    wxUINT32_SWAP_ON_LE( vscp_class );
+    vscp_class = wxUINT32_SWAP_ON_LE( vscp_class );
     buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS + 0 ] = ( vscp_class >> 8 ) & 0xff;
     buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS + 1 ] = vscp_class & 0xff;
 
     // VSCP Type
     uint16_t vscp_type = pEvent->vscp_type;
-    wxUINT32_SWAP_ON_LE( vscp_type );
+    vscp_type = wxUINT32_SWAP_ON_LE( vscp_type );
     buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE + 0 ] = ( vscp_type >> 8 ) & 0xff;
     buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE + 1 ] = vscp_type & 0xff;
 
@@ -668,7 +668,7 @@ bool daemonVSCPThread::sendMulticastEvent( int sock_mc,
 
     // Size of payload =  128 bytes
     uint16_t size = pEvent->sizeData;
-    wxUINT32_SWAP_ON_LE( size );
+    size = wxUINT32_SWAP_ON_LE( size );
     buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE + 0 ] = ( size >> 8 ) & 0xff;
     buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE + 1 ] = size & 0xff;
 
@@ -680,7 +680,7 @@ bool daemonVSCPThread::sendMulticastEvent( int sock_mc,
     // CRC
     crcInit();
     uint16_t crc = crcFast( buf, VSCP_MULTICATS_PACKET0_HEADER_LENGTH + pEvent->sizeData );
-    wxUINT32_SWAP_ON_LE( crc );
+    crc = wxUINT32_SWAP_ON_LE( crc );
     buf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH + pEvent->sizeData + 0 ] = ( crc >> 8 ) & 0xff;
     buf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH + pEvent->sizeData + 1 ] = crc & 0xff;
 
@@ -774,7 +774,7 @@ bool daemonVSCPThread::sendMulticastInformationProxyEvent( int sock,
     
     // Timestamp
     uint32_t timestamp = vscp_makeTimeStamp();
-    wxUINT32_SWAP_ON_LE( timestamp );
+    timestamp = wxUINT32_SWAP_ON_LE( timestamp );
     buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 0 ] = ( timestamp >> 24 ) & 0xff;
     buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 1 ] = ( timestamp >> 16 ) & 0xff;
     buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] = ( timestamp >> 8 ) & 0xff;
@@ -782,13 +782,13 @@ bool daemonVSCPThread::sendMulticastInformationProxyEvent( int sock,
 
     // VSCP class
     uint16_t vscp_class = VSCP_CLASS2_INFORMATION;
-    wxUINT32_SWAP_ON_LE( vscp_class );
+    vscp_class = wxUINT32_SWAP_ON_LE( vscp_class );
     buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS + 0 ] = ( vscp_class >> 8 ) & 0xff;
     buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS + 1 ] = vscp_class & 0xff;
 
     // VSCP Type
     uint16_t vscp_type = VSCP2_TYPE_INFORMATION_PROXY_HEART_BEAT;
-    wxUINT32_SWAP_ON_LE( vscp_type );
+    vscp_type = wxUINT32_SWAP_ON_LE( vscp_type );
     buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE + 0 ] = ( vscp_type >> 8 ) & 0xff;
     buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE + 1 ] = vscp_type & 0xff;
 
@@ -826,7 +826,7 @@ bool daemonVSCPThread::sendMulticastInformationProxyEvent( int sock,
     crc chksum = crcFast( buf, 
                             VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 
                                 VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE );
-    wxUINT32_SWAP_ON_LE( chksum );
+    chksum = wxUINT32_SWAP_ON_LE( chksum );
     buf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 
             VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE + 0 ] = ( chksum >> 8 ) & 0xff;
     buf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 

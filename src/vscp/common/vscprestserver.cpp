@@ -2401,7 +2401,9 @@ VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *nc,
                 data[ 3 ] = unit;
 
                 memcpy( data + 4, ( uint8_t * )&value, 8 ); // copy in double
-                wxUINT64_SWAP_ON_LE( data + 4 );
+                uint64_t temp = wxUINT64_SWAP_ON_LE( *(data + 4) );
+                memcpy( data+4, (void *)&temp, 8 );
+                
                 // Copy in data
                 pEvent->pdata = new uint8_t[ 4 + 8 ];
                 if ( NULL == pEvent->pdata ) {

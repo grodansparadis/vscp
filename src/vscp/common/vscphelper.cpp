@@ -507,8 +507,7 @@ bool vscp_getVSCPMeasurementAsString( const vscpEvent *pEvent,
         if ( 12 != pEvent->sizeData  ) return false;
 
         memset( buf, 0, sizeof( buf ) );
-        memcpy( buf, pEvent->pdata + 4, 8 );    // Double
-        //wxUINT64_SWAP_ON_LE( buf );           // Does not work. Hmmm        
+        memcpy( buf, pEvent->pdata + 4, 8 );    // Double     
         
         // Take care of byte order on little endian
         if ( wxIsPlatformLittleEndian() ) {
@@ -802,7 +801,7 @@ bool vscp_convertFloatToNormalizedEventData( uint8_t *pdata,
     (void)modf( value, &intpart );
     val64 = (uint64_t)(value * pow(10.0,ndigits));
 
-    wxUINT64_SWAP_ON_LE(val64);
+    val64 = wxUINT64_SWAP_ON_LE(val64);
 
     if ( val64 < ((double)0x80) ) {
         *psize = 3;
@@ -878,11 +877,13 @@ bool vscp_convertFloatToFloatEventData( uint8_t *pdata,
     // We must make sure
     if ( 4 !=  sizeof( float ) ) return false;
 
-    wxUINT32_SWAP_ON_LE( (uint32_t)value );
-    void *p = (void *)&value;
+    void *p = (void *)&value; 
+    uint32_t n = wxUINT32_SWAP_ON_LE( *( (uint32_t *)p ) );
+    float f = *( (float *)((uint8_t *)&n ) );    
+    p = (void *)&value;
 
     *psize = 5;
-    pdata[0] = VSCP_DATACODING_SINGLE + (unit << 3) + sensoridx;  // float + unit + sensorindex
+    pdata[0] = VSCP_DATACODING_SINGLE + (unit << 3) + sensoridx;  // float + unit + sensor index
     memcpy( pdata + 1, p, 4 );
           
     return true;
@@ -903,8 +904,6 @@ bool vscp_convertIntegerToNormalizedEventData( uint8_t *pdata,
 
     uint8_t *p = (uint8_t *)&val64;
 
-
-    // wxUINT64_SWAP_ON_LE( val64 );  does not work at least in 32-bit builds
     if ( wxIsPlatformLittleEndian() ) {
         for ( i=7; i>0; i--) {
             data[ 7-i ] = *(p+i);

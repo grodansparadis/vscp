@@ -378,7 +378,7 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
     case type_int64_t:
         {
             uint8_t *p = pReg + pAbstraction->m_nOffset;
-            wxUINT64_SWAP_ON_LE( p );
+            *p = wxUINT64_SWAP_ON_LE( *p );
 
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
                 strValue.Printf( _( "%lld" ), *p );
@@ -393,7 +393,7 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
     case type_uint64_t:
         {
             uint8_t *p = pReg + pAbstraction->m_nOffset;
-            wxUINT64_SWAP_ON_LE( p );
+            *p = wxUINT64_SWAP_ON_LE( *p );
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
                 strValue.Printf( _( "%ulld" ), *p );
             }

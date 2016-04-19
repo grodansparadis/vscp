@@ -295,15 +295,15 @@ void *worksMulticastThread::Entry()
 
         // We have data
         crc chksum = crcFast( (unsigned const char *)buf, recv_len  );
-        wxUINT32_SWAP_ON_LE( chksum );
+        chksum = wxUINT32_SWAP_ON_LE( chksum );
 
         if ( ( 0 == chksum )  && ( VSCP_MULTICAST_TYPE_EVENT  == GET_VSCP_MULTICAST_PACKET_TYPE( buf[ 0 ] ) ) ) {
 
             uint16_t vscp_class = ( ((uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS ]) << 8 ) + buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS + 1 ];
-            wxUINT32_SWAP_ON_LE( vscp_class );
+            vscp_class = wxUINT32_SWAP_ON_LE( vscp_class );
 
             uint16_t vscp_type = ( ( ( uint16_t )buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE ] ) << 8 ) + buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE + 1 ];
-            wxUINT32_SWAP_ON_LE( vscp_type );
+            vscp_type = wxUINT32_SWAP_ON_LE( vscp_type );
 
             // Level I node heart beat
             if ( ( VSCP_CLASS1_INFORMATION == vscp_class ) && 
@@ -333,7 +333,7 @@ void *worksMulticastThread::Entry()
 
                     uint16_t size = ( buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE  ] << 8 ) + 
                                         buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE +1 ];
-                    wxUINT32_SWAP_ON_LE( size );
+                    size = wxUINT32_SWAP_ON_LE( size );
 
                     // Update heart beat
                     pNode->m_lastHeartBeat = wxDateTime::Now();

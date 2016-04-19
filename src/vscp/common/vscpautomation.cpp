@@ -831,7 +831,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         time( &tnow );
         uint32_t time32 = (uint32_t)tnow;
 
-        wxUINT32_SWAP_ON_BE( time32 );
+        time32 = wxUINT32_SWAP_ON_BE( time32 );
         pEventEx->data[ 0 ] = 0;  // 8 - bit crc for VSCP daemon GUID
         pEventEx->data[ 1 ] = (uint8_t)((time32>>24) & 0xff);    // Time since epoch MSB
         pEventEx->data[ 2 ] = (uint8_t)((time32>>16) & 0xff);    
