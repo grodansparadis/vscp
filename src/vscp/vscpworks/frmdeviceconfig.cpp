@@ -5492,8 +5492,9 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
     else if ( ID_GRID_DM == event.GetId() ) {
 
         wxString str;
+        uint16_t bigval;
         uint8_t saverow[ VSCP_LEVEL1_DM_ROW_SIZE ];
-        DialogEditLevelIDMrow dlg(this);
+        DialogEditLevelIDMrow dlg( this );
         
         m_gridDM->SelectRow( event.GetRow() );
 
@@ -5509,21 +5510,36 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
         // flags
         uint8_t flags = vscp_readStringValue( m_gridDM->GetCellValue(event.GetRow(), 1) );
         
-        (flags & 0x80) ? dlg.m_chkEnableDMRow->SetValue(true) : dlg.m_chkEnableDMRow->SetValue(false);
-        (flags & 0x40) ? dlg.m_chkCheckOAddr->SetValue(true) : dlg.m_chkCheckOAddr->SetValue(false);
-        (flags & 0x20) ? dlg.m_chkHardOAddr->SetValue(true) : dlg.m_chkHardOAddr->SetValue(false);
-        (flags & 0x10) ? dlg.m_chkMatchZone->SetValue(true) : dlg.m_chkMatchZone->SetValue(false);
-        (flags & 0x08) ? dlg.m_chkMatchSubzone->SetValue(true) : dlg.m_chkMatchSubzone->SetValue(false);
+        (flags & 0x80) ? dlg.m_chkEnableDMRow->SetValue( true ) : dlg.m_chkEnableDMRow->SetValue( false );
+        (flags & 0x40) ? dlg.m_chkCheckOAddr->SetValue( true ) : dlg.m_chkCheckOAddr->SetValue( false );
+        (flags & 0x20) ? dlg.m_chkHardOAddr->SetValue( true ) : dlg.m_chkHardOAddr->SetValue( false );
+        (flags & 0x10) ? dlg.m_chkMatchZone->SetValue( true ) : dlg.m_chkMatchZone->SetValue( false );
+        (flags & 0x08) ? dlg.m_chkMatchSubzone->SetValue( true ) : dlg.m_chkMatchSubzone->SetValue( false );
 
         // Class Mask
-        reg = vscp_readStringValue(m_gridDM->GetCellValue( event.GetRow(), 2)) + ( (flags & 0x02) << 9 );
-        str = getFormattedValue( reg );
+        bigval = vscp_readStringValue(m_gridDM->GetCellValue( event.GetRow(), 2 ) ) + 
+                                                        ( ( flags & 0x02 ) << 7 );
+
+        if (VSCP_DEVCONFIG_NUMBERBASE_HEX == g_Config.m_Numberbase) {
+            str = wxString::Format(_("0x%03X"), bigval);
+        } 
+        else {
+            str = wxString::Format(_("%d"), bigval);
+        }
+        //str = getFormattedValue( reg );
         dlg.m_classMask->ChangeValue( str );
 
         // Class Filter
-        reg = vscp_readStringValue(m_gridDM->GetCellValue( event.GetRow(), 3) ) +
-                                                            ((flags & 0x01) << 9);
-        str = getFormattedValue( reg );
+        bigval = vscp_readStringValue(m_gridDM->GetCellValue( event.GetRow(), 3) ) +
+                                                            ((flags & 0x01) << 8 );
+
+        if (VSCP_DEVCONFIG_NUMBERBASE_HEX == g_Config.m_Numberbase) {
+            str = wxString::Format(_("0x%03X"), bigval);
+        } 
+        else {
+            str = wxString::Format(_("%d"), bigval);
+        }                                                                    
+        //str = getFormattedValue( reg );
         dlg.m_classFilter->ChangeValue( str );
 
         // Type Mask
