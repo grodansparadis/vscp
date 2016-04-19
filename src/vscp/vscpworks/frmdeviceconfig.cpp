@@ -5862,11 +5862,11 @@ void frmDeviceConfig::updateAbstractionGrid(void)
                                             1,
                                             strType );
         
-        m_gridAbstractions->AutoSizeColumn( 0 );
-        m_gridAbstractions->AutoSizeColumn( 1 );
-        m_gridAbstractions->AutoSizeColumn( 2 );
+        //m_gridAbstractions->AutoSizeColumn( 0 );
+        //m_gridAbstractions->AutoSizeColumn( 1 );
+        //m_gridAbstractions->AutoSizeColumn( 2 );
         //m_gridAbstractions->AutoSizeColumn( 3 );
-        // m_gridAbstractions->AutoSizeColumns();
+        m_gridAbstractions->AutoSizeColumns();
 
         // Make all parts of the row visible
         m_gridAbstractions->AutoSizeRow( m_gridAbstractions->GetNumberRows()-1 );
@@ -6925,6 +6925,7 @@ void frmDeviceConfig::OnResizeWindow( wxSizeEvent& event )
 {
     wxSize sz = wxWindow::GetClientSize();
     //m_StatusWnd->SetPosition( wxPoint(0,0) );
+    m_gridAbstractions->AutoSizeColumns();
     event.Skip();
 }
 
