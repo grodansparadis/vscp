@@ -405,8 +405,8 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
 
     case type_float:
         {
+            uint8_t *p = pReg + pAbstraction->m_nOffset;
             float f = *((float *)(pReg + pAbstraction->m_nOffset )); 
-            wxINT32_SWAP_ON_BE( f );
             strValue.Printf( _("%f"), f );
         }
         break;
@@ -414,7 +414,7 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
     case type_double:
         {
             double f = *((double *)(pReg + pAbstraction->m_nOffset ));
-            wxINT64_SWAP_ON_BE( f );
+            //wxINT64_SWAP_ON_LE( f );
             strValue.Printf( _("%g"), f );
         }
         break;

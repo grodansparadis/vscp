@@ -5549,7 +5549,7 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
                 iter != m_mdf.m_dmInfo.m_list_action.end(); ++iter) {
             CMDF_Action *action = *iter;
             int idx = dlg.m_comboAction->Append( action->m_strName );
-            dlg.m_comboAction->SetClientData (idx, (void *)action->m_nCode ); // Yes - pointer conversion
+            dlg.m_comboAction->SetClientData (idx, (void *)action->m_nCode ); // OK Don't worry
             if ( reg == action->m_nCode ) {
                 dlg.m_comboAction->SetSelection( idx );
             }

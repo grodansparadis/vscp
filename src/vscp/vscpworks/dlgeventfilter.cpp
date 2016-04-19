@@ -352,7 +352,7 @@ void dlgEventFilter::OnButtonAddDisplayEventClick( wxCommandEvent& event )
                              str;
         }
         
-        int n = m_ctrlListDisplay->Append( str, (void *)clientdata ); // Yes I know
+        int n = m_ctrlListDisplay->Append( str, (void *)clientdata ); // OK Don't worry
  
 
     }
@@ -406,7 +406,7 @@ void dlgEventFilter::OnButtonAddFilterEventClick( wxCommandEvent& event )
                              str;
         }
         
-        int n = m_ctrlListFilter->Append( str, (void *)clientdata );
+        int n = m_ctrlListFilter->Append( str, (void *)clientdata ); // OK Don't worry
 
     }
 
@@ -530,7 +530,7 @@ void dlgEventFilter::OnButtonLoadClick( wxCommandEvent& event )
                              str;
                     }
         
-                    m_ctrlListDisplay->Append( str, (void *)clientdata ); // Yes I know
+                    m_ctrlListDisplay->Append( str, (void *)clientdata ); // OK Don't worry
 
                 }
                 else if ( FILTER_MODE_FILTER == filtertype ) {
@@ -549,7 +549,7 @@ void dlgEventFilter::OnButtonLoadClick( wxCommandEvent& event )
                              str;
                     }
         
-                    m_ctrlListFilter->Append( str, (void *)clientdata ); // Yes I know
+                    m_ctrlListFilter->Append( str, (void *)clientdata ); // OK Don't worry
                 
                 }
 

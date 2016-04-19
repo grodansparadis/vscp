@@ -241,7 +241,7 @@ void DialogSetfiltermask::CreateControls()
             strBuf.Printf( _(" - %d"), key );
             strBuf = value + strBuf;
             int sel = m_wxComboClass->Append( strBuf );
-            m_wxComboClass->SetClientData( sel, (void *)key );  // Yes let it warn 
+            m_wxComboClass->SetClientData( sel, (void *)key );  // OK Don't worry 
         }
     }
 
@@ -313,7 +313,7 @@ void DialogSetfiltermask::OnComboboxSelected( wxCommandEvent& event )
                 strBuf.Printf( _(" - %d"), ( key & 0xff ) );
                 strBuf = value + strBuf;
                 int selIdx = m_wxComboType->Append( strBuf );
-                m_wxComboType->SetClientData( selIdx, (void *)key );    // Yes let it warn 
+                m_wxComboType->SetClientData( selIdx, (void *)key );    // OK Don't worry
             }
         }
 
@@ -360,7 +360,7 @@ void DialogSetfiltermask::OnButtonAddEventClick( wxCommandEvent& event )
 #endif
 
         int selidx = m_listboxEvents->Append( strBuf );
-        m_listboxEvents->SetClientData( selidx, (void *)classtype );    // Yes let it warn 
+        m_listboxEvents->SetClientData( selidx, (void *)classtype );    // OK Don't worry 
     }
 
     // Update filter/masks
