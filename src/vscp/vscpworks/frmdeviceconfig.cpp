@@ -4103,6 +4103,8 @@ read_pageregs1_again:
             // Write status
             progressDlg.Update( 50, _( "Filling in status information. [5/8]" ) );
             writeStatusInfo();
+            
+            m_gridRegisters->AutoSizeColumn( 3 );
 
             m_bFirstRead = false;
 
@@ -6941,7 +6943,9 @@ void frmDeviceConfig::OnResizeWindow( wxSizeEvent& event )
 {
     wxSize sz = wxWindow::GetClientSize();
     //m_StatusWnd->SetPosition( wxPoint(0,0) );
+    m_gridRegisters->AutoSizeColumns();
     m_gridAbstractions->AutoSizeColumns();
+    
     event.Skip();
 }
 

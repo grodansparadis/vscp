@@ -54,8 +54,8 @@
     </TabInfo>
     <TabInfo>
       <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/frmdeviceconfig.cpp" Name="FileName"/>
-      <int Value="5512" Name="FirstVisibleLine"/>
-      <int Value="5534" Name="CurrentLine"/>
+      <int Value="4091" Name="FirstVisibleLine"/>
+      <int Value="4106" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>
@@ -75,8 +75,8 @@
     </TabInfo>
     <TabInfo>
       <wxString Value="/home/akhe/development/VSCP/can4vscp_kelvin_1wire/mdf/1wire_1.xml" Name="FileName"/>
-      <int Value="4199" Name="FirstVisibleLine"/>
-      <int Value="4207" Name="CurrentLine"/>
+      <int Value="2827" Name="FirstVisibleLine"/>
+      <int Value="2846" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>
