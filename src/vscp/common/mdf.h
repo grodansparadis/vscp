@@ -84,7 +84,6 @@ enum vscp_abstraction_type {
 
 WX_DEFINE_ARRAY_LONG( uint32_t, SortedArrayLong );
 
-
 // * * * Settings * * *
 
 
@@ -104,7 +103,7 @@ public:
     wxString m_strName;
     wxString m_strDescription;
     wxString m_strHelpType;
-    wxString m_strHelp;             // Item help text or url
+    wxString m_strHelp;             // Item help text or URL
     wxString m_strValue;            // The abstraction tells the type
 
 };
@@ -131,7 +130,7 @@ public:
     void clearStorage( void );
 
     /*!
-        Get real text escription of type
+        Get real text description of type
         @param type Abstraction type
         @return Real text description of type.
     */
@@ -160,10 +159,10 @@ public:
   
     uint8_t m_nAccess;                  // Access rights
 
-    bool m_bIndexed;					// True of indexed storage
+    bool m_bIndexed;			// True of indexed storage
 
-    uint32_t m_bgcolor;                 // Cell background color. Default = white.
-    uint32_t m_fgcolor;                 // Cell forground color. Default = black.
+    uint32_t m_bgcolor;                 // Cell background colour. Default = white.
+    uint32_t m_fgcolor;                 // Cell foreground colour. Default = black.
 
     MDF_VALUE_LIST  m_list_value;       // list with selectable values
 
@@ -180,7 +179,7 @@ WX_DECLARE_LIST( CMDF_Abstraction, MDF_ABSTRACTION_LIST );
   CMDF_Bit
 
   This represents a bit or a bitfield. A valuelist can be 
-  defined to descrive the bit combinations.
+  defined to describe the bit combinations.
 
  */
 
@@ -202,15 +201,15 @@ public:
     void clearStorage( void );
 
     wxString m_strHelpType;
-    wxString m_strHelp;                 // Item help text or url
+    wxString m_strHelp;                 // Item help text or URL
 
 
-    // The following is used if the abstraction is a bit or bitfield
-    uint8_t m_nPos;                     // 'pos'		position in bit field 0-7 (from the left)
-    uint8_t m_nWidth;                   // 'width'		1 for one bit 2-8 for bit-field
-    uint8_t m_nDefault;                 // 'default'	Default value for field
+    // The following is used if the abstraction is a bit or bit field
+    uint8_t m_nPos;                     // 'pos'      position in bit field 0-7 (from the left)
+    uint8_t m_nWidth;                   // 'width'    1 for one bit 2-8 for bit-field
+    uint8_t m_nDefault;                 // 'default'  Default value for field
 
-    uint8_t m_nAccess;                  // 'access'		Access rights for the bit(-field)
+    uint8_t m_nAccess;                  // 'access'   Access rights for the bit(-field)
 
     MDF_VALUE_LIST  m_list_value;       // List with selectable values
 
@@ -271,8 +270,8 @@ public:
     long m_rowInGrid;                   // Helper for display (row reg is displayed on)
     uint8_t m_value;					// Initial value read. This is the value
                                         // that will be restored.
-    uint32_t m_bgcolor;                 // Cell background color. Default = white.
-    uint32_t m_fgcolor;                 // Cell forground color. Default = black.
+    uint32_t m_bgcolor;                 // Cell background colour. Default = white.
+    uint32_t m_fgcolor;                 // Cell foreground colour. Default = black.
 };
 
 
@@ -356,7 +355,7 @@ WX_DECLARE_LIST( CMDF_Action, MDF_ACTION_LIST );
   CMDF_DecisionMatrix
 
   Holds information about the capabilities of a system
-  decission matrix.
+  decision matrix.
  */
 
 class CMDF_DecisionMatrix
@@ -372,12 +371,12 @@ public:
     */
     void clearStorage( void );
 
-    uint8_t  m_nLevel;        // 1 or 2 (defaults to 1)
-    uint16_t m_nStartPage;
-    uint16_t m_nStartOffset;
-    uint16_t m_nRowCount;
-    uint16_t m_nRowSize;
-    bool m_bIndexed;
+    uint8_t  m_nLevel;          // 1 or 2 (defaults to 1)
+    uint16_t m_nStartPage;      // Page where DM starts
+    uint16_t m_nStartOffset;    // Offset on start page for DM
+    uint16_t m_nRowCount;       // Number of rows in DM
+    uint16_t m_nRowSize;        // Size of a DM row (Normally 8)
+    bool m_bIndexed;            // True of storage is indexed
 
     MDF_ACTION_LIST  m_list_action; // Action description
 };
@@ -689,9 +688,10 @@ public:
 
     /*!
         Get number of register pages used
-        @return Number of regsiter pages used.
+        @param array Reference to array with pages  
+        @return Number of register pages used.
     */
-    uint32_t getPages( wxArrayLong& arraylong );
+    uint32_t getPages( wxArrayLong& array );
 
     /*!
         Return register class from register + page

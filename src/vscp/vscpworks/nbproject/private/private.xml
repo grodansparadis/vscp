@@ -9,18 +9,6 @@
     </data>
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group>
-            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/vscpworks.h</file>
-            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/frmmain.cpp</file>
-            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/register.cpp</file>
-            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/frmvscpsession.cpp</file>
-            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/frmvscpsession.h</file>
-            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/Makefile</file>
-            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/version.h</file>
-            <file>file:/home/akhe/development/VSCP/vscp/src/common/mongoose.h</file>
-            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/frmdeviceconfig.cpp</file>
-            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/frmdeviceconfig.h</file>
-            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/vscpworks.cpp</file>
-        </group>
+        <group/>
     </open-files>
 </project-private>

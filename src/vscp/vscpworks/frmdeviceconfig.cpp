@@ -152,6 +152,7 @@ BEGIN_EVENT_TABLE(frmDeviceConfig, wxFrame)
     EVT_MENU(Menu_Popup_Undo, frmDeviceConfig::undoValueSelectedRow)
     EVT_MENU(Menu_Popup_Default, frmDeviceConfig::defaultValueSelectedRow)
     EVT_MENU(Menu_Popup_go_VSCP, frmDeviceConfig::OnMenuitemVscpVscpSiteClick)
+    EVT_MENU(Menu_Popup_GotoRegPage, frmDeviceConfig::gotoRegisterPage)
 
     EVT_MENU(Menu_Popup_dm_enable_row, frmDeviceConfig::dmEnableSelectedRow)
     EVT_MENU(Menu_Popup_dm_disable_row, frmDeviceConfig::dmDisableSelectedRow)
@@ -240,6 +241,8 @@ void frmDeviceConfig::Init()
     m_lastLeftWizardClickCol = 0;
     m_lastLeftWizardClickRow = 0;
 
+    m_rowStandardRegisterStart = 0;
+    
     // No interface
     m_ifguid.clear();
 }
@@ -1708,11 +1711,11 @@ void frmDeviceConfig::writeStatusInfo(void)
     switch ((m_stdRegisters.getNodeControl() & 0xC0) >> 6) {
 
         case 1:
-            strHTML += _(" [Initialized] ");
+            strHTML += _(" [Initialised] ");
             break;
 
         default:
-            strHTML += _(" [Uninitialized] ");
+            strHTML += _(" [Uninitialised] ");
             break;
     }
 
@@ -2087,12 +2090,17 @@ void frmDeviceConfig::fillStandardRegisters()
     ///////////////////////////////////
 
     m_gridRegisters->AppendRows(1);
+    
     if (!m_bLevel2->GetValue()) {
         strBuf = _("80");
     } 
     else {
         strBuf = _("FFFFFF80");
     }
+    
+    // Save the row standard registers start at
+    m_rowStandardRegisterStart = m_gridRegisters->GetNumberRows() - 1;
+    
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
     m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 
                                             0, 
@@ -4032,7 +4040,7 @@ read_stdregs1_again:
             }
 
             wxArrayLong pageArray;
-            uint32_t nPages = m_mdf.getPages( pageArray );
+            uint16_t nPages = m_mdf.getPages( pageArray );
 
             if ( 0 == nPages ) {
                 wxMessageBox( _( "MDF returns zero pages (which is an error) we still will read one page." ),
@@ -4467,17 +4475,19 @@ void frmDeviceConfig::OnCellRightClick(wxGridEvent& event)
 {
     wxMenu menu;
 
-    wxPoint pos = ClientToScreen(event.GetPosition());
+    wxPoint pos = ClientToScreen( event.GetPosition() );
 
     if (ID_GRID_REGISTERS == event.GetId()) {
 
-        menu.Append(Menu_Popup_Update, _T("Update"));
+        menu.Append( Menu_Popup_Update, _T("Update") );
         menu.AppendSeparator();
-        menu.Append(Menu_Popup_Read_Value, _T("Read value(s) for selected row(s)"));
-        menu.Append(Menu_Popup_Write_Value, _T("Write value(s) for selected row(s)"));
+        menu.Append( Menu_Popup_Read_Value, _T("Read value(s) for selected row(s)")) ;
+        menu.Append( Menu_Popup_Write_Value, _T("Write value(s) for selected row(s)") );
         menu.AppendSeparator();
-        menu.Append(Menu_Popup_Undo, _T("Undo value(s) for selected row(s)"));
-        menu.Append(Menu_Popup_Default, _T("Write default for selected row(s)"));
+        menu.Append( Menu_Popup_Undo, _T("Undo value(s) for selected row(s)") );
+        menu.Append( Menu_Popup_Default, _T("Write default for selected row(s)") );
+        menu.AppendSeparator();
+        menu.Append( Menu_Popup_GotoRegPage, _T("Goto register page...") );
         menu.AppendSeparator();
         menu.Append(/*Menu_Popup_Read_Value*/ Menu_Popup_go_VSCP, _T("Be Hungry - Stay Foolish!"));
 
@@ -5023,6 +5033,56 @@ void frmDeviceConfig::defaultValueSelectedRow(wxCommandEvent& WXUNUSED(event))
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// gotoRegisterPage
+//
+
+void frmDeviceConfig::gotoRegisterPage( wxCommandEvent& WXUNUSED( event ) ) 
+{
+    wxArrayString choicesRegisterPages;
+    wxArrayLong pages = m_userRegisters.getArrayOfPages();
+    
+    choicesRegisterPages.Add( _( "Standard registers" ) );
+    if ( m_mdf.m_dmInfo.m_nRowCount ) {
+        choicesRegisterPages.Add( _( "DM" ) );
+    }
+    for ( int i=0; i<pages.Count(); i++  ) {
+        choicesRegisterPages.Add( wxString::Format(_("Page %d"), pages.Item( i ) ) );
+    }
+    
+    int idx = wxGetSingleChoiceIndex(_("Select register page to go to: "),
+                                        _("VSCP Works"),
+                                        choicesRegisterPages,
+                                        this );
+    
+    // If now DM and idx is a page we adjust idx
+    if ( !m_mdf.m_dmInfo.m_nRowCount && ( idx > 0 )  ) idx++;
+    
+    if ( -1 != idx ) {
+        
+        // Check for standard registers
+        if ( 0 == idx ) {
+            m_gridRegisters->GoToCell( m_rowStandardRegisterStart, 0 );
+            m_gridRegisters->SelectRow( m_rowStandardRegisterStart );            
+        }
+        // DM
+        else if ( 1 == idx ) {
+            int row = getRegisterGridRow( m_mdf.m_dmInfo.m_nStartOffset, 
+                                            m_mdf.m_dmInfo.m_nStartPage );
+            m_gridRegisters->GoToCell( row, 0 );
+            m_gridRegisters->SelectRow( row );
+        }
+        // Page n
+        else {
+            int row = getRegisterGridRow( 0, 
+                                            pages.Item( idx - ( m_mdf.m_dmInfo.m_nRowCount ? 2 : 2 ) ) );
+            m_gridRegisters->GoToCell( row, 0 );
+            m_gridRegisters->SelectRow( row );
+        }
+        
+    }
+    
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // OnLeftDClick

@@ -98,7 +98,8 @@ enum {
     Menu_Popup_dm_enable_row,
     Menu_Popup_dm_disable_row,
     Menu_Popup_dm_row_wizard,
-    Menu_Popup_go_VSCP
+    Menu_Popup_go_VSCP,
+    Menu_Popup_GotoRegPage        
 };
 
 
@@ -150,7 +151,7 @@ public:
 
 
     /*!
-        Write status infiormation
+        Write status information
      */
     void writeStatusInfo(void);
 
@@ -190,6 +191,11 @@ public:
         Default value for selected row
      */
     void defaultValueSelectedRow(wxCommandEvent& event);
+    
+    /*!
+        Goto register page
+     */
+    void gotoRegisterPage( wxCommandEvent& WXUNUSED( event ) );
 
     /*! 
         Update the DM grid
@@ -264,7 +270,7 @@ public:
         @param reg Register to look for.
         @aram page Page to look for.
         @return Grid row where register:page is located. -1 is
-        retuned if row is not found.
+        returned if row is not found.
      */
     int getRegisterGridRow(uint32_t reg, uint16_t page);
 
@@ -500,6 +506,9 @@ public:
     // Last register click column/row
     int m_lastLeftWizardClickCol;
     int m_lastLeftWizardClickRow;
+    
+    // Row where standard registers start
+    int m_rowStandardRegisterStart;
     
     /// Should we show tooltips?
     static bool ShowToolTips();

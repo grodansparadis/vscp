@@ -211,18 +211,18 @@ public:
     wxArrayLong &getArrayOfPages( void ) { return m_arrayPages; };
 
     /*!
-        Get registers for a spcific page
+        Get registers for a specific page
     */
     uint8_t *getRegs4Page( uint16_t page );
 
     /*!
-        Get the value for a spcific register on a page
+        Get the value for a specific register on a page
     */
     uint8_t getValue( uint16_t page, uint8_t offset );
 
 
     /*!
-        Set the value for a spcific register on a page
+        Set the value for a specific register on a page
     */
     uint8_t setValue( uint16_t page, uint8_t offset, uint8_t value );
 
@@ -239,14 +239,14 @@ public:
 private:
 
     /*! 
-        All registers are here in chuncks of 128 bytes
+        All registers are here in chunks of 128 bytes
     */
     uint8_t *m_reg;  
 
     /// Size for the register arrays
     uint32_t m_size;
 
-    // Array with vaid register pages
+    // Array with valid register pages
     wxArrayLong m_arrayPages;
 };
 

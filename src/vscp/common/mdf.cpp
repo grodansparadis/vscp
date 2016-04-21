@@ -2580,7 +2580,7 @@ uint32_t CMDF::getNumberOfRegisters( uint32_t page )
 //  getNumberOfPages
 //  
 
-uint32_t CMDF::getPages( wxArrayLong& arraylong ) 
+uint32_t CMDF::getPages( wxArrayLong& array ) 
 { 
     bool bFound;
 
@@ -2591,20 +2591,25 @@ uint32_t CMDF::getPages( wxArrayLong& arraylong )
         CMDF_Register *pRecordValue = *iterValue;
         if ( NULL != pRecordValue ) {
 
-            bFound = false;
-            for ( uint32_t i=0; i<arraylong.Count(); i++ ) {
-                if ( pRecordValue->m_nPage== arraylong.Index( i ) ) {
+            /*bFound = false;
+            for ( uint32_t i=0; i<array.Count(); i++ ) {
+                uint16_t ttt = array.Item( i );
+                if ( -1 == ttt ) continue;
+                if ( pRecordValue->m_nPage == ttt ) {
                     bFound = true;
                     break;
                 }
-            }
+            }*/
 
-            if (!bFound ) arraylong.Add( pRecordValue->m_nPage );
+            //if (!bFound ) {
+            if ( wxNOT_FOUND == array.Index( pRecordValue->m_nPage ) ) {
+                array.Add( pRecordValue->m_nPage );
+            }
 
         }
     }
 
-    return arraylong.Count();
+    return array.Count();
 };
 
 ///////////////////////////////////////////////////////////////////////////////
