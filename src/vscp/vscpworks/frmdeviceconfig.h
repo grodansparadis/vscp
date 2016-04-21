@@ -348,6 +348,45 @@ public:
 
     /// wxEVT_COMMAND_CHECKBOX_CLICKED event handler for ID_TOGGLEBUTTON1
     void OnInterfaceActivate( wxCommandEvent& event );
+    
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_GOTO_REGISTER
+    void OnGotoRegister( wxCommandEvent& event );
+    
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_GOTO_TOP
+    void OnGotoTop( wxCommandEvent& event );
+    
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_GOTO_PAGE1
+    void OnGotoPage1( wxCommandEvent& event );
+    
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_GOTO_PAGE2
+    void OnGotoPage2( wxCommandEvent& event );
+    
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_GOTO_PAGE3
+    void OnGotoPage3( wxCommandEvent& event );
+    
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_GOTO_PAGE4
+    void OnGotoPage4( wxCommandEvent& event );
+    
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_GOTO_PAGE5
+    void OnGotoPage5( wxCommandEvent& event );
+    
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_GOTO_PAGE6
+    void OnGotoPage6( wxCommandEvent& event );
+    
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_GOTO_PAGE7
+    void OnGotoPage7( wxCommandEvent& event );
+    
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_GOTO_PAGE8
+    void OnGotoPage8( wxCommandEvent& event );
+    
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_GOTO_PAGE9
+    void OnGotoPage9( wxCommandEvent& event );
+    
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_GOTO_DM
+    void OnGotoDM( wxCommandEvent& event );
+    
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_GOTO_STANDARD
+    void OnGotoStandard( wxCommandEvent& event );
 
     /// wxEVT_GRID_CELL_LEFT_CLICK event handler for ID_GRID_REGISTERS
     void OnCellLeftClick( wxGridEvent& event );
@@ -579,6 +618,19 @@ public:
         ID_MENUITEM_UPDATE_ALL = 19045,
         ID_MENUITEM_LOAD_DEFAULTS = 19046,
         ID_MENUITEM_WIZARD = 19047,
+        ID_MENUITEM_GOTO_REGISTER = 19048,
+        ID_MENUITEM_GOTO_TOP = 19049,
+        ID_MENUITEM_GOTO_PAGE1 = 19050,
+        ID_MENUITEM_GOTO_PAGE2 = 19051,
+        ID_MENUITEM_GOTO_PAGE3 = 19052,
+        ID_MENUITEM_GOTO_PAGE4 = 19053,
+        ID_MENUITEM_GOTO_PAGE5 = 19054,
+        ID_MENUITEM_GOTO_PAGE6 = 19055,
+        ID_MENUITEM_GOTO_PAGE7 = 19056,
+        ID_MENUITEM_GOTO_PAGE8 = 19057,
+        ID_MENUITEM_GOTO_PAGE9 = 19058,
+        ID_MENUITEM_GOTO_DM = 19059,
+        ID_MENUITEM_GOTO_STANDARD = 19060,
     };
 
 };

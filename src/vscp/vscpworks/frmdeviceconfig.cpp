@@ -128,6 +128,19 @@ BEGIN_EVENT_TABLE(frmDeviceConfig, wxFrame)
     EVT_MENU( ID_MENUITEM_UPDATE_ALL, frmDeviceConfig::OnButtonUpdateAllClick )
     EVT_MENU( ID_MENUITEM_LOAD_DEFAULTS, frmDeviceConfig::OnButtonLoadDefaultsClick )
     EVT_MENU( ID_MENUITEM_WIZARD, frmDeviceConfig::OnButtonLoadDefaultsClick )
+    EVT_MENU( ID_MENUITEM_GOTO_REGISTER, frmDeviceConfig::OnGotoRegister )
+    EVT_MENU( ID_MENUITEM_GOTO_TOP, frmDeviceConfig::OnGotoTop )
+    EVT_MENU( ID_MENUITEM_GOTO_PAGE1, frmDeviceConfig::OnGotoPage1 )
+    EVT_MENU( ID_MENUITEM_GOTO_PAGE2, frmDeviceConfig::OnGotoPage2 )
+    EVT_MENU( ID_MENUITEM_GOTO_PAGE3, frmDeviceConfig::OnGotoPage3 )
+    EVT_MENU( ID_MENUITEM_GOTO_PAGE4, frmDeviceConfig::OnGotoPage4 )
+    EVT_MENU( ID_MENUITEM_GOTO_PAGE5, frmDeviceConfig::OnGotoPage5 )
+    EVT_MENU( ID_MENUITEM_GOTO_PAGE6, frmDeviceConfig::OnGotoPage6 )
+    EVT_MENU( ID_MENUITEM_GOTO_PAGE7, frmDeviceConfig::OnGotoPage7 )
+    EVT_MENU( ID_MENUITEM_GOTO_PAGE8, frmDeviceConfig::OnGotoPage8 )
+    EVT_MENU( ID_MENUITEM_GOTO_PAGE9, frmDeviceConfig::OnGotoPage9 )
+    EVT_MENU( ID_MENUITEM_GOTO_DM, frmDeviceConfig::OnGotoDM )
+    EVT_MENU( ID_MENUITEM_GOTO_STANDARD, frmDeviceConfig::OnGotoStandard )
     EVT_COMBOBOX( ID_COMBOBOX4, frmDeviceConfig::OnComboNodeIDSelected )
     EVT_TEXT( ID_COMBOBOX4, frmDeviceConfig::OnComboNodeIDUpdated )
     EVT_BUTTON( ID_CHECK_LEVEL2, frmDeviceConfig::OnBitmapbuttonTestDeviceClick )
@@ -321,6 +334,7 @@ void frmDeviceConfig::CreateControls() {
                             _("Exit"), 
                             wxEmptyString, 
                             wxITEM_NORMAL);
+    
     menuBar->Append( itemMenuTools, _("Tools") );
     
     
@@ -328,7 +342,74 @@ void frmDeviceConfig::CreateControls() {
     
     
     wxMenu* itemMenuEdit = new wxMenu;
-    menuBar->Append( itemMenuEdit, _("Edit") );
+    menuBar->Append( itemMenuEdit, _("Navigate") );
+    
+    itemMenuEdit->Append( ID_MENUITEM_GOTO_REGISTER, 
+                            _("&Go to page:register...\tCtrl-G"), 
+                            _("Go to a row set by page:offset."), 
+                            wxITEM_NORMAL);
+    
+    itemMenuEdit->AppendSeparator();
+    
+    itemMenuEdit->Append( ID_MENUITEM_GOTO_TOP, 
+                            _("Go to &top (page &0)\tCtrl-0"), 
+                            _("Go to first row of registers."), 
+                            wxITEM_NORMAL);
+    
+    itemMenuEdit->Append( ID_MENUITEM_GOTO_PAGE1, 
+                            _("Go to page &1 (if any)\tCtrl-1"), 
+                            _("If there is a page 1 - go to it."), 
+                            wxITEM_NORMAL);
+    
+    itemMenuEdit->Append( ID_MENUITEM_GOTO_PAGE2, 
+                            _("Go to page &2 (if any)\tCtrl-2"), 
+                            _("If there is a page 2 - go to it."), 
+                            wxITEM_NORMAL);
+    
+    itemMenuEdit->Append( ID_MENUITEM_GOTO_PAGE3, 
+                            _("Go to page &3 (if any)\tCtrl-3"), 
+                            _("If there is a page 3 - go to it."), 
+                            wxITEM_NORMAL);
+    
+    itemMenuEdit->Append( ID_MENUITEM_GOTO_PAGE4, 
+                            _("Go to page &4 (if any)\tCtrl-4"), 
+                            _("If there is a page 4 - go to it."), 
+                            wxITEM_NORMAL);
+    
+    itemMenuEdit->Append( ID_MENUITEM_GOTO_PAGE5, 
+                            _("Go to page &5 (if any)\tCtrl-5"), 
+                            _("If there is a page 5 - go to it."), 
+                            wxITEM_NORMAL);
+    
+    itemMenuEdit->Append( ID_MENUITEM_GOTO_PAGE6, 
+                            _("Go to page &6 (if any)\tCtrl-6"), 
+                            _("If there is a page 6 - go to it."), 
+                            wxITEM_NORMAL);
+    
+    itemMenuEdit->Append( ID_MENUITEM_GOTO_PAGE7, 
+                            _("Go to page &7 (if any)\tCtrl-7"), 
+                            _("If there is a page 7 - go to it."), 
+                            wxITEM_NORMAL);
+    
+    itemMenuEdit->Append( ID_MENUITEM_GOTO_PAGE8, 
+                            _("Go to page 8 (if any)\tCtrl-8"), 
+                            _("If there is a page 8 - go to it."), 
+                            wxITEM_NORMAL);
+    
+    itemMenuEdit->Append( ID_MENUITEM_GOTO_PAGE9, 
+                            _("Go to page &9 (if any)\tCtrl-8"), 
+                            _("If there is a page 9 - go to it."), 
+                            wxITEM_NORMAL);
+    
+    itemMenuEdit->Append( ID_MENUITEM_GOTO_DM, 
+                            _("Go to decision matri&x\tCtrl-X"), 
+                            _("If there is a decision matrix - go to it."), 
+                            wxITEM_NORMAL);
+    
+    itemMenuEdit->Append( ID_MENUITEM_GOTO_STANDARD, 
+                            _("Go to standard reg&isters\tCtrl-i"), 
+                            _("Go to the standard registers."), 
+                            wxITEM_NORMAL);
     
     
     
@@ -5083,6 +5164,184 @@ void frmDeviceConfig::gotoRegisterPage( wxCommandEvent& WXUNUSED( event ) )
     }
     
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// OnGotoRegister
+//
+
+void frmDeviceConfig::OnGotoRegister( wxCommandEvent& WXUNUSED( event ) )
+{
+    wxString token1, token2;
+    wxString str = wxGetTextFromUser(_("Input register to go to ([page:]offset)"));
+    
+    wxStringTokenizer tkz(str, _(":"));
+    if (tkz.HasMoreTokens()) {
+        token1 = tkz.GetNextToken(); // Page
+    } 
+    else {
+        token1 = _("0");
+    }
+
+    // For a standard register this one will fail
+    if (tkz.HasMoreTokens()) {
+        token2 = tkz.GetNextToken(); // Register
+    } 
+    else {
+        token1 = _("0");
+        token2 = str;
+    }
+
+    uint32_t page = vscp_readStringValue( token1.Trim() );
+    uint32_t offset = vscp_readStringValue( token2.Trim() );
+    
+    int row = getRegisterGridRow( offset, page );
+    
+    m_gridRegisters->GoToCell( row, 0 );
+    m_gridRegisters->SelectRow( row );
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// OnGotoTop
+//
+
+void frmDeviceConfig::OnGotoTop( wxCommandEvent& WXUNUSED( event ) )
+{
+    m_gridRegisters->GoToCell( 0, 0 );
+    m_gridRegisters->SelectRow( 0 );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// OnGotoPage1
+//
+
+void frmDeviceConfig::OnGotoPage1( wxCommandEvent& WXUNUSED( event ) )
+{
+    int row = getRegisterGridRow( 0, 1 );
+    
+    m_gridRegisters->GoToCell( row, 0 );
+    m_gridRegisters->SelectRow( row );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// OnGotoPage2
+//
+
+void frmDeviceConfig::OnGotoPage2( wxCommandEvent& WXUNUSED( event ) )
+{
+    int row = getRegisterGridRow( 0, 2 );
+    
+    m_gridRegisters->GoToCell( row, 0 );
+    m_gridRegisters->SelectRow( row );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// OnGotoPage3
+//
+
+void frmDeviceConfig::OnGotoPage3( wxCommandEvent& WXUNUSED( event ) )
+{
+    int row = getRegisterGridRow( 0, 3 );
+    
+    m_gridRegisters->GoToCell( row, 0 );
+    m_gridRegisters->SelectRow( row );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// OnGotoPage4
+//
+
+void frmDeviceConfig::OnGotoPage4( wxCommandEvent& WXUNUSED( event ) )
+{
+    int row = getRegisterGridRow( 0, 4 );
+    
+    m_gridRegisters->GoToCell( row, 0 );
+    m_gridRegisters->SelectRow( row );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// OnGotoPage5
+//
+
+void frmDeviceConfig::OnGotoPage5( wxCommandEvent& WXUNUSED( event ) )
+{
+    int row = getRegisterGridRow( 0, 5 );
+    
+    m_gridRegisters->GoToCell( row, 0 );
+    m_gridRegisters->SelectRow( row );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// OnGotoPage6
+//
+
+void frmDeviceConfig::OnGotoPage6( wxCommandEvent& WXUNUSED( event ) )
+{
+    int row = getRegisterGridRow( 0, 6 );
+    
+    m_gridRegisters->GoToCell( row, 0 );
+    m_gridRegisters->SelectRow( row );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// OnGotoPage7
+//
+
+void frmDeviceConfig::OnGotoPage7( wxCommandEvent& WXUNUSED( event ) )
+{
+    int row = getRegisterGridRow( 0, 7 );
+    
+    m_gridRegisters->GoToCell( row, 0 );
+    m_gridRegisters->SelectRow( row );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// OnGotoPage8
+//
+
+void frmDeviceConfig::OnGotoPage8( wxCommandEvent& WXUNUSED( event ) )
+{
+    int row = getRegisterGridRow( 0, 8 );
+    
+    m_gridRegisters->GoToCell( row, 0 );
+    m_gridRegisters->SelectRow( row );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// OnGotoPage9
+//
+
+void frmDeviceConfig::OnGotoPage9( wxCommandEvent& WXUNUSED( event ) )
+{
+    int row = getRegisterGridRow( 0, 9 );
+    
+    m_gridRegisters->GoToCell( row, 0 );
+    m_gridRegisters->SelectRow( row );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// OnGotoDM
+//
+
+void frmDeviceConfig::OnGotoDM( wxCommandEvent& WXUNUSED( event ) )
+{
+    int row = getRegisterGridRow( m_mdf.m_dmInfo.m_nStartOffset, 
+                                    m_mdf.m_dmInfo.m_nStartPage );
+    m_gridRegisters->GoToCell( row, 0 );
+    m_gridRegisters->SelectRow( row );
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// OnGotoStandard
+//
+
+void frmDeviceConfig::OnGotoStandard( wxCommandEvent& WXUNUSED( event ) )
+{
+    m_gridRegisters->GoToCell( m_rowStandardRegisterStart, 0 );
+    m_gridRegisters->SelectRow( m_rowStandardRegisterStart );
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // OnLeftDClick
