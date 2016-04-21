@@ -369,6 +369,8 @@ public:
 
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON19
     void OnButtonWizardClick( wxCommandEvent& event );
+    
+    void OnKeyDown( wxKeyEvent& event );
 
     /// Retrieves bitmap resources
     wxBitmap GetBitmapResource( const wxString& name );
@@ -483,12 +485,22 @@ public:
         m_constGridDMActionParamDefaultWidth = 90
     };
 
-    /// Last left click column
-    int m_lastLeftClickCol;
+    // Last register click column/row
+    int m_lastLeftRegisterClickCol;
+    int m_lastLeftRegisterClickRow;
 
-    /// Last left click row
-    int m_lastLeftClickRow;
-
+    // Last register click column/row
+    int m_lastLeftAbstractionClickCol;
+    int m_lastLeftAbstractionClickRow;
+    
+    // Last register click column/row
+    int m_lastLeftDMClickCol;
+    int m_lastLeftDMClickRow;
+    
+    // Last register click column/row
+    int m_lastLeftWizardClickCol;
+    int m_lastLeftWizardClickRow;
+    
     /// Should we show tooltips?
     static bool ShowToolTips();
 

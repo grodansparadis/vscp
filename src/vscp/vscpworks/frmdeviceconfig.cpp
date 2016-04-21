@@ -108,6 +108,7 @@ BEGIN_EVENT_TABLE(frmDeviceConfig, wxFrame)
 
     EVT_CLOSE( frmDeviceConfig::OnCloseWindow )
     EVT_SIZE( frmDeviceConfig::OnResizeWindow )
+    EVT_CHAR_HOOK( frmDeviceConfig::OnKeyDown )
     EVT_MENU( ID_MENUITEM_SAVE_REGISTERS, frmDeviceConfig::OnMenuitemSaveRegistersClick )
     EVT_MENU( ID_MENUITEM, frmDeviceConfig::OnMenuitemSaveSelectedRegistersClick )
     EVT_MENU( ID_MENUITEM_LOAD_REGISTES, frmDeviceConfig::OnMenuitemLoadRegistersClick )
@@ -230,8 +231,14 @@ void frmDeviceConfig::Init()
     m_ctrlButtonLoadMDF = NULL;
     m_ctrlButtonWizard = NULL;
 
-    m_lastLeftClickCol = 0;
-    m_lastLeftClickRow = 0;
+    m_lastLeftRegisterClickCol = 0;
+    m_lastLeftRegisterClickRow = 0;
+    m_lastLeftAbstractionClickCol = 0;
+    m_lastLeftAbstractionClickRow = 0;
+    m_lastLeftDMClickCol = 0;
+    m_lastLeftDMClickRow = 0;
+    m_lastLeftWizardClickCol = 0;
+    m_lastLeftWizardClickRow = 0;
 
     // No interface
     m_ifguid.clear();
@@ -525,8 +532,6 @@ void frmDeviceConfig::CreateControls() {
                             wxSUNKEN_BORDER | wxTAB_TRAVERSAL );
     
     
-    
-    
     // * * * * Choice book * * * * *
     
     
@@ -572,6 +577,8 @@ void frmDeviceConfig::CreateControls() {
                                 wxDefaultSize, 
                                 wxSUNKEN_BORDER | wxTAB_TRAVERSAL );
     m_panelRegisters->Show(false);
+    
+    m_panelRegisters->Bind( wxEVT_CHAR_HOOK, &frmDeviceConfig::OnKeyDown, this );
     
     //wxBoxSizer* itemBoxSizerPanel = new wxBoxSizer( wxVERTICAL );
     //m_panelRegisters->SetSizer( itemBoxSizerPanel );
@@ -959,7 +966,7 @@ void frmDeviceConfig::CreateControls() {
     m_gridDM->DeleteRows(0);
 
     m_gridRegisters->SetFocus();
-
+    
 }
 
 
@@ -1331,21 +1338,47 @@ void frmDeviceConfig::OnRegisterEdited(wxGridEvent& event)
 
 void frmDeviceConfig::OnCellLeftClick(wxGridEvent& event) 
 {
-    // Save clicked cell/row
-    m_lastLeftClickCol = event.GetCol();
-    m_lastLeftClickRow = event.GetRow();
+    
 
     if (ID_GRID_REGISTERS == event.GetId()) {
+        
+        // Save clicked cell/row
+        m_lastLeftRegisterClickCol = event.GetCol();
+        m_lastLeftRegisterClickRow = event.GetRow();
+    
         // Select the row
-        m_gridRegisters->SelectRow( m_lastLeftClickRow );
+        m_gridRegisters->SelectRow( event.GetRow() );
+        
     } 
     else if (ID_GRID_ABSTRACTIONS == event.GetId()) {
+        
+        // Save clicked cell/row
+        m_lastLeftAbstractionClickCol = event.GetCol();
+        m_lastLeftAbstractionClickRow = event.GetRow();
+        
         // Select the row
-        m_gridAbstractions->SelectRow( m_lastLeftClickRow );
+        m_gridAbstractions->SelectRow( event.GetRow() );
+        
     } 
     else if (ID_GRID_DM == event.GetId()) {
+        
+        // Save clicked cell/row
+        m_lastLeftDMClickCol = event.GetCol();
+        m_lastLeftDMClickRow = event.GetRow();
+        
         // Select the row
-        m_gridDM->SelectRow( m_lastLeftClickRow );
+        m_gridDM->SelectRow( event.GetRow() );
+        
+    }
+    else if ( ID_GRID_WIZARD == event.GetId()) {
+        
+        // Save clicked cell/row
+        m_lastLeftWizardClickCol = event.GetCol();
+        m_lastLeftWizardClickRow = event.GetRow();
+        
+        // Select the row
+        m_gridWizard->SelectRow( event.GetRow() );
+        
     }
 
     event.Skip();
@@ -3823,7 +3856,16 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 {
     doUpdate();
     m_gridRegisters->SetFocus();
-    event.Skip(false);
+    // Restore register selection
+    m_gridRegisters->GoToCell( m_lastLeftRegisterClickRow, 0 );
+    m_gridRegisters->SelectRow( m_lastLeftRegisterClickRow );
+    m_gridAbstractions->GoToCell( m_lastLeftAbstractionClickRow, 0 );
+    m_gridAbstractions->SelectRow( m_lastLeftAbstractionClickRow );
+    m_gridDM->GoToCell( m_lastLeftDMClickRow, 0 );
+    m_gridDM->SelectRow( m_lastLeftDMClickRow );
+    m_gridWizard->GoToCell( m_lastLeftWizardClickRow, 0 );
+    m_gridWizard->SelectRow( m_lastLeftWizardClickRow );
+    event.Skip( false );
 }
 
 
@@ -3833,11 +3875,25 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 
 void frmDeviceConfig::OnButtonUpdateAllClick( wxCommandEvent& event ) 
 {
-    bool val = m_chkFullUpdate->GetValue();
+    bool val = m_chkFullUpdate->GetValue();    
     m_chkFullUpdate->SetValue( true );
+    
     doUpdate();
+    
     m_chkFullUpdate->SetValue( val );
+    
     m_gridRegisters->SetFocus();
+    
+    // Restore register selection
+    m_gridRegisters->GoToCell( m_lastLeftRegisterClickRow, 0 );
+    m_gridRegisters->SelectRow( m_lastLeftRegisterClickRow );
+    m_gridAbstractions->GoToCell( m_lastLeftAbstractionClickRow, 0 );
+    m_gridAbstractions->SelectRow( m_lastLeftAbstractionClickRow );
+    m_gridDM->GoToCell( m_lastLeftDMClickRow, 0 );
+    m_gridDM->SelectRow( m_lastLeftDMClickRow );
+    m_gridWizard->GoToCell( m_lastLeftWizardClickRow, 0 );
+    m_gridWizard->SelectRow( m_lastLeftWizardClickRow );
+    
     event.Skip(false);
 }
 
@@ -4322,6 +4378,7 @@ read_pageregs1_again:
         }
 
     }
+        
 }
 
 
@@ -4472,7 +4529,7 @@ void frmDeviceConfig::readValueSelectedRow( wxCommandEvent& WXUNUSED( event ) )
         // cell instead of the border.
         if ( 0 == m_gridRegisters->GetSelectedRows().GetCount() ) {
             // Select the row
-            m_gridRegisters->SelectRow( m_lastLeftClickRow );
+            m_gridRegisters->SelectRow( m_lastLeftRegisterClickRow );
         }
 
         wxArrayInt selrows = m_gridRegisters->GetSelectedRows();
@@ -4608,7 +4665,7 @@ void frmDeviceConfig::writeValueSelectedRow(wxCommandEvent& WXUNUSED(event))
         // cell instead of the border.
         if ( 0 == m_gridRegisters->GetSelectedRows().GetCount() ) {
             // Select the row
-            m_gridRegisters->SelectRow( m_lastLeftClickRow );
+            m_gridRegisters->SelectRow( m_lastLeftRegisterClickRow );
         }
 
         wxArrayInt selrows = m_gridRegisters->GetSelectedRows();
@@ -4733,7 +4790,7 @@ void frmDeviceConfig::undoValueSelectedRow(wxCommandEvent& WXUNUSED(event))
         // cell instead of the border.
         if ( 0 == m_gridRegisters->GetSelectedRows().GetCount() ) {
             // Select the row
-            m_gridRegisters->SelectRow( m_lastLeftClickRow );
+            m_gridRegisters->SelectRow( m_lastLeftRegisterClickRow );
         }
 
         wxArrayInt selrows = m_gridRegisters->GetSelectedRows();
@@ -4857,7 +4914,7 @@ void frmDeviceConfig::defaultValueSelectedRow(wxCommandEvent& WXUNUSED(event))
         // cell instead of the border.
         if ( 0 == m_gridRegisters->GetSelectedRows().GetCount() ) {
             // Select the row
-            m_gridRegisters->SelectRow( m_lastLeftClickRow );
+            m_gridRegisters->SelectRow( m_lastLeftRegisterClickRow );
         }
 
         wxArrayInt selrows = m_gridRegisters->GetSelectedRows();
@@ -5884,6 +5941,7 @@ void frmDeviceConfig::updateAbstractionGrid(void)
         m_gridAbstractions->AutoSizeColumn( 1 );
         m_gridAbstractions->AutoSizeColumn( 2 );
         m_gridAbstractions->AutoSizeColumn( 3 );
+        m_gridAbstractions->AutoSizeColumn( 4 );
         //m_gridAbstractions->AutoSizeColumns();
 
         // Make all parts of the row visible
@@ -6132,7 +6190,7 @@ void frmDeviceConfig::dmEnableSelectedRow(wxCommandEvent& event)
     wxString strBuf;
 
     // Select the row
-    m_gridDM->SelectRow(m_lastLeftClickRow);
+    m_gridDM->SelectRow( m_lastLeftRegisterClickRow );
 
     wxArrayInt selrows = m_gridDM->GetSelectedRows();
 
@@ -6171,7 +6229,7 @@ void frmDeviceConfig::dmDisableSelectedRow(wxCommandEvent& event)
     wxString strBuf;
 
     // Select the row
-    m_gridDM->SelectRow(m_lastLeftClickRow);
+    m_gridDM->SelectRow( m_lastLeftRegisterClickRow );
 
     wxArrayInt selrows = m_gridDM->GetSelectedRows();
 
@@ -6949,3 +7007,13 @@ void frmDeviceConfig::OnResizeWindow( wxSizeEvent& event )
     event.Skip();
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+// OnKeyDown
+//
+
+void frmDeviceConfig::OnKeyDown( wxKeyEvent& event )
+{
+    //wxMessageBox(wxString::Format("KeyDown: %i\n", (int)event.GetKeyCode())); 
+    event.Skip();
+}
