@@ -99,7 +99,9 @@ enum {
     Menu_Popup_dm_disable_row,
     Menu_Popup_dm_row_wizard,
     Menu_Popup_go_VSCP,
-    Menu_Popup_GotoRegPage        
+    Menu_Popup_GotoRegPage,
+    Menu_Popup_Full_Edit,        
+    Menu_Popup_Update_Abstractions,        
 };
 
 
@@ -195,7 +197,7 @@ public:
     /*!
         Goto register page
      */
-    void gotoRegisterPage( wxCommandEvent& WXUNUSED( event ) );
+    void gotoRegisterPage( wxCommandEvent& event );
 
     /*! 
         Update the DM grid
@@ -387,6 +389,9 @@ public:
     
     /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_GOTO_STANDARD
     void OnGotoStandard( wxCommandEvent& event );
+    
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for Menu_Popup_Full_Edit
+    void OnAbstractionFullEdit( wxCommandEvent& eventv );
 
     /// wxEVT_GRID_CELL_LEFT_CLICK event handler for ID_GRID_REGISTERS
     void OnCellLeftClick( wxGridEvent& event );

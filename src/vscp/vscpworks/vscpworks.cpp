@@ -109,7 +109,7 @@ int g_cntCanalNodes;
 int g_cntVscpNodes;
 
 appConfiguration g_Config;
-VSCPInformation g_vscpinfo; 
+VSCPInformation g_vscpinfo;
 
 // Lists for interfaces
 WX_DEFINE_LIST(LIST_CANAL_IF);

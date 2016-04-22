@@ -734,18 +734,24 @@
         </ccTool>
       </item>
       <item path="vscpworks.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="0">
+        <ccTool>
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
-            <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
-            <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
-            <pElem>/usr/local/include/wx-3.1/wx/xml</pElem>
-            <pElem>../common</pElem>
-            <pElem>.</pElem>
-            <pElem>/usr/local/include/wx-3.1/wx/meta</pElem>
-            <pElem>/usr/local/include/wx-3.1/wx/html</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
             <pElem>/usr/local/include/wx-3.1</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>.</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>MG_ENABLE_SSL</Elem>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>VSCP_ENABLE_LUA</Elem>
+            <Elem>WXUSINGDLL</Elem>
+            <Elem>_FILE_OFFSET_BITS=64</Elem>
+            <Elem>__WXGTK__</Elem>
+            <Elem>wxUSE_GUI=1</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
     </conf>
