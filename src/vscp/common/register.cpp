@@ -246,12 +246,12 @@ uint8_t CUserRegisters::setValue( uint16_t page, uint8_t offset, uint8_t value )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-//  getAbstractionValueAsString
+//  abstractionValueFromRegsToString
 //
 
-bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction, 
-                                                    wxString &strValue,
-                                                    uint8_t format )
+bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstraction, 
+                                                            wxString &strValue,
+                                                            uint8_t format )
 {
     bool rv = false;
     uint8_t *pReg;
@@ -457,5 +457,105 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
         break;
     }
 
+    return rv;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  abstractionValueFromStringToRegs
+//
+
+bool CUserRegisters::abstractionValueFromStringToRegs( CMDF_Abstraction *pAbstraction, 
+                                                        wxString &strValue )
+{   
+    bool rv = false;
+    uint8_t *pReg;
+
+    if ( NULL == pAbstraction ) return false;
+
+    // Get register page
+    if ( NULL == ( pReg = getRegs4Page( pAbstraction->m_nPage ) ) ) return false;
+
+    switch ( pAbstraction->m_nType ) {
+
+    case type_string: 
+        {            
+            uint8_t *pString = new uint8_t[ pAbstraction->m_nWidth ];
+            if ( NULL != pString ) {
+                
+                memset( pString, 0, sizeof( pString ) );
+                        
+                delete [] pString;        
+            }
+        }
+        break;
+
+    case type_boolval:
+        {
+
+        }
+        break;
+
+    case type_bitfield:
+
+        break;
+
+    case type_int8_t:
+
+        break;
+
+    case type_uint8_t:
+
+        break;
+
+    case type_int16_t:
+  
+        break;
+
+    case type_uint16_t:
+
+        break;
+
+    case type_int32_t:
+
+        break;
+
+    case type_uint32_t:
+
+        break;
+
+    case type_int64_t:
+
+        break;
+
+    case type_uint64_t:
+
+        break;
+
+    case type_float:
+
+        break;
+
+    case type_double:
+
+        break;
+
+    case type_date:
+ 
+        break;
+
+    case type_time:
+
+        break;
+
+    case type_guid:
+
+        break;
+
+    case type_unknown:
+
+        break;
+    }
+    
     return rv;
 }

@@ -89,9 +89,9 @@ class wxHtmlWindow;
 DECLARE_EVENT_TYPE(wxVSCP_STATUS_CHANGE_EVENT, wxID_ANY )       // status change
 
 enum {
-    Menu_Popup_Read_Value = 2000,
-    Menu_Popup_Write_Value,
-    Menu_Popup_Update,
+    Menu_Popup_Register_Read_Value = 2000,
+    Menu_Popup_Register_Write_Value,
+    Menu_Popup_Register_Update,
     Menu_Popup_Load_MDF,
     Menu_Popup_Undo,
     Menu_Popup_Default,
@@ -101,13 +101,26 @@ enum {
     Menu_Popup_go_VSCP,
     Menu_Popup_GotoRegPage,
     Menu_Popup_Full_Edit,        
-    Menu_Popup_Update_Abstractions,        
+    Menu_Popup_Abstraction_Update,
+    Menu_Popup_Abstraction_Read_Value,
+    Menu_Popup_Abstraction_Write_Value,
+    Menu_Popup_Abstraction_Undo,
+    Menu_Popup_Abstraction_Default,
 };
 
 
-// Grid positions
-#define GRID_COLUMN_VALUE           2
-#define GRID_COLUMN_DESCRIPTION     3
+// Register grid positions
+#define GRID_REGISTER_COLUMN_REGISTER           0
+#define GRID_REGISTER_COLUMN_ACCESS_RIGHTS      1
+#define GRID_REGISTER_COLUMN_VALUE              2
+#define GRID_REGISTER_COLUMN_DESCRIPTION        3
+
+// Abstraction grid positions
+#define GRID_ABSTRACTION_COLUMN_NAME            0
+#define GRID_ABSTRACTION_COLUMN_TYPE            1
+#define GRID_ABSTRACTION_COLUMN_ACCESS_RIGHTS   2
+#define GRID_ABSTRACTION_COLUMN_VALUE           3
+#define GRID_ABSTRACTION_COLUMN_DESCRIPTION     4
 
 class frmDeviceConfig : public wxFrame {
     DECLARE_CLASS(frmDeviceConfig)
@@ -177,22 +190,47 @@ public:
     /*!
         Read value for selected row
      */
-    void readValueSelectedRow(wxCommandEvent& event);
+    void readValueSelectedRegisterRow(wxCommandEvent& event);
 
     /*!
         Write value for selected row
      */
-    void writeValueSelectedRow(wxCommandEvent& event);
+    void writeValueSelectedRegisterRow(wxCommandEvent& event);
 
     /*!
         Undo value for selected row
      */
-    void undoValueSelectedRow(wxCommandEvent& event);
+    void undoValueSelectedRegisterRow(wxCommandEvent& event);
 
     /*!
         Default value for selected row
      */
-    void defaultValueSelectedRow(wxCommandEvent& event);
+    void defaultValueSelectedRegisterRow(wxCommandEvent& event);
+    
+    /*!
+        Read value for selected row
+     */
+    void readValueSelectedAbstractionRow(wxCommandEvent& event);
+
+    /*!
+        Write value for selected row
+     */
+    void writeValueSelectedAbstractionRow(wxCommandEvent& event);
+
+    /*!
+        Undo value for selected row
+     */
+    void undoValueSelectedAbstractionRow(wxCommandEvent& event);
+
+    /*!
+        Default value for selected row
+     */
+    void defaultValueSelectedAbstractionRow(wxCommandEvent& event);
+    
+    /*!
+        Write modified abstraction rows
+     */
+    void writeAbstractionRows(wxCommandEvent& event);
     
     /*!
         Goto register page

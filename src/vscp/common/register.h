@@ -227,14 +227,23 @@ public:
     uint8_t setValue( uint16_t page, uint8_t offset, uint8_t value );
 
     /*!
-        Get abstraction value as string
-        @param abstraction Abstraction record from MDF
-        @param strValue Abstraction value in string form on return if call successful
-        @return true on success
+        Get abstraction value from registers into string value.
+        @param abstraction Abstraction record from MDF.
+        @param strValue Abstraction value in string form on return if call successful.
+        @return true on success.
     */
-    bool getAbstractionValueAsString( CMDF_Abstraction *pAbstraction, 
-                                        wxString &strValue,
-                                        uint8_t format = FORMAT_ABSTRACTION_DECIMAL  );
+    bool abstractionValueFromRegsToString( CMDF_Abstraction *pAbstraction, 
+                                                wxString &strValue,
+                                                uint8_t format = FORMAT_ABSTRACTION_DECIMAL  );
+    
+    /*
+     * Store abstraction value in string format in corresponding registers.
+     * @param abstraction Abstraction record from MDF.
+     * @param strValue Abstraction value in string form.
+     * @return true on success.
+     */
+    bool abstractionValueFromStringToRegs( CMDF_Abstraction *pAbstraction, 
+                                                wxString &strValue );
 
 private:
 
