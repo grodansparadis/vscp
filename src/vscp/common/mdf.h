@@ -135,12 +135,18 @@ public:
         @return Real text description of type.
     */
     wxString getAbstractionValueType( void );
+    
+    /*!
+        Get number of bytes for an abstraction type
+        @return Number of bytes for abstraction type.
+     */
+    uint16_t getAbstractionTypeByteCount( void );
 
 
     wxString m_strName;
     wxString m_strDescription;
     wxString m_strHelpType;
-    wxString m_strHelp;                 // Item help text or url
+    wxString m_strHelp;                 // Item help text or URL
 
     wxString m_strID;                   // Abstract variable id (unique
                                         // inside of MDF
@@ -159,7 +165,7 @@ public:
   
     uint8_t m_nAccess;                  // Access rights
 
-    bool m_bIndexed;			// True of indexed storage
+    bool m_bIndexed;                    // True of indexed storage
 
     uint32_t m_bgcolor;                 // Cell background colour. Default = white.
     uint32_t m_fgcolor;                 // Cell foreground colour. Default = black.
@@ -238,6 +244,11 @@ public:
         Clear storage
     */
     void clearStorage( void );
+    
+    /*!
+     Set default for value if it is defined.
+     */
+    uint8_t setDefault( void );
 
     /*!
         Assignment    
@@ -251,7 +262,7 @@ public:
 
     uint16_t m_nPage;
     uint16_t m_nOffset;
-    uint16_t m_nWidth;					// Defaults to 1
+    uint16_t m_nWidth;                  // Defaults to 1
 
     uint8_t m_type;                     // std=0/dmatix1=1/block=2
     uint8_t m_size;                     // Size for special types (default = 1)
@@ -259,16 +270,16 @@ public:
     uint32_t m_nMin;
     uint32_t m_nMax;
 
-    wxString m_strDefault;
+    wxString m_strDefault;              // "UNDEF" if not set
 
     uint8_t m_nAccess;
 
-    MDF_BIT_LIST  m_list_bit;			// dll list with bit defines
-    MDF_VALUE_LIST  m_list_value;		// dll list with selectable values
+    MDF_BIT_LIST  m_list_bit;           // dll list with bit defines
+    MDF_VALUE_LIST  m_list_value;       // dll list with selectable values
 
     // For VSCP Works
     long m_rowInGrid;                   // Helper for display (row reg is displayed on)
-    uint8_t m_value;					// Initial value read. This is the value
+    uint8_t m_value;                    // Initial value read. This is the value
                                         // that will be restored.
     uint32_t m_bgcolor;                 // Cell background colour. Default = white.
     uint32_t m_fgcolor;                 // Cell foreground colour. Default = black.
@@ -371,12 +382,12 @@ public:
     */
     void clearStorage( void );
 
-    uint8_t  m_nLevel;          // 1 or 2 (defaults to 1)
-    uint16_t m_nStartPage;      // Page where DM starts
-    uint16_t m_nStartOffset;    // Offset on start page for DM
-    uint16_t m_nRowCount;       // Number of rows in DM
-    uint16_t m_nRowSize;        // Size of a DM row (Normally 8)
-    bool m_bIndexed;            // True of storage is indexed
+    uint8_t  m_nLevel;              // 1 or 2 (defaults to 1)
+    uint16_t m_nStartPage;          // Page where DM starts
+    uint16_t m_nStartOffset;        // Offset on start page for DM
+    uint16_t m_nRowCount;           // Number of rows in DM
+    uint16_t m_nRowSize;            // Size of a DM row (Normally 8)
+    bool m_bIndexed;                // True of storage is indexed
 
     MDF_ACTION_LIST  m_list_action; // Action description
 };
@@ -408,8 +419,8 @@ public:
 
     uint16_t m_nOffset;
 
-    MDF_BIT_LIST  m_list_bit;         // List with bit defines
-    MDF_VALUE_LIST  m_list_value;     // List with selectable values
+    MDF_BIT_LIST  m_list_bit;           // List with bit defines
+    MDF_VALUE_LIST  m_list_value;       // List with selectable values
 
 
 };
@@ -502,9 +513,9 @@ public:
     */
     void clearStorage( void );
 
-    uint8_t  m_nAlgorithm;				// Bootloader algorithm used by device
-    uint32_t m_nBlockSize;				// Size for one boot block
-    uint32_t m_nBlockCount;				// Number of boot blocks
+    uint8_t  m_nAlgorithm;              // Bootloader algorithm used by device
+    uint32_t m_nBlockSize;              // Size for one boot block
+    uint32_t m_nBlockCount;             // Number of boot blocks
 
 };
 
@@ -647,7 +658,7 @@ public:
         Download MDF file from a server
         @param remoteFile remote file URL
         @param variable that will receive temporary filename for downloaded file.
-        @return Return true if a valid file is downloaded.			
+        @return Return true if a valid file is downloaded.
     */
     bool downLoadMDF( wxString& remoteFile, wxString& tempFile );
 
@@ -711,7 +722,7 @@ public:
     wxString m_strLocale;                       // ISO code for requested language
                                                 // defaults to "en"
 
-    wxString m_tempFileName;                  // Local downloaded file path
+    wxString m_tempFileName;                    // Local downloaded file path
 
     wxString m_strModule_Name;                  // Module name
     wxString m_strModule_Model;                 // Module Model

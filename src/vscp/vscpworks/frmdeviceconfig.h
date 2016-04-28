@@ -74,7 +74,7 @@ class wxGrid;
 class wxHtmlWindow;
 
 #define SYMBOL_FRMDEVICECONFIG_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX
-#define SYMBOL_FRMDEVICECONFIG_TITLE _("frmDeviceConfig")
+#define SYMBOL_FRMDEVICECONFIG_TITLE _("VSCP Configuration Window Session")
 #define SYMBOL_FRMDEVICECONFIG_IDNAME ID_FRMDEVICECONFIG
 
 #ifdef WIN32
@@ -186,6 +186,12 @@ public:
         Clear grid and other data content
      */
     void clearAllContent(void);
+    
+    /*!
+        Update selected register rows
+        @param bUpdate Updates abstractions and dm after write.
+     */
+    void doWriteValueSelectedRegisterRow( bool bUpdate = true ) ;
 
     /*!
         Read value for selected row
@@ -195,7 +201,7 @@ public:
     /*!
         Write value for selected row
      */
-    void writeValueSelectedRegisterRow(wxCommandEvent& event);
+    void writeValueSelectedRegisterRow(wxCommandEvent& event );
 
     /*!
         Undo value for selected row
@@ -236,6 +242,16 @@ public:
         Goto register page
      */
     void gotoRegisterPage( wxCommandEvent& event );
+    
+    /*!
+        Read content of remote device for a specific register and update the
+        corresponding row.
+        @param row the register row to update.
+        @param bUpdateDM Updates DM data after register update if true.
+        @param bUpdateAbstractions Updates abstraction data after register update if true
+        @return true on success.
+     */
+    bool readUpdateRegisterRow(uint16_t row, bool bUpdateDM = true, bool bUpdateAbstractions = true);
 
     /*! 
         Update the DM grid
@@ -258,6 +274,12 @@ public:
         of it.
      */
     void updateAbstractionGridConditional(uint16_t reg, uint32_t page);
+    
+    /*!
+     * Save edited abstraction rows to register grid
+     * @param bShowDialog True to show dialog.
+     */
+    void saveAbstractionEdits( bool bShowDialog = true );
 
     /*!
         Enable selected DM row
@@ -322,7 +344,7 @@ public:
     bool fetchIterfaceGUID(void);
 
     /*!
-        Message handler that sets status messages on statusbar
+        Message handler that sets status messages on status bar
     */
     void eventStatusChange( wxCommandEvent &evt );
 
@@ -458,8 +480,6 @@ public:
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON19
     void OnButtonWizardClick( wxCommandEvent& event );
     
-    void OnKeyDown( wxKeyEvent& event );
-
     /// Retrieves bitmap resources
     wxBitmap GetBitmapResource( const wxString& name );
 

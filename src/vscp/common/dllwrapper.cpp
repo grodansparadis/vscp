@@ -456,7 +456,9 @@ long CDllWrapper::doCmdOpen( const wxString& strConfiguration, unsigned long fla
 }
 
 
-long CDllWrapper::doCmdOpen( const wxString& strPath, const wxString&strConfiguration, unsigned long flags )
+long CDllWrapper::doCmdOpen( const wxString& strPath, 
+                                const wxString&strConfiguration, 
+                                unsigned long flags )
 {
     if ( !m_bInit ) {
         // Initialize
@@ -900,15 +902,15 @@ int CDllWrapper::writeLevel1Register( unsigned char nodeid,
 
     while ( true ) {
 
-        if ( 0 < doCmdDataAvailable() ) {									   // Message available
-            if ( CANAL_ERROR_SUCCESS == doCmdReceive( &canalReceiveEvent ) ) { // Valid event
+        if ( 0 < doCmdDataAvailable() ) {					// Message available
+            if ( CANAL_ERROR_SUCCESS == doCmdReceive( &canalReceiveEvent ) ) {  // Valid event
                 if ( 5 != canalReceiveEvent.sizeData ) continue;
                 if ( ( unsigned short )( canalReceiveEvent.id & 0xffff ) ==
-                    ( ( VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE << 8 ) + nodeid ) ) {  // Read reply?
+                    ( ( VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE << 8 ) + nodeid ) ) { // Read reply?
                     if ( ( 0 == canalReceiveEvent.data[ 0 ] ) &&
                          ( ( page >> 8 ) == canalReceiveEvent.data[ 1 ] ) &&
                          ( ( page & 0xff ) == canalReceiveEvent.data[ 2 ] ) &&
-                         ( canalReceiveEvent.data[ 3 ] == reg ) ) {			// Requested register?
+                         ( canalReceiveEvent.data[ 3 ] == reg ) ) {                     // Requested register?
 
                         if ( *pval != canalReceiveEvent.data[ 4 ] ) rv = CANAL_ERROR_REGISTER;
                             

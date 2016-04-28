@@ -379,4 +379,5 @@ make</RebuildCommand>
   </VirtualDirectory>
   <Dependencies Name="Debug"/>
   <Dependencies Name="Release"/>
+  <VirtualDirectory Name="vscp_common"/>
 </CodeLite_Project>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Session Name="/home/akhe/development/VSCP/vscp/src/vscp/daemon/linux/codelite_vscpd/codelite_vscpd.workspace">
-  <int Value="7" Name="m_selectedTab"/>
+  <int Value="10" Name="m_selectedTab"/>
   <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/daemon/linux/codelite_vscpd/codelite_vscpd.workspace" Name="m_workspaceName"/>
   <TabInfoArray Name="TabInfoArray">
     <TabInfo>
@@ -34,7 +34,7 @@
     <TabInfo>
       <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/frmdeviceconfig.h" Name="FileName"/>
       <int Value="351" Name="FirstVisibleLine"/>
-      <int Value="372" Name="CurrentLine"/>
+      <int Value="383" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>
@@ -55,7 +55,7 @@
     <TabInfo>
       <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/frmdeviceconfig.cpp" Name="FileName"/>
       <int Value="6939" Name="FirstVisibleLine"/>
-      <int Value="6960" Name="CurrentLine"/>
+      <int Value="6983" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>
@@ -75,15 +75,15 @@
     </TabInfo>
     <TabInfo>
       <wxString Value="/home/akhe/development/VSCP/can4vscp_kelvin_1wire/mdf/1wire_1.xml" Name="FileName"/>
-      <int Value="339" Name="FirstVisibleLine"/>
-      <int Value="290" Name="CurrentLine"/>
+      <int Value="1551" Name="FirstVisibleLine"/>
+      <int Value="1534" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>
     <TabInfo>
       <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/common/register.cpp" Name="FileName"/>
       <int Value="392" Name="FirstVisibleLine"/>
-      <int Value="416" Name="CurrentLine"/>
+      <int Value="414" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>
@@ -104,7 +104,7 @@
     <TabInfo>
       <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/common/version.h" Name="FileName"/>
       <int Value="23" Name="FirstVisibleLine"/>
-      <int Value="31" Name="CurrentLine"/>
+      <int Value="30" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>
@@ -112,6 +112,34 @@
       <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/dlgeditlevel1dmrow.h" Name="FileName"/>
       <int Value="57" Name="FirstVisibleLine"/>
       <int Value="70" Name="CurrentLine"/>
+      <wxArrayString Name="Bookmarks"/>
+      <IntVector Name="CollapsedFolds"/>
+    </TabInfo>
+    <TabInfo>
+      <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/common/canalsuperwrapper.cpp" Name="FileName"/>
+      <int Value="5277" Name="FirstVisibleLine"/>
+      <int Value="5302" Name="CurrentLine"/>
+      <wxArrayString Name="Bookmarks"/>
+      <IntVector Name="CollapsedFolds"/>
+    </TabInfo>
+    <TabInfo>
+      <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/common/canalsuperwrapper.h" Name="FileName"/>
+      <int Value="1469" Name="FirstVisibleLine"/>
+      <int Value="1483" Name="CurrentLine"/>
+      <wxArrayString Name="Bookmarks"/>
+      <IntVector Name="CollapsedFolds"/>
+    </TabInfo>
+    <TabInfo>
+      <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/common/mdf.h" Name="FileName"/>
+      <int Value="330" Name="FirstVisibleLine"/>
+      <int Value="719" Name="CurrentLine"/>
+      <wxArrayString Name="Bookmarks"/>
+      <IntVector Name="CollapsedFolds"/>
+    </TabInfo>
+    <TabInfo>
+      <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/common/mdf.cpp" Name="FileName"/>
+      <int Value="1792" Name="FirstVisibleLine"/>
+      <int Value="512" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>

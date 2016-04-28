@@ -957,7 +957,7 @@ void frmVSCPSession::CreateControls()
                                         0 );
     m_BtnActivateInterface->SetValue(true);
     if (frmVSCPSession::ShowToolTips())
-        m_BtnActivateInterface->SetToolTip(_("Acticate/Deactivate the interface"));
+        m_BtnActivateInterface->SetToolTip(_("Activate/Deactivate the interface"));
     //m_BtnActivateInterface->SetForegroundColour(wxColour(255, 255, 255));
     //m_BtnActivateInterface->SetBackgroundColour(wxColour(165, 42, 42));
     //m_BtnActivateInterface->SetFont( wxFont(10, 
@@ -2173,7 +2173,7 @@ void frmVSCPSession::OnTxDeleteClick(wxCommandEvent& event)
     if (m_ctrlGridTransmission->GetNumberRows()) {
         wxArrayInt selrows = m_ctrlGridTransmission->GetSelectedRows();
         if (selrows.GetCount()) {
-            if (wxYES == wxMessageBox(_("Selected rows will be removed. Shure that is what is intended?"),
+            if (wxYES == wxMessageBox(_("Selected rows will be removed. Are you sure that is what is intended?"),
                     _("Remove rows?"),
                     wxYES_NO | wxICON_QUESTION)) {
                 for (int i = selrows.GetCount() - 1; i >= 0; i--) {

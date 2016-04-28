@@ -195,7 +195,8 @@ void CCanalSuperWrapper::setInterface( const wxString& name,
 // open
 //
 
-long CCanalSuperWrapper::doCmdOpen( const wxString& strInterface, unsigned long flags )
+long CCanalSuperWrapper::doCmdOpen( const wxString& strInterface, 
+                                        unsigned long flags )
 {
     long rv = false;
 
@@ -217,8 +218,7 @@ long CCanalSuperWrapper::doCmdOpen( const wxString& strInterface, unsigned long 
         // *** Open remote TCP/IP interface *** 
 
         if ( strInterface.Length() ) {
-            if ( VSCP_ERROR_SUCCESS ==  m_vscptcpif.doCmdOpen( strInterface, flags ) )
-            {
+            if ( VSCP_ERROR_SUCCESS ==  m_vscptcpif.doCmdOpen( strInterface, flags ) ) {
                 rv = 1661; // Pretend to be driver 
             }
         }
@@ -505,7 +505,6 @@ int CCanalSuperWrapper::doCmdFilter( unsigned long filter )
     }
 
     return CANAL_ERROR_NOT_SUPPORTED;
-
 }
 
 
@@ -524,7 +523,6 @@ int CCanalSuperWrapper::doCmdMask( unsigned long mask )
     }
 
     return CANAL_ERROR_NOT_SUPPORTED;
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -647,13 +645,13 @@ const char * CCanalSuperWrapper::doCmdGetDriverInfo( void )
 
 
 //****************************************************************************
-//					   R e g i s t e r  r o u t i n e s
+//                  R e g i s t e r  r o u t i n e s
 //****************************************************************************
 
 
 
 
-// We don't want the graphcal UI on apps that don't use it 
+// We don't want the graphical UI on apps. that don't use it 
 #if ( wxUSE_GUI != 0 )
 
 
@@ -691,7 +689,7 @@ bool CCanalSuperWrapper::_readLevel1Register( uint8_t nodeid,
 
         if ( NULL != pdlg ) pdlg->Pulse();
 
-        if ( 0 < doCmdDataAvailable() ) {								// Message available
+        if ( 0 < doCmdDataAvailable() ) {                               // Message available
             if ( CANAL_ERROR_SUCCESS == doCmdReceive( &canalEvent ) ) {	// Valid event
                 if ( (unsigned short)( canalEvent.id & 0xffff ) ==
                     ( 0x0a00 + nodeid ) ) {                             // Read reply?
@@ -702,8 +700,8 @@ bool CCanalSuperWrapper::_readLevel1Register( uint8_t nodeid,
                             }
                             break;
 
-                        }	// Check for correct node
-                }			// Check for correct reply event 
+                        }       // Check for correct node
+                }               // Check for correct reply event 
             }
         }
         else {
@@ -712,13 +710,11 @@ bool CCanalSuperWrapper::_readLevel1Register( uint8_t nodeid,
         }
 
         // Check for read error timeout
-        if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
-            m_registerReadErrorTimeout ) {
-                errors++;
+        if ( ( ::wxGetLocalTimeMillis() - startTime ) > m_registerReadErrorTimeout ) {
+            errors++;
         }
         // Should we resend?
-        else if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
-            m_registerReadResendTimeout ) {
+        else if ( ( ::wxGetLocalTimeMillis() - startTime ) > m_registerReadResendTimeout ) {
                 // Send again
                 if ( !bResend) {
                     doCmdSend( &canalEvent );
@@ -758,7 +754,7 @@ bool CCanalSuperWrapper::_writeLevel1Register( uint8_t nodeid,
     canalEvent.sizeData = 3;
     canalEvent.data[ 0 ] = nodeid;      // Node to read from
     canalEvent.data[ 1 ] = reg;         // Register to write
-    canalEvent.data[ 2 ] = *pval;		// value to write
+    canalEvent.data[ 2 ] = *pval;       // value to write
 
     bResend = false;
     doCmdSend( &canalEvent );
@@ -769,11 +765,11 @@ bool CCanalSuperWrapper::_writeLevel1Register( uint8_t nodeid,
 
         if ( NULL != pdlg ) pdlg->Pulse();
 
-        if ( 0 < doCmdDataAvailable() ) {								// Message available
+        if ( 0 < doCmdDataAvailable() ) {                               // Message available
             if ( CANAL_ERROR_SUCCESS == doCmdReceive( &canalEvent ) ) { // Valid event
                 if ( (unsigned short)( canalEvent.id & 0xffff ) ==
                     ( 0x0a00 + nodeid ) ) {         // Read reply?
-                        if ( canalEvent.data[ 0 ] == reg ) {			// Requested register?
+                        if ( canalEvent.data[ 0 ] == reg ) {            // Requested register?
 
                             if ( *pval != canalEvent.data[ 1 ] ) rv = false;
                             // Save read value
@@ -792,12 +788,10 @@ bool CCanalSuperWrapper::_writeLevel1Register( uint8_t nodeid,
             ::wxSafeYield();
         }
 
-        if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
-            m_registerReadErrorTimeout ) {
+        if ( ( ::wxGetLocalTimeMillis() - startTime ) > m_registerReadErrorTimeout ) {
                 errors++;
         }
-        else if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
-            m_registerReadResendTimeout ) {
+        else if ( ( ::wxGetLocalTimeMillis() - startTime ) >  m_registerReadResendTimeout ) {
                 // Send again
                 if ( !bResend) {
                     doCmdSend( &canalEvent );
@@ -908,12 +902,12 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
         e.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
         e.vscp_type = VSCP_TYPE_PROTOCOL_READ_REGISTER;
 
-        memset( e.GUID, 0, 16 );	        // We use GUID for interface 
-        e.sizeData = 16 + 2;		        // Interface GUID + nodeid + register to read
+        memset( e.GUID, 0, 16 );            // We use GUID for interface 
+        e.sizeData = 16 + 2;                // Interface GUID + nodeid + register to read
 
         ifGUID.writeGUID( e.data );
 
-        e.data[ 16 ] = pdestGUID->getLSB();	// nodeid
+        e.data[ 16 ] = pdestGUID->getLSB(); // nodeid
         e.data[ 17 ] = reg;                 // Register to read
 
     }
@@ -929,16 +923,16 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
             e.vscp_class = VSCP_CLASS2_PROTOCOL;
             e.vscp_type = VSCP2_TYPE_PROTOCOL_READ_REGISTER;
 
-            memset( e.GUID, 0, 16 );		// We use GUID for interface 
+            memset( e.GUID, 0, 16 );                // We use GUID for interface 
 
-            e.sizeData = 22;				// nodeid + register to read
+            e.sizeData = 22;                        // nodeid + register to read
 
             pdestGUID->writeGUID( e.data );	        // Destination GUID
-            e.data[ 16 ] = ( reg >> 24 ) & 0xff;	// Register to read
+            e.data[ 16 ] = ( reg >> 24 ) & 0xff;    // Register to read
             e.data[ 17 ] = ( reg >> 16 ) & 0xff;
             e.data[ 18 ] = ( reg >> 8 ) & 0xff;
             e.data[ 19 ] = reg & 0xff;
-            e.data[ 20 ] = 0x00;			        // Read one register
+            e.data[ 20 ] = 0x00;                    // Read one register
             e.data[ 21 ] = 0x01;
 
         }
@@ -949,12 +943,12 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
             e.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
             e.vscp_type = VSCP_TYPE_PROTOCOL_READ_REGISTER;
 
-            memset( e.GUID, 0, 16 );		// We use GUID for interface 
-            e.sizeData = 16 + 2;			// nodeid + register to read
-            pdestGUID->writeGUID( e.data );   // Destination GUID
+            memset( e.GUID, 0, 16 );            // We use GUID for interface 
+            e.sizeData = 16 + 2;                // nodeid + register to read
+            pdestGUID->writeGUID( e.data );     // Destination GUID
 
-            e.data[16] = pdestGUID->getLSB(); // nodeid
-            e.data[17] = reg;                 // Register to read
+            e.data[16] = pdestGUID->getLSB();   // nodeid
+            e.data[17] = reg;                   // Register to read
 
         }
     }
@@ -972,9 +966,9 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
         
         if ( NULL != pdlg ) pdlg->Pulse();
 
-        if ( 0 < doCmdDataAvailable() ) {	// Message available
+        if ( 0 < doCmdDataAvailable() ) {                       // Message available
 
-            if ( CANAL_ERROR_SUCCESS == doCmdReceive( &e ) ) {	// Valid event
+            if ( CANAL_ERROR_SUCCESS == doCmdReceive( &e ) ) {  // Valid event
 
                 // Check for correct reply event
                 {
@@ -1104,10 +1098,10 @@ bool CCanalSuperWrapper::_writeLevel2Register( cguid& ifGUID,
 
         event.sizeData = 16 + 3;            // Interface GUID + nodeid + register to read + valied
 
-        destGUID.writeGUID( event.data );		// Destination GUID
-        event.data[16] = destGUID.getLSB();	// nodeid
-        event.data[17] = reg;				// Register to write
-        event.data[18] = *pcontent;			// value to write
+        destGUID.writeGUID( event.data );   // Destination GUID
+        event.data[16] = destGUID.getLSB(); // nodeid
+        event.data[17] = reg;               // Register to write
+        event.data[18] = *pcontent;         // value to write
 
     }
     else {
@@ -1118,17 +1112,17 @@ bool CCanalSuperWrapper::_writeLevel2Register( cguid& ifGUID,
             event.vscp_class = VSCP_CLASS2_PROTOCOL;
             event.vscp_type = VSCP2_TYPE_PROTOCOL_WRITE_REGISTER;
 
-            memset( event.GUID, 0, 16 );		// We use interface GUID
+            memset( event.GUID, 0, 16 );        // We use interface GUID
 
-            event.sizeData = 21;				// nodeid + register to read
+            event.sizeData = 21;                // nodeid + register to read
 
-            destGUID.writeGUID( event.data );	// Destination GUID
+            destGUID.writeGUID( event.data );   // Destination GUID
 
-            event.data[ 16 ] = ( reg >> 24 ) & 0xff;	// Register to write
+            event.data[ 16 ] = ( reg >> 24 ) & 0xff;    // Register to write
             event.data[ 17 ] = ( reg >> 16 ) & 0xff;
             event.data[ 18 ] = ( reg >> 8 ) & 0xff;
             event.data[ 19 ] = reg & 0xff;
-            event.data[ 20 ] = *pcontent;		// Data to write
+            event.data[ 20 ] = *pcontent;       // Data to write
 
         }
         else {
@@ -1139,11 +1133,11 @@ bool CCanalSuperWrapper::_writeLevel2Register( cguid& ifGUID,
             event.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
             event.vscp_type = VSCP_TYPE_PROTOCOL_WRITE_REGISTER;
 
-            memset( event.GUID, 0, 16 );		// We use interface GUID
+            memset( event.GUID, 0, 16 );        // We use interface GUID
 
-            event.sizeData = 16 + 3;				
+            event.sizeData = 16 + 3;
 
-            destGUID.writeGUID( event.data );		// Destination GUID
+            destGUID.writeGUID( event.data );   // Destination GUID
 
             event.data[16] = destGUID.getLSB();	// nodeid
             event.data[17] = reg;               // Register to write
@@ -1171,7 +1165,7 @@ bool CCanalSuperWrapper::_writeLevel2Register( cguid& ifGUID,
                     ( VSCP_TYPE_PROTOCOL_RW_RESPONSE == event.vscp_type ) ) {   // Read reply?
                     if ( event.data[ 0 ] == reg ) {	// Requested register?
                         
-                        if ( destGUID.isSameGUID( event.GUID ) ) { // From correct node?			// Correct node?
+                        if ( destGUID.isSameGUID( event.GUID ) ) { // From correct node? Correct node?
 
                             // We go a rw reply from the correct node is
                             // the written data same as we expect.
@@ -1235,12 +1229,10 @@ bool CCanalSuperWrapper::_writeLevel2Register( cguid& ifGUID,
             ::wxSafeYield();
         }
 
-        if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
-            m_registerReadErrorTimeout ) {
+        if ( ( ::wxGetLocalTimeMillis() - startTime ) > m_registerReadErrorTimeout ) {
                 errors++;
         }
-        else if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
-            m_registerReadResendTimeout ) {
+        else if ( ( ::wxGetLocalTimeMillis() - startTime ) > m_registerReadResendTimeout ) {
                 // Send again
                 if ( !bResend) {
                     doCmdSend( &event );
@@ -1341,7 +1333,7 @@ wxString CCanalSuperWrapper::getMDFfromLevel1Device( uint8_t id, bool bSilent )
                                                         id, 
                                                         0xE0 + i, 
                                                         p++ ) ) {
-                if ( !bSilent ) {												
+                if ( !bSilent ) {
                     ::wxMessageBox( _("Unable to read register."), _("VSCP Works"), wxICON_ERROR );
                 }
                 rv = false;
@@ -1424,7 +1416,7 @@ wxString CCanalSuperWrapper::getMDFfromLevel2Device( wxProgressDialog& progressD
                                         0xE0 + i, 
                                         p++,
                                         &destGUID ) ) {
-                    if ( !bSilent ) {												
+                    if ( !bSilent ) {
                         ::wxMessageBox( _("Unable to read register."), _("VSCP Works"), wxICON_ERROR );
                     }
                     rv = false;
@@ -1565,10 +1557,10 @@ bool CCanalSuperWrapper::getLevel1DmInfo( const uint8_t nodeid,
 
     while ( true ) {
 
-        if ( 0 < doCmdDataAvailable() ) {						// Message available
-            if ( doCmdReceive( &canalEvent ) ) {				// Valid message
+        if ( 0 < doCmdDataAvailable() ) {                       // Message available
+            if ( doCmdReceive( &canalEvent ) ) {                // Valid message
                 if ( (unsigned short)( canalEvent.id & 0xffff ) ==
-                    ( 0x2100 + nodeid ) ) {                 // DM info reply?
+                    ( 0x2100 + nodeid ) ) {                     // DM info reply?
                         // Copy in response data
                         memcpy( pdata, canalEvent.data, 8 );
                         break;
@@ -1614,8 +1606,8 @@ bool CCanalSuperWrapper::getLevel2DmInfo( cguid& ifGUID,
     event.vscp_type = 9;                // Get decision matrix info
     memset( event.GUID, 0, 16 );        // We use interface GUID
     event.sizeData = 16 + 1;            // Interface GUID + nodeid 
-    ifGUID.writeGUID( event.data );	// Address node
-    event.data[16] = ifGUID.getLSB();	// nodeid
+    ifGUID.writeGUID( event.data );     // Address node
+    event.data[16] = ifGUID.getLSB();   // nodeid
 
     bResend = false;
     doCmdSend( &event );
@@ -1624,10 +1616,10 @@ bool CCanalSuperWrapper::getLevel2DmInfo( cguid& ifGUID,
 
     while ( true ) {
 
-        if ( 0 < doCmdDataAvailable() ) {								// Message available
-            if ( CANAL_ERROR_SUCCESS == doCmdReceive( &event ) ) {		// Valid event
+        if ( 0 < doCmdDataAvailable() ) {                           // Message available
+            if ( CANAL_ERROR_SUCCESS == doCmdReceive( &event ) ) {  // Valid event
                 if ( ( 0 == event.vscp_class ) && 
-                    ( 0x21 == event.vscp_type ) ) {						// DM reply?
+                    ( 0x21 == event.vscp_type ) ) {                 // DM reply?
                         memcpy( pdata, event.data, 8 );
                         break;
                 }

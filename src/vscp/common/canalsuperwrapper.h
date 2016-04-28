@@ -44,8 +44,8 @@ events.
 #include "mdf.h"
 #include <dllist.h>
 
-#if !defined(AFX_CANALSUPERWRAPPER_H__A908F21A_317D_4E74_9308_18D7DD6B7D49__INCLUDED_)
-#define AFX_CANALSUPERWRAPPER_H__A908F21A_317D_4E74_9308_18D7DD6B7D49__INCLUDED_
+#if !defined(CANALSUPERWRAPPER_H__INCLUDED_)
+#define CANALSUPERWRAPPER_H__INCLUDED_
 
 #include "canal.h"
 #include "devitem.h"
@@ -852,7 +852,7 @@ public:
 
 
 
-    //			* * * * Abstraction handlers * * * *
+    //          * * * * Abstraction handlers * * * *
 
 
 
@@ -1481,4 +1481,4 @@ protected:
     uint8_t m_registerReadMaxRetries;
 };
 
-#endif // !defined(AFX_CANALSUPERWRAPPER_H__A908F21A_317D_4E74_9308_18D7DD6B7D49__INCLUDED_)
+#endif // !defined(CANALSUPERWRAPPER_H__INCLUDED_)

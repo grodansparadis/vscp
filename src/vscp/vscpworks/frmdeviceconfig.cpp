@@ -108,7 +108,6 @@ BEGIN_EVENT_TABLE(frmDeviceConfig, wxFrame)
 
     EVT_CLOSE( frmDeviceConfig::OnCloseWindow )
     EVT_SIZE( frmDeviceConfig::OnResizeWindow )
-    EVT_CHAR_HOOK( frmDeviceConfig::OnKeyDown )
     EVT_MENU( ID_MENUITEM_SAVE_REGISTERS, frmDeviceConfig::OnMenuitemSaveRegistersClick )
     EVT_MENU( ID_MENUITEM, frmDeviceConfig::OnMenuitemSaveSelectedRegistersClick )
     EVT_MENU( ID_MENUITEM_LOAD_REGISTES, frmDeviceConfig::OnMenuitemLoadRegistersClick )
@@ -670,9 +669,7 @@ void frmDeviceConfig::CreateControls() {
                                 wxDefaultSize, 
                                 wxSUNKEN_BORDER | wxTAB_TRAVERSAL );
     m_panelRegisters->Show(false);
-    
-    m_panelRegisters->Bind( wxEVT_CHAR_HOOK, &frmDeviceConfig::OnKeyDown, this );
-    
+        
     //wxBoxSizer* itemBoxSizerPanel = new wxBoxSizer( wxVERTICAL );
     //m_panelRegisters->SetSizer( itemBoxSizerPanel );
     //itemBoxSizerMain->Add( m_panelRegisters, 99, wxGROW | wxALL, 5 );
@@ -1777,540 +1774,19 @@ error:
 // OnAbstractionFullEdit
 //
 
-void frmDeviceConfig::OnAbstractionFullEdit(wxCommandEvent& event) 
+void frmDeviceConfig::OnAbstractionFullEdit( wxCommandEvent& event ) 
 {
-    uint8_t pos;
-    wxString strValue;
-    wxString strBuf;
-    uint8_t val = 0;
-    DialogAbstractionEdit dlg(this);
-    uint8_t reg;
-
-    cguid destGUID;
-    destGUID.getFromString( m_comboNodeID->GetValue() );
-
-    if (m_gridAbstractions->GetNumberRows()) {
-
-        // Must do this hack to handle rows selected by clicking a
-        // cell instead of the border.
-        if (0 == m_gridAbstractions->GetSelectedRows().GetCount()) {
-            // Select the row
-            m_gridAbstractions->SelectRow(m_lastLeftRegisterClickRow);
-        }
-
-        wxArrayInt selrows = m_gridAbstractions->GetSelectedRows();
-
-        if (selrows.GetCount()) {
-
-            for (int idx = selrows.GetCount() - 1; idx >= 0; idx--) {
-                
-                reg = selrows[ idx ];
-
-                // Get value (in string form)
-                strValue = m_gridAbstractions->GetCellValue( selrows[ idx ], 3);
-
-                // Send to dialog
-                dlg.TransferDataToWindow(m_mdf.m_list_abstraction[ selrows[ idx ] ], strValue);
-
-                m_gridAbstractions->SelectRow( selrows[ idx ] );
-
-                // int row;
-                if (wxID_OK == dlg.ShowModal()) {
-
-                    wxString newValue;
-                    dlg.TransferDataFromWindow(newValue);
-
-                    // If value is not changed do nothing.
-                    if (newValue == strValue) goto error;
-                    strValue = newValue;
-                    m_gridAbstractions->SetCellValue(selrows[ idx ], 3, newValue);
-
-                    //if (-1 == (row =
-                    //        getRegisterGridRow( m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset,
-                    //                                m_mdf.m_list_abstraction[ event.GetRow() ]->m_nPage ) ) ) {
-                    //    wxMessageBox(_("Register corresponding to abstraction not found. Error in mdf-file.") );
-                    //    goto error;
-                    //}
-                    
-                    // Get the row this variable starts at in the register grid
-                    uint16_t row =
-                            m_mdf.getMDFRegister( m_mdf.m_list_abstraction[ selrows[ idx ] ]->m_nOffset,
-                                                    m_mdf.m_list_abstraction[ selrows[ idx ] ]->m_nPage )->m_rowInGrid;
-
-                    switch ( m_mdf.m_list_abstraction[ selrows[ idx ] ]->m_nType ) {
-
-                        case type_string:
-
-                            // Do visual part
-
-                            for ( pos = 0; pos < strValue.Length(); pos++ ) {
-
-                                strBuf = getFormattedValue( strValue[ pos ] );
-                                m_gridAbstractions->SetCellValue( row + pos,
-                                                                    2,
-                                                                    strBuf);
-                                m_gridAbstractions->SetCellTextColour( row + pos,
-                                                                        2,
-                                                                        *wxRED);
-
-                                // Cant write more then allocated space
-                                if (pos > m_mdf.m_list_abstraction[ selrows[ idx ] ]->m_nWidth) break;
-
-                            }
-
-                            // Update registers
-                            m_csw.writeAbstractionString( this,
-                                                            vscp_readStringValue( m_comboNodeID->GetValue() ),
-                                                            m_mdf.m_list_abstraction[ selrows[ idx ] ],
-                                                            strValue,
-                                                            &m_ifguid,
-                                                            &destGUID,
-                                                            NULL,
-                                                            m_bLevel2->GetValue() );
-                            break;
-
-                        case type_boolval:
-                        {
-                            long lv;
-                            bool bval;
-                            strValue.ToLong(&lv);
-                            strValue = strValue.Upper();
-                            if (wxNOT_FOUND != strValue.Find(_("TRUE"))) {
-                                bval = true;
-                            } 
-                            else if (wxNOT_FOUND != strValue.Find(_("FALSE"))) {
-                                bval = false;
-                            } 
-                            else if (lv) {
-                                bval = true;
-                            } 
-                            else {
-                                bval = false;
-                            }
-
-                            // Do visual part
-
-                            strBuf = bval ? _("1") : _("0");
-                            m_gridAbstractions->SetCellValue(row,
-                                    2,
-                                    strBuf);
-
-                            m_gridAbstractions->SetCellTextColour(row,
-                                    2,
-                                    *wxRED);
-
-
-                            // Update registers
-                            m_csw.writeAbstractionBool(this,
-                                    vscp_readStringValue(m_comboNodeID->GetValue()),
-                                    m_mdf.m_list_abstraction[ selrows[ idx ] ],
-                                    bval,
-                                    &m_ifguid,
-                                    &destGUID,
-                                    NULL,
-                                    m_bLevel2->GetValue());
-                        }
-                            break;
-
-                        case type_bitfield:
-                        {
-                            val = 0;
-
-                            // Octet width is the number of bytes needed to store the bits
-                            uint8_t octetwidth =
-                                    m_mdf.m_list_abstraction[ selrows[ idx ] ]->m_nWidth / 8 +
-                                    ((m_mdf.m_list_abstraction[ selrows[ idx ] ]->m_nWidth % 8) ? 1 : 0);
-
-                            uint8_t *p;
-                            p = new uint8_t[ octetwidth ];
-                            memset(p, 0, octetwidth);
-
-                            // Build byte array
-                            wxString str = strValue;
-                            for (int i = 0; i < m_mdf.m_list_abstraction[ selrows[ idx ] ]->m_nWidth; i++) {
-                                for (int j = 7; j > 0; j--) {
-                                    if (!str.Length()) break; // Must be digits left
-                                    if (_("1") == str.Left(1)) {
-                                        *(p + 1) += (1 << j);
-                                    }
-                                    str = str.Right(str.Length() - 1);
-                                }
-                            }
-
-                            for (pos = 0; pos < strValue.Length(); pos++) {
-
-                                strBuf = getFormattedValue(*(p + pos));
-                                m_gridAbstractions->SetCellValue(
-                                        row + pos,
-                                        2,
-                                        strBuf);
-
-                                m_gridAbstractions->SetCellTextColour(row + pos,
-                                        2,
-                                        *wxRED);
-
-                                // Cant write more then allocated space
-                                if (pos > octetwidth) break;
-
-                            }
-
-                            // Update registers
-                            m_csw.writeAbstractionBitField(this,
-                                    vscp_readStringValue(m_comboNodeID->GetValue()),
-                                    m_mdf.m_list_abstraction[ selrows[ idx ] ],
-                                    strValue,
-                                    &m_ifguid,
-                                    &destGUID,
-                                    NULL,
-                                    m_bLevel2->GetValue());
-                        }
-                            break;
-
-                        case type_int8_t:
-                        case type_uint8_t:
-                        {
-                            uint8_t val;
-                            val = vscp_readStringValue(strValue);
-
-                            // Do visual part
-                            strBuf = getFormattedValue(val);
-                            m_gridAbstractions->SetCellValue(row,
-                                    2,
-                                    strBuf);
-
-                            m_gridAbstractions->SetCellTextColour(row,
-                                    2,
-                                    *wxRED);
-
-                            // Update registers
-                            m_csw.writeAbstraction8bitinteger(this,
-                                    vscp_readStringValue(m_comboNodeID->GetValue()),
-                                    m_mdf.m_list_abstraction[ selrows[ idx ] ],
-                                    val,
-                                    &m_ifguid,
-                                    &destGUID,
-                                    NULL,
-                                    m_bLevel2->GetValue());
-                        }
-                            break;
-
-
-                        case type_int16_t:
-                        case type_uint16_t:
-                        {
-                            uint16_t val;
-                            val = vscp_readStringValue(strValue);
-
-                            // Do visual part
-
-                            strBuf = getFormattedValue(((val >> 8) & 0xff));
-                            m_gridAbstractions->SetCellValue(row,
-                                    2,
-                                    strBuf);
-
-                            m_gridAbstractions->SetCellTextColour(row,
-                                    2,
-                                    *wxRED);
-                            strBuf = getFormattedValue(val & 0xff);
-                            m_gridAbstractions->SetCellValue(row + 1,
-                                    2,
-                                    strBuf);
-                            m_gridAbstractions->SetCellTextColour(row + 1,
-                                    2,
-                                    *wxRED);
-
-                            // Update registers
-                            m_csw.writeAbstraction16bitinteger(this,
-                                    vscp_readStringValue(m_comboNodeID->GetValue()),
-                                    m_mdf.m_list_abstraction[ selrows[ idx ] ],
-                                    val,
-                                    &m_ifguid,
-                                    &destGUID,
-                                    NULL,
-                                    m_bLevel2->GetValue());
-                        }
-                            break;
-
-                        case type_int32_t:
-                        case type_uint32_t:
-                        {
-                            long longVal;
-                            strValue.ToLong(&longVal);
-
-                            // Do visual part
-
-                            uint8_t *pVal = (uint8_t *) & longVal;
-
-                            for (int i = 0; i < 4; i++) {
-
-                                strBuf = getFormattedValue(pVal[ i ]);
-                                m_gridAbstractions->SetCellValue(
-                                        m_mdf.m_list_abstraction[ selrows[ idx ] ]->m_nOffset + i,
-                                        2,
-                                        strBuf);
-
-                                m_gridAbstractions->SetCellTextColour(
-                                        m_mdf.m_list_abstraction[ selrows[ idx ] ]->m_nOffset + i,
-                                        2, *wxRED);
-                            }
-
-                            // Update registers
-                            uint32_t val32 = longVal;
-                            m_csw.writeAbstraction32bitinteger(this,
-                                    vscp_readStringValue(m_comboNodeID->GetValue()),
-                                    m_mdf.m_list_abstraction[ selrows[ idx ] ],
-                                    val32,
-                                    &m_ifguid,
-                                    &destGUID,
-                                    NULL,
-                                    m_bLevel2->GetValue());
-                        }
-                            break;
-
-                        case type_int64_t:
-                        case type_uint64_t:
-                        {
-                            wxLongLong_t longlongVal;
-                            strValue.ToLongLong(&longlongVal);
-
-                            // Do visual part
-
-                            uint8_t *pVal = (uint8_t *) & longlongVal;
-
-                            for (int i = 0; i < 8; i++) {
-
-                                strBuf = getFormattedValue(pVal[ i ]);
-                                m_gridAbstractions->SetCellValue(
-                                        m_mdf.m_list_abstraction[ selrows[ idx ] ]->m_nOffset + i,
-                                        2,
-                                        strBuf);
-
-                                m_gridAbstractions->SetCellTextColour(
-                                        m_mdf.m_list_abstraction[ selrows[ idx ] ]->m_nOffset + i,
-                                        2, *wxRED);
-                            }
-
-                            // Update register
-                            uint64_t val64 = longlongVal;
-                            m_csw.writeAbstraction64bitinteger(this,
-                                    vscp_readStringValue(m_comboNodeID->GetValue()),
-                                    m_mdf.m_list_abstraction[ selrows[ idx ] ],
-                                    val64,
-                                    &m_ifguid,
-                                    &destGUID,
-                                    NULL,
-                                    m_bLevel2->GetValue());
-
-                        }
-                            break;
-
-
-                        case type_float:
-                        {
-                            double doubleVal;
-                            strValue.ToDouble(&doubleVal);
-                            float floatVal = doubleVal;
-
-                            uint8_t *pVal = (uint8_t *) & floatVal;
-
-                            // Do visual part
-
-                            for (int i = 0; i < 4; i++) {
-
-                                strBuf = getFormattedValue(pVal[ i ]);
-                                m_gridAbstractions->SetCellValue(
-                                        m_mdf.m_list_abstraction[ selrows[ idx ] ]->m_nOffset + i,
-                                        2,
-                                        strBuf);
-
-                                m_gridAbstractions->SetCellTextColour(
-                                        m_mdf.m_list_abstraction[ selrows[ idx ] ]->m_nOffset + i,
-                                        2, *wxRED);
-                            }
-
-                            // Update register
-                            m_csw.writeAbstractionFloat(this,
-                                    vscp_readStringValue(m_comboNodeID->GetValue()),
-                                    m_mdf.m_list_abstraction[ selrows[ idx ] ],
-                                    floatVal,
-                                    &m_ifguid,
-                                    &destGUID,
-                                    NULL,
-                                    m_bLevel2->GetValue());
-
-                        }
-                            break;
-
-                        case type_double:
-                        {
-                            double doubleVal;
-                            strValue.ToDouble(&doubleVal);
-
-                            uint8_t *pVal = (uint8_t *) & doubleVal;
-                            // Do visual part
-
-                            for (int i = 0; i < 8; i++) {
-
-                                strBuf = getFormattedValue(pVal[ i ]);
-                                m_gridAbstractions->SetCellValue(
-                                        m_mdf.m_list_abstraction[ selrows[ idx ] ]->m_nOffset + i,
-                                        2,
-                                        strBuf);
-
-                                m_gridAbstractions->SetCellTextColour(
-                                        m_mdf.m_list_abstraction[ selrows[ idx ] ]->m_nOffset + i,
-                                        2, *wxRED);
-                            }
-
-                            // Update register
-                            m_csw.writetAbstractionDouble(this,
-                                    vscp_readStringValue(m_comboNodeID->GetValue()),
-                                    m_mdf.m_list_abstraction[ selrows[ idx ] ],
-                                    doubleVal,
-                                    &m_ifguid,
-                                    &destGUID,
-                                    NULL,
-                                    m_bLevel2->GetValue());
-
-                        }
-                            break;
-
-                        case type_date:
-                        {
-                            // Dates are stored as YYYY-MM-DD
-                            // byte 0 - MSB of year
-                            // byte 1 - LSB of year
-                            // byte 2 - Month (1-12)
-                            // byte 3 - Date (0-31)
-
-                            uint8_t buf[ 4 ];
-                            wxDateTime date;
-
-                            date.ParseDate(strValue);
-
-                            uint16_t year = date.GetYear();
-                            buf[ 0 ] = ((year >> 8) & 0xff);
-                            buf[ 1 ] = (year & 0xff);
-                            buf[ 2 ] = date.GetMonth();
-                            buf[ 3 ] = date.GetDay();
-
-                            // Do visual part
-
-                            for (int i = 0; i < 4; i++) {
-
-                                strBuf = getFormattedValue(buf[ i ]);
-                                m_gridAbstractions->SetCellValue(
-                                        m_mdf.m_list_abstraction[ selrows[ idx ] ]->m_nOffset + i,
-                                        2,
-                                        strBuf);
-
-                                m_gridAbstractions->SetCellTextColour(
-                                        m_mdf.m_list_abstraction[ selrows[ idx ] ]->m_nOffset + i,
-                                        2, *wxRED);
-                            }
-
-                            // Update register
-                            m_csw.writeAbstractionDate(this,
-                                    vscp_readStringValue(m_comboNodeID->GetValue()),
-                                    m_mdf.m_list_abstraction[ selrows[ idx ] ],
-                                    date,
-                                    &m_ifguid,
-                                    &destGUID,
-                                    NULL,
-                                    m_bLevel2->GetValue());
-
-                        }
-                            break;
-
-                        case type_time:
-                        {
-                            // Dates are stored as HH:MM:SS
-                            // byte 0 - Hours
-                            // byte 1 - Minutes
-                            // byte 2 - seconds
-                            uint8_t buf[ 3 ];
-                            wxDateTime time;
-                            time.ParseTime(strValue);
-
-                            buf[ 0 ] = time.GetHour();
-                            buf[ 1 ] = time.GetMinute();
-                            buf[ 2 ] = time.GetSecond();
-
-                            // Do visual part
-
-                            for (int i = 0; i < 3; i++) {
-
-                                strBuf = getFormattedValue(buf[ i ]);
-                                m_gridAbstractions->SetCellValue(
-                                        m_mdf.m_list_abstraction[ selrows[ idx ] ]->m_nOffset + i,
-                                        2,
-                                        strBuf);
-
-                                m_gridAbstractions->SetCellTextColour(
-                                        m_mdf.m_list_abstraction[ selrows[ idx ] ]->m_nOffset + i,
-                                        2, *wxRED);
-                            }
-
-                            // Update register
-                            m_csw.writeAbstractionTime(this,
-                                    vscp_readStringValue(m_comboNodeID->GetValue()),
-                                    m_mdf.m_list_abstraction[ selrows[ idx ] ],
-                                    time,
-                                    &m_ifguid,
-                                    &destGUID,
-                                    NULL,
-                                    m_bLevel2->GetValue());
-
-                        }
-                            break;
-
-                        case type_guid:
-                        {
-                            cguid guid;
-                            guid.getFromString(strValue);
-
-                            const uint8_t *p = guid.getGUID();
-
-                            // Do visual part
-
-                            for (int i = 0; i < 3; i++) {
-
-                                strBuf = getFormattedValue(p[i]);
-                                m_gridAbstractions->SetCellValue(
-                                        m_mdf.m_list_abstraction[ selrows[ idx ] ]->m_nOffset + i,
-                                        2,
-                                        strBuf);
-
-                                m_gridAbstractions->SetCellTextColour(
-                                        m_mdf.m_list_abstraction[ selrows[ idx ] ]->m_nOffset + i,
-                                        2, *wxRED);
-                            }
-
-                            // Update register
-                            m_csw.writeAbstractionGUID(this,
-                                    vscp_readStringValue(m_comboNodeID->GetValue()),
-                                    m_mdf.m_list_abstraction[ selrows[ idx ] ],
-                                    guid);
-                        }
-                            break;
-
-                        case type_unknown:
-                        default:
-                            break;
-
-                    } // case
-
-                    // Update registers
-                    OnButtonUpdateClick(event);
-
-                    m_gridAbstractions->SelectRow( selrows[ idx ] );
-
-                }
-            }
-        }
-    }
+    int i;
+    wxArrayInt selrows = m_gridAbstractions->GetSelectedRows();
     
-error:
+    saveAbstractionEdits();
+    
+    // Update registers
+    OnButtonUpdateClick(event);
+
+    for ( i=0; i<selrows.GetCount(); i++ ) {
+        m_gridAbstractions->SelectRow( selrows[ i ], true );
+    }
 
     event.Skip();
 }
@@ -2452,7 +1928,12 @@ bool frmDeviceConfig::writeChangedLevel1Registers(unsigned char nodeid)
                 m_gridRegisters->SetCellAlignment( i, 2,
                                                     wxALIGN_CENTRE,
                                                     wxALIGN_CENTRE );
-                m_gridRegisters->SetCellTextColour(i, 2, *wxBLUE);
+                if ( *wxBLUE == m_gridRegisters->GetCellTextColour(i, 2 ) ) {
+                    m_gridRegisters->SetCellTextColour(i, 2, *wxBLUE);                
+                }
+                else {
+                   m_gridRegisters->SetCellTextColour(i, 2, *wxBLACK);   
+                }
                 m_gridRegisters->SelectRow(i);
                 m_gridRegisters->MakeCellVisible(i, 2);
                 m_gridRegisters->Update();
@@ -5428,7 +4909,7 @@ void frmDeviceConfig::OnCellRightClick(wxGridEvent& event)
         menu.Append( Menu_Popup_Abstraction_Read_Value, _T("Read abstractions(s) for selected row(s)")) ;
         menu.Append( Menu_Popup_Abstraction_Write_Value, _T("Write abstractions(s) for selected row(s)") );
         menu.Append( Menu_Popup_Abstraction_Undo, _T("Undo abstraction(s) for selected row(s)") );
-        menu.Append( Menu_Popup_Abstraction_Default, _T("Write default(s( for selected row(s)") );
+        menu.Append( Menu_Popup_Abstraction_Default, _T("Write default(s) for selected row(s)") );
         menu.AppendSeparator();
         menu.Append( Menu_Popup_Full_Edit, _T("Open full abstraction edit dialog") );
 
@@ -5508,10 +4989,17 @@ void frmDeviceConfig::readValueSelectedRegisterRow( wxCommandEvent& WXUNUSED( ev
                         // Update display
                         strBuf = getFormattedValue(val);
 
-                        m_gridRegisters->SetCellValue(selrows[i], 2, strBuf);
-                        m_gridRegisters->SelectRow(selrows[i]);
-                        m_gridRegisters->MakeCellVisible(selrows[i], 2);
+                        m_gridRegisters->SetCellValue( selrows[i], 2, strBuf );
+                        m_gridRegisters->SelectRow( selrows[i] );
+                        m_gridRegisters->MakeCellVisible( selrows[i], 2 );
                         m_gridRegisters->Update();
+                        
+                        if ( *wxBLUE == m_gridRegisters->GetCellTextColour(selrows[i], 2 ) ) {
+                            m_gridRegisters->SetCellTextColour(selrows[i], 2, *wxBLUE);                
+                        }
+                        else {
+                            m_gridRegisters->SetCellTextColour(selrows[i], 2, *wxBLACK);   
+                        }
 
                         updateDmGridConditional(reg, page);
                         updateAbstractionGridConditional(reg, page);
@@ -5569,7 +5057,17 @@ void frmDeviceConfig::readValueSelectedRegisterRow( wxCommandEvent& WXUNUSED( ev
 // writeValueSelectedRegisterRow
 //
 
-void frmDeviceConfig::writeValueSelectedRegisterRow(wxCommandEvent& WXUNUSED(event)) 
+void frmDeviceConfig::writeValueSelectedRegisterRow(wxCommandEvent& WXUNUSED(event) ) 
+{
+    doWriteValueSelectedRegisterRow(); 
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// doWriteValueSelectedRegisterRow
+//
+
+void frmDeviceConfig::doWriteValueSelectedRegisterRow( bool bUpdate ) 
 {
     wxString strBuf;
     uint8_t nodeid = 0;
@@ -5656,8 +5154,10 @@ void frmDeviceConfig::writeValueSelectedRegisterRow(wxCommandEvent& WXUNUSED(eve
                             m_gridRegisters->SetCellTextColour(selrows[i], 2, *wxBLUE);
                             m_gridRegisters->Update();
 
-                            updateDmGridConditional(reg, page);
-                            updateAbstractionGridConditional(reg, page);
+                            if ( bUpdate ) {
+                                updateDmGridConditional(reg, page);
+                                updateAbstractionGridConditional(reg, page);
+                            }
                         }
                         else {
                             wxMessageBox( _("Failed to write value.") );
@@ -5688,8 +5188,10 @@ void frmDeviceConfig::writeValueSelectedRegisterRow(wxCommandEvent& WXUNUSED(eve
                             m_gridRegisters->SetCellTextColour(selrows[i], 2, *wxBLUE);
                             m_gridRegisters->Update();
 
-                            updateDmGridConditional(reg, page);
-                            updateAbstractionGridConditional(reg, page);
+                            if ( bUpdate ) {
+                                updateDmGridConditional(reg, page);
+                                updateAbstractionGridConditional(reg, page);
+                            }
 
                         }
                         else {
@@ -5838,7 +5340,7 @@ void frmDeviceConfig::undoValueSelectedRegisterRow(wxCommandEvent& WXUNUSED(even
 // defaultValueSelectedRegisterRow
 //
 
-void frmDeviceConfig::defaultValueSelectedRegisterRow(wxCommandEvent& WXUNUSED(event)) 
+void frmDeviceConfig::defaultValueSelectedRegisterRow( wxCommandEvent& WXUNUSED(event) ) 
 {
     wxString strBuf;
     uint8_t nodeid = 0;
@@ -5884,11 +5386,12 @@ void frmDeviceConfig::defaultValueSelectedRegisterRow(wxCommandEvent& WXUNUSED(e
 
                     CMDF_Register *mdfRegister = m_mdf.getMDFRegister(reg, page);
                     if (NULL == mdfRegister) {
-                        wxMessageBox(_("Register is unkown. Report possible iternal problem."));
+                        wxMessageBox(_("Register is unknown. Report possible internal problem."));
                         continue;
                     }
 
-                    val = vscp_readStringValue( mdfRegister->m_strDefault );
+                    mdfRegister->setDefault();
+                    val = mdfRegister->m_value;
 
                     if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
 
@@ -6235,8 +5738,12 @@ void frmDeviceConfig::updateAbstractionGrid(void)
 
         // Set foreground and background colours.
         for ( int i = 0; i < 5; i++ ) {
-            m_gridAbstractions->SetCellTextColour( m_gridAbstractions->GetNumberRows() - 1, i, fgcolor );
-            m_gridAbstractions->SetCellBackgroundColour( m_gridAbstractions->GetNumberRows() - 1, i, bgcolor );
+            m_gridAbstractions->SetCellTextColour( m_gridAbstractions->GetNumberRows()-1, 
+                                                        i, 
+                                                        fgcolor );
+            m_gridAbstractions->SetCellBackgroundColour( m_gridAbstractions->GetNumberRows()-1, 
+                                                            i, 
+                                                            bgcolor );
         }
 
 
@@ -6312,7 +5819,7 @@ void frmDeviceConfig::updateAbstractionGrid(void)
 
         strType = pAbstraction->getAbstractionValueType();
         m_userRegisters.abstractionValueFromRegsToString( pAbstraction, 
-                                                        strValue,
+                                                            strValue,
                             ( VSCP_DEVCONFIG_NUMBERBASE_DECIMAL == g_Config.m_Numberbase ) ? FORMAT_ABSTRACTION_DECIMAL : FORMAT_ABSTRACTION_HEX );
 
 
@@ -6987,8 +6494,7 @@ uint16_t frmDeviceConfig::getPageFromCell(int row)
 
 wxString frmDeviceConfig::getFormattedValue(uint8_t val) 
 {
-    if (VSCP_DEVCONFIG_NUMBERBASE_HEX ==
-            g_Config.m_Numberbase) {
+    if (VSCP_DEVCONFIG_NUMBERBASE_HEX ==  g_Config.m_Numberbase) {
         return wxString::Format(_("0x%02X"), val);
     } 
     else {
@@ -7411,22 +6917,569 @@ void frmDeviceConfig::OnResizeWindow( wxSizeEvent& event )
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// OnKeyDown
+// readUpdateRegisterRow
 //
 
-void frmDeviceConfig::OnKeyDown( wxKeyEvent& event )
+bool frmDeviceConfig::readUpdateRegisterRow( uint16_t row, 
+                                                bool bUpdateDM, 
+                                                bool bUpdateAbstractions ) 
 {
-    //wxMessageBox(wxString::Format("KeyDown: %i\n", (int)event.GetKeyCode())); 
-    event.Skip();
+    uint8_t val;
+    wxString strBuf;
+    uint8_t register_page = getPageFromCell( row );
+    uint8_t register_offset = getRegFromCell( row );
+       
+    if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
+        
+        uint8_t nodeid = 0;
+        
+        // Get Interface id
+        nodeid = vscp_readStringValue( m_comboNodeID->GetValue() );
+
+        // Empty input queue
+        canalMsg canalmsg;
+        while (m_csw.getDllInterface()->doCmdDataAvailable()) {
+            if (CANAL_ERROR_SUCCESS != m_csw.getDllInterface()->doCmdReceive(&canalmsg)) break;
+        }
+
+        if (CANAL_ERROR_SUCCESS == 
+                m_csw.getDllInterface()->readLevel1Register( nodeid, 
+                                                                register_page, 
+                                                                register_offset, 
+                                                                &val ) ) {
+
+            // Set value from read registers
+            m_userRegisters.setValue( register_page, register_offset, val );
+
+            // Update display
+            strBuf = getFormattedValue( val );
+
+            // Show value
+            m_gridRegisters->SetCellValue( row, 2, strBuf);
+            m_gridRegisters->SelectRow( row );
+            m_gridRegisters->MakeCellVisible( row, 2);
+            m_gridRegisters->Update();
+
+            if ( bUpdateDM ) updateDmGridConditional( register_offset, 
+                                                        register_page );
+            if ( bUpdateAbstractions ) updateAbstractionGridConditional( register_offset, 
+                                                                            register_page);
+        }
+        else {
+            return false;
+        }
+    }
+    else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
+
+        // Get the destination GUID
+        cguid destGUID;
+        destGUID.getFromString(m_comboNodeID->GetValue());
+
+        // Empty input queue
+        m_csw.getTcpIpInterface()->doCmdClear();
+
+        if (VSCP_ERROR_SUCCESS ==
+                m_csw.getTcpIpInterface()->readLevel2Registers( register_offset,
+                                                                register_page,
+                                                                1,
+                                                                &val,
+                                                                m_ifguid, 
+                                                                &destGUID) ) {
+
+            // Set value
+            m_userRegisters.setValue( register_page, register_offset, val );
+
+            // Update display
+            //strBuf.Printf(_("0x%02lx"), val);
+            strBuf = getFormattedValue( val );
+            m_gridRegisters->SetCellValue( row, 2, strBuf );
+            m_gridRegisters->SelectRow( row );
+            m_gridRegisters->MakeCellVisible( row, 2 );
+            m_gridRegisters->Update();
+
+            if ( bUpdateDM ) updateDmGridConditional( register_offset, 
+                                                        register_page);
+            if ( bUpdateAbstractions ) updateAbstractionGridConditional( register_offset, 
+                                                                            register_page);
+
+        }
+        else {
+            return false;
+        }
+
+    } // Interface 
+
+    return true;
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
-// writeAbstractionRows
+// saveAbstractionEdits
+//
+
+void frmDeviceConfig::saveAbstractionEdits( bool bShowDialog )
+{
+    uint8_t pos;
+    wxString strValue;
+    wxString newval;
+    wxString strBuf;
+    uint8_t val = 0;
+    DialogAbstractionEdit dlg(this);
+    uint8_t reg;
+    int idx, i;
+    wxCommandEvent event;   // dummy
+
+    cguid destGUID;
+    destGUID.getFromString( m_comboNodeID->GetValue() );
+
+    if ( m_gridAbstractions->GetNumberRows() ) {
+
+        // Must do this hack to handle rows selected by clicking a
+        // cell instead of the border.
+        if (0 == m_gridAbstractions->GetSelectedRows().GetCount()) {
+            // Select the row
+            m_gridAbstractions->SelectRow(m_lastLeftRegisterClickRow);
+        }
+
+        wxArrayInt selAbstractionRows = m_gridAbstractions->GetSelectedRows();
+
+        if ( selAbstractionRows.GetCount() ) {
+
+            for (idx = selAbstractionRows.GetCount()-1; idx >= 0; idx--) {
+                
+                // Get value (in string form)
+                strValue = m_gridAbstractions->GetCellValue( selAbstractionRows[ idx ], 3 );
+
+                // Send to dialog
+                if ( bShowDialog ) {
+                    dlg.TransferDataToWindow( m_mdf.m_list_abstraction[ selAbstractionRows[ idx ] ], strValue );
+                }
+
+                m_gridAbstractions->SelectRow( selAbstractionRows[ idx ] );
+
+                int rv = wxID_OK;
+                if ( bShowDialog ) {
+                    rv = dlg.ShowModal();
+                }
+                
+                if ( wxID_OK == rv ) {
+
+                    wxString newValue;
+                    if ( bShowDialog ) {
+                        dlg.TransferDataFromWindow( newValue );
+                        
+                        // If value is not changed do nothing.
+                        if ( newValue == strValue ) continue;
+                        strValue = newValue;
+                        m_gridAbstractions->SetCellValue( selAbstractionRows[ idx ], 3, newValue );
+                    } 
+                    else {
+                        newval = m_gridAbstractions->GetCellValue( selAbstractionRows[ idx ], 3 );
+                    }                    
+                    
+                    m_gridAbstractions->SetCellTextColour( selAbstractionRows[ idx ],
+                                                            3,
+                                                            *wxRED );
+                    
+                    // Get the row this variable starts at in the register grid
+                    uint16_t rowRegister =
+                            m_mdf.getMDFRegister( m_mdf.m_list_abstraction[ selAbstractionRows[ idx ] ]->m_nOffset,
+                                                    m_mdf.m_list_abstraction[ selAbstractionRows[ idx ] ]->m_nPage )->m_rowInGrid;
+                    
+                    //register_page = getPageFromCell( row );
+                    //register_offset = getRegFromCell( row );
+                    
+                    // Save selected registers
+                    wxArrayInt selrowsRegisters = m_gridRegisters->GetSelectedRows();
+                
+                    
+
+                    switch ( m_mdf.m_list_abstraction[ selAbstractionRows[ idx ] ]->m_nType ) {
+
+                        case type_string:
+                        {                            
+                            char *p = new char[ m_mdf.m_list_abstraction[ selAbstractionRows[ idx ] ]->getAbstractionTypeByteCount() ];
+                            if ( NULL != p ) {
+                                memset( p, 0, m_mdf.m_list_abstraction[ selAbstractionRows[ idx ] ]->getAbstractionTypeByteCount() );
+                                strncpy(p, (const char*)strValue.mb_str(wxConvUTF8), m_mdf.m_list_abstraction[ selAbstractionRows[ idx ] ]->getAbstractionTypeByteCount() );
+                                // Update registers
+                                for ( int i=0; i<m_mdf.m_list_abstraction[ selAbstractionRows[ idx ] ]->getAbstractionTypeByteCount(); i++ ) {
+                                    m_gridRegisters->SelectRow( rowRegister + i );
+                                    m_gridRegisters->SetCellValue( rowRegister + i, 
+                                                                    2, 
+                                                                    wxString::Format(_("%d"), *(p+i) ) );
+                                    m_gridRegisters->SetCellTextColour( rowRegister + i,
+                                                                            2,
+                                                                            *wxRED );
+                                    doWriteValueSelectedRegisterRow( false );
+                                } 
+                            }
+                            else {
+                                wxMessageBox(_("Unable to allocate memory for string!"));
+                            }
+
+                        }
+                        break;
+
+                        case type_boolval:
+                        {
+                            long lv;
+                            bool bval;
+                            strValue.ToLong( &lv );
+                            strValue = strValue.MakeUpper();
+                            
+                            if (wxNOT_FOUND != strValue.Find(_("TRUE"))) {
+                                bval = true;
+                            } 
+                            else if (wxNOT_FOUND != strValue.Find(_("FALSE"))) {
+                                bval = false;
+                            } 
+                            else if (lv) {
+                                bval = true;
+                            } 
+                            else {
+                                bval = false;
+                            }
+
+                            
+                            m_gridRegisters->SelectRow( rowRegister );
+                                    m_gridRegisters->SetCellValue( rowRegister, 
+                                                                    2, 
+                                                                    wxString::Format(_("%d"), ( bval ? 1 : 0 ) ) );
+                                    m_gridRegisters->SetCellTextColour( rowRegister,
+                                                                            2,
+                                                                            *wxRED );
+                                    doWriteValueSelectedRegisterRow( false );
+
+                        }
+                        break;
+
+                        case type_bitfield:
+                        {
+                            // Octet width is the number of bytes needed to store the bits
+                            uint8_t octetwidth = m_mdf.m_list_abstraction[ selAbstractionRows[ idx ] ]->m_nWidth/8 + 
+                                                    ( m_mdf.m_list_abstraction[ selAbstractionRows[ idx ] ]->m_nWidth % 8 ) ? 1 : 0; 
+
+                            uint8_t *p;
+                            p = new uint8_t[ octetwidth ];
+                            if ( NULL != p ) {
+                                
+                                memset( p, 0, octetwidth );
+
+                                // Build byte array
+                                wxString str = strValue;
+                                for ( int k=0; k<m_mdf.m_list_abstraction[ selAbstractionRows[ idx ] ]->m_nWidth; k++ ) {
+                                    for ( int j=7; j>0; j-- ) {
+                                        if ( !str.Length() ) break; // Must be digits left
+                                        if ( _("1") == str.Left( 1 ) ) {
+                                            *(p+1) += (1 << j);
+                                        }
+                                        str = str.Right( str.Length() - 1 );
+                                    }
+                                }
+                                
+                                // Update registers
+                                for ( int i=0; i<octetwidth; i++ ) {
+                                    m_gridRegisters->SelectRow( rowRegister + i );
+                                    m_gridRegisters->SetCellValue( rowRegister + i, 
+                                                                    2, 
+                                                                    wxString::Format(_("%d"), *(p+i) ) );
+                                    m_gridRegisters->SetCellTextColour( rowRegister + i,
+                                                                            2,
+                                                                            *wxRED );
+                                    doWriteValueSelectedRegisterRow( false );
+                                } 
+                                
+                            }
+                            else {
+                                wxMessageBox(_("Unable to allocate memory for bit array!"));
+                            }
+                            
+                        }
+                        break;
+
+                        case type_int8_t:
+                        case type_uint8_t:
+                        {
+                            uint8_t val;
+                            val = vscp_readStringValue( strValue );
+                            
+                            m_gridRegisters->SelectRow( rowRegister );
+                            m_gridRegisters->SetCellValue( rowRegister, 
+                                                                2, 
+                                                                wxString::Format(_("%d"), ( val >> 8 ) & 0xff ) );
+                            m_gridRegisters->SetCellTextColour( rowRegister,
+                                                                            2,
+                                                                            *wxRED );
+                            doWriteValueSelectedRegisterRow( false );
+
+                        }
+                        break;
+
+
+                        case type_int16_t:
+                        case type_uint16_t:
+                        {
+                            uint16_t val;
+                            wxCommandEvent event;   // dummy
+                            val = vscp_readStringValue( strValue );
+
+                            m_gridRegisters->SelectRow( rowRegister );
+                            m_gridRegisters->SetCellValue( rowRegister, 
+                                                                2, 
+                                                                wxString::Format(_("%d"), ( val >> 8 ) & 0xff ) );
+                            m_gridRegisters->SetCellTextColour( rowRegister + 1,
+                                                                            2,
+                                                                            *wxRED );
+                            doWriteValueSelectedRegisterRow( false );
+                            
+                            m_gridRegisters->SelectRow( rowRegister+1 );
+                            m_gridRegisters->SetCellValue( rowRegister+1, 
+                                                                2, 
+                                                                wxString::Format(_("%d"), val & 0xff ) );
+                            m_gridRegisters->SetCellTextColour( rowRegister + 1,
+                                                                            2,
+                                                                            *wxRED );
+                            doWriteValueSelectedRegisterRow( false );
+                            
+                        }
+                        break;
+
+                        case type_int32_t:
+                        case type_uint32_t:
+                        {
+                            long longVal;
+                            strValue.ToLong( &longVal );
+                            wxINT32_SWAP_ON_LE( longVal );
+                            
+                            uint8_t *p = (uint8_t *)&longVal;
+
+                            for ( i=0; i<4; i++ ) {
+                                m_gridRegisters->SelectRow( rowRegister + i );
+                                m_gridRegisters->SetCellValue( rowRegister + i, 
+                                                                    2, 
+                                                                    wxString::Format(_("%d"), *(p + i) ) );
+                                m_gridRegisters->SetCellTextColour( rowRegister + i,
+                                                                        2,
+                                                                        *wxRED );
+                                doWriteValueSelectedRegisterRow( false );
+                            }
+                            
+                        }
+                        break;
+
+                        case type_int64_t:
+                        case type_uint64_t:
+                        {
+                            wxLongLong_t longlongVal;
+                            strValue.ToLongLong( &longlongVal );
+                            wxUINT64_SWAP_ON_LE( longlongVal );
+
+                            uint8_t *p = (uint8_t *)&longlongVal;
+
+                            for ( i=0; i<8; i++ ) {
+                                m_gridRegisters->SelectRow( rowRegister + i );
+                                m_gridRegisters->SetCellValue( rowRegister + i, 
+                                                                    2, 
+                                                                    wxString::Format(_("%d"), *(p + i) ) );
+                                m_gridRegisters->SetCellTextColour( rowRegister + i,
+                                                                        2,
+                                                                        *wxRED );
+                                doWriteValueSelectedRegisterRow( false );
+                            }
+
+                        }
+                        break;
+
+
+                        case type_float:
+                        {
+                            double doubleVal;
+                            strValue.ToDouble( &doubleVal );
+                            float floatVal = doubleVal;
+
+                            uint8_t *p = (uint8_t *)&floatVal;
+                            
+                            wxINT32_SWAP_ON_LE( (uint32_t)*p );
+                            
+                            for ( i=0; i<4; i++ ) {
+                                m_gridRegisters->SelectRow( rowRegister + i );
+                                m_gridRegisters->SetCellValue( rowRegister + i, 
+                                                                    2, 
+                                                                    wxString::Format(_("%d"), *(p + i) ) );
+                                m_gridRegisters->SetCellTextColour( rowRegister + i,
+                                                                        2,
+                                                                        *wxRED );
+                                doWriteValueSelectedRegisterRow( false );
+                            }
+
+                        }
+                        break;
+
+                        case type_double:
+                        {
+                            double doubleVal;
+                            strValue.ToDouble(&doubleVal);
+
+                            uint8_t *p = (uint8_t *)&doubleVal;
+                            wxUINT64_SWAP_ON_LE( doubleVal );
+
+                            for ( i=0; i<8; i++ ) {
+                                m_gridRegisters->SelectRow( rowRegister + i );
+                                m_gridRegisters->SetCellValue( rowRegister + i, 
+                                                                    2, 
+                                                                    wxString::Format(_("%d"), *(p + i) ) );
+                                m_gridRegisters->SetCellTextColour( rowRegister + i,
+                                                                        2,
+                                                                        *wxRED );
+                                doWriteValueSelectedRegisterRow( false );
+                            }
+
+                        } 
+                        break;
+
+                        case type_date:
+                        {
+                            // Dates are stored as YYYY-MM-DD
+                            // byte 0 - MSB of year
+                            // byte 1 - LSB of year
+                            // byte 2 - Month (1-12)
+                            // byte 3 - Date (0-31)
+
+                            uint8_t buf[ 4 ];
+                            wxDateTime date;
+
+                            date.ParseDate( strValue );
+
+                            uint16_t year = date.GetYear();
+                            buf[ 0 ] = ((year >> 8) & 0xff);
+                            buf[ 1 ] = (year & 0xff);
+                            buf[ 2 ] = date.GetMonth();
+                            buf[ 3 ] = date.GetDay();
+
+                            for ( i=0; i<4; i++ ) {
+                                m_gridRegisters->SelectRow( rowRegister + i );
+                                m_gridRegisters->SetCellValue( rowRegister + i, 
+                                                                    2, 
+                                                                    wxString::Format(_("%d"), buf[ i ] ) );
+                                m_gridRegisters->SetCellTextColour( rowRegister + i,
+                                                                        2,
+                                                                        *wxRED );
+                                doWriteValueSelectedRegisterRow( false );
+                            }
+
+                        }
+                        break;
+
+                        case type_time:
+                        {
+                            // Dates are stored as HH:MM:SS
+                            // byte 0 - Hours
+                            // byte 1 - Minutes
+                            // byte 2 - seconds
+                            uint8_t buf[ 3 ];
+                            wxDateTime time;
+                            time.ParseTime( strValue );
+
+                            buf[ 0 ] = time.GetHour();
+                            buf[ 1 ] = time.GetMinute();
+                            buf[ 2 ] = time.GetSecond();
+
+                            for ( i=0; i<3; i++ ) {
+                                m_gridRegisters->SelectRow( rowRegister + i );
+                                m_gridRegisters->SetCellValue( rowRegister + i, 
+                                                                    2, 
+                                                                    wxString::Format(_("%d"), buf[ i ] ) );
+                                m_gridRegisters->SetCellTextColour( rowRegister + i,
+                                                                        2,
+                                                                        *wxRED );
+                                doWriteValueSelectedRegisterRow( false );
+                            }
+
+                        }
+                        break;
+
+                        case type_guid:
+                        {
+                            cguid guid;
+                            guid.getFromString( strValue );
+
+                            const uint8_t *p = guid.getGUID();
+
+                            for ( i=0; i<16; i++ ) {
+                                m_gridRegisters->SelectRow( rowRegister + i );
+                                m_gridRegisters->SetCellValue( rowRegister + i, 
+                                                                    2, 
+                                                                    wxString::Format(_("%d"), *( p + i ) ) );
+                                m_gridRegisters->SetCellTextColour( rowRegister + i,
+                                                                        2,
+                                                                        *wxRED );
+                                doWriteValueSelectedRegisterRow( false );
+                            }
+                        }
+                        break;
+
+                        case type_unknown:
+                        default:
+                            break;
+
+                    } // case
+                    
+                    // Restore row selections
+                    for ( i=0; i<selrowsRegisters.GetCount(); i++ ) {
+                        m_gridRegisters->SelectRow( selrowsRegisters[ i ], true );
+                    }                    
+                    
+                } // dialog box OK
+            } // for each selected row
+            
+            // Restore selection
+            m_gridAbstractions->SelectRow( selAbstractionRows[ 0 ] );
+            m_gridAbstractions->MakeCellVisible( selAbstractionRows[ 0 ], 0 );
+            for ( idx=selAbstractionRows.GetCount()-1; idx >= 0; idx-- ) {
+                m_gridAbstractions->SelectRow( selAbstractionRows[ idx ], true );
+            } 
+            
+        } // At least one selected row
+    
+    }
+
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// writeAbstractionRows  (update abstractions)
 //
     
 void frmDeviceConfig::writeAbstractionRows( wxCommandEvent& event )
 {
-    wxMessageBox(_("writeAbstractionRows"));
+    int idx;
+    
+    wxArrayInt selAbstractionRows = m_gridAbstractions->GetSelectedRows();
+    
+    for ( idx=0; idx<m_gridAbstractions->GetNumberRows(); idx++ ) {
+    
+        // If value is marked as changed
+        if ( *wxRED == m_gridAbstractions->GetCellTextColour( idx, 3 ) ) {
+            
+            // select the row
+            m_gridAbstractions->SelectRow( idx );
+            m_gridAbstractions->MakeCellVisible( idx, 0 );
+            
+            writeValueSelectedAbstractionRow( event );
+            
+        }
+        
+    }
+    
+    // Restore selection
+    m_gridAbstractions->SelectRow( selAbstractionRows[ 0 ] );
+    m_gridAbstractions->MakeCellVisible( selAbstractionRows[ 0 ], 0 );
+    for ( idx=selAbstractionRows.GetCount()-1; idx >= 0; idx-- ) {
+        m_gridAbstractions->SelectRow( selAbstractionRows[ idx ], true );
+    } 
+    
     event.Skip();
 }
     
@@ -7436,7 +7489,81 @@ void frmDeviceConfig::writeAbstractionRows( wxCommandEvent& event )
     
 void frmDeviceConfig::readValueSelectedAbstractionRow( wxCommandEvent& event )
 {
-    wxMessageBox(_("readValueSelectedAbstractionRow"));
+    wxString strValue;
+    wxString strType;
+    uint32_t register_page;
+    uint32_t register_offset;
+    uint8_t *pRegs;
+    int idx;
+    
+    wxBusyCursor wait;
+    
+    if ( m_gridAbstractions->GetNumberRows() ) {
+        
+        // Must do this hack to handle rows selected by clicking a
+        // cell instead of the border.
+        if ( 0 == m_gridAbstractions->GetSelectedRows().GetCount() ) {
+            // Select the row
+            m_gridAbstractions->SelectRow( m_lastLeftAbstractionClickRow );
+        }
+
+        wxArrayInt selAbstractionRows = m_gridAbstractions->GetSelectedRows();
+
+        if ( selAbstractionRows.GetCount() ) {
+
+            for ( idx=selAbstractionRows.GetCount()-1; idx >= 0; idx-- ) {
+                
+                // Get the row this variable starts at in the register grid
+                uint16_t row =
+                    m_mdf.getMDFRegister( m_mdf.m_list_abstraction[ selAbstractionRows[ idx ] ]->m_nOffset,
+                                            m_mdf.m_list_abstraction[ selAbstractionRows[ idx ] ]->m_nPage )->m_rowInGrid;
+                
+                register_page = getPageFromCell( row );
+                register_offset = getRegFromCell( row );
+                
+                // Read affected registers
+                for ( int i=0; i<m_mdf.m_list_abstraction[ selAbstractionRows[ idx ] ]->getAbstractionTypeByteCount(); i++ ) {
+                    if ( !readUpdateRegisterRow( row + i, false, false ) ) {
+                        wxMessageBox( _("Failed to read register.") );
+                        return;
+                    }
+                }
+                
+                //pRegs = m_userRegisters.getRegs4Page( register_page );
+                
+                //strType = m_mdf.m_list_abstraction[ selrows[ idx ] ]->getAbstractionValueType();
+                m_userRegisters.abstractionValueFromRegsToString( m_mdf.m_list_abstraction[ selAbstractionRows[ idx ] ], 
+                                                                    strValue,
+                            ( VSCP_DEVCONFIG_NUMBERBASE_DECIMAL == g_Config.m_Numberbase ) ? FORMAT_ABSTRACTION_DECIMAL : FORMAT_ABSTRACTION_HEX );
+        
+                m_gridAbstractions->SetCellValue( selAbstractionRows[ idx ],
+                                                    3,
+                                                    strValue );
+                
+                if ( *wxRED == m_gridAbstractions->GetCellTextColour( selAbstractionRows[ idx ],
+                                                                        3 ) ) {
+                    m_gridAbstractions->SetCellTextColour( selAbstractionRows[ idx ],
+                                                            3,
+                                                            *wxBLUE );
+                }
+                else {
+                    m_gridAbstractions->SetCellTextColour( selAbstractionRows[ idx ],
+                                                            3,
+                                                            *wxBLACK );
+                }
+            
+            }
+            
+            // Restore selection
+            m_gridAbstractions->SelectRow( selAbstractionRows[ 0 ] );
+            m_gridAbstractions->MakeCellVisible( selAbstractionRows[ 0 ], 0 );
+            for ( idx=selAbstractionRows.GetCount()-1; idx >= 0; idx-- ) {
+                m_gridAbstractions->SelectRow( selAbstractionRows[ idx ], true );
+            } 
+            
+        }
+    }
+    
     event.Skip();
 }
 
@@ -7446,7 +7573,64 @@ void frmDeviceConfig::readValueSelectedAbstractionRow( wxCommandEvent& event )
     
 void frmDeviceConfig::writeValueSelectedAbstractionRow( wxCommandEvent& event )
 {
-    wxMessageBox(_("writeValueSelectedAbstractionRow"));
+    wxString strValue;
+    wxString strType;
+    uint16_t row;
+    uint32_t register_page;
+    uint32_t register_offset;
+    uint8_t *pRegs;
+    int idx;
+    
+    wxBusyCursor wait;
+    
+    if ( m_gridAbstractions->GetNumberRows() ) {
+        
+        // Must do this hack to handle rows selected by clicking a
+        // cell instead of the border.
+        if ( 0 == m_gridAbstractions->GetSelectedRows().GetCount() ) {
+            // Select the row
+            m_gridAbstractions->SelectRow( m_lastLeftAbstractionClickRow );
+        }
+
+        wxArrayInt selAbstractionRows = m_gridAbstractions->GetSelectedRows();
+
+        if ( selAbstractionRows.GetCount() ) {
+
+            for ( idx=selAbstractionRows.GetCount()-1; idx >= 0; idx-- ) {
+                
+                // Get the row this variable starts at in the register grid
+                uint16_t row =
+                    m_mdf.getMDFRegister( m_mdf.m_list_abstraction[ selAbstractionRows[ idx ] ]->m_nOffset,
+                                            m_mdf.m_list_abstraction[ selAbstractionRows[ idx ] ]->m_nPage )->m_rowInGrid;
+                
+                register_page = getPageFromCell( row );
+                register_offset = getRegFromCell( row );
+                
+                // Read affected registers
+                /*for ( int i=0; i<m_mdf.m_list_abstraction[ selrows[ idx ] ]->getAbstractionTypeByteCount(); i++ ) {
+                    
+                    if ( !readUpdateRegisterRow( row + i, false, false ) ) {
+                        wxMessageBox( _("Failed to read register.") );
+                        return;
+                    }
+                }*/
+                
+                saveAbstractionEdits( false );
+            
+            }
+            
+            // Restore selection
+            m_gridAbstractions->SelectRow( selAbstractionRows[ 0 ] );
+            m_gridAbstractions->MakeCellVisible( selAbstractionRows[ 0 ], 0 );
+            for ( idx=selAbstractionRows.GetCount()-1; idx >= 0; idx-- ) {
+                m_gridAbstractions->SelectRow( selAbstractionRows[ idx ], true );
+            } 
+            
+            readValueSelectedAbstractionRow( event );
+            
+        }
+    }
+    
     event.Skip();
 }
 
@@ -7456,7 +7640,87 @@ void frmDeviceConfig::writeValueSelectedAbstractionRow( wxCommandEvent& event )
     
 void frmDeviceConfig::undoValueSelectedAbstractionRow( wxCommandEvent& event )
 {
-    wxMessageBox(_("undoValueSelectedAbstractionRow"));
+    uint8_t val;
+    wxString strValue;
+    wxString strType;
+    uint32_t register_page;
+    uint32_t register_offset;
+    uint8_t *pRegs;
+    int idx;
+    
+    wxBusyCursor wait;
+    
+    if ( m_gridAbstractions->GetNumberRows() ) {
+        
+        // Must do this hack to handle rows selected by clicking a
+        // cell instead of the border.
+        if ( 0 == m_gridAbstractions->GetSelectedRows().GetCount() ) {
+            // Select the row
+            m_gridAbstractions->SelectRow( m_lastLeftAbstractionClickRow );
+        }
+
+        wxArrayInt selAbstractionRows = m_gridAbstractions->GetSelectedRows();
+
+        if ( selAbstractionRows.GetCount() ) {
+
+            for ( idx=selAbstractionRows.GetCount()-1; idx >= 0; idx-- ) {
+                
+                // Get the row this variable starts at in the register grid
+                uint16_t row =
+                    m_mdf.getMDFRegister( m_mdf.m_list_abstraction[ selAbstractionRows[ idx ] ]->m_nOffset,
+                                            m_mdf.m_list_abstraction[ selAbstractionRows[ idx ] ]->m_nPage )->m_rowInGrid;
+                                
+                register_page = getPageFromCell( row );
+                register_offset = getRegFromCell( row );
+                
+                wxArrayInt selRegisterRows = m_gridRegisters->GetSelectedRows();
+                
+                // Read affected registers
+                for ( int i=0; i<m_mdf.m_list_abstraction[ selAbstractionRows[ idx ] ]->getAbstractionTypeByteCount(); i++ ) {
+                    
+                    m_gridRegisters->SelectRow( row + i );
+                    undoValueSelectedRegisterRow( event );
+ 
+                    /*CMDF_Register *mdfRegister = 
+                            m_mdf.getMDFRegister(register_offset + i, 
+                                                    register_page );
+                    if (NULL == mdfRegister) {
+                        wxMessageBox(_("Register is unknown. Report possible internal problem."));
+                        continue;
+                    }
+
+                    // Update register grid
+                    mdfRegister->setDefault();
+                    strValue = getFormattedValue( mdfRegister->m_value );
+                    m_gridRegisters->SetCellValue( row + i, 2, strValue );
+                    m_gridRegisters->SetCellTextColour( row + i,
+                                                            2,
+                                                            *wxBLUE );
+                    m_gridRegisters->Update();*/
+                    
+                } // For each register
+                                
+                readValueSelectedAbstractionRow( event );
+                
+                // Restore selection
+                m_gridRegisters->SelectRow( selRegisterRows[ 0 ] );
+                for ( idx=selRegisterRows.GetCount()-1; idx >= 0; idx-- ) {
+                    m_gridRegisters->SelectRow( selRegisterRows[ idx ], true );
+                }
+                
+            } // For each selection
+            
+            // Restore selection
+            m_gridAbstractions->SelectRow( selAbstractionRows[ 0 ] );
+            m_gridAbstractions->MakeCellVisible( selAbstractionRows[ 0 ], 0 );
+            for ( idx=selAbstractionRows.GetCount()-1; idx >= 0; idx-- ) {
+                m_gridAbstractions->SelectRow( selAbstractionRows[ idx ], true );
+            } 
+            
+        } // There is elected rows
+        
+    } // Rows in grid
+    
     event.Skip();
 }
 
@@ -7466,7 +7730,89 @@ void frmDeviceConfig::undoValueSelectedAbstractionRow( wxCommandEvent& event )
     
 void frmDeviceConfig::defaultValueSelectedAbstractionRow( wxCommandEvent& event )
 {
-    wxMessageBox(_("defaultValueSelectedAbstractionRow"));
+    uint8_t val;
+    wxString strValue;
+    wxString strType;
+    uint32_t register_page;
+    uint32_t register_offset;
+    uint8_t *pRegs;
+    int idx;
+    
+    wxBusyCursor wait;
+    
+    if ( m_gridAbstractions->GetNumberRows() ) {
+        
+        // Must do this hack to handle rows selected by clicking a
+        // cell instead of the border.
+        if ( 0 == m_gridAbstractions->GetSelectedRows().GetCount() ) {
+            // Select the row
+            m_gridAbstractions->SelectRow( m_lastLeftAbstractionClickRow );
+        }
+
+        wxArrayInt selAbstractionRows = m_gridAbstractions->GetSelectedRows();
+
+        if ( selAbstractionRows.GetCount() ) {
+
+            for ( idx=selAbstractionRows.GetCount()-1; idx >= 0; idx-- ) {
+                
+                // Get the row this variable starts at in the register grid
+                uint16_t row =
+                    m_mdf.getMDFRegister( m_mdf.m_list_abstraction[ selAbstractionRows[ idx ] ]->m_nOffset,
+                                            m_mdf.m_list_abstraction[ selAbstractionRows[ idx ] ]->m_nPage )->m_rowInGrid;
+                                
+                register_page = getPageFromCell( row );
+                register_offset = getRegFromCell( row );
+                
+                wxArrayInt selRegisterRows = m_gridRegisters->GetSelectedRows();
+                
+                // Read affected registers
+                for ( int i=0; i<m_mdf.m_list_abstraction[ selAbstractionRows[ idx ] ]->getAbstractionTypeByteCount(); i++ ) {
+                    
+                    m_gridRegisters->SelectRow( row + i );
+                    defaultValueSelectedRegisterRow( event );
+ 
+                    /*CMDF_Register *mdfRegister = 
+                            m_mdf.getMDFRegister(register_offset + i, 
+                                                    register_page );
+                    if (NULL == mdfRegister) {
+                        wxMessageBox(_("Register is unknown. Report possible internal problem."));
+                        continue;
+                    }
+
+                    // Update register grid
+                    mdfRegister->setDefault();
+                    strValue = getFormattedValue( mdfRegister->m_value );
+                    m_gridRegisters->SetCellValue( row + i, 2, strValue );
+                    m_gridRegisters->SetCellTextColour( row + i,
+                                                            2,
+                                                            *wxBLUE );
+                    m_gridRegisters->Update();*/
+                    
+                } // For each register
+                                
+                readValueSelectedAbstractionRow( event );
+                
+                // Restore selection
+                m_gridRegisters->SelectRow( selRegisterRows[ 0 ] );
+                m_gridRegisters->MakeCellVisible( selRegisterRows[ 0 ], 0 );
+                for ( idx=selRegisterRows.GetCount()-1; idx >= 0; idx-- ) {
+                    m_gridRegisters->SelectRow( selRegisterRows[ idx ], true );
+                }
+                
+            } // For each selection
+            
+            // Restore selection
+            m_gridAbstractions->SelectRow( selAbstractionRows[ 0 ] );
+            m_gridAbstractions->MakeCellVisible( selAbstractionRows[ 0 ], 0 );
+            for ( idx=selAbstractionRows.GetCount()-1; idx >= 0; idx-- ) {
+                m_gridAbstractions->SelectRow( selAbstractionRows[ idx ], true );
+            } 
+            
+        } // There is selected rows
+        
+    } // Rows in grid
+    
     event.Skip();
+    
 }
 

@@ -118,12 +118,12 @@ void CMDF_Abstraction::clearStorage( void )
     // Clearup value list
     MDF_VALUE_LIST::iterator iterValue;
     for ( iterValue = m_list_value.begin(); 
-        iterValue != m_list_value.end(); 
-        ++iterValue) {
-            CMDF_ValueListValue *pRecordValue = *iterValue;
-            if ( NULL != pRecordValue ) {
-                delete pRecordValue;
-            }
+            iterValue != m_list_value.end(); 
+            ++iterValue) {
+        CMDF_ValueListValue *pRecordValue = *iterValue;
+        if ( NULL != pRecordValue ) {
+            delete pRecordValue;
+        }
     }
 }
 
@@ -190,6 +190,80 @@ wxString CMDF_Abstraction::getAbstractionValueType( void )
     }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+//  getAbstractionTypeByteCount
+//
+
+uint16_t CMDF_Abstraction::getAbstractionTypeByteCount( void )
+{
+    uint16_t width = 0;
+    
+    switch (m_nType) {
+
+        case type_string:
+            width = m_nWidth;
+            break;
+
+        case type_boolval:
+            width = 1;
+            break;
+
+        case type_bitfield:
+            width = m_nWidth;
+            break;
+
+        case type_int8_t:
+        case type_uint8_t:
+            width = 1;
+            break;
+
+
+        case type_int16_t:
+        case type_uint16_t:
+            width = 2;
+            break;
+
+        case type_int32_t:
+        case type_uint32_t:
+            width = 4;
+            break;
+
+        case type_int64_t:
+        case type_uint64_t:
+            width = 8;
+            break;
+
+        case type_float:
+            width = 4;
+            break;
+
+        case type_double:
+            width = 8;
+            break;
+
+        case type_date:
+            width = 6;
+            break;
+
+        case type_time:
+            width = 6;
+            break;
+
+        case type_guid:
+            width = 16;
+            break;
+
+        case type_unknown:
+            width = 0;
+        default:
+            break;
+
+    } // switch  
+    
+    return width;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //  Constructor/Destructor
 // 
@@ -213,12 +287,12 @@ void CMDF_Bit::clearStorage( void )
     // Clearup value list
     MDF_VALUE_LIST::iterator iterValue;
     for ( iterValue = m_list_value.begin(); 
-        iterValue != m_list_value.end(); 
-        ++iterValue) {
-            CMDF_ValueListValue *pRecordValue = *iterValue;
-            if ( NULL != pRecordValue ) {
-                delete pRecordValue;
-            }
+            iterValue != m_list_value.end(); 
+            ++iterValue) {
+        CMDF_ValueListValue *pRecordValue = *iterValue;
+        if ( NULL != pRecordValue ) {
+            delete pRecordValue;
+        }
     }
 }
 
@@ -265,6 +339,19 @@ void CMDF_Register::clearStorage( void )
     }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//  setDefault
+//
+
+uint8_t CMDF_Register::setDefault( void )
+{
+    if ( wxNOT_FOUND == m_strDefault.Find( _("UNDEF") ) ) {
+        m_value = vscp_readStringValue( m_strDefault );
+    }
+    else {
+        m_value = 0;
+    }
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //  Assignment
@@ -436,7 +523,7 @@ CMDF_DecisionMatrix::~CMDF_DecisionMatrix()
 //
 
 void CMDF_DecisionMatrix::clearStorage() 
-{	
+{
     m_nLevel = 1; 
     m_nStartPage = 0;
     m_nStartOffset = 0; 

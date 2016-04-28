@@ -1005,7 +1005,7 @@ int VscpRemoteTcpIf::doCmdEnterReceiveLoop( void )
     m_mutexArray.Unlock();
 
     m_bModeReceiveLoop = true;
-	
+    
     return VSCP_ERROR_SUCCESS;
 }
 
@@ -1487,7 +1487,7 @@ int VscpRemoteTcpIf::doCmdVersion( uint8_t *pMajorVer,
     wxStringTokenizer strTokens;
       
     if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
-  	
+    
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
         
@@ -2566,7 +2566,7 @@ int VscpRemoteTcpIf::setVariableVSCPtype( wxString& name, uint16_t vscp_type )
 
 int VscpRemoteTcpIf::readLevel2Register( uint32_t reg, 
                                                 uint16_t page,
-												uint8_t *pval,
+                                                uint8_t *pval,
                                                 cguid& ifGUID,
                                                 cguid *pdestGUID,                                                
                                                 bool bLevel2 )
@@ -2590,12 +2590,12 @@ int VscpRemoteTcpIf::readLevel2Register( uint32_t reg,
         e.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
         e.vscp_type = VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_READ;
 
-        memset( e.GUID, 0, 16 );	        // We use GUID for interface 
-        e.sizeData = 16 + 5;		        // Interface GUID + nodeid + register to read
+        memset( e.GUID, 0, 16 );            // We use GUID for interface 
+        e.sizeData = 16 + 5;		    // Interface GUID + nodeid + register to read
 
         ifGUID.writeGUID( e.data );
 
-        e.data[ 16 ] = pdestGUID->getLSB();	// nodeid
+        e.data[ 16 ] = pdestGUID->getLSB(); // nodeid
         e.data[ 17 ] = page>>8;             // Page MSB
         e.data[ 18 ] = page&0xff;           // Page LSB
         e.data[ 19 ] = reg;                 // Register to read
@@ -2614,16 +2614,16 @@ int VscpRemoteTcpIf::readLevel2Register( uint32_t reg,
             e.vscp_class = VSCP_CLASS2_PROTOCOL;
             e.vscp_type = VSCP2_TYPE_PROTOCOL_READ_REGISTER;
 
-            memset( e.GUID, 0, 16 );            // We use GUID for interface 
+            memset( e.GUID, 0, 16 );                // We use GUID for interface 
 
-            e.sizeData = 22;                    // nodeid + register to read
+            e.sizeData = 22;                        // nodeid + register to read
 
             pdestGUID->writeGUID( e.data );	    // Destination GUID
-            e.data[ 16 ] = ( reg >> 24 ) & 0xff;// Register to read
+            e.data[ 16 ] = ( reg >> 24 ) & 0xff;    // Register to read
             e.data[ 17 ] = ( reg >> 16 ) & 0xff;
             e.data[ 18 ] = ( reg >> 8 ) & 0xff;
             e.data[ 19 ] = reg & 0xff;
-            e.data[ 20 ] = 0x00;                // Read one register
+            e.data[ 20 ] = 0x00;                    // Read one register
             e.data[ 21 ] = 0x01;
 
         }
@@ -2805,7 +2805,7 @@ int VscpRemoteTcpIf::readLevel2Registers( uint32_t reg,
 
         ifGUID.writeGUID( e.data );
 
-        e.data[ 16 ] = pdestGUID->getLSB();	// nodeid
+        e.data[ 16 ] = pdestGUID->getLSB(); // nodeid
         e.data[ 17 ] = page>>8;             // Page MSB
         e.data[ 18 ] = page&0xff;           // Page LSB
         e.data[ 19 ] = reg;                 // Register to read
@@ -2826,14 +2826,14 @@ int VscpRemoteTcpIf::readLevel2Registers( uint32_t reg,
 
             memset( e.GUID, 0, 16 );		    // We use GUID for interface 
 
-            e.sizeData = 22;				    // nodeid + register to read
+            e.sizeData = 22;                        // nodeid + register to read
 
             pdestGUID->writeGUID( e.data );	    // Destination GUID
-            e.data[ 16 ] = ( reg >> 24 ) & 0xff;// Register to read
+            e.data[ 16 ] = ( reg >> 24 ) & 0xff;    // Register to read
             e.data[ 17 ] = ( reg >> 16 ) & 0xff;
             e.data[ 18 ] = ( reg >> 8 ) & 0xff;
             e.data[ 19 ] = reg & 0xff;
-            e.data[ 20 ] = 0;			        // Read count registers
+            e.data[ 20 ] = 0;			    // Read count registers
             e.data[ 21 ] = count;
 
         }
@@ -2844,8 +2844,8 @@ int VscpRemoteTcpIf::readLevel2Registers( uint32_t reg,
             e.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
             e.vscp_type = VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_READ;
 
-            memset( e.GUID, 0, 16 );		    // We use GUID for interface 
-            e.sizeData = 16 + 5;			    // nodeid + register to read
+            memset( e.GUID, 0, 16 );		// We use GUID for interface 
+            e.sizeData = 16 + 5;                // nodeid + register to read
             pdestGUID->writeGUID( e.data );     // Destination GUID
 
             e.data[ 16 ] = pdestGUID->getLSB();	// nodeid
@@ -3038,8 +3038,8 @@ int VscpRemoteTcpIf::writeLevel2Register( uint32_t reg,
         e.data[16] = pdestGUID->getLSB();	// nodeid
         e.data[17] = (page >> 8);
         e.data[18] = (page & 0xff);
-        e.data[19] = reg;				    // Register to write
-        e.data[20] = *pval;			        // value to write
+        e.data[19] = reg;                       // Register to write
+        e.data[20] = *pval;			// value to write
         
     }
     else {
@@ -3051,14 +3051,14 @@ int VscpRemoteTcpIf::writeLevel2Register( uint32_t reg,
             e.vscp_type = VSCP2_TYPE_PROTOCOL_WRITE_REGISTER;
 
             memset( e.GUID, 0, 16 );		        // We use interface GUID
-            e.sizeData = 21;				        // nodeid + register to read
+            e.sizeData = 21;				// nodeid + register to read
             pdestGUID->writeGUID( e.data );	        // Destination GUID
 
             e.data[ 16 ] = ( reg >> 24 ) & 0xff;	// Register to write
             e.data[ 17 ] = ( reg >> 16 ) & 0xff;
             e.data[ 18 ] = ( reg >> 8 ) & 0xff;
             e.data[ 19 ] = reg & 0xff;
-            e.data[ 20 ] = *pval;		            // Data to write
+            e.data[ 20 ] = *pval;		        // Data to write
 
         }
         else {
@@ -3069,9 +3069,9 @@ int VscpRemoteTcpIf::writeLevel2Register( uint32_t reg,
             e.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
             e.vscp_type = VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_WRITE;
 
-            memset( e.GUID, 0, 16 );		    // We use interface GUID
+            memset( e.GUID, 0, 16 );            // We use interface GUID
             e.sizeData = 16 + 5;				
-            pdestGUID->writeGUID( e.data );	    // Destination GUID
+            pdestGUID->writeGUID( e.data );	// Destination GUID
 
             e.data[16] = pdestGUID->getLSB();	// nodeid
             e.data[17] = page>>8;               // Page MSB
@@ -3269,7 +3269,7 @@ error:
 
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // fetchIterfaceGUID
 //
 
@@ -3377,14 +3377,14 @@ ctrlObjVscpTcpIf::ctrlObjVscpTcpIf()
     m_strUsername = _("admin");
     m_strPassword = _("secret");
     m_strHost = _("localhost");
-    m_port = 9598;						// VSCP_LEVEL2_TCP_PORT;
+    m_port = 9598;			// VSCP_LEVEL2_TCP_PORT;
     m_rxState = RX_TREAD_STATE_NONE;
-    m_bQuit = false; 	 				// Dont even think of quiting yet...
-    m_rxChannelID = 0;				    // No receive channel
-    m_txChannelID = 0;				    // No transmit channel
-    m_bFilterOwnTx = false;		        // Don't filter TX
+    m_bQuit = false; 	 		// Don't even think of quiting yet...
+    m_rxChannelID = 0;                  // No receive channel
+    m_txChannelID = 0;			// No transmit channel
+    m_bFilterOwnTx = false;		// Don't filter TX
     m_bUseRXTXEvents = false;           // No events
-    m_pWnd = NULL;						// No message window
+    m_pWnd = NULL;			// No message window
     m_wndID = 0;                        // No meaage window id
     m_maxRXqueue = MAX_TREAD_RECEIVE_EVENTS;
 }

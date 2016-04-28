@@ -67,6 +67,7 @@
 
 #include <wx/stdpaths.h>
 #include <wx/dir.h>
+#include <wx/splash.h>
 
 #include <mdf.h>
 #include <version.h>
@@ -326,6 +327,7 @@ void frmMain::Init()
                             wxStandardPaths::Get().GetUserDataDir() );
         }
     }
+    
 }
 
 
@@ -550,6 +552,19 @@ void frmMain::CreateControls()
     strVersion += _( " - " );
     strVersion += _( VSCPD_DISPLAY_VERSION );
     m_pitemStatusBar->SetStatusText( strVersion );
+    
+    wxBitmap bitmap( itemMainFrame->GetBitmapResource( wxT("vscp_logo_xpm") ) );
+    if ( /*bitmap.LoadFile("splash16.png", wxBITMAP_TYPE_PNG )*/ 1 ) {
+        wxSplashScreen* splash = new wxSplashScreen( GetBitmapResource( _("../../../docs/vscp/logo/vscp_logo.jpg") ),
+                                                        wxSPLASH_CENTRE_ON_SCREEN|wxSPLASH_TIMEOUT,
+                                                        3000, 
+                                                        NULL, 
+                                                        -1, 
+                                                        wxDefaultPosition, 
+                                                        wxDefaultSize,
+                                                        wxBORDER_SIMPLE | wxSTAY_ON_TOP );
+    }
+    wxYield(); 
         
 }
 
@@ -797,7 +812,7 @@ void frmMain::OnMenuitemOpenVscpSessionClick( wxCommandEvent& event )
                         subframe->m_CtrlObject.m_interfaceType = pBoth->m_type;
 
                         if ( INTERFACE_CANAL == pBoth->m_type ) {
-                            subframe->SetTitle(_("VSCP Session (CANAL) - ") + 
+                            subframe->SetTitle(_("VSCP Client Window Session (CANAL) - ") + 
                                 pBoth->m_pcanalif->m_strDescription );
                             subframe->m_CtrlObject.m_ifCANAL.m_strDescription = pBoth->m_pcanalif->m_strDescription;
                             subframe->m_CtrlObject.m_ifCANAL.m_strPath = pBoth->m_pcanalif->m_strPath;
@@ -805,7 +820,7 @@ void frmMain::OnMenuitemOpenVscpSessionClick( wxCommandEvent& event )
                             subframe->m_CtrlObject.m_ifCANAL.m_flags= pBoth->m_pcanalif->m_flags;
                         }
                         else if ( INTERFACE_VSCP == pBoth->m_type ) {
-                            subframe->SetTitle(_("VSCP Session (TCP/IP)- ") +  pBoth->m_pvscpif->m_strDescription );
+                            subframe->SetTitle(_("VSCP Client Window Session (TCP/IP)- ") +  pBoth->m_pvscpif->m_strDescription );
                             subframe->m_CtrlObject.m_ifVSCP.m_strDescription = pBoth->m_pvscpif->m_strDescription;
                             subframe->m_CtrlObject.m_ifVSCP.m_strHost = pBoth->m_pvscpif->m_strHost;
                             subframe->m_CtrlObject.m_ifVSCP.m_strUser = pBoth->m_pvscpif->m_strUser;
@@ -821,7 +836,7 @@ void frmMain::OnMenuitemOpenVscpSessionClick( wxCommandEvent& event )
                             if ( subframe->m_CtrlObject.m_ifVSCP.m_strPassword.IsEmpty() && 
                                 !subframe->m_CtrlObject.m_ifVSCP.m_strUser.IsEmpty() ) {
                                     subframe->m_CtrlObject.m_ifVSCP.m_strPassword = 
-                                        ::wxGetTextFromUser( _("Please enter passeword"), 
+                                        ::wxGetTextFromUser( _("Please enter password"), 
                                         _("Connection Test") );
                             }
 
@@ -922,7 +937,7 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
                         subframe->m_comboNodeID->Append( strings );
 
                         subframe->m_comboNodeID->SetValue(_("0x01"));
-                        subframe->SetTitle(_("VSCP Registers (CANAL) - ") +  
+                        subframe->SetTitle(_("VSCP Configuration Window Session (CANAL) - ") +  
                                     pBoth->m_pcanalif->m_strDescription );
 
                         subframe->m_csw.setInterface( pBoth->m_pcanalif->m_strDescription,
@@ -966,7 +981,7 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
                             subframe->m_bLevel2->SetValue( false );
                         }
 
-                        subframe->SetTitle(_("VSCP Registers (TCP/IP)- ") +  
+                        subframe->SetTitle(_("VSCP Configuration Window Session (TCP/IP)- ") +  
                             pBoth->m_pvscpif->m_strDescription );
 
                         // If server username is given and no password is entered we ask for it.
