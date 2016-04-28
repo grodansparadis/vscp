@@ -57,7 +57,7 @@
     Default response timeout for communication with the
     tcp/ip interface of the daemon in seconds
  */
-#define TCPIP_DEFAULT_RESPONSE_TIMEOUT          3000
+#define TCPIP_DEFAULT_RESPONSE_TIMEOUT          1000
 
 #define TCPIP_DEFAULT_AFTER_COMMAND_SLEEP       0
 
@@ -855,7 +855,7 @@ protected:
 
     clientTcpIpWorkerThread *m_pClientTcpIpWorkerThread;
 
-    /// Server response timeout in seconds
+    /// Server response timeout in milliseconds
     uint32_t m_responseTimeOut;
 
     /// Sleep in milliseconds after a command has been given
