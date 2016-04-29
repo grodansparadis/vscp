@@ -351,6 +351,8 @@ uint8_t CMDF_Register::setDefault( void )
     else {
         m_value = 0;
     }
+
+    return m_value;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
