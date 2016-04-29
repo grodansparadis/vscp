@@ -4274,13 +4274,21 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
     doUpdate();
     m_gridRegisters->SetFocus();
     // Restore register selection
+#if wxCHECK_VERSION(3,0,0)  
     m_gridRegisters->GoToCell( m_lastLeftRegisterClickRow, 0 );
+#endif    
     m_gridRegisters->SelectRow( m_lastLeftRegisterClickRow );
+#if wxCHECK_VERSION(3,0,0)    
     m_gridAbstractions->GoToCell( m_lastLeftAbstractionClickRow, 0 );
+#endif    
     m_gridAbstractions->SelectRow( m_lastLeftAbstractionClickRow );
+#if wxCHECK_VERSION(3,0,0)    
     m_gridDM->GoToCell( m_lastLeftDMClickRow, 0 );
+#endif    
     m_gridDM->SelectRow( m_lastLeftDMClickRow );
+#if wxCHECK_VERSION(3,0,0)    
     m_gridWizard->GoToCell( m_lastLeftWizardClickRow, 0 );
+#endif    
     m_gridWizard->SelectRow( m_lastLeftWizardClickRow );
     event.Skip( false );
 }
@@ -4302,13 +4310,21 @@ void frmDeviceConfig::OnButtonUpdateAllClick( wxCommandEvent& event )
     m_gridRegisters->SetFocus();
     
     // Restore register selection
+#if wxCHECK_VERSION(3,0,0)    
     m_gridRegisters->GoToCell( m_lastLeftRegisterClickRow, 0 );
+#endif    
     m_gridRegisters->SelectRow( m_lastLeftRegisterClickRow );
+#if wxCHECK_VERSION(3,0,0)    
     m_gridAbstractions->GoToCell( m_lastLeftAbstractionClickRow, 0 );
+#endif    
     m_gridAbstractions->SelectRow( m_lastLeftAbstractionClickRow );
+#if wxCHECK_VERSION(3,0,0)    
     m_gridDM->GoToCell( m_lastLeftDMClickRow, 0 );
+#endif    
     m_gridDM->SelectRow( m_lastLeftDMClickRow );
+#if wxCHECK_VERSION(3,0,0)    
     m_gridWizard->GoToCell( m_lastLeftWizardClickRow, 0 );
+#endif    
     m_gridWizard->SelectRow( m_lastLeftWizardClickRow );
     
     event.Skip(false);
@@ -5501,21 +5517,27 @@ void frmDeviceConfig::gotoRegisterPage( wxCommandEvent& WXUNUSED( event ) )
         
         // Check for standard registers
         if ( 0 == idx ) {
+#if wxCHECK_VERSION(3,0,0)            
             m_gridRegisters->GoToCell( m_rowStandardRegisterStart, 0 );
+#endif            
             m_gridRegisters->SelectRow( m_rowStandardRegisterStart );            
         }
         // DM
         else if ( 1 == idx ) {
             int row = getRegisterGridRow( m_mdf.m_dmInfo.m_nStartOffset, 
                                             m_mdf.m_dmInfo.m_nStartPage );
+#if wxCHECK_VERSION(3,0,0)            
             m_gridRegisters->GoToCell( row, 0 );
+#endif            
             m_gridRegisters->SelectRow( row );
         }
         // Page n
         else {
             int row = getRegisterGridRow( 0, 
                                             pages.Item( idx - ( m_mdf.m_dmInfo.m_nRowCount ? 2 : 2 ) ) );
+#if wxCHECK_VERSION(3,0,0)            
             m_gridRegisters->GoToCell( row, 0 );
+#endif            
             m_gridRegisters->SelectRow( row );
         }
         
@@ -5554,7 +5576,9 @@ void frmDeviceConfig::OnGotoRegister( wxCommandEvent& WXUNUSED( event ) )
     
     int row = getRegisterGridRow( offset, page );
     
+#if wxCHECK_VERSION(3,0,0)    
     m_gridRegisters->GoToCell( row, 0 );
+#endif    
     m_gridRegisters->SelectRow( row );
 }
 
@@ -5565,7 +5589,9 @@ void frmDeviceConfig::OnGotoRegister( wxCommandEvent& WXUNUSED( event ) )
 
 void frmDeviceConfig::OnGotoTop( wxCommandEvent& WXUNUSED( event ) )
 {
+#if wxCHECK_VERSION(3,0,0)    
     m_gridRegisters->GoToCell( 0, 0 );
+#endif    
     m_gridRegisters->SelectRow( 0 );
 }
 
@@ -5577,7 +5603,9 @@ void frmDeviceConfig::OnGotoPage1( wxCommandEvent& WXUNUSED( event ) )
 {
     int row = getRegisterGridRow( 0, 1 );
     
+#if wxCHECK_VERSION(3,0,0)    
     m_gridRegisters->GoToCell( row, 0 );
+#endif    
     m_gridRegisters->SelectRow( row );
 }
 
@@ -5589,7 +5617,9 @@ void frmDeviceConfig::OnGotoPage2( wxCommandEvent& WXUNUSED( event ) )
 {
     int row = getRegisterGridRow( 0, 2 );
     
+#if wxCHECK_VERSION(3,0,0)    
     m_gridRegisters->GoToCell( row, 0 );
+#endif    
     m_gridRegisters->SelectRow( row );
 }
 
@@ -5601,7 +5631,9 @@ void frmDeviceConfig::OnGotoPage3( wxCommandEvent& WXUNUSED( event ) )
 {
     int row = getRegisterGridRow( 0, 3 );
     
+#if wxCHECK_VERSION(3,0,0)    
     m_gridRegisters->GoToCell( row, 0 );
+#endif    
     m_gridRegisters->SelectRow( row );
 }
 
@@ -5613,7 +5645,9 @@ void frmDeviceConfig::OnGotoPage4( wxCommandEvent& WXUNUSED( event ) )
 {
     int row = getRegisterGridRow( 0, 4 );
     
+#if wxCHECK_VERSION(3,0,0)    
     m_gridRegisters->GoToCell( row, 0 );
+#endif    
     m_gridRegisters->SelectRow( row );
 }
 
@@ -5625,7 +5659,9 @@ void frmDeviceConfig::OnGotoPage5( wxCommandEvent& WXUNUSED( event ) )
 {
     int row = getRegisterGridRow( 0, 5 );
     
+#if wxCHECK_VERSION(3,0,0)    
     m_gridRegisters->GoToCell( row, 0 );
+#endif    
     m_gridRegisters->SelectRow( row );
 }
 
@@ -5637,7 +5673,9 @@ void frmDeviceConfig::OnGotoPage6( wxCommandEvent& WXUNUSED( event ) )
 {
     int row = getRegisterGridRow( 0, 6 );
     
+#if wxCHECK_VERSION(3,0,0)    
     m_gridRegisters->GoToCell( row, 0 );
+#endif    
     m_gridRegisters->SelectRow( row );
 }
 
@@ -5649,7 +5687,9 @@ void frmDeviceConfig::OnGotoPage7( wxCommandEvent& WXUNUSED( event ) )
 {
     int row = getRegisterGridRow( 0, 7 );
     
+#if wxCHECK_VERSION(3,0,0)    
     m_gridRegisters->GoToCell( row, 0 );
+#endif    
     m_gridRegisters->SelectRow( row );
 }
 
@@ -5661,7 +5701,9 @@ void frmDeviceConfig::OnGotoPage8( wxCommandEvent& WXUNUSED( event ) )
 {
     int row = getRegisterGridRow( 0, 8 );
     
+#if wxCHECK_VERSION(3,0,0)    
     m_gridRegisters->GoToCell( row, 0 );
+#endif    
     m_gridRegisters->SelectRow( row );
 }
 
@@ -5673,7 +5715,9 @@ void frmDeviceConfig::OnGotoPage9( wxCommandEvent& WXUNUSED( event ) )
 {
     int row = getRegisterGridRow( 0, 9 );
     
+#if wxCHECK_VERSION(3,0,0)    
     m_gridRegisters->GoToCell( row, 0 );
+#endif    
     m_gridRegisters->SelectRow( row );
 }
 
@@ -5685,7 +5729,9 @@ void frmDeviceConfig::OnGotoDM( wxCommandEvent& WXUNUSED( event ) )
 {
     int row = getRegisterGridRow( m_mdf.m_dmInfo.m_nStartOffset, 
                                     m_mdf.m_dmInfo.m_nStartPage );
+#if wxCHECK_VERSION(3,0,0)    
     m_gridRegisters->GoToCell( row, 0 );
+#endif    
     m_gridRegisters->SelectRow( row );
 }
 
@@ -5696,7 +5742,9 @@ void frmDeviceConfig::OnGotoDM( wxCommandEvent& WXUNUSED( event ) )
 
 void frmDeviceConfig::OnGotoStandard( wxCommandEvent& WXUNUSED( event ) )
 {
+#if wxCHECK_VERSION(3,0,0)    
     m_gridRegisters->GoToCell( m_rowStandardRegisterStart, 0 );
+#endif    
     m_gridRegisters->SelectRow( m_rowStandardRegisterStart );
 }
 
