@@ -150,6 +150,11 @@
               <Elem>wxUSE_GUI=1</Elem>
             </preprocessorList>
           </cTool>
+          <ccTool>
+            <incDir>
+              <pElem>/usr/local/include/wx-3.1/wx</pElem>
+            </incDir>
+          </ccTool>
         </makeTool>
         <preBuild>
           <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
@@ -304,7 +309,6 @@
       <item path="bootdevice.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/meta</pElem>
@@ -318,7 +322,6 @@
       <item path="bootdevice_pic1.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>../common</pElem>
@@ -332,7 +335,6 @@
       <item path="bootdevice_vscp.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>../common</pElem>
@@ -346,7 +348,6 @@
       <item path="devicebootloaderwizard.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/html</pElem>
@@ -360,7 +361,6 @@
       <item path="dlgabout.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/html</pElem>
@@ -373,7 +373,6 @@
       <item path="dlgabstractionedit.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>../common</pElem>
@@ -386,7 +385,6 @@
       <item path="dlgclasstypeselect.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/meta</pElem>
@@ -399,7 +397,6 @@
       <item path="dlgconfiguration.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/meta</pElem>
@@ -413,7 +410,6 @@
       <item path="dlgeditlevel1dmrow.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/meta</pElem>
@@ -425,7 +421,6 @@
       <item path="dlgeventfilter.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/xml</pElem>
@@ -440,7 +435,6 @@
       <item path="dlgnewvscpsession.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/meta</pElem>
@@ -454,7 +448,6 @@
       <item path="dlgselectdaemoninterface.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/meta</pElem>
@@ -466,7 +459,6 @@
       <item path="dlgsetfiltermask.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>../common</pElem>
@@ -479,7 +471,6 @@
       <item path="dlgsetmanufactdata.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/meta</pElem>
@@ -491,7 +482,6 @@
       <item path="dlgvscpfilter.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/meta</pElem>
@@ -504,7 +494,6 @@
       <item path="dlgvscpinterfacesettings.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/meta</pElem>
@@ -518,7 +507,6 @@
       <item path="dlgvscpmsg.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/meta</pElem>
@@ -531,7 +519,6 @@
       <item path="dlgvscptrmit.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/meta</pElem>
@@ -541,17 +528,9 @@
           </incDir>
         </ccTool>
       </item>
-      <folder path="src">
-        <ccTool>
-          <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
-          </incDir>
-        </ccTool>
-      </folder>
       <item path="frmdaemondecisionmartrixeditor.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/html</pElem>
@@ -564,7 +543,6 @@
       <item path="frmdaemonvariableeditor.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/html</pElem>
@@ -575,51 +553,35 @@
         </ccTool>
       </item>
       <item path="frmdeviceconfig.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
-            <pElem>/usr/local/include/wx-3.1</pElem>
-            <pElem>/usr/include/lua5.2</pElem>
-            <pElem>.</pElem>
+            <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
+            <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
+            <pElem>/usr/local/include/wx-3.1/wx/xml</pElem>
+            <pElem>/usr/local/include/wx-3.1/wx/html</pElem>
             <pElem>../common</pElem>
-            <pElem>../../common</pElem>
+            <pElem>/usr/local/include/wx-3.1/wx/meta</pElem>
+            <pElem>/usr/local/include/wx-3.1</pElem>
+            <pElem>.</pElem>
           </incDir>
-          <preprocessorList>
-            <Elem>MG_ENABLE_SSL</Elem>
-            <Elem>MG_ENABLE_THREADS</Elem>
-            <Elem>VSCP_ENABLE_LUA</Elem>
-            <Elem>WXUSINGDLL</Elem>
-            <Elem>_FILE_OFFSET_BITS=64</Elem>
-            <Elem>__WXGTK__</Elem>
-            <Elem>wxUSE_GUI=1</Elem>
-          </preprocessorList>
         </ccTool>
       </item>
       <item path="frmmain.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
-            <pElem>/usr/local/include/wx-3.1</pElem>
-            <pElem>/usr/include/lua5.2</pElem>
-            <pElem>.</pElem>
+            <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
+            <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
+            <pElem>/usr/local/include/wx-3.1/wx/html</pElem>
             <pElem>../common</pElem>
-            <pElem>../../common</pElem>
+            <pElem>/usr/local/include/wx-3.1/wx/meta</pElem>
+            <pElem>/usr/local/include/wx-3.1</pElem>
+            <pElem>.</pElem>
           </incDir>
-          <preprocessorList>
-            <Elem>MG_ENABLE_SSL</Elem>
-            <Elem>MG_ENABLE_THREADS</Elem>
-            <Elem>VSCP_ENABLE_LUA</Elem>
-            <Elem>WXUSINGDLL</Elem>
-            <Elem>_FILE_OFFSET_BITS=64</Elem>
-            <Elem>__WXGTK__</Elem>
-            <Elem>wxUSE_GUI=1</Elem>
-          </preprocessorList>
         </ccTool>
       </item>
       <item path="frmmdfeditor.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/html</pElem>
@@ -633,7 +595,6 @@
       <item path="frmscanfordevices.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/html</pElem>
@@ -650,7 +611,6 @@
             flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/html</pElem>
@@ -663,7 +623,6 @@
       <item path="frmvscpsession.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/xml</pElem>
@@ -678,7 +637,6 @@
       <item path="gridtable.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/meta</pElem>
@@ -692,7 +650,6 @@
       <item path="merlin.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/meta</pElem>
@@ -704,7 +661,6 @@
       <item path="threadvscpwork.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/meta</pElem>
@@ -718,7 +674,6 @@
       <item path="vscpbootloader.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/meta</pElem>
@@ -730,7 +685,6 @@
       <item path="vscptxobj.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/meta</pElem>
@@ -743,7 +697,6 @@
       <item path="vscpworks.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/include/wx-3.1/wx</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/gtk</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/generic</pElem>
             <pElem>/usr/local/include/wx-3.1/wx/xml</pElem>
