@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Session Name="/home/akhe/development/VSCP/vscp/src/vscp/daemon/linux/codelite_vscpd/codelite_vscpd.workspace">
-  <int Value="10" Name="m_selectedTab"/>
+  <int Value="22" Name="m_selectedTab"/>
   <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/daemon/linux/codelite_vscpd/codelite_vscpd.workspace" Name="m_workspaceName"/>
   <TabInfoArray Name="TabInfoArray">
     <TabInfo>
@@ -34,7 +34,7 @@
     <TabInfo>
       <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/frmdeviceconfig.h" Name="FileName"/>
       <int Value="351" Name="FirstVisibleLine"/>
-      <int Value="383" Name="CurrentLine"/>
+      <int Value="381" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>
@@ -118,7 +118,7 @@
     <TabInfo>
       <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/common/canalsuperwrapper.cpp" Name="FileName"/>
       <int Value="5277" Name="FirstVisibleLine"/>
-      <int Value="5302" Name="CurrentLine"/>
+      <int Value="5301" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>
@@ -140,6 +140,27 @@
       <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/common/mdf.cpp" Name="FileName"/>
       <int Value="1792" Name="FirstVisibleLine"/>
       <int Value="512" Name="CurrentLine"/>
+      <wxArrayString Name="Bookmarks"/>
+      <IntVector Name="CollapsedFolds"/>
+    </TabInfo>
+    <TabInfo>
+      <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/common/dllwrapper.cpp" Name="FileName"/>
+      <int Value="698" Name="FirstVisibleLine"/>
+      <int Value="707" Name="CurrentLine"/>
+      <wxArrayString Name="Bookmarks"/>
+      <IntVector Name="CollapsedFolds"/>
+    </TabInfo>
+    <TabInfo>
+      <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/common/vscpremotetcpif.h" Name="FileName"/>
+      <int Value="92" Name="FirstVisibleLine"/>
+      <int Value="38" Name="CurrentLine"/>
+      <wxArrayString Name="Bookmarks"/>
+      <IntVector Name="CollapsedFolds"/>
+    </TabInfo>
+    <TabInfo>
+      <wxString Value="/home/akhe/development/VSCP/vscp/src/vscp/common/vscpremotetcpif.cpp" Name="FileName"/>
+      <int Value="112" Name="FirstVisibleLine"/>
+      <int Value="95" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>

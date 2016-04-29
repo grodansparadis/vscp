@@ -12,37 +12,49 @@
             <url>src/vscp/vscpworks/frmdeviceconfig.cpp</url>
             <bookmark id="7">
                 <name/>
-                <line>5415</line>
+                <line>5431</line>
                 <key/>
             </bookmark>
             <bookmark id="3">
                 <name/>
-                <line>6212</line>
+                <line>6260</line>
                 <key/>
             </bookmark>
             <bookmark id="6">
                 <name/>
-                <line>6212</line>
+                <line>6260</line>
                 <key/>
             </bookmark>
             <bookmark id="1">
                 <name/>
-                <line>6212</line>
+                <line>6260</line>
                 <key/>
             </bookmark>
             <bookmark id="4">
                 <name/>
-                <line>6223</line>
+                <line>6271</line>
                 <key/>
             </bookmark>
             <bookmark id="2">
                 <name/>
-                <line>6315</line>
+                <line>6363</line>
                 <key/>
             </bookmark>
         </file>
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group/>
+        <group>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/vscpworks.h</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/vscp_images.h</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/frmmain.cpp</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/frmvscpsession.cpp</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/frmvscpsession.h</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/dlgabstractionedit.h</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/frmmain_images.h</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/frmdeviceconfig.cpp</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/frmdeviceconfig.h</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/vscpworks.cpp</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/vscpworks/devicebootloaderwizard_images.h</file>
+        </group>
     </open-files>
 </project-private>
