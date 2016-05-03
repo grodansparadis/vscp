@@ -6957,8 +6957,10 @@ void frmDeviceConfig::OnResizeWindow( wxSizeEvent& event )
 {
     wxSize sz = wxWindow::GetClientSize();
     //m_StatusWnd->SetPosition( wxPoint(0,0) );
+#ifndef WIN32
     m_gridRegisters->AutoSizeColumns();
     m_gridAbstractions->AutoSizeColumns();
+#endif
     
     event.Skip();
 }
