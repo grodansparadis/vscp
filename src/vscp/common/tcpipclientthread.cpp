@@ -306,14 +306,14 @@ VSCPClientThread::CommandHandler( struct mg_connection *conn,
     pClientItem = ( CClientItem * )conn->user_data;
     
     if ( NULL == pCtrlObject ) {
-        conn->flags |= MG_F_CLOSE_IMMEDIATELY;	// Close connection
+        conn->flags |= MG_F_CLOSE_IMMEDIATELY;  // Close connection
         return;
     }
 
     if ( NULL == pClientItem ) {
         pCtrlObject->logMsg ( _( "[TCP/IP Client] ClientItem pointer is NULL in command handler.\n" ), 
                                 DAEMON_LOGMSG_ERROR );
-        conn->flags |= MG_F_CLOSE_IMMEDIATELY;	// Close connection
+        conn->flags |= MG_F_CLOSE_IMMEDIATELY;  // Close connection
         return;
     }
 
@@ -331,6 +331,8 @@ VSCPClientThread::CommandHandler( struct mg_connection *conn,
     pClientItem->m_currentCommandUC.Trim();
     pClientItem->m_currentCommandUC.Trim( false );
     //wxLogDebug( _("Argument = ") + pClientItem->m_currentCommandUC );
+    
+    
 
 REPEAT_COMMAND:
 
@@ -648,9 +650,10 @@ REPEAT_COMMAND:
 // handleClientCapabilityRquest
 //
 
-void VSCPClientThread::handleClientCapabilityRquest( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientCapabilityRquest( struct mg_connection *conn, 
+                                                        CControlObject *pCtrlObject )
 {
-
+    // TODO
 }
 
 
@@ -658,7 +661,8 @@ void VSCPClientThread::handleClientCapabilityRquest( struct mg_connection *conn,
 // isVerified
 //
 
-bool VSCPClientThread::isVerified( struct mg_connection *conn, CControlObject *pCtrlObject )
+bool VSCPClientThread::isVerified( struct mg_connection *conn, 
+                                        CControlObject *pCtrlObject )
 { 
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
@@ -675,7 +679,9 @@ bool VSCPClientThread::isVerified( struct mg_connection *conn, CControlObject *p
 // checkPrivilege
 //
 
-bool VSCPClientThread::checkPrivilege( struct mg_connection *conn, CControlObject *pCtrlObject, unsigned char reqiredPrivilege )
+bool VSCPClientThread::checkPrivilege( struct mg_connection *conn, 
+                                            CControlObject *pCtrlObject, 
+                                            unsigned char reqiredPrivilege )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
@@ -703,7 +709,8 @@ bool VSCPClientThread::checkPrivilege( struct mg_connection *conn, CControlObjec
 // handleClientSend
 //
 
-void VSCPClientThread::handleClientSend( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientSend( struct mg_connection *conn, 
+                                            CControlObject *pCtrlObject )
 {
     bool bSent = false;
     bool bVariable = false;
@@ -879,7 +886,7 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn, CControlObj
         wxString strErr = 
                         wxString::Format( _("[tcp/ip Client] User [%s] not allowed to send event class=%d type=%d.\n"), 
                                                 (const char *)pClientItem->m_pUserItem->m_user.c_str(), 
-                                                event.vscp_class, event.vscp_type );			
+                                                event.vscp_class, event.vscp_type );
         
         pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
         
@@ -1013,7 +1020,8 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn, CControlObj
 // handleClientReceive
 //
 
-void VSCPClientThread::handleClientReceive ( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientReceive ( struct mg_connection *conn, 
+                                                CControlObject *pCtrlObject )
 {
     unsigned short cnt = 0;	// # of messages to read
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -1057,7 +1065,9 @@ void VSCPClientThread::handleClientReceive ( struct mg_connection *conn, CContro
 // sendOneEventFromQueue
 //
 
-bool VSCPClientThread::sendOneEventFromQueue( struct mg_connection *conn, CControlObject *pCtrlObject, bool bStatusMsg )
+bool VSCPClientThread::sendOneEventFromQueue( struct mg_connection *conn, 
+                                                CControlObject *pCtrlObject, 
+                                                bool bStatusMsg )
 {
     wxString strOut;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -1133,7 +1143,8 @@ bool VSCPClientThread::sendOneEventFromQueue( struct mg_connection *conn, CContr
 // handleClientDataAvailable
 //
 
-void VSCPClientThread::handleClientDataAvailable ( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientDataAvailable ( struct mg_connection *conn, 
+                                                    CControlObject *pCtrlObject )
 {
     char outbuf[ 1024 ];
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -1158,7 +1169,8 @@ void VSCPClientThread::handleClientDataAvailable ( struct mg_connection *conn, C
 // handleClientClearInputQueue
 //
 
-void VSCPClientThread::handleClientClearInputQueue ( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientClearInputQueue ( struct mg_connection *conn, 
+                                                        CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
@@ -1181,7 +1193,8 @@ void VSCPClientThread::handleClientClearInputQueue ( struct mg_connection *conn,
 // handleClientGetStatistics
 //
 
-void VSCPClientThread::handleClientGetStatistics ( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientGetStatistics ( struct mg_connection *conn, 
+                                                        CControlObject *pCtrlObject )
 {
     char outbuf[ 1024 ];
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -1211,7 +1224,8 @@ void VSCPClientThread::handleClientGetStatistics ( struct mg_connection *conn, C
 // handleClientGetStatus
 //
 
-void VSCPClientThread::handleClientGetStatus ( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientGetStatus ( struct mg_connection *conn, 
+                                                    CControlObject *pCtrlObject )
 {
     char outbuf[ 1024 ];
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -1238,7 +1252,8 @@ void VSCPClientThread::handleClientGetStatus ( struct mg_connection *conn, CCont
 // handleClientGetChannelID
 //
 
-void VSCPClientThread::handleClientGetChannelID ( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientGetChannelID ( struct mg_connection *conn, 
+                                                    CControlObject *pCtrlObject )
 {
     char outbuf[ 1024 ];
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -1261,7 +1276,8 @@ void VSCPClientThread::handleClientGetChannelID ( struct mg_connection *conn, CC
 // handleClientSetChannelGUID
 //
 
-void VSCPClientThread::handleClientSetChannelGUID ( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientSetChannelGUID ( struct mg_connection *conn, 
+                                                        CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
@@ -1288,7 +1304,8 @@ void VSCPClientThread::handleClientSetChannelGUID ( struct mg_connection *conn, 
 // handleClientGetChannelGUID
 //
 
-void VSCPClientThread::handleClientGetChannelGUID ( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientGetChannelGUID ( struct mg_connection *conn, 
+                                                        CControlObject *pCtrlObject )
 {
     wxString strBuf;
     //char outbuf[ 1024 ];
@@ -1315,7 +1332,8 @@ void VSCPClientThread::handleClientGetChannelGUID ( struct mg_connection *conn, 
 // handleClientGetVersion
 //
 
-void VSCPClientThread::handleClientGetVersion ( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientGetVersion ( struct mg_connection *conn, 
+                                                    CControlObject *pCtrlObject )
 {
     char outbuf[ 1024 ];
 
@@ -1343,7 +1361,8 @@ void VSCPClientThread::handleClientGetVersion ( struct mg_connection *conn, CCon
 // handleClientSetFilter
 //
 
-void VSCPClientThread::handleClientSetFilter ( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientSetFilter ( struct mg_connection *conn, 
+                                                    CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
@@ -1411,7 +1430,8 @@ void VSCPClientThread::handleClientSetFilter ( struct mg_connection *conn, CCont
 // handleClientSetMask
 //
 
-void VSCPClientThread::handleClientSetMask ( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientSetMask ( struct mg_connection *conn, 
+                                                CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
@@ -1479,7 +1499,8 @@ void VSCPClientThread::handleClientSetMask ( struct mg_connection *conn, CContro
 // handleClientUser
 //
 
-void VSCPClientThread::handleClientUser ( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientUser ( struct mg_connection *conn, 
+                                            CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
@@ -1488,9 +1509,10 @@ void VSCPClientThread::handleClientUser ( struct mg_connection *conn, CControlOb
         return;
     }
 
-    pClientItem->m_UserName = pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length() - 4 );
-    pClientItem->m_UserName.Trim();			// Trim right side	
-    pClientItem->m_UserName.Trim( false ); 	// Trim left
+    pClientItem->m_UserName = 
+        pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length() - 4 );
+    pClientItem->m_UserName.Trim();         // Trim right side
+    pClientItem->m_UserName.Trim( false );  // Trim left
     if ( pClientItem->m_UserName.IsEmpty() ) {
         mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
         return;
@@ -1619,7 +1641,8 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn,
 // handleClientRcvLoop
 //
 
-void VSCPClientThread::handleClientRcvLoop( struct mg_connection *conn, CControlObject *pCtrlObject  )
+void VSCPClientThread::handleClientRcvLoop( struct mg_connection *conn, 
+                                                CControlObject *pCtrlObject  )
 {
 /*
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -1643,7 +1666,7 @@ void VSCPClientThread::handleClientRcvLoop( struct mg_connection *conn, CControl
         // Send one event if someting in the queue
         sendOneEventFromQueue( false );
 
-    } // While
+    } // While    TODO   CHECK THIS!!!!!!
 */
     return;
 }
@@ -1652,7 +1675,8 @@ void VSCPClientThread::handleClientRcvLoop( struct mg_connection *conn, CControl
 // handleClientHelp
 //
 
-void VSCPClientThread::handleClientHelp( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientHelp( struct mg_connection *conn, 
+                                            CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
     
@@ -1882,7 +1906,8 @@ void VSCPClientThread::handleClientHelp( struct mg_connection *conn, CControlObj
 // handleClientTest
 //
 
-void VSCPClientThread::handleClientTest ( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientTest ( struct mg_connection *conn, 
+                                            CControlObject *pCtrlObject )
 {
     mg_send( conn, MSG_OK, strlen ( MSG_OK ) );
     return;
@@ -1893,7 +1918,8 @@ void VSCPClientThread::handleClientTest ( struct mg_connection *conn, CControlOb
 // handleClientRestart
 //
 
-void VSCPClientThread::handleClientRestart ( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientRestart ( struct mg_connection *conn, 
+                                                    CControlObject *pCtrlObject )
 {
     mg_send( conn, MSG_OK, strlen ( MSG_OK ) );
     return;
@@ -1904,7 +1930,8 @@ void VSCPClientThread::handleClientRestart ( struct mg_connection *conn, CContro
 // handleClientShutdown
 //
 
-void VSCPClientThread::handleClientShutdown ( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientShutdown ( struct mg_connection *conn, 
+                                                CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
@@ -1923,7 +1950,8 @@ void VSCPClientThread::handleClientShutdown ( struct mg_connection *conn, CContr
 // handleClientRemote
 //
 
-void VSCPClientThread::handleClientRemote( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientRemote( struct mg_connection *conn, 
+                                                CControlObject *pCtrlObject )
 {
     return;
 }
@@ -1932,10 +1960,10 @@ void VSCPClientThread::handleClientRemote( struct mg_connection *conn, CControlO
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientInterface
 //
-// list 	 	List interfaces.
-// unique 	Aquire selected interface uniquely. Full format is INTERFACE UNIQUE id
-// normal 	Normal access to interfaces. Full format is INTERFACE NORMAL id
-// close		Close interfaces. Full format is INTERFACE CLOSE id
+// list     List interfaces.
+// unique   Aquire selected interface uniquely. Full format is INTERFACE UNIQUE id
+// normal   Normal access to interfaces. Full format is INTERFACE NORMAL id
+// close    Close interfaces. Full format is INTERFACE CLOSE id
 
 void VSCPClientThread::handleClientInterface( struct mg_connection *conn, CControlObject *pCtrlObject )
 {
@@ -1943,17 +1971,17 @@ void VSCPClientThread::handleClientInterface( struct mg_connection *conn, CContr
 
     m_pCtrlObject->logMsg ( pClientItem->m_currentCommandUC, DAEMON_LOGMSG_INFO );
 
-    if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "LIST" ) ) )	{
+    if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "LIST" ) ) )  {
         handleClientInterface_List( conn, pCtrlObject );
     }
-    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "UNIQUE " ) ) )	{
+    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "UNIQUE " ) ) )  {
         pClientItem->m_currentCommandUC = pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-7 );            // Remove "UNIQUE "
         handleClientInterface_Unique( conn, pCtrlObject );
     }
-    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "NORMAL" ) ) )	{
+    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "NORMAL" ) ) )   {
         handleClientInterface_Normal( conn, pCtrlObject );
     }
-    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "CLOSE" ) ) )	{
+    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "CLOSE" ) ) )    {
         handleClientInterface_Close( conn, pCtrlObject );
     }
 }
@@ -1962,7 +1990,8 @@ void VSCPClientThread::handleClientInterface( struct mg_connection *conn, CContr
 // handleClientInterface_List
 //
 
-void VSCPClientThread::handleClientInterface_List( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientInterface_List( struct mg_connection *conn, 
+                                                        CControlObject *pCtrlObject )
 {
     wxString strGUID;
     wxString strBuf;
@@ -1998,7 +2027,8 @@ void VSCPClientThread::handleClientInterface_List( struct mg_connection *conn, C
 // handleClientInterface_Unique
 //
 
-void VSCPClientThread::handleClientInterface_Unique( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientInterface_Unique( struct mg_connection *conn, 
+                                                        CControlObject *pCtrlObject )
 {
     unsigned char ifGUID[ 16 ];
     memset( ifGUID, 0, 16 );
@@ -2020,7 +2050,8 @@ void VSCPClientThread::handleClientInterface_Unique( struct mg_connection *conn,
 // handleClientInterface_Normal
 //
 
-void VSCPClientThread::handleClientInterface_Normal( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientInterface_Normal( struct mg_connection *conn, 
+                                                        sCControlObject *pCtrlObject )
 {
     // TODO
 }
@@ -2029,7 +2060,8 @@ void VSCPClientThread::handleClientInterface_Normal( struct mg_connection *conn,
 // handleClientInterface_Close
 //
 
-void VSCPClientThread::handleClientInterface_Close( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientInterface_Close( struct mg_connection *conn, 
+                                                        CControlObject *pCtrlObject )
 {
     // TODO
 }
@@ -2039,7 +2071,8 @@ void VSCPClientThread::handleClientInterface_Close( struct mg_connection *conn, 
 // handleClientUdp
 //
 
-void VSCPClientThread::handleClientUdp( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientUdp( struct mg_connection *conn, 
+                                            CControlObject *pCtrlObject )
 {
     // TODO
 }
@@ -2049,7 +2082,8 @@ void VSCPClientThread::handleClientUdp( struct mg_connection *conn, CControlObje
 // handleClientFile
 //
 
-void VSCPClientThread::handleClientFile( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientFile( struct mg_connection *conn, 
+                                            CControlObject *pCtrlObject )
 {
     // TODO
 }
@@ -2059,14 +2093,18 @@ void VSCPClientThread::handleClientFile( struct mg_connection *conn, CControlObj
 // handleClientVariable
 //
 
-void VSCPClientThread::handleClientVariable( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientVariable( struct mg_connection *conn, 
+                                                CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    m_pCtrlObject->logMsg ( pClientItem->m_currentCommandUC + _("\r\b"), DAEMON_LOGMSG_INFO );
+    m_pCtrlObject->logMsg ( pClientItem->m_currentCommandUC + _("\r\n"), 
+                                DAEMON_LOGMSG_INFO );
 
-    pClientItem->m_currentCommandUC = pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-9 );    // remove "VARIABLE "
-    pClientItem->m_currentCommand = pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length()-9 );          // remove "VARIABLE "
+    pClientItem->m_currentCommandUC = 
+        pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-9 );    // remove "VARIABLE "
+    pClientItem->m_currentCommand = 
+        pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length()-9 );        // remove "VARIABLE "
     pClientItem->m_currentCommandUC.Trim( false );
     pClientItem->m_currentCommand.Trim( false );
 
@@ -2079,31 +2117,31 @@ void VSCPClientThread::handleClientVariable( struct mg_connection *conn, CContro
         pClientItem->m_currentCommand += _(" ");
         handleVariable_List( conn, pCtrlObject );
     }
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "WRITE " ) ) )	{
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "WRITE " ) ) )   {
         handleVariable_Write( conn, pCtrlObject );
     }
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "READ " ) ) )	{
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "READ " ) ) )    {
         handleVariable_Read( conn, pCtrlObject );
     }
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "READRESET " ) ) )	{
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "READRESET " ) ) )   {
         handleVariable_ReadReset( conn, pCtrlObject );
     }
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "RESET" ) ) )	{
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "RESET" ) ) )    {
         handleVariable_Reset( conn, pCtrlObject );
     }
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "REMOVE " ) ) )	{
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "REMOVE " ) ) )  {
         handleVariable_Remove( conn, pCtrlObject );
     }
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "READREMOVE " ) ) )	{
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "READREMOVE " ) ) )  {
         handleVariable_ReadRemove( conn, pCtrlObject );
     }
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "LENGTH " ) ) )	{
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "LENGTH " ) ) )  {
         handleVariable_Length( conn, pCtrlObject );
     }
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "LOAD" ) ) )	{
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "LOAD" ) ) ) {
         handleVariable_Load( conn, pCtrlObject );
     }
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "SAVE" ) ) )	{
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "SAVE" ) ) ) {
         handleVariable_Save( conn, pCtrlObject );
     }
     else {
@@ -2114,14 +2152,15 @@ void VSCPClientThread::handleClientVariable( struct mg_connection *conn, CContro
 ///////////////////////////////////////////////////////////////////////////////
 // handleVariable_List
 //
-// variable list all	- List all variables.
-// variable list *		- List all variables.
-// variable list		- List all variables.
-// variable list name	- List variable with name 'name'.
-// variable list name*	- Name with wildcard.
+// variable list all    - List all variables.
+// variable list *      - List all variables.
+// variable list        - List all variables.
+// variable list name   - List variable with name 'name'.
+// variable list name*  - Name with wildcard.
 //
 
-void VSCPClientThread::handleVariable_List( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleVariable_List( struct mg_connection *conn, 
+                                                CControlObject *pCtrlObject )
 {
     CVSCPVariable *pVariable;
     wxString str;
@@ -2129,8 +2168,10 @@ void VSCPClientThread::handleVariable_List( struct mg_connection *conn, CControl
     listVscpVariable::iterator it;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    pClientItem->m_currentCommandUC = pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-5 );    // remove "LIST "
-    pClientItem->m_currentCommand = pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length()-5 );          // remove "LIST "
+    pClientItem->m_currentCommandUC = 
+        pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-5 );    // remove "LIST "
+    pClientItem->m_currentCommand = 
+        pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length()-5 );          // remove "LIST "
     pClientItem->m_currentCommandUC.Trim();
     pClientItem->m_currentCommandUC.Trim( false );
     pClientItem->m_currentCommand.Trim();
@@ -2343,7 +2384,8 @@ void VSCPClientThread::handleVariable_List( struct mg_connection *conn, CControl
 // handleVariable_Write
 //
 
-void VSCPClientThread::handleVariable_Write( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleVariable_Write( struct mg_connection *conn, 
+                                                CControlObject *pCtrlObject )
 {
     wxString strName;
     wxString strValue;
@@ -2354,7 +2396,8 @@ void VSCPClientThread::handleVariable_Write( struct mg_connection *conn, CContro
 
     m_pCtrlObject->logMsg( pClientItem->m_currentCommandUC, DAEMON_LOGMSG_INFO );
 
-    pClientItem->m_currentCommand = pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length() - 6 ); // remove "WRITE "
+    pClientItem->m_currentCommand = 
+        pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length() - 6 ); // remove "WRITE "
     pClientItem->m_currentCommand.Trim( false );
     pClientItem->m_currentCommand.Trim( true );
 
@@ -2387,7 +2430,7 @@ void VSCPClientThread::handleVariable_Write( struct mg_connection *conn, CContro
         wxString str = tkz.GetNextToken();
         str = str.Upper();
         if ( wxNOT_FOUND != str.Find( _("TRUE") ) ) {
-            bPersistence = true;		
+            bPersistence = true;
         }
     }
     else {
@@ -2418,12 +2461,14 @@ void VSCPClientThread::handleVariable_Write( struct mg_connection *conn, CContro
 // handleVariable_Read
 //
 
-void VSCPClientThread::handleVariable_Read( struct mg_connection *conn, CControlObject *pCtrlObject, bool bOKResponse )
+void VSCPClientThread::handleVariable_Read( struct mg_connection *conn, 
+                                                CControlObject *pCtrlObject, bool bOKResponse )
 {
     wxString str;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    pClientItem->m_currentCommandUC = pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length() - 5 ); // remove "READ "
+    pClientItem->m_currentCommandUC = 
+        pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length() - 5 ); // remove "READ "
     pClientItem->m_currentCommandUC.Trim( false );
     pClientItem->m_currentCommandUC.Trim( true );
 
@@ -2445,12 +2490,14 @@ void VSCPClientThread::handleVariable_Read( struct mg_connection *conn, CControl
 // handleVariable_Reset
 //
 
-void VSCPClientThread::handleVariable_Reset( struct mg_connection *conn, CControlObject *pCtrlObject  )
+void VSCPClientThread::handleVariable_Reset( struct mg_connection *conn, 
+                                                CControlObject *pCtrlObject  )
 {
     wxString str;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    pClientItem->m_currentCommandUC = pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length() - 10 ); // remove "READRESET "
+    pClientItem->m_currentCommandUC = 
+        pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length() - 10 ); // remove "READRESET "
     pClientItem->m_currentCommandUC.Trim( false );
     pClientItem->m_currentCommandUC.Trim( true );
 
@@ -2480,12 +2527,14 @@ void VSCPClientThread::handleVariable_Reset( struct mg_connection *conn, CContro
 // handleVariable_ReadReset
 //
 
-void VSCPClientThread::handleVariable_ReadReset( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleVariable_ReadReset( struct mg_connection *conn, 
+                                                    CControlObject *pCtrlObject )
 {
     wxString str;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    pClientItem->m_currentCommandUC = pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length() - 10 ); // remove "READRESET "
+    pClientItem->m_currentCommandUC = 
+        pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length() - 10 ); // remove "READRESET "
     pClientItem->m_currentCommandUC.Trim( false );
     pClientItem->m_currentCommandUC.Trim( true );
 
@@ -2517,12 +2566,14 @@ void VSCPClientThread::handleVariable_ReadReset( struct mg_connection *conn, CCo
 // handleVariable_Remove
 //
 
-void VSCPClientThread::handleVariable_Remove( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleVariable_Remove( struct mg_connection *conn, 
+                                                CControlObject *pCtrlObject )
 {
     wxString str;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    pClientItem->m_currentCommandUC = pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length() - 7 ); // remove "REMOVE "
+    pClientItem->m_currentCommandUC = 
+        pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length() - 7 ); // remove "REMOVE "
     pClientItem->m_currentCommandUC.Trim( false );
     pClientItem->m_currentCommandUC.Trim( true );
 
@@ -2538,7 +2589,8 @@ void VSCPClientThread::handleVariable_Remove( struct mg_connection *conn, CContr
 // handleVariable_ReadRemove
 //
 
-void VSCPClientThread::handleVariable_ReadRemove( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleVariable_ReadRemove( struct mg_connection *conn, 
+                                                    CControlObject *pCtrlObject )
 {
     wxString str;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -2574,12 +2626,14 @@ void VSCPClientThread::handleVariable_ReadRemove( struct mg_connection *conn, CC
 // handleVariable_Length
 //
 
-void VSCPClientThread::handleVariable_Length( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleVariable_Length( struct mg_connection *conn, 
+                                                CControlObject *pCtrlObject )
 {
     wxString str;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    pClientItem->m_currentCommandUC = pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length() - 7 ); // remove "LENGTH "
+    pClientItem->m_currentCommandUC = 
+        pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length() - 7 ); // remove "LENGTH "
     pClientItem->m_currentCommandUC.Trim( false );
     pClientItem->m_currentCommandUC.Trim( true );
 
@@ -2604,7 +2658,7 @@ void VSCPClientThread::handleVariable_Length( struct mg_connection *conn, CContr
         mg_send( conn,  str.mb_str(), str.Length() );
     }
     else {
-        mg_send( conn, "0\r\n", strlen( "0\r\n" ) );	
+        mg_send( conn, "0\r\n", strlen( "0\r\n" ) );
     }
 
     mg_send( conn,  MSG_OK, strlen( MSG_OK ) );
@@ -2616,7 +2670,8 @@ void VSCPClientThread::handleVariable_Length( struct mg_connection *conn, CContr
 // handleVariable_Load
 //
 
-void VSCPClientThread::handleVariable_Load( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleVariable_Load( struct mg_connection *conn, 
+                                                CControlObject *pCtrlObject )
 {
     m_pCtrlObject->m_VSCP_Variables.load();
 
@@ -2628,7 +2683,8 @@ void VSCPClientThread::handleVariable_Load( struct mg_connection *conn, CControl
 // handleVariable_Save
 //
 
-void VSCPClientThread::handleVariable_Save( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleVariable_Save( struct mg_connection *conn, 
+                                                CControlObject *pCtrlObject )
 {
     wxString path;
     //wxStandardPaths stdPath;
@@ -2653,7 +2709,8 @@ void VSCPClientThread::handleVariable_Save( struct mg_connection *conn, CControl
 // handleClientDm
 //
 
-void VSCPClientThread::handleClientDm( struct mg_connection *conn, CControlObject *pCtrlObject  )
+void VSCPClientThread::handleClientDm( struct mg_connection *conn, 
+                                        CControlObject *pCtrlObject  )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
@@ -2662,31 +2719,31 @@ void VSCPClientThread::handleClientDm( struct mg_connection *conn, CControlObjec
     pClientItem->m_currentCommandUC = pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-3 );
     pClientItem->m_currentCommandUC.Trim( false );
 
-    if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "ENABLE " ) ) )	{
+    if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "ENABLE " ) ) )   {
         handleDM_Enable( conn, pCtrlObject );
     }
-    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "DISABLE " ) ) )	{
+    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "DISABLE " ) ) ) {
         handleDM_Enable( conn, pCtrlObject );
     }
-    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "LIST" ) ) )	{
+    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "LIST" ) ) ) {
         handleDM_List( conn, pCtrlObject );
     }
-    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "ADD " ) ) )	{
+    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "ADD " ) ) ) {
         handleDM_Add( conn, pCtrlObject );
     }
-    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "DELETE " ) ) )	{
+    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "DELETE " ) ) )  {
         handleDM_Delete( conn, pCtrlObject );
     }
-    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "RESET" ) ) )	{
+    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "RESET" ) ) )    {
         handleDM_Reset( conn, pCtrlObject );
     }
-    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "TRIG " ) ) )	{
+    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "TRIG " ) ) )    {
         handleDM_Trigger( conn, pCtrlObject );
     }
-    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "CLRTRIG " ) ) )	{
+    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "CLRTRIG " ) ) ) {
         handleDM_ClearTriggerCount( conn, pCtrlObject );
     }
-    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "CLRERR " ) ) )	{
+    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "CLRERR " ) ) )  {
         handleDM_ClearErrorCount( conn, pCtrlObject );
     }
 }
@@ -2695,12 +2752,13 @@ void VSCPClientThread::handleClientDm( struct mg_connection *conn, CControlObjec
 // handleDM_Enable
 //
 
-void VSCPClientThread::handleDM_Enable( struct mg_connection *conn, CControlObject *pCtrlObject  )
+void VSCPClientThread::handleDM_Enable( struct mg_connection *conn, 
+                                            CControlObject *pCtrlObject  )
 {
     unsigned short pos;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "ALL" ) ) )	{
+    if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "ALL" ) ) )   {
 
         m_pCtrlObject->m_dm.m_mutexDM.Lock();
 
@@ -2741,12 +2799,13 @@ void VSCPClientThread::handleDM_Enable( struct mg_connection *conn, CControlObje
 // handleDM_Disable
 //
 
-void VSCPClientThread::handleDM_Disable( struct mg_connection *conn, CControlObject *pCtrlObject  )
+void VSCPClientThread::handleDM_Disable( struct mg_connection *conn, 
+                                            CControlObject *pCtrlObject  )
 {
     unsigned short pos;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "ALL" ) ) )	{
+    if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "ALL" ) ) )   {
 
         m_pCtrlObject->m_dm.m_mutexDM.Lock();
 
@@ -2793,7 +2852,8 @@ void VSCPClientThread::handleDM_Disable( struct mg_connection *conn, CControlObj
 // handleDM_List
 //
 
-void VSCPClientThread::handleDM_List( struct mg_connection *conn, CControlObject *pCtrlObject  )
+void VSCPClientThread::handleDM_List( struct mg_connection *conn, 
+                                        CControlObject *pCtrlObject  )
 {
     // Valid commands at this point
     // dm list
@@ -2805,7 +2865,8 @@ void VSCPClientThread::handleDM_List( struct mg_connection *conn, CControlObject
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Remove "LIST"
-    pClientItem->m_currentCommandUC = pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length() - 4 );
+    pClientItem->m_currentCommandUC = 
+        pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length() - 4 );
     pClientItem->m_currentCommandUC.Trim( false );
 
     // if "list" add "all"
@@ -2859,7 +2920,8 @@ void VSCPClientThread::handleDM_List( struct mg_connection *conn, CControlObject
 // handleDM_Add
 //
 
-void VSCPClientThread::handleDM_Add( struct mg_connection *conn, CControlObject *pCtrlObject  )
+void VSCPClientThread::handleDM_Add( struct mg_connection *conn, 
+                                        CControlObject *pCtrlObject  )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
     dmElement *pDMItem = new dmElement;
@@ -2906,12 +2968,13 @@ void VSCPClientThread::handleDM_Add( struct mg_connection *conn, CControlObject 
 // handleDM_Delete
 //
 
-void VSCPClientThread::handleDM_Delete( struct mg_connection *conn, CControlObject *pCtrlObject  )
+void VSCPClientThread::handleDM_Delete( struct mg_connection *conn, 
+                                            CControlObject *pCtrlObject  )
 {
     unsigned short pos;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "ALL" ) ) )	{
+    if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "ALL" ) ) )   {
 
         m_pCtrlObject->m_dm.m_mutexDM.Lock();
 
@@ -2944,8 +3007,8 @@ void VSCPClientThread::handleDM_Delete( struct mg_connection *conn, CControlObje
 
             DMLIST::compatibility_iterator node = m_pCtrlObject->m_dm.m_DMList.Item( pos );
             dmElement *pDMItem = node->GetData();
-            m_pCtrlObject->m_dm.m_DMList.DeleteNode( node );	// Delete the node
-            delete pDMItem;										// Delete the object
+            m_pCtrlObject->m_dm.m_DMList.DeleteNode( node );    // Delete the node
+            delete pDMItem;                                     // Delete the object
 
             m_pCtrlObject->m_dm.m_mutexDM.Unlock();
 
@@ -2972,7 +3035,8 @@ void VSCPClientThread::handleDM_Reset( struct mg_connection *conn, CControlObjec
 // handleDM_Trigger
 //
 
-void VSCPClientThread::handleDM_Trigger( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleDM_Trigger( struct mg_connection *conn, 
+                                            CControlObject *pCtrlObject )
 {
     unsigned short pos;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -3007,7 +3071,8 @@ void VSCPClientThread::handleDM_Trigger( struct mg_connection *conn, CControlObj
 //
 
 
-void VSCPClientThread::handleDM_ClearTriggerCount( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleDM_ClearTriggerCount( struct mg_connection *conn, 
+                                                    CControlObject *pCtrlObject )
 {
     unsigned short pos;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -3062,7 +3127,8 @@ void VSCPClientThread::handleDM_ClearTriggerCount( struct mg_connection *conn, C
 //
 
 
-void VSCPClientThread::handleDM_ClearErrorCount( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleDM_ClearErrorCount( struct mg_connection *conn, 
+                                                    CControlObject *pCtrlObject )
 {
     unsigned short pos;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -3115,8 +3181,10 @@ void VSCPClientThread::handleDM_ClearErrorCount( struct mg_connection *conn, CCo
 // handleClientList
 //
 
-void VSCPClientThread::handleClientList( struct mg_connection *conn, CControlObject *pCtrlObject  )
+void VSCPClientThread::handleClientList( struct mg_connection *conn, 
+                                            CControlObject *pCtrlObject  )
 {
+    // TODO    
     mg_send( conn, MSG_OK, strlen ( MSG_OK ) );
 }
 
@@ -3125,8 +3193,9 @@ void VSCPClientThread::handleClientList( struct mg_connection *conn, CControlObj
 // handleClientDriver
 //
 
-void VSCPClientThread::handleClientDriver( struct mg_connection *conn, CControlObject *pCtrlObject  )
+void VSCPClientThread::handleClientDriver( struct mg_connection *conn, 
+                                                CControlObject *pCtrlObject  )
 {
-
+    // TODO
 }
 
