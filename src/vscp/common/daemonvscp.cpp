@@ -115,7 +115,7 @@ void *daemonVSCPThread::Entry()
     // Load Winsock 2.0 DLL
     if ( WSAStartup( MAKEWORD( 2, 0 ), &wsaData ) != 0 ) {
         fprintf( stderr, "WSAStartup() failed" );
-        m_pCtrlObject->logMsg( _( "Automation multicast announce WSAStartup() failed\r\n" ), 
+        m_pCtrlObject->logMsg( _( "Automation multicast announce WSAStartup() failed\n" ), 
                                 DAEMON_LOGMSG_CRITICAL, 
                                 DAEMON_LOGTYPE_GENERAL );
         return NULL;
@@ -124,7 +124,7 @@ void *daemonVSCPThread::Entry()
     // create a socket for sending to the multicast address 
     if ( ( sock_mc = socket( PF_INET, SOCK_DGRAM, IPPROTO_UDP ) ) < 0 ) {
         perror( "socket() failed" );
-        m_pCtrlObject->logMsg( _( "Automation multicast announce sock() failed\r\n" ), 
+        m_pCtrlObject->logMsg( _( "Automation multicast announce sock() failed\n" ), 
                                 DAEMON_LOGMSG_CRITICAL, 
                                 DAEMON_LOGTYPE_GENERAL );
         return NULL;
@@ -134,7 +134,7 @@ void *daemonVSCPThread::Entry()
     if ( ( setsockopt( sock_mc, IPPROTO_IP, IP_MULTICAST_TTL,
                        ( const char* )&mc_ttl, sizeof( mc_ttl ) ) ) < 0 ) {
         perror( "setsockopt() failed" );
-        m_pCtrlObject->logMsg(  _( "Automation multicast announce setsockopt() failed\r\n" ), 
+        m_pCtrlObject->logMsg(  _( "Automation multicast announce setsockopt() failed\n" ), 
                                 DAEMON_LOGMSG_CRITICAL, 
                                 DAEMON_LOGTYPE_GENERAL );
         return NULL;
@@ -232,7 +232,7 @@ void *daemonVSCPThread::Entry()
             vscpEventEx eventEx;
             if ( m_pCtrlObject->m_automation.doWork( &eventEx ) ) {
 
-                m_pCtrlObject->logMsg( wxString::Format( _( "Automation event sent: Class=%d Type=%d\r\n" ),
+                m_pCtrlObject->logMsg( wxString::Format( _( "Automation event sent: Class=%d Type=%d\n" ),
                                         eventEx.vscp_class, eventEx.vscp_type ),
                                         DAEMON_LOGMSG_INFO,
                                         DAEMON_LOGTYPE_GENERAL );

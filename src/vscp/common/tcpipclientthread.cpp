@@ -2098,7 +2098,7 @@ void VSCPClientThread::handleClientVariable( struct mg_connection *conn,
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    m_pCtrlObject->logMsg ( pClientItem->m_currentCommandUC + _("\r\n"), 
+    m_pCtrlObject->logMsg ( pClientItem->m_currentCommandUC + _("\n"), 
                                 DAEMON_LOGMSG_INFO );
 
     pClientItem->m_currentCommandUC = 
