@@ -589,7 +589,7 @@ bool vscp_getVSCPMeasurementAsString( const vscpEvent *pEvent,
         }
         break;
 
-        case 4: // normalized integer
+        case 4: // normalised integer
         {
             double value = 
                 vscp_getDataCodingNormalizedInteger( pEvent->pdata+offset, 
@@ -738,7 +738,7 @@ bool vscp_getVSCPMeasurementWithZoneAsString(const vscpEvent *pEvent, wxString& 
         offset = 16;
     }
     
-    // Must at least have indez, zone, subzone, normalizewr byte, one data byte
+    // Must at least have index, zone, subzone, normaliser byte, one data byte
     if (pEvent->sizeData-offset < 5) return false;
     
     // We mimic a standard measurement
@@ -769,7 +769,7 @@ bool vscp_convertFloatToNormalizedEventData( uint8_t *pdata,
     // No data assigned yet
     *psize = 0;
 
-    unit &= VSCP_MASK_DATACODING_UNIT;          // Mask of invalid bits
+    unit &= 3;                                  // Mask of invalid bits
     unit <<= 3;                                 // Shift to correct position
 
     sensoridx &= VSCP_MASK_DATACODING_INDEX;    // Mask of invalid bits
@@ -801,7 +801,7 @@ bool vscp_convertFloatToNormalizedEventData( uint8_t *pdata,
     (void)modf( value, &intpart );
     val64 = (uint64_t)(value * pow(10.0,ndigits));
 
-    //val64 = wxUINT64_SWAP_ON_LE(val64);
+    //val64 = wxUINT64_SWAP_ON_LE(val64);   Not needed
 
     if ( val64 < ((double)0x80) ) {
         *psize = 3;
@@ -3586,7 +3586,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
             // different is the unit that follows!
             // for debugging we put out in [] the type of data, and its value
             // after the =
-            // this works on bits 7,6,5 of the datacoding byte
+            // this works on bits 7,6,5 of the data coding byte
             switch ( VSCP_DATACODING_TYPE( *( pEvent->pdata+offset ) ) & 0xE0 ) {
 
             case 0x00: // bit format
@@ -3621,7 +3621,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
                 strValue += wrkstr1;
                 break;
 
-            case 0x80: // normalized int format
+            case 0x80: // normalised integer format
             {
                 double temp = 
                     vscp_getDataCodingNormalizedInteger( pEvent->pdata+offset, 
