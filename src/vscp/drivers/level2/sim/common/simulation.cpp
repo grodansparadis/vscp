@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP Project (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2015 Ake Hedman, 
+// Copyright (C) 2000-2016 Ake Hedman, 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -110,7 +110,7 @@ double gsimdata[] = {
 
 static uint32_t getClockMilliseconds()
 {
-#ifdef WIN32	
+#ifdef WIN32
     return ( uint32_t )( ( 1000 * ( float )clock() ) / CLOCKS_PER_SEC );
 #else
     timeval curTime;
@@ -128,14 +128,14 @@ static uint32_t getClockMilliseconds()
 
 CSim::CSim()
 {
-	m_bQuit = false;
+    m_bQuit = false;
     for( int i = 0; i < SIM_MAX_NODES; i++ ) {
         m_pthreadWork[ i ] = NULL;
     }
 
     m_nNodes = 1;   // One node as default
-	
-	::wxInitialize();
+    
+    ::wxInitialize();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -144,8 +144,8 @@ CSim::CSim()
 
 CSim::~CSim()
 {
-	close();
-	::wxUninitialize();
+    close();
+    ::wxUninitialize();
 }
 
 
@@ -162,58 +162,58 @@ CSim::open(const char *pUsername,
                     const char *pPrefix,
                     const char *pConfig)
 {
-	bool rv = true;
-	wxString wxstr = wxString::FromAscii(pConfig);
+    bool rv = true;
+    wxString wxstr = wxString::FromAscii(pConfig);
 
-	m_usernameLocal = wxString::FromAscii(pUsername);
-	m_passwordLocal = wxString::FromAscii(pPassword);
-	m_hostLocal = wxString::FromAscii(pHost);
-	m_portLocal = port;
-	m_prefix = wxString::FromAscii(pPrefix);
+    m_usernameLocal = wxString::FromAscii(pUsername);
+    m_passwordLocal = wxString::FromAscii(pPassword);
+    m_hostLocal = wxString::FromAscii(pHost);
+    m_portLocal = port;
+    m_prefix = wxString::FromAscii(pPrefix);
 
-	// Parse the configuration string. It should
-	// have the following form
-	// "numberofnodes"
-	// 
-	wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";\n"));
+    // Parse the configuration string. It should
+    // have the following form
+    // "numberofnodes"
+    // 
+    wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";\n"));
 
-	// Check for number of nodes in configuration string
-	if (tkz.HasMoreTokens()) {
-		// Interface
-		m_nNodes = vscp_readStringValue( tkz.GetNextToken() );
-	}
-	
-	
-	// First log on to the host and get configuration 
-	// variables
+    // Check for number of nodes in configuration string
+    if (tkz.HasMoreTokens()) {
+        // Interface
+        m_nNodes = vscp_readStringValue( tkz.GetNextToken() );
+    }
+    
+    
+    // First log on to the host and get configuration 
+    // variables
 
     if ( VSCP_ERROR_SUCCESS != m_srvLocal.doCmdOpen( m_hostLocal,
-								                        m_usernameLocal,
-								                        m_passwordLocal) ) {
+                                                        m_usernameLocal,
+                                                        m_passwordLocal) ) {
 #ifndef WIN32
-		syslog(LOG_ERR,
-				"%s",
-				(const char *) "Unable to connect to VSCP TCP/IP interface. Terminating!");
+        syslog(LOG_ERR,
+                "%s",
+                (const char *) "Unable to connect to VSCP TCP/IP interface. Terminating!");
 #endif
-		return false;
-	}
+        return false;
+    }
 
-	// Find the channel id
-	uint32_t ChannelID;
-	m_srvLocal.doCmdGetChannelID(&ChannelID);
+    // Find the channel id
+    uint32_t ChannelID;
+    m_srvLocal.doCmdGetChannelID(&ChannelID);
 
-	// The server should hold configuration data 
-	// 
-	// We look for 
+    // The server should hold configuration data 
+    // 
+    // We look for 
     //
     //   _NumberOfNodes - The number of nodes we should pretend to be.
-	//
+    //
     //   
 
-	wxString str;
+    wxString str;
     int value;
-	wxString strName = m_prefix +
-			wxString::FromAscii("_NumberOfNodes");
+    wxString strName = m_prefix +
+            wxString::FromAscii("_NumberOfNodes");
     if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableInt( strName, &value ) ) {
         m_nNodes = value;
     }
@@ -222,7 +222,7 @@ CSim::open(const char *pUsername,
     if ( m_nNodes > SIM_MAX_NODES ) {
         m_nNodes = SIM_MAX_NODES;
     }
-	
+    
     for( int i = 0; i < m_nNodes; i++ ) {
 
         wxString strIteration;
@@ -340,10 +340,10 @@ CSim::open(const char *pUsername,
 
     } // if
 
-	// Close the channel
-	m_srvLocal.doCmdClose();
+    // Close the channel
+    m_srvLocal.doCmdClose();
 
-	return rv;
+    return rv;
 }
 
 
@@ -354,11 +354,11 @@ CSim::open(const char *pUsername,
 void
 CSim::close(void)
 {
-	// Do nothing if already terminated
-	if (m_bQuit) return;
+    // Do nothing if already terminated
+    if (m_bQuit) return;
 
-	m_bQuit = true; // terminate the thread
-	wxSleep(1); // Give the thread some time to terminate
+    m_bQuit = true; // terminate the thread
+    wxSleep(1); // Give the thread some time to terminate
 }
 
 
@@ -371,8 +371,8 @@ CSim::addEvent2SendQueue(const vscpEvent *pEvent)
 {
     m_mutexSendQueue.Lock();
     m_sendList.push_back((vscpEvent *)pEvent);
-	m_semSendQueue.Post();
-	m_mutexSendQueue.Unlock();
+    m_semSendQueue.Post();
+    m_mutexSendQueue.Unlock();
     return true;
 }
 
@@ -384,7 +384,7 @@ CWrkTread::CWrkTread()
 {
     uint32_t index = 0;
 
-	m_pObj = NULL;
+    m_pObj = NULL;
 
     vscp_clearVSCPFilter( &m_vscpfilter );  // Accept all events
 
@@ -423,7 +423,7 @@ CWrkTread::CWrkTread()
 
 CWrkTread::~CWrkTread()
 {
-	;
+    ;
 }
 
 
@@ -900,14 +900,14 @@ CWrkTread::Entry()
     uint16_t measurement_index = 0;
     wxTextFile tfile;
     std::list<double> simlist;
-	bool bRemoteConnectionLost = false;
+    bool bRemoteConnectionLost = false;
     vscpEventEx eventEx;
     wxLongLong lastSendEvent = ::wxGetLocalTimeMillis();
     wxLongLong lastSendHeartbeat = ::wxGetLocalTimeMillis();
 
-	::wxInitialize();
-			
-	// Check pointer to main object
+    ::wxInitialize();
+            
+    // Check pointer to main object
     if ( NULL == m_pObj ) {
 
 #ifndef WIN32
@@ -972,7 +972,7 @@ dumb_fill_data:
 
     }
     
-	while (!TestDestroy() && !m_pObj->m_bQuit) {
+    while (!TestDestroy() && !m_pObj->m_bQuit) {
 
         if ( wxSEMA_TIMEOUT == m_pObj->m_semSendQueue.WaitTimeout( 500 ) ) {
          
@@ -1165,8 +1165,8 @@ dumb_fill_data:
             if ( 0 == pEvent->sizeData ) {
                 pEvent->pdata = NULL;
             }
-			
-			// Yes there is data to handle
+            
+            // Yes there is data to handle
             if ( m_bLevel2 ) {
 
             }
@@ -1389,12 +1389,12 @@ dumb_fill_data:
             // We are done with the event
             vscp_deleteVSCPevent( pEvent );
             pEvent = NULL;
-			
-		} // Send list size
-		
-	} // while
+            
+        } // Send list size
+        
+    } // while
 
-	return NULL;
+    return NULL;
 
 }
 
@@ -1405,7 +1405,7 @@ dumb_fill_data:
 void
 CWrkTread::OnExit()
 {
-	;
+    ;
 }
 
 

@@ -801,7 +801,7 @@ bool vscp_convertFloatToNormalizedEventData( uint8_t *pdata,
     (void)modf( value, &intpart );
     val64 = (uint64_t)(value * pow(10.0,ndigits));
 
-    val64 = wxUINT64_SWAP_ON_LE(val64);
+    //val64 = wxUINT64_SWAP_ON_LE(val64);
 
     if ( val64 < ((double)0x80) ) {
         *psize = 3;

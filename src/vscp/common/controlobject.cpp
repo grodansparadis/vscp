@@ -926,7 +926,7 @@ bool CControlObject::cleanup(void)
     // kill table files
     m_mutexTableList.Lock();
     listVSCPTables::iterator iter;
-    for (iter = m_listTables.begin(); iter != m_listTables.end(); ++iter)
+    for ( iter = m_listTables.begin(); iter != m_listTables.end(); ++iter )
     {
         CVSCPTable *pTable = *iter;
         delete pTable;
@@ -1597,7 +1597,7 @@ void CControlObject::addKnownNode( cguid& guid,
                                     cguid& ifguid, 
                                     wxString& name )
 {
-    ;
+    ;   // TODO ???
 }
 
 ///////////////////////////////////////////////////////////////////////////////

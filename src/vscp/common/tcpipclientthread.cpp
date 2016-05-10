@@ -2051,7 +2051,7 @@ void VSCPClientThread::handleClientInterface_Unique( struct mg_connection *conn,
 //
 
 void VSCPClientThread::handleClientInterface_Normal( struct mg_connection *conn, 
-                                                        sCControlObject *pCtrlObject )
+                                                        CControlObject *pCtrlObject )
 {
     // TODO
 }

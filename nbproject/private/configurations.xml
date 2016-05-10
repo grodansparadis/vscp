@@ -811,6 +811,8 @@
                   <df name="tabgroups">
                   </df>
                 </df>
+                <df name="vscp2drv_sim">
+                </df>
               </df>
               <df name="html">
               </df>
@@ -1476,6 +1478,8 @@
                   <in>simulation.h</in>
                 </df>
                 <df name="linux">
+                  <df name="vscp2drv_sim">
+                  </df>
                   <in>test.c</in>
                   <in>vscpl2drv_sim.cpp</in>
                   <in>vscpl2drv_sim.h</in>

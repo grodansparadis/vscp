@@ -351,12 +351,12 @@ void frmMain::CreateControls()
     itemMenu3->Append( ID_MENUITEM_MDF_EDITOR, 
                         _("VSCP MDF Editor..."), 
                         wxEmptyString, wxITEM_NORMAL);
-    itemMenu3->Append( ID_MENUITEM_DM_EDITOR, 
+    /*itemMenu3->Append( ID_MENUITEM_DM_EDITOR, 
                         _("VSCP Daemon Decision Matrix Editor..."), 
-                        wxEmptyString, wxITEM_NORMAL);
-    itemMenu3->Append( ID_MENUITEM_VARIABLE_EDITOR, 
+                        wxEmptyString, wxITEM_NORMAL);*/
+    /*itemMenu3->Append( ID_MENUITEM_VARIABLE_EDITOR, 
                         _("VSCP Daemon Variable Editor..."), 
-                        wxEmptyString, wxITEM_NORMAL);
+                        wxEmptyString, wxITEM_NORMAL);*/
     itemMenu3->AppendSeparator();
     itemMenu3->Append( ID_MENUITEM_SCAN, 
                         _("Scan for devices..."), 
@@ -366,10 +366,10 @@ void frmMain::CreateControls()
                         wxEmptyString, 
                         wxITEM_NORMAL);
     itemMenu3->AppendSeparator();
-    itemMenu3->Append( ID_MENUITEM_SIMPLE_UI_DESIGNER, 
+    /*itemMenu3->Append( ID_MENUITEM_SIMPLE_UI_DESIGNER, 
                         _("VSCP Simple UI designer..."), 
                         wxEmptyString, 
-                        wxITEM_NORMAL);
+                        wxITEM_NORMAL);*/
     itemMenu3->AppendSeparator();
     itemMenu3->Append( ID_MENU_VSCPWORKS_EXIT, 
                         _("Exit"), 

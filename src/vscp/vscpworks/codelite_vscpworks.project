@@ -377,7 +377,7 @@ make</RebuildCommand>
     <File Name="Makefile"/>
     <File Name="Makefile.in"/>
   </VirtualDirectory>
+  <VirtualDirectory Name="vscp_common"/>
   <Dependencies Name="Debug"/>
   <Dependencies Name="Release"/>
-  <VirtualDirectory Name="vscp_common"/>
 </CodeLite_Project>

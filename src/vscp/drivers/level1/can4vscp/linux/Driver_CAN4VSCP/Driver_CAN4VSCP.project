@@ -104,4 +104,6 @@
     <File Name="../README"/>
     <File Name="../vscpl1_can4vscpdrv.cpp"/>
   </VirtualDirectory>
+  <Dependencies Name="Debug"/>
+  <Dependencies Name="Release"/>
 </CodeLite_Project>

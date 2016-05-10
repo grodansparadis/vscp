@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2015 Ake Hedman, 
+// Copyright (C) 2000-2016 Ake Hedman, 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -63,9 +63,9 @@
 
 using namespace std;
 
-#define SIM_OBJ_MAJOR_VERSION                   1
-#define SIM_OBJ_MINOR_VERSION                   0
-#define SIM_OBJ_SUBMINOR_VERSION                0
+#define SIM_OBJ_MAJOR_VERSION                       1
+#define SIM_OBJ_MINOR_VERSION                       0
+#define SIM_OBJ_SUBMINOR_VERSION                    0
 
 #define VSCP_LEVEL2_DLL_TCPIPLINK_OBJ_MUTEX     "___VSCP__DLL_L2SIMOBJ_OBJ_MUTEX____"
 
@@ -118,24 +118,24 @@ using namespace std;
 #define VSCP_REG_USERID3                            0x87
 #define VSCP_REG_USERID4                            0x88
 
-#define VSCP_REG_MANUFACTUR_ID0			    0x89
-#define VSCP_REG_MANUFACTUR_ID1			    0x8A
-#define VSCP_REG_MANUFACTUR_ID2			    0x8B
-#define VSCP_REG_MANUFACTUR_ID3			    0x8C
+#define VSCP_REG_MANUFACTUR_ID0                     0x89
+#define VSCP_REG_MANUFACTUR_ID1                     0x8A
+#define VSCP_REG_MANUFACTUR_ID2                     0x8B
+#define VSCP_REG_MANUFACTUR_ID3                     0x8C
 
-#define VSCP_REG_MANUFACTUR_SUBID0		    0x8D
-#define VSCP_REG_MANUFACTUR_SUBID1		    0x8E
-#define VSCP_REG_MANUFACTUR_SUBID2		    0x8F
-#define VSCP_REG_MANUFACTUR_SUBID3		    0x90
+#define VSCP_REG_MANUFACTUR_SUBID0                  0x8D
+#define VSCP_REG_MANUFACTUR_SUBID1                  0x8E
+#define VSCP_REG_MANUFACTUR_SUBID2                  0x8F
+#define VSCP_REG_MANUFACTUR_SUBID3                  0x90
 
-#define VSCP_REG_NICKNAME_ID			    0x91
+#define VSCP_REG_NICKNAME_ID                        0x91
 
 #define VSCP_REG_PAGE_SELECT_MSB                    0x92
 #define VSCP_REG_PAGE_SELECT_LSB                    0x93
 
-#define VSCP_REG_FIRMWARE_MAJOR_VERSION		    0x94
-#define VSCP_REG_FIRMWARE_MINOR_VERSION		    0x95
-#define VSCP_REG_FIRMWARE_SUB_MINOR_VERSION	    0x96
+#define VSCP_REG_FIRMWARE_MAJOR_VERSION             0x94
+#define VSCP_REG_FIRMWARE_MINOR_VERSION             0x95
+#define VSCP_REG_FIRMWARE_SUB_MINOR_VERSION         0x96
 
 #define VSCP_REG_BOOT_LOADER_ALGORITHM              0x97
 #define VSCP_REG_BUFFER_SIZE                        0x98
@@ -185,22 +185,22 @@ bit 0 - Classfilter bit 8
 Action = 0 is always NOOP, "no operation".
  */
 
-#define VSCP_DM_POS_OADDR			      	0
-#define VSCP_DM_POS_FLAGS			      	1
-#define VSCP_DM_POS_CLASSMASK		   		2
-#define VSCP_DM_POS_CLASSFILTER		  		3
-#define VSCP_DM_POS_TYPEMASK                            4
-#define VSCP_DM_POS_TYPEFILTER		  		5
-#define VSCP_DM_POS_ACTION			    	6
-#define VSCP_DM_POS_ACTIONPARAM		  		7
+#define VSCP_DM_POS_OADDR                           0
+#define VSCP_DM_POS_FLAGS                           1
+#define VSCP_DM_POS_CLASSMASK                       2
+#define VSCP_DM_POS_CLASSFILTER                     3
+#define VSCP_DM_POS_TYPEMASK                        4
+#define VSCP_DM_POS_TYPEFILTER                      5
+#define VSCP_DM_POS_ACTION                          6
+#define VSCP_DM_POS_ACTIONPARAM                     7
 
-#define VSCP_DM_FLAG_ENABLED                            0x80
-#define VSCP_DM_FLAG_CHECK_OADDR	  		0x40
-#define VSCP_DM_FLAG_HARDCODED		  		0x20
-#define VSCP_DM_FLAG_CHECK_ZONE		  		0x10
-#define VSCP_DM_FLAG_CHECK_SUBZONE			0x08
-#define VSCP_DM_FLAG_CLASS_MASK		  		0x02
-#define VSCP_DM_FLAG_CLASS_FILTER	  		0x01
+#define VSCP_DM_FLAG_ENABLED                        0x80
+#define VSCP_DM_FLAG_CHECK_OADDR                    0x40
+#define VSCP_DM_FLAG_HARDCODED                      0x20
+#define VSCP_DM_FLAG_CHECK_ZONE                     0x10
+#define VSCP_DM_FLAG_CHECK_SUBZONE                  0x08
+#define VSCP_DM_FLAG_CLASS_MASK                     0x02
+#define VSCP_DM_FLAG_CLASS_FILTER                   0x01
 
 /*!
 \struct _dmrow
@@ -208,14 +208,14 @@ Decision matrix row element (for RAM storage)
 Each DM row consist of a structure of this type.
  */
 struct _dmrow {
-    uint8_t oaddr; ///< Originating address
-    uint8_t flags; ///< Decision matrix row flags
-    uint8_t class_mask; ///< Mask for class (lower eight bits)
-    uint8_t class_filter; ///< Filter for class (lower eight bits)
-    uint8_t type_mask; ///< Mask for type
-    uint8_t type_filter; ///< Filter for type
-    uint8_t action; ///< Action code
-    uint8_t action_param; ///< Action parameter
+    uint8_t oaddr;          ///< Originating address
+    uint8_t flags;          ///< Decision matrix row flags
+    uint8_t class_mask;     ///< Mask for class (lower eight bits)
+    uint8_t class_filter;   ///< Filter for class (lower eight bits)
+    uint8_t type_mask;      ///< Mask for type
+    uint8_t type_filter;    ///< Filter for type
+    uint8_t action;         ///< Action code
+    uint8_t action_param;   ///< Action parameter
 };
 
 
@@ -294,7 +294,7 @@ public:
     std::list<vscpEvent *> m_receiveList;
 
     /*!
-    Event object to indicate that there is an event in the output queue
+        Event object to indicate that there is an event in the output queue
      */
     wxSemaphore m_semSendQueue;
     wxSemaphore m_semReceiveQueue;
@@ -306,7 +306,7 @@ public:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-//				                Worker Tread
+//                              Worker Tread
 ///////////////////////////////////////////////////////////////////////////////
 
 class CWrkTread : public wxThread {

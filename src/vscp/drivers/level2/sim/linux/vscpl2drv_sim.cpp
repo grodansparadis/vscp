@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2015
+// Copyright (C) 2000-2016
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -53,12 +53,12 @@ void _fini() __attribute__((destructor));
 
 void _init()
 {
-	printf("initializing\n");
+    printf("initialising\n");
 }
 
 void _fini()
 {
-	printf("finishing\n");
+    printf("finishing\n");
 }
 
 
@@ -68,44 +68,42 @@ void _fini()
 
 CVSCPDrvApp::CVSCPDrvApp()
 {
-	m_instanceCounter = 0;
-	pthread_mutex_init(&m_objMutex, NULL);
+    m_instanceCounter = 0;
+    pthread_mutex_init(&m_objMutex, NULL);
 
-	// Init the driver array
-	for (int i = 0; i < VSCP_SIM_DRIVER_MAX_OPEN; i++) {
-		m_psimArray[ i ] = NULL;
-	}
+    // Init. the driver array
+    for (int i = 0; i < VSCP_SIM_DRIVER_MAX_OPEN; i++) {
+        m_psimArray[ i ] = NULL;
+    }
 
-	UNLOCK_MUTEX(m_objMutex);
+    UNLOCK_MUTEX(m_objMutex);
 }
 
 CVSCPDrvApp::~CVSCPDrvApp()
 {
-	LOCK_MUTEX(m_objMutex);
+    LOCK_MUTEX(m_objMutex);
 
-	for (int i = 0; i < VSCP_SIM_DRIVER_MAX_OPEN; i++) {
+    for (int i = 0; i < VSCP_SIM_DRIVER_MAX_OPEN; i++) {
 
-		if (NULL != m_psimArray[ i ]) {
+        if (NULL != m_psimArray[ i ]) {
 
-			CSim *psim = getDriverObject(i);
-			if (NULL != psim) {
-				psim->close();
-				delete m_psimArray[ i ];
-				m_psimArray[ i ] = NULL;
-			}
-		}
-	}
+            CSim *psim = getDriverObject(i);
+            if (NULL != psim) {
+                psim->close();
+                delete m_psimArray[ i ];
+                m_psimArray[ i ] = NULL;
+            }
+        }
+    }
 
-	UNLOCK_MUTEX(m_objMutex);
-	pthread_mutex_destroy(&m_objMutex);
+    UNLOCK_MUTEX(m_objMutex);
+    pthread_mutex_destroy(&m_objMutex);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // The one and only App object
 
 CVSCPDrvApp theApp;
-
-
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -118,24 +116,24 @@ CVSCPDrvApp theApp;
 
 long CVSCPDrvApp::addDriverObject(CSim *psim)
 {
-	long h = 0;
+    long h = 0;
 
-	LOCK_MUTEX(m_objMutex);
-	for (int i = 0; i < VSCP_SIM_DRIVER_MAX_OPEN; i++) {
+    LOCK_MUTEX(m_objMutex);
+    for (int i = 0; i < VSCP_SIM_DRIVER_MAX_OPEN; i++) {
 
-		if (NULL == m_psimArray[ i ]) {
+        if (NULL == m_psimArray[ i ]) {
 
-			m_psimArray[ i ] = psim;
-			h = i + 1681;
-			break;
+            m_psimArray[ i ] = psim;
+            h = i + 1681;
+            break;
 
-		}
+        }
 
-	}
+    }
 
-	UNLOCK_MUTEX(m_objMutex);
+    UNLOCK_MUTEX(m_objMutex);
 
-	return h;
+    return h;
 }
 
 
@@ -145,12 +143,12 @@ long CVSCPDrvApp::addDriverObject(CSim *psim)
 
 CSim *CVSCPDrvApp::getDriverObject(long h)
 {
-	long idx = h - 1681;
+    long idx = h - 1681;
 
-	// Check if valid handle
-	if (idx < 0) return NULL;
-	if (idx >= VSCP_SIM_DRIVER_MAX_OPEN) return NULL;
-	return m_psimArray[ idx ];
+    // Check if valid handle
+    if (idx < 0) return NULL;
+    if (idx >= VSCP_SIM_DRIVER_MAX_OPEN) return NULL;
+    return m_psimArray[ idx ];
 }
 
 
@@ -160,16 +158,16 @@ CSim *CVSCPDrvApp::getDriverObject(long h)
 
 void CVSCPDrvApp::removeDriverObject(long h)
 {
-	long idx = h - 1681;
+    long idx = h - 1681;
 
-	// Check if valid handle
-	if (idx < 0) return;
-	if (idx >= VSCP_SIM_DRIVER_MAX_OPEN) return;
+    // Check if valid handle
+    if (idx < 0) return;
+    if (idx >= VSCP_SIM_DRIVER_MAX_OPEN) return;
 
-	LOCK_MUTEX(m_objMutex);
-	if (NULL != m_psimArray[ idx ]) delete m_psimArray[ idx ];
-	m_psimArray[ idx ] = NULL;
-	UNLOCK_MUTEX(m_objMutex);
+    LOCK_MUTEX(m_objMutex);
+    if (NULL != m_psimArray[ idx ]) delete m_psimArray[ idx ];
+    m_psimArray[ idx ] = NULL;
+    UNLOCK_MUTEX(m_objMutex);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -177,8 +175,8 @@ void CVSCPDrvApp::removeDriverObject(long h)
 
 BOOL CVSCPDrvApp::InitInstance()
 {
-	m_instanceCounter++;
-	return TRUE;
+    m_instanceCounter++;
+    return TRUE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -198,30 +196,30 @@ VSCPOpen(const char *pUsername,
             const char *pParameter,
             unsigned long flags)
 {
-	long h = 0;
+    long h = 0;
 
-	CSim *pdrvObj = new CSim();
-	if (NULL != pdrvObj) {
+    CSim *pdrvObj = new CSim();
+    if (NULL != pdrvObj) {
 
-		if (pdrvObj->open(pUsername,
+        if ( pdrvObj->open(pUsername,
                             pPassword,
                             pHost,
                             port,
                             pPrefix,
-                            pParameter)) {
+                            pParameter ) ) {
 
-			if (!(h = theApp.addDriverObject(pdrvObj))) {
-				delete pdrvObj;
-			}
+            if ( !( h = theApp.addDriverObject( pdrvObj ) ) ) {
+                delete pdrvObj;
+            }
 
-		} 
+        } 
         else {
-			delete pdrvObj;
-		}
+            delete pdrvObj;
+        }
 
-	}
+    }
 
-	return h;
+    return h;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -231,12 +229,12 @@ VSCPOpen(const char *pUsername,
 extern "C" int
 VSCPClose(long handle)
 {
-	CSim *pdrvObj = theApp.getDriverObject(handle);
-	if (NULL == pdrvObj) return CANAL_ERROR_SUCCESS;
-	pdrvObj->close();
-	theApp.removeDriverObject(handle);
+    CSim *pdrvObj = theApp.getDriverObject(handle);
+    if (NULL == pdrvObj) return CANAL_ERROR_SUCCESS;
+    pdrvObj->close();
+    theApp.removeDriverObject(handle);
     
-	return CANAL_ERROR_SUCCESS;
+    return CANAL_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -246,12 +244,12 @@ VSCPClose(long handle)
 extern "C" int
 VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
 {
-	CSim *pdrvObj = theApp.getDriverObject(handle);
-	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
+    CSim *pdrvObj = theApp.getDriverObject(handle);
+    if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
     
     pdrvObj->addEvent2SendQueue( pEvent );
     
-	return CANAL_ERROR_SUCCESS;
+    return CANAL_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -264,23 +262,23 @@ VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
     // Check pointer
     if ( NULL == pEvent) return CANAL_ERROR_PARAMETER;
     
-	CSim *pdrvObj = theApp.getDriverObject(handle);
-	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
+    CSim *pdrvObj = theApp.getDriverObject(handle);
+    if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
     
     if ( wxSEMA_TIMEOUT == pdrvObj->m_semReceiveQueue.WaitTimeout( timeout ) ) {
         return CANAL_ERROR_TIMEOUT;
     }
     
-	pdrvObj->m_mutexReceiveQueue.Lock();
+    pdrvObj->m_mutexReceiveQueue.Lock();
     vscpEvent *pLocalEvent = pdrvObj->m_receiveList.front();
     pdrvObj->m_receiveList.pop_front();
-	pdrvObj->m_mutexReceiveQueue.Unlock();
+    pdrvObj->m_mutexReceiveQueue.Unlock();
     if (NULL == pLocalEvent) return CANAL_ERROR_MEMORY;
     
     vscp_copyVSCPEvent( pEvent, pLocalEvent );
     vscp_deleteVSCPevent( pLocalEvent );
-	
-	return CANAL_ERROR_SUCCESS;
+    
+    return CANAL_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -290,7 +288,7 @@ VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
 extern "C" unsigned long
 VSCPGetLevel(void)
 {
-	return CANAL_LEVEL_USES_TCPIP;
+    return CANAL_LEVEL_USES_TCPIP;
 }
 
 
@@ -301,7 +299,7 @@ VSCPGetLevel(void)
 extern "C" unsigned long
 VSCPGetDllVersion(void)
 {
-	return VSCP_DLL_VERSION;
+    return VSCP_DLL_VERSION;
 }
 
 
@@ -312,7 +310,7 @@ VSCPGetDllVersion(void)
 extern "C" const char *
 VSCPGetVendorString(void)
 {
-	return VSCP_DLL_VENDOR;
+    return VSCP_DLL_VENDOR;
 }
 
 
@@ -323,7 +321,7 @@ VSCPGetVendorString(void)
 extern "C" const char *
 VSCPGetDriverInfo(void)
 {
-	return VSCP_TCPIPLINK_DRIVERINFO;
+    return VSCP_TCPIPLINK_DRIVERINFO;
 }
 
 
@@ -337,7 +335,7 @@ VSCPGetWebPageTemplate( long handle, const char *url, char *page )
     page = NULL;
     
     // Not implemented
-	return -1;
+    return -1;
 }
 
 
@@ -349,7 +347,7 @@ extern "C" int
 VSCPGetWebPageInfo( long handle, const struct vscpextwebpageinfo *info )
 {
     // Not implemented
-	return -1;
+    return -1;
 }
 
 
@@ -361,6 +359,6 @@ extern "C" int
 VSCPWebPageupdate( long handle, const char *url )
 {
     // Not implemented
-	return -1;
+    return -1;
 }
 
