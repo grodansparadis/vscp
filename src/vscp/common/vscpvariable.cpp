@@ -1254,7 +1254,7 @@ bool CVariableStorage::save( wxString& path )
 
                     // Write value
                     pFileStream->Write( "    <value>", strlen("    <value>") );
-                    str.Printf( _("%d"), pVariable->m_longValue );
+                    str.Printf( _("%ld"), pVariable->m_longValue );
                     pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
                     pFileStream->Write( "</value>\n", strlen("</value>\n") );
 

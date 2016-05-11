@@ -582,6 +582,20 @@ public:
                                         wxString& strType,
                                         wxString& strValue,
                                         wxString& strPersistent );
+    
+    /*!
+        webserv_rest_doDeleteVariable - Delete a variable
+        @param nc Webserver connection handle.
+        @param pSession Active session or NULL if no session active
+        @param format The format output should be formated in, plain, csv, 
+           xml, json, jsonp
+        @param strVariable Name of variable to delete
+    */
+    void
+    webserv_rest_doDeleteVariable( struct mg_connection *nc, 
+                                        struct websrv_rest_session *pSession, 
+                                        int format,
+                                        wxString& strVariable  );
 
     /*!
         webserv_rest_doWriteVariable - Write a variable value

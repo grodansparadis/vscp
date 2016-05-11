@@ -735,6 +735,25 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
         }
     }
 
+        
+    //   *****************************************************
+    //   * * * * * * * *   Delete  variable    * * * * * * * *
+    //   *****************************************************
+
+    else if ( ( _("10") == keypairs[_("OP")] ) || ( _("DELETEVAR") == keypairs[_("OP")].Upper() ) ) {
+
+
+        if ( _("") != keypairs[_("VARIABLE")] ) {
+            webserv_rest_doDeleteVariable( nc, 
+                                                    pSession, 
+                                                    format, 
+                                                    keypairs[ _("VARIABLE") ] );
+        }
+        else {
+            webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_MISSING_DATA );
+        }
+    }        
+        
 
     //   *************************************************
     //   * * * * * * * * Send measurement  * * * * * * * *
@@ -2250,6 +2269,62 @@ VSCPWebServerThread::webserv_rest_doCreateVariable( struct mg_connection *nc,
     return;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// webserv_rest_doDeleteVariable
+//
+
+void
+VSCPWebServerThread::webserv_rest_doDeleteVariable( struct mg_connection *nc, 
+                                                        struct websrv_rest_session *pSession, 
+                                                        int format,
+                                                        wxString& strVariable )
+{
+    int type = VSCP_DAEMON_VARIABLE_CODE_STRING;
+    bool bPersistence = false;
+    wxStringTokenizer tkz( strVariable, _(";") );
+
+    // Check pointer
+    if (NULL == nc) {
+        return;
+    }
+
+    CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
+    
+    if (NULL == pObject) {
+        webserv_rest_error( nc, 
+                                pSession, 
+                                format, 
+                                REST_ERROR_CODE_VARIABLE_NOT_CREATED ); 
+        return;
+    }
+
+    if ( NULL != pSession ) {
+
+        // Add the variable
+        if ( !pObject->m_VSCP_Variables.remove( strVariable ) ) {
+            webserv_rest_error( nc, 
+                                    pSession, 
+                                    format, 
+                                    REST_ERROR_CODE_VARIABLE_NOT_CREATED );
+            return;
+        }
+
+        webserv_rest_error( nc, 
+                                pSession, 
+                                format, 
+                                REST_ERROR_CODE_SUCCESS );
+
+    }
+    else {
+        webserv_rest_error( nc, 
+                                pSession, 
+                                format, 
+                                REST_ERROR_CODE_INVALID_SESSION );
+    }
+
+    return;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // webserv_rest_doWriteMeasurement
