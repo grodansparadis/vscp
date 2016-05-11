@@ -1962,7 +1962,7 @@ void CControlObject::addStockVariables( void )
                 VSCP_VAR_NON_PERISTENT, 
                 VSCP_VAR_READ_ONLY ); 
 
-    m_VSCP_Variables.add( _("vscp.version.sqlite.builed"), 
+    m_VSCP_Variables.add( _("vscp.version.sqlite.build"), 
                 wxString::Format( _("%d"), build ), 
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
                 VSCP_VAR_NON_PERISTENT, 

@@ -1892,6 +1892,7 @@ VSCPWebServerThread::websock_post_incomingEvents( void )
 
                 pSession->m_pClientItem->m_mutexClientInputQueue.Lock();
                 nodeClient = pSession->m_pClientItem->m_clientInputQueue.GetFirst();
+                if ( NULL == nodeClient ) continue;
                 pEvent = nodeClient->GetData();
                 pSession->m_pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
                 pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();

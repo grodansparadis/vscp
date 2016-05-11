@@ -261,6 +261,10 @@ VSCPWebServerThread::websrv_get_rest_session( struct mg_connection *nc,
     return ret;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// websrv_expire_rest_sessions
+//
+
 void
 VSCPWebServerThread::websrv_expire_rest_sessions( struct mg_connection *nc )
 {
@@ -938,7 +942,7 @@ struct websrv_rest_session *pSession,
                               "success-code,error-code,message,description,vscpsession,nEvents\r\n1,1,Success,Success. 1,1,Success,Success,%s,%lu",
                               pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #endif
-            mg_send_http_chunk( nc, buf, strlen( buf ) );
+            mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ) );
             mg_send_http_chunk( nc, "", 0 );  // Terminator
             return;
         }
@@ -957,7 +961,7 @@ struct websrv_rest_session *pSession,
                               "<vscp-rest success = \"true\" code = \"1\" message = \"Success.\" description = \"Success.\" ><vscpsession>%s</vscpsession><nEvents>%lu</nEvents></vscp-rest>",
                               pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #endif
-            mg_send_http_chunk( nc, buf, strlen( buf ) );
+            mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ) );
             mg_send_http_chunk( nc, "", 0 );  // Terminator
             return;
         }
@@ -977,7 +981,7 @@ struct websrv_rest_session *pSession,
                               "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"vscpsession\":\"%s\",\"nEvents\":%lu}",
                               pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #endif
-            mg_send_http_chunk( nc, buf, strlen( buf ) );
+            mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ) );
             mg_send_http_chunk( nc, "", 0 );  // Terminator
             return;
         }
@@ -997,7 +1001,7 @@ struct websrv_rest_session *pSession,
                               "typeof handler === 'function' && handler({\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"vscpsession\":\"%s\",\"nEvents\":%lu});",
                               pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #endif
-            mg_send_http_chunk( nc, buf, strlen( buf ) );
+            mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ) );
             mg_send_http_chunk( nc, "", 0 ); // Terminator
             return;
         }
@@ -1055,7 +1059,7 @@ struct websrv_rest_session *pSession,
 #else
             int n = snprintf( wrkbuf, sizeof( wrkbuf ), REST_CSV_ERROR_SUCCESS );
 #endif
-            mg_send_http_chunk( nc, buf, strlen( buf ) );
+            mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ) );
             mg_send_http_chunk( nc, "", 0 );  // Terminator
             return;
         }
@@ -1067,7 +1071,7 @@ struct websrv_rest_session *pSession,
 #else
             int n = snprintf( wrkbuf, sizeof( wrkbuf ), REST_XML_ERROR_SUCCESS );
 #endif
-            mg_send_http_chunk( nc, buf, strlen( buf ) );
+            mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ) );
             mg_send_http_chunk( nc, "", 0 );  // Terminator
             return;
         }
@@ -1079,7 +1083,7 @@ struct websrv_rest_session *pSession,
 #else
             int n = snprintf( wrkbuf, sizeof( wrkbuf ), REST_JSON_ERROR_SUCCESS );
 #endif
-            mg_send_http_chunk( nc, buf, strlen( buf ) );
+            mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ) );
             mg_send_http_chunk( nc, "", 0 );  // Terminator
             return;
         }
@@ -1091,7 +1095,7 @@ struct websrv_rest_session *pSession,
 #else
             int n = snprintf( wrkbuf, sizeof( wrkbuf ), REST_JSONP_ERROR_SUCCESS );
 #endif
-            mg_send_http_chunk( nc, buf, strlen( buf ) );
+            mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ) );
             mg_send_http_chunk( nc, "", 0 );  // Terminator
             return;
         }
@@ -1291,7 +1295,7 @@ VSCPWebServerThread::webserv_rest_doSendEvent( struct mg_connection *nc,
 
                             vscp_copyVSCPEvent(pNewEvent, pEvent);
 
-                            // Add the new event to the inputqueue
+                            // Add the new event to the input queue
                             pSession->pClientItem->m_mutexClientInputQueue.Lock();
                             pSession->pClientItem->m_clientInputQueue.Append( pNewEvent );
                             pSession->pClientItem->m_semClientInputQueue.Post();

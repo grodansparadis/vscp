@@ -174,15 +174,22 @@ bool CClientList::addClient( CClientItem *pClientItem, uint32_t id )
 
 bool CClientList::removeClient( CClientItem *pClientItem )
 {
+    bool rv = true;
     // Must be a valid pointer
     if ( NULL == pClientItem ) return false;
 
+    pClientItem->m_mutexClientInputQueue.Lock();
+    
+    pClientItem->m_clientInputQueue.Clear();
+    
     // Take away the node
     if ( !m_clientItemList.DeleteObject( pClientItem ) ) {
-        return false;
+        rv = false;
     }
+    
+    pClientItem->m_mutexClientInputQueue.Unlock();
 
-    return true;
+    return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

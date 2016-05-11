@@ -13,6 +13,10 @@
             <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/register.h</file>
             <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/tcpipclientthread.cpp</file>
             <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/vscpwebserver.cpp</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/vscp.h</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.cpp</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/vscpremotetcpif.h</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/vscpremotetcpif.cpp</file>
             <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/register.cpp</file>
             <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/version.h</file>
             <file>file:/home/akhe/development/VSCP/vscp/src/vscp/daemon/linux/vscpd.cpp</file>

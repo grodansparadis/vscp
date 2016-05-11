@@ -846,7 +846,7 @@ bool vscp_convertFloatToNormalizedEventData( uint8_t *pdata,
         return false;
     }
 
-    pdata[0] = VSCP_DATACODING_NORMALIZED + unit + sensoridx;     // Normalized integer + unit + sensorindex
+    pdata[0] = VSCP_DATACODING_NORMALIZED + unit + sensoridx;     // Normalised integer + unit + sensor index
     pdata[1] = VSCP_DATACODING_NORMALIZED + ndigits;              // Decimal point shifted five steps to the left
 
     return true;
@@ -2237,12 +2237,12 @@ bool vscp_writeVscpEventToString( const vscpEvent *pEvent, wxString& str)
     // Check pointer
     if (NULL == pEvent) return false;
 
-    str.Printf(_("%u,%u,%u,%u,%u,"),
-        pEvent->head,
-        pEvent->vscp_class,
-        pEvent->vscp_type,
-        pEvent->obid,
-        pEvent->timestamp );
+    str.Printf(_("%u,%u,%u,%lu,%lu,"),
+                    (unsigned int)pEvent->head,
+                    (unsigned int)pEvent->vscp_class,
+                    (unsigned int)pEvent->vscp_type,
+                    (unsigned long)pEvent->obid,
+                    (unsigned long)pEvent->timestamp );
 
     wxString strGUID;
     vscp_writeGuidToString(pEvent, strGUID);
