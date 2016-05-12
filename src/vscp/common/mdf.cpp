@@ -2671,7 +2671,7 @@ uint32_t CMDF::getNumberOfRegisters( uint32_t page )
 
 uint32_t CMDF::getPages( wxArrayLong& array ) 
 { 
-    bool bFound;
+    //bool bFound;
 
     MDF_REGISTER_LIST::iterator iterValue;
     for ( iterValue = m_list_register.begin(); 

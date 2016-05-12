@@ -196,3 +196,4 @@ src/vscp/drivers/level2/sim/linux/test
 /src/vscp/daemon/win32/service/vscpsrv.sdf
 /src/vscp/.vs/vscp_project/v14/*.suo
 /src/vscp/*.opendb
+/config_examples/web/browse.VC.db

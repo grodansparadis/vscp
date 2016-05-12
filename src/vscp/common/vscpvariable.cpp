@@ -352,9 +352,14 @@ bool CVSCPVariable::writeValueToString( wxString& strValueOut )
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
-            strValueOut = m_timestamp.FormatISODate();
-            strValueOut += wxT("T");
-            strValueOut += m_timestamp.FormatISOTime();
+            if ( m_timestamp.IsValid() ) {
+                strValueOut = m_timestamp.FormatISODate();
+                strValueOut += wxT( "T" );
+                strValueOut += m_timestamp.FormatISOTime();
+            }
+            else {
+                strValueOut = _("00-00-00T00:00:00");
+            }
             break;
             
         case VSCP_DAEMON_VARIABLE_CODE_BASE64:
@@ -362,11 +367,21 @@ bool CVSCPVariable::writeValueToString( wxString& strValueOut )
             break;  
 
         case VSCP_DAEMON_VARIABLE_CODE_DATE:
-            strValueOut = m_timestamp.FormatISODate();
+            if ( m_timestamp.IsValid() ) {
+                strValueOut = m_timestamp.FormatISODate();
+            }
+            else {
+                strValueOut = _( "00-00-00T00:00:00" );
+            }
             break;
             
         case VSCP_DAEMON_VARIABLE_CODE_TIME:
-            strValueOut = m_timestamp.FormatISOTime();
+            if ( m_timestamp.IsValid() ) {
+                strValueOut = m_timestamp.FormatISOTime();
+            }
+            else {
+                strValueOut = _( "00-00-00T00:00:00" );
+            }
             break;    
 
         case VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED:

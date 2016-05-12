@@ -5248,7 +5248,12 @@ wxString CCanalSuperWrapper::getAbstractionValueAsString( wxWindow *pwnd,
                                 pdlg,
                                 bLevel2,
                                 bSilent  );
-            strValue = val.FormatISODate();
+            if ( val.IsValid() ) {
+                strValue = val.FormatISODate();
+            }
+            else {
+                strValue = _( "00-00-00T00:00:00" );
+            }
         }
         break;
 
