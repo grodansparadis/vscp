@@ -13,13 +13,18 @@
             <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/register.h</file>
             <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/tcpipclientthread.cpp</file>
             <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/vscpwebserver.cpp</file>
-            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/vscp.h</file>
-            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.cpp</file>
-            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/vscpremotetcpif.h</file>
-            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/vscpremotetcpif.cpp</file>
-            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/register.cpp</file>
-            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/version.h</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/vscprestserver.cpp</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/vscpwebsocketserver.cpp</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/vscpwebserver.h</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/vscpvariable.cpp</file>
             <file>file:/home/akhe/development/VSCP/vscp/src/vscp/daemon/linux/vscpd.cpp</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/webserver_websocket.h</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/controlobject.cpp</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/variablecodes.h</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/register.cpp</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/clientlist.h</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/vscpvariable.h</file>
+            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/controlobject.h</file>
         </group>
     </open-files>
 </project-private>
