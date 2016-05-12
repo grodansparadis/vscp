@@ -3760,6 +3760,23 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
             case VSCP_TYPE_INFORMATION_LONG_CLICK:
             case VSCP_TYPE_INFORMATION_SINGLE_CLICK:
             case VSCP_TYPE_INFORMATION_DOUBLE_CLICK:
+            case VSCP_TYPE_INFORMATION_SUNRISE_TWILIGHT_START:
+            case VSCP_TYPE_INFORMATION_SUNSET_TWILIGHT_START:
+            case VSCP_TYPE_INFORMATION_NAUTICAL_SUNRISE_TWILIGHT_START:
+            case VSCP_TYPE_INFORMATION_NAUTICAL_SUNSET_TWILIGHT_START:
+            case VSCP_TYPE_INFORMATION_ASTRONOMICAL_SUNRISE_TWILIGHT_START:
+            case VSCP_TYPE_INFORMATION_ASTRONOMICAL_SUNSET_TWILIGHT_START:
+            case VSCP_TYPE_INFORMATION_CALCULATED_NOON:
+            case VSCP_TYPE_INFORMATION_SHUTTER_UP:
+            case VSCP_TYPE_INFORMATION_SHUTTER_DOWN:
+            case VSCP_TYPE_INFORMATION_SHUTTER_LEFT:
+            case VSCP_TYPE_INFORMATION_SHUTTER_RIGHT:
+            case VSCP_TYPE_INFORMATION_SHUTTER_END_TOP:
+            case VSCP_TYPE_INFORMATION_SHUTTER_END_BOTTOM:
+            case VSCP_TYPE_INFORMATION_SHUTTER_END_MIDDLE:
+            case VSCP_TYPE_INFORMATION_SHUTTER_END_PRESET:
+            case VSCP_TYPE_INFORMATION_SHUTTER_END_LEFT:
+            case VSCP_TYPE_INFORMATION_SHUTTER_END_RIGHT:    
                 if ((pEvent->sizeData-offset) >= 3) {
                     strOutput = wxString::Format(_("Index=%d Zone=%d Subzone=%d\nNickname=%d\n"),
                             pEvent->pdata[ 0+offset ],

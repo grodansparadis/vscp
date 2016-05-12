@@ -602,9 +602,9 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         pEventEx->vscp_type = VSCP_TYPE_INFORMATION_SUNRISE_TWILIGHT_START;
         pEventEx->sizeData = 3;
         // IMPORTANT - GUID must be set by caller before event is sent
-        pEventEx->data[ 0 ] = 0;    // index
-        pEventEx->data[ 1 ] = 0;    // zone
-        pEventEx->data[ 2 ] = 0;    // subzone
+        pEventEx->data[ 0 ] = m_zone;       // index
+        pEventEx->data[ 1 ] = m_subzone;    // zone
+        pEventEx->data[ 2 ] = 0;            // subzone
 
         return true;
     }
@@ -646,9 +646,9 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         pEventEx->vscp_type = VSCP_TYPE_INFORMATION_SUNSET;
         pEventEx->sizeData = 3;
         // IMPORTANT - GUID must be set by caller before event is sent
-        pEventEx->data[ 0 ] = 0;    // index
-        pEventEx->data[ 1 ] = 0;    // zone
-        pEventEx->data[ 2 ] = 0;    // subzone
+        pEventEx->data[ 0 ] = 0;            // index
+        pEventEx->data[ 1 ] = m_zone;       // zone
+        pEventEx->data[ 2 ] = m_subzone;    // subzone
 
         return true;
     }
@@ -690,9 +690,9 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         pEventEx->vscp_type = VSCP_TYPE_INFORMATION_SUNSET_TWILIGHT_START;
         pEventEx->sizeData = 3;
         // IMPORTANT - GUID must be set by caller before event is sent
-        pEventEx->data[ 0 ] = 0;    // index
-        pEventEx->data[ 1 ] = 0;    // zone
-        pEventEx->data[ 2 ] = 0;    // subzone
+        pEventEx->data[ 0 ] = 0;            // index
+        pEventEx->data[ 1 ] = m_zone;       // zone
+        pEventEx->data[ 2 ] = m_subzone;    // subzone
 
         return true;
     }
@@ -734,9 +734,9 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         pEventEx->vscp_type = VSCP_TYPE_INFORMATION_CALCULATED_NOON;
         pEventEx->sizeData = 3;
         // IMPORTANT - GUID must be set by caller before event is sent
-        pEventEx->data[ 0 ] = 0;    // index
-        pEventEx->data[ 1 ] = 0;    // zone
-        pEventEx->data[ 2 ] = 0;    // subzone
+        pEventEx->data[ 0 ] = 0;            // index
+        pEventEx->data[ 1 ] = m_zone;       // zone
+        pEventEx->data[ 2 ] = m_subzone;    // subzone
 
         return true;
     }
@@ -765,9 +765,9 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         pEventEx->vscp_type = VSCP_TYPE_INFORMATION_NODE_HEARTBEAT;
         pEventEx->sizeData = 3;
         // IMPORTANT - GUID must be set by caller before event is sent
-        pEventEx->data[ 0 ] = 0;    // index
-        pEventEx->data[ 1 ] = 0;    // zone
-        pEventEx->data[ 2 ] = 0;    // subzone
+        pEventEx->data[ 0 ] = 0;            // index
+        pEventEx->data[ 1 ] = m_zone;       // zone
+        pEventEx->data[ 2 ] = m_subzone;    // subzone
 
         return true;
     }

@@ -16,21 +16,105 @@
         <df name="simulation">
         </df>
         <df name="web">
-          <df name="css">
+          <df name="docs">
+            <df name="designs">
+              <df name="clean">
+              </df>
+              <df name="deep_red">
+                <df name="img">
+                </df>
+              </df>
+              <df name="menumatic">
+                <df name="examples">
+                  <df name="horizontal">
+                    <df name="css">
+                    </df>
+                    <df name="img">
+                    </df>
+                    <df name="js">
+                    </df>
+                  </df>
+                  <df name="vertical">
+                    <df name="css">
+                    </df>
+                    <df name="img">
+                    </df>
+                    <df name="js">
+                    </df>
+                  </df>
+                </df>
+              </df>
+              <df name="pristine">
+                <df name="images">
+                </df>
+              </df>
+            </df>
+            <df name="widget_designs">
+            </df>
           </df>
           <df name="images">
             <df name="logo">
             </df>
           </df>
-          <df name="lib">
+          <df name="js">
             <df name="bootstrap">
-              <df name="css">
+              <df name="3.3.5">
+                <df name="css">
+                </df>
+                <df name="fonts">
+                </df>
+                <df name="js">
+                </df>
               </df>
-              <df name="fonts">
-              </df>
-              <df name="js">
+              <df name="3.3.6">
+                <df name="css">
+                </df>
+                <df name="fonts">
+                </df>
+                <df name="js">
+                </df>
               </df>
             </df>
+            <df name="bootstrap3-dialog">
+              <df name="1.34.6">
+                <df name="css">
+                </df>
+                <df name="js">
+                </df>
+                <df name="less">
+                </df>
+              </df>
+            </df>
+            <df name="d3">
+              <df name="3.5.17">
+              </df>
+              <df name="3.5.6">
+              </df>
+            </df>
+            <df name="dygraph">
+            </df>
+            <df name="epoch">
+              <df name="0.6.0">
+              </df>
+              <df name="0.8.4">
+              </df>
+            </df>
+            <df name="jquery">
+              <df name="1.11.3">
+              </df>
+              <df name="2.2.1">
+              </df>
+            </df>
+            <df name="jsdoc">
+              <df name="templates">
+                <df name="vscp">
+                </df>
+              </df>
+            </df>
+            <df name="sidebar">
+            </df>
+          </df>
+          <df name="lib">
             <df name="widgets">
               <df name="button">
               </df>
@@ -72,9 +156,13 @@
               </df>
             </df>
           </df>
+          <df name="rest">
+          </df>
+          <df name="service">
+          </df>
           <df name="testws">
-            <df name="images">
-            </df>
+          </df>
+          <df name="web">
           </df>
         </df>
       </df>
