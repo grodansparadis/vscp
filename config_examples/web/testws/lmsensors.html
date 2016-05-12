@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>VSCP HTML5 lm-sensors example</title>
+
+    <!-- Don't cache the page -->
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="-1" />
+
+    <!-- JQuery -->
+    <script type="text/javascript" src="../js/jquery/1.11.3/jquery-1.11.3.min.js"></script>
+    
+    <!-- Bootstrap -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="../js/bootstrap/3.3.5/css/bootstrap.min.css">
+    <script type="text/javascript" src="../js/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+    <!-- Favorite icon -->
+    <link rel="icon" href="../favicon.ico">
+
+    <!-- VSCP settings -->
+    <script type="text/javascript" src="../js/settings.js"></script>
+    <!-- VSCP hash calculation -->
+    <script type="text/javascript" src="../js/md5.js"></script>
+    <!-- VSCP websocket base library -->
+    <script type="text/javascript" src="../js/vscp.js"></script>
+    <!-- VSCP measurement functions, which are dependend on the VSCP websocket base library -->
+    <script type="text/javascript" src="../js/vscpMeasurement.js"></script>
+
+    <!-- Boostrap navigation bar helper functions -->
+    <script type="text/javascript" src="../js/navBar.js"></script>
+    <!-- Navigation bar menu structure -->
+    <script type="text/javascript" src="menu.js"></script>
+
+    <script type="text/javascript" >
+
+        (function() {
+            // VSCP websocket connection
+            var vscpConn = null;
+
+            // Measurement event decoder
+            var decoder = null;
+
+            // Wait until the whole website is loaded
+            $( document ).ready( function() {
+
+                // Show navigation bar menu
+                navBarMenu.show( "menu", navBarMenu.content );
+
+                // Create a VSCP websocket
+                vscpConn = new vscp.Connection();
+
+                // Connect to VSCP server
+                vscpConn.connect({
+
+                    url: settings.url,
+
+                    userName: settings.user,
+
+                    password: settings.passwordHash,
+
+                    onSuccess: function( conn ) {
+
+                        // Create a VSCP measurement event decoder
+                        decoder = new vscp.measurement.Decoder({
+                            connection: conn,
+                            onValue: onValue,
+                            filter: {
+                                vscpClass: vscp.constants.classes.VSCP_CLASS1_MEASUREMENT,
+                                vscpType: vscp.constants.types.VSCP_TYPE_MEASUREMENT_TEMPERATURE,
+                                sensorIndex: 0
+                            }
+                        });
+
+                        // Start receiving VSCP events
+                        vscpConn.start({
+
+                            onSuccess: function( conn ) {
+
+                            },
+
+                            onError: function( conn ) {
+                                alert("Couldn't start receiving events.");
+                            }
+
+                        });
+
+                    },
+
+                    onError: function( conn ) {
+                        alert("Couldn't establish a connection.");
+                    }
+
+                });
+            });
+
+            var onValue = function( measurement ) {
+
+                var temperatureCelsius = 0;
+
+                if ( "undefined" === measurement ) {
+                    return;
+                }
+
+                // Temperature in degree Celsius expected
+                switch( measurement.unitId ) {
+
+                    // Kelvin
+                    case 0:
+                        temperatureCelsius = vscp.measurement.convertKelvinToCelsius( measurement.value );
+                        break;
+
+                    // Celsius
+                    case 1:
+                        temperatureCelsius = measurement.value;
+                        break;
+
+                    // Fahrenheit
+                    case 2:
+                        temperatureCelsius = vscp.measurement.convertFahrenheitToCelsius( measurement.value );
+                        break;
+
+                    // Should never happen
+                    default:
+                        break;
+                }
+
+                temperatureCelsius = vscp.measurement.toFixed( temperatureCelsius, 1 );
+
+                // CPU0 ?
+                if ( "FF:FF:FF:FF:FF:FF:00:00:00:00:00:00:00:00:00:01" === measurement.event.vscpGuid.toUpperCase() ) {
+
+                    // Display in Celsius
+                    $( "#cpu0" ).text(
+                        "" + temperatureCelsius + " degrees Celsius"
+                    );
+                }
+                // CPU1 ?
+                else if ( "FF:FF:FF:FF:FF:FF:00:00:00:00:00:00:00:00:00:02" === measurement.event.vscpGuid.toUpperCase() ) {
+
+                    // Display in Celsius
+                    $( "#cpu1" ).text(
+                        "" + temperatureCelsius + " degrees Celsius"
+                    );
+                }
+            };
+
+        })();
+
+    </script>
+
+</head>
+
+<body>
+   <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="../index.html"><img src="../images/logo/vscp_new.png" class="img-thumbnail" width="100" alt="vscp logo" /></a>
+            </div>
+            <div id="menu">
+            </div>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        <h1>VSCP HTML5 lm-sensors example</h1>
+        <p>
+            This example is described in the <a href="http://www.vscp.org/wiki/doku.php/howto/driver_level2_lmsensors" target="new">wiki</a> and need
+            the lmsensor driver to be configured for it to work.
+        </p>
+        <p>
+            <table class="table table-bordered">
+                <tr>
+                    <td>Temperature for CPU Core 0</td>
+                    <td><span id="cpu0">?</span></td>
+                </tr>
+                <tr>
+                    <td>Temperature for CPU Core 1</td>
+                    <td><span id="cpu1">?</span></td>
+                </tr>
+            </table>
+        </p>
+
+        <br /><br />
+        <hr />
+        Copyright &copy; 2000-2016 <a href="http://www.grodansparadis.com">Grodans Paradis AB (Paradise of the Frog)</a>
+
+    </div>
+</body>
+</html>

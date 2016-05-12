@@ -1,0 +1,140 @@
+
+
+body {
+	padding					: 0;
+	margin					: 0;
+	background				: #FFFFFF;
+	color					: #000000;
+	font-family				: arial, verdana, sans-serif;
+	font-size				: 85%
+}
+
+
+#content {
+	width					: 700px;
+	margin-left				: auto;
+	margin-right			: auto;
+	border					: 0px solid;
+}
+
+#header {
+	margin					: 5px;
+	padding-left			: 5px;	
+	width					: 500px;
+	color					: #cc0000;
+	background				: #FFFFFF;
+}
+
+/* IE Hack */
+
+* html #header {
+	margin					: -60px 5px 5px 5px;
+	padding-left			: 5px;	
+	width					: 475px;
+	color					: #cc0000;
+	background				: #FFFFFF;
+	
+}
+
+#header p {
+	margin-top				: -19px;
+	margin-left				: 2px;
+	font-size				: 90%;
+	color					: silver;
+	background				: #FFFFFF;
+}
+
+#header input {
+	margin-top				: -17px; 
+	text-align				: right;	
+}
+
+#search {
+	width					: 210px;
+	margin-top				: 2px;
+	margin-left				: 160px;
+	float					: right;
+	font-size				: 80%;
+	color					: silver;
+	background				: #FFFFFF;	
+}
+
+/* IE Hack */
+
+* html #search {
+	width					: 210px;
+	margin-top				: 27px;
+	margin-left				: 160px;
+	float					: right;
+	font-size				: 80%;
+	color					: silver;
+	background				: #FFFFFF;	
+}
+
+#body {
+	border-top				: 1px solid silver;
+}
+
+#body a {
+	color					: #cc0000;
+	background				: #FFFFFF;
+	text-decoration			: none;
+}
+
+#footer {
+	text-align				: right;
+	font-size				: 75%;
+	color					: silver;
+	background				: #FFFFFF;
+	border-top				: 1px solid silver;
+}
+
+#footer a {
+	color					: silver;
+	background				: #FFFFFF;
+	text-decoration			: none;
+}
+
+#links {
+	float					: left;
+	width					: 150px;
+	margin					: 5px;
+
+}
+
+#links a {
+	color					: #cc0000;
+	background				: #FFFFFF;
+	text-decoration			: none;
+	font-size				: 120%;
+}
+#links p {
+	color					: silver;
+	background				: #FFFFFF;
+	font-size				: 85%;
+}
+
+#main {
+	margin					: 5px 5px 5px 160px;
+	padding					: 15px;
+	border-left				: 1px solid silver;
+}
+
+#main h2 {
+	background				: #FFFFFF;
+	background-image		: url('images/page_white_text.jpg');
+	background-repeat		: no-repeat;
+	padding-left			: 22px;
+	font-size				: 110%;
+	color					: #cc0000;
+
+}
+
+blockquote {
+	border					: 1px solid #cc0000;
+	padding					: 10px;
+}
+
+code {
+	white-space				: pre;
+}

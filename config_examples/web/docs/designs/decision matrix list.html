@@ -1,0 +1,449 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head>
+
+        <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+        <title>VSCP daemon decision matrix</title>
+
+        <style type="text/css">
+
+            body {
+                background-color: #F0F0F0;
+                padding			: 0;
+                margin			: 0;
+                background		: #FFFFFF;
+                color			: #000000;
+                font-family		: arial, verdana, sans-serif;
+                font-size		: 85%
+            }
+
+            #content {
+                width			: 700px;
+                margin-left		: auto;
+                margin-right	: auto;
+                border			: 0px solid;
+                clear           : left;
+            }
+
+            #content h4 {
+                background      : #FFFFFF;
+                padding-left	: 0px;
+                padding-top     : 0px;
+                padding-bottom  : 0px;
+                margin-top      : 5px;
+                margin-bottom   : 5px;
+                font-size       : 110%;
+                color           : #A04040;
+            }
+
+            #content h5 {
+                background		: #FFFFFF;
+                padding-left	: 0px;
+                padding-top     : 0px;
+                padding-bottom	: 0px;
+                margin-top      : 5px;
+                margin-bottom   : 5px;
+                font-size		: 110%;
+                color			: #cc0000;
+            }
+
+            #header {
+                margin			: 0px;
+                padding-left	: 0px;	
+                width			: 500px;
+                color			: #cc0000;
+                background		: #FFFFFF;
+            }
+
+            /* IE Hack */
+            * html #header {
+                margin			: -60px 5px 5px 5px;
+                padding-left	: 5px;	
+                width			: 475px;
+                color			: #cc0000;
+                background		: #FFFFFF;
+            }
+
+            #body {
+                border-top		: 1px solid silver;
+            }
+
+            #body a {
+                color			: #cc0000;
+                background		: #FFFFFF;
+                text-decoration	: none;
+            }
+
+            #footer {
+                text-align		: right;
+                font-size		: 75%;
+                color			: silver;
+                background		: #FFFFFF;
+                border-top		: 1px solid silver;
+            }
+
+            #footer a {
+                color			: silver;
+                background		: #FFFFFF;
+                text-decoration	: none;
+            }
+
+            #links {
+                float			: left;
+                width			: 150px;
+                margin			: 5px;
+
+            }
+
+            #links a {
+                color			: #cc0000;
+                background		: #FFFFFF;
+                text-decoration	: none;
+                font-size		: 120%;
+            }
+            #links p {
+                color			: silver;
+                background		: #FFFFFF;
+                font-size		: 85%;
+            }
+
+            #main {
+                margin			: 5px 5px 5px 160px;
+                padding			: 15px;
+                border-left		: 1px solid silver;
+            }
+
+            #main h2 {
+                background		: #FFFFFF;
+                padding-left	: 22px;
+                font-size		: 110%;
+                color			: #cc0000;
+
+            }
+
+            #optiontext {
+                color           : #888888; 
+                font-weight     : normal;
+            }
+            
+            #small {
+                padding-left	: 0px;
+                font-size		: 70%;
+                color			: #202020;
+            }
+            
+            #small b {
+                font-weight     : 700;
+                font-size		: 115%;
+                color			: #202070;
+            }
+            
+
+            #tdcenter {
+                float: center; 
+                text-align: center;
+            }
+
+            #tdguid {
+                font-family: Courier New,Courier,monospace;
+            }
+
+            blockquote {
+                border					: 1px solid #cc0000;
+                padding					: 10px;
+            }
+
+            code {
+                white-space				: pre;
+            }
+
+            table {
+                width: 100%;
+                border: 1px solid #d0d0ff;
+                border-spacing: 0px;
+            }
+
+            th, td {
+                text-align: left;
+                vertical-align: middle;
+                border: 1px solid #d0d0ff;
+                border-collapse: collapse;
+                padding: 0.3em;
+                caption-side: bottom;
+            }
+
+            th {
+                background: #eeeeee;
+            }
+
+            table.invisable {
+                width: 100%;
+                border: 0px solid #d0d0ff;
+                border-spacing: 0px;
+            }
+
+            table.invisable tr {
+                width: 100%;
+                border: 0px solid #d0d0ff;
+                border-spacing: 0px;
+            }
+
+            table.invisable td {
+                text-align: left;
+                vertical-align: middle;
+                border: 0px solid #0000ff;
+                border-collapse: collapse;
+                padding: 0.3em;
+                caption-side: bottom;
+            }
+
+            th.invisable {
+                background: #eeeeee;
+            }
+
+
+            #nav, #nav ul {
+                float: left;
+                width: 100%;
+                list-style: none;
+                line-height: 1;
+                background: whitesmoke;
+                font-weight: bold;
+                padding: 0;
+                border: solid #c0c0c0;
+                border-width: 1px 0;
+                margin: 0 0 2em 0;
+            }
+
+            #nav a {
+                display: block;
+                width: 10em;
+                w\idth: 6em;
+                color: #000000;
+                text-decoration: none;
+                padding: 0.25em 2em;
+            }
+
+            #nav a.daddy {
+                background: url(rightarrow2.gif) center right no-repeat;
+            }
+
+            #nav li {
+                float: left;
+                padding: 0;
+                width: 10em;
+            }
+
+            #nav li ul {
+                position: absolute;
+                left: -999em;
+                height: auto;
+                width: 14.4em;
+                w\idth: 13.9em;
+                font-weight: normal;
+                border-width: 0.25em;
+                margin: 0;
+            }
+
+            #nav li li {
+                padding-right: 1em;
+                width: 13em
+            }
+
+            #nav li ul a {
+                width: 13em;
+                w\idth: 9em;
+            }
+
+            #nav li ul ul {
+                margin: -1.75em 0 0 14em;
+            }
+
+            #nav li:hover ul ul, #nav li:hover ul ul ul, #nav li.sfhover ul ul, #nav li.sfhover ul ul ul {
+                left: -999em;
+            }
+
+            #nav li:hover ul, #nav li li:hover ul, #nav li li li:hover ul, #nav li.sfhover ul, #nav li li.sfhover ul, #nav li li li.sfhover ul {
+                left: auto;
+            }
+
+            #nav li:hover, #nav li.sfhover {
+                background: #c0c0c0;
+            }
+
+        </style>
+
+        <script type="text/javascript">
+
+            sfHover = function() {
+                var sfEls = document.getElementById("nav").getElementsByTagName("LI");
+                for (var i = 0; i < sfEls.length; i++) {
+                    sfEls[i].onmouseover = function() {
+                        this.className += " sfhover";
+                    }
+                    sfEls[i].onmouseout = function() {
+                        this.className = this.className.replace(new RegExp(" sfhover\\b"), "");
+                    }
+                }
+            }
+
+            if (window.attachEvent)
+                window.attachEvent("onload", sfHover);
+
+            function ChangeColor(tableRow, highLight) {
+                if (highLight) {
+                    tableRow.style.backgroundColor = '#dcfac9';
+                }
+                else {
+                    tableRow.style.backgroundColor = 'white';
+                }
+            }
+
+            function DoNav(theUrl) {
+                document.location.href = theUrl;
+            }
+        </script>
+
+    </head>
+
+    <body>
+
+    <br>
+
+    <ul id="nav">
+
+        <li><a href="#">Configuration</a>
+            <ul>
+                <li><a href="#">Configuration File</a></li>
+                <li><a href="#">Variables</a></li>
+                <li><a href="#">Decision Matrix</a></li>
+
+            </ul>
+        </li>
+
+        <li><a href="#">Tools</a>
+            <ul>
+                <li><a href="#">VSCP Client</a></li>
+            </ul>
+        </li>
+
+        <li><a href="#">Devices</a>
+            <ul>
+                <li><a href="#">Discovery</a></li>
+                <li><a href="#">Interfaces</a></li>
+                <li><a href="#">Configure</a></li>
+                <li><a href="#">Update firmware</a></li>
+            </ul>
+        </li>
+
+    </ul>
+
+
+    <div id="content">
+
+        <div id="header">
+            <h1 id="header">VSCP - Decision matrix</h1>
+        </div>
+
+        <table>
+
+            <tbody>
+                <tr onmouseover="ChangeColor(this, true);" onmouseout="ChangeColor(this, false);" onclick="DoNav('http://www.yahoo.com/')" >
+                    <td id="tdcenter">
+                        1
+                    </td>
+                    <td> 
+                        <div id="small">
+                            <b>group:</b>
+                            groupname                    
+                            <br>
+                           Enabled/end scan on this row/Check index/Check zone/Check subzone
+                           <br>
+                           <b>filter_priority:</b>  
+                            3 
+                            <b>filter_class:</b> 
+                            512 
+                            <b>filter_type:</b> 
+                            3 
+                            <b>filter_guid:</b> 
+                            0F:0E:0D:0C:0B:0A:09:08:07:06:05:04:03:02:01:00
+                            <br>
+                            <b>mask_Priority:</b> 
+                            0 
+                            <b>mask_class:</b> 
+                            512 
+                            <b>mask_type:</b> 
+                            3 
+                            <b>mask_guid:</b> 
+                            FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF
+                            <br>
+                            <b>Allowed from:</b>
+                            1970-01-01 00:00:00 
+                            <b>Allowed to:</b>
+                            2099-12-31 23:59:59
+                            <b>Weekdays:</b>
+                            mtwtfss 
+                            <br>
+                            <b>Allowed time:</b>
+                            *-*-* *:0/5/10;0
+                            <br>
+                            <b>Action:</b>
+                            16-Execute external program
+                            <b>Action parameter:</b>
+                            /usr/bin/go;1,t44;canal;12;25;abc;90
+                            <br>
+                            This is a comment for this row
+                            <br>
+                        </div>
+                </td>
+            </tr>
+            <tr style="background-color: white;" onmouseover="ChangeColor(this, true);" onmouseout="ChangeColor(this, false);" onclick="DoNav('http://www.yahoo.com/');" >
+                <td id="tdcenter">
+                2<br>
+            <td>
+            </td>
+            </tr>
+            <tr onmouseover="ChangeColor(this, true);" onmouseout="ChangeColor(this, false);" onclick="DoNav('http://www.yahoo.com/');" >
+                <td id="tdcenter">
+                3
+                </td>
+            <td>
+            </td>
+            </tr>
+            <tr onmouseover="ChangeColor(this, true);" onmouseout="ChangeColor(this, false);" onclick="DoNav('http://www.yahoo.com/');" >
+                <td id="tdcenter">
+                4
+                </td>
+            <td>
+            </td>
+            </tr>
+            <tr onmouseover="ChangeColor(this, true);" onmouseout="ChangeColor(this, false);" onclick="DoNav('http://www.yahoo.com/');" >
+                <td id="tdcenter">
+                5
+                </td>
+            <td>
+            </td>
+            </tr>
+            <tr onmouseover="ChangeColor(this, true);" onmouseout="ChangeColor(this, false);" onclick="DoNav('http://www.yahoo.com/');" >
+                <td id="tdcenter">
+                6000
+                </td>
+            <td>
+            </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <br>
+        <br>
+        <br>
+        <br>
+
+        <div 
+            id="footer"> Copyright © 2012-2013 VSCP & Friends, 
+            <a href="mailto:info@grodansparadis.com">Ake Hedman</a> 
+            <a href="http://www.grodansparadis.com"> Grodans Paradis AB.</a>
+        </div>
+    </div>
+
+</body>
+</html>

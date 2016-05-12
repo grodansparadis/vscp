@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>VSCP wizard</title>
+
+    <!-- Don't cache the page -->
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="-1" />
+
+    <!-- JQuery -->
+    <script type="text/javascript" src="../js/jquery/1.11.3/jquery-1.11.3.min.js"></script>
+    
+    <!-- Bootstrap -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="../js/bootstrap/3.3.5/css/bootstrap.min.css">
+    <script type="text/javascript" src="../js/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    
+    <!-- Bootstrap dialogs -->
+    <link rel="stylesheet" href="../js/bootstrap3-dialog/1.34.6/css/bootstrap-dialog.min.css">
+    <script type="text/javascript" src="../js/bootstrap3-dialog/1.34.6/js/bootstrap-dialog.min.js"></script>
+    
+    <style>
+        .btn-file {
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-file input[type=file] {
+            position: absolute;
+            top: 0;
+            right: 0;
+            min-width: 100%;
+            min-height: 100%;
+            font-size: 100px;
+            text-align: right;
+            filter: alpha(opacity=0);
+            opacity: 0;
+            outline: none;
+            background: white;
+            cursor: inherit;
+            display: block;
+        }
+    </style>
+    
+    <!-- Favorite icon -->
+    <link rel="icon" href="../favicon.ico">
+
+    <!-- VSCP settings -->
+    <script type="text/javascript" src="../js/settings.js"></script>
+    <!-- VSCP hash calculation -->
+    <script type="text/javascript" src="../js/md5.js"></script>
+    <!-- VSCP websocket bases library -->
+    <script type="text/javascript" src="../js/vscp.js"></script>
+    <!-- VSCP register access, depends on the VSCP websocket base library -->
+    <script type="text/javascript" src="../js/vscpRegister.js"></script>
+    <!-- VSCP mdf access, depends on the VSCP register access library -->
+    <script type="text/javascript" src="../js/vscpMdf.js"></script>
+    <!-- VSCP wizard functionality, depends on the VSCP mdf access library -->
+    <script type="text/javascript" src="../js/vscpWizard.js"></script>
+    <!-- VSCP service access, depends on the websocket base library -->
+    <script type="text/javascript" src="../js/vscpService.js"></script>
+    <!-- Node list, depends on the VSCP service library -->
+    <script type="text/javascript" src="../js/nodeList.js"></script>
+
+    <!-- Boostrap navigation bar helper functions -->
+    <script type="text/javascript" src="../js/navBar.js"></script>
+    <!-- Navigation bar menu structure -->
+    <script type="text/javascript" src="menu.js"></script>
+
+    <script type="text/javascript">
+        /*jshint bitwise: false */
+
+        // VSCP websocket connection
+        var vscpConn = null;
+
+        // MDF as jquery object
+        var $gMDF           = null;
+        
+        // Registers
+        var registers       = [];
+        
+        // Abstractions
+        var abstractions    = [];
+        
+        // Recipes
+        var recipes         = [];
+
+        // User interface data
+        var ui = {
+
+            enable: function() {
+                $( "#ui :input" ).attr( "disabled", false );
+            },
+
+            disable: function() {
+                $( "#ui :input" ).attr( "disabled", true );
+            }
+        };
+
+        // Wait until the whole website is loaded
+        $( document ).ready( function() {
+
+            // Show navigation bar menu
+            navBarMenu.show( "menu", navBarMenu.content );
+
+            // Create a VSCP websocket
+            vscpConn = new vscp.Connection();
+
+            // Connect to VSCP daemon
+            connect()
+            .then( setFilter )
+            .then( startReceivingEvents )
+            .then( initNodeList )
+            .done( function() {
+                // Show the nodes in the list
+                showNodeList();
+
+                // Enable user interface
+                ui.enable();
+            });
+        });
+
+        // Connect to the VSCP daemon
+        function connect() {
+            var deferred = new $.Deferred();
+
+            // Connect to VSCP server
+            vscpConn.connect({
+
+                url: settings.url,
+
+                userName: settings.user,
+
+                password: settings.passwordHash,
+
+                onSuccess: function( conn ) {
+                    deferred.resolve();
+                },
+
+                onError: function( conn ) {
+                    BootstrapDialog.alert( "Connection lost. Please reload website." );
+                    deferred.reject();
+                }
+            });
+
+            return deferred.promise();
+        }
+
+        // Set a filter for CLASS1.Protocol
+        function setFilter() {
+            var deferred = new $.Deferred();
+
+            // Set filter for CLASS1.Protocol
+            vscpConn.setFilter({
+
+                filterClass: 0x0000,
+                maskClass: 0xffff,
+                filterType: 0x0000,
+                maskType: 0x0000,
+
+                onSuccess: function() {
+                    deferred.resolve();
+                },
+
+                onError: function() {
+                    BootstrapDialog.alert( "Server error!" );
+                    deferred.reject();
+                }
+            });
+
+            return deferred.promise();
+        }
+
+        // Start receiving VSCP events
+        function startReceivingEvents() {
+            var deferred = new $.Deferred();
+
+            // Start receiving VSCP events
+            vscpConn.start({
+
+                onSuccess: function( conn ) {
+                    deferred.resolve();
+                },
+
+                onError: function( conn ) {
+                    BootstrapDialog.alert( "Server error!" );
+                    deferred.reject();
+                }
+            });
+
+            return deferred.promise();
+        }
+
+        // Initialize global node list
+        function initNodeList() {
+            var deferred = new $.Deferred();
+
+            // Initialize node list
+            nodeList.init({
+
+                connection: vscpConn,
+
+                onSuccess: function() {
+                    deferred.resolve();
+                },
+
+                onError: function() {
+                    BootstrapDialog.alert( "Server error!" );
+                    deferred.reject();
+                }
+            });
+
+            return deferred.promise();
+        }
+
+        // Show the node list
+        function showNodeList() {
+            var index   = 0;
+            var nodes   = nodeList.get();
+
+            // Clear nodes
+            $( "#nodeList" ).empty();
+            $( "#nodeList" ).append( "<option value=\"-\">-</option>" );
+
+            for( index = 0; index < nodes.length; ++index ) {
+                $( "#nodeList" ).append( "<option value=\"" + nodes[ index ] + "\">" + nodes[ index ] + "</option>" );
+            }
+        }
+        
+        // User selected a node GUID, get provided recipes
+        function nodeSelected() {
+            var guid                    = $( "#nodeList" ).val();
+            var loadMdfRemoteOrLocalMdf = "cancel";
+        
+            // Node GUID selected?
+            if ( "-" === guid ) {
+                return;
+            }
+        
+            // Disable user interface
+            ui.disable();
+            
+            // Request user where to get the MDF
+            dialogLoadMdfRemoteOrLocal()
+            .done(function( howToLoad ) {
+                loadMdfRemoteOrLocalMdf = howToLoad;
+                
+                // Load MDF from URL?
+                if ( "remote" === howToLoad ) {
+                
+                    readMdfUrl( guid )
+                    .then( loadMdfFromUrl )
+                    .done( function( xmlDoc ) {
+                    
+                        // Create jquery object from xml document
+                        var $mdf = $( xmlDoc );
+                        
+                        // Store MDF global
+                        $gMdf = $mdf;
+                        
+                        // Show MDF parts to the user
+                        processMdf( $mdf )
+                    })
+                    .always( function() {
+                        // Enable user interface
+                        ui.enable();
+                    });
+                
+                }
+                // Load MDF from local file system?
+                else if ( "local" === howToLoad ) {
+                
+                    dialogLoadMdfLocal()
+                    .then( loadMdfFromLocalFileSystem )
+                    .done( function( $mdf ) {
+                    
+                        // Store MDF global
+                        $gMdf = $mdf;
+                        
+                        // Show MDF parts to the user
+                        processMdf( $mdf );
+                    })
+                    .always( function() {
+                        // Enable user interface
+                        ui.enable();
+                    });
+                }
+                // Abort
+                else {
+                    return;
+                }
+                
+            })
+            .always( function() {
+                // Enable user interface
+                ui.enable();
+            });
+        }
+        
+        // Dialog: Ask user where to get the MDF
+        function dialogLoadMdfRemoteOrLocal() {
+            var deferred = new $.Deferred();
+            
+            BootstrapDialog.show({
+                title: "Question",
+                message: "Load the MDF from remote or local?",
+                closable: false,
+                buttons: [{
+                    label: "Remote",
+                    action: function( dialogItself ){
+                        dialogItself.close();
+                        deferred.resolve( "remote" );
+                    }
+                }, {
+                    label: "Local",
+                    action: function( dialogItself ){
+                        dialogItself.close();
+                        deferred.resolve( "local" );
+                    }
+                }, {
+                    label: "Cancel",
+                    action: function( dialogItself ){
+                        dialogItself.close();
+                        deferred.reject();
+                    }
+                }]
+            });
+            
+            return deferred.promise();
+        }
+        
+        // Dialog: Browse to local MDF
+        function dialogLoadMdfLocal() {
+            var deferred        = new $.Deferred();
+            var selectedFile    = "";
+            var fileRef         = null;
+            
+            BootstrapDialog.show({
+                title: "Question",
+                message: function( dialogItself ) {
+                    var $content = $( '<span class="btn btn-default btn-file">Browse <input type="file" id="browseFile"></span><div id="selectedFile">...</div>' );
+                    
+                    $content.find( "input" ).change( function( evt ) {
+                        // Get selected file
+                        selectedFile = $( "#browseFile").val();
+                        // Give feedback to the user, which file was selected
+                        $( "#selectedFile" ).text( selectedFile );
+                        // Save the file reference
+                        fileRef = evt.target.files[ 0 ];
+                    });
+                    
+                    return $content;
+                },
+                closable: false,
+                buttons: [{
+                    label: "Load",
+                    action: function( dialogItself ){
+                        dialogItself.close();
+                        deferred.resolve( fileRef );
+                    }
+                }, {
+                    label: "Cancel",
+                    action: function( dialogItself ){
+                        dialogItself.close();
+                        deferred.reject();
+                    }
+                }]
+            });
+            
+            return deferred.promise();
+        }
+        
+        // Get MDF URL from node
+        function readMdfUrl( guid ) {
+            var deferred = new $.Deferred();
+            
+            vscp.register.readMdfUrl({
+            
+                connection: vscpConn,
+                
+                nodeId: vscp.utility.getNodeId( guid ),
+                
+                onSuccess: function( mdfUrl ) {
+                    deferred.resolve( mdfUrl );
+                },
+                
+                onError: function() {
+                    BootstrapDialog.alert( "Couldn't read MDF URL from node." );
+                    deferred.reject();
+                }
+            });
+            
+            return deferred.promise();
+        }
+        
+        // Load MDF from URL
+        function loadMdfFromUrl( mdfUrl ) {
+            var deferred = new $.Deferred();
+            
+            vscp.mdf.load({
+                
+                url: mdfUrl,
+                
+                onSuccess: function( xmlDoc ) {
+                    deferred.resolve( xmlDoc );
+                },
+                
+                onError: function() {
+                    deferred.reject();
+                }
+            });
+            
+            return deferred.promise();
+        }
+
+        // Load MDF from local file system
+        function loadMdfFromLocalFileSystem( fileRef ) {
+            var deferred = new $.Deferred();
+            
+            vscp.mdf.loadLocal({
+            
+                fileRef: fileRef,
+                
+                onSuccess: function( $xmlDoc ) {
+                    return deferred.resolve( $xmlDoc );
+                },
+                
+                onError: function() {
+                    return deferred.reject();
+                }
+            });                    
+            
+            return deferred.promise();
+        }
+        
+        // Process the MDF
+        function processMdf( $mdf ) {
+
+            var index   = 0;
+            
+            // Retrieve all registers
+            registers = vscp.mdf.getRegisters({
+                mdf: $mdf
+            });
+                        
+            // Sort registers after page and offset
+            registers.sort( function( a, b ) {
+                var diff = a.page - b.page;
+                
+                if ( 0 === diff ) {
+                    diff = a.offset - b.offset;
+                }
+                
+                return diff;
+            });
+            
+            // Add additional data to every register.
+            // This is necessary to determine whether the register value is
+            // already read or not.
+            for( index = 0; index < registers.length; ++index ) {
+                registers[ index ].userData = {
+                    isRead: false
+                };
+            }
+
+            // Retrieve all abstractions
+            abstractions = vscp.mdf.getAbstractions({
+                mdf: $mdf
+            });
+
+            // Sort abstractions after page and offset
+            abstractions.sort( function( a, b ) {
+                var diff = a.page - b.page;
+                
+                if ( 0 === diff ) {
+                    diff = a.offset - b.offset;
+                }
+                
+                return diff;
+            });
+            
+            // Add additional data to every abstraction.
+            // This is necessary to determine whether the abstraction value is
+            // already read or not.
+            for( index = 0; index < abstractions.length; ++index ) {
+                abstractions[ index ].userData = {
+                    isRead: false
+                };
+            }
+            
+            // Retrieve all recipes
+            recipes = vscp.wizard.getRecipes({
+                mdf: $mdf
+            });
+            
+            // Show all the user
+            showRegisters();
+            showAbstractions();
+            showRecipes();
+        }
+        
+        // Update the registers tab
+        function showRegisters() {
+        
+            var index   = 0;
+            var row     = "";
+        
+            $( "#registers > tbody" ).empty();
+            
+            if ( 0 < registers.length ) {            
+                for( index = 0; index < registers.length; ++index ) {
+                    
+                    row =   "<tr>" +
+                            "<td>" + registers[ index ].page + "</td>" +
+                            "<td>" + registers[ index ].offset + "</td>" +
+                            "<td>" + registers[ index ].name + "</td>" +
+                            "<td>";
+                            
+                    if ( true === registers[ index ].readAccess ) {
+                        row += "<input type=\"button\" class=\"btn btn-default\" value=\"Read\" onclick=\"readRegister( registers[ " + index + " ] )\" />";
+                    }
+                    
+                    if ( true === registers[ index ].writeAccess ) {
+                        row += "<input type=\"button\" class=\"btn btn-default\" value=\"Write\" onclick=\"writeRegister( registers[ " + index + " ] )\" />";
+                    }
+                    
+                    row += "</td>";
+                    
+                    if ( false === registers[ index ].readAccess ) {
+                        row += "<td>-</td>";
+                    }
+                    else if ( false === registers[ index ].userData.isRead ) {
+                        row += "<td>?</td>";
+                    }
+                    else if ( true === registers[ index ].writeAccess ) {
+                        row += "<td><input type=\"number\" min=\"1\" max=\"255\" value=\"" + registers[ index ].value + "\" onchange=\"registers[ " + index + "].setValue( this.value )\" /></td>";
+                    }
+                    else {
+                        row += "<td>" + registers[ index ].value + "</td>";
+                    }
+                            
+                    row +=  "<td>" + registers[ index ].description + "</td>" +
+                            "</tr>"
+                
+                    $( "#registers > tbody" ).append( row );
+                }
+            }
+        }
+        
+        // Update the abstractions tab
+        function showAbstractions() {
+        
+            var index   = 0;
+            var row     = "";
+        
+            $( "#abstractions > tbody" ).empty();
+        
+            if ( 0 < abstractions.length ) {            
+                for( index = 0; index < abstractions.length; ++index ) {
+                    
+                    row =   "<tr>" +
+                            "<td>" + abstractions[ index ].page + "</td>" +
+                            "<td>" + abstractions[ index ].offset + "</td>" +
+                            "<td>" + abstractions[ index ].name + "</td>" +
+                            "<td>";
+                            
+                    if ( true === abstractions[ index ].readAccess ) {
+                        row += "<input type=\"button\" class=\"btn btn-default\" value=\"Read\" onclick=\"readAbstraction( abstractions[ " + index + " ] )\" />";
+                    }
+                    
+                    if ( true === abstractions[ index ].writeAccess ) {
+                        row += "<input type=\"button\" class=\"btn btn-default\" value=\"Write\" onclick=\"writeAbstraction( abstractions[ " + index + " ] )\" />";
+                    }
+                    
+                    row += "</td>";
+                    
+                    if ( false === abstractions[ index ].readAccess ) {
+                        row += "<td>-</td>";
+                    }
+                    else if ( false === abstractions[ index ].userData.isRead ) {
+                        row += "<td>?</td>";
+                    }
+                    else if ( true === abstractions[ index ].writeAccess ) {
+                    
+                        if ( ( "undefined" !== typeof vscp.mdf.constants.RANGE[ abstractions[ index ].type ] ) &&
+                             ( vscp.mdf.constants.RANGE[ abstractions[ index ].type ].MIN !== vscp.mdf.constants.RANGE[ abstractions[ index ].type ].MAX ) ) {
+                             
+                            row +=  "<td><input type=\"number\" min=\"" +
+                                    vscp.mdf.constants.RANGE[ abstractions[ index ].type ].MIN +
+                                    "\" max=\"" +
+                                    vscp.mdf.constants.RANGE[ abstractions[ index ].type ].MAX +
+                                    "\" value=\"" + abstractions[ index ].value + "\" onchange=\"abstractions[ " + index + "].setValue( this.value )\" /></td>";
+                        }
+                        else {
+                        
+                            row += "<td><input type=\"text\" value=\"" + abstractions[ index ].value + "\" onchange=\"abstractions[ " + index + "].setValue( this.value )\" /></td>";
+                        }
+                    }
+                    else {
+                        row += "<td>" + abstractions[ index ].value + "</td>";
+                    }
+                            
+                    row +=  "<td>" + abstractions[ index ].description + "</td>" +
+                            "</tr>"
+                
+                    $( "#abstractions > tbody" ).append( row );
+                }
+            }
+        }
+        
+        // Update the recipes tab
+        function showRecipes() {
+        
+            var index   = 0;
+            var row     = "";
+        
+            $( "#recipes" ).empty();
+        
+            if ( 0 === recipes.length ) {
+                $( "#recipes" ).append( "<li>Node doesn't provide any recipe.</li>" );
+            }
+            else {
+            
+                for( index = 0; index < recipes.length; ++index ) {
+                
+                    row =   "<li>" +
+                            "<a href=\"#\" onclick=\"showRecipe(" + index + ");\">" + recipes[ index ].name + "</a>" +
+                            ": " + recipes[ index ].description +
+                            "</li>";
+                        
+                    $( "#recipes" ).append( row );
+                }
+            }
+        }
+        
+        // Read a register value
+        function readRegister( register ) {
+        
+            var guid = $( "#nodeList" ).val();
+        
+            // Disable user interface
+            ui.disable();
+        
+            vscp.register.read({
+                
+                connection: vscpConn,
+                
+                nodeId: vscp.utility.getNodeId( guid ),
+            
+                page: register.page,
+                
+                offset: register.offset,
+                
+                count: 1,
+            
+                onSuccess: function( data ) {
+                    register.value = data[ 0 ];
+                    register.dirty = false;
+                    register.userData.isRead = true;
+                    
+                    showRegisters();
+                    
+                    // Disable user interface
+                    ui.enable();
+                }.bind( this ),
+                
+                onError: function() {
+                    
+                    // Disable user interface
+                    ui.enable();
+                }
+            });
+        }
+
+        // Write a register value
+        function writeRegister( register ) {
+        
+            var guid = $( "#nodeList" ).val();
+        
+            if ( false === register.dirty ) {
+                return;
+            }
+        
+            // Disable user interface
+            ui.disable();
+        
+            vscp.register.write({
+                
+                connection: vscpConn,
+                
+                nodeId: vscp.utility.getNodeId( guid ),
+            
+                page: register.page,
+                
+                offset: register.offset,
+                
+                data: [ register.value ],
+                
+                count: 1,
+            
+                onSuccess: function() {
+                    register.dirty = false;
+                                        
+                    // Disable user interface
+                    ui.enable();
+                },
+                
+                onError: function() {
+                   
+                    // Disable user interface
+                    ui.enable();
+                }
+            });
+        }
+
+        // Read abstraction
+        function readAbstraction( abstraction ) {
+        
+            var guid = $( "#nodeList" ).val();
+        
+            // Disable user interface
+            ui.disable();
+        
+            vscp.mdf.readAbstractValue({
+                
+                connection: vscpConn,
+                
+                nodeId: vscp.utility.getNodeId( guid ),
+            
+                mdf: $gMdf,
+                
+                id: abstraction.id,
+            
+                onSuccess: function( value ) {
+                    abstraction.value = value;
+                    abstraction.dirty = false;
+                    abstraction.userData.isRead = true;
+                    
+                    showAbstractions();
+                    
+                    // Disable user interface
+                    ui.enable();
+                }.bind( this ),
+                
+                onError: function() {
+                    
+                    // Disable user interface
+                    ui.enable();
+                }
+            });
+        }
+
+        // Write abstraction
+        function writeAbstraction( abstraction ) {
+        
+            var guid = $( "#nodeList" ).val();
+        
+            if ( false === abstraction.dirty ) {
+                return;
+            }
+        
+            // Disable user interface
+            ui.disable();
+        
+            vscp.mdf.writeAbstractValue({
+                
+                connection: vscpConn,
+                
+                nodeId: vscp.utility.getNodeId( guid ),
+            
+                mdf: $gMdf,
+                
+                id: abstraction.id,
+                
+                value: abstraction.value,
+            
+                onSuccess: function() {
+                    abstraction.dirty = false;
+                    
+                    // Enable user interface
+                    ui.enable();
+                },
+                
+                onError: function() {
+                   
+                    // Enable user interface
+                    ui.enable();
+                }
+            });
+        }
+        
+        // Create a modal dialog and return its html code.
+        function modalDialog( id, header, body, footer ) {
+            var htmlStr = "";
+
+            htmlStr += "<div id=\"" + id + "\" class=\"modal fade\" role=\"dialog\">";
+            htmlStr += "<div class=\"modal-dialog\">";
+            htmlStr += "<div class=\"modal-content\">";
+            htmlStr += "<div class=\"modal-header\">";
+            htmlStr += header;
+            htmlStr += "</div>";
+            htmlStr += "<div class=\"modal-body\">";
+            htmlStr += body;
+            htmlStr += "</div>";
+            htmlStr += "<div class=\"modal-footer\">";
+            htmlStr += footer;
+            htmlStr += "</div>";
+            htmlStr += "</div>";
+            htmlStr += "</div>";
+            htmlStr += "</div>";
+
+            return htmlStr;
+        }
+
+        // Create a progress bar and return its html code.
+        function progressBar( id ) {
+            var htmlStr = "";
+
+            htmlStr += "    <div id=\"" + id + "\" class=\"progress-bar progress-bar-striped active\" role=\"progressbar\" aria-valuenow=\"0\" aria-valuemin=\"0\" aria-valuemax=\"100\" style=\"width:0%\">";
+            htmlStr += "<div class=\"progress\">";
+            htmlStr += "        0%";
+            htmlStr += "    </div>";
+            htmlStr += "</div>";
+
+            return htmlStr;
+        }
+
+        // Update the progress bar
+        function updateProgressBar( id, value ) {
+            $( "#" + id ).attr( "aria-valuenow", value );
+            $( "#" + id ).text( value + "%" );
+            $( "#" + id ).attr( "style", "width: " + value + "%" );
+        }
+
+        function showRecipe( id ) {
+
+            var recipe  = null;
+            var htmlStr = "";
+            var header  = "";
+            var body    = "";
+            var footer  = "";
+            var index   = 0;
+            var script  = "";
+            var min     = 0;
+            var max     = 0;
+
+            if ( ( 0 > id ) || ( recipes.length <= id ) ) {
+                return;
+            }
+
+            // Get recipe
+            recipe = recipes[ id ];
+
+            // Create all message boxes
+            for( index = 0; index < recipe.messageBoxes.length; ++index ) {
+
+                header  = "";
+                body    = "";
+                footer  = "";
+
+                // Create dialog header
+                header += recipe.messageBoxes[ index ].head;
+
+                // Create dialog body
+                body += "<p>";
+                body += recipe.messageBoxes[ index ].description;
+                body += "</p>";
+
+                body += "<p>";
+
+                if ( "input" === recipe.messageBoxes[ index ].func ) {
+
+                    body += "<input id=\"" + recipe.messageBoxes[ index ].variableName + "\" type=\"";
+
+                    if ( "string" === recipe.messageBoxes[ index ].variableType ) {
+                        body += "text\" value=\"\"";
+                    }
+                    else {
+                        body += "number\" value=\"0\"";
+
+                        if ( "undefined" !== typeof vscp.mdf.constants.RANGE[ recipe.messageBoxes[ index ].variableType ] ) {
+                        
+                            min = vscp.mdf.constants.RANGE[ recipe.messageBoxes[ index ].variableType ].MIN;
+                            max = vscp.mdf.constants.RANGE[ recipe.messageBoxes[ index ].variableType ].MAX;
+                        
+                            if ( min !== max ) {
+                                body += "min=\"" + min + "\" max=\"" + max + "\"";
+                            }
+                        }
+                    }
+
+                    body += " />";
+                }
+                else {
+                    body += "Message box function not supported: " + recipe.messageBoxes[ index ].func;
+                }
+
+                body += "</p>";
+
+                // Create dialog footer
+                if ( recipe.messageBoxes.length === ( index + 1 ) ) {
+                    script = "recipes[ " + id + " ].messageBoxes[ " + index + " ].variableValue = $( '#" + recipe.messageBoxes[ index ].variableName + "' ).val(); waitUntilDialogHidden( 'messageBoxDialog" + index + "', function() { writeRecipe( " + id + " ); });";
+                }
+                else {
+                    script = "recipes[ " + id + " ].messageBoxes[ " + index + " ].variableValue = $( '#" + recipe.messageBoxes[ index ].variableName + "' ).val(); nextDialog( 'messageBoxDialog" + index + "', 'messageBoxDialog" + ( index + 1 ) + "' );";
+                }
+                footer += "<input type=\"button\" value=\"Next\" class=\"btn btn-default\" data-dismiss=\"modal\" onclick=\"";
+                footer += script;
+                footer += "\" />";
+                footer += "<input type=\"button\" value=\"Cancel\" class=\"btn btn-default\" data-dismiss=\"modal\" />";
+
+                // Create modal dialog
+                htmlStr += modalDialog( "messageBoxDialog" + index, header, body, footer );
+            }
+
+            $( "#output" ).html( htmlStr );
+
+            // Show dialog
+            $( "#messageBoxDialog0" ).modal({
+                backdrop: "static",
+                keyboard: false
+            });
+        }
+
+        function nextDialog( from, to ) {
+            waitUntilDialogHidden( from, function() {
+                $( "#" + to ).modal({
+                    backdrop: "static",
+                    keyboard: false
+                });
+            });
+        }
+
+        function waitUntilDialogHidden( id, action ) {
+
+            $( "#" + id ).on( "hidden.bs.modal", action );
+        }
+
+        // Write recipe
+        function writeRecipe( id ) {
+
+            var recipe  = null;
+            var htmlStr = "";
+            var guid    = $( "#nodeList" ).val();
+
+            if ( ( 0 > id ) || ( recipes.length <= id ) ) {
+                return;
+            }
+
+            // Create modal dialogs
+            htmlStr += modalDialog( "progressDialog", "", progressBar( "progressBar" ), "" );
+            htmlStr += modalDialog(
+                "successDialog",
+                "<h4 class=\"modal-title\">Info</h4>",
+                "<p>Successful</p>",
+                "<input type=\"button\" value=\"Ok\" class=\"btn btn-default\" data-dismiss=\"modal\" />"
+            );
+            htmlStr += modalDialog(
+                "errorDialog",
+                "<h4 class=\"modal-title\">Error</h4>",
+                "<p>Failed!</p>",
+                "<input type=\"button\" value=\"Ok\" class=\"btn btn-default\" data-dismiss=\"modal\" />"
+            );
+            $( "#output" ).html( htmlStr );
+
+            // Show dialog
+            $( "#progressDialog" ).modal({
+                backdrop: "static",
+                keyboard: false
+            });
+
+            // Get recipe
+            recipe = recipes[ id ];
+
+            // Write recipe
+            recipe.write({
+
+                connection: vscpConn,
+
+                nodeId: vscp.utility.getNodeId( guid ),
+
+                onProgress: function( percent ) {
+                    updateProgressBar( "progressBar", percent );
+                },
+
+                onSuccess: function() {
+                    $( "#progressDialog" ).modal( "hide" );
+                    $( "#successDialog" ).modal({
+                        backdrop: "static",
+                        keyboard: false
+                    });
+                },
+
+                onError: function() {
+                    $( "#progressDialog" ).modal( "hide" );
+                    $( "#errorDialog" ).modal({
+                        backdrop: "static",
+                        keyboard: false
+                    });
+                }
+
+            });
+
+        }
+
+        // Restart node
+        function restartNode() {
+        
+            var guid = $( "#nodeList" ).val();        
+        
+            // Node GUID selected?
+            if ( "-" === guid ) {
+                BootstrapDialog.alert( "Select a node first." );
+                return;
+            }
+        
+            // Disable user interface
+            ui.disable();
+        
+            vscpConn.sendEvent({
+                event: new vscp.Event({
+                    vscpClass:      vscp.constants.classes.VSCP_CLASS1_PROTOCOL,
+                    vscpType:       vscp.constants.types.VSCP_TYPE_PROTOCOL_DROP_NICKNAME,
+                    vscpPriority:   vscp.constants.priorities.PRIORITY_3_NORMAL,
+                    vscpData:       [
+                                        vscp.utility.getNodeId( guid ),
+                                        0x20 // Just reset, nothing else.
+                                    ]
+                }),
+                    
+                onSuccess: function() {
+                    
+                    // Enable user interface
+                    ui.enable();
+                },
+                
+                onError: function() {
+                    BootstrapDialog.alert( "Server error!" );
+                    
+                    // Enable user interface
+                    ui.enable();
+                }
+            });
+        }
+        
+    </script>
+</head>
+<body>
+   <nav class="navbar">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="../index.html"><img src="../images/logo/vscp_new.png" class="img-thumbnail" width="100" alt="vscp logo" /></a>
+            </div>
+            <div id="menu">
+            </div>
+        </div>
+    </nav>
+    <div id="ui" class="container-fluid">
+        <h1>VSCP wizard</h1>
+        <!-- Tabs -->
+        <ul class="nav nav-tabs">
+            <li class="active"><a href="#nodeSelectionTab" data-toggle="tab">Node Selection</a></li>
+            <li><a href="#registersTab" data-toggle="tab">Registers</a></li>
+            <li><a href="#abstractionsTab" data-toggle="tab">Abstractions</a></li>
+            <li><a href="#recipesTab" data-toggle="tab">Recipes</a></li>
+        </ul>
+        <!-- Tab contents -->
+        <div class="tab-content">
+            <!-- Choose node tab -->
+            <div class="tab-pane fade in active" id="nodeSelectionTab">
+                <div class="form-group">
+                    <label for="sel1">Select a node:</label>
+                    <select id="nodeList" class="form-control">
+                        <option>-</option>
+                    </select>
+                    <button type="button" class="btn btn-default" onclick="nodeSelected();">Select</button>
+                    <p>If the node list is empty, discover them first by selecting <b>Node discovery</b> in the service menu.</p>
+                </div>
+            </div>
+            <!-- Registers tab -->
+            <div class="tab-pane fade" id="registersTab">
+                <input type="button" class="btn btn-default" onclick="restartNode();" value="Restart node" />
+                <table id="registers" class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Page</th>
+                            <th>Offset</th>
+                            <th>Name</th>
+                            <th></th>
+                            <th>Value</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            <!-- Abstractions tab -->
+            <div class="tab-pane fade" id="abstractionsTab">
+                <input type="button" class="btn btn-default" onclick="restartNode();" value="Restart node" />
+                <table id="abstractions" class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Page</th>
+                            <th>Offset</th>
+                            <th>Name</th>
+                            <th></th>
+                            <th>Value</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            <!-- Recipes tab -->
+            <div class="tab-pane fade" id="recipesTab">
+                <ul id="recipes">
+                </ul>
+            </div>            
+        </div>
+        <div id="output">
+        </div>
+    </div>
+    <br /><br />
+        <hr>
+        Copyright &copy; 2015 <a href="mailto:vscp@blue-andi.de">Andreas Merkle</a><br>
+        Copyright &copy; 2000-2016 <a href="http://www.grodansparadis.com">Grodans Paradis AB (Paradise of the Frog)</a>
+</body>
+</html>

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>VSCP node discovery</title>
+
+    <!-- Don't cache the page -->
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="-1" />
+
+    <!-- JQuery -->
+    <script type="text/javascript" src="../js/jquery/1.11.3/jquery-1.11.3.min.js"></script>
+    
+    <!-- Bootstrap -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="../js/bootstrap/3.3.5/css/bootstrap.min.css">
+    <script type="text/javascript" src="../js/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    
+    <!-- Bootstrap dialogs -->
+    <link rel="stylesheet" href="../js/bootstrap3-dialog/1.34.6/css/bootstrap-dialog.min.css">
+    <script type="text/javascript" src="../js/bootstrap3-dialog/1.34.6/js/bootstrap-dialog.min.js"></script>
+
+    <!-- Favorite icon -->
+    <link rel="icon" href="../favicon.ico">
+    
+    <!-- VSCP settings -->
+    <script type="text/javascript" src="../js/settings.js"></script>
+    <!-- VSCP hash calculation -->
+    <script type="text/javascript" src="../js/md5.js"></script>
+    <!-- VSCP websocket bases library -->
+    <script type="text/javascript" src="../js/vscp.js"></script>
+    <!-- VSCP register access, depends on the websocket base library -->
+    <script type="text/javascript" src="../js/vscpRegister.js"></script>
+    <!-- VSCP service access, depends on the websocket base library -->
+    <script type="text/javascript" src="../js/vscpService.js"></script>
+    <!-- Node list, depends on the VSCP service library -->
+    <script type="text/javascript" src="../js/nodeList.js"></script>
+    
+    <!-- Boostrap navigation bar helper functions -->
+    <script type="text/javascript" src="../js/navBar.js"></script>
+    <!-- Navigation bar menu structure -->
+    <script type="text/javascript" src="menu.js"></script>
+    
+    <script type="text/javascript">
+        /*jshint bitwise: false */
+
+        // VSCP websocket connection
+        var vscpConn = null;
+        
+        // User interface data
+        var ui = {
+
+            scanFrom: function() {
+                return parseInt( $( "#scanFrom" ).val() );
+            },
+
+            scanTo: function() {
+                return parseInt( $( "#scanTo" ).val() );
+            },
+            
+            enable: function() {
+                $( "#ui :input" ).attr( "disabled", false );
+            },
+
+            disable: function() {
+                $( "#ui :input" ).attr( "disabled", true );
+            },
+            
+            clearNodes: function() {
+                $( '#output > tbody' ).empty();
+            }
+        };
+
+        // Wait until the whole website is loaded
+        $( document ).ready( function() {
+
+            // Show navigation bar menu
+            navBarMenu.show( "menu", navBarMenu.content );
+        
+            // Create a VSCP websocket
+            vscpConn = new vscp.Connection();
+
+            // Connect to VSCP daemon
+            connect()
+            .then( setFilter )
+            .then( startReceivingEvents )
+            .then( initNodeList )
+            .done( function() {
+                // Show the nodes in the list
+                showNodeList();
+                
+                // Enable user interface
+                ui.enable();
+            });
+        });
+
+        // Connect to the VSCP daemon
+        function connect() {
+            var deferred = new $.Deferred();
+
+            // Connect to VSCP server
+            vscpConn.connect({
+
+                url: settings.url,
+
+                userName: settings.user,
+
+                password: settings.passwordHash,
+
+                onSuccess: function( conn ) {
+                    deferred.resolve();                    
+                },
+
+                onError: function( conn ) {
+                    BootstrapDialog.alert( "Connection lost. Please reload website." );
+                    deferred.reject();
+                }
+            });
+            
+            return deferred.promise();
+        }
+        
+        // Set a filter for CLASS1.Protocol
+        function setFilter() {
+            var deferred = new $.Deferred();
+            
+            // Set filter for CLASS1.Protocol
+            vscpConn.setFilter({
+            
+                filterClass: 0x0000,
+                maskClass: 0xffff,
+                filterType: 0x0000,
+                maskType: 0x0000,
+                
+                onSuccess: function() {
+                    deferred.resolve();
+                },
+                
+                onError: function() {
+                    deferred.reject();
+                }
+            });
+            
+            return deferred.promise();
+        }
+        
+        // Start receiving VSCP events
+        function startReceivingEvents() {
+            var deferred = new $.Deferred();
+            
+            // Start receiving VSCP events
+            vscpConn.start({
+                
+                onSuccess: function( conn ) {
+                    deferred.resolve();
+                },
+                
+                onError: function( conn ) {
+                    BootstrapDialog.alert( "Server error!" );
+                    deferred.reject();
+                }
+            });
+            
+            return deferred.promise();
+        }
+        
+        // Initialize global node list
+        function initNodeList() {
+            var deferred = new $.Deferred();
+            
+            // Initialize node list
+            nodeList.init({
+                
+                connection: vscpConn,
+                
+                onSuccess: function() {
+                    deferred.resolve();
+                },
+                
+                onError: function() {
+                    BootstrapDialog.alert( "Server error!" );
+                    deferred.reject();
+                }
+            });
+            
+            return deferred.promise();
+        }
+        
+        // Show the node list
+        function showNodeList() {
+            var index   = 0;
+            var nodes   = nodeList.get();
+            
+            // Clear nodes
+            ui.clearNodes();
+                        
+            for( index = 0; index < nodes.length; ++index ) {
+                $( "#output tbody" ).append( "<tr><td>" + ( index + 1 ) + "</td><td>" + nodes[ index ] + "</td></tr>" );
+            }
+        }
+
+        // Discover nodes by who is there broadcast
+        function whoIsThere() {
+            var index = 0;
+            
+            // Disable user interface
+            ui.disable();
+            
+            // Clear nodes in the list
+            nodeList.clear();
+            showNodeList();
+            
+            vscp.service.whoIsThere({
+
+                connection: vscpConn,
+
+                onSuccess: function( nodes ) {
+                    
+                    for( index = 0; index < nodes.length; ++index ) {
+                    
+                        nodeList.append({
+                            guid: vscp.utility.guidToStr( nodes[ index ].interfaceGuid )
+                        });
+                        
+                    }
+                    
+                    showNodeList();
+                    
+                    if ( 1 === nodes.length ) {
+                        BootstrapDialog.alert( "One node found." );
+                    }
+                    else {
+                        BootstrapDialog.alert( "" + nodes.length + " nodes found." );
+                    }
+                    
+                    nodeList.write({
+                    
+                        onSuccess: function() {                            
+                            // Enable the user interface
+                            ui.enable();
+                        },
+                        
+                        onError: function() {
+                            // Enable the user interface
+                            ui.enable();
+                        }
+                    });
+
+                },
+
+                onError: function() {
+                    BootstrapDialog.alert( "No nodes found." );
+                    
+                    // Enable the user interface
+                    ui.enable();
+                }
+            });
+        }
+        
+        // Discover nodes by scanning for them
+        function scan() {
+        
+            // Disable user interface
+            ui.disable();
+            
+            // Clear nodes in the list
+            nodeList.clear();
+            showNodeList();
+
+            vscp.service.scan({
+
+                connection: vscpConn,
+                
+                begin: ui.scanFrom(),
+                
+                end: ui.scanTo(),
+
+                onSuccess: function( nodes ) {
+                
+                    nodeList.set({
+                        guids: nodes
+                    });
+                    
+                    showNodeList();
+                                    
+                    if ( 1 === nodes.length ) {
+                        BootstrapDialog.alert( "One node found." );
+                    }
+                    else {
+                        BootstrapDialog.alert( "" + nodes.length + " nodes found." );
+                    }
+                
+                    nodeList.write({
+                    
+                        onSuccess: function() {
+                            // Enable the user interface
+                            ui.enable();
+                        },
+                        
+                        onError: function() {
+                            // Enable the user interface
+                            ui.enable();
+                        }
+                    });
+                    
+                },
+
+                onError: function() {
+                    BootstrapDialog.alert( "No nodes found." );
+                    
+                    // Enable the user interface
+                    ui.enable();
+                }
+            });
+        }
+        
+    </script>
+</head>
+<body>
+   <nav class="navbar">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="../index.html"><img src="../images/logo/vscp_new.png" class="img-thumbnail" width="100" alt="vscp logo" /></a>
+            </div>
+            <div id="menu">
+            </div>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        <h1>VSCP node discovery</h1>
+        <div id="ui">
+            <p>
+                Two mechanism are provided to discover VSCP nodes the communication bus.
+                <ul>
+                    <li>
+                        Send a broadcast message to all nodes (who is there event) and wait for node responses.<br />
+                        <input type="submit" class="btn btn-default" value="Who is there?" onclick="whoIsThere()" disabled />
+                    </li>
+                    <li>
+                        Probe for nodes in a defined range.<br />
+                        <input type="submit" class="btn btn-default" value="Start scanning" onclick="scan()" disabled />
+                        from: <input id="scanFrom" type="text" class="btn btn-default" value="1" disabled />
+                        to: <input id="scanTo" type="text" class="btn btn-default" value="255" disabled />
+                    </li>
+                </ul>
+            </p>            
+        </div>
+        <table id="output" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Number</th>
+                    <th>Node GUID</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <br /><br />
+        <hr>
+        Copyright &copy; 2015 <a href="mailto:vscp@blue-andi.de">Andreas Merkle</a><br>
+        Copyright &copy; 2000-2016 <a href="http://www.grodansparadis.com">Grodans Paradis AB (Paradise of the Frog)</a>
+</body>
+</html>

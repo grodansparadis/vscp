@@ -1,0 +1,78 @@
+/* CSS Document */
+
+<style type="text/css">
+<!--
+body {
+	background-color: #CCCCCC;
+}
+.header {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 2em;
+	color: #FFFFFF;
+	background-color: #333333;
+	font-weight: bold;
+	margin: 20px;
+	padding-top: 30px;
+	padding-right: 20px;
+	padding-bottom: 30px;
+	padding-left: 20px;
+}
+.container {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 1em;
+	color: #333333;
+	padding: 10px;
+	border: 0.1em solid #999999;
+	background-color: #FFFFFF;
+	position: relative;
+	margin-top: 20px;
+	margin-right: 220px;
+	margin-bottom: 20px;
+	margin-left: 20px;
+}
+.nav {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 1em;
+	color: #333333;
+	border: 0.1em solid #999999;
+	background-color: #FFFFFF;
+	position: relative;
+	margin: 0px;
+	float: right;
+	right: 20px;
+	padding-top: 10px;
+	padding-right: 48px;
+	padding-bottom: 10px;
+	padding-left: 48px;
+}
+.blogDate {color: #0066FF; }
+.navTitle {color: #0066FF; font-weight: bold; }
+.navText {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 1em;
+	color: #333333;
+}
+.navText:hover {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 1em;
+	color: #333333;
+	font-weight: bold;
+}
+.footer {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 0.9em;
+	color: #FFFFFF;
+	background-color: #333333;
+	margin: 20px;
+	padding-top: 10px;
+	padding-right: 20px;
+	padding-bottom: 10px;
+	padding-left: 20px;
+	text-align: center;
+}
+.footercontact {
+	font-size: 1em;
+	color: #0066FF;
+}
+-->
+</style>

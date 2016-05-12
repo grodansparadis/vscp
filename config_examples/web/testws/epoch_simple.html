@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>VSCP Epoch chart demo simple</title>
+
+    <!-- Don't cache the page -->
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="-1" />
+
+    <!-- JQuery -->
+    <script type="text/javascript" src="../js/jquery/1.11.3/jquery-1.11.3.min.js"></script>
+    
+    <!-- Bootstrap -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="../js/bootstrap/3.3.5/css/bootstrap.min.css">
+    <script type="text/javascript" src="../js/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+    <!-- Favorite icon -->
+    <link rel="icon" href="../favicon.ico">
+
+    <!-- VSCP settings -->
+    <script type="text/javascript" src="../js/settings.js"></script>
+    <!-- VSCP hash calculation -->
+    <script type="text/javascript" src="../js/md5.js"></script>
+    <!-- VSCP websocket base library -->
+    <script type="text/javascript" src="../js/vscp.js"></script>
+    <!-- VSCP measurement functions, which are dependend on the VSCP websocket base library -->
+    <script type="text/javascript" src="../js/vscpMeasurement.js"></script>
+
+    <!-- JavaScript library for manipulating documents based on data -->
+    <script src="../js/d3/3.5.17/d3.min.js"></script>
+    <script src="../js/epoch/0.8.4/epoch.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="../js/epoch/0.8.4/epoch.min.css">
+
+    <!-- Boostrap navigation bar helper functions -->
+    <script type="text/javascript" src="../js/navBar.js"></script>
+    <!-- Navigation bar menu structure -->
+    <script type="text/javascript" src="menu.js"></script>
+
+    <script type="text/javascript">
+
+        var setTime = function( d ) {
+            var date = new Date(d*1000);
+            var date_year = date.getFullYear();
+            var date_month = date.getMonth();
+            var date_day = date.getDate();
+            var date_hour = date.getHours();
+            var date_minute = date.getMinutes();
+            var date_second = date.getSeconds();
+            return date_year + '-' + date_month + '-' + date_day + ' ' + date_hour + ':' + date_minute + ':' + date_second;
+        }
+
+        var lineChartData = [{
+            label: "Temperature",
+            values: [
+                {time: 1370044800, y: 20}, {time: 1370044801, y: 20}, {time: 1370044802, y: 19}, {time: 1370044803, y: 18},
+                {time: 1370044804, y: 17}, {time: 1370044805, y: 16}, {time: 1370044806, y: 15}, {time: 1370044807, y: 14},
+                {time: 1370044808, y: 13}, {time: 1370044809, y: 12}, {time: 1370044810, y: 11}, {time: 1370044811, y: 10},
+                {time: 1370044812, y: 9}, {time: 1370044813, y: 8}, {time: 1370044814, y: 7}, {time: 1370044815, y: 6},
+                {time: 1370044822, y: 4}, {time: 1370044844, y: 1}, {time: 1370044848, y: 0}, {time: 1370044899, y: -3},
+            ]
+        }];
+
+        // VSCP websocket connection
+        var vscpConn = null;
+
+        // Wait until the whole website is loaded
+        $( document ).ready( function() {
+
+            // Show navigation bar menu
+            navBarMenu.show( "menu", navBarMenu.content );
+
+            // Create a VSCP websocket
+            vscpConn = new vscp.Connection();
+
+            // Connect to VSCP server
+            vscpConn.connect({
+
+                url: settings.url,
+
+                userName: settings.user,
+
+                password: settings.passwordHash,
+
+                onSuccess: function( conn ) {
+
+                    // Start receiving VSCP events
+                    vscpConn.start({
+
+                        onSuccess: function( conn ) {
+
+                            vscpConn.addEventListener( eventListener );
+
+                        },
+
+                        onError: function( conn ) {
+                            alert("Couldn't start receiving events.");
+                        }
+
+                    });
+
+                },
+
+                onError: function( conn ) {
+                    alert("Couldn't establish a connection.");
+                }
+
+            });
+        });
+
+        var eventListener = function( conn, evt ) {
+
+            var value = 0;
+
+            if ( "undefined" === typeof evt ) {
+                return;
+            }
+
+            if ( false === ( evt instanceof vscp.Event ) ) {
+                return;
+            }
+
+            if ( ( vscp.constants.classes.VSCP_CLASS1_MEASUREMENT === evt.vscpClass ) &&
+                 ( vscp.constants.types.VSCP_TYPE_MEASUREMENT_TEMPERATURE === evt.vscpType ) ) {
+
+                // This event is for us
+                console.log( "Codingbyte = " + evt.vscpData );
+
+                // We are only interested in sensor 2
+                var sensorindex =  vscp.measurement.getSensorIndexFromDataCoding( evt.vscpData[ 0 ] );
+                if ( 2 !== sensorindex ) {
+                    return;
+                }
+
+                // This event is for us
+                value = vscp.measurement.toFixed( vscp.measurement.decodeClass10( evt.vscpData ), 1 );
+
+                // Should be a Celsius value
+                switch( vscp.measurement.getDataCoding( evt.vscpData[ 0 ] ) ) {
+                    // Kelvin
+                    case 0:
+                        value = vscp.measurement.convertKelvinToCelsius( this.value );
+                        break;
+                    // Fahrenheit
+                    case 2:
+                        value = vscp.measurement.convertFahrenheitToCelsius( this.value );
+                        break;
+                    // Do nothing (if already Celsius)
+                    default:
+                        break;
+                }
+
+                var d = new Date();
+                var data = [{
+                    time: d.getTime(),
+                    y: value
+                }];
+                lineBarChart1.push( data );
+                lineBarChart2.push( data );
+                areaChartInstance1.push( data );
+            }
+        };
+        
+        
+        var formatdate = function(d) { 
+            var now = new Date();
+            /*return now.getHours().toString() + ':' + 
+                    now.getMinutes().toString() + ':' +
+                    now.getSeconds().toString(); */
+            return now.toTimeString();          
+        };
+
+    </script>
+</head>
+
+<body>
+   <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="../index.html"><img src="../images/logo/vscp_new.png" class="img-thumbnail" width="100" alt="vscp logo" /></a>
+            </div>
+            <div id="menu">
+            </div>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        <h1>VSCP HTML5 demo of Epoch charts</h1>
+        <p>
+            This demo demonstrates the websocket library used with
+            <a href="http://epochjs.github.io/epoch/">Epoch charts</a>. First the
+            tables is updated with some static data just to have something to show
+            even if no data stream is available. After that the first three charts
+            are updated when received CLASS1.MEASUREMENT, Type=6, Temperature
+            events from sensor 2. You can simulated active devices by opening the
+            event page in an other window and send temperature events using demo 3 and 4.
+        </p>
+
+        <h2>Bar</h2>
+        <div id="lineBarChart1" class="epoch category10" style="width: 800px; height: 200px"></div>
+        <script>
+          var lineBarChart1 = $('#lineBarChart1').epoch({
+            type: 'time.bar',
+            ticks: { left: 5, bottom: 5, right: 5 },
+            /*tickFormats: { time: function(d) { return 'AAAA'; } },*/
+            tickFormats: { 
+                bottom: function(d) { return formatdate(d); }
+            },
+                
+            data: lineChartData,
+            axes: ['left', 'right', 'bottom']
+          });
+        </script>
+
+        <h2>Line</h2>
+        <div id="lineBarChart2" class="epoch category10" style="width: 800px; height: 200px"></div>
+        <script>
+          var lineBarChart2 = $('#lineBarChart2').epoch({
+            type: 'time.line',
+            ticks: { left: 5, bottom: 5, right: 5 },
+            tickFormats: { bottom: function(d) { return new Date().toISOString() } },
+            data: lineChartData,
+            axes: ['left', 'right', 'bottom']
+          });
+        </script>
+
+        <h2>Area time</h2>
+        <div id="lineAreaChart1" class="epoch category10" style="width: 800px; height: 200px"></div>
+        <script>
+        var areaChartInstance1 = $('#lineAreaChart1').epoch({
+            type: 'time.area',
+            ticks: { left: 5, bottom: 5, right: 5 },
+            tickFormats: { bottom: function(d) { return new Date().toISOString() } },
+            data: lineChartData,
+            axes: ['left', 'right', 'bottom']
+        });
+        </script>
+
+        <br /><br />
+        <hr />
+        Copyright &copy; 2000-2016 <a href="http://www.grodansparadis.com">Grodans Paradis AB (Paradise of the Frog)</a>
+    </div>
+</body>
+</html>

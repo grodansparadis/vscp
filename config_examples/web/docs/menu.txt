@@ -1,0 +1,72 @@
+
+Client Window
+=====================================================================================
+Monitor events
+Send events
+
+Device configuration window
+=====================================================================================
+Configure a device.
+
+Registers
+Abstractions
+DM
+Wizards
+
+Firmware load
+=====================================================================================
+Load firmware to a node.
+
+Device scan
+=====================================================================================
+Scan for nodes on an interface.
+
+
+Interfaces
+=====================================================================================
+List	- CANAL (Level I) & Level II
+Search  - Interface type, name
+
+Configuration
+=====================================================================================
+View	- Load driver but does not start it.
+Edit
+
+Variables
+=====================================================================================
+List	- List variables
+Add	- Add variable
+Delete	- Delete variable
+
+Decision matrix
+=====================================================================================
+List	- List internal or external matrix.
+Add	- Add element to internal or external matrix.
+Delete	- Delete element from internal or external matrix.
+Edit	- Edit row in internal or external matrix.
+
+Driver
+=====================================================================================
+Load	- Load driver but does not start it.
+Unload	- Unload a driver. Must be stoped. 
+Stop	- Stop driver.
+Start	- Run driver.
+Restart	- Restart a driver.
+
+
+Users
+=====================================================================================
+List	- List users
+Add 	- Add user
+Delete	- Remove user.
+Edit	- Edit users.
+
+
+Groups
+=====================================================================================
+List	- List groups
+Add 	- Add group
+Delete	- Remove group.
+Edit	- Edit group.
+
+

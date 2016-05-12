@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>VSCP slider demo</title>
+
+    <!-- Don't cache the page -->
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="-1" />
+
+    <!-- JQuery -->
+    <script type="text/javascript" src="../js/jquery/1.11.3/jquery-1.11.3.min.js"></script>
+    
+    <!-- Bootstrap -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="../js/bootstrap/3.3.5/css/bootstrap.min.css">
+    <script type="text/javascript" src="../js/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+    <!-- Favorite icon -->
+    <link rel="icon" href="../favicon.ico">
+
+    <!-- VSCP settings -->
+    <script type="text/javascript" src="../js/settings.js"></script>
+    <!-- VSCP hash calculation -->
+    <script type="text/javascript" src="../js/md5.js"></script>
+    <!-- VSCP websocket base library -->
+    <script type="text/javascript" src="../js/vscp.js"></script>
+
+    <!-- Boostrap navigation bar helper functions -->
+    <script type="text/javascript" src="../js/navBar.js"></script>
+    <!-- Navigation bar menu structure -->
+    <script type="text/javascript" src="menu.js"></script>
+
+    <script type="text/javascript">
+
+        (function() {
+
+            // VSCP websocket connection
+            var vscpConn = null;
+
+            // Wait until the whole website is loaded
+            $( document ).ready( function() {
+
+                // Show navigation bar menu
+                navBarMenu.show( "menu", navBarMenu.content );
+
+                // Create a VSCP websocket
+                vscpConn = new vscp.Connection();
+
+                // Connect to VSCP server
+                vscpConn.connect({
+
+                    url: settings.url,
+
+                    userName: settings.user,
+
+                    password: settings.passwordHash,
+
+                    onSuccess: function( conn ) {
+
+                        // Set filter for CLASS1.INFORMATION
+                        vscpConn.setFilter({
+                            filterClass: vscp.constants.classes.VSCP_CLASS1_INFORMATION,
+                            maskClass: 0xffff,
+                            filterType: vscp.constants.types.VSCP_TYPE_INFORMATION_LEVEL_CHANGED,
+                            maskType: 0xffff
+                        });
+
+                        // Start receiving VSCP events
+                        vscpConn.start({
+
+                            onSuccess: function( conn ) {
+
+                                vscpConn.addEventListener( eventListener );
+
+                            },
+
+                            onError: function( conn ) {
+                                alert("Couldn't start receiving events.");
+                            }
+
+                        });
+
+                    },
+
+                    onError: function( conn ) {
+                        alert("Couldn't establish a connection.");
+                    }
+
+                });
+            });
+
+            var eventListener = function( conn, evt ) {
+
+                var index   = 0;
+                var bFound  = false;
+
+                if ( "undefined" === typeof evt ) {
+                    return;
+                }
+
+                if ( false === ( evt instanceof vscp.Event ) ) {
+                    return;
+                }
+
+                if ( ( vscp.constants.classes.VSCP_CLASS1_INFORMATION === evt.vscpClass ) &&
+                     ( vscp.constants.types.VSCP_TYPE_INFORMATION_LEVEL_CHANGED === evt.vscpType ) &&
+                     ( zone === evt.vscpData[ 1 ] ) &&
+                     ( subZone === evt.vscpData[ 2 ] ) ) {
+
+                    $( "#sliderCtrl1" ).val( evt.vscpData[ 0 ] );
+                    $( "#sliderText1" ).html( evt.vscpData[ 0 ] );
+                    $( "#sliderCtrl2" ).val( evt.vscpData[ 0 ] );
+                }
+
+            };
+
+            var zone = 1;
+            var subZone = 20;
+
+            function sliderChange( newValue )
+            {
+                $( "#sliderText1" ).html( newValue );
+
+                vscpConn.sendEvent({
+
+                    event: new vscp.Event({
+                        vscpClass:      vscp.constants.classes.VSCP_CLASS1_CONTROL,
+                        vscpType:       vscp.constants.types.VSCP_TYPE_CONTROL_DIM_LAMPS,
+                        vscpPriority:   vscp.constants.priorities.PRIORITY_3_NORMAL,
+                        vscpData:       [ newValue, zone, subZone ]
+                    }),
+
+                });
+
+            }
+        })();
+
+    </script>
+
+</head>
+<body>
+   <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="../index.html"><img src="../images/logo/vscp_new.png" class="img-thumbnail" width="100" alt="vscp logo" /></a>
+            </div>
+            <div id="menu">
+            </div>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        <h1>VSCP HTML5 slider demo</h1>
+        <p>
+            This demo demonstrates how to use the HTML slider control with VSCP. When you drag the slider it
+            sends <a href="http://www.vscp.org/docs/vscpspec/doku.php?id=class1.control#type_20_0x14_dim_lamp_s">CLASS1.CONTROL, 
+            Type=20/VSCP_TYPE_CONTROL_DIM_LAMPS</a> with zone=1, subzone=20. This event
+            have a value between 0-100 in byte zero and zone/subzone in byte 1/2.
+        </p>
+        <p>
+            The usual response from a <a href="http://www.vscp.org/docs/vscpspec/doku.php?id=class1.control#type_20_0x14_dim_lamp_s">CLASS1.CONTROL, 
+            Type=20/VSCP_TYPE_CONTROL_DIM_LAMPS</a> event is
+            <a href="http://www.vscp.org/docs/vscpspec/doku.php?id=class1.information#type_40_0x28_level_changed">CLASS1.INFORMATION, 
+            Type=40/VSCP_TYPE_INFORMATION_LEVEL_CHANGED</a>. So a mask is set to only receive
+            this event and if it is received it will set the value of the slider after checking that the zone/subzone
+            is the expected ones.
+        </p>
+        <p>
+            If one have several sliders one may be tempted to react on <b>CLASS1.CONTROL, Type=20/VSCP_TYPE_CONTROL_DIM_LAMPS</b>
+            also but it is better to just use the CLASS1-INFORMATION event to avoid message loops.
+        </p>
+        <p>
+            You can update the slider by sending
+        </p>
+        <p>
+            <pre>send 0,20,40,0,0,-,90,1,20</pre> 
+        </p>
+        <p>
+            Over the TCP/IP connection. The <b>"90"</b> is the value of the slider. For your convenience you can
+            also open <a href="event.html">event.html</a> in a new browser window and use <b>demo 3</b> there to
+            set the slider value to either 0,10,50 or 100.
+        </p>
+        <p>
+            For those wanting to experiment there is a style in the beginning if this file that change the appearance
+            of the slider that is commented out.
+        </p>
+        <p>
+            The VSCP_TYPE_CONTROL_BIG_CHANGE_LEVEL, VSCP_TYPE_INFORMATION_BIG_ LEVEL_CHANGED events can be used if you need ranges
+            other than 0-100
+        </p>
+        <p>
+        <div>
+            <datalist id="datalist">
+                <option>0</option>
+                <option>5</option>
+                <option>10</option>
+                <option>15</option>
+                <option>20</option>
+                <option>25</option>
+                <option>30</option>
+                <option>35</option>
+                <option>40</option>
+                <option>45</option>
+                <option>50</option>
+                <option>55</option>
+                <option>60</option>
+                <option>65</option>
+                <option>70</option>
+                <option>75</option>
+                <option>80</option>
+                <option>85</option>
+                <option>90</option>
+                <option>95</option>
+                <option>100</option>
+            </datalist>
+            <input id="sliderCtrl1" style="width: 600px;" type="range" min="0" max="100" value="0" step="5" list="datalist" onchange="sliderChange( this.value )" />
+            <span id="sliderText1">0</span>
+        <div>
+        </p>    
+        <p>
+            <input id="sliderCtrl2" type="range" min="0" max="100" value="0" step="5" name="grade" orient="vertical" list="datalist" style="width: 20px; height: 200px; -webkit-appearance: slider-vertical; writing-mode: bt-lr;">
+        </p>
+        <br>
+
+        <br /><br />
+        <hr />
+        Copyright &copy; 2000-2016 <a href="http://www.grodansparadis.com">Grodans Paradis AB (Paradise of the Frog)</a>
+    </div>
+</body>
+</html>

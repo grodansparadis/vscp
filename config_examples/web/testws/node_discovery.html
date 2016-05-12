@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>VSCP passive node discovery</title>
+
+    <!-- Don't cache the page -->
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="-1" />
+
+    <!-- JQuery -->
+    <script type="text/javascript" src="../js/jquery/1.11.3/jquery-1.11.3.min.js"></script>
+    
+    <!-- Bootstrap -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="../js/bootstrap/3.3.5/css/bootstrap.min.css">
+    <script type="text/javascript" src="../js/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+    <!-- Favorite icon -->
+    <link rel="icon" href="../favicon.ico">
+
+    <!-- VSCP settings -->
+    <script type="text/javascript" src="../js/settings.js"></script>
+    <!-- VSCP hash calculation -->
+    <script type="text/javascript" src="../js/md5.js"></script>
+    <!-- VSCP websocket base library -->
+    <script type="text/javascript" src="../js/vscp.js"></script>
+
+    <!-- Boostrap navigation bar helper functions -->
+    <script type="text/javascript" src="../js/navBar.js"></script>
+    <!-- Navigation bar menu structure -->
+    <script type="text/javascript" src="menu.js"></script>
+
+    <script type="text/javascript" >
+
+        (function() {
+
+            // VSCP websocket connection
+            var vscpConn = null;
+
+            var idArray = [];
+
+            // Wait until the whole website is loaded
+            $( document ).ready( function() {
+
+                // Show navigation bar menu
+                navBarMenu.show( "menu", navBarMenu.content );
+
+                // Create a VSCP websocket
+                vscpConn = new vscp.Connection();
+
+                // Connect to VSCP server
+                vscpConn.connect({
+
+                    url: settings.url,
+
+                    userName: settings.user,
+
+                    password: settings.passwordHash,
+
+                    onSuccess: function( conn ) {
+
+                        // Start receiving VSCP events
+                        vscpConn.start({
+
+                            onSuccess: function( conn ) {
+
+                                vscpConn.addEventListener( checkForNode );
+
+                            },
+
+                            onError: function( conn ) {
+                                alert("Couldn't start receiving events.");
+                            }
+
+                        });
+
+                    },
+
+                    onError: function( conn ) {
+                        alert("Couldn't establish a connection.");
+                    }
+
+                });
+            });
+
+            var checkForNode = function( conn, evt ) {
+
+                var index   = 0;
+                var bFound  = false;
+
+                if ( "undefined" === typeof evt ) {
+                    return;
+                }
+
+                if ( false === ( evt instanceof vscp.Event ) ) {
+                    return;
+                }
+
+                if ( ( vscp.constants.classes.VSCP_CLASS1_INFORMATION === evt.vscpClass ) &&
+                     ( vscp.constants.types.VSCP_TYPE_INFORMATION_NODE_HEARTBEAT === evt.vscpType ) ) {
+
+                    for( index = 0; index < idArray.length; ++index ) {
+                        if ( evt.vscpGuid === idArray[ index ] ) {
+                            bFound = true;
+                            break;
+                        }
+                    }
+
+                    if ( false === bFound ) {
+
+                        idArray.push( evt.vscpGuid );
+                        idArray.sort();
+
+                        // Clear old options if any
+                        $( "#nodeList" ).empty();
+                        $( "#nodeList" ).css( "backgroundColor", "#00FF00" );
+                        $( "#id3" ).text( "Found" );
+                        $( "#nodeCount" ).text( idArray.length );
+                        $.each( idArray, function( index, item ) {
+                            $( "#nodeList" ).append( $( "<option></option>" ).text( item ).val( item ) );
+                        });
+                    }
+                }
+            };
+
+        })();
+
+    </script>
+
+</head>
+
+<body>
+   <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="../index.html"><img src="../images/logo/vscp_new.png" class="img-thumbnail" width="100" alt="vscp logo" /></a>
+            </div>
+            <div id="menu">
+            </div>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        <h1>Passive node discovery</h1>
+        <p>
+            This demo waits for <a href="http://www.vscp.org/docs/vscpspec/doku.php?id=class1.information#type_9_0x09_node_heartbeat">CLASS1.INFORMATION, Type=9/Heartbeats</a> and if the heartbeat has not been seen yet it is
+            added to the list. You can send one from the tcp/ip interface with <br />
+            <p><pre> send 0,20,9,0,0,"-",0,0,0</pre></p>
+            or you can use the event send list in the <a href="event.html" target="new" >event.html</a> demo.
+        </p>
+        <div id="id3">Wait...</div>
+        <div id="nodeCount">0</div>
+        <select id="nodeList" class="select">
+            <option>Nodes</option>
+        </select>
+
+        <br /><br />
+        <hr />
+        Copyright &copy; 2000-2016 <a href="http://www.grodansparadis.com">Grodans Paradis AB (Paradise of the Frog)</a>
+    </div>
+</body>
+</html>

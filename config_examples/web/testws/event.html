@@ -1,0 +1,450 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>VSCP event demos</title>
+
+    <!-- Don't cache the page -->
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="-1" />
+
+    <!-- JQuery -->
+    <script type="text/javascript" src="../js/jquery/1.11.3/jquery-1.11.3.min.js"></script>
+    
+    <!-- Bootstrap -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="../js/bootstrap/3.3.5/css/bootstrap.min.css">
+    <script type="text/javascript" src="../js/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+    <!-- Favorite icon -->
+    <link rel="icon" href="../favicon.ico">
+
+    <!-- VSCP settings -->
+    <script type="text/javascript" src="../js/settings.js"></script>
+    <!-- VSCP hash calculation -->
+    <script type="text/javascript" src="../js/md5.js"></script>
+    <!-- VSCP websocket base library -->
+    <script type="text/javascript" src="../js/vscp.js"></script>
+
+    <!-- Boostrap navigation bar helper functions -->
+    <script type="text/javascript" src="../js/navBar.js"></script>
+    <!-- Navigation bar menu structure -->
+    <script type="text/javascript" src="menu.js"></script>
+
+    <script type="text/javascript">
+
+        // VSCP websocket connection
+        var vscpConn = null;
+
+        // Wait until the whole website is loaded
+        $( document ).ready( function() {
+
+            // Show navigation bar menu
+            navBarMenu.show( "menu", navBarMenu.content );
+
+            // Create a VSCP websocket
+            vscpConn = new vscp.Connection();
+
+            // Connect to VSCP server
+            vscpConn.connect({
+
+                url: settings.url,
+
+                userName: settings.user,
+
+                password: settings.passwordHash,
+
+                onSuccess: function( conn ) {
+
+                    // Start receiving VSCP events
+                    vscpConn.start({
+
+                        onSuccess: function( conn ) {
+
+                            vscpConn.addEventListener( add2EventTable );
+
+                            // Enable the user interface
+                            ui.enable();
+                        },
+
+                        onError: function( conn ) {
+                            alert("Couldn't start receiving events.");
+                        }
+
+                    });
+
+                },
+
+                onError: function( conn ) {
+                    alert("Couldn't establish a connection.");
+                },
+
+                onMessage: function( conn, msg ) {
+                    var msgItems = msg.data.split(";"); /* Data is separated by ; */
+
+                    // Positive reply?
+                    if ( '+' === msgItems[ 0 ] ) {
+                        $( "#myResponseTable" ).append( "<tr><td><b>Positive reply:</b></td><td>" + msgItems + "</td></tr>" );
+                    }
+                    // Negative reply
+                    else {
+                        $( "#myResponseTable" ).append( "<tr><td><b>Positive reply:</b></td><td>" + msgItems + "</td></tr>" );
+                    }
+
+                    stripRows( "myResponseTable", 20 );
+
+                    // VSCP library shall handle the message
+                    return false;
+                }
+
+            });
+        });
+
+        // User interface data
+        var ui = {
+
+            enable: function() {
+                $( "#ui :input" ).attr( "disabled", false );
+            },
+
+            disable: function() {
+                $( "#ui :input" ).attr( "disabled", true );
+            }
+        };
+
+        function vscpTurnOnEvent() {
+
+            ui.disable();
+
+            vscpConn.sendEvent({
+                event: new vscp.Event({
+                    vscpClass:      vscp.constants.classes.VSCP_CLASS1_CONTROL,
+                    vscpType:       vscp.constants.types.VSCP_TYPE_CONTROL_TURNON,
+                    vscpPriority:   vscp.constants.priorities.PRIORITY_3_NORMAL,
+                    vscpData:       [ 0, 1, 12 ]
+                }),
+
+                onSuccess: function( conn ) {
+                    console.info( "TURNON event sent." );
+                    ui.enable();
+                },
+
+                onError: function( conn ) {
+                    alert( "Failed to send TURNON event." );
+                    ui.enable();
+                }
+
+            });
+
+        }
+
+        function vscpTurnOffEvent() {
+
+            ui.disable();
+
+            vscpConn.sendEvent({
+                event: new vscp.Event({
+                    vscpClass:      vscp.constants.classes.VSCP_CLASS1_CONTROL,
+                    vscpType:       vscp.constants.types.VSCP_TYPE_CONTROL_TURNOFF,
+                    vscpPriority:   vscp.constants.priorities.PRIORITY_3_NORMAL,
+                    vscpData:       [ 0, 1, 12 ]
+                }),
+
+                onSuccess: function( conn ) {
+                    console.info( "TURNOFF event sent." );
+                    ui.enable();
+                },
+
+                onError: function( conn ) {
+                    alert( "Failed to send TURNOFF event." );
+                    ui.enable();
+                }
+
+            });
+
+        }
+
+        function vscpOnEvent() {
+
+            ui.disable();
+
+            vscpConn.sendEvent({
+                event: new vscp.Event({
+                    vscpClass:      vscp.constants.classes.VSCP_CLASS1_INFORMATION,
+                    vscpType:       vscp.constants.types.VSCP_TYPE_INFORMATION_ON,
+                    vscpPriority:   vscp.constants.priorities.PRIORITY_3_NORMAL,
+                    vscpData:       [ 0, 1, 12 ]
+                }),
+
+                onSuccess: function( conn ) {
+                    console.info( "ON event sent." );
+                    ui.enable();
+                },
+
+                onError: function( conn ) {
+                    alert( "Failed to send ON event." );
+                    ui.enable();
+                }
+
+            });
+
+        }
+
+        function vscpOffEvent() {
+
+            ui.disable();
+
+            vscpConn.sendEvent({
+                event: new vscp.Event({
+                    vscpClass:      vscp.constants.classes.VSCP_CLASS1_INFORMATION,
+                    vscpType:       vscp.constants.types.VSCP_TYPE_INFORMATION_OFF,
+                    vscpPriority:   vscp.constants.priorities.PRIORITY_3_NORMAL,
+                    vscpData:       [ 0, 1, 12 ]
+                }),
+
+                onSuccess: function( conn ) {
+                    console.info( "OFF event sent." );
+                    ui.enable();
+                },
+
+                onError: function( conn ) {
+                    alert( "Failed to send OFF event." );
+                    ui.enable();
+                }
+
+            });
+
+        }
+
+        function add2EventTable( conn, evt ) {
+
+            $( "#myEventTable" ).append(
+                "<tr><td>Received Event:" +
+                " <b>Class</b>=" + evt.vscpClass +
+                " <b>Type</b>=" +  evt.vscpType +
+                " <b>Data</b>=" +  evt.vscpData +
+                " <b>GUID</b>=" +  evt.vscpGuid +
+                "</td></tr>"
+            );
+
+            stripRows( "myEventTable", 20 );
+        }
+
+        // Delete <num> rows in table by tableID
+        function stripRows( tableID, num ) {
+            try {
+                var table       = document.getElementById( tableID );
+                var rowCount    = table.rows.length;
+
+                if ( rowCount > num ) {
+                    for(var i=0; i<rowCount-num; i++) {
+                        table.deleteRow(i);
+                    }
+                }
+            }
+            catch(e) {
+                alert(e);
+            }
+        }
+
+        function vscpSendTempSelectEvent() {
+
+            var selectBox   = document.getElementById( "tempEventSelect" );
+            var strEvent    = selectBox.options[ selectBox.selectedIndex ].value;
+            var vscpItems   = strEvent.split( "," );
+            var data        = vscpItems.slice( 6, vscpItems.length );
+
+            ui.disable();
+
+            vscpConn.sendEvent({
+                event: new vscp.Event({
+                    vscpHead:       parseInt( vscpItems[ 0 ] ),
+                    vscpClass:      parseInt( vscpItems[ 1 ] ),
+                    vscpType:       parseInt( vscpItems[ 2 ] ),
+                    vscpObId:       parseInt( vscpItems[ 3 ] ),
+                    vscpTimeStamp:  parseInt( vscpItems[ 4 ] ),
+                    vscpGuid:       parseInt( vscpItems[ 5 ] ),
+                    vscpData:       data
+                }),
+
+                onSuccess: function( conn ) {
+                    ui.enable();
+                },
+
+                onError: function( conn ) {
+                    alert( "Failed to send event." );
+                    ui.enable();
+                }
+
+            });
+
+        }
+
+        function sliderUpdate( val ) {
+
+            ui.disable();
+
+            $( "#sliderText" ).val( val );
+
+            vscpConn.sendEvent({
+                event: new vscp.Event({
+                    vscpClass:      vscp.constants.classes.VSCP_CLASS1_CONTROL,
+                    vscpType:       vscp.constants.types.VSCP_TYPE_CONTROL_DIM_LAMPS,
+                    vscpPriority:   vscp.constants.priorities.PRIORITY_3_NORMAL,
+                    vscpData:       [ val, 0, 0 ]
+                }),
+
+                onSuccess: function( conn ) {
+                    console.info( "DIM_LAMPS event sent." );
+                    ui.enable();
+                },
+
+                onError: function( conn ) {
+                    alert( "Failed to send DIM_LAMPS event." );
+                    ui.enable();
+                }
+
+            });
+
+        }
+
+    </script>
+</head>
+
+<body>
+   <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="../index.html"><img src="../images/logo/vscp_new.png" class="img-thumbnail" width="100" alt="vscp logo" /></a>
+            </div>
+            <div id="menu">
+            </div>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        <h1>VSCP websocket event demos</h1>
+        <p>The following demos show how to send and receive VSCP events over websocket.</p>
+
+        <hr>
+
+        <div id="ui">
+
+            <h2>Demo 1 - Turn on and/or turn off</h2>
+            <p>The first button sends <a href="http://www.vscp.org/docs/vscpspec/doku.php?id=class1.control#type_5_0x05_turnon">CLASS1.CONTROL, Type=5/TurnOn</a>
+            and the second button sends <a href="http://www.vscp.org/docs/vscpspec/doku.php?id=class1.control#type_6_0x06_turnoff">CLASS1.CONTROL, Type=6/TurnOff</a>
+            </p>
+            <p>Open a telnet session to the VSCP daemon to see the events.</p>
+            <p>
+                <input type="submit" class="btn btn-warning" value="Send TurnOn Event (Zone=1, SubZone=12)" onclick="vscpTurnOnEvent()" disabled />
+                <input type="submit" class="btn btn-warning" value="Send TurnOff Event (Zone=1, SubZone=12)" onclick="vscpTurnOffEvent()" disabled />
+            </p>
+
+            <hr>
+
+            <h2>Demo 2 - Visual feedback</h2>
+            <p>
+                The button widget demo wait for a <a href="http://www.vscp.org/docs/vscpspec/doku.php?id=class1.information#type_3_0x03_on">CLASS1.INFORMATION, Type=3/ON</a> to validate a sent
+                <a href="http://www.vscp.org/docs/vscpspec/doku.php?id=class1.control#type_5_0x05_turnon">CLASS1.CONTROL, Type=5/TurnOn</a> event
+                and will confirm an on state when it is received. The same is true for
+                <a href="http://www.vscp.org/docs/vscpspec/doku.php?id=class1.information#type_4_0x04_off">CLASS1.INFORMATION, Type=3/OFF</a> which is a
+                validation for <a href="http://www.vscp.org/docs/vscpspec/doku.php?id=class1.control#type_6_0x06_turnoff">CLASS1.CONTROL, Type=6/TurnOff</a> event. That is<br />
+                <ul>
+                    <li>
+                        A button is pressed and send <a href="http://www.vscp.org/docs/vscpspec/doku.php?id=class1.control#type_5_0x05_turnon">CLASS1.CONTROL, Type=5/TurnOn</a> event.
+                    </li>
+                    <li>
+                        To visually indicate that the TurnOn event has been handled by a remote node
+                        the button waits for a <a href="http://www.vscp.org/docs/vscpspec/doku.php?id=class1.information#type_3_0x03_on">CLASS1.INFORMATION, Type=3/ON</a> and when received it changes the
+                        state of the button.
+                    </li>
+                    <li>
+                        The same is true when the button is on and is pressed which sends
+                        <a href="http://www.vscp.org/docs/vscpspec/doku.php?id=class1.control#type_6_0x06_turnoff">CLASS1.CONTROL, Type=6/TurnOff</a> event and waits for 
+                        <a href="http://www.vscp.org/docs/vscpspec/doku.php?id=class1.information#type_4_0x04_off"> CLASS1.INFORMATION, Type=3/OFF</a>
+                    </li>
+                </ul>
+            </p>
+            <p>The righmost button (yellow) in the <a href="statebutton.html">button widget demo</a> will change state when the below buttons are pressed.</p>
+            <p>
+                <input type="submit" class="btn btn-warning" value="Send ON Event (Zone=1, SubZone=12)" onclick="vscpOnEvent()" disabled />
+                <input type="submit" class="btn btn-warning" value="Send OFF Event (Zone=1, SubZone=12)" onclick="vscpOffEvent()" disabled />
+            </p>
+
+            <hr>
+
+            <h2>Demo 3 - Send measurements</h2>
+            <p>
+            This demo can be used to send temperature events for the different temperature demos and some other events.
+            </p>
+            <p>
+                <select id="tempEventSelect">
+                    <option value="0,10,6,0,0,-,138,0x00,0xE7">Send -25 Sensoridx=2 Normalized Integer. Degrees centigrade</option>
+                    <option value="0,10,6,0,0,-,138,0x00,0xE7">Send -20 Sensoridx=2 Normalized Integer. Degrees centigrade</option>
+                    <option value="0,10,6,0,0,-,138,0x00,0xE7">Send -15 Sensoridx=2 Normalized Integer. Degrees centigrade</option>
+                    <option value="0,10,6,0,0,-,138,0x00,0xE7">Send -10 Sensoridx=2 Normalized Integer. Degrees centigrade</option>
+                    <option value="0,10,6,0,0,-,138,0x00,0xE7">Send -5 Sensoridx=2 Normalized Integer. Degrees centigrade</option>
+                    <option value="0,10,6,0,0,-,138,0x00,0x00">Send 0 Sensoridx=2 Normalized Integer. Degrees centigrade</option>
+                    <option value="0,10,6,0,0,-,138,0x00,5">Send 5 Sensoridx=2 Normalized Integer. Degrees centigrade</option>
+                    <option value="0,10,6,0,0,-,138,0x00,10">Send 10 Sensoridx=2 Normalized Integer. Degrees centigrade</option>
+                    <option value="0,10,6,0,0,-,138,0x00,15">Send 15 Sensoridx=2 Normalized Integer. Degrees centigrade</option>
+                    <option value="0,10,6,0,0,-,138,0x00,20">Send 20 Sensoridx=2 Normalized Integer. Degrees centigrade</option>
+                    <option value="0,10,6,0,0,-,138,0x00,25">Send 25 Sensoridx=2 Normalized Integer. Degrees centigrade</option>
+                    <option value="0,10,6,0,0,-,138,0x00,30">Send 30 Sensoridx=2 Normalized Integer. Degrees centigrade</option>
+                    <option value="0,10,6,0,0,-,138,0x00,35">Send 35 Sensoridx=2 Normalized Integer. Degrees centigrade</option>
+                    <option value="0,10,6,0,0,-,138,0x00,40">Send 40 Sensoridx=2 Normalized Integer. Degrees centigrade</option>
+                    <option value="0,10,6,0,0,-,138,0x00,45">Send 45 Sensoridx=2 Normalized Integer. Degrees centigrade</option>
+                    <option value="0,10,6,0,0,-,138,0x00,0,0,0,0,0,50">Send 50 Sensoridx=2 Normalized Integer. Degrees centigrade</option>
+                    <option value="0,10,6,0,0,-,138,2,123">Send 1.23 Sensoridx=2 Normalized Integer. Degrees centigrade</option>
+                    <option value="0,10,6,0,0,-,138,0,123">Send 123 Sensoridx=2 Normalized Integer. Degrees centigrade</option>
+                    <option value="0,10,6,0,0,-,138,0x82,1">Send 100 Sensoridx=2 Normalized Integer. Degrees centigrade</option>
+                    <option value="0,20,40,0,0,-,0,1,20">Send level changed value=0, Zone=1, subzone=20</option>
+                    <option value="0,20,40,0,0,-,10,1,20">Send level changed value=10, Zone=1, subzone=20</option>
+                    <option value="0,20,40,0,0,-,50,1,20">Send level changed value=50, Zone=1, subzone=20</option>
+                    <option value="0,20,40,0,0,-,90,1,20">Send level changed value=90, Zone=1, subzone=90</option>
+                    <option value="0,20,40,0,0,-,100,1,20">Send level changed value=100, Zone=1, subzone=20</option>
+                    <option value="0,20,9,0,0,-,0,0,0">Send Heartbeat</option>
+                </select>
+                <input type="submit" class="btn btn-warning" value="Send selected value" onclick="vscpSendTempSelectEvent()" disabled />
+            </p>
+
+            <hr>
+
+            <h2>Demo 4 - User a slider</h2>
+            <p>
+            This demo show how to use a HTML5 slider to, for example,  dim a lamp.
+            </p>
+            <p>
+                <input id="slider1" style="width: 400px;"  type="range" min="0" max="100" value="0" onchange="sliderUpdate( this.value )" disabled />
+                <input id="sliderText" type="text" value="0" size="2" disabled />
+            </p>
+            <p>
+                <a href="http://www.vscp.org/docs/vscpspec/doku.php?id=class1.control#type_20_0x14_dim_lamp_s">CLASS1.CONTROL, Type=20, Dim 
+                Lamps</a> is sent by the slider control in this particular example.      
+            </p>
+
+            <hr>
+
+            <h2>Demo 5 - Listen to events</h2>
+            <p>
+                This demo show how to listen for events. All events received on the system are displayed here. Normally
+                one sets a filter to limit the received events to the ones of interest. Event definitions can be found 
+                <a href="http://www.vscp.org/docs/vscpspec/doku.php?id=level_i_events">here to help you decode the events
+                received.</a>
+            </p>
+            <div>
+                <h3>Received events</h3>
+                <table id="myEventTable" class="table table-striped"></table>
+            </div>
+            <div>
+                <h3>Received Response</h3>
+                <table id="myResponseTable" class="table table-striped"></table>
+            </div>
+
+        </div>
+
+        <br /><br />
+        <hr />
+        Copyright &copy; 2000-2016 <a href="http://www.grodansparadis.com">Grodans Paradis AB (Paradise of the Frog)</a>
+    </div>
+</body>
+</html>

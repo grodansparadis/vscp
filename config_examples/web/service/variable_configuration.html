@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Variable Configuration</title>
+
+    <!-- Don't cache the page -->
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="-1" />
+
+    <!-- JQuery -->
+    <script type="text/javascript" src="../js/jquery/1.11.3/jquery-1.11.3.min.js"></script>
+    
+    <!-- Bootstrap -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="../js/bootstrap/3.3.5/css/bootstrap.min.css">
+    <script type="text/javascript" src="../js/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    
+    <!-- Bootstrap dialogs -->
+    <link rel="stylesheet" href="../js/bootstrap3-dialog/1.34.6/css/bootstrap-dialog.min.css">
+    <script type="text/javascript" src="../js/bootstrap3-dialog/1.34.6/js/bootstrap-dialog.min.js"></script>
+
+    <!-- Favorite icon -->
+    <link rel="icon" href="../favicon.ico">
+    
+    <!-- VSCP settings -->
+    <script type="text/javascript" src="../js/settings.js"></script>
+    <!-- VSCP hash calculation -->
+    <script type="text/javascript" src="../js/md5.js"></script>
+    <!-- VSCP websocket bases library -->
+    <script type="text/javascript" src="../js/vscp.js"></script>
+
+    <!-- Boostrap navigation bar helper functions -->
+    <script type="text/javascript" src="../js/navBar.js"></script>
+    <!-- Navigation bar menu structure -->
+    <script type="text/javascript" src="menu.js"></script>
+
+    <script type="text/javascript">
+        /*jshint bitwise: false */
+
+        // VSCP websocket connection
+        var vscpConn = null;
+        
+        // VSCP variable
+        var Variable = function( options ) {
+            
+            this.name = "";
+            this.type = "";
+            this.value = "";
+            this.persistency = false;
+            
+            if ( "undefined" !== typeof options ) {
+                if ( "string" === typeof options.name ) {
+                    this.name = options.name;
+                }
+                if ( "string" === typeof options.type ) {
+                    this.type = options.type;
+                }
+                if ( "string" === typeof options.value ) {
+                    this.value = options.value;
+                }
+                if ( "boolean" === typeof options.persistency ) {
+                    this.persistency = options.persistency;
+                }
+            }
+        };
+        
+        // Variables
+        var variables = [];
+        
+        // User interface data
+        var ui = {
+                        
+            enable: function() {
+                $( "#ui :input" ).attr( "disabled", false );
+            },
+            
+            disable: function() {
+                $( "#ui :input" ).attr( "disabled", true );
+            }
+        };
+
+        // Wait until the whole website is loaded
+        $( document ).ready( function() {
+
+            // Show navigation bar menu
+            navBarMenu.show( "menu", navBarMenu.content );
+        
+            // Create a VSCP websocket
+            vscpConn = new vscp.Connection();
+
+            // Connect to VSCP daemon
+            connect()
+            .done( function() {
+                // Show empty configuration
+                update( 'configuration' );
+                
+                // Enable user interface
+                ui.enable();
+            });
+            
+        });
+
+        // Connect to the VSCP daemon
+        function connect() {
+            var deferred = new $.Deferred();
+
+            // Connect to VSCP server
+            vscpConn.connect({
+
+                url: settings.url,
+
+                userName: settings.user,
+
+                password: settings.passwordHash,
+
+                onSuccess: function( conn ) {
+                    deferred.resolve();                    
+                },
+
+                onError: function( conn ) {
+                    BootstrapDialog.alert( "Connection lost. Please reload website." );
+                    deferred.reject();
+                }
+            });
+            
+            return deferred.promise();
+        }
+        
+        // Update the configuration, which is shown the user
+        function update( id ) {
+        
+            var head    = "";
+            var body    = "";
+            var footer  = "";
+            var index   = 0;
+            var size    = 0;
+        
+            // Head
+            head += '<table class="table table-striped">';
+            head += '    <thead>';
+            head += '        <tr>';
+            head += '            <th>Id</th>';
+            head += '            <th>Name</th>';
+            head += '            <th>Type</th>';
+            head += '            <th>Value</th>';
+            head += '            <th>Persistency</th>';
+            head += '            <th></th>';
+            head += '        </tr>';
+            head += '    </thead>';
+            head += '    <tbody>';
+        
+            // Body
+            for( index = 0; index < variables.length; ++index ) {
+                body += '<tr>';
+                body += '<td>' + index + '</td>';
+                body += '<td>' + variables[ index ].name + '</td>';
+                body += '<td>' + vscp.constants.varTypeNames[ parseInt( variables[ index ].type ) ] + '</td>';
+                
+                if ( 20 < variables[ index ].value.length ) {
+                    size = variables[ index ].value.length;
+                }
+                else {
+                    size = 20;
+                }
+                
+                body += '<td><input id="input' + index + '" class="form-control" type="text" value="' + variables[ index ].value + '"size="' + size + '" /></td>';
+                body += '<td>' + variables[ index ].persistency + '</td>';
+                body += '<td>';
+                body += '<input type="button" class="btn btn-default" value="Read" onclick="readVariable( \'' + variables[ index ].name + '\', \'input' + index + '\' )" />';
+                body += '<input type="button" class="btn btn-default" value="Write" onclick="writeVariable( \'' + variables[ index ].name + '\', \'input' + index + '\' )" />';
+                body += '<input type="button" class="btn btn-default" value="Reset" onclick="resetVariable( \'' + variables[ index ].name + '\', \'input' + index + '\' )" />';
+                body += '<input type="button" class="btn btn-default" value="Remove" onclick="removeVariable( \'' + variables[ index ].name + '\' )" />';
+                body += '<input type="button" class="btn btn-default" value="Get length" onclick="getVariableLength( \'' + variables[ index ].name + '\' )" />';
+                body += '<input type="button" class="btn btn-default" value="Get last changed" onclick="getVariableLastChanged( \'' + variables[ index ].name + '\' )" />';
+                body += '</td>'
+                body += '</tr>';
+            }
+        
+            // Footer
+            footer += '    </tbody>';
+            footer += '</table>';
+        
+            // Update now at once
+            $( "#" + id ).html( '<p>' + head + body + footer + '</p>' );
+        }
+        
+        // Read all variables from server
+        function readAllVariables() {
+
+            // Disable user interface
+            ui.disable();
+        
+            // Request all variables from the VSCP server
+            vscpConn.listVar({
+            
+                onVariable: function( conn, variable ) {
+            
+                    // Store the variable
+                    variables.push(
+                        new Variable({
+                            name: variable.name,
+                            type: variable.type,
+                            value: variable.value,
+                            persistency: variable.persistency
+                        })
+                    );
+                    
+                    // Show current configuration to the user
+                    update( 'configuration' );
+                },
+                
+                onSuccess: function( conn ) {
+                
+                    // Clear all variables
+                    variables = [];
+                    
+                    // Enable the user interface
+                    ui.enable();
+                },
+                
+                onError: function( conn ) {
+                    BootstrapDialog.alert( "Failed to list all variables." );
+                    
+                    // Enable the user interface
+                    ui.enable();
+                }
+            });
+        }
+        
+        // Write a variable value
+        function writeVariable( name, id ) {
+
+            var index = 0;
+        
+            // Get new value
+            var value = $( '#' + id ).val()
+        
+            // Disable user interface
+            ui.disable();
+            
+            // Write variable value
+            vscpConn.writeVar({
+                name: name,
+                value: value,
+                onSuccess: function( conn, options ) {
+                                               
+                    // Find variable and set the value
+                    for( index = 0; index < variables.length; ++index ) {
+                        if ( options.name === variables[ index ].name ) {
+                            variables[ index ].value = options.value;
+                            break;
+                        }
+                    }
+                    
+                    // Show the current value now to the user
+                    $( '#' + id ).val( options.value );
+                    
+                    // Invalid value written?
+                    if ( value !== options.value ) {
+                        BootstrapDialog.alert( "Invalid value: " + value );
+                    }
+                    // Successful written?
+                    else {
+                        BootstrapDialog.alert( options.name + " successful written." );
+                    }
+                                                
+                    // Enable user interface
+                    ui.enable();
+                },
+                onError: function( conn ) {
+                    BootstrapDialog.alert( "Failed to write " + name + "." );
+                    
+                    // Enable user interface
+                    ui.enable();
+                }
+            });
+        }
+        
+        // Read a variable value
+        function readVariable( name, id ) {
+
+            var index = 0;
+                
+            // Disable user interface
+            ui.disable();
+            
+            // Read variable value
+            vscpConn.readVar({
+                name: name,
+                onSuccess: function( conn, options ) {
+                                               
+                    // Find variable and set the value
+                    for( index = 0; index < variables.length; ++index ) {
+                        if ( options.name === variables[ index ].name ) {
+                            variables[ index ].value = options.value;
+                            break;
+                        }
+                    }
+                    
+                    // Show the current value now to the user
+                    $( '#' + id ).val( options.value );
+                    
+                    BootstrapDialog.alert( options.name + " successful read." );
+                    
+                    // Enable user interface
+                    ui.enable();
+                },
+                onError: function( conn ) {
+                    BootstrapDialog.alert( "Failed to read " + name + "." );
+                    
+                    // Enable user interface
+                    ui.enable();
+                }
+            });
+        }
+        
+        // Reset a variable
+        function resetVariable( name, id ) {
+
+            var index = 0;
+                
+            // Disable user interface
+            ui.disable();
+            
+            // Reset variable value
+            vscpConn.resetVar({
+                name: name,
+                onSuccess: function( conn, options ) {
+                                               
+                    // Find variable and set the value
+                    for( index = 0; index < variables.length; ++index ) {
+                        if ( options.name === variables[ index ].name ) {
+                            variables[ index ].value = options.value;
+                            break;
+                        }
+                    }
+                    
+                    // Show the current value now to the user
+                    $( '#' + id ).val( options.value );
+                    
+                    BootstrapDialog.alert( options.name + " successful reset." );
+                    
+                    // Enable user interface
+                    ui.enable();
+                },
+                onError: function( conn ) {
+                    BootstrapDialog.alert( "Failed to reset " + name + "." );
+                    
+                    // Enable user interface
+                    ui.enable();
+                }
+            });
+        }
+        
+        // Remove a variable
+        function removeVariable( name ) {
+
+            var index = 0;
+                
+            // Disable user interface
+            ui.disable();
+            
+            // Reset variable value
+            vscpConn.removeVar({
+                name: name,
+                onSuccess: function( conn, options ) {
+                                               
+                    // Find variable and remove it
+                    for( index = 0; index < variables.length; ++index ) {
+                        if ( options.name === variables[ index ].name ) {
+                            variables.splice( index, 1 );
+                            break;
+                        }
+                    }
+                                        
+                    BootstrapDialog.alert( options.name + " successful removed." );
+                    
+                    update( 'configuration' );
+                    
+                    // Enable user interface
+                    ui.enable();
+                },
+                onError: function( conn ) {
+                    BootstrapDialog.alert( "Failed to remove " + name + "." );
+                    
+                    // Enable user interface
+                    ui.enable();
+                }
+            });
+        }
+        
+        // Get variable length
+        function getVariableLength( name ) {
+
+            // Disable user interface
+            ui.disable();
+            
+            // Get variable length
+            vscpConn.lengthVar({
+                name: name,
+                onSuccess: function( conn, options ) {
+                                                                                       
+                    BootstrapDialog.alert( name + " length is " + options.length + "." );
+                    
+                    // Enable user interface
+                    ui.enable();
+                },
+                onError: function( conn ) {
+                    BootstrapDialog.alert( "Failed to get length of " + name + "." );
+                    
+                    // Enable user interface
+                    ui.enable();
+                }
+            });
+        }
+        
+        // Get variable last changed
+        function getVariableLastChanged( name ) {
+
+            // Disable user interface
+            ui.disable();
+            
+            // Get variable last changed
+            vscpConn.lastChangeVar({
+                name: name,
+                onSuccess: function( conn, options ) {
+                                                                                       
+                    BootstrapDialog.alert( name + " was last changed " + options.lastChange + "." );
+                    
+                    // Enable user interface
+                    ui.enable();
+                },
+                onError: function( conn ) {
+                    BootstrapDialog.alert( "Failed to get last changed of " + name + "." );
+                    
+                    // Enable user interface
+                    ui.enable();
+                }
+            });
+        }
+        
+        // Save persistent variables
+        function savePersistentVariables( name ) {
+
+            // Disable user interface
+            ui.disable();
+            
+            // Get variable last changed
+            vscpConn.saveVar({
+                onSuccess: function( conn, options ) {
+                                                                                       
+                    BootstrapDialog.alert( "All persistent variables saved successful." );
+                    
+                    // Enable user interface
+                    ui.enable();
+                },
+                onError: function( conn ) {
+                    BootstrapDialog.alert( "Failed to save all persistent variables." );
+                    
+                    // Enable user interface
+                    ui.enable();
+                }
+            });
+        }
+        
+    </script>
+</head>
+<body>
+   <nav class="navbar">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="../index.html"><img src="../images/logo/vscp_new.png" class="img-thumbnail" width="100" alt="vscp logo" /></a>
+            </div>
+            <div id="menu">
+            </div>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        <h1>Server Variable Configuration</h1>
+        <div id="ui">
+            <input type="submit" class="btn btn-default" value="Read all variables" onclick="readAllVariables()" disabled /><br />
+            <input type="submit" class="btn btn-default" value="Save persistent variables" onclick="savePersistentVariables()" disabled /><br />
+        </div>
+        <div id="configuration">
+        </div>
+    </div>
+    <br /><br />
+        <hr>
+        Copyright &copy; 2015 <a href="mailto:vscp@blue-andi.de">Andreas Merkle</a><br>
+        Copyright &copy; 2000-2016 <a href="http://www.grodansparadis.com">Grodans Paradis AB (Paradise of the Frog)</a>
+</body>
+</html>
