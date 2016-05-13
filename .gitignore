@@ -197,3 +197,5 @@ src/vscp/drivers/level2/sim/linux/test
 /src/vscp/.vs/vscp_project/v14/*.suo
 /src/vscp/*.opendb
 /config_examples/web/browse.VC.db
+src/vscp/daemon/linux/codelite_vscpd/vscp2drv_sim/
+src/vscp/drivers/level2/sim/linux/vscp2drv_sim/
