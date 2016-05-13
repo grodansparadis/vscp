@@ -486,6 +486,9 @@
             <preprocessorList>
               <Elem>MG_ENABLE_THREADS</Elem>
               <Elem>VSCP_ENABLE_LUA</Elem>
+              <Elem>VSCP_ENABLE_SQLITE3</Elem>
+              <Elem>VSCP_ENABLE_SQLITE3</Elem>
+              <Elem>VSCP_ENABLE_SQLITE3</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__WXGTK__</Elem>
@@ -495,6 +498,8 @@
             <preprocessorList>
               <Elem>MG_ENABLE_THREADS</Elem>
               <Elem>VSCP_ENABLE_LUA</Elem>
+              <Elem>VSCP_ENABLE_SQLITE3</Elem>
+              <Elem>VSCP_ENABLE_SQLITE3</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__WXGTK__</Elem>
@@ -1292,39 +1297,6 @@
             <Elem>MG_ENABLE_SSL</Elem>
           </preprocessorList>
         </ccTool>
-      </folder>
-      <folder path="common/SendRawPacket">
-        <cTool>
-          <preprocessorList>
-            <Elem>VSCP_ENABLE_SQLITE3</Elem>
-          </preprocessorList>
-        </cTool>
-      </folder>
-      <folder path="common/dl">
-        <cTool>
-          <preprocessorList>
-            <Elem>VSCP_ENABLE_SQLITE3</Elem>
-          </preprocessorList>
-        </cTool>
-        <ccTool>
-          <preprocessorList>
-            <Elem>VSCP_ENABLE_SQLITE3</Elem>
-          </preprocessorList>
-        </ccTool>
-      </folder>
-      <folder path="common/kwxIndControlSource-0.3.0">
-        <ccTool>
-          <preprocessorList>
-            <Elem>VSCP_ENABLE_SQLITE3</Elem>
-          </preprocessorList>
-        </ccTool>
-      </folder>
-      <folder path="common/zlib">
-        <cTool>
-          <preprocessorList>
-            <Elem>VSCP_ENABLE_SQLITE3</Elem>
-          </preprocessorList>
-        </cTool>
       </folder>
       <folder path="src">
         <cTool>
