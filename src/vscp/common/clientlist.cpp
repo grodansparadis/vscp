@@ -177,8 +177,6 @@ bool CClientList::removeClient( CClientItem *pClientItem )
     bool rv = true;
     // Must be a valid pointer
     if ( NULL == pClientItem ) return false;
-
-    pClientItem->m_mutexClientInputQueue.Lock();
     
     pClientItem->m_clientInputQueue.Clear();
     
@@ -186,8 +184,6 @@ bool CClientList::removeClient( CClientItem *pClientItem )
     if ( !m_clientItemList.DeleteObject( pClientItem ) ) {
         rv = false;
     }
-    
-    pClientItem->m_mutexClientInputQueue.Unlock();
 
     return rv;
 }
