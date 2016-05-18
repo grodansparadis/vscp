@@ -102,12 +102,10 @@
 
 #ifdef __GNUC__
 #define NORETURN __attribute__((noreturn))
-#define UNUSED __attribute__((unused))
 #define NOINLINE __attribute__((noinline))
 #define WARN_UNUSED_RESULT __attribute__((warn_unused_result))
 #else
 #define NORETURN
-#define UNUSED
 #define NOINLINE
 #define WARN_UNUSED_RESULT
 #endif /* __GNUC__ */
@@ -177,8 +175,10 @@
 #define vsnprintf _vsnprintf
 #define sleep(x) Sleep((x) *1000)
 #define to64(x) _atoi64(x)
+#if !defined(__MINGW32__) && !defined(__MINGW64__)
 #define popen(x, y) _popen((x), (y))
 #define pclose(x) _pclose(x)
+#endif
 #define rmdir _rmdir
 #if defined(_MSC_VER) && _MSC_VER >= 1400
 #define fseeko(x, y, z) _fseeki64((x), (y), (z))
@@ -187,6 +187,9 @@
 #endif
 #define random() rand()
 typedef int socklen_t;
+#if _MSC_VER >= 1700
+#include <stdint.h>
+#else
 typedef signed char int8_t;
 typedef unsigned char uint8_t;
 typedef int int32_t;
@@ -195,6 +198,7 @@ typedef short int16_t;
 typedef unsigned short uint16_t;
 typedef __int64 int64_t;
 typedef unsigned __int64 uint64_t;
+#endif
 typedef SOCKET sock_t;
 typedef uint32_t in_addr_t;
 #ifndef UINT16_MAX
@@ -209,7 +213,7 @@ typedef uint32_t in_addr_t;
 #define INT64_FMT "I64d"
 #define INT64_X_FMT "I64x"
 #define SIZE_T_FMT "Iu"
-#ifdef __MINGW32__
+#if defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
 typedef struct stat cs_stat_t;
 #else
 typedef struct _stati64 cs_stat_t;
@@ -221,21 +225,6 @@ typedef struct _stati64 cs_stat_t;
 #define S_ISREG(x) (((x) &_S_IFMT) == _S_IFREG)
 #endif
 #define DIRSEP '\\'
-
-/* POSIX opendir/closedir/readdir API for Windows. */
-struct dirent {
-  char d_name[MAX_PATH];
-};
-
-typedef struct DIR {
-  HANDLE handle;
-  WIN32_FIND_DATAW info;
-  struct dirent result;
-} DIR;
-
-DIR *opendir(const char *name);
-int closedir(DIR *dir);
-struct dirent *readdir(DIR *dir);
 
 #ifndef va_copy
 #ifdef __va_copy
@@ -328,7 +317,10 @@ typedef struct stat cs_stat_t;
 #define to64(x) strtoll(x, NULL, 10)
 #define INT64_FMT PRId64
 #define INT64_X_FMT PRIx64
+
+#ifndef __cdecl
 #define __cdecl
+#endif
 
 #ifndef va_copy
 #ifdef __va_copy
@@ -453,10 +445,17 @@ typedef struct stat cs_stat_t;
 
 /* Some functions we implement for Mongoose. */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef __TI_COMPILER_VERSION__
 struct SlTimeval_t;
 #define timeval SlTimeval_t
 int gettimeofday(struct timeval *t, void *tz);
+
+int asprintf(char **strp, const char *fmt, ...);
+
 #endif
 
 long int random(void);
@@ -520,6 +519,10 @@ struct dirent *readdir(DIR *dir);
 #define MG_FS_SLFS
 #endif
 
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* CS_PLATFORM == CS_P_CC3200 */
 #endif /* CS_COMMON_PLATFORMS_PLATFORM_CC3200_H_ */
 /*
@@ -567,6 +570,10 @@ typedef struct stat cs_stat_t;
 
 /* Some functions we implement for Mongoose. */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef __TI_COMPILER_VERSION__
 struct SlTimeval_t;
 #define timeval SlTimeval_t
@@ -613,6 +620,10 @@ int _stat(const char *pathname, struct stat *st);
 #define va_copy(apc, ap) ((apc) = (ap))
 
 #endif /* __TI_COMPILER_VERSION__ */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* CS_PLATFORM == CS_P_MSP432 */
 #endif /* CS_COMMON_PLATFORMS_PLATFORM_MSP432_H_ */
@@ -709,6 +720,10 @@ int _stat(const char *pathname, struct stat *st);
 
 #define SOMAXCONN 8
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 const char *inet_ntop(int af, const void *src, char *dst, socklen_t size);
 char *inet_ntoa(struct in_addr in);
 int inet_pton(int af, const char *src, void *dst);
@@ -722,6 +737,10 @@ void mg_run_in_task(void (*cb)(struct mg_mgr *mgr, void *arg), void *cb_arg);
 
 int sl_fs_init();
 
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* defined(MG_SOCKET_SIMPLELINK) && !defined(__SIMPLELINK_H__) */
 
 #endif /* CS_COMMON_PLATFORMS_SIMPLELINK_CS_SIMPLELINK_H_ */
@@ -732,6 +751,14 @@ int sl_fs_init();
 
 #ifndef CS_COMMON_CS_DBG_H_
 #define CS_COMMON_CS_DBG_H_
+
+#ifndef CS_DISABLE_STDIO
+#include <stdio.h>
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 enum cs_log_level {
   LL_NONE = -1,
@@ -748,8 +775,6 @@ enum cs_log_level {
 void cs_log_set_level(enum cs_log_level level);
 
 #ifndef CS_DISABLE_STDIO
-
-#include <stdio.h>
 
 void cs_log_set_file(FILE *file);
 
@@ -784,6 +809,10 @@ void cs_log_printf(const char *fmt, ...);
 
 #endif
 
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
 #endif /* CS_COMMON_CS_DBG_H_ */
 /*
  * Copyright (c) 2014-2016 Cesanta Software Limited
@@ -793,8 +822,16 @@ void cs_log_printf(const char *fmt, ...);
 #ifndef CS_COMMON_CS_TIME_H_
 #define CS_COMMON_CS_TIME_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /* Sub-second granularity time(). */
 double cs_time();
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* CS_COMMON_CS_TIME_H_ */
 /*
@@ -933,11 +970,12 @@ void MD5_Update(MD5_CTX *c, const unsigned char *data, size_t len);
 void MD5_Final(unsigned char *md, MD5_CTX *c);
 
 /*
- * Return stringified MD5 hash for NULL terminated list of strings.
+ * Return stringified MD5 hash for NULL terminated list of pointer/length pairs.
+ * A length should be specified as size_t variable.
  * Example:
  *
  *    char buf[33];
- *    cs_md5(buf, "foo", "bar", NULL);
+ *    cs_md5(buf, "foo", (size_t) 3, "bar", (size_t) 3, NULL);
  */
 char *cs_md5(char buf[33], ...);
 
@@ -1092,38 +1130,6 @@ int json_emit_va(char *buf, int buf_len, const char *fmt, va_list);
 #endif /* __cplusplus */
 
 #endif /* CS_MONGOOSE_DEPS_FROZEN_FROZEN_H_ */
-/*
- * Copyright (c) 2014-2016 Cesanta Software Limited
- * All rights reserved
- */
-
-#ifndef CS_COMMON_CS_DIRENT_H_
-#define CS_COMMON_CS_DIRENT_H_
-
-#ifdef CS_ENABLE_SPIFFS
-
-#include <spiffs.h>
-
-typedef struct {
-  spiffs_DIR dh;
-  struct spiffs_dirent de;
-} DIR;
-
-#define d_name name
-#define dirent spiffs_dirent
-
-int rmdir(const char *path);
-int mkdir(const char *path, mode_t mode);
-
-#endif
-
-#if defined(_WIN32) || defined(CS_ENABLE_SPIFFS)
-DIR *opendir(const char *dir_name);
-int closedir(DIR *dir);
-struct dirent *readdir(DIR *dir);
-#endif
-
-#endif /* CS_COMMON_CS_DIRENT_H_ */
 /*
  * Copyright (c) 2014 Cesanta Software Limited
  * All rights reserved
@@ -1663,6 +1669,10 @@ double mg_time();
  * Implementation must ensure that only one callback is invoked at any time.
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /* Request that a TCP connection is made to the specified address. */
 void mg_if_connect_tcp(struct mg_connection *nc,
                        const union socket_address *sa);
@@ -1723,6 +1733,10 @@ void mg_if_get_conn_addr(struct mg_connection *nc, int remote,
 
 /* Associate a socket to a connection. */
 void mg_sock_set(struct mg_connection *nc, sock_t sock);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* CS_MONGOOSE_SRC_NET_IF_H_ */
 /*
@@ -2701,6 +2715,13 @@ void mg_file_upload_handler(struct mg_connection *nc, int ev, void *ev_data,
                             mg_fu_fname_fn local_name_fn);
 #endif /* MG_ENABLE_HTTP_STREAMING_MULTIPART */
 
+/*
+ * Authenticate HTTP request against opened passwords file.
+ * Returns 1 if authenticated, 0 otherwise.
+ */
+int mg_http_check_digest_auth(struct http_message *hm, const char *auth_domain,
+                              FILE *fp);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
@@ -3225,14 +3246,14 @@ int mg_dns_insert_header(struct mbuf *io, size_t pos,
                          struct mg_dns_message *msg);
 
 /*
- * Append already encoded body from an existing message.
+ * Append already encoded questions from an existing message.
  *
  * This is useful when generating a DNS reply message which includes
  * all question records.
  *
  * Return number of appened bytes.
  */
-int mg_dns_copy_body(struct mbuf *io, struct mg_dns_message *msg);
+int mg_dns_copy_questions(struct mbuf *io, struct mg_dns_message *msg);
 
 /*
  * Encode and append a DNS resource record to an IO buffer.
