@@ -387,6 +387,14 @@ if ( 0 ) {
     time_t ttt = mktime ( timeinfo );
     ttt = ttt + 1;
 }
+
+#ifdef CS_ENABLE_DEBUG
+    FILE *logfile;
+    cs_log_set_level( LL_VERBOSE_DEBUG );
+    logfile = fopen( "/mongoose_logfile.txt", "w+" );
+    cs_log_set_file( logfile );
+#endif
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////

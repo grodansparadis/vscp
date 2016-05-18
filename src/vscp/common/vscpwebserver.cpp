@@ -652,7 +652,7 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
                 pObject->getWebServer()->websrv_restapi( nc, phm );
             }
             else {
-                // uri ends with ".vscp"
+                // Check if uri ends with ".vscp"
                 if ( ( NULL != ( pstr = strstr( uri, ".vscp") ) ) && ( 0 == *(pstr+5))  ) {
                     
                     FILE * pFile;
