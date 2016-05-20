@@ -121,13 +121,15 @@ static void ev_handler( struct mg_connection *nc, int ev, void *p )
                 opts.password = NULL;
                 opts.user_name = NULL;
                 
+                mg_send_mqtt_handshake_opt( nc, 
+                                            pmqttobj->m_sessionid.mbc_str(), 
+                                            opts );
+                
                 //mg_send_mqtt_handshake( nc, pmqttobj->m_sessionid.mbc_str() );
                 
             }
             
-            mg_send_mqtt_handshake_opt( nc, 
-                                            pmqttobj->m_sessionid.mbc_str(), 
-                                            opts );
+            
         
 #ifndef WIN32
         syslog(LOG_INFO,
@@ -374,6 +376,8 @@ Cmqttobj::Cmqttobj()
     m_bConnected = false;
     m_pthreadWork = NULL;
     m_bSubscribe = true;
+    
+    m_sessionid = "default";
     
     // Simple
     m_bSimplify = false;

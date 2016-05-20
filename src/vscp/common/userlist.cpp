@@ -284,22 +284,15 @@ CUserItem * CUserList::getUser( const wxString& user )
 CUserItem * CUserList::checkUser( const wxString& user, 
                                     const wxString& md5password)
 {
-    int i = 1;
-    i = i + 2;
+    CUserItem *pUserItem;
 
-    VSCPUSERHASH::iterator it;
-
-
-    if ((it = m_userhashmap.find(user)) ==
-            m_userhashmap.end()) return NULL;
-
-    // Check pointer to UserItem
-    if (NULL == it->second) return NULL;
+    pUserItem = m_userhashmap[ user ];
+    if ( NULL == pUserItem ) return NULL;
 
     // Check password
-    if (!it->second->m_md5Password.IsSameAs(md5password)) return NULL;
+    if (!pUserItem->m_md5Password.IsSameAs(md5password)) return NULL;
 
-    return it->second;
+    return pUserItem;
 }
 
 

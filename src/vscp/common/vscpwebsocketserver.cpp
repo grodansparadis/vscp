@@ -1890,7 +1890,7 @@ VSCPWebServerThread::websock_post_incomingEvents( void )
                 CLIENTEVENTLIST::compatibility_iterator nodeClient;
                 vscpEvent *pEvent;
 
-                pSession->m_pClientItem->m_mutexClientInputQueue.Lock();
+                pSession->m_pClientItem->m_mutexClientInputQueue.Lock();    // 1
                 nodeClient = pSession->m_pClientItem->m_clientInputQueue.GetFirst();
                 if ( NULL == nodeClient ) continue;
                 pEvent = nodeClient->GetData();

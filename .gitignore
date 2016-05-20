@@ -253,3 +253,8 @@ src/vscp/drivers/level2/sim/linux/vscp2drv_sim/
 /src/vscp/helperlib/linux/nbproject/private/configurations.xml
 /src/vscp/helperlib/linux/nbproject/private/private.xml
 /src/vscp/helperlib/linux/nbproject/project.xml
+nbproject/
+src/vscp/daemon/linux/nbproject/
+src/vscp/vscpworks/nbproject/
+
+
