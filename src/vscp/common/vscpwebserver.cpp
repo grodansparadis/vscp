@@ -1052,7 +1052,7 @@ void *VSCPWebServerThread::Entry()
 #endif
         
         mg_mgr_poll( &gmgr, 50 );
-        websock_post_incomingEvents();
+        websock_post_incomingEvents();  // 1
 
 #ifdef WIN32
             oldus = clock();

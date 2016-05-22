@@ -31,6 +31,10 @@
 
 #define MAX_VSCPWS_MESSAGE_QUEUE 512
 
+// This is the time it takes for an expired websocket session to be 
+// removed by the system.
+#define WEBSOCKET_EXPIRE_TIME   (2*60)
+
 // Authentication states
 enum {
     WEBSOCK_AUTH_STAGE_START = 0,
@@ -82,8 +86,8 @@ struct websock_session {
     // Generated hash for this session
     char m_sid[33];
 
-    // Prorocol version
-    int m_version;      // Sec-WebSocket-Verision
+    // Protocol version
+    int m_version;      // Sec-WebSocket-Versision
 
     // Reference counter giving the number of connections
     // currently using this session.
@@ -102,7 +106,7 @@ struct websock_session {
     CClientItem *m_pClientItem;
 
     bool bTrigger;                  // True to activate trigger functionality.
-    uint32_t triggerTimeout;        // Time out before trigg (or error) must occur.
+    uint32_t triggerTimeout;        // Time out before trig (or error) must occur.
     TRIGGERLIST listTriggerOK;      // List with positive triggers.
     TRIGGERLIST listTriggerERR;     // List with negative triggers.
 };

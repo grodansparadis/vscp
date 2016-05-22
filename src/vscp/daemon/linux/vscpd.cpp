@@ -96,7 +96,7 @@ int main(int argc, char **argv)
     int arg = 0;
     wxString strcfgfile;
 
-        // Ignore return value from defunct processes
+    // Ignore return value from defunct processes
     signal(SIGCHLD, SIG_IGN);
         
     crcInit();

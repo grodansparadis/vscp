@@ -159,6 +159,7 @@ void webserv_util_sendheader( struct mg_connection *nc,
 ///////////////////////////////////////////////////
 
 // Linked list of websocket sessions
+// Protected by the websocketSexxionMutex
 static struct websock_session *gp_websock_sessions;                                        
                                         
                                     
@@ -1776,7 +1777,7 @@ VSCPWebServerThread::websock_new_session( struct mg_connection *nc,
     memset( ret->m_sid, 0, sizeof( ret->m_sid ) ); 
     cs_md5( ret->m_sid, buf, strlen( buf ), NULL );
     
-    // Init
+    // Init.
     strcpy( ret->m_key, ws_key );           // Save key
     ret->bAuthenticated = false;            // Not authenticated in yet
     ret->m_version = atoi( ws_version );    // Store protocol version
@@ -1802,8 +1803,11 @@ VSCPWebServerThread::websock_new_session( struct mg_connection *nc,
     // Add to linked list
     ret->m_referenceCount++;
     ret->lastActiveTime = time(NULL);
+    
+    m_websockSessionMutex.Lock();
     ret->m_next = gp_websock_sessions;
     gp_websock_sessions = ret;
+    m_websockSessionMutex.Unlock();
 
     return ret;
 }
@@ -1821,6 +1825,8 @@ VSCPWebServerThread::websock_expire_sessions( struct mg_connection *nc,
     struct websock_session *prev;
     struct websock_session *next;
     time_t now;
+    
+    return;
 
     // Check pointer
     if (NULL == nc) return;
@@ -1832,13 +1838,15 @@ VSCPWebServerThread::websock_expire_sessions( struct mg_connection *nc,
     prev = NULL;
     pos = gp_websock_sessions;
     
-    while (NULL != pos) {
+    m_websockSessionMutex.Lock();
+    
+    while ( NULL != pos ) {
         
         next = pos->m_next;
         
-        if ( ( now - pos->lastActiveTime ) > ( 60 * 60 ) ) {
+        if ( ( now - pos->lastActiveTime ) > ( WEBSOCKET_EXPIRE_TIME) ) {
         
-            // expire sessions after 1h 
+            // expire sessions after WEBSOCKET_EXPIRE_TIME 
             if ( NULL == prev ) {
                 gp_websock_sessions = pos->m_next;
             }
@@ -1851,7 +1859,7 @@ VSCPWebServerThread::websock_expire_sessions( struct mg_connection *nc,
             pObject->m_wxClientMutex.Unlock();
 
             // Free session data
-            free(pos);
+            free( pos );
             
         } 
         else {
@@ -1860,11 +1868,13 @@ VSCPWebServerThread::websock_expire_sessions( struct mg_connection *nc,
         
         pos = next;
     }
+    
+    m_websockSessionMutex.Unlock();
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// websock_post_incomingEvent
+// websocket_post_incomingEvent
 //
 
 void
@@ -1878,7 +1888,10 @@ VSCPWebServerThread::websock_post_incomingEvents( void )
                nc = mg_next( &gmgr, nc)) {
         
         if ( NULL == nc ) return;   // This should not happen
-                   
+        
+        CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
+        if (NULL == pObject) return;
+                           
         if ( nc->flags | MG_F_IS_WEBSOCKET ) {
 
             websock_session *pSession = (websock_session *)nc->user_data;
@@ -1892,8 +1905,10 @@ VSCPWebServerThread::websock_post_incomingEvents( void )
 
                 pSession->m_pClientItem->m_mutexClientInputQueue.Lock();    // 1
                 nodeClient = pSession->m_pClientItem->m_clientInputQueue.GetFirst();
-                if ( NULL == nodeClient ) continue;
-                pEvent = nodeClient->GetData();
+                if ( NULL == nodeClient ) {
+                    continue;
+                }
+                pEvent = nodeClient->GetData();                             // 1
                 pSession->m_pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
                 pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
 
@@ -1920,6 +1935,8 @@ VSCPWebServerThread::websock_post_incomingEvents( void )
                 } // Valid pEvent pointer
             } // events available
         } // websocket
+        
+        
     } // for
 
  }

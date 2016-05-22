@@ -352,7 +352,7 @@ CControlObject::CControlObject()
 
 #endif
 
-    // Initialize the CRC
+    // Initialise the CRC
     crcInit();
 
 #if (0)
@@ -1591,10 +1591,10 @@ void CControlObject::addClient( CClientItem *pClientItem,
 void CControlObject::removeClient( CClientItem *pClientItem )
 {
     // Remove the mapped item
-    removeIdFromClientMap(pClientItem->m_clientID);
+    removeIdFromClientMap( pClientItem->m_clientID );
 
     // Remove the client
-    m_clientList.removeClient(pClientItem);
+    m_clientList.removeClient( pClientItem );
 }
 
 //////////////////////////////////////////////////////////////////////////////

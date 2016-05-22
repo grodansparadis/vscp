@@ -714,6 +714,8 @@ public:
     // Hash table with mime types, gives mime type from
     // file extension.
     HashString m_hashMimeTypes;
+    
+    wxMutex m_websockSessionMutex;   // Protects the session object
 
 };
 
