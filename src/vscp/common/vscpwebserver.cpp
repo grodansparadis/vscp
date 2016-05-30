@@ -507,9 +507,13 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
             break;
             
         case MG_EV_POLL:    // Sent to each connection on each mg_mgr_poll() call
+            
+            // Post incoming web socket events
+            pObject->getWebServer()->websock_post_incomingEvents();  // 1
+            
             if ( ( cleanupTime - time(NULL) ) > 60 ) {
                 pObject->getWebServer()->websrv_expire_sessions( nc, phm );
-                pObject->getWebServer()->websock_expire_sessions( nc, phm );
+                //pObject->getWebServer()->websock_expire_sessions( nc, phm );
                 pObject->getWebServer()->websrv_expire_rest_sessions( nc );
                 cleanupTime = time(NULL);
             }
@@ -1052,7 +1056,6 @@ void *VSCPWebServerThread::Entry()
 #endif
         
         mg_mgr_poll( &gmgr, 50 );
-        websock_post_incomingEvents();  // 1
 
 #ifdef WIN32
             oldus = clock();

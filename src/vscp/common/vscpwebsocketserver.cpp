@@ -1826,7 +1826,7 @@ VSCPWebServerThread::websock_expire_sessions( struct mg_connection *nc,
     struct websock_session *next;
     time_t now;
     
-    return;
+    //return;
 
     // Check pointer
     if (NULL == nc) return;

@@ -116,7 +116,7 @@ int main(int argc, char **argv)
 
     wxInitializer initializer;
     if (!::wxInitialize()) {
-        fprintf(stderr, "Failed to initialize the wxWindows library, aborting.");
+        fprintf(stderr, "Failed to initialise the wxWindows library, aborting.");
 
         return -1;
     }
@@ -131,7 +131,7 @@ int main(int argc, char **argv)
     VSCPApp theApp;
     //IMPLEMENT_APP(theApp)
     
-        wxSocketBase::Initialize();
+    wxSocketBase::Initialize();
 
     while ((arg = getopt(argc, argv, "d:c:hgs")) != EOF) {
 
@@ -179,7 +179,7 @@ int main(int argc, char **argv)
 
 
 /////////////////////////////////////////////////////////////////////////////
-// initialization
+// initialisation
 
 BOOL VSCPApp::init(wxString& strcfgfile)
 {
@@ -263,10 +263,10 @@ BOOL VSCPApp::init(wxString& strcfgfile)
     //wxFile
 
 
-    wxLogDebug(_("VSCPD: init"));
+    wxLogDebug(_("VSCPD: init."));
     if ( !gpobj->init( strcfgfile ) ) {
-        printf("Can't initialize daemon. Exiting.");
-        syslog(LOG_CRIT, "Can't initialize daemon. Exiting.");
+        printf("Can't initialise daemon. Exiting.");
+        syslog(LOG_CRIT, "Can't initialise daemon. Exiting.");
         return FALSE;
     }
 

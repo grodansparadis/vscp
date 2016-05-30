@@ -1,0 +1,71 @@
+
+==========================
+VSCP database descriptions
+==========================
+
+
+
+the vspd database
+=================
+
+user
+----
+User information.
+
+
+group
+-----
+Defines groups.
+
+
+grouplinks
+----------
+links users to groups. One user can be part of many groups.
+
+
+interfaces
+----------
+Links an interface named with a GUID on the VSCP daemon. Makes it
+possible to refere to interfaces by names instead of GUID.
+
+
+location
+--------
+Defines a location with the hemp of zone and subzone.
+
+
+driver
+------
+Defines loadable drivers
+
+
+guid
+----
+Links names and GUID's.  
+Makes it possible to refere to interfaces by names instead of GUID.
+
+
+
+
+
+
+the variable database
+=====================
+
+variable
+--------
+Defines persistent variables
+
+
+
+
+
+
+the dm database
+===============
+
+dm
+--
+Decision matrix rows loaded into memory when the macjine starts up. 
+Also loaded from config file.
+

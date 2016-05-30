@@ -579,6 +579,13 @@ bool CControlObject::init(wxString& strcfgfile)
         logMsg(_("Path = .") + strcfgfile + _("\n"), DAEMON_LOGMSG_CRITICAL);
         return FALSE;
     }
+    
+    // Initialise the SQLite library
+    if ( SQLITE_OK != sqlite3_initialize() ) {
+        printf("Unable to initialise SQLite library!.");
+        logMsg(_("Unable to initialise SQLite library!.\n"), DAEMON_LOGMSG_CRITICAL);
+        return FALSE;
+    }
 
 #ifndef WIN32
     if ( m_runAsUser.Length() ) { 
@@ -955,6 +962,9 @@ bool CControlObject::cleanup(void)
     if ( m_bLogAccessEnable ) {
         m_fileLogAccess.Close();
     }
+    
+    // Clean up SQLite lib allocations
+    sqlite3_shutdown();
 
     wxLogDebug(_("ControlObject: Cleanup done"));
     return true;
