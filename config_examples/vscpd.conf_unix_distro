@@ -1,29 +1,29 @@
 <?xml version = "1.0" encoding = "UTF-8" ?>
 
-<!-- Version 0.5.0      2014-09-19                              -->
-<!-- Example configuration file Unix                            -->
-<!-- Ake Hedman, akhe@grodansparadis.com                        -->
-<!-- http://www.grodansparadis.com                              -->
-<!-- Documentation for this configuration file is available     -->
-<!-- in the specification section 14.4 which can be found       -->
-<!-- here http://vscp.org/docs.php                              -->
+<!-- Version 0.5.0      2014-09-19                                           -->
+<!-- Example configuration file Unix                                         -->
+<!-- Ake Hedman, akhe@grodansparadis.com                                     -->
+<!-- http://www.grodansparadis.com                                           -->
+<!-- Documentation for this configuration file is available                  -->
+<!-- in the specification section 14.4 which can be found                    -->
+<!-- here http://vscp.org/docs.php                                           -->
 
 <vscpconfig>
 
     <general>
     
-        <!-- Set the detail of logging you want                 -->
+        <!-- Set the detail of logging you want                              -->
 
         <loglevel>debug</loglevel>
         
-        <!-- The user to run as on Unix                         -->
+        <!-- The user to run as on Unix                                      -->
         <runasuser></runasuser>
         
-        <!-- Set GUID for daemon                                  -->
-        <!-- All nills, "-" or not set and the mac addess or the  -->
-        <!-- IP address of the computer will be used to calculate -->
-        <!-- the GUID for the daemon                              -->
-        <!-- Apply for your own GUID series at guid@vscp.org      -->
+        <!-- Set GUID for daemon                                             -->
+        <!-- All nills, "-" or not set and the mac addess or the             -->
+        <!-- IP address of the computer will be used to calculate            -->
+        <!-- the GUID for the daemon                                         -->
+        <!-- Apply for your own GUID series at guid@vscp.org                 -->
         <guid>
             00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00
         </guid>
@@ -31,83 +31,88 @@
         <!-- Set symbolic server name for daemon -->
         <servername>Unix VSCP Server</servername>
         
-        <!-- Set to true to enable VSCP high end functionality           -->
-        <!-- If disabled also automation will be disabled                -->
+        <!-- Set to true to enable VSCP high end functionality               -->
+        <!-- If disabled also automation will be disabled                    -->
         <vscp enable="true"/>
 
-        <!-- This is the default buffer size (number of events) for all  -->
-        <!-- clients in the system. Everything from a driver to a TCP/IP -->
-        <!-- user is regarded as a client. Default is 1024.              -->
+        <!-- This is the default buffer size (number of events) for all      -->
+        <!-- clients in the system. Everything from a driver to a TCP/IP     -->
+        <!-- user is regarded as a client. Default is 1024.                  -->
 
         <clientbuffersize>1024</clientbuffersize>
         
-        <!-- General logging will be done to syslog on Unix but on       -->
-        <!-- windows this path must be set to get logging saved into a   -->
-        <!-- file. The debug level will determine how much information   -->
-        <!-- you will get into this file.                                -->
+        <!-- General logging will be done to syslog on Unix but on           -->
+        <!-- windows this path must be set to get logging saved into a       -->
+        <!-- file. The debug level will determine how much information       -->
+        <!-- you will get into this file.                                    -->
         
         <generallogfile enable="true">/var/log/vscp/vscp_log_general</generallogfile>
         
-        <!-- Security logging will be done to this path must be set to   -->
-        <!-- get security logging saved into a file.                     -->
+        <!-- Security logging will be done to this path must be set to       -->
+        <!-- get security logging saved into a file.                         -->
         
         <securitylogfile enable="true">/var/log/vscp/vscp_log_security</securitylogfile>
         
-        <!-- Access logging will be done to this path must be set to     -->
-        <!-- get access logging for tcp/ip udp webserver websocket and   -->
-        <!-- rest saved into a file.                                     -->
+        <!-- Access logging will be done to this path must be set to         -->
+        <!-- get access logging for tcp/ip udp webserver websocket and       -->
+        <!-- rest saved into a file.                                         -->
         
         <accesslogfile enable="true">/var/log/vscp/vscp_log_access</accesslogfile>
 
-        <!-- It is possible to enable/disable the TCP/IP interface          -->
-        <!-- You can open TCP/IP interfaces on several ports or on          -->
-        <!-- on a specific port or on every interface of the computer       -->
-        <!-- Default 9598 will listen on all interfaces while               -->
-        <!-- "127.0.0.1:9598" only will listen on the specified interface.  -->
-        <!-- To specify several interfaces just enter them with a space     -->
-        <!-- between them.                                                  -->
+        <!-- Databases                                                       -->
+        <db_vscp_daemon>/srv/vscp/vscp_daemon.sqlite3</db_vscp_daemon>
+        <db_vscp_data>/srv/vscp/vscp_data.sqlite3</db_vscp_data>
+        <db_vscp_variable>/srv/vscp/vscp_variable.sqlite3</db_vscp_variable>
+        <db_vscp_dm>/srv/vscp/vscp_dm.sqlite3</db_vscp_dm>
+        
+        <!-- It is possible to enable/disable the TCP/IP interface           -->
+        <!-- You can open TCP/IP interfaces on several ports or on           -->
+        <!-- on a specific port or on every interface of the computer        -->
+        <!-- Default 9598 will listen on all interfaces while                -->
+        <!-- "127.0.0.1:9598" only will listen on the specified interface.   -->
+        <!-- To specify several interfaces just enter them with a space      -->
+        <!-- between them.                                                   -->
 
         <tcpip enable="true" interface="9598" />
         
-        <!-- It is possible to enable/disable the UDP interface             -->
-        <!-- You can open UDP interfaces on several ports or on             -->
-        <!-- on a specific port or on every interface of the computer       -->
-        <!-- Default "UDP://:9598" will listen on all interfaces while      -->
-        <!-- "UDP://127.0.0.1:9598" only will listen on the specified       -->
-        <!-- interface. To specify several interfaces just enter them       -->
-        <!-- with a space between them. If interface is not preceded with   -->
-        <!-- "UDP://" it will be added.                                     -->
+        <!-- It is possible to enable/disable the UDP interface              -->
+        <!-- You can open UDP interfaces on several ports or on              -->
+        <!-- on a specific port or on every interface of the computer        -->
+        <!-- Default "UDP://:9598" will listen on all interfaces while       -->
+        <!-- "UDP://127.0.0.1:9598" only will listen on the specified        -->
+        <!-- interface. To specify several interfaces just enter them        -->
+        <!-- with a space between them. If interface is not preceded with    -->
+        <!-- "UDP://" it will be added.                                      -->
         
         <udp enable="true" interface="udp://9598"/>
 
-
-        <!-- It is possible to enable/disable the MQTT Broker               -->
-        <!-- You can open the MQTT broker interfaces on several ports or on -->
-        <!-- on a specific port or on every interface of the computer       -->
-        <!-- Default "1883" will listen on all interfaces while             -->
-        <!-- "UDP://127.0.0.1:1883" only will listen on the specified       -->
-        <!-- interface. To specify several interfaces just enter them       -->
-        <!-- with a space between them.                                     -->
+        <!-- It is possible to enable/disable the MQTT Broker                -->
+        <!-- You can open the MQTT broker interfaces on several ports or on  -->
+        <!-- on a specific port or on every interface of the computer        -->
+        <!-- Default "1883" will listen on all interfaces while              -->
+        <!-- "UDP://127.0.0.1:1883" only will listen on the specified        -->
+        <!-- interface. To specify several interfaces just enter them        -->
+        <!-- with a space between them.                                      -->
         
         <mqttbroker enable="true" interface="1883"/>
 
-        <!-- It is possible to enable/disable the CoAP Server               -->
-        <!-- You can open the CoAP server interfaces on several ports or on -->
-        <!-- on a specific port or on every interface of the computer       -->
-        <!-- Default "udp://:5683" will listen on all interfaces while      -->
-        <!-- "udp://127.0.0.1:5683" only will listen on the specified       -->
-        <!-- interface. To specify several interfaces just enter them       -->
-        <!-- with a space between them.                                     -->
+        <!-- It is possible to enable/disable the CoAP Server                -->
+        <!-- You can open the CoAP server interfaces on several ports or on  -->
+        <!-- on a specific port or on every interface of the computer        -->
+        <!-- Default "udp://:5683" will listen on all interfaces while       -->
+        <!-- "udp://127.0.0.1:5683" only will listen on the specified        -->
+        <!-- interface. To specify several interfaces just enter them        -->
+        <!-- with a space between them.                                      -->
         
         <coapserver enable="true" interface="udp://:5683"/>
 
-        <!-- Set to true to enable decision matrix                         -->
-        <!-- Set to false to disable.                                      -->
-        <!-- Set path to the decision matrix file location                 -->
-        <!-- Documented in specification 14.4.1                            -->
-        <!-- Decision matrix logging: loglevel="minor|normal|extra|debug"  -->
-        <!-- enableogging="true:false" to enable/disable dm logging        -->
-        <!-- logpath is the path to the logfile.                           -->
+        <!-- Set to true to enable decision matrix                           -->
+        <!-- Set to false to disable.                                        -->
+        <!-- Set path to the decision matrix file location                   -->
+        <!-- Documented in specification 14.4.1                              -->
+        <!-- Decision matrix logging: loglevel="minor|normal|extra|debug"    -->
+        <!-- enableogging="true:false" to enable/disable dm logging          -->
+        <!-- logpath is the path to the logfile.                             -->
         
         <dm enable="true" 
                 path="/srv/vscp/dm.xml" 
@@ -115,15 +120,15 @@
                 loglevel="debug" 
                 logpath="/var/log/vscp/vscp_log_dm"  />      
 
-        <!-- Set to true to enable daemon variables                         -->
-        <!-- Set to false to disable.                                       -->
-        <!-- Path to variables storage.                                     -->
+        <!-- Set to true to enable daemon variables                          -->
+        <!-- Set to false to disable.                                        -->
+        <!-- Path to variables storage.                                      -->
 
         <variables enable="true" path="/srv/vscp/variables.xml" autosave="5" />
 
-        <!-- Enable disable the webserver interface.                        -->
-        <!-- Set the port to use for the webserver interface                -->
-        <!-- default is 8080.                                               -->
+        <!-- Enable disable the webserver interface.                         -->
+        <!-- Set the port to use for the webserver interface                 -->
+        <!-- default is 8080.                                                -->
 
         <webserver enable="true" 
                     webrootpath="/srv/vscp/web"
@@ -139,8 +144,8 @@
                     url_rewrites=""
                     run_as_user="" >
             
-            <!-- Enable disable the websocket interface.                    -->
-            <!-- Id auth is set to false not authentication will be done    -->
+            <!-- Enable disable the websocket interface.                     -->
+            <!-- Id auth is set to false not authentication will be done     -->
         
             <websockets enable="true" auth="true" />
         
@@ -149,31 +154,31 @@
     </general>
 
   
-    <!-- Holds information about one (at least) or more users               --> 
-    <!-- Use mkpassword to generate a new password                          -->
-    <!-- Privilege is admin/user                                            -->
-    <!-- Same information is used for accessing the daemon                  -->
-    <!-- through the TCP/IP interface as through the web-interface          -->
+    <!-- Holds information about one (at least) or more users                --> 
+    <!-- Use mkpassword to generate a new password                           -->
+    <!-- Privilege is admin/user                                             -->
+    <!-- Same information is used for accessing the daemon                   -->
+    <!-- through the TCP/IP interface as through the web-interface           -->
 
     <remoteuser> 
         <user>
             <name>admin</name>
             <password>d50c3180375c27927c22e42a379c3f67</password>
             <privilege>admin</privilege>
-            <!-- A stricter allowfrom can be 127.0.0.1,192.168.1.* -->
+            <!-- A stricter allowfrom can be 127.0.0.1,192.168.1.*           -->
             <allowfrom>*</allowfrom>
         </user>	
         <user>
             <name>user</name>
             <password>ee11cbb19052e40b07aac0ca060c23ee</password>
             <privilege>admin</privilege>
-            <!-- A stricter allowfrom can be 127.0.0.1,192.168.1.* -->
+            <!-- A stricter allowfrom can be 127.0.0.1,192.168.1.*           -->
             <allowfrom>*</allowfrom>
         </user>	
     </remoteuser>
 
-    <!-- Here are settings that affect the internal VSCP functionality      -->
-    <!-- of the server.                                                     -->
+    <!-- Here are settings that affect the internal VSCP functionality       -->
+    <!-- of the server.                                                      -->
  
     <automation enable="true">
         <!-- zone/subzone server use    -->
@@ -195,7 +200,7 @@
         <heartbeat-event enable="true" interval="60" />
     </automation>
     
-    <!-- List level I/CANAL drivers here                                    -->
+    <!-- List level I/CANAL drivers here                                     -->
 
     <level1driver enable="true" >
 
@@ -228,11 +233,11 @@
 
     </level1driver>
 
-    <!-- List level II VSCP drivers here                                    -->
+    <!-- List level II VSCP drivers here                                     -->
 
     <level2driver enable="true">
 
-        <!-- Level II Logger  -->
+        <!-- Level II Logger -->
         <driver enable="true" >
             <name>VSCP Level II Logger Driver 1</name>	
             <path>/usr/local/lib/vscpl2_loggerdrv.so</path>
@@ -240,7 +245,7 @@
              <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
     
-        <!-- Level II lmsensors  -->
+        <!-- Level II lmsensors -->
         <driver enable="false" >
             <name>VCCP Level II LM-sensors driver 1</name>
             <path>/usr/local/lib/vscpl2drv_lmsensors.so</path>
@@ -256,7 +261,7 @@
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
 
-        <!-- Level II mqtt  -->
+        <!-- Level II mqtt -->
         <driver enable="false" >
             <name>VSCP Level II MQTT Driver 1</name>
             <path>/usr/local/lib/vscpl2drv_mqtt.so</path>
@@ -264,7 +269,7 @@
             <guid>08:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>	
 
-        <!-- Level II tcp/ip link  -->
+        <!-- Level II tcp/ip link -->
         <driver enable="false" >                 
             <name>VSCP Level II tcpiplink Driver  1</name>
             <path>/usr/local/lib/vscpl2drv_tcpiplink.so</path>
@@ -272,14 +277,14 @@
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
 
-        <!-- Level II raw ethernet  -->
-        <driver enable="false"> 		   	 			
+        <!-- Level II raw ethernet -->
+        <driver enable="false">
             <name>VSCP Level II RawEthernet Driver 1</name> 
             <config>eth0</config>
             <path>/usr/local/lib/vscpl2drv_raweth.so</path>
         </driver>
 
-       <!-- Level II simulation  -->
+       <!-- Level II simulation -->
         <driver enable="true">
             <name>sim1</name>
             <config>1</config>
@@ -287,7 +292,7 @@
             <path>/usr/local/lib/vscpl2drv_sim.so</path>
         </driver>
 
-    <!-- Level II 1-wire driver  -->
+    <!-- Level II 1-wire driver -->
         <driver enable="false">
             <name>VSCP Level II 1-wire Driver 1</name>
             <config>eth0</config>
@@ -296,7 +301,7 @@
  
     </level2driver>	
 
-    <!-- Collect data in tables -->
+    <!-- Collect data in tables                                              -->
     <tables>
 
         <table path="/srv/vscp/tables/temperature_outside.table"

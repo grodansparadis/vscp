@@ -563,8 +563,23 @@ public:
     //                     SQLite3
     /////////////////////////////////////////////////////////
     
-    sqlite3 *m_db;
     
+    
+    //*****************************************************
+    //                    Databases
+    //*****************************************************
+    
+    wxFileName m_path_db_vscp_daemon;     // Path to the VSCP daemon database
+    sqlite3 *m_db_vscp_daemon;
+    
+    wxFileName m_path_db_vscp_data;       // Path to the VSCP data database
+    sqlite3 *m_db_vscp_data;
+    
+    wxFileName m_path_db_vscp_variable;   // Path to the VSCP variable database
+    sqlite3 *m_db_vscp_variable;
+    
+    wxFileName m_path_db_vscp_dm;         // Path to the VSCP DM database
+    sqlite3 *m_db_vscp_dm;
 
     /*!
         Event source for NT event reporting
@@ -694,6 +709,7 @@ public:
     // websocket authentivcation is needed  (if true)
     bool m_bAuthWebsockets;
     
+
 
     //*****************************************************
     //                      Lists

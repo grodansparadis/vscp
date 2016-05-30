@@ -4,6 +4,17 @@ VSCP database descriptions
 ==========================
 
 
+the vscpd database
+==================
+
+settings
+--------
+Mirror of settings from vscpd XML file.
+
+
+
+
+
 
 the vspd database
 =================
@@ -36,13 +47,44 @@ Defines a location with the hemp of zone and subzone.
 
 driver
 ------
-Defines loadable drivers
+Defines loadable drivers.
 
 
 guid
 ----
 Links names and GUID's.  
 Makes it possible to refere to interfaces by names instead of GUID.
+
+
+
+
+
+
+
+the vscp data database
+======================
+
+This database contains general VSCP information about classes/types/units and data-format.
+
+
+vscp_class
+----------
+Defined VSCP classes.
+
+
+vscp_type
+---------
+Defined VSCP types.
+
+
+vscp_unit
+---------
+Defined units for a class/type.
+
+
+vscp_data_description
+---------------------
+Description of data for a class/type.
 
 
 

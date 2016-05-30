@@ -34,6 +34,12 @@
         <!-- saved into a file.                                             -->
         
         <accesslogfile enable="true">c:/programdata/vscp/logs/vscp_log_access.txt</accesslogfile>
+        
+        <!-- Databases                                                       -->
+        <db_vscp_daemon>/programdata/vscp/db_vscp_daemon.sqlite3</db_vscp_daemon>
+        <db_vscp_data>/programdata/vscp/db_vscp_data.sqlite3</db_vscp_data>
+        <db_vscp_variable>/programdata/vscp/db_vscp_variable.sqlite3</db_vscp_variable>
+        <db_vscp_dm>/programdata/vscp/db_vscp_dm.sqlite3</db_vscp_dm>
 
         <!-- It is possible to enable/disable the TCP/IP interface          -->
         <!-- You can open TCP/IP interfaces on several ports or on          -->

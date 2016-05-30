@@ -245,6 +245,41 @@ CControlObject::CControlObject()
     m_logAccessFileName.SetName( _("/srv/vscp/logs/vscp_log_access") );
 #endif
 
+
+#ifdef WIN32
+    m_path_db_vscp_daemon.SetName( wxStandardPaths::Get().GetConfigDir() + 
+                                            _("/vscp/vscp_daemon.sqlite3") );
+#else
+    m_path_db_vscp_daemon.SetName( _("/srv/vscp/logs/vscp_daemon.sqlite3") );
+#endif    
+
+#ifdef WIN32
+    m_path_db_vscp_data.SetName( wxStandardPaths::Get().GetConfigDir() + 
+                                            _("/vscp/vscp_data.sqlite3") );
+#else
+    m_path_db_vscp_data.SetName( _("/srv/vscp/logs/vscp_data.sqlite3") );
+#endif 
+
+#ifdef WIN32
+    m_path_db_vscp_variable.SetName( wxStandardPaths::Get().GetConfigDir() + 
+                                            _("/vscp/vscp_variable.sqlite3") );
+#else
+    m_path_db_vscp_variable.SetName( _("/srv/vscp/logs/vscp_variable.sqlite3") );
+#endif
+
+#ifdef WIN32
+    m_path_db_vscp_dm.SetName( wxStandardPaths::Get().GetConfigDir() + 
+                                            _("/vscp/vscp_dm.sqlite3") );
+#else
+    m_path_db_vscp_dm.SetName( _("/srv/vscp/logs/vscp_dm.sqlite3") );
+#endif
+
+    // No databases opened yet
+    m_db_vscp_daemon = NULL;
+    m_db_vscp_data = NULL;
+    m_db_vscp_variable = NULL;
+    m_db_vscp_dm = NULL;
+
     // Control TCP/IP Interface
     m_bTCP = true;
 
@@ -769,7 +804,6 @@ bool CControlObject::init(wxString& strcfgfile)
     }
 
     return true;
-
 }
 
 
@@ -801,7 +835,7 @@ bool CControlObject::run(void)
     EventShutDown.sizeData = 0;
     EventShutDown.pdata = NULL;
 
-    // Init table files
+    // Init. table files
     m_mutexTableList.Lock();
     listVSCPTables::iterator iter;
     for ( iter = m_listTables.begin(); iter != m_listTables.end(); ++iter ) {
@@ -2725,6 +2759,34 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     fileName.SetName( subchild->GetNodeContent() );
                     if ( fileName.IsOk() ) {
                         m_logAccessFileName = fileName;
+                    }
+                }
+                else if (subchild->GetName() == wxT("db_vscp_daemon")) {
+                    wxFileName fileName;
+                    fileName.SetName( subchild->GetNodeContent() );
+                    if ( fileName.IsOk() ) {
+                        m_path_db_vscp_daemon = fileName;
+                    }
+                }
+                else if (subchild->GetName() == wxT("db_vscp_data")) {
+                    wxFileName fileName;
+                    fileName.SetName( subchild->GetNodeContent() );
+                    if ( fileName.IsOk() ) {
+                        m_path_db_vscp_data = fileName;
+                    }
+                }
+                else if (subchild->GetName() == wxT("db_vscp_variable")) {
+                    wxFileName fileName;
+                    fileName.SetName( subchild->GetNodeContent() );
+                    if ( fileName.IsOk() ) {
+                        m_path_db_vscp_variable = fileName;
+                    }
+                }
+                else if (subchild->GetName() == wxT("db_vscp_dm")) {
+                    wxFileName fileName;
+                    fileName.SetName( subchild->GetNodeContent() );
+                    if ( fileName.IsOk() ) {
+                        m_path_db_vscp_dm = fileName;
                     }
                 }
                 else if (subchild->GetName() == wxT("tcpip")) {
