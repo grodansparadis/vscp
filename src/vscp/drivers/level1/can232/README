@@ -16,8 +16,8 @@ In the configuration file (/etc/vscpd/vscpd.conf) there should be a line as
 
                 <driver>
                         <name>can232</name>
-                        <parameter>/dev/ttyS0;19200;0;0;125</parameter>
-                        <path>/usr/local/lib/can232drv.so</path>
+                        <parameter>/dev/ttyS0;57600;0;0;125</parameter>
+                        <path>/usr/local/lib/vscpl1_can232drv.so</path>
                         <flags>0</flags>
                 </driver>
         </canaldriver>

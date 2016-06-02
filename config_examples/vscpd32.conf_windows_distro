@@ -199,8 +199,8 @@
         <!-- The can232 driver  -->
         <driver enable="false" >
             <name>can232</name>
-            <config>/dev/ttyS0;19200;0;0;125</config>
-            <path>C:\Program Files\VSCP\drivers\x86\can232drv.so</path>
+            <config>1;57600;0;0;125</config>
+            <path>C:\Program Files\VSCP\drivers\x86\vscpl1_can232drv.dll</path>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
             <flags>0</flags>
         </driver>
