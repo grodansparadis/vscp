@@ -201,6 +201,10 @@ if test "${vscp_lua}" = yes ; then
    CPPFLAGS="$CPPFLAGS -D VSCP_ENABLE_LUA -I/usr/include/lua5.2"  
    CFLAGS="$CFLAGS -D VSCP_ENABLE_LUA -I/usr/include/lua5.2"
    EXTRALIBS="$EXTRALIBS -llua5.2"
+else
+   CPPFLAGS="$CPPFLAGS -D VSCP_DISABLE_LUA"
+   CFLAGS="$CFLAGS -D VSCP_DISABLE_LUA"
+   EXTRALIBS="$EXTRALIBS"
 fi
 
 if test "${vscp_sqlite3}" = yes ; then
