@@ -1642,7 +1642,8 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             doActionWriteTable( pEvent );
             break;
-        
+
+#ifndef VSCP_DISABLE_LUA
         case VSCP_DAEMON_ACTION_CODE_RUN_LUA:
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_RUN_LUA.") ); // Log
@@ -1674,6 +1675,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
             
             }
         break;
+#endif
 
         default:
         case VSCP_DAEMON_ACTION_CODE_NOOP:
@@ -4338,7 +4340,7 @@ void actionThread_VSCPSrv::OnExit()
 
 
 
-
+#ifndef VSCP_DISABLE_LUA
 ///////////////////////////////////////////////////////////////////////////////
 // actionThread_LUA
 //
@@ -4403,6 +4405,7 @@ void actionThread_LUA::OnExit()
 {
 
 }
+#endif
 
 
 
