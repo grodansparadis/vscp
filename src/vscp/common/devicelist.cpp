@@ -1,21 +1,21 @@
-// DeviceList.cpp: 
+// DeviceList.cpp:
 //
 // implementation of the CDeviceList class.
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version
 // 2 of the License, or (at your option) any later version.
-// 
-// This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2016 
+// This file is part of the VSCP (http://www.vscp.org)
+//
+// Copyright (C) 2000-2016
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
-// 
+//
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this file see the file COPYING.  If not, write to
 // the Free Software Foundation, 59 Temple Place - Suite 330,
@@ -68,7 +68,7 @@ WX_DEFINE_LIST(VSCPDEVICELIST);
 //////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
-// CDeviceItem -- Constructor 
+// CDeviceItem -- Constructor
 //
 
 CDeviceItem::CDeviceItem()
@@ -105,7 +105,7 @@ CDeviceItem::CDeviceItem()
     m_proc_CanalBlockingReceive = NULL;
     m_proc_CanalGetdriverInfo = NULL;
 
-    
+
     // VSCP Level II
     m_proc_VSCPOpen = NULL;
     m_proc_VSCPClose = NULL;
@@ -141,7 +141,7 @@ bool CDeviceItem::startDriver( CControlObject *pCtrlObject )
 
     // Just start if enabled
     if ( !m_bEnable ) return false;
-                
+
     // *****************************************
     //  Create the worker thread for the device
     // *****************************************
@@ -155,16 +155,16 @@ bool CDeviceItem::startDriver( CControlObject *pCtrlObject )
         wxThreadError err;
         if (wxTHREAD_NO_ERROR == (err = m_pdeviceThread->Create())) {
             if (wxTHREAD_NO_ERROR != (err = m_pdeviceThread->Run())) {
-                pCtrlObject->logMsg(_("Unable to create DeviceThread."), DAEMON_LOGMSG_ERROR);
+                pCtrlObject->logMsg(_("Unable to create DeviceThread.") );
             }
-        } 
+        }
         else {
-            pCtrlObject->logMsg(_("Unable to run DeviceThread."), DAEMON_LOGMSG_ERROR);
+            pCtrlObject->logMsg(_("Unable to run DeviceThread.") );
         }
 
-    } 
+    }
     else {
-        pCtrlObject->logMsg(_("Unable to allocate memory for DeviceThread."), DAEMON_LOGMSG_ERROR);
+        pCtrlObject->logMsg(_("Unable to allocate memory for DeviceThread.") );
     }
 
     return true;
@@ -243,7 +243,7 @@ bool CDeviceList::addItem(wxString strName,
             m_devItemList.Append( pDeviceItem );
 
             pDeviceItem->m_bEnable = bEnable;
-            
+
             pDeviceItem->m_driverLevel = level;
             pDeviceItem->m_strName = strName;
             pDeviceItem->m_strParameter = strParameter;
@@ -253,7 +253,7 @@ bool CDeviceList::addItem(wxString strName,
             // Set buffer sizes and flags
             pDeviceItem->m_DeviceFlags = flags;
 
-        } 
+        }
         else {
             //wxGetApp.logMsg(_("Driver does not exist."), DAEMON_LOGMSG_INFO );
             delete pDeviceItem;

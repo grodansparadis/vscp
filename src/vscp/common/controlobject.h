@@ -7,7 +7,7 @@
 //
 // This file is part of the VSCP (http://www.vscp.org)
 //
-// Copyright (C) 2000-2016 
+// Copyright (C) 2000-2016
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This file is distributed in the hope that it will be useful,
@@ -37,7 +37,7 @@
 #include <wx/filename.h>
 
 #include <mongoose.h>
-#include <sqlite3.h> 
+#include <sqlite3.h>
 
 #include <devicelist.h>
 #include <clientlist.h>
@@ -64,14 +64,15 @@ class CVSCPAutomation;
 
 enum {
     DAEMON_LOGMSG_NONE = 0,
+    DAEMON_LOGMSG_NORMAL,
     DAEMON_LOGMSG_DEBUG,
-    DAEMON_LOGMSG_INFO,
-    DAEMON_LOGMSG_NOTICE,
-    DAEMON_LOGMSG_WARNING,
-    DAEMON_LOGMSG_ERROR,
-    DAEMON_LOGMSG_CRITICAL,
-    DAEMON_LOGMSG_ALERT,
-    DAEMON_LOGMSG_EMERGENCY,    
+    //DAEMON_LOGMSG_INFO,
+    //DAEMON_LOGMSG_NOTICE,
+    //DAEMON_LOGMSG_WARNING,
+    //DAEMON_LOGMSG_ERROR,
+    //DAEMON_LOGMSG_CRITICAL,
+    //DAEMON_LOGMSG_ALERT,
+    //DAEMON_LOGMSG_EMERGENCY,
 };
 
 enum {
@@ -100,7 +101,7 @@ enum {
    ({ __typeof__ (a) _a = (a); \
        __typeof__ (b) _b = (b); \
      _a > _b ? _a : _b; })
-#endif	
+#endif
 
 
 #define MAX_ITEMS_RECEIVE_QUEUE                 1021
@@ -134,7 +135,7 @@ public:
      */
     virtual void *Entry();
 
-    /*! 
+    /*!
         called when the thread exits - whether it terminates normally or is
         stopped with Delete() (but not when it is Kill()ed!)
      */
@@ -171,10 +172,10 @@ public:
     virtual ~CControlObject(void);
 
     /*!
-      Write log message - 
-    */ 
-    void logMsg(const wxString& wxstr, 
-                    const uint8_t level = DAEMON_LOGMSG_INFO, 
+      Write log message -
+    */
+    void logMsg(const wxString& wxstr,
+                    const uint8_t level = DAEMON_LOGMSG_NORMAL,
                     const uint8_t nType = DAEMON_LOGTYPE_GENERAL );
 
     /*!
@@ -200,7 +201,7 @@ public:
 
     /*!
         Stop worker threads for devices
-        @return true on success	
+        @return true on success
      */
     bool stopDeviceWorkerThreads(void);
 
@@ -238,7 +239,7 @@ public:
         Stop the UDP Workerthread
     */
     bool stopUDPWorkerThread(void);
-    
+
     /*!
      *  Start MQTT broker
      */
@@ -246,17 +247,17 @@ public:
 
     /*!
      * Stop MQTT broker
-     */    
+     */
     bool stopMQTTBrokerThread(void);
-    
+
     /*!
      * Start CoAP server
-     */    
+     */
     bool startCoAPServerThread(void);
-    
+
     /*!
      *  Stop CoAP server
-     */    
+     */
     bool stopCoAPServerThread(void);
 
     /*!
@@ -287,7 +288,7 @@ public:
         Add a new client to the clinet list
 
         @param Pointer to client that should be added.
-        @param Normally not used but can be used to set a special 
+        @param Normally not used but can be used to set a special
         client id.
      */
     void addClient(CClientItem *pClientItem, uint32_t id = 0);
@@ -376,13 +377,21 @@ public:
     /*!
         Get the VSCP TCP/IP thread thread
         @return Pointer to the VSCP TCP/IP thread thread
-    */ 
+    */
     VSCPClientThread *getTCPIPServer( void ) { return m_pVSCPClientThread; };
-    
+
     /*!
      * Add stock variables
     */
     void addStockVariables( void );
+
+    /*!
+     * Read configuration data from database.
+     * The configuration database record is read after the XML file has
+     * been read and will replace duplicate values, if any.
+     * @return true on success
+     */
+     bool dbReadConfiguration( void );
 
 public:
 
@@ -410,13 +419,13 @@ public:
 
     /*!
         Name of this server
-    */
+     */
     wxString m_strServerName;
 
     /*!
         Server GUID
         This is the GUID for the server
-     */
+    */
     cguid m_guid;
 
     /*!
@@ -426,7 +435,7 @@ public:
         Maps unsigned log client id's to
         unsigned char id's for the
         GUID
-     */
+    */
     uint32_t m_clientMap[ VSCP_MAX_CLIENTS ];
 
     /////////////////////////////////////////////////////////
@@ -475,12 +484,12 @@ public:
         Enable UDP interface
     */
     bool m_bUDP;
-    
+
     /*!
         Enable MQTT broker
     */
     bool m_bMQTTBroker;
-    
+
     /*!
         Enable CoAP server
     */
@@ -538,7 +547,7 @@ public:
 
     /// Interface(s) to use for MQTT broker
     wxString m_strMQTTBrokerInterfaceAddress;
-    
+
     /// Interface(s) to use for CoAP Server
     wxString m_strCoAPServerInterfaceAddress;
 
@@ -547,37 +556,34 @@ public:
     //                     VARIABLES
     /////////////////////////////////////////////////////////
 
-    /*!
-        Hash table for variables
-     */
+
+    /// Hash table for variables
     CVariableStorage m_VSCP_Variables;
 
-    /*!
-        Mutex to protect variables
-     */
+    /// Mutex to protect variables
     wxMutex m_variableMutex;
-    
-    
-    
+
+
+
     /////////////////////////////////////////////////////////
     //                     SQLite3
     /////////////////////////////////////////////////////////
-    
-    
-    
+
+
+
     //*****************************************************
     //                    Databases
     //*****************************************************
-    
+
     wxFileName m_path_db_vscp_daemon;     // Path to the VSCP daemon database
     sqlite3 *m_db_vscp_daemon;
-    
+
     wxFileName m_path_db_vscp_data;       // Path to the VSCP data database
     sqlite3 *m_db_vscp_data;
-    
+
     wxFileName m_path_db_vscp_variable;   // Path to the VSCP variable database
     sqlite3 *m_db_vscp_variable;
-    
+
     wxFileName m_path_db_vscp_dm;         // Path to the VSCP DM database
     sqlite3 *m_db_vscp_dm;
 
@@ -601,14 +607,14 @@ public:
     wxMutex m_wxDeviceMutex;
 
 
-  
+
     /// Daemon Decision Matrix Object
     CDM m_dm;
 
 
     /// Automation Object
     CVSCPAutomation m_automation;
-   
+
 
     /*!
         Username for level II drivers
@@ -635,46 +641,46 @@ public:
     bool m_bDisableSecurityWebServer;
 
     //struct mg_mgr *m_pwebserver;     // Was mg_server
-    
+
     // Path to web root
     char m_pathWebRoot[ MAX_PATH_SIZE ];
-    
+
     // Domain for webserver and other net services
     char m_authDomain[ MAX_PATH_SIZE ];
-    
+
     // Path to SSL certificate
     char m_pathCert[ MAX_PATH_SIZE ];
-    
+
     /// Extra mime types
     char m_extraMimeTypes[ MAX_PATH_SIZE ];
 
     /// Extra mime types on the form "extension1=type1,extension2=type2,..."
     char m_ssi_pattern[ MAX_PATH_SIZE ];
-    
+
     // IP ACL. By default, NULL, meaning all IPs are allowed to connect
     char m_ip_acl[ MAX_PATH_SIZE ];
-    
+
     // CGI interpreter to use
     char m_cgiInterpreter[ MAX_PATH_SIZE ];
-    
+
     // CGI Pattern
     char m_cgiPattern[ MAX_PATH_SIZE ];
-    
+
     // Enable directory listing "yes"/"no"
     char m_EnableDirectoryListings[ 5 ];
-    
+
     // Hide file pattern
     char m_hideFilePatterns[ MAX_PATH_SIZE ];
-    
+
     // DAV document root. If NULL, DAV requests are going to fail.
     char m_dav_document_root[ MAX_PATH_SIZE ];
-    
+
     // Index files
     char m_indexFiles[ MAX_PATH_SIZE ];
 
     // URL rewrites
     char m_urlRewrites[ MAX_PATH_SIZE ];
-    
+
     // Leave as NULL to disable authentication.
     // To enable directory protection with authentication, set this to ".htpasswd"
     // Then, creating ".htpasswd" file in any directory automatically protects
@@ -683,7 +689,7 @@ public:
     // create/manipulate passwords file.
     // Make sure `auth_domain` is set to a valid domain name.
     char m_per_directory_auth_file[ MAX_PATH_SIZE ];
-    
+
     // Leave as NULL to disable authentication.
     // Normally, only selected directories in the document root are protected.
     // If absolutely every access to the web server needs to be authenticated,
@@ -698,8 +704,8 @@ public:
 
     // Run as user
     wxString m_runAsUserWeb;
-    
-    
+
+
 
     // * * Websockets * *
 
@@ -708,7 +714,7 @@ public:
 
     // websocket authentivcation is needed  (if true)
     bool m_bAuthWebsockets;
-    
+
 
 
     //*****************************************************
@@ -813,13 +819,13 @@ private:
 
     //wxMutex m_mutexudpSendThread;
     //wxMutex m_mutexudpReceiveThread;
-    
+
     /*!
         The server thread for the MQTT Broker
      */
     VSCPMQTTBrokerThread *m_pMQTTBrookerThread;
     wxMutex m_mutexMQTTBrokerThread;
-    
+
     /*!
         The server thread for the CoAP server
      */

@@ -7,7 +7,7 @@
 //
 // This file is part of the VSCP (http://www.vscp.org)
 //
-// Copyright (C) 2000-2016 
+// Copyright (C) 2000-2016
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This file is distributed in the hope that it will be useful,
@@ -79,28 +79,27 @@ VSCPCoAPServerThread::~VSCPCoAPServerThread()
 // Entry
 //
 
-void 
+void
 *VSCPCoAPServerThread::Entry()
 {
     struct mg_mgr mgr;
     struct mg_connection *nc;
-  
+
     // Check pointers
     if ( NULL == m_pCtrlObject ) return NULL;
 
     // We need to create a clientobject and add this object to the list
     m_pClientItem = new CClientItem;
     if ( NULL == m_pClientItem ) {
-        m_pCtrlObject->logMsg( _( "[VSCP CoAP Server] Unable to allocate memory for client.\n" ), 
-                                DAEMON_LOGMSG_ERROR );
+        m_pCtrlObject->logMsg( _( "[VSCP CoAP Server] Unable to allocate memory for client.\n" )  );
         return NULL;
     }
 
     // This is now an active Client
-    m_pClientItem->m_bOpen = true; 
+    m_pClientItem->m_bOpen = true;
     m_pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP;
     m_pClientItem->m_strDeviceName = _("VSCP CoAP Server: Started at ");
-    wxDateTime now = wxDateTime::Now(); 
+    wxDateTime now = wxDateTime::Now();
     m_pClientItem->m_strDeviceName += now.FormatISODate();
     m_pClientItem->m_strDeviceName += _(" ");
     m_pClientItem->m_strDeviceName += now.FormatISOTime();
@@ -113,19 +112,17 @@ void
     // Clear the filter (Allow everything )
     vscp_clearVSCPFilter( &m_pClientItem->m_filterVSCP );
     mg_mgr_init( &mgr, this );
-    
-    if ( ( nc = mg_bind( &mgr, 
-                            m_pCtrlObject->m_strCoAPServerInterfaceAddress.mbc_str(), 
+
+    if ( ( nc = mg_bind( &mgr,
+                            m_pCtrlObject->m_strCoAPServerInterfaceAddress.mbc_str(),
                             mg_mqtt_broker ) ) == NULL) {
-        m_pCtrlObject->logMsg( _("VSCP CoAP Server: Faild to bind to requested address.\n"), 
-                                DAEMON_LOGMSG_CRITICAL );
+        m_pCtrlObject->logMsg( _("VSCP CoAP Server: Faild to bind to requested address.\n")  );
         return NULL;
     }
-    
+
     mg_set_protocol_coap( nc );
 
-    m_pCtrlObject->logMsg( _("VSCP CoAP Server: Thread started.\n"), 
-                            DAEMON_LOGMSG_INFO );
+    m_pCtrlObject->logMsg( _("VSCP CoAP Server: Thread started.\n")  );
 
     while ( !TestDestroy() && !m_bQuit ) {
         mg_mgr_poll( &mgr, 1000 );
@@ -135,8 +132,7 @@ void
     //ns_mgr_free( &m_pCtrlObject->m_mgrTcpIpServer );
     mg_mgr_free( &mgr );
 
-    m_pCtrlObject->logMsg( _( "VSCP CoAP Server: Quit.\n" ), 
-                            DAEMON_LOGMSG_INFO );
+    m_pCtrlObject->logMsg( _( "VSCP CoAP Server: Quit.\n" )  );
 
     return NULL;
 }
@@ -146,7 +142,7 @@ void
 // OnExit
 //
 
-void 
+void
 VSCPCoAPServerThread::OnExit()
 {
     if ( NULL != m_pClientItem ) {
@@ -161,32 +157,32 @@ VSCPCoAPServerThread::OnExit()
 // ev_handler
 //
 
-void 
-VSCPCoAPServerThread::ev_handler(struct mg_connection *nc, int ev, void *p) 
+void
+VSCPCoAPServerThread::ev_handler(struct mg_connection *nc, int ev, void *p)
 {
     struct mbuf *io = &nc->recv_mbuf;
-    struct mg_mqtt_broker *pbrk = 
+    struct mg_mqtt_broker *pbrk =
                             (struct mg_mqtt_broker *)nc->user_data;
 
     switch ( ev ) {
-        
+
         case MG_EV_COAP_CON: {
-      
+
             uint32_t res;
-      
+
             struct mg_coap_message *cm = (struct mg_coap_message *) p;
             printf("CON with msg_id = %d received\n", cm->msg_id);
             res = mg_coap_send_ack(nc, cm->msg_id);
             if ( 0 == res ) {
                 printf("Successfully sent ACK for message with msg_id = %d\n",
                         cm->msg_id);
-            }  
+            }
             else {
                 printf("Error: %d\n", res);
             }
             break;
         }
-    
+
         case MG_EV_COAP_NOC:
         case MG_EV_COAP_ACK:
         case MG_EV_COAP_RST: {
@@ -194,7 +190,7 @@ VSCPCoAPServerThread::ev_handler(struct mg_connection *nc, int ev, void *p)
             printf("ACK/RST/NOC with msg_id = %d received\n", cm->msg_id);
             break;
         }
-    
+
     }
-    
+
 }

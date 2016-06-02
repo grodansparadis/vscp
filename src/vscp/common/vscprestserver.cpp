@@ -7,7 +7,7 @@
 //
 // This file is part of the VSCP (http://www.vscp.org)
 //
-// Copyright (C) 2000-2016 
+// Copyright (C) 2000-2016
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This file is distributed in the hope that it will be useful,
@@ -146,12 +146,12 @@ extern struct websrv_rest_session *gp_websrv_rest_sessions;
 
 
 
-int webserv_url_decode( const char *src, int src_len, 
+int webserv_url_decode( const char *src, int src_len,
                             char *dst, int dst_len,
                             int is_form_url_encoded );
-void webserv_util_sendheader( struct mg_connection *nc, 
-                                        const int returncode, 
-                                        const char *content );                            
+void webserv_util_sendheader( struct mg_connection *nc,
+                                        const int returncode,
+                                        const char *content );
 
 
 //-----------------------------------------------------------------------------
@@ -172,11 +172,11 @@ VSCPWebServerThread::websrv_new_rest_session( struct mg_connection *nc,
 
     // Check pointer
     if (NULL == nc) return NULL;
-    
+
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
     if (NULL == pObject) return NULL;
 
-    // create fresh session 
+    // create fresh session
     ret = (struct websrv_rest_session *)calloc(1, sizeof(struct websrv_rest_session));
     if  (NULL == ret ) {
 #ifndef WIN32
@@ -194,9 +194,9 @@ VSCPWebServerThread::websrv_new_rest_session( struct mg_connection *nc,
                 (unsigned int)rand(),
                 (unsigned int)rand(),
                 (unsigned int)t,
-                (unsigned int)rand(), 
+                (unsigned int)rand(),
                 1337 );
-    
+
     MD5_CTX ctx;
     MD5_Init( &ctx );
     MD5_Update( &ctx, (const unsigned char *)buf, strlen( buf ) );
@@ -207,7 +207,7 @@ VSCPWebServerThread::websrv_new_rest_session( struct mg_connection *nc,
     cs_to_hex( ret->sid, bindigest, 16 );
 
     // New client
-    ret->pClientItem = new CClientItem();   // Create client        
+    ret->pClientItem = new CClientItem();   // Create client
     vscp_clearVSCPFilter(&ret->pClientItem->m_filterVSCP); // Clear filter
     ret->pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_REST;
     ret->pClientItem->m_strDeviceName = _("REST client. Started at ");
@@ -223,7 +223,7 @@ VSCPWebServerThread::websrv_new_rest_session( struct mg_connection *nc,
     pObject->m_wxClientMutex.Unlock();
 
     ret->pUserItem = pUser;
-    
+
     // Add to linked list
     ret->lastActiveTime = time(NULL);
     ret->m_next = gp_websrv_rest_sessions;
@@ -245,19 +245,19 @@ VSCPWebServerThread::websrv_get_rest_session( struct mg_connection *nc,
 
     // Check pointers
     if ( NULL == nc) return NULL;
-        
-    // find existing session 
+
+    // find existing session
     ret = gp_websrv_rest_sessions;
     while (NULL != ret) {
         if  (0 == strcmp( SessionId.mbc_str(), ret->sid) )  break;
         ret = ret->m_next;
     }
-        
+
     if (NULL != ret) {
         ret->lastActiveTime = time( NULL );
         return ret;
     }
-    
+
     return ret;
 }
 
@@ -275,39 +275,39 @@ VSCPWebServerThread::websrv_expire_rest_sessions( struct mg_connection *nc )
 
     // Check pointer
     if (NULL == nc) return;
-    
+
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
     if (NULL == pObject) return;
 
     now = time( NULL );
     prev = NULL;
     pos = gp_websrv_rest_sessions;
-    
+
     while (NULL != pos) {
-        
+
         next = pos->m_next;
-        
+
         if (now - pos->lastActiveTime > 10 * 60) {  // Ten minutes
-        
-            // expire sessions after 1h 
+
+            // expire sessions after 1h
             if ( NULL == prev ) {
                 gp_websrv_rest_sessions = pos->m_next;
             }
             else {
                 prev->m_next = next;
             }
-            
+
             pObject->m_wxClientMutex.Lock();
             pObject->removeClient( pos->pClientItem );
             pObject->m_wxClientMutex.Unlock();
 
             free( pos );
-            
-        } 
+
+        }
         else {
             prev = pos;
         }
-        
+
         pos = next;
     }
 }
@@ -336,7 +336,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
 
     // Check pointer
     if (NULL == nc) return;
-    
+
     // Get method
     char method[33];
     memset( method, 0, sizeof( method ) );
@@ -344,13 +344,13 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
 
     // Make string with GMT time
     vscp_getTimeString( date, sizeof(date), &curtime );
-    
+
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
     if (NULL == pObject) return;
 
     vscp_getTimeString( date, sizeof(date), &curtime );
 
-    
+
     if ( NULL != strstr( method, ("POST") ) ) {
 
         mg_str *phdr;
@@ -359,7 +359,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
         if ( NULL != ( phdr = mg_get_http_header( hm, "vscpuser" ) ) ) {
             memset( buf, 0, sizeof( buf ) );
             strncpy( buf, phdr->p, phdr->len );
-            keypairs[_("VSCPUSER")] = wxString::FromUTF8( buf );        
+            keypairs[_("VSCPUSER")] = wxString::FromUTF8( buf );
         }
 
         // password
@@ -373,9 +373,9 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
         if ( NULL != ( phdr = mg_get_http_header( hm, "vscpsession" ) ) ) {
             memset( buf, 0, sizeof( buf ) );
             strncpy( buf, phdr->p, phdr->len );
-            keypairs[_("VSCPSESSION")] = wxString::FromUTF8( buf );        
+            keypairs[_("VSCPSESSION")] = wxString::FromUTF8( buf );
         }
-        
+
     }
     else {
         // get parameters for get
@@ -383,11 +383,11 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
         if ( 0 < mg_get_http_var( &hm->query_string, "vscpuser", buf, sizeof( buf ) ) ) {
             keypairs[ _("VSCPUSER") ] = wxString::FromUTF8( buf );
         }
-        
+
         if ( 0 < mg_get_http_var( &hm->query_string, "vscpsecret", buf, sizeof( buf ) ) ) {
             keypairs[ _("VSCPSECRET") ] = wxString::FromUTF8( buf );
         }
-        
+
         if ( 0 < mg_get_http_var( &hm->query_string, "vscpsession", buf, sizeof( buf ) ) ) {
             keypairs[ _("VSCPSESSION") ] = wxString::FromUTF8( buf );
         }
@@ -512,15 +512,15 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
     if ( NULL == pSession ) {
 
         // Get user
-        pUser = pObject->m_userList.getUser( keypairs[_("VSCPUSER")] ); 
+        pUser = pObject->m_userList.getUser( keypairs[_("VSCPUSER")] );
 
         // Check if user is valid
         if ( NULL == pUser ) {
-            wxString strErr = 
-            wxString::Format( _("[REST Client] Host [%s] Invalid user [%s]\n"), 
-                                wxString::FromAscii( (const char *)inet_ntoa( nc->sa.sin.sin_addr )).wx_str(), 
+            wxString strErr =
+            wxString::Format( _("[REST Client] Host [%s] Invalid user [%s]\n"),
+                                wxString::FromAscii( (const char *)inet_ntoa( nc->sa.sin.sin_addr )).wx_str(),
                                 keypairs[_("VSCPUSER")].wx_str() );
-            pObject->logMsg( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
+            pObject->logMsg( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
             webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_INVALID_USER );
             return;
         }
@@ -531,11 +531,11 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
         bValidHost = pUser->isAllowedToConnect( wxString::FromAscii( inet_ntoa( nc->sa.sin.sin_addr ) ) );
         pObject->m_mutexUserList.Unlock();
         if (!bValidHost) {
-            wxString strErr = 
-            wxString::Format( _("[REST Client] Host [%s] NOT allowed to connect. User [%s]\n"), 
-                                wxString::FromAscii( (const char *)inet_ntoa( nc->sa.sin.sin_addr ) ).wx_str(), 
+            wxString strErr =
+            wxString::Format( _("[REST Client] Host [%s] NOT allowed to connect. User [%s]\n"),
+                                wxString::FromAscii( (const char *)inet_ntoa( nc->sa.sin.sin_addr ) ).wx_str(),
                                 keypairs[_("VSCPUSER")].wx_str() );
-            pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
+            pObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
             webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_INVALID_ORIGIN );
             return;
         }
@@ -543,11 +543,11 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
         // Is this an authorized user?
         wxString str3 = keypairs[_("VSCPSECRET")];
         if ( keypairs[_("VSCPSECRET")] != pUser->m_md5Password ) {
-            wxString strErr = 
-            wxString::Format( _("[REST Client] User [%s] NOT allowed to connect. Client [%s]\n"), 
-                                keypairs[_("VSCPUSER")].wx_str(), 
+            wxString strErr =
+            wxString::Format( _("[REST Client] User [%s] NOT allowed to connect. Client [%s]\n"),
+                                keypairs[_("VSCPUSER")].wx_str(),
                                 wxString::FromAscii( (const char *)inet_ntoa( nc->sa.sin.sin_addr ) ).wx_str() );
-            pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
+            pObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
             webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_INVALID_PASSWORD );
             return;
         }
@@ -561,11 +561,11 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
         bValidHost = pSession->pUserItem->isAllowedToConnect( wxString::FromAscii( inet_ntoa( nc->sa.sin.sin_addr ) ) );
         pObject->m_mutexUserList.Unlock();
         if (!bValidHost) {
-            wxString strErr = 
-            wxString::Format( _("[REST Client] Host [%s] NOT allowed to connect. User [%s]\n"), 
-                                wxString::FromAscii( (const char *)inet_ntoa( nc->sa.sin.sin_addr ) ).wx_str(), 
+            wxString strErr =
+            wxString::Format( _("[REST Client] Host [%s] NOT allowed to connect. User [%s]\n"),
+                                wxString::FromAscii( (const char *)inet_ntoa( nc->sa.sin.sin_addr ) ).wx_str(),
                                 keypairs[_("VSCPUSER")].wx_str() );
-            pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
+            pObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
             webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_INVALID_ORIGIN );
             return;
         }
@@ -575,11 +575,11 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
     //                      * * * User is validated * * *
     // ------------------------------------------------------------------------
 
-    wxString strErr = 
-        wxString::Format( _("[REST Client] User [%s] Host [%s] allowed to connect. \n"), 
-                            keypairs[_("VSCPUSER")].wx_str() , 
+    wxString strErr =
+        wxString::Format( _("[REST Client] User [%s] Host [%s] allowed to connect. \n"),
+                            keypairs[_("VSCPUSER")].wx_str() ,
                             wxString::FromAscii( (const char *)inet_ntoa( nc->sa.sin.sin_addr ) ).wx_str() );
-        pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
+        pObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
 
     // Get format
     if ( _("PLAIN") == keypairs[_("FORMAT")].Upper() ) {
@@ -602,7 +602,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
     }
     else {
         webserv_util_sendheader( nc, 400, "text/plain" );
-        mg_send_http_chunk( nc, REST_PLAIN_ERROR_UNSUPPORTED_FORMAT, 
+        mg_send_http_chunk( nc, REST_PLAIN_ERROR_UNSUPPORTED_FORMAT,
                                     strlen( REST_PLAIN_ERROR_UNSUPPORTED_FORMAT ) );
         mg_send_http_chunk( nc, "", 0 );   // Terminator
         return;
@@ -619,7 +619,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
     //  * * * * * * * * open session * * * * * * * *
     //  ********************************************
     else if ( ( _("1") == keypairs[_("OP")] ) || ( _("OPEN") == keypairs[_("OP")].Upper() ) ) {
-        webserv_rest_doOpen( nc, pSession, pUser, format );        
+        webserv_rest_doOpen( nc, pSession, pUser, format );
     }
 
     //   **********************************************
@@ -635,7 +635,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
     else if ( ( _("3") == keypairs[_("OP")] ) || ( _("SENDEVENT") == keypairs[_("OP")].Upper() ) ) {
         vscpEvent vscpevent;
         if ( _("") != keypairs[_("VSCPEVENT")] ) {
-            vscp_setVscpEventFromString( &vscpevent, keypairs[_("VSCPEVENT")] ); 
+            vscp_setVscpEventFromString( &vscpevent, keypairs[_("VSCPEVENT")] );
             webserv_rest_doSendEvent( nc, pSession, format, &vscpevent );
         }
         else {
@@ -659,12 +659,12 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
     //   * * * * * * * *      Set filter    * * * * * * * *
     //   **************************************************
     else if ( ( _("5") == keypairs[_("OP")] ) || ( _("SETFILTER") == keypairs[_("OP")].Upper() ) ) {
-        
+
         vscpEventFilter vscpfilter;
         vscp_clearVSCPFilter( &vscpfilter );
 
         if ( _("") != keypairs[_("VSCPFILTER")] ) {
-            vscp_readFilterFromString( &vscpfilter, keypairs[_("VSCPFILTER")] ); 
+            vscp_readFilterFromString( &vscpfilter, keypairs[_("VSCPFILTER")] );
         }
         else {
             webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_MISSING_DATA );
@@ -687,7 +687,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
     else if ( ( _("6") == keypairs[_("OP")] ) || ( _("CLEARQUEUE") == keypairs[_("OP")].Upper() ) ) {
         webserv_rest_doClearQueue( nc, pSession, format );
     }
-    
+
     //   ****************************************************
     //   * * * * * * * * read variable value  * * * * * * * *
     //   ****************************************************
@@ -722,10 +722,10 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
 
 
         if ( _("") != keypairs[_("VARIABLE")] ) {
-            webserv_rest_doCreateVariable( nc, 
-                                                    pSession, 
-                                                    format, 
-                                                    keypairs[_("VARIABLE")], 
+            webserv_rest_doCreateVariable( nc,
+                                                    pSession,
+                                                    format,
+                                                    keypairs[_("VARIABLE")],
                                                     keypairs[ _( "TYPE" ) ],
                                                     keypairs[ _( "VALUE" ) ],
                                                     keypairs[ _( "PERISTENT" ) ]  );
@@ -735,7 +735,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
         }
     }
 
-        
+
     //   *****************************************************
     //   * * * * * * * *   Delete  variable    * * * * * * * *
     //   *****************************************************
@@ -744,16 +744,16 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
 
 
         if ( _("") != keypairs[_("VARIABLE")] ) {
-            webserv_rest_doDeleteVariable( nc, 
-                                                    pSession, 
-                                                    format, 
+            webserv_rest_doDeleteVariable( nc,
+                                                    pSession,
+                                                    format,
                                                     keypairs[ _("VARIABLE") ] );
         }
         else {
             webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_MISSING_DATA );
         }
-    }        
-        
+    }
+
 
     //   *************************************************
     //   * * * * * * * * Send measurement  * * * * * * * *
@@ -763,7 +763,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
     else if ( ( _("10") == keypairs[_("OP")] ) || ( _("MEASUREMENT") == keypairs[_("OP")].Upper() ) ) {
 
         if ( ( _("") != keypairs[_("VALUE")] ) && (_("") != keypairs[_("TYPE")]) ) {
-            
+
             webserv_rest_doWriteMeasurement( nc, pSession, format,
                                                     keypairs[ _("GUID" ) ],
                                                     keypairs[ _("LEVEL") ],
@@ -786,15 +786,15 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
     else if ( ( _("11") == keypairs[_("OP")] ) || ( _("TABLE") == keypairs[_("OP")].Upper() ) ) {
 
         if ( _("") != keypairs[_("NAME")] ) {
-            
-            webserv_rest_doGetTableData( nc, pSession, format, 
+
+            webserv_rest_doGetTableData( nc, pSession, format,
                                                     keypairs[_("NAME")],
                                                     keypairs[_("FROM")],
                                                     keypairs[_("TO")] );
         }
         else {
             webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_MISSING_DATA );
-        }        
+        }
     }
 
     //   *******************************************
@@ -821,8 +821,8 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
 //
 
 void
-VSCPWebServerThread::webserv_rest_error( struct mg_connection *nc, 
-                                            struct websrv_rest_session *pSession, 
+VSCPWebServerThread::webserv_rest_error( struct mg_connection *nc,
+                                            struct websrv_rest_session *pSession,
                                             int format,
                                             int errorcode)
 {
@@ -831,28 +831,28 @@ VSCPWebServerThread::webserv_rest_error( struct mg_connection *nc,
 
     if ( REST_FORMAT_PLAIN == format ) {
 
-        webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_PLAIN );   
+        webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_PLAIN );
         mg_send_http_chunk( nc, rest_errors[errorcode][REST_FORMAT_PLAIN], strlen( rest_errors[errorcode][REST_FORMAT_PLAIN] )  );
         mg_send_http_chunk( nc, "", 0 );   // Terminator
         return;
-        
+
     }
     else if ( REST_FORMAT_CSV == format ) {
 
-        webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_CSV );     
+        webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_CSV );
         mg_send_http_chunk( nc, rest_errors[errorcode][REST_FORMAT_CSV], strlen( rest_errors[errorcode][REST_FORMAT_CSV] )  );
         mg_send_http_chunk( nc, "", 0 );   // Terminator
         return;
-        
+
     }
     else if ( REST_FORMAT_XML == format ) {
 
         webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_XML );
-        mg_send_http_chunk( nc, XML_HEADER, strlen( XML_HEADER ) );            
+        mg_send_http_chunk( nc, XML_HEADER, strlen( XML_HEADER ) );
         mg_send_http_chunk( nc, rest_errors[errorcode][REST_FORMAT_XML], strlen( rest_errors[errorcode][REST_FORMAT_XML] ) );
         mg_send_http_chunk( nc, "", 0 );   // Terminator
         return;
-        
+
     }
     else if ( REST_FORMAT_JSON == format ) {
 
@@ -860,7 +860,7 @@ VSCPWebServerThread::webserv_rest_error( struct mg_connection *nc,
         mg_send_http_chunk( nc, rest_errors[errorcode][REST_FORMAT_JSON], strlen( rest_errors[errorcode][REST_FORMAT_JSON] ) );
         mg_send_http_chunk( nc, "", 0 );   // Terminator
         return;
-        
+
     }
     else if ( REST_FORMAT_JSONP == format ) {
 
@@ -868,7 +868,7 @@ VSCPWebServerThread::webserv_rest_error( struct mg_connection *nc,
         mg_send_http_chunk( nc, rest_errors[errorcode][REST_FORMAT_JSONP], strlen( rest_errors[errorcode][REST_FORMAT_JSONP] ) );
         mg_send_http_chunk( nc, "", 0 );   // Terminator
         return;
-        
+
     }
     else {
 
@@ -876,7 +876,7 @@ VSCPWebServerThread::webserv_rest_error( struct mg_connection *nc,
         mg_send_http_chunk( nc, REST_PLAIN_ERROR_UNSUPPORTED_FORMAT, strlen( REST_PLAIN_ERROR_UNSUPPORTED_FORMAT ) );
         mg_send_http_chunk( nc, "", 0 );   // Terminator
         return;
-        
+
     }
 }
 
@@ -928,18 +928,18 @@ struct websrv_rest_session *pSession,
         if ( REST_FORMAT_PLAIN == format ) {
 
             webserv_util_sendheader( nc, 200, REST_MIME_TYPE_PLAIN );
-  
+
 #ifdef WIN32
-            int n = _snprintf( wrkbuf, 
-                                sizeof( wrkbuf ), 
-                                "1 1 Success vscpsession=%s nEvents=%zd", 
-                                pSession->sid, 
+            int n = _snprintf( wrkbuf,
+                                sizeof( wrkbuf ),
+                                "1 1 Success vscpsession=%s nEvents=%zd",
+                                pSession->sid,
                                 pSession->pClientItem->m_clientInputQueue.GetCount() );
 #else
-            int n = snprintf( wrkbuf, 
-                                sizeof( wrkbuf ), 
-                                "1 1 Success vscpsession=%s nEvents=%lu", 
-                                pSession->sid, 
+            int n = snprintf( wrkbuf,
+                                sizeof( wrkbuf ),
+                                "1 1 Success vscpsession=%s nEvents=%lu",
+                                pSession->sid,
                                 pSession->pClientItem->m_clientInputQueue.GetCount() );
 #endif
             mg_send_http_chunk( nc, wrkbuf, n );
@@ -1009,7 +1009,7 @@ struct websrv_rest_session *pSession,
             webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSONP );
 
 #ifdef WIN32
-            // typeof handler === 'function' && 
+            // typeof handler === 'function' &&
             int n = _snprintf( wrkbuf,
                                sizeof( wrkbuf ),
                                "typeof handler === 'function' && handler({\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"vscpsession\":\"%s\",\"nEvents\":%zd});",
@@ -1120,8 +1120,8 @@ struct websrv_rest_session *pSession,
         }
         else {
             webserv_util_sendheader( nc, 400, REST_MIME_TYPE_PLAIN );
-            mg_send_http_chunk( nc, 
-                            REST_PLAIN_ERROR_UNSUPPORTED_FORMAT, 
+            mg_send_http_chunk( nc,
+                            REST_PLAIN_ERROR_UNSUPPORTED_FORMAT,
                             strlen( REST_PLAIN_ERROR_UNSUPPORTED_FORMAT ) );
             mg_send_http_chunk( nc, "", 0 ); // Terminator
             return;
@@ -1262,30 +1262,30 @@ VSCPWebServerThread::webserv_rest_doStatus( struct mg_connection *nc,
 //
 
 void
-VSCPWebServerThread::webserv_rest_doSendEvent( struct mg_connection *nc, 
-                                                    struct websrv_rest_session *pSession, 
-                                                    int format, 
+VSCPWebServerThread::webserv_rest_doSendEvent( struct mg_connection *nc,
+                                                    struct websrv_rest_session *pSession,
+                                                    int format,
                                                     vscpEvent *pEvent )
 {
     bool bSent = false;
 
     // Check pointer
     if (NULL == nc) return;
-    
+
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
     if (NULL == pObject) return;
 
     if ( NULL != pSession ) {
 
-        // Level II events betwen 512-1023 is recognized by the daemon and 
-        // sent to the correct interface as Level I events if the interface  
+        // Level II events betwen 512-1023 is recognized by the daemon and
+        // sent to the correct interface as Level I events if the interface
         // is addressed by the client.
         if ((pEvent->vscp_class <= 1023) &&
                 (pEvent->vscp_class >= 512) &&
                 (pEvent->sizeData >= 16)) {
 
             // This event shold be sent to the correct interface if it is
-            // available on this machine. If not it should be sent to 
+            // available on this machine. If not it should be sent to
             // the rest of the network as normal
 
             cguid destguid;
@@ -1295,7 +1295,7 @@ VSCPWebServerThread::webserv_rest_doSendEvent( struct mg_connection *nc,
 
             if (NULL != pSession->pClientItem ) {
 
-                // Set client id 
+                // Set client id
                 pEvent->obid = pSession->pClientItem->m_clientID;
 
                 // Check if filtered out
@@ -1325,7 +1325,7 @@ VSCPWebServerThread::webserv_rest_doSendEvent( struct mg_connection *nc,
                             bSent = false;
                         }
 
-                    } 
+                    }
                     else {
                         // Overun - No room for event
                         //vscp_deleteVSCPevent( pEvent );
@@ -1344,7 +1344,7 @@ VSCPWebServerThread::webserv_rest_doSendEvent( struct mg_connection *nc,
 
             if (NULL != pSession->pClientItem ) {
 
-                // Set client id 
+                // Set client id
                 pEvent->obid = pSession->pClientItem->m_clientID;
 
                 // There must be room in the send queue
@@ -1354,11 +1354,11 @@ VSCPWebServerThread::webserv_rest_doSendEvent( struct mg_connection *nc,
                     vscpEvent *pNewEvent = new( vscpEvent );
                     if ( NULL != pNewEvent ) {
                         vscp_copyVSCPEvent(pNewEvent, pEvent);
-                    
+
                         pObject->m_mutexClientOutputQueue.Lock();
                         pObject->m_clientOutputQueue.Append(pNewEvent);
                         pObject->m_semClientOutputQueue.Post();
-                        pObject->m_mutexClientOutputQueue.Unlock();                
+                        pObject->m_mutexClientOutputQueue.Unlock();
 
                         bSent = true;
                     }
@@ -1373,14 +1373,14 @@ VSCPWebServerThread::webserv_rest_doSendEvent( struct mg_connection *nc,
                     webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_NO_ROOM );
                     vscp_deleteVSCPevent( pEvent );
                     bSent = false;
-                } 
+                }
 
             }
             else {
                 webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_GENERAL_FAILURE );
                 vscp_deleteVSCPevent( pEvent );
                 bSent = false;
-            }            
+            }
 
         } // not sent
     }
@@ -1398,14 +1398,14 @@ VSCPWebServerThread::webserv_rest_doSendEvent( struct mg_connection *nc,
 //
 
 void
-VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc, 
-                                                        struct websrv_rest_session *pSession, 
+VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
+                                                        struct websrv_rest_session *pSession,
                                                         int format,
                                                         size_t count )
 {
     // Check pointer
     if (NULL == nc) return;
-    
+
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
     if (NULL == pObject) return;
 
@@ -1428,13 +1428,13 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
 
                     sprintf( wrkbuf, "1 1 Success \r\n");
                     mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ) );
-                    sprintf( wrkbuf, 
+                    sprintf( wrkbuf,
 #if WIN32
                                 "%zd events requested of %zd available (unfiltered) %zu will be retrieved\r\n",
 #else
-                                "%zd events requested of %zd available (unfiltered) %lu will be retrieved\r\n", 
+                                "%zd events requested of %zd available (unfiltered) %lu will be retrieved\r\n",
 #endif
-                                count, 
+                                count,
                                 pSession->pClientItem->m_clientInputQueue.GetCount(),
                                 MIN( count, cntAvailable ) );
 
@@ -1463,7 +1463,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
                                     strcat((char *) wrkbuf, (const char*) str.mb_str(wxConvUTF8));
                                     strcat((char *) wrkbuf, "\r\n" );
                                     mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
-                            
+
                                 }
                                 else {
                                     strcpy((char *) wrkbuf, "- Malformed event (intenal error)\r\n" );
@@ -1489,27 +1489,27 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
                     sprintf( wrkbuf, REST_PLAIN_ERROR_INPUT_QUEUE_EMPTY"\r\n");
                     mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
                 }
-                
+
             }
 
             // CSV
             else if ( REST_FORMAT_CSV == format ) {
 
                 // Send header
-                webserv_util_sendheader( nc, 200, /*REST_MIME_TYPE_CSV*/ REST_MIME_TYPE_PLAIN );                
-                
+                webserv_util_sendheader( nc, 200, /*REST_MIME_TYPE_CSV*/ REST_MIME_TYPE_PLAIN );
+
                 if ( pSession->pClientItem->m_bOpen && cntAvailable ) {
 
                     sprintf( wrkbuf, "success-code,error-code,message,description,Event\r\n1,1,Success,Success.,NULL\r\n");
                     mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
-                    sprintf( wrkbuf, 
+                    sprintf( wrkbuf,
 #if WIN32
                              "1,2,Info,%zd events requested of %d available (unfiltered) %zu will be retrieved,NULL\r\n",
 #else
-                             "1,2,Info,%zd events requested of %ul available (unfiltered) %lu will be retrieved,NULL\r\n", 
+                             "1,2,Info,%zd events requested of %ul available (unfiltered) %lu will be retrieved,NULL\r\n",
 #endif
-                                count, 
-                                cntAvailable,                
+                                count,
+                                cntAvailable,
                                 MIN( count, cntAvailable ) );
                     mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ) );
                     sprintf( wrkbuf,
@@ -1541,7 +1541,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
                                     strcat((char *) wrkbuf, (const char*) str.mb_str(wxConvUTF8));
                                     strcat((char *) wrkbuf, "\r\n" );
                                     mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
-                            
+
                                 }
                                 else {
                                     strcpy((char *) wrkbuf, "1,2,Info,Malformed event (intenal error)\r\n" );
@@ -1562,7 +1562,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
                             mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
                         }
                     } // for
-                } 
+                }
                 else {   // no events available
                     sprintf( wrkbuf, REST_CSV_ERROR_INPUT_QUEUE_EMPTY"\r\n");
                     mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
@@ -1577,15 +1577,15 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
                 int errors = 0;
 
                 // Send header
-                webserv_util_sendheader( nc, 200, REST_MIME_TYPE_XML );                
-                
+                webserv_util_sendheader( nc, 200, REST_MIME_TYPE_XML );
+
 
                 if ( pSession->pClientItem->m_bOpen && cntAvailable ) {
                     sprintf( wrkbuf, XML_HEADER"<vscp-rest success = \"true\" code = \"1\" message = \"Success\" description = \"Success.\" >");
                     mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
-                    sprintf( wrkbuf, 
-                                "<info>%zd events requested of %lu available (unfiltered) %zu will be retrieved</info>", 
-                                count, 
+                    sprintf( wrkbuf,
+                                "<info>%zd events requested of %lu available (unfiltered) %zu will be retrieved</info>",
+                                count,
                                 cntAvailable,
                                 MIN(count, cntAvailable ) );
                     mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
@@ -1686,7 +1686,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
                     strcpy((char *) wrkbuf, "</vscp-rest>" );
                     mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
 
-                }     
+                }
                 else {   // no events available
 
                     sprintf( wrkbuf, REST_XML_ERROR_INPUT_QUEUE_EMPTY"\r\n");
@@ -1698,7 +1698,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
             // JSON / JSONP
             else if ( ( REST_FORMAT_JSON == format ) || ( REST_FORMAT_JSONP == format ) ) {
 
-                int sentEvents = 0; 
+                int sentEvents = 0;
                 int filtered = 0;
                 int errors = 0;
                 char *p;
@@ -1719,7 +1719,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
 
                     // typeof handler === 'function' &&
                     if ( REST_FORMAT_JSONP == format ) {
-                        p += json_emit_unquoted_str( p, 
+                        p += json_emit_unquoted_str( p,
                                                        &wrkbuf[ sizeof( wrkbuf ) ] - p,
                                                        "typeof handler === 'function' && handler(",
                                                        strlen( "typeof handler === 'function' && handler(" ) );
@@ -1766,25 +1766,25 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
 
                                 wxString str;
                                 p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "{", 1 );
-                                
+
                                 // head
                                 p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "head", 4 );
                                 p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
                                 p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, pEvent->head );
                                 p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
-                                
+
                                 // class
                                 p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "vscpclass", 9 );
                                 p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
                                 p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, pEvent->vscp_class );
                                 p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
-                                
+
                                 // type
                                 p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "vscptype", 8);
                                 p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
                                 p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, pEvent->vscp_type );
                                 p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
-                                
+
                                 // timestamp
                                 p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "timestamp", 9 );
                                 p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
@@ -1796,20 +1796,20 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
                                 p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
                                 p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, pEvent->obid );
                                 p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
-                                
+
                                 // GUID
                                 vscp_writeGuidToString( pEvent, str);
                                 p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "guid", 4 );
                                 p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
                                 p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, str.mbc_str(), str.Length() );
                                 p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
-                                
+
                                 // SizeData
                                 p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "sizedata", 8 );
                                 p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
                                 p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, pEvent->sizeData );
                                 p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
-                                
+
                                 // Data
                                 p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "data", 4);
                                 p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":[", 2 );
@@ -1845,7 +1845,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
                         if ( 0 == p ) break;
 
                     } // for
-                    
+
                     memset( buf, 0, sizeof( buf ) );
                     memset( wrkbuf, 0, sizeof( wrkbuf ) );
                     p = wrkbuf;
@@ -1875,7 +1875,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
                     memset( wrkbuf, 0, sizeof( wrkbuf ) );
                     p = wrkbuf;
 
-                } // if open and data 
+                } // if open and data
                 else {   // no events available
 
                     if ( REST_FORMAT_JSON == format ) {
@@ -1888,9 +1888,9 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
                     mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
 
                 }
-                    
+
             }  // format
-            
+
             mg_send_http_chunk( nc, "", 0 );
 
         }
@@ -1912,13 +1912,13 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
 //
 
 void
-VSCPWebServerThread::webserv_rest_doSetFilter( struct mg_connection *nc, 
-                                                    struct websrv_rest_session *pSession, 
+VSCPWebServerThread::webserv_rest_doSetFilter( struct mg_connection *nc,
+                                                    struct websrv_rest_session *pSession,
                                                     int format,
                                                     vscpEventFilter& vscpfilter )
 {
     if ( NULL != pSession ) {
-        
+
         pSession->pClientItem->m_mutexClientInputQueue.Lock();
         memcpy( &pSession->pClientItem->m_filterVSCP, &vscpfilter, sizeof( vscpEventFilter ) );
         pSession->pClientItem->m_mutexClientInputQueue.Unlock();
@@ -1937,13 +1937,13 @@ VSCPWebServerThread::webserv_rest_doSetFilter( struct mg_connection *nc,
 //
 
 void
-VSCPWebServerThread::webserv_rest_doClearQueue( struct mg_connection *nc, 
-                                                    struct websrv_rest_session *pSession, 
+VSCPWebServerThread::webserv_rest_doClearQueue( struct mg_connection *nc,
+                                                    struct websrv_rest_session *pSession,
                                                     int format )
 {
     // Check pointer
     if (NULL == nc) return;
-    
+
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
     if (NULL == pObject) return;
 
@@ -1953,7 +1953,7 @@ VSCPWebServerThread::webserv_rest_doClearQueue( struct mg_connection *nc,
         CLIENTEVENTLIST::iterator iterVSCP;
 
         pSession->pClientItem->m_mutexClientInputQueue.Lock();
-        
+
         for (iterVSCP = pSession->pClientItem->m_clientInputQueue.begin();
                 iterVSCP != pSession->pClientItem->m_clientInputQueue.end(); ++iterVSCP) {
             vscpEvent *pEvent = *iterVSCP;
@@ -1962,7 +1962,7 @@ VSCPWebServerThread::webserv_rest_doClearQueue( struct mg_connection *nc,
 
         pSession->pClientItem->m_clientInputQueue.Clear();
         pSession->pClientItem->m_mutexClientInputQueue.Unlock();
-        
+
         webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_SUCCESS );
     }
     else {
@@ -1978,8 +1978,8 @@ VSCPWebServerThread::webserv_rest_doClearQueue( struct mg_connection *nc,
 //
 
 void
-VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc, 
-                                                    struct websrv_rest_session *pSession, 
+VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
+                                                    struct websrv_rest_session *pSession,
                                                     int format,
                                                     wxString& strVariableName )
 {
@@ -1988,7 +1988,7 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
 
     // Check pointer
     if (NULL == nc) return;
-    
+
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
     if (NULL == pObject) return;
 
@@ -2007,30 +2007,30 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
         // Get variable value
         wxString strVariableValue;
         pvar->writeValueToString( strVariableValue );
-        
+
         if ( REST_FORMAT_PLAIN == format ) {
 
                 webserv_util_sendheader( nc, 200, REST_MIME_TYPE_PLAIN );
                 sprintf( wrkbuf, "1 1 Success \r\n");
                 mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
 
-                sprintf( wrkbuf, 
-                                "variable=%s type=%d persistent=%s value='%s' note='%s'\r\n", 
-                                (const char *)pvar->getName().mbc_str(), 
+                sprintf( wrkbuf,
+                                "variable=%s type=%d persistent=%s value='%s' note='%s'\r\n",
+                                (const char *)pvar->getName().mbc_str(),
                                 pvar->getType(),
-                                pvar->isPersistent() ? "true" : "false", 
+                                pvar->isPersistent() ? "true" : "false",
                                 (const char *)strVariableValue.mbc_str(),
                                 (const char *)pvar->getNote().mbc_str() );
-            
+
                 mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
-                                        
+
         }
         else if ( REST_FORMAT_CSV == format ) {
-            
+
             webserv_util_sendheader( nc, 200, REST_MIME_TYPE_CSV );
-            sprintf( wrkbuf, 
+            sprintf( wrkbuf,
                 "success-code,error-code,message,description,Variable,Type,Persistent,Value,Note\r\n1,1,Success,Success.,%s,%d,%s,'%s','%s'\r\n",
-                (const char *)strVariableName.mbc_str(), 
+                (const char *)strVariableName.mbc_str(),
                 pvar->getType(),
                 pvar->isPersistent() ? "true" : "false",
                 (const char *)strVariableValue.mbc_str(),
@@ -2044,13 +2044,13 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
             sprintf( wrkbuf, XML_HEADER"<vscp-rest success = \"true\" code = \"1\" message = \"Success\" description = \"Success.\" >");
             mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
 
-            sprintf( wrkbuf, 
+            sprintf( wrkbuf,
                         "<variable type=\"%d(%s)\" persistent=\"%s\" >",
                         pvar->getType(),
                         pvar->getVariableTypeAsString( pvar->getType() ),
                         pvar->isPersistent() ? "true" : "false" );
             mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
-            sprintf((char *) wrkbuf, 
+            sprintf((char *) wrkbuf,
                             "<name>%s</name><value>%s</value><note>%s</note>",
                             (const char *)pvar->getName().mbc_str(),
                             (const char *)strVariableValue.mbc_str(),
@@ -2068,7 +2068,7 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
 
         }
         else if ( ( REST_FORMAT_JSON == format ) || ( REST_FORMAT_JSONP == format ) ) {
-                
+
             char *p = buf;
             if ( REST_FORMAT_JSONP == format ) {
                 webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSONP );
@@ -2085,17 +2085,17 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
                     p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, "typeof handler === 'function' && handler(", 41 );
                 }
 
-                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, 
+                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p,
                     "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",",
                     strlen( "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\"," ) );
-                    
+
                 p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varname", 7 );
-                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );                    
+                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
                 p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, pvar->getName().mbc_str(), pvar->getName().Length() );
                 p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 
                 p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "vartype", 7 );
-                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );            
+                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
                 wxString wxstr = wxString::FromAscii( pvar->getVariableTypeAsString( pvar->getType() ) );
                 p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wxstr.mbc_str(), wxstr.Length() );
                 p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
@@ -2112,7 +2112,7 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
                 p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 
                 p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varvalue", 8 );
-                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );                    
+                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
                 p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, strVariableValue.mbc_str(), strVariableValue.Length() );
                 p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 
@@ -2124,13 +2124,13 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
                 }
 
                 mg_send_http_chunk( nc, buf, strlen( buf) );
-                
 
-            }                         
+
+            }
         }
 
         mg_send_http_chunk( nc, "", 0 );    // Terminator
-        
+
     }
     else {
         webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_INVALID_SESSION );
@@ -2146,8 +2146,8 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
 //
 
 void
-VSCPWebServerThread::webserv_rest_doWriteVariable( struct mg_connection *nc, 
-                                                        struct websrv_rest_session *pSession, 
+VSCPWebServerThread::webserv_rest_doWriteVariable( struct mg_connection *nc,
+                                                        struct websrv_rest_session *pSession,
                                                         int format,
                                                         wxString& strVariableName,
                                                         wxString& strValue )
@@ -2160,7 +2160,7 @@ VSCPWebServerThread::webserv_rest_doWriteVariable( struct mg_connection *nc,
     }
 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    
+
     if (NULL == pObject) {
         return;
     }
@@ -2196,8 +2196,8 @@ VSCPWebServerThread::webserv_rest_doWriteVariable( struct mg_connection *nc,
 //
 
 void
-VSCPWebServerThread::webserv_rest_doCreateVariable( struct mg_connection *nc, 
-                                                        struct websrv_rest_session *pSession, 
+VSCPWebServerThread::webserv_rest_doCreateVariable( struct mg_connection *nc,
+                                                        struct websrv_rest_session *pSession,
                                                         int format,
                                                         wxString& strVariable,
                                                         wxString& strType,
@@ -2230,39 +2230,39 @@ VSCPWebServerThread::webserv_rest_doCreateVariable( struct mg_connection *nc,
     }
 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    
+
     if (NULL == pObject) {
-        webserv_rest_error( nc, 
-                                pSession, 
-                                format, 
-                                REST_ERROR_CODE_VARIABLE_NOT_CREATED ); 
+        webserv_rest_error( nc,
+                                pSession,
+                                format,
+                                REST_ERROR_CODE_VARIABLE_NOT_CREATED );
         return;
     }
 
     if ( NULL != pSession ) {
 
         // Add the variable
-        if ( !pObject->m_VSCP_Variables.add( strVariable, 
-                                                strValue, 
-                                                type, 
+        if ( !pObject->m_VSCP_Variables.add( strVariable,
+                                                strValue,
+                                                type,
                                                 bPersistence  ) ) {
-            webserv_rest_error( nc, 
-                                    pSession, 
-                                    format, 
+            webserv_rest_error( nc,
+                                    pSession,
+                                    format,
                                     REST_ERROR_CODE_VARIABLE_NOT_CREATED );
             return;
         }
 
-        webserv_rest_error( nc, 
-                                pSession, 
-                                format, 
+        webserv_rest_error( nc,
+                                pSession,
+                                format,
                                 REST_ERROR_CODE_SUCCESS );
 
     }
     else {
-        webserv_rest_error( nc, 
-                                pSession, 
-                                format, 
+        webserv_rest_error( nc,
+                                pSession,
+                                format,
                                 REST_ERROR_CODE_INVALID_SESSION );
     }
 
@@ -2275,8 +2275,8 @@ VSCPWebServerThread::webserv_rest_doCreateVariable( struct mg_connection *nc,
 //
 
 void
-VSCPWebServerThread::webserv_rest_doDeleteVariable( struct mg_connection *nc, 
-                                                        struct websrv_rest_session *pSession, 
+VSCPWebServerThread::webserv_rest_doDeleteVariable( struct mg_connection *nc,
+                                                        struct websrv_rest_session *pSession,
                                                         int format,
                                                         wxString& strVariable )
 {
@@ -2290,12 +2290,12 @@ VSCPWebServerThread::webserv_rest_doDeleteVariable( struct mg_connection *nc,
     }
 
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    
+
     if (NULL == pObject) {
-        webserv_rest_error( nc, 
-                                pSession, 
-                                format, 
-                                REST_ERROR_CODE_VARIABLE_NOT_CREATED ); 
+        webserv_rest_error( nc,
+                                pSession,
+                                format,
+                                REST_ERROR_CODE_VARIABLE_NOT_CREATED );
         return;
     }
 
@@ -2303,23 +2303,23 @@ VSCPWebServerThread::webserv_rest_doDeleteVariable( struct mg_connection *nc,
 
         // Add the variable
         if ( !pObject->m_VSCP_Variables.remove( strVariable ) ) {
-            webserv_rest_error( nc, 
-                                    pSession, 
-                                    format, 
+            webserv_rest_error( nc,
+                                    pSession,
+                                    format,
                                     REST_ERROR_CODE_VARIABLE_NOT_CREATED );
             return;
         }
 
-        webserv_rest_error( nc, 
-                                pSession, 
-                                format, 
+        webserv_rest_error( nc,
+                                pSession,
+                                format,
                                 REST_ERROR_CODE_SUCCESS );
 
     }
     else {
-        webserv_rest_error( nc, 
-                                pSession, 
-                                format, 
+        webserv_rest_error( nc,
+                                pSession,
+                                format,
                                 REST_ERROR_CODE_INVALID_SESSION );
     }
 
@@ -2331,8 +2331,8 @@ VSCPWebServerThread::webserv_rest_doDeleteVariable( struct mg_connection *nc,
 //
 
 void
-VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *nc, 
-                                                        struct websrv_rest_session *pSession, 
+VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *nc,
+                                                        struct websrv_rest_session *pSession,
                                                         int format,
                                                         wxString& strGuid,
                                                         wxString& strLevel,
@@ -2372,7 +2372,7 @@ VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *nc,
         strSubZone.ToLong( &subzone );      // VSCP event type
         subzone &= 0xff;
 
-        strLevel.ToLong( &level );          // Level I or Level II (default) 
+        strLevel.ToLong( &level );          // Level I or Level II (default)
         if ( ( level > 2 ) || ( level < 1 ) ) {
             level = 2;
         }
@@ -2396,7 +2396,7 @@ VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *nc,
         }
 
         if ( 1 == level ) {
-            
+
             if ( 0 == eventFormat ) {
 
                 // Floating point
@@ -2482,7 +2482,7 @@ VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *nc,
                 memcpy( data + 4, ( uint8_t * )&value, 8 ); // copy in double
                 uint64_t temp = wxUINT64_SWAP_ON_LE( *(data + 4) );
                 memcpy( data+4, (void *)&temp, 8 );
-                
+
                 // Copy in data
                 pEvent->pdata = new uint8_t[ 4 + 8 ];
                 if ( NULL == pEvent->pdata ) {
@@ -2503,7 +2503,7 @@ VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *nc,
                 pEvent->head = VSCP_PRIORITY_NORMAL;
                 pEvent->timestamp = 0; // Let interface fill in
                 memcpy( pEvent->GUID, guid, 16 );
-                pEvent->head = 0;                
+                pEvent->head = 0;
                 pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
                 pEvent->vscp_type = vscptype;
                 pEvent->timestamp = 0;
@@ -2540,7 +2540,7 @@ VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *nc,
 // webserv_rest_doGetTableData
 //
 
-void 
+void
 VSCPWebServerThread::websrc_rest_renderTableData( struct mg_connection *nc,
                                                         struct websrv_rest_session *pSession,
                                                         int format,
@@ -2566,7 +2566,7 @@ VSCPWebServerThread::websrc_rest_renderTableData( struct mg_connection *nc,
 
             wxDateTime dt;
             dt.Set( ( time_t )pRecords[ i ].timestamp );
-            wxString strDateTime = 
+            wxString strDateTime =
                             dt.FormatISODate() + _( " " ) + dt.FormatISOTime();
 
             sprintf( wrkbuf,
@@ -2823,7 +2823,7 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *nc,
 
             uint64_t start, end;
             if ( 0 == nRange ) {
-                // Neither 'from' or 'to' given 
+                // Neither 'from' or 'to' given
                 // Use value from header
                 start = ptblItem->getTimeStampStart();
                 end = ptblItem->getTimeStampEnd();
@@ -2839,7 +2839,7 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *nc,
                 end = timeTo.GetTicks();
             }
 
-            // Fetch number of records in set 
+            // Fetch number of records in set
             ptblItem->m_mutexThisTable.Lock();
             long nRecords = ptblItem->getRangeOfData( start, end );
             ptblItem->m_mutexThisTable.Unlock();
@@ -2946,7 +2946,7 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *nc,
                     mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ) );
 
                 }
-                
+
             }
             else if ( REST_FORMAT_XML == format ) {
 
@@ -3020,7 +3020,7 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *nc,
 
                 mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ) );
                 p = wrkbuf;
-               
+
                 for ( long i = 0; i < nfetchedRecords; i++ ) {
 
                     wxDateTime dt;
@@ -3040,12 +3040,12 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *nc,
 
                     if ( i < ( nfetchedRecords - 1 ) ) {
                         p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
-                    }                
+                    }
 
                     mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ) );
 
                 }
-                
+
                 memset( wrkbuf, 0, sizeof( wrkbuf ) );
                 p = wrkbuf;
 
@@ -3083,7 +3083,7 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *nc,
         ///////////////////////////////////////////////////////////////////////
         else if ( VSCP_TABLE_STATIC == ptblItem->m_vscpFileHead.type ) {
 
-            // Fetch number of records in set 
+            // Fetch number of records in set
             ptblItem->m_mutexThisTable.Lock();
             long nRecords = ptblItem->getStaticRequiredBuffSize();
             ptblItem->m_mutexThisTable.Unlock();
@@ -3142,7 +3142,7 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *nc,
                 return;
             }
 
-            
+
 
         }
 
@@ -3155,7 +3155,7 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *nc,
 // XML to JSON convert
 //
 
-void convert( const char *input, const char *output  ) 
+void convert( const char *input, const char *output  )
 {
     ifstream is( input );
     ostringstream oss;
@@ -3179,9 +3179,9 @@ void VSCPWebServerThread::webserv_rest_doFetchMDF( struct mg_connection *nc,
                                 wxString& strURL )
 {
     CMDF mdf;
-    
+
     if ( mdf.load( strURL, false, true ) )  {
-        
+
         // Loaded OK
 
         if ( REST_FORMAT_PLAIN == format ) {

@@ -7,7 +7,7 @@
 //
 // This file is part of the VSCP (http://www.vscp.org)
 //
-// Copyright (C) 2000-2016 Ake Hedman, 
+// Copyright (C) 2000-2016 Ake Hedman,
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This file is distributed in the hope that it will be useful,
@@ -37,7 +37,7 @@
 // TraceMasks:
 // ===========
 //
-//   wxTRACE_doWorkLoop - Workloop messages 
+//   wxTRACE_doWorkLoop - Workloop messages
 //   wxTRACE_vscpd_Msg - Received messages.
 //   wxTRACE_vscpd_ReceiveMutex  - Mutex lock
 //   wxTRACE_VSCP_Msg - VSCP message mechanism
@@ -127,7 +127,7 @@
 #endif
 
 #ifndef VSCP_DISABLE_SQLITE
-#include <sqlite3.h> 
+#include <sqlite3.h>
 #endif
 
 #include <mongoose.h>
@@ -170,7 +170,6 @@ static CControlObject *gpctrlObj;
 typedef struct _ASTAT_ {
     ADAPTER_STATUS adapt;
     NAME_BUFFER NameBuff [30];
-
 } ASTAT, * PASTAT;
 
 ASTAT Adapter;
@@ -193,10 +192,10 @@ CControlObject::CControlObject()
     int i;
     m_bQuit = false;            // true if we should quit
     gpctrlObj = this;           // needed by websocket static callbacks
-    
+
     m_automation.setControlObject( this );
     m_maxItemsInClientReceiveQueue = MAX_ITEMS_CLIENT_RECEIVE_QUEUE;
-    
+
     // Nill the GUID
     m_guid.clear();
 
@@ -219,7 +218,7 @@ CControlObject::CControlObject()
     m_bLogGeneralEnable = true;
 
 #ifdef WIN32
-    m_logGeneralFileName.SetName( wxStandardPaths::Get().GetConfigDir() + 
+    m_logGeneralFileName.SetName( wxStandardPaths::Get().GetConfigDir() +
                                         _("/vscp/logs/vscp_log_general.txt") );
 #else
     m_logGeneralFileName.SetName( _("/srv/vscp/logs/vscp_log_general") );
@@ -229,7 +228,7 @@ CControlObject::CControlObject()
     m_bLogSecurityEnable = true;
 
 #ifdef WIN32
-    m_logSecurityFileName.SetName( wxStandardPaths::Get().GetConfigDir() + 
+    m_logSecurityFileName.SetName( wxStandardPaths::Get().GetConfigDir() +
                                             _("/vscp/vscp_log_security.txt") );
 #else
     m_logSecurityFileName.SetName( _("/srv/vscp/logs/vscp_log_security") );
@@ -239,7 +238,7 @@ CControlObject::CControlObject()
     m_bLogAccessEnable = true;
 
 #ifdef WIN32
-    m_logAccessFileName.SetName( wxStandardPaths::Get().GetConfigDir() + 
+    m_logAccessFileName.SetName( wxStandardPaths::Get().GetConfigDir() +
                                             _("/vscp/vscp_log_access.txt") );
 #else
     m_logAccessFileName.SetName( _("/srv/vscp/logs/vscp_log_access") );
@@ -247,28 +246,28 @@ CControlObject::CControlObject()
 
 
 #ifdef WIN32
-    m_path_db_vscp_daemon.SetName( wxStandardPaths::Get().GetConfigDir() + 
+    m_path_db_vscp_daemon.SetName( wxStandardPaths::Get().GetConfigDir() +
                                             _("/vscp/vscp_daemon.sqlite3") );
 #else
     m_path_db_vscp_daemon.SetName( _("/srv/vscp/logs/vscp_daemon.sqlite3") );
-#endif    
+#endif
 
 #ifdef WIN32
-    m_path_db_vscp_data.SetName( wxStandardPaths::Get().GetConfigDir() + 
+    m_path_db_vscp_data.SetName( wxStandardPaths::Get().GetConfigDir() +
                                             _("/vscp/vscp_data.sqlite3") );
 #else
     m_path_db_vscp_data.SetName( _("/srv/vscp/logs/vscp_data.sqlite3") );
-#endif 
+#endif
 
 #ifdef WIN32
-    m_path_db_vscp_variable.SetName( wxStandardPaths::Get().GetConfigDir() + 
+    m_path_db_vscp_variable.SetName( wxStandardPaths::Get().GetConfigDir() +
                                             _("/vscp/vscp_variable.sqlite3") );
 #else
     m_path_db_vscp_variable.SetName( _("/srv/vscp/logs/vscp_variable.sqlite3") );
 #endif
 
 #ifdef WIN32
-    m_path_db_vscp_dm.SetName( wxStandardPaths::Get().GetConfigDir() + 
+    m_path_db_vscp_dm.SetName( wxStandardPaths::Get().GetConfigDir() +
                                             _("/vscp/vscp_dm.sqlite3") );
 #else
     m_path_db_vscp_dm.SetName( _("/srv/vscp/logs/vscp_dm.sqlite3") );
@@ -283,15 +282,15 @@ CControlObject::CControlObject()
     // Control TCP/IP Interface
     m_bTCP = true;
 
-    // Multicast annouce 
+    // Multicast annouce
     m_bMulticastAnnounce = true;
 
     // Control UDP Interface
     m_bUDP = false;
-    
+
     // Enable MQTT broker
     m_bMQTTBroker = true;
-    
+
     // Enable CoAP server
     m_bCoAPServer = true;
 
@@ -306,10 +305,10 @@ CControlObject::CControlObject()
 
     // Default UDP interface
     m_strUDPInterfaceAddress = _("udp://:9598");
-    
+
     // Default MQTT broker interface
     m_strMQTTBrokerInterfaceAddress = _("1883");
-    
+
     // Default CoAP server interface
     m_strCoAPServerInterfaceAddress = _("udp://:5683");
 
@@ -334,12 +333,12 @@ CControlObject::CControlObject()
     m_pwebServerThread = NULL;
     m_pMQTTBrookerThread = NULL;
     m_pCoAPServerThread = NULL;
-    
+
     // Websocket interface
     m_bWebSockets = true;       // websocket interface ia active
     m_bAuthWebsockets = true;   // Authentication is needed
     memset( m_pathCert, 0, sizeof( m_pathCert ) );
-    
+
     // Webserver interface
     m_portWebServer = _("8080");
     m_bWebServer = true;
@@ -362,9 +361,9 @@ CControlObject::CControlObject()
     memset( m_ssi_pattern, 0, sizeof( m_ssi_pattern ) );
     memset( m_ip_acl, 0, sizeof( m_ip_acl ) );
     memset( m_dav_document_root, 0, sizeof( m_dav_document_root ) );
-    
+
     // Directory listings on by default
-    strcpy( m_EnableDirectoryListings, "yes" ); 
+    strcpy( m_EnableDirectoryListings, "yes" );
 
     // Set control object
     m_dm.setControlObject(this);
@@ -467,7 +466,7 @@ void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const ui
 
     wxdebugmsg = datetime.FormatISODate() + _(" ") + datetime.FormatISOTime() + _(" - ") + wxstr;
 
-#ifdef WIN32 
+#ifdef WIN32
 #ifdef BUILD_VSCPD_SERVICE
 
     const char* ps[3];
@@ -494,7 +493,7 @@ void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const ui
 #endif
 #endif
 
-    
+
 
     //printf( wxdebugmsg.mb_str( wxConvUTF8 ) );
     if ( level >= m_logLevel ) {
@@ -522,13 +521,13 @@ void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const ui
             m_fileLogSecurity.Write( wxdebugmsg );
         }
     }
-        
+
     if ( DAEMON_LOGTYPE_ACCESS == nType ) {
         // Write to Access log file
         if ( m_fileLogAccess.IsOpened() ) {
             m_fileLogAccess.Write( wxdebugmsg );
-        }      
-    } 
+        }
+    }
 
 
 #ifndef WIN32
@@ -539,14 +538,14 @@ void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const ui
 
     switch (level) {
 
-    case DAEMON_LOGMSG_DEBUG:
-        syslog(LOG_DEBUG, "%s", (const char *) wxdebugmsg.ToAscii());
-        break;
-
-    case DAEMON_LOGMSG_INFO:
+    case DAEMON_LOGMSG_NORMAL:
         syslog(LOG_INFO, "%s", (const char *) wxdebugmsg.ToAscii());
         break;
 
+    case DAEMON_LOGMSG_DEBUG:
+        syslog(LOG_DEBUG, "%s", (const char *) wxdebugmsg.ToAscii());
+        break;
+/*
     case DAEMON_LOGMSG_NOTICE:
         syslog(LOG_NOTICE, "%s", (const char *) wxdebugmsg.ToAscii());
         break;
@@ -570,7 +569,7 @@ void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const ui
     case DAEMON_LOGMSG_EMERGENCY:
         syslog(LOG_EMERG, "%s", (const char *) wxdebugmsg.ToAscii());
         break;
-
+*/
     };
 
 #endif
@@ -610,32 +609,32 @@ bool CControlObject::init(wxString& strcfgfile)
     // A configuration file must be available
     if ( !wxFile::Exists( strcfgfile ) ) {
         printf("No configuration file. Can't initialize!.");
-        logMsg(_("No configuration file. Can't initialize!.\n"), DAEMON_LOGMSG_CRITICAL);
-        logMsg(_("Path = .") + strcfgfile + _("\n"), DAEMON_LOGMSG_CRITICAL);
+        logMsg(_("No configuration file. Can't initialize!.\n") );
+        logMsg(_("Path = .") + strcfgfile + _("\n") );
         return FALSE;
     }
-    
+
     // Initialise the SQLite library
     if ( SQLITE_OK != sqlite3_initialize() ) {
         printf("Unable to initialise SQLite library!.");
-        logMsg(_("Unable to initialise SQLite library!.\n"), DAEMON_LOGMSG_CRITICAL);
+        logMsg(_("Unable to initialise SQLite library!.\n") );
         return FALSE;
     }
 
 #ifndef WIN32
-    if ( m_runAsUser.Length() ) { 
+    if ( m_runAsUser.Length() ) {
         struct passwd *pw;
         if ( NULL == ( pw = getpwnam(m_runAsUser.mbc_str() ) ) ) {
-            logMsg(_("Unknown user.\n"), DAEMON_LOGMSG_CRITICAL);
+            logMsg(_("Unknown user.\n") );
         } else if (setgid(pw->pw_gid) != 0) {
-            logMsg( _("setgid() failed.\n"), DAEMON_LOGMSG_CRITICAL);
+            logMsg( _("setgid() failed.\n") );
         } else if (setuid(pw->pw_uid) != 0) {
-            logMsg( _("setuid() failed.\n"), DAEMON_LOGMSG_CRITICAL);
+            logMsg( _("setuid() failed.\n") );
         }
     }
 #endif
 
-    
+
 
     //::wxLogDebug(_("Using configuration file: ") + strcfgfile + _("\n"));
 
@@ -643,25 +642,25 @@ bool CControlObject::init(wxString& strcfgfile)
     char buf[ 512 ];
     randPassword pw(3);
 
-    // Level II Driver Username	
+    // Level II Driver Username
     pw.generatePassword(32, buf);
     m_driverUsername = wxString::FromAscii(buf);
-    
+
     // Level II Driver Password
     pw.generatePassword(32, buf);
     m_driverPassword = wxString::FromAscii( buf );
-    
+
     wxString driverhash = m_driverUsername;
     driverhash += _(":");
     driverhash += wxString::FromUTF8( m_authDomain );
     driverhash += _(":");
     driverhash += m_driverPassword;
-    
+
     memset( buf, 0, sizeof( buf ) );
     strncpy( buf,(const char *)driverhash.mbc_str(), driverhash.Length() );
-    
+
     char digest[33];
-    memset( digest, 0, sizeof( digest ) ); 
+    memset( digest, 0, sizeof( digest ) );
     static const size_t len_buf = strlen( buf );
     cs_md5( digest, buf, len_buf, NULL );
 
@@ -672,27 +671,29 @@ bool CControlObject::init(wxString& strcfgfile)
                             _(""),
                             _("") );
 
-    // Read configuration
+    // Read XML configuration
     if (!readConfiguration(strcfgfile)) {
-        logMsg(_("Unable to open/parse configuration file. Can't initialize!.\n"), DAEMON_LOGMSG_CRITICAL);
-        logMsg(_("Path = .") + strcfgfile + _("\n"), DAEMON_LOGMSG_CRITICAL);
+        logMsg(_("Unable to open/parse configuration file. Can't initialize!.\n") );
+        logMsg(_("Path = .") + strcfgfile + _("\n") );
         return FALSE;
     }
-   
+
     // Open up the General logging file.
     if ( m_bLogGeneralEnable ) {
-        m_fileLogGeneral.Open( m_logGeneralFileName.GetFullPath(), wxFile::write_append ); 
+        m_fileLogGeneral.Open( m_logGeneralFileName.GetFullPath(), wxFile::write_append );
     }
 
     // Open up the Security logging file
     if ( m_bLogSecurityEnable ) {
         m_fileLogSecurity.Open( m_logSecurityFileName.GetFullPath(), wxFile::write_append );
     }
-    
+
     // Open up the Access logging file
     if ( m_bLogAccessEnable ) {
         m_fileLogAccess.Open( m_logAccessFileName.GetFullPath(), wxFile::write_append );
     }
+
+
 
     // Calculate sunset etc
     m_automation.calcSun();
@@ -703,10 +704,10 @@ bool CControlObject::init(wxString& strcfgfile)
     str += _("\n");
     str += _(VSCPD_COPYRIGHT);
     str += _("\n");
-    logMsg(str );
-    
-    str.Printf(_("Log Level=%d\n"), m_logLevel, (uint8_t)DAEMON_LOGMSG_EMERGENCY );       
-    logMsg(str);
+    logMsg( str );
+
+    str.Printf(_("Log Level=%d\n"), m_logLevel );
+    logMsg( str );
 
     // Get GUID
     if ( m_guid.isNULL() ) {
@@ -726,28 +727,76 @@ bool CControlObject::init(wxString& strcfgfile)
         m_strServerName += strguid;
     }
 
+
+    // ===============================
+    // * * * Open database files * * *
+    // ===============================
+
+    // * * * VSCP Daemon configuration database * * *
+
+    // Check filename
+    if ( m_path_db_vscp_daemon.IsOk() && m_path_db_vscp_daemon.FileExists() ) {
+
+        if ( SQLITE_OK != sqlite3_open( m_path_db_vscp_daemon.GetFullPath().mbc_str(),
+                                            &m_db_vscp_daemon ) ) {
+
+            // Failed to open/create the database file
+            logMsg( _("VSCP Daemon configuration database could not be opened. - Will not be used.\n") );
+            str.Printf( _("Path=%s error=%s\n"),
+                            m_path_db_vscp_daemon.GetFullPath().mbc_str(),
+                            sqlite3_errmsg( m_db_vscp_daemon ) );
+            logMsg(str);
+            if ( NULL != m_db_vscp_daemon ) sqlite3_close( m_db_vscp_daemon );
+            m_db_vscp_daemon = NULL;
+
+        }
+        else {
+            // Database is open. Read configuration data from it
+            dbReadConfiguration();
+        }
+
+    }
+    else {
+
+        if ( m_path_db_vscp_daemon.IsOk() ) {
+
+            // We need to create the database from scratch. This may not work if
+            // the database is in a read only location.
+            logMsg( _("VSCP Daemon configuration database does not exist - will be created.\n") );
+            str.Printf(_("Path=%s\n"), m_path_db_vscp_daemon.GetFullPath().mbc_str() );
+            logMsg(str);
+        }
+        else {
+            logMsg( _("VSCP Daemon configuration database path invalid - will not be used.\n") );
+            str.Printf(_("Path=%s\n"), m_path_db_vscp_daemon.GetFullPath().mbc_str() );
+            logMsg(str);
+        }
+
+    }
+
+
     // Load decision matrix if mechanism is enabled
     if ( m_bDM ) {
-        logMsg(_("DM enabled.\n"), DAEMON_LOGMSG_INFO);
+        logMsg(_("DM enabled.\n") );
         m_dm.init();
         m_dm.load();
     }
     else {
-        logMsg(_("DM disabled.\n"), DAEMON_LOGMSG_INFO);
+        logMsg(_("DM disabled.\n") );
     }
 
     // Load variables if mechanism is enabled
     if ( m_bVariables ) {
-        logMsg(_("Variables enabled.\n"), DAEMON_LOGMSG_INFO);
+        logMsg(_("Variables enabled.\n") );
         m_VSCP_Variables.load();
     }
     else {
-        logMsg(_("Variables disabled.\n"), DAEMON_LOGMSG_INFO);
+        logMsg(_("Variables disabled.\n") );
     }
-    
+
     // Add stock variables if enables
     if ( m_bVariables ) {
-        addStockVariables();    
+        addStockVariables();
     }
 
     // Start daemon internal client worker thread
@@ -755,11 +804,11 @@ bool CControlObject::init(wxString& strcfgfile)
 
     // Start TCP/IP interface if enabled
     if ( m_bTCP ) {
-        logMsg(_("TCP/IP interface enabled.\n"), DAEMON_LOGMSG_INFO);
+        logMsg(_("TCP/IP interface enabled.\n") );
         startTcpWorkerThread();
     }
     else {
-        logMsg(_("TCP/IP interface disabled.\n"), DAEMON_LOGMSG_INFO);
+        logMsg(_("TCP/IP interface disabled.\n") );
     }
 
     // Start daemon worker thread if enabled.
@@ -769,38 +818,38 @@ bool CControlObject::init(wxString& strcfgfile)
 
     // Start web sockets if enabled
     if (m_bWebSockets) {
-        logMsg(_("WebServer interface active.\n"), DAEMON_LOGMSG_INFO);
+        logMsg(_("WebServer interface active.\n") );
         startWebServerThread();
     }
     else {
-        logMsg(_("WebServer interface disabled.\n"), DAEMON_LOGMSG_INFO);
+        logMsg(_("WebServer interface disabled.\n") );
     }
-    
+
     // Load drivers if the are enabled
     if (m_bEnableLevel1Drivers) {
-        logMsg(_("Level I drivers enabled.\n"), DAEMON_LOGMSG_INFO);
+        logMsg(_("Level I drivers enabled.\n") );
         startDeviceWorkerThreads();
     }
     else {
-        logMsg(_("Level I drivers disabled.\n"), DAEMON_LOGMSG_INFO);
+        logMsg(_("Level I drivers disabled.\n") );
     }
-    
+
     // Start MQTT Broker if enabled
     if ( m_bMQTTBroker ) {
-        logMsg(_("MQTT Broker enabled.\n"), DAEMON_LOGMSG_INFO);
+        logMsg(_("MQTT Broker enabled.\n") );
         startMQTTBrokerThread();
     }
     else {
-        logMsg(_("MQTTBroker disabled.\n"), DAEMON_LOGMSG_INFO);
+        logMsg(_("MQTTBroker disabled.\n") );
     }
-    
+
     // Start CoAP server if enabled
     if ( m_bCoAPServer ) {
-        logMsg(_("CoAP Server enabled.\n"), DAEMON_LOGMSG_INFO);
+        logMsg(_("CoAP Server enabled.\n") );
         startCoAPServerThread();
     }
     else {
-        logMsg(_("CoAP Server disabled.\n"), DAEMON_LOGMSG_INFO);
+        logMsg(_("CoAP Server disabled.\n") );
     }
 
     return true;
@@ -850,8 +899,7 @@ bool CControlObject::run(void)
     CClientItem *pClientItem = new CClientItem;
     if ( NULL == pClientItem ) {
         wxLogDebug(_("ControlObject: Unable to allocate Client item, Ending"));
-        logMsg( _("Unable to allocate Client item, Ending."), 
-                    DAEMON_LOGMSG_CRITICAL);
+        logMsg( _("Unable to allocate Client item, Ending.") );
         return false;
     }
 
@@ -859,8 +907,8 @@ bool CControlObject::run(void)
     m_dm.m_pClientItem = pClientItem;
 
     // Set Filter/Mask for full DM table
-    memcpy( &pClientItem->m_filterVSCP, 
-                &m_dm.m_DM_Table_filter, 
+    memcpy( &pClientItem->m_filterVSCP,
+                &m_dm.m_DM_Table_filter,
                 sizeof( vscpEventFilter ) );
 
     // This is an active client
@@ -884,11 +932,11 @@ bool CControlObject::run(void)
     //-------------------------------------------------------------------------
     //                            MAIN - LOOP
     //-------------------------------------------------------------------------
-    
+
     // DM Loop
     while ( !m_bQuit ) {
-    
-        // CLOCKS_PER_SEC 
+
+        // CLOCKS_PER_SEC
         clock_t ticks,oldus;
         oldus = ticks = clock();
 
@@ -904,12 +952,12 @@ bool CControlObject::run(void)
         // Autosave variables
         m_variableMutex.Lock();
         if ( m_VSCP_Variables.autoSave() ) {
-            logMsg(_("Autosaved variables.\n"), DAEMON_LOGMSG_INFO);
+            logMsg(_("Autosaved variables.\n") );
         }
         m_variableMutex.Unlock();
 
         // Wait for event
-        if ( wxSEMA_TIMEOUT == 
+        if ( wxSEMA_TIMEOUT ==
                 pClientItem->m_semClientInputQueue.WaitTimeout( 100 ) ) {
 
             // Put the LOOP event on the queue
@@ -981,7 +1029,7 @@ bool CControlObject::cleanup(void)
         delete pTable;
     }
     m_mutexTableList.Unlock();
-    
+
     // Close logfile
     if ( m_bLogGeneralEnable ) {
         m_fileLogGeneral.Close();
@@ -996,7 +1044,7 @@ bool CControlObject::cleanup(void)
     if ( m_bLogAccessEnable ) {
         m_fileLogAccess.Close();
     }
-    
+
     // Clean up SQLite lib allocations
     sqlite3_shutdown();
 
@@ -1024,16 +1072,13 @@ bool CControlObject::startClientWorkerThread(void)
         if (wxTHREAD_NO_ERROR == (err = m_pclientMsgWorkerThread->Create())) {
             //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
             if (wxTHREAD_NO_ERROR != (err = m_pclientMsgWorkerThread->Run())) {
-                logMsg( _("Unable to run controlobject client thread."), 
-                        DAEMON_LOGMSG_CRITICAL);
+                logMsg( _("Unable to run controlobject client thread.") );
             }
         } else {
-            logMsg( _("Unable to create controlobject client thread."), 
-                    DAEMON_LOGMSG_CRITICAL);
+            logMsg( _("Unable to create controlobject client thread.") );
         }
     } else {
-        logMsg( _("Unable to allocate memory for controlobject client thread."), 
-                    DAEMON_LOGMSG_CRITICAL);
+        logMsg( _("Unable to allocate memory for controlobject client thread.") );
     }
 
     return true;
@@ -1063,10 +1108,10 @@ bool CControlObject::stopClientWorkerThread(void)
 bool CControlObject::startTcpWorkerThread(void)
 {
     /////////////////////////////////////////////////////////////////////////////
-    // Run the TCP server thread 
+    // Run the TCP server thread
     /////////////////////////////////////////////////////////////////////////////
     if ( m_bTCP ) {
-        
+
         m_pVSCPClientThread = new VSCPClientThread;
 
         if (NULL != m_pVSCPClientThread) {
@@ -1075,17 +1120,15 @@ bool CControlObject::startTcpWorkerThread(void)
             if (wxTHREAD_NO_ERROR == (err = m_pVSCPClientThread->Create())) {
                 //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
                 if (wxTHREAD_NO_ERROR != (err = m_pVSCPClientThread->Run())) {
-                    logMsg(_("Unable to run TCP thread."), DAEMON_LOGMSG_CRITICAL);
+                    logMsg(_("Unable to run TCP thread.") );
                 }
-            } 
-            else {
-                logMsg( _("Unable to create TCP thread."), 
-                        DAEMON_LOGMSG_CRITICAL);
             }
-        } 
+            else {
+                logMsg( _("Unable to create TCP thread.") );
+            }
+        }
         else {
-            logMsg(_("Unable to allocate memory for TCP thread."), 
-                        DAEMON_LOGMSG_CRITICAL);
+            logMsg(_("Unable to allocate memory for TCP thread.") );
         }
     }
 
@@ -1120,10 +1163,10 @@ bool CControlObject::stopTcpWorkerThread(void)
 bool CControlObject::startUDPWorkerThread(void)
 {
     /////////////////////////////////////////////////////////////////////////////
-    // Run the UDP server thread 
+    // Run the UDP server thread
     /////////////////////////////////////////////////////////////////////////////
     if ( m_bUDP ) {
-        
+
         m_pVSCPClientUDPThread = new VSCPUDPClientThread;
 
         if (NULL != m_pVSCPClientUDPThread) {
@@ -1132,18 +1175,15 @@ bool CControlObject::startUDPWorkerThread(void)
             if (wxTHREAD_NO_ERROR == (err = m_pVSCPClientUDPThread->Create())) {
                 //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
                 if (wxTHREAD_NO_ERROR != (err = m_pVSCPClientUDPThread->Run())) {
-                    logMsg( _("Unable to run TCP thread."), 
-                                DAEMON_LOGMSG_CRITICAL);
+                    logMsg( _("Unable to run TCP thread.") );
                 }
-            } 
-            else {
-                logMsg( _("Unable to create TCP thread."), 
-                            DAEMON_LOGMSG_CRITICAL);
             }
-        } 
+            else {
+                logMsg( _("Unable to create TCP thread.") );
+            }
+        }
         else {
-            logMsg( _("Unable to allocate memory for TCP thread."), 
-                        DAEMON_LOGMSG_CRITICAL);
+            logMsg( _("Unable to allocate memory for TCP thread.") );
         }
     }
 
@@ -1176,10 +1216,10 @@ bool CControlObject::stopUDPWorkerThread(void)
 bool CControlObject::startWebServerThread(void)
 {
     /////////////////////////////////////////////////////////////////////////////
-    // Run the WebServer server thread  
+    // Run the WebServer server thread
     /////////////////////////////////////////////////////////////////////////////
     if ( m_bWebServer) {
-        
+
         m_pwebServerThread = new VSCPWebServerThread;
 
         if (NULL != m_pwebServerThread) {
@@ -1188,18 +1228,15 @@ bool CControlObject::startWebServerThread(void)
             if (wxTHREAD_NO_ERROR == (err = m_pwebServerThread->Create())) {
                 //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
                 if (wxTHREAD_NO_ERROR != (err = m_pwebServerThread->Run())) {
-                    logMsg( _("Unable to run WeServer thread."), 
-                                DAEMON_LOGMSG_CRITICAL);
+                    logMsg( _("Unable to run WeServer thread.") );
                 }
-            } 
-            else {
-                logMsg( _("Unable to create WebServer thread."), 
-                            DAEMON_LOGMSG_CRITICAL);
             }
-        } 
+            else {
+                logMsg( _("Unable to create WebServer thread.") );
+            }
+        }
         else {
-            logMsg( _("Unable to allocate memory for WebServer thread."), 
-                        DAEMON_LOGMSG_CRITICAL);
+            logMsg( _("Unable to allocate memory for WebServer thread.") );
         }
     }
 
@@ -1244,18 +1281,15 @@ bool CControlObject::startDaemonWorkerThread(void)
             if (wxTHREAD_NO_ERROR == (err = m_pdaemonVSCPThread->Create())) {
                 m_pdaemonVSCPThread->SetPriority(WXTHREAD_DEFAULT_PRIORITY);
                 if (wxTHREAD_NO_ERROR != (err = m_pdaemonVSCPThread->Run())) {
-                    logMsg( _("Unable to start TCP VSCP daemon thread."), 
-                                DAEMON_LOGMSG_CRITICAL);
+                    logMsg( _("Unable to start TCP VSCP daemon thread.") );
                 }
-            } 
-            else {
-                logMsg( _("Unable to create TCP VSCP daemon thread."), 
-                            DAEMON_LOGMSG_CRITICAL);
             }
-        } 
+            else {
+                logMsg( _("Unable to create TCP VSCP daemon thread.") );
+            }
+        }
         else {
-            logMsg( _("Unable to start VSCP daemon thread."), 
-                        DAEMON_LOGMSG_CRITICAL);
+            logMsg( _("Unable to start VSCP daemon thread.") );
         }
 
     } // daemon enabled
@@ -1281,7 +1315,7 @@ bool CControlObject::stopDaemonWorkerThread(void)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//  
+//
 //
 
 bool CControlObject::startDeviceWorkerThreads(void)
@@ -1298,7 +1332,7 @@ bool CControlObject::startDeviceWorkerThreads(void)
 
             // Just start if enabled
             if ( !pDeviceItem->m_bEnable ) continue;
-                
+
             pDeviceItem->startDriver( this );
 
         } // Valid device item
@@ -1342,7 +1376,7 @@ bool CControlObject::startMQTTBrokerThread(void)
     // Run the MQTT Broker thread if enabled
     /////////////////////////////////////////////////////////////////////////////
     if ( m_bMQTTBroker ) {
-        
+
         m_pMQTTBrookerThread = new VSCPMQTTBrokerThread;
 
         if (NULL != m_pMQTTBrookerThread) {
@@ -1351,18 +1385,15 @@ bool CControlObject::startMQTTBrokerThread(void)
             if (wxTHREAD_NO_ERROR == (err = m_pMQTTBrookerThread->Create())) {
                 //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
                 if (wxTHREAD_NO_ERROR != (err = m_pMQTTBrookerThread->Run())) {
-                    logMsg( _("Unable to run TCP thread."), 
-                                DAEMON_LOGMSG_CRITICAL);
+                    logMsg( _("Unable to run TCP thread.") );
                 }
-            } 
-            else {
-                logMsg( _("Unable to create TCP thread."), 
-                            DAEMON_LOGMSG_CRITICAL);
             }
-        } 
+            else {
+                logMsg( _("Unable to create TCP thread.") );
+            }
+        }
         else {
-            logMsg( _("Unable to allocate memory for TCP thread."), 
-                        DAEMON_LOGMSG_CRITICAL);
+            logMsg( _("Unable to allocate memory for TCP thread.") );
         }
     }
 
@@ -1395,10 +1426,10 @@ bool CControlObject::stopMQTTBrokerThread(void)
 bool CControlObject::startCoAPServerThread(void)
 {
     /////////////////////////////////////////////////////////////////////////////
-    // Run the CoAP Server thread if enabled 
+    // Run the CoAP Server thread if enabled
     /////////////////////////////////////////////////////////////////////////////
     if ( m_bCoAPServer ) {
-        
+
         m_pCoAPServerThread = new VSCPCoAPServerThread;
 
         if (NULL != m_pCoAPServerThread) {
@@ -1407,18 +1438,15 @@ bool CControlObject::startCoAPServerThread(void)
             if (wxTHREAD_NO_ERROR == (err = m_pCoAPServerThread->Create())) {
                 //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
                 if (wxTHREAD_NO_ERROR != (err = m_pCoAPServerThread->Run())) {
-                    logMsg( _("Unable to run TCP thread."), 
-                                DAEMON_LOGMSG_CRITICAL);
+                    logMsg( _("Unable to run TCP thread.") );
                 }
-            } 
-            else {
-                logMsg( _("Unable to create TCP thread."), 
-                            DAEMON_LOGMSG_CRITICAL);
             }
-        } 
+            else {
+                logMsg( _("Unable to create TCP thread.") );
+            }
+        }
         else {
-            logMsg( _("Unable to allocate memory for TCP thread."), 
-                        DAEMON_LOGMSG_CRITICAL);
+            logMsg( _("Unable to allocate memory for TCP thread.") );
         }
     }
 
@@ -1470,7 +1498,7 @@ void CControlObject::sendEventToClient( CClientItem *pClientItem,
     // Create an event
     vscpEvent *pnewvscpEvent = new vscpEvent;
     if (NULL != pnewvscpEvent) {
-        
+
         // Copy in the new event
         memcpy( pnewvscpEvent, pEvent, sizeof( vscpEvent) );
 
@@ -1481,7 +1509,7 @@ void CControlObject::sendEventToClient( CClientItem *pClientItem,
             if ( NULL != pnewvscpEvent->pdata ) {
                 memcpy( pnewvscpEvent->pdata, pEvent->pdata, pEvent->sizeData );
             }
-        } 
+        }
         else {
             // No data
             pnewvscpEvent->pdata = NULL;
@@ -1500,7 +1528,7 @@ void CControlObject::sendEventToClient( CClientItem *pClientItem,
 // sendEventAllClients
 //
 
-void CControlObject::sendEventAllClients( vscpEvent *pEvent, 
+void CControlObject::sendEventAllClients( vscpEvent *pEvent,
                                             uint32_t excludeID )
 {
     CClientItem *pClientItem;
@@ -1511,10 +1539,10 @@ void CControlObject::sendEventAllClients( vscpEvent *pEvent,
     wxLogTrace(_("wxTRACE_vscpd_receiveQueue"),
             _(" ControlObject: event %d, excludeid = %d"),
             pEvent->obid, excludeID);
-    
+
     m_wxClientMutex.Lock();
-    for ( it = m_clientList.m_clientItemList.begin(); 
-            it != m_clientList.m_clientItemList.end(); 
+    for ( it = m_clientList.m_clientItemList.begin();
+            it != m_clientList.m_clientItemList.end();
             ++it) {
         pClientItem = *it;
 
@@ -1543,7 +1571,7 @@ void CControlObject::sendEventAllClients( vscpEvent *pEvent,
 // They are aquired when a client connects and released when a
 // client disconnects.
 //
-// Interfaces can be fetched by investigating the map. 
+// Interfaces can be fetched by investigating the map.
 //
 // Not used at the moment.
 
@@ -1611,7 +1639,7 @@ bool CControlObject::removeIdFromClientMap( uint32_t clid )
 // addClient
 //
 
-void CControlObject::addClient( CClientItem *pClientItem, 
+void CControlObject::addClient( CClientItem *pClientItem,
                                     uint32_t id )
 {
     // Add client to client list
@@ -1645,8 +1673,8 @@ void CControlObject::removeClient( CClientItem *pClientItem )
 // addKnowNode
 //
 
-void CControlObject::addKnownNode( cguid& guid, 
-                                    cguid& ifguid, 
+void CControlObject::addKnownNode( cguid& guid,
+                                    cguid& ifguid,
                                     wxString& name )
 {
     ;   // TODO ???
@@ -1738,13 +1766,13 @@ bool CControlObject::getMacAddress( cguid& guid )
 
     // Clear the GUID
     guid.clear();
-    
+
     fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
     if ( -1 == fd ) return false;
-    
+
     memset( &s, 0, sizeof( s ) );
     strcpy( s.ifr_name, "eth0");
-    
+
     if ( 0 == ioctl( fd, SIOCGIFHWADDR, &s ) ) {
 
         unsigned char *ptr;
@@ -1755,9 +1783,8 @@ bool CControlObject::getMacAddress( cguid& guid )
                                         s.ifr_addr.sa_data[ 2 ],
                                         s.ifr_addr.sa_data[ 3 ],
                                         s.ifr_addr.sa_data[ 4 ],
-                                        s.ifr_addr.sa_data[ 5 ] ),
-                                    DAEMON_LOGMSG_INFO );
-                                    
+                                        s.ifr_addr.sa_data[ 5 ] )  );
+
         guid.setAt( 0, 0xff );
         guid.setAt( 1, 0xff );
         guid.setAt( 2, 0xff );
@@ -1776,8 +1803,7 @@ bool CControlObject::getMacAddress( cguid& guid )
         guid.setAt( 15, 0 );
     }
     else {
-        logMsg( _("Failed to get hardware address (must be root?).\n"), 
-                    DAEMON_LOGMSG_WARNING);
+        logMsg( _("Failed to get hardware address (must be root?).\n") );
         rv = false;
     }
 
@@ -1840,7 +1866,7 @@ bool CControlObject::getIPAddress( cguid& guid )
     guid.setAt( 13, 0 );
     guid.setAt( 14, 0 );
     guid.setAt( 15, 0 );
-    
+
     return true;
 }
 
@@ -1853,317 +1879,318 @@ void CControlObject::addStockVariables( void )
 {
     wxString wxstr;
     cguid guid;
-    
-    m_VSCP_Variables.add( _("vscp.version.major"), 
-                wxString::Format( _("%d"), VSCPD_MAJOR_VERSION ), 
-                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                VSCP_VAR_NON_PERISTENT, 
-                VSCP_VAR_READ_ONLY );
-                
-    m_VSCP_Variables.add( _("vscp.version.minor"), 
-                wxString::Format( _("%d"), VSCPD_MINOR_VERSION ), 
-                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                VSCP_VAR_NON_PERISTENT, 
-                VSCP_VAR_READ_ONLY );
-                
-    m_VSCP_Variables.add( _("vscp.version.sub"), 
-                wxString::Format( _("%d"), VSCPD_SUB_VERSION ), 
-                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                VSCP_VAR_NON_PERISTENT, 
-                VSCP_VAR_READ_ONLY );
-                
-    m_VSCP_Variables.add( _("vscp.version.build"), 
-                wxString::Format( _("%d"), VSCPD_BUILD_VERSION ), 
-                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                VSCP_VAR_NON_PERISTENT, 
-                VSCP_VAR_READ_ONLY );                
-                
-    m_VSCP_Variables.add( _("vscp.version.str"), 
-                wxString::Format( _("%s"), VSCPD_DISPLAY_VERSION ), 
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_NON_PERISTENT, 
-                VSCP_VAR_READ_ONLY );
-                
-    m_VSCP_Variables.add( _("vscp.version.wxwidgets.str"), 
-                wxString::Format( _("%s"), wxVERSION_STRING ), 
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_NON_PERISTENT, 
-                VSCP_VAR_READ_ONLY ); 
 
-    m_VSCP_Variables.add( _("vscp.version.wxwidgets.major"), 
-                wxString::Format( _("%d"), wxMAJOR_VERSION ), 
+    m_VSCP_Variables.add( _("vscp.version.major"),
+                wxString::Format( _("%d"), VSCPD_MAJOR_VERSION ),
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                VSCP_VAR_NON_PERISTENT, 
-                VSCP_VAR_READ_ONLY );
-                
-    m_VSCP_Variables.add( _("vscp.version.wxwidgets.minor"), 
-                wxString::Format( _("%d"), wxMINOR_VERSION ), 
-                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_NON_PERISTENT,
                 VSCP_VAR_READ_ONLY );
 
-    m_VSCP_Variables.add( _("vscp.version.wxwidgets.release"), 
-                wxString::Format( _("%d"), wxRELEASE_NUMBER ), 
+    m_VSCP_Variables.add( _("vscp.version.minor"),
+                wxString::Format( _("%d"), VSCPD_MINOR_VERSION ),
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_NON_PERISTENT,
                 VSCP_VAR_READ_ONLY );
 
-    m_VSCP_Variables.add( _("vscp.version.wxwidgets.sub"), 
-                wxString::Format( _("%d"), wxSUBRELEASE_NUMBER ), 
+    m_VSCP_Variables.add( _("vscp.version.sub"),
+                wxString::Format( _("%d"), VSCPD_SUB_VERSION ),
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_NON_PERISTENT,
                 VSCP_VAR_READ_ONLY );
-                
-    m_VSCP_Variables.add( _("vscp.copyright.vscp"), 
-                wxString::Format( _("%s"), VSCPD_COPYRIGHT ), 
+
+    m_VSCP_Variables.add( _("vscp.version.build"),
+                wxString::Format( _("%d"), VSCPD_BUILD_VERSION ),
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                VSCP_VAR_NON_PERISTENT,
+                VSCP_VAR_READ_ONLY );
+
+    m_VSCP_Variables.add( _("vscp.version.str"),
+                wxString::Format( _("%s"), VSCPD_DISPLAY_VERSION ),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_NON_PERISTENT, 
-                VSCP_VAR_READ_ONLY ); 
-                
+                VSCP_VAR_NON_PERISTENT,
+                VSCP_VAR_READ_ONLY );
+
+    m_VSCP_Variables.add( _("vscp.version.wxwidgets.str"),
+                wxString::Format( _("%s"), wxVERSION_STRING ),
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_NON_PERISTENT,
+                VSCP_VAR_READ_ONLY );
+
+    m_VSCP_Variables.add( _("vscp.version.wxwidgets.major"),
+                wxString::Format( _("%d"), wxMAJOR_VERSION ),
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                VSCP_VAR_NON_PERISTENT,
+                VSCP_VAR_READ_ONLY );
+
+    m_VSCP_Variables.add( _("vscp.version.wxwidgets.minor"),
+                wxString::Format( _("%d"), wxMINOR_VERSION ),
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                VSCP_VAR_NON_PERISTENT,
+                VSCP_VAR_READ_ONLY );
+
+    m_VSCP_Variables.add( _("vscp.version.wxwidgets.release"),
+                wxString::Format( _("%d"), wxRELEASE_NUMBER ),
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                VSCP_VAR_NON_PERISTENT,
+                VSCP_VAR_READ_ONLY );
+
+    m_VSCP_Variables.add( _("vscp.version.wxwidgets.sub"),
+                wxString::Format( _("%d"), wxSUBRELEASE_NUMBER ),
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                VSCP_VAR_NON_PERISTENT,
+                VSCP_VAR_READ_ONLY );
+
+    m_VSCP_Variables.add( _("vscp.copyright.vscp"),
+                wxString::Format( _("%s"), VSCPD_COPYRIGHT ),
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_NON_PERISTENT,
+                VSCP_VAR_READ_ONLY );
+
 // *****************************************************************************
 //                               wxWidgets
-// *****************************************************************************                
+// *****************************************************************************
 
-    m_VSCP_Variables.add( _("vscp.copyright.wxwidgets"), 
-                wxString::Format( _("%s"), 
-                    "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al" ), 
+    m_VSCP_Variables.add( _("vscp.copyright.wxwidgets"),
+                wxString::Format( _("%s"),
+                    "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al" ),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_NON_PERISTENT, 
-                VSCP_VAR_READ_ONLY ); 
-                
+                VSCP_VAR_NON_PERISTENT,
+                VSCP_VAR_READ_ONLY );
+
 // *****************************************************************************
 //                               Mongoose
-// *****************************************************************************                
+// *****************************************************************************
 
-    m_VSCP_Variables.add( _("vscp.copyright.mongoose"), 
-                wxString::Format( _("%s"), 
-                    "Copyright (c) 2013-2015 Cesanta Software Limited" ), 
+    m_VSCP_Variables.add( _("vscp.copyright.mongoose"),
+                wxString::Format( _("%s"),
+                    "Copyright (c) 2013-2015 Cesanta Software Limited" ),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_NON_PERISTENT, 
-                VSCP_VAR_READ_ONLY );      
+                VSCP_VAR_NON_PERISTENT,
+                VSCP_VAR_READ_ONLY );
 
 // *****************************************************************************
 //                                 LUA
 // *****************************************************************************
 
-#ifndef VSCP_DISABLE_LUA 
+#ifndef VSCP_DISABLE_LUA
 
-    m_VSCP_Variables.add( _("vscp.copyright.lua"), 
-                wxString::Format( _("%s"), LUA_COPYRIGHT ), 
+    m_VSCP_Variables.add( _("vscp.copyright.lua"),
+                wxString::Format( _("%s"), LUA_COPYRIGHT ),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_NON_PERISTENT,
                 VSCP_VAR_READ_ONLY );
-                         
-                
-    m_VSCP_Variables.add( _("vscp.version.lua.major"), 
-                wxString::Format( _("%s"), LUA_VERSION_MAJOR ), 
-                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                VSCP_VAR_NON_PERISTENT, 
-                VSCP_VAR_READ_ONLY ); 
 
-    m_VSCP_Variables.add( _("vscp.version.lua.minor"), 
-                wxString::Format( _("%s"), LUA_VERSION_MINOR), 
-                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                VSCP_VAR_NON_PERISTENT, 
-                VSCP_VAR_READ_ONLY );  
 
-    m_VSCP_Variables.add( _("vscp.version.lua.release"), 
-                wxString::Format( _("%s"), LUA_VERSION_RELEASE ), 
+    m_VSCP_Variables.add( _("vscp.version.lua.major"),
+                wxString::Format( _("%s"), LUA_VERSION_MAJOR ),
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                VSCP_VAR_NON_PERISTENT, 
-                VSCP_VAR_READ_ONLY );   
+                VSCP_VAR_NON_PERISTENT,
+                VSCP_VAR_READ_ONLY );
 
-    m_VSCP_Variables.add( _("vscp.version.lua.str"), 
-                wxString::Format( _("%s.%s.%s"), 
-                                    LUA_VERSION_MAJOR, 
-                                    LUA_VERSION_MINOR, 
-                                    LUA_VERSION_RELEASE ), 
+    m_VSCP_Variables.add( _("vscp.version.lua.minor"),
+                wxString::Format( _("%s"), LUA_VERSION_MINOR),
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                VSCP_VAR_NON_PERISTENT,
+                VSCP_VAR_READ_ONLY );
+
+    m_VSCP_Variables.add( _("vscp.version.lua.release"),
+                wxString::Format( _("%s"), LUA_VERSION_RELEASE ),
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                VSCP_VAR_NON_PERISTENT,
+                VSCP_VAR_READ_ONLY );
+
+    m_VSCP_Variables.add( _("vscp.version.lua.str"),
+                wxString::Format( _("%s.%s.%s"),
+                                    LUA_VERSION_MAJOR,
+                                    LUA_VERSION_MINOR,
+                                    LUA_VERSION_RELEASE ),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_NON_PERISTENT, 
-                VSCP_VAR_READ_ONLY ); 
-     
+                VSCP_VAR_NON_PERISTENT,
+                VSCP_VAR_READ_ONLY );
+
 #endif
 
 
 // *****************************************************************************
 //                                SQLite
 // *****************************************************************************
-    
+
 #ifndef VSCP_DISABLE_SQLITE
-    
+
     int major, minor, sub, build;
     sscanf( SQLITE_VERSION,
             "%d.%d.%d.%d",
             &major, &minor, &sub, &build );
-            
-    m_VSCP_Variables.add( _("vscp.version.sqlite.major"), 
-                wxString::Format( _("%d"), major ), 
-                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                VSCP_VAR_NON_PERISTENT, 
-                VSCP_VAR_READ_ONLY ); 
 
-    m_VSCP_Variables.add( _("vscp.version.sqlite.minor"), 
-                wxString::Format( _("%d"), minor ), 
+    m_VSCP_Variables.add( _("vscp.version.sqlite.major"),
+                wxString::Format( _("%d"), major ),
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                VSCP_VAR_NON_PERISTENT, 
-                VSCP_VAR_READ_ONLY );  
-
-    m_VSCP_Variables.add( _("vscp.version.sqlite.release"), 
-                wxString::Format( _("%d"), sub ), 
-                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                VSCP_VAR_NON_PERISTENT, 
-                VSCP_VAR_READ_ONLY ); 
-
-    m_VSCP_Variables.add( _("vscp.version.sqlite.build"), 
-                wxString::Format( _("%d"), build ), 
-                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                VSCP_VAR_NON_PERISTENT, 
-                VSCP_VAR_READ_ONLY );        
-    
-    m_VSCP_Variables.add( _("vscp.version.sqllite.str"), 
-                _(SQLITE_VERSION), 
-                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_NON_PERISTENT,
                 VSCP_VAR_READ_ONLY );
-    
-#endif 
+
+    m_VSCP_Variables.add( _("vscp.version.sqlite.minor"),
+                wxString::Format( _("%d"), minor ),
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                VSCP_VAR_NON_PERISTENT,
+                VSCP_VAR_READ_ONLY );
+
+    m_VSCP_Variables.add( _("vscp.version.sqlite.release"),
+                wxString::Format( _("%d"), sub ),
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                VSCP_VAR_NON_PERISTENT,
+                VSCP_VAR_READ_ONLY );
+
+    m_VSCP_Variables.add( _("vscp.version.sqlite.build"),
+                wxString::Format( _("%d"), build ),
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                VSCP_VAR_NON_PERISTENT,
+                VSCP_VAR_READ_ONLY );
+
+    m_VSCP_Variables.add( _("vscp.version.sqllite.str"),
+                _(SQLITE_VERSION),
+                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
+                VSCP_VAR_NON_PERISTENT,
+                VSCP_VAR_READ_ONLY );
+
+#endif
 
 // *****************************************************************************
 //                                OPENSSL
 // *****************************************************************************
 #ifndef WIN32
-    m_VSCP_Variables.add( _("vscp.version.openssl.str"), 
-                _(OPENSSL_VERSION_TEXT), 
+    m_VSCP_Variables.add( _("vscp.version.openssl.str"),
+                _(OPENSSL_VERSION_TEXT),
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_NON_PERISTENT,
                 VSCP_VAR_READ_ONLY );
 #endif
 
-    m_VSCP_Variables.add( _("vscp.os.str"), 
-                wxGetOsDescription(), 
+    m_VSCP_Variables.add( _("vscp.os.str"),
+                wxGetOsDescription(),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_NON_PERISTENT, 
-                VSCP_VAR_READ_ONLY ); 
-          
+                VSCP_VAR_NON_PERISTENT,
+                VSCP_VAR_READ_ONLY );
+
     if ( wxIsPlatform64Bit() ) {
         wxstr = _("64-bit ");
     }
     else {
         wxstr = _("32-bit ");
     }
-    
-    m_VSCP_Variables.add( _("vscp.os.wordwidth"), 
-                wxIsPlatform64Bit() ? _("64") : _("32"), 
+
+    m_VSCP_Variables.add( _("vscp.os.wordwidth"),
+                wxIsPlatform64Bit() ? _("64") : _("32"),
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_NON_PERISTENT,
                 VSCP_VAR_READ_ONLY );
-      
-    m_VSCP_Variables.add( _("vscp.os.wordwidth.str"), 
-                wxstr, 
+
+    m_VSCP_Variables.add( _("vscp.os.wordwidth.str"),
+                wxstr,
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_NON_PERISTENT, 
-                VSCP_VAR_READ_ONLY );                
-    
-    m_VSCP_Variables.add( _("vscp.os.width.is64bit"), 
-                wxIsPlatform64Bit() ? _("true") : _("false"), 
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_NON_PERISTENT, 
+                VSCP_VAR_NON_PERISTENT,
                 VSCP_VAR_READ_ONLY );
-                
-    m_VSCP_Variables.add( _("vscp.os.width.is32bit"), 
-                !wxIsPlatform64Bit() ? _("true") : _("false"), 
+
+    m_VSCP_Variables.add( _("vscp.os.width.is64bit"),
+                wxIsPlatform64Bit() ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_NON_PERISTENT, 
-                VSCP_VAR_READ_ONLY ); 
+                VSCP_VAR_NON_PERISTENT,
+                VSCP_VAR_READ_ONLY );
+
+    m_VSCP_Variables.add( _("vscp.os.width.is32bit"),
+                !wxIsPlatform64Bit() ? _("true") : _("false"),
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_NON_PERISTENT,
+                VSCP_VAR_READ_ONLY );
 
     if ( wxIsPlatformLittleEndian() ) {
         wxstr = _("Little endian");
     }
     else {
         wxstr = _("Big endian");
-    }  
+    }
 
-    m_VSCP_Variables.add( _("vscp.os.endiness.str"), 
-                wxstr, 
+    m_VSCP_Variables.add( _("vscp.os.endiness.str"),
+                wxstr,
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_NON_PERISTENT, 
-                VSCP_VAR_READ_ONLY ); 
+                VSCP_VAR_NON_PERISTENT,
+                VSCP_VAR_READ_ONLY );
 
-    m_VSCP_Variables.add( _("vscp.os.endiness.isLittleEndian"), 
-                wxIsPlatformLittleEndian() ? _("true") : _("false"), 
+    m_VSCP_Variables.add( _("vscp.os.endiness.isLittleEndian"),
+                wxIsPlatformLittleEndian() ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_NON_PERISTENT, 
-                VSCP_VAR_READ_ONLY );   
+                VSCP_VAR_NON_PERISTENT,
+                VSCP_VAR_READ_ONLY );
 
-   m_VSCP_Variables.add( _("vscp.host.fullname"), 
-                wxGetFullHostName(), 
+   m_VSCP_Variables.add( _("vscp.host.fullname"),
+                wxGetFullHostName(),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
-                false );  
+                VSCP_VAR_READ_ONLY,
+                false );
 
     if ( getIPAddress( guid ) ) {
-        m_VSCP_Variables.add( _("vscp.host.ip"), 
-                wxString::Format( _("%d.%d.%d.%d"), 
+        m_VSCP_Variables.add( _("vscp.host.ip"),
+                wxString::Format( _("%d.%d.%d.%d"),
                             guid.getAt( 11 ),
                             guid.getAt( 10 ),
                             guid.getAt( 9 ),
-                            guid.getAt( 8 ) ), 
+                            guid.getAt( 8 ) ),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
     }
-    
+
     if ( getMacAddress( guid ) ) {
-        m_VSCP_Variables.add( _("vscp.host.mac"), 
-                wxString::Format( _("%02X:%02X:%02X:%02X:%02X:%02X"), 
+        m_VSCP_Variables.add( _("vscp.host.mac"),
+                wxString::Format( _("%02X:%02X:%02X:%02X:%02X:%02X"),
                             guid.getAt( 13 ),
                             guid.getAt( 12 ),
                             guid.getAt( 11 ),
                             guid.getAt( 10 ),
                             guid.getAt( 9 ),
-                            guid.getAt( 8 ) ), 
+                            guid.getAt( 8 ) ),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
-                false );  
+                VSCP_VAR_READ_ONLY,
+                false );
     }
-                
-    m_VSCP_Variables.add( _("vscp.host.userid"), 
-                wxGetUserId(), 
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
-                false );  
 
-
-    m_VSCP_Variables.add( _("vscp.host.username"), 
-                wxGetUserName(), 
+    m_VSCP_Variables.add( _("vscp.host.userid"),
+                wxGetUserId(),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
-                false );      
-                 
-    m_guid.toString( wxstr );
-    m_VSCP_Variables.add( _("vscp.host.guid"), 
-                wxstr, 
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
-                
+
+
+    m_VSCP_Variables.add( _("vscp.host.username"),
+                wxGetUserName(),
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY,
+                false );
+
     m_guid.toString( wxstr );
-    m_VSCP_Variables.add( _("vscp.loglevel"), 
-                wxString::Format( _("%d "), m_logLevel ), 
+    m_VSCP_Variables.add( _("vscp.host.guid"),
+                wxstr,
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+    m_guid.toString( wxstr );
+    m_VSCP_Variables.add( _("vscp.loglevel"),
+                wxString::Format( _("%d "), m_logLevel ),
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
-                
+
     switch ( m_logLevel  ) {
         case DAEMON_LOGMSG_NONE:
             wxstr = _("None");
             break;
+        case DAEMON_LOGMSG_NORMAL:
+            wxstr = _("Normal");
+            break;
         case DAEMON_LOGMSG_DEBUG:
             wxstr = _("Debug");
             break;
-        case DAEMON_LOGMSG_INFO:
-            wxstr = _("Info");
-            break;
+/*
         case DAEMON_LOGMSG_NOTICE:
             wxstr = _("Notice");
             break;
@@ -2182,454 +2209,455 @@ void CControlObject::addStockVariables( void )
         case DAEMON_LOGMSG_EMERGENCY:
             wxstr = _("Emergency");
             break;
+*/
         default:
             wxstr = _("Unknown");
             break;
     }
 
-    m_VSCP_Variables.add( _("vscp.loglevel.str"), 
-                wxstr, 
+    m_VSCP_Variables.add( _("vscp.loglevel.str"),
+                wxstr,
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
-                false );         
-
-    
-    m_VSCP_Variables.add( _("vscp.client.ReceiveQueue.Max"), 
-                wxString::Format( _("%d"), m_maxItemsInClientReceiveQueue ), 
-                VSCP_DAEMON_VARIABLE_CODE_LONG,
-                VSCP_VAR_READ_ONLY, 
-                false );  
-                
-    m_VSCP_Variables.add( _("vscp.tcpip.isEnabled"), 
-                m_bTCP ? _("true") : _("false"), 
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY, 
-                false );             
-
-    m_VSCP_Variables.add( _("vscp.tcpip.addess"), 
-                m_strTcpInterfaceAddress, 
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
-                false );  
-
-    m_VSCP_Variables.add( _("vscp.udp.isEnabled"), 
-                m_bUDP ? _("true") : _("false"), 
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY, 
-                false );             
-
-    m_VSCP_Variables.add( _("vscp.udp.addess"), 
-                m_strUDPInterfaceAddress, 
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
-                false ); 
-                
-    m_VSCP_Variables.add( _("vscp.mqtt.broker.isEnabled"), 
-                m_bMQTTBroker ? _("true") : _("false"), 
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY, 
-                false );             
-
-    m_VSCP_Variables.add( _("vscp.mqtt.broker.addess"), 
-                m_strMQTTBrokerInterfaceAddress, 
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
-                false ); 
-
-    m_VSCP_Variables.add( _("vscp.coap.server.isEnabled"), 
-                m_bCoAPServer ? _("true") : _("false"), 
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY, 
-                false );             
-
-    m_VSCP_Variables.add( _("vscp.coap.server.addess"), 
-                m_strCoAPServerInterfaceAddress, 
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
-                false );        
-              
-    m_VSCP_Variables.add( _("vscp.discovery.isEnabled"), 
-                m_bVSCPDaemon ? _("true") : _("false"), 
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
-                
-    m_VSCP_Variables.add( _("vscp.automation.isEnabled"), 
-                m_automation.isAutomationEnabled() ? _("true") : _("false"), 
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY, 
-                false );
-                
-    m_VSCP_Variables.add( _("vscp.websrv.isEnabled"), 
-                m_bWebServer ? _("true") : _("false"), 
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY, 
-                false );            
 
-    if ( m_automation.isAutomationEnabled() ) {  
 
-        m_VSCP_Variables.add( _("vscp.automation.heartbeat.isEnabled"), 
-                m_automation.isSendHeartbeat() ? _("true") : _("false"), 
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY, 
-                false );       
-                
-        m_VSCP_Variables.add( _("vscp.automation.heartbeat.period"), 
-                wxString::Format( _("%ld"), m_automation.getIntervalHeartbeat() ), 
+    m_VSCP_Variables.add( _("vscp.client.ReceiveQueue.Max"),
+                wxString::Format( _("%d"), m_maxItemsInClientReceiveQueue ),
                 VSCP_DAEMON_VARIABLE_CODE_LONG,
-                VSCP_VAR_READ_ONLY, 
-                false ); 
+                VSCP_VAR_READ_ONLY,
+                false );
+
+    m_VSCP_Variables.add( _("vscp.tcpip.isEnabled"),
+                m_bTCP ? _("true") : _("false"),
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+    m_VSCP_Variables.add( _("vscp.tcpip.addess"),
+                m_strTcpInterfaceAddress,
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+    m_VSCP_Variables.add( _("vscp.udp.isEnabled"),
+                m_bUDP ? _("true") : _("false"),
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+    m_VSCP_Variables.add( _("vscp.udp.addess"),
+                m_strUDPInterfaceAddress,
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+    m_VSCP_Variables.add( _("vscp.mqtt.broker.isEnabled"),
+                m_bMQTTBroker ? _("true") : _("false"),
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+    m_VSCP_Variables.add( _("vscp.mqtt.broker.addess"),
+                m_strMQTTBrokerInterfaceAddress,
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+    m_VSCP_Variables.add( _("vscp.coap.server.isEnabled"),
+                m_bCoAPServer ? _("true") : _("false"),
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+    m_VSCP_Variables.add( _("vscp.coap.server.addess"),
+                m_strCoAPServerInterfaceAddress,
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+    m_VSCP_Variables.add( _("vscp.discovery.isEnabled"),
+                m_bVSCPDaemon ? _("true") : _("false"),
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+    m_VSCP_Variables.add( _("vscp.automation.isEnabled"),
+                m_automation.isAutomationEnabled() ? _("true") : _("false"),
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+    m_VSCP_Variables.add( _("vscp.websrv.isEnabled"),
+                m_bWebServer ? _("true") : _("false"),
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+    if ( m_automation.isAutomationEnabled() ) {
+
+        m_VSCP_Variables.add( _("vscp.automation.heartbeat.isEnabled"),
+                m_automation.isSendHeartbeat() ? _("true") : _("false"),
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+        m_VSCP_Variables.add( _("vscp.automation.heartbeat.period"),
+                wxString::Format( _("%ld"), m_automation.getIntervalHeartbeat() ),
+                VSCP_DAEMON_VARIABLE_CODE_LONG,
+                VSCP_VAR_READ_ONLY,
+                false );
 
         wxstr = m_automation.getHeartbeatSent().FormatISODate();
         wxstr += _( "T" );
         wxstr += m_automation.getHeartbeatSent().FormatISOTime();
-        m_VSCP_Variables.add( _("vscp.automation.heartbeat.last"), 
-                wxstr, 
+        m_VSCP_Variables.add( _("vscp.automation.heartbeat.last"),
+                wxstr,
                 VSCP_DAEMON_VARIABLE_CODE_DATETIME,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
-                
-        m_VSCP_Variables.add( _("vscp.automation.segctrl-heartbeat.isEnabled"), 
-                m_automation.isSendSegmentControllerHeartbeat() ? _("true") : _("false"), 
+
+        m_VSCP_Variables.add( _("vscp.automation.segctrl-heartbeat.isEnabled"),
+                m_automation.isSendSegmentControllerHeartbeat() ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY, 
-                false );        
-                
-        m_VSCP_Variables.add( _("vscp.automation.segctrl.heartbeat.period"), 
-                wxString::Format( _("%ld"), m_automation.getIntervalSegmentControllerHeartbeat() ), 
+                VSCP_VAR_READ_ONLY,
+                false );
+
+        m_VSCP_Variables.add( _("vscp.automation.segctrl.heartbeat.period"),
+                wxString::Format( _("%ld"), m_automation.getIntervalSegmentControllerHeartbeat() ),
                 VSCP_DAEMON_VARIABLE_CODE_LONG,
-                VSCP_VAR_READ_ONLY, 
-                false );  
+                VSCP_VAR_READ_ONLY,
+                false );
 
         wxstr = m_automation.getSegmentControllerHeartbeatSent().FormatISODate();
         wxstr += _( "T" );
         wxstr += m_automation.getSegmentControllerHeartbeatSent().FormatISOTime();
-        m_VSCP_Variables.add( _("vscp.automation.segctrl.heartbeat.last"), 
-                wxstr, 
+        m_VSCP_Variables.add( _("vscp.automation.segctrl.heartbeat.last"),
+                wxstr,
                 VSCP_DAEMON_VARIABLE_CODE_DATETIME,
-                VSCP_VAR_READ_ONLY, 
-                false );       
-                
-        m_VSCP_Variables.add( _("vscp.automation.longitude"), 
-                wxString::Format( _("%f"), m_automation.getLongitude() ), 
-                VSCP_DAEMON_VARIABLE_CODE_DOUBLE,
-                VSCP_VAR_READ_ONLY, 
-                false ); 
- 
-        m_VSCP_Variables.add( _("vscp.automation.latitude"), 
-                wxString::Format( _("%f"), m_automation.getLatitude() ), 
-                VSCP_DAEMON_VARIABLE_CODE_DOUBLE,
-                VSCP_VAR_READ_ONLY, 
-                false );
-                
-        m_VSCP_Variables.add( _("vscp.automation.isSendTwilightSunriseEvent"), 
-                m_automation.isSendSunriseTwilightEvent() ? _("true") : _("false"), 
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY, 
-                false );
-        
-        m_VSCP_Variables.add( _("vscp.automation.isSendSunriseEvent"), 
-                m_automation.isSendSunriseEvent() ? _("true") : _("false"), 
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY, 
-                false );
-                
-        m_VSCP_Variables.add( _("vscp.automation.isSendSunsetEvent"), 
-                m_automation.isSendSunsetEvent() ? _("true") : _("false"), 
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.automation.isSendTwilightSunsetEvent"), 
-                m_automation.isSendSunsetTwilightEvent() ? _("true") : _("false"), 
+        m_VSCP_Variables.add( _("vscp.automation.longitude"),
+                wxString::Format( _("%f"), m_automation.getLongitude() ),
+                VSCP_DAEMON_VARIABLE_CODE_DOUBLE,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+        m_VSCP_Variables.add( _("vscp.automation.latitude"),
+                wxString::Format( _("%f"), m_automation.getLatitude() ),
+                VSCP_DAEMON_VARIABLE_CODE_DOUBLE,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+        m_VSCP_Variables.add( _("vscp.automation.isSendTwilightSunriseEvent"),
+                m_automation.isSendSunriseTwilightEvent() ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY, 
-                false );    
-             
-        m_VSCP_Variables.add( _("vscp.WorkingFolder"), 
-                wxGetCwd(), 
+                VSCP_VAR_READ_ONLY,
+                false );
+
+        m_VSCP_Variables.add( _("vscp.automation.isSendSunriseEvent"),
+                m_automation.isSendSunriseEvent() ? _("true") : _("false"),
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+        m_VSCP_Variables.add( _("vscp.automation.isSendSunsetEvent"),
+                m_automation.isSendSunsetEvent() ? _("true") : _("false"),
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+        m_VSCP_Variables.add( _("vscp.automation.isSendTwilightSunsetEvent"),
+                m_automation.isSendSunsetTwilightEvent() ? _("true") : _("false"),
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+        m_VSCP_Variables.add( _("vscp.WorkingFolder"),
+                wxGetCwd(),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
-                false );       
-                
+                VSCP_VAR_READ_ONLY,
+                false );
+
     }
-    
+
 // *****************************************************************************
-//                                WEB-Server   
+//                                WEB-Server
 // *****************************************************************************
-    
+
     if ( m_bWebServer ) {
-    
-        m_VSCP_Variables.add( _("vscp.websrv.address"), 
-                m_portWebServer, 
+
+        m_VSCP_Variables.add( _("vscp.websrv.address"),
+                m_portWebServer,
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
-                
-        m_VSCP_Variables.add( _("vscp.websrv.authenticationOn"), 
-                !m_bDisableSecurityWebServer ? _("true") : _("false"), 
+
+        m_VSCP_Variables.add( _("vscp.websrv.authenticationOn"),
+                !m_bDisableSecurityWebServer ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
-        
-        m_VSCP_Variables.add( _("vscp.websrv.root.path"), 
-                wxString::FromUTF8( m_pathWebRoot ), 
+
+        m_VSCP_Variables.add( _("vscp.websrv.root.path"),
+                wxString::FromUTF8( m_pathWebRoot ),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
-                
-        m_VSCP_Variables.add( _("vscp.websrv.authdomain"), 
+
+        m_VSCP_Variables.add( _("vscp.websrv.authdomain"),
                 ( 0 == strlen( m_authDomain ) ) ?
                     wxString::FromAscii( "mydomain.com" ) :
-                    wxString::FromUTF8( m_authDomain ), 
+                    wxString::FromUTF8( m_authDomain ),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
-                false );  
-
-        m_VSCP_Variables.add( _("vscp.websrv.cert.path"), 
-                wxString::FromUTF8( m_pathCert ), 
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
-                
-        m_VSCP_Variables.add( _("vscp.websrv.extramimetypes"), 
-                wxString::FromUTF8( m_extraMimeTypes ), 
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
-                false );  
 
-        m_VSCP_Variables.add( _("vscp.websrv.ssipatterns"), 
-                wxString::FromUTF8( m_ssi_pattern ), 
+        m_VSCP_Variables.add( _("vscp.websrv.cert.path"),
+                wxString::FromUTF8( m_pathCert ),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
-                
-        m_VSCP_Variables.add( _("vscp.websrv.ipacl"), 
-                wxString::FromUTF8( m_ip_acl ), 
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
-                false ); 
 
-        m_VSCP_Variables.add( _("vscp.websrv.cgi.interpreter"), 
-                wxString::FromUTF8( m_cgiInterpreter ), 
+        m_VSCP_Variables.add( _("vscp.websrv.extramimetypes"),
+                wxString::FromUTF8( m_extraMimeTypes ),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
-                
-        m_VSCP_Variables.add( _("vscp.websrv.cgi.pattern"), 
-                wxString::FromUTF8( m_cgiPattern ), 
+
+        m_VSCP_Variables.add( _("vscp.websrv.ssipatterns"),
+                wxString::FromUTF8( m_ssi_pattern ),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
-                false );  
-                
-        m_VSCP_Variables.add( _("vscp.websrv.directorylistings.enable"), 
-                ( NULL != strstr( m_EnableDirectoryListings,"yes" ) ) ? _("true") : _("false"), 
+                VSCP_VAR_READ_ONLY,
+                false );
+
+        m_VSCP_Variables.add( _("vscp.websrv.ipacl"),
+                wxString::FromUTF8( m_ip_acl ),
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+        m_VSCP_Variables.add( _("vscp.websrv.cgi.interpreter"),
+                wxString::FromUTF8( m_cgiInterpreter ),
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+        m_VSCP_Variables.add( _("vscp.websrv.cgi.pattern"),
+                wxString::FromUTF8( m_cgiPattern ),
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+        m_VSCP_Variables.add( _("vscp.websrv.directorylistings.enable"),
+                ( NULL != strstr( m_EnableDirectoryListings,"yes" ) ) ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY, 
-                false );        
-
-        m_VSCP_Variables.add( _("vscp.websrv.hidefile.pattern"), 
-                wxString::FromUTF8( m_hideFilePatterns ), 
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
-                false );
-                
-        m_VSCP_Variables.add( _("vscp.websrv.indexfiles"), 
-                wxString::FromUTF8( m_indexFiles ), 
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
-                false ); 
-
-        m_VSCP_Variables.add( _("vscp.websrv.urlrewrites"), 
-                wxString::FromUTF8( m_urlRewrites ), 
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
-                false );
-                
-        m_VSCP_Variables.add( _("vscp.websrv.auth.file.directory"), 
-                wxString::FromUTF8( m_per_directory_auth_file ), 
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.websrv.auth.file.global"), 
-                wxString::FromUTF8( m_per_directory_auth_file ), 
+        m_VSCP_Variables.add( _("vscp.websrv.hidefile.pattern"),
+                wxString::FromUTF8( m_hideFilePatterns ),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
-        
+
+        m_VSCP_Variables.add( _("vscp.websrv.indexfiles"),
+                wxString::FromUTF8( m_indexFiles ),
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+        m_VSCP_Variables.add( _("vscp.websrv.urlrewrites"),
+                wxString::FromUTF8( m_urlRewrites ),
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+        m_VSCP_Variables.add( _("vscp.websrv.auth.file.directory"),
+                wxString::FromUTF8( m_per_directory_auth_file ),
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+        m_VSCP_Variables.add( _("vscp.websrv.auth.file.global"),
+                wxString::FromUTF8( m_per_directory_auth_file ),
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY,
+                false );
+
     }
-    
+
 // *****************************************************************************
-//                            Websocket-Server   
+//                            Websocket-Server
 // *****************************************************************************
-    
-    m_VSCP_Variables.add( _("vscp.websocket.enable"), 
-                m_bWebSockets ? _("true") : _("false"), 
+
+    m_VSCP_Variables.add( _("vscp.websocket.enable"),
+                m_bWebSockets ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
-    
+
     if ( m_bWebSockets ) {
-    
-        m_VSCP_Variables.add( _("vscp.websocket.auth.enable"), 
-                m_bAuthWebsockets ? _("true") : _("false"), 
+
+        m_VSCP_Variables.add( _("vscp.websocket.auth.enable"),
+                m_bAuthWebsockets ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
-        
+
     }
 
 // *****************************************************************************
-//                            Decision Matrix   
-// *****************************************************************************    
-    
-    m_VSCP_Variables.add( _("vscp.dm.enable"), 
-                m_bDM ? _("true") : _("false"), 
+//                            Decision Matrix
+// *****************************************************************************
+
+    m_VSCP_Variables.add( _("vscp.dm.enable"),
+                m_bDM ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
-    
+
     if ( m_bDM ) {
-        
-        m_VSCP_Variables.add( _("vscp.dm.logging.enable"), 
-                m_dm.m_bLogEnable ? _("true") : _("false"), 
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY, 
-                false );
-                
-        if ( m_dm.m_bLogEnable ) {
-            
-            m_VSCP_Variables.add( _("vscp.dm.logging.path"), 
-                m_dm.m_logFileName.GetFullPath(), 
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
-                false );
-            
-        }        
-                
-                
-        m_VSCP_Variables.add( _("vscp.dm.static.path"), 
-                m_dm.m_configPath, 
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
-                false );               
-        
-    }
-    
-    
-// *****************************************************************************
-//                             Variables   
-// *****************************************************************************
-    
-    m_VSCP_Variables.add( _("vscp.variable.enable"), 
-                _("true"), 
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY, 
-                false );
-                
-    m_VSCP_Variables.add( _("vscp.variable.path"), 
-                m_VSCP_Variables.m_configPath, 
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
-                false ); 
 
-    m_VSCP_Variables.add( _("vscp.variable.interval.save"), 
-                wxString::Format( _("%ud"), m_VSCP_Variables.m_autosaveInterval ), 
+        m_VSCP_Variables.add( _("vscp.dm.logging.enable"),
+                m_dm.m_bLogEnable ? _("true") : _("false"),
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+        if ( m_dm.m_bLogEnable ) {
+
+            m_VSCP_Variables.add( _("vscp.dm.logging.path"),
+                m_dm.m_logFileName.GetFullPath(),
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+        }
+
+
+        m_VSCP_Variables.add( _("vscp.dm.static.path"),
+                m_dm.m_configPath,
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+    }
+
+
+// *****************************************************************************
+//                             Variables
+// *****************************************************************************
+
+    m_VSCP_Variables.add( _("vscp.variable.enable"),
+                _("true"),
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+    m_VSCP_Variables.add( _("vscp.variable.path"),
+                m_VSCP_Variables.m_configPath,
+                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                VSCP_VAR_READ_ONLY,
+                false );
+
+    m_VSCP_Variables.add( _("vscp.variable.interval.save"),
+                wxString::Format( _("%ud"), m_VSCP_Variables.m_autosaveInterval ),
                 VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
-    
+
 // *****************************************************************************
-//                              Log files   
+//                              Log files
 // *****************************************************************************
-    
+
     // General
-    m_VSCP_Variables.add( _("vscp.log.general.enable"), 
-                m_bLogGeneralEnable ? _("true") : _("false"), 
+    m_VSCP_Variables.add( _("vscp.log.general.enable"),
+                m_bLogGeneralEnable ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
-                
+
     if ( m_bLogGeneralEnable ) {
-        
-        m_VSCP_Variables.add( _("vscp.log.general.path"), 
-                m_logGeneralFileName.GetFullPath(), 
+
+        m_VSCP_Variables.add( _("vscp.log.general.path"),
+                m_logGeneralFileName.GetFullPath(),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
-                
+
     }
-    
+
     // Access
-    m_VSCP_Variables.add( _("vscp.log.access.enable"), 
-                m_bLogAccessEnable ? _("true") : _("false"), 
+    m_VSCP_Variables.add( _("vscp.log.access.enable"),
+                m_bLogAccessEnable ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
-                
+
     if ( m_bLogAccessEnable ) {
-        
-        m_VSCP_Variables.add( _("vscp.log.access.path"), 
-                m_logAccessFileName.GetFullPath(), 
+
+        m_VSCP_Variables.add( _("vscp.log.access.path"),
+                m_logAccessFileName.GetFullPath(),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
-                
+
     }
-                
+
     // Security
-    m_VSCP_Variables.add( _("vscp.log.access.enable"), 
-                m_bLogAccessEnable ? _("true") : _("false"), 
+    m_VSCP_Variables.add( _("vscp.log.access.enable"),
+                m_bLogAccessEnable ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
-                
+
     if ( m_bLogAccessEnable ) {
-        
-        m_VSCP_Variables.add( _("vscp.log.access.path"), 
-                m_logAccessFileName.GetFullPath(), 
+
+        m_VSCP_Variables.add( _("vscp.log.access.path"),
+                m_logAccessFileName.GetFullPath(),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
-                
-    }   
-    
+
+    }
+
     // Security
-    m_VSCP_Variables.add( _("vscp.log.security.enable"), 
-                m_bLogSecurityEnable ? _("true") : _("false"), 
+    m_VSCP_Variables.add( _("vscp.log.security.enable"),
+                m_bLogSecurityEnable ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
-                
+
     if ( m_bLogSecurityEnable ) {
-        
-        m_VSCP_Variables.add( _("vscp.log.security.path"), 
-                m_logSecurityFileName.GetFullPath(), 
+
+        m_VSCP_Variables.add( _("vscp.log.security.path"),
+                m_logSecurityFileName.GetFullPath(),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
-                
-    } 
-    
+
+    }
+
 // *****************************************************************************
-//                              Drivers   
-// *****************************************************************************    
-         
-   
-   m_VSCP_Variables.add( _("vscp.driver.level1.enable"), 
-                m_bEnableLevel1Drivers ? _("true") : _("false"), 
+//                              Drivers
+// *****************************************************************************
+
+
+   m_VSCP_Variables.add( _("vscp.driver.level1.enable"),
+                m_bEnableLevel1Drivers ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY, 
+                VSCP_VAR_READ_ONLY,
                 false );
-                
-        
-    m_VSCP_Variables.add( _("vscp.driver.level2.enable"), 
-                m_bEnableLevel2Drivers ? _("true") : _("false"), 
+
+
+    m_VSCP_Variables.add( _("vscp.driver.level2.enable"),
+                m_bEnableLevel2Drivers ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY, 
-                false );    
-         
+                VSCP_VAR_READ_ONLY,
+                false );
+
 }
 
 
@@ -2644,20 +2672,18 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
     unsigned long val;
     wxXmlDocument doc;
 
-    wxString wxlogmsg = wxString::Format(_("Reading configuration from [%s]\n"), 
+    wxString wxlogmsg = wxString::Format(_("Reading configuration from [%s]\n"),
                                             (const char *)strcfgfile.c_str() );
-    logMsg( wxlogmsg, DAEMON_LOGMSG_INFO );
+    logMsg( wxlogmsg  );
 
     if (!doc.Load(strcfgfile)) {
-        logMsg(_("Can't load logfile. Is path correct?"), 
-                    DAEMON_LOGMSG_CRITICAL );
+        logMsg(_("Can't load logfile. Is path correct?")  );
         return false;
     }
 
     // start processing the XML file
     if (doc.GetRoot()->GetName() != wxT("vscpconfig")) {
-        logMsg(_("Can't read logfile. Maybe it is invalid!"), 
-                    DAEMON_LOGMSG_CRITICAL );
+        logMsg(_("Can't read logfile. Maybe it is invalid!")  );
         return false;
     }
 
@@ -2668,7 +2694,7 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
 
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
-                
+
                 if (subchild->GetName() == wxT("loglevel")) {
                     wxString str = subchild->GetNodeContent();
                     str.Trim();
@@ -2677,42 +2703,49 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     if ( str.IsSameAs(_("NONE"), false)) {
                         m_logLevel = DAEMON_LOGMSG_NONE;
                     }
-                    else if ( str.IsSameAs(_("INFO"), false)) {
-                        m_logLevel = DAEMON_LOGMSG_INFO;
-                    }
-                    else if ( str.IsSameAs(_("NOTICE"), false)) {
-                        m_logLevel = DAEMON_LOGMSG_NOTICE;
-                    }
-                    else if ( str.IsSameAs(_("WARNING"), false)) {
-                        m_logLevel = DAEMON_LOGMSG_WARNING;
-                    }
-                    else if ( str.IsSameAs(_("ERROR"), false)) {
-                        m_logLevel = DAEMON_LOGMSG_ERROR;
-                    }
-                    else if ( str.IsSameAs(_("CRITICAL"), false)) {
-                        m_logLevel = DAEMON_LOGMSG_CRITICAL;
-                    }
-                    else if ( str.IsSameAs(_("ALERT"), false)) {
-                        m_logLevel = DAEMON_LOGMSG_ALERT;
-                    }
-                    else if ( str.IsSameAs(_("EMERGENCY"), false)) {
-                        m_logLevel = DAEMON_LOGMSG_EMERGENCY;
+                    else if ( str.IsSameAs(_("NORMAL"), false)) {
+                        m_logLevel = DAEMON_LOGMSG_NORMAL;
                     }
                     else if ( str.IsSameAs(_("DEBUG"), false)) {
                         m_logLevel = DAEMON_LOGMSG_DEBUG;
                     }
-                    else {
-                        m_logLevel = vscp_readStringValue(str);
+                    // For old deprecated values
+                    else if ( str.IsSameAs(_("INFO"), false)) {
+                        m_logLevel = DAEMON_LOGMSG_NORMAL;
                     }
-                } 
-                else if (subchild->GetName() == wxT("runasuser")) { 
+                    else if ( str.IsSameAs(_("NOTICE"), false)) {
+                        m_logLevel = DAEMON_LOGMSG_NORMAL;
+                    }
+                    else if ( str.IsSameAs(_("WARNING"), false)) {
+                        m_logLevel = DAEMON_LOGMSG_NORMAL;
+                    }
+                    else if ( str.IsSameAs(_("ERROR"), false)) {
+                        m_logLevel = DAEMON_LOGMSG_NORMAL;
+                    }
+                    else if ( str.IsSameAs(_("CRITICAL"), false)) {
+                        m_logLevel = DAEMON_LOGMSG_NORMAL;
+                    }
+                    else if ( str.IsSameAs(_("ALERT"), false)) {
+                        m_logLevel = DAEMON_LOGMSG_NORMAL;
+                    }
+                    else if ( str.IsSameAs(_("EMERGENCY"), false)) {
+                        m_logLevel = DAEMON_LOGMSG_NORMAL;
+                    }
+                    else {
+                        m_logLevel = vscp_readStringValue( str );
+                        if ( m_logLevel > DAEMON_LOGMSG_DEBUG ) {
+                            m_logLevel = DAEMON_LOGMSG_NORMAL;
+                        }
+                    }
+                }
+                else if (subchild->GetName() == wxT("runasuser")) {
                     m_runAsUser = subchild->GetNodeContent();
                     m_runAsUser.Trim();
                     m_runAsUser.Trim(false);
                 }
                 else if (subchild->GetName() == wxT("generallogfile")) {
-                    
-                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true")); 
+
+                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
                     attribute.MakeLower();
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_bLogGeneralEnable = false;
@@ -2728,8 +2761,8 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     }
                 }
                 else if (subchild->GetName() == wxT("securitylogfile")) {
-                    
-                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true")); 
+
+                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
                     attribute.MakeLower();
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_bLogSecurityEnable = false;
@@ -2745,8 +2778,8 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     }
                 }
                 else if (subchild->GetName() == wxT("accesslogfile")) {
-                    
-                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true")); 
+
+                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
                     attribute.MakeLower();
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_bLogAccessEnable = false;
@@ -2790,7 +2823,7 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     }
                 }
                 else if (subchild->GetName() == wxT("tcpip")) {
-                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true")); 
+                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
                     attribute.MakeLower();
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_bTCP = false;
@@ -2801,7 +2834,7 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
 
                     m_strTcpInterfaceAddress = subchild->GetAttribute(wxT("interface"), wxT(""));
 
-                } 
+                }
                 else if ( subchild->GetName() == wxT( "multicast-announce" ) ) {
 
                     wxString attribute = subchild->GetAttribute( wxT( "enable" ), wxT( "true" ) );
@@ -2819,7 +2852,7 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
 
                 }
                 else if (subchild->GetName() == wxT("udp")) {
-                    wxString attribut = subchild->GetAttribute(wxT("enable"), wxT("true")); 
+                    wxString attribut = subchild->GetAttribute(wxT("enable"), wxT("true"));
                     attribut.MakeLower();
                     if (attribut.IsSameAs(_("false"), false)) {
                         m_bUDP = false;
@@ -2830,9 +2863,9 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
 
                     m_strUDPInterfaceAddress = subchild->GetAttribute(wxT("interface"), wxT(""));
 
-                } 
+                }
                 else if (subchild->GetName() == wxT("mqttbroker")) {
-                    wxString attribut = subchild->GetAttribute(wxT("enable"), wxT("true")); 
+                    wxString attribut = subchild->GetAttribute(wxT("enable"), wxT("true"));
                     attribut.MakeLower();
                     if (attribut.IsSameAs(_("false"), false)) {
                         m_bMQTTBroker = false;
@@ -2845,7 +2878,7 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
 
                 }
                 else if (subchild->GetName() == wxT("coapsrv")) {
-                    wxString attribut = subchild->GetAttribute(wxT("enable"), wxT("true")); 
+                    wxString attribut = subchild->GetAttribute(wxT("enable"), wxT("true"));
                     attribut.MakeLower();
                     if (attribut.IsSameAs(_("false"), false)) {
                         m_bCoAPServer = false;
@@ -2859,7 +2892,7 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                 }
                 else if (subchild->GetName() == wxT("dm")) {
                     // Should the internal DM be disabled
-                  
+
                     wxString attribut = subchild->GetAttribute(wxT("enable"), wxT("true"));
                     attribut.MakeLower();
                     if (attribut.IsSameAs(_("false"), false)) {
@@ -2867,7 +2900,7 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     }
 
                     // Get the path to the DM file
-                    m_dm.m_configPath = subchild->GetAttribute(wxT("path"), wxT(""));  
+                    m_dm.m_configPath = subchild->GetAttribute(wxT("path"), wxT(""));
                     m_dm.m_configPath.Trim();
                     m_dm.m_configPath.Trim(false);
 
@@ -2878,7 +2911,7 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     attribut.MakeLower();
                     if (attribut.IsSameAs(_("false"), false)) {
                         m_dm.m_bLogEnable = false;
-                    }     
+                    }
 
                     // Get the DM Logpath
                     wxFileName fileName;
@@ -2916,18 +2949,18 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     else if ( str.IsSameAs(_("3"), false)) {
                         m_dm.m_logLevel = LOG_DM_EXTRA;
                     }
-                    
-                }                 
+
+                }
                 else if (subchild->GetName() == wxT("variables")) {
                     // Should the internal DM be disabled
-                
+
                     wxString attrib = subchild->GetAttribute(wxT("enable"), wxT("true"));
-                  
+
                     if (attrib.IsSameAs(_("false"), false)) {
                         m_bVariables = false;
                     }
 
-                    // Get the path to the DM file                 
+                    // Get the path to the DM file
                     m_VSCP_Variables.m_configPath = subchild->GetAttribute(wxT("path"), wxT(""));
                     m_VSCP_Variables.m_configPath.Trim();
                     m_VSCP_Variables.m_configPath.Trim(false);
@@ -2936,41 +2969,41 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     long autosave = vscp_readStringValue( subchild->GetAttribute(wxT("autosave"), wxT("5")) );
                     m_VSCP_Variables.setAutoSaveInterval( autosave );
 
-                } 
+                }
                 else if (subchild->GetName() == wxT("vscp")) {
-                   
+
                     wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
-                  
+
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_bVSCPDaemon = false;
                     }
 
-                } 
+                }
                 else if (subchild->GetName() == wxT("guid")) {
                     wxString str = subchild->GetNodeContent();
                     m_guid.getFromString(str);
-                } 
+                }
                 else if ( subchild->GetName() == wxT( "servername" ) ) {
                     m_strServerName = subchild->GetNodeContent();
                 }
                 else if (subchild->GetName() == wxT("clientbuffersize")) {
                     wxString str = subchild->GetNodeContent();
                     m_maxItemsInClientReceiveQueue = vscp_readStringValue(str);
-                }  
+                }
                 else if (subchild->GetName() == wxT("webserver")) {
-                   
+
                     wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
-                   
+
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_bWebServer = false;
                     }
-                    
+
                     attribute = subchild->GetAttribute( wxT( "disableauthentication" ), wxT( "false" ) );
 
                     if ( attribute.IsSameAs( _( "true" ), true ) ) {
                         m_bDisableSecurityWebServer = true;
                     }
-                  
+
                     attribute = subchild->GetAttribute(wxT("port"), wxT("8080"));
                     attribute.Trim();
                     attribute.Trim(false);
@@ -3026,7 +3059,7 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     attribute.Trim(false);
                     attribute.MakeUpper();
                     if ( attribute.IsSameAs(_("FALSE"), false ) ) {
-                        strcpy( m_EnableDirectoryListings, "no" ); 
+                        strcpy( m_EnableDirectoryListings, "no" );
                     }
 
                     attribute = subchild->GetAttribute(wxT("hide_file_patterns"), wxT(""));
@@ -3035,7 +3068,7 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     if ( attribute.Length() ) {
                         strcpy( m_hideFilePatterns, attribute.mbc_str() );
                     }
-                    
+
                     attribute = subchild->GetAttribute(wxT("index_files"), wxT(""));
                     attribute.Trim();
                     attribute.Trim(false);
@@ -3049,35 +3082,35 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     if ( attribute.Length() ) {
                         strcpy( m_urlRewrites, attribute.mbc_str() );
                     }
-                    
+
                     attribute = subchild->GetAttribute(wxT("per_directory_auth_file"), wxT(""));
                     attribute.Trim();
                     attribute.Trim(false);
                     if ( attribute.Length() ) {
                         strcpy( m_per_directory_auth_file, attribute.mbc_str() );
                     }
-                    
+
                     attribute = subchild->GetAttribute(wxT("global_auth_file"), wxT(""));
                     attribute.Trim();
                     attribute.Trim(false);
                     if ( attribute.Length() ) {
                         strcpy( m_global_auth_file, attribute.mbc_str() );
                     }
-                    
+
                     attribute = subchild->GetAttribute(wxT("ssi_pattern"), wxT(""));
                     attribute.Trim();
                     attribute.Trim(false);
                     if ( attribute.Length() ) {
                         strcpy( m_ssi_pattern, attribute.mbc_str() );
                     }
-                    
+
                     attribute = subchild->GetAttribute(wxT("ip_acl"), wxT(""));
                     attribute.Trim();
                     attribute.Trim(false);
                     if ( attribute.Length() ) {
                         strcpy( m_ip_acl, attribute.mbc_str() );
                     }
-                    
+
                     attribute = subchild->GetAttribute(wxT("dav_document_root"), wxT(""));
                     attribute.Trim();
                     attribute.Trim(false);
@@ -3094,35 +3127,35 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     // Get webserver sub components
                     wxXmlNode *subsubchild = subchild->GetChildren();
                     while (subsubchild) {
-                    
+
                         if (subsubchild->GetName() == wxT("websockets")) {
-                   
+
                             wxString property = subsubchild->GetAttribute(wxT("enable"), wxT("true"));
-                   
+
                             if (property.IsSameAs(_("false"), false)) {
                                 m_bWebSockets = false;
                             }
-                              
+
                             property = subsubchild->GetAttribute(wxT("auth"), wxT("true"));
-                    
+
                                 if (property.IsSameAs(_("false"), false)) {
                                  m_bAuthWebsockets = false;
                             }
 
-                        } 
+                        }
 
                         subsubchild = subsubchild->GetNext();
                     }
 
                 }
-                
+
 
                 subchild = subchild->GetNext();
             }
 
             wxString content = child->GetNodeContent();
 
-        } 
+        }
         else if ( child->GetName() == wxT("remoteuser") ) {
 
             wxXmlNode *subchild = child->GetChildren();
@@ -3149,67 +3182,67 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                         if (subsubchild->GetName() == wxT("name")) {
                             name = subsubchild->GetNodeContent();
                             bUser = true;
-                        } 
+                        }
                         else if (subsubchild->GetName() == wxT("password")) {
                             md5 = subsubchild->GetNodeContent();
-                        } 
+                        }
                         else if (subsubchild->GetName() == wxT("privilege")) {
                             privilege = subsubchild->GetNodeContent();
-                        } 
+                        }
                         else if (subsubchild->GetName() == wxT("filter")) {
                             bFilterPresent = true;
-                          
+
                             wxString str_vscp_priority = subchild->GetAttribute(wxT("priority"), wxT("0"));
-                        
+
                             val = 0;
                             str_vscp_priority.ToULong(&val);
                             VSCPFilter.filter_priority = val;
-                            
+
                             wxString str_vscp_class = subchild->GetAttribute(wxT("class"), wxT("0"));
-                          
+
                             val = 0;
                             str_vscp_class.ToULong(&val);
                             VSCPFilter.filter_class = val;
-                          
+
                             wxString str_vscp_type = subchild->GetAttribute(wxT("type"), wxT("0"));
-                           
+
                             val = 0;
                             str_vscp_type.ToULong(&val);
                             VSCPFilter.filter_type = val;
-                          
-                            wxString str_vscp_guid = subchild->GetAttribute(wxT("guid"),                                 
+
+                            wxString str_vscp_guid = subchild->GetAttribute(wxT("guid"),
                                                         wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"));
                             vscp_getGuidFromStringToArray(VSCPFilter.filter_GUID, str_vscp_guid);
-                        } 
+                        }
                         else if (subsubchild->GetName() == wxT("mask")) {
 
                             bMaskPresent = true;
-                           
+
                             wxString str_vscp_priority = subchild->GetAttribute(wxT("priority"), wxT("0"));
-                           
+
                             val = 0;
                             str_vscp_priority.ToULong(&val);
                             VSCPFilter.mask_priority = val;
-                           
+
                             wxString str_vscp_class = subchild->GetAttribute(wxT("class"), wxT("0"));
-                        
+
                             val = 0;
                             str_vscp_class.ToULong(&val);
                             VSCPFilter.mask_class = val;
-                           
+
                             wxString str_vscp_type = subchild->GetAttribute(wxT("type"), wxT("0"));
-                           
+
                             val = 0;
                             str_vscp_type.ToULong(&val);
                             VSCPFilter.mask_type = val;
-                           
-                            wxString str_vscp_guid = subchild->GetAttribute(wxT("guid"),                                   
+
+                            wxString str_vscp_guid = subchild->GetAttribute(wxT("guid"),
                                     wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"));
                             vscp_getGuidFromStringToArray(VSCPFilter.mask_GUID, str_vscp_guid);
-                        } 
+                        }
                         else if (subsubchild->GetName() == wxT("allowfrom")) {
                             allowfrom = subsubchild->GetNodeContent();
-                        } 
+                        }
                         else if (subsubchild->GetName() == wxT("allowevent")) {
                             allowevent = subsubchild->GetNodeContent();
                         }
@@ -3225,7 +3258,7 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
 
                     if (bFilterPresent && bMaskPresent) {
                         m_userList.addUser(name, md5, privilege, &VSCPFilter, allowfrom, allowevent);
-                    } 
+                    }
                     else {
                         m_userList.addUser(name, md5, privilege, NULL, allowfrom, allowevent);
                     }
@@ -3240,8 +3273,8 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
 
             }
 
-        } 
-        
+        }
+
         // Level I driver
         else if ( ( child->GetName() == wxT("canaldriver") ) || ( child->GetName() == wxT("level1driver") ) ) {
 
@@ -3249,7 +3282,7 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
             attribut.MakeLower();
             if (attribut.IsSameAs(_("false"), false)) {
                 m_bEnableLevel1Drivers = false;
-            } 
+            }
             else {
                 m_bEnableLevel1Drivers = true;
             }
@@ -3266,15 +3299,15 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                 bool bCanalDriver = false;
 
                 if ( subchild->GetName() == wxT("driver") ) {
-                    
+
                     wxXmlNode *subsubchild = subchild->GetChildren();
-                                       
+
                     wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
-                 
+
                     if (attribute.IsSameAs(_("false"), false)) {
                         bEnabled = false;
                     }
-                    
+
                     while (subsubchild) {
 
                         if ( subsubchild->GetName() == wxT("name") ) {
@@ -3288,39 +3321,39 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                                 strName.SetChar(pos, wxChar('_'));
                             }
                             bCanalDriver = true;
-                        } 
+                        }
                         else if ( subsubchild->GetName() == wxT("config") ||
                                 subsubchild->GetName() == wxT("parameter") ) {
                             strConfig = subsubchild->GetNodeContent();
                             strConfig.Trim();
                             strConfig.Trim(false);
-                        } 
+                        }
                         else if ( subsubchild->GetName() == wxT("path") ) {
                             strPath = subsubchild->GetNodeContent();
                             strPath.Trim();
                             strPath.Trim(false);
-                        } 
+                        }
                         else if ( subsubchild->GetName() == wxT("flags") ) {
                             wxString str = subsubchild->GetNodeContent();
                             flags = vscp_readStringValue(str);
-                        } 
+                        }
                         else if ( subsubchild->GetName() == wxT("guid") ) {
-                            guid.getFromString( subsubchild->GetNodeContent() );                            
+                            guid.getFromString( subsubchild->GetNodeContent() );
                         }
                         else if ( subsubchild->GetName() == wxT( "known-nodes" ) ) {
-                        
+
                             wxXmlNode *subsubsubchild = subchild->GetChildren();
 
                             while ( subsubsubchild ) {
 
                                 if ( subsubsubchild->GetName() == wxT( "node" ) ) {
                                     cguid knownguid;
-                                    
+
                                     knownguid.getFromString( subchild->GetAttribute( wxT( "guid" ), wxT( "-" ) ) );
                                     wxString name = subchild->GetAttribute( wxT( "name" ), wxT( "" )  ) ;
                                     addKnownNode( knownguid, guid, name );
                                 }
-                            
+
                                 // Next driver item
                                 subsubsubchild = subsubsubchild->GetNext();
 
@@ -3347,13 +3380,13 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                                                 bEnabled ) ) {
                         wxString errMsg = _("Driver not added. Path does not exist. - [ ") +
                                 strPath + _(" ]\n");
-                        logMsg(errMsg, DAEMON_LOGMSG_ERROR);
+                        logMsg(errMsg);
                         //wxLogDebug(errMsg);
-                    } 
+                    }
                     else {
                         wxString errMsg = _("Level I driver added. - [ ") +
                                 strPath + _(" ]\n");
-                        logMsg(errMsg, DAEMON_LOGMSG_INFO);
+                        logMsg(errMsg);
                     }
 
                     bCanalDriver = false;
@@ -3373,15 +3406,15 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
             attribut.MakeLower();
             if (attribut.IsSameAs(_("false"), false)) {
                 m_bEnableLevel2Drivers = false;
-            } 
+            }
             else {
                 m_bEnableLevel2Drivers = true;
             }
 
             wxXmlNode *subchild = child->GetChildren();
-            
+
             while (subchild) {
-                
+
                 wxString strName;
                 wxString strConfig;
                 wxString strPath;
@@ -3390,15 +3423,15 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                 bool bLevel2Driver = false;
 
                 if (subchild->GetName() == wxT("driver")) {
-                    
+
                     wxXmlNode *subsubchild = subchild->GetChildren();
-                                       
+
                     wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
 
                     if (attribute.IsSameAs(_("false"), false)) {
                         bEnabled = false;
                     }
-                    
+
                     while ( subsubchild ) {
                         if (subsubchild->GetName() == wxT("name")) {
                             strName = subsubchild->GetNodeContent();
@@ -3410,18 +3443,18 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                                 strName.SetChar(pos, wxChar('_'));
                             }
                             bLevel2Driver = true;
-                        } 
+                        }
                         else if (subsubchild->GetName() == wxT("config") ||
                                 subsubchild->GetName() == wxT("parameter")) {
                             strConfig = subsubchild->GetNodeContent();
                             strConfig.Trim();
                             strConfig.Trim(false);
-                        } 
+                        }
                         else if (subsubchild->GetName() == wxT("path")) {
                             strPath = subsubchild->GetNodeContent();
                             strPath.Trim();
                             strPath.Trim(false);
-                        } 
+                        }
                         else if (subsubchild->GetName() == wxT("guid")) {
                             guid.getFromString( subsubchild->GetNodeContent() );
                         }
@@ -3465,13 +3498,13 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                                                 bEnabled )) {
                         wxString errMsg = _("Driver not added. Path does not exist. - [ ") +
                                     strPath + _(" ]\n");
-                        logMsg(errMsg, DAEMON_LOGMSG_INFO);
-                    
-                    } 
+                        logMsg(errMsg);
+
+                    }
                     else {
                         wxString errMsg = _("Level II driver added. - [ ") +
                                     strPath + _(" ]\n");
-                        logMsg(errMsg, DAEMON_LOGMSG_INFO);
+                        logMsg(errMsg);
                     }
 
                     bLevel2Driver = false;
@@ -3484,7 +3517,9 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
             }
 
         }
-        // <table name="jhjhdjhsdjh" description="jsjdsjhdhsjh" xaxis="lfdlfldk" yaxis="dfddfd" path="path" type="normal|static" size="n" class="n" type="n" unit="n" />
+        // <table name="jhjhdjhsdjh" description="jsjdsjhdhsjh" xaxis="lfdlfldk"
+        //      yaxis="dfddfd" path="path" type="normal|static" size="n" class="n"
+        //      type="n" unit="n" />
         else if (child->GetName() == wxT("tables")) {
 
             wxXmlNode *subchild = child->GetChildren();
@@ -3510,12 +3545,12 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                         memset( &pTable->m_vscpFileHead, 0, sizeof(_vscptableInfo) );
                         pTable->setTableInfo( subchild->GetAttribute( wxT("path"), wxT("") ).mbc_str(),
                                                     nType,
-                                                    subchild->GetAttribute( wxT("name"), wxT("") ).Upper().mbc_str(), 
+                                                    subchild->GetAttribute( wxT("name"), wxT("") ).Upper().mbc_str(),
                                                     subchild->GetAttribute( wxT("description"), wxT("") ).mbc_str(),
-                                                    subchild->GetAttribute( wxT("labelx"), wxT("") ).mbc_str(), 
+                                                    subchild->GetAttribute( wxT("labelx"), wxT("") ).mbc_str(),
                                                     subchild->GetAttribute( wxT("labely"), wxT("") ).mbc_str(),
                                                     vscp_readStringValue( subchild->GetAttribute( wxT("size"), wxT("0") ) ),
-                                                    vscp_readStringValue( subchild->GetAttribute( wxT("vscpclass"), wxT("10") ) ), 
+                                                    vscp_readStringValue( subchild->GetAttribute( wxT("vscpclass"), wxT("10") ) ),
                                                     vscp_readStringValue( subchild->GetAttribute( wxT("vscptype"), wxT("6") ) ),
                                                     vscp_readStringValue( subchild->GetAttribute( wxT("vscpunit"), wxT("0") ) ) );
                         m_mutexTableList.Lock();
@@ -3528,21 +3563,21 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
 
             } // while
 
-        } 
+        }
         else if ( child->GetName() == wxT("automation") ) {
-            
+
             wxString attribut = child->GetAttribute(wxT("enable"), wxT("true"));
             attribut.MakeLower();
             if (attribut.IsSameAs(_("false"), false)) {
                 m_automation.disableAutomation();
-            } 
+            }
             else {
                 m_automation.enableAutomation();
             }
 
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
-            
+
                 if (subchild->GetName() == wxT("zone")) {
                     long zone;
                     wxString strZone = subchild->GetNodeContent();
@@ -3578,7 +3613,7 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_automation.disableSunRiseEvent();
-                    }                    
+                    }
                 }
                 else if (subchild->GetName() == wxT("sunrise-twilight")) {
                     m_automation.enableSunRiseTwilightEvent();
@@ -3592,7 +3627,7 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_automation.disableSunSetEvent();
-                    }  
+                    }
                 }
                 else if (subchild->GetName() == wxT("sunset-twilight")) {
                     m_automation.enableSunSetTwilightEvent();
@@ -3623,7 +3658,7 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     attribute = subchild->GetAttribute(wxT("interval"), wxT("60"));
                     long interval;
                     attribute.ToLong( &interval );
-                    m_automation.setIntervalSegmentControllerHeartbeat( interval ); 
+                    m_automation.setIntervalSegmentControllerHeartbeat( interval );
                 }
                 else if (subchild->GetName() == wxT("heartbeat-event")) {
                     m_automation.enableHeartbeatEvent();
@@ -3651,11 +3686,57 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
     }
 
     return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// callback_daemonConfigurationRead
+//
+
+static int callback_daemonConfigurationRead( void *data,
+                                                int argc,
+                                                char **argv,
+                                                char **azColName )
+{
+    CControlObject *pctrlObj = (CControlObject *)data;
+    if ( NULL == pctrlObj ) return -1;
+
+    int dbVersion = atoi( argv[ 1 ] ); // Get the version of this db file
+
+    // Check for db version 1 data
+    if ( 1 == dbVersion ) {
+
+
+    }
 
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+// dbReadConfiguration
+//
+// Read the configuration database record
+//
 
+bool CControlObject::dbReadConfiguration( void )
+{
+    char *pErrMsg = 0;
+    const char *psql = "SELECT * from SETTINGS";
+
+    // Check if database is open
+    if ( NULL == m_db_vscp_daemon ) return false;
+
+    if ( SQLITE_OK != sqlite3_exec( m_db_vscp_daemon,
+                                        psql,
+                                        callback_daemonConfigurationRead,
+                                        (void*)gpctrlObj,
+                                        &pErrMsg ) ) {
+        fprintf( stderr, "Error reading configuration (SQL): %s\n", pErrMsg );
+        sqlite3_free( pErrMsg );
+        return false;
+    }
+
+    return true;
+}
 
 
 
@@ -3713,7 +3794,7 @@ void *clientMsgWorkerThread::Entry()
                 m_pCtrlObject->m_semClientOutputQueue.WaitTimeout(500) ) continue;
 
         if ( m_pCtrlObject->m_clientOutputQueue.GetCount() ) {
-            
+
             m_pCtrlObject->m_mutexClientOutputQueue.Lock();
             nodeVSCP = m_pCtrlObject->m_clientOutputQueue.GetFirst();
             pvscpEvent = nodeVSCP->GetData();

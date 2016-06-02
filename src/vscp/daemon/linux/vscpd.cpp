@@ -4,17 +4,17 @@
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version
 // 2 of the License, or (at your option) any later version.
-// 
-// This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2016 
+// This file is part of the VSCP (http://www.vscp.org)
+//
+// Copyright (C) 2000-2016
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
-// 
+//
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this file see the file COPYING.  If not, write to
 // the Free Software Foundation, 59 Temple Place - Suite 330,
@@ -98,17 +98,17 @@ int main(int argc, char **argv)
 
     // Ignore return value from defunct processes
     signal(SIGCHLD, SIG_IGN);
-        
+
     crcInit();
-    
+
     /*
       unsigned char ttt[ 50 ];
       for ( int m=0; m<50; m++ ) {
       ttt[ m ] = m+8;
       }
-    
+
      *((unsigned short *)(ttt + 48 )) = crcFast( ttt, 48 );
-      ttt[ 48 ] = 0x9f; 
+      ttt[ 48 ] = 0x9f;
       ttt[ 49 ] = 0x87;
       printf( "CRC for data = %X\n", crcFast( ttt, 48 ) );
       printf( "CRC for all = %X\n", crcFast( ttt, 50 ) );
@@ -120,7 +120,7 @@ int main(int argc, char **argv)
 
         return -1;
     }
-    
+
     gpobj = new CControlObject();
 
     //wxStandardPaths *strpath = wxStandardPaths::Get();
@@ -130,7 +130,7 @@ int main(int argc, char **argv)
 
     VSCPApp theApp;
     //IMPLEMENT_APP(theApp)
-    
+
     wxSocketBase::Initialize();
 
     while ((arg = getopt(argc, argv, "d:c:hgs")) != EOF) {
@@ -166,12 +166,12 @@ int main(int argc, char **argv)
     }
 
     //wxLogDebug(_("ControlObject: Configfile =") + strcfgfile);
-    gpobj->logMsg( _("ControlObject: Configfile =") + strcfgfile, DAEMON_LOGMSG_INFO );
+    gpobj->logMsg( _("ControlObject: Configfile =") + strcfgfile );
     if ( !theApp.init( strcfgfile ) ) {
         printf("ControlObject: Failed to configure. Terminating.");
         wxLogDebug(_("ControlObject: Failed to configure. Terminating."));
     }
-    
+
     delete gpobj;
 
 }
@@ -183,24 +183,24 @@ int main(int argc, char **argv)
 
 BOOL VSCPApp::init(wxString& strcfgfile)
 {
-   
+
     if (!gbDontRunAsDaemon) {
 
         pid_t pid, sid;
 
-        // Fork child	
+        // Fork child
         if (0 > (pid = fork())) {
             // Failure
             printf("Failed to fork.");
             return -1;
-        } 
+        }
         else if (0 != pid) {
             exit(0); // Parent goes by by.
         }
 
         sid = setsid(); // Become session leader
         if (sid < 0) {
-            // Failure 
+            // Failure
             printf("Failed to become session leader.");
             return -1;
         }
@@ -219,7 +219,7 @@ BOOL VSCPApp::init(wxString& strcfgfile)
 
         umask(0); // Clear out file mode creation mask
 
-        // Close out the standard file descriptors 
+        // Close out the standard file descriptors
         close(STDIN_FILENO);
         close(STDOUT_FILENO);
         close(STDERR_FILENO);
@@ -284,7 +284,7 @@ BOOL VSCPApp::init(wxString& strcfgfile)
 
     // Remove the pid file
     unlink("/var/run/vscp/vscpd/vscpd.pid");
-    
+
 
     return FALSE;
 }

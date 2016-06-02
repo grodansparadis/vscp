@@ -4,17 +4,17 @@
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version
 // 2 of the License, or (at your option) any later version.
-// 
-// This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2016 
+// This file is part of the VSCP (http://www.vscp.org)
+//
+// Copyright (C) 2000-2016
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
-// 
+//
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this file see the file COPYING.  If not, write to
 // the Free Software Foundation, 59 Temple Place - Suite 330,
@@ -40,7 +40,7 @@ class VSCPWebServerThread : public wxThread
 {
 
 public:
-    
+
     /// Constructor
     VSCPWebServerThread();
 
@@ -53,7 +53,7 @@ public:
     virtual void *Entry();
 
 
-    /*! 
+    /*!
         Called when the thread exits - whether it terminates normally or is
         stopped with Delete() (but not when it is Kill()ed!)
     */
@@ -69,10 +69,10 @@ public:
         @return Returns true on success false on failure.
      */
     bool readMimeTypes(wxString& path);
-    
-    
-    
-    
+
+
+
+
     /////////////////////////////////////////////////
     //                 WEB SERVER
     /////////////////////////////////////////////////
@@ -91,18 +91,18 @@ public:
         @param reponse
         @return FALSE on failure to validate user or TRUE on success
     */
-    static int 
-    websrv_check_password( const char *method, 
-                                const char *ha1, 
+    static int
+    websrv_check_password( const char *method,
+                                const char *ha1,
                                 const char *uri,
-                                const char *nonce, 
-                                const char *nc, 
+                                const char *nonce,
+                                const char *nc,
                                 const char *cnonce,
-                                const char *qop, 
+                                const char *qop,
                                 const char *response );
 
     /*!
-        Return the session handle for this connection, or 
+        Return the session handle for this connection, or
         create one if this is a new user.
     */
     struct websrv_Session *
@@ -117,18 +117,18 @@ public:
      * @param response response to modify
      */
     websrv_Session *
-    websrv_add_session_cookie( struct mg_connection *nc, 
+    websrv_add_session_cookie( struct mg_connection *nc,
                                 struct http_message *hm );
 
     /*!
         Get/Create web session
         @param session session to use
-        @return Pointer to session or NULL if failure to get or create session 
+        @return Pointer to session or NULL if failure to get or create session
     */
-    struct websrv_Session * 
+    struct websrv_Session *
     websrv_GetCreateSession( struct mg_connection *nc,
                                 struct http_message *hm );
-    
+
     /**
         Clean up handles of sessions that have been idle for
         too long.
@@ -143,26 +143,26 @@ public:
         @param nc Webserver connection handle
         @return TRUE on success or FALSE on failure.
     */
-    bool 
+    bool
     websrv_websocket_message( struct mg_connection *nc,
                                 struct http_message *hm,
                                 struct websocket_message *wm );
-    
+
     /*!
         Web server event handler
         @param nc Webserver connection handle
         @param ev Weberserver event
         @return TRUE on success or FALSE on failure.
     */
-    static void websrv_event_handler( struct mg_connection *nc, 
-                                        int ev, 
+    static void websrv_event_handler( struct mg_connection *nc,
+                                        int ev,
                                         void *pUser );
-                                        
-                                        
-    //////////////////////////////////////////////////////////////////////////////
-    //                           ADMIN INTERFACE                                //
-    //////////////////////////////////////////////////////////////////////////////
-    
+
+
+    ////////////////////////////////////////////////////////////////////////////
+    //                           ADMIN INTERFACE                              //
+    ////////////////////////////////////////////////////////////////////////////
+
 
     /*!
         List text file content. Built to display logfiles
@@ -170,8 +170,8 @@ public:
         @param file File to display
         @param textHeader Headtext to display
     */
-    void websrv_listFile( struct mg_connection *nc, 
-                            wxFileName& logfile, 
+    void websrv_listFile( struct mg_connection *nc,
+                            wxFileName& logfile,
                             wxString& textHeader );
 
 
@@ -191,94 +191,94 @@ public:
     void
     websrv_interfaces( struct mg_connection *nc,
                         struct http_message *hm );
-    
+
     /**
-     * websrv_dmlist -  that displays the decision matrix list 
+     * websrv_dmlist -  that displays the decision matrix list
      *
      * @param nc Webserver connection handle.
      */
     void
     websrv_dmlist( struct mg_connection *nc,
                     struct http_message *hm );
-    
+
     /**
-     * websrv_dmedit - edit of one decision matrix entry 
+     * websrv_dmedit - edit of one decision matrix entry
      *
      * @param nc Webserver connection handle.
      */
     void
     websrv_dmedit( struct mg_connection *nc,
                     struct http_message *hm );
-    
+
     /**
-     * websrv_dmpost - post of one decision matrix entry 
+     * websrv_dmpost - post of one decision matrix entry
      *
      * @param nc Webserver connection handle.
      */
-    void 
+    void
     websrv_dmpost( struct mg_connection *nc,
                     struct http_message *hm );
-    
+
     /**
-     * websrv_dmdelete - Delete DMe entries 
+     * websrv_dmdelete - Delete DMe entries
      *
      * @param nc Webserver connection handle.
      */
-    void 
+    void
     websrv_dmdelete( struct mg_connection *nc,
                         struct http_message *hm );
-    
+
     /**
-     * websrv_variables_list - that displays the variable list 
+     * websrv_variables_list - that displays the variable list
      *
      * @param nc Webserver connection handle.
      */
     void
     websrv_variables_list( struct mg_connection *nc,
                             struct http_message *hm );
-    
+
     /**
-     * websrv_variables_edit -  edit of one variable entry 
+     * websrv_variables_edit -  edit of one variable entry
      *
      * @param nc Webserver connection handle.
      */
     void
     websrv_variables_edit( struct mg_connection *nc,
                             struct http_message *hm );
-    
+
     /**
-     * websrv_variables_post -  post of one variable entry 
+     * websrv_variables_post -  post of one variable entry
      *
      * @param nc Webserver connection handle.
      */
-    void 
+    void
     websrv_variables_post( struct mg_connection *nc,
                             struct http_message *hm );
-    
+
    /**
-     * websrv_variables_new - New variable initial type selection state 
+     * websrv_variables_new - New variable initial type selection state
      *
      * @param nc Webserver connection handle.
      */
-    void 
+    void
     websrv_variables_new( struct mg_connection *nc,
                             struct http_message *hm );
-    
+
     /**
-     * websrv_variables_delete - Delete DMe entries 
+     * websrv_variables_delete - Delete DMe entries
      *
      * @param nc Webserver connection handle.
      */
-    void 
+    void
     websrv_variables_delete( struct mg_connection *nc,
                                 struct http_message *hm );
 
     /**
-     * websrv_render_variables_delete - Discover nodes 
+     * websrv_render_variables_delete - Discover nodes
      *
      * @param nc Webserver connection handle.
      */
-    void 
+    void
     websrv_discovery( struct mg_connection *nc,
                         struct http_message *hm );
 
@@ -287,7 +287,7 @@ public:
      *
      * @param nc Webserver connection handle.
      */
-    void 
+    void
     websrv_session( struct mg_connection *nc,
                         struct http_message *hm );
 
@@ -296,7 +296,7 @@ public:
      *
      * @param nc Webserver connection handle.
      */
-    void 
+    void
     websrv_configure( struct mg_connection *nc,
                         struct http_message *hm );
 
@@ -305,7 +305,7 @@ public:
      *
      * @param nc Webserver connection handle.
      */
-    void 
+    void
     websrv_bootload( struct mg_connection *nc,
                         struct http_message *hm );
 
@@ -346,15 +346,15 @@ public:
         Handle websocket send event
     */
     bool
-    websock_sendevent( struct mg_connection *nc, 
-                            struct websock_session *pSession, 
+    websock_sendevent( struct mg_connection *nc,
+                            struct websock_session *pSession,
                             vscpEvent *pEvent );
 
     /*!
         Authenticate client
         @param nc Webserver connection handle
         @param strUser Username
-        @param strKey hash of 
+        @param strKey hash of
             "user:standard vscp password hash:Sec-WebSocket-Key:session-hash"
             VSCP standard password hash =
             "admin:mydomain.com:secret" = 5ebe2294ecd0e0f08eab7690d2a6ee69
@@ -362,7 +362,7 @@ public:
     bool
     websock_authentication( struct mg_connection *nc,
                                 struct http_message *hm,
-                                struct websock_session *pSession, 
+                                struct websock_session *pSession,
                                 wxString& strUser, wxString& strKey );
 
     /*!
@@ -373,7 +373,7 @@ public:
     websock_command( struct mg_connection *nc,
                         struct http_message *hm,
                         struct websocket_message *wm,
-                        struct websock_session *pSession, 
+                        struct websock_session *pSession,
                         wxString& strCommand );
 
     /*!
@@ -395,7 +395,7 @@ public:
     /*!
         Post incomming event on open websockets
     */
-    void 
+    void
     websock_post_incomingEvents( void );
 
 
@@ -415,7 +415,7 @@ public:
     websrv_new_rest_session( struct mg_connection *nc, CUserItem *pUser );
 
     /*!
-        websrv_get_rest_session - fetch rest sesson if it is available	
+        websrv_get_rest_session - fetch rest sesson if it is available
         @param nc Webserver connection handle.
         @param SessinId Identifier for the session.
         @return pointer to session or NULL if session is not found.
@@ -443,24 +443,24 @@ public:
         webserv_rest_doStatus - Get session status
         @param nc Webserver connection handle.
         @param pSession Active session or NULL if no session active
-        @param format The format output should be formated in, plain, 
+        @param format The format output should be formated in, plain,
          *      csv, xml, json, jsonp
     */
     void
-    webserv_rest_doStatus( struct mg_connection *nc, 
-                            struct websrv_rest_session *pSession, 
+    webserv_rest_doStatus( struct mg_connection *nc,
+                            struct websrv_rest_session *pSession,
                             int format );
 
     /*!
         webserv_rest_doOpen - Open session
         @param nc Webserver connection handle.
         @param pSession Active session or NULL if no session active
-        @param format The format output should be formated in, plain, csv, 
+        @param format The format output should be formated in, plain, csv,
          *          xml, json, jsonp
     */
     void
-    webserv_rest_doOpen( struct mg_connection *nc, 
-                            struct websrv_rest_session *pSession, 
+    webserv_rest_doOpen( struct mg_connection *nc,
+                            struct websrv_rest_session *pSession,
                             CUserItem *pUser, int format );
 
 
@@ -468,12 +468,12 @@ public:
         webserv_rest_doOpen - Close session
         @param nc Webserver connection handle.
         @param pSession Active session or NULL if no session active
-        @param format The format output should be formated in, plain, csv, 
+        @param format The format output should be formated in, plain, csv,
                 xml, json, jsonp
     */
     void
-    webserv_rest_doClose( struct mg_connection *nc, 
-                            struct websrv_rest_session *pSession, 
+    webserv_rest_doClose( struct mg_connection *nc,
+                            struct websrv_rest_session *pSession,
                             int format );
 
 
@@ -481,14 +481,14 @@ public:
         webserv_rest_doSendEvent - Send VSCP event
         @param nc Webserver connection handle.
         @param pSession Active session or NULL if no session active
-        @param format The format output should be formated in, plain, csv, 
+        @param format The format output should be formated in, plain, csv,
                     xml, json, jsonp
-        @param pEvent Pointer to VSCP event to send. The framework handels 
+        @param pEvent Pointer to VSCP event to send. The framework handels
                 deletion of this pointer.
     */
     void
-    webserv_rest_doSendEvent( struct mg_connection *nc, 
-                                            struct websrv_rest_session *pSession, 
+    webserv_rest_doSendEvent( struct mg_connection *nc,
+                                            struct websrv_rest_session *pSession,
                                             int format,
                                             vscpEvent *pEvent );
 
@@ -496,13 +496,13 @@ public:
         webserv_rest_doReceiveEvent - Receive VSCP event
         @param nc Webserver connection handle.
         @param pSession Active session or NULL if no session active
-        @param format The format output should be formated in, plain, csv, 
+        @param format The format output should be formated in, plain, csv,
                 xml, json, jsonp
         @param count Number of events to read.
     */
     void
-    webserv_rest_doReceiveEvent( struct mg_connection *nc, 
-                                            struct websrv_rest_session *pSession, 
+    webserv_rest_doReceiveEvent( struct mg_connection *nc,
+                                            struct websrv_rest_session *pSession,
                                             int format,
                                             size_t count=1 );
 
@@ -510,13 +510,13 @@ public:
         webserv_rest_doSendEvent - Send VSCP event
         @param nc Webserver connection handle.
         @param pSession Active session or NULL if no session active
-        @param format The format output should be formated in, plain, csv, 
+        @param format The format output should be formated in, plain, csv,
                     xml, json, jsonp
         @param vscpfilter Filter to set.
     */
     void
-    webserv_rest_doSetFilter( struct mg_connection *nc, 
-                                            struct websrv_rest_session *pSession, 
+    webserv_rest_doSetFilter( struct mg_connection *nc,
+                                            struct websrv_rest_session *pSession,
                                             int format,
                                             vscpEventFilter& vscpfilter );
 
@@ -527,36 +527,36 @@ public:
         @param format The format output should be formated in, plain, csv, xml, json, jsonp
     */
     void
-    webserv_rest_doClearQueue( struct mg_connection *nc, 
-                                    struct websrv_rest_session *pSession, 
+    webserv_rest_doClearQueue( struct mg_connection *nc,
+                                    struct websrv_rest_session *pSession,
                                     int format );
 
     /*!
         webserv_rest_doReadVariable - Read a variable value
         @param nc Webserver connection handle.
         @param pSession Active session or NULL if no session active
-        @param format The format output should be formated in, plain, csv, 
+        @param format The format output should be formated in, plain, csv,
                 xml, json, jsonp
         @param strVariableName Name of variable to read
     */
     void
-    webserv_rest_doReadVariable( struct mg_connection *nc, 
-                                    struct websrv_rest_session *pSession, 
+    webserv_rest_doReadVariable( struct mg_connection *nc,
+                                    struct websrv_rest_session *pSession,
                                     int format,
-                                    wxString& strVariableName );	
+                                    wxString& strVariableName );
 
     /*!
         webserv_rest_doWriteVariable - Write a variable value
         @param nc Webserver connection handle.
         @param pSession Active session or NULL if no session active
-        @param format The format output should be formated in, plain, 
+        @param format The format output should be formated in, plain,
           csv, xml, json, jsonp
         @param strVariableName Name of variable to write new value to.
         @param strValue Value for variable variable
     */
     void
-    webserv_rest_doWriteVariable( struct mg_connection *nc, 
-                                        struct websrv_rest_session *pSession, 
+    webserv_rest_doWriteVariable( struct mg_connection *nc,
+                                        struct websrv_rest_session *pSession,
                                         int format,
                                         wxString& strVariableName,
                                         wxString& strValue );
@@ -565,35 +565,35 @@ public:
         webserv_rest_doCreateVariable - Create a variable of a specified type
         @param nc Webserver connection handle.
         @param pSession Active session or NULL if no session active
-        @param format The format output should be formated in, plain, csv, 
+        @param format The format output should be formated in, plain, csv,
            xml, json, jsonp
         @param strVariable Name of variable to create
-        @param strType Type of variable to create. Can be given on text or 
+        @param strType Type of variable to create. Can be given on text or
            numerical form.
         @param strValue Value of variable to create
-        @param strPersistent Should be set to "true" if variable should be 
+        @param strPersistent Should be set to "true" if variable should be
            persistent
     */
     void
-    webserv_rest_doCreateVariable( struct mg_connection *nc, 
-                                        struct websrv_rest_session *pSession, 
+    webserv_rest_doCreateVariable( struct mg_connection *nc,
+                                        struct websrv_rest_session *pSession,
                                         int format,
                                         wxString& strVariable,
                                         wxString& strType,
                                         wxString& strValue,
                                         wxString& strPersistent );
-    
+
     /*!
         webserv_rest_doDeleteVariable - Delete a variable
         @param nc Webserver connection handle.
         @param pSession Active session or NULL if no session active
-        @param format The format output should be formated in, plain, csv, 
+        @param format The format output should be formated in, plain, csv,
            xml, json, jsonp
         @param strVariable Name of variable to delete
     */
     void
-    webserv_rest_doDeleteVariable( struct mg_connection *nc, 
-                                        struct websrv_rest_session *pSession, 
+    webserv_rest_doDeleteVariable( struct mg_connection *nc,
+                                        struct websrv_rest_session *pSession,
                                         int format,
                                         wxString& strVariable  );
 
@@ -607,14 +607,14 @@ public:
         @param strType Measurement type
         @param strMeasurement Measurement value (integer/long/float)
         @param strUnit Measurement unit
-        @param strSensorIdx Sensor Index 
+        @param strSensorIdx Sensor Index
         @param strZone Zone to use
         @param strSubZone SubZone to use
         @param eventFormat Can be string or float
     */
     void
-    webserv_rest_doWriteMeasurement( struct mg_connection *nc, 
-                                                struct websrv_rest_session *pSession, 
+    webserv_rest_doWriteMeasurement( struct mg_connection *nc,
+                                                struct websrv_rest_session *pSession,
                                                 int format,
                                                 wxString& strGuid,
                                                 wxString& strLevel,
@@ -650,8 +650,8 @@ public:
         @return TRUE on success or FALSE on failure.
     */
     void
-    webserv_rest_doGetTableData( struct mg_connection *nc, 
-                                                struct websrv_rest_session *pSession, 
+    webserv_rest_doGetTableData( struct mg_connection *nc,
+                                                struct websrv_rest_session *pSession,
                                                 int format,
                                                 wxString& strName,
                                                 wxString& strFrom,
@@ -679,8 +679,8 @@ public:
         @param errorcode Code for error.
     */
     void
-    webserv_rest_error( struct mg_connection *nc, 
-                                        struct websrv_rest_session *pSession, 
+    webserv_rest_error( struct mg_connection *nc,
+                                        struct websrv_rest_session *pSession,
                                         int format,
                                         int errorcode);
 
@@ -694,9 +694,9 @@ public:
         webserv_rest_sendHeader( struct mg_connection *nc,
                                  int format,
                                  int returncode );
-    
 
-    
+
+
 
 
 // --- Member variables ---
@@ -714,7 +714,7 @@ public:
     // Hash table with mime types, gives mime type from
     // file extension.
     HashString m_hashMimeTypes;
-    
+
     wxMutex m_websockSessionMutex;   // Protects the session object
 
 };
