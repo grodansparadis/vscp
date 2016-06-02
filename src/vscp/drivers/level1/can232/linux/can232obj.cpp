@@ -680,7 +680,7 @@ void *workThread(void *pObject)
                                     printf("%02X ", pcan232obj->m_can232obj.m_receiveBuf[i]);
                                 }
                                 printf("]\n");
-                                if (!can232ToCanal(pcan232obj->m_can232obj.m_receiveBuf, pMsg)) {
+                                if (can232ToCanal(pcan232obj->m_can232obj.m_receiveBuf, pMsg)) {
                                     pNode->pObject = pMsg;
                                     dll_addNode(&pcan232obj->m_can232obj.m_rcvList, pNode);
                                     // Update statistics
