@@ -757,7 +757,7 @@ public:
     /// last update
     wxDateTime m_lastTime;
 
-    /// Path to DM file
+    /// Path to DM database file
     wxString m_configPath;
 
     /// DM table filter - Filter for all rows of the table
@@ -793,7 +793,7 @@ public:
     */
     int m_logLevel;
     bool m_bLogEnable;      // Enable decision matrix logfile
-    wxFileName m_logFileName;
+    wxFileName m_logPath;
     wxFile m_fileLog;
 
     /*!

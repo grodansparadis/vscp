@@ -139,7 +139,7 @@ public:
     void enableSunSetTwilightEvent( void ) { m_bSunSetTwilightEvent = true; };
 
     /// setter for bSunSetTwilightEvent
-    void disableSunSetTwillightEvent( void ) { m_bSunSetTwilightEvent = false; };
+    void disableSunSetTwilightEvent( void ) { m_bSunSetTwilightEvent = false; };
 
     /// setter for daylightsavingtimeStart
     void setDaylightSavingStart( wxDateTime &dt ) { m_daylightsavingtimeStart = dt; };

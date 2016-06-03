@@ -643,7 +643,7 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
             else if ( 0 == strncmp( uri, "/vscp/log/dm",12) ) {
                 wxString header = _("Log File 'Decision Matrix'");
                 pObject->getWebServer()->websrv_listFile( nc,
-                                                            pObject->m_dm.m_logFileName,
+                                                            pObject->m_dm.m_logPath,
                                                             header );
             }
             else if ( 0 == strncmp( uri, "/vscp/table",12) ) {
@@ -4967,7 +4967,7 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
             buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>DM logging</b> is enabled.");
             buildPage += _("<br>");
             buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to log file:</b> ");
-            buildPage += pObject->m_dm.m_logFileName.GetFullPath();
+            buildPage += pObject->m_dm.m_logPath.GetFullPath();
         }
         else {
             buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>DM logging</b> is disabled.");

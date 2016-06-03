@@ -28,7 +28,7 @@
 #include "wx/wx.h"
 #include "vscp.h"
 
-class cguid  
+class cguid
 {
 
 public:
@@ -90,14 +90,14 @@ public:
         \return true if same.
     */
     bool isSameGUID( const unsigned char *pguid );
-            
+
 
 // private:
-  
+
     // GUID id
-	uint8_t m_id[16];
- 	
+    uint8_t m_id[16];
+
 };
 
-#endif  
+#endif
 

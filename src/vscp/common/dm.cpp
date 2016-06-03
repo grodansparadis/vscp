@@ -2882,7 +2882,7 @@ CDM::CDM( CControlObject *ctrlObj )
 #ifdef WIN32
     m_logFileName.SetName( wxStandardPaths::Get().GetConfigDir() + _("vscp_log_dm.txt") );
 #else
-    m_logFileName.SetName( _("/srv/vscp/logs/vscp_log_dm") );
+    m_logPath.SetName( _("/srv/vscp/logs/vscp_log_dm") );
 #endif
 
     m_pCtrlObject = ctrlObj;
@@ -2957,7 +2957,7 @@ void CDM::init( void )
 {
     // Open up the General logging file.
     if ( m_bLogEnable ) {
-        m_fileLog.Open( m_logFileName.GetFullPath(), wxFile::write_append );
+        m_fileLog.Open( m_logPath.GetFullPath(), wxFile::write_append );
     }
 
     wxString wxlogmsg =
