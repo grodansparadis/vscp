@@ -199,7 +199,7 @@ CControlObject::CControlObject()
     // Nill the GUID
     m_guid.clear();
 
-    // Initialize the client map
+    // Initialise the client map
     // to all unused
     for (i = 0; i < VSCP_MAX_CLIENTS; i++) {
         m_clientMap[ i ] = 0;
@@ -370,7 +370,7 @@ CControlObject::CControlObject()
 
 #ifdef WIN32
 
-    // Initialize winsock layer
+    // Initialise winsock layer
     WSAStartup(wVersionRequested, &wsaData);
 
     // Also for wx
@@ -608,8 +608,8 @@ bool CControlObject::init(wxString& strcfgfile)
 
     // A configuration file must be available
     if ( !wxFile::Exists( strcfgfile ) ) {
-        printf("No configuration file. Can't initialize!.");
-        logMsg(_("No configuration file. Can't initialize!.\n") );
+        printf("No configuration file. Can't initialise!.");
+        logMsg(_("No configuration file. Can't initialise!.\n") );
         logMsg(_("Path = .") + strcfgfile + _("\n") );
         return FALSE;
     }
@@ -3986,6 +3986,7 @@ static int callback_daemonConfigurationRead( void *data,
 //
 // Note that fprintf needs to be used here as the logging mechanism
 // is not activated yet.
+//
 
 bool CControlObject::dbReadConfiguration( void )
 {
@@ -4007,9 +4008,6 @@ bool CControlObject::dbReadConfiguration( void )
 
     return true;
 }
-
-
-
 
 
 

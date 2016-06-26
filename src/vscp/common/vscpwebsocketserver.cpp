@@ -683,6 +683,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         resultstr += strvalue;
         mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, (const char *)resultstr.mbc_str() );
     }
+    
     // ------------------------------------------------------------------------
     //                               RESETVAR
     //-------------------------------------------------------------------------
@@ -1351,6 +1352,83 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
 
         }
 
+    }
+    // ------------------------------------------------------------------------
+    //                              VERSION
+    //-------------------------------------------------------------------------
+    else if (0 == strTok.Find(_("VERSION"))) {
+        
+        wxString strvalue;
+
+        wxString resultstr = _("+;VERSION;");
+        resultstr += VSCPD_DISPLAY_VERSION;
+        resultstr += _(";");
+        resultstr += wxString::Format(_("%d.%d.%d.%d"), VSCPD_MAJOR_VERSION,
+                                                            VSCPD_MINOR_VERSION,
+                                                            VSCPD_SUB_VERSION,
+                                                            VSCPD_BUILD_VERSION );
+        mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, (const char *)resultstr.mbc_str() );
+        
+    }
+    // ------------------------------------------------------------------------
+    //                              COPYRIGHT
+    //-------------------------------------------------------------------------
+    else if (0 == strTok.Find(_("COPYRIGHT"))) {
+        
+        wxString strvalue;
+
+        wxString resultstr = _("+;COPYRIGHT;");
+        resultstr += VSCPD_COPYRIGHT;
+        mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, (const char *)resultstr.mbc_str() );
+        
+    }
+    // ------------------------------------------------------------------------
+    //                             VARIABLE
+    //
+    //  READ, WRITE, ADD, DEL, LIST, LISTALL
+    //-------------------------------------------------------------------------
+    else if (0 == strTok.Find(_("VARIABLE"))) {
+        
+    }
+    // ------------------------------------------------------------------------
+    //                               DM
+    //
+    //  READ, WRITE, ADD, DEL, LIST, LISTALL
+    //-------------------------------------------------------------------------
+    else if (0 == strTok.Find(_("DM"))) {
+        
+    }
+    // ------------------------------------------------------------------------
+    //                              USER
+    //
+    //  READ, WRITE, ADD, DEL, LIST, LISTALL
+    //-------------------------------------------------------------------------
+    else if (0 == strTok.Find(_("USER"))) {
+        
+    }
+    // ------------------------------------------------------------------------
+    //                              GROUP
+    //
+    //  READ, WRITE, ADD, DEL, LIST, LISTALL
+    //-------------------------------------------------------------------------
+    else if (0 == strTok.Find(_("GROUP"))) {
+        
+    }
+    // ------------------------------------------------------------------------
+    //                              DRIVER
+    //
+    //  READ, WRITE, ADD, DEL, LIST, LISTALL
+    //-------------------------------------------------------------------------
+    else if (0 == strTok.Find(_("DRIVER"))) {
+        
+    }
+    // ------------------------------------------------------------------------
+    //                              TABLE
+    //
+    //  READ, WRITE, ADD, DEL, LIST, LISTALL
+    //-------------------------------------------------------------------------
+    else if (0 == strTok.Find(_("TABLE"))) {
+        
     }
     else {
         mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
