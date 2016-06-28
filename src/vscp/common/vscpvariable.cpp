@@ -767,22 +767,27 @@ void CVSCPVariable::setFalse( void )
 
 CVariableStorage::CVariableStorage()
 {
-#ifndef BUILD_VSCPD_SERVICE
-    //wxStandardPaths stdPath;
-
+    m_db_vscp_variable = NULL;
+    
     // Set the default dm configuration path
 #ifdef WIN32
     m_configPath = wxStandardPaths::Get().GetConfigDir();
     m_configPath += _("/vscp/variables.xml");
 #else
     m_configPath = _("/srv/vscp/variables.xml");
+#endif  
+    
+#ifdef WIN32
+    m_path_db_vscp_variable.SetName( wxStandardPaths::Get().GetConfigDir() +
+                                            _("/vscp/vscp_variable.sqlite3") );
+#else
+    m_path_db_vscp_variable.SetName( _("/srv/vscp/vscp_variable.sqlite3") );
 #endif
-#endif    
 
     // Autosave variables every five minutes.
     m_autosaveInterval = 5;
 
-    // We just read varaibles  
+    // We just read varibles  
     m_lastSaveTime = wxDateTime::Now();
 
     // No changes
@@ -804,6 +809,11 @@ CVariableStorage::~CVariableStorage()
         
         if ( NULL == ( pVariable = *it ) ) continue;
         remove( pVariable->getName() );
+    }
+    
+    // Close the variable database
+    if ( NULL != m_db_vscp_variable ) {
+        sqlite3_close( m_db_vscp_variable );
     }
 }
 

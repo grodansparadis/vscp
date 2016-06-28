@@ -192,6 +192,12 @@ CControlObject::CControlObject()
     int i;
     m_bQuit = false;            // true if we should quit
     gpctrlObj = this;           // needed by websocket static callbacks
+    
+    // Log to database as default
+    m_bLogToDatabase = true;
+    
+    // Log to syslog
+    m_bLogToSysLog = true;
 
     m_automation.setControlObject( this );
     m_maxItemsInClientReceiveQueue = MAX_ITEMS_CLIENT_RECEIVE_QUEUE;
@@ -247,42 +253,44 @@ CControlObject::CControlObject()
 
 #ifdef WIN32
     m_path_db_vscp_daemon.SetName( wxStandardPaths::Get().GetConfigDir() +
-                                            _("/vscp/vscp_daemon.sqlite3") );
+                                            _("/vscp/vscpd.sqlite3") );
 #else
-    m_path_db_vscp_daemon.SetName( _("/srv/vscp/logs/vscp_daemon.sqlite3") );
+    m_path_db_vscp_daemon.SetName( _("/srv/vscp/vscpd.sqlite3") );
 #endif
 
 #ifdef WIN32
     m_path_db_vscp_data.SetName( wxStandardPaths::Get().GetConfigDir() +
                                             _("/vscp/vscp_data.sqlite3") );
 #else
-    m_path_db_vscp_data.SetName( _("/srv/vscp/logs/vscp_data.sqlite3") );
+    m_path_db_vscp_data.SetName( _("/srv/vsc/vscp_data.sqlite3") );
 #endif
 
-#ifdef WIN32
-    m_path_db_vscp_variable.SetName( wxStandardPaths::Get().GetConfigDir() +
-                                            _("/vscp/vscp_variable.sqlite3") );
-#else
-    m_path_db_vscp_variable.SetName( _("/srv/vscp/logs/vscp_variable.sqlite3") );
-#endif
+
 
 #ifdef WIN32
-    m_path_db_vscp_dm.SetName( wxStandardPaths::Get().GetConfigDir() +
+    m_dm.m_path_db_vscp_dm.SetName( wxStandardPaths::Get().GetConfigDir() +
                                             _("/vscp/vscp_dm.sqlite3") );
 #else
-    m_path_db_vscp_dm.SetName( _("/srv/vscp/logs/vscp_dm.sqlite3") );
+    m_dm.m_path_db_vscp_dm.SetName( _("/srv/vscp/vscp_dm.sqlite3") );
 #endif
+    
+    
+#ifdef WIN32
+    m_path_db_vscp_log.SetName( wxStandardPaths::Get().GetConfigDir() +
+                                            _("/vscp/vscp_log.sqlite3") );
+#else
+    m_path_db_vscp_log.SetName( _("/srv/vscp/vscp_log.sqlite3") );
+#endif    
 
     // No databases opened yet
     m_db_vscp_daemon = NULL;
     m_db_vscp_data = NULL;
-    m_db_vscp_variable = NULL;
-    m_db_vscp_dm = NULL;
+    m_dm.m_db_vscp_dm = NULL;
 
     // Control TCP/IP Interface
     m_bTCP = true;
 
-    // Multicast annouce
+    // Multicast announce
     m_bMulticastAnnounce = true;
 
     // Control UDP Interface
@@ -449,7 +457,6 @@ CControlObject::~CControlObject()
 
     m_clientOutputQueue.Clear();
     m_mutexClientOutputQueue.Unlock();
-
 }
 
 
@@ -464,7 +471,7 @@ void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const ui
     wxDateTime datetime( wxDateTime::GetTimeNow() );
     wxString wxdebugmsg;
 
-    wxdebugmsg = datetime.FormatISODate() + _(" ") + datetime.FormatISOTime() + _(" - ") + wxstr;
+    wxdebugmsg = datetime.FormatISODate() + _("T") + datetime.FormatISOTime() + _(" - ") + wxstr;
 
 #ifdef WIN32
 #ifdef BUILD_VSCPD_SERVICE
@@ -493,84 +500,86 @@ void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const ui
 #endif
 #endif
 
+    if ( !m_bLogToDatabase ) {
 
+        if ( level >= m_logLevel ) {
 
-    //printf( wxdebugmsg.mb_str( wxConvUTF8 ) );
-    if ( level >= m_logLevel ) {
+            if ( DAEMON_LOGTYPE_GENERAL == nType ) {
 
-#ifdef WIN32
-        // Send out to possible window
-        wxPrintf( wxdebugmsg );
-#endif
+                // Write to general log file
+                if ( m_fileLogGeneral.IsOpened() ) {
+                    m_fileLogGeneral.Write( wxdebugmsg );
+                }
 
-        if ( DAEMON_LOGTYPE_GENERAL == nType ) {
-
-            // Write to general log file
-            if ( m_fileLogGeneral.IsOpened() ) {
-                m_fileLogGeneral.Write( wxdebugmsg );
             }
 
         }
 
+        if ( DAEMON_LOGTYPE_SECURITY == nType ) {
+            // Write to Security log file
+            if ( m_fileLogSecurity.IsOpened() ) {
+                m_fileLogSecurity.Write( wxdebugmsg );
+            }
+        }
 
-    }
-
-    if ( DAEMON_LOGTYPE_SECURITY == nType ) {
-        // Write to Security log file
-        if ( m_fileLogSecurity.IsOpened() ) {
-            m_fileLogSecurity.Write( wxdebugmsg );
+        if ( DAEMON_LOGTYPE_ACCESS == nType ) {
+            // Write to Access log file
+            if ( m_fileLogAccess.IsOpened() ) {
+                m_fileLogAccess.Write( wxdebugmsg );
+            }
         }
     }
+    // Log to database
+    else {    
 
-    if ( DAEMON_LOGTYPE_ACCESS == nType ) {
-        // Write to Access log file
-        if ( m_fileLogAccess.IsOpened() ) {
-            m_fileLogAccess.Write( wxdebugmsg );
-        }
     }
-
 
 #ifndef WIN32
 
-    if (m_logLevel >= level) {
-        wxPrintf(wxdebugmsg);
+    // Print to console if there is one
+    if ( m_logLevel >= level ) {
+        wxPrintf( wxdebugmsg );
     }
 
-    switch (level) {
+    if ( m_bLogToSysLog ) {
+        
+        switch (level) {
 
-    case DAEMON_LOGMSG_NORMAL:
-        syslog(LOG_INFO, "%s", (const char *) wxdebugmsg.ToAscii());
-        break;
+        case DAEMON_LOGMSG_NORMAL:
+            syslog(LOG_INFO, "%s", (const char *) wxdebugmsg.ToAscii());
+            break;
 
-    case DAEMON_LOGMSG_DEBUG:
-        syslog(LOG_DEBUG, "%s", (const char *) wxdebugmsg.ToAscii());
-        break;
+        case DAEMON_LOGMSG_DEBUG:
+            syslog(LOG_DEBUG, "%s", (const char *) wxdebugmsg.ToAscii());
+            break;
 /*
-    case DAEMON_LOGMSG_NOTICE:
-        syslog(LOG_NOTICE, "%s", (const char *) wxdebugmsg.ToAscii());
-        break;
+        case DAEMON_LOGMSG_NOTICE:
+            syslog(LOG_NOTICE, "%s", (const char *) wxdebugmsg.ToAscii());
+            break;
 
-    case DAEMON_LOGMSG_WARNING:
-        syslog(LOG_WARNING, "%s", (const char *) wxdebugmsg.ToAscii());
-        break;
+        case DAEMON_LOGMSG_WARNING:
+            syslog(LOG_WARNING, "%s", (const char *) wxdebugmsg.ToAscii());
+            break;
 
-    case DAEMON_LOGMSG_ERROR:
-        syslog(LOG_ERR, "%s", (const char *) wxdebugmsg.ToAscii());
-        break;
+        case DAEMON_LOGMSG_ERROR:
+            syslog(LOG_ERR, "%s", (const char *) wxdebugmsg.ToAscii());
+            break;
 
-    case DAEMON_LOGMSG_CRITICAL:
-        syslog(LOG_CRIT, "%s", (const char *) wxdebugmsg.ToAscii());
-        break;
+        case DAEMON_LOGMSG_CRITICAL:
+            syslog(LOG_CRIT, "%s", (const char *) wxdebugmsg.ToAscii());
+            break;
 
-    case DAEMON_LOGMSG_ALERT:
-        syslog(LOG_ALERT, "%s", (const char *) wxdebugmsg.ToAscii());
-        break;
+        case DAEMON_LOGMSG_ALERT:
+            syslog(LOG_ALERT, "%s", (const char *) wxdebugmsg.ToAscii());
+            break;
 
-    case DAEMON_LOGMSG_EMERGENCY:
-        syslog(LOG_EMERG, "%s", (const char *) wxdebugmsg.ToAscii());
-        break;
+        case DAEMON_LOGMSG_EMERGENCY:
+            syslog(LOG_EMERG, "%s", (const char *) wxdebugmsg.ToAscii());
+            break;
 */
-    };
+        };
+        
+    }
 
 #endif
 
@@ -584,6 +593,8 @@ void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const ui
 
 bool CControlObject::init(wxString& strcfgfile)
 {
+    wxString str;
+    
     //wxLog::AddTraceMask( "wxTRACE_doWorkLoop" );
     //wxLog::AddTraceMask(_("wxTRACE_vscpd_receiveQueue")); // Receive queue
     //wxLog::AddTraceMask(_("wxTRACE_vscpd_Msg"));
@@ -609,15 +620,15 @@ bool CControlObject::init(wxString& strcfgfile)
     // A configuration file must be available
     if ( !wxFile::Exists( strcfgfile ) ) {
         printf("No configuration file. Can't initialise!.");
-        logMsg(_("No configuration file. Can't initialise!.\n") );
-        logMsg(_("Path = .") + strcfgfile + _("\n") );
+        fprintf( stderr, "No configuration file. Can't initialise!.\n" );
+        str = _("Path = .") + strcfgfile + _("\n");
+        fprintf( stderr, str.mbc_str() );
         return FALSE;
     }
 
     // Initialise the SQLite library
     if ( SQLITE_OK != sqlite3_initialize() ) {
-        printf("Unable to initialise SQLite library!.");
-        logMsg(_("Unable to initialise SQLite library!.\n") );
+        fprintf( stderr, "Unable to initialise SQLite library!." );
         return FALSE;
     }
 
@@ -625,18 +636,19 @@ bool CControlObject::init(wxString& strcfgfile)
     if ( m_runAsUser.Length() ) {
         struct passwd *pw;
         if ( NULL == ( pw = getpwnam(m_runAsUser.mbc_str() ) ) ) {
-            logMsg(_("Unknown user.\n") );
-        } else if (setgid(pw->pw_gid) != 0) {
-            logMsg( _("setgid() failed.\n") );
-        } else if (setuid(pw->pw_uid) != 0) {
-            logMsg( _("setuid() failed.\n") );
+            fprintf( stderr, "Unknown user.\n" );
+        } 
+        else if (setgid(pw->pw_gid) != 0) {
+            fprintf( stderr, "setgid() failed.\n" );
+        } 
+        else if (setuid(pw->pw_uid) != 0) {
+            fprintf( stderr, "setuid() failed.\n" );
         }
     }
 #endif
 
-
-
-    //::wxLogDebug(_("Using configuration file: ") + strcfgfile + _("\n"));
+    str = _("Using configuration file: ") + strcfgfile + _("\n");
+    fprintf( stderr, str.mbc_str() );
 
     // Generate username and password for drivers
     char buf[ 512 ];
@@ -673,8 +685,9 @@ bool CControlObject::init(wxString& strcfgfile)
 
     // Read XML configuration
     if (!readConfiguration(strcfgfile)) {
-        logMsg(_("Unable to open/parse configuration file. Can't initialize!.\n") );
-        logMsg(_("Path = .") + strcfgfile + _("\n") );
+        fprintf( stderr, "Unable to open/parse configuration file. Can't initialise!.\n" );
+        str = _("Path = .") + strcfgfile + _("\n");
+        fprintf( stderr, str.mbc_str() );
         return FALSE;
     }
 
@@ -693,21 +706,8 @@ bool CControlObject::init(wxString& strcfgfile)
         m_fileLogAccess.Open( m_logAccessFileName.GetFullPath(), wxFile::write_append );
     }
 
-
-
     // Calculate sunset etc
     m_automation.calcSun();
-
-    wxString str = _("VSCP Daemon started\n");
-    str += _("Version: ");
-    str += _(VSCPD_DISPLAY_VERSION);
-    str += _("\n");
-    str += _(VSCPD_COPYRIGHT);
-    str += _("\n");
-    logMsg( str );
-
-    str.Printf(_("Log Level=%d\n"), m_logLevel );
-    logMsg( str );
 
     // Get GUID
     if ( m_guid.isNULL() ) {
@@ -727,10 +727,13 @@ bool CControlObject::init(wxString& strcfgfile)
         m_strServerName += strguid;
     }
 
+    
 
     // ===============================
     // * * * Open database files * * *
     // ===============================
+    
+        
 
     // * * * VSCP Daemon configuration database * * *
 
@@ -741,11 +744,11 @@ bool CControlObject::init(wxString& strcfgfile)
                                             &m_db_vscp_daemon ) ) {
 
             // Failed to open/create the database file
-            logMsg( _("VSCP Daemon configuration database could not be opened. - Will not be used.\n") );
+            fprintf( stderr, "VSCP Daemon configuration database could not be opened. - Will not be used.\n" );
             str.Printf( _("Path=%s error=%s\n"),
                             m_path_db_vscp_daemon.GetFullPath().mbc_str(),
                             sqlite3_errmsg( m_db_vscp_daemon ) );
-            logMsg(str);
+            fprintf( stderr, str.mbc_str() );
             if ( NULL != m_db_vscp_daemon ) sqlite3_close( m_db_vscp_daemon );
             m_db_vscp_daemon = NULL;
 
@@ -762,17 +765,68 @@ bool CControlObject::init(wxString& strcfgfile)
 
             // We need to create the database from scratch. This may not work if
             // the database is in a read only location.
-            logMsg( _("VSCP Daemon configuration database does not exist - will be created.\n") );
+            fprintf( stderr, "VSCP Daemon configuration database does not exist - will be created.\n" );
             str.Printf(_("Path=%s\n"), m_path_db_vscp_daemon.GetFullPath().mbc_str() );
-            logMsg(str);
+            fprintf( stderr, str.mbc_str() );
         }
         else {
-            logMsg( _("VSCP Daemon configuration database path invalid - will not be used.\n") );
+            fprintf( stderr, "VSCP Daemon configuration database path invalid - will not be used.\n" );
             str.Printf(_("Path=%s\n"), m_path_db_vscp_daemon.GetFullPath().mbc_str() );
-            logMsg(str);
+            fprintf( stderr, str.mbc_str() );
         }
 
     }
+    
+    
+    // * * * VSCP Daemon logging database * * *
+    
+    
+    // Check filename
+    if ( m_path_db_vscp_log.IsOk() && m_path_db_vscp_log.FileExists() ) {
+
+        if ( SQLITE_OK != sqlite3_open( m_path_db_vscp_log.GetFullPath().mbc_str(),
+                                            &m_db_vscp_daemon ) ) {
+
+            // Failed to open/create the database file
+            fprintf( stderr, "VSCP Daemon logging database could not be opened. - Will not be used.\n" );
+            str.Printf( _("Path=%s error=%s\n"),
+                            m_path_db_vscp_log.GetFullPath().mbc_str(),
+                            sqlite3_errmsg( m_db_vscp_daemon ) );
+            fprintf( stderr, str.mbc_str() );
+            if ( NULL != m_db_vscp_daemon ) sqlite3_close( m_db_vscp_daemon );
+            m_db_vscp_daemon = NULL;
+
+        }
+
+    }
+    else {
+
+        if ( m_path_db_vscp_log.IsOk() ) {
+            // We need to create the database from scratch. This may not work if
+            // the database is in a read only location.
+            fprintf( stderr, "VSCP Daemon configuration database does not exist - will be created.\n" );
+            str.Printf(_("Path=%s\n"), m_path_db_vscp_log.GetFullPath().mbc_str() );
+            fprintf( stderr, str.mbc_str() );
+        }
+        else {
+            fprintf( stderr, "VSCP Daemon configuration database path invalid - will not be used.\n" );
+            str.Printf(_("Path=%s\n"), m_path_db_vscp_log.GetFullPath().mbc_str() );
+            fprintf( stderr, str.mbc_str() );
+        }
+
+    }
+    
+    
+    str = _("VSCP Daemon started\n");
+    str += _("Version: ");
+    str += _(VSCPD_DISPLAY_VERSION);
+    str += _("\n");
+    str += _(VSCPD_COPYRIGHT);
+    str += _("\n");
+    logMsg( str );
+
+    str.Printf(_("Log Level=%d\n"), m_logLevel );
+    logMsg( str );
 
 
     // Load decision matrix if mechanism is enabled
@@ -1044,6 +1098,22 @@ bool CControlObject::cleanup(void)
     if ( m_bLogAccessEnable ) {
         m_fileLogAccess.Close();
     }
+    
+    // Close the VSCP data database
+    sqlite3_close( m_db_vscp_data );
+    
+    
+    
+    // Close the DM database
+    if ( m_bDM ) {
+        sqlite3_close( m_dm.m_db_vscp_dm );
+    }
+    
+    // Close the vscpd database
+    sqlite3_close( m_db_vscp_daemon );
+    
+    // Close log database
+    sqlite3_close( m_db_vscp_log );
 
     // Clean up SQLite lib allocations
     sqlite3_shutdown();
@@ -2743,6 +2813,30 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     m_runAsUser.Trim();
                     m_runAsUser.Trim(false);
                 }
+                else if (subchild->GetName() == wxT("logsyslog")) {
+
+                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    attribute.MakeLower();
+                    if (attribute.IsSameAs(_("false"), false)) {
+                        m_bLogToSysLog = false;
+                    }
+                    else {
+                        m_bLogToSysLog = true;
+                    }
+                    
+                }
+                else if (subchild->GetName() == wxT("logdatabase")) {
+
+                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    attribute.MakeLower();
+                    if (attribute.IsSameAs(_("false"), false)) {
+                        m_bLogToDatabase = false;
+                    }
+                    else {
+                        m_bLogToDatabase = true;
+                    }
+                    
+                }
                 else if (subchild->GetName() == wxT("generallogfile")) {
 
                     wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
@@ -2753,12 +2847,22 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     else {
                         m_bLogGeneralEnable = true;
                     }
-
+                    
+                    // Old form
                     wxFileName fileName;
                     fileName.SetName( subchild->GetNodeContent() );
                     if ( fileName.IsOk() ) {
                         m_logGeneralFileName = fileName;
                     }
+                    
+                    // New form
+                    attribute = subchild->GetAttribute(wxT("path"), wxT(""));
+                                      
+                    fileName.SetName( subchild->GetNodeContent() );
+                    if ( fileName.IsOk() ) {
+                        m_logGeneralFileName = attribute;
+                    }   
+                    
                 }
                 else if (subchild->GetName() == wxT("securitylogfile")) {
 
@@ -2771,11 +2875,21 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                         m_bLogSecurityEnable = true;
                     }
 
+                    // Old form
                     wxFileName fileName;
                     fileName.SetName( subchild->GetNodeContent() );
                     if ( fileName.IsOk() ) {
                         m_logSecurityFileName = fileName;
                     }
+                    
+                    // New form
+                    attribute = subchild->GetAttribute(wxT("path"), wxT(""));
+                                      
+                    fileName.SetName( subchild->GetNodeContent() );
+                    if ( fileName.IsOk() ) {
+                        m_logSecurityFileName = attribute;
+                    } 
+                    
                 }
                 else if (subchild->GetName() == wxT("accesslogfile")) {
 
@@ -2793,14 +2907,16 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     if ( fileName.IsOk() ) {
                         m_logAccessFileName = fileName;
                     }
-                }
-                else if (subchild->GetName() == wxT("db_vscp_daemon")) {
-                    wxFileName fileName;
+                    
+                    // New form
+                    attribute = subchild->GetAttribute(wxT("path"), wxT(""));
+                                      
                     fileName.SetName( subchild->GetNodeContent() );
                     if ( fileName.IsOk() ) {
-                        m_path_db_vscp_daemon = fileName;
-                    }
-                }
+                        m_logAccessFileName = attribute;
+                    } 
+                    
+                }                
                 else if (subchild->GetName() == wxT("db_vscp_data")) {
                     wxFileName fileName;
                     fileName.SetName( subchild->GetNodeContent() );
@@ -2808,18 +2924,11 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                         m_path_db_vscp_data = fileName;
                     }
                 }
-                else if (subchild->GetName() == wxT("db_vscp_variable")) {
+                else if (subchild->GetName() == wxT("db_vscp_daemon")) {
                     wxFileName fileName;
                     fileName.SetName( subchild->GetNodeContent() );
                     if ( fileName.IsOk() ) {
-                        m_path_db_vscp_variable = fileName;
-                    }
-                }
-                else if (subchild->GetName() == wxT("db_vscp_dm")) {
-                    wxFileName fileName;
-                    fileName.SetName( subchild->GetNodeContent() );
-                    if ( fileName.IsOk() ) {
-                        m_path_db_vscp_dm = fileName;
+                        m_path_db_vscp_daemon = fileName;
                     }
                 }
                 else if (subchild->GetName() == wxT("tcpip")) {
@@ -2899,11 +3008,27 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                         m_bDM = false;
                     }
 
+                    // Get the path to the DM file  (Deprecated)
+                    attribut = subchild->GetAttribute( wxT("path"), wxT("") );
+                    if ( attribut.Length() ) {
+                        m_dm.m_configPath = attribut;
+                    }
+                    
                     // Get the path to the DM file
-                    m_dm.m_configPath = subchild->GetAttribute(wxT("path"), wxT(""));
-                    m_dm.m_configPath.Trim();
-                    m_dm.m_configPath.Trim(false);
+                    attribut = subchild->GetAttribute(wxT("pathxml"), wxT(""));
+                    if ( attribut.Length() ) {
+                        m_dm.m_configPath = attribut;
+                    }
 
+                    // Get the path to the DM database
+                    attribut = subchild->GetAttribute(wxT("pathdb"), wxT(""));
+                    if ( attribut.Length() ) {
+                        wxFileName fileName;
+                        fileName.SetName( attribut );
+                        if ( fileName.IsOk() ) {
+                            m_dm.m_path_db_vscp_dm = fileName;
+                        }
+                    }
 
                     // logging enable
                     m_dm.m_bLogEnable = true;
@@ -2919,7 +3044,7 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     if ( fileName.IsOk() ) {
                         m_dm.m_logPath = fileName;
                     }
-
+                    
                     // Get the loglevel
                     wxString str = subchild->GetAttribute(wxT("loglevel"), wxT("NORMAL"));
                     str.Trim();
@@ -2953,7 +3078,7 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                 }
                 else if (subchild->GetName() == wxT("variables")) {
                     // Should the internal DM be disabled
-
+                    wxFileName fileName;
                     wxString attrib = subchild->GetAttribute(wxT("enable"), wxT("true"));
 
                     if (attrib.IsSameAs(_("false"), false)) {
@@ -2961,9 +3086,17 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     }
 
                     // Get the path to the DM file
-                    m_VSCP_Variables.m_configPath = subchild->GetAttribute(wxT("path"), wxT(""));
-                    m_VSCP_Variables.m_configPath.Trim();
-                    m_VSCP_Variables.m_configPath.Trim(false);
+                    attrib = subchild->GetAttribute(wxT("path"), wxT(""));
+                    fileName.SetName( attrib );
+                    if ( fileName.IsOk() ) {
+                        m_VSCP_Variables.m_configPath = fileName.GetFullPath();
+                    }
+                    
+                    attrib = subchild->GetAttribute(wxT("pathdb"), wxT(""));
+                    fileName.SetName( attrib );
+                    if ( fileName.IsOk() ) {
+                        m_VSCP_Variables.m_path_db_vscp_variable = fileName;
+                    }
 
                     // Autosave interval
                     long autosave = vscp_readStringValue( subchild->GetAttribute(wxT("autosave"), wxT("5")) );

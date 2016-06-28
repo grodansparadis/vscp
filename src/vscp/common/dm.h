@@ -757,8 +757,14 @@ public:
     /// last update
     wxDateTime m_lastTime;
 
-    /// Path to DM database file
+    /// Path to DM XML file
     wxString m_configPath;
+    
+    // Path to the VSCP DM database
+    wxFileName m_path_db_vscp_dm;  
+    
+    // Database
+    sqlite3 *m_db_vscp_dm;
 
     /// DM table filter - Filter for all rows of the table
     vscpEventFilter m_DM_Table_filter;

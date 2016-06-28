@@ -30,6 +30,7 @@
 #include <wx/hashset.h>
 #include <wx/datetime.h>
 #include <wx/tokenzr.h>
+#include <sqlite3.h>
 #include <guid.h>
 #include "variablecodes.h"
 #include "vscphelper.h"
@@ -40,7 +41,7 @@
 #define VSCP_VAR_READ_ONLY      false
 
 // Class that holds one VSCP variable
-// Peristant variables should have names staring with $
+// Peristent variables should have names staring with $
 
 class CVSCPVariable {
 public:
@@ -68,10 +69,10 @@ public:
     virtual ~CVSCPVariable(void);
 
     /*!
-    Set variable name
-    If the variable has $ in front of the name it is persistent.
-    If the variable has @ in front of the name its an array.
-    @param strName Name of variable
+        Set variable name
+        If the variable has $ in front of the name it is persistent.
+        If the variable has @ in front of the name its an array.
+        @param strName Name of variable
      */
     void setName(const wxString& strName);
 
@@ -83,8 +84,8 @@ public:
     static const char * getVariableTypeAsString( int type );
 
     /*
-    Get variable name
-    @return Variable name.
+        Get variable name
+        @return Variable name.
      */
     wxString& getName(void)
     {
@@ -92,9 +93,8 @@ public:
     };
 
     /*!
-    Set the variable type
-
-    @param type Variabe type code.
+        Set the variable type
+        @param type Variabe type code.
      */
     void setType(uint8_t type)
     {
@@ -102,9 +102,8 @@ public:
     };
 
     /*!
-    Get the variable type
-
-    @return The variable type code.
+        Get the variable type
+        @return The variable type code.
      */
     uint8_t getType(void)
     {
@@ -112,8 +111,8 @@ public:
     };
 
     /*!
-    Set variable note
-    @param strNote Note for variable
+        Set variable note
+        @param strNote Note for variable
      */
     void setNote(const wxString& strNote)
     {
@@ -121,8 +120,8 @@ public:
     };
 
     /*
-    Get variable note
-    @return Variable note.
+        Get variable note
+        @return Variable note.
      */
     wxString& getNote(void)
     {
@@ -131,9 +130,9 @@ public:
 
 
     /*!
-    Get numerical variable type from symbol or numeric version
-    @parm strVariableType Variable type in string form
-    @param variable type in numerical form.
+        Get numerical variable type from symbol or numeric version
+        @parm strVariableType Variable type in string form
+        @param variable type in numerical form.
      */
     static uint8_t getVariableTypeFromString(const wxString& strVariableType);
 
@@ -174,40 +173,40 @@ public:
     };
 
     /*!
-    Set variable value from string
-    @param type Type of value
-    @param strValue Value in string form
-    @return true on success.
+        Set variable value from string
+        @param type Type of value
+        @param strValue Value in string form
+        @return true on success.
      */
     bool setValueFromString(int type, const wxString& strValue);
 
     /*!
-    Set variable value from string
-    @param vartype Type of value (enum)
-    @param strValue Value in string form
-    @return true on success.
+        Set variable value from string
+        @param vartype Type of value (enum)
+        @param strValue Value in string form
+        @return true on success.
      */
     bool setValueFromString( CVSCPVariable::vartype type, const wxString& strValue );
 
     /*!
-    Get the variable value as a string value
-    @param str String that will get string representation of variable.
+        Get the variable value as a string value
+        @param str String that will get string representation of variable.
      */
     bool writeValueToString(wxString& strValue);
 
     /*!
-    Get variable information as a string value
-    Format is: "variable name",type,"persistence","value"
-    example 1: test_int,3,true,24000
-    example 2: test_string,1,true,"This is a string"
-    example 3: test_event,7,false,0,20,1,2,3,4,5,6
+        Get variable information as a string value
+        Format is: "variable name",type,"persistence","value"
+        example 1: test_int,3,true,24000
+        example 2: test_string,1,true,"This is a string"
+        example 3: test_event,7,false,0,20,1,2,3,4,5,6
 
-    @param str String that will get string represenation of variable with all info.
+        @param str String that will get string represenation of variable with all info.
      */
     bool getVariableFromString(const wxString& strVariable);
 
     /*
-    Set persistent value
+        Set persistent value
      */
     void setPersistatValue(const wxString& str)
     {
@@ -216,38 +215,37 @@ public:
 
 
     /*!
-    Reset 
-    Set variable to default values
-
+        Reset 
+        Set variable to default values
      */
     void Reset(void);
 
 
     /*!
-      isTrue 
-      @return Return true if the variable is of type bool and is true. 
-      True is also returned for a numerical varable (int, long, float) if 
-      it has a non zero value. In all other cases false will be returned.
+        isTrue 
+        @return Return true if the variable is of type bool and is true. 
+        True is also returned for a numerical varable (int, long, float) if 
+        it has a non zero value. In all other cases false will be returned.
      */
     bool isTrue(void);
 
     /*!
-      setTrue
-      Set a variable to true. A boolean variable will be set to true.
-      A numerical variable (int, long, float) is set to -1. A string is set to "true".
+        setTrue
+        Set a variable to true. A boolean variable will be set to true.
+        A numerical variable (int, long, float) is set to -1. A string is set to "true".
      */
     void setTrue(void);
 
     /*!
-      setFalse
-      Set a variable to false. A boolean variable will be set to false.
-      A numerical variable (int, long, float) is set to 0. A string is set to "false".
+        setFalse
+        Set a variable to false. A boolean variable will be set to false.
+        A numerical variable (int, long, float) is set to 0. A string is set to "false".
      */
     void setFalse(void);
 
     /*!
-      setValue
-      @param val String to set value to.
+        setValue
+        @param val String to set value to.
      */
     void setValue(wxString& val)
     {
@@ -255,8 +253,8 @@ public:
     };
 
     /*!
-      getValue
-      @param value String that will receive value.
+        getValue
+        @param value String that will receive value.
      */
     void getValue(wxString& value)
     {
@@ -264,8 +262,8 @@ public:
     };
 
     /*!
-      setValue
-      @param val long to set value to.
+        setValue
+        @param val long to set value to.
      */
     void setValue(int val)
     {
@@ -273,8 +271,8 @@ public:
     };
 
     /*!
-      getValue
-      @param value Int that will receive value.
+        getValue
+        @param value Int that will receive value.
      */
     void getValue(int *pValue)
     {
@@ -282,8 +280,8 @@ public:
     };
     
     /*!
-      setValue
-      @param val long to set value to.
+        setValue
+        @param val long to set value to.
      */
     void setValue(long val)
     {
@@ -291,8 +289,8 @@ public:
     };
 
     /*!
-      getValue
-      @param value Int that will receive value.
+        getValue
+        @param value Int that will receive value.
      */
     void getValue(long *pValue)
     {
@@ -300,8 +298,8 @@ public:
     };
 
     /*!
-      setValue
-      @param val double to set value to.
+        setValue
+        @param val double to set value to.
      */
     void setValue(double val)
     {
@@ -309,8 +307,8 @@ public:
     };
 
     /*!
-      getValue
-      @param value Double that will receive the value.
+        getValue
+        @param value Double that will receive the value.
      */
     void getValue(double *pValue)
     {
@@ -318,8 +316,8 @@ public:
     };
 
     /*!
-      setValue
-      @param val Boolean to set value to.
+        setValue
+        @param val Boolean to set value to.
      */
     void setValue(bool val)
     {
@@ -327,8 +325,8 @@ public:
     };
 
     /*!
-      getValue
-      @param value Bool that will receive the value.
+        getValue
+        @param value Bool that will receive the value.
      */
     void getValue(bool *pValue)
     {
@@ -353,8 +351,8 @@ public:
 
     wxDateTime& getLastChange( void ) { return m_lastChanged; };
     /*!
-    // Name should not contain spaces so if it does
-    // we replace them with 'underscore'
+        Name should not contain spaces so if it does
+        we replace them with 'underscore'
     */
     void fixName() {
             size_t pos;
@@ -371,12 +369,12 @@ private:
     /// type of variable
     unsigned char m_type;
 
-    /// Flag to make variable persisent
+    /// Flag to make variable persistent
     bool m_bPersistent;
 
     /*! 
-    Flag to mark a variable as an array
-    Arrays are never persistent!
+        Flag to mark a variable as an array
+        Arrays are never persistent!
      */
     bool m_bArray;
 
@@ -441,23 +439,23 @@ public:
     bool autoSave();
 
     /*!
-    Find variable from its name
-    @param name Variable to search. Name can be preceded with
-    persistence marker "$" or array marker "@"
-    @return Pointer to variable or NULL if not found.
+        Find variable from its name
+        @param name Variable to search. Name can be preceded with
+        persistence marker "$" or array marker "@"
+        @return Pointer to variable or NULL if not found.
      */
     CVSCPVariable * find(const wxString& name);
 
     /*!
-      Add a variable.
-      If the variable has $ in front of the name it is persistent.
-      If the variable has @ in front of the name its an array.
-      @param name Name of variable
-      @param value Value for variable
-      @param type Type of variable. Defaults to string.
-      @param bPersistent True if the variable should be saved to
-      persistent storage.
-      @return true on success, false on failure.
+        Add a variable.
+        If the variable has $ in front of the name it is persistent.
+        If the variable has @ in front of the name its an array.
+        @param name Name of variable
+        @param value Value for variable
+        @param type Type of variable. Defaults to string.
+        @param bPersistent True if the variable should be saved to
+        persistent storage.
+        @return true on success, false on failure.
      */
     bool add(const wxString& varName,
                     const wxString& value,
@@ -473,16 +471,16 @@ public:
                             bool brw = true );
 
     /*!
-      Add a variable.
-      @param var Pointer to variable object.
-      @return true on success, false on failure.
+        Add a variable.
+        @param var Pointer to variable object.
+        @return true on success, false on failure.
      */
     bool add( CVSCPVariable *pVar );
 
     /*!
-    Remove named variable
-    @param name Name of variable
-    @return true on success, false on failure.
+        Remove named variable
+        @param name Name of variable
+        @return true on success, false on failure.
      */
     bool remove(wxString& name);
 
@@ -494,21 +492,21 @@ public:
     bool remove( CVSCPVariable *pVariable );
 
     /*!
-    Read persistent variables
-    @return Returns true on success false on failure.
+        Read persistent variables
+        @return Returns true on success false on failure.
      */
     bool load(void);
 
     /*!
-    Write persistent variables to configured storage
-    @return Returns true on success false on failure.
+        Write persistent variables to configured storage
+        @return Returns true on success false on failure.
      */
     bool save(void);
 
     /*!
-      Write persistent variables to file
-      @param strcfgfile path to variable file where data should be written.
-      @return Returns true on success false on failure.
+        Write persistent variables to file
+        @param strcfgfile path to variable file where data should be written.
+        @return Returns true on success false on failure.
      */
     bool save(wxString& path);
 
@@ -522,9 +520,13 @@ public:
 public:
 
     /*!
-      Configuration path for variable persistant storage
+        Configuration path for variable persistent storage XML file
      */
     wxString m_configPath;
+    
+    /// Path to the VSCP variable database
+    wxFileName m_path_db_vscp_variable; 
+    sqlite3 *m_db_vscp_variable;
 
     /*!
         Autosave in minutes

@@ -78,7 +78,8 @@ enum {
 enum {
     DAEMON_LOGTYPE_GENERAL = 0,
     DAEMON_LOGTYPE_SECURITY,
-    DAEMON_LOGTYPE_ACCESS
+    DAEMON_LOGTYPE_ACCESS,
+    DAEMON_LOGTYPE_DM
 };
 
 // Configuration database ordinals
@@ -425,7 +426,7 @@ public:
     uint32_t getClientMapFromId(uint32_t clid);
 
     /*!
-        Get a client id from a clinet map index
+        Get a client id from a client map index
      */
     uint32_t getClientMapFromIndex(uint32_t idx);
 
@@ -436,7 +437,7 @@ public:
 
     /*!
         Remove a client id to the clientmap
-        @return Tfrue on success
+        @return True on success
      */
     bool removeIdFromClientMap(uint32_t clid);
 
@@ -479,7 +480,7 @@ public:
     bool m_bQuit;
 
     /*!
-        User to run asa for Unix
+        User to run as for Unix
         if not ""
     */
     wxString m_runAsUser;
@@ -547,6 +548,16 @@ public:
     //              Enable/disable switches
     /////////////////////////////////////////////////////////
 
+    /*!
+        Enable to log to database instead of separate files
+     */
+    bool m_bLogToDatabase;
+    
+    /*!
+        Log to syslog
+     */
+    bool m_bLogToSysLog;
+    
     /*!
         Enable control (TCP/IP) interface
      */
@@ -647,17 +658,14 @@ public:
     //                    Databases
     //*****************************************************
 
-    wxFileName m_path_db_vscp_daemon;     // Path to the VSCP daemon database
+    wxFileName m_path_db_vscp_daemon;   // Path to the VSCP daemon database
     sqlite3 *m_db_vscp_daemon;
 
-    wxFileName m_path_db_vscp_data;       // Path to the VSCP data database
+    wxFileName m_path_db_vscp_data;     // Path to the VSCP data database
     sqlite3 *m_db_vscp_data;
-
-    wxFileName m_path_db_vscp_variable;   // Path to the VSCP variable database
-    sqlite3 *m_db_vscp_variable;
-
-    wxFileName m_path_db_vscp_dm;         // Path to the VSCP DM database
-    sqlite3 *m_db_vscp_dm;
+    
+    wxFileName m_path_db_vscp_log;      // Path to the VSCP log database
+    sqlite3 *m_db_vscp_log;
 
     /*!
         Event source for NT event reporting
