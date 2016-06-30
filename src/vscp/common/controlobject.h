@@ -755,8 +755,6 @@ public:
 
     // * * Websockets * *
 
-    // Enable disable web socket interface
-    bool m_bWebSockets;
 
     // websocket authentication is needed  (if true)
     bool m_bAuthWebsockets;

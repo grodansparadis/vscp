@@ -4641,14 +4641,9 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     // TCP/IP interface
     buildPage += _("<div id=\"small\">");
     buildPage += _("<b>TCP/IP interface:</b> ");
-    if ( pObject->m_bTCP ) {
-        buildPage += _("enabled on <b>interface:</b> '");
-        buildPage += pObject->m_strTcpInterfaceAddress;
-        buildPage += _("'");
-    }
-    else {
-        buildPage += _("disabled");
-    }
+    buildPage += _("enabled on <b>interface:</b> '");
+    buildPage += pObject->m_strTcpInterfaceAddress;
+    buildPage += _("'");
     buildPage += _("<br>");
     buildPage += _("</div>");
 
@@ -4933,17 +4928,11 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     // Websockets
     buildPage += _("<div id=\"small\">");
     buildPage += _("<b>VSCP websocket interface:</b> ");
-    if ( pObject->m_bWebSockets ) {
-        buildPage += _("enabled.");
-        if ( pObject->m_bAuthWebsockets ) {
-            buildPage += _("<b>Authentication</b> enabled.");
-        }
-        else {
-            buildPage += _("<b>Authentication</b> disabled.");
-        }
+    if ( pObject->m_bAuthWebsockets ) {
+        buildPage += _("<b>Authentication</b> enabled.");
     }
     else {
-        buildPage += _("disabled");
+        buildPage += _("<b>Authentication</b> disabled.");
     }
     buildPage += _("</div>");
 

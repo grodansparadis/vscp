@@ -322,7 +322,6 @@ CControlObject::CControlObject()
     m_pCoAPServerThread = NULL;
 
     // Websocket interface
-    m_bWebSockets = true;       // websocket interface is active
     m_bAuthWebsockets = true;   // Authentication is needed
     memset( m_pathCert, 0, sizeof( m_pathCert ) );
 
@@ -820,25 +819,13 @@ bool CControlObject::init(wxString& strcfgfile)
     startClientWorkerThread();
 
     // Start TCP/IP interface if enabled
-    if ( m_bTCP ) {
-        logMsg(_("TCP/IP interface enabled.\n") );
-        startTcpWorkerThread();
-    }
-    else {
-        logMsg(_("TCP/IP interface disabled.\n") );
-    }
+    startTcpWorkerThread();
 
     // Start daemon worker thread
     startDaemonWorkerThread();
 
     // Start web sockets if enabled
-    if (m_bWebSockets) {
-        logMsg(_("WebServer interface active.\n") );
-        startWebServerThread();
-    }
-    else {
-        logMsg(_("WebServer interface disabled.\n") );
-    }
+    startWebServerThread();
 
     // Load drivers if the are enabled
     startDeviceWorkerThreads();
@@ -2496,21 +2483,12 @@ void CControlObject::addStockVariables( void )
 //                            Websocket-Server
 // *****************************************************************************
 
-    m_VSCP_Variables.add( _("vscp.websocket.enable"),
-                m_bWebSockets ? _("true") : _("false"),
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY,
-                false );
-
-    if ( m_bWebSockets ) {
-
-        m_VSCP_Variables.add( _("vscp.websocket.auth.enable"),
+    m_VSCP_Variables.add( _("vscp.websocket.auth.enable"),
                 m_bAuthWebsockets ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-    }
 
 // *****************************************************************************
 //                            Decision Matrix
@@ -3143,11 +3121,7 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
 
                         if (subsubchild->GetName() == wxT("websockets")) {
 
-                            wxString property = subsubchild->GetAttribute(wxT("enable"), wxT("true"));
-
-                            if (property.IsSameAs(_("false"), false)) {
-                                m_bWebSockets = false;
-                            }
+                            wxString property;
 
                             property = subsubchild->GetAttribute(wxT("auth"), wxT("true"));
 
@@ -3858,9 +3832,6 @@ static int callback_daemonConfigurationRead( void *data,
         strncpy( pctrlObj->m_dav_document_root, 
                     argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_DAVDOCUMENTROOT ], 
                     MIN( strlen(argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_DAVDOCUMENTROOT ] ), MAX_PATH_SIZE ) );
-        
-        // Enable web socket interface
-        pctrlObj->m_bWebSockets = atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSOCKET_ENABLE ] ) ? true : false;
         
         // Enable web socket authentication
         pctrlObj->m_bAuthWebsockets = atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSOCKET_ENABLEAUTH ] ) ? true : false;
