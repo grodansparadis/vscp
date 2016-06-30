@@ -4952,25 +4952,21 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     // DM
     buildPage += _("<div id=\"small\">");
     buildPage += _("<b>Daemon internal decision matrix functionality:</b> ");
-    if ( pObject->m_bDM ) {
-        buildPage += _("enabled.");
+    buildPage += _("enabled.");
+    buildPage += _("<br>");
+    buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to DM file:</b> ");
+    buildPage += pObject->m_dm.m_configPath;
+    buildPage += _("<br>");
+    if ( pObject->m_dm.m_bLogEnable ) {
+        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>DM logging</b> is enabled.");
         buildPage += _("<br>");
-        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to DM file:</b> ");
-        buildPage += pObject->m_dm.m_configPath;
-        buildPage += _("<br>");
-        if ( pObject->m_dm.m_bLogEnable ) {
-            buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>DM logging</b> is enabled.");
-            buildPage += _("<br>");
-            buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to log file:</b> ");
-            buildPage += pObject->m_dm.m_logPath.GetFullPath();
-        }
-        else {
-            buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>DM logging</b> is disabled.");
-        }
+        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to log file:</b> ");
+        buildPage += pObject->m_dm.m_logPath.GetFullPath();
     }
     else {
-        buildPage += _("disabled");
+        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>DM logging</b> is disabled.");
     }
+
     buildPage += _("</div>");
 
     buildPage += _("<hr>");

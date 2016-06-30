@@ -1066,9 +1066,7 @@ bool CControlObject::cleanup(void)
     
     
     // Close the DM database
-    if ( m_bDM ) {
-        sqlite3_close( m_dm.m_db_vscp_dm );
-    }
+    sqlite3_close( m_dm.m_db_vscp_dm );
     
     // Close the vscpd database
     sqlite3_close( m_db_vscp_daemon );
@@ -2531,38 +2529,30 @@ void CControlObject::addStockVariables( void )
 //                            Decision Matrix
 // *****************************************************************************
 
-    m_VSCP_Variables.add( _("vscp.dm.enable"),
-                m_bDM ? _("true") : _("false"),
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY,
-                false );
 
-    if ( m_bDM ) {
-
-        m_VSCP_Variables.add( _("vscp.dm.logging.enable"),
+    m_VSCP_Variables.add( _("vscp.dm.logging.enable"),
                 m_dm.m_bLogEnable ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        if ( m_dm.m_bLogEnable ) {
+    if ( m_dm.m_bLogEnable ) {
 
-            m_VSCP_Variables.add( _("vscp.dm.logging.path"),
+        m_VSCP_Variables.add( _("vscp.dm.logging.path"),
                 m_dm.m_logPath.GetFullPath(),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        }
+    }
 
 
-        m_VSCP_Variables.add( _("vscp.dm.static.path"),
+    m_VSCP_Variables.add( _("vscp.dm.static.path"),
                 m_dm.m_configPath,
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-    }
 
 
 // *****************************************************************************
@@ -2939,13 +2929,8 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                 }
                 else if (subchild->GetName() == wxT("dm")) {
                     // Should the internal DM be disabled
-
-                    wxString attribut = subchild->GetAttribute(wxT("enable"), wxT("true"));
-                    attribut.MakeLower();
-                    if (attribut.IsSameAs(_("false"), false)) {
-                        m_bDM = false;
-                    }
-
+                    wxString attribut;
+                    
                     // Get the path to the DM file  (Deprecated)
                     attribut = subchild->GetAttribute( wxT("path"), wxT("") );
                     if ( attribut.Length() ) {
@@ -3801,9 +3786,6 @@ static int callback_daemonConfigurationRead( void *data,
         
         // UDP interface port
         pctrlObj->m_strUDPInterfaceAddress = wxString::FromUTF8( argv[ DAEMON_DB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_PORT ] );
-        
-        // Enable DM functionality
-        pctrlObj->m_bDM = atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_DM_ENABLE ] ) ? true : false;
         
         // Path to DM database file
         pctrlObj->m_dm.m_configPath = wxString::FromUTF8( argv[ DAEMON_DB_ORDINAL_CONFIG_DM_PATH ] );

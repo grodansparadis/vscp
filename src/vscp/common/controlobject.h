@@ -583,11 +583,6 @@ public:
     */
     bool m_bMulticastAnnounce;
 
-    /*!
-        Enable DM functionality
-     */
-    bool m_bDM;
-
 
     /////////////////////////////////////////////////////////
     //                  Communication
