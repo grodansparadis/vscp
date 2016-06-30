@@ -4983,18 +4983,11 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     // Variable handling
     buildPage += _("<div id=\"small\">");
     buildPage += _("<b>Variable handling :</b> ");
-    if ( pObject->m_bVariables ) {
-        buildPage += _("enabled.");
-        buildPage += _("<br>");
-        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to variables:</b> ");
-        buildPage += pObject->m_VSCP_Variables.m_configPath;
-        buildPage += _("<br>");
-        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Autosave:</b> ");
-        buildPage += wxString::Format(_("%d minutes."), pObject->m_VSCP_Variables.m_autosaveInterval );
-    }
-    else {
-        buildPage += _("enabled.");
-    }
+    buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to variables:</b> ");
+    buildPage += pObject->m_VSCP_Variables.m_configPath;
+    buildPage += _("<br>");
+    buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Autosave:</b> ");
+    buildPage += wxString::Format(_("%d minutes."), pObject->m_VSCP_Variables.m_autosaveInterval );
     buildPage += _("</div>");
 
     buildPage += _("<hr>");

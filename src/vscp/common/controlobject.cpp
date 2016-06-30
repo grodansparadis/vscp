@@ -211,7 +211,7 @@ CControlObject::CControlObject()
         m_clientMap[ i ] = 0;
     }
 
-    // Web server secutity should be used.
+    // Web server security should be used.
     m_bDisableSecurityWebServer = false;
 
     // Local domain
@@ -332,9 +332,6 @@ CControlObject::CControlObject()
     // Control DM
     m_bDM = true;
 
-    // Use variables
-    m_bVariables = true;
-
     m_pclientMsgWorkerThread = NULL;
     m_pVSCPClientThread = NULL;
     m_pdaemonVSCPThread = NULL;
@@ -343,7 +340,7 @@ CControlObject::CControlObject()
     m_pCoAPServerThread = NULL;
 
     // Websocket interface
-    m_bWebSockets = true;       // websocket interface ia active
+    m_bWebSockets = true;       // websocket interface is active
     m_bAuthWebsockets = true;   // Authentication is needed
     memset( m_pathCert, 0, sizeof( m_pathCert ) );
 
@@ -742,7 +739,6 @@ bool CControlObject::init(wxString& strcfgfile)
 
         if ( SQLITE_OK != sqlite3_open( m_path_db_vscp_daemon.GetFullPath().mbc_str(),
                                             &m_db_vscp_daemon ) ) {
-
             // Failed to open/create the database file
             fprintf( stderr, "VSCP Daemon configuration database could not be opened. - Will not be used.\n" );
             str.Printf( _("Path=%s error=%s\n"),
@@ -762,7 +758,6 @@ bool CControlObject::init(wxString& strcfgfile)
     else {
 
         if ( m_path_db_vscp_daemon.IsOk() ) {
-
             // We need to create the database from scratch. This may not work if
             // the database is in a read only location.
             fprintf( stderr, "VSCP Daemon configuration database does not exist - will be created.\n" );
@@ -828,30 +823,16 @@ bool CControlObject::init(wxString& strcfgfile)
     str.Printf(_("Log Level=%d\n"), m_logLevel );
     logMsg( str );
 
-
     // Load decision matrix if mechanism is enabled
-    if ( m_bDM ) {
-        logMsg(_("DM enabled.\n") );
-        m_dm.init();
-        m_dm.load();
-    }
-    else {
-        logMsg(_("DM disabled.\n") );
-    }
+    m_dm.init();
+    m_dm.load();
 
     // Load variables if mechanism is enabled
-    if ( m_bVariables ) {
-        logMsg(_("Variables enabled.\n") );
-        m_VSCP_Variables.load();
-    }
-    else {
-        logMsg(_("Variables disabled.\n") );
-    }
+    logMsg(_("Variables enabled.\n") );
+    m_VSCP_Variables.load();
 
     // Add stock variables if enables
-    if ( m_bVariables ) {
-        addStockVariables();
-    }
+    addStockVariables();
 
     // Start daemon internal client worker thread
     startClientWorkerThread();
@@ -994,7 +975,7 @@ bool CControlObject::run(void)
         clock_t ticks,oldus;
         oldus = ticks = clock();
 
-        // Feed possible perodic event
+        // Feed possible periodic event
         m_dm.feedPeriodicEvent();
 
         // Put the LOOP event on the queue
@@ -3079,11 +3060,7 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                 else if (subchild->GetName() == wxT("variables")) {
                     // Should the internal DM be disabled
                     wxFileName fileName;
-                    wxString attrib = subchild->GetAttribute(wxT("enable"), wxT("true"));
-
-                    if (attrib.IsSameAs(_("false"), false)) {
-                        m_bVariables = false;
-                    }
+                    wxString attrib;
 
                     // Get the path to the DM file
                     attrib = subchild->GetAttribute(wxT("path"), wxT(""));
@@ -3912,10 +3889,7 @@ static int callback_daemonConfigurationRead( void *data,
         
         // DM logging level
         pctrlObj->m_dm.m_logLevel = atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_DM_LOGGING_LEVEL ] );
-        
-        // Variable handling enable
-        pctrlObj->m_bVariables = atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_VARIABLES_ENABLE ] ) ? true : false;
-        
+                
         // Path to variable database
         pctrlObj->m_VSCP_Variables.m_configPath = wxString::FromUTF8( argv[ DAEMON_DB_ORDINAL_CONFIG_VARIABLES_PATH ] );
         

@@ -603,11 +603,6 @@ public:
      */
     bool m_bVSCPDaemon;
 
-    /*!
-        Enable variable usage
-     */
-    bool m_bVariables;
-
 
     /////////////////////////////////////////////////////////
     //                  Communication
