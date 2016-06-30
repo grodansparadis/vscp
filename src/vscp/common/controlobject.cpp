@@ -327,7 +327,6 @@ CControlObject::CControlObject()
 
     // Webserver interface
     m_portWebServer = _("8080");
-    m_bWebServer = true;
 
 #ifdef WIN32
     //m_pathWebRoot = _("/programdata/vscp/www");
@@ -1227,26 +1226,24 @@ bool CControlObject::startWebServerThread(void)
     /////////////////////////////////////////////////////////////////////////////
     // Run the WebServer server thread
     /////////////////////////////////////////////////////////////////////////////
-    if ( m_bWebServer) {
 
-        m_pwebServerThread = new VSCPWebServerThread;
+    m_pwebServerThread = new VSCPWebServerThread;
 
-        if (NULL != m_pwebServerThread) {
-            m_pwebServerThread->m_pCtrlObject = this;
-            wxThreadError err;
-            if (wxTHREAD_NO_ERROR == (err = m_pwebServerThread->Create())) {
-                //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
-                if (wxTHREAD_NO_ERROR != (err = m_pwebServerThread->Run())) {
-                    logMsg( _("Unable to run WeServer thread.") );
-                }
-            }
-            else {
-                logMsg( _("Unable to create WebServer thread.") );
+    if (NULL != m_pwebServerThread) {
+        m_pwebServerThread->m_pCtrlObject = this;
+        wxThreadError err;
+        if (wxTHREAD_NO_ERROR == (err = m_pwebServerThread->Create())) {
+            //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
+            if (wxTHREAD_NO_ERROR != (err = m_pwebServerThread->Run())) {
+                logMsg( _("Unable to run WeServer thread.") );
             }
         }
         else {
-            logMsg( _("Unable to allocate memory for WebServer thread.") );
+            logMsg( _("Unable to create WebServer thread.") );
         }
+    }
+    else {
+        logMsg( _("Unable to allocate memory for WebServer thread.") );
     }
 
     return true;
@@ -2281,12 +2278,6 @@ void CControlObject::addStockVariables( void )
                 VSCP_VAR_READ_ONLY,
                 false );
 
-    m_VSCP_Variables.add( _("vscp.websrv.isEnabled"),
-                m_bWebServer ? _("true") : _("false"),
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY,
-                false );
-
     m_VSCP_Variables.add( _("vscp.automation.heartbeat.isEnabled"),
                 m_automation.isSendHeartbeat() ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
@@ -2377,27 +2368,26 @@ void CControlObject::addStockVariables( void )
 //                                WEB-Server
 // *****************************************************************************
 
-    if ( m_bWebServer ) {
 
-        m_VSCP_Variables.add( _("vscp.websrv.address"),
+    m_VSCP_Variables.add( _("vscp.websrv.address"),
                 m_portWebServer,
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.websrv.authenticationOn"),
+    m_VSCP_Variables.add( _("vscp.websrv.authenticationOn"),
                 !m_bDisableSecurityWebServer ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.websrv.root.path"),
+    m_VSCP_Variables.add( _("vscp.websrv.root.path"),
                 wxString::FromUTF8( m_pathWebRoot ),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.websrv.authdomain"),
+    m_VSCP_Variables.add( _("vscp.websrv.authdomain"),
                 ( 0 == strlen( m_authDomain ) ) ?
                     wxString::FromAscii( "mydomain.com" ) :
                     wxString::FromUTF8( m_authDomain ),
@@ -2405,79 +2395,78 @@ void CControlObject::addStockVariables( void )
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.websrv.cert.path"),
+    m_VSCP_Variables.add( _("vscp.websrv.cert.path"),
                 wxString::FromUTF8( m_pathCert ),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.websrv.extramimetypes"),
+    m_VSCP_Variables.add( _("vscp.websrv.extramimetypes"),
                 wxString::FromUTF8( m_extraMimeTypes ),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.websrv.ssipatterns"),
+    m_VSCP_Variables.add( _("vscp.websrv.ssipatterns"),
                 wxString::FromUTF8( m_ssi_pattern ),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.websrv.ipacl"),
+    m_VSCP_Variables.add( _("vscp.websrv.ipacl"),
                 wxString::FromUTF8( m_ip_acl ),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.websrv.cgi.interpreter"),
+    m_VSCP_Variables.add( _("vscp.websrv.cgi.interpreter"),
                 wxString::FromUTF8( m_cgiInterpreter ),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.websrv.cgi.pattern"),
+    m_VSCP_Variables.add( _("vscp.websrv.cgi.pattern"),
                 wxString::FromUTF8( m_cgiPattern ),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.websrv.directorylistings.enable"),
+    m_VSCP_Variables.add( _("vscp.websrv.directorylistings.enable"),
                 ( NULL != strstr( m_EnableDirectoryListings,"yes" ) ) ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.websrv.hidefile.pattern"),
+    m_VSCP_Variables.add( _("vscp.websrv.hidefile.pattern"),
                 wxString::FromUTF8( m_hideFilePatterns ),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.websrv.indexfiles"),
+    m_VSCP_Variables.add( _("vscp.websrv.indexfiles"),
                 wxString::FromUTF8( m_indexFiles ),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.websrv.urlrewrites"),
+    m_VSCP_Variables.add( _("vscp.websrv.urlrewrites"),
                 wxString::FromUTF8( m_urlRewrites ),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.websrv.auth.file.directory"),
+    m_VSCP_Variables.add( _("vscp.websrv.auth.file.directory"),
                 wxString::FromUTF8( m_per_directory_auth_file ),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.websrv.auth.file.global"),
+    m_VSCP_Variables.add( _("vscp.websrv.auth.file.global"),
                 wxString::FromUTF8( m_per_directory_auth_file ),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-    }
 
 // *****************************************************************************
 //                            Websocket-Server
@@ -2983,11 +2972,7 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                 }
                 else if (subchild->GetName() == wxT("webserver")) {
 
-                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
-
-                    if (attribute.IsSameAs(_("false"), false)) {
-                        m_bWebServer = false;
-                    }
+                    wxString attribute;
 
                     attribute = subchild->GetAttribute( wxT( "disableauthentication" ), wxT( "false" ) );
 
@@ -3742,9 +3727,6 @@ static int callback_daemonConfigurationRead( void *data,
         
         // Client buffer size
         pctrlObj->m_maxItemsInClientReceiveQueue = atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_VSCPD_DEFAULTCLIENTBUFFERSIZE ] );
-        
-        // Enable web server
-        pctrlObj->m_bWebServer = atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_ENABLE ] ) ? true : false;
         
         // Disable web server security
         pctrlObj->m_bDisableSecurityWebServer = atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_DISABLEAUTHENTICATION ] ) ? true : false;

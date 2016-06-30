@@ -677,9 +677,6 @@ public:
     //            websocket/webserver interface
     //*****************************************************
 
-    // Enable/disable full webserver
-    bool m_bWebServer;
-
     /*!
         If true web server security is disabled and checks
         will not be performed on user nor remote address.

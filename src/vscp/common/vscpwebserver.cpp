@@ -4850,77 +4850,74 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     // Web server interface
     buildPage += _("<div id=\"small\">");
     buildPage += _("<b>Web server <b>interface:</b></b> ");
-    if ( pObject->m_bWebServer ) {
-        buildPage += _("enabled on interface '");
-        buildPage += pObject->m_portWebServer;
-        buildPage += _( "<br>&nbsp;&nbsp;&nbsp;&nbsp;<b>Autentication:</b> " );
-        if ( pObject->m_bDisableSecurityWebServer ) {
-            buildPage += _( "turned off." );
-        }
-        else {
-            buildPage += _( "turned on." );
-        }
-        buildPage += _("<br>");
-        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Rootfolder:</b> ");
-        buildPage += wxString::FromUTF8( pObject->m_pathWebRoot );
-        buildPage += _("<br>");
-        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Authdomain:</b> ");
-        buildPage += wxString::FromUTF8( pObject->m_authDomain );
-        if ( 0 == strlen( pObject->m_authDomain ) ) {
-            buildPage += _("Set to default.");
-        }
-        buildPage += _("<br>");
-        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Path certs:</b> ");
-        buildPage += wxString::FromUTF8( pObject->m_pathCert );
-        buildPage += _("<br>");
-        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>ExtraMimeTypes:</b> ");
-        buildPage += wxString::FromUTF8( pObject->m_extraMimeTypes );
-        if ( 0 == strlen( pObject->m_extraMimeTypes ) ) {
-            buildPage += _("Set to default.");
-        }
-        buildPage += _("<br>");
-        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>CgiInterpreter:</b> ");
-        buildPage += wxString::FromUTF8( pObject->m_cgiInterpreter );
-        if ( 0 == strlen( pObject->m_cgiInterpreter ) ) {
-            buildPage += _("Set to default.");
-        }
-        buildPage += _("<br>");
-        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>CgiPattern:</b> ");
-        buildPage += wxString::FromUTF8( pObject->m_cgiPattern );
-        if ( 0 == strlen( pObject->m_cgiPattern ) ) {
-            buildPage += _("Set to default.");
-        }
-        buildPage += _("<br>");
-        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>HiddenFilePatterns:</b> ");
-        buildPage += wxString::FromUTF8( pObject->m_hideFilePatterns );
-        if ( 0 == strlen( pObject->m_hideFilePatterns ) ) {
-            buildPage += _("Set to default.");
-        }
-        buildPage += _("<br>");
-        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>IndexFiles:</b> ");
-        buildPage += wxString::FromUTF8( pObject->m_indexFiles );
-        if ( 0 == strlen( pObject->m_indexFiles ) ) {
-            buildPage += _("Set to default.");
-        }
-        buildPage += _("<br>");
-        if ( NULL != strstr( pObject->m_EnableDirectoryListings, "yes" ) ) {
-            buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Directory listings</b> is enabled.");
-        }
-        else {
-            buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Directory listings</b> is disabled.");
-        }
-        buildPage += _("<br>");
-        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>UrlReqrites:</b> ");
-        buildPage += wxString::FromUTF8( pObject->m_urlRewrites );
-        if ( 0 == strlen( pObject->m_urlRewrites ) ) {
-            buildPage += _("Set to default.");
-        }
 
-        // TODO missing data
+    buildPage += _("enabled on interface '");
+    buildPage += pObject->m_portWebServer;
+    buildPage += _( "<br>&nbsp;&nbsp;&nbsp;&nbsp;<b>Autentication:</b> " );
+    if ( pObject->m_bDisableSecurityWebServer ) {
+        buildPage += _( "turned off." );
     }
     else {
-        buildPage += _("disabled");
+        buildPage += _( "turned on." );
     }
+    buildPage += _("<br>");
+    buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Rootfolder:</b> ");
+    buildPage += wxString::FromUTF8( pObject->m_pathWebRoot );
+    buildPage += _("<br>");
+    buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Authdomain:</b> ");
+    buildPage += wxString::FromUTF8( pObject->m_authDomain );
+    if ( 0 == strlen( pObject->m_authDomain ) ) {
+        buildPage += _("Set to default.");
+    }
+    buildPage += _("<br>");
+    buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Path certs:</b> ");
+    buildPage += wxString::FromUTF8( pObject->m_pathCert );
+    buildPage += _("<br>");
+    buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>ExtraMimeTypes:</b> ");
+    buildPage += wxString::FromUTF8( pObject->m_extraMimeTypes );
+    if ( 0 == strlen( pObject->m_extraMimeTypes ) ) {
+        buildPage += _("Set to default.");
+    }
+    buildPage += _("<br>");
+    buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>CgiInterpreter:</b> ");
+    buildPage += wxString::FromUTF8( pObject->m_cgiInterpreter );
+    if ( 0 == strlen( pObject->m_cgiInterpreter ) ) {
+        buildPage += _("Set to default.");
+    }
+    buildPage += _("<br>");
+    buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>CgiPattern:</b> ");
+    buildPage += wxString::FromUTF8( pObject->m_cgiPattern );
+    if ( 0 == strlen( pObject->m_cgiPattern ) ) {
+        buildPage += _("Set to default.");
+    }
+    buildPage += _("<br>");
+    buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>HiddenFilePatterns:</b> ");
+    buildPage += wxString::FromUTF8( pObject->m_hideFilePatterns );
+    if ( 0 == strlen( pObject->m_hideFilePatterns ) ) {
+        buildPage += _("Set to default.");
+    }
+    buildPage += _("<br>");
+    buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>IndexFiles:</b> ");
+    buildPage += wxString::FromUTF8( pObject->m_indexFiles );
+    if ( 0 == strlen( pObject->m_indexFiles ) ) {
+        buildPage += _("Set to default.");
+    }
+    buildPage += _("<br>");
+    if ( NULL != strstr( pObject->m_EnableDirectoryListings, "yes" ) ) {
+        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Directory listings</b> is enabled.");
+    }
+    else {
+       buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Directory listings</b> is disabled.");
+    }
+    buildPage += _("<br>");
+    buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>UrlReqrites:</b> ");
+    buildPage += wxString::FromUTF8( pObject->m_urlRewrites );
+    if ( 0 == strlen( pObject->m_urlRewrites ) ) {
+       buildPage += _("Set to default.");
+    }
+
+    // TODO missing data
+
     buildPage += _("</div>");
 
     buildPage += _("<hr>");
