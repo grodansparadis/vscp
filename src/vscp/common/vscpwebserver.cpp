@@ -5033,35 +5033,31 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
 
     buildPage += _("<div id=\"small\">");
     buildPage += _("<b>Level I Drivers:</b> ");
-    if ( pObject->m_bEnableLevel1Drivers ) {
 
-        buildPage += _("enabled<br>");
+    buildPage += _("enabled<br>");
 
-        CDeviceItem *pDeviceItem;
-        VSCPDEVICELIST::iterator iter;
-        for (iter = pObject->m_deviceList.m_devItemList.begin();
+    CDeviceItem *pDeviceItem;
+    VSCPDEVICELIST::iterator iter;
+    for (iter = pObject->m_deviceList.m_devItemList.begin();
             iter != pObject->m_deviceList.m_devItemList.end();
             ++iter) {
 
-            pDeviceItem = *iter;
-            if  ( ( NULL != pDeviceItem ) &&
+        pDeviceItem = *iter;
+        if  ( ( NULL != pDeviceItem ) &&
                     ( CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL2 == pDeviceItem->m_driverLevel ) &&
                     pDeviceItem->m_bEnable ) {
-                buildPage += _("<b>Name:</b> ");
-                buildPage += pDeviceItem->m_strName;
-                buildPage += _("<br>");
-                buildPage += _("<b>Config:</b> ");
-                buildPage += pDeviceItem->m_strParameter;
-                buildPage += _("<br>");
-                buildPage += _("<b>Path:</b> ");
-                buildPage += pDeviceItem->m_strPath;
-                buildPage += _("<br>");
-            }
+            buildPage += _("<b>Name:</b> ");
+            buildPage += pDeviceItem->m_strName;
+            buildPage += _("<br>");
+            buildPage += _("<b>Config:</b> ");
+            buildPage += pDeviceItem->m_strParameter;
+            buildPage += _("<br>");
+            buildPage += _("<b>Path:</b> ");
+            buildPage += pDeviceItem->m_strPath;
+            buildPage += _("<br>");
         }
     }
-    else {
-        buildPage += _("disabled<br>");
-    }
+
     buildPage += _("<br>");
     buildPage += _("</div>");
 
@@ -5070,35 +5066,30 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
 
     buildPage += _("<div id=\"small\">");
     buildPage += _("<b>Level II Drivers:</b> ");
-    if ( pObject->m_bEnableLevel2Drivers ) {
+    buildPage += _("enabled<br>");
 
-        buildPage += _("enabled<br>");
-
-        CDeviceItem *pDeviceItem;
-        VSCPDEVICELIST::iterator iter;
-        for (iter = pObject->m_deviceList.m_devItemList.begin();
+    //CDeviceItem *pDeviceItem;
+    //VSCPDEVICELIST::iterator iter;
+    for (iter = pObject->m_deviceList.m_devItemList.begin();
             iter != pObject->m_deviceList.m_devItemList.end();
             ++iter) {
 
-            pDeviceItem = *iter;
-            if  ( ( NULL != pDeviceItem ) &&
+        pDeviceItem = *iter;
+        if  ( ( NULL != pDeviceItem ) &&
                     ( CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1 == pDeviceItem->m_driverLevel ) &&
                     pDeviceItem->m_bEnable ) {
-                buildPage += _("<b>Name:</b> ");
-                buildPage += pDeviceItem->m_strName;
-                buildPage += _("<br>");
-                buildPage += _("<b>Config:</b> ");
-                buildPage += pDeviceItem->m_strParameter;
-                buildPage += _("<br>");
-                buildPage += _("<b>Path:</b> ");
-                buildPage += pDeviceItem->m_strPath;
-                buildPage += _("<br>");
-            }
+            buildPage += _("<b>Name:</b> ");
+            buildPage += pDeviceItem->m_strName;
+            buildPage += _("<br>");
+            buildPage += _("<b>Config:</b> ");
+            buildPage += pDeviceItem->m_strParameter;
+            buildPage += _("<br>");
+            buildPage += _("<b>Path:</b> ");
+            buildPage += pDeviceItem->m_strPath;
+            buildPage += _("<br>");
         }
     }
-    else {
-        buildPage += _("disabled<br>");
-    }
+ 
     buildPage += _("<br>");
     buildPage += _("</div>");
 

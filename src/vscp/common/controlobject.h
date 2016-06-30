@@ -588,17 +588,6 @@ public:
      */
     bool m_bDM;
 
-    /*!
-        Enable CANAL Driver functionality
-     */
-    bool m_bEnableLevel1Drivers;
-
-    /*!
-        Enable Level2 Driver functionality
-    */
-    bool m_bEnableLevel2Drivers;
-
-
 
     /////////////////////////////////////////////////////////
     //                  Communication

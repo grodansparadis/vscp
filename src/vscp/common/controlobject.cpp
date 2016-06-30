@@ -847,13 +847,7 @@ bool CControlObject::init(wxString& strcfgfile)
     }
 
     // Load drivers if the are enabled
-    if (m_bEnableLevel1Drivers) {
-        logMsg(_("Level I drivers enabled.\n") );
-        startDeviceWorkerThreads();
-    }
-    else {
-        logMsg(_("Level I drivers disabled.\n") );
-    }
+    startDeviceWorkerThreads();
 
     // Start MQTT Broker if enabled
     if ( m_bMQTTBroker ) {
@@ -2670,18 +2664,7 @@ void CControlObject::addStockVariables( void )
 // *****************************************************************************
 
 
-   m_VSCP_Variables.add( _("vscp.driver.level1.enable"),
-                m_bEnableLevel1Drivers ? _("true") : _("false"),
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY,
-                false );
 
-
-    m_VSCP_Variables.add( _("vscp.driver.level2.enable"),
-                m_bEnableLevel2Drivers ? _("true") : _("false"),
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY,
-                false );
 
 }
 
@@ -3353,15 +3336,6 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
         // Level I driver
         else if ( ( child->GetName() == wxT("canaldriver") ) || ( child->GetName() == wxT("level1driver") ) ) {
 
-            wxString attribut = child->GetAttribute(wxT("enable"), wxT("true"));
-            attribut.MakeLower();
-            if (attribut.IsSameAs(_("false"), false)) {
-                m_bEnableLevel1Drivers = false;
-            }
-            else {
-                m_bEnableLevel1Drivers = true;
-            }
-
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
 
@@ -3476,15 +3450,6 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
         }
         // Level II driver
         else if ( ( child->GetName() == wxT("vscpdriver") ) || ( child->GetName() == wxT("level2driver") ) ) {
-
-            wxString attribut = child->GetAttribute(wxT("enable"), wxT("true"));
-            attribut.MakeLower();
-            if (attribut.IsSameAs(_("false"), false)) {
-                m_bEnableLevel2Drivers = false;
-            }
-            else {
-                m_bEnableLevel2Drivers = true;
-            }
 
             wxXmlNode *subchild = child->GetChildren();
 
