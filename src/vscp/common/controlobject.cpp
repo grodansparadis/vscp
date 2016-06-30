@@ -290,9 +290,6 @@ CControlObject::CControlObject()
     // Control TCP/IP Interface
     m_bTCP = true;
 
-    // Multicast announce
-    m_bMulticastAnnounce = true;
-
     // Control UDP Interface
     m_bUDP = false;
 
@@ -2874,15 +2871,6 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                 }
                 else if ( subchild->GetName() == wxT( "multicast-announce" ) ) {
 
-                    wxString attribute = subchild->GetAttribute( wxT( "enable" ), wxT( "true" ) );
-                    attribute.MakeLower();
-                    if ( attribute.IsSameAs( _( "false" ), false ) ) {
-                        m_bMulticastAnnounce = false;
-                    }
-                    else {
-                        m_bMulticastAnnounce = true;
-                    }
-
                     m_strMulticastAnnounceAddress = subchild->GetAttribute( wxT( "interface" ), wxT( "" ) );
 
                     m_ttlMultiCastAnnounce = vscp_readStringValue( subchild->GetAttribute( wxT( "ttl" ), wxT( "1" ) ) );
@@ -3771,9 +3759,6 @@ static int callback_daemonConfigurationRead( void *data,
         
         // TCP/IP port
         pctrlObj->m_strTcpInterfaceAddress = wxString::FromUTF8( argv[ DAEMON_DB_ORDINAL_CONFIG_TCPIPINTERFACE_PORT ] );
-
-        // Enable Multicast interface
-        pctrlObj->m_bMulticastAnnounce = atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_MULTICASTINTERFACE_ENABLE ] ) ? true : false;
         
         // Port for Multicast interface
         pctrlObj->m_strMulticastAnnounceAddress = wxString::FromUTF8( argv[ DAEMON_DB_ORDINAL_CONFIG_MULTICASTINTERFACE_PORT ] );

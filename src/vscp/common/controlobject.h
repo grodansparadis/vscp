@@ -578,10 +578,6 @@ public:
     */
     bool m_bCoAPServer;
 
-    /*!
-        Multicast announce interface
-    */
-    bool m_bMulticastAnnounce;
 
 
     /////////////////////////////////////////////////////////
