@@ -287,9 +287,6 @@ CControlObject::CControlObject()
     m_db_vscp_data = NULL;
     m_dm.m_db_vscp_dm = NULL;
 
-    // Control TCP/IP Interface
-    m_bTCP = true;
-
     // Control UDP Interface
     m_bUDP = false;
 
@@ -1136,27 +1133,26 @@ bool CControlObject::startTcpWorkerThread(void)
     /////////////////////////////////////////////////////////////////////////////
     // Run the TCP server thread
     /////////////////////////////////////////////////////////////////////////////
-    if ( m_bTCP ) {
 
-        m_pVSCPClientThread = new VSCPClientThread;
+    m_pVSCPClientThread = new VSCPClientThread;
 
-        if (NULL != m_pVSCPClientThread) {
-            m_pVSCPClientThread->m_pCtrlObject = this;
-            wxThreadError err;
-            if (wxTHREAD_NO_ERROR == (err = m_pVSCPClientThread->Create())) {
+    if (NULL != m_pVSCPClientThread) {
+        m_pVSCPClientThread->m_pCtrlObject = this;
+        wxThreadError err;
+        if (wxTHREAD_NO_ERROR == (err = m_pVSCPClientThread->Create())) {
                 //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
-                if (wxTHREAD_NO_ERROR != (err = m_pVSCPClientThread->Run())) {
-                    logMsg(_("Unable to run TCP thread.") );
-                }
-            }
-            else {
-                logMsg( _("Unable to create TCP thread.") );
+            if (wxTHREAD_NO_ERROR != (err = m_pVSCPClientThread->Run())) {
+                logMsg(_("Unable to run TCP thread.") );
             }
         }
         else {
-            logMsg(_("Unable to allocate memory for TCP thread.") );
+            logMsg( _("Unable to create TCP thread.") );
         }
     }
+    else {
+        logMsg(_("Unable to allocate memory for TCP thread.") );
+    }
+
 
     return true;
 }
@@ -2250,12 +2246,6 @@ void CControlObject::addStockVariables( void )
                 VSCP_VAR_READ_ONLY,
                 false );
 
-    m_VSCP_Variables.add( _("vscp.tcpip.isEnabled"),
-                m_bTCP ? _("true") : _("false"),
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY,
-                false );
-
     m_VSCP_Variables.add( _("vscp.tcpip.addess"),
                 m_strTcpInterfaceAddress,
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
@@ -2857,14 +2847,6 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     }
                 }
                 else if (subchild->GetName() == wxT("tcpip")) {
-                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
-                    attribute.MakeLower();
-                    if (attribute.IsSameAs(_("false"), false)) {
-                        m_bTCP = false;
-                    }
-                    else {
-                        m_bTCP = true;
-                    }
 
                     m_strTcpInterfaceAddress = subchild->GetAttribute(wxT("interface"), wxT(""));
 
@@ -3753,9 +3735,6 @@ static int callback_daemonConfigurationRead( void *data,
 
         // Path to access log file
         pctrlObj->m_logAccessFileName.SetPath( wxString::FromUTF8( argv[ DAEMON_DB_ORDINAL_CONFIG_ACCESSLOGFILE_PATH ] ) );
-
-        // Enable TCP/IP interface
-        pctrlObj->m_bTCP = atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_TCPIPINTERFACE_ENABLE ] ) ? true : false;
         
         // TCP/IP port
         pctrlObj->m_strTcpInterfaceAddress = wxString::FromUTF8( argv[ DAEMON_DB_ORDINAL_CONFIG_TCPIPINTERFACE_PORT ] );

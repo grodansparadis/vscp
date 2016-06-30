@@ -559,11 +559,6 @@ public:
     bool m_bLogToSysLog;
     
     /*!
-        Enable control (TCP/IP) interface
-     */
-    bool m_bTCP;
-
-    /*!
         Enable UDP interface
     */
     bool m_bUDP;
