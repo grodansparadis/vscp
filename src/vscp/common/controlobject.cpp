@@ -944,13 +944,6 @@ bool CControlObject::run(void)
         m_dm.feed( &EventLoop );
 
 
-        // Autosave variables
-        m_variableMutex.Lock();
-        if ( m_VSCP_Variables.autoSave() ) {
-            logMsg(_("Autosaved variables.\n") );
-        }
-        m_variableMutex.Unlock();
-
         // Wait for event
         if ( wxSEMA_TIMEOUT ==
                 pClientItem->m_semClientInputQueue.WaitTimeout( 100 ) ) {
@@ -2513,11 +2506,6 @@ void CControlObject::addStockVariables( void )
 //                             Variables
 // *****************************************************************************
 
-    m_VSCP_Variables.add( _("vscp.variable.enable"),
-                _("true"),
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY,
-                false );
 
     m_VSCP_Variables.add( _("vscp.variable.path"),
                 m_VSCP_Variables.m_configPath,
@@ -2525,84 +2513,84 @@ void CControlObject::addStockVariables( void )
                 VSCP_VAR_READ_ONLY,
                 false );
 
-    m_VSCP_Variables.add( _("vscp.variable.interval.save"),
-                wxString::Format( _("%ud"), m_VSCP_Variables.m_autosaveInterval ),
-                VSCP_DAEMON_VARIABLE_CODE_INTEGER,
-                VSCP_VAR_READ_ONLY,
-                false );
 
 // *****************************************************************************
 //                              Log files
 // *****************************************************************************
 
+    // Enable database logging
+     m_VSCP_Variables.add( _("vscp.log.database.enable"),
+                                m_bLogToDatabase ? _("true") : _("false"),
+                                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                                VSCP_VAR_READ_ONLY,
+                                false );
+    
     // General
     m_VSCP_Variables.add( _("vscp.log.general.enable"),
-                m_bLogGeneralEnable ? _("true") : _("false"),
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY,
-                false );
+                                m_bLogGeneralEnable ? _("true") : _("false"),
+                                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                                VSCP_VAR_READ_ONLY,
+                                false );
 
-    if ( m_bLogGeneralEnable ) {
-
-        m_VSCP_Variables.add( _("vscp.log.general.path"),
-                m_logGeneralFileName.GetFullPath(),
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY,
-                false );
-
-    }
-
+    m_VSCP_Variables.add( _("vscp.log.general.path"),
+                                m_logGeneralFileName.GetFullPath(),
+                                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                                VSCP_VAR_READ_ONLY,
+                                false );
+    
     // Access
     m_VSCP_Variables.add( _("vscp.log.access.enable"),
-                m_bLogAccessEnable ? _("true") : _("false"),
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY,
-                false );
+                                m_bLogAccessEnable ? _("true") : _("false"),
+                                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                                VSCP_VAR_READ_ONLY,
+                                false );
 
-    if ( m_bLogAccessEnable ) {
-
-        m_VSCP_Variables.add( _("vscp.log.access.path"),
-                m_logAccessFileName.GetFullPath(),
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY,
-                false );
-
-    }
-
-    // Security
-    m_VSCP_Variables.add( _("vscp.log.access.enable"),
-                m_bLogAccessEnable ? _("true") : _("false"),
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY,
-                false );
-
-    if ( m_bLogAccessEnable ) {
-
-        m_VSCP_Variables.add( _("vscp.log.access.path"),
-                m_logAccessFileName.GetFullPath(),
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY,
-                false );
-
-    }
+    m_VSCP_Variables.add( _("vscp.log.access.path"),
+                                m_logAccessFileName.GetFullPath(),
+                                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                                VSCP_VAR_READ_ONLY,
+                                false );
 
     // Security
     m_VSCP_Variables.add( _("vscp.log.security.enable"),
-                m_bLogSecurityEnable ? _("true") : _("false"),
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY,
-                false );
+                                m_bLogAccessEnable ? _("true") : _("false"),
+                                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
+                                VSCP_VAR_READ_ONLY,
+                                false );
+    
+    m_VSCP_Variables.add( _("vscp.log.security.path"),
+                                m_logSecurityFileName.GetFullPath(),
+                                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                                VSCP_VAR_READ_ONLY,
+                                false );
 
-    if ( m_bLogSecurityEnable ) {
 
-        m_VSCP_Variables.add( _("vscp.log.security.path"),
-                m_logSecurityFileName.GetFullPath(),
-                VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY,
-                false );
 
-    }
-
+    
+// *****************************************************************************
+//                             Databases
+// *****************************************************************************    
+    
+    
+    m_VSCP_Variables.add( _("vscp.database.log.path"),
+                                m_path_db_vscp_log.GetFullPath(),
+                                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                                VSCP_VAR_READ_ONLY,
+                                false );
+    
+    m_VSCP_Variables.add( _("vscp.database.vscpdata.path"),
+                                m_path_db_vscp_data.GetFullPath(),
+                                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                                VSCP_VAR_READ_ONLY,
+                                false );
+ 
+    m_VSCP_Variables.add( _("vscp.database.daemon.path"),
+                                m_path_db_vscp_daemon.GetFullPath(),
+                                VSCP_DAEMON_VARIABLE_CODE_STRING,
+                                VSCP_VAR_READ_ONLY,
+                                false );
+    
+    
 // *****************************************************************************
 //                              Drivers
 // *****************************************************************************
@@ -2953,10 +2941,6 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     if ( fileName.IsOk() ) {
                         m_VSCP_Variables.m_path_db_vscp_variable = fileName;
                     }
-
-                    // Autosave interval
-                    long autosave = vscp_readStringValue( subchild->GetAttribute(wxT("autosave"), wxT("5")) );
-                    m_VSCP_Variables.setAutoSaveInterval( autosave );
 
                 }
                 else if (subchild->GetName() == wxT("guid")) {

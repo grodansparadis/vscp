@@ -99,9 +99,9 @@ CVSCPVariable::~CVSCPVariable( void )
 // getVariableType
 //
 
-uint8_t CVSCPVariable::getVariableTypeFromString( const wxString& strVariableType )
+uint16_t CVSCPVariable::getVariableTypeFromString( const wxString& strVariableType )
 {
-    uint8_t type = VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED;
+    uint16_t type = VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED;
     wxString str = strVariableType;
     long val;
 
@@ -183,8 +183,23 @@ uint8_t CVSCPVariable::getVariableTypeFromString( const wxString& strVariableTyp
         else if ( 0 == str.Find( _("BASE64") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_BASE64;
         }
-        else if ( 0 == str.Find( _("EVENT") ) ) {
-            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT;
+        else if ( 0 == str.Find( _("MIME") ) ) {
+            type = VSCP_DAEMON_VARIABLE_CODE_MIME;
+        }
+        else if ( 0 == str.Find( _("HTML") ) ) {
+            type = VSCP_DAEMON_VARIABLE_CODE_HTML;
+        }
+        else if ( 0 == str.Find( _("JAVASCRIPT") ) ) {
+            type = VSCP_DAEMON_VARIABLE_CODE_JAVASCRIPT;
+        }
+        else if ( 0 == str.Find( _("LUA") ) ) {
+            type = VSCP_DAEMON_VARIABLE_CODE_LUA;
+        }
+        else if ( 0 == str.Find( _("LUARES") ) ) {
+            type = VSCP_DAEMON_VARIABLE_CODE_LUA_RESULT;
+        }
+        else if ( 0 == str.Find( _("UX1") ) ) {
+            type = VSCP_DAEMON_VARIABLE_CODE_UX_TYPE1;
         }
         else {
             type = vscp_readStringValue( str );
@@ -784,9 +799,6 @@ CVariableStorage::CVariableStorage()
     m_path_db_vscp_variable.SetName( _("/srv/vscp/vscp_variable.sqlite3") );
 #endif
 
-    // Autosave variables every five minutes.
-    m_autosaveInterval = 5;
-
     // We just read varibles  
     m_lastSaveTime = wxDateTime::Now();
 
@@ -815,29 +827,6 @@ CVariableStorage::~CVariableStorage()
     if ( NULL != m_db_vscp_variable ) {
         sqlite3_close( m_db_vscp_variable );
     }
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// autoSave
-//
-
-bool CVariableStorage::autoSave()
-{
-    // Must be enabled
-    if ( !m_autosaveInterval ) return false;
-
-    wxTimeSpan diffTime = wxDateTime::Now() - m_lastSaveTime;
-    if ( diffTime.GetMinutes() >= m_autosaveInterval ) {
-        if ( m_bChanged ) {
-            save();
-            m_bChanged = false;
-            return true;
-        }
-        m_lastSaveTime = wxDateTime::Now();
-    }
-
-    return false;
 }
 
 
@@ -948,11 +937,11 @@ bool CVariableStorage::add( const wxString& varName,
 // addWithStringType
 //
 
-bool CVariableStorage::addWithStringType(const wxString& varName,
-                        const wxString& value,
-                        const wxString& strType,
-                        bool bPersistent,
-                        bool brw ) 
+bool CVariableStorage::addWithStringType( const wxString& varName,
+                                            const wxString& value,
+                                            const wxString& strType,
+                                            bool bPersistent,
+                                            bool brw ) 
 {
     uint8_t type = CVSCPVariable::getVariableTypeFromString( strType );
     return add(varName,

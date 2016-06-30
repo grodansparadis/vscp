@@ -46,8 +46,9 @@
 class CVSCPVariable {
 public:
 
+   
     enum vartype {
-        STRING_T,
+        STRING_T = 0,
         BOOL_T,
         INT_T,
         LONG_T,
@@ -59,7 +60,14 @@ public:
         VSCPCLASS_T,
         VSCPTYPE_T,
         TIMESTAMP_T,
-        DATETIME_T
+        DATETIME_T,
+        BASE64_T,
+        MIME_T = 100,
+        HTML_T,
+        JAVASCRIPT_T,
+        LUA_T = 200,
+        LUARES_T,
+        UX1_T = 300
     };
 
     /// Constructor
@@ -96,7 +104,7 @@ public:
         Set the variable type
         @param type Variabe type code.
      */
-    void setType(uint8_t type)
+    void setType(uint16_t type)
     {
         m_type = type;
     };
@@ -105,7 +113,7 @@ public:
         Get the variable type
         @return The variable type code.
      */
-    uint8_t getType(void)
+    uint16_t getType(void)
     {
         return m_type;
     };
@@ -134,7 +142,7 @@ public:
         @parm strVariableType Variable type in string form
         @param variable type in numerical form.
      */
-    static uint8_t getVariableTypeFromString(const wxString& strVariableType);
+    static uint16_t getVariableTypeFromString(const wxString& strVariableType);
 
     /*!
         Check if a variable is persistent
@@ -367,7 +375,7 @@ private:
     wxString m_name;
 
     /// type of variable
-    unsigned char m_type;
+    uint16_t m_type;
 
     /// Flag to make variable persistent
     bool m_bPersistent;
@@ -426,17 +434,6 @@ public:
 
     /// Destructor
     virtual ~CVariableStorage();
-
-    /*! 
-        Set the autosave interval
-    */
-    void setAutoSaveInterval( uint16_t interval )
-                { m_autosaveInterval = interval; };
-
-    /*!
-        Save variables if it's time for it.
-    */
-    bool autoSave();
 
     /*!
         Find variable from its name
@@ -527,12 +524,6 @@ public:
     /// Path to the VSCP variable database
     wxFileName m_path_db_vscp_variable; 
     sqlite3 *m_db_vscp_variable;
-
-    /*!
-        Autosave in minutes
-        0 = disabled.
-    */
-    uint16_t m_autosaveInterval;
 
     /*!
         Set to true if storage has been changed
