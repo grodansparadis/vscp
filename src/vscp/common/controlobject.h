@@ -598,10 +598,6 @@ public:
     */
     bool m_bEnableLevel2Drivers;
 
-    /*!
-        Enable VSCP Daemon internal functionality (Disovery)
-     */
-    bool m_bVSCPDaemon;
 
 
     /////////////////////////////////////////////////////////

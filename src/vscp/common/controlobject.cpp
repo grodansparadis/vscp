@@ -320,18 +320,6 @@ CControlObject::CControlObject()
     // Default CoAP server interface
     m_strCoAPServerInterfaceAddress = _("udp://:5683");
 
-    // Level I (Canal) drivers
-    m_bEnableLevel1Drivers = true;
-
-    // Level II Drivers
-    m_bEnableLevel2Drivers = true;
-
-    // Control VSCP
-    m_bVSCPDaemon = true;
-
-    // Control DM
-    m_bDM = true;
-
     m_pclientMsgWorkerThread = NULL;
     m_pVSCPClientThread = NULL;
     m_pdaemonVSCPThread = NULL;
@@ -846,10 +834,8 @@ bool CControlObject::init(wxString& strcfgfile)
         logMsg(_("TCP/IP interface disabled.\n") );
     }
 
-    // Start daemon worker thread if enabled.
-    if ( m_bVSCPDaemon ) {
-        startDaemonWorkerThread();
-    }
+    // Start daemon worker thread
+    startDaemonWorkerThread();
 
     // Start web sockets if enabled
     if (m_bWebSockets) {
@@ -1321,29 +1307,25 @@ bool CControlObject::startDaemonWorkerThread(void)
     /////////////////////////////////////////////////////////////////////////////
     // Run the VSCP daemon thread
     /////////////////////////////////////////////////////////////////////////////
-    if (m_bVSCPDaemon) {
+    m_pdaemonVSCPThread = new daemonVSCPThread;
 
-        m_pdaemonVSCPThread = new daemonVSCPThread;
-
-        if (NULL != m_pdaemonVSCPThread) {
+    if (NULL != m_pdaemonVSCPThread) {
             m_pdaemonVSCPThread->m_pCtrlObject = this;
 
-            wxThreadError err;
-            if (wxTHREAD_NO_ERROR == (err = m_pdaemonVSCPThread->Create())) {
-                m_pdaemonVSCPThread->SetPriority(WXTHREAD_DEFAULT_PRIORITY);
-                if (wxTHREAD_NO_ERROR != (err = m_pdaemonVSCPThread->Run())) {
-                    logMsg( _("Unable to start TCP VSCP daemon thread.") );
-                }
-            }
-            else {
-                logMsg( _("Unable to create TCP VSCP daemon thread.") );
+        wxThreadError err;
+        if (wxTHREAD_NO_ERROR == (err = m_pdaemonVSCPThread->Create())) {
+            m_pdaemonVSCPThread->SetPriority(WXTHREAD_DEFAULT_PRIORITY);
+            if (wxTHREAD_NO_ERROR != (err = m_pdaemonVSCPThread->Run())) {
+                logMsg( _("Unable to start TCP VSCP daemon thread.") );
             }
         }
         else {
-            logMsg( _("Unable to start VSCP daemon thread.") );
+            logMsg( _("Unable to create TCP VSCP daemon thread.") );
         }
-
-    } // daemon enabled
+    }
+    else {
+        logMsg( _("Unable to start VSCP daemon thread.") );
+    }
 
     return true;
 }
@@ -2327,12 +2309,6 @@ void CControlObject::addStockVariables( void )
                 VSCP_VAR_READ_ONLY,
                 false );
 
-    m_VSCP_Variables.add( _("vscp.discovery.isEnabled"),
-                m_bVSCPDaemon ? _("true") : _("false"),
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
-                VSCP_VAR_READ_ONLY,
-                false );
-
     m_VSCP_Variables.add( _("vscp.automation.isEnabled"),
                 m_automation.isAutomationEnabled() ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
@@ -2345,93 +2321,91 @@ void CControlObject::addStockVariables( void )
                 VSCP_VAR_READ_ONLY,
                 false );
 
-    if ( m_automation.isAutomationEnabled() ) {
-
-        m_VSCP_Variables.add( _("vscp.automation.heartbeat.isEnabled"),
+    m_VSCP_Variables.add( _("vscp.automation.heartbeat.isEnabled"),
                 m_automation.isSendHeartbeat() ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.automation.heartbeat.period"),
+    m_VSCP_Variables.add( _("vscp.automation.heartbeat.period"),
                 wxString::Format( _("%ld"), m_automation.getIntervalHeartbeat() ),
                 VSCP_DAEMON_VARIABLE_CODE_LONG,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        wxstr = m_automation.getHeartbeatSent().FormatISODate();
-        wxstr += _( "T" );
-        wxstr += m_automation.getHeartbeatSent().FormatISOTime();
-        m_VSCP_Variables.add( _("vscp.automation.heartbeat.last"),
+    wxstr = m_automation.getHeartbeatSent().FormatISODate();
+    wxstr += _( "T" );
+    wxstr += m_automation.getHeartbeatSent().FormatISOTime();
+    m_VSCP_Variables.add( _("vscp.automation.heartbeat.last"),
                 wxstr,
                 VSCP_DAEMON_VARIABLE_CODE_DATETIME,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.automation.segctrl-heartbeat.isEnabled"),
+    m_VSCP_Variables.add( _("vscp.automation.segctrl-heartbeat.isEnabled"),
                 m_automation.isSendSegmentControllerHeartbeat() ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.automation.segctrl.heartbeat.period"),
+    m_VSCP_Variables.add( _("vscp.automation.segctrl.heartbeat.period"),
                 wxString::Format( _("%ld"), m_automation.getIntervalSegmentControllerHeartbeat() ),
                 VSCP_DAEMON_VARIABLE_CODE_LONG,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        wxstr = m_automation.getSegmentControllerHeartbeatSent().FormatISODate();
-        wxstr += _( "T" );
-        wxstr += m_automation.getSegmentControllerHeartbeatSent().FormatISOTime();
-        m_VSCP_Variables.add( _("vscp.automation.segctrl.heartbeat.last"),
+    wxstr = m_automation.getSegmentControllerHeartbeatSent().FormatISODate();
+    wxstr += _( "T" );
+    wxstr += m_automation.getSegmentControllerHeartbeatSent().FormatISOTime();
+    m_VSCP_Variables.add( _("vscp.automation.segctrl.heartbeat.last"),
                 wxstr,
                 VSCP_DAEMON_VARIABLE_CODE_DATETIME,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.automation.longitude"),
+    m_VSCP_Variables.add( _("vscp.automation.longitude"),
                 wxString::Format( _("%f"), m_automation.getLongitude() ),
                 VSCP_DAEMON_VARIABLE_CODE_DOUBLE,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.automation.latitude"),
+    m_VSCP_Variables.add( _("vscp.automation.latitude"),
                 wxString::Format( _("%f"), m_automation.getLatitude() ),
                 VSCP_DAEMON_VARIABLE_CODE_DOUBLE,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.automation.isSendTwilightSunriseEvent"),
+    m_VSCP_Variables.add( _("vscp.automation.isSendTwilightSunriseEvent"),
                 m_automation.isSendSunriseTwilightEvent() ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.automation.isSendSunriseEvent"),
+    m_VSCP_Variables.add( _("vscp.automation.isSendSunriseEvent"),
                 m_automation.isSendSunriseEvent() ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.automation.isSendSunsetEvent"),
+    m_VSCP_Variables.add( _("vscp.automation.isSendSunsetEvent"),
                 m_automation.isSendSunsetEvent() ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.automation.isSendTwilightSunsetEvent"),
+    m_VSCP_Variables.add( _("vscp.automation.isSendTwilightSunsetEvent"),
                 m_automation.isSendSunsetTwilightEvent() ? _("true") : _("false"),
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-        m_VSCP_Variables.add( _("vscp.WorkingFolder"),
+    m_VSCP_Variables.add( _("vscp.WorkingFolder"),
                 wxGetCwd(),
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
                 VSCP_VAR_READ_ONLY,
                 false );
 
-    }
+ 
 
 // *****************************************************************************
 //                                WEB-Server
@@ -3078,15 +3052,6 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     // Autosave interval
                     long autosave = vscp_readStringValue( subchild->GetAttribute(wxT("autosave"), wxT("5")) );
                     m_VSCP_Variables.setAutoSaveInterval( autosave );
-
-                }
-                else if (subchild->GetName() == wxT("vscp")) {
-
-                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
-
-                    if (attribute.IsSameAs(_("false"), false)) {
-                        m_bVSCPDaemon = false;
-                    }
 
                 }
                 else if (subchild->GetName() == wxT("guid")) {
@@ -3871,9 +3836,6 @@ static int callback_daemonConfigurationRead( void *data,
         
         // UDP interface port
         pctrlObj->m_strUDPInterfaceAddress = wxString::FromUTF8( argv[ DAEMON_DB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_PORT ] );
-        
-        // Enable internal server functionality
-        pctrlObj->m_bVSCPDaemon = atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_INTERNALDAEMONFUNCTIONALITY_ENABLE ] ) ? true : false;
         
         // Enable DM functionality
         pctrlObj->m_bDM = atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_DM_ENABLE ] ) ? true : false;

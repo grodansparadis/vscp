@@ -4706,12 +4706,7 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     // VSCP Internal automation intelligence
     buildPage += _("<div id=\"small\">");
     buildPage += _("<b>VSCP internal event logic:</b> ");
-    if ( pObject->m_bVSCPDaemon ) {
-        buildPage += _("enabled.");
-    }
-    else {
-        buildPage += _("disabled");
-    }
+    buildPage += _("enabled.");
     buildPage += _("<br>");
     buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Automation:</b> ");
     if ( pObject->m_automation.isAutomationEnabled() ) {
