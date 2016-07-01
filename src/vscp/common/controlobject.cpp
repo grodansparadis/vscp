@@ -3627,266 +3627,6 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
-// callback_daemonConfigurationRead
-//
-
-static int callback_daemonConfigurationRead( void *data,
-                                                int argc,
-                                                char **argv,
-                                                char **azColName )
-{
-    wxString wxstr;
-    CControlObject *pctrlObj = (CControlObject *)data;
-    if ( NULL == pctrlObj ) return -1;
-
-    int dbVersion = atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_DBVERSION ] ); // Get the version of this db file
-
-    // Check for db version 1 data
-    if ( ( 1 == dbVersion ) &&
-        ( DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_INTERVAL > argc ) ) {
-
-        // Debug level
-        pctrlObj->m_logLevel = atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_LOGLEVEL ] );
-        if ( pctrlObj->m_logLevel > DAEMON_LOGMSG_DEBUG ) {
-            pctrlObj->m_logLevel = DAEMON_LOGMSG_DEBUG;
-        }
-
-        // Run as user
-        pctrlObj->m_runAsUser = wxString::FromUTF8( argv[ DAEMON_DB_ORDINAL_CONFIG_RUNASUSER ] );
-
-        // Server GUID
-        pctrlObj->m_guid.getFromString( argv[ DAEMON_DB_ORDINAL_CONFIG_GUID ] );
-
-        // Server name
-        pctrlObj->m_strServerName = wxString::FromUTF8( argv[ DAEMON_DB_ORDINAL_CONFIG_NAME ] );
-
-        // General log file enable
-        pctrlObj->m_bLogGeneralEnable = atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_GENERALLOGFILE_ENABLE ] ) ? true : false;
-
-        // Path for general log file
-        pctrlObj->m_logGeneralFileName.SetPath( wxString::FromUTF8( argv[ DAEMON_DB_ORDINAL_CONFIG_GENERALLOGFILE_PATH ] ) );
-
-        // Security log file enable
-        pctrlObj->m_bLogSecurityEnable = atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_SECURITYLOGFILE_ENABLE ] ) ? true : false;
-
-        // Path to security log file
-        pctrlObj->m_logSecurityFileName.SetPath( wxString::FromUTF8( argv[ DAEMON_DB_ORDINAL_CONFIG_SECURITYLOGFILE_PATH ] ) );
-
-        // Access log file enable
-        pctrlObj->m_bLogAccessEnable = atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_ACCESSLOGFILE_ENABLE ] ) ? true : false;
-
-        // Path to access log file
-        pctrlObj->m_logAccessFileName.SetPath( wxString::FromUTF8( argv[ DAEMON_DB_ORDINAL_CONFIG_ACCESSLOGFILE_PATH ] ) );
-        
-        // TCP/IP port
-        pctrlObj->m_strTcpInterfaceAddress = wxString::FromUTF8( argv[ DAEMON_DB_ORDINAL_CONFIG_TCPIPINTERFACE_PORT ] );
-        
-        // Port for Multicast interface
-        pctrlObj->m_strMulticastAnnounceAddress = wxString::FromUTF8( argv[ DAEMON_DB_ORDINAL_CONFIG_MULTICASTINTERFACE_PORT ] );
-        
-        // TTL for Multicast i/f
-        pctrlObj->m_ttlMultiCastAnnounce = atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_MULICASTINTERFACE_TTL ] );
-        
-        // Enable UDP interface
-        pctrlObj->m_bUDP = atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_ENABLE ] ) ? true : false;
-        
-        // UDP interface port
-        pctrlObj->m_strUDPInterfaceAddress = wxString::FromUTF8( argv[ DAEMON_DB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_PORT ] );
-        
-        // Path to DM database file
-        pctrlObj->m_dm.m_configPath = wxString::FromUTF8( argv[ DAEMON_DB_ORDINAL_CONFIG_DM_PATH ] );
-        
-        // Enable DM logging
-        pctrlObj->m_dm.m_bLogEnable = atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_DM_LOGGING_ENABLE ] ) ? true : false;
-        
-        // Path to DM log file
-        pctrlObj->m_dm.m_logPath = wxString::FromUTF8( argv[ DAEMON_DB_ORDINAL_CONFIG_DM_LOGGING_PATH ] );
-        
-        // DM logging level
-        pctrlObj->m_dm.m_logLevel = atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_DM_LOGGING_LEVEL ] );
-                
-        // Path to variable database
-        pctrlObj->m_VSCP_Variables.m_configPath = wxString::FromUTF8( argv[ DAEMON_DB_ORDINAL_CONFIG_VARIABLES_PATH ] );
-        
-        // Client buffer size
-        pctrlObj->m_maxItemsInClientReceiveQueue = atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_VSCPD_DEFAULTCLIENTBUFFERSIZE ] );
-        
-        // Disable web server security
-        pctrlObj->m_bDisableSecurityWebServer = atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_DISABLEAUTHENTICATION ] ) ? true : false;
-        
-        // Web server root path
-        strncpy( pctrlObj->m_pathWebRoot, 
-                    argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_ROOTPATH ], 
-                    MIN( strlen(argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_ROOTPATH ] ), MAX_PATH_SIZE ) );
-        
-        // Port for web server
-        pctrlObj->m_portWebServer = wxString::FromUTF8( argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_PORT ] );
-        
-        // Path to cert file
-        strncpy( pctrlObj->m_pathCert, 
-                    argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_PATHCERT ], 
-                    MIN( strlen(argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_PATHCERT ] ), MAX_PATH_SIZE ) );
-        
-        // Authdomain
-        strncpy( pctrlObj->m_authDomain, 
-                    argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_AUTHDOMAIN ], 
-                    MIN( strlen(argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_AUTHDOMAIN ] ), MAX_PATH_SIZE ) );
-        
-        // CGI interpreter
-        strncpy( pctrlObj->m_cgiInterpreter, 
-                    argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_CGIINTERPRETER ], 
-                    MIN( strlen(argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_CGIINTERPRETER ] ), MAX_PATH_SIZE ) );
-        
-        // CGI pattern
-        strncpy( pctrlObj->m_cgiPattern, 
-                    argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_CGIPATTERN ], 
-                    MIN( strlen(argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_CGIPATTERN ] ), MAX_PATH_SIZE ) );
-        
-        // Enable directory listings
-        if ( atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_ENABLEDIRECTORYLISTINGS ] ) ) {
-            strcpy( pctrlObj->m_EnableDirectoryListings, "yes" );
-        }
-        else {
-            strcpy( pctrlObj->m_EnableDirectoryListings, "no" );
-        }
-        
-        // Hide file patterns
-        strncpy( pctrlObj->m_hideFilePatterns, 
-                    argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_HIDEFILEPATTERNS ], 
-                    MIN( strlen(argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_HIDEFILEPATTERNS ] ), MAX_PATH_SIZE ) );
-        
-        // Index files
-        strncpy( pctrlObj->m_indexFiles, 
-                    argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_INDEXFILES ], 
-                    MIN( strlen(argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_INDEXFILES ] ), MAX_PATH_SIZE ) );
-        
-        // Extra mime types
-        strncpy( pctrlObj->m_extraMimeTypes, 
-                    argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_EXTRAMIMETYPES ], 
-                    MIN( strlen(argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_EXTRAMIMETYPES ] ), MAX_PATH_SIZE ) );
-        
-        // URL rewrites
-        strncpy( pctrlObj->m_urlRewrites, 
-                    argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_URLREWRITES ], 
-                    MIN( strlen(argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_URLREWRITES ] ), MAX_PATH_SIZE ) );
-        
-        // SSI patterns
-        strncpy( pctrlObj->m_ssi_pattern, 
-                    argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_SSIPATTERN ], 
-                    MIN( strlen(argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_SSIPATTERN ] ), MAX_PATH_SIZE ) );
-        
-        // Webserver user
-        pctrlObj->m_runAsUserWeb = wxString::FromUTF8( argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_RUNASUSER ] );
-        
-        // Per directory auth. file
-        strncpy( pctrlObj->m_per_directory_auth_file, 
-                    argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_PERDIRECTORYAUTHFILE ], 
-                    MIN( strlen(argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_PERDIRECTORYAUTHFILE ] ), MAX_PATH_SIZE ) );
-        
-        // Global auth. file
-        strncpy( pctrlObj->m_global_auth_file, 
-                    argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_GLOBALAUTHFILE ], 
-                    MIN( strlen(argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_GLOBALAUTHFILE ] ), MAX_PATH_SIZE ) );
-        
-        // IP ACL
-        strncpy( pctrlObj->m_ip_acl, 
-                    argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER__IPACL ], 
-                    MIN( strlen(argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER__IPACL ] ), MAX_PATH_SIZE ) );
-        
-        // DAV path
-        strncpy( pctrlObj->m_dav_document_root, 
-                    argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_DAVDOCUMENTROOT ], 
-                    MIN( strlen(argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_DAVDOCUMENTROOT ] ), MAX_PATH_SIZE ) );
-        
-        // Enable web socket authentication
-        pctrlObj->m_bAuthWebsockets = atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_WEBSOCKET_ENABLEAUTH ] ) ? true : false;
-        
-        // Enable MQTT broker
-        pctrlObj->m_bMQTTBroker = atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_MQTTBROKER_ENABLE ] ) ? true : false;
-        
-        // MQTT broker port
-        pctrlObj->m_strMQTTBrokerInterfaceAddress = wxString::FromUTF8( argv[ DAEMON_DB_ORDINAL_CONFIG_MQTTBROKER_PORT ] );
-        
-        // Enable COAP server
-        pctrlObj->m_bCoAPServer = atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_COAPSERVER_ENABLE ] ) ? true : false;
-        
-        // COAP port
-        pctrlObj->m_strCoAPServerInterfaceAddress = wxString::FromUTF8( argv[ DAEMON_DB_ORDINAL_CONFIG_COAPSERVER_PORT ] );
-        
-        // Automation zone
-        pctrlObj->m_automation.setZone( atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_ZONE ] ) );
-        
-        // Automation sub zone
-        pctrlObj->m_automation.setZone( atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUBZONE ] ) );
-        
-        // Automation longitude
-        pctrlObj->m_automation.setLongitude( atof(argv[ DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_LONGITUDE ] ) );
-        
-        // Automation latitude
-        pctrlObj->m_automation.setLongitude( atof(argv[ DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_LATITUDE ] ) );
-        
-        // Automation time zone
-        pctrlObj->m_automation.setTimezone( atof( argv[ DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_TIMEZONE ] ) );
-        
-        // Automation enable sun rise event
-        if ( argv[ DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUNRISE_ENABLE ] ) {
-            pctrlObj->m_automation.enableSunRiseEvent();
-        }
-        else {
-            pctrlObj->m_automation.disableSunRiseEvent();
-        }
-        
-        // Automation enable sun set event
-        if ( argv[ DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUNSET_ENABLE ] ) {
-            pctrlObj->m_automation.enableSunSetEvent();
-        }
-        else {
-            pctrlObj->m_automation.disableSunSetEvent();
-        }
-        
-        // Automation enable sunset twilight event
-        if ( argv[ DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUNSETTWILIGHT_ENABLE ] ) {
-            pctrlObj->m_automation.enableSunSetTwilightEvent();
-        }
-        else {
-            pctrlObj->m_automation.disableSunSetTwilightEvent();
-        }
-        
-        // Automation enable sunrise twilight event
-        if ( argv[ DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUNRISETWILIGHT_ENABLE ] ) {
-            pctrlObj->m_automation.enableSunRiseTwilightEvent();
-        }
-        else {
-            pctrlObj->m_automation.disableSunRiseTwilightEvent();
-        }
-        
-        // Automation segment controller event enable
-        if ( argv[ DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_ENABLE ] ) {
-            pctrlObj->m_automation.enableSegmentControllerHeartbeat();
-        }
-        else {
-            pctrlObj->m_automation.disableSegmentControllerHeartbeat();
-        }
-        
-        // Automation, segment controller heartbeat interval
-        pctrlObj->m_automation.setIntervalSegmentControllerHeartbeat( atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_INTERVAL ] ) );
-        
-        // Automation heartbeat event enable
-        if ( argv[ DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_ENABLE ] ) {
-            pctrlObj->m_automation.enableHeartbeatEvent();
-        }
-        else {
-            pctrlObj->m_automation.disableHeartbeatEvent();
-        }
-        
-        // Automation heartbeat interval
-        pctrlObj->m_automation.setIntervalHeartbeatEvent( atoi( argv[ DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_INTERVAL ] ) );
-        
-    }
-
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // dbReadConfiguration
@@ -3905,20 +3645,6 @@ bool CControlObject::dbReadConfiguration( void )
 
     // Check if database is open
     if ( NULL == m_db_vscp_daemon ) return false;
-
-    /*
-    if ( SQLITE_OK != sqlite3_exec( m_db_vscp_daemon,
-                                        psql,
-                                        callback_daemonConfigurationRead,
-                                        (void*)gpctrlObj,
-                                        &pErrMsg ) ) {
-        fprintf( stderr, "Error reading configuration (SQL): %s\n", pErrMsg );
-        sqlite3_free( pErrMsg );
-        return false;
-    }
-     */
-    
-
     
     if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_daemon,
                                         psql,
@@ -3949,6 +3675,9 @@ bool CControlObject::dbReadConfiguration( void )
         
         // Server name
         m_strServerName = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_NAME ) );
+        
+        // Syslog enable
+        m_bLogToSysLog = sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_SYSLOG_ENABLE ) ? true : false;
         
         // General log file enable
         m_bLogGeneralEnable = sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_GENERALLOGFILE_ENABLE ) ? true : false;
@@ -4240,6 +3969,14 @@ bool CControlObject::dbReadConfiguration( void )
         // Automation heartbeat interval
         m_automation.setIntervalHeartbeatEvent( sqlite3_column_int( ppStmt, 
                             DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_INTERVAL ) );
+        
+        // VSCP data database path
+        m_path_db_vscp_data.SetPath( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
+                                DAEMON_DB_ORDINAL_CONFIG_DB_DATA_PATH ) ) );
+        
+        // VSCP log database path
+        m_path_db_vscp_log.SetPath( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
+                                DAEMON_DB_ORDINAL_CONFIG_DB_LOG_PATH ) ) );
         
     }
     
