@@ -13,9 +13,16 @@
     <general>
     
         <!-- Set the detail of logging you want                              -->
-
         <loglevel>debug</loglevel>
-        
+
+	<!-- Enable syslog logging                                           -->
+        <logsyslog enable="true" />        
+
+	<!-- Enable logging to database                                      -->
+	<!-- All logging will go to the logging database instead of to the   -->
+	<!-- text files.                                                     -->
+        <logdatabase enable="true" />
+
         <!-- The user to run as on Unix                                      -->
         <runasuser></runasuser>
         
@@ -65,7 +72,6 @@
         <db_vscp_variable>/srv/vscp/vscp_variable.sqlite3</db_vscp_variable>
         <db_vscp_dm>/srv/vscp/vscp_dm.sqlite3</db_vscp_dm>
         
-        <!-- It is possible to enable/disable the TCP/IP interface           -->
         <!-- You can open TCP/IP interfaces on several ports or on           -->
         <!-- on a specific port or on every interface of the computer        -->
         <!-- Default 9598 will listen on all interfaces while                -->
@@ -73,7 +79,17 @@
         <!-- To specify several interfaces just enter them with a space      -->
         <!-- between them.                                                   -->
 
-        <tcpip enable="true" interface="9598" />
+        <tcpip interface="9598" />
+
+
+        <!-- You can open multicast interfaces on several ports or on        -->
+        <!-- on a specific port or on every interface of the computer        -->
+        <!-- Default 9598 will listen on all interfaces while                -->
+        <!-- "127.0.0.1:9598" only will listen on the specified interface.   -->
+        <!-- To specify several interfaces just enter them with a space      -->
+        <!-- between them.                                                   -->
+
+        <tcpip interface="9598" />
         
         <!-- It is possible to enable/disable the UDP interface              -->
         <!-- You can open UDP interfaces on several ports or on              -->
@@ -114,8 +130,7 @@
         <!-- enableogging="true:false" to enable/disable dm logging          -->
         <!-- logpath is the path to the logfile.                             -->
         
-        <dm enable="true" 
-                path="/srv/vscp/dm.xml" 
+        <dm path="/srv/vscp/dm.xml" 
                 enablelogging="true" 
                 loglevel="debug" 
                 logpath="/var/log/vscp/vscp_log_dm"  />      
@@ -124,14 +139,13 @@
         <!-- Set to false to disable.                                        -->
         <!-- Path to variables storage.                                      -->
 
-        <variables enable="true" path="/srv/vscp/variables.xml" autosave="5" />
+        <variables path="/srv/vscp/variables.xml" />
 
         <!-- Enable disable the webserver interface.                         -->
         <!-- Set the port to use for the webserver interface                 -->
         <!-- default is 8080.                                                -->
 
-        <webserver enable="true" 
-                    webrootpath="/srv/vscp/web"
+        <webserver webrootpath="/srv/vscp/web"
                     port="8080"
                     path_cert=""
                     authdomain="mydomain.com"
@@ -147,7 +161,7 @@
             <!-- Enable disable the websocket interface.                     -->
             <!-- Id auth is set to false not authentication will be done     -->
         
-            <websockets enable="true" auth="true" />
+            <websockets auth="true" />
         
         </webserver>    
         

@@ -460,6 +460,12 @@ public:
      * @return true on success
      */
      bool dbReadConfiguration( void );
+     
+     /*!
+      * Create configuration table
+      * @return true on success
+      */
+     bool doCreateConfiguration( void );
 
 public:
 

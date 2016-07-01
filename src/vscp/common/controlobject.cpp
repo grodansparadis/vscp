@@ -609,6 +609,99 @@ bool CControlObject::init(wxString& strcfgfile)
         return FALSE;
     }
 
+
+    
+    // ===============================
+    // * * * Open database files * * *
+    // ===============================
+    
+        
+
+    // * * * VSCP Daemon configuration database * * *
+
+    // Check filename
+    if ( m_path_db_vscp_daemon.IsOk() && m_path_db_vscp_daemon.FileExists() ) {
+
+        if ( SQLITE_OK != sqlite3_open( m_path_db_vscp_daemon.GetFullPath().mbc_str(),
+                                            &m_db_vscp_daemon ) ) {
+            // Failed to open/create the database file
+            fprintf( stderr, "VSCP Daemon configuration database could not be opened. - Will not be used.\n" );
+            str.Printf( _("Path=%s error=%s\n"),
+                            m_path_db_vscp_daemon.GetFullPath().mbc_str(),
+                            sqlite3_errmsg( m_db_vscp_daemon ) );
+            fprintf( stderr, str.mbc_str() );
+            if ( NULL != m_db_vscp_daemon ) sqlite3_close( m_db_vscp_daemon );
+            m_db_vscp_daemon = NULL;
+
+        }
+        else {
+            // Database is open. Read configuration data from it
+            dbReadConfiguration();
+        }
+
+    }
+    else {
+
+        if ( m_path_db_vscp_daemon.IsOk() ) {
+            // We need to create the database from scratch. This may not work if
+            // the database is in a read only location.
+            fprintf( stderr, "VSCP Daemon configuration database does not exist - will be created.\n" );
+            str.Printf(_("Path=%s\n"), m_path_db_vscp_daemon.GetFullPath().mbc_str() );
+            fprintf( stderr, str.mbc_str() );
+            
+            if ( SQLITE_OK == sqlite3_open( m_path_db_vscp_daemon.GetFullPath().mbc_str(),
+                                            &m_db_vscp_daemon ) ) {
+                // create the config. database.
+                doCreateConfiguration();
+            }
+        }
+        else {
+            fprintf( stderr, "VSCP Daemon configuration database path invalid - will not be used.\n" );
+            str.Printf(_("Path=%s\n"), m_path_db_vscp_daemon.GetFullPath().mbc_str() );
+            fprintf( stderr, str.mbc_str() );
+        }
+
+    }
+    
+    
+    // * * * VSCP Daemon logging database * * *
+    
+    
+    // Check filename
+    if ( m_path_db_vscp_log.IsOk() && m_path_db_vscp_log.FileExists() ) {
+
+        if ( SQLITE_OK != sqlite3_open( m_path_db_vscp_log.GetFullPath().mbc_str(),
+                                            &m_db_vscp_daemon ) ) {
+
+            // Failed to open/create the database file
+            fprintf( stderr, "VSCP Daemon logging database could not be opened. - Will not be used.\n" );
+            str.Printf( _("Path=%s error=%s\n"),
+                            m_path_db_vscp_log.GetFullPath().mbc_str(),
+                            sqlite3_errmsg( m_db_vscp_daemon ) );
+            fprintf( stderr, str.mbc_str() );
+            if ( NULL != m_db_vscp_daemon ) sqlite3_close( m_db_vscp_daemon );
+            m_db_vscp_daemon = NULL;
+
+        }
+
+    }
+    else {
+
+        if ( m_path_db_vscp_log.IsOk() ) {
+            // We need to create the database from scratch. This may not work if
+            // the database is in a read only location.
+            fprintf( stderr, "VSCP Daemon configuration database does not exist - will be created.\n" );
+            str.Printf(_("Path=%s\n"), m_path_db_vscp_log.GetFullPath().mbc_str() );
+            fprintf( stderr, str.mbc_str() );
+        }
+        else {
+            fprintf( stderr, "VSCP Daemon configuration database path invalid - will not be used.\n" );
+            str.Printf(_("Path=%s\n"), m_path_db_vscp_log.GetFullPath().mbc_str() );
+            fprintf( stderr, str.mbc_str() );
+        }
+
+    }
+
 #ifndef WIN32
     if ( m_runAsUser.Length() ) {
         struct passwd *pw;
@@ -661,7 +754,7 @@ bool CControlObject::init(wxString& strcfgfile)
                             _("") );
 
     // Read XML configuration
-    if (!readConfiguration(strcfgfile)) {
+    if ( !readConfiguration( strcfgfile ) ) {
         fprintf( stderr, "Unable to open/parse configuration file. Can't initialise!.\n" );
         str = _("Path = .") + strcfgfile + _("\n");
         fprintf( stderr, str.mbc_str() );
@@ -703,94 +796,6 @@ bool CControlObject::init(wxString& strcfgfile)
         m_guid.toString( strguid );
         m_strServerName += strguid;
     }
-
-    
-
-    // ===============================
-    // * * * Open database files * * *
-    // ===============================
-    
-        
-
-    // * * * VSCP Daemon configuration database * * *
-
-    // Check filename
-    if ( m_path_db_vscp_daemon.IsOk() && m_path_db_vscp_daemon.FileExists() ) {
-
-        if ( SQLITE_OK != sqlite3_open( m_path_db_vscp_daemon.GetFullPath().mbc_str(),
-                                            &m_db_vscp_daemon ) ) {
-            // Failed to open/create the database file
-            fprintf( stderr, "VSCP Daemon configuration database could not be opened. - Will not be used.\n" );
-            str.Printf( _("Path=%s error=%s\n"),
-                            m_path_db_vscp_daemon.GetFullPath().mbc_str(),
-                            sqlite3_errmsg( m_db_vscp_daemon ) );
-            fprintf( stderr, str.mbc_str() );
-            if ( NULL != m_db_vscp_daemon ) sqlite3_close( m_db_vscp_daemon );
-            m_db_vscp_daemon = NULL;
-
-        }
-        else {
-            // Database is open. Read configuration data from it
-            dbReadConfiguration();
-        }
-
-    }
-    else {
-
-        if ( m_path_db_vscp_daemon.IsOk() ) {
-            // We need to create the database from scratch. This may not work if
-            // the database is in a read only location.
-            fprintf( stderr, "VSCP Daemon configuration database does not exist - will be created.\n" );
-            str.Printf(_("Path=%s\n"), m_path_db_vscp_daemon.GetFullPath().mbc_str() );
-            fprintf( stderr, str.mbc_str() );
-        }
-        else {
-            fprintf( stderr, "VSCP Daemon configuration database path invalid - will not be used.\n" );
-            str.Printf(_("Path=%s\n"), m_path_db_vscp_daemon.GetFullPath().mbc_str() );
-            fprintf( stderr, str.mbc_str() );
-        }
-
-    }
-    
-    
-    // * * * VSCP Daemon logging database * * *
-    
-    
-    // Check filename
-    if ( m_path_db_vscp_log.IsOk() && m_path_db_vscp_log.FileExists() ) {
-
-        if ( SQLITE_OK != sqlite3_open( m_path_db_vscp_log.GetFullPath().mbc_str(),
-                                            &m_db_vscp_daemon ) ) {
-
-            // Failed to open/create the database file
-            fprintf( stderr, "VSCP Daemon logging database could not be opened. - Will not be used.\n" );
-            str.Printf( _("Path=%s error=%s\n"),
-                            m_path_db_vscp_log.GetFullPath().mbc_str(),
-                            sqlite3_errmsg( m_db_vscp_daemon ) );
-            fprintf( stderr, str.mbc_str() );
-            if ( NULL != m_db_vscp_daemon ) sqlite3_close( m_db_vscp_daemon );
-            m_db_vscp_daemon = NULL;
-
-        }
-
-    }
-    else {
-
-        if ( m_path_db_vscp_log.IsOk() ) {
-            // We need to create the database from scratch. This may not work if
-            // the database is in a read only location.
-            fprintf( stderr, "VSCP Daemon configuration database does not exist - will be created.\n" );
-            str.Printf(_("Path=%s\n"), m_path_db_vscp_log.GetFullPath().mbc_str() );
-            fprintf( stderr, str.mbc_str() );
-        }
-        else {
-            fprintf( stderr, "VSCP Daemon configuration database path invalid - will not be used.\n" );
-            str.Printf(_("Path=%s\n"), m_path_db_vscp_log.GetFullPath().mbc_str() );
-            fprintf( stderr, str.mbc_str() );
-        }
-
-    }
-    
     
     str = _("VSCP Daemon started\n");
     str += _("Version: ");
@@ -3626,6 +3631,93 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
     return true;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// doCreateConfiguration
+//
+// Create configuration table.
+//
+// Note that fprintf needs to be used here as the logging mechanism
+// is not activated yet.
+//
+
+bool CControlObject::doCreateConfiguration( void )
+{
+    char *pErrMsg = 0;
+    const char *psql = "CREATE TABLE \"Settings\" ("
+	"`vscpd_idx_settings`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,"
+	"`vscpd_dbversion`	INTEGER NOT NULL,"
+	"`vscpd_LogLevel`	INTEGER,"
+	"`vscpd_RunAsUser`	TEXT,"
+	"`vscpd_GUID`	TEXT,"
+	"`vscpd_Name`	TEXT,"
+	"`vscpd_Syslog_Enable`	INTEGER,"
+	"`vscpd_GeneralLogFile_Enable`	INTEGER,"
+	"`vscpd_GeneralLogFile_Path`	TEXT,"
+	"`vscpd_SecurityLogFile_Enable`	INTEGER,"
+	"`vscpd_SecurityLogFile_Path`	TEXT,"
+	"`vscpd_AccessLogFile_Enable`	INTEGER,"
+	"`vscpd_AccessLogFile_Path`	TEXT,"
+	"`vscpd_TcpipInterface_Port`	REAL,"
+	"`vscpd_MulticastInterface_Port`	TEXT,"
+	"`vscpd_MulicastInterface_ttl`	INTEGER,"
+	"`vscpd_UdpSimpleInterface_Enable`	INTEGER,"
+	"`vscpd_UdpSimpleInterface_Port`	TEXT,"
+	"`vscpd_DM_Path`	NUMERIC,"
+	"`vscpd_DM_Logging_Enable`	INTEGER,"
+	"`vscpd_DM_Logging_Path`	TEXT,"
+	"`vscpd_DM_Logging_Level`	INTEGER,"
+	"`vscpd_Variables_Path`	TEXT,"
+	"`vscpd_VSCPD_DefaultClientBufferSize`	INTEGER,"
+	"`vscpd_Webserver_DisableAuthentication`	INTEGER,"
+	"`vscpd_Webserver_RootPath`	TEXT,"
+	"`vscpd_Webserver_Port`	TEXT,"
+	"`vscpd_Webserver_PathCert`	TEXT,"
+	"`vscpd_Webserver_AuthDomain`	TEXT,"
+	"`vscpd_Webserver_CgiInterpreter`	TEXT,"
+	"`vscpd_Webserver_CgiPattern`	TEXT,"
+	"`vscpd_Webserver_EnableDirectoryListings`	INTEGER,"
+	"`vscpd_Webserver_HideFilePatterns`	TEXT,"
+	"`vscpd_Webserver_IndexFiles`	TEXT,"
+	"`vscpd_Webserver_ExtraMimeTypes`	TEXT,"
+	"`vscpd_Webserver_UrlRewrites`	TEXT,"
+	"`vscpd_Webserver_SSIPattern`	NUMERIC,"
+	"`vscpd_Webserver_RunAsUser`	REAL,"
+	"`vscpd_Webserver_PerDirectoryAuthFile`	TEXT,"
+	"`vscpd_Webserver_GlobalAuthFile`	TEXT,"
+	"`vscpd_Webserver__IpAcl`	TEXT,"
+	"`vscpd_Webserver_DavDocumentRoot`	TEXT,"
+	"`vscpd_WebSocket_EnableAuth`	INTEGER,"
+	"`vscpd_MqttBroker_Enable`	INTEGER,"
+	"`vscpd_MqttBroker_Port`	TEXT,"
+	"`vscpd_CoapServer_Enable`	INTEGER,"
+	"`vscpd_CoapServer_Port`	TEXT,"
+	"`vscpd_Automation_Enable`	INTEGER,"
+	"`vscpd_Automation_Zone`	INTEGER,"
+	"`vscpd_Automation_SubZone`	INTEGER,"
+	"`vscpd_Automation_Longitude`	REAL,"
+	"`vscpd_Automation_Latitude`	REAL,"
+	"`vscpd_Automation_Timezone`	TEXT,"
+	"`vscpd_Automation_Sunrise_Enable`	INTEGER,"
+	"`vscpd_Automation_Sunset_Enable`	TEXT,"
+	"`vscpd_Automation_SunsetTwilight_Enable`	INTEGER,"
+	"`vscpd_Automation_SunriseTwilight_Enable`	INTEGER,"
+	"`vscpd_Automation_SegmentControllerEvent_Enable`	INTEGER,"
+	"`vscpd_Automation_SegmentControllerEvent_Interval`	INTEGER,"
+	"`vscpd_Automation_HeartbeatEvent_Enable`	INTEGER,"
+	"`vscpd_Automation_HeartbeatEvent_Interval`	INTEGER,"
+	"`vscpd_db_data_path`	TEXT,"
+	"`vscpd_db_log_path`	TEXT"
+        ")";
+    
+    // Check if database is open
+    if ( NULL == m_db_vscp_daemon ) return false;
+    
+    if ( SQLITE_ROW  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, NULL) ) {
+        return false;
+    }
+    
+    return true;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3659,105 +3751,159 @@ bool CControlObject::dbReadConfiguration( void )
         const unsigned char * p;
         
         // Get the version of this db file
-        int dbVersion = sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_DBVERSION ); 
+        int dbVersion = sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_DBVERSION );
         
         // Debug level
-        m_logLevel = sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_LOGLEVEL );
-        if ( m_logLevel > DAEMON_LOGMSG_DEBUG ) {
-            m_logLevel = DAEMON_LOGMSG_DEBUG;
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_LOGLEVEL ) ) {
+            m_logLevel = sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_LOGLEVEL );
+            if ( m_logLevel > DAEMON_LOGMSG_DEBUG ) {
+                m_logLevel = DAEMON_LOGMSG_DEBUG;
+            }
         }
 
         // Run as user
-        m_runAsUser = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_RUNASUSER ) );
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_RUNASUSER ) ) {
+            m_runAsUser = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
+                    DAEMON_DB_ORDINAL_CONFIG_RUNASUSER ) );
+        }
         
         // Server GUID
-        m_guid.getFromString( (const char *)sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_GUID ) );
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_GUID ) ) {
+            m_guid.getFromString( (const char *)sqlite3_column_text( ppStmt, 
+                    DAEMON_DB_ORDINAL_CONFIG_GUID ) );
+        }
         
         // Server name
-        m_strServerName = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_NAME ) );
-        
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_NAME ) ) {
+            m_strServerName = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
+                    DAEMON_DB_ORDINAL_CONFIG_NAME ) );
+        }
+         
         // Syslog enable
-        m_bLogToSysLog = sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_SYSLOG_ENABLE ) ? true : false;
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_SYSLOG_ENABLE ) ) {
+            m_bLogToSysLog = sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_SYSLOG_ENABLE ) ? true : false;
+        }
         
         // General log file enable
-        m_bLogGeneralEnable = sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_GENERALLOGFILE_ENABLE ) ? true : false;
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_GENERALLOGFILE_ENABLE ) ) {
+            m_bLogGeneralEnable = sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_GENERALLOGFILE_ENABLE ) ? true : false;
+        }
         
         // Path for general log file
-        m_logGeneralFileName.SetPath( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                        DAEMON_DB_ORDINAL_CONFIG_GENERALLOGFILE_PATH ) ) );
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_GENERALLOGFILE_PATH ) ) {
+            m_logGeneralFileName.SetPath( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
+                                                                DAEMON_DB_ORDINAL_CONFIG_GENERALLOGFILE_PATH ) ) );
+        }
         
         // Security log file enable
-        m_bLogSecurityEnable = sqlite3_column_int( ppStmt, 
-                                                        DAEMON_DB_ORDINAL_CONFIG_SECURITYLOGFILE_ENABLE ) ? true : false;
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_SECURITYLOGFILE_ENABLE ) ) {
+            m_bLogSecurityEnable = sqlite3_column_int( ppStmt, 
+                                                          DAEMON_DB_ORDINAL_CONFIG_SECURITYLOGFILE_ENABLE ) ? true : false;
+        }
         
         // Path to security log file
-        m_logSecurityFileName.SetPath( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt,  
-                                        DAEMON_DB_ORDINAL_CONFIG_SECURITYLOGFILE_PATH ) ) );
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_SECURITYLOGFILE_PATH ) ) {
+            m_logSecurityFileName.SetPath( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt,  
+                                            DAEMON_DB_ORDINAL_CONFIG_SECURITYLOGFILE_PATH ) ) );
+        }
         
         // Access log file enable
-        m_bLogAccessEnable = sqlite3_column_int( ppStmt,
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_ACCESSLOGFILE_ENABLE ) ) {
+            m_bLogAccessEnable = sqlite3_column_int( ppStmt,
                                                     DAEMON_DB_ORDINAL_CONFIG_ACCESSLOGFILE_ENABLE ) ? true : false;
+        }
         
         // Path to access log file
-        m_logAccessFileName.SetPath( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_ACCESSLOGFILE_PATH ) ) {
+            m_logAccessFileName.SetPath( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
                                                             DAEMON_DB_ORDINAL_CONFIG_ACCESSLOGFILE_PATH ) ) );
+        }
         
         // TCP/IP port
-        m_strTcpInterfaceAddress = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                    DAEMON_DB_ORDINAL_CONFIG_TCPIPINTERFACE_PORT ) );
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_TCPIPINTERFACE_PORT ) ) {
+            m_strTcpInterfaceAddress = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
+                                        DAEMON_DB_ORDINAL_CONFIG_TCPIPINTERFACE_PORT ) );
+        }
         
         // Port for Multicast interface
-        m_strMulticastAnnounceAddress = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                    DAEMON_DB_ORDINAL_CONFIG_MULTICASTINTERFACE_PORT ) );
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_MULTICASTINTERFACE_PORT ) ) {
+            m_strMulticastAnnounceAddress = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
+                                            DAEMON_DB_ORDINAL_CONFIG_MULTICASTINTERFACE_PORT ) );
+        }
         
         // TTL for Multicast i/f
-        m_ttlMultiCastAnnounce = sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_MULICASTINTERFACE_TTL );
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_MULICASTINTERFACE_TTL ) ) {
+            m_ttlMultiCastAnnounce = sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_MULICASTINTERFACE_TTL );
+        }
         
         // Enable UDP interface
-        m_bUDP = sqlite3_column_int( ppStmt, 
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_ENABLE ) ) {
+            m_bUDP = sqlite3_column_int( ppStmt, 
                                         DAEMON_DB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_ENABLE ) ? true : false;
+        }
         
         // UDP interface port
-        m_strUDPInterfaceAddress = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                        DAEMON_DB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_PORT ) );
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_PORT ) ) {
+            m_strUDPInterfaceAddress = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
+                                            DAEMON_DB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_PORT ) );
+        }
 
         // Path to DM database file
-        m_dm.m_configPath = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_DM_PATH ) ) {
+            m_dm.m_configPath = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
                                         DAEMON_DB_ORDINAL_CONFIG_DM_PATH ) );
+        }
   
         // Enable DM logging
-        m_dm.m_bLogEnable = sqlite3_column_int( ppStmt, 
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_DM_LOGGING_ENABLE ) ) {
+            m_dm.m_bLogEnable = sqlite3_column_int( ppStmt, 
                                         DAEMON_DB_ORDINAL_CONFIG_DM_LOGGING_ENABLE ) ? true : false;
+        }
         
         // Path to DM log file
-        m_dm.m_logPath = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_DM_LOGGING_PATH ) ) {
+            m_dm.m_logPath = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
                                         DAEMON_DB_ORDINAL_CONFIG_DM_LOGGING_PATH ) );
+        }
         
         // DM logging level
-        m_dm.m_logLevel = sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_DM_LOGGING_LEVEL );
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_DM_LOGGING_LEVEL ) ) {
+            m_dm.m_logLevel = sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_DM_LOGGING_LEVEL );
+        }
         
         // Path to variable database
-        m_VSCP_Variables.m_configPath = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_VARIABLES_PATH ) ) {
+            m_VSCP_Variables.m_configPath = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
                                         DAEMON_DB_ORDINAL_CONFIG_VARIABLES_PATH ) );
+        }
         
         // Client buffer size
-        m_maxItemsInClientReceiveQueue = sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_VSCPD_DEFAULTCLIENTBUFFERSIZE );
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_VSCPD_DEFAULTCLIENTBUFFERSIZE ) ) {
+            m_maxItemsInClientReceiveQueue = sqlite3_column_int( ppStmt, 
+                                        DAEMON_DB_ORDINAL_CONFIG_VSCPD_DEFAULTCLIENTBUFFERSIZE );
+        }
  
         // Disable web server security
-        m_bDisableSecurityWebServer = sqlite3_column_int( ppStmt,  
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_DISABLEAUTHENTICATION ) ) {
+            m_bDisableSecurityWebServer = sqlite3_column_int( ppStmt,  
                                         DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_DISABLEAUTHENTICATION ) ? true : false;
+        }
         
         // Web server root path
-        p = sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_ROOTPATH );
-        if ( NULL != p ) {
-            strncpy( m_pathWebRoot, 
-                        (const char *)p, 
-                        MIN( strlen( (const char *)p ), MAX_PATH_SIZE ) );
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_ROOTPATH ) ) {
+            p = sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_ROOTPATH );
+            if ( NULL != p ) {
+                strncpy( m_pathWebRoot, 
+                            (const char *)p, 
+                            MIN( strlen( (const char *)p ), MAX_PATH_SIZE ) );
+            }
         }
         
         // Port for web server
-        m_portWebServer = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt,  
-                                        DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_PORT ) );
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_PORT ) ) {
+            m_portWebServer = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt,  
+                                            DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_PORT ) );
+        }
         
         // Path to cert file
         p = sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_PATHCERT );
@@ -3792,11 +3938,13 @@ bool CControlObject::dbReadConfiguration( void )
         }
         
         // Enable directory listings
-        if ( sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_ENABLEDIRECTORYLISTINGS ) ) {
-            strcpy( m_EnableDirectoryListings, "yes" );
-        }
-        else {
-            strcpy( m_EnableDirectoryListings, "no" );
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_ENABLEDIRECTORYLISTINGS ) ) {
+            if ( sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_ENABLEDIRECTORYLISTINGS ) ) {
+                strcpy( m_EnableDirectoryListings, "yes" );
+            }
+            else {
+                strcpy( m_EnableDirectoryListings, "no" );
+            }
         }
    
         // Hide file patterns
@@ -3840,7 +3988,10 @@ bool CControlObject::dbReadConfiguration( void )
         }
         
         // Webserver user
-        m_runAsUserWeb = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_RUNASUSER ) );
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_RUNASUSER ) ) {
+            m_runAsUserWeb = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
+                        DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_RUNASUSER ) );
+        }
         
         // Per directory auth. file
         p = sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_PERDIRECTORYAUTHFILE );
@@ -3875,108 +4026,148 @@ bool CControlObject::dbReadConfiguration( void )
         }
         
         // Enable web socket authentication
-        m_bAuthWebsockets = sqlite3_column_int( ppStmt, 
-                DAEMON_DB_ORDINAL_CONFIG_WEBSOCKET_ENABLEAUTH ) ? true : false;
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_WEBSOCKET_ENABLEAUTH ) ) {
+            m_bAuthWebsockets = sqlite3_column_int( ppStmt, 
+                    DAEMON_DB_ORDINAL_CONFIG_WEBSOCKET_ENABLEAUTH ) ? true : false;
+        }
         
         
         // Enable MQTT broker
-        m_bMQTTBroker = sqlite3_column_int( ppStmt, 
-                DAEMON_DB_ORDINAL_CONFIG_MQTTBROKER_ENABLE ) ? true : false;
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_MQTTBROKER_ENABLE ) ) {
+            m_bMQTTBroker = sqlite3_column_int( ppStmt, 
+                    DAEMON_DB_ORDINAL_CONFIG_MQTTBROKER_ENABLE ) ? true : false;
+        }
         
         // MQTT broker port
-        m_strMQTTBrokerInterfaceAddress = 
-                wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                DAEMON_DB_ORDINAL_CONFIG_MQTTBROKER_PORT ) );
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_MQTTBROKER_PORT ) ) {
+            m_strMQTTBrokerInterfaceAddress = 
+                    wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
+                    DAEMON_DB_ORDINAL_CONFIG_MQTTBROKER_PORT ) );
+        }
         
         // Enable COAP server
-        m_bCoAPServer = sqlite3_column_int( ppStmt, 
-                                DAEMON_DB_ORDINAL_CONFIG_COAPSERVER_ENABLE ) ? true : false;
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_COAPSERVER_ENABLE ) ) {
+            m_bCoAPServer = sqlite3_column_int( ppStmt, 
+                                    DAEMON_DB_ORDINAL_CONFIG_COAPSERVER_ENABLE ) ? true : false;
+        }
         
         // COAP port
-        m_strCoAPServerInterfaceAddress = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                DAEMON_DB_ORDINAL_CONFIG_COAPSERVER_PORT ) );
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_COAPSERVER_PORT ) ) {
+            m_strCoAPServerInterfaceAddress = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
+                                    DAEMON_DB_ORDINAL_CONFIG_COAPSERVER_PORT ) );
+        }
         
         // Automation zone
-        m_automation.setZone( sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_ZONE ) );
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_ZONE ) ) {
+            m_automation.setZone( sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_ZONE ) );
+        }
         
         // Automation sub zone
-        m_automation.setZone( sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUBZONE ) );
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUBZONE ) ) {
+            m_automation.setZone( sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUBZONE ) );
+        }
         
         // Automation longitude
-        m_automation.setLongitude( sqlite3_column_double( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_LONGITUDE ) );
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_LONGITUDE ) ) {
+            m_automation.setLongitude( sqlite3_column_double( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_LONGITUDE ) );
+        }
         
         // Automation latitude
-        m_automation.setLongitude( sqlite3_column_double( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_LATITUDE ) );
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_LATITUDE ) ) {
+            m_automation.setLongitude( sqlite3_column_double( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_LATITUDE ) );
+        }
         
         // Automation time zone
-        m_automation.setTimezone( sqlite3_column_double( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_TIMEZONE ) );
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_TIMEZONE ) ) {
+            m_automation.setTimezone( sqlite3_column_double( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_TIMEZONE ) );
+        }
         
         // Automation enable sun rise event
-        if ( sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUNRISE_ENABLE ) ) {
-            m_automation.enableSunRiseEvent();
-        }
-        else {
-            m_automation.disableSunRiseEvent();
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUNRISE_ENABLE ) ) {
+            if ( sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUNRISE_ENABLE ) ) {
+                m_automation.enableSunRiseEvent();
+            }
+            else {
+                m_automation.disableSunRiseEvent();
+            }
         }
         
         // Automation enable sun set event
-        if ( sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUNSET_ENABLE ) ) {
-            m_automation.enableSunSetEvent();
-        }
-        else {
-            m_automation.disableSunSetEvent();
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUNSET_ENABLE ) ) {
+            if ( sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUNSET_ENABLE ) ) {
+                m_automation.enableSunSetEvent();
+            }
+            else {
+                m_automation.disableSunSetEvent();
+            }
         }
         
         // Automation enable sunset twilight event
-        if ( sqlite3_column_int( ppStmt, 
-                            DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUNSETTWILIGHT_ENABLE ) ) {
-            m_automation.enableSunSetTwilightEvent();
-        }
-        else {
-            m_automation.disableSunSetTwilightEvent();
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUNSETTWILIGHT_ENABLE ) ) {
+            if ( sqlite3_column_int( ppStmt, 
+                                DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUNSETTWILIGHT_ENABLE ) ) {
+                m_automation.enableSunSetTwilightEvent();
+            }
+            else {
+                m_automation.disableSunSetTwilightEvent();
+            }
         }
         
         // Automation enable sunrise twilight event
-        if ( sqlite3_column_int( ppStmt, 
-                            DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUNRISETWILIGHT_ENABLE ) ) {
-            m_automation.enableSunRiseTwilightEvent();
-        }
-        else {
-            m_automation.disableSunRiseTwilightEvent();
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUNRISETWILIGHT_ENABLE ) ) {
+            if ( sqlite3_column_int( ppStmt, 
+                                DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUNRISETWILIGHT_ENABLE ) ) {
+                m_automation.enableSunRiseTwilightEvent();
+            }
+            else {
+                m_automation.disableSunRiseTwilightEvent();
+            }
         }
         
         // Automation segment controller event enable
-        if ( sqlite3_column_int( ppStmt, 
-                            DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_ENABLE ) ) {
-            m_automation.enableSegmentControllerHeartbeat();
-        }
-        else {
-            m_automation.disableSegmentControllerHeartbeat();
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_ENABLE ) ) {
+            if ( sqlite3_column_int( ppStmt, 
+                                DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_ENABLE ) ) {
+                m_automation.enableSegmentControllerHeartbeat();
+            }
+            else {
+                m_automation.disableSegmentControllerHeartbeat();
+            }
         }
         
         // Automation, segment controller heartbeat interval
-        m_automation.setIntervalSegmentControllerHeartbeat( sqlite3_column_int( ppStmt, 
-                            DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_INTERVAL ) );
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_INTERVAL ) ) {
+            m_automation.setIntervalSegmentControllerHeartbeat( sqlite3_column_int( ppStmt, 
+                                DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_INTERVAL ) );
+        }
         
         // Automation heartbeat event enable
-        if ( sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_ENABLE ) ) {
-            m_automation.enableHeartbeatEvent();
-        }
-        else {
-            m_automation.disableHeartbeatEvent();
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_ENABLE ) ) {
+            if ( sqlite3_column_int( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_ENABLE ) ) {
+                m_automation.enableHeartbeatEvent();
+            }
+            else {
+                m_automation.disableHeartbeatEvent();
+            }
         }
         
         // Automation heartbeat interval
-        m_automation.setIntervalHeartbeatEvent( sqlite3_column_int( ppStmt, 
-                            DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_INTERVAL ) );
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_INTERVAL ) ) {
+            m_automation.setIntervalHeartbeatEvent( sqlite3_column_int( ppStmt, 
+                                DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_INTERVAL ) );
+        }
         
         // VSCP data database path
-        m_path_db_vscp_data.SetPath( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                DAEMON_DB_ORDINAL_CONFIG_DB_DATA_PATH ) ) );
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_DB_DATA_PATH ) ) {    
+            m_path_db_vscp_data.SetPath( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
+                                    DAEMON_DB_ORDINAL_CONFIG_DB_DATA_PATH ) ) );
+        }
         
         // VSCP log database path
-        m_path_db_vscp_log.SetPath( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
+        if ( NULL != sqlite3_column_text( ppStmt, DAEMON_DB_ORDINAL_CONFIG_DB_LOG_PATH ) ) {
+            m_path_db_vscp_log.SetPath( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
                                 DAEMON_DB_ORDINAL_CONFIG_DB_LOG_PATH ) ) );
+        }
         
     }
     
