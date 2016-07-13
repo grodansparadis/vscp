@@ -595,37 +595,34 @@ void *deviceThread::Entry()
         wxStringTokenizer tkz(m_pDeviceItem->m_strParameter, _(";"));
         if (tkz.HasMoreTokens()) {
 
-            CVSCPVariable *pVar;
+            CVSCPVariable variable;
 
             // Get prefix
             wxString prefix = tkz.GetNextToken();
 
-            // Check if username is specified in the configuration file
-            pVar = m_pCtrlObject->m_VSCP_Variables.find(m_pDeviceItem->m_strName + _("_username"));
-            if (NULL != pVar) {
+            // Check if username is specified in the configuration file            
+            if ( m_pCtrlObject->m_VSCP_Variables.find(m_pDeviceItem->m_strName + _("_username"), variable ) ) {
                 wxString str;
-                if (VSCP_DAEMON_VARIABLE_CODE_STRING == pVar->getType()) {
-                    pVar->getValue( str );
+                if (VSCP_DAEMON_VARIABLE_CODE_STRING == variable.getType()) {
+                    str = variable.getValue();
                     m_pCtrlObject->m_driverUsername = str;
                 }
             }
 
-            // Check if password is specified in the configuration file
-            pVar = m_pCtrlObject->m_VSCP_Variables.find(m_pDeviceItem->m_strName + _("_password"));
-            if (NULL != pVar) {
+            // Check if password is specified in the configuration file            
+            if ( m_pCtrlObject->m_VSCP_Variables.find(m_pDeviceItem->m_strName + _("_password"), variable ) ) {
                 wxString str;
-                if (VSCP_DAEMON_VARIABLE_CODE_STRING == pVar->getType()) {
-                    pVar->getValue( str );
+                if (VSCP_DAEMON_VARIABLE_CODE_STRING == variable.getType()) {
+                    str = variable.getValue();
                     m_pCtrlObject->m_driverPassword = str;
                 }
             }
 
-            // Check if host is specified in the configuration file
-            pVar = m_pCtrlObject->m_VSCP_Variables.find(m_pDeviceItem->m_strName + _("_host"));
-            if (NULL != pVar) {
+            // Check if host is specified in the configuration file       
+            if ( m_pCtrlObject->m_VSCP_Variables.find(m_pDeviceItem->m_strName + _("_host"), variable ) ) {
                 wxString str;
-                if (VSCP_DAEMON_VARIABLE_CODE_STRING == pVar->getType()) {
-                    pVar->getValue( str );
+                if (VSCP_DAEMON_VARIABLE_CODE_STRING == variable.getType()) {
+                    str = variable.getValue();
                     strHost = str;
                 }
             }

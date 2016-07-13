@@ -108,7 +108,6 @@ enum {
     Menu_Popup_Abstraction_Default,
 };
 
-
 // Register grid positions
 #define GRID_REGISTER_COLUMN_REGISTER           0
 #define GRID_REGISTER_COLUMN_ACCESS_RIGHTS      1

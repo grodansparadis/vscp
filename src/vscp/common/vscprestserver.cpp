@@ -1994,19 +1994,19 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
 
     if ( NULL != pSession ) {
 
-        CVSCPVariable *pvar;
+        CVSCPVariable variable;
         wxString strvalue;
 
-        if ( NULL == (pvar = pObject->m_VSCP_Variables.find( strVariableName ) ) ) {
+        if ( pObject->m_VSCP_Variables.find( strVariableName, variable ) ) {
             webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_FOUND );
             return;
         }
 
-        pvar->writeValueToString( strvalue );
+        variable.writeValueToString( strvalue );
 
         // Get variable value
         wxString strVariableValue;
-        pvar->writeValueToString( strVariableValue );
+        variable.writeValueToString( strVariableValue );
 
         if ( REST_FORMAT_PLAIN == format ) {
 
@@ -2016,11 +2016,11 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
 
                 sprintf( wrkbuf,
                                 "variable=%s type=%d persistent=%s value='%s' note='%s'\r\n",
-                                (const char *)pvar->getName().mbc_str(),
-                                pvar->getType(),
-                                pvar->isPersistent() ? "true" : "false",
+                                (const char *)variable.getName().mbc_str(),
+                                variable.getType(),
+                                variable.isPersistent() ? "true" : "false",
                                 (const char *)strVariableValue.mbc_str(),
-                                (const char *)pvar->getNote().mbc_str() );
+                                (const char *)variable.getNote().mbc_str() );
 
                 mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
 
@@ -2031,10 +2031,10 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
             sprintf( wrkbuf,
                 "success-code,error-code,message,description,Variable,Type,Persistent,Value,Note\r\n1,1,Success,Success.,%s,%d,%s,'%s','%s'\r\n",
                 (const char *)strVariableName.mbc_str(),
-                pvar->getType(),
-                pvar->isPersistent() ? "true" : "false",
+                variable.getType(),
+                variable.isPersistent() ? "true" : "false",
                 (const char *)strVariableValue.mbc_str(),
-                (const char *)pvar->getNote().mbc_str() );
+                (const char *)variable.getNote().mbc_str() );
             mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ) );
 
         }
@@ -2046,15 +2046,15 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
 
             sprintf( wrkbuf,
                         "<variable type=\"%d(%s)\" persistent=\"%s\" >",
-                        pvar->getType(),
-                        pvar->getVariableTypeAsString( pvar->getType() ),
-                        pvar->isPersistent() ? "true" : "false" );
+                        variable.getType(),
+                        variable.getVariableTypeAsString( variable.getType() ),
+                        variable.isPersistent() ? "true" : "false" );
             mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
             sprintf((char *) wrkbuf,
                             "<name>%s</name><value>%s</value><note>%s</note>",
-                            (const char *)pvar->getName().mbc_str(),
+                            (const char *)variable.getName().mbc_str(),
                             (const char *)strVariableValue.mbc_str(),
-                            (const char *)pvar->getNote().mbc_str() );
+                            (const char *)variable.getNote().mbc_str() );
 
             mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
 
@@ -2091,23 +2091,23 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
 
                 p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varname", 7 );
                 p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
-                p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, pvar->getName().mbc_str(), pvar->getName().Length() );
+                p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, variable.getName().mbc_str(), variable.getName().Length() );
                 p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 
                 p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "vartype", 7 );
                 p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
-                wxString wxstr = wxString::FromAscii( pvar->getVariableTypeAsString( pvar->getType() ) );
+                wxString wxstr = wxString::FromAscii( variable.getVariableTypeAsString( variable.getType() ) );
                 p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wxstr.mbc_str(), wxstr.Length() );
                 p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 
                 p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "vartypecode", 11 );
                 p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
-                p += json_emit_long( p, &buf[sizeof(buf)] - p, pvar->getType() );
+                p += json_emit_long( p, &buf[sizeof(buf)] - p, variable.getType() );
                 p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 
                 p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varpersistence", 14 );
                 p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
-                wxstr = pvar->isPersistent() ? _("true") : _("false");
+                wxstr = variable.isPersistent() ? _("true") : _("false");
                 p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wxstr.mbc_str(), wxstr.Length() );
                 p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 
@@ -2168,14 +2168,14 @@ VSCPWebServerThread::webserv_rest_doWriteVariable( struct mg_connection *nc,
     if ( NULL != pSession ) {
 
         // Get variablename
-        CVSCPVariable *pvar;
-        if ( NULL == (pvar = pObject->m_VSCP_Variables.find( strVariableName ) ) ) {
+        CVSCPVariable variable;
+        if ( pObject->m_VSCP_Variables.find( strVariableName, variable ) ) {
             webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_FOUND );
             return;
         }
 
         // Set variable value
-        if (!pvar->setValueFromString( pvar->getType(), strValue ) ) {
+        if (!variable.setValueFromString( variable.getType(), strValue ) ) {
             webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_MISSING_DATA );
             return;
         }

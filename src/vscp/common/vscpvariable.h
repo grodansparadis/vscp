@@ -35,13 +35,39 @@
 #include "variablecodes.h"
 #include "vscphelper.h"
 
+#define VAR_MAXBUF_SIZE         0x10000     // Size for variable strings etc
+
 #define VSCP_VAR_PERSISTENT     true
 #define VSCP_VAR_NON_PERISTENT  false
-#define VSCP_VAR_READ_WRITE     true
-#define VSCP_VAR_READ_ONLY      false
+
+// Permissions
+#define PERMISSON_OWNER_READ    0x400
+#define PERMISSON_OWNER_WRITE   0x200
+#define PERMISSON_OWNER_EXECUTE 0x100
+#define PERMISSON_GROUP_READ    0x040
+#define PERMISSON_GRPUP_WRITE   0x020
+#define PERMISSON_GROUP_EXECUTE 0x010
+#define PERMISSON_OTHER_READ    0x004
+#define PERMISSON_OTHER_WRITE   0x002
+#define PERMISSON_OTHER_EXECUTE 0x001
+
+#define PERMISSON_OWNER_ALL     0x700
+#define PERMISSON_OWNER_NONE    0x000
+#define PERMISSON_GROUP_ALL     0x070
+#define PERMISSON_GROUP_NONE    0x000
+#define PERMISSON_OTHER_ALL     0x007
+#define PERMISSON_OTHER_NONE    0x000
+
+#define PERMISSON_ALL_READ      0x444
+
+#define PERMISSON_ALL_RIGHTS    0x777
+#define PERMISSON_NO_RIGHTS     0x000
+
+#define USER_ADMIN              0x00
+#define GROUP_ADMIN             0x00
 
 // Class that holds one VSCP variable
-// Peristent variables should have names staring with $
+// Persistent variables should have names staring with $
 
 class CVSCPVariable {
 public:
@@ -65,6 +91,9 @@ public:
         MIME_T = 100,
         HTML_T,
         JAVASCRIPT_T,
+        JSON_T,
+        XML_T,
+        SQL_T,
         LUA_T = 200,
         LUARES_T,
         UX1_T = 300
@@ -76,14 +105,30 @@ public:
     // Destructor
     virtual ~CVSCPVariable(void);
 
+    
+    
     /*!
-        Set variable name
-        If the variable has $ in front of the name it is persistent.
-        If the variable has @ in front of the name its an array.
-        @param strName Name of variable
+     * setRights
+     * Set rights for the variable. Can be set either on numerical form or
+     * alphanumerical form.
+     * uuugggooo
+     * uuu - owner RWX/numerical
+     * ggg - group RWX/numerical
+     * ooo - other RWX/numerical
      */
-    void setName(const wxString& strName);
+    bool setRighs( wxString& strRights );
 
+    /*!
+     * setUser
+     */
+    bool setUser( wxString& strUser );
+    
+    /*!
+     * setGroup
+     */
+    bool setGroup( wxString& strUser );
+    
+    
     /*!
         Get variable type as string
         @param type Variable numerical type
@@ -91,52 +136,7 @@ public:
     */
     static const char * getVariableTypeAsString( int type );
 
-    /*
-        Get variable name
-        @return Variable name.
-     */
-    wxString& getName(void)
-    {
-        return m_name;
-    };
-
-    /*!
-        Set the variable type
-        @param type Variabe type code.
-     */
-    void setType(uint16_t type)
-    {
-        m_type = type;
-    };
-
-    /*!
-        Get the variable type
-        @return The variable type code.
-     */
-    uint16_t getType(void)
-    {
-        return m_type;
-    };
-
-    /*!
-        Set variable note
-        @param strNote Note for variable
-     */
-    void setNote(const wxString& strNote)
-    {
-        m_note = strNote;
-    };
-
-    /*
-        Get variable note
-        @return Variable note.
-     */
-    wxString& getNote(void)
-    {
-        return m_note;
-    };
-
-
+   
     /*!
         Get numerical variable type from symbol or numeric version
         @parm strVariableType Variable type in string form
@@ -144,41 +144,6 @@ public:
      */
     static uint16_t getVariableTypeFromString(const wxString& strVariableType);
 
-    /*!
-        Check if a variable is persistent
-        @return true if persistent else false.
-     */
-    bool isPersistent(void)
-    {
-        return m_bPersistent;
-    };
-
-    /*!
-        Set persistence
-        @param b True if the variable should be persistent
-     */
-    void setPersistent(bool b)
-    {
-        m_bPersistent = b;
-    };
-
-    /*!
-        Check if a variable is writable
-        @return true if writable else false.
-     */
-    bool isWritable(void)
-    {
-        return m_brw;
-    };
-
-    /*!
-        Set R/W permissions
-        @param b True if the variable should be writable
-     */
-    void makeWritable(bool b)
-    {
-        m_brw = b;
-    };
 
     /*!
         Set variable value from string
@@ -186,7 +151,7 @@ public:
         @param strValue Value in string form
         @return true on success.
      */
-    bool setValueFromString(int type, const wxString& strValue);
+    bool setValueFromString(int type, const wxString& strValue, bool bBase64 = false );
 
     /*!
         Set variable value from string
@@ -194,7 +159,7 @@ public:
         @param strValue Value in string form
         @return true on success.
      */
-    bool setValueFromString( CVSCPVariable::vartype type, const wxString& strValue );
+    bool setValueFromString( CVSCPVariable::vartype type, const wxString& strValue, bool bBase64 = false );
 
     /*!
         Get the variable value as a string value
@@ -209,17 +174,9 @@ public:
         example 2: test_string,1,true,"This is a string"
         example 3: test_event,7,false,0,20,1,2,3,4,5,6
 
-        @param str String that will get string represenation of variable with all info.
+        @param str String that will get string representation of variable with all info.
      */
-    bool getVariableFromString(const wxString& strVariable);
-
-    /*
-        Set persistent value
-     */
-    void setPersistatValue(const wxString& str)
-    {
-        m_persistant = str;
-    };
+    bool getVariableFromString( const wxString& strVariable, bool bBase64=false );
 
 
     /*!
@@ -251,22 +208,20 @@ public:
      */
     void setFalse(void);
 
+    
     /*!
-        setValue
-        @param val String to set value to.
+        getValue
+        @return value in string form is returned regardless of type.
      */
-    void setValue(wxString& val)
-    {
-        m_strValue = val;
-    };
-
+    wxString& getValue() { return m_strValue; };
+    
     /*!
         getValue
         @param value String that will receive value.
      */
-    void getValue(wxString& value)
+    void setValue(wxString value)
     {
-        value = m_strValue;
+        m_strValue = value;
     };
 
     /*!
@@ -356,46 +311,86 @@ public:
     */
     void setLastChangedToNow( void ) { m_lastChanged = wxDateTime::Now(); };
 
-
-    wxDateTime& getLastChange( void ) { return m_lastChanged; };
     /*!
-        Name should not contain spaces so if it does
+     * Get last changed date/time
+     * @return Last changed date/time
+     */
+    wxDateTime& getLastChange( void ) { return m_lastChanged; };
+    
+    /*!
+        Name should not contain special characters so if it does
         we replace them with 'underscore'
     */
-    void fixName() {
-            size_t pos;
-            while ( wxNOT_FOUND != ( pos = m_name.Find( ' ' ) ) ) {
-                m_name[pos] = '_';
-            }; m_name.MakeUpper(); };
+    void fixName( void );
+    
+    /*!
+        Set variable name
+        @param strName Name of variable
+     */
+    void setName(const wxString& strName);
 
+    // Getters/Setters
+    
+    // id
+    void setID( uint32_t id ) { m_id = id; };
+    uint32_t getID( void ) { return m_id; };
+    
+    // name
+    void setName( wxString& name ) { m_name = name; fixName(); };
+    wxString& getName( void ) { return m_name; };
+    
+    // type
+    void setType( uint16_t type ) { m_type = type; };
+    uint16_t getType( void ) { return m_type; };
 
+    // note
+    void setNote(const wxString& strNote) { m_note = strNote; };
+    wxString& getNote( void ) { return m_note; };
+    
+    // Persistence
+    bool isPersistent( void ) { return m_bPersistent; };
+    void setPersistent( bool b ) { m_bPersistent = b; };
+    
+    // Access rights
+    void setAccessRights( uint32_t accessRights ) { m_accessRights = accessRights; };
+    uint32_t getAccessRights( void ) { return m_accessRights; };
+    bool isWritable( void ) { return m_accessRights; };
+    void makeWritable( bool b ) { m_accessRights = b; };
+    
+    // user id
+    void setUserID( uint32_t uid ) { m_userid = uid; };
+    uint32_t getUserID( void ) { return m_userid; };
+    
+    // user id
+    void setGroupID( uint32_t uid ) { m_groupid = uid; };
+    uint32_t getGroupID( void ) { return m_groupid; }; 
+    
 private:
 
-    /// Name of variable
+    // id in database
+    uint32_t m_id;
+    
+    // Name of variable
     wxString m_name;
-
-    /// type of variable
+    
+    // type of variable
     uint16_t m_type;
 
-    /// Flag to make variable persistent
-    bool m_bPersistent;
-
-    /*! 
-        Flag to mark a variable as an array
-        Arrays are never persistent!
-     */
-    bool m_bArray;
-
-    /*!
-        Time when variable was last changed.
-    */
-    wxDateTime m_lastChanged;
-
-public:
-
+    // Flag to make variable persistent
+    bool m_bPersistent; 
+    
+    // Access right owner(rwx);group(rwx):other(rwx)
+    uint32_t m_accessRights;
+    
+    // User this variable is owned by
+    uint32_t m_userid;
+    
+    // Group this variable belongs to
+    uint32_t m_groupid;
+    
     /// Note about variable
     wxString m_note;
-
+    
     /*! 
         Storage
         A "class" variable is stored in the VSCP event.
@@ -404,6 +399,12 @@ public:
         A VSCP data variables s stored in the VSCP event.
      */
     wxString m_strValue;            // String
+
+public:
+    
+    // Time when variable was last changed.
+    wxDateTime m_lastChanged;
+
     vscpEvent m_event;              // VSCP event
     bool m_boolValue;               // Logical values
     long m_longValue;               // Byte, Integer and long values
@@ -412,9 +413,7 @@ public:
     uint8_t m_normInteger[8];       // Normalised integer data
     unsigned char m_GUID[16];       // GUID
     wxDateTime m_timestamp;         // Timestamp
-
-    wxString m_persistant;          // Original value is here
-    bool m_brw;                     // True if variable is writable
+    
 };
 
 
@@ -435,14 +434,70 @@ public:
     /// Destructor
     virtual ~CVariableStorage();
 
+    
     /*!
-        Find variable from its name
-        @param name Variable to search. Name can be preceded with
-        persistence marker "$" or array marker "@"
-        @return Pointer to variable or NULL if not found.
+     * Find variable from it's name
+     * 
+     * First stock variables is searched (start with "vscp.", next non-persistent
+     * variables (in-memory) is searched, and last persistent variables is
+     * searched.
+     * @param name Name of variable
+     * @param pVar [OUT] If found supplied variable is filled with data. Can be 
+     * set to NULL in which case only availability of the variable is returned.
+     * @return true if variable is found. 
      */
-    CVSCPVariable * find(const wxString& name);
+    uint32_t find(const wxString& name, CVSCPVariable& variable );
+    
+    
+    /*!
+     * Check if a variable exist.
+     * @param name Name of variable
+     * @return id if the variable exists, zero else.
+     * 
+     */
+    uint32_t exist(const wxString& name );
+    
+    
+    /*!
+     * Find a stock variable
+     * 
+     * First stock variable (start with "vscp.").
+     * @param name Name of variable
+     * @param pVar [OUT] If found supplied variable is filled with data. Can be 
+     * set to NULL in which case only availability of the variable is returned.
+     * @return id if variable is found, zero if not. 
+     */
+    uint32_t findStockVariable( const wxString& name, CVSCPVariable& pVar );
+    
+    /*!
+     * Find a non-persistent variable
+     * 
+     * Find non-persistent variable (in-memory variable).
+     * @param name Name of variable
+     * @param pVar [OUT] If found supplied variable is filled with data. Can be 
+     * set to NULL in which case only availability of the variable is returned.
+     * @return id if variable is found, zero if not. 
+     */
+    uint32_t findNonPersistentVariable( const wxString& name, CVSCPVariable& pVar );
+    
+    /*!
+     * Find a persistent variable
+     * 
+     * Find persistent variable.
+     * @param name Name of variable
+     * @param pVar [OUT] If found supplied variable is filled with data. Can be 
+     * set to NULL in which case only availability of the variable is returned.
+     * @return id if variable is found, zero if not. 
+     */
+    uint32_t findPersistentVariable( const wxString& name, CVSCPVariable& pVar );
 
+    /*!
+        Add a variable.
+        @param var Variable object.
+        @return true on success, false on failure.
+     */
+    bool add( CVSCPVariable& var );
+    
     /*!
         Add a variable.
         If the variable has $ in front of the name it is persistent.
@@ -466,13 +521,6 @@ public:
                             const wxString& strType,
                             bool bPersistent = false,
                             bool brw = true );
-
-    /*!
-        Add a variable.
-        @param var Pointer to variable object.
-        @return true on success, false on failure.
-     */
-    bool add( CVSCPVariable *pVar );
 
     /*!
         Remove named variable
@@ -506,6 +554,23 @@ public:
         @return Returns true on success false on failure.
      */
     bool save(wxString& path);
+    
+     /*!
+      * Create external variable table
+      * @return true on success
+      */
+     bool doCreateExternalVariableTable( void );
+     
+     /*!
+      * Create internal variable table
+      * This table is always created from scratch
+      * @return true on success
+      */
+     bool doCreateInternalVariableTable( void );
+     
+     
+     // -------------------------------------------------------------------
+     
 
 
     /// Hash table for variables with variable name as key
@@ -520,16 +585,13 @@ public:
         Configuration path for variable persistent storage XML file
      */
     wxString m_configPath;
+        
+    /// Path to the external VSCP variable database
+    wxFileName m_path_db_vscp_external_variable; 
+    sqlite3 *m_db_vscp_external_variable;
     
-    /// Path to the VSCP variable database
-    wxFileName m_path_db_vscp_variable; 
-    sqlite3 *m_db_vscp_variable;
-
-    /*!
-        Set to true if storage has been changed
-        since last save
-    */
-    bool m_bChanged;
+    /// Internal variable database
+    sqlite3 *m_db_vscp_internal_variable;
 
     // Last variable save
     wxDateTime m_lastSaveTime;

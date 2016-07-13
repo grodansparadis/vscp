@@ -753,7 +753,7 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn,
 
             nameVariable = str.Right( str.Length() - 1 );
             nameVariable.MakeUpper();
-
+/* TODO
             if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( nameVariable ) ) ) {
                 mg_send( conn, MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
                 return;
@@ -764,7 +764,7 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn,
                 mg_send( conn, MSG_VARIABLE_MUST_BE_EVENT_TYPE, strlen ( MSG_VARIABLE_MUST_BE_EVENT_TYPE ) );
                 return;
             }
-
+*/
             // Get the event
             pVariable->getValue( &event );
 
@@ -2469,11 +2469,12 @@ void VSCPClientThread::handleVariable_Read( struct mg_connection *conn,
 
     CVSCPVariable * pVariable;
 
+/* TODO    
     if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommandUC ) ) ) {
         mg_send( conn, MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
         return;
     }
-
+*/
     pVariable->writeValueToString( str );
     str += _("\r\n");
     mg_send( conn,  str.ToAscii(), strlen( str.ToAscii() ) );
@@ -2498,6 +2499,7 @@ void VSCPClientThread::handleVariable_Reset( struct mg_connection *conn,
 
     CVSCPVariable * pVariable;
 
+/* TODO    
     if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommandUC ) ) ) {
 
         // Must create the variable
@@ -2512,6 +2514,7 @@ void VSCPClientThread::handleVariable_Reset( struct mg_connection *conn,
             return;
         }
     }
+ */
 
     pVariable->Reset();
 
@@ -2535,6 +2538,7 @@ void VSCPClientThread::handleVariable_ReadReset( struct mg_connection *conn,
 
     CVSCPVariable * pVariable;
 
+    /* TODO
     if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommandUC ) ) ) {
 
         // Must create the variable
@@ -2547,7 +2551,7 @@ void VSCPClientThread::handleVariable_ReadReset( struct mg_connection *conn,
             mg_send( conn, MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
             return;
         }
-    }
+    } */
 
     pVariable->writeValueToString( str );
     str += _("\r\n");
@@ -2596,6 +2600,7 @@ void VSCPClientThread::handleVariable_ReadRemove( struct mg_connection *conn,
 
     CVSCPVariable * pVariable;
 
+    /* TODO
     if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommandUC ) ) ) {
 
         // Must create the variable
@@ -2608,7 +2613,7 @@ void VSCPClientThread::handleVariable_ReadRemove( struct mg_connection *conn,
             mg_send( conn, MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
             return;
         }
-    }
+    }*/
 
     pVariable->writeValueToString( str );
     str += _("\r\n");
@@ -2632,8 +2637,9 @@ void VSCPClientThread::handleVariable_Length( struct mg_connection *conn,
     pClientItem->m_currentCommandUC.Trim( false );
     pClientItem->m_currentCommandUC.Trim( true );
 
-    CVSCPVariable * pVariable;
+    CVSCPVariable variable;
 
+    /* TODO
     if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommandUC ) ) ) {
 
         // Must create the variable
@@ -2646,10 +2652,10 @@ void VSCPClientThread::handleVariable_Length( struct mg_connection *conn,
             mg_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
-    }
+    }*/
 
-    if ( pVariable->getType() ) {
-        str.Printf( _("%d\r\n"), pVariable->m_strValue.Length()  );
+    if ( variable.getType() ) {
+        str.Printf( _("%d\r\n"), variable.getValue().Length()  );
         mg_send( conn,  str.mb_str(), str.Length() );
     }
     else {

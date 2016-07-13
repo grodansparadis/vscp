@@ -539,7 +539,7 @@ public:
     /// If zone should be checked this is the one
     uint8_t m_zone;
 
-    /// If subzone should be checked this is the one
+    /// If sub zone should be checked this is the one
     uint8_t m_subzone;
 
     /// Description of last error
@@ -551,7 +551,7 @@ public:
     /// Group ID
     wxString m_strGroupID;
 
-    /// Actiontime 
+    /// Action time 
     actionTime m_timeAllow;
 
     // Pointer to owner
@@ -733,6 +733,12 @@ public:
         @return true on success
     */
      bool stopTimer( int idTimer );
+     
+     /*!
+      *     Create DM table
+      *     @return true on success.
+      */
+     bool doCreateDMTable( void );
 
   //------------------------------------
 

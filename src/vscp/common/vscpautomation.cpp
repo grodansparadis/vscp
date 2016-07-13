@@ -451,19 +451,19 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         m_pCtrlObj->m_VSCP_Variables.add( _("vscp.automation.daylength.str"), 
                 wxString::Format( _("%02d:%02d"), hours, minutes ), 
                 VSCP_DAEMON_VARIABLE_CODE_STRING,
-                VSCP_VAR_READ_ONLY, 
+                PERMISSON_ALL_READ, 
                 false );
                 
         m_pCtrlObj->m_VSCP_Variables.add( _("vscp.automation.declination"), 
                 wxString::Format( _("%f"), m_pCtrlObj->m_automation.getDeclination() ), 
                 VSCP_DAEMON_VARIABLE_CODE_DOUBLE,
-                VSCP_VAR_READ_ONLY, 
+                PERMISSON_ALL_READ, 
                 false );   
 
         m_pCtrlObj->m_VSCP_Variables.add( _("vscp.automation.sun.max.altitude"), 
                 wxString::Format( _("%f"), m_pCtrlObj->m_automation.getSunMaxAltitude() ), 
                 VSCP_DAEMON_VARIABLE_CODE_DOUBLE,
-                VSCP_VAR_READ_ONLY, 
+                PERMISSON_ALL_READ, 
                 false );
                 
         wxstr = m_pCtrlObj->m_automation.getLastCalculation().FormatISODate();
@@ -472,35 +472,35 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         m_pCtrlObj->m_VSCP_Variables.add( _("vscp.automation.calc.last"), 
                 wxstr, 
                 VSCP_DAEMON_VARIABLE_CODE_DATETIME,
-                VSCP_VAR_READ_ONLY, 
+                PERMISSON_ALL_READ, 
                 false );    
                 
         wxstr = m_pCtrlObj->m_automation.getCivilTwilightSunriseTime().FormatISOTime();        
         m_pCtrlObj->m_VSCP_Variables.add( _("vscp.automation.CivilTwilightSunriseTime"), 
                 wxstr, 
                 VSCP_DAEMON_VARIABLE_CODE_TIME,
-                VSCP_VAR_READ_ONLY, 
+                PERMISSON_ALL_READ, 
                 false );
 
         wxstr = m_pCtrlObj->m_automation.getSunriseTime().FormatISOTime();        
         m_pCtrlObj->m_VSCP_Variables.add( _("vscp.automation.CivilSunriseTime"), 
                 wxstr, 
                 VSCP_DAEMON_VARIABLE_CODE_TIME,
-                VSCP_VAR_READ_ONLY, 
+                PERMISSON_ALL_READ, 
                 false );    
 
         wxstr = m_pCtrlObj->m_automation.getSunsetTime().FormatISOTime();        
         m_pCtrlObj->m_VSCP_Variables.add( _("vscp.automation.CivilSunsetTime"), 
                 wxstr, 
                 VSCP_DAEMON_VARIABLE_CODE_TIME,
-                VSCP_VAR_READ_ONLY, 
+                PERMISSON_ALL_READ, 
                 false );
                 
         wxstr = m_pCtrlObj->m_automation.getCivilTwilightSunsetTime().FormatISOTime();        
         m_pCtrlObj->m_VSCP_Variables.add( _("vscp.automation.CivilTwilightSunsetTime"), 
                 wxstr, 
                 VSCP_DAEMON_VARIABLE_CODE_TIME,
-                VSCP_VAR_READ_ONLY, 
+                PERMISSON_ALL_READ, 
                 false );        
 
         // Send VSCP_CLASS2_VSCPD, Type=30/VSCP2_TYPE_VSCPD_NEW_CALCULATION
@@ -538,7 +538,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         m_pCtrlObj->m_VSCP_Variables.add( _("vscp.automation.sunrise"), 
                                             wxstr, 
                                             VSCP_DAEMON_VARIABLE_CODE_DATETIME,
-                                            VSCP_VAR_READ_ONLY, 
+                                            PERMISSON_ALL_READ, 
                                             false ); 
                                             
         // Write variable for sunrise event last sent
@@ -548,7 +548,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         m_pCtrlObj->m_VSCP_Variables.add( _("vscp.automation.sunrise.event.last"), 
                                             wxstr, 
                                             VSCP_DAEMON_VARIABLE_CODE_DATETIME,
-                                            VSCP_VAR_READ_ONLY, 
+                                            PERMISSON_ALL_READ, 
                                             false );                                     
 
         // Send VSCP_CLASS1_INFORMATION, Type=44/VSCP_TYPE_INFORMATION_SUNRISE
@@ -582,7 +582,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         m_pCtrlObj->m_VSCP_Variables.add( _("vscp.automation.twilightsunrise"), 
                                             wxstr, 
                                             VSCP_DAEMON_VARIABLE_CODE_DATETIME,
-                                            VSCP_VAR_READ_ONLY, 
+                                            PERMISSON_ALL_READ, 
                                             false ); 
                                             
         // Write variable for twilight sunrise event last sent
@@ -592,7 +592,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         m_pCtrlObj->m_VSCP_Variables.add( _("vscp.automation.twilightsunrise.event.last"), 
                                             wxstr, 
                                             VSCP_DAEMON_VARIABLE_CODE_DATETIME,
-                                            VSCP_VAR_READ_ONLY, 
+                                            PERMISSON_ALL_READ, 
                                             false ); 
 
         // Send VSCP_CLASS1_INFORMATION, Type=52/VSCP_TYPE_INFORMATION_SUNRISE_TWILIGHT_START
@@ -626,7 +626,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         m_pCtrlObj->m_VSCP_Variables.add( _("vscp.automation.sunset"), 
                                             wxstr, 
                                             VSCP_DAEMON_VARIABLE_CODE_DATETIME,
-                                            VSCP_VAR_READ_ONLY, 
+                                            PERMISSON_ALL_READ, 
                                             false ); 
                                             
         // Write variable for sunset event last sent
@@ -636,7 +636,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         m_pCtrlObj->m_VSCP_Variables.add( _("vscp.automation.sunset.event.last"), 
                                             wxstr, 
                                             VSCP_DAEMON_VARIABLE_CODE_DATETIME,
-                                            VSCP_VAR_READ_ONLY, 
+                                            PERMISSON_ALL_READ, 
                                             false );
 
         // Send VSCP_CLASS1_INFORMATION, Type=45/VSCP_TYPE_INFORMATION_SUNSET
@@ -670,7 +670,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         m_pCtrlObj->m_VSCP_Variables.add( _("vscp.automation.twilightsunset"), 
                                             wxstr, 
                                             VSCP_DAEMON_VARIABLE_CODE_DATETIME,
-                                            VSCP_VAR_READ_ONLY, 
+                                            PERMISSON_ALL_READ, 
                                             false ); 
                                             
         // Write variable for twilight sunset event last sent
@@ -680,7 +680,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         m_pCtrlObj->m_VSCP_Variables.add( _("vscp.automation.twilightsunset.event.last"), 
                                             wxstr, 
                                             VSCP_DAEMON_VARIABLE_CODE_DATETIME,
-                                            VSCP_VAR_READ_ONLY, 
+                                            PERMISSON_ALL_READ, 
                                             false );
 
         // Send VSCP_CLASS1_INFORMATION, Type=53/VSCP_TYPE_INFORMATION_SUNSET_TWILIGHT_START
@@ -714,7 +714,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         m_pCtrlObj->m_VSCP_Variables.add( _("vscp.automation.noonTime"), 
                                             wxstr, 
                                             VSCP_DAEMON_VARIABLE_CODE_DATETIME,
-                                            VSCP_VAR_READ_ONLY, 
+                                            PERMISSON_ALL_READ, 
                                             false ); 
                                             
         // Write variable for noonTime event last sent
@@ -724,7 +724,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         m_pCtrlObj->m_VSCP_Variables.add( _("vscp.automation.noonTime.event.last"), 
                                             wxstr, 
                                             VSCP_DAEMON_VARIABLE_CODE_DATETIME,
-                                            VSCP_VAR_READ_ONLY, 
+                                            PERMISSON_ALL_READ, 
                                             false );
 
         // Send VSCP_CLASS1_INFORMATION, Type=58/VSCP_TYPE_INFORMATION_CALCULATED_NOON
@@ -755,7 +755,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         m_pCtrlObj->m_VSCP_Variables.add( _("vscp.automation.HeartbeatLevel1.event.last"), 
                                             wxstr, 
                                             VSCP_DAEMON_VARIABLE_CODE_DATETIME,
-                                            VSCP_VAR_READ_ONLY, 
+                                            PERMISSON_ALL_READ, 
                                             false );
 
         // Send VSCP_CLASS1_INFORMATION, Type=9/VSCP_TYPE_INFORMATION_NODE_HEARTBEAT
@@ -786,7 +786,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         m_pCtrlObj->m_VSCP_Variables.add( _("vscp.automation.HeartbeatLevel2.event.last"), 
                                             wxstr, 
                                             VSCP_DAEMON_VARIABLE_CODE_DATETIME,
-                                            VSCP_VAR_READ_ONLY, 
+                                            PERMISSON_ALL_READ, 
                                             false );
 
         // Send VSCP_CLASS1_INFORMATION, Type=9/VSCP_TYPE_INFORMATION_NODE_HEARTBEAT
@@ -817,7 +817,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         m_pCtrlObj->m_VSCP_Variables.add( _("vscp.automation.SegmentCtrlHeartbeat.event.last"), 
                                             wxstr, 
                                             VSCP_DAEMON_VARIABLE_CODE_DATETIME,
-                                            VSCP_VAR_READ_ONLY, 
+                                            PERMISSON_ALL_READ, 
                                             false );
 
         // Send VSCP_CLASS1_PROTOCOL, Type=1/VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT

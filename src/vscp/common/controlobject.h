@@ -449,11 +449,6 @@ public:
     VSCPClientThread *getTCPIPServer( void ) { return m_pVSCPClientThread; };
 
     /*!
-     * Add stock variables
-    */
-    void addStockVariables( void );
-
-    /*!
      * Read configuration data from database.
      * The configuration database record is read after the XML file has
      * been read and will replace duplicate values, if any.
@@ -465,7 +460,14 @@ public:
       * Create configuration table
       * @return true on success
       */
-     bool doCreateConfiguration( void );
+     bool doCreateConfigurationTable( void );
+     
+     /*!
+      * Create log database
+      * @return true on success
+      */
+     bool doCreateLogTable( void );
+     
 
 public:
 

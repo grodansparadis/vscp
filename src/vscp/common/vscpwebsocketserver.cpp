@@ -434,7 +434,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
     //-------------------------------------------------------------------------
     else if (0 == strTok.Find(_("WRITEVAR"))) {
 
-        CVSCPVariable *pvar;
+        CVSCPVariable variable;
         wxString strvalue;
         uint8_t type;
 
@@ -473,7 +473,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
 
 
             strVarName = tkz.GetNextToken();
-            if (NULL == (pvar = pCtrlObject->m_VSCP_Variables.find(strVarName))) {
+            if ( pCtrlObject->m_VSCP_Variables.find(strVarName, variable ) ) {
                 mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
                                     "-;WRITEVAR;%d;%s",
                                     WEBSOCK_ERROR_VARIABLE_UNKNOWN,
@@ -484,7 +484,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
             // Set variable value
             if (tkz.HasMoreTokens()) {
                 strTok = tkz.GetNextToken();
-                if (!pvar->setValueFromString(pvar->getType(), strTok)) {
+                if (!variable.setValueFromString(variable.getType(), strTok)) {
                     mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
                                     "-;WRITEVAR;%d;%s",
                                     WEBSOCK_ERROR_SYNTAX_ERROR,
@@ -508,8 +508,8 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
             return;
         }
 
-        pvar->writeValueToString( strvalue );
-        type = pvar->getType();
+        variable.writeValueToString( strvalue );
+        type = variable.getType();
 
         wxString resultstr = _( "+;WRITEVAR;" );
         resultstr += strVarName;
@@ -629,7 +629,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
     //-------------------------------------------------------------------------
     else if (0 == strTok.Find(_("READVAR"))) {
 
-        CVSCPVariable *pvar;
+        CVSCPVariable variable;
         uint8_t type;
         wxString strvalue;
 
@@ -664,7 +664,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         }
 
         strTok = tkz.GetNextToken();
-        if (NULL == (pvar = pCtrlObject->m_VSCP_Variables.find(strTok))) {
+        if ( pCtrlObject->m_VSCP_Variables.find(strTok, variable ) ) {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
                                     "-;READVAR;%d;%s",
                                     WEBSOCK_ERROR_VARIABLE_UNKNOWN,
@@ -672,8 +672,8 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
             return;
         }
 
-        pvar->writeValueToString(strvalue);
-        type = pvar->getType();
+        variable.writeValueToString(strvalue);
+        type = variable.getType();
 
         wxString resultstr = _("+;READVAR;");
         resultstr += strTok;
@@ -689,7 +689,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
     //-------------------------------------------------------------------------
     else if (0 == strTok.Find(_("RESETVAR"))) {
 
-        CVSCPVariable *pvar;
+        CVSCPVariable variable;
         wxString strvalue;
         uint8_t type;
 
@@ -719,7 +719,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         }
 
         strTok = tkz.GetNextToken();
-        if (NULL == (pvar = pCtrlObject->m_VSCP_Variables.find(strTok))) {
+        if ( pCtrlObject->m_VSCP_Variables.find(strTok, variable )) {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
                                     "-;RESETVAR;%d;%s",
                                     WEBSOCK_ERROR_VARIABLE_UNKNOWN,
@@ -731,10 +731,10 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
             return;
         }
 
-        pvar->Reset();
+        variable.Reset();
 
-        pvar->writeValueToString( strvalue );
-        type = pvar->getType();
+        variable.writeValueToString( strvalue );
+        type = variable.getType();
 
         wxString resultstr = _( "+;RESETVAR;" );
         resultstr += strTok;
@@ -751,7 +751,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
     //-------------------------------------------------------------------------
     else if (0 == strTok.Find(_("REMOVEVAR"))) {
 
-        CVSCPVariable *pvar;
+        CVSCPVariable variable;
         wxString strvalue;
 
         // Must be authorized to do this
@@ -784,7 +784,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         }
 
         strTok = tkz.GetNextToken();
-        if (NULL == (pvar = pCtrlObject->m_VSCP_Variables.find(strTok))) {
+        if ( pCtrlObject->m_VSCP_Variables.find(strTok, variable ) ) {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
                                     "-;REMOVEVAR;%d;%s",
                                     WEBSOCK_ERROR_VARIABLE_UNKNOWN,
@@ -806,7 +806,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
     //-------------------------------------------------------------------------
     else if (0 == strTok.Find(_("LENGTHVAR"))) {
 
-        CVSCPVariable *pvar;
+        CVSCPVariable variable;
 
         // Must be authorized to do this
         if ( !pSession->bAuthenticated ) {
@@ -838,7 +838,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         }
 
         strTok = tkz.GetNextToken();
-        if (NULL == (pvar = pCtrlObject->m_VSCP_Variables.find(strTok))) {
+        if ( pCtrlObject->m_VSCP_Variables.find(strTok, variable ) ) {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
                                     "-;LENGTHVAR;%d;%s",
                                     WEBSOCK_ERROR_VARIABLE_UNKNOWN,
@@ -849,7 +849,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         wxString resultstr = _("+;LENGTHVAR;");
         resultstr += strTok;
         resultstr += _(";");
-        resultstr += wxString::Format(_("%d"), pvar->m_strValue.Length() );
+        resultstr += wxString::Format(_("%d"), variable.getValue().Length() );
         mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, (const char *)resultstr.mbc_str() );
 
     }
@@ -858,7 +858,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
     //-------------------------------------------------------------------------
     else if (0 == strTok.Find(_("LASTCHANGEVAR"))) {
 
-        CVSCPVariable *pvar;
+        CVSCPVariable variable;
         wxString strvalue;
 
         // Must be authorized to do this
@@ -891,7 +891,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         }
 
         strTok = tkz.GetNextToken();
-        if (NULL == (pvar = pCtrlObject->m_VSCP_Variables.find(strTok))) {
+        if ( pCtrlObject->m_VSCP_Variables.find(strTok, variable ) ) {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
                                     "-;LASTCHANGEVAR;%d;%s",
                                     WEBSOCK_ERROR_VARIABLE_UNKNOWN,
@@ -899,12 +899,12 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
             return;
         }
 
-        pvar->writeValueToString(strvalue);
+        variable.writeValueToString( strvalue );
 
         wxString resultstr = _("+;LASTCHANGEVAR;");
         resultstr += strTok;
         resultstr += _( ";" );
-        resultstr +=  pvar->getLastChange().FormatISODate() + _(" ") +  pvar->getLastChange().FormatISOTime();
+        resultstr += variable.getLastChange().FormatISODate() + _(" ") + variable.getLastChange().FormatISOTime();
         mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, (const char *)resultstr.mbc_str() );
 
     }
@@ -913,7 +913,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
     //-------------------------------------------------------------------------
     else if (0 == strTok.Find(_("LISTVAR"))) {
 
-        CVSCPVariable *pvar;
+        CVSCPVariable variable;
         wxString strvalue;
 
         // Must be authorized to do this
@@ -954,6 +954,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         resultstr = wxString::Format( _( "+;LISTVAR;%zu" ), m_pCtrlObject->m_VSCP_Variables.m_listVariable.GetCount() );
         mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, ( const char * )resultstr.mbc_str() );
 
+        /* TODO
         listVscpVariable::iterator it;
         for( it = m_pCtrlObject->m_VSCP_Variables.m_listVariable.begin();
                     it != m_pCtrlObject->m_VSCP_Variables.m_listVariable.end();
@@ -981,7 +982,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         }
 
         m_pCtrlObject->m_variableMutex.Unlock();
-
+        */
 
     }
     // ------------------------------------------------------------------------

@@ -1332,35 +1332,34 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                 if ( wxNOT_FOUND == ( pos = str.First(' ') ) ) {
 
                     // OK variable name must be all that is left in the param
-                    CVSCPVariable *pVariable  =
-                        m_pDM->m_pCtrlObject->m_VSCP_Variables.find( str );
-
-                    str.Empty(); // Not needed anymore
+                    CVSCPVariable variable;
 
                     // Assign value if variable exist
-                    if ( NULL != pVariable ) {
+                    
+                     if ( m_pDM->m_pCtrlObject->m_VSCP_Variables.find( str, variable ) ) {
 
                         // Existing - get real text value
                         wxString wxwrk;
-                        if ( pVariable->writeValueToString( wxwrk ) ) {
+                        if ( variable.writeValueToString( wxwrk ) ) {
                             strResult += wxwrk;
                         }
 
                     }
+                    
+                    str.Empty(); // Not needed anymore
 
                 }
                 else {
                     wxString variableName = str.Left( pos );
                     str = str.Right( str.Length() - pos );
 
-                    CVSCPVariable *pVariable  =
-                        m_pDM->m_pCtrlObject->m_VSCP_Variables.find( variableName );
+                    CVSCPVariable variable;
 
                     // Assign value if variable exist
-                    if ( NULL != pVariable ) {
+                    if ( m_pDM->m_pCtrlObject->m_VSCP_Variables.find( variableName, variable ) ) {
 
                         wxString wxwrk;
-                        if ( pVariable->writeValueToString( wxwrk ) ) {
+                        if ( variable.writeValueToString( wxwrk ) ) {
                             strResult += wxwrk;
                         }
 
@@ -1888,9 +1887,8 @@ bool dmElement::doActionSendEvent( vscpEvent *pDMEvent )
                 // Set the variable to false if it is defined
                 if ( 0 != var.Length() ) {
 
-                    CVSCPVariable *pVariable  =
-                            m_pDM->m_pCtrlObject->m_VSCP_Variables.find( var );
-                    if ( NULL == pVariable ) {
+                    CVSCPVariable variable;
+                    if ( m_pDM->m_pCtrlObject->m_VSCP_Variables.find( var, variable ) ) {
 
                         // Non existent - add and set to false
                         m_pDM->m_pCtrlObject->m_VSCP_Variables.add( var, wxT("true") );
@@ -1899,7 +1897,7 @@ bool dmElement::doActionSendEvent( vscpEvent *pDMEvent )
                     else {
 
                         // Existing - set value to false
-                        pVariable->setValueFromString( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN, wxT("true") );
+                        variable.setValueFromString( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN, wxT("true") );
 
                     }
                 }
@@ -1933,8 +1931,8 @@ bool dmElement::doActionSendEventConditional( vscpEvent *pDMEvent )
 
         wxString varname = tkz.GetNextToken();
 
-        CVSCPVariable *pVar = m_pDM->m_pCtrlObject->m_VSCP_Variables.find( varname );
-        if ( NULL == pVar ) {
+        CVSCPVariable variable; 
+        if ( m_pDM->m_pCtrlObject->m_VSCP_Variables.find( varname, variable ) ) {
             // must be a variable
             wxString wxstrErr = wxT("[Action] Conditional event: No variable defined ");
             wxstrErr += wxstr;
@@ -2258,27 +2256,18 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
 
     //if ( !m_pDM->m_pCtrlObject->m_VSCP_Variables.find( pVar ) ) {
     //pVar =
-    pVar = new CVSCPVariable;
-    if ( NULL == pVar ) {
-        // must be a variable
-        wxString wxstrErr = wxT("[Action] Store Variable: Could not allocate variable ");
-        wxstrErr += wxstr;
-        wxstrErr += _("\n");
-        m_pDM->m_pCtrlObject->logMsg( wxstrErr );
-        return false;
-    }
+    CVSCPVariable var;
 
-    if ( !( pVar->getVariableFromString( wxstr ) ) ) {
+    if ( !( var.getVariableFromString( wxstr ) ) ) {
         // must be a variable
         wxString wxstrErr = wxT("[Action] Store Variable: Could not set new variable ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
         m_pDM->m_pCtrlObject->logMsg( wxstrErr );
-        delete pVar;
         return false;
     }
 
-    if ( !m_pDM->m_pCtrlObject->m_VSCP_Variables.add( pVar ) ) {
+    if ( !m_pDM->m_pCtrlObject->m_VSCP_Variables.add( var ) ) {
         // must be a variable
         wxString wxstrErr = wxT("[Action] Store Variable: Could not add variable ");
         wxstrErr += wxstr;
@@ -2296,7 +2285,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
 
 bool dmElement::doActionAddVariable( vscpEvent *pDMEvent )
 {
-    CVSCPVariable *pVar;
+    CVSCPVariable variable;
     wxString strName;
     long val;
     double floatval;
@@ -2318,40 +2307,28 @@ bool dmElement::doActionAddVariable( vscpEvent *pDMEvent )
         strval.ToDouble( &floatval );
     }
 
-    pVar = m_pDM->m_pCtrlObject->m_VSCP_Variables.find( strName );
-    if ( NULL == pVar ) {
+    if ( m_pDM->m_pCtrlObject->m_VSCP_Variables.find( strName, variable ) ) {
 
-        pVar = new CVSCPVariable;
-        if ( NULL == pVar ) {
-            // must be a variable
-            wxString wxstrErr = wxT("[Action] Add Variable: Could not allocate variable ");
-            wxstrErr += m_actionparam;
-            wxstrErr += _("\n");
-            m_pDM->m_pCtrlObject->logMsg( wxstrErr );
-            return false;
-        }
+        CVSCPVariable var;
+        var.setName( strName );
+        var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+        var.setPersistent( false );
 
-        pVar->setName( strName );
-        pVar->setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
-        pVar->setPersistent( false );
-
-        if ( m_pDM->m_pCtrlObject->m_VSCP_Variables.add( pVar ) ) {
+        if ( m_pDM->m_pCtrlObject->m_VSCP_Variables.add( var ) ) {
             wxString wxstrErr = wxT("[Action] Add to Variable: Could not add new variable ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
             m_pDM->m_pCtrlObject->logMsg( wxstrErr );
 
-            // Remove the newly allocated var.
-            delete pVar;
             return false;
         }
 
     }
 
     // Must be a numerical variable
-    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != pVar->getType() ) &&
-        ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != pVar->getType() ) &&
-        ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != pVar->getType() ) ) {
+    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != variable.getType() ) &&
+        ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != variable.getType() ) &&
+        ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != variable.getType() ) ) {
             wxString wxstrErr = wxT("[Action] Add to Variable: Variable is not numerical ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
@@ -2359,14 +2336,14 @@ bool dmElement::doActionAddVariable( vscpEvent *pDMEvent )
             return false;
     }
 
-    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != pVar->getType() ) ) {
-        pVar->m_longValue += val;
+    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != variable.getType() ) ) {
+        variable.m_longValue += val;
     }
-    else if ( ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != pVar->getType() ) ) {
-        pVar->m_longValue += val;
+    else if ( ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != variable.getType() ) ) {
+        variable.m_longValue += val;
     }
-    else if ( ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != pVar->getType() ) ) {
-        pVar->m_floatValue += floatval;
+    else if ( ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != variable.getType() ) ) {
+        variable.m_floatValue += floatval;
     }
 
     return true;
@@ -2378,7 +2355,7 @@ bool dmElement::doActionAddVariable( vscpEvent *pDMEvent )
 
 bool dmElement::doActionSubtractVariable( vscpEvent *pDMEvent )
 {
-    CVSCPVariable *pVar;
+    CVSCPVariable variable;
     wxString strName;
     long val;
     double floatval;
@@ -2400,40 +2377,29 @@ bool dmElement::doActionSubtractVariable( vscpEvent *pDMEvent )
         strval.ToDouble( &floatval );
     }
 
-    pVar = m_pDM->m_pCtrlObject->m_VSCP_Variables.find( strName );
-    if ( NULL == pVar ) {
+    if ( m_pDM->m_pCtrlObject->m_VSCP_Variables.find( strName, variable ) ) {
 
-        pVar = new CVSCPVariable;
-        if ( NULL == pVar ) {
-            // must be a variable
-            wxString wxstrErr = wxT("[Action] Add Variable: Could not allocate variable ");
-            wxstrErr += m_actionparam;
-            wxstrErr += _("\n");
-            m_pDM->m_pCtrlObject->logMsg( wxstrErr );
-            return false;
-        }
+        CVSCPVariable var;
 
-        pVar->setName( strName );
-        pVar->setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
-        pVar->setPersistent( false );
+        var.setName( strName );
+        var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+        var.setPersistent( false );
 
-        if ( m_pDM->m_pCtrlObject->m_VSCP_Variables.add( pVar ) ) {
+        if ( m_pDM->m_pCtrlObject->m_VSCP_Variables.add( var ) ) {
             wxString wxstrErr = wxT("[Action] Add to Variable: Could not add new variable ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
             m_pDM->m_pCtrlObject->logMsg( wxstrErr );
 
-            // Remove the newly allocated var.
-            delete pVar;
             return false;
         }
 
     }
 
     // Must be a numerical variable
-    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != pVar->getType() ) &&
-        ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != pVar->getType() ) &&
-        ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != pVar->getType() ) ) {
+    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != variable.getType() ) &&
+        ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != variable.getType() ) &&
+        ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != variable.getType() ) ) {
             wxString wxstrErr = wxT("[Action] Add to Variable: Variable is not numerical ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
@@ -2441,14 +2407,14 @@ bool dmElement::doActionSubtractVariable( vscpEvent *pDMEvent )
             return false;
     }
 
-    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != pVar->getType() ) ) {
-        pVar->m_longValue -= val;
+    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != variable.getType() ) ) {
+        variable.m_longValue -= val;
     }
-    else if ( ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != pVar->getType() ) ) {
-        pVar->m_longValue -= val;
+    else if ( ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != variable.getType() ) ) {
+        variable.m_longValue -= val;
     }
-    else if ( ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != pVar->getType() ) ) {
-        pVar->m_floatValue -= floatval;
+    else if ( ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != variable.getType() ) ) {
+        variable.m_floatValue -= floatval;
     }
 
     return true;
@@ -2460,7 +2426,7 @@ bool dmElement::doActionSubtractVariable( vscpEvent *pDMEvent )
 
 bool dmElement::doActionMultiplyVariable( vscpEvent *pDMEvent )
 {
-    CVSCPVariable *pVar;
+    CVSCPVariable variable;
     wxString strName;
     long val;
     double floatval;
@@ -2481,41 +2447,29 @@ bool dmElement::doActionMultiplyVariable( vscpEvent *pDMEvent )
     else {
         strval.ToDouble( &floatval );
     }
+   
+    if ( m_pDM->m_pCtrlObject->m_VSCP_Variables.find( strName, variable ) ) {
 
-    pVar = m_pDM->m_pCtrlObject->m_VSCP_Variables.find( strName );
-    if ( NULL == pVar ) {
+        CVSCPVariable var;
+        var.setName( strName );
+        var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+        var.setPersistent( false );
 
-        pVar = new CVSCPVariable;
-        if ( NULL == pVar ) {
-            // must be a variable
-            wxString wxstrErr = wxT("[Action] Add Variable: Could not allocate variable ");
-            wxstrErr += m_actionparam;
-            wxstrErr += _("\n");
-            m_pDM->m_pCtrlObject->logMsg( wxstrErr );
-            return false;
-        }
-
-        pVar->setName( strName );
-        pVar->setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
-        pVar->setPersistent( false );
-
-        if ( m_pDM->m_pCtrlObject->m_VSCP_Variables.add( pVar ) ) {
+        if ( m_pDM->m_pCtrlObject->m_VSCP_Variables.add( var ) ) {
             wxString wxstrErr = wxT("[Action] Add to Variable: Could not add new variable ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
             m_pDM->m_pCtrlObject->logMsg( wxstrErr );
 
-            // Remove the newly allocated var.
-            delete pVar;
             return false;
         }
 
     }
 
     // Must be a numerical variable
-    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != pVar->getType() ) &&
-        ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != pVar->getType() ) &&
-        ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != pVar->getType() ) ) {
+    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != variable.getType() ) &&
+        ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != variable.getType() ) &&
+        ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != variable.getType() ) ) {
             wxString wxstrErr = wxT("[Action] Add to Variable: Variable is not numerical ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
@@ -2523,14 +2477,14 @@ bool dmElement::doActionMultiplyVariable( vscpEvent *pDMEvent )
             return false;
     }
 
-    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != pVar->getType() ) ) {
-        pVar->m_longValue *= val;
+    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != variable.getType() ) ) {
+        variable.m_longValue *= val;
     }
-    else if ( ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != pVar->getType() ) ) {
-        pVar->m_longValue *= val;
+    else if ( ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != variable.getType() ) ) {
+        variable.m_longValue *= val;
     }
-    else if ( ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != pVar->getType() ) ) {
-        pVar->m_floatValue *= floatval;
+    else if ( ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != variable.getType() ) ) {
+        variable.m_floatValue *= floatval;
     }
 
     return true;
@@ -2542,7 +2496,7 @@ bool dmElement::doActionMultiplyVariable( vscpEvent *pDMEvent )
 
 bool dmElement::doActionDivideVariable( vscpEvent *pDMEvent )
 {
-    CVSCPVariable *pVar;
+    CVSCPVariable variable;
     wxString strName;
     long val;
     double floatval;
@@ -2564,40 +2518,28 @@ bool dmElement::doActionDivideVariable( vscpEvent *pDMEvent )
         strval.ToDouble( &floatval );
     }
 
-    pVar = m_pDM->m_pCtrlObject->m_VSCP_Variables.find( strName );
-    if ( NULL == pVar ) {
+    if ( m_pDM->m_pCtrlObject->m_VSCP_Variables.find( strName, variable )) {
 
-        pVar = new CVSCPVariable;
-        if ( NULL == pVar ) {
-            // must be a variable
-            wxString wxstrErr = wxT("[Action] Add Variable: Could not allocate variable ");
-            wxstrErr += m_actionparam;
-            wxstrErr += _("\n");
-            m_pDM->m_pCtrlObject->logMsg( wxstrErr );
-            return false;
-        }
+        CVSCPVariable var;
+        var.setName( strName );
+        var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+        var.setPersistent( false );
 
-        pVar->setName( strName );
-        pVar->setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
-        pVar->setPersistent( false );
-
-        if ( m_pDM->m_pCtrlObject->m_VSCP_Variables.add( pVar ) ) {
+        if ( m_pDM->m_pCtrlObject->m_VSCP_Variables.add( var ) ) {
             wxString wxstrErr = wxT("[Action] Add to Variable: Could not add new variable ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
             m_pDM->m_pCtrlObject->logMsg( wxstrErr );
 
-            // Remove the newly allocated var.
-            delete pVar;
             return false;
         }
 
     }
 
     // Must be a numerical variable
-    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != pVar->getType() ) &&
-        ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != pVar->getType() ) &&
-        ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != pVar->getType() ) ) {
+    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != variable.getType() ) &&
+        ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != variable.getType() ) &&
+        ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != variable.getType() ) ) {
             wxString wxstrErr = wxT("[Action] Add to Variable: Variable is not numerical ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
@@ -2605,14 +2547,14 @@ bool dmElement::doActionDivideVariable( vscpEvent *pDMEvent )
             return false;
     }
 
-    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != pVar->getType() ) ) {
-        if ( 0 != val ) pVar->m_longValue /= val;
+    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != variable.getType() ) ) {
+        if ( 0 != val ) variable.m_longValue /= val;
     }
-    else if ( ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != pVar->getType() ) ) {
-        if ( 0 != val ) pVar->m_longValue /= val;
+    else if ( ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != variable.getType() ) ) {
+        if ( 0 != val ) variable.m_longValue /= val;
     }
-    else if ( ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != pVar->getType() ) ) {
-        if ( 0.0 != floatval) pVar->m_floatValue /= floatval;
+    else if ( ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != variable.getType() ) ) {
+        if ( 0.0 != floatval) variable.m_floatValue /= floatval;
     }
 
     return true;
@@ -2913,10 +2855,16 @@ CDM::CDM( CControlObject *ctrlObj )
     // Set the default dm configuration path
     m_configPath = wxStandardPaths::Get().GetConfigDir();
     m_configPath += _("/vscp/dm.xml");
+    
+    m_path_db_vscp_dm = wxStandardPaths::Get().GetConfigDir();
+    m_path_db_vscp_dm += _("/vscp/vscp_dm.sqlite3");
 #endif
 #else
 	m_configPath = _("/srv/vscp/dm.xml");
+        m_path_db_vscp_dm = _("/srv/vscp/vscp_dm.sqlite3");
 #endif
+        
+   m_db_vscp_dm = NULL;     
 
 }
 
@@ -3783,7 +3731,7 @@ bool CDM::feedPeriodicEvent( void )
 
 void CDM::serviceTimers( void )
 {
-    CVSCPVariable *pVariable;
+    CVSCPVariable variable;
 
     DMTIMERS::iterator it;
     for ( it = m_timerHash.begin(); it != m_timerHash.end(); it++ ) {
@@ -3791,8 +3739,7 @@ void CDM::serviceTimers( void )
         dmTimer *pTimer = it->second;
 
         if ( pTimer->isActive() &&
-            ( NULL !=
-                ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( pTimer->getVariableName() ) ) ) ) {
+            ( m_pCtrlObject->m_VSCP_Variables.find( pTimer->getVariableName(), variable ) ) ) {
 
                 if ( !pTimer->decTimer() ) {
 
@@ -3802,10 +3749,10 @@ void CDM::serviceTimers( void )
 
                     // Handle the setvalue
                     if ( pTimer->getSetValue() ) {
-                        pVariable->setTrue();
+                        variable.setTrue();
                     }
                     else {
-                        pVariable->setFalse();
+                        variable.setFalse();
                     }
 
                 }
@@ -3821,10 +3768,10 @@ void CDM::serviceTimers( void )
 //
 
 int CDM::addTimer( uint16_t id,
-    wxString& nameVar,
-    uint32_t delay,
-    bool bStart,
-    bool setValue )
+                    wxString& nameVar,
+                    uint32_t delay,
+                    bool bStart,
+                    bool setValue )
 {
 
     int rv = 0; // Default return value is failure
@@ -3852,7 +3799,7 @@ int CDM::addTimer( uint16_t id,
     nameVar.Trim( false );
 
     // Check if variable is defined
-    if ( NULL != m_pCtrlObject->m_VSCP_Variables.find( nameVar ) ) {
+    if ( m_pCtrlObject->m_VSCP_Variables.exist( nameVar ) ) {
 
         // Log
         wxString logStr = wxString::Format(_("Variable is not defined %s"),
@@ -3971,6 +3918,60 @@ bool CDM::stopTimer( int idTimer )
     return true;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// doCreateDMTable
+//
+
+bool CDM::doCreateDMTable( void )
+{
+    char *pErrMsg = 0;
+    const char *psql = "CREATE TABLE \"dm\" ("
+	"`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,"
+	"`GroupID`	TEXT NOT NULL,"
+	"`bEnable`	INTEGER NOT NULL DEFAULT 0,"
+	"`maskPriority`	INTEGER NOT NULL DEFAULT 0,"
+	"`maskClass`	NUMERIC NOT NULL DEFAULT 0,"
+	"`maskType`	INTEGER NOT NULL DEFAULT 0,"
+	"`maskGUID`	TEXT NOT NULL,"
+	"`filterPriority`	INTEGER NOT NULL DEFAULT 0,"
+	"`filterClass`	INTEGER NOT NULL DEFAULT 0,"
+	"`filterType`	INTEGER NOT NULL DEFAULT 0,"
+	"`filterGUID`	TEXT NOT NULL,"
+	"`allowedFrom`	TEXT NOT NULL,"
+	"`allowedTo`	TEXT NOT NULL,"
+	"`allowedMonday`	BLOB NOT NULL,"
+	"`allowedTuesday`	INTEGER NOT NULL,"
+	"`allowsWednesday`	INTEGER NOT NULL,"
+	"`allowedThursday`	INTEGER NOT NULL,"
+	"`allowedFriday`	INTEGER NOT NULL,"
+	"`allowedSaturday`	NUMERIC NOT NULL,"
+	"`allowedSunday`	BLOB NOT NULL,"
+	"`allowedTime`	TEXT NOT NULL,"
+	"`bCheckIndex`	INTEGER NOT NULL,"
+	"`index`	TEXT NOT NULL,"
+	"`bCheckZone`	TEXT NOT NULL,"
+	"`zone`	INTEGER NOT NULL,"
+	"`bCheckSubZone`	INTEGER NOT NULL,"
+	"`subzone`	INTEGER NOT NULL,"
+	"`bCheckMeasurementIndex`	INTEGER NOT NULL,"
+	"`meaurementIndex`	INTEGER NOT NULL,"
+	"`actionCode`	TEXT NOT NULL,"
+	"`actionParameter`	NUMERIC NOT NULL,"
+	"`measurementValue`	REAL,"
+	"`measurementUnit`	INTEGER,"
+	"`measurementCompare`	INTEGER,"
+	"`comment`	TEXT"
+    ")";
+    
+    // Check if database is open
+    if ( NULL == m_db_vscp_dm ) return false;
+    
+    if ( SQLITE_OK != sqlite3_exec(m_db_vscp_dm, psql, NULL, NULL, NULL) ) {
+        return false;
+    }
+    
+    return true;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////

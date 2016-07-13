@@ -3490,7 +3490,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *nc,
             }
             else {
                 wxString str;
-                pVariable->getValue( str );
+                str = pVariable->getValue();
                 buildPage += str;
             }
 
@@ -3893,7 +3893,7 @@ VSCPWebServerThread::websrv_variables_post( struct mg_connection *nc,
     char buf[32000];
     wxString str;
     VSCPInformation vscpinfo;
-    CVSCPVariable *pVariable = NULL;
+    CVSCPVariable variable;
 
     // Check pointer
     if (NULL == nc) return;
@@ -4057,7 +4057,7 @@ VSCPWebServerThread::websrv_variables_post( struct mg_connection *nc,
     buildPage += _(WEB_VARPOST_BODY_START);
 
     if (bNew) {
-        pVariable = new CVSCPVariable;
+        //pVariable = new CVSCPVariable;
     }
 
     if (bNew || (id >= 0)) {
@@ -4066,15 +4066,15 @@ VSCPWebServerThread::websrv_variables_post( struct mg_connection *nc,
                 ((0 == id) && !bNew) ||
                 (id < (long)pObject->m_VSCP_Variables.m_listVariable.GetCount()) ) {
 
-            if (!bNew) pVariable = pObject->m_VSCP_Variables.m_listVariable.Item(id)->GetData();
+            //if (!bNew) pObject->m_VSCP_Variables.m_listVariable.Item(id)->GetData();
 
-            if (NULL != pVariable) {
+            if ( 0 ) {
 
                 // Set the type
-                pVariable->setPersistent( bPersistent );
-                pVariable->setType( nType );
-                pVariable->m_note = strNote;
-                pVariable->setName( strName );
+                variable.setPersistent( bPersistent );
+                variable.setType( nType );
+                variable.setNote( strNote );
+                variable.setName( strName );
 
                 switch ( nType ) {
 
@@ -4083,68 +4083,68 @@ VSCPWebServerThread::websrv_variables_post( struct mg_connection *nc,
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_STRING:
-                    pVariable->setValue( strValueString );
+                    variable.setValue( strValueString );
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_BOOLEAN:
-                    pVariable->setValue( bValueBoolean );
+                    variable.setValue( bValueBoolean );
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_INTEGER:
-                    pVariable->setValue( value_integer );
+                    variable.setValue( value_integer );
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_LONG:
-                    pVariable->setValue( value_long );
+                    variable.setValue( value_long );
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_DOUBLE:
-                    pVariable->setValue( value_double );
+                    variable.setValue( value_double );
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
                     uint16_t size;
-                    vscp_setVscpDataArrayFromString( pVariable->m_normInteger,
-                                                    &size,
-                                                    strMeasurement );
-                    pVariable->m_normIntSize = size;
+                    vscp_setVscpDataArrayFromString( variable.m_normInteger,
+                                                        &size,
+                                                        strMeasurement );
+                    variable.m_normIntSize = size;
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
-                    pVariable->m_event.vscp_class = value_class;
-                    pVariable->m_event.vscp_type = value_type;
-                    vscp_getGuidFromStringToArray( pVariable->m_event.GUID, strGUID );
-                    vscp_setVscpDataFromString( &pVariable->m_event,
-                                            strData );
-                    pVariable->m_event.crc = value_crc;
-                    pVariable->m_event.head = value_head;
-                    pVariable->m_event.obid = value_obid;
-                    pVariable->m_event.timestamp = value_timestamp;
+                    variable.m_event.vscp_class = value_class;
+                    variable.m_event.vscp_type = value_type;
+                    vscp_getGuidFromStringToArray( variable.m_event.GUID, strGUID );
+                    vscp_setVscpDataFromString( &variable.m_event,
+                                                    strData );
+                    variable.m_event.crc = value_crc;
+                    variable.m_event.head = value_head;
+                    variable.m_event.obid = value_obid;
+                    variable.m_event.timestamp = value_timestamp;
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID:
-                    vscp_getGuidFromStringToArray( pVariable->m_event.GUID, strGUID );
+                    vscp_getGuidFromStringToArray( variable.m_event.GUID, strGUID );
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA:
-                    vscp_setVscpDataFromString( &pVariable->m_event,
-                                            strData );
+                    vscp_setVscpDataFromString( &variable.m_event,
+                                                    strData );
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS:
-                    pVariable->m_event.vscp_class = value_class;
+                    variable.m_event.vscp_class = value_class;
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE:
-                    pVariable->m_event.vscp_type = value_type;
+                    variable.m_event.vscp_type = value_type;
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP:
-                    pVariable->m_event.timestamp = value_timestamp;
+                    variable.m_event.timestamp = value_timestamp;
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
-                    pVariable->m_timestamp.ParseDateTime( strDateTime );
+                    variable.m_timestamp.ParseDateTime( strDateTime );
                     break;
 
                 default:
@@ -4154,8 +4154,8 @@ VSCPWebServerThread::websrv_variables_post( struct mg_connection *nc,
                 }
 
                 // If new variable add it
-                if (bNew ) {
-                    pObject->m_VSCP_Variables.add( pVariable );
+                if ( bNew ) {
+                    //pObject->m_VSCP_Variables.add( pVariable );
                 }
 
                 // Save variables

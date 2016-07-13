@@ -8,7 +8,7 @@
 // This file is part of the VSCP (http://www.vscp.org) 
 //
 // Copyright (C) 2000-2016
-// Ake Hedman, eurosource, <akhe@eurosource.se>
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -48,6 +48,9 @@
 #define VSCP_DAEMON_VARIABLE_CODE_MIME                      100 // Mime type (mime-type;base64 encoded content)
 #define VSCP_DAEMON_VARIABLE_CODE_HTML                      101 // HTML Page
 #define VSCP_DAEMON_VARIABLE_CODE_JAVASCRIPT                102 // Javascript code
+#define VSCP_DAEMON_VARIABLE_CODE_JSON                      103 // JSON data
+#define VSCP_DAEMON_VARIABLE_CODE_XML                       104 // XML data
+#define VSCP_DAEMON_VARIABLE_CODE_SQL                       105 // SQL data
 
 #define VSCP_DAEMON_VARIABLE_CODE_LUA                       200 // LUA script
 #define VSCP_DAEMON_VARIABLE_CODE_LUA_RESULT                201 // LUA executed script result string
