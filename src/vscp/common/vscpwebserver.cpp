@@ -3123,6 +3123,7 @@ VSCPWebServerThread::websrv_variables_list( struct mg_connection *nc,
         }
         else if (NULL != strstr("next",buf)) {
             nFrom += nCount;
+            /* TODO
             if ( (unsigned long)nFrom > pObject->m_VSCP_Variables.m_listVariable.GetCount()-1 ) {
                 if ( pObject->m_VSCP_Variables.m_listVariable.GetCount() % nCount ) {
                     nFrom = pObject->m_VSCP_Variables.m_listVariable.GetCount()/nCount;
@@ -3130,15 +3131,16 @@ VSCPWebServerThread::websrv_variables_list( struct mg_connection *nc,
                 else {
                     nFrom = (pObject->m_VSCP_Variables.m_listVariable.GetCount()/nCount) - 1;
                 }
-            }
+            }*/
         }
         else if (NULL != strstr("last",buf)) {
-            if ( pObject->m_VSCP_Variables.m_listVariable.GetCount() % nCount ) {
+            /* TODO
+             if ( pObject->m_VSCP_Variables.m_listVariable.GetCount() % nCount ) {
                 nFrom = (pObject->m_VSCP_Variables.m_listVariable.GetCount()/nCount)*nCount;
             }
             else {
                 nFrom = ((pObject->m_VSCP_Variables.m_listVariable.GetCount()/nCount) - 1)*nCount;
-            }
+            }*/
         }
         else if ( NULL != strstr("first",buf) ) {
             nFrom = 0;
@@ -3169,6 +3171,7 @@ VSCPWebServerThread::websrv_variables_list( struct mg_connection *nc,
     buildPage += _(WEB_COMMON_MENU);
     buildPage += _(WEB_VARLIST_BODY_START);
 
+    /* TODO
     {
         wxString wxstrurl = _("/vscp/variables");
         buildPage += wxString::Format( _(WEB_COMMON_LIST_NAVIGATION),
@@ -3182,11 +3185,13 @@ VSCPWebServerThread::websrv_variables_list( struct mg_connection *nc,
                 _("false" ) );
         buildPage += _("<br>");
     }
+     */
 
     wxString strBuf;
 
     // Display Variables List
 
+    /* TODO
     if ( 0 == pObject->m_VSCP_Variables.m_listVariable.GetCount() ) {
         buildPage += _("<br>Variables list is empty!<br>");
     }
@@ -3347,7 +3352,7 @@ VSCPWebServerThread::websrv_variables_list( struct mg_connection *nc,
     // Server data
     mg_send_http_chunk( nc, buildPage.ToAscii(), buildPage.Length() );
     mg_send_http_chunk( nc, "", 0 );
-
+    */
 
     return;
 }
@@ -3423,9 +3428,11 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *nc,
 
     buildPage += _(WEB_VAREDIT_BODY_START);
 
+    /* TODO
     if ( !bNew && ( id < (long)pObject->m_VSCP_Variables.m_listVariable.GetCount() ) ) {
         pVariable = pObject->m_VSCP_Variables.m_listVariable.Item(id)->GetData();
     }
+     */
 
     if (bNew || (NULL != pVariable)) {
 
@@ -3588,7 +3595,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *nc,
                 buildPage += _("");
             }
             else {
-                buildPage += wxString::Format(_("0x%x"), pVariable->m_event.vscp_class );
+                // TODO buildPage += wxString::Format(_("0x%x"), pVariable->m_event.vscp_class );
             }
 
             buildPage += _("</textarea>");
@@ -3602,7 +3609,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *nc,
                 buildPage += _("");
             }
             else {
-                buildPage += wxString::Format(_("0x%x"), pVariable->m_event.vscp_type );
+                // TODO buildPage += wxString::Format(_("0x%x"), pVariable->m_event.vscp_type );
             }
 
             buildPage += _("</textarea>");
@@ -3617,7 +3624,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *nc,
             }
             else {
                 wxString strGUID;
-                vscp_writeGuidArrayToString( pVariable->m_event.GUID, strGUID );
+                // TODO vscp_writeGuidArrayToString( pVariable->m_event.GUID, strGUID );
                 buildPage += wxString::Format(_("%s"), strGUID.wx_str() );
             }
 
@@ -3632,7 +3639,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *nc,
                 buildPage += _("0");
             }
             else {
-                buildPage += wxString::Format(_("0x%x"), pVariable->m_event.timestamp );
+                // TODO buildPage += wxString::Format(_("0x%x"), pVariable->m_event.timestamp );
             }
 
             buildPage += _("</textarea>");
@@ -3649,7 +3656,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *nc,
                 buildPage += _("0");
             }
             else {
-                buildPage += wxString::Format(_("0x%X"), pVariable->m_event.obid );
+                // TODO buildPage += wxString::Format(_("0x%X"), pVariable->m_event.obid );
             }
 
             buildPage += _("</textarea>");
@@ -3669,7 +3676,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *nc,
                 buildPage += _("0");
             }
             else {
-                buildPage += wxString::Format(_("0x%02x"), pVariable->m_event.head );
+                // TODO buildPage += wxString::Format(_("0x%02x"), pVariable->m_event.head );
             }
 
             buildPage += _("</textarea>");
@@ -3683,7 +3690,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *nc,
                 buildPage += _("0");
             }
             else {
-                buildPage += wxString::Format(_("0x%08x"), pVariable->m_event.crc );
+                // TODO buildPage += wxString::Format(_("0x%08x"), pVariable->m_event.crc );
             }
 
             buildPage += _("</textarea>");
@@ -3700,7 +3707,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *nc,
                 buildPage += _("0");
             }
             else {
-                buildPage += wxString::Format(_("%d"), pVariable->m_event.sizeData );
+                // TODO buildPage += wxString::Format(_("%d"), pVariable->m_event.sizeData );
             }
 
             //buildPage += _("</textarea>");
@@ -3715,7 +3722,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *nc,
             }
             else {
                 wxString strData;
-                vscp_writeVscpDataToString( &pVariable->m_event, strData );
+                // TODO vscp_writeVscpDataToString( &pVariable->m_event, strData );
                 buildPage += wxString::Format(_("%s"), strData.wx_str() );
             }
 
@@ -3748,7 +3755,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *nc,
             }
             else {
                 wxString strData;
-                vscp_writeVscpDataToString( &pVariable->m_event, strData );
+                // TODO vscp_writeVscpDataToString( &pVariable->m_event, strData );
                 buildPage += strData;
             }
 
@@ -4060,6 +4067,7 @@ VSCPWebServerThread::websrv_variables_post( struct mg_connection *nc,
         //pVariable = new CVSCPVariable;
     }
 
+    /* TODO
     if (bNew || (id >= 0)) {
 
         if (bNew ||
@@ -4176,7 +4184,7 @@ VSCPWebServerThread::websrv_variables_post( struct mg_connection *nc,
     else {
         buildPage += wxString::Format(_("<br><br>Record id=%d is wrong. Unable to save record"), id);
     }
-
+    */
 
     buildPage += _(WEB_COMMON_END); // Common end code
 
@@ -4240,12 +4248,14 @@ VSCPWebServerThread::websrv_variables_new( struct mg_connection *nc,
     buildPage += _("\" name=\"varnewstep1\">");
 
     long nFrom;
+    /* TODO
     if ( pObject->m_VSCP_Variables.m_listVariable.GetCount() % nCount ) {
         nFrom = (pObject->m_VSCP_Variables.m_listVariable.GetCount()/nCount)*nCount;
     }
     else {
         nFrom = ((pObject->m_VSCP_Variables.m_listVariable.GetCount()/nCount) - 1)*nCount;
     }
+     */
 
     buildPage += wxString::Format( _("<input name=\"from\" value=\"%d\" type=\"hidden\">"), nFrom );
     buildPage += wxString::Format( _("<input name=\"count\" value=\"%d\" type=\"hidden\">"), nCount );
@@ -4345,12 +4355,12 @@ VSCPWebServerThread::websrv_variables_delete( struct mg_connection *nc,
     buildPage += _(WEB_COMMON_MENU);
 
     buildPage += _(WEB_VAREDIT_BODY_START);
-
+/* TODO
     pVariable = pObject->m_VSCP_Variables.m_listVariable.Item(id)->GetData();
     //wxlistVscpVariableNode *node =
     //        pObject->m_VSCP_Variables.m_listVariable.Item( id );
     //if ( pObject->m_VSCP_Variables.m_listVariable.DeleteNode( node )  ) {//
-    if ( pObject->m_VSCP_Variables.remove( pVariable ) )  {
+    if ( pObject->m_VSCP_Variables.remove( variable ) )  {
         buildPage += wxString::Format(_("<br>Deleted record id = %d"), id);
         // Save variables
         pObject->m_VSCP_Variables.save();
@@ -4358,7 +4368,7 @@ VSCPWebServerThread::websrv_variables_delete( struct mg_connection *nc,
     else {
         buildPage += wxString::Format(_("<br>Failed to remove record id = %d"), id);
     }
-
+*/
     buildPage += _(WEB_COMMON_END);     // Common end code
 
     // Server data

@@ -949,12 +949,12 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         wxString resultstr;
         wxString strWork;
         m_pCtrlObject->m_variableMutex.Lock();
-
+/* TODO
         // Send count
         resultstr = wxString::Format( _( "+;LISTVAR;%zu" ), m_pCtrlObject->m_VSCP_Variables.m_listVariable.GetCount() );
         mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, ( const char * )resultstr.mbc_str() );
 
-        /* TODO
+        
         listVscpVariable::iterator it;
         for( it = m_pCtrlObject->m_VSCP_Variables.m_listVariable.begin();
                     it != m_pCtrlObject->m_VSCP_Variables.m_listVariable.end();

@@ -2337,13 +2337,22 @@ bool dmElement::doActionAddVariable( vscpEvent *pDMEvent )
     }
 
     if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != variable.getType() ) ) {
-        variable.m_longValue += val;
+        long lval;
+        variable.getValue( &lval );
+        lval += val;
+        variable.setValue( lval );
     }
     else if ( ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != variable.getType() ) ) {
-        variable.m_longValue += val;
+        long lval;
+        variable.getValue( &lval );
+        lval += val;
+        variable.setValue( lval );
     }
     else if ( ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != variable.getType() ) ) {
-        variable.m_floatValue += floatval;
+        double dval;
+        variable.getValue( &dval );
+        dval += floatval;
+        variable.setValue( dval );
     }
 
     return true;
@@ -2408,13 +2417,22 @@ bool dmElement::doActionSubtractVariable( vscpEvent *pDMEvent )
     }
 
     if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != variable.getType() ) ) {
-        variable.m_longValue -= val;
+        long lval;
+        variable.getValue( &lval );
+        lval -= val;
+        variable.setValue( lval );
     }
     else if ( ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != variable.getType() ) ) {
-        variable.m_longValue -= val;
+        long lval;
+        variable.getValue( &lval );
+        lval -= val;
+        variable.setValue( lval );
     }
     else if ( ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != variable.getType() ) ) {
-        variable.m_floatValue -= floatval;
+        double dval;
+        variable.getValue( &dval );
+        dval -= floatval;
+        variable.setValue( dval );
     }
 
     return true;
@@ -2478,13 +2496,22 @@ bool dmElement::doActionMultiplyVariable( vscpEvent *pDMEvent )
     }
 
     if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != variable.getType() ) ) {
-        variable.m_longValue *= val;
+        long lval;
+        variable.getValue( &lval );
+        lval *= val;
+        variable.setValue( lval );
     }
     else if ( ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != variable.getType() ) ) {
-        variable.m_longValue *= val;
+        long lval;
+        variable.getValue( &lval );
+        lval *= val;
+        variable.setValue( lval );
     }
     else if ( ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != variable.getType() ) ) {
-        variable.m_floatValue *= floatval;
+        double dval;
+        variable.getValue( &dval );
+        dval *= floatval;
+        variable.setValue( dval );
     }
 
     return true;
@@ -2548,13 +2575,28 @@ bool dmElement::doActionDivideVariable( vscpEvent *pDMEvent )
     }
 
     if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != variable.getType() ) ) {
-        if ( 0 != val ) variable.m_longValue /= val;
+        if ( 0 != val ) {
+            long lval;
+            variable.getValue( &lval );
+            lval /= val;
+            variable.setValue( lval );
+        }
     }
     else if ( ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != variable.getType() ) ) {
-        if ( 0 != val ) variable.m_longValue /= val;
+        if ( 0 != val ) {
+            long lval;
+            variable.getValue( &lval );
+            lval /= val;
+            variable.setValue( lval );
+        }
     }
     else if ( ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != variable.getType() ) ) {
-        if ( 0.0 != floatval) variable.m_floatValue /= floatval;
+        if ( 0.0 != floatval) {
+            double dval;
+            variable.getValue( &dval );
+            dval *= floatval;
+            variable.setValue( dval );
+        }
     }
 
     return true;

@@ -66,12 +66,32 @@
 #define USER_ADMIN              0x00
 #define GROUP_ADMIN             0x00
 
+// Table types - bitfield
+#define VARIABLE_STOCK          0x01
+#define VARIABLE_INTERNAL       0x02
+#define VARIABLE_EXTERNAL       0x04
+
+// Forward declarations
+class wxFFileOutputStream;
+
+
+/*
+ * Structure used for multi call variable
+ * queries. 
+ */
+struct varQuery {
+    uint8_t table;          // Table type    
+    uint32_t stockId;       // ID for next stock variable to return
+    sqlite3_stmt *ppStmt;   // Handle for SQL query. NULL if stock
+};
+
+typedef struct varQuery varQuery;
+
 // Class that holds one VSCP variable
 // Persistent variables should have names staring with $
 
 class CVSCPVariable {
 public:
-
    
     enum vartype {
         STRING_T = 0,
@@ -159,13 +179,14 @@ public:
         @param strValue Value in string form
         @return true on success.
      */
-    bool setValueFromString( CVSCPVariable::vartype type, const wxString& strValue, bool bBase64 = false );
+    bool setValueFromString( CVSCPVariable::vartype type, const wxString& strValue, bool bBase64=false );
 
     /*!
         Get the variable value as a string value
         @param str String that will get string representation of variable.
+        @param  bBase64 If true strings are encoded in BASE64
      */
-    bool writeValueToString(wxString& strValue);
+    bool writeValueToString( wxString& strValue, bool bBase64=false );
 
     /*!
         Get variable information as a string value
@@ -208,103 +229,108 @@ public:
      */
     void setFalse(void);
 
+    /*!
+        Get string value
+     */
+    wxString getValue( void ) { return  m_strValue; };
     
     /*!
         getValue
         @return value in string form is returned regardless of type.
      */
-    wxString& getValue() { return m_strValue; };
+    void getValue( wxString *pval ) { *pval =  m_strValue; };
     
     /*!
         getValue
         @param value String that will receive value.
      */
-    void setValue(wxString value)
-    {
-        m_strValue = value;
-    };
+    void setValue(wxString value) { m_strValue = value; };
 
     /*!
         setValue
         @param val long to set value to.
      */
-    void setValue(int val)
-    {
-        m_longValue = val;
-    };
+    void setValue(int val);
+
 
     /*!
         getValue
         @param value Int that will receive value.
      */
-    void getValue(int *pValue)
-    {
-        *pValue = m_longValue;
-    };
+    void getValue(int *pValue);
+
     
     /*!
         setValue
         @param val long to set value to.
      */
-    void setValue(long val)
-    {
-        m_longValue = val;
-    };
+    void setValue(long val);
 
     /*!
         getValue
         @param value Int that will receive value.
      */
-    void getValue(long *pValue)
-    {
-        *pValue = m_longValue;
-    };
+    void getValue(long *pValue);
 
     /*!
         setValue
         @param val double to set value to.
      */
-    void setValue(double val)
-    {
-        m_floatValue = val;
-    };
+    void setValue(double val);
 
     /*!
         getValue
         @param value Double that will receive the value.
      */
-    void getValue(double *pValue)
-    {
-        *pValue = m_floatValue;
-    };
+    void getValue(double *pValue);
 
     /*!
         setValue
         @param val Boolean to set value to.
      */
-    void setValue(bool val)
-    {
-        m_boolValue = val;
-    };
+    void setValue(bool val);
 
     /*!
         getValue
         @param value Bool that will receive the value.
      */
-    void getValue(bool *pValue)
-    {
-        *pValue = m_boolValue;
-    };
-
+    void getValue(bool *pValue);
+ 
+    /*!
+        setValue - vscpEvent
+        @param event VSCP Event to set.
+    */
+    void setValue( vscpEvent& event );
+    
     /*!
         getValue
         @param value Bool that will receive the value.
      */
-    void getValue(vscpEvent *pEvent)
-    {
-        if ( NULL != pEvent ) vscp_copyVSCPEvent( pEvent,  &m_event );
-    };
-
+    void getValue( vscpEvent *pEvent );
+    
+    /*!
+        getValue - EventEx
+        @param pEventEx [OUT ]VSCP EventEx from variable
+     */
+    void getValue( vscpEventEx *pEventEx );
+    
+    /*!
+        setValue - vscpEventEx
+        @param event VSCP EventEx to set.
+     */
+    void setValue( vscpEventEx& eventex );
+    
+    /*!
+        GetValue - Date + time format
+        @param pValue [OUT] Date + time value in ISO format
+     */
+    void getValue( wxDateTime *pValue );
+    
+    /*!
+        SetValue - Date + Time ISO format
+        @param val Date + time in ISO format.
+     */
+    void setValue( wxDateTime& val );
 
     /*!
         Change last change date time to now
@@ -365,6 +391,10 @@ public:
     void setGroupID( uint32_t uid ) { m_groupid = uid; };
     uint32_t getGroupID( void ) { return m_groupid; }; 
     
+    // stock variable
+    void setStockVariable( bool bStock = true ) { m_bStock = bStock; };
+    bool isStockVariable( void ) { return m_bStock; };
+    
 private:
 
     // id in database
@@ -399,30 +429,18 @@ private:
         A VSCP data variables s stored in the VSCP event.
      */
     wxString m_strValue;            // String
+    
+    // True if this is a stick variable
+    bool m_bStock;
 
 public:
     
     // Time when variable was last changed.
     wxDateTime m_lastChanged;
-
-    vscpEvent m_event;              // VSCP event
-    bool m_boolValue;               // Logical values
-    long m_longValue;               // Byte, Integer and long values
-    double m_floatValue;            // Floating point values
-    uint8_t m_normIntSize;          // Size for Normalised integer	
-    uint8_t m_normInteger[8];       // Normalised integer data
-    unsigned char m_GUID[16];       // GUID
-    wxDateTime m_timestamp;         // Timestamp
     
 };
 
 
-// Variable hash table define
-WX_DECLARE_HASH_MAP(wxString, CVSCPVariable*, wxStringHash, wxStringEqual, VscpVariableHash);
-
-// Variable list
-//	This is needed because the iteration through the map does not work!!!
-WX_DECLARE_LIST(CVSCPVariable, listVscpVariable);
 
 
 
@@ -465,9 +483,9 @@ public:
      * @param name Name of variable
      * @param pVar [OUT] If found supplied variable is filled with data. Can be 
      * set to NULL in which case only availability of the variable is returned.
-     * @return id if variable is found, zero if not. 
+     * @return True if the variable is found. 
      */
-    uint32_t findStockVariable( const wxString& name, CVSCPVariable& pVar );
+    bool findStockVariable( const wxString& name, CVSCPVariable& pVar );
     
     /*!
      * Find a non-persistent variable
@@ -500,27 +518,32 @@ public:
     
     /*!
         Add a variable.
-        If the variable has $ in front of the name it is persistent.
-        If the variable has @ in front of the name its an array.
         @param name Name of variable
         @param value Value for variable
         @param type Type of variable. Defaults to string.
+        @param userid Id for user that owns the variable.
+        @param groupid Group this variable belongs to.
         @param bPersistent True if the variable should be saved to
         persistent storage.
+        @param accessRights Access rights for the variable
         @return true on success, false on failure.
      */
-    bool add(const wxString& varName,
+    bool add(const wxString& name,
                     const wxString& value,
-                    uint8_t type = VSCP_DAEMON_VARIABLE_CODE_STRING,
-                    bool bPersistent = false,
-                    bool brw = true );
+                    const uint8_t type = VSCP_DAEMON_VARIABLE_CODE_STRING,
+                    const uint32_t userid = USER_ADMIN,
+                    const uint32_t groupid = GROUP_ADMIN,
+                    const bool bPersistent = false,
+                    const uint32_t accessRights = PERMISSON_OWNER_ALL );
 
     // Variant of the above with string as type
-    bool addWithStringType(const wxString& varName,
+    bool add(const wxString& varName,
                             const wxString& value,
-                            const wxString& strType,
-                            bool bPersistent = false,
-                            bool brw = true );
+                            const wxString& strType, 
+                            const uint32_t userid = USER_ADMIN,
+                            const uint32_t groupid = GROUP_ADMIN,
+                            const bool bPersistent = false,
+                            const uint32_t accessRights = PERMISSON_OWNER_ALL);
 
     /*!
         Remove named variable
@@ -534,7 +557,7 @@ public:
         @param pVariable Pointe to variable object
         @return true on success, false on failure.
      */
-    bool remove( CVSCPVariable *pVariable );
+    bool remove( CVSCPVariable& variable );
 
     /*!
         Read persistent variables
@@ -553,31 +576,64 @@ public:
         @param strcfgfile path to variable file where data should be written.
         @return Returns true on success false on failure.
      */
-    bool save(wxString& path);
+    bool save(wxString& path, uint8_t whatToSave = VARIABLE_INTERNAL | VARIABLE_EXTERNAL );
+    
+    /*!
+        Write one variable out to persistent storage
+        @param pFileStream Pointer to an open output stream
+        @param variable Variable to write out.
+        @return True on success.
+     */
+    bool writeVariable( wxFFileOutputStream *pFileStream, CVSCPVariable& variable );
     
      /*!
-      * Create external variable table
-      * @return true on success
+        Create external variable table
+        @return true on success
       */
      bool doCreateExternalVariableTable( void );
      
-     /*!
-      * Create internal variable table
-      * This table is always created from scratch
-      * @return true on success
-      */
-     bool doCreateInternalVariableTable( void );
+    /*!
+        Create internal variable table
+        This table is always created from scratch
+        @return true on success
+     */
+    bool doCreateInternalVariableTable( void );
      
+     
+    /*!
+     * Prepare list functionality. Must be called before any of the other
+     * list methods
+     * @param table Select list (only one can be selected)
+     * @param search Search and ordering criteria.
+     * @return List handle on success, NULL on failure.
+     */
+    varQuery *listPrepare( uint8_t table, wxString& search );
+    
+    /*!
+     * Get next list item
+     * @oaram ppStmt List handle.
+     * @param variable Reference to variable which will get data.
+     * @return Ture is returned if valid data is returned. 
+     */
+    bool listItem( varQuery *pq, CVSCPVariable& variable );
+    
+    /*!
+     * Clean up list operation
+     * ppStmt List handle.
+     */
+    void listFinalize( varQuery *pq );
+
+
+    
+    
+    
      
      // -------------------------------------------------------------------
      
+     
 
 
-    /// Hash table for variables with variable name as key
-    VscpVariableHash m_hashVariable;
-
-    /// List with variables  
-    listVscpVariable m_listVariable;
+ 
 
 public:
 
@@ -595,6 +651,9 @@ public:
 
     // Last variable save
     wxDateTime m_lastSaveTime;
+    
+    // Stock variables names
+    wxArrayString m_StockVariable;
 };
 
 

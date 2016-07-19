@@ -2157,6 +2157,7 @@ void VSCPClientThread::handleClientVariable( struct mg_connection *conn,
 void VSCPClientThread::handleVariable_List( struct mg_connection *conn,
                                                 CControlObject *pCtrlObject )
 {
+    /* TODO
     CVSCPVariable *pVariable;
     wxString str;
     wxString strWork;
@@ -2370,7 +2371,7 @@ void VSCPClientThread::handleVariable_List( struct mg_connection *conn,
 
         }
 
-    }
+    }*/
 
     mg_send( conn,  MSG_OK, strlen ( MSG_OK ) );
 }
@@ -2444,7 +2445,7 @@ void VSCPClientThread::handleVariable_Write( struct mg_connection *conn,
 
     // If the variable exist change value
     // if not add it. This is handled in add.
-    m_pCtrlObject->m_VSCP_Variables.addWithStringType( strName, strValue, strType, bPersistence, true );
+    m_pCtrlObject->m_VSCP_Variables.add( strName, strValue, strType, 0, 0, bPersistence, 777 ); // TODO
 
     // Save decision matrix
     m_pCtrlObject->m_dm.save();
