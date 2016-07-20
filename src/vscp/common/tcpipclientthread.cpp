@@ -748,25 +748,26 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn,
             event.head = vscp_readStringValue( str );
         }
         else {
-            CVSCPVariable *pVariable;
+            CVSCPVariable variable;
             bVariable = true;   // Yes this is a variable send
 
+            // Get the name of the variable
             nameVariable = str.Right( str.Length() - 1 );
             nameVariable.MakeUpper();
-/* TODO
-            if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( nameVariable ) ) ) {
+
+            if ( m_pCtrlObject->m_VSCP_Variables.find( nameVariable, variable  ) ) {
                 mg_send( conn, MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
                 return;
             }
 
             // Must be event type
-            if ( VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT != pVariable->getType() ) {
+            if ( VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT != variable.getType() ) {
                 mg_send( conn, MSG_VARIABLE_MUST_BE_EVENT_TYPE, strlen ( MSG_VARIABLE_MUST_BE_EVENT_TYPE ) );
                 return;
             }
-*/
+
             // Get the event
-            pVariable->getValue( &event );
+            variable.getValue( &event );
 
         }
     }
@@ -1658,7 +1659,7 @@ void VSCPClientThread::handleClientRcvLoop( struct mg_connection *conn,
                 continue;
         }
 
-        // Send one event if someting in the queue
+        // Send one event if something in the queue
         sendOneEventFromQueue( false );
 
     } // While    TODO   CHECK THIS!!!!!!
@@ -2157,221 +2158,67 @@ void VSCPClientThread::handleClientVariable( struct mg_connection *conn,
 void VSCPClientThread::handleVariable_List( struct mg_connection *conn,
                                                 CControlObject *pCtrlObject )
 {
-    /* TODO
-    CVSCPVariable *pVariable;
+    CVSCPVariable variable;
     wxString str;
     wxString strWork;
-    listVscpVariable::iterator it;
+    wxString strSearch;
+    
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     pClientItem->m_currentCommandUC =
         pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-5 );    // remove "LIST "
     pClientItem->m_currentCommand =
-        pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length()-5 );          // remove "LIST "
+        pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length()-5 );        // remove "LIST "
     pClientItem->m_currentCommandUC.Trim();
     pClientItem->m_currentCommandUC.Trim( false );
     pClientItem->m_currentCommand.Trim();
     pClientItem->m_currentCommand.Trim( false );
 
-    // if "variable list" we add "all"
-    if ( 0 == pClientItem->m_currentCommandUC.Length() ) {
-        pClientItem->m_currentCommandUC +=  _("ALL");
-        pClientItem->m_currentCommand += _("all");
-    }
-
-    // If "*" wildcard we add "all"
-    if ( ( 1 == pClientItem->m_currentCommand.Length() ) &&
-        ( 0 == pClientItem->m_currentCommandUC.Find ( _( "*" ) ) ) ) {
-            pClientItem->m_currentCommandUC += _("ALL");
-            pClientItem->m_currentCommand += _("all");
-    }
-
-    if ( ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "ALL" ) ) ) )	{
-
-        m_pCtrlObject->m_variableMutex.Lock();
-
-        for( it = m_pCtrlObject->m_VSCP_Variables.m_listVariable.begin();
-            it != m_pCtrlObject->m_VSCP_Variables.m_listVariable.end();
-            ++it ) {
-
-                if ( NULL == ( pVariable = *it ) ) continue;
-
-                str = pVariable->getName();
-                str += _(";");
-                strWork.Printf( _("%d"), pVariable->getType() ) ;
-                str += strWork;
-                if ( pVariable->isPersistent() ) {
-                    str += _(";true;");
-                }
-                else {
-                    str += _(";false;");
-                }
-
-                pVariable->writeValueToString( strWork );
-                str += strWork;
-                str += _("\r\n");
-
-                mg_send( conn,  str.mb_str(), str.Length() );
-        }
-
-        m_pCtrlObject->m_variableMutex.Unlock();
-
+    wxStringTokenizer tkz( pClientItem->m_currentCommand, _(" ") );
+    if ( tkz.HasMoreTokens() ) {
+        wxString token = tkz.GetNextToken();
+        token.Trim();
+        token.Trim( false );
+        token = token.Upper();
+        strSearch = "WHERE name LIKE ";
+        strSearch += token;
     }
     else {
+        strSearch = _(" ORDER BY name");
+    }
 
-        // variables (or wildcards) to list are separated
-        // with spaces
-        wxStringTokenizer tkz( pClientItem->m_currentCommandUC, _(" ") );
+    // For all variable types
+    for ( uint8_t varType=0; varType<3; varType++ ) {
+        
+        m_pCtrlObject->m_variableMutex.Lock();
 
-        while ( tkz.HasMoreTokens() ) {
+        varQuery *pq = m_pCtrlObject->m_VSCP_Variables.listPrepare( varType, strSearch );
+            
+        while ( m_pCtrlObject->m_VSCP_Variables.listItem( pq, variable ) ) {
 
-            wxString token = tkz.GetNextToken();
-            token.Trim();
-            token.Trim( false );
-            token = token.Upper();
-
-            // Wildcard?
-            if ( wxNOT_FOUND != token.Find(_("*")) ) {
-
-                // Possibilities:
-                //	    *aaaa
-                //      aaaa*
-                //      *aaaa*
-
-                // Find the pos for the wildcard char
-                int pos = token.Find( '*' );
-
-                // true if wildcard is on the left "*aaaa"
-                bool bfromLeft = true;
-                bool bDoubleWildcard = false;
-
-                // remove wildcard
-                if ( 0 == pos ) {
-
-                    // Wildcard sits on the left side "*aaaa"
-                    bfromLeft = true;
-
-                    // Remove the wildcard
-                    token = token.Right( token.Length() - 1 );
-
-                    // Can still be a wildcard left
-                    if ( wxNOT_FOUND != token.Find( '*' ) ) {
-
-                        bDoubleWildcard = true;
-
-                        // The wildcard must be on the oposit side
-
-                        // Remove the wildcard
-                        token = token.Left( token.Length() - 1 );
-
-                    }
-
-                }
-                else {
-
-                    // Wildcard sits on the right side "aaaa*"
-                    bfromLeft = false;
-
-                    // Remove the wildcard
-                    token = token.Left( token.Length() - 1 );
-
-                    // Can still be a wildcard left
-                    if ( wxNOT_FOUND != token.Find( '*' ) ) {
-
-                        bDoubleWildcard = true;
-
-                        // The wildcard must be on the oposit side
-
-                        // Remove the wildcard
-                        token = token.Right( token.Length() - 1 );
-
-                    }
-                }
-
-                // List a specific variable
-                m_pCtrlObject->m_variableMutex.Lock();
-
-                for( it = m_pCtrlObject->m_VSCP_Variables.m_listVariable.begin();
-                    it != m_pCtrlObject->m_VSCP_Variables.m_listVariable.end();
-                    ++it ) {
-
-                        if ( NULL == ( pVariable = *it ) ) continue;
-
-                        str = pVariable->getName();
-
-                        int posFound;
-                        if ( wxNOT_FOUND != ( posFound = str.Find( token ) ) ) {
-
-                            if ( bDoubleWildcard ||
-                                ( !bfromLeft && ( 0 == posFound ) ) ||
-                                ( bfromLeft && ( ( str.Length() - token.Length() ) == posFound ) ) ) {
-
-                                    str = pVariable->getName();
-                                    str += _(";");
-                                    strWork.Printf( _("%d"), pVariable->getType() ) ;
-                                    str += strWork;
-                                    if ( pVariable->isPersistent() ) {
-                                        str += _(";true;");
-                                    }
-                                    else {
-                                        str += _(";false;");
-                                    }
-                                    pVariable->writeValueToString( strWork );
-                                    str += strWork;
-                                    str += _("\r\n");
-
-                                    mg_send( conn,  str.mb_str(), str.Length() );
-
-                            }
-
-                        }
-
-                } // next token
-
-                m_pCtrlObject->m_variableMutex.Unlock();
-
+            str = variable.getName();
+            str += _(";");
+            strWork.Printf( _("%d"), variable.getType() ) ;
+            str += strWork;
+            if ( variable.isPersistent() ) {
+                str += _(";true;");
             }
-            // Not a wildcard
             else {
-
-                // List a specific variable
-                m_pCtrlObject->m_variableMutex.Lock();
-
-                for( it = m_pCtrlObject->m_VSCP_Variables.m_listVariable.begin();
-                    it != m_pCtrlObject->m_VSCP_Variables.m_listVariable.end();
-                    ++it ) {
-
-                        if ( NULL == ( pVariable = *it ) ) continue;
-
-                        if ( pVariable->getName() == token ) {
-
-                            str = pVariable->getName();
-                            str += _(";");
-                            strWork.Printf( _("%d"), pVariable->getType() ) ;
-                            str += strWork;
-                            if ( pVariable->isPersistent() ) {
-                                str += _(";true;");
-                            }
-                            else {
-                                str += _(";false;");
-                            }
-                            pVariable->writeValueToString( strWork );
-                            str += strWork;
-                            str += _("\r\n");
-
-                            mg_send( conn, str.mb_str(), str.Length() );
-
-                        }
-
-                }
-
-                m_pCtrlObject->m_variableMutex.Unlock();
-
+                str += _(";false;");
             }
 
+            variable.writeValueToString( strWork );
+            str += strWork;
+                str += _("\r\n");
+                
         }
 
-    }*/
+        m_pCtrlObject->m_VSCP_Variables.listFinalize( pq );
+            
+        mg_send( conn,  str.mb_str(), str.Length() );
+        m_pCtrlObject->m_variableMutex.Unlock();
+            
+    }
 
     mg_send( conn,  MSG_OK, strlen ( MSG_OK ) );
 }
@@ -2675,7 +2522,8 @@ void VSCPClientThread::handleVariable_Length( struct mg_connection *conn,
 void VSCPClientThread::handleVariable_Load( struct mg_connection *conn,
                                                 CControlObject *pCtrlObject )
 {
-    m_pCtrlObject->m_VSCP_Variables.load();
+    wxString path;  // Empty to load from default path
+    m_pCtrlObject->m_VSCP_Variables.load( path );  // TODO add path + type
 
     mg_send( conn, MSG_OK, strlen( MSG_OK ) );
 }

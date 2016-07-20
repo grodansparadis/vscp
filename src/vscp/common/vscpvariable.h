@@ -451,7 +451,6 @@ public:
 
     /// Destructor
     virtual ~CVariableStorage();
-
     
     /*!
      * Find variable from it's name
@@ -563,7 +562,7 @@ public:
         Read persistent variables
         @return Returns true on success false on failure.
      */
-    bool load(void);
+    bool load( wxString& path );
 
     /*!
         Write persistent variables to configured storage
@@ -607,7 +606,7 @@ public:
      * @param search Search and ordering criteria.
      * @return List handle on success, NULL on failure.
      */
-    varQuery *listPrepare( uint8_t table, wxString& search );
+    varQuery *listPrepare( const uint8_t table, const wxString& search );
     
     /*!
      * Get next list item

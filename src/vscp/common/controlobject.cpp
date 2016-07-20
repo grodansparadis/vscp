@@ -266,14 +266,14 @@ CControlObject::CControlObject()
 #endif
 
 
-
+/*  Done in dm.cpp
 #ifdef WIN32
     m_dm.m_path_db_vscp_dm.SetName( wxStandardPaths::Get().GetConfigDir() +
                                             _("/vscp/vscp_dm.sqlite3") );
 #else
     m_dm.m_path_db_vscp_dm.SetName( _("/srv/vscp/vscp_dm.sqlite3") );
 #endif
-    
+*/    
     
 #ifdef WIN32
     m_path_db_vscp_log.SetName( wxStandardPaths::Get().GetConfigDir() +
@@ -755,15 +755,15 @@ bool CControlObject::init(wxString& strcfgfile)
             m_dm.m_path_db_vscp_dm.FileExists() ) {
 
         if ( SQLITE_OK != sqlite3_open( m_dm.m_path_db_vscp_dm.GetFullPath().mbc_str(),
-                                            &m_VSCP_Variables.m_db_vscp_external_variable ) ) {
+                                            &m_dm.m_db_vscp_dm  ) ) {
 
             // Failed to open/create the database file
-            fprintf( stderr, "VSCP Daemon external variable database could not be opened. - Will not be used.\n" );
+            fprintf( stderr, "VSCP Daemon DM database could not be opened. - Will not be used.\n" );
             str.Printf( _("Path=%s error=%s\n"),
                             m_dm.m_path_db_vscp_dm.GetFullPath().mbc_str(),
-                            sqlite3_errmsg( m_VSCP_Variables.m_db_vscp_external_variable ) );
+                            sqlite3_errmsg( m_dm.m_db_vscp_dm ) );
             fprintf( stderr, str.mbc_str() );
-            if ( NULL != m_db_vscp_daemon ) sqlite3_close( m_VSCP_Variables.m_db_vscp_external_variable );
+            if ( NULL != m_db_vscp_daemon ) sqlite3_close( m_dm.m_db_vscp_dm  );
             m_db_vscp_daemon = NULL;
 
         }
@@ -773,18 +773,25 @@ bool CControlObject::init(wxString& strcfgfile)
         if ( m_dm.m_path_db_vscp_dm.IsOk() ) {
             // We need to create the database from scratch. This may not work if
             // the database is in a read only location.
-            fprintf( stderr, "VSCP Daemon external variable database does not exist - will be created.\n" );
+            fprintf( stderr, "VSCP Daemon DM does not exist - will be created.\n" );
             str.Printf(_("Path=%s\n"), m_dm.m_path_db_vscp_dm.GetFullPath().mbc_str() );
             fprintf( stderr, str.mbc_str() );
             
-            if ( SQLITE_OK == sqlite3_open( m_VSCP_Variables.m_path_db_vscp_external_variable.GetFullPath().mbc_str(),
+            if ( SQLITE_OK == sqlite3_open( m_dm.m_path_db_vscp_dm.GetFullPath().mbc_str(),
                                             &m_dm.m_db_vscp_dm ) ) {            
                 // create the table.
                 m_dm.doCreateDMTable();
             }
+            else {
+                fprintf( stderr, "Failed to create VSCP DM database - will not be used.\n" );
+                str.Printf( _("Path=%s error=%s\n"),
+                            m_dm.m_path_db_vscp_dm.GetFullPath().mbc_str(),
+                            sqlite3_errmsg( m_dm.m_db_vscp_dm ) );
+                fprintf( stderr, str.mbc_str() );
+            }
         }
         else {
-            fprintf( stderr, "VSCP Daemon external variable database path invalid - will not be used.\n" );
+            fprintf( stderr, "VSCP DM database path invalid - will not be used.\n" );
             str.Printf(_("Path=%s\n"), m_dm.m_path_db_vscp_dm.GetFullPath().mbc_str() );
             fprintf( stderr, str.mbc_str() );
         }
@@ -921,7 +928,8 @@ bool CControlObject::init(wxString& strcfgfile)
 
     // Load variables if mechanism is enabled
     logMsg(_("Loading persistent variables.\n") );
-    m_VSCP_Variables.load();
+    wxString path;  // Empty to load from default path
+    m_VSCP_Variables.load( path );
 
     // Start daemon internal client worker thread
     startClientWorkerThread();

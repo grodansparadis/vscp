@@ -215,18 +215,18 @@
 //                           external VARIABLE
 //*****************************************************************************
 
-#define VSCPDB_VARIABLE_EXT_CREATE  "CREATE TABLE \"variableEx\" ("\
-	"`idx_variableex`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,"\
-        "`lastchange`	TEXT NOT NULL"\
-	"`name`	TEXT NOT NULL UNIQUE,"\
-	"`type`	INTEGER NOT NULL DEFAULT 0,"\
-	"`value`	TEXT NOT NULL,"\
-	"`bPersistent`	INTEGER NOT NULL DEFAULT 0,"\
-	"`link_to_user`	INTEGER NOT NULL,"\
-	"`link_to_group`	INTEGER NOT NULL,"\
-	"`permission`	INTEGER NOT NULL,"\
-	"`note`	TEXT"\
-        ");"
+#define VSCPDB_VARIABLE_EXT_CREATE  "CREATE TABLE 'variableEx' ("\
+"'idx_variableex'  INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,"\
+"'lastchange'      TEXT NOT NULL,"\
+"'name'            TEXT NOT NULL UNIQUE,"\
+"'type'            INTEGER NOT NULL DEFAULT 0,"\
+"'value'           TEXT NOT NULL,"\
+"'bPersistent'     INTEGER NOT NULL DEFAULT 0,"\
+"'link_to_user'    INTEGER NOT NULL,"\
+"'link_to_group'   INTEGER NOT NULL,"\
+"'permission'      INTEGER NOT NULL DEFAULT 777,"\
+"'note'	TEXT"\
+");"
 
 #define VSCPDB_ORDINAL_VARIABLE_EXT_ID              0   //
 #define VSCPDB_ORDINAL_VARIABLE_EXT_LASTCHANGE      1   //
@@ -243,15 +243,16 @@
 //                             internal VARIABLE
 //*****************************************************************************
         
-#define VSCPDB_VARIABLE_INT_CREATE "CREATE TABLE \"variableInt\" ("\
+#define VSCPDB_VARIABLE_INT_CREATE "CREATE TABLE 'variableInt' ("\
 	"`idx_variableint`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,"\
-        "`lastchange`	TEXT NOT NULL"\
+        "`lastchange`	TEXT NOT NULL,"\
 	"`name`	TEXT NOT NULL UNIQUE,"\
 	"`type`	INTEGER NOT NULL DEFAULT 1,"\
 	"`value`	TEXT NOT NULL,"\
+        "'bPersistent'     INTEGER NOT NULL DEFAULT 0,"\
 	"`link_to_user`	INTEGER NOT NULL DEFAULT 0,"\
 	"`link_to_group`	INTEGER NOT NULL DEFAULT 0,"\
-	"`permission`	INTEGER NOT NULL DEFAULT 777"\
+	"`permission`	INTEGER NOT NULL DEFAULT 777,"\
         "`note`	TEXT"\
         ");"      
 
@@ -260,9 +261,93 @@
 #define VSCPDB_ORDINAL_VARIABLE_INT_NAME            2   // 
 #define VSCPDB_ORDINAL_VARIABLE_INT_TYPE            3   // 
 #define VSCPDB_ORDINAL_VARIABLE_INT_VALUE           4   // 
-#define VSCPDB_ORDINAL_VARIABLE_INT_LINK_TO_USER    5   // 
-#define VSCPDB_ORDINAL_VARIABLE_INT_LINK_TO_GROUP   6   // 
-#define VSCPDB_ORDINAL_VARIABLE_INT_PERMISSION      7   // 
-#define VSCPDB_ORDINAL_VARIABLE_INT_NOTE            8   //
+#define VSCPDB_ORDINAL_VARIABLE_EXT_PERSISTENT      5   // 
+#define VSCPDB_ORDINAL_VARIABLE_INT_LINK_TO_USER    6   // 
+#define VSCPDB_ORDINAL_VARIABLE_INT_LINK_TO_GROUP   7   // 
+#define VSCPDB_ORDINAL_VARIABLE_INT_PERMISSION      8   // 
+#define VSCPDB_ORDINAL_VARIABLE_INT_NOTE            9   //
 
-#endif
+
+
+//*****************************************************************************
+//                                 DM
+//*****************************************************************************
+
+
+
+#define VSCPDB_DM_CREATE  "CREATE TABLE 'dm' ("\
+	"`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,"\
+	"`GroupID`	TEXT NOT NULL,"\
+	"`bEnable`	INTEGER NOT NULL DEFAULT 0,"\
+	"`maskPriority`	INTEGER NOT NULL DEFAULT 0,"\
+	"`maskClass`	NUMERIC NOT NULL DEFAULT 0,"\
+	"`maskType`	INTEGER NOT NULL DEFAULT 0,"\
+	"`maskGUID`	TEXT NOT NULL,"\
+	"`filterPriority`	INTEGER NOT NULL DEFAULT 0,"\
+	"`filterClass`	INTEGER NOT NULL DEFAULT 0,"\
+	"`filterType`	INTEGER NOT NULL DEFAULT 0,"\
+	"`filterGUID`	TEXT NOT NULL,"\
+	"`allowedFrom`	TEXT NOT NULL,"\
+	"`allowedTo`	TEXT NOT NULL,"\
+	"`allowedMonday`	BLOB NOT NULL,"\
+	"`allowedTuesday`	INTEGER NOT NULL,"\
+	"`allowsWednesday`	INTEGER NOT NULL,"\
+	"`allowedThursday`	INTEGER NOT NULL,"\
+	"`allowedFriday`	INTEGER NOT NULL,"\
+	"`allowedSaturday`	NUMERIC NOT NULL,"\
+	"`allowedSunday`	BLOB NOT NULL,"\
+	"`allowedTime`	TEXT NOT NULL,"\
+	"`bCheckIndex`	INTEGER NOT NULL,"\
+	"`index`	TEXT NOT NULL,"\
+	"`bCheckZone`	TEXT NOT NULL,"\
+	"`zone`	INTEGER NOT NULL,"\
+	"`bCheckSubZone`	INTEGER NOT NULL,"\
+	"`subzone`	INTEGER NOT NULL,"\
+	"`bCheckMeasurementIndex`	INTEGER NOT NULL,"\
+	"`meaurementIndex`	INTEGER NOT NULL,"\
+	"`actionCode`	TEXT NOT NULL,"\
+	"`actionParameter`	NUMERIC NOT NULL,"\
+	"`measurementValue`	REAL,"\
+	"`measurementUnit`	INTEGER,"\
+	"`measurementCompare`	INTEGER,"\
+	"`comment`	TEXT"\
+    ")"
+
+#define VSCPDB_ORDINAL_DM_ID                        0   // 
+#define VSCPDB_ORDINAL_DM_GROUPID                   1   //
+#define VSCPDB_ORDINAL_DM_ENABLE                    2   //
+#define VSCPDB_ORDINAL_DM_MASK_PRIORITY             3   //
+#define VSCPDB_ORDINAL_DM_MASK_CLASS                4   //
+#define VSCPDB_ORDINAL_DM_MASK_FILTER               5   //
+#define VSCPDB_ORDINAL_DM_MASK_GUID                 6   //
+#define VSCPDB_ORDINAL_DM_FILTER_PRIORITY           7   //
+#define VSCPDB_ORDINAL_DM_FILTER_CLASS              8   //
+#define VSCPDB_ORDINAL_DM_FILTER_FILTER             9   //
+#define VSCPDB_ORDINAL_DM_FILTER_GUID               10   //
+#define VSCPDB_ORDINAL_DM_ALLOWED_FROM              11   //
+#define VSCPDB_ORDINAL_DM_ALLOWED_TO                12   //
+#define VSCPDB_ORDINAL_DM_ALLOWED_MONDAY            13   //
+#define VSCPDB_ORDINAL_DM_ALLOWED_TUESDAY           14   //
+#define VSCPDB_ORDINAL_DM_ALLOWED_WEDNESDAY         15   //
+#define VSCPDB_ORDINAL_DM_ALLOWED_THURSDAY          16   //
+#define VSCPDB_ORDINAL_DM_ALLOWED_FRIDAY            17   //
+#define VSCPDB_ORDINAL_DM_ALLOWED_SATURDAY          18   //
+#define VSCPDB_ORDINAL_DM_ALLOWED_SUNDAY            19   //
+#define VSCPDB_ORDINAL_DM_ALLOWED_TIME              20   //
+#define VSCPDB_ORDINAL_DM_CHECK_INDEX               21   //
+#define VSCPDB_ORDINAL_DM_INDEX                     22   //
+#define VSCPDB_ORDINAL_DM_CHECK_ZONE                23   //
+#define VSCPDB_ORDINAL_DM_ZONE                      24   //
+#define VSCPDB_ORDINAL_DM_CHECK_SUBZONE             25   //
+#define VSCPDB_ORDINAL_DM_SUBZONE                   26   //
+#define VSCPDB_ORDINAL_DM_CHECK_MEASUREMENT_INDEX   27   //
+#define VSCPDB_ORDINAL_DM_MEASUREMENT_INDEX         28   //
+#define VSCPDB_ORDINAL_DM_ACTIONCODE                29   //
+#define VSCPDB_ORDINAL_DM_ACTIONPARAMETER           30   //
+#define VSCPDB_ORDINAL_DM_MEASUREMENT_VALUE         31   //
+#define VSCPDB_ORDINAL_DM_MEASUREMENT_UNIT          32   //
+#define VSCPDB_ORDINAL_DM_MEASUREMENT_COMPARE       33   //
+#define VSCPDB_ORDINAL_DM_MEASUREMENT_COMMENT       34   //
+
+
+#endif  // compile

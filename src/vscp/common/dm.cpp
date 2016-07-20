@@ -49,6 +49,7 @@
 #endif
 
 #include <vscp.h>
+#include <vscpdb.h>
 #include <version.h>
 #include <vscphelper.h>
 #include <vscpeventhelper.h>
@@ -3967,43 +3968,7 @@ bool CDM::stopTimer( int idTimer )
 bool CDM::doCreateDMTable( void )
 {
     char *pErrMsg = 0;
-    const char *psql = "CREATE TABLE \"dm\" ("
-	"`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,"
-	"`GroupID`	TEXT NOT NULL,"
-	"`bEnable`	INTEGER NOT NULL DEFAULT 0,"
-	"`maskPriority`	INTEGER NOT NULL DEFAULT 0,"
-	"`maskClass`	NUMERIC NOT NULL DEFAULT 0,"
-	"`maskType`	INTEGER NOT NULL DEFAULT 0,"
-	"`maskGUID`	TEXT NOT NULL,"
-	"`filterPriority`	INTEGER NOT NULL DEFAULT 0,"
-	"`filterClass`	INTEGER NOT NULL DEFAULT 0,"
-	"`filterType`	INTEGER NOT NULL DEFAULT 0,"
-	"`filterGUID`	TEXT NOT NULL,"
-	"`allowedFrom`	TEXT NOT NULL,"
-	"`allowedTo`	TEXT NOT NULL,"
-	"`allowedMonday`	BLOB NOT NULL,"
-	"`allowedTuesday`	INTEGER NOT NULL,"
-	"`allowsWednesday`	INTEGER NOT NULL,"
-	"`allowedThursday`	INTEGER NOT NULL,"
-	"`allowedFriday`	INTEGER NOT NULL,"
-	"`allowedSaturday`	NUMERIC NOT NULL,"
-	"`allowedSunday`	BLOB NOT NULL,"
-	"`allowedTime`	TEXT NOT NULL,"
-	"`bCheckIndex`	INTEGER NOT NULL,"
-	"`index`	TEXT NOT NULL,"
-	"`bCheckZone`	TEXT NOT NULL,"
-	"`zone`	INTEGER NOT NULL,"
-	"`bCheckSubZone`	INTEGER NOT NULL,"
-	"`subzone`	INTEGER NOT NULL,"
-	"`bCheckMeasurementIndex`	INTEGER NOT NULL,"
-	"`meaurementIndex`	INTEGER NOT NULL,"
-	"`actionCode`	TEXT NOT NULL,"
-	"`actionParameter`	NUMERIC NOT NULL,"
-	"`measurementValue`	REAL,"
-	"`measurementUnit`	INTEGER,"
-	"`measurementCompare`	INTEGER,"
-	"`comment`	TEXT"
-    ")";
+    const char *psql = VSCPDB_DM_CREATE;
     
     // Check if database is open
     if ( NULL == m_db_vscp_dm ) return false;
