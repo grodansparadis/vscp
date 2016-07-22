@@ -2766,13 +2766,13 @@ bool CVariableStorage::load( wxString& path  )
     if ( 0 == path.Length() ) {
         path = m_configPath;
     }
-
+    
     if (!doc.Load( path ) ) {
         return false;
     }
-
+    
     //::wxLogDebug ( _("Loading variables from: \n\t") + m_configPath );
-
+    
     // start processing the XML file
     if ( !( doc.GetRoot()->GetName() != wxT("variables") ||
             doc.GetRoot()->GetName() != wxT("persistent") ) ) {

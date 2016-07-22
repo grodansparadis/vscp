@@ -594,8 +594,9 @@ private:
 // List with DMitems
 WX_DECLARE_LIST ( dmElement, DMLIST );
 
+
 /*!
-Decision Matrix
+    Decision Matrix
 */
 
 class CDM
@@ -736,6 +737,19 @@ public:
       *     @return true on success.
       */
      bool doCreateDMTable( void );
+     
+     
+    /*!
+     *     Create the in memroy DM table
+     *     @return true on success.
+     */
+     bool doCreateInMemoryDMTable( void );
+     
+    /*!
+     *     Fill/Update the in memroy DM table
+     *     @return true on success.
+    */
+    bool doFillMemoryDMTable();
 
   //------------------------------------
 
@@ -766,8 +780,9 @@ public:
     // Path to the VSCP DM database
     wxFileName m_path_db_vscp_dm;  
     
-    // Database
-    sqlite3 *m_db_vscp_dm;
+    // Databases
+    sqlite3 *m_db_vscp_dm;              // External DM database
+    sqlite3 *m_db_vscp_dm_memory;       // In-memory DM database
 
     /// DM table filter - Filter for all rows of the table
     vscpEventFilter m_DM_Table_filter;

@@ -2907,7 +2907,8 @@ CDM::CDM( CControlObject *ctrlObj )
         m_path_db_vscp_dm = _("/srv/vscp/vscp_dm.sqlite3");
 #endif
         
-   m_db_vscp_dm = NULL;     
+   m_db_vscp_dm = NULL; 
+   m_db_vscp_dm_memory = NULL;
 
 }
 
@@ -3872,7 +3873,8 @@ int CDM::addTimer( uint16_t id,
                                             (const char *)nameVar.c_str() );
         logMsg( logStr, LOG_DM_DEBUG );
 
-        if ( m_pCtrlObject->m_VSCP_Variables.add( nameVar, wxT("false"), VSCP_DAEMON_VARIABLE_CODE_BOOLEAN ) ) {
+        if ( m_pCtrlObject->m_VSCP_Variables.add( nameVar, wxT("false"), 
+                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN ) ) {
 
             dmTimer *pTimer = new dmTimer( nameVar,
                 delay,
@@ -3917,7 +3919,10 @@ bool CDM::startTimer( int idTimer )
 // startTimer
 //
 
-int CDM::startTimer( uint16_t idTimer, wxString& nameVariable, uint32_t delay, bool bSetValue )
+int CDM::startTimer( uint16_t idTimer, 
+                        wxString& nameVariable, 
+                        uint32_t delay,
+                        bool bSetValue )
 {
     uint16_t rv = 0;
 
@@ -3982,6 +3987,115 @@ bool CDM::doCreateDMTable( void )
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// doCreateInMemoryDMTable
+//
+
+bool CDM::doCreateInMemoryDMTable( void )
+{
+    char *pErrMsg = 0;
+    const char *psql = VSCPDB_DM_CREATE;
+    
+    // Check if database is open
+    if ( NULL == m_db_vscp_dm_memory ) return false;
+    
+    if ( SQLITE_OK != sqlite3_exec(m_db_vscp_dm_memory, psql, NULL, NULL, NULL) ) {
+        return false;
+    }
+    
+    return true;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// doFillMemoryDMTable
+//
+
+bool CDM::doFillMemoryDMTable()
+{  
+    wxString str;
+    sqlite3_stmt *ppStmt;
+    const char *psql =  _("SELECT * FROM  dm;");
+    
+    // Check if database is open
+    if ( NULL == m_db_vscp_dm ) return false;
+           
+    if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_dm,
+                                            psql,
+                                            -1,
+                                            &ppStmt,
+                                            NULL ) ) {
+        return false;
+    }
+    
+    
+    while ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
+        
+        char *insert_sql = sqlite3_mprintf("INSERT INTO 'dm' ("
+                "id,GroupID,bEnable,maskPriority,maskClass,maskType,maskGUID,"
+                "filterPriority,filterClass,filterType,filterGUID,allowedFrom,allowedTo,"
+                "allowedMonday,allowedTuesday,allowsWednesday,allowedThursday,allowedFriday,allowedSaturday,"
+                "allowedSunday,allowedTime,bCheckIndex,index,bCheckZone,zone,"
+                "bCheckSubZone,subzone,bCheckMeasurementIndex,meaurementIndex,"
+                "actionCode,actionParameter,measurementValue,measurementUnit,measurementCompare"
+                ") VALUES ( "
+                "'%s','%s', '%s','%s','%s','%s','%s','%s','%s','%s','%s','%s',"
+                "'%s','%s', '%s','%s','%s','%s','%s','%s','%s','%s','%s','%s',"
+                "'%s','%s', '%s','%s','%s','%s','%s','%s','%s','%s'"
+                ")",
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ID ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_GROUPID ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ENABLE ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_MASK_PRIORITY ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_MASK_CLASS ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_MASK_FILTER ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_MASK_GUID ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_FILTER_PRIORITY ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_FILTER_CLASS ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_FILTER_FILTER ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_FILTER_GUID ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_FROM ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_TO ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_MONDAY ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_TUESDAY ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_WEDNESDAY ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_THURSDAY ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_FRIDAY ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_SATURDAY ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_SUNDAY ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_TIME ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_CHECK_INDEX ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_INDEX ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_CHECK_ZONE ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ZONE ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_CHECK_SUBZONE ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_SUBZONE ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_CHECK_MEASUREMENT_INDEX ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_INDEX ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ACTIONCODE ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ACTIONPARAMETER ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_VALUE ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_UNIT ),
+                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_COMPARE )            
+            ); 
+        
+        if (SQLITE_OK != sqlite3_exec( ppStmt, insert_sql, NULL, NULL, &zErrMsg ) ) {
+            sqlite3_free( insert_sql );
+            return false;
+        }
+
+        sqlite3_free( insert_sql );
+                
+    }
+    
+    
+    sqlite3_finalize( ppStmt );
+    
+    return true;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -4040,7 +4154,8 @@ actionThread_URL::~actionThread_URL()
 
 void *actionThread_URL::Entry()
 {
-    //m_pCtrlObject->logMsg ( _T ( "TCP actionThreadURL: Quit.\n" ), DAEMON_LOGMSG_INFO );
+    //m_pCtrlObject->logMsg ( _( "TCP actionThreadURL: Quit.\n" ), 
+    //                            DAEMON_LOGMSG_INFO );
 
     wxIPV4address addr;
     wxSocketClient sock;
@@ -4136,7 +4251,7 @@ void *actionThread_URL::Entry()
         else {
 
             // Invalid method
-            m_pCtrlObject->logMsg( _T ( "actionThreadURL: Invalid http access method: " ) +
+            m_pCtrlObject->logMsg( _T( "actionThreadURL: Invalid http access method: " ) +
                 m_url.GetServer() +
                 wxT(",") +
                 m_url.GetPort() +
