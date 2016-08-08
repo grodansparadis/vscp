@@ -3040,434 +3040,6 @@ dmElement *CDM::getElement( short row )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// load
-//
-// Read decision matrix from file
-//
-
-bool CDM::load ( void )
-{
-    logMsg( _("DM: Loading decision matrix from :\n") );
-
-    // debug print configuration path
-    logMsg( m_configPath + _("\n") );
-
-    // File must exist
-    if ( !wxFile::Exists( m_configPath ) ) {
-        logMsg( _("DM: file does not exist.\n") );
-        return false;
-    }
-
-    wxXmlDocument doc;
-    if ( !doc.Load ( m_configPath ) ) {
-        logMsg( _("Faild to load DM. Check format!\n") );
-        return false;
-    }
-
-    // start processing the XML file
-    if ( doc.GetRoot()->GetName() != wxT ( "dm" ) ) {
-        logMsg( _("Faild to load DM. <dm> tahs not found, format is wrong!\n") );
-        return false;
-    }
-
-    wxXmlNode *child = doc.GetRoot()->GetChildren();
-    while ( child ) {
-
-        if ( child->GetName() == wxT ( "row" ) ) {
-
-            // Set row default values for row
-            dmElement *pDMitem = new dmElement;
-            pDMitem->m_control = 0;
-            pDMitem->m_action = 0;
-            pDMitem->m_triggCounter = 0;
-            pDMitem->m_errorCounter = 0;
-            pDMitem->m_actionparam.Empty();
-            pDMitem->m_comment.Empty();
-            pDMitem->m_timeAllow.m_fromTime = wxDateTime::Now();
-            pDMitem->m_timeAllow.m_endTime = wxDateTime::Now();
-            pDMitem->m_timeAllow.setWeekDays(wxT("mtwtfss"));
-            pDMitem->m_index = 0;
-            pDMitem->m_zone = 0;
-            pDMitem->m_subzone = 0;
-            vscp_clearVSCPFilter( &pDMitem->m_vscpfilter );
-
-            // Check if row is enabled
-            wxString strEnabled = child->GetAttribute( wxT( "enable" ), wxT("false") );
-
-            strEnabled.MakeUpper();
-            if ( wxNOT_FOUND != strEnabled.Find( _("TRUE") ) ) {
-                pDMitem->enableRow();
-            }
-            else {
-                pDMitem->disableRow();
-            }
-
-            // Get group id
-            pDMitem->m_strGroupID = child->GetAttribute( wxT( "groupid" ), wxT("") );
-
-
-            // add the DM row to the matrix
-            addElement ( pDMitem );
-
-            wxXmlNode *subchild = child->GetChildren();
-            while ( subchild ) {
-
-                if ( subchild->GetName() == wxT ( "mask" ) ) {
-                    wxString str;
-                    str = subchild->GetAttribute( wxT( "priority" ), wxT("0") );
-                    pDMitem->m_vscpfilter.mask_priority = vscp_readStringValue( str );
-
-                    str = subchild->GetAttribute( wxT( "class" ), wxT("0") );
-                    pDMitem->m_vscpfilter.mask_class = vscp_readStringValue( str );
-
-                    str = subchild->GetAttribute( wxT( "type" ), wxT("0") );
-                    pDMitem->m_vscpfilter.mask_type = vscp_readStringValue( str );
-
-                    wxString strGUID = subchild->GetAttribute( wxT( "GUID" ),
-                                                                wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
-                    vscp_getGuidFromStringToArray( pDMitem->m_vscpfilter.mask_GUID, strGUID );
-                }
-                else if ( subchild->GetName() == wxT ( "filter" ) ) {
-                    wxString str;
-                    str = subchild->GetAttribute( wxT( "priority" ), wxT("0") );
-                    pDMitem->m_vscpfilter.filter_priority = vscp_readStringValue( str );
-
-                    str = subchild->GetAttribute( wxT( "class" ), wxT("0") );
-                    pDMitem->m_vscpfilter.filter_class = vscp_readStringValue( str );
-
-                    str = subchild->GetAttribute( wxT( "type" ), wxT("0") );
-                    pDMitem->m_vscpfilter.filter_type = vscp_readStringValue( str );
-
-                    wxString strGUID = subchild->GetAttribute( wxT( "GUID" ),
-                            wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
-                    vscp_getGuidFromStringToArray( pDMitem->m_vscpfilter.filter_GUID, strGUID );
-                }
-                else if ( subchild->GetName() == wxT ( "control" ) ) {
-                    pDMitem->m_control = vscp_readStringValue( subchild->GetNodeContent() );
-                }
-                else if ( subchild->GetName() == wxT ( "action" ) ) {
-                    pDMitem->m_action = vscp_readStringValue( subchild->GetNodeContent() );
-                }
-                else if ( subchild->GetName() == wxT ( "param" ) ){
-                    pDMitem->m_actionparam = subchild->GetNodeContent();
-                    pDMitem->m_actionparam = pDMitem->m_actionparam.Trim();
-                    pDMitem->m_actionparam = pDMitem->m_actionparam.Trim(false);
-                }
-                else if ( subchild->GetName() == wxT ( "comment" ) ) {
-                    pDMitem->m_comment = subchild->GetNodeContent();
-                    pDMitem->m_comment = pDMitem->m_comment.Trim();
-                    pDMitem->m_comment = pDMitem->m_comment.Trim(false);
-                }
-                else if ( subchild->GetName() == wxT ( "allowed_from" ) ) {
-                    wxString str = subchild->GetNodeContent();
-                    str.Trim();
-                    if ( 0 != str.Length() ) {
-                        pDMitem->m_timeAllow.m_fromTime.ParseDateTime(str);
-                    }
-                    else {
-                        pDMitem->m_timeAllow.m_fromTime.ParseDateTime( _("1970-01-01 00:00:00") );
-                    }
-                }
-                else if ( subchild->GetName() == wxT ( "allowed_to" ) ) {
-                    wxString str = subchild->GetNodeContent();
-                    str.Trim();
-                    if ( 0 != str.Length() ) {
-                        pDMitem->m_timeAllow.m_endTime.ParseDateTime(str);
-                    }
-                    else {
-                        pDMitem->m_timeAllow.m_endTime.ParseDateTime( _("2199-12-31 23:59:59") );
-                    }
-                }
-                else if ( subchild->GetName() == wxT ( "allowed_weekdays" ) ) {
-                    wxString str = subchild->GetNodeContent();
-                    str.Trim();
-                    if ( 0 != str.Length() ) {
-                        pDMitem->m_timeAllow.setWeekDays(str);
-                    }
-                    else {
-                        pDMitem->m_timeAllow.setWeekDays( _("mtwtfss") );
-                    }
-                }
-                else if ( subchild->GetName() == wxT ( "allowed_time" ) ) {
-                    wxString str = subchild->GetNodeContent();
-                    str.Trim();
-                    if ( 0 != str.Length() ) {
-                        pDMitem->m_timeAllow.parseActionTime(str);
-                    }
-                    else {
-                        pDMitem->m_timeAllow.parseActionTime(_("*:*:*" ));
-                        }
-                }
-                else if ( subchild->GetName() == wxT ( "index" ) ) {
-                    wxString str;
-
-                    str = subchild->GetAttribute( wxT( "bMeasurement" ), wxT("false") );
-
-                    str.MakeUpper();
-                    if ( wxNOT_FOUND != str.Find(_("TRUE"))) {
-                        pDMitem->m_bMeasurement = true;
-                    }
-                    pDMitem->m_index = vscp_readStringValue( subchild->GetNodeContent() );
-                }
-                else if ( subchild->GetName() == wxT ( "zone" ) ) {
-                    pDMitem->m_zone = vscp_readStringValue( subchild->GetNodeContent() );
-                }
-                else if ( subchild->GetName() == wxT ( "subzone" ) ) {
-                    pDMitem->m_subzone = vscp_readStringValue( subchild->GetNodeContent() );
-                }
-
-                subchild = subchild->GetNext();
-
-            }
-
-        }
-
-        child = child->GetNext();
-
-    }
-
-    logMsg( _("DM: Read success.\n"), LOG_DM_NORMAL );
-
-    return true;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// save
-//
-// Write decision matrix to file
-//
-
-bool CDM::save ( void )
-{
-    wxString strLog;
-    wxString buf;
-
-    strLog = _("DM: Saving decision matrix to: ") + m_configPath + _("\n");
-    logMsg( strLog );
-
-    if ( !wxFileName::IsFileWritable( m_configPath ) ) {
-        strLog = _("DM: File is not writable.\n");
-        logMsg( strLog );
-        return false;
-    }
-
-    wxFFileOutputStream *pFileStream = new wxFFileOutputStream ( m_configPath );
-    if ( NULL == pFileStream ) {
-        strLog = _("DM: Failed to save: ") + m_configPath + _(" (memory allocation)\n");
-        logMsg( strLog );
-        return false;
-    }
-
-    // Make a copy before we save
-    wxCopyFile( m_configPath, m_configPath + _("~") );
-
-    pFileStream->Write ( "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n",
-            strlen ( "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n" ) );
-
-    m_mutexDM.Lock();
-
-    // DM matrix information start
-    pFileStream->Write ( "<dm>\n",strlen ( "<dm>\n" ) );
-
-    DMLIST::iterator it;
-    for ( it = m_DMList.begin(); it != m_DMList.end(); ++it ) {
-
-        dmElement *pDMitem = *it;
-
-        if ( NULL != pDMitem ) {  // Must be an dmElement to work with  m_strGroupID
-
-            pFileStream->Write( "  <row enable=\"",strlen ( "  <row enable=\"" ) );
-            if ( pDMitem->isEnabled() ) {
-                pFileStream->Write("true\" ",strlen("true\" "));
-            }
-            else {
-                pFileStream->Write("false\" ",strlen("false\" "));
-            }
-
-            pFileStream->Write("groupid=\"",strlen("groupid=\""));
-            pFileStream->Write( pDMitem->m_strGroupID.mb_str(), strlen(pDMitem->m_strGroupID.mb_str()) );
-            pFileStream->Write("\" >\n", strlen("\" >\n"));
-
-            pFileStream->Write( "    <mask ",strlen ( "    <mask " ) );
-            buf.Printf( _( " priority=\"%d\" " ), pDMitem->m_vscpfilter.mask_priority );
-            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
-
-            buf.Printf( _( " class=\"%d\" " ), pDMitem->m_vscpfilter.mask_class );
-            pFileStream->Write ( buf.mb_str(), strlen( buf.mb_str() ) );
-
-            buf.Printf ( _( " type=\"%d\" " ), pDMitem->m_vscpfilter.mask_type );
-            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
-
-            buf.Printf( _( " GUID=\" " ) );
-            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
-
-            wxString strGUID;
-            vscp_writeGuidArrayToString( pDMitem->m_vscpfilter. mask_GUID, strGUID );
-            pFileStream->Write( strGUID.mb_str(), strlen( strGUID.mb_str() ) );
-            pFileStream->Write( "\" > ", strlen( "\" > " ) );
-            pFileStream->Write( "</mask>\n", strlen( "</mask>\n" ) );
-
-            pFileStream->Write( "    <filter ", strlen( "    <filter " ) );
-            buf.Printf( _( " priority=\"%d\" " ), pDMitem->m_vscpfilter.filter_priority );
-            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
-            buf.Printf( _( " class=\"%d\" " ), pDMitem->m_vscpfilter.filter_class );
-            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
-            buf.Printf( _( " type=\"%d\" " ), pDMitem->m_vscpfilter.filter_type );
-            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
-            buf.Printf( _( " GUID=\" " ) );
-            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
-            vscp_writeGuidArrayToString( pDMitem->m_vscpfilter.filter_GUID, strGUID );
-            pFileStream->Write( strGUID.mb_str(), strlen( strGUID.mb_str() ) );
-            pFileStream->Write( "\" > ", strlen( "\" > " ) );
-            pFileStream->Write( "</filter>\n", strlen( "</filter>\n" ) );
-
-            pFileStream->Write( "    <control>", strlen( "    <control>" ) );
-            buf.Printf( _( "0x%x" ), pDMitem->m_control );
-            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
-            pFileStream->Write( "</control>\n", strlen( "</control>\n" ) );
-
-            pFileStream->Write( "    <action>", strlen( "    <action>" ) );
-            buf.Printf( _( "0x%x" ), pDMitem->m_action );
-            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ));
-            pFileStream->Write( "</action>\n", strlen ( "</action>\n" ) );
-
-            pFileStream->Write( "    <param>", strlen ( "    <param>" ) );
-            pFileStream->Write( pDMitem->m_actionparam.mb_str(),
-                                    strlen( pDMitem->m_actionparam.mb_str() ) );
-            pFileStream->Write( "</param>\n", strlen ( "</param>\n" ) );
-
-            pFileStream->Write( "    <comment>", strlen ( "    <comment>" ) );
-            pFileStream->Write( pDMitem->m_comment.mb_str(),
-                                    strlen(pDMitem->m_comment.mb_str()) );
-            pFileStream->Write( "</comment>\n", strlen ( "</comment>\n" ) );
-
-            pFileStream->Write( "    <allowed_from>", strlen ( "    <allowed_from>" ) );
-            {
-                wxString str = pDMitem->m_timeAllow.m_fromTime.FormatISODate() + _(" ") +
-                    pDMitem->m_timeAllow.m_fromTime.FormatISOTime();
-                pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
-            }
-            pFileStream->Write( "</allowed_from>\n", strlen( "</allowed_from>\n" ) );
-
-            pFileStream->Write ( "    <allowed_to>", strlen( "    <allowed_to>" ) );
-            {
-                wxString str = pDMitem->m_timeAllow.m_endTime.FormatISODate() + _(" ") +
-                    pDMitem->m_timeAllow.m_endTime.FormatISOTime();
-                pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
-            }
-            pFileStream->Write("</allowed_to>\n", strlen ( "</allowed_to>\n" ) );
-
-            pFileStream->Write("    <allowed_weekdays>", strlen ( "    <allowed_weekdays>" ) );
-            {
-                wxString str = pDMitem->m_timeAllow.getWeekDays();
-                pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
-            }
-            pFileStream->Write( "</allowed_weekdays>\n", strlen ( "</allowed_weekdays>\n" ) );
-
-            pFileStream->Write( "    <allowed_time>", strlen ( "    <allowed_time>" ) );
-            {
-                wxString str = pDMitem->m_timeAllow.getActionTimeAsString();
-                pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
-            }
-            pFileStream->Write( "</allowed_time>\n",strlen ( "</allowed_time>\n" ) );
-
-            // Index
-            pFileStream->Write( "    <index ", strlen( "    <index " ) );
-            buf.Printf( _( " bMeasurement=\"%s\" " ),
-                    (pDMitem->m_bMeasurement) ? _("true") : _("false") );
-            pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
-            pFileStream->Write( " > ", strlen( " > " ) );
-            buf.Printf( _( "%d" ), pDMitem->m_index );
-            pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
-            pFileStream->Write( "</index>\n", strlen ( "</index>\n" ) );
-
-            // Zone
-            pFileStream->Write( "    <zone>", strlen ( "    <zone>" ) );
-            buf.Printf( _( "%d" ), pDMitem->m_zone );
-            pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
-            pFileStream->Write( "</zone>\n", strlen ( "</zone>\n" ) );
-
-            // Subzone
-            pFileStream->Write( "    <subzone>", strlen ( "    <subzone>" ) );
-            buf.Printf( _( "%d" ), pDMitem->m_subzone );
-            pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
-            pFileStream->Write( "</subzone>\n", strlen ( "</subzone>\n" ) );
-
-
-            pFileStream->Write( "  </row>\n\n",strlen( "  </row>\n\n" ) );
-
-        }
-
-    }
-
-    // DM matrix information end
-    pFileStream->Write ( "</dm>",strlen ( "</dm>" ) );
-
-    m_mutexDM.Unlock();
-
-    // Close the file
-    pFileStream->Close();
-
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// feed
-//
-
-bool CDM::feed( vscpEvent *pEvent )
-{
-    m_mutexDM.Lock();
-
-    DMLIST::iterator it;
-    for ( it = m_DMList.begin(); it != m_DMList.end(); ++it ) {
-
-        dmElement *pDMitem = *it;
-
-        // Skip if disabled
-        if ( !pDMitem->isEnabled() ) continue;
-
-        if ( vscp_doLevel2Filter( pEvent, &pDMitem->m_vscpfilter ) &&
-                pDMitem->m_timeAllow.ShouldWeDoAction() ) {
-
-                if ( pDMitem->isCheckIndexSet() ) {
-                    if ( pDMitem->m_bMeasurement ) {
-                        if ( ( 0 == pEvent->sizeData ) ||
-                                ( ( pEvent->pdata[0] & 7 ) != pDMitem->m_index ) ) continue;
-                    }
-                    else {
-                        if ( ( 0 == pEvent->sizeData ) ||
-                                ( pEvent->pdata[0] != pDMitem->m_index ) ) continue;
-                    }
-                }
-
-                if ( pDMitem->isCheckZoneSet() ) {
-                    if ( ( 2 > pEvent->sizeData ) ||
-                                ( pEvent->pdata[1] != pDMitem->m_zone ) ) continue;
-                }
-
-                if ( pDMitem->isCheckSubZoneSet() ) {
-                    if ( ( 3 > pEvent->sizeData ) ||
-                                ( pEvent->pdata[2] != pDMitem->m_subzone ) ) continue;
-                }
-
-                // Match do action for this row
-                pDMitem->doAction( pEvent );
-
-                // Check if DM scan should continue after this DM row
-                if ( pDMitem->isScanDontContinueSet() ) break;
-
-        }
-
-    }
-
-    m_mutexDM.Unlock();
-
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // feedPeriodicEvent
 //
 
@@ -3978,9 +3550,14 @@ bool CDM::doCreateDMTable( void )
     // Check if database is open
     if ( NULL == m_db_vscp_dm ) return false;
     
-    if ( SQLITE_OK != sqlite3_exec(m_db_vscp_dm, psql, NULL, NULL, NULL) ) {
+    m_mutexDM.Lock();
+    
+    if ( SQLITE_OK != sqlite3_exec(m_db_vscp_dm, psql, NULL, NULL, &pErrMsg ) ) {
+        m_mutexDM.Unlock();
         return false;
     }
+    
+    m_mutexDM.Unlock();
     
     return true;
 }
@@ -3988,6 +3565,8 @@ bool CDM::doCreateDMTable( void )
 
 ///////////////////////////////////////////////////////////////////////////////
 // doCreateInMemoryDMTable
+//
+// Not used
 //
 
 bool CDM::doCreateInMemoryDMTable( void )
@@ -3998,9 +3577,14 @@ bool CDM::doCreateInMemoryDMTable( void )
     // Check if database is open
     if ( NULL == m_db_vscp_dm_memory ) return false;
     
-    if ( SQLITE_OK != sqlite3_exec(m_db_vscp_dm_memory, psql, NULL, NULL, NULL) ) {
+    m_mutexDM.Lock();
+    
+    if ( SQLITE_OK != sqlite3_exec(m_db_vscp_dm_memory, psql, NULL, NULL, &pErrMsg ) ) {
+        m_mutexDM.Unlock();
         return false;
     }
+    
+    m_mutexDM.Unlock();
     
     return true;
 }
@@ -4009,24 +3593,34 @@ bool CDM::doCreateInMemoryDMTable( void )
 ///////////////////////////////////////////////////////////////////////////////
 // doFillMemoryDMTable
 //
+// Not used
+//
 
 bool CDM::doFillMemoryDMTable()
 {  
     wxString str;
     sqlite3_stmt *ppStmt;
-    const char *psql =  _("SELECT * FROM  dm;");
+    char *pErrMsg;
     
-    // Check if database is open
+    // Check if databases are open
     if ( NULL == m_db_vscp_dm ) return false;
+    if ( NULL == m_db_vscp_dm_memory ) return false;
+    
+    m_mutexDM.Lock();
+    
+    // Delete all elements in memory database
+    pErrMsg = 0;
+    if ( SQLITE_OK != sqlite3_exec( m_db_vscp_dm_memory, "DELETE * FROM dm;", NULL, NULL, &pErrMsg ) ) {
+        //sqlite3_free( insert_sql );
+    }
            
     if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_dm,
-                                            psql,
+                                            "SELECT * FROM dm;",
                                             -1,
                                             &ppStmt,
                                             NULL ) ) {
         return false;
     }
-    
     
     while ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
         
@@ -4078,18 +3672,448 @@ bool CDM::doFillMemoryDMTable()
                 (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_COMPARE )            
             ); 
         
-        if (SQLITE_OK != sqlite3_exec( ppStmt, insert_sql, NULL, NULL, &zErrMsg ) ) {
-            sqlite3_free( insert_sql );
-            return false;
+        // Insert into memory database
+        pErrMsg = 0;
+        if ( SQLITE_OK != sqlite3_exec( m_db_vscp_dm_memory, insert_sql, NULL, NULL, &pErrMsg ) ) {
+            //sqlite3_free( insert_sql );
         }
 
         sqlite3_free( insert_sql );
-                
+
     }
-    
     
     sqlite3_finalize( ppStmt );
     
+    m_mutexDM.Unlock();
+    
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// load
+//
+// Read decision matrix from file
+//
+
+bool CDM::load ( void )
+{
+    logMsg( _("DM: Loading decision matrix from :\n") );
+
+    // debug print configuration path
+    logMsg( m_configPath + _("\n") );
+
+    // File must exist
+    if ( !wxFile::Exists( m_configPath ) ) {
+        logMsg( _("DM: file does not exist.\n") );
+        return false;
+    }
+
+    wxXmlDocument doc;
+    if ( !doc.Load ( m_configPath ) ) {
+        logMsg( _("Faild to load DM. Check format!\n") );
+        return false;
+    }
+
+    // start processing the XML file
+    if ( doc.GetRoot()->GetName() != wxT ( "dm" ) ) {
+        logMsg( _("Faild to load DM. <dm> tahs not found, format is wrong!\n") );
+        return false;
+    }
+
+    wxXmlNode *child = doc.GetRoot()->GetChildren();
+    while ( child ) {
+
+        if ( child->GetName() == wxT ( "row" ) ) {
+
+            // Set row default values for row
+            dmElement *pDMitem = new dmElement;
+            pDMitem->m_control = 0;
+            pDMitem->m_action = 0;
+            pDMitem->m_triggCounter = 0;
+            pDMitem->m_errorCounter = 0;
+            pDMitem->m_actionparam.Empty();
+            pDMitem->m_comment.Empty();
+            pDMitem->m_timeAllow.m_fromTime = wxDateTime::Now();
+            pDMitem->m_timeAllow.m_endTime = wxDateTime::Now();
+            pDMitem->m_timeAllow.setWeekDays(wxT("mtwtfss"));
+            pDMitem->m_index = 0;
+            pDMitem->m_zone = 0;
+            pDMitem->m_subzone = 0;
+            vscp_clearVSCPFilter( &pDMitem->m_vscpfilter );
+
+            // Check if row is enabled
+            wxString strEnabled = child->GetAttribute( wxT( "enable" ), wxT("false") );
+
+            strEnabled.MakeUpper();
+            if ( wxNOT_FOUND != strEnabled.Find( _("TRUE") ) ) {
+                pDMitem->enableRow();
+            }
+            else {
+                pDMitem->disableRow();
+            }
+
+            // Get group id
+            pDMitem->m_strGroupID = child->GetAttribute( wxT( "groupid" ), wxT("") );
+
+
+            // add the DM row to the matrix
+            addElement ( pDMitem );
+
+            wxXmlNode *subchild = child->GetChildren();
+            while ( subchild ) {
+
+                if ( subchild->GetName() == wxT ( "mask" ) ) {
+                    wxString str;
+                    str = subchild->GetAttribute( wxT( "priority" ), wxT("0") );
+                    pDMitem->m_vscpfilter.mask_priority = vscp_readStringValue( str );
+
+                    str = subchild->GetAttribute( wxT( "class" ), wxT("0") );
+                    pDMitem->m_vscpfilter.mask_class = vscp_readStringValue( str );
+
+                    str = subchild->GetAttribute( wxT( "type" ), wxT("0") );
+                    pDMitem->m_vscpfilter.mask_type = vscp_readStringValue( str );
+
+                    wxString strGUID = subchild->GetAttribute( wxT( "GUID" ),
+                                                                wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
+                    vscp_getGuidFromStringToArray( pDMitem->m_vscpfilter.mask_GUID, strGUID );
+                }
+                else if ( subchild->GetName() == wxT ( "filter" ) ) {
+                    wxString str;
+                    str = subchild->GetAttribute( wxT( "priority" ), wxT("0") );
+                    pDMitem->m_vscpfilter.filter_priority = vscp_readStringValue( str );
+
+                    str = subchild->GetAttribute( wxT( "class" ), wxT("0") );
+                    pDMitem->m_vscpfilter.filter_class = vscp_readStringValue( str );
+
+                    str = subchild->GetAttribute( wxT( "type" ), wxT("0") );
+                    pDMitem->m_vscpfilter.filter_type = vscp_readStringValue( str );
+
+                    wxString strGUID = subchild->GetAttribute( wxT( "GUID" ),
+                            wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
+                    vscp_getGuidFromStringToArray( pDMitem->m_vscpfilter.filter_GUID, strGUID );
+                }
+                else if ( subchild->GetName() == wxT ( "control" ) ) {
+                    pDMitem->m_control = vscp_readStringValue( subchild->GetNodeContent() );
+                }
+                else if ( subchild->GetName() == wxT ( "action" ) ) {
+                    pDMitem->m_action = vscp_readStringValue( subchild->GetNodeContent() );
+                }
+                else if ( subchild->GetName() == wxT ( "param" ) ){
+                    pDMitem->m_actionparam = subchild->GetNodeContent();
+                    pDMitem->m_actionparam = pDMitem->m_actionparam.Trim();
+                    pDMitem->m_actionparam = pDMitem->m_actionparam.Trim(false);
+                }
+                else if ( subchild->GetName() == wxT ( "comment" ) ) {
+                    pDMitem->m_comment = subchild->GetNodeContent();
+                    pDMitem->m_comment = pDMitem->m_comment.Trim();
+                    pDMitem->m_comment = pDMitem->m_comment.Trim(false);
+                }
+                else if ( subchild->GetName() == wxT ( "allowed_from" ) ) {
+                    wxString str = subchild->GetNodeContent();
+                    str.Trim();
+                    if ( 0 != str.Length() ) {
+                        pDMitem->m_timeAllow.m_fromTime.ParseDateTime(str);
+                    }
+                    else {
+                        pDMitem->m_timeAllow.m_fromTime.ParseDateTime( _("1970-01-01 00:00:00") );
+                    }
+                }
+                else if ( subchild->GetName() == wxT ( "allowed_to" ) ) {
+                    wxString str = subchild->GetNodeContent();
+                    str.Trim();
+                    if ( 0 != str.Length() ) {
+                        pDMitem->m_timeAllow.m_endTime.ParseDateTime(str);
+                    }
+                    else {
+                        pDMitem->m_timeAllow.m_endTime.ParseDateTime( _("2199-12-31 23:59:59") );
+                    }
+                }
+                else if ( subchild->GetName() == wxT ( "allowed_weekdays" ) ) {
+                    wxString str = subchild->GetNodeContent();
+                    str.Trim();
+                    if ( 0 != str.Length() ) {
+                        pDMitem->m_timeAllow.setWeekDays(str);
+                    }
+                    else {
+                        pDMitem->m_timeAllow.setWeekDays( _("mtwtfss") );
+                    }
+                }
+                else if ( subchild->GetName() == wxT ( "allowed_time" ) ) {
+                    wxString str = subchild->GetNodeContent();
+                    str.Trim();
+                    if ( 0 != str.Length() ) {
+                        pDMitem->m_timeAllow.parseActionTime(str);
+                    }
+                    else {
+                        pDMitem->m_timeAllow.parseActionTime(_("*:*:*" ));
+                        }
+                }
+                else if ( subchild->GetName() == wxT ( "index" ) ) {
+                    wxString str;
+
+                    str = subchild->GetAttribute( wxT( "bMeasurement" ), wxT("false") );
+
+                    str.MakeUpper();
+                    if ( wxNOT_FOUND != str.Find(_("TRUE"))) {
+                        pDMitem->m_bMeasurement = true;
+                    }
+                    pDMitem->m_index = vscp_readStringValue( subchild->GetNodeContent() );
+                }
+                else if ( subchild->GetName() == wxT ( "zone" ) ) {
+                    pDMitem->m_zone = vscp_readStringValue( subchild->GetNodeContent() );
+                }
+                else if ( subchild->GetName() == wxT ( "subzone" ) ) {
+                    pDMitem->m_subzone = vscp_readStringValue( subchild->GetNodeContent() );
+                }
+
+                subchild = subchild->GetNext();
+
+            }
+
+        }
+
+        child = child->GetNext();
+
+    }
+
+    logMsg( _("DM: Read success.\n"), LOG_DM_NORMAL );
+
+    return true;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// save
+//
+// Write decision matrix to file
+//
+
+bool CDM::save ( void )
+{
+    wxString strLog;
+    wxString buf;
+
+    strLog = _("DM: Saving decision matrix to: ") + m_configPath + _("\n");
+    logMsg( strLog );
+
+    if ( !wxFileName::IsFileWritable( m_configPath ) ) {
+        strLog = _("DM: File is not writable.\n");
+        logMsg( strLog );
+        return false;
+    }
+
+    wxFFileOutputStream *pFileStream = new wxFFileOutputStream ( m_configPath );
+    if ( NULL == pFileStream ) {
+        strLog = _("DM: Failed to save: ") + m_configPath + _(" (memory allocation)\n");
+        logMsg( strLog );
+        return false;
+    }
+
+    // Make a copy before we save
+    wxCopyFile( m_configPath, m_configPath + _("~") );
+
+    pFileStream->Write ( "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n",
+            strlen ( "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n" ) );
+
+    m_mutexDM.Lock();
+
+    // DM matrix information start
+    pFileStream->Write ( "<dm>\n",strlen ( "<dm>\n" ) );
+
+    DMLIST::iterator it;
+    for ( it = m_DMList.begin(); it != m_DMList.end(); ++it ) {
+
+        dmElement *pDMitem = *it;
+
+        if ( NULL != pDMitem ) {  // Must be an dmElement to work with  m_strGroupID
+
+            pFileStream->Write( "  <row enable=\"",strlen ( "  <row enable=\"" ) );
+            if ( pDMitem->isEnabled() ) {
+                pFileStream->Write("true\" ",strlen("true\" "));
+            }
+            else {
+                pFileStream->Write("false\" ",strlen("false\" "));
+            }
+
+            pFileStream->Write("groupid=\"",strlen("groupid=\""));
+            pFileStream->Write( pDMitem->m_strGroupID.mb_str(), strlen(pDMitem->m_strGroupID.mb_str()) );
+            pFileStream->Write("\" >\n", strlen("\" >\n"));
+
+            pFileStream->Write( "    <mask ",strlen ( "    <mask " ) );
+            buf.Printf( _( " priority=\"%d\" " ), pDMitem->m_vscpfilter.mask_priority );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+
+            buf.Printf( _( " class=\"%d\" " ), pDMitem->m_vscpfilter.mask_class );
+            pFileStream->Write ( buf.mb_str(), strlen( buf.mb_str() ) );
+
+            buf.Printf ( _( " type=\"%d\" " ), pDMitem->m_vscpfilter.mask_type );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+
+            buf.Printf( _( " GUID=\" " ) );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+
+            wxString strGUID;
+            vscp_writeGuidArrayToString( pDMitem->m_vscpfilter. mask_GUID, strGUID );
+            pFileStream->Write( strGUID.mb_str(), strlen( strGUID.mb_str() ) );
+            pFileStream->Write( "\" > ", strlen( "\" > " ) );
+            pFileStream->Write( "</mask>\n", strlen( "</mask>\n" ) );
+
+            pFileStream->Write( "    <filter ", strlen( "    <filter " ) );
+            buf.Printf( _( " priority=\"%d\" " ), pDMitem->m_vscpfilter.filter_priority );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+            buf.Printf( _( " class=\"%d\" " ), pDMitem->m_vscpfilter.filter_class );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+            buf.Printf( _( " type=\"%d\" " ), pDMitem->m_vscpfilter.filter_type );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+            buf.Printf( _( " GUID=\" " ) );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+            vscp_writeGuidArrayToString( pDMitem->m_vscpfilter.filter_GUID, strGUID );
+            pFileStream->Write( strGUID.mb_str(), strlen( strGUID.mb_str() ) );
+            pFileStream->Write( "\" > ", strlen( "\" > " ) );
+            pFileStream->Write( "</filter>\n", strlen( "</filter>\n" ) );
+
+            pFileStream->Write( "    <control>", strlen( "    <control>" ) );
+            buf.Printf( _( "0x%x" ), pDMitem->m_control );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+            pFileStream->Write( "</control>\n", strlen( "</control>\n" ) );
+
+            pFileStream->Write( "    <action>", strlen( "    <action>" ) );
+            buf.Printf( _( "0x%x" ), pDMitem->m_action );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ));
+            pFileStream->Write( "</action>\n", strlen ( "</action>\n" ) );
+
+            pFileStream->Write( "    <param>", strlen ( "    <param>" ) );
+            pFileStream->Write( pDMitem->m_actionparam.mb_str(),
+                                    strlen( pDMitem->m_actionparam.mb_str() ) );
+            pFileStream->Write( "</param>\n", strlen ( "</param>\n" ) );
+
+            pFileStream->Write( "    <comment>", strlen ( "    <comment>" ) );
+            pFileStream->Write( pDMitem->m_comment.mb_str(),
+                                    strlen(pDMitem->m_comment.mb_str()) );
+            pFileStream->Write( "</comment>\n", strlen ( "</comment>\n" ) );
+
+            pFileStream->Write( "    <allowed_from>", strlen ( "    <allowed_from>" ) );
+            {
+                wxString str = pDMitem->m_timeAllow.m_fromTime.FormatISODate() + _(" ") +
+                    pDMitem->m_timeAllow.m_fromTime.FormatISOTime();
+                pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+            }
+            pFileStream->Write( "</allowed_from>\n", strlen( "</allowed_from>\n" ) );
+
+            pFileStream->Write ( "    <allowed_to>", strlen( "    <allowed_to>" ) );
+            {
+                wxString str = pDMitem->m_timeAllow.m_endTime.FormatISODate() + _(" ") +
+                    pDMitem->m_timeAllow.m_endTime.FormatISOTime();
+                pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+            }
+            pFileStream->Write("</allowed_to>\n", strlen ( "</allowed_to>\n" ) );
+
+            pFileStream->Write("    <allowed_weekdays>", strlen ( "    <allowed_weekdays>" ) );
+            {
+                wxString str = pDMitem->m_timeAllow.getWeekDays();
+                pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+            }
+            pFileStream->Write( "</allowed_weekdays>\n", strlen ( "</allowed_weekdays>\n" ) );
+
+            pFileStream->Write( "    <allowed_time>", strlen ( "    <allowed_time>" ) );
+            {
+                wxString str = pDMitem->m_timeAllow.getActionTimeAsString();
+                pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+            }
+            pFileStream->Write( "</allowed_time>\n",strlen ( "</allowed_time>\n" ) );
+
+            // Index
+            pFileStream->Write( "    <index ", strlen( "    <index " ) );
+            buf.Printf( _( " bMeasurement=\"%s\" " ),
+                    (pDMitem->m_bMeasurement) ? _("true") : _("false") );
+            pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
+            pFileStream->Write( " > ", strlen( " > " ) );
+            buf.Printf( _( "%d" ), pDMitem->m_index );
+            pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
+            pFileStream->Write( "</index>\n", strlen ( "</index>\n" ) );
+
+            // Zone
+            pFileStream->Write( "    <zone>", strlen ( "    <zone>" ) );
+            buf.Printf( _( "%d" ), pDMitem->m_zone );
+            pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
+            pFileStream->Write( "</zone>\n", strlen ( "</zone>\n" ) );
+
+            // Subzone
+            pFileStream->Write( "    <subzone>", strlen ( "    <subzone>" ) );
+            buf.Printf( _( "%d" ), pDMitem->m_subzone );
+            pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
+            pFileStream->Write( "</subzone>\n", strlen ( "</subzone>\n" ) );
+
+
+            pFileStream->Write( "  </row>\n\n",strlen( "  </row>\n\n" ) );
+
+        }
+
+    }
+
+    // DM matrix information end
+    pFileStream->Write ( "</dm>",strlen ( "</dm>" ) );
+
+    m_mutexDM.Unlock();
+
+    // Close the file
+    pFileStream->Close();
+
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// feed
+//
+
+bool CDM::feed( vscpEvent *pEvent )
+{
+    m_mutexDM.Lock();
+
+    DMLIST::iterator it;
+    for ( it = m_DMList.begin(); it != m_DMList.end(); ++it ) {
+
+        dmElement *pDMitem = *it;
+
+        // Skip if disabled
+        if ( !pDMitem->isEnabled() ) continue;
+
+        if ( vscp_doLevel2Filter( pEvent, &pDMitem->m_vscpfilter ) &&
+                pDMitem->m_timeAllow.ShouldWeDoAction() ) {
+
+                if ( pDMitem->isCheckIndexSet() ) {
+                    if ( pDMitem->m_bMeasurement ) {
+                        if ( ( 0 == pEvent->sizeData ) ||
+                                ( ( pEvent->pdata[0] & 7 ) != pDMitem->m_index ) ) continue;
+                    }
+                    else {
+                        if ( ( 0 == pEvent->sizeData ) ||
+                                ( pEvent->pdata[0] != pDMitem->m_index ) ) continue;
+                    }
+                }
+
+                if ( pDMitem->isCheckZoneSet() ) {
+                    if ( ( 2 > pEvent->sizeData ) ||
+                                ( pEvent->pdata[1] != pDMitem->m_zone ) ) continue;
+                }
+
+                if ( pDMitem->isCheckSubZoneSet() ) {
+                    if ( ( 3 > pEvent->sizeData ) ||
+                                ( pEvent->pdata[2] != pDMitem->m_subzone ) ) continue;
+                }
+
+                // Match do action for this row
+                pDMitem->doAction( pEvent );
+
+                // Check if DM scan should continue after this DM row
+                if ( pDMitem->isScanDontContinueSet() ) break;
+
+        }
+
+    }
+
+    m_mutexDM.Unlock();
+
     return true;
 }
 

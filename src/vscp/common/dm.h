@@ -308,7 +308,8 @@ public:
         Get DM item as a realstring description.
         @param bCRLF true to have CRLF placed at end (default)
         @return A string representation for the item. This string is on the form 
-        enabled,from,to,weekday,time,mask,filter,index,zone,subzone,control-code,action-code,action-param,comment,trig-counter,error-counter
+        enabled,from,to,weekday,time,mask,filter,index,zone,subzone,control-code,
+        action-code,action-param,comment,trig-counter,error-counter
         where mask is Priority;Class;Type;GUID an filter is Priority;Class;Type;GUID
         See the specification for a description of the from, to and weekday fields. 
     */
@@ -611,7 +612,7 @@ public:
     ~CDM();
 
     /*!
-    Initt open logfile etc
+    Init open logfile etc
     */
     void init( void );
 

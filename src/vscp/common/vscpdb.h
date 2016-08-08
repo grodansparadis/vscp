@@ -196,7 +196,7 @@
 #define VSCPDB_ORDINAL_USER_NOTE                     5   // 
 
 //*****************************************************************************
-//                                 GROUP
+//                                GROUP
 //*****************************************************************************
 
 #define VSCPDB_GROUP_CREATE "CREATE TABLE \"group\" ("\
@@ -212,7 +212,7 @@
 #define VSCPDB_ORDINAL_GROUP_NOTE                   3   // 
 
 //*****************************************************************************
-//                           external VARIABLE
+//                          external VARIABLE
 //*****************************************************************************
 
 #define VSCPDB_VARIABLE_EXT_CREATE  "CREATE TABLE 'variableEx' ("\
@@ -240,7 +240,7 @@
 #define VSCPDB_ORDINAL_VARIABLE_EXT_NOTE            9   // 
 
 //*****************************************************************************
-//                             internal VARIABLE
+//                           internal VARIABLE
 //*****************************************************************************
         
 #define VSCPDB_VARIABLE_INT_CREATE "CREATE TABLE 'variableInt' ("\
@@ -313,7 +313,7 @@
 	"`comment`	TEXT"\
     ")"
 
-// The internal table does not have an autoincement id as it is filled with 
+// The internal table does not have an autoincrement id as it is filled with 
 // the id from the external database.
 #define VSCPDB_DM_INTERNAL_CREATE  "CREATE TABLE 'dm' ("\
 	"`id`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\

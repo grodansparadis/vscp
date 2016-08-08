@@ -2582,7 +2582,7 @@ bool CVariableStorage::add( CVSCPVariable& var )
                 var.getAccessRights(),
                 (const char *) var.getNote().mbc_str() );
 
-        if (SQLITE_OK != sqlite3_exec( var.isPersistent() ? m_db_vscp_external_variable : m_db_vscp_internal_variable, 
+        if ( SQLITE_OK != sqlite3_exec( var.isPersistent() ? m_db_vscp_external_variable : m_db_vscp_internal_variable, 
                                             sql, NULL, NULL, &zErrMsg)) {
             sqlite3_free( sql );
             return false;

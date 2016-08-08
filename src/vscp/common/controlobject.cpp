@@ -136,14 +136,15 @@
 #include <crc.h>
 #include <randpassword.h>
 #include <version.h>
-#include "variablecodes.h"
-#include "actioncodes.h"
-#include "devicelist.h"
-#include "devicethread.h"
-#include "dm.h"
-#include "vscpeventhelper.h"
-#include "vscpwebserver.h"
-#include "controlobject.h"
+#include <vscpdb.h>
+#include <variablecodes.h>
+#include <actioncodes.h>
+#include <devicelist.h>
+#include <devicethread.h>
+#include <dm.h>
+#include <vscpeventhelper.h>
+#include <vscpwebserver.h>
+#include <controlobject.h>
 
 
 #ifndef _CRT_SECURE_NO_WARNINGS
@@ -3037,76 +3038,15 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
 bool CControlObject::doCreateConfigurationTable( void )
 {
     char *pErrMsg = 0;
-    const char *psql = "CREATE TABLE \"Settings\" ("
-	"`vscpd_idx_settings`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,"
-	"`vscpd_dbversion`	INTEGER NOT NULL,"
-	"`vscpd_LogLevel`	INTEGER,"
-	"`vscpd_RunAsUser`	TEXT,"
-	"`vscpd_GUID`	TEXT,"
-	"`vscpd_Name`	TEXT,"
-	"`vscpd_Syslog_Enable`	INTEGER,"
-	"`vscpd_GeneralLogFile_Enable`	INTEGER,"
-	"`vscpd_GeneralLogFile_Path`	TEXT,"
-	"`vscpd_SecurityLogFile_Enable`	INTEGER,"
-	"`vscpd_SecurityLogFile_Path`	TEXT,"
-	"`vscpd_AccessLogFile_Enable`	INTEGER,"
-	"`vscpd_AccessLogFile_Path`	TEXT,"
-	"`vscpd_TcpipInterface_Port`	REAL,"
-	"`vscpd_MulticastInterface_Port`	TEXT,"
-	"`vscpd_MulicastInterface_ttl`	INTEGER,"
-	"`vscpd_UdpSimpleInterface_Enable`	INTEGER,"
-	"`vscpd_UdpSimpleInterface_Port`	TEXT,"
-	"`vscpd_DM_Path`	NUMERIC,"
-	"`vscpd_DM_Logging_Enable`	INTEGER,"
-	"`vscpd_DM_Logging_Path`	TEXT,"
-	"`vscpd_DM_Logging_Level`	INTEGER,"
-	"`vscpd_Variables_Path`	TEXT,"
-	"`vscpd_VSCPD_DefaultClientBufferSize`	INTEGER,"
-	"`vscpd_Webserver_DisableAuthentication`	INTEGER,"
-	"`vscpd_Webserver_RootPath`	TEXT,"
-	"`vscpd_Webserver_Port`	TEXT,"
-	"`vscpd_Webserver_PathCert`	TEXT,"
-	"`vscpd_Webserver_AuthDomain`	TEXT,"
-	"`vscpd_Webserver_CgiInterpreter`	TEXT,"
-	"`vscpd_Webserver_CgiPattern`	TEXT,"
-	"`vscpd_Webserver_EnableDirectoryListings`	INTEGER,"
-	"`vscpd_Webserver_HideFilePatterns`	TEXT,"
-	"`vscpd_Webserver_IndexFiles`	TEXT,"
-	"`vscpd_Webserver_ExtraMimeTypes`	TEXT,"
-	"`vscpd_Webserver_UrlRewrites`	TEXT,"
-	"`vscpd_Webserver_SSIPattern`	NUMERIC,"
-	"`vscpd_Webserver_RunAsUser`	REAL,"
-	"`vscpd_Webserver_PerDirectoryAuthFile`	TEXT,"
-	"`vscpd_Webserver_GlobalAuthFile`	TEXT,"
-	"`vscpd_Webserver__IpAcl`	TEXT,"
-	"`vscpd_Webserver_DavDocumentRoot`	TEXT,"
-	"`vscpd_WebSocket_EnableAuth`	INTEGER,"
-	"`vscpd_MqttBroker_Enable`	INTEGER,"
-	"`vscpd_MqttBroker_Port`	TEXT,"
-	"`vscpd_CoapServer_Enable`	INTEGER,"
-	"`vscpd_CoapServer_Port`	TEXT,"
-	"`vscpd_Automation_Enable`	INTEGER,"
-	"`vscpd_Automation_Zone`	INTEGER,"
-	"`vscpd_Automation_SubZone`	INTEGER,"
-	"`vscpd_Automation_Longitude`	REAL,"
-	"`vscpd_Automation_Latitude`	REAL,"
-	"`vscpd_Automation_Timezone`	TEXT,"
-	"`vscpd_Automation_Sunrise_Enable`	INTEGER,"
-	"`vscpd_Automation_Sunset_Enable`	TEXT,"
-	"`vscpd_Automation_SunsetTwilight_Enable`	INTEGER,"
-	"`vscpd_Automation_SunriseTwilight_Enable`	INTEGER,"
-	"`vscpd_Automation_SegmentControllerEvent_Enable`	INTEGER,"
-	"`vscpd_Automation_SegmentControllerEvent_Interval`	INTEGER,"
-	"`vscpd_Automation_HeartbeatEvent_Enable`	INTEGER,"
-	"`vscpd_Automation_HeartbeatEvent_Interval`	INTEGER,"
-	"`vscpd_db_data_path`	TEXT,"
-	"`vscpd_db_log_path`	TEXT"
-        ")";
+    const char *psql = VSCPDB_SETTINGS_CREATE;
     
     // Check if database is open
     if ( NULL == m_db_vscp_daemon ) return false;
     
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, NULL) ) {
+    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
+        fprintf( stderr, 
+                    "Creation of the VSCP settings database failed with message %s", 
+                    pErrMsg );
         return false;
     }
     
@@ -3130,13 +3070,19 @@ bool CControlObject::dbReadConfiguration( void )
     sqlite3_stmt *ppStmt;
 
     // Check if database is open
-    if ( NULL == m_db_vscp_daemon ) return false;
+    if ( NULL == m_db_vscp_daemon ) {
+        fprintf( stderr, 
+                    "Failed to read VSCP settings database - not open." );
+        return false;
+    }
     
     if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_daemon,
                                         psql,
                                         -1,
                                         &ppStmt,
                                         NULL ) ) {
+        fprintf( stderr, 
+                    "Failed to read VSCP settings database - prepare query." );
         return false;
     }
     
@@ -3582,18 +3528,19 @@ bool CControlObject::dbReadConfiguration( void )
 bool CControlObject::doCreateLogTable( void )
 {
     char *pErrMsg = 0;
-    const char *psql = "CREATE TABLE \"log\" ("
-	"`idx_log`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,"
-	"`type`	INTEGER,"
-	"`date`	TEXT,"
-	"`level`	INTEGER,"
-	"`message`	TEXT"
-        ")";
+    const char *psql = VSCPDB_LOG_CREATE;
     
     // Check if database is open
-    if ( NULL == m_db_vscp_log ) return false;
+    if ( NULL == m_db_vscp_log ) {
+        fprintf( stderr, 
+                    "Failed to create VSCP log database - closed." );
+        return false;
+    }
     
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_log, psql, NULL, NULL, NULL) ) {
+    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_log, psql, NULL, NULL, &pErrMsg ) ) {
+        fprintf( stderr, 
+                    "Failed to create VSCP log database with error %s.",
+                    pErrMsg );
         return false;
     }
     
