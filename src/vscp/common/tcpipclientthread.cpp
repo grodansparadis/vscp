@@ -2295,7 +2295,7 @@ void VSCPClientThread::handleVariable_Write( struct mg_connection *conn,
     m_pCtrlObject->m_VSCP_Variables.add( strName, strValue, strType, 0, 0, bPersistence, 777 ); // TODO
 
     // Save decision matrix
-    m_pCtrlObject->m_dm.save();
+    m_pCtrlObject->m_dm.saveXML();
 
     mg_send( conn, MSG_OK, strlen( MSG_OK ) );
 }

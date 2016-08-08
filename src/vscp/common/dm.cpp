@@ -2908,7 +2908,7 @@ CDM::CDM( CControlObject *ctrlObj )
 #endif
         
    m_db_vscp_dm = NULL; 
-   m_db_vscp_dm_memory = NULL;
+   //m_db_vscp_dm_memory = NULL;
 
 }
 
@@ -3562,7 +3562,7 @@ bool CDM::doCreateDMTable( void )
     return true;
 }
 
-
+/*
 ///////////////////////////////////////////////////////////////////////////////
 // doCreateInMemoryDMTable
 //
@@ -3688,6 +3688,20 @@ bool CDM::doFillMemoryDMTable()
     
     return true;
 }
+*/
+
+///////////////////////////////////////////////////////////////////////////////
+// loadFromDatabase
+//
+// Read decision matrix from the database
+//
+
+bool CDM::loadFromDatabase( void )
+{
+    logMsg( _("DM: Loading decision matrix from :\n") );
+    
+    return true;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // load
@@ -3695,7 +3709,7 @@ bool CDM::doFillMemoryDMTable()
 // Read decision matrix from file
 //
 
-bool CDM::load ( void )
+bool CDM::loadXML( void )
 {
     logMsg( _("DM: Loading decision matrix from :\n") );
 
@@ -3888,7 +3902,7 @@ bool CDM::load ( void )
 // Write decision matrix to file
 //
 
-bool CDM::save ( void )
+bool CDM::saveXML( void )
 {
     wxString strLog;
     wxString buf;

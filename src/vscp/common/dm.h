@@ -647,14 +647,19 @@ public:
     dmElement *getElement( short row );
 
     /*!
-    Load DM from external storage.
+        Load from Database
     */
-    bool load( void );
+    bool loadFromDatabase( void );
+    
+    /*!
+        Load DM from external storage.
+    */
+    bool loadXML( void );
 
     /*!
-    Save DM to external storage.
+        Save DM to external storage.
     */
-    bool save( void );
+    bool saveXML( void );
 
     /*!
     Run an event through the matrix
@@ -783,7 +788,7 @@ public:
     
     // Databases
     sqlite3 *m_db_vscp_dm;              // External DM database
-    sqlite3 *m_db_vscp_dm_memory;       // In-memory DM database
+    //sqlite3 *m_db_vscp_dm_memory;       // In-memory DM database
 
     /// DM table filter - Filter for all rows of the table
     vscpEventFilter m_DM_Table_filter;

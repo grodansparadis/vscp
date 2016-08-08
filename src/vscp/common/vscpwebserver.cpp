@@ -2978,7 +2978,7 @@ VSCPWebServerThread::websrv_dmpost( struct mg_connection *nc,
                 }
 
                 // Save decision matrix
-                pObject->m_dm.save();
+                pObject->m_dm.saveXML();
 
                 buildPage += wxString::Format(_("<br><br>DM Entry has been saved. id=%d"), id);
             }
@@ -3066,7 +3066,7 @@ VSCPWebServerThread::websrv_dmdelete( struct mg_connection *nc,
     if ( pObject->m_dm.removeElement( id ) ) {
         buildPage += wxString::Format(_("<br>Deleted record id = %d"), id);
         // Save decision matrix
-        pObject->m_dm.save();
+        pObject->m_dm.saveXML();
     }
     else {
         buildPage += wxString::Format(_("<br>Failed to remove record id = %d"), id);

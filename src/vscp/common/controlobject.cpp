@@ -797,7 +797,7 @@ bool CControlObject::init(wxString& strcfgfile)
     }
     
     // * * * VSCP Daemon internal DM database - Always created in-memory * * *
-    
+/*    
     if ( SQLITE_OK == sqlite3_open( NULL, &m_dm.m_db_vscp_dm_memory ) ) {
         
         // Should always be created
@@ -816,6 +816,7 @@ bool CControlObject::init(wxString& strcfgfile)
         if ( NULL != m_dm.m_db_vscp_dm_memory  ) sqlite3_close( m_dm.m_db_vscp_dm_memory  );
         m_dm.m_db_vscp_dm_memory  = NULL;
     }
+*/
     
     // * * * VSCP Daemon data database - NEVER created * * *
 
@@ -943,7 +944,7 @@ bool CControlObject::init(wxString& strcfgfile)
     logMsg(_("Init DM.\n") );
     m_dm.init();
     logMsg(_("Loading DM.\n") );
-    m_dm.load();
+    m_dm.loadXML();
 
     // Load variables if mechanism is enabled
     logMsg(_("Loading persistent variables.\n") );
