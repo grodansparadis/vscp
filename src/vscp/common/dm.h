@@ -50,6 +50,13 @@ WX_DECLARE_LIST( int, ACTIONTIME );
 #define DM_CONTROL_CHECK_ZONE           0x00000010 
 #define DM_CONTROL_CHECK_SUBZONE        0x00000008  
 
+// Measurement compare constants
+#define DM_MEASUREMENT_COMPARE_EQ       0x00    // Equal to ==
+#define DM_MEASUREMENT_COMPARE_NOT_EQ   0x01    // Not equal to !=
+#define DM_MEASUREMENT_COMPARE_LT       0x02    // Less than <
+#define DM_MEASUREMENT_COMPARE_LTEQ     0x03    // Less than or equal to <=
+#define DM_MEASUREMENT_COMPARE_GT       0x04    // Greater than
+#define DM_MEASUREMENT_COMPARE_GTEQ     0x05    // Greater than or equal tp >=
 
 enum {
     LOG_DM_NONE = 0,
@@ -179,7 +186,7 @@ private:
 
 
 /*!
-Timed object
+    Timed object
 */
 
 class actionTime
@@ -190,80 +197,122 @@ public:
   ~actionTime();
 
   /*!
-  Set the weekdays that the action is allowed to occur at. The
-  string is on the form 'mtwtfss'  The day can be replaced with a
-  '-' to indicate a none valid day.
-  @param actionTime strWeek on the format 'mtwtfss'
-  @return True on success.
+    Set the weekdays that the action is allowed to occur at. The
+    string is on the form 'mtwtfss'  The day can be replaced with a
+    '-' to indicate a none valid day.
+    @param actionTime strWeek on the format 'mtwtfss'
+    @return True on success.
   */
   bool setWeekDays( const wxString& strWeek );
 
 
   /*!
-  Get the allowed weekdays as a wxWtring on the form 'mtwtfss' where
-  '-' is used to indicate a day when the event is not allowe to occur.
-  @return A string with the allowed weekdays.
+    Get the allowed weekdays as a wxWtring on the form 'mtwtfss' where
+    '-' is used to indicate a day when the event is not allowe to occur.
+    @return A string with the allowed weekdays.
   */
   wxString getWeekDays( void );
 
   /*!
-  Set an allowed weekday in realtext.
-  @param strWeekday Weekday to set in real text as "monday", "tuesday", 
-  "wednesday", "thursday", "friday", "saturday", "sunday".
-  @return true on success.
+    Set an allowed weekday in realtext.
+    @param strWeekday Weekday to set in real text as "monday", "tuesday", 
+        "wednesday", "thursday", "friday", "saturday", "sunday".
+    @return true on success.
   */
 
   bool setWeekDay( const wxString& strWeekday );
+  
+  /*!
+    Allow/disallow action to happen on Mondays
+    @param bAllow True to allow action on this day.
+   */
+  void allowMonday( bool bAllow = true ) { m_weekDay[ 0 ] = bAllow; };
+  
+  /*!
+    Allow/disallow action to happen on Tuesday
+    @param bAllow True to allow action on this day.
+   */
+  void allowTuesday( bool bAllow = true ) { m_weekDay[ 1 ] = bAllow; };
+  
+  /*!
+    Allow/disallow action to happen on Wednesday
+    @param bAllow True to allow action on this day.
+   */
+  void allowWednesday( bool bAllow = true ) { m_weekDay[ 2 ] = bAllow; };
+  
+  /*!
+    Allow/disallow action to happen on Thursday
+    @param bAllow True to allow action on this day.
+   */
+  void allowThursday( bool bAllow = true ) { m_weekDay[ 3 ] = bAllow; };
+  
+  /*!
+    Allow/disallow action to happen on Friday
+    @param bAllow True to allow action on this day.
+   */
+  void allowFriday( bool bAllow = true ) { m_weekDay[ 4 ] = bAllow; };
+  
+  /*!
+    Allow/disallow action to happen on Saturday
+    @param bAllow True to allow action on this day.
+   */
+  void allowSaturday( bool bAllow = true ) { m_weekDay[ 5 ] = bAllow; };
+  
+  /*!
+    Allow/disallow action to happen on Sunday
+    @param bAllow True to allow action on this day.
+   */
+  void allowSunday( bool bAllow = true ) { m_weekDay[ 6 ] = bAllow; };
 
   /*!
-  This method parse a string on the form YYYY-MM-DD HH:MM:SS. Both parts can 
-  be replaced with a '*' to indicate that it is a no care meaning that * * is
-  for all dates and all time while * HH:MM:SS is for all dates but a specific times.
-  Furter all elemenst such as YYYY, MM, DD, HH, MM, SS can be replaced with a * to
-  represent a no care for each where it's present. Each can also be given as a list 
-  seperated with '/' characters to indicate several choices. So YYYY-MM-DD HH:0/5/10;SS
-  means the action should be performed on a specific date and hour on every full hour, five
-  minutes past and ten minutes past.
-  @param actionTime Time on the format YYYY-MM-DD HH:MM:SS
-  @return True on success.
+    This method parse a string on the form YYYY-MM-DD HH:MM:SS. Both parts can 
+    be replaced with a '*' to indicate that it is a no care meaning that * * is
+    for all dates and all time while * HH:MM:SS is for all dates but a specific times.
+    Further all elements such as YYYY, MM, DD, HH, MM, SS can be replaced with a * to
+    represent a no care for each where it's present. Each can also be given as a list 
+    separated with '/' characters to indicate several choices. So YYYY-MM-DD HH:0/5/10;SS
+    means the action should be performed on a specific date and hour on every full hour, five
+    minutes past and ten minutes past.
+    @param actionTime Time on the format YYYY-MM-DD HH:MM:SS
+    @return True on success.
   */
   bool parseActionTime( const wxString& actionTime );
 
   /*!
-  Get multiple integers when they are in a string separated
-  with '/' characters.
-  @param item The list separated with '/'.
-  @param pList Pointer to list with integer items.
-  @return True on success.
+    Get multiple integers when they are in a string separated
+    with '/' characters.
+    @param item The list separated with '/'.
+    @param pList Pointer to list with integer items.
+    @return True on success.
   */
   bool getMultiItem( const wxString& items, ACTIONTIME *pList );
 
   /*!
-  Check if we should do actionTime action
-  @return True if the actions should be performed else false.
+    Check if we should do actionTime action
+    @return True if the actions should be performed else false.
   */
   bool ShouldWeDoAction( void );
 
   /*!
-  Get the actiontime as a readable string
-  @return actiontime as a atring.
+    Get the actiontime as a readable string
+    @return actiontime as a string.
   */
   wxString getActionTimeAsString( void );
 
   /*!
-  True if working on that day.
+    True if working on that day.
   */
   bool m_weekDay[ 7 ];      // Monday - Sunday
 
   /*!
-  This is the time (inclusive) from which this action is
-  allowed to occur.
+    This is the time (inclusive) from which this action is
+    allowed to occur.
   */
   wxDateTime m_fromTime;
 
   /*!
-  This is the time up (inclusive) to which this action is
-  allowed to occur.
+    This is the time up (inclusive) to which this action is
+    allowed to occur.
   */
   wxDateTime m_endTime;
 
@@ -290,11 +339,12 @@ public:
 
 
 /*!
-Decision Matrix Element
+    Decision Matrix Element
 */
 
 class dmElement
 {
+    
 public:
 
     /// Constructor
@@ -386,7 +436,7 @@ public:
     bool doAction( vscpEvent *pDMEvent );
 
     /*!
-        Exceute action 
+        Excecute action 
         Just executes the external action script. The parameter
         is action dependent.
         @param pDMEvent Event that triggered the action
@@ -395,120 +445,123 @@ public:
     bool doActionExecute( vscpEvent *pDMEvent );
 
     /*!
-    Timed exceute the external action script.
-    @param pDMEvent Event that triggered the action
-    @returns true if all went well.
+        Timed exceute the external action script.
+        @param pDMEvent Event that triggered the action
+        @returns true if all went well.
     */
     bool doActionTimedExecute( vscpEvent *pDMEvent );
 
     /*!
-    Send event action 
-    @param pDMEvent Event that triggered the action
-    @returns true if all went well.
+        Send event action 
+        @param pDMEvent Event that triggered the action
+        @returns true if all went well.
     */
     bool doActionSendEvent( vscpEvent *pDMEvent );
 
     /*!
-    Send event conditional action 
-    @param pDMEvent Event that triggered the action
-    @returns true if all went well.
+        Send event conditional action 
+        @param pDMEvent Event that triggered the action
+        @returns true if all went well.
     */
     bool doActionSendEventConditional( vscpEvent *pDMEvent );
 
     /*!
-    Send events from file action 
-    @param pDMEvent Event that triggered the action
-    @returns true if all went well.
+        Send events from file action 
+        @param pDMEvent Event that triggered the action
+        @returns true if all went well.
     */
     bool doActionSendEventsFromFile( vscpEvent *pDMEvent );
 
     /*!
-    Store in variable action 
-    @param pDMEvent Event that triggered the action
-    @returns true if all went well.
+        Store in variable action 
+        @param pDMEvent Event that triggered the action
+        @returns true if all went well.
     */
     bool doActionStoreVariable( vscpEvent *pDMEvent );
 
     /*!
-    Add to variable action 
-    @param pDMEvent Event that triggered the action
-    @returns true if all went well.
+        Add to variable action 
+        @param pDMEvent Event that triggered the action
+        @returns true if all went well.
     */
     bool doActionAddVariable( vscpEvent *pDMEvent );
 
     /*!
-    Subtract from variable action 
-    @param pDMEvent Event that triggered the action
-    @returns true if all went well.
+        Subtract from variable action 
+        @param pDMEvent Event that triggered the action
+        @returns true if all went well.
     */
     bool doActionSubtractVariable( vscpEvent *pDMEvent );
 
     /*!
-    Multiply variable action 
-    @param pDMEvent Event that triggered the action
-    @returns true if all went well.
+        Multiply variable action 
+        @param pDMEvent Event that triggered the action
+        @returns true if all went well.
     */
     bool doActionMultiplyVariable( vscpEvent *pDMEvent );
 
     /*!
-    Divide variable action 
-    @param pDMEvent Event that triggered the action
-    @returns true if all went well.
+        Divide variable action 
+        @param pDMEvent Event that triggered the action
+        @returns true if all went well.
     */
     bool doActionDivideVariable( vscpEvent *pDMEvent );
 
     /*!
-    Start a timer 
-    @param pDMEvent Event that triggered the action
-    @returns true if all went well.
+        Start a timer 
+        @param pDMEvent Event that triggered the action
+        @returns true if all went well.
     */
     bool doActionStartTimer( vscpEvent *pDMEvent );
 
     /*!
-    Pause a timer 
-    @param pDMEvent Event that triggered the action
-    @returns true if all went well.
+        Pause a timer 
+        @param pDMEvent Event that triggered the action
+        @returns true if all went well.
     */
     bool doActionPauseTimer( vscpEvent *pDMEvent );
 
     /*!
-    Resume a timer 
-    @param pDMEvent Event that triggered the action
-    @returns true if all went well.
+        Resume a timer 
+        @param pDMEvent Event that triggered the action
+        @returns true if all went well.
     */
     bool doActionResumeTimer( vscpEvent *pDMEvent );
 
     /*!
-    Stop a timer 
-    @param pDMEvent Event that triggered the action
-    @returns true if all went well.
+        Stop a timer 
+        @param pDMEvent Event that triggered the action
+        @returns true if all went well.
     */
     bool doActionStopTimer( vscpEvent *pDMEvent );
 
     /*!
-    Write to file 
-    @param pDMEvent Event that triggered the action
-    @returns true if all went well.
+        Write to file 
+        @param pDMEvent Event that triggered the action
+        @returns true if all went well.
     */
     bool doActionWriteFile( vscpEvent *pDMEvent );
 
     /*!
-    Get URL
-    @param pDMEvent Event that triggered the action
-    @returns true if all went well.
+        Get URL
+        @param pDMEvent Event that triggered the action
+        @returns true if all went well.
     */
     bool doActionGetURL( vscpEvent *pDMEvent );
 
 
     /*!
-    Write a record to a table
-    @param pDMEvent Event that triggered the action
-    @returns true if all went well.
+        Write a record to a table
+        @param pDMEvent Event that triggered the action
+        @returns true if all went well.
     */
     bool doActionWriteTable( vscpEvent *pDMEvent );
 
     /// True if row is enabled
     bool m_bEnable;
+    
+    // Database index for record ( 0 if loaded from XML file)
+    uint32_t m_id;
 
     /// DM row filter
     vscpEventFilter m_vscpfilter;
@@ -517,7 +570,7 @@ public:
     uint32_t m_control;
 
     /// Action code
-    uint32_t m_action;
+    uint32_t m_actionCode;
 
     /// Action parameters
     wxString m_actionparam;
@@ -527,16 +580,28 @@ public:
 
     /// A counter that is updated each time an error occurs
     uint32_t m_errorCounter;
+    
+     /// True if index should be checked
+    bool m_bCheckIndex;
 
     /// If index should be checked this is the one
     uint8_t m_index;
 
     /// Index should be masked so only the LSB tree bits are checked
-    bool m_bMeasurement;
+    bool m_bCheckMeasurementIndex;
+    
+    /// If measurement index should be checked this is the one
+    uint8_t m_measurementIndex;
 
+    /// True if zone should be checked
+    bool m_bCheckZone;
+    
     /// If zone should be checked this is the one
     uint8_t m_zone;
 
+    /// True if subzone should be checked
+    bool m_bCheckSubZone;
+    
     /// If sub zone should be checked this is the one
     uint8_t m_subzone;
 
@@ -552,6 +617,15 @@ public:
     /// Action time 
     actionTime m_timeAllow;
 
+    // Value for measurement comparisons
+    double m_measurementValue;
+    
+    // Unit code for measurement value
+    uint8_t m_measurementUnit;
+
+    // Measurement compare code
+    uint8_t m_measurementCompareCode;
+    
     // Pointer to owner
     CDM *m_pDM;
 
@@ -612,37 +686,37 @@ public:
     ~CDM();
 
     /*!
-    Init open logfile etc
+        Init open logfile etc
     */
     void init( void );
 
     /*!
-    Set control object for DM
+        Set control object for DM
     */
     void setControlObject( CControlObject *ctrlObj );
 
     /*!
-    log message
+        log message
     */
     void logMsg( const wxString& msg, uint8_t level = LOG_DM_NORMAL );
 
     /*!
-    Add Element to matrix
+        Add Element to matrix
     */
     bool addElement( dmElement *pItem );
 
     /*!
-    Remove Element from matrix
+        Remove Element from matrix
     */
     bool removeElement( unsigned short pos );
 
     /*!
-    Get number of rows in matrix
+        Get number of rows in matrix
     */
     unsigned short getElementCount( void ) { return m_DMList.GetCount(); };
 
     /*!
-    Get a row from the matrix
+        Get a row from the matrix
     */
     dmElement *getElement( short row );
 
@@ -654,37 +728,37 @@ public:
     /*!
         Load DM from external storage.
     */
-    bool loadXML( void );
+    bool loadFromXML( void );
 
     /*!
         Save DM to external storage.
     */
-    bool saveXML( void );
+    bool saveToXML( void );
 
     /*!
-    Run an event through the matrix
+        Run an event through the matrix
     */
     bool feed( vscpEvent *pEvent );
 
     /*!
-    Feed periodic events throu the matrix
-    SECONDS
-    MINUTE
-    HOUR
-    NOON
-    MIDNIGHT
-    WEEK
-    MONTH
-    QUARTER
-    YEAR
-    RANDOM-MINUTE
-    RANDOM-HOUR
-    RANDOM-DAY
-    RANDOM-WEEK
-    RANDOM-MONTH
-    RANDOM-YEAR
-    DUSK
-    DAWN
+        Feed periodic events true the matrix
+        SECONDS
+        MINUTE
+        HOUR
+        NOON
+        MIDNIGHT
+        WEEK
+        MONTH
+        QUARTER
+        YEAR
+        RANDOM-MINUTE
+        RANDOM-HOUR
+        RANDOM-DAY
+        RANDOM-WEEK
+        RANDOM-MONTH
+        RANDOM-YEAR
+        DUSK
+        DAWN
     */
     bool feedPeriodicEvent( void );
 
@@ -694,21 +768,21 @@ public:
     //------------------------------------
 
     /*!
-    serviceTimers
-    This method service all timers and handle there decrement
+        serviceTimers
+        This method service all timers and handle there decrement
     */
     void serviceTimers( void );
 
     /*!
-    Add a new timer
-    A new timer is created if it is not yet existing. To test this the
-    variablename is searched before a new timer is created. If already 
-    available the old timer will be initialized with the new values.
-    @param nameVar Name of variable
-    @param delay Timer value
-    @param bStart Run flag for timer
-    @param setValue Value to set variable to when timer elapse
-    @return a timer if > 0 on success
+        Add a new timer
+        A new timer is created if it is not yet existing. To test this the
+        variablename is searched before a new timer is created. If already 
+        available the old timer will be initialized with the new values.
+        @param nameVar Name of variable
+        @param delay Timer value
+        @param bStart Run flag for timer
+        @param setValue Value to set variable to when timer elapse
+        @return a timer if > 0 on success
     */
     int addTimer( uint16_t id,
                     wxString& nameVar, 
@@ -746,13 +820,13 @@ public:
      
      
     /*!
-     *     Create the in memroy DM table
+     *     Create the in memory DM table
      *     @return true on success.
      */
      bool doCreateInMemoryDMTable( void );
      
     /*!
-     *     Fill/Update the in memroy DM table
+     *     Fill/Update the in memory DM table
      *     @return true on success.
     */
     bool doFillMemoryDMTable();

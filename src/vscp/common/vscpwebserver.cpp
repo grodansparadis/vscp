@@ -1833,7 +1833,7 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *nc,
 
             // Control - Check index
             if (pElement->isCheckIndexSet()) {
-                if (pElement->m_bMeasurement) {
+                if (pElement->m_bCheckMeasurementIndex) {
                     buildPage += _("[Check Measurement Index] ");
                 }
                 else {
@@ -1905,7 +1905,7 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *nc,
                 buildPage += _("<b>Subzone: </b>");
                 buildPage += wxString::Format(_("%d "), pElement->m_subzone);
 
-                if ( pElement->m_bMeasurement ) {
+                if ( pElement->m_bCheckMeasurementIndex ) {
                     buildPage += _("&nbsp;&nbsp;&nbsp;(Sensor index is used for index compare)");
                 }
 
@@ -1932,7 +1932,7 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *nc,
             } // mini
 
             buildPage += _("<b>Action:</b> ");
-            buildPage += wxString::Format(_("%d "), pElement->m_action);
+            buildPage += wxString::Format(_("%d "), pElement->m_actionCode);
 
             buildPage += _(" <b>Action parameters:</b> ");
             buildPage += pElement->m_actionparam;
@@ -2239,7 +2239,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
         }
         else {
             buildPage += wxString::Format(_("%s"),
-                pElement->m_bMeasurement ? _("checked") : _("") );
+                pElement->m_bCheckMeasurementIndex ? _("checked") : _("") );
         }
         buildPage += _(" type=\"checkbox\">");
         buildPage += _("<span id=\"optiontext\">Use measurement index (only for measurement events)</span>");
@@ -2420,7 +2420,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
             str = _("");
         }
         else {
-            str = (0x10 == pElement->m_action ) ? _("selected") : _(" ");
+            str = (0x10 == pElement->m_actionCode ) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x10\" %s>Execute external program</option>"),
                 str.wx_str() );
@@ -2429,7 +2429,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
             str = _("");
         }
         else {
-            str = (0x12 == pElement->m_action) ? _("selected") : _(" ");
+            str = (0x12 == pElement->m_actionCode) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x12\" %s>Execute internal procedure</option>"),
                 str.wx_str() );
@@ -2438,7 +2438,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
             str = _("");
         }
         else {
-            str = (0x30 == pElement->m_action) ? _("selected") : _(" ");
+            str = (0x30 == pElement->m_actionCode) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x30\" %s>Execute library procedure</option>"),
                 str.wx_str() );
@@ -2447,7 +2447,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
             str = _("");
         }
         else {
-            str = (0x40 == pElement->m_action) ? _("selected") : _(" ");
+            str = (0x40 == pElement->m_actionCode) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x40\" %s>Send event</option>"),
                 str.wx_str() );
@@ -2456,7 +2456,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
             str = _("");
         }
         else {
-            str = (0x41 == pElement->m_action) ? _("selected") : _(" ");
+            str = (0x41 == pElement->m_actionCode) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x41\" %s>Send event Conditional</option>"),
                 str.wx_str() );
@@ -2465,7 +2465,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
             str = _("");
         }
         else {
-            str = (0x42 == pElement->m_action) ? _("selected") : _(" ");
+            str = (0x42 == pElement->m_actionCode) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x42\" %s>Send event(s) from file</option>"),
                 str.wx_str() );
@@ -2474,7 +2474,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
             str = _("");
         }
         else {
-            str = (0x43 == pElement->m_action) ? _("selected") : _(" ");
+            str = (0x43 == pElement->m_actionCode) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x43\" %s>Send event(s) to remote VSCP server</option>"),
                 str.wx_str() );
@@ -2483,7 +2483,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
             str = _("");
         }
         else {
-            str = (0x50 == pElement->m_action) ? _("selected") : _(" ");
+            str = (0x50 == pElement->m_actionCode) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x50\" %s>Store in variable</option>"),
                 str.wx_str() );
@@ -2492,7 +2492,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
             str = _("");
         }
         else {
-            str = (0x51 == pElement->m_action) ? _("selected") : _(" ");
+            str = (0x51 == pElement->m_actionCode) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x51\" %s>Store in array</option>"),
                 str.wx_str() );
@@ -2501,7 +2501,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
             str = _("");
         }
         else {
-            str = (0x52 == pElement->m_action) ? _("selected") : _(" ");
+            str = (0x52 == pElement->m_actionCode) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x52\" %s>Add to variable</option>"),
                 str.wx_str() );
@@ -2510,7 +2510,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
             str = _("");
         }
         else {
-            str = (0x53 == pElement->m_action) ? _("selected") : _(" ");
+            str = (0x53 == pElement->m_actionCode) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x53\" %s>Subtract from variable</option>"),
                 str.wx_str() );
@@ -2519,7 +2519,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
             str = _("");
         }
         else {
-            str = (0x54 == pElement->m_action) ? _("selected") : _(" ");
+            str = (0x54 == pElement->m_actionCode) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x54\" %s>Multiply variable</option>"),
                 str.wx_str() );
@@ -2528,7 +2528,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
             str = _("");
         }
         else {
-            str = (0x55 == pElement->m_action) ? _("selected") : _(" ");
+            str = (0x55 == pElement->m_actionCode) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x55\" %s>Divide variable</option>"),
                 str.wx_str() );
@@ -2537,7 +2537,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
             str = _("");
         }
         else {
-            str = (0x60 == pElement->m_action) ? _("selected") : _(" ");
+            str = (0x60 == pElement->m_actionCode) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x60\" %s>Start timer</option>"),
                 str.wx_str() );
@@ -2546,7 +2546,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
             str = _("");
         }
         else {
-            str = (0x61 == pElement->m_action) ? _("selected") : _(" ");
+            str = (0x61 == pElement->m_actionCode) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x61\" %s>Pause timer</option>"),
                 str.wx_str() );
@@ -2555,7 +2555,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
             str = _("");
         }
         else {
-            str = (0x62 == pElement->m_action) ? _("selected") : _(" ");
+            str = (0x62 == pElement->m_actionCode) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x62\" %s>Stop timer</option>"),
                 str.wx_str() );
@@ -2564,7 +2564,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
             str = _("");
         }
         else {
-            str = (0x63 == pElement->m_action) ? _("selected") : _(" ");
+            str = (0x63 == pElement->m_actionCode) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x63\" %s>Resume timer</option>"),
                 str.wx_str() );
@@ -2573,7 +2573,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
             str = _("");
         }
         else {
-            str = (0x70 == pElement->m_action) ? _("selected") : _(" ");
+            str = (0x70 == pElement->m_actionCode) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x70\" %s>Write file</option>"),
                 str.wx_str() );
@@ -2582,7 +2582,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
             str = _("");
         }
         else {
-            str = (0x75 == pElement->m_action) ? _("selected") : _(" ");
+            str = (0x75 == pElement->m_actionCode) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x75\" %s>Get/Put/Post URL</option>"),
                 str.wx_str() );
@@ -2591,7 +2591,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
             str = _("");
         }
         else {
-            str = (0x80 == pElement->m_action) ? _("selected") : _(" ");
+            str = (0x80 == pElement->m_actionCode) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x80\" %s>Write to table</option>"),
                 str.wx_str() );
@@ -2938,7 +2938,7 @@ VSCPWebServerThread::websrv_dmpost( struct mg_connection *nc,
 
                 pElement->m_index = index;
                 pElement->m_zone = zone;
-                pElement->m_bMeasurement = bUseMeasurementIndex;
+                pElement->m_bCheckMeasurementIndex = bUseMeasurementIndex;
                 pElement->m_subzone = subzone;
 
                 pElement->m_control = 0;
@@ -2962,7 +2962,7 @@ VSCPWebServerThread::websrv_dmpost( struct mg_connection *nc,
                 if (bCheckSunday) weekdays += _("s"); else weekdays += _("-");
                 pElement->m_timeAllow.setWeekDays(weekdays);
 
-                pElement->m_action = action;
+                pElement->m_actionCode = action;
 
                 pElement->m_actionparam = strActionParameter;
                 pElement->m_comment = strComment;
@@ -2978,7 +2978,7 @@ VSCPWebServerThread::websrv_dmpost( struct mg_connection *nc,
                 }
 
                 // Save decision matrix
-                pObject->m_dm.saveXML();
+                pObject->m_dm.saveToXML();
 
                 buildPage += wxString::Format(_("<br><br>DM Entry has been saved. id=%d"), id);
             }
@@ -2986,10 +2986,12 @@ VSCPWebServerThread::websrv_dmpost( struct mg_connection *nc,
                 buildPage += wxString::Format(_("<br><br>Memory problem id=%d. Unable to save record"), id);
             }
 
-        } else {
+        } 
+        else {
             buildPage += wxString::Format(_("<br><br>Record id=%d is to large. Unable to save record"), id);
         }
-    } else {
+    } 
+    else {
         buildPage += wxString::Format(_("<br><br>Record id=%d is wrong. Unable to save record"), id);
     }
 
@@ -3066,7 +3068,7 @@ VSCPWebServerThread::websrv_dmdelete( struct mg_connection *nc,
     if ( pObject->m_dm.removeElement( id ) ) {
         buildPage += wxString::Format(_("<br>Deleted record id = %d"), id);
         // Save decision matrix
-        pObject->m_dm.saveXML();
+        pObject->m_dm.saveToXML();
     }
     else {
         buildPage += wxString::Format(_("<br>Failed to remove record id = %d"), id);

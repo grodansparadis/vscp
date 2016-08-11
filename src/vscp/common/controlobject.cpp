@@ -746,77 +746,7 @@ bool CControlObject::init(wxString& strcfgfile)
         m_VSCP_Variables.m_db_vscp_internal_variable = NULL;
     }
        
-    // * * * VSCP Daemon DM database * * * 
     
-    // Check filename
-    if ( m_dm.m_path_db_vscp_dm.IsOk() && 
-            m_dm.m_path_db_vscp_dm.FileExists() ) {
-
-        if ( SQLITE_OK != sqlite3_open( m_dm.m_path_db_vscp_dm.GetFullPath().mbc_str(),
-                                            &m_dm.m_db_vscp_dm  ) ) {
-
-            // Failed to open/create the database file
-            fprintf( stderr, "VSCP Daemon DM database could not be opened. - Will not be used.\n" );
-            str.Printf( _("Path=%s error=%s\n"),
-                            m_dm.m_path_db_vscp_dm.GetFullPath().mbc_str(),
-                            sqlite3_errmsg( m_dm.m_db_vscp_dm ) );
-            fprintf( stderr, str.mbc_str() );
-            if ( NULL != m_db_vscp_daemon ) sqlite3_close( m_dm.m_db_vscp_dm  );
-            m_db_vscp_daemon = NULL;
-
-        }
-
-    }
-    else {
-        if ( m_dm.m_path_db_vscp_dm.IsOk() ) {
-            // We need to create the database from scratch. This may not work if
-            // the database is in a read only location.
-            fprintf( stderr, "VSCP Daemon DM does not exist - will be created.\n" );
-            str.Printf(_("Path=%s\n"), m_dm.m_path_db_vscp_dm.GetFullPath().mbc_str() );
-            fprintf( stderr, str.mbc_str() );
-            
-            if ( SQLITE_OK == sqlite3_open( m_dm.m_path_db_vscp_dm.GetFullPath().mbc_str(),
-                                            &m_dm.m_db_vscp_dm ) ) {            
-                // create the table.
-                m_dm.doCreateDMTable();
-            }
-            else {
-                fprintf( stderr, "Failed to create VSCP DM database - will not be used.\n" );
-                str.Printf( _("Path=%s error=%s\n"),
-                            m_dm.m_path_db_vscp_dm.GetFullPath().mbc_str(),
-                            sqlite3_errmsg( m_dm.m_db_vscp_dm ) );
-                fprintf( stderr, str.mbc_str() );
-            }
-        }
-        else {
-            fprintf( stderr, "VSCP DM database path invalid - will not be used.\n" );
-            str.Printf(_("Path=%s\n"), m_dm.m_path_db_vscp_dm.GetFullPath().mbc_str() );
-            fprintf( stderr, str.mbc_str() );
-        }
-
-    }
-    
-    // * * * VSCP Daemon internal DM database - Always created in-memory * * *
-/*    
-    if ( SQLITE_OK == sqlite3_open( NULL, &m_dm.m_db_vscp_dm_memory ) ) {
-        
-        // Should always be created
-        m_dm.doCreateInMemoryDMTable();
-        
-        // Fill internal DM with data from external
-        m_dm.doFillMemoryDMTable();
-        
-    }
-    else {
-        // Failed to open/create the database file
-        fprintf( stderr, "VSCP Daemon internal DM database could not be opened - Will not be used.\n" );
-        str.Printf( _("Error=%s\n"),
-                            sqlite3_errmsg( m_dm.m_db_vscp_dm_memory ) );
-        fprintf( stderr, str.mbc_str() );
-        if ( NULL != m_dm.m_db_vscp_dm_memory  ) sqlite3_close( m_dm.m_db_vscp_dm_memory  );
-        m_dm.m_db_vscp_dm_memory  = NULL;
-    }
-*/
     
     // * * * VSCP Daemon data database - NEVER created * * *
 
@@ -944,7 +874,7 @@ bool CControlObject::init(wxString& strcfgfile)
     logMsg(_("Init DM.\n") );
     m_dm.init();
     logMsg(_("Loading DM.\n") );
-    m_dm.loadXML();
+    m_dm.loadFromXML();
 
     // Load variables if mechanism is enabled
     logMsg(_("Loading persistent variables.\n") );

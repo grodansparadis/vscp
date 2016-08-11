@@ -2295,7 +2295,7 @@ void VSCPClientThread::handleVariable_Write( struct mg_connection *conn,
     m_pCtrlObject->m_VSCP_Variables.add( strName, strValue, strType, 0, 0, bPersistence, 777 ); // TODO
 
     // Save decision matrix
-    m_pCtrlObject->m_dm.saveXML();
+    m_pCtrlObject->m_dm.saveToXML();
 
     mg_send( conn, MSG_OK, strlen( MSG_OK ) );
 }
@@ -2801,7 +2801,7 @@ void VSCPClientThread::handleDM_Add( struct mg_connection *conn,
     pDMItem->m_control = vscp_readStringValue( tkz.GetNextToken() );
 
     // action code
-    pDMItem->m_action = vscp_readStringValue( tkz.GetNextToken() );
+    pDMItem->m_actionCode = vscp_readStringValue( tkz.GetNextToken() );
 
     // action parameters
     pDMItem->m_actionparam = tkz.GetNextToken();
