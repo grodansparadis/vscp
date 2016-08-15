@@ -327,16 +327,16 @@
 	"`filterClass`	INTEGER NOT NULL DEFAULT 0,"\
 	"`filterType`	INTEGER NOT NULL DEFAULT 0,"\
 	"`filterGUID`	TEXT NOT NULL,"\
-	"`allowedFrom`	TEXT NOT NULL,"\
-	"`allowedTo`	TEXT NOT NULL,"\
-	"`allowedMonday`	BLOB NOT NULL,"\
+	"`allowedStart`	TEXT,"\
+	"`allowedEnd`	TEXT,"\
+	"`allowedMonday`	INTEGER NOT NULL,"\
 	"`allowedTuesday`	INTEGER NOT NULL,"\
 	"`allowsWednesday`	INTEGER NOT NULL,"\
 	"`allowedThursday`	INTEGER NOT NULL,"\
 	"`allowedFriday`	INTEGER NOT NULL,"\
 	"`allowedSaturday`	NUMERIC NOT NULL,"\
-	"`allowedSunday`	BLOB NOT NULL,"\
-	"`allowedTime`	TEXT NOT NULL,"\
+	"`allowedSunday`	INTEGER NOT NULL,"\
+	"`allowedTime`	TEXT,"\
 	"`bCheckIndex`	INTEGER NOT NULL,"\
 	"`index`	TEXT NOT NULL,"\
 	"`bCheckZone`	TEXT NOT NULL,"\
@@ -354,8 +354,8 @@
     ")"
 
 #define VSCPDB_ORDINAL_DM_ID                        0   // 
-#define VSCPDB_ORDINAL_DM_GROUPID                   1   //
-#define VSCPDB_ORDINAL_DM_ENABLE                    2   //
+#define VSCPDB_ORDINAL_DM_ENABLE                    1   //
+#define VSCPDB_ORDINAL_DM_GROUPID                   2   //
 #define VSCPDB_ORDINAL_DM_MASK_PRIORITY             3   //
 #define VSCPDB_ORDINAL_DM_MASK_CLASS                4   //
 #define VSCPDB_ORDINAL_DM_MASK_TYPE                 5   //
@@ -364,8 +364,8 @@
 #define VSCPDB_ORDINAL_DM_FILTER_CLASS              8   //
 #define VSCPDB_ORDINAL_DM_FILTER_TYPE               9   //
 #define VSCPDB_ORDINAL_DM_FILTER_GUID               10   //
-#define VSCPDB_ORDINAL_DM_ALLOWED_FROM              11   //
-#define VSCPDB_ORDINAL_DM_ALLOWED_TO                12   //
+#define VSCPDB_ORDINAL_DM_ALLOWED_START             11   //
+#define VSCPDB_ORDINAL_DM_ALLOWED_END               12   //
 #define VSCPDB_ORDINAL_DM_ALLOWED_MONDAY            13   //
 #define VSCPDB_ORDINAL_DM_ALLOWED_TUESDAY           14   //
 #define VSCPDB_ORDINAL_DM_ALLOWED_WEDNESDAY         15   //

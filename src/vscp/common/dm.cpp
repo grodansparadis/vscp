@@ -825,7 +825,6 @@ dmElement::dmElement()
     m_id = 0;
     m_strGroupID.Empty();
     vscp_clearVSCPFilter( &m_vscpfilter );
-    m_control = 0;
     m_actionCode = 0;
     m_triggCounter = 0;
     m_errorCounter = 0;
@@ -863,34 +862,27 @@ dmElement::~dmElement()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getAsRealText
+// getDmRowAsString
 //
-
-
-wxString dmElement::getAsRealText( bool bCRLF )
+ 
+wxString dmElement::getDmRowAsString( bool bCRLF )
 {
     wxString strRow;
 
+    // id
+    strRow = wxString::Format( _("%d,"), m_id );
+    
+    // bEnable
     if ( isEnabled() ) {
-        strRow = _("enabled,");
+        strRow += _("true,");
     }
     else {
-        strRow = _("disabled,");
+        strRow += _("false,");
     }
-
-    // From time
-    strRow += m_timeAllow.m_fromTime.FormatISODate() + _(" ") +
-                                m_timeAllow.m_fromTime.FormatISOTime() + _(",");
-
-    // End time
-    strRow += m_timeAllow.m_endTime.FormatISODate() + _(" ") +
-                                m_timeAllow.m_endTime.FormatISOTime() + _(",");
-
-    // Allowed weekdays
-    strRow += m_timeAllow.getWeekDays() + _(",");
-
-    // Action time
-    strRow += m_timeAllow.getActionTimeAsString() + _(",");
+    
+    // GroupID
+    strRow += m_strGroupID;
+    strRow += _(",");
 
     // Priority mask
     strRow += wxString::Format(_("0x%X,"), m_vscpfilter.mask_priority );
@@ -920,10 +912,55 @@ wxString dmElement::getAsRealText( bool bCRLF )
     vscp_writeGuidArrayToString( m_vscpfilter.filter_GUID, strGUID );
     strRow += strGUID;
     strRow += _(",");
+    
+    // From time
+    strRow += m_timeAllow.m_fromTime.FormatISODate() + _(" ") +
+                                m_timeAllow.m_fromTime.FormatISOTime() + _(",");
 
-    // Control Code
-    strRow += wxString::Format(_("0x%X,"), m_control );
+    // End time
+    strRow += m_timeAllow.m_endTime.FormatISODate() + _(" ") +
+                                m_timeAllow.m_endTime.FormatISOTime() + _(",");
 
+    // Allowed weekdays
+    strRow += m_timeAllow.getWeekDays() + _(",");
+
+    // Action time
+    strRow += m_timeAllow.getActionTimeAsString() + _(",");
+
+    // bIndex
+    strRow += m_bCheckIndex ? _("true,") : _("false,");
+    
+    // index
+    strRow += wxString::Format(_("%d,"), m_index );
+    
+    // bMeasurementIndex
+    strRow += m_bCheckMeasurementIndex ? _("true,") : _("false,");
+    
+    // measurementindex
+    strRow += wxString::Format(_("%d,"), m_measurementIndex );
+    
+    // bCheckZone
+    strRow += m_bCheckZone ? _("true,") : _("false,");
+    
+    // zone
+    strRow += wxString::Format(_("%d,"), m_zone );
+    
+    // bCheckSubZone
+    strRow += m_bCheckSubZone ? _("true,") : _("false,");
+    
+    // subzone
+    strRow += wxString::Format(_("%d,"), m_subzone );
+    
+    // measurement value
+    strRow += wxString::Format(_("%f,"), m_measurementValue );
+    
+    // measurement unit
+    strRow += wxString::Format(_("%d,"), m_measurementUnit );
+    
+    // measurement compare code
+    strRow += getSymbolicMeasurementFromCompareCode( m_measurementCompareCode );
+    strRow += _(",");
+    
     // Action Code
     strRow += wxString::Format(_("0x%X,"), m_actionCode );
 
@@ -936,6 +973,10 @@ wxString dmElement::getAsRealText( bool bCRLF )
 
     // error-counter:
     strRow += wxString::Format(_("0x%X,"), m_errorCounter );
+    
+    // Last error
+    strRow += m_strLastError;
+    strRow += _(",");        
 
     strRow += m_comment;
 
@@ -945,6 +986,402 @@ wxString dmElement::getAsRealText( bool bCRLF )
     }
 
     return strRow;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getCompareCodeFromSymbolicMeasurement
+//
+
+uint8_t dmElement::getCompareCodeFromSymbolicMeasurement( wxString& strCompare )
+{
+    uint8_t cc = DM_MEASUREMENT_COMPARE_NOOP;
+    
+    strCompare.MakeUpper();
+    strCompare.Trim();
+    strCompare.Trim( false );
+    
+    if ( _("EQ") == strCompare ) {
+        cc = DM_MEASUREMENT_COMPARE_EQ;
+    }
+    else if ( _("==") == strCompare ) {
+        cc = DM_MEASUREMENT_COMPARE_EQ;
+    }
+    else if ( _("NEQ") == strCompare ) {
+        cc = DM_MEASUREMENT_COMPARE_NEQ;
+    }
+    else if ( _("!=") == strCompare ) {
+        cc = DM_MEASUREMENT_COMPARE_NEQ;
+    }
+    else if ( _("LT") == strCompare ) {
+        cc = DM_MEASUREMENT_COMPARE_LT;
+    }
+    else if ( _("<") == strCompare ) {
+        cc = DM_MEASUREMENT_COMPARE_LT;
+    }
+    else if ( _("LTEQ") == strCompare ) {
+        cc = DM_MEASUREMENT_COMPARE_LTEQ;
+    }
+    else if ( _("<=") == strCompare ) {
+        cc = DM_MEASUREMENT_COMPARE_LTEQ;
+    }
+    else if ( _("GT") == strCompare ) {
+        cc = DM_MEASUREMENT_COMPARE_GT;
+    }
+    else if ( _(">") == strCompare ) {
+        cc = DM_MEASUREMENT_COMPARE_GT;
+    }
+    else if ( _("GTEQ") == strCompare ) {
+        cc = DM_MEASUREMENT_COMPARE_GTEQ;
+    }
+    else if ( _(">=") == strCompare ) {
+        cc = DM_MEASUREMENT_COMPARE_GTEQ;
+    }
+    else if ( _("NOOP") == strCompare ) {
+        cc = DM_MEASUREMENT_COMPARE_NOOP;
+    }
+    
+    return cc;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getSymbolicMeasurementCompareCode
+//
+
+wxString dmElement::getSymbolicMeasurementFromCompareCode( uint8_t cc, uint8_t type )
+{
+    wxString scc = "NOOP";
+    
+    if ( DM_MEASUREMENT_COMPARE_EQ == cc ) {
+        if ( 0 == type ) {
+            scc = "==";
+        }
+        else {
+            scc = "EQ";
+        }
+    }
+    else if ( DM_MEASUREMENT_COMPARE_NEQ == cc ) {
+        if ( 0 == type ) {
+            scc = "!=";
+        }
+        else {
+            scc = "NEQ";
+        }
+    }
+    else if ( DM_MEASUREMENT_COMPARE_LT == cc ) {
+        if ( 0 == type ) {
+            scc = "<";
+        }
+        else {
+            scc = "LT";
+        }
+    }
+    else if ( DM_MEASUREMENT_COMPARE_LTEQ == cc ) {
+        if ( 0 == type ) {
+            scc = "<=";
+        }
+        else {
+            scc = "LTEQ";
+        }
+    }
+    else if ( DM_MEASUREMENT_COMPARE_GT == cc ) {
+        if ( 0 == type ) {
+            scc = ">";
+        }
+        else {
+            scc = "GT";
+        }
+    }
+    else if ( DM_MEASUREMENT_COMPARE_GTEQ == cc ) {
+        if ( 0 == type ) {
+            scc = ">=";
+        }
+        else {
+            scc = "GTEQ";
+        }
+    }
+    else {
+        scc = "NOOP";
+    }
+    
+    return scc;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setFromString
+//
+
+
+bool dmElement::setFromString( wxString& strDM )
+{
+    wxString wxstr;
+    long unsigned int lval;
+    
+    wxStringTokenizer tkz( strDM, wxT(",") );
+
+    // bEnable 
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken().MakeUpper();
+        if ( wxNOT_FOUND == wxstr.Find( _("TRUE") ) ) {
+            m_bEnable = true;
+        }
+        else {
+            m_bEnable = false;
+        }
+    }
+    
+    // GroupID
+    if ( tkz.HasMoreTokens() ) {
+        m_strGroupID = tkz.GetNextToken();
+    }
+    
+    // Mask priority
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+        if ( wxstr.ToULong( &lval ) ) {
+            m_vscpfilter.mask_priority = lval;
+        }
+        else {
+            m_vscpfilter.mask_priority = 0;
+        }
+    }
+    
+    // Mask class
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+        if ( wxstr.ToULong( &lval ) ) {
+            m_vscpfilter.mask_class = lval;
+        }
+        else {
+            m_vscpfilter.mask_class = 0;
+        }
+    }
+    
+    // Mask type
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+        if ( wxstr.ToULong( &lval ) ) {
+            m_vscpfilter.mask_type = lval;
+        }
+        else {
+            m_vscpfilter.mask_type = 0;
+        }
+    }
+    
+    // mask GUID
+    if ( tkz.HasMoreTokens() ) {
+        cguid guid;
+        wxstr = tkz.GetNextToken();
+        guid.getFromString( wxstr );
+        memcpy( m_vscpfilter.mask_GUID, guid.getGUID(), 16 );
+    }
+    
+    // Filter priority
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+        if ( wxstr.ToULong( &lval ) ) {
+            m_vscpfilter.filter_priority = lval;
+        }
+        else {
+            m_vscpfilter.filter_priority = 0;
+        }
+    }
+    
+    // Filter class
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+        if ( wxstr.ToULong( &lval ) ) {
+            m_vscpfilter.filter_class = lval;
+        }
+        else {
+            m_vscpfilter.filter_class = 0;
+        }
+    }
+    
+    // Filter type
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+        if ( wxstr.ToULong( &lval ) ) {
+            m_vscpfilter.filter_type = lval;
+        }
+        else {
+            m_vscpfilter.filter_type = 0;
+        }
+    }
+    
+    // Filter GUID
+    if ( tkz.HasMoreTokens() ) {
+        cguid guid;
+        wxstr = tkz.GetNextToken();
+        guid.getFromString( wxstr );
+        memcpy( m_vscpfilter.filter_GUID, guid.getGUID(), 16 );
+    }
+    
+    // Allowed start
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();  
+    }
+    
+    // Allowed end
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+    }
+    
+    // Allowed weekdays
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+        m_timeAllow.setWeekDay( wxstr );
+    }
+    
+    // Allowed time
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+        m_timeAllow.parseActionTime( wxstr );
+    }
+    
+    // bCheckIndex
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken().MakeUpper();
+        if ( wxNOT_FOUND == wxstr.Find( _("TRUE") ) ) {
+            m_bCheckIndex = true;
+        }
+        else {
+            m_bCheckIndex = false;
+        }
+    }
+    
+    // index
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+        if ( wxstr.ToULong( &lval ) ) {
+            m_index = lval;
+        }
+        else {
+            m_index = 0;
+        }
+    }
+    
+    // bCheckZone
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken().MakeUpper();
+        if ( wxNOT_FOUND == wxstr.Find( _("TRUE") ) ) {
+            m_bCheckZone = true;
+        }
+        else {
+            m_bCheckZone = false;
+        }
+    }
+    
+    // zone
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+        if ( wxstr.ToULong( &lval ) ) {
+            m_zone = lval;
+        }
+        else {
+            m_zone = 0;
+        }
+    }
+    
+    // bCheckSubZone
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken().MakeUpper();
+        if ( wxNOT_FOUND == wxstr.Find( _("TRUE") ) ) {
+            m_bCheckSubZone = true;
+        }
+        else {
+            m_bCheckSubZone = false;
+        }
+    }
+    
+    // subzone
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+        if ( wxstr.ToULong( &lval ) ) {
+            m_subzone = lval;
+        }
+        else {
+            m_subzone = 0;
+        }
+    }
+    
+    // bCheckMeasurementIndex
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken().MakeUpper();
+        if ( wxNOT_FOUND == wxstr.Find( _("TRUE") ) ) {
+            m_bCheckMeasurementIndex = true;
+        }
+        else {
+            m_bCheckMeasurementIndex = false;
+        }
+    }
+    
+    // measurementindex
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+        if ( wxstr.ToULong( &lval ) ) {
+            m_measurementIndex = lval;
+        }
+        else {
+            m_measurementIndex = 0;
+        }
+    }
+    
+    // actioncode
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+        if ( wxstr.ToULong( &lval ) ) {
+            m_actionCode = lval;
+        }
+        else {
+            m_actionCode = 0;
+        }
+    }
+    
+    // Action parameter
+    if ( tkz.HasMoreTokens() ) {
+        m_actionparam = tkz.GetNextToken();
+    }
+    
+    // Measurement value
+    if ( tkz.HasMoreTokens() ) {
+        double dval;
+        wxstr = tkz.GetNextToken();
+        if ( wxstr.ToDouble( &dval ) ) {
+            m_measurementValue = dval;
+        }
+        else {
+            m_measurementValue = dval;
+        }
+    }
+    
+    // measurement unit
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+        if ( wxstr.ToULong( &lval ) ) {
+            m_measurementUnit = lval;
+        }
+        else {
+            m_measurementUnit = 0;
+        }
+    }
+    
+    // measurement compare code
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+        if ( wxstr.ToULong( &lval ) ) {
+            m_measurementCompareCode = lval;
+        }
+        else {
+            m_measurementCompareCode = 0;
+        }
+    }
+    
+    // comment
+    if ( tkz.HasMoreTokens() ) {
+        m_comment = tkz.GetNextToken();
+    }
+    
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1490,7 +1927,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_EXECUTE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -1501,7 +1938,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_SEND_EVENT.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -1512,7 +1949,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_SEND_EVENT_CONDITIONAL.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -1523,7 +1960,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_SEND_EVENTS_FROM_FILE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -1534,7 +1971,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_STORE_VARIABLE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -1545,7 +1982,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_ADD_VARIABLE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg( _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg( _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -1556,7 +1993,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_SUBTRACT_VARIABLE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -1567,7 +2004,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_MULTIPLY_VARIABLE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -1578,7 +2015,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_DIVIDE_VARIABLE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -1589,7 +2026,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_START_TIMER.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -1600,7 +2037,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_PAUSE_TIMER.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -1611,7 +2048,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_STOP_TIMER.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -1622,7 +2059,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_RESUME_TIMER.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -1633,7 +2070,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_WRITE_FILE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -1644,7 +2081,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_GET_PUT_POST_URL.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -1655,7 +2092,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_WRITE_TABLE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -1667,7 +2104,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_RUN_LUA.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -1699,7 +2136,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
             // We do nothing
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_NOOP.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
             break;
@@ -3084,12 +3521,12 @@ void CDM::logMsg( const wxString& msg, uint8_t level )
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// addElement
+// addMemoryElement
 //
 // Read decision matrix from file
 //
 
-bool CDM::addElement( dmElement *pItem )
+bool CDM::addMemoryElement( dmElement *pItem )
 {
     // Check pointer
     if ( NULL == pItem ) return false;
@@ -3105,10 +3542,10 @@ bool CDM::addElement( dmElement *pItem )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// removeRow
+// removeMemoryElement
 //
 
-bool CDM::removeElement( unsigned short pos )
+bool CDM::removeMemoryElement( unsigned short pos )
 {
     if ( pos >= m_DMList.GetCount() ) return false;
 
@@ -3122,10 +3559,10 @@ bool CDM::removeElement( unsigned short pos )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getElement
+// getMemoryElement
 //
 
-dmElement *CDM::getElement( short row )
+dmElement *CDM::getMemoryElement( short row )
 {
     if (row < 0) return NULL;
     if ( (unsigned short)row >= m_DMList.GetCount() ) return NULL;
@@ -3789,6 +4226,351 @@ bool CDM::doFillMemoryDMTable()
 */
 
 ///////////////////////////////////////////////////////////////////////////////
+// getDatabaseRecordCount
+//
+//
+
+uint32_t CDM::getDatabaseRecordCount( void )
+{
+    wxString wxstr;
+    char *pErrMsg;
+    sqlite3_stmt *ppStmt;
+    uint32_t count = 0;
+    
+    // Database file must be open
+    if ( NULL == m_db_vscp_dm ) {
+        logMsg( _("DM: Get record count. Database file is not open.\n") );
+        return false;
+    }
+    
+    if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_dm,
+                                            "SELECT count(id) FROM dm WHERE bEnable='true';",
+                                            -1,
+                                            &ppStmt,
+                                            NULL ) ) {
+        return false;
+    }
+    
+    while ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
+        count = sqlite3_column_int( ppStmt, 0 );
+    }
+    
+    sqlite3_finalize( ppStmt );
+       
+    
+    return count;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// deleteDatabaseRecord
+//
+//
+
+bool CDM::deleteDatabaseRecord( uint32_t idx )
+{
+    char *pErrMsg;
+    
+    // Database file must be open
+    if ( NULL == m_db_vscp_dm ) {
+        logMsg( _("DM: Delete record. Database file is not open.\n") );
+        return false;
+    }
+    
+    char *sql = sqlite3_mprintf( "DELETE FROM \"dm\" "
+                                        "WHERE id='%d';",
+                                    idx );
+        if ( SQLITE_OK != sqlite3_exec( m_db_vscp_dm, sql, NULL, NULL, &pErrMsg ) ) {
+            sqlite3_free( sql );
+            return false;
+        }
+        
+        sqlite3_free( sql );
+    
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// addDatabaseRecord
+//
+//
+
+bool CDM::addDatabaseRecord( dmElement& dm )
+{
+    char *pErrMsg;
+    cguid guid_mask;
+    cguid guid_filter;
+            
+    // Database file must be open
+    if ( NULL == m_db_vscp_dm ) {
+        logMsg( _("DM: Add record. Database file is not open.\n") );
+        return false;
+    }
+    
+    guid_mask.getFromArray( dm.m_vscpfilter.mask_GUID );
+    guid_filter.getFromArray( dm.m_vscpfilter.filter_GUID );
+    
+    char *sql = sqlite3_mprintf("INSERT INTO 'dm' "
+                "(GroupID,bEnable,maskPriority,maskClass,maskType,maskGUID,filterPriority,filterClass,filterType,filterGUID,"
+                "allowedFrom,allowedTo,allowedMonday,allowedTuesday,allowsWednesday,allowedThursday,allowedFriday,allowedSaturday,"
+                "allowedSunday,allowedTime,bCheckIndex,index,bCheckZone,zone,bCheckSubZone,subzone,bCheckMeasurementIndex,"
+                "meaurementIndex,actionCode,actionParameter,measurementValue,measurementUnit,measurementCompare"
+                " )VALUES ('%s','%d','%d','%d','%d','%s','%d','%d','%d','%s',"
+                "'%s','%s','%d','%d','%d','%d','%d','%d','%d',"
+                "'%d','%s','%d','%d','%d','%d','%d','%d','%d','%d','%d','%s','%f','%d','%s'"
+                ")",
+                (const char *)dm.m_strGroupID.mbc_str(),
+                dm.m_bEnable ? 1 : 0,
+                dm.m_vscpfilter.mask_priority,
+                dm.m_vscpfilter.mask_class,
+                dm.m_vscpfilter.mask_type,
+                (const char *)guid_mask.getAsString().mbc_str(),
+                dm.m_vscpfilter.filter_priority,
+                dm.m_vscpfilter.filter_class,
+                dm.m_vscpfilter.filter_type,
+                (const char *)guid_filter.getAsString().mbc_str(),
+                //--------------------------------------------------------------
+                (const char *)dm.m_timeAllow.m_fromTime.FormatISOCombined().mbc_str(),
+                (const char *)dm.m_timeAllow.m_endTime.FormatISOCombined().mbc_str(),
+                dm.m_timeAllow.m_weekDay[ 0 ] ? 1 : 0,
+                dm.m_timeAllow.m_weekDay[ 1 ] ? 1 : 0,
+                dm.m_timeAllow.m_weekDay[ 2 ] ? 1 : 0,
+                dm.m_timeAllow.m_weekDay[ 3 ] ? 1 : 0,
+                dm.m_timeAllow.m_weekDay[ 4 ] ? 1 : 0,
+                dm.m_timeAllow.m_weekDay[ 5 ] ? 1 : 0,
+                //--------------------------------------------------------------
+                dm.m_timeAllow.m_weekDay[ 6 ] ? 1 : 0,
+                (const char *)dm.m_timeAllow.getActionTimeAsString().mbc_str(),
+                dm.m_bCheckIndex ? 1 : 0,
+                dm.m_index,
+                dm.m_bCheckZone,
+                dm.m_zone,
+                dm.m_bCheckSubZone,
+                dm.m_subzone,
+                dm.m_bCheckMeasurementIndex,
+                //--------------------------------------------------------------
+                dm.m_measurementIndex,
+                dm.m_actionCode,
+                (const char *)dm.m_actionparam.mbc_str(),
+                dm.m_measurementValue,
+                dm.m_measurementUnit,
+                dm.m_measurementCompareCode
+            );
+
+        if ( SQLITE_OK != sqlite3_exec( m_db_vscp_dm, 
+                                            sql, NULL, NULL, &pErrMsg)) {
+            sqlite3_free( sql );
+            return false;
+        }
+
+        sqlite3_free( sql );
+    
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getDatabaseRecord
+//
+//
+
+bool CDM::getDatabaseRecord( uint32_t idx, dmElement *pDMitem )
+{
+    wxString wxstr;
+    char *pErrMsg;
+    sqlite3_stmt *ppStmt;
+    
+    // Check pointer
+    if ( NULL == pDMitem ) return false;
+    
+    // Database file must be open
+    if ( NULL == m_db_vscp_dm ) {
+        logMsg( _("DM: Get record. Database file is not open.\n") );
+        return false;
+    }
+    
+    char *sql = sqlite3_mprintf( "SELECT * FROM dm WHERE id='%d';", idx );
+    
+    if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_dm,
+                                            sql,
+                                            -1,
+                                            &ppStmt,
+                                            NULL ) ) {
+        sqlite3_free( sql );
+        return false;
+    }
+    
+    if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
+                  
+        const char *p;
+            
+        pDMitem->m_pDM = this;  // Record owner
+            
+        // id in database
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ID ) ) ) {
+            pDMitem->m_id = atol( p );
+        }
+            
+        // bEnable
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ENABLE ) ) ) {
+            pDMitem->m_bEnable = atoi( p ) ? true : false;
+        }
+            
+        // groupid
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_GROUPID ) ) ) {
+            pDMitem->m_strGroupID = wxString::FromUTF8( p );
+        }
+            
+        // Mask priority
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_MASK_PRIORITY ) ) ) {
+            pDMitem->m_vscpfilter.mask_priority = atoi( p );
+        }
+            
+        // Filter priority
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_FILTER_PRIORITY ) ) ) {
+            pDMitem->m_vscpfilter.filter_priority = atoi( p );
+        }
+            
+        // Mask class
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_MASK_CLASS ) ) ) {
+            pDMitem->m_vscpfilter.mask_class = atoi( p );
+        }
+            
+        // Filter class
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_FILTER_CLASS ) ) ) {
+            pDMitem->m_vscpfilter.filter_class = atoi( p );
+        }
+            
+        // Mask type
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_MASK_TYPE ) ) ) {
+            pDMitem->m_vscpfilter.mask_type = atoi( p );
+        }
+            
+        // Filter type
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_FILTER_TYPE ) ) ) {
+            pDMitem->m_vscpfilter.filter_type = atoi( p );
+        }
+            
+        // Mask GUID
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_MASK_GUID ) ) ) {
+            cguid guid;
+            guid.getFromString( p );
+            memcpy( pDMitem->m_vscpfilter.mask_GUID, guid.getGUID(), 16 );
+        }
+            
+        // Filter GUID
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_FILTER_GUID ) ) ) {
+            cguid guid;
+            guid.getFromString( p );
+            memcpy( pDMitem->m_vscpfilter.filter_GUID, guid.getGUID(), 16 );
+        }
+            
+        // Allowed start
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_START ) ) ) {
+            pDMitem->m_timeAllow.m_fromTime.ParseDate( p );
+        }
+            
+        // Allowed end
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_END ) ) ) {
+            pDMitem->m_timeAllow.m_endTime.ParseDate( p );
+        }
+            
+        // Allowed time
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_TIME ) ) ) {
+            pDMitem->m_timeAllow.parseActionTime( p );
+        }
+            
+        // Allow Monday
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_MONDAY ) ) ) {
+            atoi( p ) ? pDMitem->m_timeAllow.allowMonday() : pDMitem->m_timeAllow.allowMonday( false );
+        }
+            
+        // Allow Tuesday
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_TUESDAY ) ) ) {
+            atoi( p ) ? pDMitem->m_timeAllow.allowTuesday() : pDMitem->m_timeAllow.allowTuesday( false );
+        }
+            
+        // Allow Wednesday
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_WEDNESDAY ) ) ) {
+            atoi( p ) ? pDMitem->m_timeAllow.allowWednesday() : pDMitem->m_timeAllow.allowWednesday( false );
+        }
+            
+        // Allow Thursday
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_THURSDAY ) ) ) {
+            atoi( p ) ? pDMitem->m_timeAllow.allowThursday() : pDMitem->m_timeAllow.allowThursday( false );
+        }
+            
+        // Allow Friday
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_FRIDAY ) ) ) {
+            atoi( p ) ? pDMitem->m_timeAllow.allowFriday() : pDMitem->m_timeAllow.allowFriday( false );
+        }
+            
+        // Allow Saturday
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_SATURDAY ) ) ) {
+            atoi( p ) ? pDMitem->m_timeAllow.allowSaturday() : pDMitem->m_timeAllow.allowSaturday( false );
+        }
+            
+        // Allow Sunday
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_SUNDAY ) ) ) {
+            atoi( p ) ? pDMitem->m_timeAllow.allowSunday() : pDMitem->m_timeAllow.allowSunday( false );
+        }
+
+        // bCheckIndex
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_CHECK_INDEX ) ) ) {
+            pDMitem->m_bCheckIndex = atoi( p ) ? true : false;
+        }
+            
+        // Index
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_INDEX ) ) ) {
+            pDMitem->m_index = atoi( p );
+        }
+            
+        // bCheckZone
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_CHECK_ZONE ) ) ) {
+            pDMitem->m_bCheckZone = atoi( p ) ? true : false;
+        }
+            
+        // Zone
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ZONE ) ) ) {
+            pDMitem->m_zone = atoi( p );
+        }
+            
+        // bCheckSubZone
+        pDMitem->m_bCheckZone = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_DM_CHECK_SUBZONE ) ? true : false;
+            
+        // SubZone
+        pDMitem->m_zone = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_DM_SUBZONE );
+            
+        // bMeasurementIndex
+        pDMitem->m_bCheckMeasurementIndex = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_DM_CHECK_MEASUREMENT_INDEX ) ? true : false;
+            
+        // MeasurementIndex
+        pDMitem->m_measurementIndex = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_INDEX );
+            
+        // ActionCode
+        pDMitem->m_actionCode = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_INDEX );
+            
+        // ActionParamter
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ACTIONPARAMETER ) ) ) {
+            pDMitem->m_actionparam = wxString::FromUTF8( p );
+        }
+            
+        // Measurement value
+        pDMitem->m_measurementValue = sqlite3_column_double( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_VALUE );
+            
+        // Measurement unit
+        pDMitem->m_measurementUnit = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_UNIT );
+            
+        // Measurement compare code
+        pDMitem->m_measurementCompareCode = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_COMPARE );
+        
+    }
+    
+    sqlite3_finalize( ppStmt );
+    sqlite3_free( sql );
+    
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // loadFromDatabase
 //
 // Read decision matrix from the database
@@ -3891,12 +4673,12 @@ bool CDM::loadFromDatabase( void )
             }
             
             // Allowed from
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_FROM ) ) ) {
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_START ) ) ) {
                 pDMitem->m_timeAllow.m_fromTime.ParseDate( p );
             }
             
             // Allowed to
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_TO ) ) ) {
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_END ) ) ) {
                 pDMitem->m_timeAllow.m_endTime.ParseDate( p );
             }
             
@@ -3990,7 +4772,7 @@ bool CDM::loadFromDatabase( void )
             pDMitem->m_measurementCompareCode = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_COMPARE );
 
             // Add the DM row to the matrix
-            addElement ( pDMitem );
+            addMemoryElement ( pDMitem );
             
         }
         
@@ -4041,7 +4823,6 @@ bool CDM::loadFromXML( void )
 
             // Set row default values for row
             dmElement *pDMitem = new dmElement;
-            pDMitem->m_control = 0;
             pDMitem->m_actionCode = 0;
             pDMitem->m_triggCounter = 0;
             pDMitem->m_errorCounter = 0;
@@ -4069,9 +4850,8 @@ bool CDM::loadFromXML( void )
             // Get group id
             pDMitem->m_strGroupID = child->GetAttribute( wxT( "groupid" ), wxT("") );
 
-
             // add the DM row to the matrix
-            addElement ( pDMitem );
+            addMemoryElement ( pDMitem );
 
             wxXmlNode *subchild = child->GetChildren();
             while ( subchild ) {
@@ -4105,9 +4885,6 @@ bool CDM::loadFromXML( void )
                     wxString strGUID = subchild->GetAttribute( wxT( "GUID" ),
                             wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
                     vscp_getGuidFromStringToArray( pDMitem->m_vscpfilter.filter_GUID, strGUID );
-                }
-                else if ( subchild->GetName() == wxT ( "control" ) ) {
-                    pDMitem->m_control = vscp_readStringValue( subchild->GetNodeContent() );
                 }
                 else if ( subchild->GetName() == wxT ( "action" ) ) {
                     pDMitem->m_actionCode = vscp_readStringValue( subchild->GetNodeContent() );
@@ -4289,11 +5066,6 @@ bool CDM::saveToXML( void )
             pFileStream->Write( "\" > ", strlen( "\" > " ) );
             pFileStream->Write( "</filter>\n", strlen( "</filter>\n" ) );
 
-            pFileStream->Write( "    <control>", strlen( "    <control>" ) );
-            buf.Printf( _( "0x%x" ), pDMitem->m_control );
-            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
-            pFileStream->Write( "</control>\n", strlen( "</control>\n" ) );
-
             pFileStream->Write( "    <action>", strlen( "    <action>" ) );
             buf.Printf( _( "0x%x" ), pDMitem->m_actionCode );
             pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ));
@@ -4312,7 +5084,7 @@ bool CDM::saveToXML( void )
             pFileStream->Write( "    <allowed_from>", strlen ( "    <allowed_from>" ) );
             {
                 wxString str = pDMitem->m_timeAllow.m_fromTime.FormatISODate() + _(" ") +
-                    pDMitem->m_timeAllow.m_fromTime.FormatISOTime();
+                                    pDMitem->m_timeAllow.m_fromTime.FormatISOTime();
                 pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
             }
             pFileStream->Write( "</allowed_from>\n", strlen( "</allowed_from>\n" ) );
@@ -4320,7 +5092,7 @@ bool CDM::saveToXML( void )
             pFileStream->Write ( "    <allowed_to>", strlen( "    <allowed_to>" ) );
             {
                 wxString str = pDMitem->m_timeAllow.m_endTime.FormatISODate() + _(" ") +
-                    pDMitem->m_timeAllow.m_endTime.FormatISOTime();
+                                    pDMitem->m_timeAllow.m_endTime.FormatISOTime();
                 pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
             }
             pFileStream->Write("</allowed_to>\n", strlen ( "</allowed_to>\n" ) );
@@ -4422,8 +5194,6 @@ bool CDM::feed( vscpEvent *pEvent )
                 // Match do action for this row
                 pDMitem->doAction( pEvent );
 
-                // Check if DM scan should continue after this DM row
-                if ( pDMitem->isScanDontContinueSet() ) break;
 
         }
 
@@ -4436,11 +5206,19 @@ bool CDM::feed( vscpEvent *pEvent )
 
 
 
-///////////////////////////////////////////////////////////////////////////////
 
 
 
-///////////////////////////////////////////////////////////////////////////////
+
+//------------------------------------------------------------------------------
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
 // actionThreadURL
 //
 // This thread connects to a HTTP server on a specified port
@@ -4712,7 +5490,7 @@ void actionThread_URL::OnExit()
 
 
 
-///////////////////////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------
 
 
 
@@ -4789,7 +5567,7 @@ void actionThread_VSCPSrv::OnExit()
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------
 
 
 

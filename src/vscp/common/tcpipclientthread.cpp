@@ -2735,7 +2735,7 @@ void VSCPClientThread::handleDM_List( struct mg_connection *conn,
                 ++iter) {
 
             dmElement *pDMItem = *iter;
-            wxString strRow = pDMItem->getAsRealText();
+            wxString strRow = pDMItem->getDmRowAsString();
 
             mg_send( conn,  strRow.mb_str(),
                                         strlen ( strRow.mb_str() ) );
@@ -2797,9 +2797,6 @@ void VSCPClientThread::handleDM_Add( struct mg_connection *conn,
     strGUID = tkz.GetNextToken();
     vscp_getGuidFromStringToArray( pDMItem->m_vscpfilter.filter_GUID, strGUID );
 
-    // control
-    pDMItem->m_control = vscp_readStringValue( tkz.GetNextToken() );
-
     // action code
     pDMItem->m_actionCode = vscp_readStringValue( tkz.GetNextToken() );
 
@@ -2808,7 +2805,7 @@ void VSCPClientThread::handleDM_Add( struct mg_connection *conn,
 
     // add the DM row to the matrix
     m_pCtrlObject->m_dm.m_mutexDM.Lock();
-    m_pCtrlObject->m_dm.addElement ( pDMItem );
+    m_pCtrlObject->m_dm.addMemoryElement ( pDMItem );
     m_pCtrlObject->m_dm.m_mutexDM.Unlock();
 
     mg_send( conn, MSG_OK, strlen( MSG_OK ) );

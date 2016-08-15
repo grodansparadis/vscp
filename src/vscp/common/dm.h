@@ -44,19 +44,20 @@ WX_DECLARE_HASH_MAP( int, dmTimer*, wxIntegerHash, wxIntegerEqual, DMTIMERS );
 WX_DECLARE_LIST ( wxDynamicLibrary, PLUGINLIST ); 	// List with DM plugins
 WX_DECLARE_LIST( int, ACTIONTIME );
 
-// Control bits
+// Control bits  (deprecated)
 #define DM_CONTROL_DONT_CONTINUE_SCAN   0x40000000
 #define DM_CONTROL_CHECK_INDEX          0x00000020
-#define DM_CONTROL_CHECK_ZONE           0x00000010 
-#define DM_CONTROL_CHECK_SUBZONE        0x00000008  
+#define DM_CONTROL_CHECK_ZONE           0x00000010
+#define DM_CONTROL_CHECK_SUBZONE        0x00000008
 
 // Measurement compare constants
-#define DM_MEASUREMENT_COMPARE_EQ       0x00    // Equal to ==
-#define DM_MEASUREMENT_COMPARE_NOT_EQ   0x01    // Not equal to !=
-#define DM_MEASUREMENT_COMPARE_LT       0x02    // Less than <
-#define DM_MEASUREMENT_COMPARE_LTEQ     0x03    // Less than or equal to <=
-#define DM_MEASUREMENT_COMPARE_GT       0x04    // Greater than
-#define DM_MEASUREMENT_COMPARE_GTEQ     0x05    // Greater than or equal tp >=
+#define DM_MEASUREMENT_COMPARE_NOOP     0x00    // No compare
+#define DM_MEASUREMENT_COMPARE_EQ       0x01    // Equal to ==
+#define DM_MEASUREMENT_COMPARE_NEQ      0x02    // Not equal to !=
+#define DM_MEASUREMENT_COMPARE_LT       0x03    // Less than <
+#define DM_MEASUREMENT_COMPARE_LTEQ     0x04    // Less than or equal to <=
+#define DM_MEASUREMENT_COMPARE_GT       0x05    // Greater than
+#define DM_MEASUREMENT_COMPARE_GTEQ     0x06    // Greater than or equal tp >=
 
 enum {
     LOG_DM_NONE = 0,
@@ -353,9 +354,8 @@ public:
     /// Destructor
     ~dmElement( void );
 
-
     /*!
-        Get DM item as a realstring description.
+        Get DM row as a string description.
         @param bCRLF true to have CRLF placed at end (default)
         @return A string representation for the item. This string is on the form 
         enabled,from,to,weekday,time,mask,filter,index,zone,subzone,control-code,
@@ -363,8 +363,14 @@ public:
         where mask is Priority;Class;Type;GUID an filter is Priority;Class;Type;GUID
         See the specification for a description of the from, to and weekday fields. 
     */
-    wxString getAsRealText( bool bCRLF = true );
-
+    wxString getDmRowAsString( bool bCRLF = true );
+    
+    /*!
+        Set DM row content from string 
+        @param strDM DM row in string form.
+        @return True on success.
+     */
+    bool setFromString( wxString& strDM );
 
     /*!
         Enable row
@@ -383,35 +389,38 @@ public:
     bool isEnabled( void ) { return m_bEnable; };
   
     /*!
-        Check if scan should continue
-        @returns true if enabled false otherwise
-    */
-    bool isScanDontContinueSet( void ) 
-        { return ( ( m_control & DM_CONTROL_DONT_CONTINUE_SCAN ) ? true : false ); };
-
-    /*!
         Check if index should be checked
         @returns true if enabled false otherwise
      */
-    bool isCheckIndexSet( void ) 
-        { return ( ( m_control & DM_CONTROL_CHECK_INDEX ) ? true : false ); };
+    bool isCheckIndexSet( void ) { return m_bCheckIndex; };
     
     /*!
         Check if zone should be checked
         @returns true if enabled false otherwise
     */    
     bool isCheckZoneSet( void ) 
-        { return ( ( m_control & DM_CONTROL_CHECK_ZONE ) ? true : false ); };
+        { return m_bCheckZone; };
   
     /*!
         Check if zone should be checked
         @returns true if enabled false otherwise
     */
-    bool isCheckSubZoneSet( void ) 
-        { return ( ( m_control & DM_CONTROL_CHECK_SUBZONE ) ? true : false ); };
+    bool isCheckSubZoneSet( void ) { return m_bCheckSubZone; };
+    
+    /*!
+        Get measurement compare code from symbolic compare value
+        @parfam strCompare Symbolic compare value
+        @return Symbolic code or zero if invalid code (DM_MEASUREMENT_COMPARE_NOOP)
+     */
+    uint8_t getCompareCodeFromSymbolicMeasurement( wxString& strCompare );
+    
+    void setSymbolicMeasurementCompareCode( wxString& strCompare ) 
+            { m_measurementCompareCode = getCompareCodeFromSymbolicMeasurement( strCompare ); };
+            
+    wxString getSymbolicMeasurementFromCompareCode( uint8_t cc, uint8_t type = 0 );
   
     /*!
-        Handle escape sequencies
+        Handle escape sequences
         @param pEvent Event feed true matrix
         @param str String to replace escapes in
         @return true on success, else false.
@@ -436,7 +445,7 @@ public:
     bool doAction( vscpEvent *pDMEvent );
 
     /*!
-        Excecute action 
+        Execute action 
         Just executes the external action script. The parameter
         is action dependent.
         @param pDMEvent Event that triggered the action
@@ -445,7 +454,7 @@ public:
     bool doActionExecute( vscpEvent *pDMEvent );
 
     /*!
-        Timed exceute the external action script.
+        Timed exeute the external action script.
         @param pDMEvent Event that triggered the action
         @returns true if all went well.
     */
@@ -557,17 +566,17 @@ public:
     */
     bool doActionWriteTable( vscpEvent *pDMEvent );
 
+    // Database index for record ( 0 if loaded from XML file)
+    uint32_t m_id;
+    
     /// True if row is enabled
     bool m_bEnable;
     
-    // Database index for record ( 0 if loaded from XML file)
-    uint32_t m_id;
-
+    /// Group ID
+    wxString m_strGroupID;
+    
     /// DM row filter
     vscpEventFilter m_vscpfilter;
-
-    /// Control Code
-    uint32_t m_control;
 
     /// Action code
     uint32_t m_actionCode;
@@ -610,9 +619,6 @@ public:
 
     /// Description for entry
     wxString m_comment;
-
-    /// Group ID
-    wxString m_strGroupID;
 
     /// Action time 
     actionTime m_timeAllow;
@@ -703,23 +709,53 @@ public:
     /*!
         Add Element to matrix
     */
-    bool addElement( dmElement *pItem );
+    bool addMemoryElement( dmElement *pItem );
 
     /*!
         Remove Element from matrix
     */
-    bool removeElement( unsigned short pos );
+    bool removeMemoryElement( unsigned short pos );
 
     /*!
         Get number of rows in matrix
     */
-    unsigned short getElementCount( void ) { return m_DMList.GetCount(); };
+    unsigned short getMemoryElementCount( void ) { return m_DMList.GetCount(); };
 
     /*!
         Get a row from the matrix
     */
-    dmElement *getElement( short row );
-
+    dmElement *getMemoryElement( short row );
+    
+    /*!
+        Add database record
+        @param dm Reference to DM element with record data.
+        @return True if record found.
+     */
+    bool addDatabaseRecord( dmElement& dm );
+    
+    /*!
+        Read DM record from database
+        @param idx Database index
+        @param pDMitem Pointer to DM element that will be filled with 
+                record data.
+        @return True if record found.
+     */
+    bool getDatabaseRecord( uint32_t idx, dmElement *pDMitem );
+    
+    /*!
+        Delete database record
+        @param idx Database index
+        @return True if record found.
+     */
+    bool deleteDatabaseRecord( uint32_t idx );
+    
+    /*!
+        Delete database record count
+        @param idx Database index
+        @return True if record found.
+     */
+    uint32_t getDatabaseRecordCount( void );
+    
     /*!
         Load from Database
     */
@@ -861,8 +897,8 @@ public:
     wxFileName m_path_db_vscp_dm;  
     
     // Databases
-    sqlite3 *m_db_vscp_dm;              // External DM database
-    //sqlite3 *m_db_vscp_dm_memory;       // In-memory DM database
+    sqlite3 *m_db_vscp_dm;                  // External DM database
+    //sqlite3 *m_db_vscp_dm_memory;         // In-memory DM database
 
     /// DM table filter - Filter for all rows of the table
     vscpEventFilter m_DM_Table_filter;
@@ -942,12 +978,12 @@ public:
         @param kind Threadtype.
     */
     actionThread_URL( CControlObject *pCtrlObject, 
-                      wxString& url,
-                      accessmethod_t nAccessMethod,
-                      wxString& putdata,
-                      wxString& extraheaders,
-                      wxString& proxy,
-                      wxThreadKind kind = wxTHREAD_DETACHED );
+                        wxString& url,
+                        accessmethod_t nAccessMethod,
+                        wxString& putdata,
+                        wxString& extraheaders,
+                        wxString& proxy,
+                        wxThreadKind kind = wxTHREAD_DETACHED );
   
     /// Destructor
     ~actionThread_URL();
@@ -1044,12 +1080,12 @@ private:
     wxString m_strHostname;
 
     /*!
-        port to access server at
+        Port to access server at
     */
     short m_port;
 
     /*!
-        username to login with  
+        Username to login with  
     */
     wxString m_strUsername;
 

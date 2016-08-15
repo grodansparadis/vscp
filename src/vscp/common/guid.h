@@ -88,6 +88,12 @@ public:
         @param pszGUID Zero terminated ASCII string pointing at GUID
     */
     void toString( wxString& strGUID  );
+    
+    /*!
+        GUID to string
+        @return GUID as string
+    */ 
+    wxString getAsString( void ) { wxString str; toString( str ); return str; };
 
     /*!
         Return pointer to GUID

@@ -2298,6 +2298,28 @@ bool CVariableStorage::findStockVariable(const wxString& name, CVSCPVariable& va
     
     
 // *****************************************************************************
+//                             Decision Matrix
+// *****************************************************************************
+    else if ( name.Lower() == _("vscp.dm.count") ) {
+        
+    }
+    else if ( name.Lower() == _("vscp.dm.count.active") ) {
+        
+    }
+    else if ( wxNOT_FOUND != name.Lower().Find( _("vscp.dm.") ) ) {
+        int pos;
+        wxString wxstr;
+        wxstr = name.Right( name.Length() - 8 );    // remove "vscp.dm."
+        if ( wxNOT_FOUND != ( pos = wxstr.Lower().Find( _(".") ) ) ) {
+            // this is a sub command.
+        }
+        else {
+            // A full DM row is requested (vscp.dm.35)
+            
+        }
+    }
+    
+// *****************************************************************************
 //                              Drivers
 // *****************************************************************************
     

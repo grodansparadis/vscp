@@ -1705,21 +1705,21 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *nc,
         }
         else if (NULL != strstr("next",buf)) {
             nFrom += nCount;
-            if ( nFrom > pObject->m_dm.getElementCount() - 1 ) {
-                if ( pObject->m_dm.getElementCount() % nCount ) {
-                    nFrom = pObject->m_dm.getElementCount()/nCount;
+            if ( nFrom > pObject->m_dm.getMemoryElementCount() - 1 ) {
+                if ( pObject->m_dm.getMemoryElementCount() % nCount ) {
+                    nFrom = pObject->m_dm.getMemoryElementCount()/nCount;
                 }
                 else {
-                    nFrom = (pObject->m_dm.getElementCount()/nCount) - 1;
+                    nFrom = (pObject->m_dm.getMemoryElementCount()/nCount) - 1;
                 }
             }
         }
         else if (NULL != strstr("last",buf)) {
-            if ( pObject->m_dm.getElementCount() % nCount ) {
-                nFrom = (pObject->m_dm.getElementCount()/nCount)*nCount;
+            if ( pObject->m_dm.getMemoryElementCount() % nCount ) {
+                nFrom = (pObject->m_dm.getMemoryElementCount()/nCount)*nCount;
             }
             else {
-                nFrom = ((pObject->m_dm.getElementCount()/nCount) - 1)*nCount;
+                nFrom = ((pObject->m_dm.getMemoryElementCount()/nCount) - 1)*nCount;
             }
         }
         else if ( NULL != strstr("first",buf) ) {
@@ -1754,9 +1754,9 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *nc,
         buildPage += wxString::Format( _(WEB_COMMON_LIST_NAVIGATION),
                 _("/vscp/dm"),
                 (unsigned long)nFrom+1,
-                ( (unsigned long)(nFrom + nCount) < pObject->m_dm.getElementCount()) ?
-                    nFrom + nCount : pObject->m_dm.getElementCount(),
-                (unsigned long)pObject->m_dm.getElementCount(),
+                ( (unsigned long)(nFrom + nCount) < pObject->m_dm.getMemoryElementCount()) ?
+                    nFrom + nCount : pObject->m_dm.getMemoryElementCount(),
+                (unsigned long)pObject->m_dm.getMemoryElementCount(),
                 (unsigned long)nCount,
                 (unsigned long)nFrom,
                 (const char *)wxstrlight.mbc_str() );
@@ -1769,7 +1769,7 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *nc,
 
     // Display DM List
 
-    if ( 0 == pObject->m_dm.getElementCount() ) {
+    if ( 0 == pObject->m_dm.getMemoryElementCount() ) {
         buildPage += _("<br>Decision Matrix is empty!<br>");
     }
     else {
@@ -1781,9 +1781,9 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *nc,
     for ( int i=0; i<nCount; i++) {
 
         // Check limits
-        if ( ( nFrom+i ) >= pObject->m_dm.getElementCount() ) break;
+        if ( ( nFrom+i ) >= pObject->m_dm.getMemoryElementCount() ) break;
 
-        dmElement *pElement = pObject->m_dm.getElement(i);
+        dmElement *pElement = pObject->m_dm.getMemoryElement(i);
 
         {
             wxString url_dmedit =
@@ -1824,11 +1824,6 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *nc,
             }
             else {
                 buildPage += _("[Row is disabled] ");
-            }
-
-            // Control - End scan
-            if (pElement->isScanDontContinueSet()) {
-                buildPage += _("[End scan after this row] ");
             }
 
             // Control - Check index
@@ -1971,9 +1966,9 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *nc,
         buildPage += wxString::Format( _(WEB_COMMON_LIST_NAVIGATION),
                 _("/vscp/dm"),
                 (unsigned long)nFrom+1,
-                ( (unsigned long)(nFrom + nCount) < pObject->m_dm.getElementCount()) ?
-                    nFrom + nCount : pObject->m_dm.getElementCount(),
-                (unsigned long)pObject->m_dm.getElementCount(),
+                ( (unsigned long)(nFrom + nCount) < pObject->m_dm.getMemoryElementCount()) ?
+                    nFrom + nCount : pObject->m_dm.getMemoryElementCount(),
+                (unsigned long)pObject->m_dm.getMemoryElementCount(),
                 (unsigned long)nCount,
                 (unsigned long)nFrom,
                 wxstrlight.wx_str() );
@@ -2050,8 +2045,8 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
     buildPage += _(WEB_COMMON_MENU);;
     buildPage += _(WEB_DMEDIT_BODY_START);
 
-    if ( !bNew && id < pObject->m_dm.getElementCount() ) {
-        pElement = pObject->m_dm.getElement(id);
+    if ( !bNew && id < pObject->m_dm.getMemoryElementCount() ) {
+        pElement = pObject->m_dm.getMemoryElement(id);
     }
 
     if (bNew || (NULL != pElement)) {
@@ -2075,11 +2070,11 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
             buildPage += _("<input name=\"new\" value=\"true\" type=\"hidden\"></input>");
 
             long nFrom;
-             if ( pObject->m_dm.getElementCount() % nCount ) {
-                nFrom = (pObject->m_dm.getElementCount()/nCount)*nCount;
+             if ( pObject->m_dm.getMemoryElementCount() % nCount ) {
+                nFrom = (pObject->m_dm.getMemoryElementCount()/nCount)*nCount;
             }
             else {
-                nFrom = ((pObject->m_dm.getElementCount()/nCount) - 1)*nCount;
+                nFrom = ((pObject->m_dm.getMemoryElementCount()/nCount) - 1)*nCount;
             }
 
             buildPage += wxString::Format( _("<input name=\"from\" value=\"%ld\" type=\"hidden\">"), (long)nFrom );
@@ -2282,20 +2277,6 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
         }
         buildPage += _(" type=\"checkbox\">");
         buildPage += _("<span id=\"optiontext\">Enable row</span>&nbsp;&nbsp;");
-
-        // End scan on this row
-        buildPage += _("<input name=\"check_endscan\" value=\"true\"");
-        if ( bNew ) {
-            buildPage += _("");
-        }
-        else {
-            buildPage += wxString::Format(_("%s"),
-                                            pElement->isScanDontContinueSet() ? _("checked") : _("") );
-        }
-        buildPage += _(" type=\"checkbox\">");
-        buildPage += _("<span id=\"optiontext\">End scan on this row</span>&nbsp;&nbsp;");
-
-        //buildPage += _("<br>");
 
         // Check Index
         buildPage += _("<input name=\"check_index\" value=\"true\"");
@@ -2883,9 +2864,9 @@ VSCPWebServerThread::websrv_dmpost( struct mg_connection *nc,
 
     if ( bNew || ( id >= 0 ) ) {
 
-        if ( bNew || ((0 == id) && !bNew) || ( id < pObject->m_dm.getElementCount() ) ) {
+        if ( bNew || ((0 == id) && !bNew) || ( id < pObject->m_dm.getMemoryElementCount() ) ) {
 
-            if (!bNew) pElement = pObject->m_dm.getElement(id);
+            if (!bNew) pElement = pObject->m_dm.getMemoryElement(id);
 
             if (NULL != pElement) {
 
@@ -2941,11 +2922,9 @@ VSCPWebServerThread::websrv_dmpost( struct mg_connection *nc,
                 pElement->m_bCheckMeasurementIndex = bUseMeasurementIndex;
                 pElement->m_subzone = subzone;
 
-                pElement->m_control = 0;
-                if (bEndScan) pElement->m_control |= DM_CONTROL_DONT_CONTINUE_SCAN;
-                if (bCheckIndex) pElement->m_control |= DM_CONTROL_CHECK_INDEX;
-                if (bCheckZone) pElement->m_control |= DM_CONTROL_CHECK_ZONE;
-                if (bCheckSubZone) pElement->m_control |= DM_CONTROL_CHECK_SUBZONE;
+                bCheckIndex ? pElement->m_bCheckIndex = true : pElement->m_bCheckIndex = false;
+                bCheckZone ? pElement->m_bCheckZone = true : pElement->m_bCheckZone = false;
+                bCheckSubZone ? pElement->m_bCheckSubZone = true : pElement->m_bCheckSubZone = false;
 
                 pElement->m_timeAllow.m_fromTime.ParseDateTime( strAllowedFrom );
                 pElement->m_timeAllow.m_endTime.ParseDateTime( strAllowedTo );
@@ -2974,7 +2953,7 @@ VSCPWebServerThread::websrv_dmpost( struct mg_connection *nc,
 
                 if ( bNew ) {
                     // add the DM row to the matrix
-                    pObject->m_dm.addElement(pElement);
+                    pObject->m_dm.addMemoryElement(pElement);
                 }
 
                 // Save decision matrix
@@ -3065,7 +3044,7 @@ VSCPWebServerThread::websrv_dmdelete( struct mg_connection *nc,
 
     buildPage += _(WEB_DMEDIT_BODY_START);
 
-    if ( pObject->m_dm.removeElement( id ) ) {
+    if ( pObject->m_dm.removeMemoryElement( id ) ) {
         buildPage += wxString::Format(_("<br>Deleted record id = %d"), id);
         // Save decision matrix
         pObject->m_dm.saveToXML();
