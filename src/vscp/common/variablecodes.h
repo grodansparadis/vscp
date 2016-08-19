@@ -57,6 +57,11 @@
 
 #define VSCP_DAEMON_VARIABLE_CODE_UX_TYPE1                  300 // Contains XML file for User interface
 
+#define VSCP_DAEMON_VARIABLE_CODE_DM_ROW                    500 // A DM row, comma seperated
+#define VSCP_DAEMON_VARIABLE_CODE_DRIVER                    501 // Driver item, comma seperated
+#define VSCP_DAEMON_VARIABLE_CODE_USER                      502 // User item, comma seperated
+#define VSCP_DAEMON_VARIABLE_CODE_GROUP                     503 // Group item, comma seperated
+
 // A non persistent variable is stored with the name as the hash value.
 // A persistent variable is stored with $ + its name as the hash value.
 // A non persistent array is stored with @ + its name as hash value.

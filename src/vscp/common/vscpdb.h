@@ -32,7 +32,7 @@
 //*****************************************************************************
 
 #define VSCPDB_SETTINGS_CREATE "CREATE TABLE \"Settings\" ("\
-	"`vscpd_idx_settings`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,"\
+	"`vscpd_idx_settings`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`vscpd_dbversion`	INTEGER NOT NULL,"\
 	"`vscpd_LogLevel`	INTEGER,"\
 	"`vscpd_RunAsUser`	TEXT,"\
@@ -162,7 +162,7 @@
 
 
 #define VSCPDB_LOG_CREATE "CREATE TABLE \"log\" ("\
-	"`idx_log`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,"\
+	"`idx_log`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`type`	INTEGER,"\
 	"`date`	TEXT,"\
 	"`level`	INTEGER,"\
@@ -180,7 +180,7 @@
 //*****************************************************************************
 
 #define VSCPDB_USER_CREATE "CREATE TABLE \"user\" ("\
-	"`idx_user`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,"\
+	"`idx_user`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`username`	TEXT NOT NULL UNIQUE,"\
 	"`password`	TEXT NOT NULL,"\
 	"`fullname`	TEXT NOT NULL,"\
@@ -200,7 +200,7 @@
 //*****************************************************************************
 
 #define VSCPDB_GROUP_CREATE "CREATE TABLE \"group\" ("\
-	"`idx_group`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,"\
+	"`idx_group`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`groupname`	TEXT NOT NULL,"\
 	"`permission`	INTEGER NOT NULL,"\
 	"`note`	TEXT"\
@@ -216,7 +216,7 @@
 //*****************************************************************************
 
 #define VSCPDB_VARIABLE_EXT_CREATE  "CREATE TABLE 'variableEx' ("\
-"'idx_variableex'  INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,"\
+"'idx_variableex'  INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 "'lastchange'      TEXT NOT NULL,"\
 "'name'            TEXT NOT NULL UNIQUE,"\
 "'type'            INTEGER NOT NULL DEFAULT 0,"\
@@ -244,7 +244,7 @@
 //*****************************************************************************
         
 #define VSCPDB_VARIABLE_INT_CREATE "CREATE TABLE 'variableInt' ("\
-	"`idx_variableint`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,"\
+	"`idx_variableint`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
         "`lastchange`	TEXT NOT NULL,"\
 	"`name`	TEXT NOT NULL UNIQUE,"\
 	"`type`	INTEGER NOT NULL DEFAULT 1,"\
@@ -276,7 +276,7 @@
 
 
 #define VSCPDB_DM_CREATE  "CREATE TABLE 'dm' ("\
-	"`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,"\
+	"`id`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`GroupID`	TEXT NOT NULL,"\
 	"`bEnable`	INTEGER NOT NULL DEFAULT 0,"\
 	"`maskPriority`	INTEGER NOT NULL DEFAULT 0,"\
@@ -352,6 +352,25 @@
 	"`measurementCompare`	INTEGER,"\
 	"`comment`	TEXT"\
     ")"
+
+#define VSCPDB_DM_INSERT "INSERT INTO 'dm' "\
+                "(GroupID,bEnable,maskPriority,maskClass,maskType,maskGUID,filterPriority,filterClass,filterType,filterGUID,"\
+                "allowedStart,allowedEnd,allowedMonday,allowedTuesday,allowsWednesday,allowedThursday,allowedFriday,allowedSaturday,"\
+                "allowedSunday,allowedTime,bCheckIndex,index,bCheckZone,zone,bCheckSubZone,subzone,bCheckMeasurementIndex,"\
+                "meaurementIndex,actionCode,actionParameter,measurementValue,measurementUnit,measurementCompare,comment"\
+                " )VALUES ('%s','%d','%d','%d','%d','%s','%d','%d','%d','%s',"\
+                "'%s','%s','%d','%d','%d','%d','%d','%d','%d',"\
+                "'%d','%s','%d','%d','%d','%d','%d','%d','%d','%d','%d','%s','%f','%d','%s'"\
+                ")"
+                        
+#define VSCPDB_DM_UPDATE "UPDATE 'dm' "\
+                "SET (GroupID='%s',bEnable='%d',maskPriority='%d',maskClass=%d',maskType=%d',maskGUID=%s',filterPriority=%d',filterClass=%d',filterType=%d',filterGUID=%s',"\
+                "allowedStart=%s',allowedEnd=%s',allowedMonday='%d',allowedTuesday='%d',allowsWednesday='%d',allowedThursday='%d',allowedFriday='%d',allowedSaturday='%d',"\
+                "allowedSunday,allowedTime,bCheckIndex,index,bCheckZone,zone,bCheckSubZone,subzone,bCheckMeasurementIndex,"\
+                "meaurementIndex='%d',actionCode='%d',actionParameter='%s',measurementValue='%f',measurementUnit='%d',measurementCompare='%d'"\
+                ") WHERE id='%d'" 
+
+#define VSCPDB_DM_UPDATE_ITEM "UPDATE 'dm' SET ( %s='%s' ) WHERE id='%d' "\
 
 #define VSCPDB_ORDINAL_DM_ID                        0   // 
 #define VSCPDB_ORDINAL_DM_ENABLE                    1   //

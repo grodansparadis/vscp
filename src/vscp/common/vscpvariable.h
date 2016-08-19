@@ -268,7 +268,7 @@ public:
 
     /*!
         getValue
-        @param value Int that will receive value.
+        @param value Long that will receive value.
      */
     void getValue(long *pValue);
 
@@ -289,6 +289,7 @@ public:
         @param val Boolean to set value to.
      */
     void setValue(bool val);
+    
 
     /*!
         getValue
@@ -487,6 +488,14 @@ public:
     bool findStockVariable( const wxString& name, CVSCPVariable& pVar );
     
     /*!
+        Write stock variable.    
+        @param name Name of variable.
+        @param var Reference to variable to write
+        @return true on success.
+     */
+    bool writeStockVariable( CVSCPVariable& var );
+    
+    /*!
      * Find a non-persistent variable
      * 
      * Find non-persistent variable (in-memory variable).
@@ -578,12 +587,12 @@ public:
     bool save(wxString& path, uint8_t whatToSave = VARIABLE_INTERNAL | VARIABLE_EXTERNAL );
     
     /*!
-        Write one variable out to persistent storage
+        Write one variable out to XML persistent storage
         @param pFileStream Pointer to an open output stream
         @param variable Variable to write out.
         @return True on success.
      */
-    bool writeVariable( wxFFileOutputStream *pFileStream, CVSCPVariable& variable );
+    bool writeVariableToXmlFile( wxFFileOutputStream *pFileStream, CVSCPVariable& variable );
     
      /*!
         Create external variable table

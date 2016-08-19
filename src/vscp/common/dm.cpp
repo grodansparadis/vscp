@@ -2128,7 +2128,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
                 }
 
             }
-        break;
+            break;
 #endif
 
         default:
@@ -4309,15 +4309,7 @@ bool CDM::addDatabaseRecord( dmElement& dm )
     guid_mask.getFromArray( dm.m_vscpfilter.mask_GUID );
     guid_filter.getFromArray( dm.m_vscpfilter.filter_GUID );
     
-    char *sql = sqlite3_mprintf("INSERT INTO 'dm' "
-                "(GroupID,bEnable,maskPriority,maskClass,maskType,maskGUID,filterPriority,filterClass,filterType,filterGUID,"
-                "allowedFrom,allowedTo,allowedMonday,allowedTuesday,allowsWednesday,allowedThursday,allowedFriday,allowedSaturday,"
-                "allowedSunday,allowedTime,bCheckIndex,index,bCheckZone,zone,bCheckSubZone,subzone,bCheckMeasurementIndex,"
-                "meaurementIndex,actionCode,actionParameter,measurementValue,measurementUnit,measurementCompare"
-                " )VALUES ('%s','%d','%d','%d','%d','%s','%d','%d','%d','%s',"
-                "'%s','%s','%d','%d','%d','%d','%d','%d','%d',"
-                "'%d','%s','%d','%d','%d','%d','%d','%d','%d','%d','%d','%s','%f','%d','%s'"
-                ")",
+    char *sql = sqlite3_mprintf( VSCPDB_DM_INSERT,
                 (const char *)dm.m_strGroupID.mbc_str(),
                 dm.m_bEnable ? 1 : 0,
                 dm.m_vscpfilter.mask_priority,
@@ -4366,6 +4358,106 @@ bool CDM::addDatabaseRecord( dmElement& dm )
     
     return true;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// updateDatabaseRecord
+//
+
+bool CDM::updateDatabaseRecord( dmElement& dm )
+{
+    char *pErrMsg;
+    cguid guid_mask;
+    cguid guid_filter;
+            
+    // Database file must be open
+    if ( NULL == m_db_vscp_dm ) {
+        logMsg( _("DM: Add record. Database file is not open.\n") );
+        return false;
+    }
+    
+    guid_mask.getFromArray( dm.m_vscpfilter.mask_GUID );
+    guid_filter.getFromArray( dm.m_vscpfilter.filter_GUID );
+    
+    char *sql = sqlite3_mprintf( VSCPDB_DM_UPDATE,
+                (const char *)dm.m_strGroupID.mbc_str(),
+                dm.m_bEnable ? 1 : 0,
+                dm.m_vscpfilter.mask_priority,
+                dm.m_vscpfilter.mask_class,
+                dm.m_vscpfilter.mask_type,
+                (const char *)guid_mask.getAsString().mbc_str(),
+                dm.m_vscpfilter.filter_priority,
+                dm.m_vscpfilter.filter_class,
+                dm.m_vscpfilter.filter_type,
+                (const char *)guid_filter.getAsString().mbc_str(),
+                //--------------------------------------------------------------
+                (const char *)dm.m_timeAllow.m_fromTime.FormatISOCombined().mbc_str(),
+                (const char *)dm.m_timeAllow.m_endTime.FormatISOCombined().mbc_str(),
+                dm.m_timeAllow.m_weekDay[ 0 ] ? 1 : 0,
+                dm.m_timeAllow.m_weekDay[ 1 ] ? 1 : 0,
+                dm.m_timeAllow.m_weekDay[ 2 ] ? 1 : 0,
+                dm.m_timeAllow.m_weekDay[ 3 ] ? 1 : 0,
+                dm.m_timeAllow.m_weekDay[ 4 ] ? 1 : 0,
+                dm.m_timeAllow.m_weekDay[ 5 ] ? 1 : 0,
+                //--------------------------------------------------------------
+                dm.m_timeAllow.m_weekDay[ 6 ] ? 1 : 0,
+                (const char *)dm.m_timeAllow.getActionTimeAsString().mbc_str(),
+                dm.m_bCheckIndex ? 1 : 0,
+                dm.m_index,
+                dm.m_bCheckZone,
+                dm.m_zone,
+                dm.m_bCheckSubZone,
+                dm.m_subzone,
+                dm.m_bCheckMeasurementIndex,
+                //--------------------------------------------------------------
+                dm.m_measurementIndex,
+                dm.m_actionCode,
+                (const char *)dm.m_actionparam.mbc_str(),
+                dm.m_measurementValue,
+                dm.m_measurementUnit,
+                dm.m_measurementCompareCode,
+                dm.m_id     // Where clause
+            );
+
+    if ( SQLITE_OK != sqlite3_exec( m_db_vscp_dm, 
+                                            sql, NULL, NULL, &pErrMsg)) {
+        sqlite3_free( sql );
+        return false;
+    }
+
+    sqlite3_free( sql );
+    
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// updateDatabaseRecordItem
+//
+
+bool CDM::updateDatabaseRecordItem( unsigned long id, wxString& strUpdateField, wxString& strUpdateValue )
+{
+    char *pErrMsg;
+            
+    // Database file must be open
+    if ( NULL == m_db_vscp_dm ) {
+        logMsg( _("DM: Add record. Database file is not open.\n") );
+        return false;
+    }
+    
+    char *sql = sqlite3_mprintf( VSCPDB_DM_UPDATE_ITEM, 
+                                    (const char *)strUpdateField.mbc_str(),
+                                    (const char *)strUpdateValue.mbc_str(),
+                                    id );
+    if ( SQLITE_OK != sqlite3_exec( m_db_vscp_dm, 
+                                            sql, NULL, NULL, &pErrMsg)) {
+        sqlite3_free( sql );
+        return false;
+    }
+
+    sqlite3_free( sql );
+    
+    return true;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // getDatabaseRecord

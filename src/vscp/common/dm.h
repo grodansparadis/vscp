@@ -729,9 +729,21 @@ public:
     /*!
         Add database record
         @param dm Reference to DM element with record data.
-        @return True if record found.
+        @return True if record inserted.
      */
     bool addDatabaseRecord( dmElement& dm );
+    
+    /*!
+        Update database record
+        @param dm Reference to DM element with record data.
+        @return True if record found and updated.
+     */
+    bool updateDatabaseRecord( dmElement& dm );
+    
+    /*
+        Update item if database record
+     */
+    bool updateDatabaseRecordItem( unsigned long id, wxString& strUpdateField, wxString& strUpdateValue );
     
     /*!
         Read DM record from database

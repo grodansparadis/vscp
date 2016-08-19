@@ -224,6 +224,9 @@ uint16_t CVSCPVariable::getVariableTypeFromString( const wxString& strVariableTy
         else if ( 0 == str.Find( _("UX1") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_UX_TYPE1;
         }
+        else if ( 0 == str.Find( _("DMROW") ) ) {
+            type = VSCP_DAEMON_VARIABLE_CODE_DM_ROW;
+        }
         else {
             type = vscp_readStringValue( str );
         }
@@ -318,6 +321,9 @@ const char * CVSCPVariable::getVariableTypeAsString( int type )
             
         case VSCP_DAEMON_VARIABLE_CODE_UX_TYPE1:
             return "UX1";
+            
+        case VSCP_DAEMON_VARIABLE_CODE_DM_ROW:
+            return "DMROW";    
             
         default:
             return "Unknown";
@@ -589,6 +595,15 @@ bool CVSCPVariable::writeValueToString( wxString& strValueOut, bool bBase64 )
                 strValueOut = m_strValue;
             }
             break; 
+            
+        case VSCP_DAEMON_VARIABLE_CODE_DM_ROW:
+            if ( bBase64 ) {
+                strValueOut = wxBase64Encode( m_strValue.ToUTF8(), strlen( m_strValue.ToUTF8() ) );
+            }
+            else {
+                strValueOut = m_strValue;
+            }
+            break;    
 
         case VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED:
 
@@ -998,6 +1013,27 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
                 m_strValue = strValue;
             }
             break;
+            
+        case VSCP_DAEMON_VARIABLE_CODE_DM_ROW:
+            // Should we do a BASE64 conversion
+            if ( bBase64 ) {
+                m_strValue = wxT("");
+                uint8_t *pbuf = new uint8_t[ wxBase64DecodedSize( strValue.Length() ) ];
+                if ( NULL == pbuf ) return false;
+                size_t len = wxBase64Decode( pbuf, 
+                                                wxBase64DecodedSize( strValue.Length() ), 
+                                                (const char *)strValue.mbc_str() );
+                if ( wxCONV_FAILED == len ) {
+                    delete [] pbuf;
+                    return false;
+                }
+                m_strValue.FromUTF8( (const char *)pbuf, len );
+                delete [] pbuf;
+            }
+            else {
+                m_strValue = strValue;
+            }
+            break;    
 
         case VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED:
             
@@ -1225,6 +1261,10 @@ void CVSCPVariable::Reset( void )
             case VSCP_DAEMON_VARIABLE_CODE_UX_TYPE1:
                 m_strValue = _("");
                 break;    
+                
+            case VSCP_DAEMON_VARIABLE_CODE_DM_ROW:
+                m_strValue = _("");
+                break;     
 
             case VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED:
             
@@ -2199,7 +2239,7 @@ bool CVariableStorage::findStockVariable(const wxString& name, CVSCPVariable& va
 
     else if ( name.Lower() == _("vscp.variable.path") ) {
         var.setStockVariable();
-        var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );;
+        var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
         var.setPersistent( false );
         var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
         var.setValue( gpctrlObj->m_VSCP_Variables.m_configPath );
@@ -2213,7 +2253,7 @@ bool CVariableStorage::findStockVariable(const wxString& name, CVSCPVariable& va
     // Enable database logging
     else if ( name.Lower() == _("vscp.log.database.enable") ) {
         var.setStockVariable();
-        var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );;
+        var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
         var.setPersistent( false );
         var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
         var.setValue( gpctrlObj->m_bLogToDatabase ? _("true") : _("false") );
@@ -2229,7 +2269,7 @@ bool CVariableStorage::findStockVariable(const wxString& name, CVSCPVariable& va
     }
     else if ( name.Lower() == _("vscp.log.general.path") ) {
         var.setStockVariable();
-        var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );;
+        var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
         var.setPersistent( false );
         var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
         var.setValue( gpctrlObj->m_logGeneralFileName.GetFullPath() );
@@ -2238,14 +2278,14 @@ bool CVariableStorage::findStockVariable(const wxString& name, CVSCPVariable& va
     // Access
     else if ( name.Lower() == _("vscp.log.access.enable") ) {
         var.setStockVariable();
-        var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );;
+        var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
         var.setPersistent( false );
         var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
         var.setValue( gpctrlObj->m_bLogAccessEnable ? _("true") : _("false") );
     }
     else if ( name.Lower() == _("vscp.log.access.path") ) {
         var.setStockVariable();
-        var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );;
+        var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
         var.setPersistent( false );
         var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
         var.setValue( gpctrlObj->m_logAccessFileName.GetFullPath() );
@@ -2254,14 +2294,14 @@ bool CVariableStorage::findStockVariable(const wxString& name, CVSCPVariable& va
     // Security
     else if ( name.Lower() == _("vscp.log.security.enable") ) {
         var.setStockVariable();
-        var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );;
+        var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
         var.setPersistent( false );
         var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
         var.setValue( gpctrlObj->m_bLogAccessEnable ? _("true") : _("false") );
     }   
     else if ( name.Lower() == _("vscp.log.security.path") ) {
         var.setStockVariable();
-        var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );;
+        var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
         var.setPersistent( false );
         var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
         var.setValue( gpctrlObj->m_logSecurityFileName.GetFullPath() );
@@ -2276,21 +2316,21 @@ bool CVariableStorage::findStockVariable(const wxString& name, CVSCPVariable& va
     
     else if ( name.Lower() ==  _("vscp.database.log.path") ) {
         var.setStockVariable();
-        var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );;
+        var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
         var.setPersistent( false );
         var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
         var.setValue( gpctrlObj->m_path_db_vscp_log.GetFullPath() );
     }    
     else if ( name.Lower() ==  _("vscp.database.vscpdata.path") ) {
         var.setStockVariable();
-        var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );;
+        var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
         var.setPersistent( false );
         var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
         var.setValue( gpctrlObj->m_path_db_vscp_data.GetFullPath() );
     } 
     else if ( name.Lower() ==  _("vscp.database.daemon.path") ) {
         var.setStockVariable();
-        var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );;
+        var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
         var.setPersistent( false );
         var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
         var.setValue( gpctrlObj->m_path_db_vscp_daemon.GetFullPath() );
@@ -2301,20 +2341,1040 @@ bool CVariableStorage::findStockVariable(const wxString& name, CVSCPVariable& va
 //                             Decision Matrix
 // *****************************************************************************
     else if ( name.Lower() == _("vscp.dm.count") ) {
-        
+        var.setStockVariable();
+        var.setPersistent( false );
+        var.setAccessRights( PERMISSON_OWNER_READ );         
+        var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+        var.setValue( (long)gpctrlObj->m_dm.getDatabaseRecordCount() );
     }
     else if ( name.Lower() == _("vscp.dm.count.active") ) {
-        
+        var.setStockVariable();
+        var.setPersistent( false );
+        var.setAccessRights( PERMISSON_OWNER_READ );;           
+        var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+        var.setValue( gpctrlObj->m_dm.getMemoryElementCount() );      
     }
     else if ( wxNOT_FOUND != name.Lower().Find( _("vscp.dm.") ) ) {
+        
         int pos;
         wxString wxstr;
         wxstr = name.Right( name.Length() - 8 );    // remove "vscp.dm."
         if ( wxNOT_FOUND != ( pos = wxstr.Lower().Find( _(".") ) ) ) {
-            // this is a sub command.
+            
+            // this is a sub variable.
+            wxString strID;
+            unsigned long id;
+            
+            // Get id
+            if ( !wxstr.Left( pos ).ToULong( &id ) ) return false;
+            
+            // Get the remaining sub string
+            wxstr = wxstr.Right( wxstr.Length() - pos - 1 );
+            
+            dmElement *pElement;
+            if ( !gpctrlObj->m_dm.getDatabaseRecord( id, pElement ) ) return false;
+            
+            var.setStockVariable();
+            var.setPersistent( false );
+            
+            if ( wxstr == _("id") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ );;           
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+                var.setValue( (long)pElement->m_id );
+            }
+            else if ( wxstr == _("bEnable") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
+                var.setValue( pElement->m_bEnable );
+            }
+            else if ( wxstr == _("groupid") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+                var.setValue( pElement->m_strGroupID );
+            }
+            else if ( wxstr == _("mask.priority") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
+                var.setValue( pElement->m_vscpfilter.mask_priority );
+            }
+            else if ( wxstr == _("mask.class") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+                var.setValue( pElement->m_vscpfilter.mask_class );
+            }
+            else if ( wxstr == _("mask.type") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+                var.setValue( pElement->m_vscpfilter.mask_type );
+            }
+            else if ( wxstr == _("mask.guid") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+                var.setValue( pElement->m_vscpfilter.mask_GUID );
+            }
+            else if ( wxstr == _("filter.priority") ) {
+                cguid guid;
+                guid.getFromArray( pElement->m_vscpfilter.mask_GUID );
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
+                var.setValue( guid.getAsString() );
+            }
+            else if ( wxstr == _("filter.class") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+                var.setValue( pElement->m_vscpfilter.filter_class );
+            }
+            else if ( wxstr == _("filter.type") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+                var.setValue( pElement->m_vscpfilter.filter_type );
+            }
+            else if ( wxstr == _("filter.guid") ) {
+                cguid guid;
+                guid.getFromArray( pElement->m_vscpfilter.filter_GUID );
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+                var.setValue( guid.getAsString() );
+            }
+            else if ( wxstr == _("allowed.start") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+                var.setValue( (long)pElement->m_id );
+            }
+            else if ( wxstr == _("allowed.end") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+                var.setValue( (long)pElement->m_id );
+            }
+            else if ( wxstr == _("allowed.monday") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
+                var.setValue( (long)pElement->m_id );
+            }
+            else if ( wxstr == _("allowed.tuesday") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );          
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
+                var.setValue( (long)pElement->m_id );
+            }
+            else if ( wxstr == _("allowed.wednessday") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );           
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
+                var.setValue( (long)pElement->m_id );
+            }
+            else if ( wxstr == _("allowed.thursday") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );         
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
+                var.setValue( (long)pElement->m_id );
+            }
+            else if ( wxstr == _("allowed.friday") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );           
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
+                var.setValue( (long)pElement->m_id );
+            }
+            else if ( wxstr == _("allowed.saturday") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );           
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
+                var.setValue( (long)pElement->m_id );
+            }
+            else if ( wxstr == _("allowed.sunday") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
+                var.setValue( (long)pElement->m_id );
+            }
+            else if ( wxstr == _("allowed.time") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+                var.setValue( (long)pElement->m_id );
+            }
+            else if ( wxstr == _("bCheckIndex") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
+                var.setValue( (long)pElement->m_id );
+            }
+            else if ( wxstr == _("index") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
+                var.setValue( (long)pElement->m_id );
+            }
+            else if ( wxstr == _("bCheckZone") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
+                var.setValue( (long)pElement->m_id );
+            }
+            else if ( wxstr == _("zone") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
+                var.setValue( (long)pElement->m_id );
+            }
+            else if ( wxstr == _("bCheckSubZone") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
+                var.setValue( (long)pElement->m_id );
+            }
+            else if ( wxstr == _("subzone") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
+                var.setValue( (long)pElement->m_id );
+            }
+            else if ( wxstr == _("measurement.value") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_DOUBLE );
+                var.setValue( (long)pElement->m_id );
+            }
+            else if ( wxstr == _("measurement.unit") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
+                var.setValue( (long)pElement->m_id );
+            }
+            else if ( wxstr == _("measurement.compare") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
+                var.setValue( (long)pElement->m_id );
+            }
+            else if ( wxstr == _("measurement.compare.string") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+                var.setValue( (long)pElement->m_id );
+            }
+            else if ( wxstr == _("measurement.comment") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );    
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+                var.setValue( (long)pElement->m_id );
+            }
+            else if ( wxstr == _("count.trigger") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ );          
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+                var.setValue( (long)pElement->m_id );
+            }
+            else if ( wxstr == _("count.error") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ );          
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+                var.setValue( (long)pElement->m_id );
+            }
+            else if ( ( wxstr == _("error") ) || ( wxstr == _("error.string") ) ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );           
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+                var.setValue( (long)pElement->m_id );
+            }
+            
         }
         else {
-            // A full DM row is requested (vscp.dm.35)
+            // A full DM row is requested ("vscp.dm.35" for row with id = 35)
+            //???
+        }
+    }
+    
+// *****************************************************************************
+//                              Drivers
+// *****************************************************************************
+    
+    
+// *****************************************************************************
+//                             Interfaces
+// ***************************************************************************** 
+    
+    
+// *****************************************************************************
+//                              Discovery
+// ***************************************************************************** 
+    
+    
+// *****************************************************************************
+//                                 Log
+// *****************************************************************************    
+    
+    
+// *****************************************************************************
+//                                Tables
+// *****************************************************************************    
+    
+    
+// *****************************************************************************
+//                                Users
+// *****************************************************************************    
+    
+    
+// *****************************************************************************
+//                               Groups
+// *****************************************************************************    
+    
+    
+// ----------------------------- Not Found -------------------------------------    
+    
+    else {
+        return false;   // Not a stock variable
+    }
+    
+    return true;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// writeStockVariable
+//
+
+bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
+{
+    wxString wxstr;
+    wxString name = var.getName();
+    
+    // Make sure it starts with ".vscp"
+    if ( !name.Lower().StartsWith("vscp.") ) return false;  
+    
+    if ( name.Lower() == _("vscp.version.major") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.version.minor") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.version.build") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.version.str") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.version.wxwidgets.str") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.version.wxwidgets.major") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.version.wxwidgets.minor") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.version.wxwidgets.release") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.version.wxwidgets.sub") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.copyright.vscp") ) {
+        return false;   // None writable
+    }
+
+// *****************************************************************************
+//                               wxWidgets
+// *****************************************************************************
+
+    else if ( name.Lower() == _("vscp.copyright.wxwidgets") ) {
+        return false;   // None writable
+    }
+
+// *****************************************************************************
+//                               Mongoose
+// *****************************************************************************
+
+    else if ( name.Lower() == _("vscp.copyright.mongoose") ) {
+        return false;   // None writable
+    }
+
+// *****************************************************************************
+//                                 LUA
+// *****************************************************************************
+
+#ifndef VSCP_DISABLE_LUA
+
+    else if ( name.Lower() == _("vscp.copyright.lua") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.version.lua.major") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.version.lua.minor") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.version.lua.release") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.version.lua.str") ) {
+        return false;   // None writable
+    }
+
+#endif
+
+// *****************************************************************************
+//                                SQLite
+// *****************************************************************************
+
+    else if ( name.Lower() == _("vscp.version.sqlite.major") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.version.sqlite.minor") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.version.sqlite.release") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.version.sqlite.build") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.version.sqllite.str") ) {
+        return false;   // None writable
+    }
+
+// *****************************************************************************
+//                                OPENSSL
+// *****************************************************************************
+    
+#ifndef WIN32
+    else if ( name.Lower() == _("vscp.version.openssl.str") ) {
+        return false;   // None writable
+    }
+#endif
+    else if ( name.Lower() == _("vscp.os.str") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.os.wordwidth") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.os.wordwidth.str") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.os.width.is64bit") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.os.width.is32bit") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.os.endiness.str") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.os.endiness.islittleendian") ) {
+        return false;   // None writable
+    }
+   else if ( name.Lower() == _("vscp.host.fullname") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.host.ip") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.host.mac") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.host.userid") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() ==  _("vscp.host.username") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.host.guid") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.loglevel") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.loglevel.str") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.client.receivequeue.max") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.tcpip.address") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.udp.isenabled") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.udp.address") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.mqtt.broker.isenabled") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.mqtt.broker.address") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.coap.server.isenabled") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.coap.server.address") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.automation.heartbeat.isenabled") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.automation.heartbeat.period") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.automation.heartbeat.last") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() ==  _("vscp.automation.segctrl-heartbeat.isEnabled") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.automation.segctrl.heartbeat.period") ) {
+        //???
+    }  
+    else if ( name.Lower() == _("vscp.automation.segctrl.heartbeat.last") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.automation.longitude") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.automation.latitude") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.automation.issendtwilightsunriseevent") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.automation.issendtwilightsunriseevent") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.automation.issendsunsetevent") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.automation.issendtwilightsunsetevent") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.workingfolder") ) {
+        //???
+    }
+ 
+
+// *****************************************************************************
+//                                WEB-Server
+// *****************************************************************************
+
+
+    else if ( name.Lower() == _("vscp.websrv.address") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.websrv.authenticationOn") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.websrv.root.path") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.websrv.authdomain") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.websrv.cert.path") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.websrv.extramimetypes") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.websrv.ssipatterns") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.websrv.ipacl") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.websrv.cgi.interpreter") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.websrv.cgi.pattern") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.websrv.directorylistings.enable") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.websrv.hidefile.pattern") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.websrv.indexfiles") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.websrv.urlrewrites") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.websrv.auth.file.directory") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.websrv.auth.file.global") ) {
+        //???
+    }
+
+
+// *****************************************************************************
+//                            Websocket-Server
+// *****************************************************************************
+
+    else if ( name.Lower() == _("vscp.websocket.auth.enable") ) {
+        //???
+    }
+
+
+// *****************************************************************************
+//                            Decision Matrix
+// *****************************************************************************
+
+
+    else if ( name.Lower() == _("vscp.dm.logging.enable") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.dm.logging.path") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.dm.static.path") ) {
+         //???
+    }
+
+
+// *****************************************************************************
+//                             Variables
+// *****************************************************************************
+
+
+    else if ( name.Lower() == _("vscp.variable.path") ) {
+        //???
+    }
+
+
+// *****************************************************************************
+//                              Log files
+// *****************************************************************************
+
+    // Enable database logging
+    else if ( name.Lower() == _("vscp.log.database.enable") ) {
+        //???
+    }
+    
+    // General
+    else if ( name.Lower() == _("vscp.log.general.enable") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.log.general.path") ) {
+        //???
+    }
+
+    // Access
+    else if ( name.Lower() == _("vscp.log.access.enable") ) {
+        //???
+    }
+    else if ( name.Lower() == _("vscp.log.access.path") ) {
+        //???
+    }
+
+    // Security
+    else if ( name.Lower() == _("vscp.log.security.enable") ) {
+        //???
+    }   
+    else if ( name.Lower() == _("vscp.log.security.path") ) {
+        //???
+    }
+    
+
+    
+// *****************************************************************************
+//                             Databases
+// *****************************************************************************    
+    
+    
+    else if ( name.Lower() ==  _("vscp.database.log.path") ) {
+        //???
+    }    
+    else if ( name.Lower() ==  _("vscp.database.vscpdata.path") ) {
+        //???
+    } 
+    else if ( name.Lower() ==  _("vscp.database.daemon.path") ) {
+        //???
+    }
+    
+    
+// *****************************************************************************
+//                             Decision Matrix
+// *****************************************************************************
+    else if ( name.Lower() == _("vscp.dm.count") ) {
+        return false;   // None writable
+    }
+    else if ( name.Lower() == _("vscp.dm.count.active") ) {
+        return false;   // None writable      
+    }
+    else if ( wxNOT_FOUND != name.Lower().Find( _("vscp.dm.") ) ) {
+        
+        int pos;
+        wxString wxstr;
+        wxstr = name.Right( name.Length() - 8 );    // remove "vscp.dm."
+        if ( wxNOT_FOUND != ( pos = wxstr.Lower().Find( _(".") ) ) ) {
+            
+            // this is a sub variable.
+            wxString strID;
+            unsigned long id;
+            
+            // Get id
+            if ( !wxstr.Left( pos ).ToULong( &id ) ) return false;
+            
+            // get the sub string
+            wxstr = wxstr.Right( wxstr.Length() - pos - 1 );
+            
+            dmElement dm;
+            
+            // Get the DM record
+            if ( !gpctrlObj->m_dm.getDatabaseRecord( id, &dm ) ) return false;
+                      
+            if ( wxstr == _("id") ) {
+                return false;   // None writable
+            }
+            else if ( wxstr == _("bEnable") ) {
+                
+                bool bVal;
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("bEnable");                
+                var.getValue( &bVal );
+                bVal ? strValue=_("1") : _("0");
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );                  
+            }
+            else if ( wxstr == _("groupid") ) {
+  
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("groupid");
+                var.getValue( &strValue );
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("mask.priority") ) {
+
+                int val;
+                wxString strFieldName,strValue;
+
+                strFieldName = _("maskPriority");                
+                var.getValue( &val );
+                strValue.Format( _("%d"), val );
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("mask.class") ) {
+                
+                int val;
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("maskClass");                
+                var.getValue( &val );
+                strValue.Format( _("%d"), val );
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("mask.type") ) {
+                
+                int val;
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("maskType");                
+                var.getValue( &val );
+                strValue.Format( _("%d"), val );
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("mask.guid") ) {
+                
+                wxString strFieldName,strValue;
+                strFieldName = _("maskGUID");
+                var.getValue( &strValue );
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("filter.priority") ) {
+                
+                int val;
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("filterPriority");                
+                var.getValue( &val );
+                strValue.Format( _("%d"), val );
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("filter.class") ) {
+                
+                int val;
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("filterClass");                
+                var.getValue( &val );
+                strValue.Format( _("%d"), val );
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("filter.type") ) {
+                
+                int val;
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("filterTYpe");                
+                var.getValue( &val );
+                strValue.Format( _("%d"), val );
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("filter.guid") ) {
+                
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("filterGUID");
+                var.getValue( &strValue );
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("allowed.start") ) {
+                
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("allowedStart");
+                var.getValue( &strValue );
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("allowed.end") ) {
+                
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("allowedEnd");
+                var.getValue( &strValue );
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("allowed.monday") ) {
+                
+                bool bVal;
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("allowedMonday");                
+                var.getValue( &bVal );
+                bVal ? strValue=_("1") : _("0");
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("allowed.tuesday") ) {
+                
+                bool bVal;
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("allowedTuesday");
+                var.getValue( &bVal );
+                bVal ? strValue=_("1") : _("0");
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("allowed.wednessday") ) {
+                
+                bool bVal;
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("allowedWednessday");                
+                var.getValue( &bVal );
+                bVal ? strValue=_("1") : _("0");
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("allowed.thursday") ) {
+                
+                bool bVal;
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("allowedThursday");                
+                var.getValue( &bVal );
+                bVal ? strValue=_("1") : _("0");
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("allowed.friday") ) {
+                
+                bool bVal;
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("allowedFriday");                
+                var.getValue( &bVal );
+                bVal ? strValue=_("1") : _("0");
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("allowed.saturday") ) {
+                
+                bool bVal;
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("allowedSaturday");                
+                var.getValue( &bVal );
+                bVal ? strValue=_("1") : _("0");
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("allowed.sunday") ) {
+                
+                bool bVal;                
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("allowedSunday");                
+                var.getValue( &bVal );
+                bVal ? strValue=_("1") : _("0");
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("allowed.time") ) {
+                
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("allowedTime");
+                var.getValue( &strValue );
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("bCheckIndex") ) {
+                
+                bool bVal;                
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("bCheckIndex");                
+                var.getValue( &bVal );
+                bVal ? strValue=_("1") : _("0");
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("index") ) {
+                
+                int val;
+                
+                wxString strFieldName,strValue;
+                strFieldName = _("index");
+                
+                var.getValue( &val );
+                strValue.Format( _("%d"), val );
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("bCheckZone") ) {
+                
+                bool bVal;
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("bCheckZone");
+                var.getValue( &bVal );
+                bVal ? strValue=_("1") : _("0");
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("zone") ) {
+                
+                int val;
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("zone");                
+                var.getValue( &val );
+                strValue.Format( _("%d"), val );
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("bCheckSubZone") ) {
+                
+                bool bVal;
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("bCheckSubZone");                
+                var.getValue( &bVal );
+                bVal ? strValue=_("1") : _("0");
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("subzone") ) {
+                
+                int val;
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("subzone");                
+                var.getValue( &val );
+                strValue.Format( _("%d"), val );
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("measurement.value") ) {
+                
+                double val;
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("measurementValue");                
+                var.getValue( &val );
+                strValue.Format( _("%d"), val );
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("measurement.unit") ) {
+                
+                int val;
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("measurementUnit");                
+                var.getValue( &val );
+                strValue.Format( _("%d"), val );
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("measurement.compare") ) {
+                
+                int val;
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("measurementCompare");                
+                var.getValue( &val );
+                strValue.Format( _("%d"), val );
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("measurement.compare.string") ) {
+                return false;
+            }
+            else if ( wxstr == _("comment") ) {
+                
+                wxString strFieldName,strValue;
+                
+                strFieldName = _("comment");
+                var.getValue( &strValue );
+                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                                                                    strFieldName,
+                                                                    strValue );
+            }
+            else if ( wxstr == _("count.trigger") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ );          
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+                //var.setValue( (long)pElement->m_id );
+            }
+            else if ( wxstr == _("count.error") ) {
+                var.setAccessRights( PERMISSON_OWNER_READ );          
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+                //var.setValue( (long)pElement->m_id );
+            }
+            else if ( ( wxstr == _("error") ) || ( wxstr == _("error.string") ) ) {
+                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );           
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+                //var.setValue( (long)pElement->m_id );
+            }
+            
+        }
+        else {
+            // A full DM row is written ("vscp.dm.35" for row with id = 35)
+            // a new row have id set to zero
             
         }
     }
@@ -2322,6 +3382,44 @@ bool CVariableStorage::findStockVariable(const wxString& name, CVSCPVariable& va
 // *****************************************************************************
 //                              Drivers
 // *****************************************************************************
+    
+    
+// *****************************************************************************
+//                             Interfaces
+// ***************************************************************************** 
+    
+    
+// *****************************************************************************
+//                              Discovery
+// ***************************************************************************** 
+    
+    
+// *****************************************************************************
+//                                 Log
+// *****************************************************************************    
+    
+    
+// *****************************************************************************
+//                                Tables
+// *****************************************************************************    
+    
+    
+// *****************************************************************************
+//                                Users
+// *****************************************************************************    
+    
+    
+// *****************************************************************************
+//                               Groups
+// *****************************************************************************    
+    
+    
+    
+// ----------------------------- Not Found -------------------------------------    
+    
+    else {
+        return false; // Not a stock variable
+    }
     
     return true;
 }
@@ -2551,7 +3649,7 @@ bool CVariableStorage::add( CVSCPVariable& var )
     
     // Stock variables can't be added.
     if ( var.getName().StartsWith("VSCP.") ) {
-        return false;
+        return writeStockVariable( var );
     }
 
     // Update last changed timestamp
@@ -2949,7 +4047,7 @@ bool CVariableStorage::save( wxString& path, uint8_t whatToSave )
             variable.setAccessRights( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_PERMISSION ) );
             variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_NOTE ) ) );
             
-            writeVariable( pFileStream, variable );
+            writeVariableToXmlFile( pFileStream, variable );
         }
         
         sqlite3_finalize( ppStmt );
@@ -2985,7 +4083,7 @@ bool CVariableStorage::save( wxString& path, uint8_t whatToSave )
             variable.setAccessRights( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_PERMISSION ) );
             variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_NOTE ) ) );
             
-            writeVariable( pFileStream, variable );
+            writeVariableToXmlFile( pFileStream, variable );
         }
         
         sqlite3_finalize( ppStmt );
@@ -3005,14 +4103,14 @@ bool CVariableStorage::save( wxString& path, uint8_t whatToSave )
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// writeVariable
+// writeVariableToXmlFile
 //
 // Create the external variable database
 //
 //
 
-bool CVariableStorage::writeVariable( wxFFileOutputStream *pFileStream,
-                                        CVSCPVariable& variable ) 
+bool CVariableStorage::writeVariableToXmlFile( wxFFileOutputStream *pFileStream,
+                                                CVSCPVariable& variable ) 
 {
     wxString str;
     wxString name = variable.getName();
