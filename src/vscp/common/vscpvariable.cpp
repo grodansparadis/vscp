@@ -2984,6 +2984,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
     else if ( wxNOT_FOUND != name.Lower().Find( _("vscp.dm.") ) ) {
         
         int pos;
+        dmElement dmDB;
         wxString wxstr;
         wxstr = name.Right( name.Length() - 8 );    // remove "vscp.dm."
         if ( wxNOT_FOUND != ( pos = wxstr.Lower().Find( _(".") ) ) ) {
@@ -2998,10 +2999,14 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
             // get the sub string
             wxstr = wxstr.Right( wxstr.Length() - pos - 1 );
             
-            dmElement dm;
+            // Get a pointer to memory DM row if any
+            dmElement *pdm = 
+                    gpctrlObj->m_dm.getMemoryElementFromId( var.getID() ); 
+            
+            
             
             // Get the DM record
-            if ( !gpctrlObj->m_dm.getDatabaseRecord( id, &dm ) ) return false;
+            if ( !gpctrlObj->m_dm.getDatabaseRecord( id, &dmDM ) ) return false;
                       
             if ( wxstr == _("id") ) {
                 return false;   // None writable
@@ -3356,19 +3361,32 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                                                                     strValue );
             }
             else if ( wxstr == _("count.trigger") ) {
-                var.setAccessRights( PERMISSON_OWNER_READ );          
-                var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
-                //var.setValue( (long)pElement->m_id );
+                dmElement *pdm;
+                if ( NULL == 
+                        ( pdm = gpctrlObj->m_dm.getMemoryElementFromId( var.getID() ) ) ) {
+                    return false;
+                }
+                
+                pdm->m_triggCounter = 0;
+                
+                /*
+                CVSCPVariable stockvar;
+                if ( ! findStockVariable( var.getName(), stockvar ) ) {
+                    return false;   // None writable
+                }
+                */
             }
             else if ( wxstr == _("count.error") ) {
-                var.setAccessRights( PERMISSON_OWNER_READ );          
-                var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
-                //var.setValue( (long)pElement->m_id );
+                dmElement *pdm;
+                if ( NULL == 
+                        ( pdm = gpctrlObj->m_dm.getMemoryElementFromId( var.getID() ) ) ) {
+                    return false;
+                }
+                
+                pdm->m_errorCounter = 0;
             }
             else if ( ( wxstr == _("error") ) || ( wxstr == _("error.string") ) ) {
-                var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );           
-                var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-                //var.setValue( (long)pElement->m_id );
+                return false;   // None writable
             }
             
         }

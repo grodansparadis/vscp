@@ -1783,7 +1783,7 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *nc,
         // Check limits
         if ( ( nFrom+i ) >= pObject->m_dm.getMemoryElementCount() ) break;
 
-        dmElement *pElement = pObject->m_dm.getMemoryElement(i);
+        dmElement *pElement = pObject->m_dm.getMemoryElementFromRow( i );
 
         {
             wxString url_dmedit =
@@ -2046,7 +2046,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
     buildPage += _(WEB_DMEDIT_BODY_START);
 
     if ( !bNew && id < pObject->m_dm.getMemoryElementCount() ) {
-        pElement = pObject->m_dm.getMemoryElement(id);
+        pElement = pObject->m_dm.getMemoryElementFromRow(id);
     }
 
     if (bNew || (NULL != pElement)) {
@@ -2866,7 +2866,7 @@ VSCPWebServerThread::websrv_dmpost( struct mg_connection *nc,
 
         if ( bNew || ((0 == id) && !bNew) || ( id < pObject->m_dm.getMemoryElementCount() ) ) {
 
-            if (!bNew) pElement = pObject->m_dm.getMemoryElement(id);
+            if (!bNew) pElement = pObject->m_dm.getMemoryElementFromRow(id);
 
             if (NULL != pElement) {
 

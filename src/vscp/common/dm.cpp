@@ -3559,15 +3559,30 @@ bool CDM::removeMemoryElement( unsigned short pos )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getMemoryElement
+// getMemoryElementFromRow
 //
 
-dmElement *CDM::getMemoryElement( short row )
+dmElement *CDM::getMemoryElementFromRow( const short row )
 {
     if (row < 0) return NULL;
     if ( (unsigned short)row >= m_DMList.GetCount() ) return NULL;
 
     return m_DMList.Item( row )->GetData();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getMemoryElementFromId
+//
+
+dmElement *CDM::getMemoryElementFromId( const uint32_t idx )
+{
+    DMLIST::iterator iter;
+    for (iter = m_DMList.begin(); iter != m_DMList.end(); ++iter) {
+        dmElement *pe = *iter;
+        if ( idx == pe->m_id ) return pe;
+    }
+    
+    return NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

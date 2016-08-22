@@ -722,9 +722,18 @@ public:
     unsigned short getMemoryElementCount( void ) { return m_DMList.GetCount(); };
 
     /*!
-        Get a row from the matrix
+        Get a row from the matrix (from row number)
+        @param row DM row to fetch
+        @return Pointer to DM row if found, NULL else.
     */
-    dmElement *getMemoryElement( short row );
+    dmElement *getMemoryElementFromRow( const short row );
+    
+    /*!
+        Get a row from the matrix (from idx )
+        @param idx Database index for DM row to fetch 
+        @return Pointer to DM row if found, NULL else.
+    */
+    dmElement *getMemoryElementFromId( const uint32_t idx );
     
     /*!
         Add database record

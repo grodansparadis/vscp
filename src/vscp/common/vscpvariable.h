@@ -66,7 +66,7 @@
 #define USER_ADMIN              0x00
 #define GROUP_ADMIN             0x00
 
-// Table types - bitfield
+// Table types - bit-field
 #define VARIABLE_STOCK          0x01
 #define VARIABLE_INTERNAL       0x02
 #define VARIABLE_EXTERNAL       0x04
@@ -116,7 +116,11 @@ public:
         SQL_T,
         LUA_T = 200,
         LUARES_T,
-        UX1_T = 300
+        UX1_T = 300,
+        DM_ROW = 500,
+        DRIVER = 501,
+        USER = 502,
+        GROUP = 503
     };
 
     /// Constructor
