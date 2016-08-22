@@ -230,8 +230,8 @@
         <!-- The can232 driver -->
         <driver enable="false" >
             <name>can232</name>
-            <config>/dev/ttyS0;19200;0;0;125</config>
-            <path>/usr/local/lib/can232drv.so</path>
+            <config>/dev/ttyS0;57600;0;0;125</config>
+            <path>/usr/local/lib/vscpl1_can232drv.so</path>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
             <flags>0</flags>
         </driver>

@@ -84,8 +84,8 @@
             </driver>
             <driver>
                 <name>can232</name>
-                <config>/dev/ttyS0;19200;0;0;125</config>
-                <path>/usr/local/lib/can232drv.so</path>
+                <config>/dev/ttyAMA0;57600;0;0;125</config>
+                <path>/usr/local/lib/vscpl1_can232drv.so</path>
                 <flags>0</flags>
             </driver>
         </canaldriver>
