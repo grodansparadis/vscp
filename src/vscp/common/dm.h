@@ -353,6 +353,12 @@ public:
 
     /// Destructor
     ~dmElement( void );
+    
+    /*!
+        Assignment overload
+    */
+    dmElement& operator=( const dmElement& dm );
+    
 
     /*!
         Get DM row as a string description.
@@ -363,7 +369,7 @@ public:
         where mask is Priority;Class;Type;GUID an filter is Priority;Class;Type;GUID
         See the specification for a description of the from, to and weekday fields. 
     */
-    wxString getDmRowAsString( bool bCRLF = true );
+    wxString getAsString( bool bCRLF = true );
     
     /*!
         Set DM row content from string 
@@ -640,7 +646,6 @@ public:
     //                    A C T I O N  -  P A R A M E T E R S
     ////////////////////////////////////////////////////////////////////////////
 
-private:
 
     // When a dm row is added the action code and the action parameter
     // is parsed. Values here are used for storage of parsed data
@@ -731,9 +736,11 @@ public:
     /*!
         Get a row from the matrix (from idx )
         @param idx Database index for DM row to fetch 
+        @param prow [out] Pointer to short that will receive row (if no NULL) where
+                DM entry was found. 
         @return Pointer to DM row if found, NULL else.
     */
-    dmElement *getMemoryElementFromId( const uint32_t idx );
+    dmElement *getMemoryElementFromId( const uint32_t idx, short *prow = NULL );
     
     /*!
         Add database record

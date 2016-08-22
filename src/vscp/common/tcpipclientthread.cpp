@@ -2735,7 +2735,7 @@ void VSCPClientThread::handleDM_List( struct mg_connection *conn,
                 ++iter) {
 
             dmElement *pDMItem = *iter;
-            wxString strRow = pDMItem->getDmRowAsString();
+            wxString strRow = pDMItem->getAsString();
 
             mg_send( conn,  strRow.mb_str(),
                                         strlen ( strRow.mb_str() ) );

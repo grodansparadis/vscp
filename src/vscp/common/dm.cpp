@@ -862,10 +862,49 @@ dmElement::~dmElement()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getDmRowAsString
+// Assignment =
+//
+
+
+dmElement& dmElement::operator=( const dmElement& dm)
+{
+    // Check for self-assignment!
+    if ( this == &dm ) {    // Same object?
+        return *this;       // Yes, so skip assignment, and just return *this.
+    }
+    
+    m_id = dm.m_id;
+    m_bEnable = dm.m_bEnable;
+    m_strGroupID = dm.m_strGroupID;
+    memcpy( &m_vscpfilter, &dm.m_vscpfilter, sizeof(vscpEventFilter) );
+    m_actionCode = dm.m_actionCode;
+    m_actionparam = dm.m_actionparam;
+    m_triggCounter = dm.m_triggCounter;
+    m_errorCounter = dm.m_errorCounter;
+    m_bCheckIndex = dm.m_bCheckIndex;
+    m_index = dm.m_index;
+    m_bCheckMeasurementIndex = dm.m_bCheckMeasurementIndex;
+    m_measurementIndex = dm.m_measurementIndex;
+    m_bCheckZone = dm.m_bCheckZone;
+    m_zone = dm.m_zone;
+    m_bCheckSubZone = dm.m_bCheckSubZone;
+    m_subzone = dm.m_subzone;
+    m_strLastError = dm.m_strLastError;
+    m_comment = dm.m_comment;
+    m_timeAllow = dm.m_timeAllow;
+    m_measurementValue = dm.m_measurementValue;
+    m_measurementUnit = dm.m_measurementUnit;
+    m_measurementCompareCode = dm.m_measurementCompareCode;
+    m_pDM = dm.m_pDM;
+
+    return *this;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getAsString
 //
  
-wxString dmElement::getDmRowAsString( bool bCRLF )
+wxString dmElement::getAsString( bool bCRLF )
 {
     wxString strRow;
 
@@ -1927,7 +1966,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_EXECUTE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -1938,7 +1977,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_SEND_EVENT.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -1949,7 +1988,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_SEND_EVENT_CONDITIONAL.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -1960,7 +1999,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_SEND_EVENTS_FROM_FILE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -1971,7 +2010,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_STORE_VARIABLE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -1982,7 +2021,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_ADD_VARIABLE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg( _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg( _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -1993,7 +2032,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_SUBTRACT_VARIABLE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -2004,7 +2043,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_MULTIPLY_VARIABLE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -2015,7 +2054,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_DIVIDE_VARIABLE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -2026,7 +2065,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_START_TIMER.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -2037,7 +2076,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_PAUSE_TIMER.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -2048,7 +2087,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_STOP_TIMER.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -2059,7 +2098,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_RESUME_TIMER.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -2070,7 +2109,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_WRITE_FILE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -2081,7 +2120,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_GET_PUT_POST_URL.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -2092,7 +2131,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_WRITE_TABLE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -2104,7 +2143,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_RUN_LUA.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
@@ -2136,7 +2175,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
             // We do nothing
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_NOOP.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getDmRowAsString( false ), LOG_DM_EXTRA );
+            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
             break;
@@ -3574,12 +3613,17 @@ dmElement *CDM::getMemoryElementFromRow( const short row )
 // getMemoryElementFromId
 //
 
-dmElement *CDM::getMemoryElementFromId( const uint32_t idx )
+dmElement *CDM::getMemoryElementFromId( const uint32_t idx, short *prow )
 {
+    short row = 0;
     DMLIST::iterator iter;
     for (iter = m_DMList.begin(); iter != m_DMList.end(); ++iter) {
         dmElement *pe = *iter;
-        if ( idx == pe->m_id ) return pe;
+        if ( idx == pe->m_id ) {
+            if ( NULL != prow ) *prow = row;
+            return pe;
+        }
+        row++;
     }
     
     return NULL;
@@ -5606,7 +5650,7 @@ void actionThread_URL::OnExit()
 ///////////////////////////////////////////////////////////////////////////////
 // actionThread_VSCPSrv
 //
-// This thread connects to a ODBC database and execute a SQL expression.
+// This thread connects to remote server and send event.
 //
 
 actionThread_VSCPSrv::actionThread_VSCPSrv( CControlObject *pCtrlObject,
@@ -5644,20 +5688,20 @@ void *actionThread_VSCPSrv::Entry()
     VscpRemoteTcpIf client;
 
     if ( CANAL_ERROR_SUCCESS != client.doCmdOpen( m_strHostname,
-        m_strUsername,
-        m_strPassword ) ) {
-            // Failed to connect
-            m_pCtrlObject->logMsg( wxT( "actionThreadVSCPSrv: Unable to connect to remote server : " ) +
-                m_strHostname +
-                wxT(" \n")  );
+                                                    m_strUsername,
+                                                    m_strPassword ) ) {
+        // Failed to connect
+        m_pCtrlObject->logMsg( wxT( "actionThreadVSCPSrv: Unable to connect to remote server : " ) +
+                                    m_strHostname +
+                                    wxT(" \n")  );
     }
 
     // Connected
     if ( CANAL_ERROR_SUCCESS != client.doCmdSendEx( &m_eventThe ) ) {
         // Failed to send event
         m_pCtrlObject->logMsg( wxT( "actionThreadVSCPSrv: Unable to send event to remote server : " ) +
-            m_strHostname +
-            wxT(" \n")  );
+                                m_strHostname +
+                                wxT(" \n")  );
     }
 
     return NULL;

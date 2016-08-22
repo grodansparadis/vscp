@@ -2984,6 +2984,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
     else if ( wxNOT_FOUND != name.Lower().Find( _("vscp.dm.") ) ) {
         
         int pos;
+        short row;
         dmElement dmDB;
         wxString wxstr;
         wxstr = name.Right( name.Length() - 8 );    // remove "vscp.dm."
@@ -2998,15 +2999,13 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
             
             // get the sub string
             wxstr = wxstr.Right( wxstr.Length() - pos - 1 );
+                                 
+            // Get the DM db record
+            if ( !gpctrlObj->m_dm.getDatabaseRecord( id, &dmDB ) ) return false;
             
-            // Get a pointer to memory DM row if any
+            // Get a pointer to memory DM row (if any)
             dmElement *pdm = 
-                    gpctrlObj->m_dm.getMemoryElementFromId( var.getID() ); 
-            
-            
-            
-            // Get the DM record
-            if ( !gpctrlObj->m_dm.getDatabaseRecord( id, &dmDM ) ) return false;
+                    gpctrlObj->m_dm.getMemoryElementFromId( var.getID(), &row );
                       
             if ( wxstr == _("id") ) {
                 return false;   // None writable
@@ -3016,12 +3015,36 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 bool bVal;
                 wxString strFieldName,strValue;
                 
-                strFieldName = _("bEnable");                
                 var.getValue( &bVal );
+                
+                // Update database record
+                strFieldName = _("bEnable");                                
                 bVal ? strValue=_("1") : _("0");
-                return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
+                if ( !gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
-                                                                    strValue );                  
+                                                                    strValue ) ) {
+                    return false;
+                }
+                
+                // if the record is in memory
+                if ( NULL != pdm ) {
+                    
+                    pdm->m_bEnable = bVal;
+                    
+                    // if value is false the database row should be removed
+                    if ( !bVal ) {
+                        gpctrlObj->m_dm.removeMemoryElement( row );
+                    }
+                    
+                }               
+                // If true and not in memory the record should be added
+                else {
+                    dmElement *pdmnew = new dmElement();
+                    if ( NULL!= pdmnew ) return false;
+                    gpctrlObj->m_dm.getDatabaseRecord( dmDB.m_id, pdmnew );
+                    gpctrlObj->m_dm.addMemoryElement( pdmnew );
+                }
+                              
             }
             else if ( wxstr == _("groupid") ) {
   
@@ -3029,6 +3052,10 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 
                 strFieldName = _("groupid");
                 var.getValue( &strValue );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    pdm->m_strGroupID = strValue;
+                }
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
                                                                     strValue );
@@ -3040,6 +3067,10 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 
                 strFieldName = _("maskPriority");                
                 var.getValue( &val );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    pdm->m_vscpfilter.mask_priority = val;
+                }
                 strValue.Format( _("%d"), val );
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
@@ -3052,6 +3083,10 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 
                 strFieldName = _("maskClass");                
                 var.getValue( &val );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    pdm->m_vscpfilter.mask_class = val;
+                }
                 strValue.Format( _("%d"), val );
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
@@ -3064,6 +3099,10 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 
                 strFieldName = _("maskType");                
                 var.getValue( &val );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    pdm->m_vscpfilter.mask_type = val;
+                }
                 strValue.Format( _("%d"), val );
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
@@ -3074,6 +3113,12 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 wxString strFieldName,strValue;
                 strFieldName = _("maskGUID");
                 var.getValue( &strValue );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    cguid guid;
+                    guid.getFromString( strValue );
+                    memcpy( pdm->m_vscpfilter.mask_GUID, guid.getGUID(), 16 );
+                }
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
                                                                     strValue );
@@ -3085,6 +3130,10 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 
                 strFieldName = _("filterPriority");                
                 var.getValue( &val );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    pdm->m_vscpfilter.filter_priority = val;
+                }
                 strValue.Format( _("%d"), val );
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
@@ -3097,6 +3146,10 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 
                 strFieldName = _("filterClass");                
                 var.getValue( &val );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    pdm->m_vscpfilter.filter_class = val;
+                }
                 strValue.Format( _("%d"), val );
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
@@ -3107,8 +3160,12 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 int val;
                 wxString strFieldName,strValue;
                 
-                strFieldName = _("filterTYpe");                
+                strFieldName = _("filterType");                
                 var.getValue( &val );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    pdm->m_vscpfilter.filter_type = val;
+                }
                 strValue.Format( _("%d"), val );
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
@@ -3120,6 +3177,12 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 
                 strFieldName = _("filterGUID");
                 var.getValue( &strValue );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    cguid guid;
+                    guid.getFromString( strValue );
+                    memcpy( pdm->m_vscpfilter.filter_GUID, guid.getGUID(), 16 );
+                }
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
                                                                     strValue );
@@ -3130,6 +3193,10 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 
                 strFieldName = _("allowedStart");
                 var.getValue( &strValue );
+                // Change in memory record
+                if ( NULL != pdm ) {                    
+                    pdm->m_timeAllow.m_fromTime.ParseISOCombined( strValue );
+                }
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
                                                                     strValue );
@@ -3140,6 +3207,10 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 
                 strFieldName = _("allowedEnd");
                 var.getValue( &strValue );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    pdm->m_timeAllow.m_endTime.ParseISOCombined( strValue );
+                }
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
                                                                     strValue );
@@ -3151,6 +3222,10 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 
                 strFieldName = _("allowedMonday");                
                 var.getValue( &bVal );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    pdm->m_timeAllow.allowMonday( bVal );
+                }
                 bVal ? strValue=_("1") : _("0");
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
@@ -3163,6 +3238,10 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 
                 strFieldName = _("allowedTuesday");
                 var.getValue( &bVal );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    pdm->m_timeAllow.allowTuesday( bVal );
+                }
                 bVal ? strValue=_("1") : _("0");
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
@@ -3175,6 +3254,10 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 
                 strFieldName = _("allowedWednessday");                
                 var.getValue( &bVal );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    pdm->m_timeAllow.allowWednessday( bVal );
+                }
                 bVal ? strValue=_("1") : _("0");
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
@@ -3187,6 +3270,10 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 
                 strFieldName = _("allowedThursday");                
                 var.getValue( &bVal );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    pdm->m_timeAllow.allowThursday( bVal );
+                }
                 bVal ? strValue=_("1") : _("0");
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
@@ -3199,6 +3286,10 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 
                 strFieldName = _("allowedFriday");                
                 var.getValue( &bVal );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    pdm->m_timeAllow.allowFriday( bVal );
+                }
                 bVal ? strValue=_("1") : _("0");
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
@@ -3211,6 +3302,10 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 
                 strFieldName = _("allowedSaturday");                
                 var.getValue( &bVal );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    pdm->m_timeAllow.allowSaturday( bVal );
+                }
                 bVal ? strValue=_("1") : _("0");
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
@@ -3223,6 +3318,10 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 
                 strFieldName = _("allowedSunday");                
                 var.getValue( &bVal );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    pdm->m_timeAllow.allowSunday( bVal );
+                }
                 bVal ? strValue=_("1") : _("0");
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
@@ -3234,6 +3333,10 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 
                 strFieldName = _("allowedTime");
                 var.getValue( &strValue );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    pdm->m_timeAllow.parseActionTime( strValue );
+                }
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
                                                                     strValue );
@@ -3245,6 +3348,10 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 
                 strFieldName = _("bCheckIndex");                
                 var.getValue( &bVal );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    pdm->m_bCheckIndex = bVal;
+                }
                 bVal ? strValue=_("1") : _("0");
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
@@ -3258,6 +3365,10 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 strFieldName = _("index");
                 
                 var.getValue( &val );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    pdm->m_index = val;
+                }
                 strValue.Format( _("%d"), val );
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
@@ -3270,6 +3381,10 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 
                 strFieldName = _("bCheckZone");
                 var.getValue( &bVal );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    pdm->m_bCheckZone = bVal;
+                }
                 bVal ? strValue=_("1") : _("0");
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
@@ -3282,6 +3397,10 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 
                 strFieldName = _("zone");                
                 var.getValue( &val );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    pdm->m_zone = val;
+                }
                 strValue.Format( _("%d"), val );
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
@@ -3294,6 +3413,10 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 
                 strFieldName = _("bCheckSubZone");                
                 var.getValue( &bVal );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    pdm->m_bCheckZone = bVal;
+                }
                 bVal ? strValue=_("1") : _("0");
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
@@ -3306,6 +3429,10 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 
                 strFieldName = _("subzone");                
                 var.getValue( &val );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    pdm->m_subzone = val;
+                }
                 strValue.Format( _("%d"), val );
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
@@ -3318,6 +3445,10 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 
                 strFieldName = _("measurementValue");                
                 var.getValue( &val );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    pdm->m_measurementValue = val;
+                }
                 strValue.Format( _("%d"), val );
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
@@ -3330,6 +3461,10 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 
                 strFieldName = _("measurementUnit");                
                 var.getValue( &val );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    pdm->m_measurementUnit = val;
+                }
                 strValue.Format( _("%d"), val );
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
@@ -3342,6 +3477,10 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 
                 strFieldName = _("measurementCompare");                
                 var.getValue( &val );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    pdm->m_measurementUnit = val;
+                }
                 strValue.Format( _("%d"), val );
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
@@ -3356,34 +3495,23 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 
                 strFieldName = _("comment");
                 var.getValue( &strValue );
+                // Change in memory record
+                if ( NULL != pdm ) {
+                    pdm->m_comment = strValue;
+                }
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     strFieldName,
                                                                     strValue );
             }
             else if ( wxstr == _("count.trigger") ) {
-                dmElement *pdm;
-                if ( NULL == 
-                        ( pdm = gpctrlObj->m_dm.getMemoryElementFromId( var.getID() ) ) ) {
-                    return false;
+                if ( NULL != pdm ) {                
+                    pdm->m_triggCounter = 0;
                 }
-                
-                pdm->m_triggCounter = 0;
-                
-                /*
-                CVSCPVariable stockvar;
-                if ( ! findStockVariable( var.getName(), stockvar ) ) {
-                    return false;   // None writable
-                }
-                */
             }
             else if ( wxstr == _("count.error") ) {
-                dmElement *pdm;
-                if ( NULL == 
-                        ( pdm = gpctrlObj->m_dm.getMemoryElementFromId( var.getID() ) ) ) {
-                    return false;
+                if ( NULL == pdm ) {                
+                    pdm->m_errorCounter = 0;
                 }
-                
-                pdm->m_errorCounter = 0;
             }
             else if ( ( wxstr == _("error") ) || ( wxstr == _("error.string") ) ) {
                 return false;   // None writable

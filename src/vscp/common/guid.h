@@ -44,7 +44,7 @@ public:
 public:
 
     /*!
-        Assignement overload
+        Assignment overload
     */
     cguid& operator=( const cguid& guid);
 
@@ -68,20 +68,20 @@ public:
         Get GUID from string
         @param strGUID The GUID in string form
     */
-    void getFromString( const wxString& strGUID );
+    static void getFromString( const wxString& strGUID );
 
     /*!
         Get GUID from string
         @param pszGUID Zero terminated ASCII string pointing at GUID
     */
-    void getFromString( const char *pszGUID );
+    static void getFromString( const char *pszGUID );
 
     /*!
         Set GUID from array
         @param pguid Pointer to array that holds 16 GUID bytes on
                 MSB->LSB form.
     */
-    void getFromArray( const uint8_t *pguid );
+    static void getFromArray( const uint8_t *pguid );
 
     /*!
         GUID to string
