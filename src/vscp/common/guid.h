@@ -68,20 +68,20 @@ public:
         Get GUID from string
         @param strGUID The GUID in string form
     */
-    static void getFromString( const wxString& strGUID );
+    void getFromString( const wxString& strGUID );
 
     /*!
         Get GUID from string
         @param pszGUID Zero terminated ASCII string pointing at GUID
     */
-    static void getFromString( const char *pszGUID );
+    void getFromString( const char *pszGUID );
 
     /*!
         Set GUID from array
         @param pguid Pointer to array that holds 16 GUID bytes on
                 MSB->LSB form.
     */
-    static void getFromArray( const uint8_t *pguid );
+    void getFromArray( const uint8_t *pguid );
 
     /*!
         GUID to string

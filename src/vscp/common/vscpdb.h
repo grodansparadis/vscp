@@ -33,132 +33,140 @@
 
 #define VSCPDB_SETTINGS_CREATE "CREATE TABLE \"Settings\" ("\
 	"`vscpd_idx_settings`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-	"`vscpd_dbversion`	INTEGER NOT NULL,"\
-	"`vscpd_LogLevel`	INTEGER,"\
-	"`vscpd_RunAsUser`	TEXT,"\
-	"`vscpd_GUID`	TEXT,"\
-	"`vscpd_Name`	TEXT,"\
-	"`vscpd_Syslog_Enable`	INTEGER,"\
-	"`vscpd_GeneralLogFile_Enable`	INTEGER,"\
-	"`vscpd_GeneralLogFile_Path`	TEXT,"\
-	"`vscpd_SecurityLogFile_Enable`	INTEGER,"\
-	"`vscpd_SecurityLogFile_Path`	TEXT,"\
-	"`vscpd_AccessLogFile_Enable`	INTEGER,"\
-	"`vscpd_AccessLogFile_Path`	TEXT,"\
-	"`vscpd_TcpipInterface_Port`	REAL,"\
-	"`vscpd_MulticastInterface_Port`	TEXT,"\
-	"`vscpd_MulicastInterface_ttl`	INTEGER,"\
-	"`vscpd_UdpSimpleInterface_Enable`	INTEGER,"\
-	"`vscpd_UdpSimpleInterface_Port`	TEXT,"\
-	"`vscpd_DM_Path`	NUMERIC,"\
-	"`vscpd_DM_Logging_Enable`	INTEGER,"\
-	"`vscpd_DM_Logging_Path`	TEXT,"\
-	"`vscpd_DM_Logging_Level`	INTEGER,"\
-	"`vscpd_Variables_Path`	TEXT,"\
-	"`vscpd_VSCPD_DefaultClientBufferSize`	INTEGER,"\
-	"`vscpd_Webserver_DisableAuthentication`	INTEGER,"\
-	"`vscpd_Webserver_RootPath`	TEXT,"\
-	"`vscpd_Webserver_Port`	TEXT,"\
-	"`vscpd_Webserver_PathCert`	TEXT,"\
-	"`vscpd_Webserver_AuthDomain`	TEXT,"\
-	"`vscpd_Webserver_CgiInterpreter`	TEXT,"\
-	"`vscpd_Webserver_CgiPattern`	TEXT,"\
-	"`vscpd_Webserver_EnableDirectoryListings`	INTEGER,"\
-	"`vscpd_Webserver_HideFilePatterns`	TEXT,"\
-	"`vscpd_Webserver_IndexFiles`	TEXT,"\
-	"`vscpd_Webserver_ExtraMimeTypes`	TEXT,"\
-	"`vscpd_Webserver_UrlRewrites`	TEXT,"\
-	"`vscpd_Webserver_SSIPattern`	NUMERIC,"\
-	"`vscpd_Webserver_RunAsUser`	REAL,"\
-	"`vscpd_Webserver_PerDirectoryAuthFile`	TEXT,"\
-	"`vscpd_Webserver_GlobalAuthFile`	TEXT,"\
-	"`vscpd_Webserver__IpAcl`	TEXT,"\
-	"`vscpd_Webserver_DavDocumentRoot`	TEXT,"\
-	"`vscpd_WebSocket_EnableAuth`	INTEGER,"\
-	"`vscpd_MqttBroker_Enable`	INTEGER,"\
-	"`vscpd_MqttBroker_Port`	TEXT,"\
-	"`vscpd_CoapServer_Enable`	INTEGER,"\
-	"`vscpd_CoapServer_Port`	TEXT,"\
-	"`vscpd_Automation_Enable`	INTEGER,"\
-	"`vscpd_Automation_Zone`	INTEGER,"\
-	"`vscpd_Automation_SubZone`	INTEGER,"\
-	"`vscpd_Automation_Longitude`	REAL,"\
-	"`vscpd_Automation_Latitude`	REAL,"\
-	"`vscpd_Automation_Timezone`	TEXT,"\
-	"`vscpd_Automation_Sunrise_Enable`	INTEGER,"\
-	"`vscpd_Automation_Sunset_Enable`	TEXT,"\
-	"`vscpd_Automation_SunsetTwilight_Enable`	INTEGER,"\
-	"`vscpd_Automation_SunriseTwilight_Enable`	INTEGER,"\
-	"`vscpd_Automation_SegmentControllerEvent_Enable`	INTEGER,"\
-	"`vscpd_Automation_SegmentControllerEvent_Interval`	INTEGER,"\
-	"`vscpd_Automation_HeartbeatEvent_Enable`	INTEGER,"\
-	"`vscpd_Automation_HeartbeatEvent_Interval`	INTEGER,"\
-	"`vscpd_db_data_path`	TEXT,"\
-	"`vscpd_db_log_path`	TEXT"\
+	"`vscpd_dbversion`                  INTEGER NOT NULL DEFAULT 1,"\
+	"`vscpd_LogLevel`                   INTEGER DEFAULT 1,"\
+        "'vscpd.maxqueue'                   INTEGER DEFAULT 8191,"\
+	"`vscpd_RunAsUser`                  TEXT DEFAULT '',"\
+	"`vscpd_GUID`                       TEXT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00',"\
+	"`vscpd_Name`                       TEXT,"\
+	"`vscpd_Syslog_Enable`              INTEGER DEFAULT 1,"\
+	"`vscpd_GeneralLogFile_Enable`      INTEGER DEFAULT 1,"\
+	"`vscpd_GeneralLogFile_Path`        TEXT,"\
+	"`vscpd_SecurityLogFile_Enable`     INTEGER DEFAULT 1,"\
+	"`vscpd_SecurityLogFile_Path`       TEXT,"\
+	"`vscpd_AccessLogFile_Enable`       INTEGER DEFAULT 1,"\
+	"`vscpd_AccessLogFile_Path`         TEXT,"\
+	"`vscpd_TcpipInterface_Port`        TEXT,"\
+	"`vscpd_MulticastInterface_Port`    TEXT,"\
+	"`vscpd_MulicastInterface_ttl`      INTEGER,"\
+	"`vscpd_UdpSimpleInterface_Enable`  INTEGER,"\
+	"`vscpd_UdpSimpleInterface_Port`    TEXT,"\
+	"`vscpd_DM_Path`                    NUMERIC,"\
+	"`vscpd_DM_Logging_Enable`          INTEGER,"\
+	"`vscpd_DM_Logging_Path`            TEXT,"\
+	"`vscpd_DM_Logging_Level`           INTEGER,"\
+	"`vscpd_Variables_Path`             TEXT,"\
+	"`vscpd_VSCPD_DefaultClientBufferSize`      INTEGER,"\
+	"`vscpd_Webserver_DisableAuthentication`    INTEGER,"\
+	"`vscpd_Webserver_RootPath`         TEXT,"\
+	"`vscpd_Webserver_Port`             TEXT,"\
+	"`vscpd_Webserver_PathCert`         TEXT,"\
+	"`vscpd_Webserver_AuthDomain`       TEXT DEFAULT 'mydomain.com',"\
+	"`vscpd_Webserver_CgiInterpreter`   TEXT,"\
+	"`vscpd_Webserver_CgiPattern`       TEXT,"\
+	"`vscpd_Webserver_EnableDirectoryListings`  INTEGER,"\
+	"`vscpd_Webserver_HideFilePatterns` TEXT,"\
+	"`vscpd_Webserver_IndexFiles`       TEXT,"\
+	"`vscpd_Webserver_ExtraMimeTypes`   TEXT,"\
+	"`vscpd_Webserver_UrlRewrites`      TEXT,"\
+	"`vscpd_Webserver_SSIPattern`       NUMERIC,"\
+	"`vscpd_Webserver_RunAsUser`        TEXT,"\
+	"`vscpd_Webserver_PerDirectoryAuthFile`     TEXT,"\
+	"`vscpd_Webserver_GlobalAuthFile`   TEXT,"\
+	"`vscpd_Webserver__IpAcl`           TEXT,"\
+	"`vscpd_Webserver_DavDocumentRoot`  TEXT,"\
+	"`vscpd_WebSocket_EnableAuth`       INTEGER,"\
+	"`vscpd_MqttBroker_Enable`          INTEGER,"\
+	"`vscpd_MqttBroker_Port`            TEXT,"\
+	"`vscpd_CoapServer_Enable`          INTEGER,"\
+	"`vscpd_CoapServer_Port`            TEXT,"\
+	"`vscpd_Automation_Enable`          INTEGER,"\
+	"`vscpd_Automation_Zone`            INTEGER,"\
+	"`vscpd_Automation_SubZone`         INTEGER,"\
+	"`vscpd_Automation_Longitude`       REAL,"\
+	"`vscpd_Automation_Latitude`        REAL,"\
+	"`vscpd_Automation_Timezone`        TEXT,"\
+	"`vscpd_Automation_Sunrise_Enable`  INTEGER,"\
+	"`vscpd_Automation_Sunset_Enable`   TEXT,"\
+	"`vscpd_Automation_SunsetTwilight_Enable`   INTEGER,"\
+	"`vscpd_Automation_SunriseTwilight_Enable`  INTEGER,"\
+	"`vscpd_Automation_SegmentControllerEvent_Enable`   INTEGER,"\
+	"`vscpd_Automation_SegmentControllerEvent_Interval` INTEGER,"\
+	"`vscpd_Automation_HeartbeatEvent_Enable`   INTEGER,"\
+	"`vscpd_Automation_HeartbeatEvent_Interval` INTEGER,"\
+	"`vscpd_db_data_path`               TEXT,"\
+	"`vscpd_db_log_path`                TEXT"\
         ");";
+
+#define VSCPDB_CONFIG_SET_DEFAULTS  ""        
+        
+
+#define VSCPDB_CONFIG_UPDATE_ITEM "UPDATE 'Settings' SET ( %s='%s' ) WHERE id='%d' "
+
 
 #define VSCPDB_ORDINAL_CONFIG_ID                                            0
 #define VSCPDB_ORDINAL_CONFIG_DBVERSION                                     1
 #define VSCPDB_ORDINAL_CONFIG_LOGLEVEL                                      2
-#define VSCPDB_ORDINAL_CONFIG_RUNASUSER                                     3
-#define VSCPDB_ORDINAL_CONFIG_GUID                                          4
-#define VSCPDB_ORDINAL_CONFIG_NAME                                          5
-#define VSCPDB_ORDINAL_CONFIG_SYSLOG_ENABLE                                 6
-#define VSCPDB_ORDINAL_CONFIG_GENERALLOGFILE_ENABLE                         7
-#define VSCPDB_ORDINAL_CONFIG_GENERALLOGFILE_PATH                           8
-#define VSCPDB_ORDINAL_CONFIG_SECURITYLOGFILE_ENABLE                        9
-#define VSCPDB_ORDINAL_CONFIG_SECURITYLOGFILE_PATH                          10
-#define VSCPDB_ORDINAL_CONFIG_ACCESSLOGFILE_ENABLE                          11
-#define VSCPDB_ORDINAL_CONFIG_ACCESSLOGFILE_PATH                            12
-#define VSCPDB_ORDINAL_CONFIG_TCPIPINTERFACE_PORT                           13
-#define VSCPDB_ORDINAL_CONFIG_MULTICASTINTERFACE_PORT                       14
-#define VSCPDB_ORDINAL_CONFIG_MULICASTINTERFACE_TTL                         15
-#define VSCPDB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_ENABLE                     16
-#define VSCPDB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_PORT                       17
-#define VSCPDB_ORDINAL_CONFIG_DM_PATH                                       18
-#define VSCPDB_ORDINAL_CONFIG_DM_LOGGING_ENABLE                             19
-#define VSCPDB_ORDINAL_CONFIG_DM_LOGGING_PATH                               20
-#define VSCPDB_ORDINAL_CONFIG_DM_LOGGING_LEVEL                              21
-#define VSCPDB_ORDINAL_CONFIG_VARIABLES_PATH                                22
-#define VSCPDB_ORDINAL_CONFIG_VSCPD_DEFAULTCLIENTBUFFERSIZE                 23
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_DISABLEAUTHENTICATION               24
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_ROOTPATH                            25
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_PORT                                26
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_PATHCERT                            27
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_AUTHDOMAIN                          28
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_CGIINTERPRETER                      29
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_CGIPATTERN                          30
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_ENABLEDIRECTORYLISTINGS             31
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_HIDEFILEPATTERNS                    32
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_INDEXFILES                          33
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_EXTRAMIMETYPES                      34
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_URLREWRITES                         35
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_SSIPATTERN                          36
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_RUNASUSER                           37
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_PERDIRECTORYAUTHFILE                38
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_GLOBALAUTHFILE                      39
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER__IPACL                              40
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_DAVDOCUMENTROOT                     41
-#define VSCPDB_ORDINAL_CONFIG_WEBSOCKET_ENABLEAUTH                          42
-#define VSCPDB_ORDINAL_CONFIG_MQTTBROKER_ENABLE                             43
-#define VSCPDB_ORDINAL_CONFIG_MQTTBROKER_PORT                               44
-#define VSCPDB_ORDINAL_CONFIG_COAPSERVER_ENABLE                             45
-#define VSCPDB_ORDINAL_CONFIG_COAPSERVER_PORT                               46
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_ZONE                               47
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUBZONE                            48
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_LONGITUDE                          49
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_LATITUDE                           50
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_TIMEZONE                           51
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISE_ENABLE                     52
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSET_ENABLE                      53
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSETTWILIGHT_ENABLE              54
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISETWILIGHT_ENABLE             55
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_ENABLE      56
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_INTERVAL    57
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_ENABLE              58
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_INTERVAL            59
-#define VSCPDB_ORDINAL_CONFIG_DB_DATA_PATH                                  60
-#define VSCPDB_ORDINAL_CONFIG_DB_LOG_PATH                                   61
+#define VSCPDB_ORDINAL_CONFIG_MAXQUEUE                                      3
+#define VSCPDB_ORDINAL_CONFIG_RUNASUSER                                     4
+#define VSCPDB_ORDINAL_CONFIG_GUID                                          5
+#define VSCPDB_ORDINAL_CONFIG_NAME                                          6
+#define VSCPDB_ORDINAL_CONFIG_SYSLOG_ENABLE                                 7
+#define VSCPDB_ORDINAL_CONFIG_GENERALLOGFILE_ENABLE                         8
+#define VSCPDB_ORDINAL_CONFIG_GENERALLOGFILE_PATH                           9
+#define VSCPDB_ORDINAL_CONFIG_SECURITYLOGFILE_ENABLE                        10
+#define VSCPDB_ORDINAL_CONFIG_SECURITYLOGFILE_PATH                          11
+#define VSCPDB_ORDINAL_CONFIG_ACCESSLOGFILE_ENABLE                          12
+#define VSCPDB_ORDINAL_CONFIG_ACCESSLOGFILE_PATH                            13
+#define VSCPDB_ORDINAL_CONFIG_TCPIPINTERFACE_PORT                           14
+#define VSCPDB_ORDINAL_CONFIG_MULTICASTINTERFACE_PORT                       15
+#define VSCPDB_ORDINAL_CONFIG_MULICASTINTERFACE_TTL                         16
+#define VSCPDB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_ENABLE                     17
+#define VSCPDB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_PORT                       18
+#define VSCPDB_ORDINAL_CONFIG_DM_PATH                                       19
+#define VSCPDB_ORDINAL_CONFIG_DM_LOGGING_ENABLE                             20
+#define VSCPDB_ORDINAL_CONFIG_DM_LOGGING_PATH                               21
+#define VSCPDB_ORDINAL_CONFIG_DM_LOGGING_LEVEL                              22
+#define VSCPDB_ORDINAL_CONFIG_VARIABLES_PATH                                23
+#define VSCPDB_ORDINAL_CONFIG_VSCPD_DEFAULTCLIENTBUFFERSIZE                 24
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_DISABLEAUTHENTICATION               25
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_ROOTPATH                            26
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_PORT                                27
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_PATHCERT                            28
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_AUTHDOMAIN                          29
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_CGIINTERPRETER                      30
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_CGIPATTERN                          31
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_ENABLEDIRECTORYLISTINGS             32
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_HIDEFILEPATTERNS                    33
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_INDEXFILES                          34
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_EXTRAMIMETYPES                      35
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_URLREWRITES                         36
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_SSIPATTERN                          37
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_RUNASUSER                           38
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_PERDIRECTORYAUTHFILE                39
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_GLOBALAUTHFILE                      40
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER__IPACL                              41
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_DAVDOCUMENTROOT                     42
+#define VSCPDB_ORDINAL_CONFIG_WEBSOCKET_ENABLEAUTH                          43
+#define VSCPDB_ORDINAL_CONFIG_MQTTBROKER_ENABLE                             44
+#define VSCPDB_ORDINAL_CONFIG_MQTTBROKER_PORT                               45
+#define VSCPDB_ORDINAL_CONFIG_COAPSERVER_ENABLE                             46
+#define VSCPDB_ORDINAL_CONFIG_COAPSERVER_PORT                               47
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_ZONE                               48
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUBZONE                            49
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_LONGITUDE                          50
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_LATITUDE                           51
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_TIMEZONE                           52
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISE_ENABLE                     53
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSET_ENABLE                      54
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSETTWILIGHT_ENABLE              55
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISETWILIGHT_ENABLE             56
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_ENABLE      57
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_INTERVAL    58
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_ENABLE              59
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_INTERVAL            60
+#define VSCPDB_ORDINAL_CONFIG_DB_DATA_PATH                                  61
+#define VSCPDB_ORDINAL_CONFIG_DB_LOG_PATH                                   62
 
 
 #define VSCPDB_LOG_CREATE "CREATE TABLE \"log\" ("\
@@ -179,7 +187,7 @@
 //                                 USER
 //*****************************************************************************
 
-#define VSCPDB_USER_CREATE "CREATE TABLE \"user\" ("\
+#define VSCPDB_USER_CREATE "CREATE TABLE 'user' ("\
 	"`idx_user`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`username`	TEXT NOT NULL UNIQUE,"\
 	"`password`	TEXT NOT NULL,"\
@@ -199,7 +207,7 @@
 //                                GROUP
 //*****************************************************************************
 
-#define VSCPDB_GROUP_CREATE "CREATE TABLE \"group\" ("\
+#define VSCPDB_GROUP_CREATE "CREATE TABLE 'group' ("\
 	"`idx_group`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`groupname`	TEXT NOT NULL,"\
 	"`permission`	INTEGER NOT NULL,"\
@@ -215,7 +223,7 @@
 //                          external VARIABLE
 //*****************************************************************************
 
-#define VSCPDB_VARIABLE_EXT_CREATE  "CREATE TABLE 'variableEx' ("\
+#define VSCPDB_VARIABLE_CREATE  "CREATE TABLE 'variable' ("\
 "'idx_variableex'  INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 "'lastchange'      TEXT NOT NULL,"\
 "'name'            TEXT NOT NULL UNIQUE,"\
@@ -228,44 +236,16 @@
 "'note'	TEXT"\
 ");"
 
-#define VSCPDB_ORDINAL_VARIABLE_EXT_ID              0   //
-#define VSCPDB_ORDINAL_VARIABLE_EXT_LASTCHANGE      1   //
-#define VSCPDB_ORDINAL_VARIABLE_EXT_NAME            2   // 
-#define VSCPDB_ORDINAL_VARIABLE_EXT_TYPE            3   // 
-#define VSCPDB_ORDINAL_VARIABLE_EXT_VALUE           4   // 
-#define VSCPDB_ORDINAL_VARIABLE_EXT_PERSISTENT      5   // 
-#define VSCPDB_ORDINAL_VARIABLE_EXT_LINK_TO_USER    6   // 
-#define VSCPDB_ORDINAL_VARIABLE_EXT_LINK_TO_GROUP   7   // 
-#define VSCPDB_ORDINAL_VARIABLE_EXT_PERMISSION      8   // 
-#define VSCPDB_ORDINAL_VARIABLE_EXT_NOTE            9   // 
-
-//*****************************************************************************
-//                           internal VARIABLE
-//*****************************************************************************
-        
-#define VSCPDB_VARIABLE_INT_CREATE "CREATE TABLE 'variableInt' ("\
-	"`idx_variableint`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-        "`lastchange`	TEXT NOT NULL,"\
-	"`name`	TEXT NOT NULL UNIQUE,"\
-	"`type`	INTEGER NOT NULL DEFAULT 1,"\
-	"`value`	TEXT NOT NULL,"\
-        "'bPersistent'     INTEGER NOT NULL DEFAULT 0,"\
-	"`link_to_user`	INTEGER NOT NULL DEFAULT 0,"\
-	"`link_to_group`	INTEGER NOT NULL DEFAULT 0,"\
-	"`permission`	INTEGER NOT NULL DEFAULT 777,"\
-        "`note`	TEXT"\
-        ");"      
-
-#define VSCPDB_ORDINAL_VARIABLE_INT_ID              0   // 
-#define VSCPDB_ORDINAL_VARIABLE_INT_LASTCHANGE      1   //
-#define VSCPDB_ORDINAL_VARIABLE_INT_NAME            2   // 
-#define VSCPDB_ORDINAL_VARIABLE_INT_TYPE            3   // 
-#define VSCPDB_ORDINAL_VARIABLE_INT_VALUE           4   // 
-#define VSCPDB_ORDINAL_VARIABLE_EXT_PERSISTENT      5   // 
-#define VSCPDB_ORDINAL_VARIABLE_INT_LINK_TO_USER    6   // 
-#define VSCPDB_ORDINAL_VARIABLE_INT_LINK_TO_GROUP   7   // 
-#define VSCPDB_ORDINAL_VARIABLE_INT_PERMISSION      8   // 
-#define VSCPDB_ORDINAL_VARIABLE_INT_NOTE            9   //
+#define VSCPDB_ORDINAL_VARIABLE_ID              0   //
+#define VSCPDB_ORDINAL_VARIABLE_LASTCHANGE      1   //
+#define VSCPDB_ORDINAL_VARIABLE_NAME            2   // 
+#define VSCPDB_ORDINAL_VARIABLE_TYPE            3   // 
+#define VSCPDB_ORDINAL_VARIABLE_VALUE           4   // 
+#define VSCPDB_ORDINAL_VARIABLE_PERSISTENT      5   // 
+#define VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER    6   // 
+#define VSCPDB_ORDINAL_VARIABLE_LINK_TO_GROUP   7   // 
+#define VSCPDB_ORDINAL_VARIABLE_PERMISSION      8   // 
+#define VSCPDB_ORDINAL_VARIABLE_NOTE            9   // 
 
 
 
@@ -282,35 +262,35 @@
 	"`maskPriority`	INTEGER NOT NULL DEFAULT 0,"\
 	"`maskClass`	NUMERIC NOT NULL DEFAULT 0,"\
 	"`maskType`	INTEGER NOT NULL DEFAULT 0,"\
-	"`maskGUID`	TEXT NOT NULL,"\
+	"`maskGUID`	TEXT NOT NULL DEFAULT DEFAULT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00',"\
 	"`filterPriority`	INTEGER NOT NULL DEFAULT 0,"\
 	"`filterClass`	INTEGER NOT NULL DEFAULT 0,"\
 	"`filterType`	INTEGER NOT NULL DEFAULT 0,"\
 	"`filterGUID`	TEXT NOT NULL,"\
 	"`allowedFrom`	TEXT NOT NULL,"\
 	"`allowedTo`	TEXT NOT NULL,"\
-	"`allowedMonday`	BLOB NOT NULL,"\
+	"`allowedMonday`	INTEGER NOT NULL,"\
 	"`allowedTuesday`	INTEGER NOT NULL,"\
 	"`allowsWednesday`	INTEGER NOT NULL,"\
 	"`allowedThursday`	INTEGER NOT NULL,"\
 	"`allowedFriday`	INTEGER NOT NULL,"\
 	"`allowedSaturday`	NUMERIC NOT NULL,"\
-	"`allowedSunday`	BLOB NOT NULL,"\
-	"`allowedTime`	TEXT NOT NULL,"\
-	"`bCheckIndex`	INTEGER NOT NULL,"\
-	"`index`	TEXT NOT NULL,"\
-	"`bCheckZone`	TEXT NOT NULL,"\
-	"`zone`	INTEGER NOT NULL,"\
+	"`allowedSunday`	INTEGER NOT NULL,"\
+	"`allowedTime`          TEXT NOT NULL,"\
+	"`bCheckIndex`          INTEGER NOT NULL,"\
+	"`index`                TEXT NOT NULL,"\
+	"`bCheckZone`           TEXT NOT NULL,"\
+	"`zone`                 INTEGER NOT NULL,"\
 	"`bCheckSubZone`	INTEGER NOT NULL,"\
-	"`subzone`	INTEGER NOT NULL,"\
+	"`subzone`              INTEGER NOT NULL,"\
 	"`bCheckMeasurementIndex`	INTEGER NOT NULL,"\
 	"`meaurementIndex`	INTEGER NOT NULL,"\
-	"`actionCode`	TEXT NOT NULL,"\
+	"`actionCode`           TEXT NOT NULL,"\
 	"`actionParameter`	NUMERIC NOT NULL,"\
 	"`measurementValue`	REAL,"\
 	"`measurementUnit`	INTEGER,"\
 	"`measurementCompare`	INTEGER,"\
-	"`comment`	TEXT"\
+	"`comment`              TEXT"\
     ")"
 
 // The internal table does not have an autoincrement id as it is filled with 
@@ -370,7 +350,7 @@
                 "meaurementIndex='%d',actionCode='%d',actionParameter='%s',measurementValue='%f',measurementUnit='%d',measurementCompare='%d'"\
                 ") WHERE id='%d'" 
 
-#define VSCPDB_DM_UPDATE_ITEM "UPDATE 'dm' SET ( %s='%s' ) WHERE id='%d' "\
+#define VSCPDB_DM_UPDATE_ITEM "UPDATE 'dm' SET ( %s='%s' ) WHERE id='%d' "
 
 #define VSCPDB_ORDINAL_DM_ID                        0   // 
 #define VSCPDB_ORDINAL_DM_ENABLE                    1   //
@@ -410,3 +390,5 @@
 
 
 #endif  // compile
+
+        

@@ -159,7 +159,7 @@ public:
     Set the variable name
     @param Variable name
   */
-  void setVariableName( wxString& nameVariable ) { m_nameVariable =nameVariable; };
+  void setVariableName( wxString& nameVariable ) { m_nameVariable = nameVariable; };
 
   /*!
     *** This is for future usage ***
@@ -759,7 +759,9 @@ public:
     /*
         Update item if database record
      */
-    bool updateDatabaseRecordItem( unsigned long id, wxString& strUpdateField, wxString& strUpdateValue );
+    bool updateDatabaseRecordItem( unsigned long id, 
+                                    const wxString& strUpdateField, 
+                                    const wxString& strUpdateValue );
     
     /*!
         Read DM record from database

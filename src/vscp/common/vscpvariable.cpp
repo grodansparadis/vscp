@@ -1438,16 +1438,16 @@ CVariableStorage::CVariableStorage()
     m_StockVariable.Add( _("vscp.loglevel.str") );
     m_StockVariable.Add( _("vscp.client.receivequeue.max") );
     m_StockVariable.Add( _("vscp.tcpip.address") );
-    m_StockVariable.Add( _("vscp.udp.isenabled") );
+    m_StockVariable.Add( _("vscp.udp.enable") );
     m_StockVariable.Add( _("vscp.udp.address") );
-    m_StockVariable.Add( _("vscp.mqtt.broker.isenabled") );
+    m_StockVariable.Add( _("vscp.mqtt.broker.enable") );
     m_StockVariable.Add( _("vscp.mqtt.broker.address") );
-    m_StockVariable.Add( _("vscp.coap.server.isenabled") );
+    m_StockVariable.Add( _("vscp.coap.server.enable") );
     m_StockVariable.Add( _("vscp.coap.server.address") );
-    m_StockVariable.Add( _("vscp.automation.heartbeat.isenabled") );
+    m_StockVariable.Add( _("vscp.automation.heartbeat.enable") );
     m_StockVariable.Add( _("vscp.automation.heartbeat.period") );
     m_StockVariable.Add( _("vscp.automation.heartbeat.last") );
-    m_StockVariable.Add( _("vscp.automation.segctrl-heartbeat.isEnabled") );
+    m_StockVariable.Add( _("vscp.automation.segctrl-heartbeat.enable") );
     m_StockVariable.Add( _("vscp.automation.segctrl.heartbeat.period") );
     m_StockVariable.Add( _("vscp.automation.segctrl.heartbeat.last") );
     m_StockVariable.Add( _("vscp.automation.longitude") );
@@ -1924,7 +1924,7 @@ bool CVariableStorage::findStockVariable(const wxString& name, CVSCPVariable& va
         var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
         var.setValue( gpctrlObj->m_strTcpInterfaceAddress );
     }
-    else if ( name.Lower() == _("vscp.udp.isenabled") ) {
+    else if ( name.Lower() == _("vscp.udp.enable") ) {
         var.setStockVariable();
         var.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );
         var.setPersistent( false );
@@ -1938,7 +1938,7 @@ bool CVariableStorage::findStockVariable(const wxString& name, CVSCPVariable& va
         var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
         var.setValue( gpctrlObj->m_strUDPInterfaceAddress );
     }
-    else if ( name.Lower() == _("vscp.mqtt.broker.isenabled") ) {
+    else if ( name.Lower() == _("vscp.mqtt.broker.enable") ) {
         var.setStockVariable();
         var.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );
         var.setPersistent( false );
@@ -1952,7 +1952,7 @@ bool CVariableStorage::findStockVariable(const wxString& name, CVSCPVariable& va
         var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
         var.setValue( gpctrlObj->m_strMQTTBrokerInterfaceAddress );
     }
-    else if ( name.Lower() == _("vscp.coap.server.isenabled") ) {
+    else if ( name.Lower() == _("vscp.coap.server.enable") ) {
         var.setStockVariable();
         var.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );
         var.setPersistent( false );
@@ -1966,7 +1966,7 @@ bool CVariableStorage::findStockVariable(const wxString& name, CVSCPVariable& va
         var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
         var.setValue( gpctrlObj->m_strCoAPServerInterfaceAddress );
     }
-    else if ( name.Lower() == _("vscp.automation.heartbeat.isenabled") ) {
+    else if ( name.Lower() == _("vscp.automation.heartbeat.enable") ) {
         var.setStockVariable();
         var.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );
         var.setPersistent( false );
@@ -1990,7 +1990,7 @@ bool CVariableStorage::findStockVariable(const wxString& name, CVSCPVariable& va
         var.setType( VSCP_DAEMON_VARIABLE_CODE_DATETIME );
         var.setValue( wxstr );
     }
-    else if ( name.Lower() ==  _("vscp.automation.segctrl-heartbeat.isEnabled") ) {
+    else if ( name.Lower() ==  _("vscp.automation.segctrl-heartbeat.enable") ) {
         var.setStockVariable();
         var.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );
         var.setPersistent( false );
@@ -2743,7 +2743,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
         return false;   // None writable
     }
    else if ( name.Lower() == _("vscp.host.fullname") ) {
-        //???
+        return false;   // None writable
     }
     else if ( name.Lower() == _("vscp.host.ip") ) {
         return false;   // None writable
@@ -2757,41 +2757,71 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
     else if ( name.Lower() ==  _("vscp.host.username") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.host.guid") ) {
-        //???
+    else if ( name.Lower() == _("vscp.host.guid") ) {        
+        gpctrlObj->m_guid.getFromString( var.getValue() );
     }
     else if ( name.Lower() == _("vscp.loglevel") ) {
-        //???
+        int val;
+        var.getValue( &val );
+        gpctrlObj->m_logLevel = val;
+        gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_LogLevel"), 
+                                                    val ? _("1") : _("0") );      
     }
     else if ( name.Lower() == _("vscp.loglevel.str") ) {
         return false;   // None writable
     }
     else if ( name.Lower() == _("vscp.client.receivequeue.max") ) {
-        //???
+        int val;
+        var.getValue( &val );
+        gpctrlObj->m_maxItemsInClientReceiveQueue = val;
+        gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd.maxqueue"), 
+                                                    wxString::Format( _("%d"), val ) );
     }
     else if ( name.Lower() == _("vscp.tcpip.address") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.udp.isenabled") ) {
-        //???
+    else if ( name.Lower() == _("vscp.udp.enable") ) {
+        int val;
+        var.getValue( &val );
+        gpctrlObj->m_bUDP = val;
+        gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscp.udp.enable"), 
+                                                    val ? _("1") : _("0") );
     }
     else if ( name.Lower() == _("vscp.udp.address") ) {
         //???
     }
-    else if ( name.Lower() == _("vscp.mqtt.broker.isenabled") ) {
-        //???
+    else if ( name.Lower() == _("vscp.mqtt.broker.enable") ) {
+        int val;
+        var.getValue( &val );
+        gpctrlObj->m_bMQTTBroker = val;
+        gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_MqttBroker_Enable"), 
+                                                    val ? _("1") : _("0") );
     }
     else if ( name.Lower() == _("vscp.mqtt.broker.address") ) {
         //???
     }
-    else if ( name.Lower() == _("vscp.coap.server.isenabled") ) {
-        //???
+    else if ( name.Lower() == _("vscp.coap.server.enable") ) {
+        int val;
+        var.getValue( &val );
+        gpctrlObj->m_bCoAPServer = val;
+        gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_CoapServer_Enable"), 
+                                                    val ? _("1") : _("0") );
     }
     else if ( name.Lower() == _("vscp.coap.server.address") ) {
         //???
     }
-    else if ( name.Lower() == _("vscp.automation.heartbeat.isenabled") ) {
-        //???
+    else if ( name.Lower() == _("vscp.automation.heartbeat.enable") ) {
+        int val;
+        var.getValue( &val );
+        gpctrlObj->m_logLevel = val;
+        gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_LogLevel"), 
+                                                    val ? _("1") : _("0") );
     }
     else if ( name.Lower() == _("vscp.automation.heartbeat.period") ) {
         //???
@@ -2799,8 +2829,13 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
     else if ( name.Lower() == _("vscp.automation.heartbeat.last") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() ==  _("vscp.automation.segctrl-heartbeat.isEnabled") ) {
-        //???
+    else if ( name.Lower() ==  _("vscp.automation.segctrl-heartbeat.enable") ) {
+        int val;
+        var.getValue( &val );
+        gpctrlObj->m_logLevel = val;
+        gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_LogLevel"), 
+                                                    val ? _("1") : _("0") );
     }
     else if ( name.Lower() == _("vscp.automation.segctrl.heartbeat.period") ) {
         //???
@@ -2815,16 +2850,36 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
         //???
     }
     else if ( name.Lower() == _("vscp.automation.issendtwilightsunriseevent") ) {
-        //???
+        int val;
+        var.getValue( &val );
+        gpctrlObj->m_logLevel = val;
+        gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_LogLevel"), 
+                                                    val ? _("1") : _("0") );
     }
     else if ( name.Lower() == _("vscp.automation.issendtwilightsunriseevent") ) {
-        //???
+        int val;
+        var.getValue( &val );
+        gpctrlObj->m_logLevel = val;
+        gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_LogLevel"), 
+                                                    val ? _("1") : _("0") );
     }
     else if ( name.Lower() == _("vscp.automation.issendsunsetevent") ) {
-        //???
+        int val;
+        var.getValue( &val );
+        gpctrlObj->m_logLevel = val;
+        gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_LogLevel"), 
+                                                    val ? _("1") : _("0") );
     }
     else if ( name.Lower() == _("vscp.automation.issendtwilightsunsetevent") ) {
-        //???
+        int val;
+        var.getValue( &val );
+        gpctrlObj->m_logLevel = val;
+        gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_LogLevel"), 
+                                                    val ? _("1") : _("0") );
     }
     else if ( name.Lower() == _("vscp.workingfolder") ) {
         //???
@@ -2867,7 +2922,12 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
         //???
     }
     else if ( name.Lower() == _("vscp.websrv.directorylistings.enable") ) {
-        //???
+        int val;
+        var.getValue( &val );
+        gpctrlObj->m_logLevel = val;
+        gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_LogLevel"), 
+                                                    val ? _("1") : _("0") );
     }
     else if ( name.Lower() == _("vscp.websrv.hidefile.pattern") ) {
         //???
@@ -2891,7 +2951,12 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 // *****************************************************************************
 
     else if ( name.Lower() == _("vscp.websocket.auth.enable") ) {
-        //???
+        int val;
+        var.getValue( &val );
+        gpctrlObj->m_logLevel = val;
+        gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_LogLevel"), 
+                                                    val ? _("1") : _("0") );
     }
 
 
@@ -2901,7 +2966,12 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 
 
     else if ( name.Lower() == _("vscp.dm.logging.enable") ) {
-        //???
+        int val;
+        var.getValue( &val );
+        gpctrlObj->m_logLevel = val;
+        gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_LogLevel"), 
+                                                    val ? _("1") : _("0") );
     }
     else if ( name.Lower() == _("vscp.dm.logging.path") ) {
         //???
@@ -2927,12 +2997,22 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 
     // Enable database logging
     else if ( name.Lower() == _("vscp.log.database.enable") ) {
-        //???
+        int val;
+        var.getValue( &val );
+        gpctrlObj->m_logLevel = val;
+        gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_LogLevel"), 
+                                                    val ? _("1") : _("0") );
     }
     
     // General
     else if ( name.Lower() == _("vscp.log.general.enable") ) {
-        //???
+        int val;
+        var.getValue( &val );
+        gpctrlObj->m_logLevel = val;
+        gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_LogLevel"), 
+                                                    val ? _("1") : _("0") );
     }
     else if ( name.Lower() == _("vscp.log.general.path") ) {
         //???
@@ -2940,7 +3020,12 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 
     // Access
     else if ( name.Lower() == _("vscp.log.access.enable") ) {
-        //???
+        int val;
+        var.getValue( &val );
+        gpctrlObj->m_logLevel = val;
+        gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_LogLevel"), 
+                                                    val ? _("1") : _("0") );
     }
     else if ( name.Lower() == _("vscp.log.access.path") ) {
         //???
@@ -2948,7 +3033,12 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 
     // Security
     else if ( name.Lower() == _("vscp.log.security.enable") ) {
-        //???
+        int val;
+        var.getValue( &val );
+        gpctrlObj->m_logLevel = val;
+        gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_LogLevel"), 
+                                                    val ? _("1") : _("0") );
     }   
     else if ( name.Lower() == _("vscp.log.security.path") ) {
         //???
@@ -3256,7 +3346,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 var.getValue( &bVal );
                 // Change in memory record
                 if ( NULL != pdm ) {
-                    pdm->m_timeAllow.allowWednessday( bVal );
+                    pdm->m_timeAllow.allowWednesday( bVal );
                 }
                 bVal ? strValue=_("1") : _("0");
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
@@ -3599,16 +3689,16 @@ uint32_t CVariableStorage::findNonPersistentVariable(const wxString& name, CVSCP
     
     // Get the data for the variable
     if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
-        variable.setID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_ID ) );
-        variable.m_lastChanged.ParseDateTime( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_LASTCHANGE ) );
-        variable.setName( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_NAME ) ) );
-        variable.setType( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_TYPE ) );
-        variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_VALUE ) ) );
+        variable.setID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_ID ) );
+        variable.m_lastChanged.ParseDateTime( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_LASTCHANGE ) );
+        variable.setName( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NAME ) ) );
+        variable.setType( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_TYPE ) );
+        variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_VALUE ) ) );
         variable.setPersistent( false );
-        variable.setUserID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_LINK_TO_USER ) ); 
-        variable.setGroupID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_LINK_TO_GROUP ) );
-        variable.setAccessRights( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_PERMISSION ) );
-        variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_NOTE ) ) );
+        variable.setUserID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER ) ); 
+        variable.setGroupID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_GROUP ) );
+        variable.setAccessRights( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_PERMISSION ) );
+        variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NOTE ) ) );
     }
     
     sqlite3_finalize( ppStmt );
@@ -3645,16 +3735,16 @@ uint32_t CVariableStorage::findPersistentVariable(const wxString& name, CVSCPVar
     
     // Get the result
     if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
-        variable.setID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_ID ) );
-        variable.m_lastChanged.ParseDateTime( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_LASTCHANGE ) );
-        variable.setName( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_NAME ) ) );
-        variable.setType( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_TYPE ) );
-        variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_VALUE ) ) );
-        variable.setPersistent( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_PERSISTENT ) ? true : false );
-        variable.setUserID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_LINK_TO_USER ) );
-        variable.setGroupID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_LINK_TO_GROUP ) );
-        variable.setAccessRights( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_PERMISSION ) );
-        variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_NOTE ) ) );
+        variable.setID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_ID ) );
+        variable.m_lastChanged.ParseDateTime( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_LASTCHANGE ) );
+        variable.setName( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NAME ) ) );
+        variable.setType( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_TYPE ) );
+        variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_VALUE ) ) );
+        variable.setPersistent( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_PERSISTENT ) ? true : false );
+        variable.setUserID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER ) );
+        variable.setGroupID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_GROUP ) );
+        variable.setAccessRights( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_PERMISSION ) );
+        variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NOTE ) ) );
     }
     
     sqlite3_finalize( ppStmt );
@@ -3731,29 +3821,29 @@ bool CVariableStorage::listItem( varQuery *pq, CVSCPVariable& variable )
     }
     else if ( VARIABLE_INTERNAL == pq->table  ) {
         if ( SQLITE_ROW != sqlite3_step( pq->ppStmt ) ) return false; 
-        variable.setID( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_ID ) );
-        variable.m_lastChanged.ParseDateTime( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_LASTCHANGE ) );
-        variable.setName( wxString::FromUTF8( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_NAME ) ) );
-        variable.setType( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_TYPE ) );
-        variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_VALUE ) ) );
+        variable.setID( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_ID ) );
+        variable.m_lastChanged.ParseDateTime( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_LASTCHANGE ) );
+        variable.setName( wxString::FromUTF8( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_NAME ) ) );
+        variable.setType( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_TYPE ) );
+        variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_VALUE ) ) );
         variable.setPersistent( false );
-        variable.setUserID( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_LINK_TO_USER ) ); 
-        variable.setGroupID( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_LINK_TO_GROUP ) );
-        variable.setAccessRights( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_PERMISSION ) );
-        variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_NOTE ) ) );
+        variable.setUserID( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER ) ); 
+        variable.setGroupID( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_GROUP ) );
+        variable.setAccessRights( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_PERMISSION ) );
+        variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_NOTE ) ) );
     }
     else if ( VARIABLE_EXTERNAL == pq->table  ) {
         if ( SQLITE_ROW != sqlite3_step( pq->ppStmt ) ) return false;
-        variable.setID( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_ID ) );
-        variable.m_lastChanged.ParseDateTime( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_LASTCHANGE ) );
-        variable.setName( wxString::FromUTF8( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_NAME ) ) );
-        variable.setType( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_TYPE ) );
-        variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_VALUE ) ) );
-        variable.setPersistent( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_PERSISTENT ) ? true : false );
-        variable.setUserID( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_LINK_TO_USER ) );
-        variable.setGroupID( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_LINK_TO_GROUP ) );
-        variable.setAccessRights( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_PERMISSION ) );
-        variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_NOTE ) ) );
+        variable.setID( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_ID ) );
+        variable.m_lastChanged.ParseDateTime( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_LASTCHANGE ) );
+        variable.setName( wxString::FromUTF8( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_NAME ) ) );
+        variable.setType( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_TYPE ) );
+        variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_VALUE ) ) );
+        variable.setPersistent( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_PERSISTENT ) ? true : false );
+        variable.setUserID( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER ) );
+        variable.setGroupID( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_GROUP ) );
+        variable.setAccessRights( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_PERMISSION ) );
+        variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_NOTE ) ) );
     }
     else {
         return false;
@@ -3970,7 +4060,7 @@ bool CVariableStorage::remove( CVSCPVariable& variable )
 bool CVariableStorage::doCreateExternalVariableTable( void )
 {
     char *pErrMsg = 0;
-    const char *psql = VSCPDB_VARIABLE_EXT_CREATE; 
+    const char *psql = VSCPDB_VARIABLE_CREATE; 
     
     // Check if database is open
     if ( NULL == m_db_vscp_external_variable ) return false;
@@ -3992,7 +4082,7 @@ bool CVariableStorage::doCreateExternalVariableTable( void )
 bool CVariableStorage::doCreateInternalVariableTable( void )
 {
     char *pErrMsg = 0;
-    const char *psql = VSCPDB_VARIABLE_INT_CREATE;;
+    const char *psql = VSCPDB_VARIABLE_CREATE;
     
     // Check if database is open
     if ( NULL == m_db_vscp_internal_variable ) return false;
@@ -4182,16 +4272,16 @@ bool CVariableStorage::save( wxString& path, uint8_t whatToSave )
             
             CVSCPVariable variable;
             
-            variable.setID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_ID ) );
-            variable.m_lastChanged.ParseDateTime( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_LASTCHANGE ) );
-            variable.setName( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_NAME ) ) );
-            variable.setType( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_TYPE ) );
-            variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_VALUE ) ) );
+            variable.setID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_ID ) );
+            variable.m_lastChanged.ParseDateTime( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_LASTCHANGE ) );
+            variable.setName( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NAME ) ) );
+            variable.setType( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_TYPE ) );
+            variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_VALUE ) ) );
             variable.setPersistent( false );
-            variable.setUserID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_LINK_TO_USER ) ); 
-            variable.setGroupID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_LINK_TO_GROUP ) );
-            variable.setAccessRights( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_PERMISSION ) );
-            variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_INT_NOTE ) ) );
+            variable.setUserID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER ) ); 
+            variable.setGroupID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_GROUP ) );
+            variable.setAccessRights( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_PERMISSION ) );
+            variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NOTE ) ) );
             
             writeVariableToXmlFile( pFileStream, variable );
         }
@@ -4218,16 +4308,16 @@ bool CVariableStorage::save( wxString& path, uint8_t whatToSave )
             
             CVSCPVariable variable;
             
-            variable.setID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_ID ) );
-            variable.m_lastChanged.ParseDateTime( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_LASTCHANGE ) );
-            variable.setName( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_NAME ) ) );
-            variable.setType( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_TYPE ) );
-            variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_VALUE ) ) );
-            variable.setPersistent( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_PERSISTENT ) ? true : false );
-            variable.setUserID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_LINK_TO_USER ) );
-            variable.setGroupID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_LINK_TO_GROUP ) );
-            variable.setAccessRights( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_PERMISSION ) );
-            variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_EXT_NOTE ) ) );
+            variable.setID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_ID ) );
+            variable.m_lastChanged.ParseDateTime( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_LASTCHANGE ) );
+            variable.setName( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NAME ) ) );
+            variable.setType( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_TYPE ) );
+            variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_VALUE ) ) );
+            variable.setPersistent( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_PERSISTENT ) ? true : false );
+            variable.setUserID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER ) );
+            variable.setGroupID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_GROUP ) );
+            variable.setAccessRights( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_PERMISSION ) );
+            variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NOTE ) ) );
             
             writeVariableToXmlFile( pFileStream, variable );
         }

@@ -455,12 +455,19 @@ public:
      * @return true on success
      */
      bool dbReadConfiguration( void );
-     
+          
      /*!
       * Create configuration table
       * @return true on success
       */
      bool doCreateConfigurationTable( void );
+     
+     /*
+      * Update field in settings table
+      */
+     bool updateConfigurationRecordItem( unsigned long id, 
+                                            const wxString& strUpdateField, 
+                                            const wxString& strUpdateValue );
      
      /*!
       * Create log database
@@ -629,6 +636,8 @@ public:
 
     wxFileName m_path_db_vscp_daemon;   // Path to the VSCP daemon database
     sqlite3 *m_db_vscp_daemon;
+    /// Mutex to protect variables
+    wxMutex m_configMutex;              // Mutex for the configuration table
 
     wxFileName m_path_db_vscp_data;     // Path to the VSCP data database
     sqlite3 *m_db_vscp_data;

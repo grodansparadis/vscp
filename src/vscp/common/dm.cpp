@@ -4492,13 +4492,15 @@ bool CDM::updateDatabaseRecord( dmElement& dm )
 // updateDatabaseRecordItem
 //
 
-bool CDM::updateDatabaseRecordItem( unsigned long id, wxString& strUpdateField, wxString& strUpdateValue )
+bool CDM::updateDatabaseRecordItem( unsigned long id, 
+                                        const wxString& strUpdateField, 
+                                        const wxString& strUpdateValue )
 {
     char *pErrMsg;
             
     // Database file must be open
     if ( NULL == m_db_vscp_dm ) {
-        logMsg( _("DM: Add record. Database file is not open.\n") );
+        logMsg( _("DM: Update record. Database file is not open.\n") );
         return false;
     }
     

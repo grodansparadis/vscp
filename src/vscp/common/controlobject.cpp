@@ -219,7 +219,7 @@ CControlObject::CControlObject()
     strcpy( m_authDomain, "mydomain.com" );
 
     // Set Default Log Level
-    m_logLevel = 0;
+    m_logLevel = DAEMON_LOGMSG_NORMAL;
 
     // General logfile is enabled by default
     m_bLogGeneralEnable = true;
@@ -2974,12 +2974,18 @@ bool CControlObject::doCreateConfigurationTable( void )
     // Check if database is open
     if ( NULL == m_db_vscp_daemon ) return false;
     
+    m_configMutex.Lock();
+    
     if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
         fprintf( stderr, 
                     "Creation of the VSCP settings database failed with message %s", 
                     pErrMsg );
         return false;
     }
+
+    // TODO Write initial data
+    
+    m_configMutex.Unlock();
     
     return true;
 }
@@ -3447,6 +3453,41 @@ bool CControlObject::dbReadConfiguration( void )
     return true;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// updateConfigurationRecordItem
+//
+
+bool CControlObject::updateConfigurationRecordItem( unsigned long id, 
+                                                        const wxString& strUpdateField, 
+                                                        const wxString& strUpdateValue )
+{
+    char *pErrMsg;
+            
+    // Database file must be open
+    if ( NULL == m_db_vscp_daemon ) {
+        logMsg( _("Settings update: Update record. Database file is not open.\n") );
+        return false;
+    }
+    
+    m_configMutex.Lock();
+    
+    char *sql = sqlite3_mprintf( VSCPDB_CONFIG_UPDATE_ITEM, 
+                                    (const char *)strUpdateField.mbc_str(),
+                                    (const char *)strUpdateValue.mbc_str(),
+                                    id );
+    if ( SQLITE_OK != sqlite3_exec( m_db_vscp_daemon, 
+                                            sql, NULL, NULL, &pErrMsg)) {
+        sqlite3_free( sql );
+        m_configMutex.Unlock();
+        return false;
+    }
+
+    sqlite3_free( sql );
+    
+    m_configMutex.Unlock();
+    
+    return true;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3468,12 +3509,17 @@ bool CControlObject::doCreateLogTable( void )
         return false;
     }
     
+    m_configMutex.Lock();
+    
     if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_log, psql, NULL, NULL, &pErrMsg ) ) {
         fprintf( stderr, 
                     "Failed to create VSCP log database with error %s.",
                     pErrMsg );
+        m_configMutex.Unlock();
         return false;
     }
+    
+    m_configMutex.Unlock();
     
     return true;
 }
