@@ -32,74 +32,74 @@
 //*****************************************************************************
 
 #define VSCPDB_SETTINGS_CREATE "CREATE TABLE \"Settings\" ("\
-	"`vscpd_idx_settings`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-	"`vscpd_dbversion`                  INTEGER NOT NULL DEFAULT 1,"\
-	"`vscpd_LogLevel`                   INTEGER DEFAULT 1,"\
-        "'vscpd.maxqueue'                   INTEGER DEFAULT 8191,"\
-	"`vscpd_RunAsUser`                  TEXT DEFAULT '',"\
-	"`vscpd_GUID`                       TEXT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00',"\
-	"`vscpd_Name`                       TEXT,"\
-	"`vscpd_Syslog_Enable`              INTEGER DEFAULT 1,"\
-        "`vscpd_LogDB_Enable`               INTEGER DEFAULT 1,"\
-        "`vscpd_db_log_path`                TEXT"\
-	"`vscpd_GeneralLogFile_Enable`      INTEGER DEFAULT 1,"\
-	"`vscpd_GeneralLogFile_Path`        TEXT,"\
-	"`vscpd_SecurityLogFile_Enable`     INTEGER DEFAULT 1,"\
-	"`vscpd_SecurityLogFile_Path`       TEXT,"\
-	"`vscpd_AccessLogFile_Enable`       INTEGER DEFAULT 1,"\
-	"`vscpd_AccessLogFile_Path`         TEXT,"\
-	"`vscpd_TcpipInterface_Address`     TEXT,"\
-	"`vscpd_MulticastInterface_Port`    TEXT,"\
-	"`vscpd_MulicastInterface_ttl`      INTEGER,"\
-	"`vscpd_UdpSimpleInterface_Enable`  INTEGER,"\
-	"`vscpd_UdpSimpleInterface_Address` TEXT,"\
-	"`vscpd_DM_DB_Path`                 TEXT,"\
-        "`vscpd_DM_XML_Path`                TEXT,"\
-	"`vscpd_DM_Logging_Enable`          INTEGER,"\
-	"`vscpd_DM_Logging_Path`            TEXT,"\
-	"`vscpd_DM_Logging_Level`           INTEGER,"\
-	"`vscpd_Variables_DB_Path`          TEXT,"\
-        "`vscpd_Variables_XML_Path`         TEXT,"\
-	"`vscpd_VSCPD_DefaultClientBufferSize`      INTEGER,"\
-	"`vscpd_Webserver_Authentication_enable`    INTEGER,"\
-	"`vscpd_Webserver_RootPath`         TEXT,"\
-	"`vscpd_Webserver_Address`          TEXT,"\
-	"`vscpd_Webserver_PathCert`         TEXT,"\
-	"`vscpd_Webserver_AuthDomain`       TEXT DEFAULT 'mydomain.com',"\
-	"`vscpd_Webserver_CgiInterpreter`   TEXT,"\
-	"`vscpd_Webserver_CgiPattern`       TEXT,"\
-	"`vscpd_Webserver_EnableDirectoryListings`  INTEGER,"\
-	"`vscpd_Webserver_HideFilePatterns` TEXT,"\
-	"`vscpd_Webserver_IndexFiles`       TEXT,"\
-	"`vscpd_Webserver_ExtraMimeTypes`   TEXT,"\
-	"`vscpd_Webserver_UrlRewrites`      TEXT,"\
-	"`vscpd_Webserver_SSIPattern`       NUMERIC,"\
-	"`vscpd_Webserver_RunAsUser`        TEXT,"\
-	"`vscpd_Webserver_PerDirectoryAuthFile`     TEXT,"\
-	"`vscpd_Webserver_GlobalAuthFile`   TEXT,"\
-	"`vscpd_Webserver_IpAcl`           TEXT,"\
-	"`vscpd_Webserver_DavDocumentRoot`  TEXT,"\
-	"`vscpd_WebSocket_EnableAuth`       INTEGER,"\
-	"`vscpd_MqttBroker_Enable`          INTEGER,"\
-	"`vscpd_MqttBroker_Address`            TEXT,"\
-	"`vscpd_CoapServer_Enable`          INTEGER,"\
-	"`vscpd_CoapServer_Address`            TEXT,"\
-	"`vscpd_Automation_Enable`          INTEGER,"\
-	"`vscpd_Automation_Zone`            INTEGER,"\
-	"`vscpd_Automation_SubZone`         INTEGER,"\
-	"`vscpd_Automation_Longitude`       REAL,"\
-	"`vscpd_Automation_Latitude`                        REAL,"\
-	"`vscpd_Automation_Timezone`                        TEXT,"\
-	"`vscpd_Automation_Sunrise_Enable`          INTEGER,"\
-	"`vscpd_Automation_Sunset_Enable`           TEXT,"\
-	"`vscpd_Automation_SunsetTwilight_Enable`   INTEGER,"\
-	"`vscpd_Automation_SunriseTwilight_Enable`  INTEGER,"\
-	"`vscpd_Automation_SegmentControllerEvent_Enable`   INTEGER,"\
-	"`vscpd_Automation_SegmentControllerEvent_Interval` INTEGER,"\
-	"`vscpd_Automation_HeartbeatEvent_Enable`   INTEGER,"\
-	"`vscpd_Automation_HeartbeatEvent_Interval` INTEGER,"\
-	"`vscpd_db_data_path`                       TEXT,"\
-        "`vscpd_db_vscpconf_path`                   TEXT,"\
+	"`vscpd_idx_settings`                               INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
+	"`vscpd_dbversion`                                  INTEGER NOT NULL DEFAULT 1,"\
+	"`vscpd_LogLevel`                                   INTEGER DEFAULT 1,"\
+        "'vscpd.maxqueue'                                   INTEGER DEFAULT 8191,"\
+	"`vscpd_RunAsUser`                                  TEXT DEFAULT '',"\
+	"`vscpd_GUID`                                       TEXT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00',"\
+	"`vscpd_Name`                                       TEXT DEAFULT 'THE-VSCP-DAEMON',"\
+	"`vscpd_Syslog_Enable`                              INTEGER DEFAULT 1,"\
+        "`vscpd_LogDB_Enable`                               INTEGER DEFAULT 1,"\
+        "`vscpd_db_log_path`                                TEXT DEFAULT '/srv/vscp/log'"\
+	"`vscpd_GeneralLogFile_Enable`                      INTEGER DEFAULT 1,"\
+	"`vscpd_GeneralLogFile_Path`                        TEXT DEFAULT '/var/log/vscp/vscp_log_general',"\
+	"`vscpd_SecurityLogFile_Enable`                     INTEGER DEFAULT 1,"\
+	"`vscpd_SecurityLogFile_Path`                       TEXT DEFAULT '/var/log/vscp/vscp_log_security',"\
+	"`vscpd_AccessLogFile_Enable`                       INTEGER DEFAULT 1,"\
+	"`vscpd_AccessLogFile_Path`                         TEXT DEFAULT '/var/log/vscp/vscp_log_access',"\
+	"`vscpd_TcpipInterface_Address`                     TEXT DEFAULT '9598',"\
+	"`vscpd_MulticastInterface_Port`                    TEXT DEFAULT '9598',"\
+	"`vscpd_MulicastInterface_ttl`                      INTEGER DEFAULT 1,"\
+	"`vscpd_UdpSimpleInterface_Enable`                  INTEGER DEFAULT 0,"\
+	"`vscpd_UdpSimpleInterface_Address`                 TEXT DEFAULT 'udp://:9598',"\
+	"`vscpd_DM_DB_Path`                                 TEXT DEFAULT '/srv/vscp/dm.sqlite3',"\
+        "`vscpd_DM_XML_Path`                                TEXT DEFAULT '/srv/vscp/dm.xml',"\
+	"`vscpd_DM_Logging_Enable`                          INTEGER DEFAULT 1,"\
+	"`vscpd_DM_Logging_Path`                            TEXT DEFAULT '/var/log/vscp/vscp_log_dm',"\
+	"`vscpd_DM_Logging_Level`                           INTEGER DEFAULT 1,"\
+	"`vscpd_Variables_DB_Path`                          TEXT DEFAULT '/srv/vscp/variables.sqlite3',"\
+        "`vscpd_Variables_XML_Path`                         TEXT DEFAULT '/srv/vscp/variables.xml',"\
+	"`vscpd_VSCPD_DefaultClientBufferSize`              INTEGER DEFAULT 1024,"\
+	"`vscpd_Webserver_Authentication_enable`            INTEGER DEFAULT 1,"\
+	"`vscpd_Webserver_RootPath`                         TEXT DEFAULT '/srv/vscp/web',"\
+	"`vscpd_Webserver_Address`                          TEXT DEFAULT '8080',"\
+	"`vscpd_Webserver_PathCert`                         TEXT DEFAULT '',"\
+	"`vscpd_Webserver_AuthDomain`                       TEXT DEFAULT 'mydomain.com',"\
+	"`vscpd_Webserver_CgiInterpreter`                   TEXT DEFAULT '',"\
+	"`vscpd_Webserver_CgiPattern`                       TEXT DEFAULT '',"\
+	"`vscpd_Webserver_EnableDirectoryListings`          INTEGER DEFAULT 0,"\
+	"`vscpd_Webserver_HideFilePatterns`                 TEXT DEFAULT '',"\
+	"`vscpd_Webserver_IndexFiles`                       TEXT DEFAULT '',"\
+	"`vscpd_Webserver_ExtraMimeTypes`                   TEXT DEFAULT '',"\
+	"`vscpd_Webserver_UrlRewrites`                      TEXT DEFAULT '',"\
+	"`vscpd_Webserver_SSIPattern`                       TEXT DEFAULT '',"\
+	"`vscpd_Webserver_RunAsUser`                        TEXT DEFAULT '',"\
+	"`vscpd_Webserver_PerDirectoryAuthFile`             TEXT DEFAULT '',"\
+	"`vscpd_Webserver_GlobalAuthFile`                   TEXT DEFAULT '',"\
+	"`vscpd_Webserver_IpAcl`                            TEXT DEFAULT '',"\
+	"`vscpd_Webserver_DavDocumentRoot`                  TEXT DEFAULT '',"\
+	"`vscpd_WebSocket_EnableAuth`                       INTEGER DEFAULT 1,"\
+	"`vscpd_MqttBroker_Enable`                          INTEGER DEFAULT 0,"\
+	"`vscpd_MqttBroker_Address`                         TEXT DEFAULT '1883',"\
+	"`vscpd_CoapServer_Enable`                          INTEGER TEXT DEFAULT 0,"\
+	"`vscpd_CoapServer_Address`                         TEXT TEXT DEFAULT 'udp://:5683',"\
+	"`vscpd_Automation_Enable`                          INTEGER DEFAULT 1,"\
+	"`vscpd_Automation_Zone`                            INTEGER DEFAULT 1,"\
+	"`vscpd_Automation_SubZone`                         INTEGER DEFAULT 2,"\
+	"`vscpd_Automation_Longitude`                       REAL DEFAULT 1,"\
+	"`vscpd_Automation_Latitude`                        REAL DEFAULT 1,"\
+	"`vscpd_Automation_Timezone`                        TEXT DEFAULT '',"\
+	"`vscpd_Automation_Sunrise_Enable`                  INTEGER DEFAULT 1,"\
+	"`vscpd_Automation_Sunset_Enable`                   INTEGER DEFAULT 1,"\
+	"`vscpd_Automation_SunsetTwilight_Enable`           INTEGER DEFAULT 1,"\
+	"`vscpd_Automation_SunriseTwilight_Enable`          INTEGER DEFAULT 1,"\
+	"`vscpd_Automation_SegmentControllerEvent_Enable`   INTEGER DEFAULT 1,"\
+	"`vscpd_Automation_SegmentControllerEvent_Interval` INTEGER DEFAULT 1,"\
+	"`vscpd_Automation_HeartbeatEvent_Enable`           INTEGER DEFAULT 1,"\
+	"`vscpd_Automation_HeartbeatEvent_Interval`         INTEGER DEFAULT 60,"\
+	"`vscpd_db_data_path`                               TEXT DEFAULT '/var/log/vscp/vscpdata.sqlite3',"\
+        "`vscpd_db_vscpconf_path`                           TEXT DEFAULT '/var/log/vscp/vscpd.sqlite3',"\
         ");";
 
 #define VSCPDB_CONFIG_SET_DEFAULTS  ""        
@@ -176,11 +176,15 @@
 #define VSCPDB_ORDINAL_CONFIG_DB_VSCPDATA_PATH                              65
 #define VSCPDB_ORDINAL_CONFIG_DB_VSCPCONF_PATH                              66
 
+//*****************************************************************************
+//                                  LOG
+//*****************************************************************************
+
 #define VSCPDB_LOG_CREATE "CREATE TABLE \"log\" ("\
 	"`idx_log`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-	"`type`	INTEGER,"\
+	"`type`	INTEGER DEFAULT 1,"\
 	"`date`	TEXT,"\
-	"`level`	INTEGER,"\
+	"`level`	INTEGER DEFAULT 1,"\
 	"`message`	TEXT"\
         ");";\
 
@@ -199,7 +203,7 @@
 	"`username`	TEXT NOT NULL UNIQUE,"\
 	"`password`	TEXT NOT NULL,"\
 	"`fullname`	TEXT NOT NULL,"\
-	"`permission`	INTEGER NOT NULL,"\
+	"`permission`	INTEGER DEFAULT 777,"\
 	"`note`	TEXT NOT NULL"\
         ");"
 
@@ -217,7 +221,7 @@
 #define VSCPDB_GROUP_CREATE "CREATE TABLE 'group' ("\
 	"`idx_group`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`groupname`	TEXT NOT NULL,"\
-	"`permission`	INTEGER NOT NULL,"\
+	"`permission`	INTEGER DEFAULT 777,"\
 	"`note`	TEXT"\
         ");"
 

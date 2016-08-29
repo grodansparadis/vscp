@@ -2345,7 +2345,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
         var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
         var.setValue( gpctrlObj->m_path_db_vscp_data.GetFullPath() );
     } 
-    else if ( name.Lower() ==  _("vscp.database.daemon.path") ) {
+    else if ( name.Lower() ==  _("vscp.database.vscpdconfig.path") ) {
         var.setStockVariable();
         var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
         var.setPersistent( false );
@@ -3294,7 +3294,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                                                     _("vscpd_db_data_path"), 
                                                     strval );
     } 
-    else if ( name.Lower() ==  _("vscp.database.daemon.path") ) {
+    else if ( name.Lower() ==  _("vscp.database.vscpdconfig.path") ) {
         wxString strval;
         strval = var.getValue();
         gpctrlObj->m_path_db_vscp_daemon.SetPath( strval );
