@@ -933,7 +933,7 @@ void *VSCPWebServerThread::Entry()
 
     mg_mgr_init( &gmgr, m_pCtrlObject );
     nc = mg_bind( &gmgr,
-                    m_pCtrlObject->m_portWebServer.mbc_str(),
+                    m_pCtrlObject->m_strWebServerInterfaceAddress.mbc_str(),
                     VSCPWebServerThread::websrv_event_handler );
 
     // Unable to bind to port
@@ -941,12 +941,12 @@ void *VSCPWebServerThread::Entry()
 #ifndef WIN32
         syslog( LOG_ERR,
                 "Webserver: Could not use port %s (%s). Terminating\n",
-                (const char *)m_pCtrlObject->m_portWebServer.mbc_str(),
+                (const char *)m_pCtrlObject->m_strWebServerInterfaceAddress.mbc_str(),
                 strerror( errno ) );
 #endif
         wxString strErr =
                  wxString::Format( _("Webserver: Could not use port %s (%s). Terminating\n"),
-                                        (const char *)m_pCtrlObject->m_portWebServer.mbc_str(),
+                                        (const char *)m_pCtrlObject->m_strWebServerInterfaceAddress.mbc_str(),
                                         strerror( errno ) );
                 m_pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_GENERAL );
 
@@ -4843,7 +4843,7 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     buildPage += _("<b>Web server <b>interface:</b></b> ");
 
     buildPage += _("enabled on interface '");
-    buildPage += pObject->m_portWebServer;
+    buildPage += pObject->m_strWebServerInterfaceAddress;
     buildPage += _( "<br>&nbsp;&nbsp;&nbsp;&nbsp;<b>Autentication:</b> " );
     if ( pObject->m_bDisableSecurityWebServer ) {
         buildPage += _( "turned off." );
@@ -4932,7 +4932,7 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     buildPage += _("enabled.");
     buildPage += _("<br>");
     buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to DM file:</b> ");
-    buildPage += pObject->m_dm.m_configPath;
+    buildPage += pObject->m_dm.m_staticXMLPath;
     buildPage += _("<br>");
     if ( pObject->m_dm.m_bLogEnable ) {
         buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>DM logging</b> is enabled.");
@@ -4952,7 +4952,7 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     buildPage += _("<div id=\"small\">");
     buildPage += _("<b>Variable handling :</b> ");
     buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to variables:</b> ");
-    buildPage += pObject->m_VSCP_Variables.m_configPath;
+    buildPage += pObject->m_VSCP_Variables.m_xmlPath;
     buildPage += _("</div>");
 
     buildPage += _("<hr>");

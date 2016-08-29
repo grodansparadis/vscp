@@ -921,7 +921,7 @@ public:
     wxDateTime m_lastTime;
 
     /// Path to DM XML file
-    wxString m_configPath;
+    wxString m_staticXMLPath;
     
     // Path to the VSCP DM database
     wxFileName m_path_db_vscp_dm;  

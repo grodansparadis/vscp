@@ -3346,10 +3346,10 @@ CDM::CDM( CControlObject *ctrlObj )
 
     // Set the default dm configuration path
 #ifdef WIN32
-    m_configPath = wxStandardPaths::Get().GetConfigDir();
-    m_configPath += _("/vscp/dm.xml");
+    m_staticXMLPath = wxStandardPaths::Get().GetConfigDir();
+    m_staticXMLPath += _("/vscp/dm.xml");
 #else
-    m_configPath = _("/srv/vscp/dm.xml");
+    m_staticXMLPath = _("/srv/vscp/dm.xml");
 #endif
 #endif
 
@@ -3398,7 +3398,7 @@ CDM::CDM( CControlObject *ctrlObj )
     m_path_db_vscp_dm += _("/vscp/vscp_dm.sqlite3");
 #endif
 #else
-	m_configPath = _("/srv/vscp/dm.xml");
+	m_staticXMLPath = _("/srv/vscp/dm.xml");
         m_path_db_vscp_dm = _("/srv/vscp/vscp_dm.sqlite3");
 #endif
         
@@ -3524,7 +3524,7 @@ void CDM::init( void )
 
     wxString wxlogmsg =
     wxString::Format(_("DM engine started. DM from [%s]\n"),
-                        (const char *)m_configPath.c_str() );
+                        (const char *)m_staticXMLPath.c_str() );
     logMsg( wxlogmsg );
 }
 
@@ -4949,16 +4949,16 @@ bool CDM::loadFromXML( void )
     logMsg( _("DM: Loading decision matrix from :\n") );
 
     // debug print configuration path
-    logMsg( m_configPath + _("\n") );
+    logMsg( m_staticXMLPath + _("\n") );
 
     // File must exist
-    if ( !wxFile::Exists( m_configPath ) ) {
+    if ( !wxFile::Exists( m_staticXMLPath ) ) {
         logMsg( _("DM: file does not exist.\n") );
         return false;
     }
 
     wxXmlDocument doc;
-    if ( !doc.Load ( m_configPath ) ) {
+    if ( !doc.Load ( m_staticXMLPath ) ) {
         logMsg( _("Faild to load DM. Check format!\n") );
         return false;
     }
@@ -5140,24 +5140,24 @@ bool CDM::saveToXML( void )
     wxString strLog;
     wxString buf;
 
-    strLog = _("DM: Saving decision matrix to: ") + m_configPath + _("\n");
+    strLog = _("DM: Saving decision matrix to: ") + m_staticXMLPath + _("\n");
     logMsg( strLog );
 
-    if ( !wxFileName::IsFileWritable( m_configPath ) ) {
+    if ( !wxFileName::IsFileWritable( m_staticXMLPath ) ) {
         strLog = _("DM: File is not writable.\n");
         logMsg( strLog );
         return false;
     }
 
-    wxFFileOutputStream *pFileStream = new wxFFileOutputStream ( m_configPath );
+    wxFFileOutputStream *pFileStream = new wxFFileOutputStream ( m_staticXMLPath );
     if ( NULL == pFileStream ) {
-        strLog = _("DM: Failed to save: ") + m_configPath + _(" (memory allocation)\n");
+        strLog = _("DM: Failed to save: ") + m_staticXMLPath + _(" (memory allocation)\n");
         logMsg( strLog );
         return false;
     }
 
     // Make a copy before we save
-    wxCopyFile( m_configPath, m_configPath + _("~") );
+    wxCopyFile( m_staticXMLPath, m_staticXMLPath + _("~") );
 
     pFileStream->Write ( "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n",
             strlen ( "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n" ) );

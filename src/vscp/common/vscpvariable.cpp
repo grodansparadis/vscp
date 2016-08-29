@@ -1381,17 +1381,17 @@ CVariableStorage::CVariableStorage()
     
     // Set the default dm configuration path
 #ifdef WIN32
-    m_configPath = wxStandardPaths::Get().GetConfigDir();
-    m_configPath += _("/vscp/variables.xml");
+    m_xmlPath = wxStandardPaths::Get().GetConfigDir();
+    m_xmlPath += _("/vscp/variables.xml");
 #else
-    m_configPath = _("/srv/vscp/variables.xml");
+    m_xmlPath = _("/srv/vscp/variables.xml");
 #endif  
     
 #ifdef WIN32
     m_path_db_vscp_variable.SetName( wxStandardPaths::Get().GetConfigDir() +
                                             _("/vscp/vscp_variable.sqlite3") );
 #else
-    m_path_db_vscp_external_variable.SetName( _("/srv/vscp/vscp_variable.sqlite3") );
+    m_dbFilename.SetName( _("/srv/vscp/vscp_variable.sqlite3") );
 #endif
 
     // We just read variables  
@@ -1529,7 +1529,7 @@ uint32_t CVariableStorage::find(const wxString& name, CVSCPVariable& variable )
     
     // Look for stock variables
     if ( name.StartsWith("VSCP.") ) {
-        return findStockVariable( name, variable );
+        return getStockVariable( name, variable );
     }
     else {
         
@@ -1547,10 +1547,10 @@ uint32_t CVariableStorage::find(const wxString& name, CVSCPVariable& variable )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// findStockVariable
+// getStockVariable
 //
 
-bool CVariableStorage::findStockVariable(const wxString& name, CVSCPVariable& var )
+bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var )
 {
     wxString wxstr;
     
@@ -2028,28 +2028,28 @@ bool CVariableStorage::findStockVariable(const wxString& name, CVSCPVariable& va
         var.setType( VSCP_DAEMON_VARIABLE_CODE_DOUBLE );
         var.setValue( wxString::Format( _("%f"), gpctrlObj->m_automation.getLatitude() ) );
     }
-    else if ( name.Lower() == _("vscp.automation.issendtwilightsunriseevent") ) {
+    else if ( name.Lower() == _("vscp.automation.twilightsunriseevent.enable") ) {
         var.setStockVariable();
         var.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );
         var.setPersistent( false );
         var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
         var.setValue( gpctrlObj->m_automation.isSendSunriseTwilightEvent() ? _("true") : _("false") );
     }
-    else if ( name.Lower() == _("vscp.automation.issendtwilightsunriseevent") ) {
+    else if ( name.Lower() == _("vscp.automation.twilightsunriseevent.enable") ) {
         var.setStockVariable();
         var.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );
         var.setPersistent( false );
         var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
         var.setValue( gpctrlObj->m_automation.isSendSunriseEvent() ? _("true") : _("false") );
     }
-    else if ( name.Lower() == _("vscp.automation.issendsunsetevent") ) {
+    else if ( name.Lower() == _("vscp.automation.sunsetevent.enable") ) {
         var.setStockVariable();
         var.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );
         var.setPersistent( false );
         var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
         var.setValue( gpctrlObj->m_automation.isSendSunsetEvent() ? _("true") : _("false") );
     }
-    else if ( name.Lower() == _("vscp.automation.issendtwilightsunsetevent") ) {
+    else if ( name.Lower() == _("vscp.automation.twilightsunsetevent.enable") ) {
         var.setStockVariable();
         var.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );
         var.setPersistent( false );
@@ -2075,9 +2075,9 @@ bool CVariableStorage::findStockVariable(const wxString& name, CVSCPVariable& va
         var.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );
         var.setPersistent( false );
         var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-        var.setValue( gpctrlObj->m_portWebServer );
+        var.setValue( gpctrlObj->m_strWebServerInterfaceAddress );
     }
-    else if ( name.Lower() == _("vscp.websrv.authenticationOn") ) {
+    else if ( name.Lower() == _("vscp.websrv.authentication.enable") ) {
         var.setStockVariable();
         var.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );
         var.setPersistent( false );
@@ -2187,7 +2187,7 @@ bool CVariableStorage::findStockVariable(const wxString& name, CVSCPVariable& va
         var.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );
         var.setPersistent( false );
         var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-        var.setValue( wxString::FromUTF8( gpctrlObj->m_per_directory_auth_file ) );
+        var.setValue( wxString::FromUTF8( gpctrlObj->m_global_auth_file ) );
     }
 
 
@@ -2228,7 +2228,7 @@ bool CVariableStorage::findStockVariable(const wxString& name, CVSCPVariable& va
         var.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );
         var.setPersistent( false );
         var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-        var.setValue( gpctrlObj->m_dm.m_configPath ); 
+        var.setValue( gpctrlObj->m_dm.m_staticXMLPath ); 
     }
 
 
@@ -2237,12 +2237,19 @@ bool CVariableStorage::findStockVariable(const wxString& name, CVSCPVariable& va
 // *****************************************************************************
 
 
-    else if ( name.Lower() == _("vscp.variable.path") ) {
+    else if ( name.Lower() == _("vscp.variable.db.path") ) {
         var.setStockVariable();
         var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
         var.setPersistent( false );
         var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-        var.setValue( gpctrlObj->m_VSCP_Variables.m_configPath );
+        var.setValue( gpctrlObj->m_VSCP_Variables.m_dbFilename.GetFullPath() );
+    }
+    else if ( name.Lower() == _("vscp.variable.xml.path") ) {
+        var.setStockVariable();
+        var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+        var.setPersistent( false );
+        var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+        var.setValue( gpctrlObj->m_VSCP_Variables.m_xmlPath );
     }
 
 
@@ -2250,6 +2257,15 @@ bool CVariableStorage::findStockVariable(const wxString& name, CVSCPVariable& va
 //                              Log files
 // *****************************************************************************
 
+    // Enable syslog logging
+    else if ( name.Lower() == _("vscp.log.syslog.enable") ) {
+        var.setStockVariable();
+        var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+        var.setPersistent( false );
+        var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
+        var.setValue( gpctrlObj->m_bLogToSysLog ? _("true") : _("false") );
+    }
+    
     // Enable database logging
     else if ( name.Lower() == _("vscp.log.database.enable") ) {
         var.setStockVariable();
@@ -2257,7 +2273,15 @@ bool CVariableStorage::findStockVariable(const wxString& name, CVSCPVariable& va
         var.setPersistent( false );
         var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
         var.setValue( gpctrlObj->m_bLogToDatabase ? _("true") : _("false") );
-     }
+    }
+    
+    else if ( name.Lower() ==  _("vscp.log.database.path") ) {
+        var.setStockVariable();
+        var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
+        var.setPersistent( false );
+        var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+        var.setValue( gpctrlObj->m_path_db_vscp_data.GetFullPath() );
+    }
     
     // General
     else if ( name.Lower() == _("vscp.log.general.enable") ) {
@@ -2313,14 +2337,7 @@ bool CVariableStorage::findStockVariable(const wxString& name, CVSCPVariable& va
 //                             Databases
 // *****************************************************************************    
     
-    
-    else if ( name.Lower() ==  _("vscp.database.log.path") ) {
-        var.setStockVariable();
-        var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
-        var.setPersistent( false );
-        var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-        var.setValue( gpctrlObj->m_path_db_vscp_log.GetFullPath() );
-    }    
+        
     else if ( name.Lower() ==  _("vscp.database.vscpdata.path") ) {
         var.setStockVariable();
         var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
@@ -2764,7 +2781,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
         int val;
         var.getValue( &val );
         gpctrlObj->m_logLevel = val;
-        gpctrlObj->updateConfigurationRecordItem( 1, 
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
                                                     _("vscpd_LogLevel"), 
                                                     val ? _("1") : _("0") );      
     }
@@ -2775,23 +2792,33 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
         int val;
         var.getValue( &val );
         gpctrlObj->m_maxItemsInClientReceiveQueue = val;
-        gpctrlObj->updateConfigurationRecordItem( 1, 
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
                                                     _("vscpd.maxqueue"), 
                                                     wxString::Format( _("%d"), val ) );
     }
     else if ( name.Lower() == _("vscp.tcpip.address") ) {
-        return false;   // None writable
+        wxString strval;
+        strval = var.getValue();
+        gpctrlObj->m_strTcpInterfaceAddress = strval;
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                        _("vscpd_TcpipInterface_Address"), 
+                                                        strval );
     }
     else if ( name.Lower() == _("vscp.udp.enable") ) {
         int val;
         var.getValue( &val );
         gpctrlObj->m_bUDP = val;
-        gpctrlObj->updateConfigurationRecordItem( 1, 
-                                                    _("vscp.udp.enable"), 
-                                                    val ? _("1") : _("0") );
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                        _("vscpd_UdpSimpleInterface_Enable"), 
+                                                        val ? _("1") : _("0") );
     }
     else if ( name.Lower() == _("vscp.udp.address") ) {
-        //???
+        wxString strval;
+        strval = var.getValue();
+        gpctrlObj->m_strUDPInterfaceAddress = strval;
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_UdpSimpleInterface_Address"), 
+                                                    strval );
     }
     else if ( name.Lower() == _("vscp.mqtt.broker.enable") ) {
         int val;
@@ -2802,7 +2829,12 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                                                     val ? _("1") : _("0") );
     }
     else if ( name.Lower() == _("vscp.mqtt.broker.address") ) {
-        //???
+        wxString strval;
+        strval = var.getValue();
+        gpctrlObj->m_strMQTTBrokerInterfaceAddress = strval;
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_UdpSimpleInterface_Address"), 
+                                                    strval );
     }
     else if ( name.Lower() == _("vscp.coap.server.enable") ) {
         int val;
@@ -2813,18 +2845,28 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                                                     val ? _("1") : _("0") );
     }
     else if ( name.Lower() == _("vscp.coap.server.address") ) {
-        //???
+        wxString strval;
+        strval = var.getValue();
+        gpctrlObj->m_strCoAPServerInterfaceAddress = strval;
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_CoapServer_Address"), 
+                                                    strval );
     }
     else if ( name.Lower() == _("vscp.automation.heartbeat.enable") ) {
+        bool val;
+        var.getValue( &val );
+        val ? gpctrlObj->m_automation.enableHeartbeatEvent() : gpctrlObj->m_automation.disableHeartbeatEvent();
+        gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_Automation_HeartbeatEvent_Enable"), 
+                                                    val ? _("1") : _("0") );
+    }
+    else if ( name.Lower() == _("vscp.automation.heartbeat.period") ) {
         int val;
         var.getValue( &val );
         gpctrlObj->m_logLevel = val;
         gpctrlObj->updateConfigurationRecordItem( 1, 
-                                                    _("vscpd_LogLevel"), 
-                                                    val ? _("1") : _("0") );
-    }
-    else if ( name.Lower() == _("vscp.automation.heartbeat.period") ) {
-        //???
+                                                    _("vscpd_Automation_HeartbeatEvent_Interval"), 
+                                                    wxString::Format(_("%d"), val ) );
     }
     else if ( name.Lower() == _("vscp.automation.heartbeat.last") ) {
         return false;   // None writable
@@ -2838,51 +2880,66 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                                                     val ? _("1") : _("0") );
     }
     else if ( name.Lower() == _("vscp.automation.segctrl.heartbeat.period") ) {
-        //???
+        long val;
+        var.getValue( &val );
+        gpctrlObj->m_automation.setIntervalSegmentControllerHeartbeat( val );
+        gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_Automation_SegmentControllerEvent_Interval"), 
+                                                    wxString::Format(_("%ld"), val) );
     }  
     else if ( name.Lower() == _("vscp.automation.segctrl.heartbeat.last") ) {
         return false;   // None writable
     }
     else if ( name.Lower() == _("vscp.automation.longitude") ) {
-        //???
+        double val;
+        var.getValue( &val );
+        gpctrlObj->m_automation.setLongitude( val );
+        gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_Automation_Longitude"), 
+                                                    wxString::Format( _("%f"), gpctrlObj->m_automation.getLongitude() ) );
     }
     else if ( name.Lower() == _("vscp.automation.latitude") ) {
-        //???
+        double val;
+        var.getValue( &val );
+        gpctrlObj->m_automation.setLatitude( val );
+        gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_Automation_Latitude"), 
+                                                    wxString::Format( _("%f"), gpctrlObj->m_automation.getLatitude() ) );
     }
-    else if ( name.Lower() == _("vscp.automation.issendtwilightsunriseevent") ) {
+    else if ( name.Lower() == _("vscp.automation.twilightsunriseevent.enable") ) {
         int val;
         var.getValue( &val );
-        gpctrlObj->m_logLevel = val;
+        gpctrlObj->m_automation.enableSunRiseTwilightEvent( val );
         gpctrlObj->updateConfigurationRecordItem( 1, 
-                                                    _("vscpd_LogLevel"), 
+                                                    _("vscpd_Automation_SunriseTwilight_Enable"), 
                                                     val ? _("1") : _("0") );
     }
-    else if ( name.Lower() == _("vscp.automation.issendtwilightsunriseevent") ) {
+    else if ( name.Lower() == _("vscp.automation.twilightsunsetevent.enable") ) {
         int val;
         var.getValue( &val );
-        gpctrlObj->m_logLevel = val;
+        gpctrlObj->m_automation.enableSunSetTwilightEvent( val );
         gpctrlObj->updateConfigurationRecordItem( 1, 
-                                                    _("vscpd_LogLevel"), 
+                                                    _("vscpd_Automation_SunsetTwilight_Enable"), 
                                                     val ? _("1") : _("0") );
     }
-    else if ( name.Lower() == _("vscp.automation.issendsunsetevent") ) {
+    else if ( name.Lower() == _("vscp.automation.sunriseevent.enable") ) {
         int val;
         var.getValue( &val );
-        gpctrlObj->m_logLevel = val;
+        gpctrlObj->m_automation.enableSunRiseEvent( val );
         gpctrlObj->updateConfigurationRecordItem( 1, 
-                                                    _("vscpd_LogLevel"), 
+                                                    _("vscpd_Automation_Sunrise_Enable"), 
                                                     val ? _("1") : _("0") );
     }
-    else if ( name.Lower() == _("vscp.automation.issendtwilightsunsetevent") ) {
+    else if ( name.Lower() == _("vscp.automation.sunsetevent.enable") ) {
         int val;
         var.getValue( &val );
-        gpctrlObj->m_logLevel = val;
+        gpctrlObj->m_automation.enableSunSetEvent( val );
         gpctrlObj->updateConfigurationRecordItem( 1, 
-                                                    _("vscpd_LogLevel"), 
+                                                    _("vscpd_Automation_Sunset_Enable"), 
                                                     val ? _("1") : _("0") );
     }
     else if ( name.Lower() == _("vscp.workingfolder") ) {
-        //???
+        return false;   // Not writable
     }
  
 
@@ -2892,57 +2949,172 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 
 
     else if ( name.Lower() == _("vscp.websrv.address") ) {
-        //???
+        wxString strval;
+        strval = var.getValue();
+        gpctrlObj->m_strWebServerInterfaceAddress = strval;
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_Webserver_Address"), 
+                                                    strval );
     }
-    else if ( name.Lower() == _("vscp.websrv.authenticationOn") ) {
-        //???
+    else if ( name.Lower() == _("vscp.websrv.authentication.enable") ) {
+        int val;
+        var.getValue( &val );
+        gpctrlObj->m_bDisableSecurityWebServer = val;
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_Webserver_Authentication_enable"), 
+                                                    val ? _("1") : _("0") );
     }
     else if ( name.Lower() == _("vscp.websrv.root.path") ) {
-        //???
+        wxString strval;
+        strval = var.getValue();
+        memset( gpctrlObj->m_pathWebRoot, 0, sizeof( gpctrlObj->m_pathWebRoot ) );
+        memcpy( gpctrlObj->m_pathWebRoot, 
+                    (const char *)strval.mbc_str(), 
+                    wxMin( sizeof( gpctrlObj->m_pathWebRoot)-1, strval.Length() ) );
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_Webserver_RootPath"), 
+                                                    strval );
     }
     else if ( name.Lower() == _("vscp.websrv.authdomain") ) {
-        //???
+        wxString strval;
+        strval = var.getValue();
+        memset( gpctrlObj->m_authDomain, 0, sizeof( gpctrlObj->m_authDomain ) );
+        memcpy( gpctrlObj->m_authDomain, 
+                    (const char *)strval.mbc_str(), 
+                    wxMin( sizeof( gpctrlObj->m_authDomain)-1, strval.Length() ) );
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_Webserver_AuthDomain"), 
+                                                    strval );
     }
     else if ( name.Lower() == _("vscp.websrv.cert.path") ) {
-        //???
+        wxString strval;
+        strval = var.getValue();
+        memset( gpctrlObj->m_pathCert, 0, sizeof( gpctrlObj->m_pathCert ) );
+        memcpy( gpctrlObj->m_pathCert, 
+                    (const char *)strval.mbc_str(), 
+                    wxMin( sizeof( gpctrlObj->m_pathCert)-1, strval.Length() ) );
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_Webserver_PathCert"), 
+                                                    strval );
     }
     else if ( name.Lower() == _("vscp.websrv.extramimetypes") ) {
-        //???
+        wxString strval;
+        strval = var.getValue();
+        memset( gpctrlObj->m_extraMimeTypes, 0, sizeof( gpctrlObj->m_extraMimeTypes ) );
+        memcpy( gpctrlObj->m_extraMimeTypes, 
+                    (const char *)strval.mbc_str(), 
+                    wxMin( sizeof( gpctrlObj->m_extraMimeTypes)-1, strval.Length() ) );
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_Webserver_ExtraMimeTypes"), 
+                                                    strval );
     }
     else if ( name.Lower() == _("vscp.websrv.ssipatterns") ) {
-        //???
+        wxString strval;
+        strval = var.getValue();
+        memset( gpctrlObj->m_ssi_pattern, 0, sizeof( gpctrlObj->m_ssi_pattern ) );
+        memcpy( gpctrlObj->m_ssi_pattern, 
+                    (const char *)strval.mbc_str(), 
+                    wxMin( sizeof( gpctrlObj->m_ssi_pattern)-1, strval.Length() ) );
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_Webserver_SSIPattern"), 
+                                                    strval );
     }
     else if ( name.Lower() == _("vscp.websrv.ipacl") ) {
-        //???
+        wxString strval;
+        strval = var.getValue();
+        memset( gpctrlObj->m_ip_acl, 0, sizeof( gpctrlObj->m_ip_acl ) );
+        memcpy( gpctrlObj->m_ip_acl, 
+                    (const char *)strval.mbc_str(), 
+                    wxMin( sizeof( gpctrlObj->m_ip_acl)-1, strval.Length() ) );
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_Webserver_IpAcl"), 
+                                                    strval );
     }
     else if ( name.Lower() == _("vscp.websrv.cgi.interpreter") ) {
-        //???
+        wxString strval;
+        strval = var.getValue();
+        memset( gpctrlObj->m_cgiInterpreter, 0, sizeof( gpctrlObj->m_cgiInterpreter ) );
+        memcpy( gpctrlObj->m_cgiInterpreter, 
+                    (const char *)strval.mbc_str(), 
+                    wxMin( sizeof( gpctrlObj->m_cgiInterpreter)-1, strval.Length() ) );
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_Webserver_CgiInterpreter"), 
+                                                    strval );
     }
     else if ( name.Lower() == _("vscp.websrv.cgi.pattern") ) {
-        //???
+        wxString strval;
+        strval = var.getValue();
+        memset( gpctrlObj->m_cgiPattern, 0, sizeof( gpctrlObj->m_cgiPattern ) );
+        memcpy( gpctrlObj->m_cgiPattern, 
+                    (const char *)strval.mbc_str(), 
+                    wxMin( sizeof( gpctrlObj->m_cgiPattern)-1, strval.Length() ) );
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_Webserver_CgiPattern"), 
+                                                    strval );
     }
     else if ( name.Lower() == _("vscp.websrv.directorylistings.enable") ) {
         int val;
         var.getValue( &val );
-        gpctrlObj->m_logLevel = val;
-        gpctrlObj->updateConfigurationRecordItem( 1, 
-                                                    _("vscpd_LogLevel"), 
+        strcpy( gpctrlObj->m_EnableDirectoryListings,
+                val ? "yes" : "no" );
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_Webserver_EnableDirectoryListings"), 
                                                     val ? _("1") : _("0") );
     }
     else if ( name.Lower() == _("vscp.websrv.hidefile.pattern") ) {
-        //???
+        wxString strval;
+        strval = var.getValue();
+        memset( gpctrlObj->m_hideFilePatterns, 0, sizeof( gpctrlObj->m_hideFilePatterns ) );
+        memcpy( gpctrlObj->m_hideFilePatterns, 
+                    (const char *)strval.mbc_str(), 
+                    wxMin( sizeof( gpctrlObj->m_hideFilePatterns)-1, strval.Length() ) );
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_Webserver_HideFilePatterns"), 
+                                                    strval );
     }
     else if ( name.Lower() == _("vscp.websrv.indexfiles") ) {
-        //???
+        wxString strval;
+        strval = var.getValue();
+        memset( gpctrlObj->m_indexFiles, 0, sizeof( gpctrlObj->m_indexFiles ) );
+        memcpy( gpctrlObj->m_indexFiles, 
+                    (const char *)strval.mbc_str(), 
+                    wxMin( sizeof( gpctrlObj->m_indexFiles)-1, strval.Length() ) );
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_Webserver_IndexFiles"), 
+                                                    strval );
     }
     else if ( name.Lower() == _("vscp.websrv.urlrewrites") ) {
-        //???
+        wxString strval;
+        strval = var.getValue();
+        memset( gpctrlObj->m_urlRewrites, 0, sizeof( gpctrlObj->m_urlRewrites ) );
+        memcpy( gpctrlObj->m_urlRewrites, 
+                    (const char *)strval.mbc_str(), 
+                    wxMin( sizeof( gpctrlObj->m_urlRewrites)-1, strval.Length() ) );
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_Webserver_UrlRewrites"), 
+                                                    strval );
     }
     else if ( name.Lower() == _("vscp.websrv.auth.file.directory") ) {
-        //???
+        wxString strval;
+        strval = var.getValue();
+        memset( gpctrlObj->m_per_directory_auth_file, 0, sizeof( gpctrlObj->m_per_directory_auth_file ) );
+        memcpy( gpctrlObj->m_per_directory_auth_file, 
+                    (const char *)strval.mbc_str(), 
+                    wxMin( sizeof( gpctrlObj->m_per_directory_auth_file)-1, strval.Length() ) );
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_Webserver_PerDirectoryAuthFile"), 
+                                                    strval );
     }
     else if ( name.Lower() == _("vscp.websrv.auth.file.global") ) {
-        //???
+        wxString strval;
+        strval = var.getValue();
+        memset( gpctrlObj->m_global_auth_file, 0, sizeof( gpctrlObj->m_global_auth_file ) );
+        memcpy( gpctrlObj->m_global_auth_file, 
+                    (const char *)strval.mbc_str(), 
+                    wxMin( sizeof( gpctrlObj->m_global_auth_file)-1, strval.Length() ) );
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_Webserver_GlobalAuthFile"), 
+                                                    strval );
     }
 
 
@@ -2951,11 +3123,11 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 // *****************************************************************************
 
     else if ( name.Lower() == _("vscp.websocket.auth.enable") ) {
-        int val;
+        bool val;
         var.getValue( &val );
-        gpctrlObj->m_logLevel = val;
+        gpctrlObj->m_bAuthWebsockets = val;
         gpctrlObj->updateConfigurationRecordItem( 1, 
-                                                    _("vscpd_LogLevel"), 
+                                                    _("vscpd_WebSocket_EnableAuth"), 
                                                     val ? _("1") : _("0") );
     }
 
@@ -2966,18 +3138,36 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 
 
     else if ( name.Lower() == _("vscp.dm.logging.enable") ) {
-        int val;
+        bool val;
         var.getValue( &val );
-        gpctrlObj->m_logLevel = val;
-        gpctrlObj->updateConfigurationRecordItem( 1, 
-                                                    _("vscpd_LogLevel"), 
+        gpctrlObj->m_dm.m_bLogEnable = val;
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_DM_Logging_Enable"), 
                                                     val ? _("1") : _("0") );
     }
     else if ( name.Lower() == _("vscp.dm.logging.path") ) {
-        //???
+        wxString strval;
+        strval = var.getValue();
+        var.setValue( gpctrlObj->m_dm.m_logPath.GetFullPath() );
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_DM_Logging_Path"), 
+                                                    strval );
     }
-    else if ( name.Lower() == _("vscp.dm.static.path") ) {
-         //???
+    else if ( name.Lower() == _("vscp.dm.xml.path") ) {
+        wxString strval;
+        strval = var.getValue();
+        var.setValue( gpctrlObj->m_dm.m_staticXMLPath );
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_DM_XML_Path"), 
+                                                    strval );
+    }
+    else if ( name.Lower() == _("vscp.dm.db.path") ) {
+        wxString strval;
+        strval = var.getValue();
+        var.setValue( gpctrlObj->m_dm.m_staticXMLPath );
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_DM_DB_Path"), 
+                                                    strval );
     }
 
 
@@ -2985,9 +3175,21 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 //                             Variables
 // *****************************************************************************
 
-
-    else if ( name.Lower() == _("vscp.variable.path") ) {
-        //???
+    else if ( name.Lower() == _("vscp.variable.db.path") ) {
+        wxString strval;
+        strval = var.getValue();
+        var.setValue( gpctrlObj->m_VSCP_Variables.m_dbFilename.GetFullPath() );
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_Variables_DB_Path"), 
+                                                    strval );
+    }
+    else if ( name.Lower() == _("vscp.variable.xml.path") ) {
+        wxString strval;
+        strval = var.getValue();
+        var.setValue( gpctrlObj->m_VSCP_Variables.m_xmlPath );
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_Variables_XML_Path"), 
+                                                    strval );
     }
 
 
@@ -2995,53 +3197,87 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 //                              Log files
 // *****************************************************************************
 
-    // Enable database logging
-    else if ( name.Lower() == _("vscp.log.database.enable") ) {
-        int val;
+    // Enable syslog logging
+    else if ( name.Lower() == _("vscp.log.syslog.enable") ) {
+        bool val;
         var.getValue( &val );
-        gpctrlObj->m_logLevel = val;
-        gpctrlObj->updateConfigurationRecordItem( 1, 
-                                                    _("vscpd_LogLevel"), 
+        gpctrlObj->m_bLogToSysLog = val;
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_Syslog_Enable"), 
                                                     val ? _("1") : _("0") );
     }
     
+    // Enable database logging
+    else if ( name.Lower() == _("vscp.log.database.enable") ) {
+        bool val;
+        var.getValue( &val );
+        gpctrlObj->m_bLogToDatabase = val;
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_LogDB_Enable"), 
+                                                    val ? _("1") : _("0") );
+    }
+    
+    else if ( name.Lower() ==  _("vscp.log.database.path") ) {
+        wxString strval;
+        strval = var.getValue();
+        gpctrlObj->m_path_db_vscp_data.SetPath( strval );
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_GeneralLogFile_Path"), 
+                                                    strval );
+    } 
+    
     // General
     else if ( name.Lower() == _("vscp.log.general.enable") ) {
-        int val;
+        bool val;
         var.getValue( &val );
-        gpctrlObj->m_logLevel = val;
+        gpctrlObj->m_bLogGeneralEnable = val;
         gpctrlObj->updateConfigurationRecordItem( 1, 
-                                                    _("vscpd_LogLevel"), 
+                                                    _("vscpd_GeneralLogFile_Enable"), 
                                                     val ? _("1") : _("0") );
     }
     else if ( name.Lower() == _("vscp.log.general.path") ) {
-        //???
+        wxString strval;
+        strval = var.getValue();
+        gpctrlObj->m_logGeneralFileName.SetPath( strval );
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_GeneralLogFile_Path"), 
+                                                    strval );
     }
 
     // Access
     else if ( name.Lower() == _("vscp.log.access.enable") ) {
-        int val;
+        bool val;
         var.getValue( &val );
-        gpctrlObj->m_logLevel = val;
+        gpctrlObj->m_bLogAccessEnable = val;
         gpctrlObj->updateConfigurationRecordItem( 1, 
-                                                    _("vscpd_LogLevel"), 
+                                                    _("vscpd_AccessLogFile_Enable"), 
                                                     val ? _("1") : _("0") );
     }
     else if ( name.Lower() == _("vscp.log.access.path") ) {
-        //???
+        wxString strval;
+        strval = var.getValue();
+        gpctrlObj->m_logAccessFileName.SetPath( strval );
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_AccessLogFile_Path"), 
+                                                    strval );
     }
 
     // Security
     else if ( name.Lower() == _("vscp.log.security.enable") ) {
-        int val;
+        bool val;
         var.getValue( &val );
-        gpctrlObj->m_logLevel = val;
+        gpctrlObj->m_bLogAccessEnable = val;
         gpctrlObj->updateConfigurationRecordItem( 1, 
-                                                    _("vscpd_LogLevel"), 
+                                                    _("vscpd_SecurityLogFile_Enable"), 
                                                     val ? _("1") : _("0") );
     }   
     else if ( name.Lower() == _("vscp.log.security.path") ) {
-        //???
+        wxString strval;
+        strval = var.getValue();
+        gpctrlObj->m_logSecurityFileName.SetPath( strval );
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_SecurityLogFile_Path"), 
+                                                    strval );
     }
     
 
@@ -3050,15 +3286,21 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 //                             Databases
 // *****************************************************************************    
     
-    
-    else if ( name.Lower() ==  _("vscp.database.log.path") ) {
-        //???
-    }    
     else if ( name.Lower() ==  _("vscp.database.vscpdata.path") ) {
-        //???
+        wxString strval;
+        strval = var.getValue();
+        gpctrlObj->m_path_db_vscp_data.SetPath( strval );
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_db_data_path"), 
+                                                    strval );
     } 
     else if ( name.Lower() ==  _("vscp.database.daemon.path") ) {
-        //???
+        wxString strval;
+        strval = var.getValue();
+        gpctrlObj->m_path_db_vscp_daemon.SetPath( strval );
+        return gpctrlObj->updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_db_vscpconf_path"), 
+                                                    strval );
     }
     
     
@@ -3817,7 +4059,7 @@ bool CVariableStorage::listItem( varQuery *pq, CVSCPVariable& variable )
     
     if ( VARIABLE_STOCK == pq->table  ) {
         if ( pq->stockId >= m_StockVariable.Count() ) return false;
-        return findStockVariable( m_StockVariable[ pq->stockId ], variable );
+        return getStockVariable( m_StockVariable[ pq->stockId ], variable );
     }
     else if ( VARIABLE_INTERNAL == pq->table  ) {
         if ( SQLITE_ROW != sqlite3_step( pq->ppStmt ) ) return false; 
@@ -4120,7 +4362,7 @@ bool CVariableStorage::load( wxString& path  )
     
     // If a null path is supplied use the configured path
     if ( 0 == path.Length() ) {
-        path = m_configPath;
+        path = m_xmlPath;
     }
     
     if (!doc.Load( path ) ) {
@@ -4225,9 +4467,9 @@ bool CVariableStorage::save()
 #endif
 
     // Make a copy before we save
-    wxCopyFile( m_configPath, m_configPath + _("~") );
+    wxCopyFile( m_xmlPath, m_xmlPath + _("~") );
 
-    return save( m_configPath );
+    return save( m_xmlPath );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

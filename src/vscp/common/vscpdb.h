@@ -40,26 +40,30 @@
 	"`vscpd_GUID`                       TEXT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00',"\
 	"`vscpd_Name`                       TEXT,"\
 	"`vscpd_Syslog_Enable`              INTEGER DEFAULT 1,"\
+        "`vscpd_LogDB_Enable`               INTEGER DEFAULT 1,"\
+        "`vscpd_db_log_path`                TEXT"\
 	"`vscpd_GeneralLogFile_Enable`      INTEGER DEFAULT 1,"\
 	"`vscpd_GeneralLogFile_Path`        TEXT,"\
 	"`vscpd_SecurityLogFile_Enable`     INTEGER DEFAULT 1,"\
 	"`vscpd_SecurityLogFile_Path`       TEXT,"\
 	"`vscpd_AccessLogFile_Enable`       INTEGER DEFAULT 1,"\
 	"`vscpd_AccessLogFile_Path`         TEXT,"\
-	"`vscpd_TcpipInterface_Port`        TEXT,"\
+	"`vscpd_TcpipInterface_Address`     TEXT,"\
 	"`vscpd_MulticastInterface_Port`    TEXT,"\
 	"`vscpd_MulicastInterface_ttl`      INTEGER,"\
 	"`vscpd_UdpSimpleInterface_Enable`  INTEGER,"\
-	"`vscpd_UdpSimpleInterface_Port`    TEXT,"\
-	"`vscpd_DM_Path`                    NUMERIC,"\
+	"`vscpd_UdpSimpleInterface_Address` TEXT,"\
+	"`vscpd_DM_DB_Path`                 TEXT,"\
+        "`vscpd_DM_XML_Path`                TEXT,"\
 	"`vscpd_DM_Logging_Enable`          INTEGER,"\
 	"`vscpd_DM_Logging_Path`            TEXT,"\
 	"`vscpd_DM_Logging_Level`           INTEGER,"\
-	"`vscpd_Variables_Path`             TEXT,"\
+	"`vscpd_Variables_DB_Path`          TEXT,"\
+        "`vscpd_Variables_XML_Path`         TEXT,"\
 	"`vscpd_VSCPD_DefaultClientBufferSize`      INTEGER,"\
-	"`vscpd_Webserver_DisableAuthentication`    INTEGER,"\
+	"`vscpd_Webserver_Authentication_enable`    INTEGER,"\
 	"`vscpd_Webserver_RootPath`         TEXT,"\
-	"`vscpd_Webserver_Port`             TEXT,"\
+	"`vscpd_Webserver_Address`          TEXT,"\
 	"`vscpd_Webserver_PathCert`         TEXT,"\
 	"`vscpd_Webserver_AuthDomain`       TEXT DEFAULT 'mydomain.com',"\
 	"`vscpd_Webserver_CgiInterpreter`   TEXT,"\
@@ -73,29 +77,29 @@
 	"`vscpd_Webserver_RunAsUser`        TEXT,"\
 	"`vscpd_Webserver_PerDirectoryAuthFile`     TEXT,"\
 	"`vscpd_Webserver_GlobalAuthFile`   TEXT,"\
-	"`vscpd_Webserver__IpAcl`           TEXT,"\
+	"`vscpd_Webserver_IpAcl`           TEXT,"\
 	"`vscpd_Webserver_DavDocumentRoot`  TEXT,"\
 	"`vscpd_WebSocket_EnableAuth`       INTEGER,"\
 	"`vscpd_MqttBroker_Enable`          INTEGER,"\
-	"`vscpd_MqttBroker_Port`            TEXT,"\
+	"`vscpd_MqttBroker_Address`            TEXT,"\
 	"`vscpd_CoapServer_Enable`          INTEGER,"\
-	"`vscpd_CoapServer_Port`            TEXT,"\
+	"`vscpd_CoapServer_Address`            TEXT,"\
 	"`vscpd_Automation_Enable`          INTEGER,"\
 	"`vscpd_Automation_Zone`            INTEGER,"\
 	"`vscpd_Automation_SubZone`         INTEGER,"\
 	"`vscpd_Automation_Longitude`       REAL,"\
-	"`vscpd_Automation_Latitude`        REAL,"\
-	"`vscpd_Automation_Timezone`        TEXT,"\
-	"`vscpd_Automation_Sunrise_Enable`  INTEGER,"\
-	"`vscpd_Automation_Sunset_Enable`   TEXT,"\
+	"`vscpd_Automation_Latitude`                        REAL,"\
+	"`vscpd_Automation_Timezone`                        TEXT,"\
+	"`vscpd_Automation_Sunrise_Enable`          INTEGER,"\
+	"`vscpd_Automation_Sunset_Enable`           TEXT,"\
 	"`vscpd_Automation_SunsetTwilight_Enable`   INTEGER,"\
 	"`vscpd_Automation_SunriseTwilight_Enable`  INTEGER,"\
 	"`vscpd_Automation_SegmentControllerEvent_Enable`   INTEGER,"\
 	"`vscpd_Automation_SegmentControllerEvent_Interval` INTEGER,"\
 	"`vscpd_Automation_HeartbeatEvent_Enable`   INTEGER,"\
 	"`vscpd_Automation_HeartbeatEvent_Interval` INTEGER,"\
-	"`vscpd_db_data_path`               TEXT,"\
-	"`vscpd_db_log_path`                TEXT"\
+	"`vscpd_db_data_path`                       TEXT,"\
+        "`vscpd_db_vscpconf_path`                   TEXT,"\
         ");";
 
 #define VSCPDB_CONFIG_SET_DEFAULTS  ""        
@@ -112,62 +116,65 @@
 #define VSCPDB_ORDINAL_CONFIG_GUID                                          5
 #define VSCPDB_ORDINAL_CONFIG_NAME                                          6
 #define VSCPDB_ORDINAL_CONFIG_SYSLOG_ENABLE                                 7
-#define VSCPDB_ORDINAL_CONFIG_GENERALLOGFILE_ENABLE                         8
-#define VSCPDB_ORDINAL_CONFIG_GENERALLOGFILE_PATH                           9
-#define VSCPDB_ORDINAL_CONFIG_SECURITYLOGFILE_ENABLE                        10
-#define VSCPDB_ORDINAL_CONFIG_SECURITYLOGFILE_PATH                          11
-#define VSCPDB_ORDINAL_CONFIG_ACCESSLOGFILE_ENABLE                          12
-#define VSCPDB_ORDINAL_CONFIG_ACCESSLOGFILE_PATH                            13
-#define VSCPDB_ORDINAL_CONFIG_TCPIPINTERFACE_PORT                           14
-#define VSCPDB_ORDINAL_CONFIG_MULTICASTINTERFACE_PORT                       15
-#define VSCPDB_ORDINAL_CONFIG_MULICASTINTERFACE_TTL                         16
-#define VSCPDB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_ENABLE                     17
-#define VSCPDB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_PORT                       18
-#define VSCPDB_ORDINAL_CONFIG_DM_PATH                                       19
-#define VSCPDB_ORDINAL_CONFIG_DM_LOGGING_ENABLE                             20
-#define VSCPDB_ORDINAL_CONFIG_DM_LOGGING_PATH                               21
-#define VSCPDB_ORDINAL_CONFIG_DM_LOGGING_LEVEL                              22
-#define VSCPDB_ORDINAL_CONFIG_VARIABLES_PATH                                23
-#define VSCPDB_ORDINAL_CONFIG_VSCPD_DEFAULTCLIENTBUFFERSIZE                 24
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_DISABLEAUTHENTICATION               25
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_ROOTPATH                            26
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_PORT                                27
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_PATHCERT                            28
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_AUTHDOMAIN                          29
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_CGIINTERPRETER                      30
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_CGIPATTERN                          31
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_ENABLEDIRECTORYLISTINGS             32
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_HIDEFILEPATTERNS                    33
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_INDEXFILES                          34
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_EXTRAMIMETYPES                      35
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_URLREWRITES                         36
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_SSIPATTERN                          37
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_RUNASUSER                           38
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_PERDIRECTORYAUTHFILE                39
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_GLOBALAUTHFILE                      40
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER__IPACL                              41
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_DAVDOCUMENTROOT                     42
-#define VSCPDB_ORDINAL_CONFIG_WEBSOCKET_ENABLEAUTH                          43
-#define VSCPDB_ORDINAL_CONFIG_MQTTBROKER_ENABLE                             44
-#define VSCPDB_ORDINAL_CONFIG_MQTTBROKER_PORT                               45
-#define VSCPDB_ORDINAL_CONFIG_COAPSERVER_ENABLE                             46
-#define VSCPDB_ORDINAL_CONFIG_COAPSERVER_PORT                               47
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_ZONE                               48
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUBZONE                            49
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_LONGITUDE                          50
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_LATITUDE                           51
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_TIMEZONE                           52
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISE_ENABLE                     53
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSET_ENABLE                      54
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSETTWILIGHT_ENABLE              55
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISETWILIGHT_ENABLE             56
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_ENABLE      57
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_INTERVAL    58
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_ENABLE              59
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_INTERVAL            60
-#define VSCPDB_ORDINAL_CONFIG_DB_DATA_PATH                                  61
-#define VSCPDB_ORDINAL_CONFIG_DB_LOG_PATH                                   62
-
+#define VSCPDB_ORDINAL_CONFIG_LOGDB_ENABLE                                  8
+#define VSCPDB_ORDINAL_CONFIG_DB_LOG_PATH                                   9
+#define VSCPDB_ORDINAL_CONFIG_GENERALLOGFILE_ENABLE                         10
+#define VSCPDB_ORDINAL_CONFIG_GENERALLOGFILE_PATH                           11
+#define VSCPDB_ORDINAL_CONFIG_SECURITYLOGFILE_ENABLE                        12
+#define VSCPDB_ORDINAL_CONFIG_SECURITYLOGFILE_PATH                          13
+#define VSCPDB_ORDINAL_CONFIG_ACCESSLOGFILE_ENABLE                          14
+#define VSCPDB_ORDINAL_CONFIG_ACCESSLOGFILE_PATH                            15
+#define VSCPDB_ORDINAL_CONFIG_TCPIPINTERFACE_PORT                           16
+#define VSCPDB_ORDINAL_CONFIG_MULTICASTINTERFACE_PORT                       17
+#define VSCPDB_ORDINAL_CONFIG_MULICASTINTERFACE_TTL                         18
+#define VSCPDB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_ENABLE                     19
+#define VSCPDB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_PORT                       20
+#define VSCPDB_ORDINAL_CONFIG_DM_DB_PATH                                    21
+#define VSCPDB_ORDINAL_CONFIG_DM_XML_PATH                                   22
+#define VSCPDB_ORDINAL_CONFIG_DM_LOGGING_ENABLE                             23
+#define VSCPDB_ORDINAL_CONFIG_DM_LOGGING_PATH                               24
+#define VSCPDB_ORDINAL_CONFIG_DM_LOGGING_LEVEL                              25
+#define VSCPDB_ORDINAL_CONFIG_VARIABLES_DB_PATH                             26
+#define VSCPDB_ORDINAL_CONFIG_VARIABLES_XML_PATH                            27
+#define VSCPDB_ORDINAL_CONFIG_VSCPD_DEFAULTCLIENTBUFFERSIZE                 28
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_DISABLEAUTHENTICATION               29
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_ROOTPATH                            30
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_PORT                                31
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_PATHCERT                            32
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_AUTHDOMAIN                          33
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_CGIINTERPRETER                      34
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_CGIPATTERN                          35
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_ENABLEDIRECTORYLISTINGS             36
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_HIDEFILEPATTERNS                    37
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_INDEXFILES                          38
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_EXTRAMIMETYPES                      39
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_URLREWRITES                         40
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_SSIPATTERN                          41
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_RUNASUSER                           42
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_PERDIRECTORYAUTHFILE                43
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_GLOBALAUTHFILE                      44
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER__IPACL                              45
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_DAVDOCUMENTROOT                     46
+#define VSCPDB_ORDINAL_CONFIG_WEBSOCKET_ENABLEAUTH                          47
+#define VSCPDB_ORDINAL_CONFIG_MQTTBROKER_ENABLE                             48
+#define VSCPDB_ORDINAL_CONFIG_MQTTBROKER_PORT                               49
+#define VSCPDB_ORDINAL_CONFIG_COAPSERVER_ENABLE                             50
+#define VSCPDB_ORDINAL_CONFIG_COAPSERVER_PORT                               51
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_ZONE                               52
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUBZONE                            53
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_LONGITUDE                          54
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_LATITUDE                           55
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_TIMEZONE                           56
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISE_ENABLE                     57
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSET_ENABLE                      58
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSETTWILIGHT_ENABLE              59
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISETWILIGHT_ENABLE             60
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_ENABLE      61
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_INTERVAL    62
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_ENABLE              63
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_INTERVAL            64
+#define VSCPDB_ORDINAL_CONFIG_DB_VSCPDATA_PATH                              65
+#define VSCPDB_ORDINAL_CONFIG_DB_VSCPCONF_PATH                              66
 
 #define VSCPDB_LOG_CREATE "CREATE TABLE \"log\" ("\
 	"`idx_log`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
@@ -388,6 +395,74 @@
 #define VSCPDB_ORDINAL_DM_MEASUREMENT_COMPARE       33   //
 #define VSCPDB_ORDINAL_DM_MEASUREMENT_COMMENT       34   //
 
+
+/*
+ // Configuration database ordinals
+enum {
+    DAEMON_DB_ORDINAL_CONFIG_ID = 0,
+    DAEMON_DB_ORDINAL_CONFIG_DBVERSION,
+    DAEMON_DB_ORDINAL_CONFIG_LOGLEVEL,
+    DAEMON_DB_ORDINAL_CONFIG_RUNASUSER,
+    DAEMON_DB_ORDINAL_CONFIG_GUID,
+    DAEMON_DB_ORDINAL_CONFIG_NAME,
+    DAEMON_DB_ORDINAL_CONFIG_SYSLOG_ENABLE,
+    DAEMON_DB_ORDINAL_CONFIG_GENERALLOGFILE_ENABLE,
+    DAEMON_DB_ORDINAL_CONFIG_GENERALLOGFILE_PATH,
+    DAEMON_DB_ORDINAL_CONFIG_SECURITYLOGFILE_ENABLE,
+    DAEMON_DB_ORDINAL_CONFIG_SECURITYLOGFILE_PATH,
+    DAEMON_DB_ORDINAL_CONFIG_ACCESSLOGFILE_ENABLE,
+    DAEMON_DB_ORDINAL_CONFIG_ACCESSLOGFILE_PATH,
+    DAEMON_DB_ORDINAL_CONFIG_TCPIPINTERFACE_PORT,
+    DAEMON_DB_ORDINAL_CONFIG_MULTICASTINTERFACE_PORT,
+    DAEMON_DB_ORDINAL_CONFIG_MULICASTINTERFACE_TTL,
+    DAEMON_DB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_ENABLE,
+    DAEMON_DB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_PORT,
+    DAEMON_DB_ORDINAL_CONFIG_DM_PATH,
+    DAEMON_DB_ORDINAL_CONFIG_DM_LOGGING_ENABLE,
+    DAEMON_DB_ORDINAL_CONFIG_DM_LOGGING_PATH,
+    DAEMON_DB_ORDINAL_CONFIG_DM_LOGGING_LEVEL,
+    DAEMON_DB_ORDINAL_CONFIG_VARIABLES_PATH,
+    DAEMON_DB_ORDINAL_CONFIG_VSCPD_DEFAULTCLIENTBUFFERSIZE,
+    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_DISABLEAUTHENTICATION,
+    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_ROOTPATH,
+    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_PORT,
+    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_PATHCERT,
+    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_AUTHDOMAIN,
+    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_CGIINTERPRETER,
+    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_CGIPATTERN,
+    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_ENABLEDIRECTORYLISTINGS,
+    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_HIDEFILEPATTERNS,
+    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_INDEXFILES,
+    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_EXTRAMIMETYPES,
+    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_URLREWRITES,
+    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_SSIPATTERN,
+    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_RUNASUSER,
+    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_PERDIRECTORYAUTHFILE,
+    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_GLOBALAUTHFILE,
+    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER__IPACL,
+    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_DAVDOCUMENTROOT,
+    DAEMON_DB_ORDINAL_CONFIG_WEBSOCKET_ENABLEAUTH,
+    DAEMON_DB_ORDINAL_CONFIG_MQTTBROKER_ENABLE,
+    DAEMON_DB_ORDINAL_CONFIG_MQTTBROKER_PORT,
+    DAEMON_DB_ORDINAL_CONFIG_COAPSERVER_ENABLE,
+    DAEMON_DB_ORDINAL_CONFIG_COAPSERVER_PORT,
+    DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_ZONE,
+    DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUBZONE,
+    DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_LONGITUDE,
+    DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_LATITUDE,
+    DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_TIMEZONE,
+    DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUNRISE_ENABLE,
+    DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUNSET_ENABLE,
+    DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUNSETTWILIGHT_ENABLE,
+    DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUNRISETWILIGHT_ENABLE,
+    DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_ENABLE,
+    DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_INTERVAL,
+    DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_ENABLE,
+    DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_INTERVAL,
+    DAEMON_DB_ORDINAL_CONFIG_DB_DATA_PATH,
+    DAEMON_DB_ORDINAL_CONFIG_DB_LOG_PATH,
+};
+ */
 
 #endif  // compile
 

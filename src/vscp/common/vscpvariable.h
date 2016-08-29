@@ -481,7 +481,7 @@ public:
     
     
     /*!
-     * Find a stock variable
+     * Get a stock variable
      * 
      * First stock variable (start with "vscp.").
      * @param name Name of variable
@@ -489,7 +489,7 @@ public:
      * set to NULL in which case only availability of the variable is returned.
      * @return True if the variable is found. 
      */
-    bool findStockVariable( const wxString& name, CVSCPVariable& pVar );
+    bool getStockVariable( const wxString& name, CVSCPVariable& pVar );
     
     /*!
         Write stock variable.    
@@ -642,20 +642,14 @@ public:
      
      // -------------------------------------------------------------------
      
-     
-
-
- 
 
 public:
-
-    /*!
-        Configuration path for variable persistent storage XML file
-     */
-    wxString m_configPath;
+    
+    /// Path to variable XML file 
+    wxString m_xmlPath;
         
     /// Path to the external VSCP variable database
-    wxFileName m_path_db_vscp_external_variable; 
+    wxFileName m_dbFilename; 
     sqlite3 *m_db_vscp_external_variable;
     
     /// Internal variable database

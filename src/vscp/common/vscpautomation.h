@@ -115,31 +115,32 @@ public:
     uint8_t getSubzone( void ) { return m_subzone; };
 
     /// setter for bSunRiseEvent
-    void enableSunRiseEvent( void ) { m_bSunRiseEvent = true; };
+    void enableSunRiseEvent( bool bEnable = true ) { m_bSunRiseEvent = bEnable; };
 
     /// setter for bSunRiseEvent
     void disableSunRiseEvent( void ) { m_bSunRiseEvent = false; };
 
     
     /// setter for bSunSetEvent
-    void enableSunSetEvent( void ) { m_bSunSetEvent = true; };
+    void enableSunSetEvent( bool bEnable = true ) { m_bSunSetEvent = bEnable; };
 
     /// setter for bSunSetEvent
     void disableSunSetEvent( void ) { m_bSunSetEvent = false; };
 
 
     /// setter for bSunRiseTwilightEven
-    void enableSunRiseTwilightEvent( void ) { m_bSunRiseTwilightEvent = true; };
+    void enableSunRiseTwilightEvent( bool bEnable = true ) { m_bSunRiseTwilightEvent = bEnable; };
 
     /// setter for bSunRiseTwilightEvent
     void disableSunRiseTwilightEvent( void ) { m_bSunRiseTwilightEvent = false; };
 
 
     /// setter for bSunSetTwilightEvent
-    void enableSunSetTwilightEvent( void ) { m_bSunSetTwilightEvent = true; };
+    void enableSunSetTwilightEvent( bool bEnable = true ) { m_bSunSetTwilightEvent = bEnable; };
 
     /// setter for bSunSetTwilightEvent
     void disableSunSetTwilightEvent( void ) { m_bSunSetTwilightEvent = false; };
+    
 
     /// setter for daylightsavingtimeStart
     void setDaylightSavingStart( wxDateTime &dt ) { m_daylightsavingtimeStart = dt; };
