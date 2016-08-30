@@ -28,10 +28,10 @@
 #define VSCPDB__INCLUDED_
 
 //*****************************************************************************
-//                               SETTINGS
+//                              CONFIGURATION
 //*****************************************************************************
 
-#define VSCPDB_SETTINGS_CREATE "CREATE TABLE \"Settings\" ("\
+#define VSCPDB_CONFIG_CREATE "CREATE TABLE \"Settings\" ("\
 	"`vscpd_idx_settings`                               INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`vscpd_dbversion`                                  INTEGER NOT NULL DEFAULT 1,"\
 	"`vscpd_LogLevel`                                   INTEGER DEFAULT 1,"\
@@ -198,6 +198,19 @@
 //                                 USER
 //*****************************************************************************
 
+/*
+ * Defines users
+ * 
+ * permissions
+ * ===========
+ * uuugggooo
+ * uuu – user
+ * ggg – group
+ * ooo - other
+ *
+ * Each group is rw- and other permissions may be added added in front of this.
+ */
+
 #define VSCPDB_USER_CREATE "CREATE TABLE 'user' ("\
 	"`idx_user`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`username`	TEXT NOT NULL UNIQUE,"\
@@ -218,6 +231,21 @@
 //                                GROUP
 //*****************************************************************************
 
+/*
+ * Defines groups
+ * permission is bitfield with permissions.  The filed is OR'ed with user 
+ * permissions to form the resulting permission.
+ * 
+ * permissions
+ * ===========
+ * uuugggooo
+ * uuu – user
+ * ggg – group
+ * ooo - other
+ *
+ * Each group is rw- and other permissions may be added added in front of this.
+ */
+
 #define VSCPDB_GROUP_CREATE "CREATE TABLE 'group' ("\
 	"`idx_group`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`groupname`	TEXT NOT NULL,"\
@@ -229,6 +257,299 @@
 #define VSCPDB_ORDINAL_GROUP_USERNAME               1   // 
 #define VSCPDB_ORDINAL_GROUP_PERMISSION             2   // 
 #define VSCPDB_ORDINAL_GROUP_NOTE                   3   // 
+
+//*****************************************************************************
+//                             GROUPLINKS
+//*****************************************************************************
+
+/* 
+ * Defines which user(s) belong to a group.) 
+ */
+
+#define VSCPDB_GROUPLINKS_CREATE "CREATE TABLE `grouplinks` ("\
+	"`idx_acl`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
+	"`link_to_user`	INTEGER NOT NULL,"\
+	"`link_to_group`	INTEGER NOT NULL"\
+        ");"
+
+#define VSCPDB_ORDINAL_GROUPLINKS_ID                0   // 
+#define VSCPDB_ORDINAL_GROUPLINKS_LINK_TO_USER      1   // 
+#define VSCPDB_ORDINAL_GROUPLINKS_LINK_TO_GROUP     2   // 
+
+
+//*****************************************************************************
+//                                ACL
+//*****************************************************************************
+
+/*
+ * Defines access rights for remote machines and users.
+ */
+
+#define VSCPDB_ACL_CREATE "CREATE TABLE `acl` ("\
+	"`idx_acl`          INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
+	"`remote_address    TEXT NOT NULL,"\
+	"`link_to_user`     INTEGER NOT NULL"\
+        ");"
+
+#define VSCPDB_ORDINAL_ACL_ID                       0   // 
+#define VSCPDB_ORDINAL_ACL_REMOTE_ADDRESS           1   // 
+#define VSCPDB_ORDINAL_ACL_LINK_TO_USER             2   // 
+
+//*****************************************************************************
+//                               DRIVER
+//*****************************************************************************
+
+/*
+ * List drivers (Level I and Level II) used by the system
+ */
+
+#define VSCPDB_DRIVER_CREATE "CREATE TABLE `driver` ("\
+	"`idx_driver`       INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
+	"`bEnable`          INTEGER NOT NULL,"\
+	"`level`            INTEGER NOT NULL DEFAULT 0,"\
+	"`name`             TEXT NOT NULL,"\
+	"`link_to_guid`     INTEGER,"\
+	"`configuration`    TEXT,"\
+	"`path`             TEXT,"\
+	"`flags`            INTEGER,"\
+	"`note`             TEXT"\
+        ");"
+
+#define VSCPDB_ORDINAL_DRIVER_ID                    0   // 
+#define VSCPDB_ORDINAL_DRIVER_ENABLE                1   //
+#define VSCPDB_ORDINAL_DRIVER_LEVEL                 2   //
+#define VSCPDB_ORDINAL_DRIVER_NAME                  3   //
+#define VSCPDB_ORDINAL_DRIVER_LINK_TO_GUID          4   //
+#define VSCPDB_ORDINAL_DRIVER_CONFIGURATION         5   //
+#define VSCPDB_ORDINAL_DRIVER_PATH                  6   //
+#define VSCPDB_ORDINAL_DRIVER_FLAGS                 7   //
+#define VSCPDB_ORDINAL_DRIVER_NOTE                  8   //
+
+
+//*****************************************************************************
+//                                 GUID
+//*****************************************************************************
+
+/*
+ * GUID table
+ * type describes what this GUID is describing, for example an interface, a node etc.
+ *
+ * Type=0 - Common GUID.
+ * Type=1 – Interface. Can be a daemon or a hardware node with several interfaces.
+ * Type=2 - Hardware. link_to_guid will hold a link to the interface if this is a 
+ *      Level I node found on an interface. link_to_guid is NULL for a Level II 
+ *      hardware node. 
+ * Type=3 – Location.
+ */
+
+#define VSCPDB_GUID_CREATE "CREATE TABLE "guid" ("\
+	"`idx_guid`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,"\
+	"`type`         INTEGER NOT NULL,"\
+	"`guid`         TEXT,"\
+        "`link_to_mdf`	INTEGER,"\
+        "`name`         TEXT,"\
+        "`description`	TEXT,"\
+        ");"
+
+#define VSCPDB_ORDINAL_GUID_ID                      0   // 
+#define VSCPDB_ORDINAL_GUID_TYPE                    1   //
+#define VSCPDB_ORDINAL_GUID_GUID                    2   //
+#define VSCPDB_ORDINAL_GUID_LINK_TO_MDF             3   //
+#define VSCPDB_ORDINAL_GUID_NAME                    4   //
+#define VSCPDB_ORDINAL_GUID_DESCRIPTION             5   //
+                
+                
+//*****************************************************************************
+//                               LOCATION
+//*****************************************************************************
+
+/*
+ * Defines locations.
+ * A GUID can also be used to identify a location. If so link_to_guid points to it.
+ */
+
+#define VSCPDB_LOCATION_CREATE "CREATE TABLE `location` ("\
+	"`idx_location`         INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
+	"`link_to_zone`         INTEGER,"\
+	"`link_to_subzone`	INTEGER,"\
+	"`link_to_guid`          INTEGER,"\
+        "`name`                 TEXT NOT NULL UNIQUE,"\
+        "`description`	I       NTEGER,"\
+        ");"
+
+#define VSCPDB_ORDINAL_LOCATION_ID                  0   //            
+#define VSCPDB_ORDINAL_LOCATION_LINK_TO_ZONE        0   //
+#define VSCPDB_ORDINAL_LOCATION_LINK_TO_SUBZONE     0   //
+#define VSCPDB_ORDINAL_LOCATION_LINK_TO_GUID        0   //
+#define VSCPDB_ORDINAL_LOCATION_NAME                0   //
+#define VSCPDB_ORDINAL_LOCATION_DESCRIPTION         0   //                
+                
+                
+//*****************************************************************************
+//                               MDF_CACHE
+//*****************************************************************************
+                
+#define VSCPDB_MDF_CACHE_CREATE "CREATE TABLE "mdf_cache" ("\
+	"`idx_mdf`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
+	"`url`          TEXT NOT NULL UNIQUE,"\
+	"`pathFile`	TEXT NOT NULL,"\
+	"`pathPicture`	TEXT,"\
+	"`dateLoaded`	TEXT,"\
+	"`dateAccessed`	TEXT"\
+        ");"
+                
+#define VSCPDB_ORDINAL_MDF_CACHE_ID                 0   //  
+#define VSCPDB_ORDINAL_MDF_CACHE_URL                1   //
+#define VSCPDB_ORDINAL_MDF_CACHE_FILE_PATH          2   //
+#define VSCPDB_ORDINAL_MDF_CACHE_PICTURE_PATH       3   //
+#define VSCPDB_ORDINAL_MDF_CACHE_DATE               4   //
+#define VSCPDB_ORDINAL_MDF_CACHE_ACCESS             5   //
+                
+
+//*****************************************************************************
+//                               SIMPLEUI
+//*****************************************************************************
+
+/*
+ * Defines a simple UI
+ */
+
+#define VSCPDB_SIMPLE_UI_CREATE "CREATE TABLE "simpleui" ("\
+	"`idx_simpleui`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
+	"`name`             TEXT NOT NULL UNIQUE,"\
+	"`link_to_ower`     INTEGER NOT NULL,"\
+        "`link_to_group`    INTEGER NOT NULL,"\
+	"`permission`       INTEGER DEFAULT 777"\
+        "`comment`          TEXT"\
+        ");";
+
+ 
+#define VSCPDB_ORDINAL_SIMPLE_UI_NAME               1   //
+#define VSCPDB_ORDINAL_SIMPLE_UI_LINK_TO_OWNER      2   //  
+#define VSCPDB_ORDINAL_SIMPLE_UI_LINK_TO_GROUP      3   //
+#define VSCPDB_ORDINAL_SIMPLE_UI_PERMISSION         4   // 
+#define VSCPDB_ORDINAL_SIMPLE_UI_COMMENT            5   //
+
+
+//*****************************************************************************
+//                              SIMPLEUI_ITEM
+//*****************************************************************************
+
+/*
+ * Defines a simple UI item
+ * param_... defines contents for the row type
+ */
+                
+#define VSCPDB_SIMPLE_UI_ITEM_CREATE "CREATE TABLE `simpleui_item` ("\
+	"`idx_simpleui_item`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
+	"`link_to_simpleui`	INTEGER NOT NULL,"\
+        "`param_left`           TEXT NOT NULL,"\
+        "`param_middle`         TEXT NOT NULL,"\
+        "`param_right`          TEXT NOT NULL,"\
+	"`page`                 INTEGER,"\
+	"`sortorder`            INTEGER,"\
+	"`rowtype`              INTEGER DEFAULT 0"\
+        "):"
+
+#define VSCPDB_ORDINAL_SIMPLE_UI_ITEM_ID                0   //
+#define VSCPDB_ORDINAL_SIMPLE_UI_ITEM_LINK_TO_SIMPLEUI  1   //
+#define VSCPDB_ORDINAL_SIMPLE_UI_ITEM_PARAM_LEFT        2   //
+#define VSCPDB_ORDINAL_SIMPLE_UI_ITEM_PARAM_MIDDLE      3   //
+#define VSCPDB_ORDINAL_SIMPLE_UI_ITEM_PARAM_RIGHT       4   //
+#define VSCPDB_ORDINAL_SIMPLE_UI_ITEM_PAGE              5   //
+#define VSCPDB_ORDINAL_SIMPLE_UI_ITEM_SORT_ORDER        6   //
+#define VSCPDB_ORDINAL_SIMPLE_UI_ITEM_ROW_TYPE          7   //
+
+
+//*****************************************************************************
+//                                  ZONE
+//*****************************************************************************
+
+#define VSCPDB_ZONE_CREATE "CREATE TABLE "zone" ("\
+	"`idx_zone`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,"\
+	"`name`         TEXT NOT NULL,"\
+	"`description`	TEXT"\
+        ");"
+
+#define VSCPDB_ORDINAL_ZONE_ID                   0   //
+#define VSCPDB_ORDINAL_ZONE_NAME                 1   //
+#define VSCPDB_ORDINAL_ZONE_DESCRIPTION          2   //
+
+//*****************************************************************************
+//                                 SUBZONE
+//*****************************************************************************
+
+#define VSCPDB_SUBZONE_CREATE "CREATE TABLE `subzone` ("\
+	"`idx_subzone`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"\
+	"`name`         TEXT NOT NULL,"\
+	"`description`	TEXT"\
+        ");"
+
+#define VSCPDB_ORDINAL_SUBZONE_ID               0   //
+#define VSCPDB_ORDINAL_SUBZONE_NAME             1   //
+#define VSCPDB_ORDINAL_SUBZONE_DESCRIPTION      2   //
+
+
+
+//*****************************************************************************
+//                              USERDEF_TABLE
+//*****************************************************************************
+
+/*
+ * User defined tables with diagram hints
+ * xname - Text on xaxis
+ * yname - Text on yaxis
+ * title - Text for diagram title
+ * xfield - fields for data
+ * note - Text to display as note on diagram.
+ * tabletype - code for type of table
+ * param - parameter for table type
+ * size - A specific size for a table with a defined size (round robin).
+ * sql_create - SQL expression to use to create table
+ * sql_insertvalue - SQL expression to insert value. The value should be set as 
+ *  $value in the SQL expression and will be substituted with the real value as 
+ *  a floating point value.
+ * decription - User description for table
+ */
+
+#define VSCPDB_USERDEF_TABLE_CREATE "CREATE TABLE "userdef_table" ("\
+	"`idx_table`        INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
+	"`name`             TEXT NOT NULL,"\
+	"`link_to_owner`    INTEGER NOT NULL,"\
+        "`link_to_group`    INTEGER NOT NULL,"\
+	"`permission`       INTEGER NOT NULL,"\
+	"`xname`            BLOB NOT NULL,"\
+	"`yname`            TEXT NOT NULL,"\
+	"`title`            REAL NOT NULL,"\
+	"`xfield`           TEXT NOT NULL,"\
+	"`yfield`           TEXT NOT NULL,"\
+	"`note`             TEXT,"\
+        "`tabletype`        INTEGER,"\
+        "`param`            TEXT,"\
+	"`size`             INTEGER DEFAULT 0,"\
+	"`sql_create`       TEXT NOT NULL,"\
+	"`sql_insertvalue`  TEXT NOT NULL"\
+        "`description`      TEXT NOT NULL"\
+        ");"
+
+#define VSCPDB_ORDINAL_USERDEF_TABLE_ID                 0   //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_NAME               1   //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_LINK_TO_OWNER      2   //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_LINK_TO_GROUP      3   //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_PERMISSION         4   //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_XNAME              5   //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_YNAME              6   //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_TITLE              7   //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_XFIELD             8   //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_YFIELD             9   //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_NOTE               10  //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_TABLETYPE          11  //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_PARAM              12  //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_SIZE               13  //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_SQL_CREATE         14  //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_SQL_INSERTVALUE    15  //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_DESCRIPTION        16  //
+
 
 //*****************************************************************************
 //                          external VARIABLE

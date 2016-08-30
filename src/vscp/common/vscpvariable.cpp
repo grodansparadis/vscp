@@ -2353,7 +2353,6 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
         var.setValue( gpctrlObj->m_path_db_vscp_daemon.GetFullPath() );
     }
     
-    
 // *****************************************************************************
 //                             Decision Matrix
 // *****************************************************************************

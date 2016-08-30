@@ -2975,7 +2975,7 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
 bool CControlObject::doCreateConfigurationTable( void )
 {
     char *pErrMsg = 0;
-    const char *psql = VSCPDB_SETTINGS_CREATE;
+    const char *psql = VSCPDB_CONFIG_CREATE;
     
     // Check if database is open
     if ( NULL == m_db_vscp_daemon ) return false;
