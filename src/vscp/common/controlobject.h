@@ -168,125 +168,125 @@ public:
     /*!
         Constructor
      */
-    CControlObject(void);
+    CControlObject( void );
 
     /*!
         Destructor
      */
-    virtual ~CControlObject(void);
+    virtual ~CControlObject( void );
 
     /*!
       Write log message -
     */
-    void logMsg(const wxString& wxstr,
+    void logMsg( const wxString& wxstr,
                     const uint8_t level = DAEMON_LOGMSG_NORMAL,
                     const uint8_t nType = DAEMON_LOGTYPE_GENERAL );
 
     /*!
-        General initialization
+        General initialisation
      */
-    bool init(wxString& strcfgfile);
+    bool init( wxString& strcfgfile );
 
     /*!
         Clean up used resources
      */
-    bool cleanup(void);
+    bool cleanup( void );
 
     /*!
         The main worker thread
      */
-    bool run(void);
+    bool run( void );
 
     /*!
         Start worker threads for devices
         @return true on success
      */
-    bool startDeviceWorkerThreads(void);
+    bool startDeviceWorkerThreads( void );
 
     /*!
         Stop worker threads for devices
         @return true on success
      */
-    bool stopDeviceWorkerThreads(void);
+    bool stopDeviceWorkerThreads( void );
 
     /*!
         Starting daemon worker thread
         @return true on success
      */
-    bool startDaemonWorkerThread(void);
+    bool startDaemonWorkerThread( void );
 
     /*!
         Stop daemon worker thread
         @return true on success
      */
-    bool stopDaemonWorkerThread(void);
+    bool stopDaemonWorkerThread( void );
 
 
     /*!
         Starting TCP/IP worker thread
         @return true on success
      */
-    bool startTcpWorkerThread(void);
+    bool startTcpWorkerThread( void );
 
     /*!
         Stop the TCP/IP worker thread
         @return true on success
      */
-    bool stopTcpWorkerThread(void);
+    bool stopTcpWorkerThread( void );
 
     /*!
         Start the UDP worker thread
     */
-    bool startUDPWorkerThread(void);
+    bool startUDPWorkerThread( void );
 
     /*!
         Stop the UDP Workerthread
     */
-    bool stopUDPWorkerThread(void);
+    bool stopUDPWorkerThread( void );
 
     /*!
      *  Start MQTT broker
      */
-    bool startMQTTBrokerThread(void);
+    bool startMQTTBrokerThread( void );
 
     /*!
      * Stop MQTT broker
      */
-    bool stopMQTTBrokerThread(void);
+    bool stopMQTTBrokerThread( void );
 
     /*!
      * Start CoAP server
      */
-    bool startCoAPServerThread(void);
+    bool startCoAPServerThread( void );
 
     /*!
      *  Stop CoAP server
      */
-    bool stopCoAPServerThread(void);
+    bool stopCoAPServerThread( void );
 
     /*!
         Starting WebServer worker thread
         @return true on success
      */
-    bool startWebServerThread(void);
+    bool startWebServerThread( void );
 
     /*!
         Stop the WebServer worker thread
         @return true on success
      */
-    bool stopWebServerThread(void);
+    bool stopWebServerThread( void );
 
     /*!
         Starting Client worker thread
         @return true on success
      */
-    bool startClientWorkerThread(void);
+    bool startClientWorkerThread( void );
 
     /*!
         Stop Client worker thread
         @return true on success
      */
-    bool stopClientWorkerThread(void);
+    bool stopClientWorkerThread( void );
 
     /*!
         Add a new client to the clinet list
@@ -295,7 +295,7 @@ public:
         @param Normally not used but can be used to set a special
         client id.
      */
-    void addClient(CClientItem *pClientItem, uint32_t id = 0);
+    void addClient( CClientItem *pClientItem, uint32_t id = 0 );
 
     /*!
         Add a known node
@@ -305,19 +305,18 @@ public:
     void addKnownNode( cguid& guid, cguid& ifguid, wxString& name );
 
     /*!
-        Remove a new client from the clinet list
+        Remove a new client from the client list
 
         @param pClientItem Pointer to client that should be added.
      */
-    void removeClient(CClientItem *pClientItem);
-
+    void removeClient( CClientItem *pClientItem );
 
     /*!
-        Get device address for primary etehernet adapter
+        Get device address for primary ehernet adapter
 
         @param guid class
      */
-    bool getMacAddress(cguid& guid);
+    bool getMacAddress( cguid& guid );
 
 
     /*!
@@ -332,45 +331,45 @@ public:
         @param strcfgfile path to configuration file.
         @return Returns true on success false on failure.
      */
-    bool readConfiguration(wxString& strcfgfile);
+    bool readConfiguration( wxString& strcfgfile );
 
     /*!
          Save configuration data
      */
-    bool saveConfiguration(void);
+    bool saveConfiguration( void );
 
 
     /*!
         send level II message to all clients
      */
-    void sendEventToClient(CClientItem *pClientItem, vscpEvent *pEvent);
+    void sendEventToClient( CClientItem *pClientItem, vscpEvent *pEvent );
 
     /*!
         Send Level II event to all clients witch exception
      */
-    void sendEventAllClients(vscpEvent *pEvent, uint32_t excludeID = 0);
+    void sendEventAllClients( vscpEvent *pEvent, uint32_t excludeID = 0 );
 
 
     /*!
         Get clientmap index from a client id
      */
-    uint32_t getClientMapFromId(uint32_t clid);
+    uint32_t getClientMapFromId( uint32_t clid );
 
     /*!
         Get a client id from a client map index
      */
-    uint32_t getClientMapFromIndex(uint32_t idx);
+    uint32_t getClientMapFromIndex( uint32_t idx );
 
     /*!
         Add a client id to the clientmap
      */
-    uint32_t addIdToClientMap(uint32_t clid);
+    uint32_t addIdToClientMap( uint32_t clid );
 
     /*!
         Remove a client id to the clientmap
         @return True on success
      */
-    bool removeIdFromClientMap(uint32_t clid);
+    bool removeIdFromClientMap( uint32_t clid );
 
     /*!
         Get the webserver thread
@@ -398,6 +397,7 @@ public:
       */
      bool doCreateConfigurationTable( void );
      
+     
      /*
       * Update field in settings table
       */
@@ -405,12 +405,77 @@ public:
                                             const wxString& strUpdateField, 
                                             const wxString& strUpdateValue );
      
-     /*!
-      * Create log database
-      * @return true on success
-      */
-     bool doCreateLogTable( void );
+    /*!
+     * Create log database
+     * @return true on success
+     * @return true on success
+     */
+    bool doCreateLogTable( void );
      
+    /*!
+     * Create user table
+     */
+    bool doCreateUserTable( void );
+     
+    /*!
+     * Create group table
+     */
+     bool doCreateGroupTable( void );
+     
+    /*!
+     * Create grouplinks table
+     */
+    bool doCreateGroupLinksTable( void );
+    
+    /*!
+     * Create acl table
+     */
+    bool doCreateAclTable( void );
+    
+    /*!
+     * Create driver table
+     */
+    bool doCreateDriverTable( void );
+    
+    /*!
+     * Create guid table
+     */
+    bool doCreateGuidTable( void );
+    
+    /*!
+     * Create location table
+     */
+    bool doCreateLocationTable( void );
+    
+    /*!
+     * Create mdf table
+     */
+    bool doCreateMdfCacheTable( void );
+    
+    /*!
+     * Create simpleui table
+     */
+    bool doCreateSimpleUiTable( void );
+    
+    /*!
+     * Create simpleui item table
+     */
+    bool doCreateSimpleUiItemTable( void );
+    
+    /*!
+     * Create zone table
+     */
+    bool doCreateZoneTable( void );
+    
+    /*!
+     * Create subzone table
+     */
+    bool doCreateSubZoneTable( void );
+    
+    /*!
+     * Create userdef table
+     */
+    bool doCreateUserdefTableTable( void );
 
 public:
 
@@ -456,6 +521,7 @@ public:
         GUID
     */
     uint32_t m_clientMap[ VSCP_MAX_CLIENTS ];
+    
 
     /////////////////////////////////////////////////////////
     //                      Logging

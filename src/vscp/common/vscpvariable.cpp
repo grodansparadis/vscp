@@ -86,6 +86,8 @@ CVSCPVariable::~CVSCPVariable( void )
     ;
 }
 
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // fixName
 //
@@ -1397,6 +1399,91 @@ CVariableStorage::CVariableStorage()
     // We just read variables  
     m_lastSaveTime = wxDateTime::Now();
 
+    
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Destructor
+//
+
+CVariableStorage::~CVariableStorage()
+{    
+    // Close the internal variable database
+    if ( NULL != m_db_vscp_internal_variable ) {
+        sqlite3_close( m_db_vscp_internal_variable );
+    }
+    
+    // Close the external variable database
+    if ( NULL != m_db_vscp_external_variable ) {
+        sqlite3_close( m_db_vscp_external_variable );
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// init
+//
+
+bool CVariableStorage::init( void )
+{
+    wxString wxstr;
+    
+    // * * * VSCP Daemon external variable database * * *
+        
+    // Check filename
+    if ( m_dbFilename.IsOk() && m_dbFilename.FileExists() ) {
+
+        if ( SQLITE_OK != sqlite3_open( m_dbFilename.GetFullPath().mbc_str(),
+                                            &m_db_vscp_external_variable ) ) {
+
+            // Failed to open/create the database file
+            fprintf( stderr, "VSCP Daemon external variable database could not be opened. - Will not be used.\n" );
+            wxstr.Printf( _("Path=%s error=%s\n"),
+                            m_dbFilename.GetFullPath().mbc_str(),
+                            sqlite3_errmsg( m_db_vscp_external_variable ) );
+            fprintf( stderr, wxstr.mbc_str() );
+
+        }
+
+    }
+    else {
+        if ( m_dbFilename.IsOk() ) {
+            // We need to create the database from scratch. This may not work if
+            // the database is in a read only location.
+            fprintf( stderr, "VSCP Daemon external variable database does not exist - will be created.\n" );
+            wxstr.Printf(_("Path=%s\n"), m_dbFilename.GetFullPath().mbc_str() );
+            fprintf( stderr, wxstr.mbc_str() );
+            
+            if ( SQLITE_OK == sqlite3_open( m_dbFilename.GetFullPath().mbc_str(),
+                                            &m_db_vscp_external_variable ) ) {            
+                // create the table.
+                doCreateExternalVariableTable();
+            }
+        }
+        else {
+            fprintf( stderr, "VSCP Daemon external variable database path invalid - will not be used.\n" );
+            wxstr.Printf(_("Path=%s\n"), m_dbFilename.GetFullPath().mbc_str() );
+            fprintf( stderr, wxstr.mbc_str() );
+        }
+
+    }
+    
+    // * * * VSCP Daemon internal variable database - Always created in-memory * * *
+    
+    if ( SQLITE_OK == sqlite3_open( NULL, &m_db_vscp_internal_variable ) ) {
+        // Should always be created
+        doCreateInternalVariableTable();
+    }
+    else {
+        // Failed to open/create the database file
+        fprintf( stderr, "VSCP Daemon internal variable database could not be opened - Will not be used.\n" );
+        wxstr.Printf( _("Error=%s\n"),
+                            sqlite3_errmsg( m_db_vscp_internal_variable ) );
+        fprintf( stderr, wxstr.mbc_str() );
+        if ( NULL != m_db_vscp_internal_variable ) sqlite3_close( m_db_vscp_internal_variable );
+        m_db_vscp_internal_variable = NULL;
+    }
+    
     // Add stock variables
     m_StockVariable.Add( _("vscp.version.major") );
     m_StockVariable.Add( _("vscp.version.minor") );
@@ -1452,10 +1539,10 @@ CVariableStorage::CVariableStorage()
     m_StockVariable.Add( _("vscp.automation.segctrl.heartbeat.last") );
     m_StockVariable.Add( _("vscp.automation.longitude") );
     m_StockVariable.Add( _("vscp.automation.latitude") );
-    m_StockVariable.Add( _("vscp.automation.issendtwilightsunriseevent") );
-    m_StockVariable.Add( _("vscp.automation.issendtwilightsunriseevent") );
-    m_StockVariable.Add( _("vscp.automation.issendsunsetevent") );
-    m_StockVariable.Add( _("vscp.automation.issendtwilightsunsetevent") );
+    m_StockVariable.Add( _("vscp.automation.twilightsunriseevent.enable") );
+    m_StockVariable.Add( _("vscp.automation.twilightsunriseevent.enable") );
+    m_StockVariable.Add( _("vscp.automation.sunsetevent.enable") );
+    m_StockVariable.Add( _("vscp.automation.wilightsunsetevent.enable") );
     m_StockVariable.Add( _("vscp.workingfolder") );
     m_StockVariable.Add( _("vscp.websrv.address") );
     m_StockVariable.Add( _("vscp.websrv.authenticationOn") );
@@ -1487,25 +1574,9 @@ CVariableStorage::CVariableStorage()
     m_StockVariable.Add( _("vscp.log.security.path") );
     m_StockVariable.Add( _("vscp.database.log.path") );
     m_StockVariable.Add( _("vscp.database.vscpdata.path") );
-    m_StockVariable.Add( _("vscp.database.daemon.path") );
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// Destructor
-//
-
-CVariableStorage::~CVariableStorage()
-{    
-    // Close the internal variable database
-    if ( NULL != m_db_vscp_internal_variable ) {
-        sqlite3_close( m_db_vscp_internal_variable );
-    }
+    m_StockVariable.Add( _("vscp.database.daemon.path") ); 
     
-    // Close the external variable database
-    if ( NULL != m_db_vscp_external_variable ) {
-        sqlite3_close( m_db_vscp_external_variable );
-    }
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1526,9 +1597,10 @@ uint32_t CVariableStorage::exist(const wxString& name )
 uint32_t CVariableStorage::find(const wxString& name, CVSCPVariable& variable )
 {
     uint32_t id = 0;
+    wxString lowercase_name = name.Lower();
     
     // Look for stock variables
-    if ( name.StartsWith("VSCP.") ) {
+    if ( lowercase_name.StartsWith("vscp.") ) {
         return getStockVariable( name, variable );
     }
     else {
@@ -4560,7 +4632,8 @@ bool CVariableStorage::save( wxString& path, uint8_t whatToSave )
             variable.setAccessRights( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_PERMISSION ) );
             variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NOTE ) ) );
             
-            writeVariableToXmlFile( pFileStream, variable );
+            writeVariableToXmlFile( pFileStream, variable ); // Write the variable out on the stream
+            
         }
         
         sqlite3_finalize( ppStmt );

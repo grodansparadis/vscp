@@ -31,17 +31,17 @@
 //                              CONFIGURATION
 //*****************************************************************************
 
-#define VSCPDB_CONFIG_CREATE "CREATE TABLE \"Settings\" ("\
+#define VSCPDB_CONFIG_CREATE "CREATE TABLE 'settings' ("\
 	"`vscpd_idx_settings`                               INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`vscpd_dbversion`                                  INTEGER NOT NULL DEFAULT 1,"\
 	"`vscpd_LogLevel`                                   INTEGER DEFAULT 1,"\
         "'vscpd.maxqueue'                                   INTEGER DEFAULT 8191,"\
 	"`vscpd_RunAsUser`                                  TEXT DEFAULT '',"\
-	"`vscpd_GUID`                                       TEXT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00',"\
-	"`vscpd_Name`                                       TEXT DEAFULT 'THE-VSCP-DAEMON',"\
+	"`vscpd_GUID`                                       TEXT DEFAULT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00',"\
+	"`vscpd_Name`                                       TEXT DEFAULT 'THE-VSCP-DAEMON',"\
 	"`vscpd_Syslog_Enable`                              INTEGER DEFAULT 1,"\
         "`vscpd_LogDB_Enable`                               INTEGER DEFAULT 1,"\
-        "`vscpd_db_log_path`                                TEXT DEFAULT '/srv/vscp/log'"\
+        "`vscpd_db_log_path`                                TEXT DEFAULT '/srv/vscp/log',"\
 	"`vscpd_GeneralLogFile_Enable`                      INTEGER DEFAULT 1,"\
 	"`vscpd_GeneralLogFile_Path`                        TEXT DEFAULT '/var/log/vscp/vscp_log_general',"\
 	"`vscpd_SecurityLogFile_Enable`                     INTEGER DEFAULT 1,"\
@@ -82,8 +82,8 @@
 	"`vscpd_WebSocket_EnableAuth`                       INTEGER DEFAULT 1,"\
 	"`vscpd_MqttBroker_Enable`                          INTEGER DEFAULT 0,"\
 	"`vscpd_MqttBroker_Address`                         TEXT DEFAULT '1883',"\
-	"`vscpd_CoapServer_Enable`                          INTEGER TEXT DEFAULT 0,"\
-	"`vscpd_CoapServer_Address`                         TEXT TEXT DEFAULT 'udp://:5683',"\
+	"`vscpd_CoapServer_Enable`                          INTEGER DEFAULT 0,"\
+	"`vscpd_CoapServer_Address`                         TEXT DEFAULT 'udp://:5683',"\
 	"`vscpd_Automation_Enable`                          INTEGER DEFAULT 1,"\
 	"`vscpd_Automation_Zone`                            INTEGER DEFAULT 1,"\
 	"`vscpd_Automation_SubZone`                         INTEGER DEFAULT 2,"\
@@ -99,7 +99,7 @@
 	"`vscpd_Automation_HeartbeatEvent_Enable`           INTEGER DEFAULT 1,"\
 	"`vscpd_Automation_HeartbeatEvent_Interval`         INTEGER DEFAULT 60,"\
 	"`vscpd_db_data_path`                               TEXT DEFAULT '/var/log/vscp/vscpdata.sqlite3',"\
-        "`vscpd_db_vscpconf_path`                           TEXT DEFAULT '/var/log/vscp/vscpd.sqlite3',"\
+        "`vscpd_db_vscpconf_path`                           TEXT DEFAULT '/var/log/vscp/vscpd.sqlite3' "\
         ");";
 
 #define VSCPDB_CONFIG_SET_DEFAULTS  ""        
@@ -180,7 +180,7 @@
 //                                  LOG
 //*****************************************************************************
 
-#define VSCPDB_LOG_CREATE "CREATE TABLE \"log\" ("\
+#define VSCPDB_LOG_CREATE "CREATE TABLE 'log' ("\
 	"`idx_log`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`type`	INTEGER DEFAULT 1,"\
 	"`date`	TEXT,"\
@@ -217,7 +217,7 @@
 	"`password`	TEXT NOT NULL,"\
 	"`fullname`	TEXT NOT NULL,"\
 	"`permission`	INTEGER DEFAULT 777,"\
-	"`note`	TEXT NOT NULL"\
+	"`note`	TEXT DEFAULT ''"\
         ");"
 
 #define VSCPDB_ORDINAL_USER_ID                       0   // 
@@ -248,13 +248,13 @@
 
 #define VSCPDB_GROUP_CREATE "CREATE TABLE 'group' ("\
 	"`idx_group`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-	"`groupname`	TEXT NOT NULL,"\
+	"`name`         TEXT NOT NULL,"\
 	"`permission`	INTEGER DEFAULT 777,"\
-	"`note`	TEXT"\
+	"`note`	TEXT DEFAULT ''"\
         ");"
 
 #define VSCPDB_ORDINAL_GROUP_ID                     0   // 
-#define VSCPDB_ORDINAL_GROUP_USERNAME               1   // 
+#define VSCPDB_ORDINAL_GROUP_NAME                   1   // 
 #define VSCPDB_ORDINAL_GROUP_PERMISSION             2   // 
 #define VSCPDB_ORDINAL_GROUP_NOTE                   3   // 
 
@@ -267,8 +267,8 @@
  */
 
 #define VSCPDB_GROUPLINKS_CREATE "CREATE TABLE `grouplinks` ("\
-	"`idx_acl`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-	"`link_to_user`	INTEGER NOT NULL,"\
+	"`idx_grouplinks`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
+	"`link_to_user`         INTEGER NOT NULL,"\
 	"`link_to_group`	INTEGER NOT NULL"\
         ");"
 
@@ -287,7 +287,7 @@
 
 #define VSCPDB_ACL_CREATE "CREATE TABLE `acl` ("\
 	"`idx_acl`          INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-	"`remote_address    TEXT NOT NULL,"\
+	"`remote_address`   TEXT NOT NULL,"\
 	"`link_to_user`     INTEGER NOT NULL"\
         ");"
 
@@ -342,13 +342,13 @@
  * Type=3 – Location.
  */
 
-#define VSCPDB_GUID_CREATE "CREATE TABLE "guid" ("\
+#define VSCPDB_GUID_CREATE "CREATE TABLE `guid` ("\
 	"`idx_guid`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,"\
 	"`type`         INTEGER NOT NULL,"\
 	"`guid`         TEXT,"\
         "`link_to_mdf`	INTEGER,"\
         "`name`         TEXT,"\
-        "`description`	TEXT,"\
+        "`description`	TEXT "\
         ");"
 
 #define VSCPDB_ORDINAL_GUID_ID                      0   // 
@@ -374,7 +374,7 @@
 	"`link_to_subzone`	INTEGER,"\
 	"`link_to_guid`          INTEGER,"\
         "`name`                 TEXT NOT NULL UNIQUE,"\
-        "`description`	I       NTEGER,"\
+        "`description`	I       NTEGER "\
         ");"
 
 #define VSCPDB_ORDINAL_LOCATION_ID                  0   //            
@@ -389,7 +389,7 @@
 //                               MDF_CACHE
 //*****************************************************************************
                 
-#define VSCPDB_MDF_CACHE_CREATE "CREATE TABLE "mdf_cache" ("\
+#define VSCPDB_MDF_CACHE_CREATE "CREATE TABLE 'mdf_cache' ("\
 	"`idx_mdf`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`url`          TEXT NOT NULL UNIQUE,"\
 	"`pathFile`	TEXT NOT NULL,"\
@@ -414,12 +414,12 @@
  * Defines a simple UI
  */
 
-#define VSCPDB_SIMPLE_UI_CREATE "CREATE TABLE "simpleui" ("\
+#define VSCPDB_SIMPLE_UI_CREATE "CREATE TABLE 'simpleui' ("\
 	"`idx_simpleui`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`name`             TEXT NOT NULL UNIQUE,"\
 	"`link_to_ower`     INTEGER NOT NULL,"\
         "`link_to_group`    INTEGER NOT NULL,"\
-	"`permission`       INTEGER DEFAULT 777"\
+	"`permission`       INTEGER DEFAULT 777,"\
         "`comment`          TEXT"\
         ");";
 
@@ -449,7 +449,7 @@
 	"`page`                 INTEGER,"\
 	"`sortorder`            INTEGER,"\
 	"`rowtype`              INTEGER DEFAULT 0"\
-        "):"
+        ");"
 
 #define VSCPDB_ORDINAL_SIMPLE_UI_ITEM_ID                0   //
 #define VSCPDB_ORDINAL_SIMPLE_UI_ITEM_LINK_TO_SIMPLEUI  1   //
@@ -465,7 +465,7 @@
 //                                  ZONE
 //*****************************************************************************
 
-#define VSCPDB_ZONE_CREATE "CREATE TABLE "zone" ("\
+#define VSCPDB_ZONE_CREATE "CREATE TABLE 'zone' ("\
 	"`idx_zone`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,"\
 	"`name`         TEXT NOT NULL,"\
 	"`description`	TEXT"\
@@ -512,7 +512,7 @@
  * decription - User description for table
  */
 
-#define VSCPDB_USERDEF_TABLE_CREATE "CREATE TABLE "userdef_table" ("\
+#define VSCPDB_USERDEF_TABLE_CREATE "CREATE TABLE 'userdef_table' ("\
 	"`idx_table`        INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`name`             TEXT NOT NULL,"\
 	"`link_to_owner`    INTEGER NOT NULL,"\
@@ -528,7 +528,7 @@
         "`param`            TEXT,"\
 	"`size`             INTEGER DEFAULT 0,"\
 	"`sql_create`       TEXT NOT NULL,"\
-	"`sql_insertvalue`  TEXT NOT NULL"\
+	"`sql_insertvalue`  TEXT NOT NULL,"\
         "`description`      TEXT NOT NULL"\
         ");"
 
@@ -549,6 +549,13 @@
 #define VSCPDB_ORDINAL_USERDEF_TABLE_SQL_CREATE         14  //
 #define VSCPDB_ORDINAL_USERDEF_TABLE_SQL_INSERTVALUE    15  //
 #define VSCPDB_ORDINAL_USERDEF_TABLE_DESCRIPTION        16  //
+
+
+
+
+// ----------------------------------------------------------------------------
+
+
 
 
 //*****************************************************************************
@@ -578,6 +585,14 @@
 #define VSCPDB_ORDINAL_VARIABLE_LINK_TO_GROUP   7   // 
 #define VSCPDB_ORDINAL_VARIABLE_PERMISSION      8   // 
 #define VSCPDB_ORDINAL_VARIABLE_NOTE            9   // 
+
+
+
+
+
+// ----------------------------------------------------------------------------
+
+
 
 
 
@@ -721,73 +736,7 @@
 #define VSCPDB_ORDINAL_DM_MEASUREMENT_COMMENT       34   //
 
 
-/*
- // Configuration database ordinals
-enum {
-    DAEMON_DB_ORDINAL_CONFIG_ID = 0,
-    DAEMON_DB_ORDINAL_CONFIG_DBVERSION,
-    DAEMON_DB_ORDINAL_CONFIG_LOGLEVEL,
-    DAEMON_DB_ORDINAL_CONFIG_RUNASUSER,
-    DAEMON_DB_ORDINAL_CONFIG_GUID,
-    DAEMON_DB_ORDINAL_CONFIG_NAME,
-    DAEMON_DB_ORDINAL_CONFIG_SYSLOG_ENABLE,
-    DAEMON_DB_ORDINAL_CONFIG_GENERALLOGFILE_ENABLE,
-    DAEMON_DB_ORDINAL_CONFIG_GENERALLOGFILE_PATH,
-    DAEMON_DB_ORDINAL_CONFIG_SECURITYLOGFILE_ENABLE,
-    DAEMON_DB_ORDINAL_CONFIG_SECURITYLOGFILE_PATH,
-    DAEMON_DB_ORDINAL_CONFIG_ACCESSLOGFILE_ENABLE,
-    DAEMON_DB_ORDINAL_CONFIG_ACCESSLOGFILE_PATH,
-    DAEMON_DB_ORDINAL_CONFIG_TCPIPINTERFACE_PORT,
-    DAEMON_DB_ORDINAL_CONFIG_MULTICASTINTERFACE_PORT,
-    DAEMON_DB_ORDINAL_CONFIG_MULICASTINTERFACE_TTL,
-    DAEMON_DB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_ENABLE,
-    DAEMON_DB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_PORT,
-    DAEMON_DB_ORDINAL_CONFIG_DM_PATH,
-    DAEMON_DB_ORDINAL_CONFIG_DM_LOGGING_ENABLE,
-    DAEMON_DB_ORDINAL_CONFIG_DM_LOGGING_PATH,
-    DAEMON_DB_ORDINAL_CONFIG_DM_LOGGING_LEVEL,
-    DAEMON_DB_ORDINAL_CONFIG_VARIABLES_PATH,
-    DAEMON_DB_ORDINAL_CONFIG_VSCPD_DEFAULTCLIENTBUFFERSIZE,
-    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_DISABLEAUTHENTICATION,
-    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_ROOTPATH,
-    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_PORT,
-    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_PATHCERT,
-    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_AUTHDOMAIN,
-    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_CGIINTERPRETER,
-    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_CGIPATTERN,
-    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_ENABLEDIRECTORYLISTINGS,
-    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_HIDEFILEPATTERNS,
-    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_INDEXFILES,
-    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_EXTRAMIMETYPES,
-    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_URLREWRITES,
-    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_SSIPATTERN,
-    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_RUNASUSER,
-    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_PERDIRECTORYAUTHFILE,
-    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_GLOBALAUTHFILE,
-    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER__IPACL,
-    DAEMON_DB_ORDINAL_CONFIG_WEBSERVER_DAVDOCUMENTROOT,
-    DAEMON_DB_ORDINAL_CONFIG_WEBSOCKET_ENABLEAUTH,
-    DAEMON_DB_ORDINAL_CONFIG_MQTTBROKER_ENABLE,
-    DAEMON_DB_ORDINAL_CONFIG_MQTTBROKER_PORT,
-    DAEMON_DB_ORDINAL_CONFIG_COAPSERVER_ENABLE,
-    DAEMON_DB_ORDINAL_CONFIG_COAPSERVER_PORT,
-    DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_ZONE,
-    DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUBZONE,
-    DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_LONGITUDE,
-    DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_LATITUDE,
-    DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_TIMEZONE,
-    DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUNRISE_ENABLE,
-    DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUNSET_ENABLE,
-    DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUNSETTWILIGHT_ENABLE,
-    DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SUNRISETWILIGHT_ENABLE,
-    DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_ENABLE,
-    DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_INTERVAL,
-    DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_ENABLE,
-    DAEMON_DB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_INTERVAL,
-    DAEMON_DB_ORDINAL_CONFIG_DB_DATA_PATH,
-    DAEMON_DB_ORDINAL_CONFIG_DB_LOG_PATH,
-};
- */
+
 
 #endif  // compile
 

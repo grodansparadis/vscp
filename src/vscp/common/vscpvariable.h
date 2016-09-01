@@ -457,6 +457,10 @@ public:
     /// Destructor
     virtual ~CVariableStorage();
     
+    // Initialise variable storage
+    // @return true on success.
+    bool init( void );
+    
     /*!
      * Find variable from it's name
      * 
@@ -635,11 +639,7 @@ public:
      */
     void listFinalize( varQuery *pq );
 
-
-    
-    
-    
-     
+  
      // -------------------------------------------------------------------
      
 

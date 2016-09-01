@@ -116,7 +116,7 @@ int main(int argc, char **argv)
 
     wxInitializer initializer;
     if (!::wxInitialize()) {
-        fprintf(stderr, "Failed to initialise the wxWindows library, aborting.");
+        fprintf(stderr, "Failed to initialise the wxWindows library, aborting.\n");
 
         return -1;
     }
@@ -166,10 +166,10 @@ int main(int argc, char **argv)
     }
 
     //wxLogDebug(_("ControlObject: Configfile =") + strcfgfile);
-    gpobj->logMsg( _("ControlObject: Configfile =") + strcfgfile );
+    gpobj->logMsg( _("ControlObject: Configfile =") + strcfgfile + _(" \n") );
     if ( !theApp.init( strcfgfile ) ) {
-        printf("ControlObject: Failed to configure. Terminating.");
-        wxLogDebug(_("ControlObject: Failed to configure. Terminating."));
+        printf("ControlObject: Failed to configure. Terminating.\n");
+        wxLogDebug(_("ControlObject: Failed to configure. Terminating.\n"));
     }
 
     delete gpobj;
@@ -191,7 +191,7 @@ BOOL VSCPApp::init(wxString& strcfgfile)
         // Fork child
         if (0 > (pid = fork())) {
             // Failure
-            printf("Failed to fork.");
+            printf("Failed to fork.\n");
             return -1;
         }
         else if (0 != pid) {
@@ -201,7 +201,7 @@ BOOL VSCPApp::init(wxString& strcfgfile)
         sid = setsid(); // Become session leader
         if (sid < 0) {
             // Failure
-            printf("Failed to become session leader.");
+            printf("Failed to become session leader.\n");
             return -1;
         }
 
@@ -265,20 +265,20 @@ BOOL VSCPApp::init(wxString& strcfgfile)
 
     wxLogDebug(_("VSCPD: init."));
     if ( !gpobj->init( strcfgfile ) ) {
-        printf("Can't initialise daemon. Exiting.");
+        printf("Can't initialise daemon. Exiting.\n");
         syslog(LOG_CRIT, "Can't initialise daemon. Exiting.");
         return FALSE;
     }
 
     wxLogDebug(_("VSCPD: run"));
     if (!gpobj->run()) {
-        printf("Unable to start the VSCPD application. Exiting.");
+        printf("Unable to start the VSCPD application. Exiting.\n");
         syslog(LOG_CRIT, "Unable to start the VSCPD application. Exiting.");
     }
 
     wxLogDebug(_("VSCPD: cleanup"));
     if (!gpobj->cleanup()) {
-        printf("Unable to clean up the VSCPD application.");
+        printf("Unable to clean up the VSCPD application.\n");
         syslog(LOG_CRIT, "Unable to clean up the VSCPD application.");
     }
 
