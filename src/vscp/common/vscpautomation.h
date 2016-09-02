@@ -54,6 +54,7 @@ public:
     */
     int isDaylightSavingTime();
 
+    
     /*!
         Get the hours our locale differs from GMT
     */
@@ -141,13 +142,6 @@ public:
     /// setter for bSunSetTwilightEvent
     void disableSunSetTwilightEvent( void ) { m_bSunSetTwilightEvent = false; };
     
-
-    /// setter for daylightsavingtimeStart
-    void setDaylightSavingStart( wxDateTime &dt ) { m_daylightsavingtimeStart = dt; };
-
-    /// setter for daylightsavingtimeEnd
-    void setDaylightSavingEnd( wxDateTime &dt ) { m_daylightsavingtimeEnd = dt; };
-
     /// setter for longitude
     void setLongitude( double l ) { m_longitude = l; };
 
@@ -155,28 +149,37 @@ public:
     void setLatitude( double l ) { m_latitude = l; };
 
     /// setter for timezone
-    void setTimezone( double tz ) { m_timezone = tz; };
-
+    //void setTimezone( double tz ) { m_timezone = tz; };
+    //double getTimeZone( void ) { return m_timezone; };
 
     /// setter for m_bSegmentControllerHeartbeat
     void enableSegmentControllerHeartbeat( void ) { m_bSegmentControllerHeartbeat = true; };
 
     /// setter for m_bSegmentControllerHeartbeat
     void disableSegmentControllerHeartbeat( void ) { m_bSegmentControllerHeartbeat = false; };
+    
+    bool isSegmentControllerHeartbeat( void ) { return m_bSegmentControllerHeartbeat; };
 
-    /// setter for m_intervalSegmentControllerHeartbeat
-    void setIntervalSegmentControllerHeartbeat( long interval ) 
+    /// setter/getter for m_intervalSegmentControllerHeartbeat
+    void setSegmentControllerHeartbeatInterval( long interval ) 
                                         { m_intervalSegmentControllerHeartbeat = interval; };
+                                        
+    long getSegmentControllerHeartbeatInterval( void ) 
+                                        { return m_intervalSegmentControllerHeartbeat; };
 
     /// setter for m_bHeartBeatEvent
     void enableHeartbeatEvent( void ) { m_bHeartBeatEvent = true; };
 
     /// setter for m_bHeartBeatEvent
     void disableHeartbeatEvent( void ) { m_bHeartBeatEvent = false; };
+    
+    bool isHeartbeatEvent( void ) { return m_bHeartBeatEvent; };
 
     /// setter for setIntervalHeartbeatEvent
-    void setIntervalHeartbeatEvent( long interval ) 
+    void setHeartbeatEventInterval( long interval ) 
                                         { m_intervalHeartBeat = interval; };
+    long getHeartbeatEventInterval( void ) 
+                                        { return m_intervalHeartBeat; };                                        
 
     // Setter/getter for automation enable/diable
     void enableAutomation( void ) { m_bAutomation = true; };
@@ -212,7 +215,7 @@ public:
     bool isSendSunsetTwilightEvent( void ) { return m_bSunSetTwilightEvent; }; 
     bool isSendCalculatedNoonEvent( void ) { return m_bCalculatedNoonEvent; };
 
-    bool  isSendSegmentControllerHeartbeat( void ) { return m_bSegmentControllerHeartbeat; };
+    bool isSendSegmentControllerHeartbeat( void ) { return m_bSegmentControllerHeartbeat; };
     long getIntervalSegmentControllerHeartbeat( void ) { return m_intervalSegmentControllerHeartbeat; };
     wxDateTime &getSegmentControllerHeartbeatSent( void ) { return m_SegmentHeartbeat_sent; };
 
@@ -234,7 +237,7 @@ private:
         Timezone for this computer
         GMT = 0;
     */
-    double m_timezone;
+    //double m_timezone;
 
     /*!
         Set to true for  periodic CLASS1.PROTOCOL, Type=1 (Segment Status Heartbeat) 
@@ -268,20 +271,6 @@ private:
 
     // Time when capabilities Level II sent
     wxDateTime m_Capabilities_Level2_sent;
-
-    /*!
-        Start date time when daylight saving time starts. When daylight saving time is in 
-        effect the zone value will be increase with one for all calculations. Date/Time should 
-        be on the form YY-MM-DD HH:MM:SS
-    */
-    wxDateTime m_daylightsavingtimeStart;
-
-    /*!
-        Start date time when daylight saving time starts. When daylight saving time is in 
-        effect the zone value will be increase with one for all calculations. Date/Time should 
-        be on the form YY-MM-DD HH:MM:SS
-    */
-    wxDateTime m_daylightsavingtimeEnd;
 
     /*!
         Enable/disable the CLASS1.INFORMATION, Type=52 (Civil sunrise twilight time) to be sent. 

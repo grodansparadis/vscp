@@ -103,17 +103,12 @@ CVSCPAutomation::CVSCPAutomation( void )
     // Take me the freedom to use my own place as reference
     m_longitude =  15.1604167;  // Home sweet home
     m_latitude = 61.7441833;
-    m_timezone = 1;
 
     m_bSegmentControllerHeartbeat = true;
     m_intervalSegmentControllerHeartbeat = 60;
 
     m_bHeartBeatEvent = true;
     m_intervalHeartBeat = 60;
-
-    // Again Europe and Sweden as a reference
-    m_daylightsavingtimeStart.ParseDateTime(_("2014-03-30 02:00:00"));
-    m_daylightsavingtimeEnd.ParseDateTime(_("2014-10-26 02:00:00"));
 
     m_bSunRiseEvent = true;
     m_bSunRiseTwilightEvent = true;
@@ -300,22 +295,11 @@ void CVSCPAutomation::calcSun( void )
     double twilightSunraise, maxAltitude, noonTime, sunsetTime, sunriseTime, twilightSunset;
     time_t sekunnit;
     struct tm *p;
-    double tzone = m_timezone;
-
-    if ( isDaylightSavingTime() < 0 ) {
-        // No support from system for Daylight saving time on this system
-
-        // If summertime we add an hour to the zone
-        if ( ( wxDateTime::Now() >= m_daylightsavingtimeStart ) &&
-                ( wxDateTime::Now() <= m_daylightsavingtimeEnd ) ) {
-            tzone++;
-        }
-    }
-    else {
-        // We have support for Daylight saving time
-        if ( isDaylightSavingTime() ) {
-            tzone = getTimeZoneDiffHours();
-        }
+    double tzone = 0;
+  
+    // Adjust for daylight saving time
+    if ( isDaylightSavingTime() ) {
+        tzone = getTimeZoneDiffHours();
     }
 
     degs = 180.0 / pi;

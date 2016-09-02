@@ -401,8 +401,7 @@ public:
      /*
       * Update field in settings table
       */
-     bool updateConfigurationRecordItem( unsigned long id, 
-                                            const wxString& strUpdateField, 
+     bool updateConfigurationRecordItem( const wxString& strUpdateField, 
                                             const wxString& strUpdateValue );
      
     /*!
@@ -476,6 +475,7 @@ public:
      * Create userdef table
      */
     bool doCreateUserdefTableTable( void );
+    
 
 public:
 
@@ -485,6 +485,14 @@ public:
 
     wxLocale m_locale;
 
+    // In the configuration database configurations are stored in records.
+    // Normally record = 1 (default) is used )
+    uint16_t m_nConfiguration;
+    
+    // This is the root folder for the VSCP daemon, it will look for
+    // the configuration database here
+    wxString m_rootFolder;
+    
     /*!
         true if we should quit
      */
