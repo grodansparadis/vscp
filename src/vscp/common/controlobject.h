@@ -185,7 +185,7 @@ public:
     /*!
         General initialisation
      */
-    bool init( wxString& strcfgfile );
+    bool init( wxString& strcfgfile, wxString& rootFolder );
 
     /*!
         Clean up used resources
@@ -331,7 +331,7 @@ public:
         @param strcfgfile path to configuration file.
         @return Returns true on success false on failure.
      */
-    bool readConfiguration( wxString& strcfgfile );
+    bool readXMLConfiguration( wxString& strcfgfile );
 
     /*!
          Save configuration data

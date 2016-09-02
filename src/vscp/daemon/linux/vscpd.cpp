@@ -94,7 +94,8 @@ VSCPApp::VSCPApp()
 int main(int argc, char **argv)
 {
     int arg = 0;
-    wxString strcfgfile;
+    wxString rootFolder;    // Folder where VSCP files will be
+    wxString strcfgfile;    // Points to XML configuration file
 
     // Ignore return value from defunct processes
     signal(SIGCHLD, SIG_IGN);
@@ -122,6 +123,12 @@ int main(int argc, char **argv)
     }
 
     gpobj = new CControlObject();
+    
+#ifdef WIN32
+    rootFolder = _("/programdata/vscp");
+#else    
+    rootFolder = _("/srv/vscp/");
+#endif    
 
     //wxStandardPaths *strpath = wxStandardPaths::Get();
     //strcfgFile =  _("/etc/vscp/vscpd.conf" );     // default config path
@@ -133,7 +140,7 @@ int main(int argc, char **argv)
 
     wxSocketBase::Initialize();
 
-    while ((arg = getopt(argc, argv, "d:c:hgs")) != EOF) {
+    while ((arg = getopt(argc, argv, "d:c:f:hgs")) != EOF) {
 
         switch (arg) {
 
@@ -145,8 +152,10 @@ int main(int argc, char **argv)
 
         case 'c':
             strcfgfile = wxString(optarg, wxConvUTF8);
-            //wxMBConvUTF8 cnv;
-            //cnv.MB2WC( strcfgfile, optarg, 10 );
+            break;
+            
+        case 'r':
+            rootFolder = wxString(optarg, wxConvUTF8);
             break;
 
         case 'd':
@@ -167,8 +176,8 @@ int main(int argc, char **argv)
 
     //wxLogDebug(_("ControlObject: Configfile =") + strcfgfile);
     gpobj->logMsg( _("ControlObject: Configfile =") + strcfgfile + _(" \n") );
-    if ( !theApp.init( strcfgfile ) ) {
-        printf("ControlObject: Failed to configure. Terminating.\n");
+    if ( !theApp.init( strcfgfile, rootFolder ) ) {
+        fprintf(stderr,"ControlObject: Failed to configure. Terminating.\n");
         wxLogDebug(_("ControlObject: Failed to configure. Terminating.\n"));
     }
 
@@ -181,17 +190,16 @@ int main(int argc, char **argv)
 /////////////////////////////////////////////////////////////////////////////
 // initialisation
 
-BOOL VSCPApp::init(wxString& strcfgfile)
+BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
 {
-
-    if (!gbDontRunAsDaemon) {
+    if ( !gbDontRunAsDaemon ) {
 
         pid_t pid, sid;
 
         // Fork child
         if (0 > (pid = fork())) {
             // Failure
-            printf("Failed to fork.\n");
+            fprintf(stderr,"Failed to fork.\n");
             return -1;
         }
         else if (0 != pid) {
@@ -201,7 +209,7 @@ BOOL VSCPApp::init(wxString& strcfgfile)
         sid = setsid(); // Become session leader
         if (sid < 0) {
             // Failure
-            printf("Failed to become session leader.\n");
+            fprintf(stderr,"Failed to become session leader.\n");
             return -1;
         }
 
@@ -260,25 +268,25 @@ BOOL VSCPApp::init(wxString& strcfgfile)
 
     }
 
-    //wxFile
+    
 
 
     wxLogDebug(_("VSCPD: init."));
-    if ( !gpobj->init( strcfgfile ) ) {
-        printf("Can't initialise daemon. Exiting.\n");
+    if ( !gpobj->init( strcfgfile, rootFolder ) ) {
+        fprintf(stderr,"Can't initialise daemon. Exiting.\n");
         syslog(LOG_CRIT, "Can't initialise daemon. Exiting.");
         return FALSE;
     }
 
     wxLogDebug(_("VSCPD: run"));
     if (!gpobj->run()) {
-        printf("Unable to start the VSCPD application. Exiting.\n");
+        fprintf(stderr,"Unable to start the VSCPD application. Exiting.\n");
         syslog(LOG_CRIT, "Unable to start the VSCPD application. Exiting.");
     }
 
     wxLogDebug(_("VSCPD: cleanup"));
     if (!gpobj->cleanup()) {
-        printf("Unable to clean up the VSCPD application.\n");
+        fprintf(stderr,"Unable to clean up the VSCPD application.\n");
         syslog(LOG_CRIT, "Unable to clean up the VSCPD application.");
     }
 
@@ -328,8 +336,9 @@ void help(char *szPrgname)
 {
     fprintf(stderr, "Usage: %s [-ahg] [-c command-file] -dn\n", szPrgname);
     fprintf(stderr, "\t-h\tThis help message.\n");
-    fprintf(stderr, "\t-s\tStandalone (don't run as daemon)..\n");
-    fprintf(stderr, "\t-c\tSpecify a configuration file \n");
+    fprintf(stderr, "\t-s\tStandalone (don't run as daemon). \n");
+    fprintf(stderr, "\t-r\tSpecify VSCP root folder. \n");
+    fprintf(stderr, "\t-c\tSpecify a configuration file. \n");
     fprintf(stderr, "\t-d\tDebug level. 0=None, 99=Don't run as daemon. ");
     fprintf(stderr, "that should be used (default: /etc/canalworks.conf).\n");
     fprintf(stderr, "\t-g\tPrint the GNU copyleft info.\n");

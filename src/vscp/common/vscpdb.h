@@ -105,7 +105,7 @@
 #define VSCPDB_CONFIG_SET_DEFAULTS  ""        
         
 
-#define VSCPDB_CONFIG_UPDATE_ITEM "UPDATE 'Settings' SET ( %s='%s' ) WHERE id='%d' "
+#define VSCPDB_CONFIG_UPDATE_ITEM "UPDATE 'settings' SET %s='%s' WHERE vscpd_idx_settings='%d';"
 
 
 #define VSCPDB_ORDINAL_CONFIG_ID                                            0
@@ -691,11 +691,11 @@
                 ")"
                         
 #define VSCPDB_DM_UPDATE "UPDATE 'dm' "\
-                "SET (GroupID='%s',bEnable='%d',maskPriority='%d',maskClass=%d',maskType=%d',maskGUID=%s',filterPriority=%d',filterClass=%d',filterType=%d',filterGUID=%s',"\
+                "SET GroupID='%s',bEnable='%d',maskPriority='%d',maskClass=%d',maskType=%d',maskGUID=%s',filterPriority=%d',filterClass=%d',filterType=%d',filterGUID=%s',"\
                 "allowedStart=%s',allowedEnd=%s',allowedMonday='%d',allowedTuesday='%d',allowsWednesday='%d',allowedThursday='%d',allowedFriday='%d',allowedSaturday='%d',"\
                 "allowedSunday,allowedTime,bCheckIndex,index,bCheckZone,zone,bCheckSubZone,subzone,bCheckMeasurementIndex,"\
                 "meaurementIndex='%d',actionCode='%d',actionParameter='%s',measurementValue='%f',measurementUnit='%d',measurementCompare='%d'"\
-                ") WHERE id='%d'" 
+                " WHERE id='%d'" 
 
 #define VSCPDB_DM_UPDATE_ITEM "UPDATE 'dm' SET ( %s='%s' ) WHERE id='%d' "
 

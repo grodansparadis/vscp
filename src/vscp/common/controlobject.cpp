@@ -247,7 +247,8 @@ CControlObject::CControlObject()
     m_logAccessFileName.SetName( _("/srv/vscp/logs/vscp_log_access") );
 #endif
 
-
+// NOTE!!!  Dependent on the root folder
+// Therefore this statement (currently) has no effect.    
 #ifdef WIN32
     m_path_db_vscp_daemon.SetName( wxStandardPaths::Get().GetConfigDir() +
                                             _("/vscp/vscpd.sqlite3") );
@@ -541,7 +542,7 @@ void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const ui
 /////////////////////////////////////////////////////////////////////////////
 // init
 
-bool CControlObject::init(wxString& strcfgfile)
+bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 {
     wxString str;
     
@@ -567,22 +568,33 @@ bool CControlObject::init(wxString& strcfgfile)
         setlocale( LC_NUMERIC, "C" );
     }
 
+    // Root folder must exist
+    if ( !wxFileName::DirExists( rootFolder ) ) {
+        fprintf(stderr,"The specified rootfolder does not exist (%s).\n",
+                (const char *)rootFolder.mbc_str() );
+        return false;
+    } 
+    
     // A configuration file must be available
     if ( !wxFile::Exists( strcfgfile ) ) {
         printf("No configuration file. Can't initialise!.");
         fprintf( stderr, "No configuration file. Can't initialise!.\n" );
         str = _("Path = .") + strcfgfile + _("\n");
         fprintf( stderr, str.mbc_str() );
-        return FALSE;
+        return false;
     }
 
     // Initialise the SQLite library
     if ( SQLITE_OK != sqlite3_initialize() ) {
         fprintf( stderr, "Unable to initialise SQLite library!." );
-        return FALSE;
+        return false;
     }
 
+    
+    // The root folder is the basis for the configuration file
+    m_path_db_vscp_daemon.SetName( rootFolder + _("/vscpd.sqlite3") );
 
+    
     
     // ======================================
     // * * * Open/Create database files * * *
@@ -597,15 +609,17 @@ bool CControlObject::init(wxString& strcfgfile)
 
         if ( SQLITE_OK != sqlite3_open( m_path_db_vscp_daemon.GetFullPath().mbc_str(),
                                             &m_db_vscp_daemon ) ) {
+            
             // Failed to open/create the database file
-            fprintf( stderr, "VSCP Daemon configuration database could not be opened. - Will not be used.\n" );
+            fprintf( stderr, "VSCP Daemon configuration database could not be opened. - Will exit.\n" );
             str.Printf( _("Path=%s error=%s\n"),
                             m_path_db_vscp_daemon.GetFullPath().mbc_str(),
                             sqlite3_errmsg( m_db_vscp_daemon ) );
             fprintf( stderr, str.mbc_str() );
             if ( NULL != m_db_vscp_daemon ) sqlite3_close( m_db_vscp_daemon );
             m_db_vscp_daemon = NULL;
-
+            return false;
+            
         }
         else {
             // Database is open. Read configuration data from it
@@ -671,9 +685,10 @@ bool CControlObject::init(wxString& strcfgfile)
             }
         }
         else {
-            fprintf( stderr, "VSCP Daemon configuration database path invalid - will not be used.\n" );
+            fprintf( stderr, "VSCP Daemon configuration database path invalid - will exit.\n" );
             str.Printf(_("Path=%s\n"), m_path_db_vscp_daemon.GetFullPath().mbc_str() );
             fprintf( stderr, str.mbc_str() );
+            return false;
         }
 
     }
@@ -686,16 +701,16 @@ bool CControlObject::init(wxString& strcfgfile)
     if ( m_path_db_vscp_log.IsOk() && m_path_db_vscp_log.FileExists() ) {
 
         if ( SQLITE_OK != sqlite3_open( m_path_db_vscp_log.GetFullPath().mbc_str(),
-                                            &m_db_vscp_daemon ) ) {
+                                            &m_db_vscp_log ) ) {
 
             // Failed to open/create the database file
             fprintf( stderr, "VSCP Daemon logging database could not be opened. - Will not be used.\n" );
             str.Printf( _("Path=%s error=%s\n"),
                             m_path_db_vscp_log.GetFullPath().mbc_str(),
-                            sqlite3_errmsg( m_db_vscp_daemon ) );
+                            sqlite3_errmsg( m_db_vscp_log ) );
             fprintf( stderr, str.mbc_str() );
-            if ( NULL != m_db_vscp_daemon ) sqlite3_close( m_db_vscp_daemon );
-            m_db_vscp_daemon = NULL;
+            if ( NULL != m_db_vscp_log ) sqlite3_close( m_db_vscp_log );
+            m_db_vscp_log = NULL;
 
         }
 
@@ -705,7 +720,7 @@ bool CControlObject::init(wxString& strcfgfile)
         if ( m_path_db_vscp_log.IsOk() ) {
             // We need to create the database from scratch. This may not work if
             // the database is in a read only location.
-            fprintf( stderr, "VSCP Daemon configuration database does not exist - will be created.\n" );
+            fprintf( stderr, "VSCP Daemon log database does not exist - will be created.\n" );
             str.Printf(_("Path=%s\n"), m_path_db_vscp_log.GetFullPath().mbc_str() );
             fprintf( stderr, str.mbc_str() );
             
@@ -721,7 +736,7 @@ bool CControlObject::init(wxString& strcfgfile)
             fprintf( stderr, str.mbc_str() );
         }
 
-    }    
+    }
     
     // * * * VSCP Daemon data database - NEVER created * * *
 
@@ -734,8 +749,8 @@ bool CControlObject::init(wxString& strcfgfile)
                         m_path_db_vscp_data.GetFullPath().mbc_str(),
                         sqlite3_errmsg( m_db_vscp_data ) );
         fprintf( stderr, str.mbc_str() );
-        if ( NULL != m_db_vscp_daemon ) sqlite3_close( m_db_vscp_data );
-        m_db_vscp_daemon = NULL;
+        if ( NULL != m_db_vscp_data ) sqlite3_close( m_db_vscp_data );
+        m_db_vscp_data = NULL;
 
     }
     
@@ -793,7 +808,7 @@ bool CControlObject::init(wxString& strcfgfile)
                             _("") );
 
     // Read XML configuration
-    if ( !readConfiguration( strcfgfile ) ) {
+    if ( !readXMLConfiguration( strcfgfile ) ) {
         fprintf( stderr, "Unable to open/parse configuration file. Can't initialise!.\n" );
         str = _("Path = .") + strcfgfile + _("\n");
         fprintf( stderr, str.mbc_str() );
@@ -1920,7 +1935,7 @@ bool CControlObject::getIPAddress( cguid& guid )
 // Read the configuration XML file
 //
 
-bool CControlObject::readConfiguration( wxString& strcfgfile )
+bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
 {
     unsigned long val;
     wxXmlDocument doc;
@@ -1993,16 +2008,24 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                         }
                     }
                     
-                    m_logLevel = 8;
+                    // Write into settings database
                     updateConfigurationRecordItem( 1, 
                                                     _("vscpd_LogLevel"), 
                                                     wxString::Format(_("%d"), m_logLevel ) );
                     
                 }
                 else if (subchild->GetName() == wxT("runasuser")) {
+                    
                     m_runAsUser = subchild->GetNodeContent();
                     m_runAsUser.Trim();
                     m_runAsUser.Trim(false);
+                    
+                    // Write into settings database
+                    updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_RunAsUser"), 
+                                                    wxString::Format(_("%s"), 
+                                                    (const char *)m_runAsUser.mbc_str() ) );
+                    
                 }
                 else if (subchild->GetName() == wxT("logsyslog")) {
 
@@ -2015,6 +2038,12 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                         m_bLogToSysLog = true;
                     }
                     
+                    // Write into settings database
+                    updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_Syslog_Enable"), 
+                                                    wxString::Format(_("%d"), 
+                                                    m_bLogToSysLog ? 1 : 0 ) );
+                    
                 }
                 else if (subchild->GetName() == wxT("logdatabase")) {
 
@@ -2026,6 +2055,12 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     else {
                         m_bLogToDatabase = true;
                     }
+                    
+                    // Write into settings database
+                    updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_LogDB_Enable"), 
+                                                    wxString::Format(_("%d"), 
+                                                    m_bLogToDatabase ? 1 : 0 ) );
                     
                 }
                 else if (subchild->GetName() == wxT("generallogfile")) {
@@ -2052,7 +2087,18 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                     fileName.SetName( subchild->GetNodeContent() );
                     if ( fileName.IsOk() ) {
                         m_logGeneralFileName = attribute;
-                    }   
+                    }
+                    
+                    // Write into settings database
+                    updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_GeneralLogFile_Enable"), 
+                                                    wxString::Format(_("%d"), 
+                                                    m_bLogGeneralEnable ? 1 : 0 ) );
+                    
+                    updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_GeneralLogFile_Path"), 
+                                                    wxString::Format(_("%s"), 
+                                                    (const char *)m_logGeneralFileName.GetFullPath().mbc_str() ) );
                     
                 }
                 else if (subchild->GetName() == wxT("securitylogfile")) {
@@ -2081,6 +2127,17 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                         m_logSecurityFileName = attribute;
                     } 
                     
+                    // Write into settings database
+                    updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_SecurityLogFile_Enable"), 
+                                                    wxString::Format(_("%d"), 
+                                                    m_bLogSecurityEnable ? 1 : 0 ) );
+                    
+                    updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_SecurityLogFile_Path"), 
+                                                    wxString::Format(_("%s"), 
+                                                    (const char *)m_logSecurityFileName.GetFullPath().mbc_str() ) );
+                    
                 }
                 else if (subchild->GetName() == wxT("accesslogfile")) {
 
@@ -2107,21 +2164,18 @@ bool CControlObject::readConfiguration( wxString& strcfgfile )
                         m_logAccessFileName = attribute;
                     } 
                     
+                    // Write into settings database
+                    updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_AccessLogFile_Enable"), 
+                                                    wxString::Format(_("%d"), 
+                                                    m_bLogAccessEnable ? 1 : 0 ) );
+                    
+                    updateConfigurationRecordItem( 1, 
+                                                    _("vscpd_AccessLogFile_Path"), 
+                                                    wxString::Format(_("%s"), 
+                                                    (const char *)m_logAccessFileName.GetFullPath().mbc_str() ) );
+                    
                 }                
-                else if (subchild->GetName() == wxT("db_vscp_data")) {
-                    wxFileName fileName;
-                    fileName.SetName( subchild->GetNodeContent() );
-                    if ( fileName.IsOk() ) {
-                        m_path_db_vscp_data = fileName;
-                    }
-                }
-                else if (subchild->GetName() == wxT("db_vscp_daemon")) {
-                    wxFileName fileName;
-                    fileName.SetName( subchild->GetNodeContent() );
-                    if ( fileName.IsOk() ) {
-                        m_path_db_vscp_daemon = fileName;
-                    }
-                }
                 else if (subchild->GetName() == wxT("tcpip")) {
 
                     m_strTcpInterfaceAddress = subchild->GetAttribute(wxT("interface"), wxT(""));
@@ -3490,16 +3544,19 @@ bool CControlObject::updateConfigurationRecordItem( unsigned long id,
         return false;
     }
     
-    m_configMutex.Lock();
+    m_configMutex.Lock();  
     
     char *sql = sqlite3_mprintf( VSCPDB_CONFIG_UPDATE_ITEM, 
                                     (const char *)strUpdateField.mbc_str(),
                                     (const char *)strUpdateValue.mbc_str(),
                                     id );
     if ( SQLITE_OK != sqlite3_exec( m_db_vscp_daemon, 
-                                            sql, NULL, NULL, &pErrMsg)) {
+                                            sql, NULL, NULL, &pErrMsg)) { 
         sqlite3_free( sql );
         m_configMutex.Unlock();
+        fprintf( stderr, 
+                    "Failed to update setting with error %s.\n", 
+                    pErrMsg );
         return false;
     }
 

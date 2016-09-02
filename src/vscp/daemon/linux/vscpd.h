@@ -51,9 +51,9 @@ public:
 
     
     /*!
-            Initialize the system
+            Initialise the system
      */
-    BOOL init(wxString& strcfgfile);
+    BOOL init( wxString& strcfgfile, wxString& rootFolder );
 
 
     // Implementation
