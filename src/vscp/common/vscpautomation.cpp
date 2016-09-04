@@ -58,6 +58,11 @@
 #include "controlobject.h"
 #include "vscpautomation.h"
 
+///////////////////////////////////////////////////
+//                 GLOBALS
+///////////////////////////////////////////////////
+
+extern CControlObject *gpobj;
 
 //-----------------------------------------------------------------------------
 //                   Helpers for sunrise/sunset calculations

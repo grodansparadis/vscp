@@ -132,6 +132,12 @@ using namespace std;
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
+///////////////////////////////////////////////////
+//                 GLOBALS
+///////////////////////////////////////////////////
+
+extern CControlObject *gpobj;
+
 // Weberver
 extern struct mg_mgr gmgr;
 
@@ -140,7 +146,6 @@ extern struct websrv_Session *gp_websrv_sessions;
 
 // Session structure for REST API
 extern struct websrv_rest_session *gp_websrv_rest_sessions;
-
 
 // Prototypes
 int webserv_url_decode( const char *src, int src_len,

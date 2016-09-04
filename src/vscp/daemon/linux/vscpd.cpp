@@ -55,13 +55,13 @@
 #include <controlobject.h>
 #include <version.h>
 
-#define DEBUG
-
+//#define DEBUG
 
 // Globals for the daemon
 int gbStopDaemon;
 int gnDebugLevel = 0;
 bool gbDontRunAsDaemon = false;
+bool gbRestart = false;
 
 CControlObject *gpobj;
 
@@ -268,27 +268,32 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
 
     }
 
-    
 
 
-    wxLogDebug(_("VSCPD: init."));
-    if ( !gpobj->init( strcfgfile, rootFolder ) ) {
-        fprintf(stderr,"Can't initialise daemon. Exiting.\n");
-        syslog(LOG_CRIT, "Can't initialise daemon. Exiting.");
-        return FALSE;
-    }
+    do {
+        
+        gbRestart = false;
+        
+        wxLogDebug(_("VSCPD: init."));
+        if (!gpobj->init(strcfgfile, rootFolder)) {
+            fprintf(stderr, "Can't initialise daemon. Exiting.\n");
+            syslog(LOG_CRIT, "Can't initialise daemon. Exiting.");
+            return FALSE;
+        }
 
-    wxLogDebug(_("VSCPD: run"));
-    if (!gpobj->run()) {
-        fprintf(stderr,"Unable to start the VSCPD application. Exiting.\n");
-        syslog(LOG_CRIT, "Unable to start the VSCPD application. Exiting.");
-    }
+        wxLogDebug(_("VSCPD: run"));
+        if (!gpobj->run()) {
+            fprintf(stderr, "Unable to start the VSCPD application. Exiting.\n");
+            syslog(LOG_CRIT, "Unable to start the VSCPD application. Exiting.");
+        }
 
-    wxLogDebug(_("VSCPD: cleanup"));
-    if (!gpobj->cleanup()) {
-        fprintf(stderr,"Unable to clean up the VSCPD application.\n");
-        syslog(LOG_CRIT, "Unable to clean up the VSCPD application.");
-    }
+        wxLogDebug(_("VSCPD: cleanup"));
+        if (!gpobj->cleanup()) {
+            fprintf(stderr, "Unable to clean up the VSCPD application.\n");
+            syslog(LOG_CRIT, "Unable to clean up the VSCPD application.");
+        }
+        
+    } while ( gbRestart );
 
     // Remove the pid file
     unlink("/var/run/vscp/vscpd/vscpd.pid");

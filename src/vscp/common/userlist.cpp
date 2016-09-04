@@ -55,8 +55,11 @@
 
 CUserItem::CUserItem(void)
 {
-    // Let all events thru
+    // Let all events thrue
     vscp_clearVSCPFilter(&m_filterVSCP);
+    
+    // No user rights
+    memset( m_userRights, 0, sizeof( m_userRights ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -204,23 +207,36 @@ bool CUserList::addUser(const wxString& user,
 
     // Privileges
     if (userRights.Length()) {
-        wxStringTokenizer tkz(userRights, wxT(","));
+        
+        wxStringTokenizer tkz( userRights, wxT(",") );
+        
+        int idx=0;
         do {
+            
             wxString str = tkz.GetNextToken();
             if (str.IsSameAs(_("admin"), false)) {
-                pItem->m_userRights = 0xffffffff;
-            } else if (str.IsSameAs(_("user"), false)) {
-                pItem->m_userRights = 0x00000006;
-            } else if (str.IsSameAs(_("driver"), false)) {
-                pItem->m_userRights = 0x0000000f;
-            } else {
+                // All rights
+                memset( pItem->m_userRights, 0xff, sizeof( pItem->m_userRights ) );
+            } 
+            else if (str.IsSameAs(_("user"), false)) {
+                // A standard user
+                pItem->m_userRights[ 0 ] = 0x06;
+            } 
+            else if (str.IsSameAs(_("driver"), false)) {
+                // A standard driver
+                pItem->m_userRights[ 0 ] = 0x0f;
+            } 
+            else {
                 // Numerical
-                str.ToULong(&pItem->m_userRights);
+                unsigned long lval;
+                str.ToULong( &lval );
+                pItem->m_userRights[ idx++ ] = (uint8_t)lval;
             }
-        } while (tkz.HasMoreTokens());
+            
+        } while ( tkz.HasMoreTokens() && ( idx < sizeof( pItem->m_userRights ) ) );
     }
 
-    // Allow remotes
+    // Allowed remotes
     if (allowedRemotes.Length()) {
         wxStringTokenizer tkz(allowedRemotes, wxT(","));
         do {

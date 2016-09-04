@@ -135,6 +135,12 @@ using namespace std;
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
+///////////////////////////////////////////////////
+//                 GLOBALS
+///////////////////////////////////////////////////
+
+extern CControlObject *gpobj;
+
 // Linked list of all active sessions. (webserv.h)
 extern struct websrv_Session *gp_websrv_sessions;
 

@@ -131,13 +131,18 @@
 #include <controlobject.h>
 #include <webserver.h>
 #include <webserver_websocket.h>
-//#include <webserver_rest.h>
 
 using namespace std;
 
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
 #endif
+
+///////////////////////////////////////////////////
+//                 GLOBALS
+///////////////////////////////////////////////////
+
+extern CControlObject *gpobj;
 
 ///////////////////////////////////////////////////
 //                WEBSERVER

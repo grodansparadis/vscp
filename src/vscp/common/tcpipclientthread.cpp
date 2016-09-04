@@ -50,10 +50,14 @@
 #include <controlobject.h>
 
 
+///////////////////////////////////////////////////
+//                 GLOBALS
+///////////////////////////////////////////////////
+
+extern CControlObject *gpobj;
+
+
 //WX_DEFINE_LIST(TCPCLIENTS);
-
-// Prototypes
-
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -66,10 +70,8 @@
 VSCPClientThread::VSCPClientThread()
 : wxThread(wxTHREAD_JOINABLE)
 {
-    //OutputDebugString( "TCP ClientThread: Create");
     m_bQuit = false;
     m_pCtrlObject = NULL;
-    //m_numClients = 0;
 }
 
 
@@ -145,7 +147,6 @@ void VSCPClientThread::ev_handler( struct mg_connection *conn,
     char rbuf[ 2048 ];
     int pos4lf;
 
-    //struct mbuf *io = NULL;
     CControlObject *pCtrlObject = NULL;
     CClientItem *pClientItem = NULL;
 
@@ -153,8 +154,6 @@ void VSCPClientThread::ev_handler( struct mg_connection *conn,
         return;
     }
 
-    //io = &conn->recv_iobuf;
-    //io = conn->recv_mbuf;
     pClientItem = ( CClientItem * )conn->user_data;
 
     if ( ( NULL == conn->mgr ) || ( NULL == conn->mgr->user_data ) ) {
@@ -247,7 +246,7 @@ void VSCPClientThread::ev_handler( struct mg_connection *conn,
             // Read new data
             memset( rbuf, 0, sizeof( rbuf ) );
             memcpy( rbuf, conn->recv_mbuf.buf, conn->recv_mbuf.len );
-            //iobuf_remove(io, io->len); conn->recv_mbuf
+            
             mbuf_remove( &conn->recv_mbuf, conn->recv_mbuf.len );
             pClientItem->m_readBuffer += wxString::FromUTF8( rbuf );
 

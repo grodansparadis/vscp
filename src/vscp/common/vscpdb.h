@@ -92,7 +92,7 @@
 	"`vscpd_automation_sunrise_enable`                  INTEGER DEFAULT 1,"\
 	"`vscpd_automation_sunset_enable`                   INTEGER DEFAULT 1,"\
 	"`vscpd_automation_sunsettwilight_enable`           INTEGER DEFAULT 1,"\
-	"`vscpd_automation_sunrisettwilight_enable`          INTEGER DEFAULT 1,"\
+	"`vscpd_automation_sunrisettwilight_enable`         INTEGER DEFAULT 1,"\
 	"`vscpd_automation_segmentcontrollerevent_enable`   INTEGER DEFAULT 1,"\
 	"`vscpd_automation_segmentcontrollerevent_interval` INTEGER DEFAULT 1,"\
 	"`vscpd_automation_heartbeatevent_enable`           INTEGER DEFAULT 1,"\
@@ -207,6 +207,10 @@
  * ooo - other
  *
  * Each group is rw- and other permissions may be added added in front of this.
+ * 
+ * permission   - Default user permissions uuugggooo
+ * rights       - string with a maximum of six numerical (byte) comma separated 
+ *                  fields. Also 'admin', 'driver' and 'user' can be given.
  */
 
 #define VSCPDB_USER_CREATE "CREATE TABLE 'user' ("\
@@ -215,6 +219,7 @@
 	"`password`	TEXT NOT NULL,"\
 	"`fullname`	TEXT NOT NULL,"\
 	"`permission`	INTEGER DEFAULT 777,"\
+        "`rights`	TEST DEFAULT 'user',"\
 	"`note`	TEXT DEFAULT ''"\
         ");"
 
@@ -223,7 +228,8 @@
 #define VSCPDB_ORDINAL_USER_PASSWORD                 2   // 
 #define VSCPDB_ORDINAL_USER_FULLNAME                 3   // 
 #define VSCPDB_ORDINAL_USER_PERMISSION               4   // 
-#define VSCPDB_ORDINAL_USER_NOTE                     5   // 
+#define VSCPDB_ORDINAL_USER_RIGHT                    5   //
+#define VSCPDB_ORDINAL_USER_NOTE                     6   // 
 
 //*****************************************************************************
 //                                GROUP
@@ -248,13 +254,15 @@
 	"`idx_group`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`name`         TEXT NOT NULL,"\
 	"`permission`	INTEGER DEFAULT 777,"\
+        "`rights`	BLOB,"\
 	"`note`	TEXT DEFAULT ''"\
         ");"
 
 #define VSCPDB_ORDINAL_GROUP_ID                     0   // 
 #define VSCPDB_ORDINAL_GROUP_NAME                   1   // 
-#define VSCPDB_ORDINAL_GROUP_PERMISSION             2   // 
-#define VSCPDB_ORDINAL_GROUP_NOTE                   3   // 
+#define VSCPDB_ORDINAL_GROUP_PERMISSION             2   //
+#define VSCPDB_ORDINAL_GROUP_RIGHT                  3   //
+#define VSCPDB_ORDINAL_GROUP_NOTE                   4   // 
 
 //*****************************************************************************
 //                             GROUPLINKS
@@ -285,13 +293,37 @@
 
 #define VSCPDB_ACL_CREATE "CREATE TABLE `acl` ("\
 	"`idx_acl`          INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-	"`remote_address`   TEXT NOT NULL,"\
+	"`remote_address`   TEXT DEFAULT '*.*.*.*',"\
+        "`bipv6_address`    INTEGER DEFAULT 0,"\
 	"`link_to_user`     INTEGER NOT NULL"\
         ");"
 
 #define VSCPDB_ORDINAL_ACL_ID                       0   // 
 #define VSCPDB_ORDINAL_ACL_REMOTE_ADDRESS           1   // 
+#define VSCPDB_ORDINAL_ACL_IPV6_ADDRESS             1   //
 #define VSCPDB_ORDINAL_ACL_LINK_TO_USER             2   // 
+
+//*****************************************************************************
+//                               ALLOWED-EVENTS
+//*****************************************************************************
+
+/*
+ * Defines events a user or group can send
+ */
+
+#define VSCPDB_USER_EVENTS_CREATE "CREATE TABLE `allowedevents` ("\
+	"`allowedevents`   INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
+	"`class`            INTEGER DEFAULT 0,"\
+        "`type`             INTEGER DEFAULT 0,"\
+	"`link_to_user`     INTEGER"\
+        "`link_to_group`    INTEGER"\
+        ");"
+
+#define VSCPDB_ORDINAL_ALLOWEDEVENTS_ID             0   // 
+#define VSCPDB_ORDINAL_ALLOWEDEVENTS_CLASS          1   //
+#define VSCPDB_ORDINAL_ALLOWEDEVENTS_TYPE           2   //
+#define VSCPDB_ORDINAL_ALLOWEDEVENTS_LINK_TO_USER   3   //
+#define VSCPDB_ORDINAL_ALLOWEDEVENTS_LINK_TO_GROUP  4   //
 
 //*****************************************************************************
 //                               DRIVER
