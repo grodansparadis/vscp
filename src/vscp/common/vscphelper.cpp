@@ -43,6 +43,7 @@
 
 #include "wx/defs.h"
 #include "wx/app.h"
+#include "guid.h"
 #include <wx/wfstream.h>
 #include <wx/xml/xml.h>
 #include <wx/tokenzr.h>
@@ -1698,7 +1699,7 @@ void vscp_deleteVSCPeventEx(vscpEventEx *pEventEx)
 // Mask tells *which* bits that are of interest means
 // it always returns true if bit set to zero (0=don't care).
 //
-// Filter tells the value fo valid bits. If filter bit is == 1 the bits
+// Filter tells the value for valid bits. If filter bit is == 1 the bits
 // must be equal to get a true filter return.
 //
 // So a nill mask will let everything through
@@ -1788,7 +1789,7 @@ void vscp_clearVSCPFilter(vscpEventFilter *pFilter)
 // readFilterFromString
 //
 
-bool vscp_readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter)
+bool vscp_readFilterFromString(vscpEventFilter *pFilter, const wxString& strFilter)
 {
     wxString strTok;
 
@@ -1835,6 +1836,28 @@ bool vscp_readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter)
         vscp_getGuidFromStringToArray(pFilter->filter_GUID,
                                         strTok);
     } 
+
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_writeFilterToString
+//
+
+bool vscp_writeFilterToString(vscpEventFilter *pFilter, wxString& strFilter)
+{
+    cguid guid;
+    
+    // Check pointer
+    if ( NULL == pFilter ) return false;
+    
+    guid.getFromArray( pFilter->filter_GUID );
+    
+    strFilter.Printf(_("%d,%d,%d,%s"),
+                pFilter->filter_priority,
+                pFilter->filter_class,
+                pFilter->filter_type,
+                guid.getAsString().mbc_str() );
 
     return true;
 }
@@ -1890,6 +1913,28 @@ bool vscp_readMaskFromString(vscpEventFilter *pFilter, wxString& strMask)
         vscp_getGuidFromStringToArray(pFilter->mask_GUID,
                                         strTok);
     } 
+
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_writeMaskToString
+//
+
+bool vscp_writeMaskToString(vscpEventFilter *pFilter, wxString& strFilter)
+{
+    cguid guid;
+    
+    // Check pointer
+    if ( NULL == pFilter ) return false;
+    
+    guid.getFromArray( pFilter->mask_GUID );
+    
+    strFilter.Printf(_("%d,%d,%d,%s"),
+                pFilter->mask_priority,
+                pFilter->mask_class,
+                pFilter->mask_type,
+                guid.getAsString().mbc_str() );
 
     return true;
 }

@@ -66,9 +66,8 @@ CVSCPVariable::CVSCPVariable( void )
     m_name.Empty();
     m_type = VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED;
     m_bPersistent = false;                  // Not persistent by default
-    m_accessRights = PERMISSON_ALL_RIGHTS;  // Read/Write/execute for all
+    m_accessRights = PERMISSON_OWNER_ALL;   // Owner can do everything. 
     m_userid = USER_ADMIN;                  // Admin owns variable by default
-    m_groupid = GROUP_ADMIN;                // Group is admin-group by default
     
     m_strValue.Empty();
     m_note.Empty();
@@ -428,47 +427,6 @@ bool CVSCPVariable::setUser( wxString& strUser )
     // Get the result
     if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
         m_userid = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_USER_ID );
-    }
-    
-    sqlite3_finalize( ppStmt );
-    
-    sqlite3_close( db );
-    
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// setGroup
-//
-
-bool CVSCPVariable::setGroup( wxString& strGroup )
-{
-    sqlite3 *db;
-    sqlite3_stmt *ppStmt;
-    char *pErrMsg = 0;
-    char psql[ 512 ];
-    
-    sprintf( psql, 
-                "SELECT * FROM \"group\" where groupname='%s'",
-                (const char *)strGroup.mbc_str() );
-    
-    if ( SQLITE_OK != sqlite3_open( gpctrlObj->m_path_db_vscp_daemon.GetFullPath().mbc_str(),
-                                            &db ) ) {
-        return false;
-    }
-    
-    if ( SQLITE_OK != sqlite3_prepare( db,
-                                        psql,
-                                        -1,
-                                        &ppStmt,
-                                        NULL ) ) {
-        sqlite3_close( db );
-        return false;
-    }
-    
-    // Get the result
-    if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
-        m_groupid = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_GROUP_ID );
     }
     
     sqlite3_finalize( ppStmt );
@@ -1052,7 +1010,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
 ///////////////////////////////////////////////////////////////////////////////
 // getVariableFromString
 //
-// Format is: "variable name",type,"persistence",rights,user,group,"value"
+// Format is: "variable name","type","persistence","rights", "user","value"
 
 bool CVSCPVariable::getVariableFromString( const wxString& strVariable, bool bBase64 )
 {
@@ -1060,7 +1018,6 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable, bool bBa
     wxString strValue;              // Variable value
     wxString strRights;             // User rights for variable
     wxString strUser;               // Owner of variable
-    wxString strGroup;              // Group for variable
     int      typeVariable;          // Type of variable;
     bool     bPersistent = false;   // Persistence of variable
     bool     brw = true;            // Writable    
@@ -1121,16 +1078,6 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable, bool bBa
         return false;
     }
     
-    // Get group for the variable
-    // Numeric or by name
-    if ( tkz.HasMoreTokens() ) {
-        wxString str = tkz.GetNextToken();
-        strGroup = str.Upper();
-    }
-    else {
-        return false;
-    }
-
     // Get the value of the variable
     if ( tkz.HasMoreTokens() ) {
         strValue = tkz.GetNextToken();
@@ -1145,7 +1092,6 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable, bool bBa
     setName( strName );
     setRighs( strRights );
     setUser( strUser );
-    setGroup( strGroup );
     setValueFromString( typeVariable, strValue, bBase64 );
 
     return true;
@@ -3965,7 +3911,6 @@ uint32_t CVariableStorage::findNonPersistentVariable(const wxString& name, CVSCP
         variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_VALUE ) ) );
         variable.setPersistent( false );
         variable.setUserID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER ) ); 
-        variable.setGroupID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_GROUP ) );
         variable.setAccessRights( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_PERMISSION ) );
         variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NOTE ) ) );
     }
@@ -4011,7 +3956,6 @@ uint32_t CVariableStorage::findPersistentVariable(const wxString& name, CVSCPVar
         variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_VALUE ) ) );
         variable.setPersistent( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_PERSISTENT ) ? true : false );
         variable.setUserID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER ) );
-        variable.setGroupID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_GROUP ) );
         variable.setAccessRights( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_PERMISSION ) );
         variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NOTE ) ) );
     }
@@ -4097,7 +4041,6 @@ bool CVariableStorage::listItem( varQuery *pq, CVSCPVariable& variable )
         variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_VALUE ) ) );
         variable.setPersistent( false );
         variable.setUserID( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER ) ); 
-        variable.setGroupID( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_GROUP ) );
         variable.setAccessRights( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_PERMISSION ) );
         variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_NOTE ) ) );
     }
@@ -4110,7 +4053,6 @@ bool CVariableStorage::listItem( varQuery *pq, CVSCPVariable& variable )
         variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_VALUE ) ) );
         variable.setPersistent( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_PERSISTENT ) ? true : false );
         variable.setUserID( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER ) );
-        variable.setGroupID( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_GROUP ) );
         variable.setAccessRights( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_PERMISSION ) );
         variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_NOTE ) ) );
     }
@@ -4168,7 +4110,6 @@ bool CVariableStorage::add( CVSCPVariable& var )
                 "value='%g', "
                 "bPersistent='%d', "
                 "link_to_user='%d', "
-                "link_to_group='%d', "
                 "permission='%d', "
                 "note='%g' "
                 "WHERE idx_variableex='%d';",
@@ -4179,7 +4120,6 @@ bool CVariableStorage::add( CVSCPVariable& var )
                 (const char *) var.getValue().mbc_str(),
                 var.isPersistent() ? 1 : 0,
                 var.getUserID(),
-                var.getGroupID(),
                 var.getAccessRights(),
                 (const char *) var.getNote().mbc_str(),
                 id );
@@ -4194,7 +4134,7 @@ bool CVariableStorage::add( CVSCPVariable& var )
     }
     else {
         char *sql = sqlite3_mprintf("INSERT INTO '%s' "
-                "(lastchange,name,type,value,bPersistent,link_to_user,link_to_group,permission,note) "
+                "(lastchange,name,type,value,bPersistent,link_to_user,permission,note) "
                 "VALUES ('%s','%s', '%d','%q','%d','%d','%d','%s','%q')",
                 var.isPersistent() ? "variableEx" : "variableInt",
                 (const char *) var.m_lastChanged.FormatISOCombined().mbc_str(),
@@ -4203,7 +4143,6 @@ bool CVariableStorage::add( CVSCPVariable& var )
                 (const char *) var.getValue().mbc_str(),
                 var.isPersistent() ? 1 : 0,
                 var.getUserID(),
-                var.getGroupID(),
                 var.getAccessRights(),
                 (const char *) var.getNote().mbc_str() );
 
@@ -4227,7 +4166,6 @@ bool CVariableStorage::add( const wxString& name,
                                     const wxString& value, 
                                     const uint8_t type,
                                     const uint32_t userid,
-                                    const uint32_t groupid,
                                     const bool bPersistent,
                                     const uint32_t accessRights )
 {
@@ -4238,7 +4176,6 @@ bool CVariableStorage::add( const wxString& name,
     variable.setValue( value );
     variable.setPersistent( bPersistent );
     variable.setUserID( userid );
-    variable.setGroupID( groupid );
     variable.setAccessRights( accessRights );
 
     return add( variable );
@@ -4252,7 +4189,6 @@ bool CVariableStorage::add( const wxString& varName,
                                             const wxString& value,
                                             const wxString& strType,    
                                             const uint32_t userid,
-                                            const uint32_t groupid,
                                             bool bPersistent,
                                             const uint32_t accessRights ) 
 {
@@ -4261,7 +4197,6 @@ bool CVariableStorage::add( const wxString& varName,
                     value,
                     type,
                     userid,
-                    groupid,
                     bPersistent,
                     accessRights ); 
 }
@@ -4430,11 +4365,6 @@ bool CVariableStorage::load( wxString& path  )
                 variable.setUserID( lval );
             }
             
-            // groupid
-            if ( child->GetAttribute( wxT("groupid"), wxT("0") ).ToULong( &lval ) ) {
-                variable.setGroupID( lval );
-            }
-            
             // accessrights
             if ( child->GetAttribute( wxT("accessrights"), wxT("0") ).ToULong( &lval ) ) {
                 variable.setAccessRights( lval );
@@ -4548,7 +4478,6 @@ bool CVariableStorage::save( wxString& path, uint8_t whatToSave )
             variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_VALUE ) ) );
             variable.setPersistent( false );
             variable.setUserID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER ) ); 
-            variable.setGroupID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_GROUP ) );
             variable.setAccessRights( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_PERMISSION ) );
             variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NOTE ) ) );
             
@@ -4584,7 +4513,6 @@ bool CVariableStorage::save( wxString& path, uint8_t whatToSave )
             variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_VALUE ) ) );
             variable.setPersistent( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_PERSISTENT ) ? true : false );
             variable.setUserID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER ) );
-            variable.setGroupID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_GROUP ) );
             variable.setAccessRights( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_PERMISSION ) );
             variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NOTE ) ) );
             
@@ -4633,9 +4561,6 @@ bool CVariableStorage::writeVariableToXmlFile( wxFFileOutputStream *pFileStream,
     pFileStream->Write(str.mb_str(), strlen(str.mb_str()));
 
     str.Printf(_(" userid=\"%d\" "), variable.getUserID());
-    pFileStream->Write(str.mb_str(), strlen(str.mb_str()));
-
-    str.Printf(_(" groupid=\"%d\" "), variable.getGroupID());
     pFileStream->Write(str.mb_str(), strlen(str.mb_str()));
 
     str.Printf(_(" accessrights=\"%d\" "), variable.getAccessRights());

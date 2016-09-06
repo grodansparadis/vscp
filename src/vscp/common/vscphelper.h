@@ -661,8 +661,16 @@ extern "C" {
         @return true on success, false on failure.
      */
  
-    bool vscp_readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter);
+    bool vscp_readFilterFromString(vscpEventFilter *pFilter, const wxString& strFilter);
 
+    /*!
+        Write filter to string
+        @param pFilter Filter structure to write out to string.
+        @param strFilter Filter in string form 
+                filter-priority, filter-class, filter-type, filter-GUID
+        @return true on success, false on failure.
+    */
+    bool vscp_writeFilterToString(vscpEventFilter *pFilter, wxString& strFilter);
 
     /*!
         Read a mask from a string
@@ -671,11 +679,19 @@ extern "C" {
         @param pFilter Filter structure to write mask to.
         @param strMask Mask in string form 
                 mask-priority, mask-class, mask-type, mask-GUID
-        @return true on success, fals eon failure.
+        @return true on success, false on failure.
      */
  
     bool vscp_readMaskFromString(vscpEventFilter *pFilter, wxString& strMask);
 
+    /*!
+        Write mask to string
+        @param pFilter Filter structure to write out to string.
+        @param strFilter Mask in string form 
+                mask-priority, mask-class, mask-type, mask-GUID
+        @return true on success, false on failure.
+    */
+    bool vscp_writeMaskToString(vscpEventFilter *pFilter, wxString& strFilter);
 
     /*!
       Convert an Event from a CANAL message

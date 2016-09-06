@@ -44,17 +44,17 @@
 #define PERMISSON_OWNER_READ    0x400
 #define PERMISSON_OWNER_WRITE   0x200
 #define PERMISSON_OWNER_EXECUTE 0x100
-#define PERMISSON_GROUP_READ    0x040
-#define PERMISSON_GRPUP_WRITE   0x020
-#define PERMISSON_GROUP_EXECUTE 0x010
+#define PERMISSON_GROUP_READ    0x040   // Not used
+#define PERMISSON_GROUP_WRITE   0x020   // Not used
+#define PERMISSON_GROUP_EXECUTE 0x010   // Not used
 #define PERMISSON_OTHER_READ    0x004
 #define PERMISSON_OTHER_WRITE   0x002
 #define PERMISSON_OTHER_EXECUTE 0x001
 
 #define PERMISSON_OWNER_ALL     0x700
 #define PERMISSON_OWNER_NONE    0x000
-#define PERMISSON_GROUP_ALL     0x070
-#define PERMISSON_GROUP_NONE    0x000
+#define PERMISSON_GROUP_ALL     0x070   // Not used
+#define PERMISSON_GROUP_NONE    0x000   // Not used
 #define PERMISSON_OTHER_ALL     0x007
 #define PERMISSON_OTHER_NONE    0x000
 
@@ -64,7 +64,6 @@
 #define PERMISSON_NO_RIGHTS     0x000
 
 #define USER_ADMIN              0x00
-#define GROUP_ADMIN             0x00
 
 // Table types - bit-field
 #define VARIABLE_STOCK          0x01
@@ -146,11 +145,6 @@ public:
      * setUser
      */
     bool setUser( wxString& strUser );
-    
-    /*!
-     * setGroup
-     */
-    bool setGroup( wxString& strUser );
     
     
     /*!
@@ -390,11 +384,7 @@ public:
     
     // user id
     void setUserID( uint32_t uid ) { m_userid = uid; };
-    uint32_t getUserID( void ) { return m_userid; };
-    
-    // user id
-    void setGroupID( uint32_t uid ) { m_groupid = uid; };
-    uint32_t getGroupID( void ) { return m_groupid; }; 
+    uint32_t getUserID( void ) { return m_userid; }; 
     
     // stock variable
     void setStockVariable( bool bStock = true ) { m_bStock = bStock; };
@@ -419,10 +409,7 @@ private:
     
     // User this variable is owned by
     uint32_t m_userid;
-    
-    // Group this variable belongs to
-    uint32_t m_groupid;
-    
+        
     /// Note about variable
     wxString m_note;
     
@@ -538,7 +525,6 @@ public:
         @param value Value for variable
         @param type Type of variable. Defaults to string.
         @param userid Id for user that owns the variable.
-        @param groupid Group this variable belongs to.
         @param bPersistent True if the variable should be saved to
         persistent storage.
         @param accessRights Access rights for the variable
@@ -548,7 +534,6 @@ public:
                     const wxString& value,
                     const uint8_t type = VSCP_DAEMON_VARIABLE_CODE_STRING,
                     const uint32_t userid = USER_ADMIN,
-                    const uint32_t groupid = GROUP_ADMIN,
                     const bool bPersistent = false,
                     const uint32_t accessRights = PERMISSON_OWNER_ALL );
 
@@ -557,7 +542,6 @@ public:
                             const wxString& value,
                             const wxString& strType, 
                             const uint32_t userid = USER_ADMIN,
-                            const uint32_t groupid = GROUP_ADMIN,
                             const bool bPersistent = false,
                             const uint32_t accessRights = PERMISSON_OWNER_ALL);
 

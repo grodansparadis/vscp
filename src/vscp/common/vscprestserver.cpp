@@ -548,7 +548,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
 
         // Is this an authorized user?
         wxString str3 = keypairs[_("VSCPSECRET")];
-        if ( keypairs[_("VSCPSECRET")] != pUser->m_md5Password ) {
+        if ( keypairs[_("VSCPSECRET")] != pUser->getPassword() ) {
             wxString strErr =
             wxString::Format( _("[REST Client] User [%s] NOT allowed to connect. Client [%s]\n"),
                                 keypairs[_("VSCPUSER")].wx_str(),

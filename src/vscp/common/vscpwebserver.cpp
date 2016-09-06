@@ -420,7 +420,7 @@ static int vscp_is_authorized( struct mg_connection *conn,
             wxString strErr =
                 wxString::Format( _( "[Webserver Client] Host [%s] NOT allowed to connect. User [%s]\n" ),
                 wxString::FromAscii( ( const char * )inet_ntoa( conn->sa.sin.sin_addr ) ).wx_str(),
-                                            pUserItem->m_user.wx_str() );
+                                            pUserItem->getUser().mbc_str() );
                 pObject->logMsg( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
                 return 0;
         }
@@ -432,7 +432,7 @@ static int vscp_is_authorized( struct mg_connection *conn,
         // Check digest
         if ( TRUE !=
             pObject->getWebServer()->websrv_check_password( method,
-                            ( const char * )pUserItem->m_md5Password.mbc_str(),
+                            ( const char * )pUserItem->getPassword().mbc_str(),
                             uri,
                             nonce,
                             nc,
@@ -444,7 +444,7 @@ static int vscp_is_authorized( struct mg_connection *conn,
             wxString strErr =
                 wxString::Format( _( "[Webserver Client] Host [%s] User [%s] NOT allowed to connect.\n" ),
                         wxString::FromAscii( ( const char * )inet_ntoa( conn->sa.sin.sin_addr ) ).wx_str(),
-                        pUserItem->m_user.wx_str() );
+                        pUserItem->getUser().mbc_str() );
                 pObject->logMsg( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
                 return 0;
         }

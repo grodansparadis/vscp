@@ -690,7 +690,7 @@ bool VSCPClientThread::checkPrivilege( struct mg_connection *conn,
         return false;
     }
 
-    if ( (pClientItem->m_pUserItem->m_userRights & 0xf) < reqiredPrivilege ) {
+    if ( (pClientItem->m_pUserItem->getUserRight( 0 ) & USER_PRIVILEGE_MASK ) < reqiredPrivilege ) {
         mg_send( conn,  MSG_LOW_PRIVILEGE_ERROR, strlen ( MSG_LOW_PRIVILEGE_ERROR ) );
         return false;
     }
@@ -880,7 +880,7 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn,
     if ( !pClientItem->m_pUserItem->isUserAllowedToSendEvent( event.vscp_class, event.vscp_type ) ) {
         wxString strErr =
                         wxString::Format( _("[tcp/ip Client] User [%s] not allowed to send event class=%d type=%d.\n"),
-                                                (const char *)pClientItem->m_pUserItem->m_user.c_str(),
+                                                (const char *)pClientItem->m_pUserItem->getUser().mbc_str(),
                                                 event.vscp_class, event.vscp_type );
 
         pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
@@ -1614,7 +1614,7 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn,
 
     // Copy in the user filter
     memcpy( &pClientItem->m_filterVSCP,
-                &pClientItem->m_pUserItem->m_filterVSCP,
+                pClientItem->m_pUserItem->getFilter(),
                 sizeof( vscpEventFilter ) );
 
     wxString strErr =
@@ -2291,7 +2291,7 @@ void VSCPClientThread::handleVariable_Write( struct mg_connection *conn,
 
     // If the variable exist change value
     // if not add it. This is handled in add.
-    m_pCtrlObject->m_VSCP_Variables.add( strName, strValue, strType, 0, 0, bPersistence, 777 ); // TODO
+    m_pCtrlObject->m_VSCP_Variables.add( strName, strValue, strType, 0, bPersistence, 777 ); // TODO
 
     // Save decision matrix
     m_pCtrlObject->m_dm.saveToXML();

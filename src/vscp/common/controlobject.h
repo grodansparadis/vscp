@@ -415,21 +415,6 @@ public:
      * Create user table
      */
     bool doCreateUserTable( void );
-     
-    /*!
-     * Create group table
-     */
-     bool doCreateGroupTable( void );
-     
-    /*!
-     * Create grouplinks table
-     */
-    bool doCreateGroupLinksTable( void );
-    
-    /*!
-     * Create acl table
-     */
-    bool doCreateAclTable( void );
     
     /*!
      * Create driver table
@@ -476,7 +461,7 @@ public:
      */
     bool doCreateUserdefTableTable( void );
     
-
+    
 public:
 
 #ifdef BUILD_VSCPD_SERVICE

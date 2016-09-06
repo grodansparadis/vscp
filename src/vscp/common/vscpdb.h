@@ -180,8 +180,8 @@
 
 #define VSCPDB_LOG_CREATE "CREATE TABLE 'log' ("\
 	"`idx_log`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-	"`type`	INTEGER DEFAULT 1,"\
-	"`date`	TEXT,"\
+	"`type`         INTEGER DEFAULT 1,"\
+	"`date`         TEXT,"\
 	"`level`	INTEGER DEFAULT 1,"\
 	"`message`	TEXT"\
         ");";\
@@ -203,127 +203,48 @@
  * ===========
  * uuugggooo
  * uuu – user
- * ggg – group
+ * ggg – group  (not used)
  * ooo - other
  *
  * Each group is rw- and other permissions may be added added in front of this.
+ * 
+ * filter a filter for incoming traffic. Default is open.
  * 
  * permission   - Default user permissions uuugggooo
  * rights       - string with a maximum of six numerical (byte) comma separated 
  *                  fields. Also 'admin', 'driver' and 'user' can be given.
  */
 
-#define VSCPDB_USER_CREATE "CREATE TABLE 'user' ("\
-	"`idx_user`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-	"`username`	TEXT NOT NULL UNIQUE,"\
-	"`password`	TEXT NOT NULL,"\
-	"`fullname`	TEXT NOT NULL,"\
-	"`permission`	INTEGER DEFAULT 777,"\
-        "`rights`	TEST DEFAULT 'user',"\
+#define VSCPDB_USER_CREATE  "CREATE TABLE 'user' ("\
+	"`idx_user`         INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
+	"`username`         TEXT NOT NULL UNIQUE,"\
+	"`password`         TEXT NOT NULL,"\
+	"`fullname`         TEXT NOT NULL,"\
+        "`filter`           TEXT,"\
+        "`rights`           TEST DEFAULT 'user',"\
+        "`allowedevents`    TEST DEFAULT '*:*',"\
+        "`allowedremotes`    TEST DEFAULT '*'"\
 	"`note`	TEXT DEFAULT ''"\
         ");"
 
-#define VSCPDB_ORDINAL_USER_ID                       0   // 
-#define VSCPDB_ORDINAL_USER_USERNAME                 1   // 
-#define VSCPDB_ORDINAL_USER_PASSWORD                 2   // 
-#define VSCPDB_ORDINAL_USER_FULLNAME                 3   // 
-#define VSCPDB_ORDINAL_USER_PERMISSION               4   // 
-#define VSCPDB_ORDINAL_USER_RIGHT                    5   //
-#define VSCPDB_ORDINAL_USER_NOTE                     6   // 
+#define VSCPDB_USER_INSERT "INSERT INTO 'user' "\
+                "(idx_user, username,password,fullname,filter,rights,allowedevents,allowedremotes,note "\
+                " ) VALUES (%d,'%s','%s','%s','%s',%d,'%s','%s','%s' );"
 
-//*****************************************************************************
-//                                GROUP
-//*****************************************************************************
+#define VSCPDB_USER_UPDATE "UPDATE 'user' "\
+                "SET username='%s',password='%s',fullname='%s',filter='%s',rights=%d,allowedevents=%s',allowedremotes='%s',allowedremotes='%s',note='%s' "\
+                " WHERE idx_user='%d'"
 
-/*
- * Defines groups
- * permission is bitfield with permissions.  The filed is OR'ed with user 
- * permissions to form the resulting permission.
- * 
- * permissions
- * ===========
- * uuugggooo
- * uuu – user
- * ggg – group
- * ooo - other
- *
- * Each group is rw- and other permissions may be added added in front of this.
- */
+#define VSCPDB_ORDINAL_USER_ID                      0   // 
+#define VSCPDB_ORDINAL_USER_USERNAME                1   // 
+#define VSCPDB_ORDINAL_USER_PASSWORD                2   // 
+#define VSCPDB_ORDINAL_USER_FULLNAME                3   // 
+#define VSCPDB_ORDINAL_USER_FILTER                  4   //
+#define VSCPDB_ORDINAL_USER_RIGHTS                  5   //
+#define VSCPDB_ORDINAL_USER_ALLOWED_EVENTS          6   //
+#define VSCPDB_ORDINAL_USER_ALLOWED_REMOTES         7   //
+#define VSCPDB_ORDINAL_USER_NOTE                    8   // 
 
-#define VSCPDB_GROUP_CREATE "CREATE TABLE 'group' ("\
-	"`idx_group`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-	"`name`         TEXT NOT NULL,"\
-	"`permission`	INTEGER DEFAULT 777,"\
-        "`rights`	BLOB,"\
-	"`note`	TEXT DEFAULT ''"\
-        ");"
-
-#define VSCPDB_ORDINAL_GROUP_ID                     0   // 
-#define VSCPDB_ORDINAL_GROUP_NAME                   1   // 
-#define VSCPDB_ORDINAL_GROUP_PERMISSION             2   //
-#define VSCPDB_ORDINAL_GROUP_RIGHT                  3   //
-#define VSCPDB_ORDINAL_GROUP_NOTE                   4   // 
-
-//*****************************************************************************
-//                             GROUPLINKS
-//*****************************************************************************
-
-/* 
- * Defines which user(s) belong to a group.) 
- */
-
-#define VSCPDB_GROUPLINKS_CREATE "CREATE TABLE `grouplinks` ("\
-	"`idx_grouplinks`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-	"`link_to_user`         INTEGER NOT NULL,"\
-	"`link_to_group`	INTEGER NOT NULL"\
-        ");"
-
-#define VSCPDB_ORDINAL_GROUPLINKS_ID                0   // 
-#define VSCPDB_ORDINAL_GROUPLINKS_LINK_TO_USER      1   // 
-#define VSCPDB_ORDINAL_GROUPLINKS_LINK_TO_GROUP     2   // 
-
-
-//*****************************************************************************
-//                                ACL
-//*****************************************************************************
-
-/*
- * Defines access rights for remote machines and users.
- */
-
-#define VSCPDB_ACL_CREATE "CREATE TABLE `acl` ("\
-	"`idx_acl`          INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-	"`remote_address`   TEXT DEFAULT '*.*.*.*',"\
-        "`bipv6_address`    INTEGER DEFAULT 0,"\
-	"`link_to_user`     INTEGER NOT NULL"\
-        ");"
-
-#define VSCPDB_ORDINAL_ACL_ID                       0   // 
-#define VSCPDB_ORDINAL_ACL_REMOTE_ADDRESS           1   // 
-#define VSCPDB_ORDINAL_ACL_IPV6_ADDRESS             1   //
-#define VSCPDB_ORDINAL_ACL_LINK_TO_USER             2   // 
-
-//*****************************************************************************
-//                               ALLOWED-EVENTS
-//*****************************************************************************
-
-/*
- * Defines events a user or group can send
- */
-
-#define VSCPDB_USER_EVENTS_CREATE "CREATE TABLE `allowedevents` ("\
-	"`allowedevents`   INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-	"`class`            INTEGER DEFAULT 0,"\
-        "`type`             INTEGER DEFAULT 0,"\
-	"`link_to_user`     INTEGER"\
-        "`link_to_group`    INTEGER"\
-        ");"
-
-#define VSCPDB_ORDINAL_ALLOWEDEVENTS_ID             0   // 
-#define VSCPDB_ORDINAL_ALLOWEDEVENTS_CLASS          1   //
-#define VSCPDB_ORDINAL_ALLOWEDEVENTS_TYPE           2   //
-#define VSCPDB_ORDINAL_ALLOWEDEVENTS_LINK_TO_USER   3   //
-#define VSCPDB_ORDINAL_ALLOWEDEVENTS_LINK_TO_GROUP  4   //
 
 //*****************************************************************************
 //                               DRIVER
@@ -402,9 +323,9 @@
 	"`idx_location`         INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`link_to_zone`         INTEGER,"\
 	"`link_to_subzone`	INTEGER,"\
-	"`link_to_guid`          INTEGER,"\
+	"`link_to_guid`         INTEGER,"\
         "`name`                 TEXT NOT NULL UNIQUE,"\
-        "`description`	I       NTEGER "\
+        "`description`	I       TEXT "\
         ");"
 
 #define VSCPDB_ORDINAL_LOCATION_ID                  0   //            
@@ -445,10 +366,9 @@
  */
 
 #define VSCPDB_SIMPLE_UI_CREATE "CREATE TABLE 'simpleui' ("\
-	"`idx_simpleui`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
+	"`idx_simpleui`     INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`name`             TEXT NOT NULL UNIQUE,"\
 	"`link_to_ower`     INTEGER NOT NULL,"\
-        "`link_to_group`    INTEGER NOT NULL,"\
 	"`permission`       INTEGER DEFAULT 777,"\
         "`comment`          TEXT"\
         ");";
@@ -456,9 +376,8 @@
  
 #define VSCPDB_ORDINAL_SIMPLE_UI_NAME               1   //
 #define VSCPDB_ORDINAL_SIMPLE_UI_LINK_TO_OWNER      2   //  
-#define VSCPDB_ORDINAL_SIMPLE_UI_LINK_TO_GROUP      3   //
-#define VSCPDB_ORDINAL_SIMPLE_UI_PERMISSION         4   // 
-#define VSCPDB_ORDINAL_SIMPLE_UI_COMMENT            5   //
+#define VSCPDB_ORDINAL_SIMPLE_UI_PERMISSION         3   // 
+#define VSCPDB_ORDINAL_SIMPLE_UI_COMMENT            4   //
 
 
 //*****************************************************************************
@@ -546,7 +465,6 @@
 	"`idx_table`        INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`name`             TEXT NOT NULL,"\
 	"`link_to_owner`    INTEGER NOT NULL,"\
-        "`link_to_group`    INTEGER NOT NULL,"\
 	"`permission`       INTEGER NOT NULL,"\
 	"`xname`            BLOB NOT NULL,"\
 	"`yname`            TEXT NOT NULL,"\
@@ -565,20 +483,19 @@
 #define VSCPDB_ORDINAL_USERDEF_TABLE_ID                 0   //
 #define VSCPDB_ORDINAL_USERDEF_TABLE_NAME               1   //
 #define VSCPDB_ORDINAL_USERDEF_TABLE_LINK_TO_OWNER      2   //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_LINK_TO_GROUP      3   //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_PERMISSION         4   //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_XNAME              5   //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_YNAME              6   //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_TITLE              7   //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_XFIELD             8   //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_YFIELD             9   //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_NOTE               10  //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_TABLETYPE          11  //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_PARAM              12  //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_SIZE               13  //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_SQL_CREATE         14  //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_SQL_INSERTVALUE    15  //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_DESCRIPTION        16  //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_PERMISSION         3   //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_XNAME              4   //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_YNAME              5   //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_TITLE              6   //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_XFIELD             7   //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_YFIELD             8   //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_NOTE               9   //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_TABLETYPE          10  //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_PARAM              11  //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_SIZE               12  //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_SQL_CREATE         13  //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_SQL_INSERTVALUE    14  //
+#define VSCPDB_ORDINAL_USERDEF_TABLE_DESCRIPTION        15  //
 
 
 
@@ -593,15 +510,14 @@
 //*****************************************************************************
 
 #define VSCPDB_VARIABLE_CREATE  "CREATE TABLE 'variable' ("\
-"'idx_variableex'  INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-"'lastchange'      TEXT NOT NULL,"\
-"'name'            TEXT NOT NULL UNIQUE,"\
-"'type'            INTEGER NOT NULL DEFAULT 0,"\
-"'value'           TEXT NOT NULL,"\
-"'bPersistent'     INTEGER NOT NULL DEFAULT 0,"\
-"'link_to_user'    INTEGER NOT NULL,"\
-"'link_to_group'   INTEGER NOT NULL,"\
-"'permission'      INTEGER NOT NULL DEFAULT 777,"\
+"'idx_variable'     INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
+"'lastchange'       TEXT NOT NULL,"\
+"'name'             TEXT NOT NULL UNIQUE,"\
+"'type'             INTEGER NOT NULL DEFAULT 0,"\
+"'value'            TEXT NOT NULL,"\
+"'bPersistent'      INTEGER NOT NULL DEFAULT 0,"\
+"'link_to_user'     INTEGER NOT NULL,"\
+"'permission'       INTEGER NOT NULL DEFAULT 777,"\
 "'note'	TEXT"\
 ");"
 
@@ -611,10 +527,9 @@
 #define VSCPDB_ORDINAL_VARIABLE_TYPE            3   // 
 #define VSCPDB_ORDINAL_VARIABLE_VALUE           4   // 
 #define VSCPDB_ORDINAL_VARIABLE_PERSISTENT      5   // 
-#define VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER    6   // 
-#define VSCPDB_ORDINAL_VARIABLE_LINK_TO_GROUP   7   // 
-#define VSCPDB_ORDINAL_VARIABLE_PERMISSION      8   // 
-#define VSCPDB_ORDINAL_VARIABLE_NOTE            9   // 
+#define VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER    6   //  
+#define VSCPDB_ORDINAL_VARIABLE_PERMISSION      7   // 
+#define VSCPDB_ORDINAL_VARIABLE_NOTE            8   // 
 
 
 
@@ -633,81 +548,41 @@
 
 
 #define VSCPDB_DM_CREATE  "CREATE TABLE 'dm' ("\
-	"`id`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-	"`GroupID`	TEXT NOT NULL,"\
-	"`bEnable`	INTEGER NOT NULL DEFAULT 0,"\
-	"`maskPriority`	INTEGER NOT NULL DEFAULT 0,"\
-	"`maskClass`	NUMERIC NOT NULL DEFAULT 0,"\
-	"`maskType`	INTEGER NOT NULL DEFAULT 0,"\
-	"`maskGUID`	TEXT NOT NULL DEFAULT DEFAULT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00',"\
-	"`filterPriority`	INTEGER NOT NULL DEFAULT 0,"\
-	"`filterClass`	INTEGER NOT NULL DEFAULT 0,"\
-	"`filterType`	INTEGER NOT NULL DEFAULT 0,"\
-	"`filterGUID`	TEXT NOT NULL,"\
-	"`allowedFrom`	TEXT NOT NULL,"\
-	"`allowedTo`	TEXT NOT NULL,"\
-	"`allowedMonday`	INTEGER NOT NULL,"\
-	"`allowedTuesday`	INTEGER NOT NULL,"\
-	"`allowsWednesday`	INTEGER NOT NULL,"\
-	"`allowedThursday`	INTEGER NOT NULL,"\
-	"`allowedFriday`	INTEGER NOT NULL,"\
-	"`allowedSaturday`	NUMERIC NOT NULL,"\
-	"`allowedSunday`	INTEGER NOT NULL,"\
-	"`allowedTime`          TEXT NOT NULL,"\
-	"`bCheckIndex`          INTEGER NOT NULL,"\
-	"`index`                TEXT NOT NULL,"\
-	"`bCheckZone`           TEXT NOT NULL,"\
-	"`zone`                 INTEGER NOT NULL,"\
-	"`bCheckSubZone`	INTEGER NOT NULL,"\
-	"`subzone`              INTEGER NOT NULL,"\
+	"`idx_dm`                       INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
+        "`GroupID`                      TEXT NOT NULL,"\
+	"`bEnable`                      INTEGER NOT NULL DEFAULT 0,"\
+	"`maskPriority`                 INTEGER NOT NULL DEFAULT 0,"\
+	"`maskClass`                    NUMERIC NOT NULL DEFAULT 0,"\
+	"`maskType`                     INTEGER NOT NULL DEFAULT 0,"\
+	"`maskGUID`                     TEXT NOT NULL DEFAULT DEFAULT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00',"\
+	"`filterPriority`               INTEGER NOT NULL DEFAULT 0,"\
+	"`filterClass`                  INTEGER NOT NULL DEFAULT 0,"\
+	"`filterType`                   INTEGER NOT NULL DEFAULT 0,"\
+	"`filterGUID`                   TEXT NOT NULL,"\
+	"`allowedFrom`                  TEXT NOT NULL,"\
+	"`allowedTo`                    TEXT NOT NULL,"\
+	"`allowedMonday`                INTEGER NOT NULL,"\
+	"`allowedTuesday`               INTEGER NOT NULL,"\
+	"`allowsWednesday`              INTEGER NOT NULL,"\
+	"`allowedThursday`              INTEGER NOT NULL,"\
+	"`allowedFriday`                INTEGER NOT NULL,"\
+	"`allowedSaturday`              NUMERIC NOT NULL,"\
+	"`allowedSunday`                INTEGER NOT NULL,"\
+	"`allowedTime`                  TEXT NOT NULL,"\
+	"`bCheckIndex`                  INTEGER NOT NULL,"\
+	"`index`                        TEXT NOT NULL,"\
+	"`bCheckZone`                   TEXT NOT NULL,"\
+	"`zone`                         INTEGER NOT NULL,"\
+	"`bCheckSubZone`                INTEGER NOT NULL,"\
+	"`subzone`                      INTEGER NOT NULL,"\
 	"`bCheckMeasurementIndex`	INTEGER NOT NULL,"\
-	"`meaurementIndex`	INTEGER NOT NULL,"\
-	"`actionCode`           TEXT NOT NULL,"\
-	"`actionParameter`	NUMERIC NOT NULL,"\
-	"`measurementValue`	REAL,"\
-	"`measurementUnit`	INTEGER,"\
-	"`measurementCompare`	INTEGER,"\
-	"`comment`              TEXT"\
-    ")"
-
-// The internal table does not have an autoincrement id as it is filled with 
-// the id from the external database.
-#define VSCPDB_DM_INTERNAL_CREATE  "CREATE TABLE 'dm' ("\
-	"`id`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-	"`GroupID`	TEXT NOT NULL,"\
-	"`bEnable`	INTEGER NOT NULL DEFAULT 0,"\
-	"`maskPriority`	INTEGER NOT NULL DEFAULT 0,"\
-	"`maskClass`	NUMERIC NOT NULL DEFAULT 0,"\
-	"`maskType`	INTEGER NOT NULL DEFAULT 0,"\
-	"`maskGUID`	TEXT NOT NULL,"\
-	"`filterPriority`	INTEGER NOT NULL DEFAULT 0,"\
-	"`filterClass`	INTEGER NOT NULL DEFAULT 0,"\
-	"`filterType`	INTEGER NOT NULL DEFAULT 0,"\
-	"`filterGUID`	TEXT NOT NULL,"\
-	"`allowedStart`	TEXT,"\
-	"`allowedEnd`	TEXT,"\
-	"`allowedMonday`	INTEGER NOT NULL,"\
-	"`allowedTuesday`	INTEGER NOT NULL,"\
-	"`allowsWednesday`	INTEGER NOT NULL,"\
-	"`allowedThursday`	INTEGER NOT NULL,"\
-	"`allowedFriday`	INTEGER NOT NULL,"\
-	"`allowedSaturday`	NUMERIC NOT NULL,"\
-	"`allowedSunday`	INTEGER NOT NULL,"\
-	"`allowedTime`	TEXT,"\
-	"`bCheckIndex`	INTEGER NOT NULL,"\
-	"`index`	TEXT NOT NULL,"\
-	"`bCheckZone`	TEXT NOT NULL,"\
-	"`zone`	INTEGER NOT NULL,"\
-	"`bCheckSubZone`	INTEGER NOT NULL,"\
-	"`subzone`	INTEGER NOT NULL,"\
-	"`bCheckMeasurementIndex`	INTEGER NOT NULL,"\
-	"`meaurementIndex`	INTEGER NOT NULL,"\
-	"`actionCode`	TEXT NOT NULL,"\
-	"`actionParameter`	NUMERIC NOT NULL,"\
-	"`measurementValue`	REAL,"\
-	"`measurementUnit`	INTEGER,"\
-	"`measurementCompare`	INTEGER,"\
-	"`comment`	TEXT"\
+	"`meaurementIndex`              INTEGER NOT NULL,"\
+	"`actionCode`                   TEXT NOT NULL,"\
+	"`actionParameter`              NUMERIC NOT NULL,"\
+	"`measurementValue`             REAL,"\
+	"`measurementUnit`              INTEGER,"\
+	"`measurementCompare`           INTEGER,"\
+	"`comment`                      TEXT"\
     ")"
 
 #define VSCPDB_DM_INSERT "INSERT INTO 'dm' "\
@@ -725,7 +600,7 @@
                 "allowedStart=%s',allowedEnd=%s',allowedMonday='%d',allowedTuesday='%d',allowsWednesday='%d',allowedThursday='%d',allowedFriday='%d',allowedSaturday='%d',"\
                 "allowedSunday,allowedTime,bCheckIndex,index,bCheckZone,zone,bCheckSubZone,subzone,bCheckMeasurementIndex,"\
                 "meaurementIndex='%d',actionCode='%d',actionParameter='%s',measurementValue='%f',measurementUnit='%d',measurementCompare='%d'"\
-                " WHERE id='%d'" 
+                " WHERE idx_dm='%d'" 
 
 #define VSCPDB_DM_UPDATE_ITEM "UPDATE 'dm' SET ( %s='%s' ) WHERE id='%d' "
 

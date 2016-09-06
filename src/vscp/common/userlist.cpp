@@ -45,9 +45,18 @@
 #include <wx/xml/xml.h>
 #include <wx/tokenzr.h>
 
+#include <sqlite3.h>
+
+#include <vscpdb.h>
+#include <controlobject.h>
 #include <vscphelper.h>
 #include "userlist.h"
 
+///////////////////////////////////////////////////
+//                 GLOBALS
+///////////////////////////////////////////////////
+
+extern CControlObject *gpobj;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor
@@ -55,6 +64,8 @@
 
 CUserItem::CUserItem(void)
 {
+    m_userID = USER_IS_LOCAL;    // Local user
+    
     // Let all events thrue
     vscp_clearVSCPFilter(&m_filterVSCP);
     
@@ -68,8 +79,263 @@ CUserItem::CUserItem(void)
 
 CUserItem::~CUserItem(void)
 {
-    m_listAllowedRemotes.clear();
+    m_listAllowedIPV4Remotes.clear();
+    m_listAllowedIPV6Remotes.clear();
     m_listAllowedEvents.clear();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setUserRightsFromString
+//
+
+bool CUserItem::setUserRightsFromString( const wxString& strRights )
+{
+    // Privileges
+    if ( strRights.Length() ) {
+        
+        wxStringTokenizer tkz( strRights, wxT(",") );
+        
+        int idx=0;
+        do {
+            
+            wxString str = tkz.GetNextToken();
+            if (str.IsSameAs(_("admin"), false)) {
+                // All rights
+                memset( m_userRights, 0xff, sizeof( m_userRights ) );
+            } 
+            else if (str.IsSameAs(_("user"), false)) {
+                // A standard user
+                m_userRights[ 0 ] = 0x06;
+            } 
+            else if (str.IsSameAs(_("driver"), false)) {
+                // A standard driver
+                m_userRights[ 0 ] = 0x0f;
+            } 
+            else {
+                // Numerical
+                unsigned long lval;
+                str.ToULong( &lval );
+                m_userRights[ idx++ ] = (uint8_t)lval;
+            }
+            
+        } while ( tkz.HasMoreTokens() && ( idx < sizeof( m_userRights ) ) );
+    }
+    
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setAllowedEventsFromString
+//
+
+bool CUserItem::setAllowedEventsFromString( const wxString& strEvents )
+{
+    // Privileges
+    if ( strEvents.Length() ) {
+        
+        wxStringTokenizer tkz( strEvents, wxT(",") );
+        
+        do {
+            
+            wxString str = tkz.GetNextToken();
+            m_listAllowedEvents.Add( str );
+            
+        } while ( tkz.HasMoreTokens() );
+    }
+    
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setAllowedRemotesFromString
+//
+
+bool CUserItem::setAllowedRemotesFromString( const wxString& strConnect )
+{
+    // Privileges
+    if ( strConnect.Length() ) {
+        
+        wxStringTokenizer tkz( strConnect, wxT(",") );
+        
+        do {
+            
+            wxString str = tkz.GetNextToken();
+            m_listAllowedIPV4Remotes.Add( str );
+            
+        } while ( tkz.HasMoreTokens() );
+    }
+    
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getRightsAsString
+//
+
+wxString CUserItem::getRightsAsString( void  )
+{
+    wxString strRights;
+    
+    for ( int i=0; i<USER_PRIVILEGE_BYTES; i++ ) {
+        strRights += wxString::Format( _("%d"), m_userRights[ i ] );
+        if ( i != ( USER_PRIVILEGE_BYTES - 1 )  ) {
+            strRights += _(",");
+        }
+    }
+    
+    return strRights;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getAllowedEventsAsString
+//
+
+wxString CUserItem::getAllowedEventsAsString( void )
+{
+    wxString strAllowedEvents;
+    
+    for ( int i=0; i<m_listAllowedEvents.Count(); i++ ) {
+        strAllowedEvents += m_listAllowedEvents[ i ];
+        if ( i != ( m_listAllowedEvents.Count() - 1 )  ) {
+            strAllowedEvents += _(",");
+        }
+    }
+    
+    return strAllowedEvents;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getAllowedRemotesAsString
+//
+
+wxString CUserItem::getAllowedRemotesAsString( void )
+{
+    int i;
+    wxString strAllowedRemotes;
+    
+    for ( i=0; i<m_listAllowedIPV4Remotes.Count(); i++ ) {
+        strAllowedRemotes += m_listAllowedIPV4Remotes[ i ];
+        strAllowedRemotes += _(",");
+    }
+    
+    for ( i=0; i<m_listAllowedIPV6Remotes.Count(); i++ ) {
+        strAllowedRemotes += m_listAllowedIPV6Remotes[ i ];
+        if ( i != ( m_listAllowedIPV6Remotes.Count() - 1 )  ) {
+            strAllowedRemotes += _(",");
+        }
+    }
+    
+    return strAllowedRemotes;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// saveToDatabase
+//
+
+bool CUserItem::saveToDatabase( void )
+{
+    char *zErrMsg = 0;
+    
+    // Database must be open
+    if ( NULL == gpobj->m_db_vscp_daemon ) return false;
+    
+    // Internal records can't be saved to db
+    // driver users is an example on users that are only local
+    if ( USER_IS_LOCAL == m_userID ) return false;
+    
+    wxString strFilter, strMask, strBoth;
+    strBoth = strFilter + _(",") + strMask;
+    vscp_writeFilterToString( &m_filterVSCP, strFilter );
+    vscp_writeMaskToString( &m_filterVSCP, strMask );
+    strBoth = strFilter + _(",") + strMask;
+    
+    if ( 0 == m_userID ) {
+ 
+        // Add
+        char *sql = sqlite3_mprintf( VSCPDB_USER_INSERT,
+                m_userID,
+                (const char *)m_user.mbc_str(),
+                (const char *)m_md5Password.mbc_str(),
+                (const char *)m_fullName.mbc_str(),
+                (const char *)strBoth.mbc_str(),
+                (const char *)getRightsAsString().mbc_str(),
+                (const char *)getAllowedEventsAsString().mbc_str(),
+                (const char *)getAllowedRemotesAsString().mbc_str(),
+                (const char *)m_note.mbc_str() );
+        
+        if ( SQLITE_OK != sqlite3_exec( gpobj->m_db_vscp_daemon, 
+                                            sql, NULL, NULL, &zErrMsg)) {
+            sqlite3_free( sql );
+            return false;
+        }
+
+        sqlite3_free( sql );
+        
+    }
+    else {
+        
+        // Update
+        char *sql = sqlite3_mprintf( VSCPDB_USER_UPDATE,
+                (const char *)m_user.mbc_str(),
+                (const char *)m_md5Password.mbc_str(),
+                (const char *)m_fullName.mbc_str(),
+                (const char *)strBoth.mbc_str(),
+                (const char *)getRightsAsString().mbc_str(),
+                (const char *)getAllowedEventsAsString().mbc_str(),
+                (const char *)getAllowedRemotesAsString().mbc_str(),
+                (const char *)m_note.mbc_str() );
+        
+        if ( SQLITE_OK != sqlite3_exec( gpobj->m_db_vscp_daemon, 
+                                            sql, NULL, NULL, &zErrMsg)) {
+            sqlite3_free( sql );
+            return false;
+        }
+
+        sqlite3_free( sql );
+        
+    }
+    
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// isUserDefined
+//
+
+bool CUserItem::isUserDefined(const wxString& user, long *pid ) 
+{
+    bool rv = false;
+    char *zErrMsg = 0;
+    sqlite3_stmt *ppStmt;
+    
+    // Database must be open
+    if ( NULL == gpobj->m_db_vscp_daemon ) return false;
+    
+    // Search username
+    char *sql = sqlite3_mprintf( "SELECT idx_user from 'user' WHERE name='%s'",
+                (const char *)user.mbc_str() );
+    
+    if ( SQLITE_OK != sqlite3_prepare( gpobj->m_db_vscp_daemon,
+                                            sql,
+                                            -1,
+                                            &ppStmt,
+                                            NULL ) ) {
+        gpobj->logMsg( _("Failed to read user database - prepare query.") );
+        sqlite3_free( sql );
+        return false;
+    }
+    
+    while ( SQLITE_ROW  == sqlite3_step( ppStmt ) ) {
+        rv = true;
+        if ( NULL != pid ) {
+            *pid = sqlite3_column_int( ppStmt,VSCPDB_ORDINAL_USER_ID );
+        }
+    }
+    
+    sqlite3_free( sql );
+    sqlite3_finalize( ppStmt );
+    
+    return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -81,14 +347,14 @@ bool CUserItem::isAllowedToConnect(const wxString& remote)
     unsigned int i;
     wxString wxstr;
     wxIPV4address ipaddr;
-    if (!ipaddr.Hostname(remote)) return false;
+    if ( !ipaddr.Hostname( remote ) ) return false;
 
     // If empty all host allowed, This is "*.*.*.*" or "*"
-    if ( m_listAllowedRemotes.IsEmpty() ) return true;
+    if ( m_listAllowedIPV4Remotes.IsEmpty() ) return true;
 
-    for (i = 0; i < m_listAllowedRemotes.GetCount(); i++) {
-        wxLogDebug(m_listAllowedRemotes[ i ]);
-        if (m_listAllowedRemotes[ i ].IsSameAs(remote)) return true;
+    for (i = 0; i < m_listAllowedIPV4Remotes.GetCount(); i++) {
+        wxLogDebug(m_listAllowedIPV4Remotes[ i ]);
+        if (m_listAllowedIPV4Remotes[ i ].IsSameAs(remote)) return true;
     }
 
     wxStringTokenizer tkz(ipaddr.IPAddress(), wxT("."));
@@ -99,21 +365,20 @@ bool CUserItem::isAllowedToConnect(const wxString& remote)
 
     // test wildcard a.b.c.*
     wxstr.Printf(_("%s.%s.%s.*"), ip1.c_str(), ip2.c_str(), ip3.c_str());
-    for (i = 0; i < m_listAllowedRemotes.GetCount(); i++) {
-        if (m_listAllowedRemotes[ i ].IsSameAs(wxstr)) return true;
+    for (i = 0; i < m_listAllowedIPV4Remotes.GetCount(); i++) {
+        if (m_listAllowedIPV4Remotes[ i ].IsSameAs(wxstr)) return true;
     }
 
     // test wildcard a.b.*.*
     wxstr.Printf(_("%s.%s.*.*"), ip1.c_str(), ip2.c_str());
-    for (i = 0; i < m_listAllowedRemotes.GetCount(); i++) {
-        if (m_listAllowedRemotes[ i ].IsSameAs(wxstr)) return true;
+    for (i = 0; i < m_listAllowedIPV4Remotes.GetCount(); i++) {
+        if (m_listAllowedIPV4Remotes[ i ].IsSameAs(wxstr)) return true;
     }
-
 
     // test wildcard a.*.*.*
     wxstr.Printf(_("%s.*.*.*"), ip1.c_str());
-    for (i = 0; i < m_listAllowedRemotes.GetCount(); i++) {
-        if (m_listAllowedRemotes[ i ].IsSameAs(wxstr)) return true;
+    for (i = 0; i < m_listAllowedIPV4Remotes.GetCount(); i++) {
+        if (m_listAllowedIPV4Remotes[ i ].IsSameAs(wxstr)) return true;
     }
 
     return false;
@@ -125,7 +390,7 @@ bool CUserItem::isAllowedToConnect(const wxString& remote)
 //
 
 bool CUserItem::isUserAllowedToSendEvent( const uint32_t vscp_class,
-                                            const uint32_t vscp_type)
+                                            const uint32_t vscp_type )
 {
     unsigned int i;
     wxString wxstr;
@@ -139,13 +404,13 @@ bool CUserItem::isUserAllowedToSendEvent( const uint32_t vscp_class,
         if (m_listAllowedEvents[ i ].IsSameAs(wxstr)) return true;
     }
 
-    wxstr.Printf(_("%08X:%08X"), vscp_class, vscp_type);
+    wxstr.Printf(_("%04X:%04X"), vscp_class, vscp_type);
     for (i = 0; i < m_listAllowedEvents.GetCount(); i++) {
         if (m_listAllowedEvents[ i ].IsSameAs(wxstr)) return true;
     }
 
     // test wildcard class.*
-    wxstr.Printf(_("%08X:*"), vscp_class);
+    wxstr.Printf(_("%04X:*"), vscp_class);
     for (i = 0; i < m_listAllowedEvents.GetCount(); i++) {
         if (m_listAllowedEvents[ i ].IsSameAs(wxstr)) return true;
     }
@@ -175,38 +440,169 @@ CUserList::CUserList(void)
 
 CUserList::~CUserList(void)
 {
-    VSCPUSERHASH::iterator it;
-    for (it = m_userhashmap.begin(); it != m_userhashmap.end(); ++it) {
-        CUserItem *pItem = it->second;
-        if (NULL != pItem) delete pItem;
+    {
+        VSCPGROUPHASH::iterator it;
+        for (it = m_grouphashmap.begin(); it != m_grouphashmap.end(); ++it) {
+            CGroupItem *pItem = it->second;
+            if (NULL != pItem) delete pItem;
+        }
+    }
+    
+    m_grouphashmap.clear();
+    
+    {
+        VSCPUSERHASH::iterator it;
+        for (it = m_userhashmap.begin(); it != m_userhashmap.end(); ++it) {
+            CUserItem *pItem = it->second;
+            if (NULL != pItem) delete pItem;
+        }
     }
 
     m_userhashmap.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// loadUsers
+//
+
+bool CUserList::loadUsers( void )
+{
+    // Check if user is already in the database
+    char *pErrMsg = 0;
+    sqlite3_stmt *ppStmt;
+    const char *psql = "SELECT * from 'user'";
+
+    // Check if database is open
+    if ( NULL == gpobj->m_db_vscp_daemon ) {
+        gpobj->logMsg( _("Failed to read VSCP settings database - not open." ) );
+        return false;
+    }
+        
+    if ( SQLITE_OK != sqlite3_prepare( gpobj->m_db_vscp_daemon,
+                                            psql,
+                                            -1,
+                                            &ppStmt,
+                                            NULL ) ) {
+        gpobj->logMsg( _("Failed to read VSCP settings database - prepare query.") );
+        return false;
+    }
+    
+    while ( SQLITE_ROW  == sqlite3_step( ppStmt ) ) {
+        
+        // New user item
+        CUserItem *pItem = new CUserItem;
+        if ( NULL != pItem ) {
+
+           const unsigned char *p;
+            
+            // id
+            pItem->setUserID( sqlite3_column_int( ppStmt,VSCPDB_ORDINAL_USER_ID ) );
+                    
+            // User
+            p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_USER_USERNAME );
+            if ( NULL != p ) {
+                pItem->setUser( wxString::FromUTF8( (const char *)p ) );
+            }
+            
+            wxLogDebug( _("Adding user: ") + pItem->getUser() );
+            
+            // Password
+            p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_USER_PASSWORD );
+            if ( NULL != p ) {
+                pItem->setPassword( wxString::FromUTF8( (const char *)p ) );
+            }
+            
+            // Fullname
+            p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_USER_FULLNAME );
+            if ( NULL != p ) {
+                pItem->setFullname( wxString::FromUTF8( (const char *)p ) );
+            }         
+            
+            // Event filter
+            p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_USER_FILTER );
+            if ( NULL != p ) {
+                wxString wxstr;
+                wxstr.FromUTF8( (const char *)p );
+                pItem->setFilterFromString( wxstr );
+            }
+                  
+            // Rights
+            p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_USER_RIGHTS );
+            if ( NULL != p ) {
+                pItem->setUserRightsFromString( (const char *)p );
+            }
+            
+            // Allowed events
+            p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_USER_ALLOWED_EVENTS );
+            if ( NULL != p ) {
+                pItem->setAllowedEventsFromString( (const char *)p );
+            }
+            
+            // Allowed remotes
+            p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_USER_ALLOWED_REMOTES );
+            if ( NULL != p ) {
+                pItem->setAllowedRemotesFromString( (const char *)p );
+            }        
+            
+            m_userhashmap[ pItem->getUser() ] = pItem;
+            
+        }
+        else {
+            gpobj->logMsg( _("Unable to allocate memory for new user.\n") );
+        }
+    
+        sqlite3_step( ppStmt );
+    }
+    
+    sqlite3_finalize( ppStmt );
+    
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // addUser
 //
 
-bool CUserList::addUser(const wxString& user,
-                            const wxString& md5,
-                            const wxString& userRights,
+bool CUserList::addUser( const wxString& user,
+                            const wxString& md5, 
+                            const wxString& strNote,
                             const vscpEventFilter *pFilter,
+                            const wxString& userRights,
                             const wxString& allowedRemotes,
-                            const wxString& allowedEvents)
+                            const wxString& allowedEvents )
 {
+    // Check if user is already in the database
+    char *pErrMsg = 0;
+    sqlite3_stmt *ppStmt;
+
+    // Check if database is open
+    if ( NULL == gpobj->m_db_vscp_daemon ) {
+        gpobj->logMsg( _("Failed to read VSCP settings database - not open.") );
+        return false;
+    }
+
+    // New user item
     CUserItem *pItem = new CUserItem;
     if (NULL == pItem) return false;
+    
+    // Check if user is defined already
+    if ( pItem->isUserDefined( user ) ) {
+        delete pItem;
+        return false;
+    }
 
-    pItem->m_user = user;
-    pItem->m_md5Password = md5;
-
-    wxLogDebug(_("Adding user: ") + user);
-
+    pItem->setUser( user );
+    pItem->setPassword( md5 );
+    pItem->setNote( strNote );
+    pItem->setFilter( pFilter );
+    pItem->setUserRightsFromString( userRights );
+    pItem->setAllowedRemotesFromString( allowedRemotes );
+    pItem->setAllowedEventsFromString( allowedEvents );
+    
     m_userhashmap[ user ] = pItem;
 
     // Privileges
-    if (userRights.Length()) {
+    if ( userRights.Length() ) {
         
         wxStringTokenizer tkz( userRights, wxT(",") );
         
@@ -216,27 +612,29 @@ bool CUserList::addUser(const wxString& user,
             wxString str = tkz.GetNextToken();
             if (str.IsSameAs(_("admin"), false)) {
                 // All rights
-                memset( pItem->m_userRights, 0xff, sizeof( pItem->m_userRights ) );
+                for (int i= 0; i<USER_PRIVILEGE_BYTES; i++ ) {
+                    pItem->setUserRight( i, 0xff );
+                }
             } 
             else if (str.IsSameAs(_("user"), false)) {
                 // A standard user
-                pItem->m_userRights[ 0 ] = 0x06;
+                pItem->setUserRight( 0, 0x06 );
             } 
             else if (str.IsSameAs(_("driver"), false)) {
                 // A standard driver
-                pItem->m_userRights[ 0 ] = 0x0f;
+                pItem->setUserRight( 0, 0x0f );
             } 
             else {
                 // Numerical
                 unsigned long lval;
                 str.ToULong( &lval );
-                pItem->m_userRights[ idx++ ] = (uint8_t)lval;
+                pItem->setUserRight( idx++, (uint8_t)lval );
             }
             
-        } while ( tkz.HasMoreTokens() && ( idx < sizeof( pItem->m_userRights ) ) );
+        } while ( tkz.HasMoreTokens() && ( idx < USER_PRIVILEGE_BYTES ) );
     }
 
-    // Allowed remotes
+    // Allowed remotes (ACL) 
     if (allowedRemotes.Length()) {
         wxStringTokenizer tkz(allowedRemotes, wxT(","));
         do {
@@ -246,10 +644,10 @@ bool CUserList::addUser(const wxString& user,
                 remote.Trim( false );
                 if ( ( _( "*" ) == remote ) || ( _( "*.*.*.*" ) == remote ) ) {
                     // All is allowed to connect
-                    pItem->m_listAllowedRemotes.Clear();
+                    pItem->clearAllowedRemoteList();
                 }
                 else {
-                    pItem->m_listAllowedRemotes.Add( remote );
+                    pItem->addAllowedRemote( remote );
                 }
             }
         } while (tkz.HasMoreTokens());
@@ -263,14 +661,14 @@ bool CUserList::addUser(const wxString& user,
             if (!eventpair.IsEmpty()) {
                 eventpair.Trim();
                 eventpair.Trim(false);
-                pItem->m_listAllowedEvents.Add(eventpair);
+                pItem->addAllowedEvent( eventpair );
             }
         } while (tkz.HasMoreTokens());
     } 
 
     // Clear filter
     if (NULL != pFilter) {
-        memcpy(&pItem->m_filterVSCP, pFilter, sizeof( vscpEventFilter));
+        pItem->setFilter( pFilter );
     }
 
     return true;
@@ -282,12 +680,9 @@ bool CUserList::addUser(const wxString& user,
 
 CUserItem * CUserList::getUser( const wxString& user )
 {
-    int i = 1;
-    i = i + 2;
-
     VSCPUSERHASH::iterator it;
 
-    if ((it = m_userhashmap.find(user)) ==
+    if ( ( it = m_userhashmap.find( user ) ) ==
             m_userhashmap.end()) return NULL;
 
     return it->second;
@@ -306,7 +701,7 @@ CUserItem * CUserList::checkUser( const wxString& user,
     if ( NULL == pUserItem ) return NULL;
 
     // Check password
-    if (!pUserItem->m_md5Password.IsSameAs(md5password)) return NULL;
+    if (!pUserItem->getPassword().IsSameAs( md5password ) ) return NULL;
 
     return pUserItem;
 }

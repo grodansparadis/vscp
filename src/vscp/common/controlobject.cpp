@@ -650,16 +650,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
                 
                 // Create user table
                 doCreateUserTable();
-     
-                // Create group table
-                doCreateGroupTable();
-     
-                // Create grouplinks table
-                doCreateGroupLinksTable();
-    
-                // Create acl table
-                doCreateAclTable();
-    
+        
                 // Create driver table
                 doCreateDriverTable();
 
@@ -688,6 +679,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
                 doCreateUserdefTableTable();
             
             }
+            
         }
         else {
             fprintf( stderr, "VSCP Daemon configuration database path invalid - will exit.\n" );
@@ -807,10 +799,9 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 
     m_userList.addUser( m_driverUsername,
                             wxString::FromUTF8( digest ),
-                            _("admin"),
+                            _(""),      // note
                             NULL,
-                            _(""),
-                            _("") );
+                            _("admin")  );    
 
     // Read XML configuration
     if ( !readXMLConfiguration( strcfgfile ) ) {
@@ -2791,10 +2782,10 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                 if ( bUser ) {
 
                     if (bFilterPresent && bMaskPresent) {
-                        m_userList.addUser(name, md5, privilege, &VSCPFilter, allowfrom, allowevent);
+                        m_userList.addUser(name, md5, _(""), &VSCPFilter, privilege, allowfrom, allowevent);
                     }
                     else {
-                        m_userList.addUser(name, md5, privilege, NULL, allowfrom, allowevent);
+                        m_userList.addUser(name, md5, _(""), NULL, privilege, allowfrom, allowevent);
                     }
 
                     bUser = false;
@@ -3897,122 +3888,6 @@ bool CControlObject::doCreateUserTable( void )
     return true;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// doCreateGroupTable
-//
-// Create the group table
-//
-//
-
-bool CControlObject::doCreateGroupTable( void )
-{
-    char *pErrMsg = 0;
-    const char *psql = VSCPDB_GROUP_CREATE;
-    
-    // Check if database is open
-    if ( NULL == m_db_vscp_daemon ) {
-        fprintf( stderr, 
-                    "Failed to create VSCP group table - closed.\n" );
-        return false;
-    }
-    
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
-        fprintf( stderr, 
-                    "Failed to create VSCP group table with error %s.\n",
-                    pErrMsg );
-        return false;
-    }
-    
-    // group 'admin' should be added
-    psql = " INSERT INTO 'group' (name,permission,note)"
-            " VALUES ('admin',777,'Admin group inserted by the system')";
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
-        fprintf( stderr, 
-                    "Failed to insert admin group with error %s.\n",
-                    pErrMsg );
-        return false;
-    }
-    
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// doCreateGroupLinksTable
-//
-// Create the grouplinks table
-//
-//
-
-bool CControlObject::doCreateGroupLinksTable( void )
-{
-    char *pErrMsg = 0;
-    const char *psql = VSCPDB_GROUPLINKS_CREATE;
-    
-    // Check if database is open
-    if ( NULL == m_db_vscp_daemon ) {
-        fprintf( stderr, 
-                    "Failed to create VSCP grouplinks table - closed.\n" );
-        return false;
-    }
-    
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
-        fprintf( stderr, 
-                    "Failed to create VSCP grouplinks table with error %s.\n",
-                    pErrMsg );
-        return false;
-    }
-    
-    // user 'admin' linked to group 'admin' should be added
-    psql = " INSERT INTO 'grouplinks' (link_to_user,link_to_group)"
-            " VALUES (1,1)";
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
-        fprintf( stderr, 
-                    "Failed to insert link between admin user and admin group with error %s.\n",
-                    pErrMsg );
-        return false;
-    }
-    
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// doCreateAclTable
-//
-// Create the acl table
-//
-//
-
-bool CControlObject::doCreateAclTable( void )
-{
-    char *pErrMsg = 0;
-    const char *psql = VSCPDB_ACL_CREATE;
-    
-    // Check if database is open
-    if ( NULL == m_db_vscp_daemon ) {
-        fprintf( stderr, 
-                    "Failed to create VSCP acl table - closed.\n" );
-        return false;
-    }
-    
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
-        fprintf( stderr, 
-                    "Failed to create VSCP acl table with error %s.\n",
-                    pErrMsg );
-        return false;
-    }
-    
-    // Allow user 'admin' to log in from anywhere
-    psql = " INSERT INTO 'acl' (remote_address,link_to_user)"
-            " VALUES ('*',1)";
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
-        fprintf( stderr, 
-                    "Failed to insert admin log in rights with error %s.\n",
-                    pErrMsg );
-        return false;
-    }
-    
-    return true;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // doCreateDriverTable
@@ -4275,6 +4150,8 @@ bool CControlObject::doCreateUserdefTableTable( void )
     
     return true;
 }
+
+
 
 
 

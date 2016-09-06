@@ -290,7 +290,7 @@ VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p)
 
                 // Copy in the user filter
                 memcpy( &pUDPClientThread->m_pClientItem->m_filterVSCP,
-                            &pUDPClientThread->m_pClientItem->m_pUserItem->m_filterVSCP,
+                            pUDPClientThread->m_pClientItem->m_pUserItem->getFilter(),
                             sizeof( vscpEventFilter ) );
 
                 wxString strErr =

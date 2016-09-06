@@ -29,12 +29,23 @@
 #include <wx/socket.h>
 
 #include <dllist.h>
+#include <vscphelper.h>
 #include <vscp.h>
+
+// permission bits for an object (variables)
+// uuugggooo
+// uuu = user   (rwx)
+// ggg = group  (rwx)
+// ooo = other  (rwx)
+// First user rights is checked. If user have rights to do the operation it is 
+// allowed. If not group rights are checked and if the user is member of a group
+// that is allowed to do the operation it is allowed. Last other rights are checked
+// and if the the other rights allow the user to do the operation it is allowed.
 
 // User rights bit array
 // "admin" has all rights.
 // "user" standard user rights
-// "driver" can send and receive events and log i to tcp/ip
+// "driver" can send and receive events and log in to tcp/ip through local host
 
 // Rights byte 7
 #define VSCP_USER_RIGHT_ALLOW_RESTART                   0x80000000
@@ -69,12 +80,41 @@
 #define VSCP_USER_RIGHT_ALLOW_WEBSOCKET                 0x00000020
 #define VSCP_USER_RIGHT_ALLOW_TCPIP                     0x00000010
 
+// Some interfaces has a privilege level for commands 
+// Higher privileges is "better"
 #define VSCP_USER_RIGHT_PRIORITY3                       0x00000008
 #define VSCP_USER_RIGHT_PRIORITY2                       0x00000004
 #define VSCP_USER_RIGHT_PRIORITY1                       0x00000002
 #define VSCP_USER_RIGHT_PRIORITY0                       0x00000001
 
+// Users not in db is local
+#define USER_IS_LOCAL           -1
+
+#define USER_PRIVILEGE_MASK     0x0f
+#define USER_PRIVILEGE_BYTES    8
+
+class CGroupItem {
+    
+public:
+
+    /// Constructor
+    CGroupItem(void);
+
+    /// Destructor
+    virtual ~CGroupItem(void);
+    
+    
+private:
+    
+};
+
+
+// hash table for groups
+WX_DECLARE_HASH_MAP(wxString, CGroupItem*, wxStringHash, wxStringEqual, VSCPGROUPHASH);
+
+
 class CUserItem {
+    
 public:
 
     /// Constructor
@@ -105,51 +145,131 @@ public:
         */
     bool isUserAllowedToSendEvent( const uint32_t vscp_class,
                                     const uint32_t vscp_type);
-
+    
+    
+    /*!
+     * Set user rights from a comma separated string. The string can have 
+     * up to eight comma separated bitfield octets.  
+     * 
+     * As an alternative one can use mnenomics
+     * 
+     * admin    - user get full access.
+     * user     - user get standard user rights.
+     * driver   - user get standard driver rights.
+     */
+    bool setUserRightsFromString( const wxString& strRights );
+    
+    /*!
+     * Set allowed remote addresses for string
+     * Comma separated list if IP v4 or IP v6 addresses. Wildcards can be used
+     * on any position ('*').
+     */
+    bool setAllowedRemotesFromString( const wxString& strConnect );
+    
+    /*!
+     * Set allowed event for string.
+     * Comma separated string where each item is class:type where either
+     * class or type or both can be wildcard '*'
+     */
+    bool setAllowedEventsFromString( const wxString& strEvents );
+    
+    /*!
+     * Save record to database
+     * @return true on success.
+     */
+    bool saveToDatabase( void );
+    
+    /*!
+     * Check if a user is defined available in the db
+     * @param user username to look for.
+     * @param pid  Optional Pointer to integer that receives id for the record if
+     *              the user is found.
+     * @return true on success
+     */
+    bool isUserDefined(const wxString& user, long *pid = NULL );
+    
+    // Getters/Setters
+    int getUserID( void ) { return m_userID; };
+    void setUserID( const int id ) { m_userID = id; };
+    
+    wxString getUser( void ) { return m_user; };
+    void setUser( const wxString& strUser ) { m_user = strUser; };
+    
+    wxString getPassword( void ) { return m_md5Password; };
+    void setPassword( const wxString& strPassword ) { m_md5Password = strPassword; };
+    
+    wxString getFullname( void ) { return m_fullName; };
+    void setFullname( const wxString& strUser ) { m_fullName = strUser; };
+    
+    wxString getNote( void ) { return m_note; };
+    void setNote( const wxString& note ) { m_note = note; };
+    
+    uint8_t getUserRight( const uint8_t pos ) { return m_userRights[ pos & 0x07 ]; };
+    void setUserRight( const uint8_t pos, const uint8_t right ) { m_userRights[ pos & 0x07 ] = right; };
+    wxString getRightsAsString( void );
+    
+    void clearAllowedEventList( void ) { m_listAllowedEvents.Clear(); };
+    void addAllowedEvent( const wxString& strEvent ) { m_listAllowedEvents.Add( strEvent ); };
+    wxString getAllowedEventsAsString( void );
+    
+    void clearAllowedRemoteList( void ) { m_listAllowedIPV4Remotes.Clear(); m_listAllowedIPV6Remotes.Clear(); };
+    void addAllowedRemote( const wxString& strRemote ) { if ( wxNOT_FOUND != strRemote.Find(':') ) m_listAllowedIPV6Remotes.Add( strRemote ); else m_listAllowedIPV4Remotes.Add( strRemote ); };     
+    wxString getAllowedRemotesAsString( void );
+ 
+    const vscpEventFilter *getFilter( void ) { return &m_filterVSCP; };
+    void setFilter( const vscpEventFilter * pFilter ) { if ( NULL != pFilter ) memcpy( &m_filterVSCP, 
+                                                                    pFilter,
+                                                                    sizeof( vscpEventFilter ) ); };
+    bool setFilterFromString( wxString& strFilter ) { return vscp_readFilterFromString( &m_filterVSCP, strFilter ); };                                                                    
+protected:
+    
+    // System assigned ID for user
+    long m_userID;
+    
     /// Username
     wxString m_user;
-
+    
     /// MD5 of user password
     wxString m_md5Password;
-
+    
+    /// Full name
+    wxString m_fullName;
+    
+    /// note
+    wxString m_note;
+    
     /*!
         Bit array with user rights i.e. tells what
         this user is allowed to do.
     */ 
-    uint8_t m_userRights[ 8 ];
-
-    /*!
-        Filter associated with this user
-        */
-    vscpEventFilter m_filterVSCP;
-
-    /*!
-        This list holds ip-addresses for remote
-        computers that are allowed to connect to this
-        machine.
-    */
-    wxArrayString m_listAllowedRemotes;
-
+    uint8_t m_userRights[ USER_PRIVILEGE_BYTES ];
+    
     /*!
         This list holds allowed events that user can send.
         Wildcards can be used and the default is all events 
-        allowed.
+        allowed. Form is class:type where either or both of
+        class and type can use wildcard '*'
     */
     wxArrayString m_listAllowedEvents;
-
-protected:
-
+    
     /*!
-        System assigned ID for user
+        This list holds ip-addresses for remote
+        computers that are allowed to connect to this
+        machine. IP v4 and IP v6 on standard form.
     */
-    uint32_t m_userID;
+    wxArrayString m_listAllowedIPV4Remotes;
+    wxArrayString m_listAllowedIPV6Remotes;
+    
+    /*!
+        Filter associated with this user
+    */
+    vscpEventFilter m_filterVSCP;
 
 };
 
-
-
 // hash table for users
 WX_DECLARE_HASH_MAP(wxString, CUserItem*, wxStringHash, wxStringEqual, VSCPUSERHASH);
+
 
 class CUserList {
 public:
@@ -159,16 +279,23 @@ public:
 
     /// Destructor
     virtual ~CUserList(void);
+    
+    /*!
+     * Load users from database
+     * @return true on success
+     */
+    bool loadUsers( void );
 
     /*!
-        Add a user that are allowed to access the control interface
+        Add a user to the in memory list. Must save to database to make persistent.
         @param user Username for user.
         @param md5 MD5 of user password.
+        @param note An arbitrary note about the user
+        @param Ponter to a VSCP filter associated with this user.
         @param userRights list with user rights on the form right1,right2,right3....
                     admin - all rights
                     user - standard user rights
                     or an unsigned long value
-        @param Ponter toa VSCP filter associated with this user.
         @param allowedRemotes List with remote computers that are allowed to connect. 
                     Empty list is no restrictions.			
         @param allowedEvents List with allowed events that a remote user is allowed
@@ -177,8 +304,9 @@ public:
     */
     bool addUser(const wxString& user,
                             const wxString& md5,
-                            const wxString& userRights = _(""),
+                            const wxString& strNote,
                             const vscpEventFilter *pFilter = NULL,
+                            const wxString& userRights = _(""),
                             const wxString& allowedRemotes = _(""),
                             const wxString& allowedEvents = _(""));
 
@@ -186,7 +314,7 @@ public:
     /*!
         Get user 
         @param user Username
-        @return Ponter to user if available else NULL
+        @return Pointer to user if available else NULL
     */
     CUserItem * getUser( const wxString& user );
 
@@ -204,6 +332,11 @@ protected:
         hash with user items
     */
     VSCPUSERHASH m_userhashmap;
+    
+    /*!
+        hash with group items
+    */
+    VSCPGROUPHASH m_grouphashmap;
 
 };
 
