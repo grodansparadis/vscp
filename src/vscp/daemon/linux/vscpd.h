@@ -26,10 +26,10 @@
 
 #include <controlobject.h>
 
-// Inlcude the CANAL definitions
+// Include the CANAL definitions
 #include <canal.h>
 
-/// Nams of mutex's
+/// Names of mutex's
 
 #define CANALD_CLIENT_OBJ_MUTEX "____CANAL_CLIENT_OBJ_MUTEX____"
 #define CANALD_DEVICE_OBJ_MUTEX "____CANAL_DEVICE_OBJ_MUTEX____"

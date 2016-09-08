@@ -88,7 +88,8 @@
 #define VSCP_USER_RIGHT_PRIORITY0                       0x00000001
 
 // Users not in db is local
-#define USER_IS_LOCAL           -1
+#define USER_IS_LOCAL           -1  // Never saved to db
+#define USER_IS_UNSAVED          0  // Should be saved to db
 
 #define USER_PRIVILEGE_MASK     0x0f
 #define USER_PRIVILEGE_BYTES    8
@@ -186,7 +187,9 @@ public:
      *              the user is found.
      * @return true on success
      */
-    bool isUserDefined(const wxString& user, long *pid = NULL );
+    bool isUserDB(const wxString& user, long *pid = NULL );
+    
+    bool checkPassword( const wxString& md5password ) { return (getPassword().IsSameAs( md5password ) ? true : false); };
     
     // Getters/Setters
     int getUserID( void ) { return m_userID; };
@@ -195,8 +198,8 @@ public:
     wxString getUser( void ) { return m_user; };
     void setUser( const wxString& strUser ) { m_user = strUser; };
     
-    wxString getPassword( void ) { return m_md5Password; };
-    void setPassword( const wxString& strPassword ) { m_md5Password = strPassword; };
+    wxString getPassword( void ) { return m_md5Password.Lower(); };
+    void setPassword( const wxString& strPassword ) { m_md5Password = strPassword.Lower(); };
     
     wxString getFullname( void ) { return m_fullName; };
     void setFullname( const wxString& strUser ) { m_fullName = strUser; };
@@ -223,7 +226,7 @@ public:
     bool setFilterFromString( wxString& strFilter ) { return vscp_readFilterFromString( &m_filterVSCP, strFilter ); };                                                                    
 protected:
     
-    // System assigned ID for user
+    // System assigned ID for user (-1 for system users (not in DB), 0 for new users )
     long m_userID;
     
     /// Username
@@ -300,6 +303,7 @@ public:
                     Empty list is no restrictions.			
         @param allowedEvents List with allowed events that a remote user is allowed
                     to send.
+        @param bSystemUser If true this user is a user that should not be save to the DB
         @return true on success. false on failure.	
     */
     bool addUser(const wxString& user,
@@ -308,7 +312,8 @@ public:
                             const vscpEventFilter *pFilter = NULL,
                             const wxString& userRights = _(""),
                             const wxString& allowedRemotes = _(""),
-                            const wxString& allowedEvents = _(""));
+                            const wxString& allowedEvents = _(""),
+                            bool bSystemUser = false );
 
 
     /*!
@@ -319,11 +324,11 @@ public:
     CUserItem * getUser( const wxString& user );
 
     /*!
-        Check if a username i available.
+        Validate a username.
         @param user Username to test.
         @return Pointer to useritem if valid, NULL if not.
         */
-    CUserItem * checkUser(const wxString& user, const wxString& md5password);
+    CUserItem * validateUser(const wxString& user, const wxString& md5password);
 
 
 protected:

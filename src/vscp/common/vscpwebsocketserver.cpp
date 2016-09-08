@@ -1705,7 +1705,7 @@ VSCPWebServerThread::websrv_websocket_message( struct mg_connection *nc,
 //      "AUTH;user;hash"
 //  where the hash is based on
 //      "user:standard vscp password hash:server generated hash(sid)"
-//  "user;hash" is reeived in strKey
+//  "user;hash" is received in strKey
 
 bool
 VSCPWebServerThread::websock_authentication( struct mg_connection *nc,
@@ -1739,7 +1739,7 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *nc,
         // Check if remote ip is valid
         bValidHost = pUser->isAllowedToConnect( wxString::FromAscii( inet_ntoa( nc->sa.sin.sin_addr ) ) );
 
-        if (!bValidHost) {
+        if ( !bValidHost ) {
             // Log valid login
             wxString strErr =
             wxString::Format( _("[Websocket Client] Host [%s] NOT allowed to connect.\n"),

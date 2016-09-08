@@ -186,9 +186,6 @@
         <sunrise-twilight enable="true" />
         <sunset enable="true" />
         <sunset-twilight enable="true" />
-        <!-- Settings for 2014 (Sweden)                              -->
-        <!-- Not needed on systems that is dayligt saving time aware -->
-        <timezone>1</timezone>
         <segmentcontoller-event enable="true" interval="60" />
         <heartbeat-event enable="true" interval="60" />
     </automation>

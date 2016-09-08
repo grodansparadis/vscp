@@ -482,6 +482,17 @@ public:
         true if we should quit
      */
     bool m_bQuit;
+    
+    //**************************************************************************
+    //                                 Security
+    //**************************************************************************
+    
+    // Password is MD5 hash over "username:vscptoken:password"
+    wxString m_admin_user;      // Defaults to "admin"
+    wxString m_admin_password;  // Defaults to "13ca88de01ce06e377f74e61c23f630b"
+    wxString m_admin_allowfrom; // Remotes allowe to connect. Defaults to "*"
+    wxString m_vscp_token;      // Defaults to "Stay Hungry. Stay Foolish."
+    
 
     /*!
         User to run as for Unix

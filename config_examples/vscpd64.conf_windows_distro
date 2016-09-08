@@ -181,15 +181,12 @@
         <zone>1</zone>
         <sub-zone>2</sub-zone>
         <!-- sunrise/sunset events data  -->
-        <longitude>15.1604167</longitude>
+        <longitude>15.1604167</longitude>	
         <latitude>61.7441833</latitude>
         <sunrise enable="true" />
         <sunrise-twilight enable="true" />
         <sunset enable="true" />
         <sunset-twilight enable="true" />
-        <!-- Settings for 2014 (Sweden)                                     -->
-        <!-- Not needed on systems that is dayligt saving time aware        -->
-        <timezone>1</timezone>
         <segmentcontoller-event enable="true" interval="60" />
         <heartbeat-event enable="true" interval="60" />
     </automation>

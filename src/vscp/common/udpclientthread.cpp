@@ -246,7 +246,7 @@ VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p)
                 //::wxLogDebug( _("Password: ") + strPassword );
                 //::wxLogDebug( _("MD5 of Password: ") + md5Password );
                 pUDPClientThread->m_pClientItem->m_pUserItem =
-                        pUDPClientThread->m_pCtrlObject->m_userList.checkUser( strUser, strPassword );
+                        pUDPClientThread->m_pCtrlObject->m_userList.validateUser( strUser, strPassword );
                 pUDPClientThread->m_pCtrlObject->m_mutexUserList.Unlock();
 
                 if ( NULL == pUDPClientThread->m_pClientItem->m_pUserItem ) {

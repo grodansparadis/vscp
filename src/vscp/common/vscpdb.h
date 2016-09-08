@@ -216,15 +216,15 @@
  */
 
 #define VSCPDB_USER_CREATE  "CREATE TABLE 'user' ("\
-	"`idx_user`         INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-	"`username`         TEXT NOT NULL UNIQUE,"\
-	"`password`         TEXT NOT NULL,"\
-	"`fullname`         TEXT NOT NULL,"\
-        "`filter`           TEXT,"\
-        "`rights`           TEST DEFAULT 'user',"\
-        "`allowedevents`    TEST DEFAULT '*:*',"\
-        "`allowedremotes`    TEST DEFAULT '*'"\
-	"`note`	TEXT DEFAULT ''"\
+	"`idx_user`             INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
+	"`username`             TEXT NOT NULL UNIQUE,"\
+	"`password`             TEXT NOT NULL,"\
+	"`fullname`             TEXT NOT NULL,"\
+        "`filter`               TEXT,"\
+        "`rights`               TEST DEFAULT 'user',"\
+        "`allowedevents`        TEST DEFAULT '*:*',"\
+        "`allowedremotes`       TEST DEFAULT '*'"\
+	"`note`                 TEXT DEFAULT ''"\
         ");"
 
 #define VSCPDB_USER_INSERT "INSERT INTO 'user' "\
@@ -278,36 +278,59 @@
 
 
 //*****************************************************************************
-//                                 GUID
+//                                GUID (Discovery)
 //*****************************************************************************
 
 /*
  * GUID table
- * type describes what this GUID is describing, for example an interface, a node etc.
- *
- * Type=0 - Common GUID.
- * Type=1 – Interface. Can be a daemon or a hardware node with several interfaces.
- * Type=2 - Hardware. link_to_guid will hold a link to the interface if this is a 
- *      Level I node found on an interface. link_to_guid is NULL for a Level II 
- *      hardware node. 
- * Type=3 – Location.
+ * 
+ * type - describes what this GUID is describing, for example an interface, a node etc.
+ * type = 0 - Common GUID.
+ * type = 1 - Interface on this machine,
+ * type = 2 - Level I hardware. Lives on one of the interfaces of this daemon.
+ * type = 3 - Level II hardware. Lives somewhere given by address.
+ * Type = 4 – Location.
+ * 
+ * GUID - GUID for the type. Level I hardware use the proxy GUID.
+ * 
+ * date - date time when discovered in ISO format. YY-MM-DDTHH:MM:SS
+ * 
+ * name - Max 64 byte name
+ * 
+ * link_to_mdf - For a hardware device. 
+ * 
+ * address - is IPv4/IPv6/BT-UID or other address for a Level II hardware type
+ * 
+ * capabilities - see CLASS2.PROTOCOL, Type=20   A 8 byte comma separated list with
+ *                the bytes of the capability 64-bit code.
+ * 
+ * nonstandard - is one or more nonstandard info as described for CLASS2.PROTOCOL, Type=20
+ * 
  */
 
 #define VSCPDB_GUID_CREATE "CREATE TABLE `guid` ("\
-	"`idx_guid`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,"\
+	"`idx_guid`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`type`         INTEGER NOT NULL,"\
-	"`guid`         TEXT,"\
-        "`link_to_mdf`	INTEGER,"\
+	"`guid`         TEXT DEFAULT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00',"\
+        "`date`         TEXT,"\
         "`name`         TEXT,"\
+        "`link_to_mdf`	INTEGER,"\
+        "`address`      TEXT,"\
+        "`capabilities` TEXT,"\
+        "`nonstandard`  TEXT,"\
         "`description`	TEXT "\
         ");"
 
 #define VSCPDB_ORDINAL_GUID_ID                      0   // 
 #define VSCPDB_ORDINAL_GUID_TYPE                    1   //
 #define VSCPDB_ORDINAL_GUID_GUID                    2   //
-#define VSCPDB_ORDINAL_GUID_LINK_TO_MDF             3   //
+#define VSCPDB_ORDINAL_GUID_DATE                    3   //
 #define VSCPDB_ORDINAL_GUID_NAME                    4   //
-#define VSCPDB_ORDINAL_GUID_DESCRIPTION             5   //
+#define VSCPDB_ORDINAL_GUID_LINK_TO_MDF             5   //
+#define VSCPDB_ORDINAL_GUID_ADDRESS                 6   //
+#define VSCPDB_ORDINAL_GUID_CAPABILITIES            7   //
+#define VSCPDB_ORDINAL_GUID_NONSTANDARD             8   //
+#define VSCPDB_ORDINAL_GUID_DESCRIPTION             9   //
                 
                 
 //*****************************************************************************
@@ -339,14 +362,22 @@
 //*****************************************************************************
 //                               MDF_CACHE
 //*****************************************************************************
-                
+
+/*
+ * Loaded MDF's are cached. This record points to the loaded MDF
+ * 
+ * date   - When the MDF was fetched.
+ * access - When the MDF was last accessed.
+ * guid   - GUID for the device.
+ */
 #define VSCPDB_MDF_CACHE_CREATE "CREATE TABLE 'mdf_cache' ("\
 	"`idx_mdf`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`url`          TEXT NOT NULL UNIQUE,"\
 	"`pathFile`	TEXT NOT NULL,"\
 	"`pathPicture`	TEXT,"\
-	"`dateLoaded`	TEXT,"\
-	"`dateAccessed`	TEXT"\
+	"`date`         TEXT,"\
+	"`access`	TEXT"\
+        "`guid`         TEXT DEFAULT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00'"\
         ");"
                 
 #define VSCPDB_ORDINAL_MDF_CACHE_ID                 0   //  
@@ -355,7 +386,7 @@
 #define VSCPDB_ORDINAL_MDF_CACHE_PICTURE_PATH       3   //
 #define VSCPDB_ORDINAL_MDF_CACHE_DATE               4   //
 #define VSCPDB_ORDINAL_MDF_CACHE_ACCESS             5   //
-                
+#define VSCPDB_ORDINAL_MDF_CACHE_GUID               6   //                
 
 //*****************************************************************************
 //                               SIMPLEUI

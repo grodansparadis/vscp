@@ -185,12 +185,13 @@ CControlObject::CControlObject()
     m_bQuit = false;            // true if we should quit
     gpctrlObj = this;           // needed by websocket static callbacks, variables etc
     
-    m_nConfiguration = 1;       // Default configuration record is read.
+    // Default admin user credentials
+    m_admin_user = _("admin");
+    m_admin_password = _("13ca88de01ce06e377f74e61c23f630b");
+    m_vscp_token = _("Stay Hungry. Stay Foolish.");
+    m_admin_allowfrom = _("*");
     
-    /*wxString tttt;
-    tttt = wxT("12Å34");
-    i = tttt.Length();
-    i = strlen( tttt.ToUTF8() );*/
+    m_nConfiguration = 1;       // Default configuration record is read.
     
     // Log to database as default
     m_bLogToDatabase = true;
@@ -771,6 +772,33 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     str = _("Using configuration file: ") + strcfgfile + _("\n");
     fprintf( stderr, str.mbc_str() );
 
+       
+
+    // Read XML configuration
+    if ( !readXMLConfiguration( strcfgfile ) ) {
+        fprintf( stderr, "Unable to open/parse configuration file. Can't initialise!.\n" );
+        str = _("Path = .") + strcfgfile + _("\n");
+        fprintf( stderr, str.mbc_str() );
+        return FALSE;
+    }
+    
+    //==========================================================================
+    //                           Add admin user
+    //==========================================================================
+
+    m_userList.addUser( m_admin_user,
+                            m_admin_password,
+                            _("Admin user"),    // note
+                            NULL,
+                            _("admin"),
+                            m_admin_allowfrom,  // Remotes allows to connect     
+                            _("*"),             // All events
+                            USER_IS_LOCAL );    // Not in DB
+    
+    //==========================================================================
+    //                           Add driver user
+    //==========================================================================
+    
     // Generate username and password for drivers
     char buf[ 512 ];
     randPassword pw(3);
@@ -785,7 +813,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 
     wxString driverhash = m_driverUsername;
     driverhash += _(":");
-    driverhash += wxString::FromUTF8( m_authDomain );
+    driverhash += wxString::FromUTF8( m_vscp_token );
     driverhash += _(":");
     driverhash += m_driverPassword;
 
@@ -799,18 +827,14 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 
     m_userList.addUser( m_driverUsername,
                             wxString::FromUTF8( digest ),
-                            _(""),      // note
+                            _("System added driver user."), // note
                             NULL,
-                            _("admin")  );    
-
-    // Read XML configuration
-    if ( !readXMLConfiguration( strcfgfile ) ) {
-        fprintf( stderr, "Unable to open/parse configuration file. Can't initialise!.\n" );
-        str = _("Path = .") + strcfgfile + _("\n");
-        fprintf( stderr, str.mbc_str() );
-        return FALSE;
-    }
-
+                            _("driver"),
+                            _("127.0.0.1"),                 // Only local
+                            _("*"),                         // All events
+                            USER_IS_LOCAL ); 
+    
+    
     // Open up the General logging file.
     if ( m_bLogGeneralEnable ) {
         m_fileLogGeneral.Open( m_logGeneralFileName.GetFullPath(), wxFile::write_append );
@@ -1959,7 +1983,13 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
 
-                if (subchild->GetName() == wxT("loglevel")) {
+                if (subchild->GetName() == wxT("secret")) {
+                    m_admin_user = subchild->GetAttribute(wxT("user"), wxT("admin"));
+                    m_admin_password = subchild->GetAttribute(wxT("password"), wxT("13ca88de01ce06e377f74e61c23f630b"));
+                    m_admin_allowfrom = subchild->GetAttribute(wxT("allowfrom"), wxT("*"));
+                    m_vscp_token = subchild->GetAttribute(wxT("vscptoken"), wxT("Stay Hungry. Stay Foolish."));                    
+                }
+                else if (subchild->GetName() == wxT("loglevel")) {
                     
                     wxString str = subchild->GetNodeContent();
                     str.Trim();
@@ -3876,14 +3906,14 @@ bool CControlObject::doCreateUserTable( void )
     }
     
     // User 'admin' should be added
-    psql = " INSERT INTO 'user' (username,password,fullname,permission,note)"
+    /*psql = " INSERT INTO 'user' (username,password,fullname,permission,note)"
             " VALUES ('admin','d50c3180375c27927c22e42a379c3f67','admin-user',777,'Admin user inserted by the system')";
     if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
         fprintf( stderr, 
                     "Failed to insert admin user with error %s.\n",
                     pErrMsg );
         return false;
-    }
+    }*/
     
     return true;
 }

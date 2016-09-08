@@ -299,10 +299,10 @@ bool CUserItem::saveToDatabase( void )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// isUserDefined
+// isUserDB
 //
 
-bool CUserItem::isUserDefined(const wxString& user, long *pid ) 
+bool CUserItem::isUserDB(const wxString& user, long *pid ) 
 {
     bool rv = false;
     char *zErrMsg = 0;
@@ -569,7 +569,8 @@ bool CUserList::addUser( const wxString& user,
                             const vscpEventFilter *pFilter,
                             const wxString& userRights,
                             const wxString& allowedRemotes,
-                            const wxString& allowedEvents )
+                            const wxString& allowedEvents,
+                            bool bSystemUser )
 {
     // Check if user is already in the database
     char *pErrMsg = 0;
@@ -585,8 +586,15 @@ bool CUserList::addUser( const wxString& user,
     CUserItem *pItem = new CUserItem;
     if (NULL == pItem) return false;
     
+    if ( bSystemUser ) {
+        pItem->setUserID( USER_IS_LOCAL );   // Never save to DB
+    }
+    else {
+        pItem->setUserID( USER_IS_UNSAVED ); // Should be save to DB
+    }
+    
     // Check if user is defined already
-    if ( pItem->isUserDefined( user ) ) {
+    if ( pItem->isUserDB( user ) ) {
         delete pItem;
         return false;
     }
@@ -611,7 +619,7 @@ bool CUserList::addUser( const wxString& user,
         do {
             
             wxString str = tkz.GetNextToken();
-            if (str.IsSameAs(_("admin"), false)) {
+            if (str.IsSameAs(_("admin"), false) && bSystemUser ) {
                 // All rights
                 for (int i= 0; i<USER_PRIVILEGE_BYTES; i++ ) {
                     pItem->setUserRight( i, 0xff );
@@ -690,10 +698,10 @@ CUserItem * CUserList::getUser( const wxString& user )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// checkUser
+// validateUser
 //
 
-CUserItem * CUserList::checkUser( const wxString& user, 
+CUserItem * CUserList::validateUser( const wxString& user, 
                                     const wxString& md5password)
 {
     CUserItem *pUserItem;
