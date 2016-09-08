@@ -145,7 +145,7 @@ int main(int argc, char **argv)
         switch (arg) {
 
         case 's':
-            wxPrintf(_("Be hungry, stay foolish my friend!\n"));
+            wxPrintf(_("Stay Hungry. Stay Foolish.\n"));
             wxPrintf(_("I will ***NOT*** run as daemon! (ctrl+c to terminate)\n"));
             gbDontRunAsDaemon = true;
             break;

@@ -599,6 +599,7 @@ bool CUserList::addUser( const wxString& user,
     pItem->setAllowedRemotesFromString( allowedRemotes );
     pItem->setAllowedEventsFromString( allowedEvents );
     
+    // Add to the map
     m_userhashmap[ user ] = pItem;
 
     // Privileges

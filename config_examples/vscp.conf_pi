@@ -1,11 +1,27 @@
 <?xml version = "1.0" encoding = "UTF-8" ?>
 
-<!-- Version 0.4.0	   2013-05-28 -->
-<!-- Linux example configuration file -->
+<!-- Version 0.6.0      2016-09-08                                           -->
+<!-- Example configuration file Unix (Raspberry Pi)                          -->
+<!-- Ake Hedman, akhe@grodansparadis.com                                     -->
+<!-- http://www.grodansparadis.com                                           -->
+<!-- Documentation for this configuration file is available                  -->
+<!-- in the specification section 14.4 which can be found                    -->
+<!-- here http://vscp.org/docs.php                                           -->
 
 <vscpconfig>
 
     <general>
+
+   	<!-- This is the admin credentials                                    -->
+	<!-- admin-password is made up from MD5 over user:vscptoken:password  -->
+	<!--   can be calculated online here http://www.md5.cz/                     -->
+        <!-- allowfrom="*" allow connections from all hosts                   -->
+        <!-- A stricter allowfrom can be 127.0.0.1,192.168.1.*                -->
+        <security admin="admin" 
+                       password="13ca88de01ce06e377f74e61c23f630b" 
+                       allowfrom="*" 
+                       vscptoken="Stay Hungry. Stay Foolish." />
+
         <!-- Set the detail of logging you want -->
         <loglevel>debug</loglevel>
 
@@ -43,21 +59,17 @@
 
     </general>
 
-        <!-- Holds information about one (at least) or more users --> 
-        <!-- Use mkpassword to generate a new password            -->
-        <!--   Privilege is admin/user                            -->
+        <!-- Holds information about one (at least) or more users                --> 
+        <!-- Use mkpassword to generate a new password                           -->
+        <!-- Privilege is "admin" or "user" or comma seperated list              -->
         <remoteuser> 
             <user>
-                <name>admin</name>
-                <password>5ebe2294ecd0e0f08eab7690d2a6ee69</password>
-                <privilege>admin</privilege>
-                <allowfrom>127.0.0.1,192.168.1.*</allowfrom>
-            </user>	
-            <user>
                 <name>user</name>
-                <password>ee11cbb19052e40b07aac0ca060c23ee</password>
-                <privilege>admin</privilege>
-                <allowfrom>127.0.0.1,192.168.1.*</allowfrom>
+                <!-- "user:Stay Hungry. Stay Foolish.:secret"                    -->
+                <password>6f3bd42ff3cce26016a7251d7c897594</password>
+                <privilege>user</privilege>
+                <!-- A stricter allowfrom can be 127.0.0.1,192.168.1.*           -->
+                <allowfrom>*</allowfrom>
             </user>	
         </remoteuser>
 	

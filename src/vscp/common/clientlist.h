@@ -102,7 +102,7 @@ public:
     CLIENTEVENTLIST m_clientInputQueue;
 
     /*!
-        Event to indicate that an event has been received
+        Semaphore to indicate that an event has been received
     */
     wxSemaphore m_semClientInputQueue;
 

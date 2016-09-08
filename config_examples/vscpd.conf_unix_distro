@@ -1,6 +1,6 @@
 <?xml version = "1.0" encoding = "UTF-8" ?>
 
-<!-- Version 0.5.0      2014-09-19                                           -->
+<!-- Version 0.6.0      2016-09-08                                           -->
 <!-- Example configuration file Unix                                         -->
 <!-- Ake Hedman, akhe@grodansparadis.com                                     -->
 <!-- http://www.grodansparadis.com                                           -->
@@ -11,6 +11,16 @@
 <vscpconfig>
 
     <general>
+
+   	<!-- This is the admin credentials                                    -->
+	<!-- admin-password is made up from MD5 over user:vscptoken:password  -->
+	<!--   can be calculated online here http://www.md5.cz/                     -->
+        <!-- allowfrom="*" allow connections from all hosts                   -->
+        <!-- A stricter allowfrom can be 127.0.0.1,192.168.1.*                -->
+        <security admin="admin" 
+                       password="13ca88de01ce06e377f74e61c23f630b" 
+                       allowfrom="*" 
+                       vscptoken="Stay Hungry. Stay Foolish." />
     
         <!-- Set the detail of logging you want                              -->
         <loglevel>debug</loglevel>
@@ -170,22 +180,16 @@
   
     <!-- Holds information about one (at least) or more users                --> 
     <!-- Use mkpassword to generate a new password                           -->
-    <!-- Privilege is admin/user                                             -->
+    <!-- Privilege is "admin" or "user" or comma seperated list              -->
     <!-- Same information is used for accessing the daemon                   -->
     <!-- through the TCP/IP interface as through the web-interface           -->
 
     <remoteuser> 
         <user>
-            <name>admin</name>
-            <password>d50c3180375c27927c22e42a379c3f67</password>
-            <privilege>admin</privilege>
-            <!-- A stricter allowfrom can be 127.0.0.1,192.168.1.*           -->
-            <allowfrom>*</allowfrom>
-        </user>	
-        <user>
             <name>user</name>
-            <password>ee11cbb19052e40b07aac0ca060c23ee</password>
-            <privilege>admin</privilege>
+            <!-- "user:Stay Hungry. Stay Foolish.:secret"                    -->
+            <password>6f3bd42ff3cce26016a7251d7c897594</password>
+            <privilege>user</privilege>
             <!-- A stricter allowfrom can be 127.0.0.1,192.168.1.*           -->
             <allowfrom>*</allowfrom>
         </user>	

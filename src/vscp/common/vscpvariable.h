@@ -86,6 +86,7 @@ struct varQuery {
 
 typedef struct varQuery varQuery;
 
+
 // Class that holds one VSCP variable
 // Persistent variables should have names staring with $
 
@@ -424,6 +425,11 @@ private:
     
     // True if this is a stick variable
     bool m_bStock;
+    
+    // Variable hook  TODO
+    // Used to get notification in websocket when a variable changed it's value
+    // Contains client id's for clients that should be informed if the variable is written to.
+    wxArrayLong m_clientHooks;
 
 public:
     
