@@ -366,17 +366,17 @@
 /*
  * Loaded MDF's are cached. This record points to the loaded MDF
  * 
- * date   - When the MDF was fetched.
- * access - When the MDF was last accessed.
- * guid   - GUID for the device.
+ * mdf      - The MDF file content.
+ * picture  - Picture of device
+ * date     - When the MDF was fetched.
+ * guid     - GUID for the device.
  */
 #define VSCPDB_MDF_CACHE_CREATE "CREATE TABLE 'mdf_cache' ("\
 	"`idx_mdf`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`url`          TEXT NOT NULL UNIQUE,"\
-	"`pathFile`	TEXT NOT NULL,"\
-	"`pathPicture`	TEXT,"\
+	"`mdf`          TEXT NOT NULL,"\
+	"`picture`	BLOB,"\
 	"`date`         TEXT,"\
-	"`access`	TEXT"\
         "`guid`         TEXT DEFAULT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00'"\
         ");"
                 
@@ -385,8 +385,7 @@
 #define VSCPDB_ORDINAL_MDF_CACHE_FILE_PATH          2   //
 #define VSCPDB_ORDINAL_MDF_CACHE_PICTURE_PATH       3   //
 #define VSCPDB_ORDINAL_MDF_CACHE_DATE               4   //
-#define VSCPDB_ORDINAL_MDF_CACHE_ACCESS             5   //
-#define VSCPDB_ORDINAL_MDF_CACHE_GUID               6   //                
+#define VSCPDB_ORDINAL_MDF_CACHE_GUID               5   //                
 
 //*****************************************************************************
 //                               SIMPLEUI
@@ -537,7 +536,7 @@
 
 
 //*****************************************************************************
-//                          external VARIABLE
+//                              VARIABLE
 //*****************************************************************************
 
 #define VSCPDB_VARIABLE_CREATE  "CREATE TABLE 'variable' ("\

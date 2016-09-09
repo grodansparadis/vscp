@@ -195,8 +195,8 @@ uint16_t CVSCPVariable::getVariableTypeFromString( const wxString& strVariableTy
         else if ( 0 == str.Find( _("TIME") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_TIME;
         }
-        else if ( 0 == str.Find( _("BASE64") ) ) {
-            type = VSCP_DAEMON_VARIABLE_CODE_BASE64;
+        else if ( 0 == str.Find( _("BLOB") ) ) {
+            type = VSCP_DAEMON_VARIABLE_CODE_BLOB;
         }
         else if ( 0 == str.Find( _("MIME") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_MIME;
@@ -227,6 +227,15 @@ uint16_t CVSCPVariable::getVariableTypeFromString( const wxString& strVariableTy
         }
         else if ( 0 == str.Find( _("DMROW") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_DM_ROW;
+        }
+        else if ( 0 == str.Find( _("DRIVER") ) ) {
+            type = VSCP_DAEMON_VARIABLE_CODE_DRIVER;
+        }
+        else if ( 0 == str.Find( _("USER") ) ) {
+            type = VSCP_DAEMON_VARIABLE_CODE_USER;
+        }
+        else if ( 0 == str.Find( _("FILTER") ) ) {
+            type = VSCP_DAEMON_VARIABLE_CODE_FILTER;
         }
         else {
             type = vscp_readStringValue( str );
@@ -287,8 +296,8 @@ const char * CVSCPVariable::getVariableTypeAsString( int type )
         case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
             return "DateTime";
             
-        case VSCP_DAEMON_VARIABLE_CODE_BASE64:
-            return "BASE64";
+        case VSCP_DAEMON_VARIABLE_CODE_BLOB:
+            return "BLOB";
 
         case VSCP_DAEMON_VARIABLE_CODE_DATE:
             return "Date";
@@ -297,16 +306,16 @@ const char * CVSCPVariable::getVariableTypeAsString( int type )
             return "Time";    
         
         case VSCP_DAEMON_VARIABLE_CODE_MIME:
-            return "MIME";
+            return "Mime";
             
         case VSCP_DAEMON_VARIABLE_CODE_HTML:
-            return "HTML";
+            return "Html";
 
         case VSCP_DAEMON_VARIABLE_CODE_JAVASCRIPT:
             return "Javascript";
             
         case VSCP_DAEMON_VARIABLE_CODE_JSON:
-            return "JSON";
+            return "Json";
             
         case VSCP_DAEMON_VARIABLE_CODE_XML:
             return "XML";
@@ -324,7 +333,16 @@ const char * CVSCPVariable::getVariableTypeAsString( int type )
             return "UX1";
             
         case VSCP_DAEMON_VARIABLE_CODE_DM_ROW:
-            return "DMROW";    
+            return "DMrow";   
+            
+        case VSCP_DAEMON_VARIABLE_CODE_DRIVER:
+            return "Driver";
+            
+        case VSCP_DAEMON_VARIABLE_CODE_USER:
+            return "User"; 
+            
+        case VSCP_DAEMON_VARIABLE_CODE_FILTER:
+            return "Filter";    
             
         default:
             return "Unknown";
@@ -471,7 +489,7 @@ bool CVSCPVariable::writeValueToString( wxString& strValueOut, bool bBase64 )
             strValueOut = m_strValue;
             break;
   
-        case VSCP_DAEMON_VARIABLE_CODE_BASE64:
+        case VSCP_DAEMON_VARIABLE_CODE_BLOB:
             if ( bBase64 ) {
                 strValueOut = wxBase64Encode( m_strValue.ToUTF8(), strlen( m_strValue.ToUTF8() ) );
             }
@@ -557,6 +575,33 @@ bool CVSCPVariable::writeValueToString( wxString& strValueOut, bool bBase64 )
             break; 
             
         case VSCP_DAEMON_VARIABLE_CODE_DM_ROW:
+            if ( bBase64 ) {
+                strValueOut = wxBase64Encode( m_strValue.ToUTF8(), strlen( m_strValue.ToUTF8() ) );
+            }
+            else {
+                strValueOut = m_strValue;
+            }
+            break;  
+            
+        case VSCP_DAEMON_VARIABLE_CODE_DRIVER:
+            if ( bBase64 ) {
+                strValueOut = wxBase64Encode( m_strValue.ToUTF8(), strlen( m_strValue.ToUTF8() ) );
+            }
+            else {
+                strValueOut = m_strValue;
+            }
+            break;
+            
+        case VSCP_DAEMON_VARIABLE_CODE_USER:
+            if ( bBase64 ) {
+                strValueOut = wxBase64Encode( m_strValue.ToUTF8(), strlen( m_strValue.ToUTF8() ) );
+            }
+            else {
+                strValueOut = m_strValue;
+            }
+            break;   
+            
+        case VSCP_DAEMON_VARIABLE_CODE_FILTER:
             if ( bBase64 ) {
                 strValueOut = wxBase64Encode( m_strValue.ToUTF8(), strlen( m_strValue.ToUTF8() ) );
             }
@@ -721,16 +766,6 @@ void CVSCPVariable::setValue(wxDateTime& val)
 // setValueFromString
 //
 
-bool CVSCPVariable::setValueFromString( CVSCPVariable::vartype type, 
-                                            const wxString& strValue, 
-                                            bool bBase64 )
-{
-    return setValueFromString( (int)type, strValue );
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// setValueFromString
-//
 
 bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool bBase64 )
 {	
@@ -819,7 +854,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
             m_strValue = strValue;
             break;
             
-        case VSCP_DAEMON_VARIABLE_CODE_BASE64:
+        case VSCP_DAEMON_VARIABLE_CODE_BLOB:
             // Should we do a BASE64 conversion
             if ( bBase64 ) {
                 m_strValue = wxT("");
@@ -994,6 +1029,69 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
                 m_strValue = strValue;
             }
             break;    
+            
+        case VSCP_DAEMON_VARIABLE_CODE_DRIVER:
+            // Should we do a BASE64 conversion
+            if ( bBase64 ) {
+                m_strValue = wxT("");
+                uint8_t *pbuf = new uint8_t[ wxBase64DecodedSize( strValue.Length() ) ];
+                if ( NULL == pbuf ) return false;
+                size_t len = wxBase64Decode( pbuf, 
+                                                wxBase64DecodedSize( strValue.Length() ), 
+                                                (const char *)strValue.mbc_str() );
+                if ( wxCONV_FAILED == len ) {
+                    delete [] pbuf;
+                    return false;
+                }
+                m_strValue.FromUTF8( (const char *)pbuf, len );
+                delete [] pbuf;
+            }
+            else {
+                m_strValue = strValue;
+            }
+            break;    
+            
+        case VSCP_DAEMON_VARIABLE_CODE_USER:
+            // Should we do a BASE64 conversion
+            if ( bBase64 ) {
+                m_strValue = wxT("");
+                uint8_t *pbuf = new uint8_t[ wxBase64DecodedSize( strValue.Length() ) ];
+                if ( NULL == pbuf ) return false;
+                size_t len = wxBase64Decode( pbuf, 
+                                                wxBase64DecodedSize( strValue.Length() ), 
+                                                (const char *)strValue.mbc_str() );
+                if ( wxCONV_FAILED == len ) {
+                    delete [] pbuf;
+                    return false;
+                }
+                m_strValue.FromUTF8( (const char *)pbuf, len );
+                delete [] pbuf;
+            }
+            else {
+                m_strValue = strValue;
+            }
+            break;   
+            
+        case VSCP_DAEMON_VARIABLE_CODE_FILTER:
+            // Should we do a BASE64 conversion
+            if ( bBase64 ) {
+                m_strValue = wxT("");
+                uint8_t *pbuf = new uint8_t[ wxBase64DecodedSize( strValue.Length() ) ];
+                if ( NULL == pbuf ) return false;
+                size_t len = wxBase64Decode( pbuf, 
+                                                wxBase64DecodedSize( strValue.Length() ), 
+                                                (const char *)strValue.mbc_str() );
+                if ( wxCONV_FAILED == len ) {
+                    delete [] pbuf;
+                    return false;
+                }
+                m_strValue.FromUTF8( (const char *)pbuf, len );
+                delete [] pbuf;
+            }
+            else {
+                m_strValue = strValue;
+            }
+            break;    
 
         case VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED:
             
@@ -1006,6 +1104,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
 
     return true;
 }
+ 
 
 ///////////////////////////////////////////////////////////////////////////////
 // getVariableFromString
@@ -1170,7 +1269,7 @@ void CVSCPVariable::Reset( void )
                 m_strValue = wxDateTime::Now().FormatISOCombined();
                 break;
                 
-            case VSCP_DAEMON_VARIABLE_CODE_BASE64:
+            case VSCP_DAEMON_VARIABLE_CODE_BLOB:
                 m_strValue = _("");
                 break; 
                 
@@ -1212,7 +1311,19 @@ void CVSCPVariable::Reset( void )
                 
             case VSCP_DAEMON_VARIABLE_CODE_DM_ROW:
                 m_strValue = _("");
-                break;     
+                break;   
+                
+            case VSCP_DAEMON_VARIABLE_CODE_DRIVER:
+                m_strValue = _("");
+                break;
+                
+            case VSCP_DAEMON_VARIABLE_CODE_USER:
+                m_strValue = _("");
+                break; 
+                
+            case VSCP_DAEMON_VARIABLE_CODE_FILTER:
+                m_strValue = _("");
+                break;      
 
             case VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED:
             

@@ -93,7 +93,7 @@ typedef struct varQuery varQuery;
 class CVSCPVariable {
 public:
    
-    enum vartype {
+    /*enum vartype {
         STRING_T = 0,
         BOOL_T,
         INT_T,
@@ -121,7 +121,7 @@ public:
         DRIVER = 501,
         USER = 502,
         GROUP = 503
-    };
+    };*/
 
     /// Constructor
     CVSCPVariable(void);
@@ -172,13 +172,6 @@ public:
      */
     bool setValueFromString(int type, const wxString& strValue, bool bBase64 = false );
 
-    /*!
-        Set variable value from string
-        @param vartype Type of value (enum)
-        @param strValue Value in string form
-        @return true on success.
-     */
-    bool setValueFromString( CVSCPVariable::vartype type, const wxString& strValue, bool bBase64=false );
 
     /*!
         Get the variable value as a string value
