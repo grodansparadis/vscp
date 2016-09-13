@@ -84,7 +84,7 @@ static double SunDia = 0.53; // Sunradius degrees
 static double AirRefr = 34.0 / 60.0; // athmospheric refraction degrees //
 
 
-
+ 
 
 //-----------------------------------------------------------------------------
 //                       End of sunset/sunrise functions

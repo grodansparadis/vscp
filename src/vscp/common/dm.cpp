@@ -2348,7 +2348,7 @@ bool dmElement::unixVSCPExecute( wxString& argExec )
 bool dmElement::doActionSendEvent( vscpEvent *pDMEvent )
 {
     int idx;
-    wxString var;
+    wxString varName;
 
     // Write in possible escapes
     wxString wxstr = m_actionparam;
@@ -2361,7 +2361,7 @@ bool dmElement::doActionSendEvent( vscpEvent *pDMEvent )
             if (  wxNOT_FOUND != ( idx = m_actionparam.Find( wxT(";") ) ) ) {
                 // There is a variable that we should set to true in
                 // this parameter line. We extract it
-                var = m_actionparam.Mid( idx + 1 );
+                varName = m_actionparam.Mid( idx + 1 );
                 m_actionparam = m_actionparam.Mid( 0, idx );
             }
 
@@ -2381,13 +2381,13 @@ bool dmElement::doActionSendEvent( vscpEvent *pDMEvent )
                 m_pDM->m_pClientItem->m_statistics.cntTransmitFrames++;
 
                 // Set the variable to false if it is defined
-                if ( 0 != var.Length() ) {
+                if ( 0 != varName.Length() ) {
 
                     CVSCPVariable variable;
-                    if ( m_pDM->m_pCtrlObject->m_VSCP_Variables.find( var, variable ) ) {
+                    if ( m_pDM->m_pCtrlObject->m_VSCP_Variables.find( varName, variable ) ) {
 
                         // Non existent - add and set to false
-                        m_pDM->m_pCtrlObject->m_VSCP_Variables.add( var, wxT("true") );
+                        m_pDM->m_pCtrlObject->m_VSCP_Variables.add( varName, wxT("true") );
 
                     }
                     else {
@@ -3627,6 +3627,25 @@ dmElement *CDM::getMemoryElementFromId( const uint32_t idx, short *prow )
     }
     
     return NULL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getAllRows
+//
+
+bool CDM::getAllRows( wxString& strAllRows )
+{
+    short row = 0;
+    
+    strAllRows.Empty();
+    
+    DMLIST::iterator iter;
+    for (iter = m_DMList.begin(); iter != m_DMList.end(); ++iter) {
+        dmElement *pe = *iter;      
+        if ( NULL != pe ) strAllRows += pe->getAsString();
+    }
+    
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

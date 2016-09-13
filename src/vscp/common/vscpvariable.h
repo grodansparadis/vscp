@@ -65,10 +65,13 @@
 
 #define USER_ADMIN              0x00
 
+#define ID_NON_PERSISTENT       0x00
+
 // Table types - bit-field
 #define VARIABLE_STOCK          0x01
 #define VARIABLE_INTERNAL       0x02
 #define VARIABLE_EXTERNAL       0x04
+
 
 // Forward declarations
 class wxFFileOutputStream;
@@ -92,44 +95,12 @@ typedef struct varQuery varQuery;
 
 class CVSCPVariable {
 public:
-   
-    /*enum vartype {
-        STRING_T = 0,
-        BOOL_T,
-        INT_T,
-        LONG_T,
-        FLOAT_T,
-        MEASUREMENT_T,
-        EVENT_T,
-        GUID_T,
-        DATA_T,
-        VSCPCLASS_T,
-        VSCPTYPE_T,
-        TIMESTAMP_T,
-        DATETIME_T,
-        BASE64_T,
-        MIME_T = 100,
-        HTML_T,
-        JAVASCRIPT_T,
-        JSON_T,
-        XML_T,
-        SQL_T,
-        LUA_T = 200,
-        LUARES_T,
-        UX1_T = 300,
-        DM_ROW = 500,
-        DRIVER = 501,
-        USER = 502,
-        GROUP = 503
-    };*/
 
     /// Constructor
     CVSCPVariable(void);
 
     // Destructor
     virtual ~CVSCPVariable(void);
-
-    
     
     /*!
      * setRights
@@ -145,6 +116,7 @@ public:
     /*!
      * setUser
      */
+    bool setUser( uint32_t userid ) { m_userid = userid; return true; }
     bool setUser( wxString& strUser );
     
     
@@ -356,7 +328,7 @@ public:
     
     // name
     void setName( wxString& name ) { m_name = name; fixName(); };
-    wxString& getName( void ) { return m_name; };
+    wxString& getName( void ) { return m_name.MakeUpper(); };
     
     // type
     void setType( uint16_t type ) { m_type = type; };
@@ -416,7 +388,7 @@ private:
      */
     wxString m_strValue;            // String
     
-    // True if this is a stick variable
+    // True if this is a stock variable
     bool m_bStock;
     
     // Variable hook  TODO
@@ -512,6 +484,16 @@ public:
     uint32_t findPersistentVariable( const wxString& name, CVSCPVariable& pVar );
 
     /*!
+     * Add stock variable
+     * Stock variable is added to internal variables but there 
+     * values is not read/written from there. They are just in the
+     * internal space for sorting/listing.
+     * @param var Reference to variable to be added.
+     * @return true on success.
+     */
+    bool addStockVariable( CVSCPVariable& var );
+    
+    /*!
         Add a variable.
         @param var Variable object.
         @return true on success, false on failure.
@@ -537,7 +519,7 @@ public:
                     const uint32_t accessRights = PERMISSON_OWNER_ALL );
 
     // Variant of the above with string as type
-    bool add(const wxString& varName,
+    bool add(const wxString& name,
                             const wxString& value,
                             const wxString& strType, 
                             const uint32_t userid = USER_ADMIN,

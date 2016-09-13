@@ -539,27 +539,61 @@
 //                              VARIABLE
 //*****************************************************************************
 
+//
+// bstock - True for a stock variable. A stock variable is virtual but is 
+//          in the database for sorting, searching and listing of variables.
+//              lastchange is always set to program start
+//              value is always  empty
+//              name set to correct name
+//              type set to correct type
+//              bpersistent set to false
+//              link_to-user = 0 (admin)
+//              permission depends on the actual variable
+//          ONLY!!!!  PERSISTENT  !!!!   no use for persistent variables
+//
+
 #define VSCPDB_VARIABLE_CREATE  "CREATE TABLE 'variable' ("\
-"'idx_variable'     INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-"'lastchange'       TEXT NOT NULL,"\
-"'name'             TEXT NOT NULL UNIQUE,"\
-"'type'             INTEGER NOT NULL DEFAULT 0,"\
-"'value'            TEXT NOT NULL,"\
-"'bPersistent'      INTEGER NOT NULL DEFAULT 0,"\
-"'link_to_user'     INTEGER NOT NULL,"\
-"'permission'       INTEGER NOT NULL DEFAULT 777,"\
-"'note'	TEXT"\
-");"
+                        "'idx_variable'     INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
+                        "'bstock'           INTEGER NOT NULL DEFAULT 0,"\
+                        "'lastchange'       TEXT NOT NULL,"\
+                        "'name'             TEXT NOT NULL UNIQUE,"\
+                        "'type'             INTEGER NOT NULL DEFAULT 0,"\
+                        "'value'            TEXT NOT NULL,"\
+                        "'bPersistent'      INTEGER NOT NULL DEFAULT 0,"\
+                        "'link_to_user'     INTEGER NOT NULL,"\
+                        "'permission'       INTEGER NOT NULL DEFAULT 777,"\
+                        "'note'	TEXT"\
+                        ");"
+
+#define VSCPDB_VARIABLE_UPDATE "UPDATE 'variable' "\
+                                        "SET lastchange='%s', "\
+                                        "name='%g', "\
+                                        "type='%d', "\
+                                        "value='%g', "\
+                                        "bPersistent='%d', "\
+                                        "link_to_user='%d', "\
+                                        "permission='%d', "\
+                                        "note='%g' "\
+                                        "WHERE idx_variable='%d';"
+
+#define VSCPDB_VARIABLE_INSERT "INSERT INTO 'variable' "\
+                        "(lastchange,name,type,value,bPersistent,link_to_user,permission,note) "\
+                        "VALUES ('%s','%s', '%d','%q','%d','%d','%d','%s','%q')" 
+
+#define VSCPDB_VARIABLE_INSERT_STOCK "INSERT INTO 'variable' "\
+                        "(lastchange,bstock,name,type,value,bPersistent,link_to_user,permission) "\
+                        "VALUES ('%s',1,'%s', '%d','%q','%d','%d','%d','%s')"
 
 #define VSCPDB_ORDINAL_VARIABLE_ID              0   //
-#define VSCPDB_ORDINAL_VARIABLE_LASTCHANGE      1   //
-#define VSCPDB_ORDINAL_VARIABLE_NAME            2   // 
-#define VSCPDB_ORDINAL_VARIABLE_TYPE            3   // 
-#define VSCPDB_ORDINAL_VARIABLE_VALUE           4   // 
-#define VSCPDB_ORDINAL_VARIABLE_PERSISTENT      5   // 
-#define VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER    6   //  
-#define VSCPDB_ORDINAL_VARIABLE_PERMISSION      7   // 
-#define VSCPDB_ORDINAL_VARIABLE_NOTE            8   // 
+#define VSCPDB_ORDINAL_VARIABLE_BSTOCK          1   //
+#define VSCPDB_ORDINAL_VARIABLE_LASTCHANGE      2   //
+#define VSCPDB_ORDINAL_VARIABLE_NAME            3   // 
+#define VSCPDB_ORDINAL_VARIABLE_TYPE            4   // 
+#define VSCPDB_ORDINAL_VARIABLE_VALUE           5   // 
+#define VSCPDB_ORDINAL_VARIABLE_PERSISTENT      6   // 
+#define VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER    7   //  
+#define VSCPDB_ORDINAL_VARIABLE_PERMISSION      8   // 
+#define VSCPDB_ORDINAL_VARIABLE_NOTE            9   // 
 
 
 

@@ -210,10 +210,19 @@ public:
     double getSunMaxAltitude( void ) { return m_SunMaxAltitude; };
 
     bool isSendSunriseEvent( void ) { return m_bSunRiseEvent; };
+    wxDateTime &getSunriseEventSent( void ) { return m_SunriseTime_sent; };
+    
     bool isSendSunriseTwilightEvent( void ) { return m_bSunRiseTwilightEvent; };
+    wxDateTime &getSunriseTwilightEventSent( void ) { return m_civilTwilightSunriseTime_sent; };
+    
     bool isSendSunsetEvent( void ) { return m_bSunSetEvent; };
+    wxDateTime &getSunsetEventSent( void ) { return m_SunsetTime_sent; };
+    
     bool isSendSunsetTwilightEvent( void ) { return m_bSunSetTwilightEvent; }; 
+    wxDateTime &getSunsetTwilightEventSent( void ) { return m_civilTwilightSunsetTime_sent; };
+    
     bool isSendCalculatedNoonEvent( void ) { return m_bCalculatedNoonEvent; };
+    wxDateTime &getCalculatedNoonEventSent( void ) { return m_noonTime_sent; };
 
     bool isSendSegmentControllerHeartbeat( void ) { return m_bSegmentControllerHeartbeat; };
     long getIntervalSegmentControllerHeartbeat( void ) { return m_intervalSegmentControllerHeartbeat; };

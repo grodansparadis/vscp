@@ -743,6 +743,13 @@ public:
     dmElement *getMemoryElementFromId( const uint32_t idx, short *prow = NULL );
     
     /*!
+     * Get all rows in DM as string
+     * @param strAllRows All DM rows (crlf separated)
+     * @return True on success.
+     */
+    bool getAllRows( wxString& strAllRows );
+    
+    /*!
         Add database record
         @param dm Reference to DM element with record data.
         @return True if record inserted.
