@@ -187,7 +187,7 @@ public:
      *              the user is found.
      * @return true on success
      */
-    bool isUserDB(const wxString& user, long *pid = NULL );
+    bool isUserInDB(const wxString& user, long *pid = NULL );
     
     bool checkPassword( const wxString& md5password ) { return (getPassword().IsSameAs( md5password ) ? true : false); };
     

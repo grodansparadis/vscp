@@ -35,19 +35,19 @@
 	"`vscpd_idx_settings`                               INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`vscpd_dbversion`                                  INTEGER NOT NULL DEFAULT 1,"\
 	"`vscpd_loglevel`                                   INTEGER DEFAULT 1,"\
-        "'vscpd.clientbuffersize'                           INTEGER DEFAULT 8191,"\
+        "'vscpd_clientbuffersize'                           INTEGER DEFAULT 8191,"\
 	"`vscpd_runasuser`                                  TEXT DEFAULT '',"\
 	"`vscpd_guid`                                       TEXT DEFAULT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00',"\
 	"`vscpd_servername`                                 TEXT DEFAULT 'THE-VSCP-DAEMON',"\
 	"`vscpd_syslog_enable`                              INTEGER DEFAULT 1,"\
         "`vscpd_logdb_enable`                               INTEGER DEFAULT 1,"\
-        "`vscpd_db_log_path`                                TEXT DEFAULT '/srv/vscp/log',"\
+        "`vscpd_db_log_path`                                TEXT DEFAULT '/var/log/vscp/vscpd_log.sqlite3',"\
 	"`vscpd_generallogfile_enable`                      INTEGER DEFAULT 1,"\
-	"`vscpd_generallogfile_path`                        TEXT DEFAULT '/var/log/vscp/vscp_log_general',"\
+	"`vscpd_generallogfile_path`                        TEXT DEFAULT '/var/log/vscp/vscpd_log_general',"\
 	"`vscpd_securitylogfile_enable`                     INTEGER DEFAULT 1,"\
-	"`vscpd_securitylogfile_path`                       TEXT DEFAULT '/var/log/vscp/vscp_log_security',"\
+	"`vscpd_securitylogfile_path`                       TEXT DEFAULT '/var/log/vscp/vscpd_log_security',"\
 	"`vscpd_accesslogfile_enable`                       INTEGER DEFAULT 1,"\
-	"`vscpd_accesslogFile_path`                         TEXT DEFAULT '/var/log/vscp/vscp_log_access',"\
+	"`vscpd_accesslogFile_path`                         TEXT DEFAULT '/var/log/vscp/vscpd_log_access',"\
 	"`vscpd_tcpipinterface_address`                     TEXT DEFAULT '9598',"\
 	"`vscpd_multicastinterface_address`                 TEXT DEFAULT '9598',"\
 	"`vscpd_mulicastinterface_ttl`                      INTEGER DEFAULT 1,"\
@@ -56,9 +56,9 @@
 	"`vscpd_dm_db_path`                                 TEXT DEFAULT '/srv/vscp/dm.sqlite3',"\
         "`vscpd_dm_xml_path`                                TEXT DEFAULT '/srv/vscp/dm.xml',"\
 	"`vscpd_dm_logging_enable`                          INTEGER DEFAULT 1,"\
-	"`vscpd_dm_logging_path`                            TEXT DEFAULT '/var/log/vscp/vscp_log_dm',"\
+	"`vscpd_dm_logging_path`                            TEXT DEFAULT '/var/log/vscp/log_dm',"\
 	"`vscpd_dm_logging_level`                           INTEGER DEFAULT 1,"\
-	"`vscpd_variables_db_path`                          TEXT DEFAULT '/srv/vscp/variables.sqlite3',"\
+	"`vscpd_variables_db_path`                          TEXT DEFAULT '/srv/vscp/variable.sqlite3',"\
         "`vscpd_variables_xml_Path`                         TEXT DEFAULT '/srv/vscp/variables.xml',"\
 	"`vscpd_defaultclientbuffersize`                    INTEGER DEFAULT 1024,"\
 	"`vscpd_webserver_authentication_enable`            INTEGER DEFAULT 1,"\
@@ -92,16 +92,16 @@
 	"`vscpd_automation_sunrise_enable`                  INTEGER DEFAULT 1,"\
 	"`vscpd_automation_sunset_enable`                   INTEGER DEFAULT 1,"\
 	"`vscpd_automation_sunsettwilight_enable`           INTEGER DEFAULT 1,"\
-	"`vscpd_automation_sunrisettwilight_enable`         INTEGER DEFAULT 1,"\
+	"`vscpd_automation_sunrisetwilight_enable`          INTEGER DEFAULT 1,"\
 	"`vscpd_automation_segmentcontrollerevent_enable`   INTEGER DEFAULT 1,"\
 	"`vscpd_automation_segmentcontrollerevent_interval` INTEGER DEFAULT 1,"\
 	"`vscpd_automation_heartbeatevent_enable`           INTEGER DEFAULT 1,"\
 	"`vscpd_automation_heartbeatevent_interval`         INTEGER DEFAULT 60,"\
-	"`vscpd_db_data_path`                               TEXT DEFAULT '/var/log/vscp/vscpdata.sqlite3',"\
-        "`vscpd_db_vscpconf_path`                           TEXT DEFAULT '/var/log/vscp/vscpd.sqlite3' "\
+	"`vscpd_db_data_path`                               TEXT DEFAULT '/srv/vscp/vscp_data.sqlite3',"\
+        "`vscpd_db_vscpconf_path`                           TEXT DEFAULT '/srv/vscp/vscpd.sqlite3' "\
         ");";
 
-#define VSCPDB_CONFIG_SET_DEFAULTS  ""        
+#define VSCPDB_CONFIG_SET_DEFAULTS  "TODO"        
         
 
 #define VSCPDB_CONFIG_UPDATE_ITEM "UPDATE 'settings' SET %s='%s' WHERE vscpd_idx_settings='%d';"
@@ -113,7 +113,7 @@
 #define VSCPDB_ORDINAL_CONFIG_MAXQUEUE                                      3
 #define VSCPDB_ORDINAL_CONFIG_RUNASUSER                                     4
 #define VSCPDB_ORDINAL_CONFIG_GUID                                          5
-#define VSCPDB_ORDINAL_CONFIG_NAME                                          6
+#define VSCPDB_ORDINAL_CONFIG_SERVER_NAME                                   6
 #define VSCPDB_ORDINAL_CONFIG_SYSLOG_ENABLE                                 7
 #define VSCPDB_ORDINAL_CONFIG_LOGDB_ENABLE                                  8
 #define VSCPDB_ORDINAL_CONFIG_DB_LOG_PATH                                   9
@@ -221,19 +221,21 @@
 	"`password`             TEXT NOT NULL,"\
 	"`fullname`             TEXT NOT NULL,"\
         "`filter`               TEXT,"\
-        "`rights`               TEST DEFAULT 'user',"\
-        "`allowedevents`        TEST DEFAULT '*:*',"\
-        "`allowedremotes`       TEST DEFAULT '*'"\
+        "`rights`               TEXT DEFAULT 'user',"\
+        "`allowedevents`        TEXT DEFAULT '*:*',"\
+        "`allowedremotes`       TEXT DEFAULT '*',"\
 	"`note`                 TEXT DEFAULT ''"\
         ");"
 
 #define VSCPDB_USER_INSERT "INSERT INTO 'user' "\
-                "(idx_user, username,password,fullname,filter,rights,allowedevents,allowedremotes,note "\
-                " ) VALUES (%d,'%s','%s','%s','%s',%d,'%s','%s','%s' );"
+                "(username,password,fullname,filter,rights,allowedevents,allowedremotes,note "\
+                " ) VALUES ('%s','%s','%s','%s',%d,'%s','%s','%s' );"
 
 #define VSCPDB_USER_UPDATE "UPDATE 'user' "\
                 "SET username='%s',password='%s',fullname='%s',filter='%s',rights=%d,allowedevents=%s',allowedremotes='%s',allowedremotes='%s',note='%s' "\
                 " WHERE idx_user='%d'"
+
+#define VSCPDB_USER_CHECK_USER "SELECT idx_user from 'user' WHERE username='%s'"
 
 #define VSCPDB_ORDINAL_USER_ID                      0   // 
 #define VSCPDB_ORDINAL_USER_USERNAME                1   // 
@@ -578,11 +580,11 @@
 
 #define VSCPDB_VARIABLE_INSERT "INSERT INTO 'variable' "\
                         "(lastchange,name,type,value,bPersistent,link_to_user,permission,note) "\
-                        "VALUES ('%s','%s', '%d','%q','%d','%d','%d','%s','%q')" 
+                        "VALUES ('%s','%s', '%d','%q','%d','%d','%d','%q')" 
 
 #define VSCPDB_VARIABLE_INSERT_STOCK "INSERT INTO 'variable' "\
-                        "(lastchange,bstock,name,type,value,bPersistent,link_to_user,permission) "\
-                        "VALUES ('%s',1,'%s', '%d','%q','%d','%d','%d','%s')"
+                        "(lastchange,name,type,value,bPersistent,link_to_user,permission) "\
+                        "VALUES ('%s','%s', '%d','%q','%d','%d','%d')"
 
 #define VSCPDB_ORDINAL_VARIABLE_ID              0   //
 #define VSCPDB_ORDINAL_VARIABLE_BSTOCK          1   //

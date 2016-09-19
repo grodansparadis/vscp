@@ -77,10 +77,10 @@
         <accesslogfile enable="true">/var/log/vscp/vscp_log_access</accesslogfile>
 
         <!-- Databases                                                       -->
-        <db_vscp_daemon>/srv/vscp/vscp_daemon.sqlite3</db_vscp_daemon>
+        <db_vscp_daemon>/srv/vscp/vscpd.sqlite3</db_vscp_daemon>
         <db_vscp_data>/srv/vscp/vscp_data.sqlite3</db_vscp_data>
-        <db_vscp_variable>/srv/vscp/vscp_variable.sqlite3</db_vscp_variable>
-        <db_vscp_dm>/srv/vscp/vscp_dm.sqlite3</db_vscp_dm>
+        <db_vscp_variable>/srv/vscp/variable.sqlite3</db_vscp_variable>
+        <db_vscp_dm>/srv/vscp/dm.sqlite3</db_vscp_dm>
         
         <!-- You can open TCP/IP interfaces on several ports or on           -->
         <!-- on a specific port or on every interface of the computer        -->

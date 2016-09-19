@@ -2,6 +2,11 @@
 #ifdef V7_MODULE_LINES
 #line 1 "./v7/src/license.h"
 #endif
+
+
+//#define DISABLE_BASE64
+//#undef V7_ENABLE__RegExp
+
 /*
  * Copyright (c) 2013-2014 Cesanta Software Limited
  * All rights reserved

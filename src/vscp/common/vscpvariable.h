@@ -152,7 +152,7 @@ public:
      * If bShort is true
      *    name;type;userid;rights;lastchanged;bPersistent
      * is returned. If not
-     *    name;type;userid;rights;lastchanged;bPersistent;note;value
+     *    name;type;userid;rights;lastchanged;bPersistent;value;note
      * is returned.
      * @return Variable content in semicolon separated form. 
      */
@@ -441,7 +441,7 @@ public:
      * @param name Name of variable
      * @param pVar [OUT] If found supplied variable is filled with data. Can be 
      * set to NULL in which case only availability of the variable is returned.
-     * @return true if variable is found. 
+     * @return >0 if variable is found, zero if not. 
      */
     uint32_t find(const wxString& name, CVSCPVariable& variable );
     
@@ -555,9 +555,11 @@ public:
 
     /*!
         Read persistent variables
+        @param Path to XML file. Defaults to empty in which case
+                the default XML path is used.
         @return Returns true on success false on failure.
      */
-    bool load( wxString& path );
+    bool load( const wxString& path = _("") );
 
     /*!
         Write persistent variables to configured storage
@@ -602,8 +604,8 @@ public:
      *                  names that meet regular expression.
      * @return Returns true on success
      */
-    bool getVarlistFromRegExp( const wxString& regex, 
-                                   wxArrayString& nameArray );
+    bool getVarlistFromRegExp( wxArrayString& nameArray,
+                                const wxString& regex = _("(.*)") );
     
     /*!
      * Get next list item

@@ -66,6 +66,7 @@ VSCPD_OBJECTS =  vscpd.o \
 	../../../common/sqlite3.o \
 	../../../common/randpassword.o \
 	../../../common/mongoose.o  \
+	../../../common/frozen.o  \
 	../../../common/slre.o \
 
 # Add object files that always should be built here

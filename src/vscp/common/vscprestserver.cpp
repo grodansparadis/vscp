@@ -106,6 +106,7 @@
 
 #include <slre.h>
 #include <mongoose.h>
+#include <frozen.h>
 
 #include <canal_macro.h>
 #include <vscp.h>

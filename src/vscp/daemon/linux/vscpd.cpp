@@ -146,7 +146,7 @@ int main(int argc, char **argv)
 
         case 's':
             wxPrintf(_("Stay Hungry. Stay Foolish.\n"));
-            wxPrintf(_("I will ***NOT*** run as daemon! (ctrl+c to terminate)\n"));
+            wxPrintf(_("I will ***NOT*** run as daemon! (ctrl+c to terminate)\n\n"));
             gbDontRunAsDaemon = true;
             break;
 

@@ -299,10 +299,10 @@ bool CUserItem::saveToDatabase( void )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// isUserDB
+// isUserInDB
 //
 
-bool CUserItem::isUserDB(const wxString& user, long *pid ) 
+bool CUserItem::isUserInDB(const wxString& user, long *pid ) 
 {
     bool rv = false;
     char *zErrMsg = 0;
@@ -312,15 +312,15 @@ bool CUserItem::isUserDB(const wxString& user, long *pid )
     if ( NULL == gpobj->m_db_vscp_daemon ) return false;
     
     // Search username
-    char *sql = sqlite3_mprintf( "SELECT idx_user from 'user' WHERE name='%s'",
-                (const char *)user.mbc_str() );
+    char *sql = sqlite3_mprintf( VSCPDB_USER_CHECK_USER,
+                                    (const char *)user.mbc_str() );
     
     if ( SQLITE_OK != sqlite3_prepare( gpobj->m_db_vscp_daemon,
                                             sql,
                                             -1,
                                             &ppStmt,
                                             NULL ) ) {
-        gpobj->logMsg( _("Failed to read user database - prepare query.") );
+        gpobj->logMsg( _("Failed to read user database - prepare query.\n") );
         sqlite3_free( sql );
         return false;
     }
@@ -594,7 +594,7 @@ bool CUserList::addUser( const wxString& user,
     }
     
     // Check if user is defined already
-    if ( pItem->isUserDB( user ) ) {
+    if ( pItem->isUserInDB( user ) ) {
         delete pItem;
         return false;
     }

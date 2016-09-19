@@ -3395,11 +3395,11 @@ CDM::CDM( CControlObject *ctrlObj )
     m_configPath += _("/vscp/dm.xml");
     
     m_path_db_vscp_dm = wxStandardPaths::Get().GetConfigDir();
-    m_path_db_vscp_dm += _("/vscp/vscp_dm.sqlite3");
+    m_path_db_vscp_dm += _("/vscp/dm.sqlite3");
 #endif
 #else
 	m_staticXMLPath = _("/srv/vscp/dm.xml");
-        m_path_db_vscp_dm = _("/srv/vscp/vscp_dm.sqlite3");
+        m_path_db_vscp_dm.Assign( _("/srv/vscp/dm.sqlite3") ); 
 #endif
         
    m_db_vscp_dm = NULL; 

@@ -1555,7 +1555,7 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn,
                 pClientItem->m_UserName.Length() );
     strncat( buf, ":", 1 );
     strncat( buf,
-                (const char *)pCtrlObject->m_authDomain,
+                (const char *)pCtrlObject->m_vscp_token,
                 strlen( pCtrlObject->m_vscp_token ) );
     strncat( buf, ":", 1 );
     strncat( (char *)buf, strPassword.mbc_str(), strPassword.Length() );
@@ -2158,7 +2158,7 @@ void VSCPClientThread::handleVariable_List( struct mg_connection *conn,
                                                 CControlObject *pCtrlObject )
 {
     CVSCPVariable variable;
-    wxString str;
+    wxString wxstr;
     wxString strWork;
     wxString strSearch;
     
@@ -2178,47 +2178,39 @@ void VSCPClientThread::handleVariable_List( struct mg_connection *conn,
         wxString token = tkz.GetNextToken();
         token.Trim();
         token.Trim( false );
-        token = token.Upper();
-        strSearch = "WHERE name LIKE ";
-        strSearch += token;
+        if ( !token.empty() ) {
+            strSearch = token;
+        }
+        else {
+            strSearch = _("(.*))");
+        }
     }
     else {
-        strSearch = _(" ORDER BY name");
+        strSearch = _("(.*)");
     }
 
-    // For all variable types
-    for ( uint8_t varType=0; varType<3; varType++ ) {
+    wxArrayString arrayVars;
+    m_pCtrlObject->m_VSCP_Variables.getVarlistFromRegExp( arrayVars, strSearch );
+    
+    if ( arrayVars.Count() ) {
         
-        m_pCtrlObject->m_variableMutex.Lock();
-
-        // TODO
-        varQuery *pq = NULL;//m_pCtrlObject->m_VSCP_Variables.listPrepare( varType, strSearch );
-            
-        while ( m_pCtrlObject->m_VSCP_Variables.listItem( pq, variable ) ) {
-
-            str = variable.getName();
-            str += _(";");
-            strWork.Printf( _("%d"), variable.getType() ) ;
-            str += strWork;
-            if ( variable.isPersistent() ) {
-                str += _(";true;");
+        wxstr = wxString::Format( _("%zu rows.\r\n"), arrayVars.Count() );
+        mg_send( conn,  wxstr.mb_str(), wxstr.Length() );
+    
+        for ( int i=0; i<arrayVars.Count(); i++ ) {
+            if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( arrayVars[ i ], variable ) ) {
+                wxstr = wxString::Format( _("%d;"), i );
+                wxstr += variable.getAsString();
+                wxstr += _("\r\n");
+                mg_send( conn,  wxstr.mb_str(), wxstr.Length() );
             }
-            else {
-                str += _(";false;");
-            }
-
-            variable.writeValueToString( strWork );
-            str += strWork;
-                str += _("\r\n");
-                
         }
-
-        m_pCtrlObject->m_VSCP_Variables.listFinalize( pq );
-            
-        mg_send( conn,  str.mb_str(), str.Length() );
-        m_pCtrlObject->m_variableMutex.Unlock();
-            
+    
     }
+    else {
+        wxstr = _("0 rows.\r\n");
+        mg_send( conn,  wxstr.mb_str(), wxstr.Length() );
+    } 
 
     mg_send( conn,  MSG_OK, strlen ( MSG_OK ) );
 }
