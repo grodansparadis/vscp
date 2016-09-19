@@ -661,7 +661,7 @@ bool VSCPClientThread::isVerified( struct mg_connection *conn,
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
-    if ( !pClientItem->m_bAuthorized ) {
+    if ( !pClientItem->bAuthenticated ) {
         mg_send( conn, MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
         return false;
     }
@@ -680,7 +680,7 @@ bool VSCPClientThread::checkPrivilege( struct mg_connection *conn,
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be loged on
-    if ( !pClientItem->m_bAuthorized ) {
+    if ( !pClientItem->bAuthenticated ) {
         mg_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
         return false;
     }
@@ -728,7 +728,7 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn,
     }
 
     // Must be accredited to do this
-    if ( !pClientItem->m_bAuthorized ) {
+    if ( !pClientItem->bAuthenticated ) {
         mg_send( conn, MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
@@ -1022,7 +1022,7 @@ void VSCPClientThread::handleClientReceive ( struct mg_connection *conn,
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
-    if ( !pClientItem->m_bAuthorized ) {
+    if ( !pClientItem->bAuthenticated ) {
         mg_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
@@ -1145,7 +1145,7 @@ void VSCPClientThread::handleClientDataAvailable ( struct mg_connection *conn,
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
-    if ( !pClientItem->m_bAuthorized ) {
+    if ( !pClientItem->bAuthenticated ) {
         mg_send( conn,  MSG_NOT_ACCREDITED,
             strlen ( MSG_NOT_ACCREDITED ) );
         return;
@@ -1170,7 +1170,7 @@ void VSCPClientThread::handleClientClearInputQueue ( struct mg_connection *conn,
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
-    if ( !pClientItem->m_bAuthorized ) {
+    if ( !pClientItem->bAuthenticated ) {
         mg_send( conn,  MSG_NOT_ACCREDITED,
             strlen ( MSG_NOT_ACCREDITED ) );
         return;
@@ -1195,7 +1195,7 @@ void VSCPClientThread::handleClientGetStatistics ( struct mg_connection *conn,
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
-    if ( !pClientItem->m_bAuthorized ) {
+    if ( !pClientItem->bAuthenticated ) {
         mg_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
@@ -1226,7 +1226,7 @@ void VSCPClientThread::handleClientGetStatus ( struct mg_connection *conn,
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
-    if ( !pClientItem->m_bAuthorized ) {
+    if ( !pClientItem->bAuthenticated ) {
         mg_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
@@ -1254,7 +1254,7 @@ void VSCPClientThread::handleClientGetChannelID ( struct mg_connection *conn,
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
-    if ( !pClientItem->m_bAuthorized ) {
+    if ( !pClientItem->bAuthenticated ) {
         mg_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
@@ -1277,7 +1277,7 @@ void VSCPClientThread::handleClientSetChannelGUID ( struct mg_connection *conn,
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
-    if ( !pClientItem->m_bAuthorized ) {
+    if ( !pClientItem->bAuthenticated ) {
         mg_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
@@ -1309,7 +1309,7 @@ void VSCPClientThread::handleClientGetChannelGUID ( struct mg_connection *conn,
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
-    if ( !pClientItem->m_bAuthorized ) {
+    if ( !pClientItem->bAuthenticated ) {
         mg_send( conn, MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
@@ -1335,7 +1335,7 @@ void VSCPClientThread::handleClientGetVersion ( struct mg_connection *conn,
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
-    if ( !pClientItem->m_bAuthorized ) {
+    if ( !pClientItem->bAuthenticated ) {
         mg_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
@@ -1362,7 +1362,7 @@ void VSCPClientThread::handleClientSetFilter ( struct mg_connection *conn,
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
-    if ( !pClientItem->m_bAuthorized ) {
+    if ( !pClientItem->bAuthenticated ) {
         mg_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
@@ -1431,7 +1431,7 @@ void VSCPClientThread::handleClientSetMask ( struct mg_connection *conn,
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
-    if ( !pClientItem->m_bAuthorized ) {
+    if ( !pClientItem->bAuthenticated ) {
         mg_send( conn,  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
@@ -1499,7 +1499,7 @@ void VSCPClientThread::handleClientUser ( struct mg_connection *conn,
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    if ( pClientItem->m_bAuthorized ) {
+    if ( pClientItem->bAuthenticated ) {
         mg_send( conn,  MSG_OK, strlen ( MSG_OK ) );
         return;
     }
@@ -1526,7 +1526,7 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn,
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    if ( pClientItem->m_bAuthorized ) {
+    if ( pClientItem->bAuthenticated ) {
         mg_send( conn,  MSG_OK, strlen ( MSG_OK ) );
         return true;
     }
@@ -1624,7 +1624,7 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn,
 
     pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
 
-    pClientItem->m_bAuthorized = true;
+    pClientItem->bAuthenticated = true;
     mg_send( conn,  MSG_OK, strlen ( MSG_OK ) );
 
     return true;
@@ -1930,7 +1930,7 @@ void VSCPClientThread::handleClientShutdown ( struct mg_connection *conn,
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    if ( !pClientItem->m_bAuthorized ) {
+    if ( !pClientItem->bAuthenticated ) {
         mg_send( conn,  MSG_OK, strlen ( MSG_OK ) );
     }
 
@@ -2191,7 +2191,8 @@ void VSCPClientThread::handleVariable_List( struct mg_connection *conn,
         
         m_pCtrlObject->m_variableMutex.Lock();
 
-        varQuery *pq = m_pCtrlObject->m_VSCP_Variables.listPrepare( varType, strSearch );
+        // TODO
+        varQuery *pq = NULL;//m_pCtrlObject->m_VSCP_Variables.listPrepare( varType, strSearch );
             
         while ( m_pCtrlObject->m_VSCP_Variables.listItem( pq, variable ) ) {
 

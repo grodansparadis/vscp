@@ -98,7 +98,7 @@ CClientItem::CClientItem()
     //                 Working variable storage for clients
     //////////////////////////////////////////////////////////////////////////
 
-    m_bAuthorized = false;
+    bAuthenticated = false;
     m_pUserItem = NULL;
 
     /// Buffer for read data

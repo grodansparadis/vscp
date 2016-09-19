@@ -194,7 +194,7 @@ public:
     wxString m_Password;
 
     /// True if the credentials has been checked.
-    bool m_bAuthorized;
+    bool bAuthenticated;
 
     /// pointer ti the user
     CUserItem *m_pUserItem;

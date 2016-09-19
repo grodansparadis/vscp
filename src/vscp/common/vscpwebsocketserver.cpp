@@ -216,14 +216,16 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
                                     WEBSOCK_STR_ERROR_SYNTAX_ERROR );
         return;
     }
+    
     // ------------------------------------------------------------------------
     //                                NOOP
     //-------------------------------------------------------------------------
+    
     if (0 == strTok.Find(_("NOOP"))) {
 
         mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, "+;NOOP" );
 
-        // Send authentication challange
+        // Send authentication challenge
         if ( !pSession->bAuthenticated ) {
 
         }
@@ -240,9 +242,11 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         }
 
     }
+    
     // ------------------------------------------------------------------------
     //                                AUTH
     //-------------------------------------------------------------------------
+    
     // AUTH;user;hash
     else if (0 == strTok.Find(_("AUTH"))) {
 
@@ -261,23 +265,25 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         else {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
                                     "-;AUTH;%d;%s",
-                                    WEBSOCK_ERROR_NOT_AUTHORIZED,
-                                    WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
+                                    WEBSOCK_ERROR_NOT_AUTHORISED,
+                                    WEBSOCK_STR_ERROR_NOT_AUTHORISED );
             pSession->bAuthenticated = false;   // Authenticated
         }
     }
+    
     // ------------------------------------------------------------------------
     //                                OPEN
     //-------------------------------------------------------------------------
+    
     else if (0 == strTok.Find(_("OPEN"))) {
 
-        // Must be authorized to do this
+        // Must be authorised to do this
         if ( !pSession->bAuthenticated ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
                                     "-;OPEN;%d;%s",
-                                    WEBSOCK_ERROR_NOT_AUTHORIZED,
-                                    WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
+                                    WEBSOCK_ERROR_NOT_AUTHORISED,
+                                    WEBSOCK_STR_ERROR_NOT_AUTHORISED );
             return;     // We still leave channel open
         }
 
@@ -289,10 +295,13 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         pSession->m_pClientItem->m_bOpen = false;
         mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, "+;CLOSE" );
     }
+    
     // ------------------------------------------------------------------------
-    //                                SETFILTER
+    //                             SETFILTER/SF
     //-------------------------------------------------------------------------
-    else if (0 == strTok.Find(_("SETFILTER"))) {
+    
+    else if ( ( 0 == strTok.Find( _("SETFILTER") ) ) || 
+            ( 0 == strTok.Find( _("SF") ) ) ) {
 
         unsigned char ifGUID[ 16 ];
         memset(ifGUID, 0, 16);
@@ -301,10 +310,10 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         if ( !pSession->bAuthenticated ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
-                                    "-;SETFILTER;%d;%s",
-                                    WEBSOCK_ERROR_NOT_AUTHORIZED,
-                                    WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
-            pCtrlObject->logMsg ( _("[Websocket] User/host not authorized to do that.\n"),
+                                    "-;SF;%d;%s",
+                                    WEBSOCK_ERROR_NOT_AUTHORISED,
+                                    WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            pCtrlObject->logMsg ( _("[Websocket] User/host not authorised to set a filter.\n"),
                                         DAEMON_LOGMSG_NORMAL,
                                         DAEMON_LOGTYPE_SECURITY );
 
@@ -315,11 +324,11 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         if ( (pSession->m_pClientItem->m_pUserItem->getUserRight( 0 ) & 0xf) < 6 ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
-                                    "-;SETFILTER;%d;%s",
+                                    "-;SF;%d;%s",
                                     WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                     WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
             wxString strErr =
-                        wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"),
+                        wxString::Format( _("[Websocket] User [%s] not allowed to set a filter.\n"),
                                                 pSession->m_pClientItem->m_pUserItem->getUser().mbc_str() );
 
             pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
@@ -337,7 +346,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
                 // Unlock
                 pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
                 mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
-                                    "-;SETFILTER;%d;%s",
+                                    "-;SF;%d;%s",
                                     WEBSOCK_ERROR_SYNTAX_ERROR,
                                     WEBSOCK_STR_ERROR_SYNTAX_ERROR );
                 return;
@@ -347,7 +356,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         }
         else {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
-                                    "-;SETFILTER;%d;%s",
+                                    "-;SF;%d;%s",
                                     WEBSOCK_ERROR_SYNTAX_ERROR,
                                     WEBSOCK_STR_ERROR_SYNTAX_ERROR );
             return;
@@ -365,7 +374,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
                 // Unlock
                 pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
                 mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
-                                    "-;SETFILTER;%d;%s",
+                                    "-;SF;%d;%s",
                                     WEBSOCK_ERROR_SYNTAX_ERROR,
                                     WEBSOCK_STR_ERROR_SYNTAX_ERROR );
                 pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
@@ -375,21 +384,23 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         }
         else {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
-                                    "-;SETFILTER;%d;%s",
+                                    "-;SF;%d;%s",
                                     WEBSOCK_ERROR_SYNTAX_ERROR,
                                     WEBSOCK_STR_ERROR_SYNTAX_ERROR );
             return;
         }
 
         // Positive response
-        mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, "+;SETFILTER" );
+        mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, "+;SF" );
 
     }
     // ------------------------------------------------------------------------
-    //                                CLRQUEUE
+    //                           CLRQUEUE/CLRQ
     //-------------------------------------------------------------------------
+    
     // Clear the event queue
-    else if (0 == strTok.Find(_("CLRQUEUE"))) {
+    else if ( ( 0 == strTok.Find(_("CLRQUEUE") ) ) || 
+                ( 0 == strTok.Find(_("CLRQ") ) ) ) {
 
         CLIENTEVENTLIST::iterator iterVSCP;
 
@@ -397,10 +408,10 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         if ( !pSession->bAuthenticated ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
-                                    "-;CLRQUEUE;%d;%s",
-                                    WEBSOCK_ERROR_NOT_AUTHORIZED,
-                                    WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
-            pCtrlObject->logMsg ( _("[Websocket] User/host not authorized to do that.\n"),
+                                    "-;CLRQ;%d;%s",
+                                    WEBSOCK_ERROR_NOT_AUTHORISED,
+                                    WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            pCtrlObject->logMsg ( _("[Websocket] User/host not authorised to clear the queue.\n"),
                                         DAEMON_LOGMSG_NORMAL,
                                         DAEMON_LOGTYPE_SECURITY );
 
@@ -415,7 +426,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
                                     WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                     WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
             wxString strErr =
-                        wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"),
+                        wxString::Format( _("[Websocket] User [%s] not allowed to clear the queue.\n"),
                                                 pSession->m_pClientItem->m_pUserItem->getUser().mbc_str() );
 
             pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
@@ -432,12 +443,14 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         pSession->m_pClientItem->m_clientInputQueue.Clear();
         pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
 
-        mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, "+;CLRQUE" );
+        mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, "+;CLRQUEUE" );
     }
     // ------------------------------------------------------------------------
-    //                                  WRITEVAR
+    //                                WRITEVAR/WVAR
     //-------------------------------------------------------------------------
-    else if (0 == strTok.Find(_("WRITEVAR"))) {
+    
+    else if ( ( 0 == strTok.Find( _("WRITEVAR") ) ) || 
+                ( 0 == strTok.Find( _("WVAR") ) ) ) {
 
         CVSCPVariable variable;
         wxString strvalue;
@@ -447,10 +460,10 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         if ( !pSession->bAuthenticated ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
-                                    "-;WRITEVAR;%d;%s",
-                                    WEBSOCK_ERROR_NOT_AUTHORIZED,
-                                    WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
-            pCtrlObject->logMsg ( _("[Websocket] User/host not authorized to do that.\n"),
+                                    "-;WVAR;%d;%s",
+                                    WEBSOCK_ERROR_NOT_AUTHORISED,
+                                    WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            pCtrlObject->logMsg ( _("[Websocket] User/host not authorised to write a variable.\n"),
                                         DAEMON_LOGMSG_NORMAL,
                                         DAEMON_LOGTYPE_SECURITY );
 
@@ -461,11 +474,11 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         if ( (pSession->m_pClientItem->m_pUserItem->getUserRight( 0 ) & 0xf) < 6 ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
-                                    "-;WRITEVAR;%d;%s",
+                                    "-;WVAR;%d;%s",
                                     WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                     WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
             wxString strErr =
-                        wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"),
+                        wxString::Format( _("[Websocket] User [%s] not allowed to do write variable.\n"),
                                                 pSession->m_pClientItem->m_pUserItem->getUser().mbc_str() );
 
             pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
@@ -480,7 +493,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
             strVarName = tkz.GetNextToken();
             if ( pCtrlObject->m_VSCP_Variables.find(strVarName, variable ) ) {
                 mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
-                                    "-;WRITEVAR;%d;%s",
+                                    "-;WVAR;%d;%s",
                                     WEBSOCK_ERROR_VARIABLE_UNKNOWN,
                                     WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN );
                 return;
@@ -491,7 +504,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
                 strTok = tkz.GetNextToken();
                 if (!variable.setValueFromString(variable.getType(), strTok)) {
                     mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
-                                    "-;WRITEVAR;%d;%s",
+                                    "-;WVAR;%d;%s",
                                     WEBSOCK_ERROR_SYNTAX_ERROR,
                                     WEBSOCK_STR_ERROR_SYNTAX_ERROR );
                     return;
@@ -499,7 +512,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
             }
             else {
                 mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
-                                    "-;WRITEVAR;%d;%s",
+                                    "-;WVAR;%d;%s",
                                     WEBSOCK_ERROR_SYNTAX_ERROR,
                                     WEBSOCK_STR_ERROR_SYNTAX_ERROR );
                 return;
@@ -507,7 +520,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         }
         else {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
-                                    "-;WRITEVAR;%d;%s",
+                                    "-;WVAR;%d;%s",
                                     WEBSOCK_ERROR_SYNTAX_ERROR,
                                     WEBSOCK_STR_ERROR_SYNTAX_ERROR );
             return;
@@ -516,7 +529,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         variable.writeValueToString( strvalue );
         type = variable.getType();
 
-        wxString resultstr = _( "+;WRITEVAR;" );
+        wxString resultstr = _( "+;WVAR;" );
         resultstr += strVarName;
         resultstr += _( ";" );
         resultstr += wxString::Format( _( "%d" ), type );
@@ -528,23 +541,25 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
 
     }
     // ------------------------------------------------------------------------
-    //                               CREATEVAR
+    //                            CREATEVAR/CVAR
     //-------------------------------------------------------------------------
-    else if (0 == strTok.Find(_("CREATEVAR"))) {
+    
+    else if ( ( 0 == strTok.Find(_("CREATEVAR") ) ) || 
+                ( 0 == strTok.Find(_("CVAR") ) ) ) {
 
         wxString name;
         wxString value;
         uint8_t type = VSCP_DAEMON_VARIABLE_CODE_STRING;
         bool bPersistent = false;
 
-        // Must be authorized to do this
+        // Must be authorised to do this
         if ( !pSession->bAuthenticated ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
-                                    "-;CREATEVAR;%d;%s",
-                                    WEBSOCK_ERROR_NOT_AUTHORIZED,
-                                    WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
-            pCtrlObject->logMsg ( _("[Websocket] User/host not authorized to do that.\n"),
+                                    "-;CVAR;%d;%s",
+                                    WEBSOCK_ERROR_NOT_AUTHORISED,
+                                    WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            pCtrlObject->logMsg ( _("[Websocket] User/host not authorised to create a variable.\n"),
                                         DAEMON_LOGMSG_NORMAL,
                                         DAEMON_LOGTYPE_SECURITY );
 
@@ -555,11 +570,11 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         if ( (pSession->m_pClientItem->m_pUserItem->getUserRight( 0 ) & 0xf) < 6 ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
-                                    "-;CREATEVAR;%d;%s",
+                                    "-;CVAR;%d;%s",
                                     WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                     WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
             wxString strErr =
-                        wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"),
+                        wxString::Format( _("[Websocket] User [%s] not allowed to create a variable.\n"),
                                                 pSession->m_pClientItem->m_pUserItem->getUser().mbc_str() );
 
             pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
@@ -572,7 +587,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         }
         else {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
-                                    "-;CREATEVAR;%d;%s",
+                                    "-;CVAR;%d;%s",
                                     WEBSOCK_ERROR_SYNTAX_ERROR,
                                     WEBSOCK_STR_ERROR_SYNTAX_ERROR );
             return;
@@ -595,7 +610,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
             }
             else {
                 mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
-                                        "-;CREATEVAR;%d;%s",
+                                        "-;CVAR;%d;%s",
                                         WEBSOCK_ERROR_SYNTAX_ERROR,
                                         WEBSOCK_STR_ERROR_SYNTAX_ERROR );
                 return;
@@ -608,7 +623,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         }
         else {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
-                                    "-;CREATEVAR;%d;%s",
+                                    "-;CVAR;%d;%s",
                                     WEBSOCK_ERROR_SYNTAX_ERROR,
                                     WEBSOCK_STR_ERROR_SYNTAX_ERROR );
             return;
@@ -617,36 +632,38 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         // Add the variable
         if (!pCtrlObject->m_VSCP_Variables.add(name, value, type, bPersistent)) {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
-                                    "-;CREATEVAR;%d;%s",
+                                    "-;CVAR;%d;%s",
                                     WEBSOCK_ERROR_SYNTAX_ERROR,
                                     WEBSOCK_STR_ERROR_SYNTAX_ERROR );
             return;
         }
 
-        wxString resultstr = _("+;CREATEVAR;");
+        wxString resultstr = _("+;CVAR;");
         resultstr += name;
 
         mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, (const char *)resultstr.mbc_str() );
 
     }
     // ------------------------------------------------------------------------
-    //                               READVAR
+    //                                RVAR
     //-------------------------------------------------------------------------
-    else if (0 == strTok.Find(_("READVAR"))) {
+    
+    else if ( ( 0 == strTok.Find(_("READVAR") ) ) || 
+                ( 0 == strTok.Find(_("RVAR") ) ) ) {
 
         CVSCPVariable variable;
         uint8_t type;
         wxString strvalue;
 
-        // Must be authorized to do this
+        // Must be authorised to do this
         if ( !pSession->bAuthenticated ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
-                                    "-;READVAR;%d;%s",
-                                    WEBSOCK_ERROR_NOT_AUTHORIZED,
-                                    WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
+                                    "-;RVAR;%d;%s",
+                                    WEBSOCK_ERROR_NOT_AUTHORISED,
+                                    WEBSOCK_STR_ERROR_NOT_AUTHORISED );
 
-            pCtrlObject->logMsg ( _("[Websocket] User/host not authorized to do that.\n"),
+            pCtrlObject->logMsg ( _("[Websocket] User/host not authorised to read a variable.\n"),
                                         DAEMON_LOGMSG_NORMAL,
                                         DAEMON_LOGTYPE_SECURITY );
 
@@ -657,11 +674,11 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         if ( (pSession->m_pClientItem->m_pUserItem->getUserRight( 0 ) & 0xf) < 4 ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
-                                    "-;READVAR;%d;%s",
+                                    "-;RVAR;%d;%s",
                                     WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                     WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
             wxString strErr =
-                        wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"),
+                        wxString::Format( _("[Websocket] User [%s] not allowed to read a variable.\n"),
                                                 pSession->m_pClientItem->m_pUserItem->getUser().mbc_str() );
 
             pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
@@ -669,9 +686,9 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         }
 
         strTok = tkz.GetNextToken();
-        if ( pCtrlObject->m_VSCP_Variables.find(strTok, variable ) ) {
+        if ( pCtrlObject->m_VSCP_Variables.find( strTok, variable ) ) {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
-                                    "-;READVAR;%d;%s",
+                                    "-;RVAR;%d;%s",
                                     WEBSOCK_ERROR_VARIABLE_UNKNOWN,
                                     WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN );
             return;
@@ -680,7 +697,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         variable.writeValueToString(strvalue);
         type = variable.getType();
 
-        wxString resultstr = _("+;READVAR;");
+        wxString resultstr = _("+;RVAR;");
         resultstr += strTok;
         resultstr += _(";");
         resultstr += wxString::Format(_("%d"), type);
@@ -692,19 +709,21 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
     // ------------------------------------------------------------------------
     //                               RESETVAR
     //-------------------------------------------------------------------------
-    else if (0 == strTok.Find(_("RESETVAR"))) {
+    
+    else if ( ( 0 == strTok.Find(_("RESETVAR") ) ) || 
+                    ( 0 == strTok.Find(_("RESVAR") ) ) ) {
 
         CVSCPVariable variable;
         wxString strvalue;
         uint8_t type;
 
-        // Must be authorized to do this
+        // Must be authorised to do this
         if ( !pSession->bAuthenticated ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
-                                    "-;RESETVAR;%d;%s",
-                                    WEBSOCK_ERROR_NOT_AUTHORIZED,
-                                    WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
+                                    "-;RESVAR;%d;%s",
+                                    WEBSOCK_ERROR_NOT_AUTHORISED,
+                                    WEBSOCK_STR_ERROR_NOT_AUTHORISED );
             return;     // We still leave channel open
         }
 
@@ -712,11 +731,11 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         if ( (pSession->m_pClientItem->m_pUserItem->getUserRight( 0 ) & 0xf) < 6 ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
-                                    "-;RESETVAR;%d;%s",
+                                    "-;RESVAR;%d;%s",
                                     WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                     WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
             wxString strErr =
-                        wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"),
+                        wxString::Format( _("[Websocket] User [%s] not allowed to reset a variable.\n"),
                                                 pSession->m_pClientItem->m_pUserItem->getUser().mbc_str() );
 
             pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
@@ -726,10 +745,10 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         strTok = tkz.GetNextToken();
         if ( pCtrlObject->m_VSCP_Variables.find(strTok, variable )) {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
-                                    "-;RESETVAR;%d;%s",
+                                    "-;RESVAR;%d;%s",
                                     WEBSOCK_ERROR_VARIABLE_UNKNOWN,
                                     WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN );
-            pCtrlObject->logMsg ( _("[Websocket] User/host not authorized to do that.\n"),
+            pCtrlObject->logMsg ( _("[Websocket] User/host not authorised to reset a variable.\n"),
                                         DAEMON_LOGMSG_NORMAL,
                                         DAEMON_LOGTYPE_SECURITY );
 
@@ -741,7 +760,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         variable.writeValueToString( strvalue );
         type = variable.getType();
 
-        wxString resultstr = _( "+;RESETVAR;" );
+        wxString resultstr = _( "+;RESVAR;" );
         resultstr += strTok;
         resultstr += _( ";" );
         resultstr += wxString::Format( _( "%d" ), type );
@@ -751,22 +770,25 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, ( const char * )resultstr.mbc_str() );
 
     }
+    
     // ------------------------------------------------------------------------
-    //                              REMOVEVAR
+    //                                 DELVAR/REMOVEVAR
     //-------------------------------------------------------------------------
-    else if (0 == strTok.Find(_("REMOVEVAR"))) {
+    
+    else if ( ( 0 == strTok.Find(_("DELVAR") ) ) || 
+                ( 0 == strTok.Find(_("REMOVEVAR") ) ) ) {
 
         CVSCPVariable variable;
         wxString strvalue;
 
-        // Must be authorized to do this
+        // Must be authorised to do this
         if ( !pSession->bAuthenticated ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
-                                    "-;REMOVEVAR;%d;%s",
-                                    WEBSOCK_ERROR_NOT_AUTHORIZED,
-                                    WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
-            pCtrlObject->logMsg ( _("[Websocket] User/host not authorized to do that.\n"),
+                                    "-;DELVAR;%d;%s",
+                                    WEBSOCK_ERROR_NOT_AUTHORISED,
+                                    WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            pCtrlObject->logMsg ( _("[Websocket] User/host not authorised to delete a variable.\n"),
                                         DAEMON_LOGMSG_NORMAL,
                                         DAEMON_LOGTYPE_SECURITY );
 
@@ -777,11 +799,11 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         if ( (pSession->m_pClientItem->m_pUserItem->getUserRight( 0 ) & 0xf) < 6 ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
-                                    "-;REMOVEVAR;%d;%s",
+                                    "-;DELVAR;%d;%s",
                                     WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                     WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
             wxString strErr =
-                        wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"),
+                        wxString::Format( _("[Websocket] User [%s] not allowed to delete a variable.\n"),
                                                 pSession->m_pClientItem->m_pUserItem->getUser().mbc_str() );
 
             pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
@@ -791,7 +813,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         strTok = tkz.GetNextToken();
         if ( pCtrlObject->m_VSCP_Variables.find(strTok, variable ) ) {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
-                                    "-;REMOVEVAR;%d;%s",
+                                    "-;DELVAR;%d;%s",
                                     WEBSOCK_ERROR_VARIABLE_UNKNOWN,
                                     WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN );
             return;
@@ -801,26 +823,29 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         pCtrlObject->m_VSCP_Variables.remove( strTok );
         pCtrlObject->m_variableMutex.Unlock();
 
-        wxString strResult = _("+;REMOVEVAR;");
+        wxString strResult = _("+;DELVAR;");
         strResult += strTok;
         mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, (const char *)strResult.mbc_str() );
 
     }
+    
     // ------------------------------------------------------------------------
-    //                             LENGTHVAR
+    //                             LENVAR/LENGTHVAR
     //-------------------------------------------------------------------------
-    else if (0 == strTok.Find(_("LENGTHVAR"))) {
+    
+    else if ( ( 0 == strTok.Find(_("LENGTHVAR") ) ) || 
+                ( 0 == strTok.Find(_("LENVAR") ) ) ) {
 
         CVSCPVariable variable;
 
-        // Must be authorized to do this
+        // Must be authorised to do this
         if ( !pSession->bAuthenticated ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
-                                    "-;LENGTHVAR;%d;%s",
-                                    WEBSOCK_ERROR_NOT_AUTHORIZED,
-                                    WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
-            pCtrlObject->logMsg ( _("[Websocket] User/host not authorized to do that.\n"),
+                                    "-;LENVAR;%d;%s",
+                                    WEBSOCK_ERROR_NOT_AUTHORISED,
+                                    WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            pCtrlObject->logMsg ( _("[Websocket] User/host not authorised to get length of variable.\n"),
                                         DAEMON_LOGMSG_NORMAL,
                                         DAEMON_LOGTYPE_SECURITY );
 
@@ -831,11 +856,11 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         if ( (pSession->m_pClientItem->m_pUserItem->getUserRight( 0 ) & 0xf) < 4 ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
-                                    "-;LENGTHVAR;%d;%s",
+                                    "-;LENVAR;%d;%s",
                                     WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                     WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
             wxString strErr =
-                        wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"),
+                        wxString::Format( _("[Websocket] User [%s] not allowed to get length of variable.\n"),
                                                 pSession->m_pClientItem->m_pUserItem->getUser().mbc_str() );
 
             pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
@@ -845,35 +870,38 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         strTok = tkz.GetNextToken();
         if ( pCtrlObject->m_VSCP_Variables.find(strTok, variable ) ) {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
-                                    "-;LENGTHVAR;%d;%s",
+                                    "-;LENVAR;%d;%s",
                                     WEBSOCK_ERROR_VARIABLE_UNKNOWN,
                                     WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN );
             return;
         }
 
-        wxString resultstr = _("+;LENGTHVAR;");
+        wxString resultstr = _("+;LENVAR;");
         resultstr += strTok;
         resultstr += _(";");
         resultstr += wxString::Format(_("%d"), variable.getValue().Length() );
         mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, (const char *)resultstr.mbc_str() );
 
     }
+    
     // ------------------------------------------------------------------------
-    //                           LASTCHANGEVAR
+    //                           LCVAR/LASTCHANGEVAR
     //-------------------------------------------------------------------------
-    else if (0 == strTok.Find(_("LASTCHANGEVAR"))) {
+    
+    else if ( ( 0 == strTok.Find(_("LASTCHANGEVAR") ) ) || 
+                ( 0 == strTok.Find(_("LCVAR") ) ) ) {
 
         CVSCPVariable variable;
         wxString strvalue;
 
-        // Must be authorized to do this
+        // Must be authorised to do this
         if ( !pSession->bAuthenticated ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
-                                    "-;LASTCHANGEVAR;%d;%s",
-                                    WEBSOCK_ERROR_NOT_AUTHORIZED,
-                                    WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
-            pCtrlObject->logMsg ( _("[Websocket] User/host not authorized to do that.\n"),
+                                    "-;LCVAR;%d;%s",
+                                    WEBSOCK_ERROR_NOT_AUTHORISED,
+                                    WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            pCtrlObject->logMsg ( _("[Websocket] User/host not authorised to get last change date of variable.\n"),
                                         DAEMON_LOGMSG_NORMAL,
                                         DAEMON_LOGTYPE_SECURITY );
 
@@ -884,11 +912,11 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         if ( (pSession->m_pClientItem->m_pUserItem->getUserRight( 0 ) & 0xf) < 4 ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
-                                    "-;LASTCHANGEVAR;%d;%s",
+                                    "-;LCVAR;%d;%s",
                                     WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                     WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
             wxString strErr =
-                        wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"),
+                        wxString::Format( _("[Websocket] User [%s] not allowed to get last change date of variable.\n"),
                                                 pSession->m_pClientItem->m_pUserItem->getUser().mbc_str() );
 
             pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
@@ -898,7 +926,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         strTok = tkz.GetNextToken();
         if ( pCtrlObject->m_VSCP_Variables.find(strTok, variable ) ) {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
-                                    "-;LASTCHANGEVAR;%d;%s",
+                                    "-;LCVAR;%d;%s",
                                     WEBSOCK_ERROR_VARIABLE_UNKNOWN,
                                     WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN );
             return;
@@ -906,29 +934,32 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
 
         variable.writeValueToString( strvalue );
 
-        wxString resultstr = _("+;LASTCHANGEVAR;");
+        wxString resultstr = _("+;LCVAR;");
         resultstr += strTok;
         resultstr += _( ";" );
         resultstr += variable.getLastChange().FormatISODate() + _(" ") + variable.getLastChange().FormatISOTime();
         mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, (const char *)resultstr.mbc_str() );
 
     }
+    
     // ------------------------------------------------------------------------
     //                               LISTVAR
     //-------------------------------------------------------------------------
-    else if (0 == strTok.Find(_("LISTVAR"))) {
+    
+    else if ( ( 0 == strTok.Find( _("LISTVAR") ) ) || 
+                    ( 0 == strTok.Find( _("LVAR") ) ) ) {
 
         CVSCPVariable variable;
         wxString strvalue;
 
-        // Must be authorized to do this
+        // Must be authorised to do this
         if ( !pSession->bAuthenticated ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
-                                    "-;LISTVAR;%d;%s",
-                                    WEBSOCK_ERROR_NOT_AUTHORIZED,
-                                    WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
-            pCtrlObject->logMsg ( _("[Websocket] User/host not authorized to do that.\n"),
+                                    "-;LVAR;%d;%s",
+                                    WEBSOCK_ERROR_NOT_AUTHORISED,
+                                    WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            pCtrlObject->logMsg ( _("[Websocket] User/host not authorised to list variable(s).\n"),
                                         DAEMON_LOGMSG_NORMAL,
                                         DAEMON_LOGTYPE_SECURITY );
 
@@ -939,11 +970,11 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         if ( (pSession->m_pClientItem->m_pUserItem->getUserRight( 0 ) & 0xf) < 4 ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
-                                    "-;LISTVAR;%d;%s",
+                                    "-;LVAR;%d;%s",
                                     WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                     WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
             wxString strErr =
-                        wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"),
+                        wxString::Format( _("[Websocket] User [%s] not allowed to list variable(s).\n"),
                                                 pSession->m_pClientItem->m_pUserItem->getUser().mbc_str() );
 
             pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
@@ -990,66 +1021,25 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         */
 
     }
+    
     // ------------------------------------------------------------------------
-    //                                SAVEVAR
+    //                                GT/GETTABLE
     //-------------------------------------------------------------------------
-    else if (0 == strTok.Find(_("SAVEVAR"))) {
-
-        // Must be authorized to do this
-        if ( !pSession->bAuthenticated ) {
-            mg_printf_websocket_frame( nc,
-                                    WEBSOCKET_OP_TEXT,
-                                    "-;SAVEVAR;%d;%s",
-                                    WEBSOCK_ERROR_NOT_AUTHORIZED,
-                                    WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
-            pCtrlObject->logMsg ( _("[Websocket] User/host not authorized to do that.\n"),
-                                        DAEMON_LOGMSG_NORMAL,
-                                        DAEMON_LOGTYPE_SECURITY );
-
-            return; // We still leave channel open
-        }
-
-        // Check privilege
-        if ( (pSession->m_pClientItem->m_pUserItem->getUserRight( 0 ) & 0xf) < 4 ) {
-            mg_printf_websocket_frame( nc,
-                                    WEBSOCKET_OP_TEXT,
-                                    "-;SAVEVAR;%d;%s",
-                                    WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
-                                    WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
-            wxString strErr =
-                        wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"),
-                                                pSession->m_pClientItem->m_pUserItem->getUser().mbc_str() );
-
-            pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
-            return;     // We still leave channel open
-        }
-
-        if (!pCtrlObject->m_VSCP_Variables.save()) {
-            mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
-                                    "-;SAVEVAR;%d;%s",
-                                    WEBSOCK_ERROR_SYNTAX_ERROR,
-                                    WEBSOCK_STR_ERROR_SYNTAX_ERROR );
-            return;
-        }
-
-        mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, "+;SAVEVAR" );
-    }
-    // ------------------------------------------------------------------------
-    //                                GETTABLE
-    //-------------------------------------------------------------------------
-    else if (0 == strTok.Find(_("GT"))) {
+    
+    else if ( ( 0 == strTok.Find(_("GT") ) ) || 
+                ( 0 == strTok.Find(_("GETTABLE") ) ) ) {
 
         // Format is:
         //      tablename;from;to
 
-        // Must be authorized to do this
+        // Must be authorised to do this
         if ( !pSession->bAuthenticated ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
                                     "-;GT;%d;%s",
-                                    WEBSOCK_ERROR_NOT_AUTHORIZED,
-                                    WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
-            pCtrlObject->logMsg ( _("[Websocket] User/host not authorized to do that.\n"),
+                                    WEBSOCK_ERROR_NOT_AUTHORISED,
+                                    WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            pCtrlObject->logMsg ( _("[Websocket] User/host not authorised to get table.\n"),
                                         DAEMON_LOGMSG_NORMAL,
                                         DAEMON_LOGTYPE_SECURITY );
 
@@ -1064,7 +1054,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
                                     WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                     WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
             wxString strErr =
-                        wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"),
+                        wxString::Format( _("[Websocket] User [%s] not allowed to get table.\n"),
                                                 pSession->m_pClientItem->m_pUserItem->getUser().mbc_str() );
 
             pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
@@ -1189,13 +1179,18 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
                                     WEBSOCK_ERROR_MEMORY_ALLOCATION,
                                     WEBSOCK_STR_ERROR_MEMORY_ALLOCATION );
                     wxString strErr =
-                            wxString::Format( _("[Websocket] Having problems to allocate memory. [name=%s]\n"), tblName.wx_str() );
+                            wxString::Format( _("[Websocket] Having problems to allocate memory. [name=%s]\n"), 
+                                tblName.wx_str() );
                     pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_GENERAL );
                     return;
                 }
 
                 ptblItem->m_mutexThisTable.Lock();
-                long nfetchedRecords = ptblItem->getRangeOfData(start, end, (void *)pRecords, nRecords* sizeof(struct _vscpFileRecord )  );
+                long nfetchedRecords = ptblItem->getRangeOfData( start, 
+                                                                    end, 
+                                                                    (void *)pRecords, 
+                                                                    nRecords* 
+                                                                    sizeof(struct _vscpFileRecord )  );
                 ptblItem->m_mutexThisTable.Unlock();
 
                 if ( 0 == nfetchedRecords ) {
@@ -1205,7 +1200,8 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
                                     WEBSOCK_ERROR_TABLE_ERROR_READING,
                                     WEBSOCK_STR_ERROR_TABLE_ERROR_READING );
                     wxString strErr =
-                        wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), tblName.wx_str() );
+                        wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), 
+                                            tblName.wx_str() );
                     pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_GENERAL );
                     return;
                 }
@@ -1359,9 +1355,11 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         }
 
     }
+    
     // ------------------------------------------------------------------------
     //                              VERSION
     //-------------------------------------------------------------------------
+    
     else if (0 == strTok.Find(_("VERSION"))) {
         
         wxString strvalue;
@@ -1376,9 +1374,11 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, (const char *)resultstr.mbc_str() );
         
     }
+    
     // ------------------------------------------------------------------------
     //                              COPYRIGHT
     //-------------------------------------------------------------------------
+    
     else if (0 == strTok.Find(_("COPYRIGHT"))) {
         
         wxString strvalue;
@@ -1388,11 +1388,13 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, (const char *)resultstr.mbc_str() );
         
     }
+    
     // ------------------------------------------------------------------------
     //                             VARIABLE
     //
     //  READ, WRITE, ADD, DEL, LIST, LISTALL
     //-------------------------------------------------------------------------
+    
     else if (0 == strTok.Find(_("VARIABLE"))) {
         
     }
@@ -1591,7 +1593,8 @@ VSCPWebServerThread::websrv_websocket_message( struct mg_connection *nc,
                                                     struct http_message *hm,
                                                     struct websocket_message *wm )
 {
-    wxString str;
+    wxString wxstr;
+    wxString strCmd;
     char buf[ 2048 ];
     struct websock_session *pSession;
     const char *p = buf;
@@ -1602,34 +1605,18 @@ VSCPWebServerThread::websrv_websocket_message( struct mg_connection *nc,
     if (NULL == nc) return false;
     if (NULL == hm) return false;
     if (NULL == wm) return false;
-
+   
     // Copy data
     if ( wm->size ) memcpy( buf, wm->data, MIN(wm->size, sizeof( buf ) ) );
 
     pSession = (struct websock_session *)nc->user_data;
     if (NULL == pSession) return false;
 
-    // Keep connection alive
-    /*if ( wm->flags | WEBSOCKET_OP_PING ) {
-        mg_send_websocket_frame( nc,
-                                WEBSOCKET_OP_PONG,
-                                wm->data,
-                                wm->size );
-        return true;
-    }
-    else if ( wm->flags |WEBSOCKET_OP_PONG  ) {
-        mg_send_websocket_frame( nc,
-                                WEBSOCKET_OP_PING,
-                                wm->data,
-                                wm->size );
-        return true;
-    }*/
-
     CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
     if (NULL == pObject) return false;
 
     memset(buf, 0, sizeof( buf));
-    memcpy(buf, (char *)wm->data, MIN( wm->size, sizeof(buf) ) );
+    memcpy(buf, (char *)wm->data, MIN( wm->size, sizeof( buf ) ) );
 
     switch (*p) {
 
@@ -1637,30 +1624,30 @@ VSCPWebServerThread::websrv_websocket_message( struct mg_connection *nc,
         case 'C':
             p++;
             p++; // Point beyond initial info "C;"
-            str = wxString::FromAscii( p );
-            websock_command( nc, hm, wm, pSession, str );
+            strCmd = wxString::FromUTF8( p );
+            websock_command( nc, hm, wm, pSession, strCmd );
             break;
 
         // Event | 'E' ; head(byte) , vscp_class(unsigned short) , vscp_type(unsigned
         //              short) , GUID(16*byte), data(0-487 bytes) |
         case 'E':
         {
-            // Must be authorized to do this
+            // Must be authorised to do this
             if ( !pSession->bAuthenticated ) {
                 mg_printf_websocket_frame( nc,
                                             WEBSOCKET_OP_TEXT,
                                             "-;%d;%s",
-                                            WEBSOCK_ERROR_NOT_AUTHORIZED,
-                                            WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
+                                            WEBSOCK_ERROR_NOT_AUTHORISED,
+                                            WEBSOCK_STR_ERROR_NOT_AUTHORISED );
                 return true;
             }
 
             p++;
             p++; // Point beyond initial info "E;"
             vscpEvent vscp_event;
-            str = wxString::FromAscii( p );
+            wxstr = wxString::FromAscii( p );
 
-            if ( vscp_setVscpEventFromString( &vscp_event, str ) ) {
+            if ( vscp_setVscpEventFromString( &vscp_event, wxstr ) ) {
 
                 // Check if this user is allowed to send this event
                 if ( !pSession->m_pClientItem->m_pUserItem->isUserAllowedToSendEvent( vscp_event.vscp_class, vscp_event.vscp_type ) ) {
@@ -1766,7 +1753,7 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *nc,
 
         if (  rv ) {
 
-            pSession->m_pClientItem->m_bAuthorized = true;
+            pSession->m_pClientItem->bAuthenticated = true;
 
             // Add user to client
             pSession->m_pClientItem->m_pUserItem = pUser;

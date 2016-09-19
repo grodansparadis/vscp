@@ -873,8 +873,8 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
                 mg_printf_websocket_frame( nc,
                                             WEBSOCKET_OP_TEXT,
                                             "-;%d;%s",
-                                            WEBSOCK_ERROR_NOT_AUTHORIZED,
-                                            WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
+                                            WEBSOCK_ERROR_NOT_AUTHORISED,
+                                            WEBSOCK_STR_ERROR_NOT_AUTHORISED );
             }
 
             if ( pObject->m_bAuthWebsockets ) {

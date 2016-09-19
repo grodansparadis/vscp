@@ -34,6 +34,7 @@
 #include <wx/wfstream.h>
 #include <wx/xml/xml.h>
 #include <wx/stdpaths.h>
+#include <wx/regex.h>
 #include <wx/base64.h>
 
 #include <mongoose.h>
@@ -347,6 +348,36 @@ const char * CVSCPVariable::getVariableTypeAsString( int type )
         default:
             return "Unknown";
     }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getAsString
+//
+
+wxString CVSCPVariable::getAsString( bool bShort )
+{
+    wxString wxstr;
+    
+    wxstr = m_name;
+    wxstr += _(";");
+    wxstr += wxString::Format(_("%d"), m_type );
+    wxstr += _(";");
+    wxstr += wxString::Format(_("%lu"), m_userid );
+    wxstr += _(";");
+    wxstr += wxString::Format(_("%lu"), m_accessRights );
+    wxstr += _(";");
+    wxstr += m_bPersistent ? _("true") : _("false");
+    wxstr += _(";");
+    wxstr += m_lastChanged.FormatISOCombined();
+    
+    if ( !bShort ) {        
+        wxstr += _(";");
+        wxstr += m_strValue;
+        wxstr += _(";");
+        wxstr += m_note;
+    }
+    
+    return wxstr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4961,58 +4992,72 @@ uint32_t CVariableStorage::findPersistentVariable(const wxString& name, CVSCPVar
     return variable.getID();
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// getVarlistFromRegExp
+//
 
-varQuery *CVariableStorage::listPrepare( const uint8_t table, const wxString& search )
+bool CVariableStorage::getVarlistFromRegExp( const wxString& regex, 
+                                                wxArrayString& nameArray )
 {
-    varQuery *pq = NULL;
+    wxString varname;
+    sqlite3_stmt *ppStmt;
+    const char *psql;
+    wxString regexlocal = regex;
     
+    nameArray.Clear();
     
-    if ( VARIABLE_STOCK == table ) {
-        varQuery *pq = new varQuery;
-        pq->table = VARIABLE_STOCK;
-        pq->stockId = 0;
-        pq->ppStmt = NULL;           
-    }
-    else if ( VARIABLE_INTERNAL == table ) {
-        varQuery *pq = new varQuery;
-        if ( pq != NULL ) return NULL;
-        pq->table = VARIABLE_INTERNAL;
-        pq->stockId = 0;
-        pq->ppStmt = NULL;
+    regexlocal.Trim();
+    if ( 0 == regexlocal.Length() ) regexlocal = _("*");  // List all if empty
+    wxRegEx wxregex( regexlocal );
         
-        char *psql = sqlite3_mprintf( "SELECT * FROM 'variableint' %s",
-                                        (const char *)search.mbc_str() );
+    // Get variables from internal table    
+    psql = "SELECT * FROM 'variableint'";
         
-        if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_internal_variable,
+    if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_internal_variable,
                                             psql,
                                             -1,
-                                            &pq->ppStmt,
+                                            &ppStmt,
                                             NULL ) ) {
-            delete pq;
-            return NULL;
+        return false;
+    }
+    
+    while ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
+        
+        varname.FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NAME ) );
+        if ( wxregex.Matches( varname ) ) {
+            nameArray.Add( varname );
         }
     }
-    else if ( VARIABLE_EXTERNAL == table ) {
-        varQuery *pq = new varQuery;
-        if ( pq != NULL ) return NULL;
-        pq->table = VARIABLE_EXTERNAL;
-        pq->stockId = 0;
-        pq->ppStmt = NULL;
 
-        char *psql = sqlite3_mprintf( "SELECT * FROM 'variableext' %s",
-                                        (const char *)search.mbc_str() );
+    sqlite3_finalize( ppStmt );
+
+
+    // Get variables from external table    
+    psql = "SELECT * FROM 'variableext'";
         
-        if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_external_variable,
+    if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_internal_variable,
                                             psql,
                                             -1,
-                                            &pq->ppStmt,
+                                            &ppStmt,
                                             NULL ) ) {
-            delete pq;
-            return NULL;
-        }
+        sqlite3_finalize( ppStmt );
+        return false;
     }
     
-    return pq;
+    while ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
+        
+        varname.FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NAME ) );
+        if ( wxregex.Matches( varname ) ) {
+            nameArray.Add( varname );
+        }
+    }
+
+    sqlite3_finalize( ppStmt );
+    
+    // Sort the array
+    nameArray.Sort();
+        
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5024,11 +5069,11 @@ bool CVariableStorage::listItem( varQuery *pq, CVSCPVariable& variable )
     // Must be a valid pointer
     if ( NULL == pq ) return false;
     
-    if ( VARIABLE_STOCK == pq->table  ) {
-        if ( pq->stockId >= m_StockVariable.Count() ) return false;
-        return getStockVariable( m_StockVariable[ pq->stockId ], variable );
-    }
-    else if ( VARIABLE_INTERNAL == pq->table  ) {
+    //if ( VARIABLE_STOCK == pq->table  ) {
+    //    if ( pq->stockId >= m_StockVariable.Count() ) return false;
+    //    return getStockVariable( m_StockVariable[ pq->stockId ], variable );
+    //}
+    if ( VARIABLE_INTERNAL == pq->table  ) {
         if ( SQLITE_ROW != sqlite3_step( pq->ppStmt ) ) return false; 
         variable.setID( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_ID ) );
         variable.m_lastChanged.ParseDateTime( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_LASTCHANGE ) );

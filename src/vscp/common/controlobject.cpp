@@ -1,4 +1,4 @@
-// ControlObject.cpp: implementation of the CControlObject class.
+// ControlObject.cpp: m_path_db_vscp_logimplementation of the CControlObject class.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -265,23 +265,15 @@ CControlObject::CControlObject()
 #else
     m_path_db_vscp_data.SetName( _("/srv/vsc/vscp_data.sqlite3") );
 #endif
-
-
-/*  Done in dm.cpp
-#ifdef WIN32
-    m_dm.m_path_db_vscp_dm.SetName( wxStandardPaths::Get().GetConfigDir() +
-                                            _("/vscp/vscp_dm.sqlite3") );
-#else
-    m_dm.m_path_db_vscp_dm.SetName( _("/srv/vscp/vscp_dm.sqlite3") );
-#endif
-*/    
+ 
     
 #ifdef WIN32
     m_path_db_vscp_log.SetName( wxStandardPaths::Get().GetConfigDir() +
                                             _("/vscp/vscp_log.sqlite3") );
 #else
     m_path_db_vscp_log.SetName( _("/srv/vscp/vscp_log.sqlite3") );
-#endif    
+#endif   
+        
 
     // No databases opened yet
     m_db_vscp_daemon = NULL;
@@ -718,7 +710,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
         if ( m_path_db_vscp_log.IsOk() ) {
             // We need to create the database from scratch. This may not work if
             // the database is in a read only location.
-            fprintf( stderr, "VSCP Daemon log database does not exist - will be created.\n" );
+            fprintf( stderr, "VSCP Daemon logging database does not exist - will be created.\n" );
             str.Printf(_("Path=%s\n"), m_path_db_vscp_log.GetFullPath().mbc_str() );
             fprintf( stderr, str.mbc_str() );
             
@@ -729,12 +721,14 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
             }
         }
         else {
-            fprintf( stderr, "VSCP Daemon configuration database path invalid - will not be used.\n" );
+            fprintf( stderr, "VSCP Daemon logging database path invalid - will not be used.\n" );
             str.Printf(_("Path=%s\n"), m_path_db_vscp_log.GetFullPath().mbc_str() );
             fprintf( stderr, str.mbc_str() );
         }
 
     }
+    
+    
     
     // * * * VSCP Daemon data database - NEVER created * * *
 
@@ -3845,6 +3839,8 @@ bool CControlObject::updateConfigurationRecordItem( const wxString& strUpdateFie
 }
 
 
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // doCreateLogTable
 //
@@ -3878,6 +3874,8 @@ bool CControlObject::doCreateLogTable( void )
     
     return true;
 }
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // doCreateUserTable

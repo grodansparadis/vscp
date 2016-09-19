@@ -407,10 +407,9 @@ public:
     /*!
      * Create log database
      * @return true on success
-     * @return true on success
      */
     bool doCreateLogTable( void );
-     
+    
     /*!
      * Create user table
      */
@@ -490,7 +489,7 @@ public:
     // Password is MD5 hash over "username:vscptoken:password"
     wxString m_admin_user;      // Defaults to "admin"
     wxString m_admin_password;  // Defaults to "13ca88de01ce06e377f74e61c23f630b"
-    wxString m_admin_allowfrom; // Remotes allowe to connect. Defaults to "*"
+    wxString m_admin_allowfrom; // Remotes allowed to connect. Defaults to "*"
     wxString m_vscp_token;      // Defaults to "Stay Hungry. Stay Foolish."
     
 
@@ -650,6 +649,7 @@ public:
     
     wxFileName m_path_db_vscp_log;      // Path to the VSCP log database
     sqlite3 *m_db_vscp_log;
+    
 
     /*!
         Event source for NT event reporting

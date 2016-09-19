@@ -278,7 +278,7 @@
 
 
 //*****************************************************************************
-//                                GUID (Discovery)
+//                                GUID (Discovery)    . DB:discovery
 //*****************************************************************************
 
 /*
@@ -352,11 +352,11 @@
         ");"
 
 #define VSCPDB_ORDINAL_LOCATION_ID                  0   //            
-#define VSCPDB_ORDINAL_LOCATION_LINK_TO_ZONE        0   //
-#define VSCPDB_ORDINAL_LOCATION_LINK_TO_SUBZONE     0   //
-#define VSCPDB_ORDINAL_LOCATION_LINK_TO_GUID        0   //
-#define VSCPDB_ORDINAL_LOCATION_NAME                0   //
-#define VSCPDB_ORDINAL_LOCATION_DESCRIPTION         0   //                
+#define VSCPDB_ORDINAL_LOCATION_LINK_TO_ZONE        1   //
+#define VSCPDB_ORDINAL_LOCATION_LINK_TO_SUBZONE     2   //
+#define VSCPDB_ORDINAL_LOCATION_LINK_TO_GUID        3   //
+#define VSCPDB_ORDINAL_LOCATION_NAME                4   //
+#define VSCPDB_ORDINAL_LOCATION_DESCRIPTION         5   //                
                 
                 
 //*****************************************************************************
@@ -380,12 +380,12 @@
         "`guid`         TEXT DEFAULT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00'"\
         ");"
                 
-#define VSCPDB_ORDINAL_MDF_CACHE_ID                 0   //  
+#define VSCPDB_ORDINAL_MDF_CACHE_ID                 0   //
 #define VSCPDB_ORDINAL_MDF_CACHE_URL                1   //
 #define VSCPDB_ORDINAL_MDF_CACHE_FILE_PATH          2   //
 #define VSCPDB_ORDINAL_MDF_CACHE_PICTURE_PATH       3   //
 #define VSCPDB_ORDINAL_MDF_CACHE_DATE               4   //
-#define VSCPDB_ORDINAL_MDF_CACHE_GUID               5   //                
+#define VSCPDB_ORDINAL_MDF_CACHE_GUID               5   //
 
 //*****************************************************************************
 //                               SIMPLEUI

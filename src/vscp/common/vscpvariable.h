@@ -32,8 +32,8 @@
 #include <wx/tokenzr.h>
 #include <sqlite3.h>
 #include <guid.h>
-#include "variablecodes.h"
-#include "vscphelper.h"
+#include <variablecodes.h>
+#include <vscphelper.h>
 
 #define VAR_MAXBUF_SIZE         0x10000     // Size for variable strings etc
 
@@ -81,6 +81,7 @@ class wxFFileOutputStream;
  * Structure used for multi call variable
  * queries. 
  */
+
 struct varQuery {
     uint8_t table;          // Table type    
     uint32_t stockId;       // ID for next stock variable to return
@@ -101,25 +102,7 @@ public:
 
     // Destructor
     virtual ~CVSCPVariable(void);
-    
-    /*!
-     * setRights
-     * Set rights for the variable. Can be set either on numerical form or
-     * alphanumerical form.
-     * uuugggooo
-     * uuu - owner RWX/numerical
-     * ggg - group RWX/numerical
-     * ooo - other RWX/numerical
-     */
-    bool setRighs( wxString& strRights );
 
-    /*!
-     * setUser
-     */
-    bool setUser( uint32_t userid ) { m_userid = userid; return true; }
-    bool setUser( wxString& strUser );
-    
-    
     /*!
         Get variable type as string
         @param type Variable numerical type
@@ -163,9 +146,20 @@ public:
      */
     bool getVariableFromString( const wxString& strVariable, bool bBase64=false );
 
+    /*!
+     * Get string content as semicolon separated string form.
+     * @param bShort
+     * If bShort is true
+     *    name;type;userid;rights;lastchanged;bPersistent
+     * is returned. If not
+     *    name;type;userid;rights;lastchanged;bPersistent;note;value
+     * is returned.
+     * @return Variable content in semicolon separated form. 
+     */
+    wxString getAsString( bool bShort=true );
 
     /*!
-        Reset 
+        Reset the variable to it's default value
         Set variable to default values
      */
     void Reset(void);
@@ -296,6 +290,25 @@ public:
         @param val Date + time in ISO format.
      */
     void setValue( wxDateTime& val );
+    
+    
+    /*!
+     * setRights
+     * Set rights for the variable. Can be set either on numerical form or
+     * alphanumerical form.
+     * uuugggooo
+     * uuu - owner RWX/numerical
+     * ggg - group RWX/numerical
+     * ooo - other RWX/numerical
+     */
+    bool setRighs( wxString& strRights );
+
+    /*!
+     * setUser
+     */
+    bool setUser( uint32_t userid ) { m_userid = userid; return true; }
+    bool setUser( wxString& strUser );
+    
 
     /*!
         Change last change date time to now
@@ -376,7 +389,7 @@ private:
     // User this variable is owned by
     uint32_t m_userid;
         
-    /// Note about variable
+    /// Note about variable (always coded in BASE64)
     wxString m_note;
     
     /*! 
@@ -386,7 +399,7 @@ private:
         A "GUID" variable is stored in the VSCP event.
         A VSCP data variables s stored in the VSCP event.
      */
-    wxString m_strValue;            // String
+    wxString m_strValue;
     
     // True if this is a stock variable
     bool m_bStock;
@@ -583,12 +596,14 @@ public:
      
     /*!
      * Prepare list functionality. Must be called before any of the other
-     * list methods
-     * @param table Select list (only one can be selected)
-     * @param search Search and ordering criteria.
-     * @return List handle on success, NULL on failure.
+     * list methods.
+     * @param search Regular expression to use for names of variables.
+     * @param nameArray String array that will receive sorted array with variables
+     *                  names that meet regular expression.
+     * @return Returns true on success
      */
-    varQuery *listPrepare( const uint8_t table, const wxString& search );
+    bool getVarlistFromRegExp( const wxString& regex, 
+                                   wxArrayString& nameArray );
     
     /*!
      * Get next list item
@@ -624,7 +639,7 @@ public:
     wxDateTime m_lastSaveTime;
     
     // Stock variables names
-    wxArrayString m_StockVariable;
+    //wxArrayString m_StockVariable;
 };
 
 
