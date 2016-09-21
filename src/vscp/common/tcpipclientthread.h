@@ -285,57 +285,109 @@ public:
 
     /*!
         Client VARIABLE command
+        @param conn Connection handler.
+        @param pCtrlObject Pointer to control object
     */
     void handleClientVariable( struct mg_connection *conn, CControlObject *pCtrlObject );
 
     /*!
         Variable List
+        @param conn Connection handler.
+        @param pCtrlObject Pointer to control object
     */
     void handleVariable_List( struct mg_connection *conn, CControlObject *pCtrlObject );
 
     /*!
         Variable Write
+        @param conn Connection handler.
+        @param pCtrlObject Pointer to control object
     */
     void handleVariable_Write( struct mg_connection *conn, CControlObject *pCtrlObject );
+    
+    /*!
+        Variable Write value
+        @param conn Connection handler.
+        @param pCtrlObject Pointer to control object
+    */
+    void handleVariable_WriteValue( struct mg_connection *conn, CControlObject *pCtrlObject );
+    
+    /*!
+        Variable Write note
+        @param conn Connection handler.
+        @param pCtrlObject Pointer to control object
+    */
+    void handleVariable_WriteNote( struct mg_connection *conn, CControlObject *pCtrlObject );
 
     /*!
         Variable Read
+        @param conn Connection handler.
+        @param pCtrlObject Pointer to control object
         @param bOKResponse OK response will be given if true (default).
     */
     void handleVariable_Read( struct mg_connection *conn, CControlObject *pCtrlObject, bool bOKResponse = true );
+    
+    /*!
+        Variable Read value
+        @param conn Connection handler.
+        @param pCtrlObject Pointer to control object
+        @param bOKResponse OK response will be given if true (default).
+    */
+    void handleVariable_ReadValue( struct mg_connection *conn, CControlObject *pCtrlObject, bool bOKResponse = true );
 
     /*!
+        Variable Read note
+        @param conn Connection handler.
+        @param pCtrlObject Pointer to control object
+        @param bOKResponse OK response will be given if true (default).
+    */
+    void handleVariable_ReadNote( struct mg_connection *conn, CControlObject *pCtrlObject, bool bOKResponse = true );
+    
+    /*!
         Variable ReadReset
+        @param conn Connection handler.
+        @param pCtrlObject Pointer to control object
     */
     void handleVariable_ReadReset( struct mg_connection *conn, CControlObject *pCtrlObject );
 
     /*!
         Variable Write
+        @param conn Connection handler.
+        @param pCtrlObject Pointer to control object
     */
     void handleVariable_Reset( struct mg_connection *conn, CControlObject *pCtrlObject );
 
     /*!
         Variable Remove
+        @param conn Connection handler.
+        @param pCtrlObject Pointer to control object
     */
     void handleVariable_Remove( struct mg_connection *conn, CControlObject *pCtrlObject );
 
     /*!
-        Variable Read/remove
+        Variable Read + remove
+        @param conn Connection handler.
+        @param pCtrlObject Pointer to control object
     */
     void handleVariable_ReadRemove( struct mg_connection *conn, CControlObject *pCtrlObject );
 
     /*!
         Variable Length
+        @param conn Connection handler.
+        @param pCtrlObject Pointer to control object
     */
     void handleVariable_Length( struct mg_connection *conn, CControlObject *pCtrlObject );
 
     /*!
         Variable Load
+        @param conn Connection handler.
+        @param pCtrlObject Pointer to control object
     */
     void handleVariable_Load( struct mg_connection *conn, CControlObject *pCtrlObject );
 
     /*!
         Variable Save
+        @param conn Connection handler.
+        @param pCtrlObject Pointer to control object
     */
     void handleVariable_Save( struct mg_connection *conn, CControlObject *pCtrlObject );
 

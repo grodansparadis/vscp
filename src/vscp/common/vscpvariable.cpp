@@ -68,7 +68,7 @@ CVSCPVariable::CVSCPVariable( void )
     m_type = VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED;
     m_bPersistent = false;                  // Not persistent by default
     m_accessRights = PERMISSON_OWNER_ALL;   // Owner can do everything. 
-    m_userid = USER_ADMIN;                  // Admin owns variable by default
+    m_userid = USER_ID_ADMIN;               // Admin owns variable by default
     m_lastChanged = wxDateTime::Now();
     
     m_strValue.Empty();
@@ -361,22 +361,34 @@ wxString CVSCPVariable::getAsString( bool bShort )
     
     wxstr = m_name;
     wxstr += _(";");
-    wxstr += wxString::Format(_("%d"), m_type );
+    wxstr += wxString::Format(_("%u"), (unsigned short)m_type );
     wxstr += _(";");
-    wxstr += wxString::Format(_("%lu"), m_userid );
+    wxstr += wxString::Format(_("%lu"), (unsigned long)m_userid );
     wxstr += _(";");
-    wxstr += wxString::Format(_("%lu"), m_accessRights );
+    wxstr += wxString::Format(_("%lu"), (unsigned long)m_accessRights );
     wxstr += _(";");
     wxstr += m_bPersistent ? _("true") : _("false");
     wxstr += _(";");
     wxstr += m_lastChanged.FormatISOCombined();
     
     // Long format can be dangerous as it can give **VERY** long lines.
-    if ( !bShort ) {        
-        wxstr += _(";");
-        wxstr += m_strValue;
-        wxstr += _(";");
-        wxstr += m_note;
+    if ( !bShort ) { 
+        if ( 1 == m_type || 16 == m_type || 
+                100 == m_type || 101 == m_type || 102 == m_type ||   
+                200 == m_type || 201 == m_type || 
+                300 == m_type || 
+                500 == m_type || 501 == m_type || 502 == m_type || 503 == m_type ) {
+            wxstr += _(";");
+            wxstr += wxBase64Encode( m_strValue, m_strValue.Length() );
+            wxstr += _(";");
+            wxstr += wxBase64Encode( m_note, m_note.Length() );
+        }
+        else {
+            wxstr += _(";");
+            wxstr += m_strValue;
+            wxstr += _(";");
+            wxstr += wxBase64Encode( m_note, m_note.Length() );
+        }
     }
     
     return wxstr;
@@ -391,8 +403,14 @@ void CVSCPVariable::setName( const wxString& strName )
     wxString str = strName;
     str.Trim( false );
     str.Trim( true );
+    
+    if ( 0 == str.Length() ) {
+        // Name can't be null
+        gpctrlObj->logMsg( wxString::Format( _("Setting variable name: Variable name can't be empty.\n") ) );
+        return;
+    }
+    
     m_name = str= strName.Upper();
-
     fixName();
 
 }
@@ -447,42 +465,43 @@ bool CVSCPVariable::setRighs( wxString& strRights )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// setUser
+// setUserId
 //
 
-bool CVSCPVariable::setUser( wxString& strUser )
+bool CVSCPVariable::setUserId( uint32_t userid )
 {
-    sqlite3 *db;
-    sqlite3_stmt *ppStmt;
-    char *pErrMsg = 0;
-    char psql[ 512 ];
-    
-    sprintf( psql,
-                "SELECT * FROM 'user' where username='%s'", 
-                (const char *)strUser.mbc_str() );
-    
-    if ( SQLITE_OK != sqlite3_open( gpctrlObj->m_path_db_vscp_daemon.GetFullPath().mbc_str(),
-                                            &db ) ) {
-        return false;
+    // Check for admin user
+    if ( 0 == userid ) {
+        m_userid = USER_ID_ADMIN;
+        return true;
     }
     
-    if ( SQLITE_OK != sqlite3_prepare( db,
-                                        psql,
-                                        -1,
-                                        &ppStmt,
-                                        NULL ) ) {
-        sqlite3_close( db );
-        return false;
+    // Check if id is defined
+    if ( !CUserItem::isUserInDB( userid ) ) return false;
+    
+    // Assign userid    
+    m_userid = userid;
+    
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setUserIdFromUserName
+//
+
+bool CVSCPVariable::setUserIdFromUserName( wxString& strUser )
+{
+    long userid;
+    
+    // Check for admin user
+    if ( gpctrlObj->m_admin_user == strUser.Upper() ) {
+        m_userid = USER_ID_ADMIN;
+        return true;
     }
     
-    // Get the result
-    if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
-        m_userid = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_USER_ID );
-    }
+    if ( !CUserItem::isUserInDB( strUser, &userid ) ) return false;
     
-    sqlite3_finalize( ppStmt );
-    
-    sqlite3_close( db );
+    m_userid = userid;
     
     return true;
 }
@@ -491,7 +510,7 @@ bool CVSCPVariable::setUser( wxString& strUser )
 // writeValueToString
 //
 
-bool CVSCPVariable::writeValueToString( wxString& strValueOut, bool bBase64 )
+void CVSCPVariable::writeValueToString( wxString& strValueOut, bool bBase64 )
 {
     wxString str = wxT("");
     switch ( m_type ) { 
@@ -651,8 +670,6 @@ bool CVSCPVariable::writeValueToString( wxString& strValueOut, bool bBase64 )
             strValueOut.Printf(_("UNKNOWN"));
             break;
     }
-
-    return true;
 
 }
 
@@ -1142,14 +1159,12 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
 ///////////////////////////////////////////////////////////////////////////////
 // getVariableFromString
 //
-// Format is: "variable name","type","persistence","rights", "user","value"
+// Format is: "variable name","type","persistence","user","rights","value","note"
+//
 
 bool CVSCPVariable::getVariableFromString( const wxString& strVariable, bool bBase64 )
 {
-    wxString strName;               // Name of variable
-    wxString strValue;              // Variable value
-    wxString strRights;             // User rights for variable
-    wxString strUser;               // Owner of variable
+    wxString strRights;             // User rights for variable               
     int      typeVariable;          // Type of variable;
     bool     bPersistent = false;   // Persistence of variable
     bool     brw = true;            // Writable    
@@ -1159,35 +1174,61 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable, bool bBa
 
     wxStringTokenizer tkz( strVariable, _(";") );
 
-    // Get name of variable
+    // Name
     if ( tkz.HasMoreTokens() ) {
-        strName = tkz.GetNextToken();
+        wxString str = tkz.GetNextToken();
+        str.Trim();
+        if ( str.Length() ) setName( tkz.GetNextToken() );
     }
     else {
         return false;	
     }
 
-    // Get the type of the variable
+    // Type
     if ( tkz.HasMoreTokens() ) {
-        typeVariable = CVSCPVariable::getVariableTypeFromString( tkz.GetNextToken() );
+        getVariableTypeFromString( tkz.GetNextToken() );
     }
     else {
         return false;
     }
 
-    // Get the persistence of the variable
+    // Persistence
     if ( tkz.HasMoreTokens() ) {
         wxString str = tkz.GetNextToken();
         str = str.Upper();
-        if ( wxNOT_FOUND != str.Find( _("TRUE") ) ) {
-            bPersistent = true;
+        str.Trim();
+        if ( str.Length() ) {
+            if ( wxNOT_FOUND != str.Find( _("TRUE") ) ) {
+                setPersistent( true );
+            }
+            else {
+                setPersistent( false );
+            }
         }
     }
     else {
         return false;
     }
     
-    // Get rights for the variable
+    // User - Numeric or by name
+    if ( tkz.HasMoreTokens() ) {
+        unsigned long userid = 0;
+        wxString str = tkz.GetNextToken();
+        str.Trim();
+        if ( str.Length() ) {
+            if ( str.ToULong( &userid ) ) {
+                setUserId( userid );
+            }
+            else {
+                setUserIdFromUserName( str );
+            }
+        }
+    }
+    else {
+        return false;
+    }
+    
+    // Access rights
     // uuugggooo
     // uuu - owner RWX/numerical
     // ggg - group RWX/numerical
@@ -1200,32 +1241,22 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable, bool bBa
         return false;
     }
     
-    // Get owner of the variable
-    // Numeric or by name
+    
+    
+    // Get the value of the variable
     if ( tkz.HasMoreTokens() ) {
-        wxString str = tkz.GetNextToken();
-        strUser = str.Upper();
+        setValueFromString( typeVariable, tkz.GetNextToken(), bBase64 );
     }
     else {
         return false;
     }
     
+    // Get the note (if any)
     // Get the value of the variable
     if ( tkz.HasMoreTokens() ) {
-        strValue = tkz.GetNextToken();
+        setNote( tkz.GetNextToken() );
     }
-    else {
-        return false;
-    }
-
-    // Set values
-    m_type = typeVariable;
-    m_bPersistent = bPersistent;
-    setName( strName );
-    setRighs( strRights );
-    setUser( strUser );
-    setValueFromString( typeVariable, strValue, bBase64 );
-
+    
     return true;
 
 }
@@ -1582,7 +1613,7 @@ bool CVariableStorage::init( void )
     variable.setID( ID_NON_PERSISTENT );
     variable.setStockVariable( true );
     variable.setPersistent( false );
-    variable.setUser( USER_ADMIN );
+    variable.setUserId( USER_ID_ADMIN );
     variable.setLastChangedToNow();
     variable.setNote(_(""));
     
@@ -4728,6 +4759,12 @@ bool CVariableStorage::add( CVSCPVariable& var )
     uint32_t id = 0;
     char *zErrMsg = 0;
     
+    // Must have a valid name
+    if ( 0 == var.getName().Length() ) {
+        gpctrlObj->logMsg( wxString::Format( _("Add variable: Variable name can't be empty.\n") ) );
+        return false;
+    }
+    
     // Update last changed timestamp
     var.setLastChangedToNow();
     
@@ -4751,6 +4788,7 @@ bool CVariableStorage::add( CVSCPVariable& var )
         if (SQLITE_OK != sqlite3_exec( var.isPersistent() ? m_db_vscp_external_variable : m_db_vscp_internal_variable, 
                                             sql, NULL, NULL, &zErrMsg)) {
             sqlite3_free(sql);
+            gpctrlObj->logMsg( wxString::Format( _("Add variable: Unable to add variable. [%s]\n"), sql ) );
             return false;
         }
 
@@ -4954,6 +4992,7 @@ bool CVariableStorage::load( const wxString& path  )
             gpctrlObj->logMsg(_("Failed to load variable XML file from standard XML path.\n") );
             return false;
         }
+        
     }
     else {
         
@@ -4977,7 +5016,7 @@ bool CVariableStorage::load( const wxString& path  )
     wxXmlNode *child = doc.GetRoot()->GetChildren();
     while (child) {
 
-        if (child->GetName() == wxT("variable")) {
+        if ( child->GetName() == wxT("variable") ) {
 
             CVSCPVariable variable;
 
@@ -5009,12 +5048,7 @@ bool CVariableStorage::load( const wxString& path  )
             wxstr = child->GetAttribute( wxT("name"), wxT("") );
             wxstr.MakeUpper();
             wxstr.Trim();
-            wxstr.Trim(false);
-            if ( 0 == wxstr.Length() ) {
-                // Name can't be null
-                gpctrlObj->logMsg( wxString::Format( _("Loading XML file: Variable name can't be empty.\n") ) );                
-                continue;
-            }
+            wxstr.Trim( false );
             variable.setName( wxstr );
             
             // value
@@ -5032,11 +5066,6 @@ bool CVariableStorage::load( const wxString& path  )
                     wxString strName = subchild->GetNodeContent();
                     strName.Trim();
                     strName.Trim(false);
-                    if ( 0 == wxstr.Length() ) {
-                        // Name can't be null
-                        gpctrlObj->logMsg( wxString::Format( _("Loading XML file: Variable name can't be empty.\n") ) );                
-                        continue;
-                    }
                     variable.setName( strName );
                 }
                 else if (subchild->GetName() == wxT("value")) {
@@ -5052,12 +5081,12 @@ bool CVariableStorage::load( const wxString& path  )
 
             // Add the variable
             if ( add( variable ) ) {
-                gpctrlObj->logMsg( wxString::Format( _("Loading XML file: Saved variable %s.\n"),
+                gpctrlObj->logMsg( wxString::Format( _("Loading XML file: Added variable %s.\n"),
                                         (const char *)variable.getName().mbc_str() ),
                                         DAEMON_LOGMSG_DEBUG );
             }
             else {
-                gpctrlObj->logMsg( wxString::Format( _("Loading XML file: Failed to save variable %s.\n"),
+                gpctrlObj->logMsg( wxString::Format( _("Loading XML file: Failed to add variable %s.\n"),
                                         (const char *)variable.getName().mbc_str() ) );
             }
 

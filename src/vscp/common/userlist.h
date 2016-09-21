@@ -181,13 +181,20 @@ public:
     bool saveToDatabase( void );
     
     /*!
-     * Check if a user is defined available in the db
+     * Check if a user is with a specific userid is available in the db
+     * @param userid userid to look for
+     * @return true on success
+     */
+    static bool isUserInDB(const unsigned long userid );
+    
+    /*!
+     * Check if a user is with a specific username is available in the db
      * @param user username to look for.
      * @param pid  Optional Pointer to integer that receives id for the record if
      *              the user is found.
      * @return true on success
      */
-    bool isUserInDB(const wxString& user, long *pid = NULL );
+    static bool isUserInDB(const wxString& user, long *pid = NULL );
     
     bool checkPassword( const wxString& md5password ) { return (getPassword().IsSameAs( md5password ) ? true : false); };
     

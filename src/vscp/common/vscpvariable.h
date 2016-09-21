@@ -63,7 +63,7 @@
 #define PERMISSON_ALL_RIGHTS    0x777
 #define PERMISSON_NO_RIGHTS     0x000
 
-#define USER_ADMIN              0x00
+#define USER_ID_ADMIN           0x00
 
 #define ID_NON_PERSISTENT       0x00
 
@@ -133,16 +133,15 @@ public:
         @param str String that will get string representation of variable.
         @param  bBase64 If true strings are encoded in BASE64
      */
-    bool writeValueToString( wxString& strValue, bool bBase64=false );
+    void writeValueToString( wxString& strValue, bool bBase64=false );
 
     /*!
         Get variable information as a string value
-        Format is: "variable name",type,"persistence","value"
-        example 1: test_int,3,true,24000
-        example 2: test_string,1,true,"This is a string"
-        example 3: test_event,7,false,0,20,1,2,3,4,5,6
-
+        Format is: "variable name","type","persistence","user","rights","value","note"
+        User can be numeric (userid) or given as a username. It is valid to leave all fields
+        blank ";;" except for variablename
         @param str String that will get string representation of variable with all info.
+        @return true if the sting could be parsed correctly
      */
     bool getVariableFromString( const wxString& strVariable, bool bBase64=false );
 
@@ -150,9 +149,9 @@ public:
      * Get string content as semicolon separated string form.
      * @param bShort
      * If bShort is true
-     *    name;type;userid;rights;lastchanged;bPersistent
+     *    name;type;bPersistent;userid;rights;lastchanged
      * is returned. If not
-     *    name;type;userid;rights;lastchanged;bPersistent;value;note
+     *    name;type;bPersistent;userid;rights;lastchanged;value;note
      * is returned.
      * @return Variable content in semicolon separated form. 
      */
@@ -306,9 +305,9 @@ public:
     /*!
      * setUser
      */
-    bool setUser( uint32_t userid ) { m_userid = userid; return true; }
-    bool setUser( wxString& strUser );
-    
+    bool setUserId( uint32_t userid );
+    bool setUserIdFromUserName( wxString& strUser );
+    bool setUserIdFromClient( uint32_t userid );
 
     /*!
         Change last change date time to now
@@ -341,7 +340,7 @@ public:
     
     // name
     void setName( wxString& name ) { m_name = name; fixName(); };
-    wxString& getName( void ) { return m_name.MakeUpper(); };
+    wxString getName( void ) { return m_name.MakeUpper(); };
     
     // type
     void setType( uint16_t type ) { m_type = type; };
@@ -349,7 +348,7 @@ public:
 
     // note
     void setNote(const wxString& strNote) { m_note = strNote; };
-    wxString& getNote( void ) { return m_note; };
+    wxString getNote( void ) { return m_note; };
     
     // Persistence
     bool isPersistent( void ) { return m_bPersistent; };
@@ -527,7 +526,7 @@ public:
     bool add(const wxString& name,
                     const wxString& value,
                     const uint8_t type = VSCP_DAEMON_VARIABLE_CODE_STRING,
-                    const uint32_t userid = USER_ADMIN,
+                    const uint32_t userid = USER_ID_ADMIN,
                     const bool bPersistent = false,
                     const uint32_t accessRights = PERMISSON_OWNER_ALL );
 
@@ -535,7 +534,7 @@ public:
     bool add(const wxString& name,
                             const wxString& value,
                             const wxString& strType, 
-                            const uint32_t userid = USER_ADMIN,
+                            const uint32_t userid = USER_ID_ADMIN,
                             const bool bPersistent = false,
                             const uint32_t accessRights = PERMISSON_OWNER_ALL);
 

@@ -237,6 +237,8 @@
 
 #define VSCPDB_USER_CHECK_USER "SELECT idx_user from 'user' WHERE username='%s'"
 
+#define VSCPDB_USER_CHECK_USER_ID "SELECT username FROM 'user' where idx_user='%lu'"
+
 #define VSCPDB_ORDINAL_USER_ID                      0   // 
 #define VSCPDB_ORDINAL_USER_USERNAME                1   // 
 #define VSCPDB_ORDINAL_USER_PASSWORD                2   // 

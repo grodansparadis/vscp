@@ -2093,8 +2093,8 @@ void VSCPClientThread::handleClientVariable( struct mg_connection *conn,
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    m_pCtrlObject->logMsg ( pClientItem->m_currentCommandUC + _("\n"),
-                                DAEMON_LOGMSG_NORMAL );
+    //m_pCtrlObject->logMsg ( pClientItem->m_currentCommandUC + _("\n"),
+    //                            DAEMON_LOGMSG_DEBUG );
 
     pClientItem->m_currentCommandUC =
         pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-9 );    // remove "VARIABLE "
@@ -2115,8 +2115,20 @@ void VSCPClientThread::handleClientVariable( struct mg_connection *conn,
     else if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "WRITE " ) ) )   {
         handleVariable_Write( conn, pCtrlObject );
     }
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "WRITEVALUE " ) ) )   {
+        handleVariable_WriteValue( conn, pCtrlObject );
+    }
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "WRITENOTE " ) ) )   {
+        handleVariable_WriteNote( conn, pCtrlObject );
+    }
     else if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "READ " ) ) )    {
         handleVariable_Read( conn, pCtrlObject );
+    }
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "READVALUE " ) ) )   {
+        handleVariable_ReadValue( conn, pCtrlObject );
+    }
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "READNOTE " ) ) )   {
+        handleVariable_ReadNote( conn, pCtrlObject );
     }
     else if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "READRESET " ) ) )   {
         handleVariable_ReadReset( conn, pCtrlObject );
@@ -2147,11 +2159,8 @@ void VSCPClientThread::handleClientVariable( struct mg_connection *conn,
 ///////////////////////////////////////////////////////////////////////////////
 // handleVariable_List
 //
-// variable list all    - List all variables.
-// variable list *      - List all variables.
-// variable list        - List all variables.
-// variable list name   - List variable with name 'name'.
-// variable list name*  - Name with wildcard.
+// variable list - List all variables.
+// variable list test - List all variables with "test" in there name
 //
 
 void VSCPClientThread::handleVariable_List( struct mg_connection *conn,
@@ -2229,7 +2238,7 @@ void VSCPClientThread::handleVariable_Write( struct mg_connection *conn,
     bool bPersistence = false;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    m_pCtrlObject->logMsg( pClientItem->m_currentCommandUC, DAEMON_LOGMSG_NORMAL );
+    //m_pCtrlObject->logMsg( pClientItem->m_currentCommandUC, DAEMON_LOGMSG_DEBUG );
 
     pClientItem->m_currentCommand =
         pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length() - 6 ); // remove "WRITE "
@@ -2248,7 +2257,7 @@ void VSCPClientThread::handleVariable_Write( struct mg_connection *conn,
         return;
     }
 
-    // type - string default. can be numerical r string
+    // type - string default. Can be numerical string
     if ( tkz.HasMoreTokens() ) {
         strType = tkz.GetNextToken();
         strType.Trim();
@@ -2293,11 +2302,32 @@ void VSCPClientThread::handleVariable_Write( struct mg_connection *conn,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// handleVariable_WriteValue
+//
+
+void VSCPClientThread::handleVariable_WriteValue( struct mg_connection *conn,
+                                                    CControlObject *pCtrlObject )
+{
+    
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// handleVariable_WriteNote
+//
+
+void VSCPClientThread::handleVariable_WriteNote( struct mg_connection *conn,
+                                                    CControlObject *pCtrlObject )
+{
+    
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // handleVariable_Read
 //
 
 void VSCPClientThread::handleVariable_Read( struct mg_connection *conn,
-                                                CControlObject *pCtrlObject, bool bOKResponse )
+                                                CControlObject *pCtrlObject, 
+                                                bool bOKResponse )
 {
     wxString str;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -2307,19 +2337,82 @@ void VSCPClientThread::handleVariable_Read( struct mg_connection *conn,
     pClientItem->m_currentCommandUC.Trim( false );
     pClientItem->m_currentCommandUC.Trim( true );
 
-    CVSCPVariable * pVariable;
+    CVSCPVariable variable;
+    if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommandUC,variable ) ) {
+        
+        str = variable.getAsString( false );
+        str = _("+OK - ") + str + _("\r\n");
+        mg_send( conn,  str.mbc_str(), strlen( str.mbc_str() ) );
 
-/* TODO    
-    if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommandUC ) ) ) {
-        mg_send( conn, MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
-        return;
+        mg_send( conn, MSG_OK, strlen ( MSG_OK ) );
+        
     }
-*/
-    pVariable->writeValueToString( str );
-    str += _("\r\n");
-    mg_send( conn,  str.ToAscii(), strlen( str.ToAscii() ) );
+    else {
+        mg_send( conn, MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
+    }
+    
+}
 
-    mg_send( conn, MSG_OK, strlen ( MSG_OK ) );
+///////////////////////////////////////////////////////////////////////////////
+// handleVariable_ReadVal
+//
+
+void VSCPClientThread::handleVariable_ReadValue( struct mg_connection *conn,
+                                                    CControlObject *pCtrlObject, 
+                                                    bool bOKResponse )
+{
+    wxString str;
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
+
+    pClientItem->m_currentCommandUC =
+        pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length() - 10 ); // remove "READVALUE "
+    pClientItem->m_currentCommandUC.Trim( false );
+    pClientItem->m_currentCommandUC.Trim( true );
+
+    CVSCPVariable variable;
+    if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommandUC,variable ) ) {
+        
+        variable.writeValueToString( str );
+        str = _("+OK - ") + str + _("\r\n");
+        mg_send( conn,  str.mbc_str(), strlen( str.mbc_str() ) );
+
+        mg_send( conn, MSG_OK, strlen ( MSG_OK ) );
+        
+    }
+    else {
+        mg_send( conn, MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
+    }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// handleVariable_ReadNote
+//
+
+void VSCPClientThread::handleVariable_ReadNote( struct mg_connection *conn,
+                                                CControlObject *pCtrlObject, bool bOKResponse )
+{
+    wxString str;
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
+
+    pClientItem->m_currentCommandUC =
+        pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length() - 10 ); // remove "READVALUE "
+    pClientItem->m_currentCommandUC.Trim( false );
+    pClientItem->m_currentCommandUC.Trim( true );
+
+    CVSCPVariable variable;
+    if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommandUC,variable ) ) {
+        
+        str = variable.getNote();
+        str = _("+OK - ") + str + _("\r\n");
+        mg_send( conn,  str.mbc_str(), strlen( str.mbc_str() ) );
+
+        mg_send( conn, MSG_OK, strlen ( MSG_OK ) );
+        
+    }
+    else {
+        mg_send( conn, MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

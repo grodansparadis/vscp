@@ -834,17 +834,26 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     
     // Open up the General logging file.
     if ( m_bLogGeneralEnable ) {
-        m_fileLogGeneral.Open( m_logGeneralFileName.GetFullPath(), wxFile::write_append );
+        if ( !m_fileLogGeneral.Open( m_logGeneralFileName.GetFullPath(), wxFile::write_append ) ) {
+            logMsg( wxString::Format(_("Could not open general log file. Path=%s\n"),
+                    (const char *)m_logGeneralFileName.GetFullPath() ) );
+        }
     }
 
     // Open up the Security logging file
     if ( m_bLogSecurityEnable ) {
-        m_fileLogSecurity.Open( m_logSecurityFileName.GetFullPath(), wxFile::write_append );
+        if ( !m_fileLogSecurity.Open( m_logSecurityFileName.GetFullPath(), wxFile::write_append ) ) {
+            logMsg( wxString::Format(_("Could not open security log file. Path=%s\n"),
+                    (const char *)m_logSecurityFileName.GetFullPath() ) );
+        }
     }
 
     // Open up the Access logging file
     if ( m_bLogAccessEnable ) {
-        m_fileLogAccess.Open( m_logAccessFileName.GetFullPath(), wxFile::write_append );
+        if ( !m_fileLogAccess.Open( m_logAccessFileName.GetFullPath(), wxFile::write_append ) ) {
+            logMsg( wxString::Format(_("Could not open access log file. Path=%s\n"),
+                    (const char *)m_logAccessFileName.GetFullPath() ) );
+        }
     }
 
     // Calculate sunset etc
@@ -1859,7 +1868,7 @@ bool CControlObject::getMacAddress( cguid& guid )
                                         s.ifr_addr.sa_data[ 2 ],
                                         s.ifr_addr.sa_data[ 3 ],
                                         s.ifr_addr.sa_data[ 4 ],
-                                        s.ifr_addr.sa_data[ 5 ] )  );
+                                        s.ifr_addr.sa_data[ 5 ] ), DAEMON_LOGMSG_DEBUG  );
 
         guid.setAt( 0, 0xff );
         guid.setAt( 1, 0xff );
@@ -2084,6 +2093,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                 }
                 else if (subchild->GetName() == wxT("generallogfile")) {
 
+                    wxFileName fileName;
                     wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
                     attribute.MakeLower();
                     if (attribute.IsSameAs(_("false"), false)) {
@@ -2092,20 +2102,13 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     else {
                         m_bLogGeneralEnable = true;
                     }
-                    
-                    // Old form
-                    wxFileName fileName;
-                    fileName.Assign( subchild->GetNodeContent() );
-                    if ( fileName.IsOk() ) {
-                        m_logGeneralFileName = fileName;
-                    }
-                    
+  
                     // New form
-                    attribute = subchild->GetAttribute(wxT("path"), wxT(""));
+                    attribute = subchild->GetAttribute( wxT("path"), wxT("/srv/vscp/logs/vscp_log_general") );
                                       
                     fileName.Assign( subchild->GetNodeContent() );
                     if ( fileName.IsOk() ) {
-                        m_logGeneralFileName = attribute;
+                        m_logGeneralFileName = fileName;
                     }
                     
                     // Write into settings database
@@ -2120,6 +2123,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                 }
                 else if (subchild->GetName() == wxT("securitylogfile")) {
 
+                    wxFileName fileName;
                     wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
                     attribute.MakeLower();
                     if (attribute.IsSameAs(_("false"), false)) {
@@ -2128,20 +2132,13 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     else {
                         m_bLogSecurityEnable = true;
                     }
-
-                    // Old form
-                    wxFileName fileName;
-                    fileName.Assign( subchild->GetNodeContent() );
-                    if ( fileName.IsOk() ) {
-                        m_logSecurityFileName = fileName;
-                    }
-                    
+ 
                     // New form
-                    attribute = subchild->GetAttribute(wxT("path"), wxT(""));
+                    attribute = subchild->GetAttribute(wxT("path"), wxT("/srv/vscp/logs/vscp_log_security"));
                                       
                     fileName.Assign( subchild->GetNodeContent() );
                     if ( fileName.IsOk() ) {
-                        m_logSecurityFileName = attribute;
+                        m_logSecurityFileName = fileName;
                     } 
                     
                     // Write into settings database
@@ -2156,6 +2153,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                 }
                 else if (subchild->GetName() == wxT("accesslogfile")) {
 
+                    wxFileName fileName;
                     wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
                     attribute.MakeLower();
                     if (attribute.IsSameAs(_("false"), false)) {
@@ -2165,18 +2163,12 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                         m_bLogAccessEnable = true;
                     }
 
-                    wxFileName fileName;
-                    fileName.Assign( subchild->GetNodeContent() );
-                    if ( fileName.IsOk() ) {
-                        m_logAccessFileName = fileName;
-                    }
-                    
                     // New form
-                    attribute = subchild->GetAttribute(wxT("path"), wxT(""));
+                    attribute = subchild->GetAttribute(wxT("path"), wxT("/srv/vscp/logs/vscp_log_access"));
                                       
                     fileName.Assign( subchild->GetNodeContent() );
                     if ( fileName.IsOk() ) {
-                        m_logAccessFileName = attribute;
+                        m_logAccessFileName = fileName;
                     } 
                     
                     // Write into settings database
@@ -2947,7 +2939,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
 
             wxXmlNode *subchild = child->GetChildren();
 
-            while (subchild) {
+            while ( subchild ) {
 
                 wxString strName;
                 wxString strConfig;
@@ -2956,7 +2948,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                 bool bEnabled = true;
                 bool bLevel2Driver = false;
 
-                if (subchild->GetName() == wxT("driver")) {
+                if ( subchild->GetName() == wxT("driver") ) {
 
                     wxXmlNode *subsubchild = subchild->GetChildren();
 
@@ -3306,7 +3298,7 @@ bool CControlObject::doCreateConfigurationTable( void )
     // Check if database is open
     if ( NULL == m_db_vscp_daemon ) return false;
     
-    m_configMutex.Lock();
+    m_db_vscp_configMutex.Lock();
     
     if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
         fprintf( stderr, 
@@ -3318,8 +3310,7 @@ bool CControlObject::doCreateConfigurationTable( void )
     fprintf( stderr, "Writing default database content..\n" );
 
     // Add default settings (set as defaults in SQL create expression))
-    psql = " INSERT INTO 'settings' (vscpd_dbversion)"
-            " VALUES ( 1 )";
+    psql = " INSERT INTO 'settings' (vscpd_dbversion) VALUES ( 1 )";
     if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
         fprintf( stderr, 
                     "Failed to insert default settings data with error %s.\n",
@@ -3327,7 +3318,7 @@ bool CControlObject::doCreateConfigurationTable( void )
         return false;
     }
     
-    m_configMutex.Unlock();
+    m_db_vscp_configMutex.Unlock();
     
     return true;
 }
@@ -3822,7 +3813,7 @@ bool CControlObject::updateConfigurationRecordItem( const wxString& strUpdateFie
         return false;
     }
     
-    m_configMutex.Lock();  
+    m_db_vscp_configMutex.Lock();  
     
     char *sql = sqlite3_mprintf( VSCPDB_CONFIG_UPDATE_ITEM, 
                                     (const char *)strUpdateField.mbc_str(),
@@ -3831,7 +3822,7 @@ bool CControlObject::updateConfigurationRecordItem( const wxString& strUpdateFie
     if ( SQLITE_OK != sqlite3_exec( m_db_vscp_daemon, 
                                             sql, NULL, NULL, &pErrMsg)) { 
         sqlite3_free( sql );
-        m_configMutex.Unlock();
+        m_db_vscp_configMutex.Unlock();
         fprintf( stderr, 
                     "Failed to update setting with error %s.\n", 
                     pErrMsg );
@@ -3840,7 +3831,7 @@ bool CControlObject::updateConfigurationRecordItem( const wxString& strUpdateFie
 
     sqlite3_free( sql );
     
-    m_configMutex.Unlock();
+    m_db_vscp_configMutex.Unlock();
     
     return true;
 }
@@ -3869,17 +3860,17 @@ bool CControlObject::doCreateLogTable( void )
         return false;
     }
     
-    m_configMutex.Lock();
+    m_db_vscp_configMutex.Lock();
     
     if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_log, psql, NULL, NULL, &pErrMsg ) ) {
         fprintf( stderr, 
                     "Failed to create VSCP log table with error %s.\n",
                     pErrMsg );
-        m_configMutex.Unlock();
+        m_db_vscp_configMutex.Unlock();
         return false;
     }
     
-    m_configMutex.Unlock();
+    m_db_vscp_configMutex.Unlock();
     
     return true;
 }
