@@ -189,8 +189,8 @@ public:
     
     /// Username given by user
     wxString m_UserName;
-
-    /// Password given by ysed
+    
+    /// Password given by user
     wxString m_Password;
 
     /// True if the credentials has been checked.

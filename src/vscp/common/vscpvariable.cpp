@@ -95,6 +95,8 @@ CVSCPVariable::~CVSCPVariable( void )
 
 void CVSCPVariable::fixName( void )
 {
+    m_name.Trim( false );
+    m_name.Trim( true );
     m_name.MakeUpper();
     
     // Works only for ASCII names. Should be fixed so
@@ -352,6 +354,35 @@ const char * CVSCPVariable::getVariableTypeAsString( int type )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// setType
+//
+
+bool CVSCPVariable::setType( const wxString& strType )
+{
+    unsigned long lval;
+    
+    if ( strType.ToULong( &lval ) ) {
+        
+        if ( lval > 0xffff ) return false;
+        
+        
+    }
+    else {
+        
+        if ( VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED == 
+                ( lval = getVariableTypeFromString( strType ) ) ) {
+            return false;
+        }
+            
+    }
+    
+    // Set as numeric
+    m_type = (uint16_t)lval;
+    
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // getAsString
 //
 
@@ -398,21 +429,21 @@ wxString CVSCPVariable::getAsString( bool bShort )
 // setName
 //
 
-void CVSCPVariable::setName( const wxString& strName )
+bool CVSCPVariable::setName( const wxString& strName )
 {
     wxString str = strName;
-    str.Trim( false );
-    str.Trim( true );
+    str.Trim();
     
-    if ( 0 == str.Length() ) {
+    if ( str.IsEmpty() ) {
         // Name can't be null
         gpctrlObj->logMsg( wxString::Format( _("Setting variable name: Variable name can't be empty.\n") ) );
-        return;
+        return false;
     }
     
-    m_name = str= strName.Upper();
+    m_name = str;
     fixName();
 
+    return true;
 }
 
 
@@ -815,7 +846,6 @@ void CVSCPVariable::setValue(wxDateTime& val)
 ///////////////////////////////////////////////////////////////////////////////
 // setValueFromString
 //
-
 
 bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool bBase64 )
 {	
@@ -1262,6 +1292,20 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable, bool bBa
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// setNote
+//
+
+void CVSCPVariable::setNote( const wxString& strNote, bool bBase64 )
+{
+    wxString wxstr = strNote;
+    if ( bBase64 ) {
+        wxstr = wxBase64Encode( strNote, strNote.Length() );
+    }
+    
+    m_note = wxstr;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Reset
 //
 
@@ -1505,9 +1549,9 @@ CVariableStorage::CVariableStorage()
     // Set the default dm configuration path
 #ifdef WIN32
     m_xmlPath = wxStandardPaths::Get().GetConfigDir();
-    m_xmlPath += _("/vscp/variables.xml");
+    m_xmlPath += _("/vscp/variable.xml");
 #else
-    m_xmlPath = _("/srv/vscp/variables.xml");
+    m_xmlPath = _("/srv/vscp/variable.xml");
 #endif  
     
 #ifdef WIN32
@@ -1551,17 +1595,21 @@ bool CVariableStorage::init( void )
     CVSCPVariable variable;
     
     // * * * VSCP Daemon external variable database * * *
+    
+    wxstr.Printf( _("Path=%s\n"),
+                            (const char *)m_dbFilename.GetFullPath().mbc_str()  );
+            fprintf( stderr, wxstr.mbc_str() );
         
     // Check filename
     if ( m_dbFilename.IsOk() && m_dbFilename.FileExists() ) {
 
-        if ( SQLITE_OK != sqlite3_open( m_dbFilename.GetFullPath().mbc_str(),
+        if ( SQLITE_OK != sqlite3_open( (const char *)m_dbFilename.GetFullPath().mbc_str(),
                                             &m_db_vscp_external_variable ) ) {
 
             // Failed to open/create the database file
             fprintf( stderr, "VSCP Daemon external variable database could not be opened. - Will not be used.\n" );
             wxstr.Printf( _("Path=%s error=%s\n"),
-                            m_dbFilename.GetFullPath().mbc_str(),
+                            (const char *)m_dbFilename.GetFullPath().mbc_str(),
                             sqlite3_errmsg( m_db_vscp_external_variable ) );
             fprintf( stderr, wxstr.mbc_str() );
 
@@ -1570,17 +1618,29 @@ bool CVariableStorage::init( void )
     }
     else {
         if ( m_dbFilename.IsOk() ) {
+            
             // We need to create the database from scratch. This may not work if
             // the database is in a read only location.
             fprintf( stderr, "VSCP Daemon external variable database does not exist - will be created.\n" );
-            wxstr.Printf(_("Path=%s\n"), m_dbFilename.GetFullPath().mbc_str() );
+            wxstr.Printf( _("Path=%s\n"), (const char *)m_dbFilename.GetFullPath().mbc_str() );
             fprintf( stderr, wxstr.mbc_str() );
             
-            if ( SQLITE_OK == sqlite3_open( m_dbFilename.GetFullPath().mbc_str(),
+            gpctrlObj->logMsg( wxString::Format( _("VSCP Daemon external variable database open  Err=%s\n"), sqlite3_errmsg( m_db_vscp_external_variable ) ) );
+            
+            if ( SQLITE_OK == sqlite3_open( (const char *)m_dbFilename.GetFullPath().mbc_str(),
                                             &m_db_vscp_external_variable ) ) {            
                 // create the table.
                 doCreateExternalVariableTable();
+                
             }
+            else {
+                
+                // Failed to create the variable database
+                gpctrlObj->logMsg( wxString::Format( _("VSCP Daemon external variable database open  Err=%s\n"), sqlite3_errmsg( m_db_vscp_external_variable ) ) );
+            
+                
+            }
+            
         }
         else {
             fprintf( stderr, "VSCP Daemon external variable database path invalid - will not be used.\n" );
@@ -3980,8 +4040,8 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 // Update database record                                
                 bVal ? strValue=_("1") : _("0");
                 if ( !gpctrlObj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("bEnable"),
-                                                                    strValue ) ) {
+                                                                _("bEnable"),
+                                                                strValue ) ) {
                     return false;
                 }
                 
@@ -3995,7 +4055,8 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                         gpctrlObj->m_dm.removeMemoryElement( row );
                     }
                     
-                }               
+                }      
+                
                 // If true and not in memory the record should be added
                 else {
                     dmElement *pdmnew = new dmElement();
@@ -4017,6 +4078,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 return gpctrlObj->m_dm.updateDatabaseRecordItem( id,
                                                                     _("groupid"),
                                                                     strValue );
+                
             }
             else if ( wxstr == _("mask.priority") ) {
 
@@ -4760,7 +4822,7 @@ bool CVariableStorage::add( CVSCPVariable& var )
     char *zErrMsg = 0;
     
     // Must have a valid name
-    if ( 0 == var.getName().Length() ) {
+    if ( var.getName().IsEmpty() ) {
         gpctrlObj->logMsg( wxString::Format( _("Add variable: Variable name can't be empty.\n") ) );
         return false;
     }
@@ -4785,10 +4847,10 @@ bool CVariableStorage::add( CVSCPVariable& var )
                 (const char *) var.getNote().mbc_str(),
                 id );
 
-        if (SQLITE_OK != sqlite3_exec( var.isPersistent() ? m_db_vscp_external_variable : m_db_vscp_internal_variable, 
-                                            sql, NULL, NULL, &zErrMsg)) {
+        if (SQLITE_OK != sqlite3_exec( ( var.isPersistent() ? m_db_vscp_external_variable : m_db_vscp_internal_variable ), 
+                                            sql, NULL, NULL, &zErrMsg)) {            
+            gpctrlObj->logMsg( wxString::Format( _("Add variable: Unable to update variable in db. [%s] Err=%s\n"), sql, zErrMsg ) );
             sqlite3_free(sql);
-            gpctrlObj->logMsg( wxString::Format( _("Add variable: Unable to add variable. [%s]\n"), sql ) );
             return false;
         }
 
@@ -4803,11 +4865,13 @@ bool CVariableStorage::add( CVSCPVariable& var )
                 var.isPersistent() ? 1 : 0,
                 var.getUserID(),
                 var.getAccessRights(),
-                (const char *) var.getNote().mbc_str() );
+                (const char *) var.getNote().mbc_str() );  
 
-        if ( SQLITE_OK != sqlite3_exec( var.isPersistent() ? m_db_vscp_external_variable : m_db_vscp_internal_variable, 
-                                            sql, NULL, NULL, &zErrMsg)) {
-            sqlite3_free( sql );
+        if ( SQLITE_OK != sqlite3_exec( ( var.isPersistent() ? m_db_vscp_external_variable : m_db_vscp_internal_variable ), 
+                                            sql, NULL, NULL, &zErrMsg ) ) {
+            fprintf(stderr, "Error: %s\n", sqlite3_errmsg( m_db_vscp_external_variable ) );
+            gpctrlObj->logMsg( wxString::Format( _("Add variable: Unable to add variable in db. [%s] Err=%s\n"), sql, zErrMsg ) );
+            sqlite3_free( sql );            
             return false;
         }
 
@@ -4958,12 +5022,12 @@ bool CVariableStorage::doCreateInternalVariableTable( void )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// load
+// loadFromXML
 //
 // Read persistent variables from file
 //
 
-bool CVariableStorage::load( const wxString& path  )
+bool CVariableStorage::loadFromXML( const wxString& path  )
 {
     wxString wxstr;
     unsigned long lval;
@@ -4975,17 +5039,17 @@ bool CVariableStorage::load( const wxString& path  )
     // Set the default dm configuration path
 #ifdef WIN32
     m_configPath = wxStandardPaths::Get().GetConfigDir();
-    m_configPath += _("/vscp/variables.xml");
+    m_configPath += _("/vscp/variable.xml");
 #else
-    m_configPath = _("/srv/vscp/variables.xml");
+    m_configPath = _("/srv/vscp/variable.xml");
 #endif
 #endif 
     
     // If a null path is supplied use the configured path
-    if ( 0 == path.Length() ) {
+    if ( path.IsEmpty() ) {
         
         gpctrlObj->logMsg( wxString::Format( _("Loading variable XML file from %s.\n"),
-                                        (const char *)path.mbc_str() ), 
+                                        (const char *)m_xmlPath.mbc_str() ), 
                                         DAEMON_LOGMSG_DEBUG );
         
         if ( !doc.Load( m_xmlPath ) ) {

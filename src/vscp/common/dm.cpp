@@ -1836,9 +1836,8 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
 
                         // Existing - get real text value
                         wxString wxwrk;
-                        if ( variable.writeValueToString( wxwrk ) ) {
-                            strResult += wxwrk;
-                        }
+                        variable.writeValueToString( wxwrk );
+                        strResult += wxwrk;
 
                     }
                     
@@ -1855,9 +1854,8 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                     if ( m_pDM->m_pCtrlObject->m_VSCP_Variables.find( variableName, variable ) ) {
 
                         wxString wxwrk;
-                        if ( variable.writeValueToString( wxwrk ) ) {
-                            strResult += wxwrk;
-                        }
+                        variable.writeValueToString( wxwrk );
+                        strResult += wxwrk;
 
                     }
 

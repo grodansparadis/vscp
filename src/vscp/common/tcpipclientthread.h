@@ -299,6 +299,12 @@ public:
 
     /*!
         Variable Write
+        Write Format: variablename;variabletype;accessrights;persistance;value;note 
+            variablename must be given.
+            variabletype can be symbolic ("string") or numeric ("1"). Default: string.
+            persistens can be 0/1 or false/true. Default: false.
+            accessrights must be numeric. Default 744.
+            User always set to logged in user.
         @param conn Connection handler.
         @param pCtrlObject Pointer to control object
     */

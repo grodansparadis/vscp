@@ -171,6 +171,11 @@ public:
         it has a non zero value. In all other cases false will be returned.
      */
     bool isTrue(void);
+    
+    /*!
+     Get the length for the string value of a variable
+     */
+    size_t getLength( void ) { return m_strValue.Length(); };
 
     /*!
         setTrue
@@ -188,12 +193,13 @@ public:
 
     /*!
         Get string value
+        @return value in string form is returned regardless of type.
      */
     wxString getValue( void ) { return  m_strValue; };
     
     /*!
         getValue
-        @return value in string form is returned regardless of type.
+        @param pval Pointer to string that will get value.
      */
     void getValue( wxString *pval ) { *pval =  m_strValue; };
     
@@ -326,11 +332,6 @@ public:
     */
     void fixName( void );
     
-    /*!
-        Set variable name
-        @param strName Name of variable
-     */
-    void setName(const wxString& strName);
 
     // Getters/Setters
     
@@ -339,16 +340,27 @@ public:
     uint32_t getID( void ) { return m_id; };
     
     // name
-    void setName( wxString& name ) { m_name = name; fixName(); };
-    wxString getName( void ) { return m_name.MakeUpper(); };
+    /*!
+        Set variable name
+        @param strName Name of variable
+        @return true on success
+     */
+    bool setName( const wxString& strName );
+    wxString& getName( void ) { return m_name.MakeUpper(); };
     
     // type
+    /*!
+        set type
+        @param strType type in numerical or string form
+        @return True on success.
+     */
+    bool setType( const wxString& strType );
     void setType( uint16_t type ) { m_type = type; };
     uint16_t getType( void ) { return m_type; };
 
     // note
-    void setNote(const wxString& strNote) { m_note = strNote; };
-    wxString getNote( void ) { return m_note; };
+    void setNote( const wxString& strNote, bool bBase64=false );
+    wxString& getNote( void ) { return m_note; };
     
     // Persistence
     bool isPersistent( void ) { return m_bPersistent; };
@@ -357,12 +369,13 @@ public:
     // Access rights
     void setAccessRights( uint32_t accessRights ) { m_accessRights = accessRights; };
     uint32_t getAccessRights( void ) { return m_accessRights; };
+    
     bool isWritable( void ) { return m_accessRights; };
     void makeWritable( bool b ) { m_accessRights = b; };
     
     // user id
     void setUserID( uint32_t uid ) { m_userid = uid; };
-    uint32_t getUserID( void ) { return m_userid; }; 
+    uint32_t getUserID( void ) { return m_userid; };
     
     // stock variable
     void setStockVariable( bool bStock = true ) { m_bStock = bStock; };
@@ -543,7 +556,7 @@ public:
         @param name Name of variable
         @return true on success, false on failure.
      */
-    bool remove(wxString& name);
+    bool remove( wxString& name );
 
     /*!
         Remove variable from object
@@ -558,7 +571,7 @@ public:
                 the default XML path is used.
         @return Returns true on success false on failure.
      */
-    bool load( const wxString& path = _("") );
+    bool loadFromXML( const wxString& path = _("") );
 
     /*!
         Write persistent variables to configured storage

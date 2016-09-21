@@ -900,9 +900,8 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     m_VSCP_Variables.init();
     
     // Load variables if mechanism is enabled
-    logMsg(_("Loading persistent variables.\n") );
-    wxString path;  // Empty to load from default path
-    m_VSCP_Variables.load( path );
+    logMsg(_("Loading persistent variables from XML variable default path.\n") );
+    m_VSCP_Variables.loadFromXML();
 
     // Start daemon internal client worker thread
     startClientWorkerThread();
@@ -2375,13 +2374,13 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                         m_VSCP_Variables.m_xmlPath = fileName.GetFullPath();
                     }
                     
-                    attrib = subchild->GetAttribute(wxT("pathxml"), wxT(""));
+                    attrib = subchild->GetAttribute(wxT("pathxml"), wxT("/srv/vscp/variable.xml"));
                     fileName.Assign( attrib );
                     if ( fileName.IsOk() ) {
                         m_VSCP_Variables.m_xmlPath = fileName.GetFullPath();
                     }
                     
-                    attrib = subchild->GetAttribute(wxT("pathdb"), wxT(""));
+                    attrib = subchild->GetAttribute(wxT("pathdb"), wxT("/srv/vscp/variable.sqlite3"));
                     fileName.Assign( attrib );
                     if ( fileName.IsOk() ) {
                         m_VSCP_Variables.m_dbFilename = fileName;

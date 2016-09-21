@@ -59,7 +59,7 @@
 	"`vscpd_dm_logging_path`                            TEXT DEFAULT '/var/log/vscp/log_dm',"\
 	"`vscpd_dm_logging_level`                           INTEGER DEFAULT 1,"\
 	"`vscpd_variables_db_path`                          TEXT DEFAULT '/srv/vscp/variable.sqlite3',"\
-        "`vscpd_variables_xml_Path`                         TEXT DEFAULT '/srv/vscp/variables.xml',"\
+        "`vscpd_variables_xml_Path`                         TEXT DEFAULT '/srv/vscp/variable.xml',"\
 	"`vscpd_defaultclientbuffersize`                    INTEGER DEFAULT 1024,"\
 	"`vscpd_webserver_authentication_enable`            INTEGER DEFAULT 1,"\
 	"`vscpd_webserver_rootpath`                         TEXT DEFAULT '/srv/vscp/web',"\
@@ -582,11 +582,11 @@
 
 #define VSCPDB_VARIABLE_INSERT "INSERT INTO 'variable' "\
                         "(lastchange,name,type,value,bPersistent,link_to_user,permission,note) "\
-                        "VALUES ('%s','%s', '%d','%q','%d','%d','%d','%q')" 
+                        "VALUES ('%s','%s', '%d','%q','%d','%d','%d','%q');"
 
 #define VSCPDB_VARIABLE_INSERT_STOCK "INSERT INTO 'variable' "\
                         "(lastchange,name,type,value,bPersistent,link_to_user,permission) "\
-                        "VALUES ('%s','%s', '%d','%q','%d','%d','%d')"
+                        "VALUES ('%s','%s', '%d','%q','%d','%d','%d');"
 
 #define VSCPDB_ORDINAL_VARIABLE_ID              0   //
 #define VSCPDB_ORDINAL_VARIABLE_BSTOCK          1   //

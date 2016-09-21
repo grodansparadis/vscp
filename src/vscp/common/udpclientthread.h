@@ -64,7 +64,7 @@
 
 #define MSG_VARIABLE_NOT_DEFINED            "-OK - Variable is not defined.\r\n"
 #define MSG_MOT_ALLOWED_TO_SEND_EVENT       "-OK - Not allowed to sen this event (contact admin).\r\n"
-
+#define MSG_INVALID_PATH                    "-OK - Invalid path.\r\n"
 
 
 //class CControlObject;
