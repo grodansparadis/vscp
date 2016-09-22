@@ -174,6 +174,13 @@ public:
         Destructor
      */
     virtual ~CControlObject( void );
+    
+    /*!
+        Generate a random session key from a string key
+        @param pKey Null terminated string key (max 255 characters)
+        @param pSid Pointer to 33 byte sid that will receive sid
+     */
+    bool generateSessionId( const char *pKey, char *pSid );
 
     /*!
       Write log message -

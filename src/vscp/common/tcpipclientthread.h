@@ -66,6 +66,7 @@
 
 #define MSG_VARIABLE_NOT_DEFINED            "-OK - Variable is not defined.\r\n"
 #define MSG_VARIABLE_MUST_BE_EVENT_TYPE     "-OK - Variable must be of event type.\r\n"
+#define MSG_VARIABLE_NOT_STOCK              "-OK - Operation does not work with stock variables.\r\n"
 
 
 //class CControlObject;
@@ -154,7 +155,7 @@ public:
     /*!
         sendOneEventFromQueue
         @param 	bStatusMsg True if response messages (+OK/-OK) should be sent. Default.
-        @return True on success/false on failue.
+        @return True on success/false on failure.
     */
     bool sendOneEventFromQueue( struct mg_connection *conn, CControlObject *pCtrlObject, bool bStatusMsg = true );
 
@@ -212,6 +213,11 @@ public:
     Client issue password
     */
     bool handleClientPassword ( struct mg_connection *conn, CControlObject *pCtrlObject  );
+    
+    /*!
+     Handle challenge
+     */
+    void handleChallenge( struct mg_connection *conn, CControlObject *pCtrlObject );
 
     /*!
         Client Get channel ID

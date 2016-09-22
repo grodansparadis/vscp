@@ -585,8 +585,12 @@
                         "VALUES ('%s','%s', '%d','%q','%d','%d','%d','%q');"
 
 #define VSCPDB_VARIABLE_INSERT_STOCK "INSERT INTO 'variable' "\
-                        "(lastchange,name,type,value,bPersistent,link_to_user,permission) "\
-                        "VALUES ('%s','%s', '%d','%q','%d','%d','%d');"
+                        "(lastchange,name,type,value,bPersistent,link_to_user,permission, note) "\
+                        "VALUES ('%s','%s', '%d','%q','%d','%d','%d','%q');"
+
+#define VSCPDB_VARIABLE_FIND_ALL "SELECT * FROM 'variable'"
+
+#define VSCPDB_VARIABLE_FIND_FROM_NAME "SELECT * FROM 'variable' WHERE name='%s'"
 
 #define VSCPDB_ORDINAL_VARIABLE_ID              0   //
 #define VSCPDB_ORDINAL_VARIABLE_BSTOCK          1   //

@@ -102,6 +102,9 @@ public:
 
     // Destructor
     virtual ~CVSCPVariable(void);
+    
+    /// Set default values
+    void init( void );
 
     /*!
         Get variable type as string

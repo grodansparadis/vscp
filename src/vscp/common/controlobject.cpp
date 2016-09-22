@@ -429,6 +429,38 @@ CControlObject::~CControlObject()
     m_mutexClientOutputQueue.Unlock();
 }
 
+/////////////////////////////////////////////////////////////////////////////
+// generateSessionId
+//
+
+bool CControlObject::generateSessionId( const char *pKey, char *psid )
+{
+    char buf[ 8193 ];
+    
+    // Check pointers
+    if ( NULL == pKey ) return false;
+    if ( NULL == psid ) return false;
+    
+    if ( strlen(pKey) > 256 ) return false;
+    
+    // Generate a random session ID
+    time_t t;
+    t = time( NULL );
+    sprintf( buf,
+                "__%s_%X%X%X%X_be_hungry_stay_foolish_%X%X",
+                pKey,
+                (unsigned int)rand(),
+                (unsigned int)rand(),
+                (unsigned int)rand(),
+                (unsigned int)t,
+                (unsigned int)rand(),
+                1337 );
+
+    memset( psid, 0, sizeof( 33 ) );
+    cs_md5( psid, buf, strlen( buf ), NULL );
+    
+    return true;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // logMsg
@@ -904,22 +936,28 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     m_VSCP_Variables.loadFromXML();
 
     // Start daemon internal client worker thread
+    logMsg(_("Starting client worker thread.\n") );
     startClientWorkerThread();
 
     // Start TCP/IP interface
+    logMsg(_("Starting TCP/IP interface.\n") );
     startTcpWorkerThread();
 
     // Start daemon worker thread
+    logMsg(_("Starting VSCP daemon worker thread.\n") );
     startDaemonWorkerThread();
 
     // Start web sockets
+    logMsg(_("Starting websockets interface.\n") );
     startWebServerThread();
 
     // Load drivers
+    logMsg(_("Starting drivers.\n") );
     startDeviceWorkerThreads();
 
     // Start MQTT Broker if enabled
     if ( m_bMQTTBroker ) {
+        logMsg(_("Starting MQTT interface.\n") );
         logMsg(_("MQTT Broker enabled.\n") );
         startMQTTBrokerThread();
     }
@@ -929,6 +967,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 
     // Start CoAP server if enabled
     if ( m_bCoAPServer ) {
+        logMsg(_("Starting CoAP interface.\n") );
         logMsg(_("CoAP Server enabled.\n") );
         startCoAPServerThread();
     }

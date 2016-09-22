@@ -327,11 +327,19 @@ VSCPClientThread::CommandHandler( struct mg_connection *conn,
     pClientItem->m_currentCommandUC.Trim( false );
     //wxLogDebug( _("Argument = ") + pClientItem->m_currentCommandUC );
 
-
-
+    // If we are in a receive loop only the quitloop command works
+    if ( conn->flags & MG_F_USER_1 ) {
+        if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "QUITLOOP" ) ) ) {
+            conn->flags &= ~(unsigned int)MG_F_USER_1;
+            mg_send( conn, MSG_QUIT_LOOP, strlen ( MSG_QUIT_LOOP ) );
+            return;
+        }
+        else {
+            return;
+        }
+    }
+     
 REPEAT_COMMAND:
-
-
 
     //*********************************************************************
     //                            No Operation
@@ -476,6 +484,13 @@ REPEAT_COMMAND:
     }
 
     //*********************************************************************
+    //                           Challenge
+    //*********************************************************************
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "CHALLENGE " ) ) ) {
+        handleChallenge( conn, pCtrlObject );
+    }
+
+    //*********************************************************************
     //                        + (repeat last command)
     //*********************************************************************
     else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "+" ) ) ) {
@@ -486,7 +501,7 @@ REPEAT_COMMAND:
     }
 
     //*********************************************************************
-    //                               Rcvloop
+    //                             Rcvloop
     //*********************************************************************
     else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "RCVLOOP" ) ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 2 ) ) {
@@ -495,14 +510,6 @@ REPEAT_COMMAND:
         }
     }
 
-    //*********************************************************************
-    //                           Quitloop
-    //*********************************************************************
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "QUITLOOP" ) ) ) {
-        // Turn of receive loop
-        conn->flags &= ~(unsigned int)MG_F_USER_1;
-        mg_send( conn, MSG_QUIT_LOOP, strlen ( MSG_QUIT_LOOP ) );
-    }
 
     // *********************************************************************
     //                                 QUIT
@@ -624,12 +631,13 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                             WhatCanYouDo
     //*********************************************************************
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "WHATCANYOUDO" ) ) ) {
+    else if ( ( 0 == pClientItem->m_currentCommandUC.Find ( _( "WHATCANYOUDO" ) ) ) ||
+               ( 0 == pClientItem->m_currentCommandUC.Find ( _( "WCYD" ) ) ) ) {
             handleClientCapabilityRquest( conn, pCtrlObject );
     }
 
     //*********************************************************************
-    //                                Que?
+    //                                What?
     //*********************************************************************
     else {
         mg_send( conn,  MSG_UNKNOWN_COMMAND, strlen ( MSG_UNKNOWN_COMMAND ) );
@@ -1082,12 +1090,12 @@ bool VSCPClientThread::sendOneEventFromQueue( struct mg_connection *conn,
         }
         pClientItem->m_mutexClientInputQueue.Unlock();
 
-        strOut.Printf( _("%d,%d,%d,%d,%d,"),
+        strOut.Printf( _("%d,%d,%d,%ul,%ul,"),
                             pqueueEvent->head,
                             pqueueEvent->vscp_class,
                             pqueueEvent->vscp_type,
-                            pqueueEvent->obid,
-                            pqueueEvent->timestamp );
+                            (unsigned long)pqueueEvent->obid,
+                            (unsigned long)pqueueEvent->timestamp );
 
         wxString strGUID;
         vscp_writeGuidToString( pqueueEvent, strGUID );
@@ -1631,6 +1639,32 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn,
 
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// handleChallenge
+//
+
+void VSCPClientThread::handleChallenge( struct mg_connection *conn,
+                                            CControlObject *pCtrlObject )
+{
+    wxString wxstr;
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
+
+    wxString strcmd = pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-4 );
+    strcmd.Trim();
+    strcmd.Trim(false);
+
+    memset( pClientItem->m_sid, 0, sizeof( pClientItem->m_sid ) );
+    if ( !gpobj->generateSessionId( strcmd, pClientItem->m_sid ) ) {
+        mg_send( conn,  MSG_FAILD_TO_GENERATE_SID, strlen ( MSG_FAILD_TO_GENERATE_SID ) );
+        return;
+    }
+    
+    wxstr = _("+OK - ") + wxString::FromUTF8( pClientItem->m_sid ) + _("\r\n");
+    mg_send( conn, wxstr, strlen ( wxstr ) );
+    
+    //mg_send( conn, MSG_OK, strlen ( MSG_OK ) );
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientRcvLoop
@@ -1639,17 +1673,18 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn,
 void VSCPClientThread::handleClientRcvLoop( struct mg_connection *conn,
                                                 CControlObject *pCtrlObject  )
 {
-/*
+
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
-*/
 
     mg_send( conn,  MSG_RECEIVE_LOOP, strlen ( MSG_RECEIVE_LOOP ) );
     conn->flags |= MG_F_USER_1; // Mark socket as being in receive loop
-/*
-    // Loop until the connection is lost
-    while ( !TestDestroy() && !m_bQuit && (conn->flags & NSF_USER_1 ) ) {
+    
+    pClientItem->m_readBuffer.Empty();
 
-        if ( m_pClientSocket->IsDisconnected() ) m_bQuit = true;
+    // Loop until the connection is lost
+    while ( !TestDestroy() && !m_bQuit && (conn->flags & MG_F_USER_1 ) ) {
+
+        //if ( m_pClientSocket->IsDisconnected() ) m_bQuit = true;
 
         // Wait for event
         if ( wxSEMA_TIMEOUT ==
@@ -1659,10 +1694,16 @@ void VSCPClientThread::handleClientRcvLoop( struct mg_connection *conn,
         }
 
         // Send one event if something in the queue
-        sendOneEventFromQueue( false );
+        //if ( !sendOneEventFromQueue( conn, gpobj, false ) ) {
+        //    wxMilliSleep( 10 );
+        //}
+        
+        // We must handle the polling here wile in the loop
+        mg_mgr_poll( &m_pCtrlObject->m_mgrTcpIpServer, 50 );
+
 
     } // While    TODO   CHECK THIS!!!!!!
-*/
+
     return;
 }
 
@@ -1880,15 +1921,19 @@ void VSCPClientThread::handleClientHelp( struct mg_connection *conn,
     }
     else if ( _("VARIABLE") == strcmd ) {
         wxString str = _("'VARIABLE' Handle variables on the daemon.\r\n");
-        str += _("'VARIABLE list'.\r\n");
-        str += _("'VARIABLE write'.\r\n");
-        str += _("'VARIABLE read'.\r\n");
-        str += _("'VARIABLE reset'.\r\n");
-        str += _("'VARIABLE readreset'.\r\n");
-        str += _("'VARIABLE remove'.\r\n");
-        str += _("'VARIABLE readremove'.\r\n");
-        str += _("'VARIABLE length'.\r\n");
-        str += _("'VARIABLE save'.\r\n");
+        str += _("'VARIABLE list <regular-expression>'.\r\n");        
+        str += _("'VARIABLE read <variable-name>'.\r\n");
+        str += _("'VARIABLE readvalue <variable-name>'.\r\n");
+        str += _("'VARIABLE readnote <variable-name>'.\r\n");
+        str += _("'VARIABLE write <variable-name> <variable>'.\r\n");
+        str += _("'VARIABLE writevalue <variable-name> <value>'.\r\n");
+        str += _("'VARIABLE writenote <variable-name>' <note>.\r\n");
+        str += _("'VARIABLE reset <variable-name>'.\r\n");
+        str += _("'VARIABLE readreset <variable-name>'.\r\n");
+        str += _("'VARIABLE remove <variable-name>'.\r\n");
+        str += _("'VARIABLE readremove <variable-name>'.\r\n");
+        str += _("'VARIABLE length <variable-name>'.\r\n");
+        str += _("'VARIABLE save <path> <selection>'.\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
 
@@ -2175,10 +2220,10 @@ void VSCPClientThread::handleVariable_List( struct mg_connection *conn,
 
     pClientItem->m_currentCommandUC =
         pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-5 );    // remove "LIST "
-    pClientItem->m_currentCommand.Trim();
-    pClientItem->m_currentCommand.Trim( false );
+    pClientItem->m_currentCommandUC.Trim();
+    pClientItem->m_currentCommandUC.Trim( false );
 
-    wxStringTokenizer tkz( pClientItem->m_currentCommand, _(" ") );
+    wxStringTokenizer tkz( pClientItem->m_currentCommandUC, _(" ") );
     if ( tkz.HasMoreTokens() ) {
         wxString token = tkz.GetNextToken();
         token.Trim();
@@ -2644,6 +2689,11 @@ void VSCPClientThread::handleVariable_ReadReset( struct mg_connection *conn,
         pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-10 ); // remove "READRESET "
     pClientItem->m_currentCommandUC.Trim( false );
     pClientItem->m_currentCommandUC.Trim( true );
+    
+    if ( pClientItem->m_currentCommandUC.StartsWith( _("VSCP.") ) ) {
+        mg_send( conn, MSG_VARIABLE_NOT_STOCK, strlen ( MSG_VARIABLE_NOT_STOCK ) );
+        return;
+    }
 
     CVSCPVariable variable;
     
@@ -2679,6 +2729,11 @@ void VSCPClientThread::handleVariable_Remove( struct mg_connection *conn,
     pClientItem->m_currentCommandUC.Trim( false );
     pClientItem->m_currentCommandUC.Trim( true );
     
+    if ( pClientItem->m_currentCommandUC.StartsWith( _("VSCP.") ) ) {
+        mg_send( conn, MSG_VARIABLE_NOT_STOCK, strlen ( MSG_VARIABLE_NOT_STOCK ) );
+        return;
+    }
+    
     if ( !m_pCtrlObject->m_VSCP_Variables.remove( pClientItem->m_currentCommandUC ) ) {
         mg_send( conn, MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );        
     }
@@ -2700,6 +2755,11 @@ void VSCPClientThread::handleVariable_ReadRemove( struct mg_connection *conn,
     pClientItem->m_currentCommandUC = pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-11 ); // remove "READREMOVE "
     pClientItem->m_currentCommandUC.Trim( false );
     pClientItem->m_currentCommandUC.Trim( true );
+    
+    if ( pClientItem->m_currentCommandUC.StartsWith( _("VSCP.") ) ) {
+        mg_send( conn, MSG_VARIABLE_NOT_STOCK, strlen ( MSG_VARIABLE_NOT_STOCK ) );
+        return;
+    }
 
     CVSCPVariable variable;
     if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommandUC, variable ) ) {

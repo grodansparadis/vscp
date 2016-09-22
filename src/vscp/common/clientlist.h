@@ -192,6 +192,9 @@ public:
     
     /// Password given by user
     wxString m_Password;
+    
+    /// Session id
+    char m_sid[33];
 
     /// True if the credentials has been checked.
     bool bAuthenticated;
@@ -202,7 +205,7 @@ public:
     /// Read buffer
     wxString m_readBuffer;
 
-    /// Last connand executed
+    /// Last command executed
     wxString m_lastCommand;
 
     // Current command
