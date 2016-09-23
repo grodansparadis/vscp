@@ -416,7 +416,7 @@ struct myNode {
 
 // Bits for VSCP server 16-bit capability code
 // used by CLASS1.PROTOCOL, HIGH END SERVER RESPONSE
-// and low end 15-bits for
+// and low end 16-bits for
 // CLASS2.PROTOCOL, HIGH END SERVER HEART BEAT
 
 #define VSCP_SERVER_CAPABILITY_MULTICAST            (1<<16)

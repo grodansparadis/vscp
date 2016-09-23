@@ -87,7 +87,7 @@ public:
     // Client id for interface the node is located at
     uint32_t m_clientID;
 
-    // Clientitem for this trhread
+    // Clientitem for this thread
     CClientItem *m_pClientItem;
 
     // Pointer to the control object
@@ -98,7 +98,7 @@ public:
 // information collected from them.
 
 struct discoveredNodeInfo {
-    int bStatus;                    // 0 = working, -1=failed, 777=succes.
+    int bStatus;                    // 0 = working, -1=failed, 777=success.
     discoveryVSCPThread *pThread;   // Discover thread
     uint8_t nodeid;                 // nodeid for the node to investigate
     uint32_t clientId;              // Clientid for node to investigate
@@ -112,7 +112,7 @@ WX_DECLARE_LIST ( discoveredNodeInfo, DISCOVERYLIST );
 
 /*!
     This class implement a one of thread that look
-    for specific events and react on them appropriatly.
+    for specific events and react on them appropriately.
 
 */
 

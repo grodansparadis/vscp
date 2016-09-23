@@ -181,6 +181,13 @@ public:
         @param pSid Pointer to 33 byte sid that will receive sid
      */
     bool generateSessionId( const char *pKey, char *pSid );
+    
+    /*!
+        Get server capabilities (64-bit array)
+        @param pCapability Pointer to 64 bit capabilities array
+        @return True on success.
+     */
+    bool getVscpCapabilities( uint8_t *pCapability );
 
     /*!
       Write log message -

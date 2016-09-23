@@ -655,7 +655,14 @@ REPEAT_COMMAND:
 void VSCPClientThread::handleClientCapabilityRquest( struct mg_connection *conn,
                                                         CControlObject *pCtrlObject )
 {
-    // TODO
+    wxString wxstr;
+    uint8_t capabilities[16];
+    
+    gpobj->getVscpCapabilities( capabilities );
+    wxstr = wxString::Format(_("%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X"),                                
+                                capabilities[7], capabilities[6], capabilities[5], capabilities[4],
+                                capabilities[3], capabilities[2], capabilities[1], capabilities[0] );
+    mg_send( conn,  MSG_UNKNOWN_COMMAND, strlen ( MSG_UNKNOWN_COMMAND ) );
 }
 
 
@@ -1684,25 +1691,18 @@ void VSCPClientThread::handleClientRcvLoop( struct mg_connection *conn,
     // Loop until the connection is lost
     while ( !TestDestroy() && !m_bQuit && (conn->flags & MG_F_USER_1 ) ) {
 
-        //if ( m_pClientSocket->IsDisconnected() ) m_bQuit = true;
-
         // Wait for event
         if ( wxSEMA_TIMEOUT ==
             pClientItem->m_semClientInputQueue.WaitTimeout( 1000 ) ) {
                 mg_send( conn, "+OK\r\n", 5 );
                 continue;
         }
-
-        // Send one event if something in the queue
-        //if ( !sendOneEventFromQueue( conn, gpobj, false ) ) {
-        //    wxMilliSleep( 10 );
-        //}
         
         // We must handle the polling here wile in the loop
         mg_mgr_poll( &m_pCtrlObject->m_mgrTcpIpServer, 50 );
 
 
-    } // While    TODO   CHECK THIS!!!!!!
+    } // While 
 
     return;
 }
@@ -1725,36 +1725,38 @@ void VSCPClientThread::handleClientHelp( struct mg_connection *conn,
         wxString str = _("Help for the VSCP tcp/ip interface\r\n");
                 str += _("====================================================================\r\n");
                 str += _("To get more information about a specific command issue 'HELP comman'\r\n");
-                str += _("+               - Repeat last command.\r\n");
-                str += _("NOOP            - No operation. Does nothing.\r\n");
-                str += _("QUIT            - Close the connection.\r\n");
-                str += _("USER 'username' - Username for login. \r\n");
-                str += _("PASS 'password' - Password for login.  \r\n");
-                str += _("SEND 'event'    - Send an event.   \r\n");
-                str += _("RETR 'count'    - Rtrive n events from input queue.   \r\n");
-                str += _("RCVLOOP         - Will retrieve events in an endless loop until the connection is closed by the client or QUITLOOP is sent.\r\n");
-                str += _("QUITLOOP        - Terminate RCVLOOP.\r\n");
-                str += _("CDTA/CHKDATA    - Check if there is data in the input queue.\r\n");
-                str += _("CLRA/CLRALL     - Clear input queue.\r\n");
-                str += _("STAT            - Get statistical information.\r\n");
-                str += _("INFO            - Get status info.\r\n");
-                str += _("CHID            - Get channel id.\r\n");
-                str += _("SGID/SETGUID    - Set GUID for channel.\r\n");
-                str += _("GGID/GETGUID    - Get GUID for channel.\r\n");
-                str += _("VERS/VERSION    - Get VSCP daemon version.\r\n");
-                str += _("SFLT/SETFILTER  - Set incoming event filter.\r\n");
-                str += _("SMSK/SETMASK    - Set incoming event mask.\r\n");
-                str += _("HELP [command]  - This command.\r\n");
-                str += _("TEST            - Do test sequence. Only used for debugging.\r\n");
-                str += _("SHUTDOWN        - Shutdown the daemon.\r\n");
-                str += _("RESTART         - Restart the daemon.\r\n");
-                str += _("DRIVER          - Driver manipulation.\r\n");
-                str += _("FILE            - File handling.\r\n");
-                str += _("UDP             - UDP.\r\n");
-                str += _("REMOTE          - User manipulation.\r\n");
-                str += _("INTERFACE       - Interface manipulation. \r\n");
-                str += _("DM              - Decision Matrix manipulation.\r\n");
-                str += _("VARIABLE        - Variable handling. \r\n");
+                str += _("+                 - Repeat last command.\r\n");
+                str += _("NOOP              - No operation. Does nothing.\r\n");
+                str += _("QUIT              - Close the connection.\r\n");
+                str += _("USER 'username'   - Username for login. \r\n");
+                str += _("PASS 'password'   - Password for login.  \r\n");
+                str += _("CHALLENGE 'token' - Get session id.  \r\n");
+                str += _("SEND 'event'      - Send an event.   \r\n");
+                str += _("RETR 'count'      - Retrive n events from input queue.   \r\n");
+                str += _("RCVLOOP           - Will retrieve events in an endless loop until the connection is closed by the client or QUITLOOP is sent.\r\n");
+                str += _("QUITLOOP          - Terminate RCVLOOP.\r\n");
+                str += _("CDTA/CHKDATA      - Check if there is data in the input queue.\r\n");
+                str += _("CLRA/CLRALL       - Clear input queue.\r\n");
+                str += _("STAT              - Get statistical information.\r\n");
+                str += _("INFO              - Get status info.\r\n");
+                str += _("CHID              - Get channel id.\r\n");
+                str += _("SGID/SETGUID      - Set GUID for channel.\r\n");
+                str += _("GGID/GETGUID      - Get GUID for channel.\r\n");
+                str += _("VERS/VERSION      - Get VSCP daemon version.\r\n");
+                str += _("SFLT/SETFILTER    - Set incoming event filter.\r\n");
+                str += _("SMSK/SETMASK      - Set incoming event mask.\r\n");
+                str += _("HELP [command]    - This command.\r\n");
+                str += _("TEST              - Do test sequence. Only used for debugging.\r\n");
+                str += _("SHUTDOWN          - Shutdown the daemon.\r\n");
+                str += _("RESTART           - Restart the daemon.\r\n");
+                str += _("DRIVER            - Driver manipulation.\r\n");
+                str += _("FILE              - File handling.\r\n");
+                str += _("UDP               - UDP.\r\n");
+                str += _("REMOTE            - User handling.\r\n");
+                str += _("INTERFACE         - Interface handling. \r\n");
+                str += _("DM                - Decision Matrix manipulation.\r\n");
+                str += _("VARIABLE          - Variable handling. \r\n");
+                str += _("WCYD/WHATCANYOUDO - Check server capabilities. \r\n");
                 mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( _("+") == strcmd ) {

@@ -140,6 +140,7 @@
 #include <dm.h>
 #include <vscpeventhelper.h>
 #include <vscpwebserver.h>
+#include <vscpd_caps.h>
 #include <controlobject.h>
 
 
@@ -458,6 +459,26 @@ bool CControlObject::generateSessionId( const char *pKey, char *psid )
 
     memset( psid, 0, sizeof( 33 ) );
     cs_md5( psid, buf, strlen( buf ), NULL );
+    
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// getVscpCapabilities
+//
+
+bool CControlObject::getVscpCapabilities( uint8_t *pCapability )
+{
+    // Check pointer
+    if ( NULL == pCapability ) return false;
+    
+    memset( pCapability, 0, 8 );
+    
+    // Fill info in MSB of 16-bit code
+    pCapability[ 14 ] = VSCP_DAEMON_SERVER_CAPABILITIES_6;
+            
+    // Fill info in LSB of 16-bit code
+    pCapability[ 15 ] = VSCP_DAEMON_SERVER_CAPABILITIES_7;
     
     return true;
 }

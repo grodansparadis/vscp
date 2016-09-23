@@ -50,8 +50,8 @@ public:
     CVSCPServerInformation& operator=( const CVSCPServerInformation& node ) 
     {
         // Check for self-assignment!
-        if ( this == &node ) {	// Same object?
-            return *this;		// Yes, so skip assignment, and just return *this.
+        if ( this == &node ) {      // Same object?
+            return *this;           // Yes, so skip assignment, and just return *this.
         }
 
         m_bUpdated = node.m_bUpdated;
@@ -103,7 +103,7 @@ WX_DECLARE_STRING_HASH_MAP( CVSCPServerInformation*, VSCP_HASH_KNOWN_SERVERS );
 // guid (12 MSB bytes with 4 LSB bytes set to zero). The real node will not have the
 // proxy flag set and the interface will be set to the interface it is on.
 //
-// ClientObject can be received from clientid which also is set in obid of the event.
+// ClientObject can be received from clientid' which also is set in obid of the event.
 //
 // DeviceObject can be fetched from the client id with the getDeviceItemFromClientId method
 // in the devicelist class.
@@ -144,10 +144,10 @@ public:
     };
 
     // This flag can be used by a client to mark this item as seen
-    // by an upfate routine.
+    // by an update routine.
     bool m_bUpdated;
 
-    // Thru if this node has been checked
+    // True if this node has been checked
     bool m_bInvestigated;
 
     // This flag is true if a node is using one or several

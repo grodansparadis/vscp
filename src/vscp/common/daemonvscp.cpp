@@ -336,8 +336,8 @@ void *daemonVSCPThread::Entry()
 
                         pnewEvent->pdata = new unsigned char[ 8 ];
                         if ( NULL != pnewEvent->pdata ) {
-                            pnewEvent->pdata[ 0 ] = (uint8_t)( VSCP_DAEMON_SERVER_CAPABILITIES >> 8 );
-                            pnewEvent->pdata[ 1 ] = (uint8_t)( VSCP_DAEMON_SERVER_CAPABILITIES & 0x0f);
+                            pnewEvent->pdata[ 0 ] = VSCP_DAEMON_SERVER_CAPABILITIES_14;
+                            pnewEvent->pdata[ 1 ] = VSCP_DAEMON_SERVER_CAPABILITIES_15;
                             pnewEvent->pdata[ 2 ] = ( localaddr[ i ] >> 24 );
                             pnewEvent->pdata[ 3 ] = ( localaddr[ i ] >> 16 );
                             pnewEvent->pdata[ 4 ] = ( localaddr[ i ] >> 8 );
@@ -414,7 +414,7 @@ void *daemonVSCPThread::Entry()
                         if ( NULL != pdiscoverNode ) {
                             pdiscoverNode->bStatus = 0;                 // Working
                             pdiscoverNode->nodeid = pEvent->GUID[15];   // node id
-                            pdiscoverNode->clientId = pEvent->obid;     // clientid
+                            pdiscoverNode->clientId = pEvent->obid;     // Clientid
                             pdiscoverNode->guid = guid;                 // Node guid
                             pdiscoverNode->pThread = NULL;              // No thread yet
                             pdiscoverNode->pThread = new discoveryVSCPThread();
@@ -519,7 +519,7 @@ CNodeInformation * daemonVSCPThread::addNodeIfNotKnown( vscpEvent *pEvent )
 
                 pNode->m_level = pDeviceItem->m_driverLevel;
 
-                // Construct a devicename if no devicename set
+                // Construct a device name if no device name set
                 // 'devicename_clientid'
                 if ( pNode->m_deviceName.IsEmpty() ) {
                     pNode->m_deviceName = pDeviceItem->m_strName;
@@ -738,7 +738,7 @@ bool daemonVSCPThread::sendMulticastInformationProxyEvent( int sock,
     // Clear buffer
     memset( buf, 0, sizeof( buf ) );
 
-    //  0 	Packet type & encryption setings
+    //  0 	Packet type & encryption stings
     //  1 	HEAD
     //  2 	Timestamp microseconds MSB
     //  3 	Timestamp microseconds
@@ -765,7 +765,7 @@ bool daemonVSCPThread::sendMulticastInformationProxyEvent( int sock,
     //  64-127 	    Real text name of node( if any ).Set to all zero if not available.
     //  128-191     Real text name of interface ( if any ).Set to all zero if not available.
 
-    // Packe type
+    // Packet type
     buf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = SET_VSCP_MULTICAST_TYPE( VSCP_MULTICAST_TYPE_EVENT , VSCP_MULTICAST_ENCRYPTION_NONE );
 
     // VSCP header

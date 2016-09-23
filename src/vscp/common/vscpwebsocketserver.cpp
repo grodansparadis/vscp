@@ -1369,7 +1369,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         resultstr += _(";");
         resultstr += wxString::Format(_("%d.%d.%d.%d"), VSCPD_MAJOR_VERSION,
                                                             VSCPD_MINOR_VERSION,
-                                                            VSCPD_SUB_VERSION,
+                                                            VSCPD_RELEASE_VERSION,
                                                             VSCPD_BUILD_VERSION );
         mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, (const char *)resultstr.mbc_str() );
         

@@ -239,11 +239,11 @@ private:
     /// Zone that automation server belongs to
     uint8_t m_zone;
 
-    /// Subzone that automation server belongs to
+    /// Sub zone that automation server belongs to
     uint8_t m_subzone;
 
     /*!
-        Timezone for this computer
+        Time zone for this computer
         GMT = 0;
     */
     //double m_timezone;
@@ -283,25 +283,25 @@ private:
 
     /*!
         Enable/disable the CLASS1.INFORMATION, Type=52 (Civil sunrise twilight time) to be sent. 
-        Longitude, latitude and timezone must be set for this to work correctly.
+        Longitude, latitude and time zone must be set for this to work correctly.
     */
     bool m_bSunRiseEvent;
 
     /*!
         Enable/disable the CLASS1.INFORMATION, Type=52 (Civil sunrise twilight time) to be sent. 
-        Longitude, latitude and timezone must be set for this to work correctly.
+        Longitude, latitude and time zone must be set for this to work correctly.
     */
     bool m_bSunRiseTwilightEvent;
 
     /*!
         Enable/disable the CLASS1.INFORMATION, Type=45 (Sunset) to be sent. 
-        Longitude, latitude and timezone must be set for this to work correctly.
+        Longitude, latitude and time zone must be set for this to work correctly.
     */
     bool m_bSunSetEvent;
 
     /*!
         Enable/disable the CLASS1.INFORMATION, Type=53 (Civil sunset twilight time) 
-        to be sent. Longitude, latitude and timezone must be set for this to work correctly.
+        to be sent. Longitude, latitude and time zone must be set for this to work correctly.
     */
     bool m_bSunSetTwilightEvent;
 
@@ -322,7 +322,7 @@ private:
     double m_daylength;               // hours/minutes
     double m_SunMaxAltitude;
 
-    /// Logitude for this server
+    /// Longitude for this server
     double m_longitude;
 
     /// Latitude for this server
