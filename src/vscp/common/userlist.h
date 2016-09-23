@@ -230,7 +230,8 @@ public:
     void setFilter( const vscpEventFilter * pFilter ) { if ( NULL != pFilter ) memcpy( &m_filterVSCP, 
                                                                     pFilter,
                                                                     sizeof( vscpEventFilter ) ); };
-    bool setFilterFromString( wxString& strFilter ) { return vscp_readFilterFromString( &m_filterVSCP, strFilter ); };                                                                    
+    bool setFilterFromString( wxString& strFilter ) { return vscp_readFilterFromString( &m_filterVSCP, strFilter ); };
+    
 protected:
     
     // System assigned ID for user (-1 for system users (not in DB), 0 for new users )

@@ -544,7 +544,8 @@ public:
                     const uint8_t type = VSCP_DAEMON_VARIABLE_CODE_STRING,
                     const uint32_t userid = USER_ID_ADMIN,
                     const bool bPersistent = false,
-                    const uint32_t accessRights = PERMISSON_OWNER_ALL );
+                    const uint32_t accessRights = PERMISSON_OWNER_ALL,
+                    const wxString& note = _("") );
 
     // Variant of the above with string as type
     bool add(const wxString& name,
@@ -552,7 +553,8 @@ public:
                             const wxString& strType, 
                             const uint32_t userid = USER_ID_ADMIN,
                             const bool bPersistent = false,
-                            const uint32_t accessRights = PERMISSON_OWNER_ALL);
+                            const uint32_t accessRights = PERMISSON_OWNER_ALL,
+                            const wxString& note = _("") );
 
     /*!
         Remove named variable

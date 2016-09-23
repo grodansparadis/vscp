@@ -4998,7 +4998,8 @@ bool CVariableStorage::add( const wxString& name,
                                     const uint8_t type,
                                     const uint32_t userid,
                                     const bool bPersistent,
-                                    const uint32_t accessRights )
+                                    const uint32_t accessRights,
+                                    const wxString& note )
 {
     CVSCPVariable variable;
             
@@ -5008,6 +5009,7 @@ bool CVariableStorage::add( const wxString& name,
     variable.setPersistent( bPersistent );
     variable.setUserID( userid );
     variable.setAccessRights( accessRights );
+    variable.setNote( note );
 
     return add( variable );
 }
@@ -5021,7 +5023,8 @@ bool CVariableStorage::add( const wxString& varName,
                                             const wxString& strType,    
                                             const uint32_t userid,
                                             bool bPersistent,
-                                            const uint32_t accessRights ) 
+                                            const uint32_t accessRights,
+                                            const wxString& note ) 
 {
     uint8_t type = CVSCPVariable::getVariableTypeFromString( strType );
     return add( varName,
@@ -5029,7 +5032,8 @@ bool CVariableStorage::add( const wxString& varName,
                     type,
                     userid,
                     bPersistent,
-                    accessRights ); 
+                    accessRights,
+                    note ); 
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5051,22 +5055,22 @@ bool CVariableStorage::remove( wxString& name )
     }
     
     if ( variable.isPersistent() ) {
-        char *sql = sqlite3_mprintf( "DELETE FROM \"idx_variable\" "
-                                        "WHERE idx_variable='%d';",
+        char *sql = sqlite3_mprintf( VSCPDB_VARIABLE_WITH_ID,
                                     variable.getID() );
         if ( SQLITE_OK != sqlite3_exec( m_db_vscp_external_variable, sql, NULL, NULL, &zErrMsg ) ) {
             sqlite3_free( sql );
+            gpctrlObj->logMsg( wxString::Format( _("Delete variable: Unable to delete variable in db. [%s] Err=%s\n"), sql, zErrMsg ) );
             return false;
         }
         
         sqlite3_free( sql );                            
     }
     else {        
-        char *sql = sqlite3_mprintf( "DELETE FROM \"idx_variable\" "
-                                        "WHERE idx_variable='%d';",
+        char *sql = sqlite3_mprintf( VSCPDB_VARIABLE_WITH_ID,
                                     variable.getID() );
         if ( SQLITE_OK != sqlite3_exec( m_db_vscp_internal_variable, sql, NULL, NULL, &zErrMsg ) ) {
             sqlite3_free( sql );
+            gpctrlObj->logMsg( wxString::Format( _("Delete variable: Unable to delete variable in db. [%s] Err=%s\n"), sql, zErrMsg ) );
             return false;
         }
         

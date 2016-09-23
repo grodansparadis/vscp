@@ -534,7 +534,7 @@ bool CUserList::loadUsers( void )
     // Check if user is already in the database
     char *pErrMsg = 0;
     sqlite3_stmt *ppStmt;
-    const char *psql = "SELECT * from 'user'";
+    const char *psql = VSCPDB_USER_ALL;
 
     // Check if database is open
     if ( NULL == gpctrlObj->m_db_vscp_daemon ) {
@@ -563,16 +563,14 @@ bool CUserList::loadUsers( void )
            const unsigned char *p;
             
             // id
-            pItem->setUserID( sqlite3_column_int( ppStmt,VSCPDB_ORDINAL_USER_ID ) );
+            pItem->setUserID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_USER_ID ) );
                     
             // User
             p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_USER_USERNAME );
             if ( NULL != p ) {
                 pItem->setUser( wxString::FromUTF8( (const char *)p ) );
             }
-            
-            wxLogDebug( _("Adding user: ") + pItem->getUser() );
-            
+                        
             // Password
             p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_USER_PASSWORD );
             if ( NULL != p ) {
@@ -621,10 +619,8 @@ bool CUserList::loadUsers( void )
         sqlite3_step( ppStmt );
     }
     
-    sqlite3_finalize( ppStmt );
-    
-    gpctrlObj->m_db_vscp_configMutex.Unlock();
-    
+    sqlite3_finalize( ppStmt );    
+    gpctrlObj->m_db_vscp_configMutex.Unlock();    
     return true;
 }
 

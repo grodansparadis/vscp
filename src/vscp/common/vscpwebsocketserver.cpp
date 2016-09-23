@@ -395,7 +395,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
 
     }
     // ------------------------------------------------------------------------
-    //                           CLRQUEUE/CLRQ
+    //                           CLRQ/CLRQUEUE
     //-------------------------------------------------------------------------
     
     // Clear the event queue
@@ -422,7 +422,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         if ( (pSession->m_pClientItem->m_pUserItem->getUserRight( 0 ) & 0xf) < 1 ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
-                                    "-;CLRQUEUE;%d;%s",
+                                    "-;CLRQ;%d;%s",
                                     WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                     WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
             wxString strErr =
@@ -443,10 +443,19 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         pSession->m_pClientItem->m_clientInputQueue.Clear();
         pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
 
-        mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, "+;CLRQUEUE" );
+        mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, "+;CLRQ" );
     }
+    
+    
+    
+    ////////////////////////////////////////////////////////////////////////////
+    //                              VARIABLES
+    ////////////////////////////////////////////////////////////////////////////
+    
+    
+    
     // ------------------------------------------------------------------------
-    //                                WRITEVAR/WVAR
+    //                                WVAR/WRITEVAR
     //-------------------------------------------------------------------------
     
     else if ( ( 0 == strTok.Find( _("WRITEVAR") ) ) || 
@@ -541,7 +550,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
 
     }
     // ------------------------------------------------------------------------
-    //                            CREATEVAR/CVAR
+    //                            CVAR/CREATEVAR
     //-------------------------------------------------------------------------
     
     else if ( ( 0 == strTok.Find(_("CREATEVAR") ) ) || 
@@ -549,8 +558,10 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
 
         wxString name;
         wxString value;
+        wxString note;
         uint8_t type = VSCP_DAEMON_VARIABLE_CODE_STRING;
         bool bPersistent = false;
+        uint32_t accessrights = 744;
 
         // Must be authorised to do this
         if ( !pSession->bAuthenticated ) {
@@ -580,6 +591,8 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
             pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
             return ;    // We still leave channel open
         }
+        
+        // “C;CVAR;name;type;accessrights;bPersistens;value;note”
 
         // Get variable name
         if (tkz.HasMoreTokens()) {
@@ -595,7 +608,12 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
 
         // Get variable type
         if (tkz.HasMoreTokens()) {
-            type = vscp_readStringValue(tkz.GetNextToken());
+            type = vscp_readStringValue( tkz.GetNextToken() );
+        }
+        
+        // Get variable accessrights
+        if (tkz.HasMoreTokens()) {
+            accessrights = vscp_readStringValue( tkz.GetNextToken() );
         }
 
         // Get variable Persistence
@@ -621,16 +639,21 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         if (tkz.HasMoreTokens()) {
             value = tkz.GetNextToken();
         }
-        else {
-            mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
-                                    "-;CVAR;%d;%s",
-                                    WEBSOCK_ERROR_SYNTAX_ERROR,
-                                    WEBSOCK_STR_ERROR_SYNTAX_ERROR );
-            return;
+
+        
+        // Get variable note
+        if (tkz.HasMoreTokens()) {
+            note = tkz.GetNextToken();
         }
 
         // Add the variable
-        if (!pCtrlObject->m_VSCP_Variables.add(name, value, type, bPersistent)) {
+        if (!pCtrlObject->m_VSCP_Variables.add( name, 
+                            value, 
+                            type, 
+                            pSession->m_pClientItem->m_pUserItem->getUserID(), 
+                            bPersistent, 
+                            accessrights, 
+                            note ) ) {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
                                     "-;CVAR;%d;%s",
                                     WEBSOCK_ERROR_SYNTAX_ERROR,
@@ -645,7 +668,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
 
     }
     // ------------------------------------------------------------------------
-    //                                RVAR
+    //                            RVAR/READVAR
     //-------------------------------------------------------------------------
     
     else if ( ( 0 == strTok.Find(_("READVAR") ) ) || 
@@ -707,11 +730,11 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
     }
     
     // ------------------------------------------------------------------------
-    //                               RESETVAR
+    //                               RSTVAR/RESETVAR
     //-------------------------------------------------------------------------
     
     else if ( ( 0 == strTok.Find(_("RESETVAR") ) ) || 
-                    ( 0 == strTok.Find(_("RESVAR") ) ) ) {
+                    ( 0 == strTok.Find(_("RSTVAR") ) ) ) {
 
         CVSCPVariable variable;
         wxString strvalue;
@@ -721,7 +744,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         if ( !pSession->bAuthenticated ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
-                                    "-;RESVAR;%d;%s",
+                                    "-;RSTVAR;%d;%s",
                                     WEBSOCK_ERROR_NOT_AUTHORISED,
                                     WEBSOCK_STR_ERROR_NOT_AUTHORISED );
             return;     // We still leave channel open
@@ -731,7 +754,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         if ( (pSession->m_pClientItem->m_pUserItem->getUserRight( 0 ) & 0xf) < 6 ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
-                                    "-;RESVAR;%d;%s",
+                                    "-;RSTVAR;%d;%s",
                                     WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                     WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
             wxString strErr =
@@ -745,7 +768,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         strTok = tkz.GetNextToken();
         if ( pCtrlObject->m_VSCP_Variables.find(strTok, variable )) {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
-                                    "-;RESVAR;%d;%s",
+                                    "-;RSTVAR;%d;%s",
                                     WEBSOCK_ERROR_VARIABLE_UNKNOWN,
                                     WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN );
             pCtrlObject->logMsg ( _("[Websocket] User/host not authorised to reset a variable.\n"),
@@ -760,7 +783,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         variable.writeValueToString( strvalue );
         type = variable.getType();
 
-        wxString resultstr = _( "+;RESVAR;" );
+        wxString resultstr = _( "+;RSTVAR;" );
         resultstr += strTok;
         resultstr += _( ";" );
         resultstr += wxString::Format( _( "%d" ), type );
@@ -943,11 +966,11 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
     }
     
     // ------------------------------------------------------------------------
-    //                               LISTVAR
+    //                               LSTVAR/LISTVAR
     //-------------------------------------------------------------------------
     
     else if ( ( 0 == strTok.Find( _("LISTVAR") ) ) || 
-                    ( 0 == strTok.Find( _("LVAR") ) ) ) {
+                    ( 0 == strTok.Find( _("LSTVAR") ) ) ) {
 
         CVSCPVariable variable;
         wxString strvalue;
@@ -956,7 +979,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         if ( !pSession->bAuthenticated ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
-                                    "-;LVAR;%d;%s",
+                                    "-;LSTVAR;%d;%s",
                                     WEBSOCK_ERROR_NOT_AUTHORISED,
                                     WEBSOCK_STR_ERROR_NOT_AUTHORISED );
             pCtrlObject->logMsg ( _("[Websocket] User/host not authorised to list variable(s).\n"),
@@ -970,7 +993,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         if ( (pSession->m_pClientItem->m_pUserItem->getUserRight( 0 ) & 0xf) < 4 ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
-                                    "-;LVAR;%d;%s",
+                                    "-;LSTVAR;%d;%s",
                                     WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                     WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
             wxString strErr =
@@ -1022,8 +1045,14 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
 
     }
     
+    
+    ////////////////////////////////////////////////////////////////////////////
+    //                             USER TABLES
+    ////////////////////////////////////////////////////////////////////////////
+    
+    
     // ------------------------------------------------------------------------
-    //                                GT/GETTABLE
+    //                             GT/GETTABLE
     //-------------------------------------------------------------------------
     
     else if ( ( 0 == strTok.Find(_("GT") ) ) || 

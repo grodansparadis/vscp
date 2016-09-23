@@ -235,6 +235,8 @@
                 "SET username='%s',password='%s',fullname='%s',filter='%s',rights=%d,allowedevents=%s',allowedremotes='%s',allowedremotes='%s',note='%s' "\
                 " WHERE idx_user='%d'"
 
+#define VSCPDB_USER_ALL "SELECT * from 'user'"
+
 #define VSCPDB_USER_CHECK_USER "SELECT idx_user from 'user' WHERE username='%s'"
 
 #define VSCPDB_USER_CHECK_USER_ID "SELECT username FROM 'user' where idx_user='%lu'"
@@ -282,7 +284,7 @@
 
 
 //*****************************************************************************
-//                                GUID (Discovery)    . DB:discovery
+//                     GUID (Discovery)    . DB:discovery
 //*****************************************************************************
 
 /*
@@ -591,6 +593,8 @@
 #define VSCPDB_VARIABLE_FIND_ALL "SELECT * FROM 'variable'"
 
 #define VSCPDB_VARIABLE_FIND_FROM_NAME "SELECT * FROM 'variable' WHERE name='%s'"
+
+#define VSCPDB_VARIABLE_WITH_ID  "DELETE FROM 'variable' WHERE idx_variable='%d';"
 
 #define VSCPDB_ORDINAL_VARIABLE_ID              0   //
 #define VSCPDB_ORDINAL_VARIABLE_BSTOCK          1   //

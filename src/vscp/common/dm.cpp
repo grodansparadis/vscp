@@ -1874,7 +1874,7 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                 strResult += wxString::Format( _("%d"), VSCPD_MINOR_VERSION );
             }
             else if (  str.StartsWith( wxT("%vscp.version.sub"), &str ) ) {
-                strResult += wxString::Format( _("%d"), VSCPD_SUB_VERSION );
+                strResult += wxString::Format( _("%d"), VSCPD_RELEASE_VERSION );
             }
             else if (  str.StartsWith( wxT("%vscp.version.build"), &str ) ) {
                 strResult += wxString::Format( _("%d"), VSCPD_BUILD_VERSION );

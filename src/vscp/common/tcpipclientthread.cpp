@@ -1360,7 +1360,7 @@ void VSCPClientThread::handleClientGetVersion ( struct mg_connection *conn,
                 "%d,%d,%d\r\n%s",
                 VSCPD_MAJOR_VERSION,
                 VSCPD_MINOR_VERSION,
-                VSCPD_SUB_VERSION,
+                VSCPD_RELEASE_VERSION,
                 MSG_OK );
 
     mg_send( conn,  outbuf, strlen ( outbuf ) );
