@@ -453,102 +453,6 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
     ////////////////////////////////////////////////////////////////////////////
     
     
-    
-    // ------------------------------------------------------------------------
-    //                                WVAR/WRITEVAR
-    //-------------------------------------------------------------------------
-    
-    else if ( ( 0 == strTok.Find( _("WRITEVAR") ) ) || 
-                ( 0 == strTok.Find( _("WVAR") ) ) ) {
-
-        CVSCPVariable variable;
-        wxString strvalue;
-        uint8_t type;
-
-        // Must be authorized to do this
-        if ( !pSession->bAuthenticated ) {
-            mg_printf_websocket_frame( nc,
-                                    WEBSOCKET_OP_TEXT,
-                                    "-;WVAR;%d;%s",
-                                    WEBSOCK_ERROR_NOT_AUTHORISED,
-                                    WEBSOCK_STR_ERROR_NOT_AUTHORISED );
-            pCtrlObject->logMsg ( _("[Websocket] User/host not authorised to write a variable.\n"),
-                                        DAEMON_LOGMSG_NORMAL,
-                                        DAEMON_LOGTYPE_SECURITY );
-
-            return; // We still leave channel open
-        }
-
-        // Check privilege
-        if ( (pSession->m_pClientItem->m_pUserItem->getUserRight( 0 ) & 0xf) < 6 ) {
-            mg_printf_websocket_frame( nc,
-                                    WEBSOCKET_OP_TEXT,
-                                    "-;WVAR;%d;%s",
-                                    WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
-                                    WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
-            wxString strErr =
-                        wxString::Format( _("[Websocket] User [%s] not allowed to do write variable.\n"),
-                                                pSession->m_pClientItem->m_pUserItem->getUser().mbc_str() );
-
-            pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
-            return;     // We still leave channel open
-        }
-
-        // Get variablename
-        wxString strVarName;
-        if (tkz.HasMoreTokens()) {
-
-
-            strVarName = tkz.GetNextToken();
-            if ( pCtrlObject->m_VSCP_Variables.find(strVarName, variable ) ) {
-                mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
-                                    "-;WVAR;%d;%s",
-                                    WEBSOCK_ERROR_VARIABLE_UNKNOWN,
-                                    WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN );
-                return;
-            }
-
-            // Set variable value
-            if (tkz.HasMoreTokens()) {
-                strTok = tkz.GetNextToken();
-                if (!variable.setValueFromString(variable.getType(), strTok)) {
-                    mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
-                                    "-;WVAR;%d;%s",
-                                    WEBSOCK_ERROR_SYNTAX_ERROR,
-                                    WEBSOCK_STR_ERROR_SYNTAX_ERROR );
-                    return;
-                }
-            }
-            else {
-                mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
-                                    "-;WVAR;%d;%s",
-                                    WEBSOCK_ERROR_SYNTAX_ERROR,
-                                    WEBSOCK_STR_ERROR_SYNTAX_ERROR );
-                return;
-            }
-        }
-        else {
-            mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
-                                    "-;WVAR;%d;%s",
-                                    WEBSOCK_ERROR_SYNTAX_ERROR,
-                                    WEBSOCK_STR_ERROR_SYNTAX_ERROR );
-            return;
-        }
-
-        variable.writeValueToString( strvalue );
-        type = variable.getType();
-
-        wxString resultstr = _( "+;WVAR;" );
-        resultstr += strVarName;
-        resultstr += _( ";" );
-        resultstr += wxString::Format( _( "%d" ), type );
-        resultstr += _( ";" );
-        resultstr += strvalue;
-
-        // Positive reply
-        mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, (const char *)resultstr.mbc_str() );
-
-    }
     // ------------------------------------------------------------------------
     //                            CVAR/CREATEVAR
     //-------------------------------------------------------------------------
@@ -611,7 +515,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
             type = vscp_readStringValue( tkz.GetNextToken() );
         }
         
-        // Get variable accessrights
+        // Get variable access rights
         if (tkz.HasMoreTokens()) {
             accessrights = vscp_readStringValue( tkz.GetNextToken() );
         }
@@ -667,6 +571,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, (const char *)resultstr.mbc_str() );
 
     }
+    
     // ------------------------------------------------------------------------
     //                            RVAR/READVAR
     //-------------------------------------------------------------------------
@@ -709,7 +614,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         }
 
         strTok = tkz.GetNextToken();
-        if ( pCtrlObject->m_VSCP_Variables.find( strTok, variable ) ) {
+        if ( 0 == pCtrlObject->m_VSCP_Variables.find( strTok, variable ) ) {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
                                     "-;RVAR;%d;%s",
                                     WEBSOCK_ERROR_VARIABLE_UNKNOWN,
@@ -717,16 +622,115 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
             return;
         }
 
-        variable.writeValueToString(strvalue);
-        type = variable.getType();
-
+        //variable.writeValueToString(strvalue);
+        //type = variable.getType();
+        // name;type;bPersistent;userid;rights;lastchanged;value;note
         wxString resultstr = _("+;RVAR;");
-        resultstr += strTok;
-        resultstr += _(";");
-        resultstr += wxString::Format(_("%d"), type);
-        resultstr += _(";");
-        resultstr += strvalue;
+        resultstr += variable.getAsString( false );
         mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, (const char *)resultstr.mbc_str() );
+    }
+    
+    // ------------------------------------------------------------------------
+    //                                WVAR/WRITEVAR
+    //-------------------------------------------------------------------------
+    
+    else if ( ( 0 == strTok.Find( _("WRITEVAR") ) ) || 
+                ( 0 == strTok.Find( _("WVAR") ) ) ) {
+
+        CVSCPVariable variable;
+        wxString strvalue;
+        uint8_t type;
+
+        // Must be authorised to do this
+        if ( !pSession->bAuthenticated ) {
+            mg_printf_websocket_frame( nc,
+                                    WEBSOCKET_OP_TEXT,
+                                    "-;WVAR;%d;%s",
+                                    WEBSOCK_ERROR_NOT_AUTHORISED,
+                                    WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            pCtrlObject->logMsg ( _("[Websocket] User/host not authorised to write a variable.\n"),
+                                        DAEMON_LOGMSG_NORMAL,
+                                        DAEMON_LOGTYPE_SECURITY );
+
+            return; // We still leave channel open
+        }
+
+        // Check privilege
+        if ( (pSession->m_pClientItem->m_pUserItem->getUserRight( 0 ) & 0xf) < 6 ) {
+            mg_printf_websocket_frame( nc,
+                                    WEBSOCKET_OP_TEXT,
+                                    "-;WVAR;%d;%s",
+                                    WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
+                                    WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
+            wxString strErr =
+                        wxString::Format( _("[Websocket] User [%s] not allowed to do write variable.\n"),
+                                                pSession->m_pClientItem->m_pUserItem->getUser().mbc_str() );
+
+            pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
+            return;     // We still leave channel open
+        }
+
+        // Get variable name
+        wxString strVarName;
+        if (tkz.HasMoreTokens()) {
+
+
+            strVarName = tkz.GetNextToken();
+            if ( 0 == pCtrlObject->m_VSCP_Variables.find( strVarName.Upper(), variable ) ) {
+                mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
+                                    "-;WVAR;%d;%s",
+                                    WEBSOCK_ERROR_VARIABLE_UNKNOWN,
+                                    WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN );
+                return;
+            }
+
+            // Set variable value
+            if (tkz.HasMoreTokens()) {
+                
+                strTok = tkz.GetNextToken();
+                if (!variable.setValueFromString(variable.getType(), strTok)) {
+                    mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
+                                    "-;WVAR;%d;%s",
+                                    WEBSOCK_ERROR_SYNTAX_ERROR,
+                                    WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+                    return;
+                }
+                
+                // Update the variable
+                if ( !pCtrlObject->m_VSCP_Variables.update( variable ) ) {
+                    mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
+                                    "-;WVAR;%d;%s",
+                                    WEBSOCK_STR_ERROR_VARIABLE_UPDATE,
+                                    WEBSOCK_STR_ERROR_VARIABLE_UPDATE );
+                return;
+                }
+                
+            }
+            else {
+                mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
+                                    "-;WVAR;%d;%s",
+                                    WEBSOCK_ERROR_SYNTAX_ERROR,
+                                    WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+                return;
+            }
+        }
+        else {
+            mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
+                                    "-;WVAR;%d;%s",
+                                    WEBSOCK_ERROR_SYNTAX_ERROR,
+                                    WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            return;
+        }
+
+        //variable.writeValueToString( strvalue );
+        //type = variable.getType();
+
+        wxString resultstr = _( "+;WVAR;" );
+        resultstr += strVarName;
+
+        // Positive reply
+        mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, (const char *)resultstr.mbc_str() );
+
     }
     
     // ------------------------------------------------------------------------
@@ -766,7 +770,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         }
 
         strTok = tkz.GetNextToken();
-        if ( pCtrlObject->m_VSCP_Variables.find(strTok, variable )) {
+        if ( 0 == pCtrlObject->m_VSCP_Variables.find(strTok, variable )) {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
                                     "-;RSTVAR;%d;%s",
                                     WEBSOCK_ERROR_VARIABLE_UNKNOWN,
@@ -802,7 +806,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
                 ( 0 == strTok.Find(_("REMOVEVAR") ) ) ) {
 
         CVSCPVariable variable;
-        wxString strvalue;
+        wxString name;
 
         // Must be authorised to do this
         if ( !pSession->bAuthenticated ) {
@@ -833,8 +837,8 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
             return;     // We still leave channel open
         }
 
-        strTok = tkz.GetNextToken();
-        if ( pCtrlObject->m_VSCP_Variables.find(strTok, variable ) ) {
+        name = tkz.GetNextToken();
+        if ( 0 == pCtrlObject->m_VSCP_Variables.find( name, variable ) ) {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
                                     "-;DELVAR;%d;%s",
                                     WEBSOCK_ERROR_VARIABLE_UNKNOWN,
@@ -843,11 +847,11 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         }
 
         pCtrlObject->m_variableMutex.Lock();
-        pCtrlObject->m_VSCP_Variables.remove( strTok );
+        pCtrlObject->m_VSCP_Variables.remove( name );
         pCtrlObject->m_variableMutex.Unlock();
 
         wxString strResult = _("+;DELVAR;");
-        strResult += strTok;
+        strResult += name;
         mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, (const char *)strResult.mbc_str() );
 
     }
@@ -891,7 +895,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         }
 
         strTok = tkz.GetNextToken();
-        if ( pCtrlObject->m_VSCP_Variables.find(strTok, variable ) ) {
+        if ( 0 == pCtrlObject->m_VSCP_Variables.find(strTok, variable ) ) {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
                                     "-;LENVAR;%d;%s",
                                     WEBSOCK_ERROR_VARIABLE_UNKNOWN,
@@ -947,7 +951,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         }
 
         strTok = tkz.GetNextToken();
-        if ( pCtrlObject->m_VSCP_Variables.find(strTok, variable ) ) {
+        if ( 0 == pCtrlObject->m_VSCP_Variables.find(strTok, variable ) ) {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
                                     "-;LCVAR;%d;%s",
                                     WEBSOCK_ERROR_VARIABLE_UNKNOWN,
@@ -974,6 +978,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
 
         CVSCPVariable variable;
         wxString strvalue;
+        wxString strSearch;
 
         // Must be authorised to do this
         if ( !pSession->bAuthenticated ) {
@@ -1008,6 +1013,48 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         wxString resultstr;
         wxString strWork;
         m_pCtrlObject->m_variableMutex.Lock();
+        
+        if (tkz.HasMoreTokens()) {
+            strSearch = tkz.GetNextToken();
+            strSearch.Trim();
+            if ( strSearch.IsEmpty() ) {
+                strSearch = _("(.*)");  // list all
+            }
+        }
+        else {
+            strSearch = _("(.*)");      // List all
+        }
+        
+        wxString wxstr;
+        wxArrayString arrayVars;
+        m_pCtrlObject->m_VSCP_Variables.getVarlistFromRegExp( arrayVars, strSearch );
+    
+        if ( arrayVars.Count() ) {
+            
+            // +;LSTVAR;ordinal;name;type;userid;accessrights;persistance;last_change
+            for ( int i=0; i<arrayVars.Count(); i++ ) {
+                if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( arrayVars[ i ], variable ) ) {
+                    
+                    wxstr = wxString::Format( _("+;LSTVAR;%d;"), i );
+                    wxstr += variable.getAsString();
+                    
+                    mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, (const char *)wxstr.mbc_str() );
+                }
+            }
+    
+        }
+        else {
+            mg_printf_websocket_frame( nc,
+                                    WEBSOCKET_OP_TEXT,
+                                    "-;LSTVAR;%d;%s",
+                                    WEBSOCK_ERROR_VARIABLE_UNKNOWN,
+                                    WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN );
+        }    
+        
+        
+        m_pCtrlObject->m_variableMutex.Unlock();
+        
+        
 /* TODO
         // Send count
         resultstr = wxString::Format( _( "+;LISTVAR;%zu" ), m_pCtrlObject->m_VSCP_Variables.m_listVariable.GetCount() );

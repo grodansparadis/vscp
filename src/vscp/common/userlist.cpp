@@ -64,9 +64,9 @@ extern CControlObject *gpctrlObj;
 
 CUserItem::CUserItem(void)
 {
-    m_userID = USER_IS_LOCAL;    // Local user
+    m_userID = VSCP_ADD_USER_UNINITIALISED;
     
-    // Let all events thrue
+    // Accept all events 
     vscp_clearVSCPFilter( &m_filterVSCP );
     
     // No user rights
@@ -333,7 +333,7 @@ bool CUserItem::saveToDatabase( void )
     
     // Internal records can't be saved to db
     // driver users is an example on users that are only local
-    if ( USER_IS_LOCAL == m_userID ) return false;
+    if ( m_userID > VSCP_LOCAL_USER_OFFSET ) return false;
     
     wxString strFilter, strMask, strBoth;
     strBoth = strFilter + _(",") + strMask;
@@ -635,11 +635,17 @@ bool CUserList::addUser( const wxString& user,
                             const wxString& userRights,
                             const wxString& allowedRemotes,
                             const wxString& allowedEvents,
-                            bool bSystemUser )
+                            uint32_t bFlags )
 {
+    static uint32_t cntLocaluser = VSCP_LOCAL_USER_OFFSET;
     // Check if user is already in the database
     char *pErrMsg = 0;
     sqlite3_stmt *ppStmt;
+    
+    // Cant add user with name that is already defined.
+    if ( NULL!= m_userhashmap[ user ] ) {
+        return false;
+    }
 
     // Check if database is open
     if ( NULL == gpctrlObj->m_db_vscp_daemon ) {
@@ -648,14 +654,15 @@ bool CUserList::addUser( const wxString& user,
     }
 
     // New user item
-    CUserItem *pItem = new CUserItem;
+    CUserItem *pItem = new CUserItem; 
     if (NULL == pItem) return false;
     
-    if ( bSystemUser ) {
-        pItem->setUserID( USER_IS_LOCAL );   // Never save to DB
+    if ( VSCP_ADD_USER_FLAG_LOCAL & bFlags ) {
+        pItem->setUserID( cntLocaluser++ ); // Never save to DB
     }
-    else {
-        pItem->setUserID( USER_IS_UNSAVED ); // Should be save to DB
+  
+    if ( VSCP_ADD_USER_FLAG_ADMIN & bFlags ) {
+        pItem->setUserID( 0 );              // The one and only admin user
     }
     
     // Check if user is defined already
@@ -684,7 +691,7 @@ bool CUserList::addUser( const wxString& user,
         do {
             
             wxString str = tkz.GetNextToken();
-            if (str.IsSameAs(_("admin"), false) && bSystemUser ) {
+            if ( str.IsSameAs( _("admin"), false) && ( VSCP_ADD_USER_FLAG_ADMIN & bFlags ) ) {
                 // All rights
                 for (int i= 0; i<USER_PRIVILEGE_BYTES; i++ ) {
                     pItem->setUserRight( i, 0xff );

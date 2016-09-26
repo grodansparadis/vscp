@@ -832,7 +832,7 @@ void CVSCPVariable::getValue(vscpEventEx *pEventEx)
 
 void CVSCPVariable::getValue(wxDateTime *pValue)
 {
-    pValue->ParseDateTime( m_strValue );
+    pValue->ParseISOCombined( m_strValue );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -898,15 +898,35 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_INTEGER:
-            m_strValue = strValue;
+            {
+                long lval;
+                if ( strValue.ToLong( &lval ) ) {
+                    m_strValue = wxString::Format(_("%d"), (int)lval );
+                }
+                else {
+                    m_strValue = _("0");
+                }
+            }
             break;
             
         case VSCP_DAEMON_VARIABLE_CODE_LONG:
-            m_strValue = strValue;
+            long lval;
+            if ( strValue.ToLong( &lval ) ) {
+                m_strValue = wxString::Format(_("%ld"), lval );
+            }
+            else {
+                m_strValue = _("0");
+            }
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_DOUBLE:
-            m_strValue = strValue;
+            double dval;
+            if ( strValue.ToDouble( &dval ) ) {
+                m_strValue = wxString::Format(_("%f"), dval );
+            }
+            else {
+                m_strValue = _("0");
+            }
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
@@ -1311,6 +1331,69 @@ void CVSCPVariable::setNote( const wxString& strNote, bool bBase64 )
     
     m_note = wxstr;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// setValue
+//
+
+/*void CVSCPVariable::setValue( wxString value ) 
+{
+    switch ( m_type ) {
+        
+        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS:
+        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE:    
+        case VSCP_DAEMON_VARIABLE_CODE_INTEGER:
+            break;
+            
+        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP:    
+        case VSCP_DAEMON_VARIABLE_CODE_LONG:
+            break;
+            
+        case VSCP_DAEMON_VARIABLE_CODE_DOUBLE:
+            break;
+            
+        case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
+            break;
+            
+        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
+            break;
+            
+        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID:
+            break;
+            
+        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA:
+            break;
+            
+        case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
+            break;
+            
+        case VSCP_DAEMON_VARIABLE_CODE_DATE:
+            break;
+            
+        case VSCP_DAEMON_VARIABLE_CODE_TIME:
+            break;    
+    
+        case VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED:
+        case VSCP_DAEMON_VARIABLE_CODE_STRING:
+        case VSCP_DAEMON_VARIABLE_CODE_BLOB:    
+        case VSCP_DAEMON_VARIABLE_CODE_MIME:
+        case VSCP_DAEMON_VARIABLE_CODE_HTML:
+        case VSCP_DAEMON_VARIABLE_CODE_JAVASCRIPT:
+        case VSCP_DAEMON_VARIABLE_CODE_JSON:
+        case VSCP_DAEMON_VARIABLE_CODE_XML:
+        case VSCP_DAEMON_VARIABLE_CODE_SQL:
+        case VSCP_DAEMON_VARIABLE_CODE_LUA:
+        case VSCP_DAEMON_VARIABLE_CODE_LUA_RESULT:
+        case VSCP_DAEMON_VARIABLE_CODE_UX_TYPE1:
+        case VSCP_DAEMON_VARIABLE_CODE_DM_ROW:
+        case VSCP_DAEMON_VARIABLE_CODE_DRIVER:
+        case VSCP_DAEMON_VARIABLE_CODE_USER:
+        case VSCP_DAEMON_VARIABLE_CODE_FILTER:    
+        default:
+            m_strValue = value;
+            break;
+    } 
+}*/
 
 ///////////////////////////////////////////////////////////////////////////////
 // Reset
@@ -2579,10 +2662,10 @@ uint32_t CVariableStorage::exist(const wxString& name )
 uint32_t CVariableStorage::find(const wxString& name, CVSCPVariable& variable )
 {
     uint32_t id = 0;
-    wxString lowercase_name = name.Lower();
+    wxString uc_name = name.Upper();
     
     // Look for stock variables
-    if ( lowercase_name.StartsWith("vscp.") ) {
+    if ( uc_name.StartsWith("vscp.") ) {
         return getStockVariable( name, variable );
     }
     else {
@@ -2597,7 +2680,7 @@ uint32_t CVariableStorage::find(const wxString& name, CVSCPVariable& variable )
         
     }
     
-    return 0;
+    return 0; // Not found
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4686,7 +4769,7 @@ uint32_t CVariableStorage::findNonPersistentVariable( const wxString& name,
     
     sprintf( psql,
                 VSCPDB_VARIABLE_FIND_FROM_NAME, 
-                (const char *)name.mbc_str() );
+                (const char *)name.Upper().mbc_str() );
     
     if ( NULL == m_db_vscp_internal_variable ) {
         return 0;
@@ -4703,7 +4786,7 @@ uint32_t CVariableStorage::findNonPersistentVariable( const wxString& name,
     // Get the data for the variable
     if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
         variable.setID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_ID ) );
-        variable.m_lastChanged.ParseDateTime( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_LASTCHANGE ) );
+        variable.m_lastChanged.ParseISOCombined( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_LASTCHANGE ) );
         variable.setName( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NAME ) ) );
         variable.setType( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_TYPE ) );
         variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_VALUE ) ) );
@@ -4731,9 +4814,9 @@ uint32_t CVariableStorage::findPersistentVariable(const wxString& name, CVSCPVar
     
     sprintf( psql,
                 VSCPDB_VARIABLE_FIND_FROM_NAME, 
-                (const char *)name.mbc_str() );
+                (const char *)name.Upper().mbc_str() );
     
-    if ( NULL == m_db_vscp_internal_variable ) {
+    if ( NULL == m_db_vscp_external_variable ) {
         return 0;
     }
     
@@ -4748,7 +4831,7 @@ uint32_t CVariableStorage::findPersistentVariable(const wxString& name, CVSCPVar
     // Get the result
     if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
         variable.setID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_ID ) );
-        variable.m_lastChanged.ParseDateTime( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_LASTCHANGE ) );
+        variable.m_lastChanged.ParseISOCombined( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_LASTCHANGE ) );
         variable.setName( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NAME ) ) );
         variable.setType( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_TYPE ) );
         variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_VALUE ) ) );
@@ -4840,7 +4923,7 @@ bool CVariableStorage::listItem( varQuery *pq, CVSCPVariable& variable )
     if ( VARIABLE_INTERNAL == pq->table  ) {
         if ( SQLITE_ROW != sqlite3_step( pq->ppStmt ) ) return false; 
         variable.setID( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_ID ) );
-        variable.m_lastChanged.ParseDateTime( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_LASTCHANGE ) );
+        variable.m_lastChanged.ParseISOCombined( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_LASTCHANGE ) );
         variable.setName( wxString::FromUTF8( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_NAME ) ) );
         variable.setType( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_TYPE ) );
         variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_VALUE ) ) );
@@ -4852,7 +4935,7 @@ bool CVariableStorage::listItem( varQuery *pq, CVSCPVariable& variable )
     else if ( VARIABLE_EXTERNAL == pq->table  ) {
         if ( SQLITE_ROW != sqlite3_step( pq->ppStmt ) ) return false;
         variable.setID( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_ID ) );
-        variable.m_lastChanged.ParseDateTime( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_LASTCHANGE ) );
+        variable.m_lastChanged.ParseISOCombined( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_LASTCHANGE ) );
         variable.setName( wxString::FromUTF8( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_NAME ) ) );
         variable.setType( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_TYPE ) );
         variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_VALUE ) ) );
@@ -4920,6 +5003,7 @@ bool CVariableStorage::addStockVariable( CVSCPVariable& var )
     return true;
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // add
 //
@@ -4966,7 +5050,7 @@ bool CVariableStorage::add( CVSCPVariable& var )
     }
     else {
         char *sql = sqlite3_mprintf( VSCPDB_VARIABLE_INSERT,
-                (const char *) var.m_lastChanged.FormatISOCombined().mbc_str(),
+                (const char *) var.m_lastChanged.Now().FormatISOCombined().mbc_str(),
                 (const char *) var.getName().mbc_str(),
                 var.getType(),
                 (const char *) var.getValue().mbc_str(),
@@ -5005,7 +5089,7 @@ bool CVariableStorage::add( const wxString& name,
             
     variable.setName( name );
     variable.setType( type );
-    variable.setValue( value );
+    variable.setValueFromString( type, value );
     variable.setPersistent( bPersistent );
     variable.setUserID( userid );
     variable.setAccessRights( accessRights );
@@ -5034,6 +5118,47 @@ bool CVariableStorage::add( const wxString& varName,
                     bPersistent,
                     accessRights,
                     note ); 
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// update
+//
+
+bool CVariableStorage::update( CVSCPVariable& var )
+{
+    uint32_t id = 0;
+    char *zErrMsg = 0;
+    
+    // Can't be stock variables 
+    if ( var.isStockVariable() ) {
+        return false;
+    }
+
+    // Must exists    
+    if ( 0 == ( id = exist( var.getName() ) ) ) {
+        return false;
+    }
+    
+    char *sql = sqlite3_mprintf( VSCPDB_VARIABLE_UPDATE, 
+                (const char *) var.m_lastChanged.FormatISOCombined().mbc_str(),
+                (const char *) var.getName().mbc_str(),
+                var.getType(),
+                (const char *) var.getValue().mbc_str(),
+                var.isPersistent() ? 1 : 0,
+                var.getUserID(),
+                var.getAccessRights(),
+                (const char *) var.getNote().mbc_str(),
+                id );
+
+    if (SQLITE_OK != sqlite3_exec( ( var.isPersistent() ? m_db_vscp_external_variable : m_db_vscp_internal_variable ), 
+                                            sql, NULL, NULL, &zErrMsg)) {            
+        gpctrlObj->logMsg( wxString::Format( _("Add variable: Unable to update variable in db. [%s] Err=%s\n"), sql, zErrMsg ) );
+        sqlite3_free(sql);
+        return false;
+    }
+
+    sqlite3_free(sql);    
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5340,7 +5465,7 @@ bool CVariableStorage::save( wxString& path, uint8_t whatToSave )
             CVSCPVariable variable;
             
             variable.setID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_ID ) );
-            variable.m_lastChanged.ParseDateTime( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_LASTCHANGE ) );
+            variable.m_lastChanged.ParseISOCombined( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_LASTCHANGE ) );
             variable.setName( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NAME ) ) );
             variable.setType( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_TYPE ) );
             variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_VALUE ) ) );
@@ -5375,7 +5500,7 @@ bool CVariableStorage::save( wxString& path, uint8_t whatToSave )
             CVSCPVariable variable;
             
             variable.setID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_ID ) );
-            variable.m_lastChanged.ParseDateTime( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_LASTCHANGE ) );
+            variable.m_lastChanged.ParseISOCombined( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_LASTCHANGE ) );
             variable.setName( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NAME ) ) );
             variable.setType( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_TYPE ) );
             variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_VALUE ) ) );

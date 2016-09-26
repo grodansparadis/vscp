@@ -111,7 +111,7 @@ public:
         @param type Variable numerical type
         @return Variable type as a string.
     */
-    static const char * getVariableTypeAsString( int type );
+    static const char *getVariableTypeAsString( int type );
 
    
     /*!
@@ -153,7 +153,8 @@ public:
      * @param bShort
      * If bShort is true
      *    name;type;bPersistent;userid;rights;lastchanged
-     * is returned. If not
+     * is returned. 
+     * If not bShort is false
      *    name;type;bPersistent;userid;rights;lastchanged;value;note
      * is returned.
      * @return Variable content in semicolon separated form. 
@@ -210,7 +211,7 @@ public:
         getValue
         @param value String that will receive value.
      */
-    void setValue(wxString value) { m_strValue = value; };
+    void setValue(wxString value) { m_strValue = value; };  
 
     /*!
         setValue
@@ -539,7 +540,7 @@ public:
         @param accessRights Access rights for the variable
         @return true on success, false on failure.
      */
-    bool add(const wxString& name,
+    bool add( const wxString& name,
                     const wxString& value,
                     const uint8_t type = VSCP_DAEMON_VARIABLE_CODE_STRING,
                     const uint32_t userid = USER_ID_ADMIN,
@@ -548,13 +549,16 @@ public:
                     const wxString& note = _("") );
 
     // Variant of the above with string as type
-    bool add(const wxString& name,
+    bool add( const wxString& name,
                             const wxString& value,
                             const wxString& strType, 
                             const uint32_t userid = USER_ID_ADMIN,
                             const bool bPersistent = false,
                             const uint32_t accessRights = PERMISSON_OWNER_ALL,
                             const wxString& note = _("") );
+    
+    // Update a variable (write to db)
+    bool update( CVSCPVariable& var );
 
     /*!
         Remove named variable

@@ -67,7 +67,7 @@
 #define MSG_VARIABLE_NOT_DEFINED            "-OK - Variable is not defined.\r\n"
 #define MSG_VARIABLE_MUST_BE_EVENT_TYPE     "-OK - Variable must be of event type.\r\n"
 #define MSG_VARIABLE_NOT_STOCK              "-OK - Operation does not work with stock variables.\r\n"
-
+#define MSG_VARIABLE_NO_SAVE                "-OK - Variable could not be saved.\r\n"
 
 //class CControlObject;
 //class CClientItem;

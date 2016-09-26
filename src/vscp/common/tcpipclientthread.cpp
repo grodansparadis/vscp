@@ -560,7 +560,7 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                             Variable
     //*********************************************************************
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "VARIABLE " ) ) ) {
+    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "VAR " ) ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 4 ) ) {
             handleClientVariable( conn, pCtrlObject );
         }
@@ -1755,7 +1755,7 @@ void VSCPClientThread::handleClientHelp( struct mg_connection *conn,
                 str += _("REMOTE            - User handling.\r\n");
                 str += _("INTERFACE         - Interface handling. \r\n");
                 str += _("DM                - Decision Matrix manipulation.\r\n");
-                str += _("VARIABLE          - Variable handling. \r\n");
+                str += _("VAR               - Variable handling. \r\n");
                 str += _("WCYD/WHATCANYOUDO - Check server capabilities. \r\n");
                 mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
@@ -1921,7 +1921,7 @@ void VSCPClientThread::handleClientHelp( struct mg_connection *conn,
         str += _("'DM save'.\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( _("VARIABLE") == strcmd ) {
+    else if ( ( _("VARIABLE") == strcmd ) || ( _("VAR") == strcmd ) ) {
         wxString str = _("'VARIABLE' Handle variables on the daemon.\r\n");
         str += _("'VARIABLE list <regular-expression>'.\r\n");        
         str += _("'VARIABLE read <variable-name>'.\r\n");
@@ -2144,9 +2144,9 @@ void VSCPClientThread::handleClientVariable( struct mg_connection *conn,
     //                            DAEMON_LOGMSG_DEBUG );
 
     pClientItem->m_currentCommandUC =
-        pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-9 );    // remove "VARIABLE "
+        pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-4 );    // remove "VAR "
     pClientItem->m_currentCommand =
-        pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length()-9 );        // remove "VARIABLE "
+        pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length()-4 );        // remove "VAR "
     pClientItem->m_currentCommandUC.Trim( false );
     pClientItem->m_currentCommand.Trim( false );
 
@@ -2234,11 +2234,11 @@ void VSCPClientThread::handleVariable_List( struct mg_connection *conn,
             strSearch = token;
         }
         else {
-            strSearch = _("(.*))");
+            strSearch = _("(.*))");     // List all
         }
     }
     else {
-        strSearch = _("(.*)");
+        strSearch = _("(.*)");          // List all
     }
 
     wxArrayString arrayVars;
@@ -2412,7 +2412,7 @@ void VSCPClientThread::handleVariable_Write( struct mg_connection *conn,
     // Value
     if ( tkz.HasMoreTokens() ) {
         
-        wxstr = tkz.GetString();       
+        wxstr = tkz.GetNextToken();       
         wxstr.Trim();
         
         variable.setValue( wxstr );
@@ -2426,7 +2426,7 @@ void VSCPClientThread::handleVariable_Write( struct mg_connection *conn,
     // Note
     if ( tkz.HasMoreTokens() ) {
         
-        wxstr = tkz.GetString();       
+        wxstr = tkz.GetNextToken();       
         wxstr.Trim();
         
         variable.setNote( wxstr );
@@ -2437,10 +2437,23 @@ void VSCPClientThread::handleVariable_Write( struct mg_connection *conn,
         return;
     }
     
-    // If the variable exist change value
-    // if not - add it.
-    m_pCtrlObject->m_VSCP_Variables.add( variable ); 
-
+    if ( m_pCtrlObject->m_VSCP_Variables.exist( variable.getName() ) ) {
+        
+        // Update in database
+        if ( !m_pCtrlObject->m_VSCP_Variables.update( variable ) ) {
+            mg_send( conn, MSG_VARIABLE_NO_SAVE, strlen ( MSG_VARIABLE_NO_SAVE ) );
+            return;
+        }
+        
+    }
+    else {
+       
+        // If the variable exist change value
+        // if not - add it.
+        m_pCtrlObject->m_VSCP_Variables.add( variable ); 
+        
+    }
+    
     mg_send( conn, MSG_OK, strlen( MSG_OK ) );
 }
 
@@ -2451,7 +2464,8 @@ void VSCPClientThread::handleVariable_Write( struct mg_connection *conn,
 void VSCPClientThread::handleVariable_WriteValue( struct mg_connection *conn,
                                                     CControlObject *pCtrlObject )
 {
-    wxString str;
+    wxString name;
+    wxString value;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
     
     pClientItem->m_currentCommand =
@@ -2464,14 +2478,11 @@ void VSCPClientThread::handleVariable_WriteValue( struct mg_connection *conn,
     pClientItem->m_currentCommandUC.Trim( false );
     pClientItem->m_currentCommandUC.Trim( true );
     
-    wxString name;
-    wxString value;
-    
     wxStringTokenizer tkz( pClientItem->m_currentCommand, _(" ") );
     
     // Variable name
     if ( tkz.HasMoreTokens() ) {
-        name = tkz.GetString();
+        name = tkz.GetNextToken();
     }
     else {
         mg_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
@@ -2480,7 +2491,7 @@ void VSCPClientThread::handleVariable_WriteValue( struct mg_connection *conn,
     
     // Variable value
     if ( tkz.HasMoreTokens() ) {
-        value = tkz.GetString();
+        value = tkz.GetNextToken();
     }
     else {
         mg_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
@@ -2489,8 +2500,16 @@ void VSCPClientThread::handleVariable_WriteValue( struct mg_connection *conn,
 
     CVSCPVariable variable;
     if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( name, variable ) ) {
+        
         // Set value and encode as BASE64 when expected
         variable.setValueFromString( variable.getType(), value, true );
+        
+        // Update in database
+        if ( !m_pCtrlObject->m_VSCP_Variables.update( variable ) ) {
+            mg_send( conn, MSG_VARIABLE_NO_SAVE, strlen ( MSG_VARIABLE_NO_SAVE ) );
+            return;
+        }
+        
     }
     else {
         mg_send( conn, MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
@@ -2526,7 +2545,7 @@ void VSCPClientThread::handleVariable_WriteNote( struct mg_connection *conn,
     
     // Variable name
     if ( tkz.HasMoreTokens() ) {
-        name = tkz.GetString();
+        name = tkz.GetNextToken();
     }
     else {
         mg_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
@@ -2535,7 +2554,7 @@ void VSCPClientThread::handleVariable_WriteNote( struct mg_connection *conn,
     
     // Variable value
     if ( tkz.HasMoreTokens() ) {
-        note = tkz.GetString();
+        note = tkz.GetNextToken();
     }
     else {
         mg_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
@@ -2544,8 +2563,16 @@ void VSCPClientThread::handleVariable_WriteNote( struct mg_connection *conn,
 
     CVSCPVariable variable;
     if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( name, variable ) ) {
+        
         // Set value and encode as BASE64 when expected
         variable.setNote( note, true );
+        
+        // Update in database
+        if ( !m_pCtrlObject->m_VSCP_Variables.update( variable ) ) {
+            mg_send( conn, MSG_VARIABLE_NO_SAVE, strlen ( MSG_VARIABLE_NO_SAVE ) );
+            return;
+        }
+        
     }
     else {
         mg_send( conn, MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
@@ -2669,6 +2696,12 @@ void VSCPClientThread::handleVariable_Reset( struct mg_connection *conn,
         
         variable.Reset();
         
+        // Update in database
+        if ( !m_pCtrlObject->m_VSCP_Variables.update( variable ) ) {
+            mg_send( conn, MSG_VARIABLE_NO_SAVE, strlen ( MSG_VARIABLE_NO_SAVE ) );
+            return;
+        }
+        
     }
     else {
         mg_send( conn, MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
@@ -2706,6 +2739,12 @@ void VSCPClientThread::handleVariable_ReadReset( struct mg_connection *conn,
         mg_send( conn,  str.mbc_str(), strlen( str.mbc_str() ) );
     
         variable.Reset();
+        
+        // Update in database
+        if ( !m_pCtrlObject->m_VSCP_Variables.update( variable ) ) {
+            mg_send( conn, MSG_VARIABLE_NO_SAVE, strlen ( MSG_VARIABLE_NO_SAVE ) );
+            return;
+        }
         
     }
     else {

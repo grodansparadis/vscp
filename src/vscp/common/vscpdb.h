@@ -573,13 +573,13 @@
 
 #define VSCPDB_VARIABLE_UPDATE "UPDATE 'variable' "\
                                         "SET lastchange='%s', "\
-                                        "name='%g', "\
+                                        "name='%q', "\
                                         "type='%d', "\
-                                        "value='%g', "\
+                                        "value='%q', "\
                                         "bPersistent='%d', "\
                                         "link_to_user='%d', "\
                                         "permission='%d', "\
-                                        "note='%g' "\
+                                        "note='%q' "\
                                         "WHERE idx_variable='%d';"
 
 #define VSCPDB_VARIABLE_INSERT "INSERT INTO 'variable' "\

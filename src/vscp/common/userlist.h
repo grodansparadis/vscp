@@ -34,9 +34,9 @@
 
 // permission bits for an object (variables)
 // uuugggooo
-// uuu = user   (rwx)
-// ggg = group  (rwx)
-// ooo = other  (rwx)
+// uuu = user(owner) (rwx)
+// ggg = group       (rwx)
+// ooo = other       (rwx)
 // First user rights is checked. If user have rights to do the operation it is 
 // allowed. If not group rights are checked and if the user is member of a group
 // that is allowed to do the operation it is allowed. Last other rights are checked
@@ -49,7 +49,6 @@
 
 // Rights byte 7
 #define VSCP_USER_RIGHT_ALLOW_RESTART                   0x80000000
-
 
 // Rights byte 6
 #define VSCP_USER_RIGHT_ALLOW_VARIABLE_SAVE             0x10000000
@@ -87,9 +86,16 @@
 #define VSCP_USER_RIGHT_PRIORITY1                       0x00000002
 #define VSCP_USER_RIGHT_PRIORITY0                       0x00000001
 
+#define VSCP_ADD_USER_UNINITIALISED                     -1
+#define VSCP_LOCAL_USER_OFFSET                          0x10000
+
+// Add user flags
+#define VSCP_ADD_USER_FLAG_LOCAL                        0x00000001  // Marks local user not in db
+#define VSCP_ADD_USER_FLAG_ADMIN                        0x10000000  // Marks the one and only admin user
+
 // Users not in db is local
-#define USER_IS_LOCAL           -1  // Never saved to db
-#define USER_IS_UNSAVED          0  // Should be saved to db
+//#define USER_IS_LOCAL           -1  // Never saved to db
+//#define USER_IS_UNSAVED          0  // Should be saved to db
 
 #define USER_PRIVILEGE_MASK     0x0f
 #define USER_PRIVILEGE_BYTES    8
@@ -150,7 +156,7 @@ public:
     
     /*!
      * Set user rights from a comma separated string. The string can have 
-     * up to eight comma separated bitfield octets.  
+     * up to eight comma separated bit field octets.  
      * 
      * As an alternative one can use mnenomics
      * 
@@ -234,7 +240,7 @@ public:
     
 protected:
     
-    // System assigned ID for user (-1 for system users (not in DB), 0 for new users )
+    // System assigned ID for user (-1 -  for system users (not in DB), 0 for adḿin user )
     long m_userID;
     
     /// Username
@@ -250,7 +256,7 @@ protected:
     wxString m_note;
     
     /*!
-        Bit array with user rights i.e. tells what
+        Bit array (64-bits) with user rights i.e. tells what
         this user is allowed to do.
     */ 
     uint8_t m_userRights[ USER_PRIVILEGE_BYTES ];
@@ -298,7 +304,8 @@ public:
     bool loadUsers( void );
 
     /*!
-        Add a user to the in memory list. Must save to database to make persistent.
+        Add a user to the in memory list. Must saved to database to make persistent.
+        The configuration set username is not a valid username.
         @param user Username for user.
         @param md5 MD5 of user password.
         @param note An arbitrary note about the user
@@ -314,14 +321,14 @@ public:
         @param bSystemUser If true this user is a user that should not be save to the DB
         @return true on success. false on failure.	
     */
-    bool addUser(const wxString& user,
+    bool addUser( const wxString& user,
                             const wxString& md5,
                             const wxString& strNote,
                             const vscpEventFilter *pFilter = NULL,
                             const wxString& userRights = _(""),
                             const wxString& allowedRemotes = _(""),
                             const wxString& allowedEvents = _(""),
-                            bool bSystemUser = false );
+                            uint32_t bFlags = 0 );
 
 
     /*!
@@ -329,14 +336,14 @@ public:
         @param user Username
         @return Pointer to user if available else NULL
     */
-    CUserItem * getUser( const wxString& user );
+    CUserItem *getUser( const wxString& user );
 
     /*!
         Validate a username.
         @param user Username to test.
         @return Pointer to useritem if valid, NULL if not.
         */
-    CUserItem * validateUser(const wxString& user, const wxString& md5password);
+    CUserItem *validateUser(const wxString& user, const wxString& md5password);
 
 
 protected:

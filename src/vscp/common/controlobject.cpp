@@ -838,12 +838,12 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 
     m_userList.addUser( m_admin_user,
                             m_admin_password,
-                            _("Admin user"),    // note
+                            _("Admin user"),            // note
                             NULL,
                             _("admin"),
-                            m_admin_allowfrom,  // Remotes allows to connect     
-                            _("*"),             // All events
-                            USER_IS_LOCAL );    // Not in DB
+                            m_admin_allowfrom,          // Remotes allows to connect     
+                            _("*"),                     // All events
+                            VSCP_ADD_USER_FLAG_ADMIN ); // Not in DB
     
     //==========================================================================
     //                           Add driver user
@@ -882,8 +882,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
                             _("driver"),
                             _("127.0.0.1"),                 // Only local
                             _("*"),                         // All events
-                            USER_IS_LOCAL ); 
-    
+                            VSCP_ADD_USER_FLAG_LOCAL ); 
     
     // Open up the General logging file.
     if ( m_bLogGeneralEnable ) {
