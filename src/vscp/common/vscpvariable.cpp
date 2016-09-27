@@ -37,6 +37,9 @@
 #include <wx/regex.h>
 #include <wx/base64.h>
 
+#include <openssl/opensslv.h>
+#include <openssl/crypto.h>
+
 #include <mongoose.h>
 
 #include <wx/listimpl.cpp>
