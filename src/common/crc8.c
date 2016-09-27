@@ -14,6 +14,8 @@
  */
 
 #include <stdio.h>
+#include "crc8.h"
+
 
 #define GP  0x107   /* x^8 + x^2 + x + 1 */
 #define DI  0x07

@@ -47,6 +47,7 @@
 #include <vscp_class.h>
 #include <vscp_type.h>
 #include <canal.h>
+#include <crc8.h>
 #include <crc.h>
 
 // Forward declaration

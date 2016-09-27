@@ -25,6 +25,8 @@
 #ifndef SLRE_HEADER_DEFINED
 #define SLRE_HEADER_DEFINED
 
+#define EXCLUDE_COMMON
+
 #ifdef __cplusplus
 extern "C" {
 #endif

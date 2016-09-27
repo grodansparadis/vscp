@@ -61,9 +61,11 @@
 #include <sys/types.h>
 #endif
 
+#include <crc8.h> 
+#include <crc.h> 
+
 #include <vscp.h>
 #include <mdf.h>
-#include <crc8.h>
 #include <vscphelper.h>
 
 

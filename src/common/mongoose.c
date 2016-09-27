@@ -1,6 +1,6 @@
 #include "mongoose.h"
 #ifdef MG_MODULE_LINES
-#line 1 "./src/internal.h"
+#line 1 "mongoose/src/internal.h"
 #endif
 /*
  * Copyright (c) 2014 Cesanta Software Limited
@@ -121,7 +121,7 @@ extern void *(*test_calloc)(size_t count, size_t size);
 
 #endif /* CS_MONGOOSE_SRC_INTERNAL_H_ */
 #ifdef MG_MODULE_LINES
-#line 1 "./src/../../common/cs_dbg.h"
+#line 1 "common/cs_dbg.h"
 #endif
 /*
  * Copyright (c) 2014-2016 Cesanta Software Limited
@@ -194,7 +194,7 @@ void cs_log_printf(const char *fmt, ...);
 
 #endif /* CS_COMMON_CS_DBG_H_ */
 #ifdef MG_MODULE_LINES
-#line 1 "./src/../../common/cs_dbg.c"
+#line 1 "common/cs_dbg.c"
 #endif
 /*
  * Copyright (c) 2014-2016 Cesanta Software Limited
@@ -257,7 +257,7 @@ void cs_log_set_level(enum cs_log_level level) {
 #endif
 }
 #ifdef MG_MODULE_LINES
-#line 1 "./src/../../common/base64.c"
+#line 1 "common/base64.c"
 #endif
 /*
  * Copyright (c) 2014 Cesanta Software Limited
@@ -460,7 +460,7 @@ int cs_base64_decode(const unsigned char *s, int len, char *dst) {
 
 #endif /* EXCLUDE_COMMON */
 #ifdef MG_MODULE_LINES
-#line 1 "./src/../../common/cs_dirent.h"
+#line 1 "common/cs_dirent.h"
 #endif
 /*
  * Copyright (c) 2014-2016 Cesanta Software Limited
@@ -515,7 +515,7 @@ struct dirent *readdir(DIR *dir);
 
 #endif /* CS_COMMON_CS_DIRENT_H_ */
 #ifdef MG_MODULE_LINES
-#line 1 "./src/../../common/cs_dirent.c"
+#line 1 "common/cs_dirent.c"
 #endif
 /*
  * Copyright (c) 2015 Cesanta Software Limited
@@ -653,7 +653,7 @@ int mkdir(const char *path, mode_t mode) {
 /* ISO C requires a translation unit to contain at least one declaration */
 typedef int cs_dirent_dummy;
 #ifdef MG_MODULE_LINES
-#line 1 "./src/../../common/cs_time.c"
+#line 1 "common/cs_time.c"
 #endif
 /*
  * Copyright (c) 2014-2016 Cesanta Software Limited
@@ -684,7 +684,7 @@ double cs_time(void) {
   return now;
 }
 #ifdef MG_MODULE_LINES
-#line 1 "./src/../../common/cs_endian.h"
+#line 1 "common/cs_endian.h"
 #endif
 /*
  * Copyright (c) 2014-2016 Cesanta Software Limited
@@ -711,7 +711,7 @@ double cs_time(void) {
 
 #endif /* CS_COMMON_CS_ENDIAN_H_ */
 #ifdef MG_MODULE_LINES
-#line 1 "./src/../../common/md5.c"
+#line 1 "common/md5.c"
 #endif
 /*
  * This code implements the MD5 message-digest algorithm.
@@ -958,7 +958,7 @@ char *cs_md5(char buf[33], ...) {
 
 #endif /* EXCLUDE_COMMON */
 #ifdef MG_MODULE_LINES
-#line 1 "./src/../../common/mbuf.c"
+#line 1 "common/mbuf.c"
 #endif
 /*
  * Copyright (c) 2014 Cesanta Software Limited
@@ -1055,7 +1055,7 @@ void mbuf_remove(struct mbuf *mb, size_t n) {
 
 #endif /* EXCLUDE_COMMON */
 #ifdef MG_MODULE_LINES
-#line 1 "./src/../../common/mg_str.c"
+#line 1 "common/mg_str.c"
 #endif
 /*
  * Copyright (c) 2014-2016 Cesanta Software Limited
@@ -1122,7 +1122,7 @@ int mg_strcmp(const struct mg_str str1, const struct mg_str str2) {
   return 0;
 }
 #ifdef MG_MODULE_LINES
-#line 1 "./src/../../common/sha1.c"
+#line 1 "common/sha1.c"
 #endif
 /* Copyright(c) By Steve Reid <steve@edmweb.com> */
 /* 100% Public Domain */
@@ -1376,7 +1376,7 @@ void cs_hmac_sha1(const unsigned char *key, size_t keylen,
 
 #endif /* EXCLUDE_COMMON */
 #ifdef MG_MODULE_LINES
-#line 1 "./src/../../common/str_util.c"
+#line 1 "common/str_util.c"
 #endif
 /*
  * Copyright (c) 2015 Cesanta Software Limited
@@ -1645,7 +1645,7 @@ const char *c_strnstr(const char *s, const char *find, size_t slen) {
 
 #endif /* EXCLUDE_COMMON */
 #ifdef MG_MODULE_LINES
-#line 1 "./src/net.c"
+#line 1 "mongoose/src/net.c"
 #endif
 /*
  * Copyright (c) 2014 Cesanta Software Limited
@@ -2725,7 +2725,7 @@ double mg_time(void) {
   return cs_time();
 }
 #ifdef MG_MODULE_LINES
-#line 1 "./src/net_if_socket.c"
+#line 1 "mongoose/src/net_if_socket.c"
 #endif
 /*
  * Copyright (c) 2014-2016 Cesanta Software Limited
@@ -3434,7 +3434,7 @@ void mg_if_get_conn_addr(struct mg_connection *nc, int remote,
 
 #endif /* !defined(MG_DISABLE_SOCKET_IF) && !defined(MG_SOCKET_SIMPLELINK) */
 #ifdef MG_MODULE_LINES
-#line 1 "./src/multithreading.c"
+#line 1 "mongoose/src/multithreading.c"
 #endif
 /*
  * Copyright (c) 2014 Cesanta Software Limited
@@ -3566,7 +3566,7 @@ void mg_enable_multithreading(struct mg_connection *nc) {
 
 #endif
 #ifdef MG_MODULE_LINES
-#line 1 "./src/uri.c"
+#line 1 "mongoose/src/uri.c"
 #endif
 /*
  * Copyright (c) 2014 Cesanta Software Limited
@@ -3743,7 +3743,7 @@ int mg_normalize_uri_path(const struct mg_str *in, struct mg_str *out) {
   return 1;
 }
 #ifdef MG_MODULE_LINES
-#line 1 "./src/http.c"
+#line 1 "mongoose/src/http.c"
 #endif
 /*
  * Copyright (c) 2014 Cesanta Software Limited
@@ -4045,8 +4045,8 @@ static int mg_http_get_request_len(const char *s, int buf_len) {
 
 static const char *mg_http_parse_headers(const char *s, const char *end,
                                          int len, struct http_message *req) {
-  int i;
-  for (i = 0; i < (int) ARRAY_SIZE(req->header_names) - 1; i++) {
+  int i = 0;
+  while (i < (int) ARRAY_SIZE(req->header_names) - 1) {
     struct mg_str *k = &req->header_names[i], *v = &req->header_values[i];
 
     s = mg_skip(s, end, ": ", k);
@@ -4054,6 +4054,15 @@ static const char *mg_http_parse_headers(const char *s, const char *end,
 
     while (v->len > 0 && v->p[v->len - 1] == ' ') {
       v->len--; /* Trim trailing spaces in header value */
+    }
+
+    /*
+     * If header value is empty - skip it and go to next (if any).
+     * NOTE: Do not add it to headers_values because such addition changes API
+     * behaviour
+     */
+    if (k->len != 0 && v->len == 0) {
+      continue;
     }
 
     if (k->len == 0 || v->len == 0) {
@@ -4066,6 +4075,8 @@ static const char *mg_http_parse_headers(const char *s, const char *end,
       req->body.len = (size_t) to64(v->p);
       req->message.len = len + req->body.len;
     }
+
+    i++;
   }
 
   return s;
@@ -5228,11 +5239,14 @@ void mg_set_protocol_http_websocket(struct mg_connection *nc) {
 void mg_send_websocket_handshake2(struct mg_connection *nc, const char *path,
                                   const char *host, const char *protocol,
                                   const char *extra_headers) {
-  /* pretty poor source of randomness, TODO fix */
-  unsigned long random = (unsigned long) (uintptr_t) path;
-  char key[sizeof(random) * 3];
+  char key[25];
+  uint32_t nonce[4];
+  nonce[0] = mg_ws_random_mask();
+  nonce[1] = mg_ws_random_mask();
+  nonce[2] = mg_ws_random_mask();
+  nonce[3] = mg_ws_random_mask();
+  mg_base64_encode((unsigned char *) &nonce, sizeof(nonce), key);
 
-  mg_base64_encode((unsigned char *) &random, sizeof(random), key);
   mg_printf(nc,
             "GET %s HTTP/1.1\r\n"
             "Upgrade: websocket\r\n"
@@ -6662,9 +6676,9 @@ static void mg_abs_path(const char *utf8_path, char *abs_path, size_t len) {
   WideCharToMultiByte(CP_UTF8, 0, buf2, wcslen(buf2) + 1, abs_path, len, 0, 0);
 }
 
-static pid_t mg_start_process(const char *interp, const char *cmd,
-                              const char *env, const char *envp[],
-                              const char *dir, sock_t sock) {
+static int mg_start_process(const char *interp, const char *cmd,
+                            const char *env, const char *envp[],
+                            const char *dir, sock_t sock) {
   STARTUPINFOW si;
   PROCESS_INFORMATION pi;
   HANDLE a[2], b[2], me = GetCurrentProcess();
@@ -6719,6 +6733,12 @@ static pid_t mg_start_process(const char *interp, const char *cmd,
                      (void *) env, full_dir, &si, &pi) != 0) {
     mg_spawn_stdio_thread(sock, a[1], mg_push_to_stdin);
     mg_spawn_stdio_thread(sock, b[0], mg_pull_from_stdout);
+
+    CloseHandle(si.hStdOutput);
+    CloseHandle(si.hStdInput);
+
+    CloseHandle(pi.hThread);
+    CloseHandle(pi.hProcess);
   } else {
     CloseHandle(a[1]);
     CloseHandle(b[0]);
@@ -6727,19 +6747,13 @@ static pid_t mg_start_process(const char *interp, const char *cmd,
   DBG(("CGI command: [%ls] -> %p", wcmd, pi.hProcess));
 
   /* Not closing a[0] and b[1] because we've used DUPLICATE_CLOSE_SOURCE */
-  CloseHandle(si.hStdOutput);
-  CloseHandle(si.hStdInput);
-  /* TODO(lsm): check if we need close process and thread handles too */
-  /* CloseHandle(pi.hThread); */
-  /* CloseHandle(pi.hProcess); */
-
   (void) envp;
-  return pi.hProcess;
+  return (pi.hProcess != NULL);
 }
 #else
-static pid_t mg_start_process(const char *interp, const char *cmd,
-                              const char *env, const char *envp[],
-                              const char *dir, sock_t sock) {
+static int mg_start_process(const char *interp, const char *cmd,
+                            const char *env, const char *envp[],
+                            const char *dir, sock_t sock) {
   char buf[500];
   pid_t pid = fork();
   (void) env;
@@ -6777,7 +6791,7 @@ static pid_t mg_start_process(const char *interp, const char *cmd,
     exit(EXIT_FAILURE); /* exec call failed */
   }
 
-  return pid;
+  return (pid != 0);
 }
 #endif /* _WIN32 */
 
@@ -7479,9 +7493,14 @@ size_t mg_parse_multipart(const char *buf, size_t buf_len, char *var_name,
 
 void mg_register_http_endpoint(struct mg_connection *nc, const char *uri_path,
                                mg_event_handler_t handler) {
-  struct mg_http_proto_data *pd = mg_http_get_proto_data(nc);
-  struct mg_http_endpoint *new_ep =
-      (struct mg_http_endpoint *) calloc(1, sizeof(*new_ep));
+  struct mg_http_proto_data *pd = NULL;
+  struct mg_http_endpoint *new_ep = NULL;
+
+  if (nc == NULL) return;
+  new_ep = (struct mg_http_endpoint *) calloc(1, sizeof(*new_ep));
+  if (new_ep == NULL) return;
+
+  pd = mg_http_get_proto_data(nc);
   new_ep->name = strdup(uri_path);
   new_ep->name_len = strlen(new_ep->name);
   new_ep->handler = handler;
@@ -7491,7 +7510,7 @@ void mg_register_http_endpoint(struct mg_connection *nc, const char *uri_path,
 
 #endif /* MG_DISABLE_HTTP */
 #ifdef MG_MODULE_LINES
-#line 1 "./src/util.c"
+#line 1 "mongoose/src/util.c"
 #endif
 /*
  * Copyright (c) 2014 Cesanta Software Limited
@@ -7851,7 +7870,7 @@ int mg_match_prefix(const char *pattern, int pattern_len, const char *str) {
   return mg_match_prefix_n(pstr, mg_mk_str(str));
 }
 #ifdef MG_MODULE_LINES
-#line 1 "./src/mqtt.c"
+#line 1 "mongoose/src/mqtt.c"
 #endif
 /*
  * Copyright (c) 2014 Cesanta Software Limited
@@ -8174,7 +8193,7 @@ void mg_mqtt_disconnect(struct mg_connection *nc) {
 
 #endif /* MG_DISABLE_MQTT */
 #ifdef MG_MODULE_LINES
-#line 1 "./src/mqtt_server.c"
+#line 1 "mongoose/src/mqtt_server.c"
 #endif
 /*
  * Copyright (c) 2014 Cesanta Software Limited
@@ -8347,7 +8366,7 @@ struct mg_mqtt_session *mg_mqtt_next(struct mg_mqtt_broker *brk,
 
 #endif /* MG_ENABLE_MQTT_BROKER */
 #ifdef MG_MODULE_LINES
-#line 1 "./src/dns.c"
+#line 1 "mongoose/src/dns.c"
 #endif
 /*
  * Copyright (c) 2014 Cesanta Software Limited
@@ -8719,7 +8738,7 @@ void mg_set_protocol_dns(struct mg_connection *nc) {
 
 #endif /* MG_DISABLE_DNS */
 #ifdef MG_MODULE_LINES
-#line 1 "./src/dns_server.c"
+#line 1 "mongoose/src/dns_server.c"
 #endif
 /*
  * Copyright (c) 2014 Cesanta Software Limited
@@ -8793,7 +8812,7 @@ int mg_dns_reply_record(struct mg_dns_reply *reply,
 
 #endif /* MG_ENABLE_DNS_SERVER */
 #ifdef MG_MODULE_LINES
-#line 1 "./src/resolv.c"
+#line 1 "mongoose/src/resolv.c"
 #endif
 /*
  * Copyright (c) 2014 Cesanta Software Limited
@@ -9056,7 +9075,7 @@ int mg_resolve_async_opt(struct mg_mgr *mgr, const char *name, int query,
 
 #endif /* MG_DISABLE_RESOLVE */
 #ifdef MG_MODULE_LINES
-#line 1 "./src/coap.c"
+#line 1 "mongoose/src/coap.c"
 #endif
 /*
  * Copyright (c) 2015 Cesanta Software Limited
@@ -9653,7 +9672,7 @@ int mg_set_protocol_coap(struct mg_connection *nc) {
 
 #endif /* MG_DISABLE_COAP */
 #ifdef MG_MODULE_LINES
-#line 1 "./src/../../common/platforms/cc3200/cc3200_libc.c"
+#line 1 "common/platforms/cc3200/cc3200_libc.c"
 #endif
 /*
  * Copyright (c) 2014-2016 Cesanta Software Limited
@@ -9777,7 +9796,7 @@ int _isatty(int fd) {
 
 #endif /* CS_PLATFORM == CS_P_CC3200 */
 #ifdef MG_MODULE_LINES
-#line 1 "./src/../../common/platforms/msp432/msp432_libc.c"
+#line 1 "common/platforms/msp432/msp432_libc.c"
 #endif
 /*
  * Copyright (c) 2014-2016 Cesanta Software Limited
@@ -9798,7 +9817,7 @@ int gettimeofday(struct timeval *tp, void *tzp) {
 
 #endif /* CS_PLATFORM == CS_P_MSP432 */
 #ifdef MG_MODULE_LINES
-#line 1 "./src/../../common/platforms/simplelink/sl_fs_slfs.h"
+#line 1 "common/platforms/simplelink/sl_fs_slfs.h"
 #endif
 /*
  * Copyright (c) 2014-2016 Cesanta Software Limited
@@ -9835,7 +9854,7 @@ void fs_slfs_set_new_file_size(const char *name, size_t size);
 
 #endif /* CS_COMMON_PLATFORMS_SIMPLELINK_SL_FS_SLFS_H_ */
 #ifdef MG_MODULE_LINES
-#line 1 "./src/../../common/platforms/simplelink/sl_fs_slfs.c"
+#line 1 "common/platforms/simplelink/sl_fs_slfs.c"
 #endif
 /*
  * Copyright (c) 2014-2016 Cesanta Software Limited
@@ -10056,7 +10075,7 @@ void fs_slfs_set_new_file_size(const char *name, size_t size) {
 
 #endif /* defined(MG_FS_SLFS) || defined(CC3200_FS_SLFS) */
 #ifdef MG_MODULE_LINES
-#line 1 "./src/../../common/platforms/simplelink/sl_fs.c"
+#line 1 "common/platforms/simplelink/sl_fs.c"
 #endif
 /*
  * Copyright (c) 2014-2016 Cesanta Software Limited
@@ -10452,7 +10471,7 @@ int sl_fs_init(void) {
 #endif /* defined(MG_SOCKET_SIMPLELINK) && (defined(MG_FS_SLFS) || \
           defined(MG_FS_SPIFFS)) */
 #ifdef MG_MODULE_LINES
-#line 1 "./src/../../common/platforms/simplelink/sl_socket.c"
+#line 1 "common/platforms/simplelink/sl_socket.c"
 #endif
 /*
  * Copyright (c) 2014-2016 Cesanta Software Limited
@@ -10503,7 +10522,7 @@ int inet_pton(int af, const char *src, void *dst) {
 
 #endif /* CS_COMMON_PLATFORMS_SIMPLELINK_SL_SOCKET_C_ */
 #ifdef MG_MODULE_LINES
-#line 1 "./src/../../common/platforms/simplelink/sl_mg_task.c"
+#line 1 "common/platforms/simplelink/sl_mg_task.c"
 #endif
 #if defined(MG_SOCKET_SIMPLELINK) && !defined(MG_SIMPLELINK_NO_OSI)
 
@@ -10557,7 +10576,7 @@ void mg_run_in_task(void (*cb)(struct mg_mgr *mgr, void *arg), void *cb_arg) {
 
 #endif /* defined(MG_SOCKET_SIMPLELINK) */
 #ifdef MG_MODULE_LINES
-#line 1 "./src/../../common/platforms/simplelink/sl_net_if.c"
+#line 1 "common/platforms/simplelink/sl_net_if.c"
 #endif
 /*
  * Copyright (c) 2014-2016 Cesanta Software Limited
@@ -10766,7 +10785,7 @@ static sock_t mg_open_listening_socket(union socket_address *sa, int type,
       (sa->sa.sa_family == AF_INET) ? sizeof(sa->sin) : sizeof(sa->sin6);
   sock_t sock = sl_Socket(sa->sa.sa_family, type, proto);
   if (sock < 0) return sock;
-  if ((r = bind(sock, &sa->sa, sa_len)) < 0) {
+  if ((r = sl_Bind(sock, &sa->sa, sa_len)) < 0) {
     sl_Close(sock);
     return r;
   }
@@ -10784,7 +10803,7 @@ static void mg_write_to_socket(struct mg_connection *nc) {
 
   if (nc->flags & MG_F_UDP) {
     n = sl_SendTo(nc->sock, io->buf, io->len, 0, &nc->sa.sa,
-                      sizeof(nc->sa.sin));
+                  sizeof(nc->sa.sin));
     DBG(("%p %d %d %d %s:%hu", nc, nc->sock, n, errno,
          inet_ntoa(nc->sa.sin.sin_addr), ntohs(nc->sa.sin.sin_port)));
   } else {
@@ -10938,13 +10957,13 @@ time_t mg_mgr_poll(struct mg_mgr *mgr, int timeout_ms) {
   double min_timer;
   struct mg_connection *nc, *tmp;
   struct SlTimeval_t tv;
-  fd_set read_set, write_set, err_set;
+  SlFdSet_t read_set, write_set, err_set;
   sock_t max_fd = INVALID_SOCKET;
   int num_fds, num_ev, num_timers = 0;
 
-  FD_ZERO(&read_set);
-  FD_ZERO(&write_set);
-  FD_ZERO(&err_set);
+  SL_FD_ZERO(&read_set);
+  SL_FD_ZERO(&write_set);
+  SL_FD_ZERO(&err_set);
 
   /*
    * Note: it is ok to have connections with sock == INVALID_SOCKET in the list,
@@ -10960,14 +10979,14 @@ time_t mg_mgr_poll(struct mg_mgr *mgr, int timeout_ms) {
       if (!(nc->flags & MG_F_WANT_WRITE) &&
           nc->recv_mbuf.len < nc->recv_mbuf_limit &&
           (!(nc->flags & MG_F_UDP) || nc->listener == NULL)) {
-        FD_SET(nc->sock, &read_set);
+        SL_FD_SET(nc->sock, &read_set);
         if (max_fd == INVALID_SOCKET || nc->sock > max_fd) max_fd = nc->sock;
       }
 
       if (((nc->flags & MG_F_CONNECTING) && !(nc->flags & MG_F_WANT_READ)) ||
           (nc->send_mbuf.len > 0 && !(nc->flags & MG_F_CONNECTING))) {
-        FD_SET(nc->sock, &write_set);
-        FD_SET(nc->sock, &err_set);
+        SL_FD_SET(nc->sock, &write_set);
+        SL_FD_SET(nc->sock, &err_set);
         if (max_fd == INVALID_SOCKET || nc->sock > max_fd) max_fd = nc->sock;
       }
     }
@@ -11004,12 +11023,13 @@ time_t mg_mgr_poll(struct mg_mgr *mgr, int timeout_ms) {
     int fd_flags = 0;
     if (nc->sock != INVALID_SOCKET) {
       if (num_ev > 0) {
-        fd_flags = (FD_ISSET(nc->sock, &read_set) &&
-                            (!(nc->flags & MG_F_UDP) || nc->listener == NULL)
-                        ? _MG_F_FD_CAN_READ
-                        : 0) |
-                   (FD_ISSET(nc->sock, &write_set) ? _MG_F_FD_CAN_WRITE : 0) |
-                   (FD_ISSET(nc->sock, &err_set) ? _MG_F_FD_ERROR : 0);
+        fd_flags =
+            (SL_FD_ISSET(nc->sock, &read_set) &&
+                     (!(nc->flags & MG_F_UDP) || nc->listener == NULL)
+                 ? _MG_F_FD_CAN_READ
+                 : 0) |
+            (SL_FD_ISSET(nc->sock, &write_set) ? _MG_F_FD_CAN_WRITE : 0) |
+            (SL_FD_ISSET(nc->sock, &err_set) ? _MG_F_FD_ERROR : 0);
       }
       /* SimpleLink does not report UDP sockets as writeable. */
       if (nc->flags & MG_F_UDP && nc->send_mbuf.len > 0) {

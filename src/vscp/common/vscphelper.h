@@ -44,21 +44,19 @@
 #include <wx/hashmap.h>
 #ifndef WIN32
 #include <sys/times.h>
-#endif
-
+#endif 
 
 #include <vscp.h>
 #include <vscp_class.h>
 #include <vscp_type.h>
 #include <canal.h>
-#include <crc.h>
 
 // Forward declaration
 class CMDF;
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif   
 
     //@{
 

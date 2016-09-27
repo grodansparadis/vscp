@@ -30,15 +30,13 @@ DLLPREFIX = lib
 ### Variables: ###
 
 DESTDIR = 
-WX_RELEASE = 2.8
+WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
 VSCPD_OBJECTS =  vscpd.o \
 	../../common/daemonvscp.o \
 	../../common/clientlist.o \
 	../../common/controlobject.o \
-	../../common/devicelist.o \
-	../../common/vscphelper.o \
 	../../common/vscpeventhelper.o \
 	../../common/tcpipclientthread.o \
 	../../common/dm.o \
@@ -46,47 +44,40 @@ VSCPD_OBJECTS =  vscpd.o \
 	../../common/interfacelist.o \
 	../../common/userlist.o \
 	../../common/devicethread.o \
-	../../common/vscpremotetcpif.o \
-	../../common/guid.o \
 	../../common/vscpwebserver.o \
 	../../common/vscprestserver.o \
 	../../common/vscpwebsocketserver.o \
 	../../common/udpclientthread.o \
 	../../common/tables.o \
 	../../common/vscpautomation.o \
-	../../common/mdf.o \
-	../../common/register.o \
 	../../common/knownnodes.o \
 	../../common/vscpmqttbroker.o \
 	../../common/vscpcoapserver.o \
-	../../../common/dllist.o \
-	../../../common/configfile.o \
-	../../../common/crc.o \
-	../../../common/crc8.o \
-	../../../common/sqlite3.o \
-	../../../common/randpassword.o \
-	../../../common/mongoose.o  \
-	../../../common/frozen.o  \
-	../../../common/slre.o \
+
+# The following files are built in the local folder to
+# prevent a mix between dll linkage and exe linkage
+VSCPD_SPECIALS = vscphelper.o \
+	vscpremotetcpif.o \
+	devicelist.o \
+	mdf.o \
+	guid.o \
+	register.o \
+	dllist.o \
+	configfile.o \
+	crc.o \
+	crc8.o \
+	randpassword.o \
+	frozen.o  \
+	v7.o  \
+	mongoose.o\
+	sqlite3.o \
 
 # Add object files that always should be built here
-ALWAYS_BUILD = ../../common/vscphelper.o \
-	../../common/vscpremotetcpif.o \
-	../../common/devicelist.o \
-	../../common/mdf.o \
-	../../common/guid.o \
-	../../common/register.o \
-	../../../common/dllist.o \
-	../../../common/configfile.o \
-	../../../common/crc.o \
-	../../../common/crc8.o \
-	../../../common/randpassword.o \
-	../../../common/mongoose.o  \
-	../../../common/slre.o \
+ALWAYS_BUILD = 
 
 ### Targets: ###
 
-all: vscpd
+all: $(VSCPD_SPECIALS) vscpd
 
 install: all
 	$(INSTALL_PROGRAM) vscpd $(bindir)
@@ -97,6 +88,7 @@ install-strip: install
 
 clean: 
 	rm -rf ./.deps ./.pch
+	rm -f *.o
 	rm -f ./*.o
 	rm -f ../../common/*.o
 	rm -f ../../../common/*.o
@@ -105,6 +97,51 @@ clean:
 
 distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile
+
+vscphelper.o: ../../common/vscphelper.o ../../common/vscphelper.h
+	$(CXX) -c ../../common/vscphelper.cpp $(CPPFLAGS) 
+
+vscpremotetcpif.o: ../../common/vscpremotetcpif.o ../../common/vscpremotetcpif.h
+	$(CXX) -c ../../common/vscpremotetcpif.cpp $(CPPFLAGS)
+
+devicelist.o: ../../common/devicelist.o ../../common/devicelist.h
+	$(CXX) -c ../../common/devicelist.cpp $(CPPFLAGS)
+
+guid.o: ../../common/guid.o ../../common/guid.h
+	$(CXX) -c ../../common/guid.cpp $(CPPFLAGS)
+
+mdf.o: ../../common/mdf.o ../../common/mdf.h
+	$(CXX) -c ../../common/mdf.cpp $(CPPFLAGS)
+
+register.o: ../../common/register.o ../../common/register.h
+	$(CXX) -c ../../common/register.cpp $(CPPFLAGS)
+
+dllist.o: ../../../common/dllist.o ../../../common/dllist.h
+	$(CXX) -c ../../../common/dllist.c 
+
+configfile.o: ../../../common/configfile.o ../../../common/configfile.h
+	$(CXX) -c ../../../common/configfile.cpp $(CPPFLAGS)
+
+crc.o: ../../../common/crc.o ../../../common/crc.h
+	$(CXX) -c ../../../common/crc.c
+
+crc8.o: ../../../common/crc8.o ../../../common/crc8.h
+	$(CXX) -c ../../../common/crc8.c
+
+randpassword.o: ../../../common/randpassword.o ../../../common/randpassword.h
+	$(CXX) -c ../../../common/randpassword.cpp 	
+
+mongoose.o: ../../../common/mongoose.o ../../../common/mongoose.h
+	$(CXX) -c ../../../common/mongoose.c -D EXCLUDE_COMMON -D MG_ENABLE_SSL -D MG_ENABLE_SSL -D MG_ENABLE_THREADS -D MG_ENABLE_MQTT_BROKER -D MG_ENABLE_COAP 
+
+v7.o: ../../../common/v7.o ../../../common/v7.h
+	$(CXX) -c ../../../common/v7.c 
+
+frozen.o: ../../../common/frozen.o ../../../common/frozen.h
+	$(CXX) -c ../../../common/frozen.c
+	
+sqlite3.o: ../../../common/sqlite3.o
+	gcc -c  ../../../common/sqlite3.c -o $@
 
 vscpd: $(VSCPD_OBJECTS)
 	$(CXX) -o $@ $(VSCPD_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
