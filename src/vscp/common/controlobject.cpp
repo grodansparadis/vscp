@@ -963,10 +963,6 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     logMsg(_("Starting TCP/IP interface.\n") );
     startTcpWorkerThread();
 
-    // Start daemon worker thread
-    logMsg(_("Starting VSCP daemon worker thread.\n") );
-    startDaemonWorkerThread();
-
     // Start web sockets
     logMsg(_("Starting websockets interface.\n") );
     startWebServerThread();
@@ -994,6 +990,10 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     else {
         logMsg(_("CoAP Server disabled.\n") );
     }
+    
+    // Start daemon worker thread
+    logMsg(_("Starting VSCP daemon worker thread.\n") );
+    startDaemonWorkerThread();
 
     return true;
 }
@@ -2888,17 +2888,17 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                 wxString strPath;
                 unsigned long flags;
                 cguid guid;
-                bool bEnabled = true;
+                bool bEnabled = false;
                 bool bCanalDriver = false;
 
                 if ( subchild->GetName() == wxT("driver") ) {
 
                     wxXmlNode *subsubchild = subchild->GetChildren();
 
-                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("false"));
 
-                    if (attribute.IsSameAs(_("false"), false)) {
-                        bEnabled = false;
+                    if ( attribute.IsSameAs( _("true"), false ) ) {
+                        bEnabled = true;
                     }
 
                     while (subsubchild) {
@@ -3003,41 +3003,50 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                 wxString strConfig;
                 wxString strPath;
                 cguid guid;
-                bool bEnabled = true;
+                bool bEnabled = false;
                 bool bLevel2Driver = false;
 
                 if ( subchild->GetName() == wxT("driver") ) {
 
                     wxXmlNode *subsubchild = subchild->GetChildren();
 
-                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("false"));
 
-                    if (attribute.IsSameAs(_("false"), false)) {
-                        bEnabled = false;
+                    if (attribute.IsSameAs(_("true"), false)) {
+                        bEnabled = true;
                     }
 
                     while ( subsubchild ) {
+                        
                         if (subsubchild->GetName() == wxT("name")) {
+                            
                             strName = subsubchild->GetNodeContent();
                             strName.Trim();
                             strName.Trim(false);
+                            
                             // Replace spaces in name with underscore
                             int pos;
                             while (wxNOT_FOUND != (pos = strName.Find(_(" ")))) {
                                 strName.SetChar(pos, wxChar('_'));
                             }
+                            
                             bLevel2Driver = true;
+                            
                         }
                         else if (subsubchild->GetName() == wxT("config") ||
                                 subsubchild->GetName() == wxT("parameter")) {
+                            
                             strConfig = subsubchild->GetNodeContent();
                             strConfig.Trim();
                             strConfig.Trim(false);
+                            
                         }
                         else if (subsubchild->GetName() == wxT("path")) {
+                            
                             strPath = subsubchild->GetNodeContent();
                             strPath.Trim();
                             strPath.Trim(false);
+                            
                         }
                         else if (subsubchild->GetName() == wxT("guid")) {
                             guid.getFromString( subsubchild->GetNodeContent() );

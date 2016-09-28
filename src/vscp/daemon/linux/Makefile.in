@@ -11,8 +11,10 @@ top_builddir = @top_builddir@
 top_wxbuilddir = @top_wxbuilddir@
 CC = @CC@
 CXX = @CXX@
-CXXFLAGS =  @CXXFLAGS@ 
-CPPFLAGS = @CPPFLAGS@ -D MG_ENABLE_THREADS -D MG_ENABLE_MQTT_BROKER -D MG_ENABLE_COAP -I../../common -I../../../common
+CFLAGS = @CFLAGS@ -D MG_ENABLE_THREADS  -D MG_ENABLE_MQTT_BROKER -D MG_ENABLE_COAP -I../../common -I../../../common
+CXXFLAGS = @CXXFLAGS@ 
+CPPFLAGS = @CPPFLAGS@ -fno-var-tracking-assignments -D MG_ENABLE_THREADS  -D MG_ENABLE_MQTT_BROKER -D MG_ENABLE_COAP -I../../common -I../../../common
+mongoose_CFLAGS = -D EXCLUDE_COMMON
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
 STRIP = strip
@@ -78,7 +80,7 @@ ALWAYS_BUILD =
 
 ### Targets: ###
 
-all: $(VSCPD_SPECIALS) vscpd
+all: vscpd 
 
 install: all
 	$(INSTALL_PROGRAM) vscpd $(bindir)
@@ -98,53 +100,53 @@ clean:
 
 distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile
-
+	
 vscphelper.o: ../../common/vscphelper.o ../../common/vscphelper.h
-	$(CXX) -c ../../common/vscphelper.cpp $(CPPFLAGS)  -o $@
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscphelper.cpp -o $@
 
 vscpremotetcpif.o: ../../common/vscpremotetcpif.o ../../common/vscpremotetcpif.h
-	$(CXX) -c ../../common/vscpremotetcpif.cpp $(CPPFLAGS) -o $@
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscpremotetcpif.cpp -o $@
 
 devicelist.o: ../../common/devicelist.o ../../common/devicelist.h
-	$(CXX) -c ../../common/devicelist.cpp $(CPPFLAGS) -o $@
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/devicelist.cpp -o $@
 
 guid.o: ../../common/guid.o ../../common/guid.h
-	$(CXX) -c ../../common/guid.cpp $(CPPFLAGS) -o $@
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/guid.cpp -o $@
 
 mdf.o: ../../common/mdf.o ../../common/mdf.h
-	$(CXX) -c ../../common/mdf.cpp $(CPPFLAGS) -o $@
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/mdf.cpp -o $@
 
 register.o: ../../common/register.o ../../common/register.h
-	$(CXX) -c ../../common/register.cpp $(CPPFLAGS) -o $@
-
-dllist.o: ../../../common/dllist.o ../../../common/dllist.h
-	$(CXX) -c ../../../common/dllist.c  -o $@
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/register.cpp -o $@
 
 configfile.o: ../../../common/configfile.o ../../../common/configfile.h
-	$(CXX) -c ../../../common/configfile.cpp $(CPPFLAGS) -o $@
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../common/configfile.cpp -o $@	
+		
+dllist.o: ../../../common/dllist.o ../../../common/dllist.h
+	$(CC) $(CFLAGS) -c ../../../common/dllist.c  -o $@	
 
-crc.o: ../../../common/crc.o ../../../common/crc.h
-	$(CXX) -c ../../../common/crc.c -o $@
+crc.o: ../../../common/crc.o ../../../common/crc.h 
+	$(CC) $(CFLAGS) -c ../../../common/crc.c -o $@
 
 crc8.o: ../../../common/crc8.o ../../../common/crc8.h
-	$(CXX) -c ../../../common/crc8.c -o $@
+	$(CC) $(CFLAGS) -c ../../../common/crc8.c -o $@
 
 randpassword.o: ../../../common/randpassword.o ../../../common/randpassword.h
-	$(CXX) -c ../../../common/randpassword.cpp -o $@ 	
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../common/randpassword.cpp -o $@
 
 mongoose.o: ../../../common/mongoose.o ../../../common/mongoose.h
-	$(CXX) -c ../../../common/mongoose.c -D EXCLUDE_COMMON -D MG_ENABLE_SSL -D MG_ENABLE_SSL -D MG_ENABLE_THREADS -D MG_ENABLE_MQTT_BROKER -D MG_ENABLE_COAP  -o $@
+	$(CC) $(CFLAGS) -D EXCLUDE_COMMON -c ../../../common/mongoose.c -o $@  
 
 v7.o: ../../../common/v7.o ../../../common/v7.h
-	$(CXX) -c ../../../common/v7.c -o $@ 
+	$(CC) $(CFLAGS) -c ../../../common/v7.c -o $@
 
 frozen.o: ../../../common/frozen.o ../../../common/frozen.h
-	$(CXX) -c ../../../common/frozen.c -o $@
+	$(CC) $(CFLAGS) -c ../../../common/frozen.c -o $@
 	
 sqlite3.o: ../../../common/sqlite3.o
-	$(CC) -c  ../../../common/sqlite3.c -o $@
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c  ../../../common/sqlite3.c -o $@
 
-vscpd: $(VSCPD_OBJECTS)
+vscpd: $(VSCPD_OBJECTS) $(VSCPD_SPECIALS)
 	$(CXX) -o $@ $(VSCPD_OBJECTS) $(VSCPD_SPECIALS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
 $(ALWAYS_BUILD):  .FORCE

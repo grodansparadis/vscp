@@ -51,7 +51,7 @@ enum {
     WEBSOCK_ERROR_VARIABLE_DEFINED,         // Variable is already defined.
     WEBSOCK_ERROR_VARIABLE_UNKNOWN,         // Cant find variable
     WEBSOCK_ERROR_NOT_AUTHORISED,           // Not authorised
-    WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT, // Not authorised
+    WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT,// Not authorised
     WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,   // Not allowed to do that
     WEBSOCK_ERROR_MUST_HAVE_TABLE_NAME,     // Must have a table name
     WEBSOCK_ERROR_END_DATE_IS_WRONG,        // End date must be later than start date
@@ -89,7 +89,7 @@ struct websock_session {
     char m_sid[33];
 
     // Protocol version
-    int m_version;      // Sec-WebSocket-Versision
+    int m_version;      // Sec-WebSocket-Version
 
     // Reference counter giving the number of connections
     // currently using this session.

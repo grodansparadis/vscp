@@ -40,6 +40,7 @@
 #include <openssl/opensslv.h>
 #include <openssl/crypto.h>
 
+#include <slre.h>
 #include <mongoose.h>
 
 #include <wx/listimpl.cpp>
@@ -4860,6 +4861,18 @@ bool CVariableStorage::getVarlistFromRegExp( wxArrayString& nameArray,
     sqlite3_stmt *ppStmt;
     wxString regexlocal = regex.Upper();
     
+    const char *request = " GET /index.html HTTP/1.0\r\n\r\n";
+struct slre_cap caps[4];
+
+if (slre_match("^\\s*(\\S+)\\s+(\\S+)\\s+HTTP/(\\d)\\.(\\d)",
+               request, strlen(request), caps, 4, 0) > 0) {
+  printf("Method: [%.*s], URI: [%.*s]\n",
+         caps[0].len, caps[0].ptr,
+         caps[1].len, caps[1].ptr);
+} else {
+  printf("Error parsing [%s]\n", request);
+}
+    
     nameArray.Clear();
     
     regexlocal.Trim();
@@ -4878,7 +4891,12 @@ bool CVariableStorage::getVarlistFromRegExp( wxArrayString& nameArray,
         
         const unsigned char *p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NAME );
         varname = wxString::FromUTF8Unchecked( (const char *)p );
-        if ( wxregex.Matches( varname ) ) {
+        //if ( wxregex.Matches( varname ) ) {
+        if ( slre_match( (const char *)regexlocal.mbc_str(),
+                                        (const char *)varname.mbc_str(), 
+                                        strlen( (const char *)varname.mbc_str() ), 
+                                        caps, 4, 0) > 0) {
+        
             nameArray.Add( varname );
         }
     }

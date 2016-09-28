@@ -11,7 +11,7 @@
 #define CS_MONGOOSE_SRC_INTERNAL_H_
 
 #ifndef MG_MALLOC
-#define MG_MALLOC malloc
+#define MG_MALLOC malloc 
 #endif
 
 #ifndef MG_CALLOC
@@ -40,7 +40,7 @@
   } while (0)
 
 #ifndef MG_INTERNAL
-#define MG_INTERNAL static
+#define MG_INTERNAL static 
 #endif
 
 #ifdef PICOTCP

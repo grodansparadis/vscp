@@ -2028,7 +2028,7 @@ VSCPWebServerThread::websock_post_incomingEvents( void )
     // Iterate over all connections, and push current time message to websocket ones.
     for ( nc = mg_next( &gmgr, NULL);
                nc != NULL;
-               nc = mg_next( &gmgr, nc)) {
+               nc = mg_next( &gmgr, nc) ) {
 
         if ( NULL == nc ) return;   // This should not happen
 
@@ -2041,16 +2041,14 @@ VSCPWebServerThread::websock_post_incomingEvents( void )
             if ( NULL == pSession) continue;
 
             if ( pSession->m_pClientItem->m_bOpen &&
-                    pSession->m_pClientItem->m_clientInputQueue.GetCount()) {
+                    pSession->m_pClientItem->m_clientInputQueue.GetCount() ) {
 
                 CLIENTEVENTLIST::compatibility_iterator nodeClient;
                 vscpEvent *pEvent;
 
                 pSession->m_pClientItem->m_mutexClientInputQueue.Lock();    // 1
                 nodeClient = pSession->m_pClientItem->m_clientInputQueue.GetFirst();
-                if ( NULL == nodeClient ) {
-                    continue;
-                }
+                if ( NULL == nodeClient )  continue;
                 pEvent = nodeClient->GetData();                             // 1
                 pSession->m_pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
                 pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
