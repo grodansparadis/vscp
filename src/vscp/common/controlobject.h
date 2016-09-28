@@ -503,9 +503,7 @@ public:
     // Password is MD5 hash over "username:vscptoken:password"
     wxString m_admin_user;      // Defaults to "admin"
     wxString m_admin_password;  // Defaults to "13ca88de01ce06e377f74e61c23f630b"
-    wxString m_admin_allowfrom; // Remotes allowed to connect. Defaults to "*"
-    wxString m_vscp_token;      // Defaults to "Stay Hungry. Stay Foolish."
-    
+    wxString m_admin_allowfrom; // Remotes allowed to connect. Defaults to "*"   
 
     /*!
         User to run as for Unix

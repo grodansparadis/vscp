@@ -1562,7 +1562,8 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn,
         return false;
     }
 
-    // Calculate MD5 for username:vscptoken:password
+    /*
+    // Calculate MD5 for username:authdomain:password
     char buf[2148];
     memset( buf, 0, sizeof( buf ) );
     strncpy( buf,
@@ -1570,8 +1571,8 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn,
                 pClientItem->m_UserName.Length() );
     strncat( buf, ":", 1 );
     strncat( buf,
-                (const char *)pCtrlObject->m_vscp_token,
-                strlen( pCtrlObject->m_vscp_token ) );
+                (const char *)pCtrlObject->m_authDomain,
+                strlen( pCtrlObject->m_authDomain ) );
     strncat( buf, ":", 1 );
     strncat( (char *)buf, strPassword.mbc_str(), strPassword.Length() );
 
@@ -1585,13 +1586,15 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn,
     cs_to_hex( digest, bindigest, 16 );
 
     wxString md5Password = wxString( digest, wxConvUTF8 );
+    */
+    
     m_pCtrlObject->m_mutexUserList.Lock();
 #if  0
     ::wxLogDebug( _("Username: ") + m_UserName );
     ::wxLogDebug( _("Password: ") + strPassword );
     ::wxLogDebug( _("MD5 of Password: ") + md5Password );
 #endif
-    pClientItem->m_pUserItem = m_pCtrlObject->m_userList.validateUser( pClientItem->m_UserName, md5Password );
+    pClientItem->m_pUserItem = m_pCtrlObject->m_userList.validateUser( pClientItem->m_UserName, strPassword );
     m_pCtrlObject->m_mutexUserList.Unlock();
 
     if ( NULL == pClientItem->m_pUserItem ) {

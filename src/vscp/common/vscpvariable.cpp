@@ -3151,11 +3151,6 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     else if ( name.Lower() == _("vscp.websrv.root.path") ) {
         var.setValue( wxString::FromUTF8( gpctrlObj->m_pathWebRoot ) );
     }
-    else if ( name.Lower() == _("vscp.websrv.authdomain") ) {
-        var.setValue( ( 0 == strlen( gpctrlObj->m_authDomain ) ) ?
-                    wxString::FromAscii( "mydomain.com" ) :
-                    wxString::FromUTF8( gpctrlObj->m_authDomain ) );
-    }
     else if ( name.Lower() == _("vscp.websrv.cert.path") ) {
         var.setValue( wxString::FromUTF8( gpctrlObj->m_pathCert ) );
     }
@@ -3894,16 +3889,6 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                     (const char *)strval.mbc_str(), 
                     wxMin( sizeof( gpctrlObj->m_pathWebRoot)-1, strval.Length() ) );
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_Webserver_RootPath"), 
-                                                    strval );
-    }
-    else if ( name.Lower() == _("vscp.websrv.authdomain") ) {
-        wxString strval;
-        strval = var.getValue();
-        memset( gpctrlObj->m_authDomain, 0, sizeof( gpctrlObj->m_authDomain ) );
-        memcpy( gpctrlObj->m_authDomain, 
-                    (const char *)strval.mbc_str(), 
-                    wxMin( sizeof( gpctrlObj->m_authDomain)-1, strval.Length() ) );
-        return gpctrlObj->updateConfigurationRecordItem( _("vscpd_Webserver_AuthDomain"), 
                                                     strval );
     }
     else if ( name.Lower() == _("vscp.websrv.cert.path") ) {
@@ -4860,19 +4845,8 @@ bool CVariableStorage::getVarlistFromRegExp( wxArrayString& nameArray,
     wxString varname;
     sqlite3_stmt *ppStmt;
     wxString regexlocal = regex.Upper();
-    
-    const char *request = " GET /index.html HTTP/1.0\r\n\r\n";
-struct slre_cap caps[4];
-
-if (slre_match("^\\s*(\\S+)\\s+(\\S+)\\s+HTTP/(\\d)\\.(\\d)",
-               request, strlen(request), caps, 4, 0) > 0) {
-  printf("Method: [%.*s], URI: [%.*s]\n",
-         caps[0].len, caps[0].ptr,
-         caps[1].len, caps[1].ptr);
-} else {
-  printf("Error parsing [%s]\n", request);
-}
-    
+    //struct slre_cap caps[4];
+        
     nameArray.Clear();
     
     regexlocal.Trim();
@@ -4891,11 +4865,11 @@ if (slre_match("^\\s*(\\S+)\\s+(\\S+)\\s+HTTP/(\\d)\\.(\\d)",
         
         const unsigned char *p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NAME );
         varname = wxString::FromUTF8Unchecked( (const char *)p );
-        //if ( wxregex.Matches( varname ) ) {
-        if ( slre_match( (const char *)regexlocal.mbc_str(),
+        if ( wxregex.Matches( varname ) ) {
+        /*if ( slre_match( (const char *)regexlocal.mbc_str(),
                                         (const char *)varname.mbc_str(), 
                                         strlen( (const char *)varname.mbc_str() ), 
-                                        caps, 4, 0) > 0) {
+                                        caps, 4, 0) > 0) {*/
         
             nameArray.Add( varname );
         }
@@ -4916,6 +4890,10 @@ if (slre_match("^\\s*(\\S+)\\s+(\\S+)\\s+HTTP/(\\d)\\.(\\d)",
         
         varname = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NAME ) );
         if ( wxregex.Matches( varname ) ) {
+        /*if ( slre_match( (const char *)regexlocal.mbc_str(),
+                                        (const char *)varname.mbc_str(), 
+                                        strlen( (const char *)varname.mbc_str() ), 
+                                        caps, 4, 0) > 0) {*/
             nameArray.Add( varname );
         }
     }

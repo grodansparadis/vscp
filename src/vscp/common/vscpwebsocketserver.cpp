@@ -573,7 +573,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
     }
     
     // ------------------------------------------------------------------------
-    //                            RVAR/READVAR
+    //                              RVAR/READVAR
     //-------------------------------------------------------------------------
     
     else if ( ( 0 == strTok.Find(_("READVAR") ) ) || 
@@ -734,7 +734,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
     }
     
     // ------------------------------------------------------------------------
-    //                               RSTVAR/RESETVAR
+    //                             RSTVAR/RESETVAR
     //-------------------------------------------------------------------------
     
     else if ( ( 0 == strTok.Find(_("RESETVAR") ) ) || 
@@ -1014,7 +1014,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
         wxString strWork;
         m_pCtrlObject->m_variableMutex.Lock();
         
-        if (tkz.HasMoreTokens()) {
+        if ( tkz.HasMoreTokens() ) {
             strSearch = tkz.GetNextToken();
             strSearch.Trim();
             if ( strSearch.IsEmpty() ) {

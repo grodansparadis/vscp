@@ -324,7 +324,7 @@ static int vscp_check_nonce( const char *nonce )
 {
     unsigned long now = (unsigned long) time( NULL );
     unsigned long val = (unsigned long) strtoul( nonce, NULL, 16 );
-    return ( 1 || ( now < val ) || ( ( now - val ) < 3600 ) );
+    return ( /*1 ||*/ ( now < val ) || ( ( now - val ) < 3600 ) );
 }
 
 
@@ -367,7 +367,7 @@ static int vscp_is_authorized( struct mg_connection *conn,
     struct mg_str *hdr;
     char user[50], cnonce[50], response[40], uri[200], qop[20], nc[20], nonce[50];
 
-    // Parse "Authorization:" header, fail fast on parse error
+    // Parse "authorisation:" header, fail fast on parse error
     if ( ( hdr = mg_get_http_header( hm, "Authorization" ) ) == NULL ||
         mg_http_parse_header(hdr, "username", user, sizeof( user ) ) == 0 ||
         mg_http_parse_header(hdr, "cnonce", cnonce, sizeof( cnonce ) ) == 0 ||
@@ -537,10 +537,10 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
 
         case MG_EV_HTTP_REQUEST:
 
-            // Don't authorize here for rest calls
+            // Don't authorise here for rest calls
             if ( 0 != strncmp(phm->uri.p, "/vscp/rest", 10 ) ) {
 
-                // Must be autorized
+                // Must be authorised
                 if ( !vscp_is_authorized( nc, phm, pObject ) ) {
                     mg_printf( nc,
                                 "HTTP/1.1 401 Unauthorized\r\n"
@@ -549,7 +549,8 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
                                 "Content-Length: 0\r\n\r\n",
                                 pObject->m_authDomain,
                                 (unsigned long)time( NULL ) );
-                return;
+                    return;
+                
                 }
             }
 

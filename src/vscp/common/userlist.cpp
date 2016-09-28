@@ -347,7 +347,7 @@ bool CUserItem::saveToDatabase( void )
         char *sql = sqlite3_mprintf( VSCPDB_USER_INSERT,
                 m_userID,
                 (const char *)m_user.mbc_str(),
-                (const char *)m_md5Password.mbc_str(),
+                (const char *)m_password.mbc_str(),
                 (const char *)m_fullName.mbc_str(),
                 (const char *)strBoth.mbc_str(),
                 (const char *)getRightsAsString().mbc_str(),
@@ -374,7 +374,7 @@ bool CUserItem::saveToDatabase( void )
         // Update
         char *sql = sqlite3_mprintf( VSCPDB_USER_UPDATE,
                 (const char *)m_user.mbc_str(),
-                (const char *)m_md5Password.mbc_str(),
+                (const char *)m_password.mbc_str(),
                 (const char *)m_fullName.mbc_str(),
                 (const char *)strBoth.mbc_str(),
                 (const char *)getRightsAsString().mbc_str(),
@@ -629,7 +629,7 @@ bool CUserList::loadUsers( void )
 //
 
 bool CUserList::addUser( const wxString& user,
-                            const wxString& md5, 
+                            const wxString& password, 
                             const wxString& strNote,
                             const vscpEventFilter *pFilter,
                             const wxString& userRights,
@@ -637,6 +637,7 @@ bool CUserList::addUser( const wxString& user,
                             const wxString& allowedEvents,
                             uint32_t bFlags )
 {
+    char buf[ 512 ];
     static uint32_t cntLocaluser = VSCP_LOCAL_USER_OFFSET;
     // Check if user is already in the database
     char *pErrMsg = 0;
@@ -652,6 +653,8 @@ bool CUserList::addUser( const wxString& user,
         gpctrlObj->logMsg( _("Failed to read VSCP settings database - not open.") );
         return false;
     }
+    
+    
 
     // New user item
     CUserItem *pItem = new CUserItem; 
@@ -670,9 +673,28 @@ bool CUserList::addUser( const wxString& user,
         delete pItem;
         return false;
     }
+    
+    
+    // MD5 Token
+    wxString driverhash = user;
+    driverhash += _(":");
+    driverhash += wxString::FromUTF8( gpctrlObj->m_authDomain );
+    driverhash += _(":");
+    driverhash += password;
+    
+    memset( buf, 0, sizeof( buf ) );
+    strncpy( buf,(const char *)driverhash.mbc_str(), driverhash.Length() );
+
+    char digest[33];
+    memset( digest, 0, sizeof( digest ) );
+    static const size_t len_buf = strlen( buf );
+    cs_md5( digest, buf, len_buf, NULL );
+
+    pItem->setPasswordDomain( wxString::FromUTF8( digest ) );
+    
 
     pItem->setUser( user );
-    pItem->setPassword( md5 );
+    pItem->setPassword( password );
     pItem->setNote( strNote );
     pItem->setFilter( pFilter );
     pItem->setUserRightsFromString( userRights );
@@ -774,7 +796,7 @@ CUserItem * CUserList::getUser( const wxString& user )
 //
 
 CUserItem * CUserList::validateUser( const wxString& user, 
-                                    const wxString& md5password)
+                                            const wxString& password ) 
 {
     CUserItem *pUserItem;
 
@@ -782,11 +804,28 @@ CUserItem * CUserList::validateUser( const wxString& user,
     if ( NULL == pUserItem ) return NULL;
 
     // Check password
-    if (!pUserItem->getPassword().IsSameAs( md5password ) ) return NULL;
+    if (!pUserItem->getPassword().IsSameAs( password ) ) return NULL;
 
     return pUserItem;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// validateUserDomain
+//
+
+CUserItem * CUserList::validateUserDomain( const wxString& user, 
+                                            const wxString& md5password ) 
+{
+    CUserItem *pUserItem;
+
+    pUserItem = m_userhashmap[ user ];
+    if ( NULL == pUserItem ) return NULL;
+
+    // Check password
+    if (!pUserItem->getPasswordDomain().IsSameAs( md5password ) ) return NULL;
+
+    return pUserItem;
+}
 
 
 

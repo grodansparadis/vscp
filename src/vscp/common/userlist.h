@@ -202,7 +202,8 @@ public:
      */
     static bool isUserInDB(const wxString& user, long *pid = NULL );
     
-    bool checkPassword( const wxString& md5password ) { return (getPassword().IsSameAs( md5password ) ? true : false); };
+    bool checkPassword( const wxString& password ) { return ( getPassword().IsSameAs( password ) ? true : false); };
+    bool checkPasswordDomain( const wxString& md5password ) { return ( getPasswordDomain().IsSameAs( md5password ) ? true : false); };
     
     // Getters/Setters
     int getUserID( void ) { return m_userID; };
@@ -211,8 +212,11 @@ public:
     wxString getUser( void ) { return m_user; };
     void setUser( const wxString& strUser ) { m_user = strUser; };
     
-    wxString getPassword( void ) { return m_md5Password.Lower(); };
-    void setPassword( const wxString& strPassword ) { m_md5Password = strPassword.Lower(); };
+    wxString getPassword( void ) { return m_password; };
+    void setPassword( const wxString& strPassword ) { m_password = strPassword; };
+    
+    wxString getPasswordDomain( void ) { return m_md5PasswordDomain.Lower(); };
+    void setPasswordDomain( const wxString& strPassword ) { m_md5PasswordDomain = strPassword.Lower(); };
     
     wxString getFullname( void ) { return m_fullName; };
     void setFullname( const wxString& strUser ) { m_fullName = strUser; };
@@ -246,8 +250,11 @@ protected:
     /// Username
     wxString m_user;
     
-    /// MD5 of user password
-    wxString m_md5Password;
+    /// Password
+    wxString m_password;
+    
+    /// MD5 of user:domain:password (h1)
+    wxString m_md5PasswordDomain;
     
     /// Full name
     wxString m_fullName;
@@ -307,7 +314,7 @@ public:
         Add a user to the in memory list. Must saved to database to make persistent.
         The configuration set username is not a valid username.
         @param user Username for user.
-        @param md5 MD5 of user password.
+        @param password Password.
         @param note An arbitrary note about the user
         @param Ponter to a VSCP filter associated with this user.
         @param userRights list with user rights on the form right1,right2,right3....
@@ -322,7 +329,7 @@ public:
         @return true on success. false on failure.	
     */
     bool addUser( const wxString& user,
-                            const wxString& md5,
+                            const wxString& password,
                             const wxString& strNote,
                             const vscpEventFilter *pFilter = NULL,
                             const wxString& userRights = _(""),
@@ -339,12 +346,20 @@ public:
     CUserItem *getUser( const wxString& user );
 
     /*!
-        Validate a username.
+        Validate a username/password pair
         @param user Username to test.
+        @param password Password to test
         @return Pointer to useritem if valid, NULL if not.
-        */
-    CUserItem *validateUser(const wxString& user, const wxString& md5password);
+    */
+    CUserItem *validateUser( const wxString& user, const wxString& password );
 
+    /*!
+        Validate a username using the user domain. (WEB/WEBSOCKETS)
+        @param user Username to test.
+        @param md5password MD5(user;domain;password)
+        @return Pointer to useritem if valid, NULL if not.
+    */
+    CUserItem *validateUserDomain( const wxString& user, const wxString& md5password );
 
 protected:
 

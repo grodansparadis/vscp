@@ -188,8 +188,7 @@ CControlObject::CControlObject()
     
     // Default admin user credentials
     m_admin_user = _("admin");
-    m_admin_password = _("13ca88de01ce06e377f74e61c23f630b");
-    m_vscp_token = _("Stay Hungry. Stay Foolish.");
+    m_admin_password = _("secret");
     m_admin_allowfrom = _("*");
     
     m_nConfiguration = 1;       // Default configuration record is read.
@@ -863,7 +862,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 
     wxString driverhash = m_driverUsername;
     driverhash += _(":");
-    driverhash += wxString::FromUTF8( m_vscp_token );
+    driverhash += wxString::FromUTF8( m_authDomain );
     driverhash += _(":");
     driverhash += m_driverPassword;
 
@@ -2049,9 +2048,8 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
 
                 if (subchild->GetName() == wxT("secret")) {
                     m_admin_user = subchild->GetAttribute(wxT("user"), wxT("admin"));
-                    m_admin_password = subchild->GetAttribute(wxT("password"), wxT("13ca88de01ce06e377f74e61c23f630b"));
-                    m_admin_allowfrom = subchild->GetAttribute(wxT("allowfrom"), wxT("*"));
-                    m_vscp_token = subchild->GetAttribute(wxT("vscptoken"), wxT("Stay Hungry. Stay Foolish."));                    
+                    m_admin_password = subchild->GetAttribute(wxT("password"), wxT("secret"));
+                    m_admin_allowfrom = subchild->GetAttribute(wxT("allowfrom"), wxT("*"));                    
                 }
                 else if (subchild->GetName() == wxT("loglevel")) {
                     
