@@ -13,12 +13,10 @@
     <general>
 
    	<!-- This is the admin credentials                                    -->
-	<!-- admin-password is made up from MD5 over user:vscptoken:password  -->
-	<!--   can be calculated online here http://www.md5.cz/                     -->
         <!-- allowfrom="*" allow connections from all hosts                   -->
         <!-- A stricter allowfrom can be 127.0.0.1,192.168.1.*                -->
         <security admin="admin" 
-                       password="13ca88de01ce06e377f74e61c23f630b" 
+                       password="secret" 
                        allowfrom="*" 
                        vscptoken="Stay Hungry. Stay Foolish." />
     
@@ -165,8 +163,7 @@
     <remoteuser> 
         <user>
             <name>user</name>
-            <!-- "user:Stay Hungry. Stay Foolish.:secret"                    -->
-            <password>6f3bd42ff3cce26016a7251d7c897594</password>
+            <password>secret</password>
             <privilege>user</privilege>
             <!-- A stricter allowfrom can be 127.0.0.1,192.168.1.*           -->
             <allowfrom>*</allowfrom>
@@ -186,7 +183,7 @@
         <sunrise-twilight enable="true" />
         <sunset enable="true" />
         <sunset-twilight enable="true" />
-        <segmentcontoller-event enable="true" interval="60" />
+        <segmentcontrol-event enable="true" interval="60" />
         <heartbeat-event enable="true" interval="60" />
     </automation>
     

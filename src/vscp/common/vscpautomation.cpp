@@ -79,9 +79,9 @@ static double degs;
 static double rads;
 
 static double L, g, daylen;
-static double SunDia = 0.53; // Sunradius degrees
+static double SunDia = 0.53; // Sun radius degrees
 
-static double AirRefr = 34.0 / 60.0; // athmospheric refraction degrees //
+static double AirRefr = 34.0 / 60.0; // atmospheric refraction degrees //
 
 
  
@@ -121,7 +121,7 @@ CVSCPAutomation::CVSCPAutomation( void )
     m_bSunSetTwilightEvent = true;
     m_bCalculatedNoonEvent = true;
 
-    m_bCalulationHasBeenDone = false;   // No calcs has been done yet
+    m_bCalulationHasBeenDone = false;   // No calculations has been done yet
 
     // Set to some early date to indicate that they have not been sent
     wxTimeSpan in_the_past(-8760);
