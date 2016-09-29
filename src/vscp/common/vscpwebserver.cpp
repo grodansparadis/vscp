@@ -432,7 +432,7 @@ static int vscp_is_authorized( struct mg_connection *conn,
         // Check digest
         if ( TRUE !=
             pObject->getWebServer()->websrv_check_password( method,
-                            ( const char * )pUserItem->getPassword().mbc_str(),
+                            ( const char * )pUserItem->getPasswordDomain().mbc_str(),
                             uri,
                             nonce,
                             nc,
@@ -538,8 +538,11 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
         case MG_EV_HTTP_REQUEST:
 
             // Don't authorise here for rest calls
-            if ( 0 != strncmp(phm->uri.p, "/vscp/rest", 10 ) ) {
-
+            if ( 0 == strncmp(phm->uri.p, "/vscp/rest", 10 ) ) {
+                pObject->getWebServer()->websrv_restapi( nc, phm );
+                return;
+            }
+            else {
                 // Must be authorised
                 if ( !vscp_is_authorized( nc, phm, pObject ) ) {
                     mg_printf( nc,

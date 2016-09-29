@@ -22,10 +22,8 @@
  * Please refer to README.md for a detailed reference.
  */
 
-#ifndef SLRE_HEADER_DEFINED
-#define SLRE_HEADER_DEFINED
-
-#define EXCLUDE_COMMON
+#ifndef CS_SLRE_SLRE_H_
+#define CS_SLRE_SLRE_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -59,4 +57,4 @@ enum { SLRE_IGNORE_CASE = 1 };
 }
 #endif
 
-#endif  /* SLRE_HEADER_DEFINED */
+#endif /* CS_SLRE_SLRE_H_ */

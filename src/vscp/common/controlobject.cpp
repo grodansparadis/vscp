@@ -1519,6 +1519,7 @@ bool CControlObject::startMQTTBrokerThread(void)
     /////////////////////////////////////////////////////////////////////////////
     if ( m_bMQTTBroker ) {
 
+#ifdef MG_ENABLE_MQTT_BROKER        
         m_pMQTTBrookerThread = new VSCPMQTTBrokerThread;
 
         if (NULL != m_pMQTTBrookerThread) {
@@ -1536,7 +1537,8 @@ bool CControlObject::startMQTTBrokerThread(void)
         }
         else {
             logMsg( _("Unable to allocate memory for TCP thread.") );
-        }
+         }
+#endif         
     }
 
     return true;
@@ -1572,6 +1574,7 @@ bool CControlObject::startCoAPServerThread(void)
     /////////////////////////////////////////////////////////////////////////////
     if ( m_bCoAPServer ) {
 
+ #ifdef MG_ENABLE_COAP       
         m_pCoAPServerThread = new VSCPCoAPServerThread;
 
         if (NULL != m_pCoAPServerThread) {
@@ -1590,6 +1593,8 @@ bool CControlObject::startCoAPServerThread(void)
         else {
             logMsg( _("Unable to allocate memory for TCP thread.") );
         }
+#endif
+        
     }
 
     return true;
@@ -3298,10 +3303,10 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     // Write into settings database
                     updateConfigurationRecordItem( _("vscpd_automation_segmentcontrollerevent_enable"), 
                                             wxString::Format(_("%d"), 
-                                            m_automation.isSegmentControllerHeartbeat() ? 0 : 1 ) );
+                                            m_automation.isSegmentControllerHeartbeat() ? 1 : 0 ) );
                     
                     updateConfigurationRecordItem( _("vscpd_automation_segmentcontrollerevent_interval"), 
-                                            wxString::Format(_("%d"), 
+                                            wxString::Format(_("%ld"), 
                                             m_automation.getSegmentControllerHeartbeatInterval() ) );
                     
                 }
@@ -3323,7 +3328,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     // Write into settings database
                     updateConfigurationRecordItem(_("vscpd_automation_heartbeatevent_enable"), 
                                             wxString::Format(_("%d"), 
-                                            m_automation.isHeartbeatEvent() ? 0 : 1 ) );
+                                            m_automation.isHeartbeatEvent() ? 1 : 0 ) );
                     
                     updateConfigurationRecordItem(_("vscpd_automation_heartbeatevent_interval"), 
                                             wxString::Format(_("%ld"), 

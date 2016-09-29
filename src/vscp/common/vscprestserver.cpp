@@ -104,7 +104,7 @@
 #include "web_js.h"
 #include "web_template.h"
 
-#include <slre.h>
+#include <v7.h>
 #include <mongoose.h>
 #include <frozen.h>
 
@@ -547,7 +547,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
             return;
         }
 
-        // Is this an authorized user?
+        // Is this an authorised user?
         wxString str3 = keypairs[_("VSCPSECRET")];
         if ( keypairs[_("VSCPSECRET")] != pUser->getPassword() ) {
             wxString strErr =
@@ -819,6 +819,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
     }
 
     return;
+    
 }
 
 
@@ -2002,18 +2003,15 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
     if ( NULL != pSession ) {
 
         CVSCPVariable variable;
-        wxString strvalue;
 
-        if ( pObject->m_VSCP_Variables.find( strVariableName, variable ) ) {
+        if ( 0 == pObject->m_VSCP_Variables.find( strVariableName, variable ) ) {
             webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_FOUND );
             return;
         }
 
-        variable.writeValueToString( strvalue );
-
         // Get variable value
-        wxString strVariableValue;
-        variable.writeValueToString( strVariableValue );
+        //wxString strVariableValue;
+        //variable.writeValueToString( strVariableValue );
 
         if ( REST_FORMAT_PLAIN == format ) {
 
@@ -2022,11 +2020,14 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
                 mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
 
                 sprintf( wrkbuf,
-                                "variable=%s type=%d persistent=%s value='%s' note='%s'\r\n",
+                                "name=%s type=%d user=%lu access-right=%03X persistent=%s last-change='%s' value='%s' note='%s'\r\n",
                                 (const char *)variable.getName().mbc_str(),
                                 variable.getType(),
+                                variable.getUserID(),
+                                variable.getAccessRights(),                                
                                 variable.isPersistent() ? "true" : "false",
-                                (const char *)strVariableValue.mbc_str(),
+                                (const char *)variable.getLastChange().FormatISOCombined().mbc_str(),
+                                (const char *)variable.getValue().mbc_str(),
                                 (const char *)variable.getNote().mbc_str() );
 
                 mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
@@ -2036,11 +2037,14 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
 
             webserv_util_sendheader( nc, 200, REST_MIME_TYPE_CSV );
             sprintf( wrkbuf,
-                "success-code,error-code,message,description,Variable,Type,Persistent,Value,Note\r\n1,1,Success,Success.,%s,%d,%s,'%s','%s'\r\n",
+                "success-code,error-code,message,description,name,type,user,access-right,persistent,last-change,value,note\r\n1,1,Success,Success.,%s,%d,%lu,%03X,%s,%s,'%s','%s'\r\n",
                 (const char *)strVariableName.mbc_str(),
                 variable.getType(),
+                variable.getUserID(),
+                variable.getAccessRights(),    
                 variable.isPersistent() ? "true" : "false",
-                (const char *)strVariableValue.mbc_str(),
+                (const char *)variable.getLastChange().FormatISOCombined().mbc_str(),    
+                (const char *)variable.getValue().mbc_str(),
                 (const char *)variable.getNote().mbc_str() );
             mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ) );
 
@@ -2052,15 +2056,19 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
             mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
 
             sprintf( wrkbuf,
-                        "<variable type=\"%d(%s)\" persistent=\"%s\" >",
+                        "<variable name=\"%s\" typecode=\"%d\" type=\"%s\" user=\"%lu\" access-right=\"%03X\" persistent=\"%s\" last-change=\"%s\" >",
+                        (const char *)variable.getName().mbc_str(),
                         variable.getType(),
                         variable.getVariableTypeAsString( variable.getType() ),
-                        variable.isPersistent() ? "true" : "false" );
+                        variable.getUserID(),
+                        variable.getAccessRights(),                                                
+                        variable.isPersistent() ? "true" : "false",
+                        (const char *)variable.getLastChange().FormatISOCombined().mbc_str() );
             mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
             sprintf((char *) wrkbuf,
                             "<name>%s</name><value>%s</value><note>%s</note>",
                             (const char *)variable.getName().mbc_str(),
-                            (const char *)strVariableValue.mbc_str(),
+                            (const char *)variable.getValue().mbc_str(),
                             (const char *)variable.getNote().mbc_str() );
 
             mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
@@ -2076,6 +2084,7 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
         }
         else if ( ( REST_FORMAT_JSON == format ) || ( REST_FORMAT_JSONP == format ) ) {
 
+            wxString wxstr;
             char *p = buf;
             if ( REST_FORMAT_JSONP == format ) {
                 webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSONP );
@@ -2100,27 +2109,48 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
                 p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
                 p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, variable.getName().mbc_str(), variable.getName().Length() );
                 p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
-
+                
                 p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "vartype", 7 );
                 p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
                 wxString wxstr = wxString::FromAscii( variable.getVariableTypeAsString( variable.getType() ) );
                 p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wxstr.mbc_str(), wxstr.Length() );
                 p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
-
+                
                 p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "vartypecode", 11 );
                 p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
                 p += json_emit_long( p, &buf[sizeof(buf)] - p, variable.getType() );
                 p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
-
+                
+                p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varuser", 7 );
+                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
+                p += json_emit_long( p, &buf[sizeof(buf)] - p, variable.getUserID() );
+                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
+                
+                p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varaccessright", 14 );
+                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
+                p += json_emit_long( p, &buf[sizeof(buf)] - p, variable.getAccessRights() );
+                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
+                
                 p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varpersistence", 14 );
                 p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
                 wxstr = variable.isPersistent() ? _("true") : _("false");
                 p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wxstr.mbc_str(), wxstr.Length() );
                 p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
+                
+                p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varlastchange", 13 );
+                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
+                wxstr = variable.getLastChange().FormatISOCombined();
+                p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wxstr.mbc_str(), wxstr.Length() );
+                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 
                 p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varvalue", 8 );
                 p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
-                p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, strVariableValue.mbc_str(), strVariableValue.Length() );
+                p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, variable.getValue().mbc_str(), variable.getValue().Length() );
+                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
+                
+                p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varnote", 7 );
+                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
+                p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, variable.getNote().mbc_str(), variable.getNote().Length() );
                 p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 
                 // Mark end
@@ -2176,7 +2206,7 @@ VSCPWebServerThread::webserv_rest_doWriteVariable( struct mg_connection *nc,
 
         // Get variablename
         CVSCPVariable variable;
-        if ( pObject->m_VSCP_Variables.find( strVariableName, variable ) ) {
+        if ( 0 == pObject->m_VSCP_Variables.find( strVariableName, variable ) ) {
             webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_FOUND );
             return;
         }
