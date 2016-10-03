@@ -325,7 +325,7 @@ void *deviceThread::Entry()
             /////////////////////////////////////////////////////////////////////////////
             // Device write worker thread
             /////////////////////////////////////////////////////////////////////////////
-            m_pwriteThread = new deviceCanalWriteThread;
+            m_pwriteThread = new deviceLevel1WriteThread;
 
             if (m_pwriteThread) {
                 m_pwriteThread->m_pMainThreadObj = this;
@@ -347,7 +347,7 @@ void *deviceThread::Entry()
             /////////////////////////////////////////////////////////////////////////////
             // Device read worker thread
             /////////////////////////////////////////////////////////////////////////////
-            m_preceiveThread = new deviceCanalReceiveThread;
+            m_preceiveThread = new deviceLevel1ReceiveThread;
 
             if (m_preceiveThread) {
                 m_preceiveThread->m_pMainThreadObj = this;
@@ -750,14 +750,14 @@ void deviceThread::OnExit()
 // deviceCanalReceiveThread
 //
 
-deviceCanalReceiveThread::deviceCanalReceiveThread()
+deviceLevel1ReceiveThread::deviceLevel1ReceiveThread()
 : wxThread(wxTHREAD_JOINABLE)
 {
     m_pMainThreadObj = NULL;
     m_bQuit = false;
 }
 
-deviceCanalReceiveThread::~deviceCanalReceiveThread()
+deviceLevel1ReceiveThread::~deviceLevel1ReceiveThread()
 {
     ;
 }
@@ -766,10 +766,10 @@ deviceCanalReceiveThread::~deviceCanalReceiveThread()
 // Entry
 //
 
-void *deviceCanalReceiveThread::Entry()
+void *deviceLevel1ReceiveThread::Entry()
 {
     canalMsg msg;
-    CanalMsgOutList::compatibility_iterator nodeCanal;
+    Level1MsgOutList::compatibility_iterator nodeLevel1;
 
     // Must be a valid main object pointer
     if (NULL == m_pMainThreadObj) return NULL;
@@ -829,9 +829,231 @@ void *deviceCanalReceiveThread::Entry()
                         pvscpEvent->GUID[15] = nickname_lsb;
 
                     }
+                    
+                    // =========================================================
+                    //                   Outgoing translations
+                    // =========================================================
+                    
+                    // Level I measurement events to Level II measurement float
+                    if ( m_pMainThreadObj->m_pDeviceItem->m_translation & 
+                            VSCP_DRIVER_OUT_TR_M1M2F ) {
+                        
+                        double val64;
+                        if ( vscp_getVSCPMeasurementAsDouble( pvscpEvent, &val64 ) ) {
+                            
+                            pvscpEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
+                            uint8_t *p = new uint8_t[ 12 ];
+                            if ( NULL != p ) {
+                                
+                                memset( p, 0, 12 );
+/*                                
+0 	Index for sensor, 0-255.
+1 	Zone, 0-255.
+2 	Sub zone, 0-255.
+3 	Unit from measurements, 0-255.
+4-11 	64-bit double precision floating point value stored MSB first. 
+*/ 
+                                if ( VSCP_CLASS1_MEASUREMENT == pvscpEvent->vscp_class ) {
+                                    
+                                    // Sensor index
+                                    p[ 0 ] = pvscpEvent->pdata[ 0 ] & VSCP_MASK_DATACODING_INDEX;
+                                    
+                                    // Zone + Subzone
+                                    p[ 1 ] = p[ 2 ] = 0x00;
+                                    
+                                    // unit
+                                    p[ 3 ] = (pvscpEvent->pdata[ 0 ] & VSCP_MASK_DATACODING_UNIT) >> 3;
+                                    
+                                    // Floating point value
+                                    val64 = wxUINT64_SWAP_ON_LE(val64);
+                                    memcpy( p + 4, &val64, sizeof( val64 ) );
+                                    
+                                    delete [] pvscpEvent->pdata;
+                                    
+                                    pvscpEvent->pdata = p;
+                                    
+                                }
+                                else if ( VSCP_CLASS1_MEASUREMENT64 == pvscpEvent->vscp_class ) {
+                                    
+                                    // Index = 0, Unit = 0, Zone = 0, Subzone = 0
+                                    // Floating point value
+                                    val64 = wxUINT64_SWAP_ON_LE(val64);
+                                    memcpy( p + 4, &val64, sizeof( val64 ) );
+                                    
+                                    delete [] pvscpEvent->pdata;
+                                    
+                                    pvscpEvent->pdata = p;
+                                    
+                                }
+                                else if ( VSCP_CLASS1_MEASUREMENT32 == pvscpEvent->vscp_class ) {
+                                    
+                                    // Index = 0, Unit = 0, Zone = 0, Subzone = 0
+                                    // Floating point value
+                                    val64 = wxUINT64_SWAP_ON_LE(val64);
+                                    memcpy( p + 4, &val64, sizeof( val64 ) );
+                                    
+                                    delete [] pvscpEvent->pdata;
+                                    
+                                    pvscpEvent->pdata = p;
+                                    
+                                }
+                                else if ( VSCP_CLASS1_MEASUREZONE == pvscpEvent->vscp_class ) {
+                                    
+                                    // Sensor index
+                                    p[ 0 ] = pvscpEvent->pdata[ 0 ];
+                                    
+                                    // Zone
+                                    p[ 1 ] = pvscpEvent->pdata[ 1 ];
+                                    
+                                    // Subzone
+                                    p[ 2 ] = pvscpEvent->pdata[ 2 ];
+                                            
+                                    val64 = wxUINT64_SWAP_ON_LE(val64);
+                                    memcpy( p + 4, &val64, sizeof( val64 ) );
+                                    
+                                    delete [] pvscpEvent->pdata;
+                                    
+                                    pvscpEvent->pdata = p;
+                                    
+                                }                                
+                                else if ( VSCP_CLASS1_SETVALUEZONE == pvscpEvent->vscp_class ) {
+                                    
+                                    // Sensor index
+                                    p[ 0 ] = pvscpEvent->pdata[ 0 ];
+                                    
+                                    // Zone
+                                    p[ 1 ] = pvscpEvent->pdata[ 1 ];
+                                    
+                                    // Subzone
+                                    p[ 2 ] = pvscpEvent->pdata[ 2 ];
+                                            
+                                    val64 = wxUINT64_SWAP_ON_LE(val64);
+                                    memcpy( p + 4, &val64, sizeof( val64 ) );
+                                    
+                                    delete [] pvscpEvent->pdata;
+                                    
+                                    pvscpEvent->pdata = p;
+                                    
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Level I measurement events to Level II measurement string
+                    if ( m_pMainThreadObj->m_pDeviceItem->m_translation & 
+                            VSCP_DRIVER_OUT_TR_M1M2S ) {
+                        
+                        wxString strval;
+                        if ( vscp_getVSCPMeasurementAsString( pvscpEvent, strval ) ) {
+                            
+                            pvscpEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
+                            
+                            char *p = new char[ 4 + strval.Length() ];
+                            if ( NULL != p ) {
+                                
+                                memset( p, 0, 4 + strval.Length() );
+
+                                if ( VSCP_CLASS1_MEASUREMENT == pvscpEvent->vscp_class ) {
+                                    
+                                    // Sensor index
+                                    p[ 0 ] = pvscpEvent->pdata[ 0 ] & VSCP_MASK_DATACODING_INDEX;
+                                    
+                                    // Zone + Subzone
+                                    p[ 1 ] = p[ 2 ] = 0x00;
+                                    
+                                    // unit
+                                    p[ 3 ] = (pvscpEvent->pdata[ 0 ] & VSCP_MASK_DATACODING_UNIT) >> 3;
+                                    
+                                    // Copy in the value string
+                                    strcpy( p + 4, (const char *)strval.mbc_str() );
+                                    
+                                    delete [] pvscpEvent->pdata;
+                                    
+                                    pvscpEvent->pdata = (uint8_t *)p;
+                                    
+                                }
+                                else if ( VSCP_CLASS1_MEASUREMENT64 == pvscpEvent->vscp_class ) {
+                                    
+                                    // Index = 0, Unit = 0, Zone = 0, Subzone = 0
+                                    // Floating point value
+                                    // Copy in the value string
+                                    strcpy( p + 4, (const char *)strval.mbc_str() );
+                                    
+                                    delete [] pvscpEvent->pdata;
+                                    
+                                    pvscpEvent->pdata = (uint8_t *)p;
+                                    
+                                }
+                                else if ( VSCP_CLASS1_MEASUREMENT32 == pvscpEvent->vscp_class ) {
+                                    
+                                    // Index = 0, Unit = 0, Zone = 0, Subzone = 0
+                                    // Floating point value
+                                    // Copy in the value string
+                                    strcpy( p + 4, (const char *)strval.mbc_str() );
+                                    
+                                    delete [] pvscpEvent->pdata;
+                                    
+                                    pvscpEvent->pdata = (uint8_t *)p;
+                                    
+                                }
+                                else if ( VSCP_CLASS1_MEASUREZONE == pvscpEvent->vscp_class ) {
+                                    
+                                    // Sensor index
+                                    p[ 0 ] = pvscpEvent->pdata[ 0 ];
+                                    
+                                    // Zone
+                                    p[ 1 ] = pvscpEvent->pdata[ 1 ];
+                                    
+                                    // Subzone
+                                    p[ 2 ] = pvscpEvent->pdata[ 2 ];
+                                            
+                                    // Copy in the value string
+                                    strcpy( p + 4, (const char *)strval.mbc_str() );
+                                    
+                                    delete [] pvscpEvent->pdata;
+                                    
+                                    pvscpEvent->pdata = (uint8_t *)p;
+                                    
+                                }                                
+                                else if ( VSCP_CLASS1_SETVALUEZONE == pvscpEvent->vscp_class ) {
+                                    
+                                    // Sensor index
+                                    p[ 0 ] = pvscpEvent->pdata[ 0 ];
+                                    
+                                    // Zone
+                                    p[ 1 ] = pvscpEvent->pdata[ 1 ];
+                                    
+                                    // Subzone
+                                    p[ 2 ] = pvscpEvent->pdata[ 2 ];
+                                            
+                                    // Copy in the value string
+                                    strcpy( p + 4, (const char *)strval.mbc_str() );
+                                    
+                                    delete [] pvscpEvent->pdata;
+                                    
+                                    pvscpEvent->pdata = (uint8_t *)p;
+                                    
+                                }
+                            }                            
+                        }
+                    }
+                    
+                    // Level I events to Level I over Level II events
+                    if ( m_pMainThreadObj->m_pDeviceItem->m_translation & 
+                            VSCP_DRIVER_OUT_TR_ALL512 ) {
+                        pvscpEvent->vscp_class += 512;
+                        uint8_t *p = new uint8_t[ 16 + pvscpEvent->sizeData ];
+                        if ( NULL != p ) {
+                            memset( p, 0, 16 + pvscpEvent->sizeData );
+                            memcpy( p + 16, pvscpEvent->pdata, pvscpEvent->sizeData );
+                            pvscpEvent->sizeData += 16;
+                            delete [] pvscpEvent->pdata;
+                            pvscpEvent->pdata = p;
+                        }
+                    }
 
                     m_pMainThreadObj->m_pCtrlObject->m_mutexClientOutputQueue.Lock();
-                    m_pMainThreadObj->m_pCtrlObject->m_clientOutputQueue.Append(pvscpEvent);
+                    m_pMainThreadObj->m_pCtrlObject->m_clientOutputQueue.Append( pvscpEvent );
                     m_pMainThreadObj->m_pCtrlObject->m_semClientOutputQueue.Post();
                     m_pMainThreadObj->m_pCtrlObject->m_mutexClientOutputQueue.Unlock();
 
@@ -848,7 +1070,7 @@ void *deviceCanalReceiveThread::Entry()
 // OnExit
 //
 
-void deviceCanalReceiveThread::OnExit()
+void deviceLevel1ReceiveThread::OnExit()
 {
     ;
 }
@@ -861,14 +1083,14 @@ void deviceCanalReceiveThread::OnExit()
 // deviceCanalWriteThread
 //
 
-deviceCanalWriteThread::deviceCanalWriteThread()
+deviceLevel1WriteThread::deviceLevel1WriteThread()
 : wxThread(wxTHREAD_JOINABLE)
 {
     m_pMainThreadObj = NULL;
     m_bQuit = false;
 }
 
-deviceCanalWriteThread::~deviceCanalWriteThread()
+deviceLevel1WriteThread::~deviceLevel1WriteThread()
 {
     ;
 }
@@ -878,10 +1100,10 @@ deviceCanalWriteThread::~deviceCanalWriteThread()
 // Entry
 //
 
-void *deviceCanalWriteThread::Entry()
+void *deviceLevel1WriteThread::Entry()
 {
 
-    CanalMsgOutList::compatibility_iterator nodeCanal;
+    Level1MsgOutList::compatibility_iterator nodeLevel1;
 
     // Must be a valid main object pointer
     if (NULL == m_pMainThreadObj) return NULL;
@@ -932,7 +1154,7 @@ void *deviceCanalWriteThread::Entry()
 // OnExit
 //
 
-void deviceCanalWriteThread::OnExit()
+void deviceLevel1WriteThread::OnExit()
 {
 
 }

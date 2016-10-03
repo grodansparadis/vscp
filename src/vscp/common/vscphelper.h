@@ -153,19 +153,19 @@ extern "C" {
 
     
     /*!
-        Fetch datacoding byte from measurement events
+        Fetch data coding byte from measurement events
         @param pEvent Pointer to VSCP event
-        @return Measurement datacoding byte or zero if its not an 
-        event with a datacoding.
+        @return Measurement data coding byte or zero if its not an 
+        event with a data coding.
     */
     uint8_t vscp_getMeasurementDataCoding( const vscpEvent *pEvent );
 
     /*!
-        Get bitarray from coded event data
+        Get bit array from coded event data
         @param pCode Pointer to data coding byte.
         @param length Number of bytes it consist of including
-        the first normalize byte.
-        @return Bitarray as a unsigned 64-bit integer.
+        the first normalise byte.
+        @return Bit array as a unsigned 64-bit integer.
     */
     uint64_t vscp_getDataCodingBitArray( const uint8_t *pCode, uint8_t length);
 
@@ -210,6 +210,8 @@ extern "C" {
         
         CLASS1.MEASUREMENT
         CLASS2_LEVEL1.MEASUREMENT 
+        - VSCP_CLASS1_MEASUREZONE
+        - VSCP_CLASS1_SETVALUEZONE
         CLASS2_MEASUREMENT_FLOAT
         CLASS2_MEASUREMENT_STR
          
@@ -239,7 +241,7 @@ extern "C" {
         @return true on success, false on failure.
     */
     bool vscp_getVSCPMeasurementAsDouble( const vscpEvent *pEvent, 
-                                            double *pvalue);
+                                            double *pvalue );
 
     /*!
         Get data in the VSCP data coding format to a string. Works for

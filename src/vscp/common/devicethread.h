@@ -49,16 +49,16 @@ class deviceThread;
     to a blocking CANAL driver
 */
 
-class deviceCanalWriteThread : public wxThread
+class deviceLevel1WriteThread : public wxThread
 {
 
 public:
     
     /// Constructor
-    deviceCanalWriteThread();
+    deviceLevel1WriteThread();
 
     /// Destructor
-    virtual ~deviceCanalWriteThread();
+    virtual ~deviceLevel1WriteThread();
 
     /*!
         Thread code entry point
@@ -90,16 +90,16 @@ public:
     from a blocking CANAL driver
 */
 
-class deviceCanalReceiveThread : public wxThread
+class deviceLevel1ReceiveThread : public wxThread
 {
 
 public:
 
     /// Constructor
-    deviceCanalReceiveThread();
+    deviceLevel1ReceiveThread();
 
     /// Destructor
-    virtual ~deviceCanalReceiveThread();
+    virtual ~deviceLevel1ReceiveThread();
 
     /*!
         Thread code entry point
@@ -253,12 +253,12 @@ public:
     /*!
         Holder for CANAL receive thread
     */
-    deviceCanalReceiveThread *m_preceiveThread;
+    deviceLevel1ReceiveThread *m_preceiveThread;
 
     /*!
         Holder for CANAL write thread
     */
-    deviceCanalWriteThread *m_pwriteThread;
+    deviceLevel1WriteThread *m_pwriteThread;
     
     
     /*!

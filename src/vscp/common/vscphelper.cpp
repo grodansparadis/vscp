@@ -658,7 +658,6 @@ bool vscp_getVSCPMeasurementAsString( const vscpEvent *pEvent,
 
 bool vscp_getVSCPMeasurementAsDouble(const vscpEvent *pEvent, double *pvalue)
 {
-
     wxString str;
    
     // Check pointers

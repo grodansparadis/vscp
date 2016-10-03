@@ -21,7 +21,6 @@
 // Boston, MA 02111-1307, USA.
 //
 
-
 #if !defined(AFX_DEVICELIST_H__0ED35EA7_E9E1_41CD_8A98_5EB3369B3194__INCLUDED_)
 #define AFX_DEVICELIST_H__0ED35EA7_E9E1_41CD_8A98_5EB3369B3194__INCLUDED_
 
@@ -31,12 +30,10 @@
 #endif // _MSC_VER > 1000
 #endif
 
-
 #include "wx/wxprec.h"
 #include "wx/wx.h"
 #include "wx/defs.h"
 #include "wx/app.h"
-
 
 #ifdef WIN32
 
@@ -55,6 +52,15 @@
 #include "clientlist.h"
 #include "devicethread.h"
 
+#define NO_TRANSLATION  0       // No translation bit set
+
+// Out - translation bit definitions
+#define VSCP_DRIVER_OUT_TR_M1M2F     1  // M1 -> M2 Float  
+#define VSCP_DRIVER_OUT_TR_M1M2S     2  // M1 -> M2 String   
+#define VSCP_DRIVER_OUT_TR_ALL512    4  // All to Level II events
+
+// In - translation bit definitions
+
 enum _driver_levels {
     VSCP_DRIVER_LEVEL1 = 0,  
     VSCP_DRIVER_LEVEL2
@@ -63,8 +69,7 @@ enum _driver_levels {
 class CClientItem;
 class cguid;
 
-WX_DECLARE_LIST ( canalMsg, CanalMsgOutList );
-
+WX_DECLARE_LIST ( canalMsg, Level1MsgOutList );
 
 
 class CDeviceItem
@@ -140,6 +145,12 @@ public:
     */
     wxMutex m_deviceMutex;
 
+    /*!
+     *  Translation flags 
+     *  High 16-bits incoming.
+     *  Low 16-bit outgoing.
+     */
+    uint32_t m_translation;
 
     // Handle for dll/dl driver interface
     long m_openHandle;
@@ -190,12 +201,13 @@ public:
 
     /*!
         Add one driver item
-        @strName Driver name
-        @strParameters Driver configuration string
-        @flags Driver flags
-        @guid Interface GUID
-        @level Mark as Level I or Level II driver
-        @bEnable True to enable driver
+        @param strName Driver name
+        @param strParameters Driver configuration string
+        @param flags Driver flags
+        @param guid Interface GUID
+        @param level Mark as Level I or Level II driver
+        @param bEnable True to enable driver
+     *  @param translation Bits to set translations to be performed.
         @return True is returned if the driver was successfully added.
     */
     bool addItem( wxString strName,
@@ -204,7 +216,8 @@ public:
                             uint32_t flags,
                             cguid& guid,
                             uint8_t level = VSCP_DRIVER_LEVEL1,
-                            bool bEnable = true );
+                            bool bEnable = true,
+                            uint32_t translation = NO_TRANSLATION );
 
     /*!
         Remove a driver item

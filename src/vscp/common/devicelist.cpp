@@ -60,7 +60,7 @@
 #include "devicethread.h"
 #include "devicelist.h"
 
-WX_DEFINE_LIST(CanalMsgOutList);
+WX_DEFINE_LIST(Level1MsgOutList);
 WX_DEFINE_LIST(VSCPDEVICELIST);
 
 //////////////////////////////////////////////////////////////////////
@@ -74,8 +74,10 @@ WX_DEFINE_LIST(VSCPDEVICELIST);
 CDeviceItem::CDeviceItem()
 {
     m_bQuit = false;
-    m_bEnable = false;  // Default is that driver should not be started
+    m_bEnable = false;      // Default is that driver should not be started
 
+    m_translation = NO_TRANSLATION; // Default is no translation
+    
     m_strName.Empty();      // No Device Name
     m_strParameter.Empty(); // No Parameters
     m_strPath.Empty();      // No path
@@ -230,7 +232,8 @@ bool CDeviceList::addItem(wxString strName,
                             uint32_t flags,
                             cguid& guid,
                             uint8_t level,
-                            bool bEnable )
+                            bool bEnable,
+                            uint32_t translation )
 {
     bool rv = true;
     CDeviceItem *pDeviceItem = new CDeviceItem();

@@ -258,6 +258,16 @@
 
 /*
  * List drivers (Level I and Level II) used by the system
+ * bEnable True for driver to be loaded.
+ * level Currently Level I (0) or Level II (1)
+ * name Name for driver.
+ * link_to_guid Pointer to GUID for this driver. All drivers must have a GUID.
+ * configuration Semicolon separated configuration string for driver.
+ * path Path to driver dl/dll
+ * flags Flags for driver functionality
+ * translation Semicolon separated list. Translate Level I events to Level II 
+ *      (measurements float/string)
+ * note Driver notations and/or information.
  */
 
 #define VSCPDB_DRIVER_CREATE "CREATE TABLE `driver` ("\
@@ -269,6 +279,7 @@
 	"`configuration`    TEXT,"\
 	"`path`             TEXT,"\
 	"`flags`            INTEGER,"\
+        "`translation`      TEXT,"\
 	"`note`             TEXT"\
         ");"
 
@@ -280,7 +291,8 @@
 #define VSCPDB_ORDINAL_DRIVER_CONFIGURATION         5   //
 #define VSCPDB_ORDINAL_DRIVER_PATH                  6   //
 #define VSCPDB_ORDINAL_DRIVER_FLAGS                 7   //
-#define VSCPDB_ORDINAL_DRIVER_NOTE                  8   //
+#define VSCPDB_ORDINAL_DRIVER_TRANSLATION           8   //
+#define VSCPDB_ORDINAL_DRIVER_NOTE                  9   //
 
 
 //*****************************************************************************
@@ -394,7 +406,7 @@
 #define VSCPDB_ORDINAL_MDF_CACHE_GUID               5   //
 
 //*****************************************************************************
-//                               SIMPLEUI
+//                                SIMPLEUI
 //*****************************************************************************
 
 /*
@@ -542,7 +554,7 @@
 
 
 //*****************************************************************************
-//                              VARIABLE
+//                                VARIABLE
 //*****************************************************************************
 
 //
@@ -618,7 +630,7 @@
 
 
 //*****************************************************************************
-//                                 DM
+//                                     DM
 //*****************************************************************************
 
 
