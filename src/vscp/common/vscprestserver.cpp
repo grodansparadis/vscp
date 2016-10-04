@@ -440,7 +440,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
         keypairs[ _( "VALUE" ) ] = wxString::FromUTF8( buf );
     }
 
-    // type
+    // type (number or string)
     if ( 0 < mg_get_http_var( &hm->query_string, "type", buf, sizeof(buf) ) ) {
         keypairs[_("TYPE")] = wxString::FromUTF8( buf );
     }
@@ -449,10 +449,20 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
     if ( 0 < mg_get_http_var( &hm->query_string, "persistent", buf, sizeof( buf ) ) ) {
         keypairs[ _( "PERSISTENT" ) ] = wxString::FromUTF8( buf );
     }
+    
+    // access-right  (hex or decimal)
+    if ( 0 < mg_get_http_var( &hm->query_string, "accessright", buf, sizeof( buf ) ) ) {
+        keypairs[ _( "ACCESSRIGHT" ) ] = wxString::FromUTF8( buf );
+    }
 
     // note
     if ( 0 < mg_get_http_var( &hm->query_string, "note", buf, sizeof( buf ) ) ) {
         keypairs[ _( "NOTE" ) ] = wxString::FromUTF8( buf );
+    }
+    
+    // listlong
+    if ( 0 < mg_get_http_var( &hm->query_string, "listlong", buf, sizeof( buf ) ) ) {
+        keypairs[ _( "LISTLONG" ) ] = wxString::FromUTF8( buf );
     }
 
     // unit
@@ -567,7 +577,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
         pObject->m_mutexUserList.Lock();
         bValidHost = pSession->pUserItem->isAllowedToConnect( wxString::FromAscii( inet_ntoa( nc->sa.sin.sin_addr ) ) );
         pObject->m_mutexUserList.Unlock();
-        if (!bValidHost) {
+        if ( !bValidHost ) {
             wxString strErr =
             wxString::Format( _("[REST Client] Host [%s] NOT allowed to connect. User [%s]\n"),
                                 wxString::FromAscii( (const char *)inet_ntoa( nc->sa.sin.sin_addr ) ).wx_str(),
@@ -694,6 +704,21 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
     else if ( ( _("6") == keypairs[_("OP")] ) || ( _("CLEARQUEUE") == keypairs[_("OP")].Upper() ) ) {
         webserv_rest_doClearQueue( nc, pSession, format );
     }
+        
+    //   ****************************************************
+    //   * * * * * * * *   list variables     * * * * * * * *
+    //   ****************************************************
+    else if ( ( _("12") == keypairs[_("OP")] ) || ( _("LISTVAR") == keypairs[_("OP")].Upper() ) ) {
+        
+        bool bShort = true;        
+        
+        if ( wxNOT_FOUND !=  keypairs[ _( "LISTLONG" ) ].Upper().Find( _("TRUE") ) ) {
+            bShort = false;
+        }
+        
+        webserv_rest_doListVariable( nc, pSession, format, keypairs[_("REGEX")], bShort );
+        
+    }    
 
     //   ****************************************************
     //   * * * * * * * * read variable value  * * * * * * * *
@@ -730,12 +755,14 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
 
         if ( _("") != keypairs[_("VARIABLE")] ) {
             webserv_rest_doCreateVariable( nc,
-                                                    pSession,
-                                                    format,
-                                                    keypairs[_("VARIABLE")],
-                                                    keypairs[ _( "TYPE" ) ],
-                                                    keypairs[ _( "VALUE" ) ],
-                                                    keypairs[ _( "PERISTENT" ) ]  );
+                                            pSession,
+                                            format,
+                                            keypairs[_("VARIABLE")],
+                                            keypairs[ _( "TYPE" ) ],
+                                            keypairs[ _( "VALUE" ) ],
+                                            keypairs[ _( "PERISTENT" ) ],
+                                            keypairs[ _( "ACCESSRIGHT" ) ],
+                                            keypairs[ _( "NOTE" ) ] );
         }
         else {
             webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_MISSING_DATA );
@@ -1488,7 +1515,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
 
                         } // Valid pEvent pointer
                         else {
-                            strcpy((char *) wrkbuf, "- Event could not be fetched (intenal error)\r\n" );
+                            strcpy((char *) wrkbuf, "- Event could not be fetched (intenral error)\r\n" );
                             mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
                         }
                     } // for
@@ -1552,7 +1579,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
 
                                 }
                                 else {
-                                    strcpy((char *) wrkbuf, "1,2,Info,Malformed event (intenal error)\r\n" );
+                                    strcpy((char *) wrkbuf, "1,2,Info,Malformed event (internal error)\r\n" );
                                     mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf)  );
                                 }
                             }
@@ -1566,7 +1593,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
 
                         } // Valid pEvent pointer
                         else {
-                            strcpy((char *) wrkbuf, "1,2,Info,Event could not be fetched (intenal error)\r\n" );
+                            strcpy((char *) wrkbuf, "1,2,Info,Event could not be fetched (internal error)\r\n" );
                             mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
                         }
                     } // for
@@ -1982,6 +2009,97 @@ VSCPWebServerThread::webserv_rest_doClearQueue( struct mg_connection *nc,
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// webserv_rest_doCreateVariable
+//
+
+void
+VSCPWebServerThread::webserv_rest_doCreateVariable( struct mg_connection *nc,
+                                                        struct websrv_rest_session *pSession,
+                                                        int format,
+                                                        wxString& strVariable,
+                                                        wxString& strType,
+                                                        wxString& strValue,
+                                                        wxString& strPersistent,
+                                                        wxString& strAccessRight,
+                                                        wxString& strNote )
+{
+    int type = VSCP_DAEMON_VARIABLE_CODE_STRING;
+    bool bPersistence = false;
+    uint32_t accessright = 0x700;
+    wxStringTokenizer tkz( strVariable, _(";") );
+
+    // Check pointer
+    if (NULL == nc) {
+        return;
+    }
+
+    // Get type
+    if ( strType.IsNumber() ) {
+        type = vscp_readStringValue( strType );
+    }
+    else {
+        type = CVSCPVariable::getVariableTypeFromString( strType  );
+    }
+
+    // Get persistence
+    strPersistent.Trim();
+    strPersistent.Trim( false );
+    strPersistent.MakeUpper();
+    if ( wxNOT_FOUND != strPersistent.Find( _( "TRUE" ) ) ) {
+        bPersistence = true;
+    }
+    
+    // Get access rights
+    strAccessRight.Trim();
+    strAccessRight.Trim( false );
+    if ( !strAccessRight.IsEmpty() ) {
+        accessright = vscp_readStringValue( strAccessRight );
+    }
+
+    CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
+
+    if (NULL == pObject) {
+        webserv_rest_error( nc,
+                                pSession,
+                                format,
+                                REST_ERROR_CODE_VARIABLE_NOT_CREATED );
+        return;
+    }
+
+    if ( NULL != pSession ) {
+
+        // Add the variable
+        if ( !pObject->m_VSCP_Variables.add( strVariable,
+                                                strValue,
+                                                type,
+                                                pSession->pUserItem->getUserID(),
+                                                bPersistence,
+                                                accessright,
+                                                strNote ) ) {
+            webserv_rest_error( nc,
+                                    pSession,
+                                    format,
+                                    REST_ERROR_CODE_VARIABLE_NOT_CREATED );
+            return;
+        }
+
+        webserv_rest_error( nc,
+                                pSession,
+                                format,
+                                REST_ERROR_CODE_SUCCESS );
+
+    }
+    else {
+        webserv_rest_error( nc,
+                                pSession,
+                                format,
+                                REST_ERROR_CODE_INVALID_SESSION );
+    }
+
+    return;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // webserv_rest_doReadVariable
 //
 
@@ -2008,10 +2126,6 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
             webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_FOUND );
             return;
         }
-
-        // Get variable value
-        //wxString strVariableValue;
-        //variable.writeValueToString( strVariableValue );
 
         if ( REST_FORMAT_PLAIN == format ) {
 
@@ -2179,6 +2293,290 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// webserv_rest_doListVariable
+//
+
+void
+VSCPWebServerThread::webserv_rest_doListVariable( struct mg_connection *nc,
+                                                    struct websrv_rest_session *pSession,
+                                                    int format,
+                                                    wxString& strRegEx,
+                                                    bool bShort )
+{
+    char wrkbuf[512];
+
+    // Check pointer
+    if (NULL == nc) return;
+
+    strRegEx.Trim();
+    
+    CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
+    if (NULL == pObject) return;
+
+    if ( NULL != pSession ) {
+        
+        wxArrayString variable_array;
+        if ( !pObject->m_VSCP_Variables.getVarlistFromRegExp( variable_array, strRegEx ) ) {
+            webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_FOUND );
+            return;
+        }
+       
+        if ( REST_FORMAT_PLAIN == format ) {
+
+                webserv_util_sendheader( nc, 200, REST_MIME_TYPE_PLAIN );
+                sprintf( wrkbuf, "1 1 Success \r\n");
+                mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
+                
+                for ( unsigned int i=0; i<variable_array.GetCount(); i++ ) {
+                    
+                    CVSCPVariable variable;
+
+                    if ( 0 == pObject->m_VSCP_Variables.find( variable_array[ i ], variable ) ) {
+                        continue;
+                    }
+
+                    if ( bShort ) {
+                        sprintf( wrkbuf,
+                                    "name=%s type=%d user=%lu access-right=%03X last-change='%s' persistent=%s\r\n",
+                                    (const char *)variable.getName().mbc_str(),
+                                    variable.getType(),
+                                    variable.getUserID(),
+                                    variable.getAccessRights(),
+                                    (const char *)variable.getLastChange().FormatISOCombined().mbc_str(),
+                                    variable.isPersistent() ? "true" : "false" );
+                    }
+                    else {
+                        sprintf( wrkbuf,
+                                    "name=%s type=%d user=%lu access-right=%03X last-change='%s' persistent=%s value=%s note=%s\r\n",
+                                    (const char *)variable.getName().mbc_str(),
+                                    variable.getType(),
+                                    variable.getUserID(),
+                                    variable.getAccessRights(),
+                                    (const char *)variable.getLastChange().FormatISOCombined().mbc_str(),
+                                    variable.isPersistent() ? "true" : "false",
+                                    (const char *)variable.getValue().mbc_str(),
+                                    (const char *)variable.getNote().mbc_str() );                        
+                    }
+                    
+                    mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
+                    
+                }
+
+        }
+        else if ( REST_FORMAT_CSV == format ) {
+
+            webserv_util_sendheader( nc, 200, REST_MIME_TYPE_CSV );
+                        
+            if ( pSession->pClientItem->m_bOpen && variable_array.GetCount() ) {
+
+                    sprintf( wrkbuf, "success-code,error-code,message,description,Variable\r\n1,1,Success,Success.,NULL\r\n");
+                    mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
+                    
+                    sprintf( wrkbuf,
+                             "1,2,Info,%zd variables found,NULL\r\n",
+                                variable_array.GetCount() );
+                    mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ) );
+                    
+                    sprintf( wrkbuf,
+                             "1,5,Count,%zu,NULL\r\n",
+                             variable_array.GetCount() );
+                    mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ) );
+
+                    for ( unsigned int i=0; i<variable_array.GetCount(); i++ ) {
+                    
+                        CVSCPVariable variable;
+
+                        if ( 0 == pObject->m_VSCP_Variables.find( variable_array[ i ], variable ) ) {
+                            continue;
+                        }
+
+                        if ( bShort ) {
+                            sprintf( wrkbuf,
+                                        "1,3,Data,Variable,%s\r\n",
+                                        (const char *)variable.getAsString( true ).mbc_str() );
+                        }
+                        else {
+                            sprintf( wrkbuf,
+                                        "1,3,Data,Variable,%s\r\n",
+                                        (const char *)variable.getAsString( false ).mbc_str() );
+                        }
+                        mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ) );
+                        
+                    } // for
+                }
+                else {   // no events available
+                    sprintf( wrkbuf, REST_CSV_ERROR_INPUT_QUEUE_EMPTY"\r\n");
+                    mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
+                }
+
+        }
+        else if ( REST_FORMAT_XML == format ) {
+
+            webserv_util_sendheader( nc, 200, REST_MIME_TYPE_XML );
+            sprintf( wrkbuf, XML_HEADER"<vscp-rest success = \"true\" code = \"1\" message = \"Success\" description = \"Success.\" >");
+            mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
+            
+            sprintf( wrkbuf, "<count>%zu</count>",variable_array.GetCount() );
+
+            for ( unsigned int i=0; i<variable_array.GetCount(); i++ ) {
+                
+                CVSCPVariable variable;
+                
+                if ( 0 == pObject->m_VSCP_Variables.find( variable_array[ i ], variable ) ) {
+                    continue;
+                }
+                
+                sprintf( wrkbuf,
+                        "<variable name=\"%s\" typecode=\"%d\" type=\"%s\" user=\"%lu\" access-right=\"%03X\" persistent=\"%s\" last-change=\"%s\" >",
+                        (const char *)variable.getName().mbc_str(),
+                        variable.getType(),
+                        variable.getVariableTypeAsString( variable.getType() ),
+                        variable.getUserID(),
+                        variable.getAccessRights(),                                                
+                        variable.isPersistent() ? "true" : "false",
+                        (const char *)variable.getLastChange().FormatISOCombined().mbc_str() );
+                mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
+                
+                if ( !bShort ) {
+                    sprintf((char *) wrkbuf,
+                                "<name>%s</name><value>%s</value><note>%s</note>",
+                                (const char *)variable.getName().mbc_str(),
+                                (const char *)variable.getValue().mbc_str(),
+                                (const char *)variable.getNote().mbc_str() );
+
+                    mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
+                }
+            }
+
+            // End tag
+            strcpy((char *) wrkbuf, "</variable>" );
+            mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
+
+            // End tag
+            strcpy((char *) wrkbuf, "</vscp-rest>" );
+            mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf));
+
+        }
+        else if ( ( REST_FORMAT_JSON == format ) || ( REST_FORMAT_JSONP == format ) ) {
+
+            wxString wxstr;
+            
+            if ( REST_FORMAT_JSONP == format ) {
+                webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSONP );
+            }
+            else {
+                webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSON );
+            }
+
+            if ( pSession->pClientItem->m_bOpen  ) {
+                
+                for ( unsigned int i=0; i<variable_array.GetCount(); i++ ) {
+                    
+                    CVSCPVariable variable;
+
+                    if ( 0 == pObject->m_VSCP_Variables.find( variable_array[ i ], variable ) ) {
+                        continue;
+                    }
+                    
+                    uint32_t len = 2048 + 
+                            strlen( variable.getName().mbc_str() ) + 1 + 
+                            strlen( variable.getValue().mbc_str() ) + 1 + 
+                            strlen( variable.getNote().mbc_str() ) + 1;
+                    char *buf = new char[ len ];
+                    if ( NULL == buf ) {
+                        webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_MEMORY );
+                        return;
+                    }
+                    memset( buf, 0, sizeof( len ) );
+                    char *p = buf;
+
+                    if ( REST_FORMAT_JSONP == format ) {
+                        p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, "typeof handler === 'function' && handler(", 41 );
+                    }
+
+                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p,
+                        "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",",
+                        strlen( "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\"," ) );
+
+                    p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varname", 7 );
+                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
+                    p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, variable.getName().mbc_str(), variable.getName().Length() );
+                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
+                
+                    p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "vartype", 7 );
+                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
+                    wxString wxstr = wxString::FromAscii( variable.getVariableTypeAsString( variable.getType() ) );
+                    p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wxstr.mbc_str(), wxstr.Length() );
+                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
+                
+                    p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "vartypecode", 11 );
+                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
+                    p += json_emit_long( p, &buf[sizeof(buf)] - p, variable.getType() );
+                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
+                
+                    p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varuser", 7 );
+                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
+                    p += json_emit_long( p, &buf[sizeof(buf)] - p, variable.getUserID() );
+                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
+                
+                    p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varaccessright", 14 );
+                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
+                    p += json_emit_long( p, &buf[sizeof(buf)] - p, variable.getAccessRights() );
+                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
+                
+                    p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varpersistence", 14 );
+                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
+                    wxstr = variable.isPersistent() ? _("true") : _("false");
+                    p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wxstr.mbc_str(), wxstr.Length() );
+                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
+                
+                    p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varlastchange", 13 );
+                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
+                    wxstr = variable.getLastChange().FormatISOCombined();
+                    p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wxstr.mbc_str(), wxstr.Length() );
+                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
+
+                    if ( !bShort ) {
+                        p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varvalue", 8 );
+                        p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
+                        p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, variable.getValue().mbc_str(), variable.getValue().Length() );
+                        p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );                    
+                
+                        p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varnote", 7 );
+                        p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
+                        p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, variable.getNote().mbc_str(), variable.getNote().Length() );
+                        p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
+                    }
+
+                    // Mark end
+                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, "}", 1 );
+
+                    if ( REST_FORMAT_JSONP == format ) {
+                        p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ");", 2 );
+                    }
+
+                    mg_send_http_chunk( nc, buf, strlen( buf) );
+                    
+                    delete [] buf;
+
+                }
+                
+            }
+        }
+
+        mg_send_http_chunk( nc, "", 0 );    // Terminator
+
+    }
+    else {
+        webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_INVALID_SESSION );
+    }
+
+    return;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
 // webserv_rest_doWriteVariable
 //
 
@@ -2204,7 +2602,7 @@ VSCPWebServerThread::webserv_rest_doWriteVariable( struct mg_connection *nc,
 
     if ( NULL != pSession ) {
 
-        // Get variablename
+        // Get variable name
         CVSCPVariable variable;
         if ( 0 == pObject->m_VSCP_Variables.find( strVariableName, variable ) ) {
             webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_FOUND );
@@ -2216,91 +2614,17 @@ VSCPWebServerThread::webserv_rest_doWriteVariable( struct mg_connection *nc,
             webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_MISSING_DATA );
             return;
         }
+        
+        if ( pObject->m_VSCP_Variables.update( variable ) ) {
+            webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_VARIABLE_FAIL_UPDATE );
+            return;
+        }
 
         webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_SUCCESS );
 
     }
     else {
         webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_INVALID_SESSION );
-    }
-
-    return;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// webserv_rest_doCreateVariable
-//
-
-void
-VSCPWebServerThread::webserv_rest_doCreateVariable( struct mg_connection *nc,
-                                                        struct websrv_rest_session *pSession,
-                                                        int format,
-                                                        wxString& strVariable,
-                                                        wxString& strType,
-                                                        wxString& strValue,
-                                                        wxString& strPersistent )
-{
-    int type = VSCP_DAEMON_VARIABLE_CODE_STRING;
-    bool bPersistence = false;
-    wxStringTokenizer tkz( strVariable, _(";") );
-
-    // Check pointer
-    if (NULL == nc) {
-        return;
-    }
-
-    // Get type
-    if ( strType.IsNumber() ) {
-        type = vscp_readStringValue( strType );
-    }
-    else {
-        type = CVSCPVariable::getVariableTypeFromString( strType  );
-    }
-
-    // Get persistence
-    strPersistent.Trim();
-    strPersistent.Trim( false );
-    strPersistent.MakeUpper();
-    if ( wxNOT_FOUND != strPersistent.Find( _( "TRUE" ) ) ) {
-        bPersistence = true;
-    }
-
-    CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-
-    if (NULL == pObject) {
-        webserv_rest_error( nc,
-                                pSession,
-                                format,
-                                REST_ERROR_CODE_VARIABLE_NOT_CREATED );
-        return;
-    }
-
-    if ( NULL != pSession ) {
-
-        // Add the variable
-        if ( !pObject->m_VSCP_Variables.add( strVariable,
-                                                strValue,
-                                                type,
-                                                bPersistence  ) ) {
-            webserv_rest_error( nc,
-                                    pSession,
-                                    format,
-                                    REST_ERROR_CODE_VARIABLE_NOT_CREATED );
-            return;
-        }
-
-        webserv_rest_error( nc,
-                                pSession,
-                                format,
-                                REST_ERROR_CODE_SUCCESS );
-
-    }
-    else {
-        webserv_rest_error( nc,
-                                pSession,
-                                format,
-                                REST_ERROR_CODE_INVALID_SESSION );
     }
 
     return;

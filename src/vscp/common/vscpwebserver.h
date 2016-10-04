@@ -544,6 +544,23 @@ public:
                                     struct websrv_rest_session *pSession,
                                     int format,
                                     wxString& strVariableName );
+    
+    /*!
+        webserv_rest_doReadVariable - Read a variable value
+        @param nc Webserver connection handle.
+        @param pSession Active session or NULL if no session active
+        @param format The format output should be formated in, plain, csv,
+                xml, json, jsonp
+        @param strRegEx Regular expression to select whcih variables to list or 
+                    empty for all.
+        @param bShort Short format (no value, no note) default.
+    */
+    void
+    webserv_rest_doListVariable( struct mg_connection *nc,
+                                    struct websrv_rest_session *pSession,
+                                    int format,
+                                    wxString& strRegEx,
+                                    bool bShort = true );
 
     /*!
         webserv_rest_doWriteVariable - Write a variable value
@@ -573,6 +590,9 @@ public:
         @param strValue Value of variable to create
         @param strPersistent Should be set to "true" if variable should be
            persistent
+        @param strAccessRights Accessrights in string form. Hex or decimal.
+        @param strNote Note for variable (BASE64 encoded).
+        
     */
     void
     webserv_rest_doCreateVariable( struct mg_connection *nc,
@@ -581,7 +601,9 @@ public:
                                         wxString& strVariable,
                                         wxString& strType,
                                         wxString& strValue,
-                                        wxString& strPersistent );
+                                        wxString& strPersistent,
+                                        wxString& strAccessRight,
+                                        wxString& strNote );
 
     /*!
         webserv_rest_doDeleteVariable - Delete a variable
