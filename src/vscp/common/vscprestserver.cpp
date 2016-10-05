@@ -464,6 +464,11 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
     if ( 0 < mg_get_http_var( &hm->query_string, "listlong", buf, sizeof( buf ) ) ) {
         keypairs[ _( "LISTLONG" ) ] = wxString::FromUTF8( buf );
     }
+    
+    // regex
+    if ( 0 < mg_get_http_var( &hm->query_string, "regex", buf, sizeof( buf ) ) ) {
+        keypairs[ _( "REGEX" ) ] = wxString::FromUTF8( buf );
+    }
 
     // unit
     if ( 0 < mg_get_http_var( &hm->query_string, "unit", buf, sizeof(buf) ) ) {
@@ -1501,7 +1506,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
 
                                 }
                                 else {
-                                    strcpy((char *) wrkbuf, "- Malformed event (intenal error)\r\n" );
+                                    strcpy((char *) wrkbuf, "- Malformed event (internal error)\r\n" );
                                     mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
                                 }
                             }
@@ -2303,7 +2308,7 @@ VSCPWebServerThread::webserv_rest_doListVariable( struct mg_connection *nc,
                                                     wxString& strRegEx,
                                                     bool bShort )
 {
-    char wrkbuf[512];
+    char wrkbuf[8192];
 
     // Check pointer
     if (NULL == nc) return;
@@ -2459,6 +2464,7 @@ VSCPWebServerThread::webserv_rest_doListVariable( struct mg_connection *nc,
         }
         else if ( ( REST_FORMAT_JSON == format ) || ( REST_FORMAT_JSONP == format ) ) {
 
+            char *p = wrkbuf;
             wxString wxstr;
             
             if ( REST_FORMAT_JSONP == format ) {
@@ -2469,97 +2475,168 @@ VSCPWebServerThread::webserv_rest_doListVariable( struct mg_connection *nc,
             }
 
             if ( pSession->pClientItem->m_bOpen  ) {
+
+                memset( wrkbuf, 0, sizeof(  wrkbuf ) );
+                p = wrkbuf;
                 
+                if ( REST_FORMAT_JSONP == format ) {
+                    p += json_emit_unquoted_str( p, &wrkbuf[sizeof(wrkbuf)] - p, "typeof handler === 'function' && handler(", 41 );
+                }
+
+                p += json_emit_unquoted_str( p, &wrkbuf[sizeof(wrkbuf)] - p,
+                    "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",",
+                    strlen( "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\"," ) );
+
+                p += json_emit_quoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "info", 4 );
+                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
+                {
+                    char buf2[200];
+                    sprintf( buf2,
+                                "\"%zd variables will be retrieved\"",
+                                variable_array.Count() );
+                    p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, buf2, strlen( buf2 ) );
+                }
+                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
+                p += json_emit_quoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "variable", 8);
+                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":[", 2 );
+
+                mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf)); 
+                    
+                uint32_t cntVariable = 0;
+                uint32_t cntErrors = 0;
                 for ( unsigned int i=0; i<variable_array.GetCount(); i++ ) {
                     
-                    CVSCPVariable variable;
-
+                    CVSCPVariable variable; 
+                    
                     if ( 0 == pObject->m_VSCP_Variables.find( variable_array[ i ], variable ) ) {
+                        cntErrors++;
                         continue;
                     }
                     
-                    uint32_t len = 2048 + 
+                    uint32_t lenBuf = 2048 + 
                             strlen( variable.getName().mbc_str() ) + 1 + 
                             strlen( variable.getValue().mbc_str() ) + 1 + 
                             strlen( variable.getNote().mbc_str() ) + 1;
-                    char *buf = new char[ len ];
+                                       
+                    char *buf = new char[ lenBuf ];
                     if ( NULL == buf ) {
                         webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_MEMORY );
                         return;
                     }
-                    memset( buf, 0, sizeof( len ) );
-                    char *p = buf;
-
-                    if ( REST_FORMAT_JSONP == format ) {
-                        p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, "typeof handler === 'function' && handler(", 41 );
-                    }
-
-                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p,
-                        "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",",
-                        strlen( "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\"," ) );
-
-                    p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varname", 7 );
-                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
-                    p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, variable.getName().mbc_str(), variable.getName().Length() );
-                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
+                    
+                    memset( buf, 0, lenBuf );
+                    p = buf;
+                                       
+                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, "{", 1 );
+                    
+                    // Variable name
+                    p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, "varname", 7 );
+                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ":", 1 );
+                    p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, 
+                                                    (const char *)variable.getName().mbc_str(), 
+                                                    strlen( (const char *)variable.getName().mbc_str() ) );
+                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ",", 1 );
+                    
+                    wxLogDebug( wxString::FromAscii( buf ) );
                 
-                    p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "vartype", 7 );
-                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
+                    // Variable type
+                    p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, "vartype", 7 );
+                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ":", 1 );
                     wxString wxstr = wxString::FromAscii( variable.getVariableTypeAsString( variable.getType() ) );
-                    p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wxstr.mbc_str(), wxstr.Length() );
-                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
+                    p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, 
+                                                    (const char *)wxstr.mbc_str(), 
+                                                    strlen( (const char *)wxstr.mbc_str() ) );
+                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ",", 1 );
+                    
+                    // Variable type code
+                    p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, "vartypecode", 11 );
+                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ":", 1 );
+                    p += json_emit_long( p, &buf[ lenBuf ] - p, variable.getType() );
+                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ",", 1 );
                 
-                    p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "vartypecode", 11 );
-                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
-                    p += json_emit_long( p, &buf[sizeof(buf)] - p, variable.getType() );
-                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
+                    // Variable user id
+                    p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, "varuser", 7 );
+                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ":", 1 );
+                    p += json_emit_long( p, &buf[ lenBuf ] - p, variable.getUserID() );
+                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ",", 1 );
                 
-                    p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varuser", 7 );
-                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
-                    p += json_emit_long( p, &buf[sizeof(buf)] - p, variable.getUserID() );
-                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
+                    // Variable access right
+                    p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, "varaccessright", 14 );
+                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ":", 1 );
+                    p += json_emit_long( p, &buf[ lenBuf ] - p, variable.getAccessRights() );
+                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ",", 1 );
                 
-                    p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varaccessright", 14 );
-                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
-                    p += json_emit_long( p, &buf[sizeof(buf)] - p, variable.getAccessRights() );
-                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
-                
-                    p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varpersistence", 14 );
-                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
+                    // Variable persistence
+                    p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, "varpersistence", 14 );
+                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ":", 1 );
                     wxstr = variable.isPersistent() ? _("true") : _("false");
-                    p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wxstr.mbc_str(), wxstr.Length() );
-                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
+                    p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, 
+                                                    (const char *)wxstr.mbc_str(), 
+                                                    strlen( (const char *)wxstr.mbc_str() ) );
+                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ",", 1 );
                 
-                    p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varlastchange", 13 );
-                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
+                    // Variable last change
+                    p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, "varlastchange", 13 );
+                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ":", 1 );
                     wxstr = variable.getLastChange().FormatISOCombined();
-                    p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wxstr.mbc_str(), wxstr.Length() );
-                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
+                    p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, 
+                                                    (const char *)wxstr.mbc_str(), 
+                                                    strlen( (const char *)wxstr.mbc_str() ) );
+                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ",", 1 );
 
                     if ( !bShort ) {
-                        p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varvalue", 8 );
-                        p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
-                        p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, variable.getValue().mbc_str(), variable.getValue().Length() );
-                        p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );                    
+                        
+                        // Variable value
+                        p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, "varvalue", 8 );
+                        p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ":", 1 );
+                        p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, 
+                                                        (const char *)variable.getValue().mbc_str(), 
+                                                        strlen( (const char *)variable.getValue().mbc_str() ) );
+                        p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ",", 1 );                    
                 
-                        p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varnote", 7 );
-                        p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
-                        p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, variable.getNote().mbc_str(), variable.getNote().Length() );
-                        p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
+                        // Variable note
+                        p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, "varnote", 7 );
+                        p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ":", 1 );
+                        p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, 
+                                                        (const char *)variable.getNote().mbc_str(), 
+                                                        strlen( (const char *)variable.getNote().mbc_str() ) );
+                        p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ",", 1 );
+                        
+                    }
+                    
+                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, "}", 1 );
+
+                    if ( i < ( variable_array.GetCount() - 1 ) ) {
+                        p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ",", 1 );
                     }
 
-                    // Mark end
-                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, "}", 1 );
-
-                    if ( REST_FORMAT_JSONP == format ) {
-                        p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ");", 2 );
-                    }
-
-                    mg_send_http_chunk( nc, buf, strlen( buf) );
+                    mg_send_http_chunk( nc, buf, strlen( buf ) );
+                    
+                    cntVariable++;
                     
                     delete [] buf;
+                    
+                } // for                                    
+                
+                memset( wrkbuf, 0, sizeof( wrkbuf ) );
+                p = wrkbuf;
 
+                // Mark end
+                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "],", 2 );
+                    p += json_emit_quoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "count", 5 );
+                    p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
+                    p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, cntVariable );
+                    p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
+                    p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "errors", 6 );
+                    p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
+                    p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, cntErrors );
+                    p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "}", 1 );
+
+                if ( REST_FORMAT_JSONP == format ) {
+                    p += json_emit_unquoted_str( p, &wrkbuf[sizeof(wrkbuf)] - p, ");", 2 );
                 }
+
+                mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );                    
                 
             }
         }

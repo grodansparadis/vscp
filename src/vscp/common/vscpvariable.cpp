@@ -4850,8 +4850,14 @@ bool CVariableStorage::getVarlistFromRegExp( wxArrayString& nameArray,
     nameArray.Clear();
     
     regexlocal.Trim();
-    if ( 0 == regexlocal.Length() ) regexlocal = _("(.*?)");  // List all if empty
-    wxRegEx wxregex( regexlocal ); 
+    if ( 0 == regexlocal.Length() ) regexlocal = _("(.*)");  // List all if empty
+    wxRegEx wxregex( regexlocal );
+    if ( !wxregex.IsValid() ) {
+        nameArray.Empty();
+        gpctrlObj->logMsg( wxString::Format( _("Invalid regular expression [%s]"), 
+                            (const char *)regexlocal.mbc_str() ) );
+        return false;
+    }
         
     if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_internal_variable,
                                             VSCPDB_VARIABLE_FIND_ALL,
