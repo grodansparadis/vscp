@@ -357,6 +357,10 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
     if (NULL == pObject) return;
 
     vscp_getTimeString( date, sizeof(date), &curtime );
+    
+    // Set defaults
+    keypairs[_("FORMAT")] = _("plain");
+    keypairs[_("OP")] = _("open");
 
 
     if ( NULL != strstr( method, ("POST") ) ) {
@@ -417,117 +421,117 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
     }
 
     // vscpevent
-    if ( 0 < mg_get_http_var( &hm->query_string, "vscpevent", buf, sizeof(buf) ) ) {
+    if ( 0 < mg_get_http_var( pParams, "vscpevent", buf, sizeof(buf) ) ) {
         keypairs[_("VSCPEVENT")] = wxString::FromUTF8( buf );
     }
 
     // count
-    if ( 0 < mg_get_http_var( &hm->query_string, "count", buf, sizeof(buf) ) ) {
+    if ( 0 < mg_get_http_var( pParams, "count", buf, sizeof(buf) ) ) {
         keypairs[_("COUNT")] = wxString::FromUTF8( buf );
     }
 
     // vscpfilter
-    if ( 0 < mg_get_http_var( &hm->query_string, "vscpfilter", buf, sizeof(buf) ) ) {
+    if ( 0 < mg_get_http_var( pParams, "vscpfilter", buf, sizeof(buf) ) ) {
         keypairs[_("VSCPFILTER")] = wxString::FromUTF8( buf );
     }
 
     // vscpmask
-    if ( 0 < mg_get_http_var( &hm->query_string, "vscpmask", buf, sizeof( buf ) ) ) {
+    if ( 0 < mg_get_http_var( pParams, "vscpmask", buf, sizeof( buf ) ) ) {
         keypairs[ _( "VSCPMASK" ) ] = wxString::FromUTF8( buf );
     }
 
     // variable
-    if ( 0 < mg_get_http_var( &hm->query_string, "variable", buf, sizeof(buf) ) ) {
+    if ( 0 < mg_get_http_var( pParams, "variable", buf, sizeof(buf) ) ) {
         keypairs[_("VARIABLE")] = wxString::FromUTF8( buf );
     }
 
     // value
-    if ( 0 < mg_get_http_var( &hm->query_string, "value", buf, sizeof( buf ) ) ) {
+    if ( 0 < mg_get_http_var( pParams, "value", buf, sizeof( buf ) ) ) {
         keypairs[ _( "VALUE" ) ] = wxString::FromUTF8( buf );
     }
 
     // type (number or string)
-    if ( 0 < mg_get_http_var( &hm->query_string, "type", buf, sizeof(buf) ) ) {
+    if ( 0 < mg_get_http_var( pParams, "type", buf, sizeof(buf) ) ) {
         keypairs[_("TYPE")] = wxString::FromUTF8( buf );
     }
 
     // persistent
-    if ( 0 < mg_get_http_var( &hm->query_string, "persistent", buf, sizeof( buf ) ) ) {
+    if ( 0 < mg_get_http_var( pParams, "persistent", buf, sizeof( buf ) ) ) {
         keypairs[ _( "PERSISTENT" ) ] = wxString::FromUTF8( buf );
     }
     
     // access-right  (hex or decimal)
-    if ( 0 < mg_get_http_var( &hm->query_string, "accessright", buf, sizeof( buf ) ) ) {
+    if ( 0 < mg_get_http_var( pParams, "accessright", buf, sizeof( buf ) ) ) {
         keypairs[ _( "ACCESSRIGHT" ) ] = wxString::FromUTF8( buf );
     }
 
     // note
-    if ( 0 < mg_get_http_var( &hm->query_string, "note", buf, sizeof( buf ) ) ) {
+    if ( 0 < mg_get_http_var( pParams, "note", buf, sizeof( buf ) ) ) {
         keypairs[ _( "NOTE" ) ] = wxString::FromUTF8( buf );
     }
     
     // listlong
-    if ( 0 < mg_get_http_var( &hm->query_string, "listlong", buf, sizeof( buf ) ) ) {
+    if ( 0 < mg_get_http_var( pParams, "listlong", buf, sizeof( buf ) ) ) {
         keypairs[ _( "LISTLONG" ) ] = wxString::FromUTF8( buf );
     }
     
     // regex
-    if ( 0 < mg_get_http_var( &hm->query_string, "regex", buf, sizeof( buf ) ) ) {
+    if ( 0 < mg_get_http_var( pParams, "regex", buf, sizeof( buf ) ) ) {
         keypairs[ _( "REGEX" ) ] = wxString::FromUTF8( buf );
     }
 
     // unit
-    if ( 0 < mg_get_http_var( &hm->query_string, "unit", buf, sizeof(buf) ) ) {
+    if ( 0 < mg_get_http_var( pParams, "unit", buf, sizeof(buf) ) ) {
         keypairs[_("UNIT")] = wxString::FromUTF8( buf );
     }
 
     // sensoridx
-    if ( 0 < mg_get_http_var( &hm->query_string, "sensoridx", buf, sizeof(buf) ) ) {
+    if ( 0 < mg_get_http_var( pParams, "sensoridx", buf, sizeof(buf) ) ) {
         keypairs[_("SENSORINDEX")] = wxString::FromUTF8( buf );
     }
 
     // level  ( VSCP level 1 or 2 )
-    if ( 0 < mg_get_http_var( &hm->query_string, "level", buf, sizeof( buf ) ) ) {
+    if ( 0 < mg_get_http_var( pParams, "level", buf, sizeof( buf ) ) ) {
         keypairs[ _( "LEVEL" ) ] = wxString::FromUTF8( buf );
     }
 
     // zone
-    if ( 0 < mg_get_http_var( &hm->query_string, "zone", buf, sizeof( buf ) ) ) {
+    if ( 0 < mg_get_http_var( pParams, "zone", buf, sizeof( buf ) ) ) {
         keypairs[ _( "ZONE" ) ] = wxString::FromUTF8( buf );
     }
 
     // subzone
-    if ( 0 < mg_get_http_var( &hm->query_string, "subzone", buf, sizeof( buf ) ) ) {
+    if ( 0 < mg_get_http_var( pParams, "subzone", buf, sizeof( buf ) ) ) {
         keypairs[ _( "SUBZONE" ) ] = wxString::FromUTF8( buf );
     }
 
     // guid
-    if ( 0 < mg_get_http_var( &hm->query_string, "guid", buf, sizeof( buf ) ) ) {
+    if ( 0 < mg_get_http_var( pParams, "guid", buf, sizeof( buf ) ) ) {
         keypairs[ _( "GUID" ) ] = wxString::FromUTF8( buf );
     }
 
     // name
-    if ( 0 < mg_get_http_var( &hm->query_string, "name", buf, sizeof(buf) ) ) {
+    if ( 0 < mg_get_http_var( pParams, "name", buf, sizeof(buf) ) ) {
         keypairs[_("NAME")] = wxString::FromUTF8( buf );
     }
 
     // from
-    if ( 0 < mg_get_http_var( &hm->query_string, "from", buf, sizeof(buf) ) ) {
+    if ( 0 < mg_get_http_var( pParams, "from", buf, sizeof(buf) ) ) {
         keypairs[_("FROM")] = wxString::FromUTF8( buf );
     }
 
     // to
-    if ( 0 < mg_get_http_var( &hm->query_string, "to", buf, sizeof(buf) ) ) {
+    if ( 0 < mg_get_http_var( pParams, "to", buf, sizeof(buf) ) ) {
         keypairs[_("TO")] = wxString::FromUTF8( buf );
     }
 
     // url
-    if ( 0 < mg_get_http_var( &hm->query_string, "url", buf, sizeof( buf ) ) ) {
+    if ( 0 < mg_get_http_var( pParams, "url", buf, sizeof( buf ) ) ) {
         keypairs[ _( "URL" ) ] = wxString::FromUTF8( buf );
     }
 
     // eventformat
-    if ( 0 < mg_get_http_var( &hm->query_string, "eventformat", buf, sizeof( buf ) ) ) {
+    if ( 0 < mg_get_http_var( pParams, "eventformat", buf, sizeof( buf ) ) ) {
         keypairs[ _( "EVENTFORMAT" ) ] = wxString::FromUTF8( buf );
     }
 
