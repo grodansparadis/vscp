@@ -3,11 +3,5 @@
 <img src="http://vscp.org/images/vscp_logo.jpg" >
 
 <p>
-This is a sample that shows how to use Javascript to interface the REST interface of the 
-<a href="http://www.vscp.org/docs/vscpd/doku.php?id=start">VSCP Daemon</a> in format JSONP.
+This sample has moved to the <a href="https://github.com/grodansparadis/vscp-ux/tree/master/rest">REST interface main demo code</a>.
 </p>
-
-<p>You can call the file with parameters to change defaults.</p>
-<ul>
-<li>host - hostname</li>
-</ul>
