@@ -332,6 +332,7 @@ void
 VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
                                         struct http_message *hm )
 {
+    const struct mg_str *pParams = NULL;   // Point to parameter string
     char buf[2048];
     char date[64];
     wxString str;
@@ -382,6 +383,9 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
             strncpy( buf, phdr->p, phdr->len );
             keypairs[_("VSCPSESSION")] = wxString::FromUTF8( buf );
         }
+        
+        pParams = &hm->body;    // Parameters is in the body
+        
 
     }
     else {
@@ -398,15 +402,17 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
         if ( 0 < mg_get_http_var( &hm->query_string, "vscpsession", buf, sizeof( buf ) ) ) {
             keypairs[ _("VSCPSESSION") ] = wxString::FromUTF8( buf );
         }
+        
+        pParams = &hm->query_string;    // Parameters is in query string
     }
 
     // format
-    if ( 0 < mg_get_http_var( &hm->query_string, "format", buf, sizeof( buf ) ) ) {
+    if ( 0 < mg_get_http_var( pParams, "format", buf, sizeof( buf ) ) ) {
         keypairs[_("FORMAT")] = wxString::FromUTF8( buf );
     }
 
     // op
-    if ( 0 < mg_get_http_var( &hm->query_string, "op", buf, sizeof(buf) ) ) {
+    if ( 0 < mg_get_http_var( pParams, "op", buf, sizeof(buf) ) ) {
         keypairs[_("OP")] = wxString::FromUTF8( buf );
     }
 
