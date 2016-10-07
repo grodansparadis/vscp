@@ -859,6 +859,12 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
             webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_MISSING_DATA );
         }
     }
+        
+    // Unrecognised operation        
+        
+    else {
+        webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_MISSING_DATA );
+    }    
 
     return;
     
@@ -2743,7 +2749,7 @@ VSCPWebServerThread::webserv_rest_doDeleteVariable( struct mg_connection *nc,
         webserv_rest_error( nc,
                                 pSession,
                                 format,
-                                REST_ERROR_CODE_VARIABLE_NOT_CREATED );
+                                REST_ERROR_CODE_VARIABLE_NOT_DELETED );
         return;
     }
 
@@ -2754,7 +2760,7 @@ VSCPWebServerThread::webserv_rest_doDeleteVariable( struct mg_connection *nc,
             webserv_rest_error( nc,
                                     pSession,
                                     format,
-                                    REST_ERROR_CODE_VARIABLE_NOT_CREATED );
+                                    REST_ERROR_CODE_VARIABLE_NOT_DELETED );
             return;
         }
 

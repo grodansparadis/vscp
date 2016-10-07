@@ -59,7 +59,7 @@ struct websrv_rest_session
 enum {
     REST_ERROR_CODE_SUCCESS = 0,
     REST_ERROR_CODE_GENERAL_FAILURE,
-    REST_ERROR_CODE_INVALID_SESSION ,
+    REST_ERROR_CODE_INVALID_SESSION,
     REST_ERROR_CODE_UNSUPPORTED_FORMAT,
     REST_ERROR_CODE_COULD_NOT_OPEN_SESSION,
     REST_ERROR_CODE_MISSING_DATA,
@@ -75,6 +75,7 @@ enum {
     REST_ERROR_CODE_INVALID_ORIGIN,
     REST_ERROR_CODE_INVALID_PASSWORD,
     REST_ERROR_CODE_MEMORY,
+    REST_ERROR_CODE_VARIABLE_NOT_DELETED
 };
 
 // REST formats
@@ -119,25 +120,28 @@ enum {
 #define REST_PLAIN_ERROR_INVALID_ORIGIN         "0 -15 Invalid origin \r\n\r\nYou are not allowed to connect from his location.\r\n"
 #define REST_PLAIN_ERROR_INVALID_PASSWORD       "0 -16 Invalid passsword \r\n\r\nWrong credentials has been given.\r\n"
 #define REST_PLAIN_ERROR_MEMORY                 "0 -17 Memory error \r\n\r\nOut of memory or other memory error.\r\n"
+#define REST_PLAIN_ERROR_VARIABLE_NOT_DELETE    "0 -18 Variable delete error \r\n\r\nVariable could not be deleted.\r\n"
 
-#define REST_CSV_ERROR_SUCCESS                  "success-code,error-code,message,description\r\n1,1,Success,Success."
-#define REST_CSV_ERROR_GENERAL_FAILURE          "success-code,error-code,message,description\r\n0,-1,Failure,General failure."
-#define REST_CSV_ERROR_INVALID_SESSION          "success-code,error-code,message,description\r\n0,-2,Invalid session,The session must be opened with 'open' before a session command can be used. It may also be possible that the session has timed out."
-#define REST_CSV_ERROR_UNSUPPORTED_FORMAT       "success-code,error-code,message,description\r\n0,-3,Unsupported format,Format can be 0/plain, 1/CSV, 2/XML, 3/JSON, 4/JSONP."
-#define REST_CSV_ERROR_COULD_NOT_OPEN_SESSION   "success-code,error-code,message,description\r\n0,-4,Unable to create session,A new session could not be created."
-#define REST_CSV_ERROR_MISSING_DATA             "success-code,error-code,message,description\r\n0,-5,Missing data/parameter,A needed parameter or data is missing to be able to perform operation."
-#define REST_CSV_ERROR_INPUT_QUEUE_EMPTY        "success-code,error-code,message,description\r\n0,-6,Input queue empty,The input queue is empty."
-#define REST_CSV_ERROR_VARIABLE_NOT_FOUND       "success-code,error-code,message,description\r\n0,-7,Variable not found,Variable could not be found."
-#define REST_CSV_ERROR_VARIABLE_NOT_CREATED     "success-code,error-code,message,description\r\n0,-8,Variable could not be created,Variable could not be created."
-#define REST_CSV_ERROR_VARIABLE_FAIL_UPDATE      "success-code,error-code,message,description\r\n0,-9,Faild to update variable,Faild to update variable."
-#define REST_CSV_ERROR_NO_ROOM                  "success-code,error-code,message,description\r\n0,-10,No room in queue,No room in queue."
-#define REST_CSV_ERROR_TABLE_NOT_FOUND          "success-code,error-code,message,description\r\n0,-11,Table does not exist,A table with that name does not exist."
-#define REST_CSV_ERROR_TABLE_NO_DATA            "success-code,error-code,message,description\r\n0,-12,No data ,The table exist but contains no data (in that range)."
-#define REST_CSV_ERROR_TABLE_RANGE              "success-code,error-code,message,description\r\n0,-13,Range error ,The end date must be later than the start date."
-#define REST_CSV_ERROR_INVALID_USER             "success-code,error-code,message,description\r\n0,-14,Invalid user ,The user is not a valid user of this system."
-#define REST_CSV_ERROR_INVALID_ORIGIN           "success-code,error-code,message,description\r\n0,-15,Invalid origin ,You are not allowed to connect from his location."
-#define REST_CSV_ERROR_INVALID_PASSWORD         "success-code,error-code,message,description\r\n0,-16,Invalid password ,Wrong credentials has been given."
-#define REST_CSV_ERROR_MEMORY                   "success-code,error-code,message,description\r\n0,-17,Memory error ,Out of memory or other memory error."
+#define REST_CSV_ERROR_SUCCESS                  "success-code,error-code,message,description\r\n1,1,Success, Success."
+#define REST_CSV_ERROR_GENERAL_FAILURE          "success-code,error-code,message,description\r\n0,-1,Failure, General failure."
+#define REST_CSV_ERROR_INVALID_SESSION          "success-code,error-code,message,description\r\n0,-2,Invalid session, The session must be opened with 'open' before a session command can be used. It may also be possible that the session has timed out."
+#define REST_CSV_ERROR_UNSUPPORTED_FORMAT       "success-code,error-code,message,description\r\n0,-3,Unsupported format, Format can be 0/plain, 1/CSV, 2/XML, 3/JSON, 4/JSONP."
+#define REST_CSV_ERROR_COULD_NOT_OPEN_SESSION   "success-code,error-code,message,description\r\n0,-4,Unable to create session, A new session could not be created."
+#define REST_CSV_ERROR_MISSING_DATA             "success-code,error-code,message,description\r\n0,-5,Missing data/parameter, A needed parameter or data is missing to be able to perform operation."
+#define REST_CSV_ERROR_INPUT_QUEUE_EMPTY        "success-code,error-code,message,description\r\n0,-6,Input queue empty, The input queue is empty."
+#define REST_CSV_ERROR_VARIABLE_NOT_FOUND       "success-code,error-code,message,description\r\n0,-7,Variable not found, Variable could not be found."
+#define REST_CSV_ERROR_VARIABLE_NOT_CREATED     "success-code,error-code,message,description\r\n0,-8,Variable could not be created, Variable could not be created."
+#define REST_CSV_ERROR_VARIABLE_FAIL_UPDATE      "success-code,error-code,message,description\r\n0,-9,Faild to update variable, Faild to update variable."
+#define REST_CSV_ERROR_NO_ROOM                  "success-code,error-code,message,description\r\n0,-10,No room in queue, No room in queue."
+#define REST_CSV_ERROR_TABLE_NOT_FOUND          "success-code,error-code,message,description\r\n0,-11,Table does not exist, A table with that name does not exist."
+#define REST_CSV_ERROR_TABLE_NO_DATA            "success-code,error-code,message,description\r\n0,-12,No data, The table exist but contains no data (in that range)."
+#define REST_CSV_ERROR_TABLE_RANGE              "success-code,error-code,message,description\r\n0,-13,Range error, The end date must be later than the start date."
+#define REST_CSV_ERROR_INVALID_USER             "success-code,error-code,message,description\r\n0,-14,Invalid user, The user is not a valid user of this system."
+#define REST_CSV_ERROR_INVALID_ORIGIN           "success-code,error-code,message,description\r\n0,-15,Invalid origin, You are not allowed to connect from his location."
+#define REST_CSV_ERROR_INVALID_PASSWORD         "success-code,error-code,message,description\r\n0,-16,Invalid password, Wrong credentials has been given."
+#define REST_CSV_ERROR_MEMORY                   "success-code,error-code,message,description\r\n0,-17,Memory error, Out of memory or other memory error."
+#define REST_CSV_ERROR_VARIABLE_NOT_DELETE      "success-code,error-code,message,description\r\n0,-18,Variable delete error, Variable could not be deleted."
+
 
 #define XML_HEADER  "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>"
 #define REST_XML_ERROR_SUCCESS                  "<vscp-rest success = \"true\" code = \"1\" message = \"Success\" description = \"Success.\" />"
@@ -158,6 +162,8 @@ enum {
 #define REST_XML_ERROR_INVALID_ORIGIN           "<vscp-rest success = \"false\" code = \"-15\" message = \"Invalid origin\" description = \"You are not allowed to connect from his location.\" />"
 #define REST_XML_ERROR_INVALID_PASSWORD         "<vscp-rest success = \"false\" code = \"-16\" message = \"Invalid password\" description = \"Wrong credentials has been given.\" />"
 #define REST_XML_ERROR_MEMORY                   "<vscp-rest success = \"false\" code = \"-17\" message = \"Memory error\" description = \"Out of memory or other memory error.\" />"
+#define REST_XML_ERROR_VARIABLE_NOT_DELETE      "<vscp-rest success = \"false\" code = \"-18\" message = \"Variable delete error\" description = \"Variable could not be deleted.\" />"
+
 
 #define REST_JSON_ERROR_SUCCESS                 "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\"}"
 #define REST_JSON_ERROR_GENERAL_FAILURE         "{\"success\":false,\"code\":-1,\"message\":\"Failure\",\"description\":\"General failure.\"}"
@@ -177,6 +183,8 @@ enum {
 #define REST_JSON_ERROR_INVALID_ORIGIN          "{\"success\":false,\"code\":-15,\"message\":\"Invalid origin\",\"description\":\"You are not allowed to connect from his location.\"}"
 #define REST_JSON_ERROR_INVALID_PASSWORD        "{\"success\":false,\"code\":-16,\"message\":\"Invalid password\",\"description\":\"Wrong credentials has been given.\"}"
 #define REST_JSON_ERROR_MEMORY                  "{\"success\":false,\"code\":-17,\"message\":\"Memory error\",\"description\":\"Out of memory or other memory error.\"}"
+#define REST_JSON_ERROR_VARIABLE_NOT_DELETE     "{\"success\":false,\"code\":-18,\"message\":\"Variable delete error\",\"description\":\"Variable delete error\" description = \"Variable could not be deleted.\"}"
+
 
 #define REST_JSONP_ERROR_SUCCESS                "typeof handler === 'function' && handler(" REST_JSON_ERROR_SUCCESS ");"
 #define REST_JSONP_ERROR_GENERAL_FAILURE        "typeof handler === 'function' && handler(" REST_JSON_ERROR_GENERAL_FAILURE ");"
@@ -196,6 +204,7 @@ enum {
 #define REST_JSONP_ERROR_INVALID_ORIGIN         "typeof handler === 'function' && handler(" REST_JSON_ERROR_INVALID_ORIGIN ");"
 #define REST_JSONP_ERROR_INVALID_PASSWORD       "typeof handler === 'function' && handler(" REST_JSON_ERROR_INVALID_PASSWORD ");"
 #define REST_JSONP_ERROR_MEMORY                 "typeof handler === 'function' && handler(" REST_JSON_ERROR_MEMORY ");"
+#define REST_JSONP_ERROR_VARIABLE_NOT_DELETE    "typeof handler === 'function' && handler(" REST_JSON_ERROR_VARIABLE_NOT_DELETE  ");"
 
 const char* rest_errors[][REST_FORMAT_COUNT+1] = {
     { REST_PLAIN_ERROR_SUCCESS,                 REST_CSV_ERROR_SUCCESS,                 REST_XML_ERROR_SUCCESS,                 REST_JSON_ERROR_SUCCESS,                REST_JSONP_ERROR_SUCCESS                    },
@@ -216,6 +225,7 @@ const char* rest_errors[][REST_FORMAT_COUNT+1] = {
     { REST_PLAIN_ERROR_INVALID_ORIGIN,          REST_CSV_ERROR_INVALID_ORIGIN,          REST_XML_ERROR_INVALID_ORIGIN,          REST_JSON_ERROR_INVALID_ORIGIN,         REST_JSONP_ERROR_INVALID_ORIGIN             },
     { REST_PLAIN_ERROR_INVALID_PASSWORD,        REST_CSV_ERROR_INVALID_PASSWORD,        REST_XML_ERROR_INVALID_PASSWORD,        REST_JSON_ERROR_INVALID_PASSWORD,       REST_JSONP_ERROR_INVALID_PASSWORD           },
     { REST_PLAIN_ERROR_MEMORY,                  REST_CSV_ERROR_MEMORY,                  REST_XML_ERROR_MEMORY,                  REST_JSON_ERROR_MEMORY,                 REST_JSONP_ERROR_MEMORY                     },
+    { REST_PLAIN_ERROR_VARIABLE_NOT_DELETE,     REST_CSV_ERROR_VARIABLE_NOT_DELETE,     REST_XML_ERROR_VARIABLE_NOT_DELETE,     REST_JSON_ERROR_VARIABLE_NOT_DELETE,    REST_JSONP_ERROR_VARIABLE_NOT_DELETE        },
 
 };
 
