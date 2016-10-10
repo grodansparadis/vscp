@@ -1,0 +1,48 @@
+CREATE TABLE "vscp_class" (
+	`class`	INTEGER NOT NULL UNIQUE,		Typically content 6
+	`name`	TEXT NOT NULL,				Typically content "Measurement"
+	`token`	TEXT NOT NULL UNIQUE,			Typically content "CLASS1.MEASUREMENT"
+	`description`	TEXT NOT NULL,			Typically content "Bla bla bla bla HTML formated"
+	PRIMARY KEY(class)
+)
+
+CREATE TABLE "vscp_type" (
+	`type`	INTEGER NOT NULL UNIQUE,		Typically content 6
+	`link_to_class`	INTEGER NOT NULL,		Typically content Link to Measurement class
+	`description`	TEXT,				Typically content "Bla bla bla bla HTML formated"
+	PRIMARY KEY(type)
+)
+
+CREATE TABLE "vscp_bytes" (
+	`idx_bytes`	INTEGER NOT NULL UNIQUE,	Primary index
+	`link_to_type`	INTEGER NOT NULL,		Typically content Link to type 6
+	`nbyte`	INTEGER NOT NULL,			Typically content 0-n for each byte this class,type have.
+	`description`	TEXT,				Typically content "Bla bla bla bla HTML formated"
+	PRIMARY KEY(idx_bytes)
+)
+
+CREATE TABLE `vscp_unit` (
+	`idx_unit`	INTEGER NOT NULL UNIQUE,	Primary index
+	`link_to_type`	INTEGER NOT NULL,		Typically content Link to type 6
+	`nunit`	INTEGER NOT NULL,			Typically content "0" for Kelvin/"1" for Celsius/"2" for Fahrenheit
+	`description`	INTEGER,			Typically content "Bla bla bla bla HTML formated"
+	PRIMARY KEY(idx_unit)
+)
+
+
+Functions
+=========
+- mysql + php + Javascript
+- Password protected (write). World open for read. 
+- Protected agains SQL injections. 
+- Add new class/edit class/delete class
+- Add new type/edit type/delete type
+- Add new byte/edit byte/delete byte
+- Add new unit/edit unit/delete unit
+- search class/type/freetext
+- List classes/types of a class etc
+- Export XML/JSON/JSONP and sqlite3 database as of above.
+- Preferably using ace (https://ace.c9.io/#nav=about) for description editing.
+- Export to c headers, Javascript (JSON) etc
+
+
