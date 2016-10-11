@@ -30,7 +30,7 @@ DLLPREFIX = lib
 ### Variables: ###
 
 DESTDIR = 
-WX_RELEASE = 2.8
+WX_RELEASE = 3.1
 LIBDIRNAME = $(top_wxbuilddir)lib
 
 UVSCPD_OBJECTS =  uvscpd.o\
@@ -38,6 +38,7 @@ UVSCPD_OBJECTS =  uvscpd.o\
 	base64_enc.o\
 	sha1.c \
 	../common/vscphelper.o \
+	../common/guid.o\
 	../../common/dllist.o \
 	../../common/crc.o \
 	../../common/crc8.o \
@@ -46,6 +47,7 @@ UVSCPD_OBJECTS =  uvscpd.o\
 	../../common/randpassword.o 
 
 ALWAYS_BUILD = ../common/vscphelper.o \
+	../common/guid.o\
 	../../common/dllist.o \
 	../../common/crc.o \
 	../../common/crc8.o \

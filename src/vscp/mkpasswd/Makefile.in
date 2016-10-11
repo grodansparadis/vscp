@@ -31,16 +31,18 @@ DLLPREFIX = lib
 ### Variables: ###
 
 DESTDIR = 
-WX_RELEASE = 2.8
+WX_RELEASE = 3.1
 LIBDIRNAME = $(top_wxbuilddir)lib
 
 MKPASSWD_OBJECTS =  mkpasswd.o\
+	../common/vscphelper.o\
 	../common/vscphelper.o\
 	../../common/md5.o\
 	../../common/crc.o\
 	../../common/crc8.o
 
 ALWAYS_BUILD = ../common/vscphelper.o\
+	../common/vscphelper.o\
 	../../common/md5.o\
 	../../common/crc.o\
 	../../common/crc8.o

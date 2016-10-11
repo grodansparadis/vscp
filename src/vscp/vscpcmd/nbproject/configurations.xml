@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="95">
+<configurationDescriptor version="100">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <logicalFolder name="common"
                    displayName="common"
@@ -17,6 +17,8 @@
       <itemPath>../common/guid.cpp</itemPath>
       <itemPath>../common/guid.h</itemPath>
       <itemPath>../common/mdf.h</itemPath>
+      <itemPath>../../common/mongoose.c</itemPath>
+      <itemPath>../../common/mongoose.h</itemPath>
       <itemPath>../../common/net_skeleton.c</itemPath>
       <itemPath>../../common/net_skeleton.h</itemPath>
       <itemPath>../../common/slre.c</itemPath>
@@ -41,6 +43,7 @@
                    projectFiles="false"
                    kind="IMPORTANT_FILES_FOLDER">
       <itemPath>Makefile</itemPath>
+      <itemPath>../mkpasswd/Makefile.in</itemPath>
     </logicalFolder>
   </logicalFolder>
   <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
@@ -67,12 +70,7 @@
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
           <executablePath></executablePath>
           <cTool>
-            <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-              <pElem>/usr/local/include/wx-3.0</pElem>
-            </incDir>
             <preprocessorList>
-              <Elem>NS_ENABLE_SSL</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__WXGTK__</Elem>
@@ -85,53 +83,97 @@
             </preprocessorList>
           </ccTool>
         </makeTool>
+        <preBuild>
+          <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
+          <preBuildCommand></preBuildCommand>
+        </preBuild>
       </makefileType>
       <item path="../../common/crc.c" ex="false" tool="0" flavor2="2">
         <cTool>
           <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
+            <pElem>/usr/local/include/wx-3.1</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>VSCP_ENABLE_LUA</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="../../common/crc8.c" ex="false" tool="0" flavor2="2">
         <cTool>
           <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
+            <pElem>/usr/local/include/wx-3.1</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>VSCP_ENABLE_LUA</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="../../common/frozen.c" ex="false" tool="0" flavor2="2">
         <cTool>
           <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="../../common/mongoose.c" ex="false" tool="0" flavor2="0">
+        <cTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
+            <pElem>/usr/local/include/wx-3.1</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
+            <pElem>.</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>VSCP_ENABLE_LUA</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="../../common/net_skeleton.c" ex="false" tool="0" flavor2="2">
         <cTool>
           <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="../../common/slre.c" ex="false" tool="0" flavor2="2">
         <cTool>
           <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="../../common/v7.c" ex="false" tool="0" flavor2="2">
         <cTool>
-          <incDir>
-            <pElem>../common</pElem>
-            <pElem>../../common</pElem>
-            <pElem>.</pElem>
-          </incDir>
-        </cTool>
-      </item>
-      <item path="../common/guid.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
@@ -141,6 +183,22 @@
           </incDir>
           <preprocessorList>
             <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="../common/guid.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
+            <pElem>/usr/local/include/wx-3.1</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
+            <pElem>.</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>VSCP_ENABLE_LUA</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -148,14 +206,16 @@
       <item path="../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
+            <pElem>/usr/local/include/wx-3.1</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
             <pElem>../common</pElem>
             <pElem>../../common</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>VSCP_ENABLE_LUA</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -163,14 +223,16 @@
       <item path="../common/vscpremotetcpif.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
+            <pElem>/usr/local/include/wx-3.1</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
             <pElem>../common</pElem>
             <pElem>../../common</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>VSCP_ENABLE_LUA</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -191,18 +253,22 @@
       <folder path="0">
         <ccTool>
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
+            <pElem>/usr/local/include/wx-3.1</pElem>
+            <pElem>/usr/include/lua5.2</pElem>
             <pElem>../common</pElem>
             <pElem>../../common</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>VSCP_ENABLE_LUA</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
       </folder>
       <item path="vscpcmd.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
     </conf>
   </confs>
