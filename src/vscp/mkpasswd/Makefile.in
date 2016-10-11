@@ -36,13 +36,13 @@ LIBDIRNAME = $(top_wxbuilddir)lib
 
 MKPASSWD_OBJECTS =  mkpasswd.o\
 	../common/vscphelper.o\
-	../common/vscphelper.o\
+	../common/guid.o\
 	../../common/md5.o\
 	../../common/crc.o\
 	../../common/crc8.o
 
 ALWAYS_BUILD = ../common/vscphelper.o\
-	../common/vscphelper.o\
+	../common/guid.o\
 	../../common/md5.o\
 	../../common/crc.o\
 	../../common/crc8.o
