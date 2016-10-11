@@ -4397,12 +4397,12 @@ bool CDM::addDatabaseRecord( dmElement& dm )
                 dm.m_vscpfilter.filter_type,
                 (const char *)guid_filter.getAsString().mbc_str(),
                 //--------------------------------------------------------------
-#if wxCHECK_VERSION(3,0,0)            
+#if wxCHECK_VERSION( 3,0,0 )            
                 (const char *)dm.m_timeAllow.m_fromTime.FormatISOCombined().mbc_str(),
                 (const char *)dm.m_timeAllow.m_endTime.FormatISOCombined().mbc_str(),
 #else
-                (const char *)( m.m_timeAllow.m_fromTime.FormatISODate() + _("T") + dm.m_timeAllow.m_fromTime.FormatISOTime() ).mbc_str();
-                (const char *)( m.m_timeAllow.m_endTime.FormatISODate() + _("T") + dm.m_timeAllow.m_endTime.FormatISOTime() ).mbc_str();
+                (const char *)( dm.m_timeAllow.m_fromTime.FormatISODate() + _("T") + dm.m_timeAllow.m_fromTime.FormatISOTime() ).mbc_str();
+                (const char *)( dm.m_timeAllow.m_endTime.FormatISODate() + _("T") + dm.m_timeAllow.m_endTime.FormatISOTime() ).mbc_str();
 #endif            
                 dm.m_timeAllow.m_weekDay[ 0 ] ? 1 : 0,
                 dm.m_timeAllow.m_weekDay[ 1 ] ? 1 : 0,
