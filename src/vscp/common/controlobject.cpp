@@ -887,7 +887,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     if ( m_bLogGeneralEnable ) {
         if ( !m_fileLogGeneral.Open( m_logGeneralFileName.GetFullPath(), wxFile::write_append ) ) {
             logMsg( wxString::Format(_("Could not open general log file. Path=%s\n"),
-                    (const char *)m_logGeneralFileName.GetFullPath() ) );
+                    (const char *)m_logGeneralFileName.GetFullPath().mbc_str() ) );
         }
     }
 
@@ -895,7 +895,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     if ( m_bLogSecurityEnable ) {
         if ( !m_fileLogSecurity.Open( m_logSecurityFileName.GetFullPath(), wxFile::write_append ) ) {
             logMsg( wxString::Format(_("Could not open security log file. Path=%s\n"),
-                    (const char *)m_logSecurityFileName.GetFullPath() ) );
+                    (const char *)m_logSecurityFileName.GetFullPath().mbc_str() ) );
         }
     }
 
@@ -903,7 +903,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     if ( m_bLogAccessEnable ) {
         if ( !m_fileLogAccess.Open( m_logAccessFileName.GetFullPath(), wxFile::write_append ) ) {
             logMsg( wxString::Format(_("Could not open access log file. Path=%s\n"),
-                    (const char *)m_logAccessFileName.GetFullPath() ) );
+                    (const char *)m_logAccessFileName.GetFullPath().mbc_str() ) );
         }
     }
 
