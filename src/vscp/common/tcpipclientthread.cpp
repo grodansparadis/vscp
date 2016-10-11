@@ -1670,7 +1670,7 @@ void VSCPClientThread::handleChallenge( struct mg_connection *conn,
     }
     
     wxstr = _("+OK - ") + wxString::FromUTF8( pClientItem->m_sid ) + _("\r\n");
-    mg_send( conn, wxstr, strlen ( wxstr ) );
+    mg_send( conn, (const char *)wxstr.mbc_str(), strlen ( (const char *)wxstr.mbc_str() ) );
     
     //mg_send( conn, MSG_OK, strlen ( MSG_OK ) );
 }
