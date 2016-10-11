@@ -4645,17 +4645,17 @@ bool CDM::getDatabaseRecord( uint32_t idx, dmElement *pDMitem )
             
         // Allowed start
         if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_START ) ) ) {
-            pDMitem->m_timeAllow.m_fromTime.ParseDate( p );
+            pDMitem->m_timeAllow.m_fromTime.ParseDate( wxString::FromUTF8( p ) );
         }
             
         // Allowed end
         if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_END ) ) ) {
-            pDMitem->m_timeAllow.m_endTime.ParseDate( p );
+            pDMitem->m_timeAllow.m_endTime.ParseDate( wxString::FromUTF8( p ) );
         }
             
         // Allowed time
         if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_TIME ) ) ) {
-            pDMitem->m_timeAllow.parseActionTime( p );
+            pDMitem->m_timeAllow.parseActionTime( wxString::FromUTF8( p ) );
         }
             
         // Allow Monday
