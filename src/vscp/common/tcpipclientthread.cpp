@@ -2333,7 +2333,7 @@ void VSCPClientThread::handleVariable_Write( struct mg_connection *conn,
         wxstr.Trim();
         wxstr.Trim( false );
         if ( wxstr.IsEmpty() ) {
-            wxstr = "STRING";   // String is default type
+            wxstr = _("STRING");   // String is default type
         }
         
         variable.setType( wxstr );
