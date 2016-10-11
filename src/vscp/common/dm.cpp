@@ -4854,17 +4854,17 @@ bool CDM::loadFromDatabase( void )
             
             // Allowed from
             if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_START ) ) ) {
-                pDMitem->m_timeAllow.m_fromTime.ParseDate( p );
+                pDMitem->m_timeAllow.m_fromTime.ParseDate( wxString::FromUTF8( p ) );
             }
             
             // Allowed to
             if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_END ) ) ) {
-                pDMitem->m_timeAllow.m_endTime.ParseDate( p );
+                pDMitem->m_timeAllow.m_endTime.ParseDate( wxString::FromUTF8( p ) );
             }
             
             // Allowed to
             if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_TIME ) ) ) {
-                pDMitem->m_timeAllow.parseActionTime( p );
+                pDMitem->m_timeAllow.parseActionTime( wxString::FromUTF8( p ) );
             }
             
             // Allow Monday
