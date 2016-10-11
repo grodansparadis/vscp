@@ -1092,7 +1092,7 @@ wxString dmElement::getSymbolicMeasurementFromCompareCode( uint8_t cc, uint8_t t
     
     if ( DM_MEASUREMENT_COMPARE_EQ == cc ) {
         if ( 0 == type ) {
-            scc = "==";
+            scc = _("==");
         }
         else {
             scc = _("EQ");
@@ -1100,7 +1100,7 @@ wxString dmElement::getSymbolicMeasurementFromCompareCode( uint8_t cc, uint8_t t
     }
     else if ( DM_MEASUREMENT_COMPARE_NEQ == cc ) {
         if ( 0 == type ) {
-            scc = "!=";
+            scc = _("!=");
         }
         else {
             scc = _("NEQ");
@@ -1108,7 +1108,7 @@ wxString dmElement::getSymbolicMeasurementFromCompareCode( uint8_t cc, uint8_t t
     }
     else if ( DM_MEASUREMENT_COMPARE_LT == cc ) {
         if ( 0 == type ) {
-            scc = "<";
+            scc = _("<");
         }
         else {
             scc = _("LT");
@@ -1116,7 +1116,7 @@ wxString dmElement::getSymbolicMeasurementFromCompareCode( uint8_t cc, uint8_t t
     }
     else if ( DM_MEASUREMENT_COMPARE_LTEQ == cc ) {
         if ( 0 == type ) {
-            scc = "<=";
+            scc = _("<=");
         }
         else {
             scc = _("LTEQ");
