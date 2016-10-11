@@ -3454,7 +3454,7 @@ void CDM::init( void )
             // Failed to open/create the database file
             fprintf( stderr, "VSCP Daemon DM database could not be opened. - Will not be used.\n" );
             wxstr.Printf( _("Path=%s error=%s\n"),
-                            m_path_db_vscp_dm.GetFullPath().mbc_str(),
+                            (const char *)m_path_db_vscp_dm.GetFullPath().mbc_str(),
                             sqlite3_errmsg( m_db_vscp_dm ) );
             fprintf( stderr, wxstr.mbc_str() );
             if ( NULL != m_db_vscp_dm ) sqlite3_close( m_db_vscp_dm  );
@@ -3468,10 +3468,10 @@ void CDM::init( void )
             // We need to create the database from scratch. This may not work if
             // the database is in a read only location.
             fprintf( stderr, "VSCP Daemon DM does not exist - will be created.\n" );
-            wxstr.Printf(_("Path=%s\n"), m_path_db_vscp_dm.GetFullPath().mbc_str() );
+            wxstr.Printf(_("Path=%s\n"), (const char *)m_path_db_vscp_dm.GetFullPath().mbc_str() );
             fprintf( stderr, wxstr.mbc_str() );
             
-            if ( SQLITE_OK == sqlite3_open( m_path_db_vscp_dm.GetFullPath().mbc_str(),
+            if ( SQLITE_OK == sqlite3_open( (const char *)m_path_db_vscp_dm.GetFullPath().mbc_str(),
                                             &m_db_vscp_dm ) ) {            
                 // create the table.
                 doCreateDMTable();
@@ -3479,14 +3479,14 @@ void CDM::init( void )
             else {
                 fprintf( stderr, "Failed to create VSCP DM database - will not be used.\n" );
                 wxstr.Printf( _("Path=%s error=%s\n"),
-                            m_path_db_vscp_dm.GetFullPath().mbc_str(),
+                            (const char *)m_path_db_vscp_dm.GetFullPath().mbc_str(),
                             sqlite3_errmsg( m_db_vscp_dm ) );
                 fprintf( stderr, wxstr.mbc_str() );
             }
         }
         else {
             fprintf( stderr, "VSCP DM database path invalid - will not be used.\n" );
-            wxstr.Printf(_("Path=%s\n"), m_path_db_vscp_dm.GetFullPath().mbc_str() );
+            wxstr.Printf(_("Path=%s\n"), (const char *)m_path_db_vscp_dm.GetFullPath().mbc_str() );
             fprintf( stderr, wxstr.mbc_str() );
         }
 
