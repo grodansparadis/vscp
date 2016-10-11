@@ -1664,9 +1664,9 @@ void VSCPClientThread::handleChallenge( struct mg_connection *conn,
     strcmd.Trim(false);
 
     memset( pClientItem->m_sid, 0, sizeof( pClientItem->m_sid ) );
-    if ( !gpobj->generateSessionId( strcmd, pClientItem->m_sid ) ) {
+    if ( !gpobj->generateSessionId( (const char *)strcmd.mbc_str(), pClientItem->m_sid ) ) {
         mg_send( conn,  MSG_FAILD_TO_GENERATE_SID, strlen ( MSG_FAILD_TO_GENERATE_SID ) );
-        return;
+        return; 
     }
     
     wxstr = _("+OK - ") + wxString::FromUTF8( pClientItem->m_sid ) + _("\r\n");
