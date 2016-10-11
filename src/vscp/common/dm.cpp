@@ -1088,14 +1088,14 @@ uint8_t dmElement::getCompareCodeFromSymbolicMeasurement( wxString& strCompare )
 
 wxString dmElement::getSymbolicMeasurementFromCompareCode( uint8_t cc, uint8_t type )
 {
-    wxString scc = "NOOP";
+    wxString scc = _("NOOP");
     
     if ( DM_MEASUREMENT_COMPARE_EQ == cc ) {
         if ( 0 == type ) {
             scc = "==";
         }
         else {
-            scc = "EQ";
+            scc = _("EQ");
         }
     }
     else if ( DM_MEASUREMENT_COMPARE_NEQ == cc ) {
@@ -1103,7 +1103,7 @@ wxString dmElement::getSymbolicMeasurementFromCompareCode( uint8_t cc, uint8_t t
             scc = "!=";
         }
         else {
-            scc = "NEQ";
+            scc = _("NEQ");
         }
     }
     else if ( DM_MEASUREMENT_COMPARE_LT == cc ) {
@@ -1111,7 +1111,7 @@ wxString dmElement::getSymbolicMeasurementFromCompareCode( uint8_t cc, uint8_t t
             scc = "<";
         }
         else {
-            scc = "LT";
+            scc = _("LT");
         }
     }
     else if ( DM_MEASUREMENT_COMPARE_LTEQ == cc ) {
@@ -1119,27 +1119,27 @@ wxString dmElement::getSymbolicMeasurementFromCompareCode( uint8_t cc, uint8_t t
             scc = "<=";
         }
         else {
-            scc = "LTEQ";
+            scc = _("LTEQ");
         }
     }
     else if ( DM_MEASUREMENT_COMPARE_GT == cc ) {
         if ( 0 == type ) {
-            scc = ">";
+            scc = _(">");
         }
         else {
-            scc = "GT";
+            scc = _("GT");
         }
     }
     else if ( DM_MEASUREMENT_COMPARE_GTEQ == cc ) {
         if ( 0 == type ) {
-            scc = ">=";
+            scc = _(">=");
         }
         else {
-            scc = "GTEQ";
+            scc = _("GTEQ");
         }
     }
     else {
-        scc = "NOOP";
+        scc = _("NOOP");
     }
     
     return scc;
