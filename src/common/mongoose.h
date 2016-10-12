@@ -84,6 +84,7 @@
 #define CS_P_CC3200 4
 #define CS_P_MSP432 5
 #define CS_P_CC3100 6
+#define CS_P_MBED 7
 
 /* If not specified explicitly, we guess platform by defines. */
 #ifndef CS_PLATFORM
@@ -97,6 +98,8 @@
 #define CS_PLATFORM CS_P_UNIX
 #elif defined(_WIN32)
 #define CS_PLATFORM CS_P_WINDOWS
+#elif defined(__MBED__)
+#define CS_PLATFORM CS_P_MBED
 #endif
 
 #ifndef CS_PLATFORM
@@ -110,6 +113,7 @@
 /* Amalgamated: #include "common/platforms/platform_esp_lwip.h" */
 /* Amalgamated: #include "common/platforms/platform_cc3200.h" */
 /* Amalgamated: #include "common/platforms/platform_cc3100.h" */
+/* Amalgamated: #include "common/platforms/platform_mbed.h" */
 
 /* Common stuff */
 
@@ -429,6 +433,15 @@ typedef struct stat cs_stat_t;
 unsigned long os_random(void);
 #define random os_random
 
+#ifndef RTOS_SDK
+#define MG_NET_IF_LWIP
+struct mg_mgr;
+struct mg_connection;
+uint32_t mg_lwip_get_poll_delay_ms(struct mg_mgr *mgr);
+void mg_lwip_set_keepalive_params(struct mg_connection *nc, int idle,
+                                  int interval, int count);
+#endif
+
 #endif /* CS_PLATFORM == CS_P_ESP_LWIP */
 #endif /* CS_COMMON_PLATFORMS_PLATFORM_ESP_LWIP_H_ */
 #ifdef MG_MODULE_LINES
@@ -468,6 +481,7 @@ unsigned long os_random(void);
 
 #include <simplelink.h>
 #include <netapp.h>
+#undef timeval 
 
 typedef int sock_t;
 #define INVALID_SOCKET (-1)
@@ -719,6 +733,22 @@ int _stat(const char *pathname, struct stat *st);
 
 #endif /* CS_PLATFORM == CS_P_MSP432 */
 #endif /* CS_COMMON_PLATFORMS_PLATFORM_MSP432_H_ */
+#ifdef MG_MODULE_LINES
+#line 1 "common/platforms/platform_mbed.h"
+#endif
+/*
+ * Copyright (c) 2014-2016 Cesanta Software Limited
+ * All rights reserved
+ */
+
+#ifndef CS_COMMON_PLATFORMS_PLATFORM_MBED_H_
+#define CS_COMMON_PLATFORMS_PLATFORM_MBED_H_
+#if CS_PLATFORM == CS_P_MBED
+
+/* Amalgamated: #include "mbed.h" */
+
+#endif /* CS_PLATFORM == CS_P_MBED */
+#endif /* CS_COMMON_PLATFORMS_PLATFORM_MBED_H_ */
 #ifdef MG_MODULE_LINES
 #line 1 "common/platforms/simplelink/cs_simplelink.h"
 #endif
@@ -2009,6 +2039,7 @@ int mg_hexdump(const void *buf, int len, char *dst, int dst_len);
  */
 void mg_hexdump_connection(struct mg_connection *nc, const char *path,
                            const void *buf, int num_bytes, int ev);
+
 /*
  * Prints message to the buffer. If the buffer is large enough to hold the
  * message, it returns buffer. If buffer is to small, it allocates a large
@@ -2016,7 +2047,7 @@ void mg_hexdump_connection(struct mg_connection *nc, const char *path,
  * This is a supposed use case:
  *
  *    char buf[5], *p = buf;
- *    p = mg_avprintf(&p, sizeof(buf), "%s", "hi there");
+ *    mg_avprintf(&p, sizeof(buf), "%s", "hi there");
  *    use_p_somehow(p);
  *    if (p != buf) {
  *      free(p);
@@ -2024,6 +2055,9 @@ void mg_hexdump_connection(struct mg_connection *nc, const char *path,
  *
  * The purpose of this is to avoid malloc-ing if generated strings are small.
  */
+int mg_asprintf(char **buf, size_t size, const char *fmt, ...);
+
+/* Same as mg_asprintf, but takes varargs list. */
 int mg_avprintf(char **buf, size_t size, const char *fmt, va_list ap);
 
 /*
@@ -2165,11 +2199,19 @@ struct mg_http_multipart_part {
   void *user_data;
 };
 
+/* SSI call context */
+struct mg_ssi_call_ctx {
+  struct http_message *req; /* The request being processed. */
+  struct mg_str file;       /* Filesystem path of the file being processed. */
+  struct mg_str arg; /* The argument passed to the tag: <!-- call arg -->. */
+};
+
 /* HTTP and websocket events. void *ev_data is described in a comment. */
 #define MG_EV_HTTP_REQUEST 100 /* struct http_message * */
 #define MG_EV_HTTP_REPLY 101   /* struct http_message * */
 #define MG_EV_HTTP_CHUNK 102   /* struct http_message * */
 #define MG_EV_SSI_CALL 105     /* char * */
+#define MG_EV_SSI_CALL_CTX 106 /* struct mg_ssi_call_ctx * */
 
 #ifndef MG_DISABLE_HTTP_WEBSOCKET
 #define MG_EV_WEBSOCKET_HANDSHAKE_REQUEST 111 /* NULL */
@@ -2800,8 +2842,23 @@ void mg_printf_http_chunk(struct mg_connection *nc, const char *fmt, ...);
  *      HTTP/1.1 200 OK\r\n
  *      Access-Control-Allow-Origin: *\r\n
  */
-void mg_send_response_line(struct mg_connection *c, int status_code,
+void mg_send_response_line(struct mg_connection *nc, int status_code,
                            const char *extra_headers);
+
+/*
+ * Sends a redirect response.
+ * `status_code` should be either 301 or 302 and `location` point to the
+ * new location.
+ * If `extra_headers` is not empty, then `extra_headers` are also sent
+ * after the reponse line. `extra_headers` must NOT end end with new line.
+ *
+ * Example:
+ *
+ *      mg_http_send_redirect(nc, 302, mg_mk_str("/login"), mg_mk_str(NULL));
+ */
+void mg_http_send_redirect(struct mg_connection *nc, int status_code,
+                           const struct mg_str location,
+                           const struct mg_str extra_headers);
 
 /*
  * Sends the response line and headers.
