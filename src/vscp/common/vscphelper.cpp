@@ -2032,6 +2032,7 @@ bool vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pvscpEvent)
 
     sizeData = pvscpEvent->sizeData;
     vscp_class = pvscpEvent->vscp_class;
+    nodeid = pvscpEvent->GUID[ 15 ];
     
     pcanalMsg->obid = pvscpEvent->obid;
     pcanalMsg->flags = 0;
