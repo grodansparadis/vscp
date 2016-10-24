@@ -2666,10 +2666,10 @@ uint32_t CVariableStorage::exist(const wxString& name )
 uint32_t CVariableStorage::find(const wxString& name, CVSCPVariable& variable )
 {
     uint32_t id = 0;
-    wxString uc_name = name.Upper();
+    wxString lc_name = name.Lower();
     
     // Look for stock variables
-    if ( uc_name.StartsWith("vscp.") ) {
+    if ( lc_name.StartsWith("vscp.") ) {
         return getStockVariable( name, variable );
     }
     else {

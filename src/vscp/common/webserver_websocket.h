@@ -96,7 +96,7 @@ struct websock_session {
     unsigned int m_referenceCount;
 
     // This variable is true when the logon process
-    // is valid and the usr is logged in.
+    // is valid and the user is logged in.
     bool bAuthenticated;
 
     // Time when this session was last active.

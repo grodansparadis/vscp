@@ -518,7 +518,7 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
 
             if ( ( cleanupTime - time(NULL) ) > 60 ) {
                 pObject->getWebServer()->websrv_expire_sessions( nc, phm );
-                //pObject->getWebServer()->websock_expire_sessions( nc, phm );
+                pObject->getWebServer()->websock_expire_sessions( nc, phm );
                 pObject->getWebServer()->websrv_expire_rest_sessions( nc );
                 cleanupTime = time(NULL);
             }

@@ -1820,7 +1820,7 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *nc,
         cs_md5( expected_response,
                     (const char *)strUser.mbc_str(), strUser.Length(),
                     colon, one,
-                    (const char *)pUser->getPassword().mbc_str(), pUser->getPassword().Length(),
+                    (const char *)pUser->getPasswordDomain().mbc_str(), pUser->getPasswordDomain().Length(),
                     colon, one,
                     pSession->m_sid, n32,
                     NULL );
@@ -2039,6 +2039,11 @@ VSCPWebServerThread::websock_post_incomingEvents( void )
 
             websock_session *pSession = (websock_session *)nc->user_data;
             if ( NULL == pSession) continue;
+            
+            // Should be a client item... hmm.... client disconnected 
+            if ( NULL == pSession->m_pClientItem ) {
+                continue;
+            }
 
             if ( pSession->m_pClientItem->m_bOpen &&
                     pSession->m_pClientItem->m_clientInputQueue.GetCount() ) {

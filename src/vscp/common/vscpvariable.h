@@ -98,10 +98,10 @@ class CVSCPVariable {
 public:
 
     /// Constructor
-    CVSCPVariable(void);
+    CVSCPVariable( void );
 
     // Destructor
-    virtual ~CVSCPVariable(void);
+    virtual ~CVSCPVariable( void );
     
     /// Set default values
     void init( void );
