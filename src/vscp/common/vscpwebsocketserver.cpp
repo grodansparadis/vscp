@@ -1035,7 +1035,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
             for ( int i=0; i<arrayVars.Count(); i++ ) {
                 if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( arrayVars[ i ], variable ) ) {
                     
-                    wxstr = wxString::Format( _("+;LSTVAR;%d;"), i );
+                    wxstr = wxString::Format( _("+;LSTVAR;%d;%zu;"), i, arrayVars.Count() );
                     wxstr += variable.getAsString();
                     
                     mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, (const char *)wxstr.mbc_str() );
