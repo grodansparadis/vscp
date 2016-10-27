@@ -368,6 +368,17 @@ public:
     uint32_t getUserCount( void ) { return m_userhashmap.size(); };
     
     /*!
+     * Get user info as string
+     * Format is:
+     *   userid;name;password;fullname;filter;mask;rights;remotes;events;note
+     *   note is always BINHEX64 coded.
+     * @param pUserItem Pointer to user.
+     * @param strUser String that will receive information
+     * @return true on success.
+     */
+    bool getUserAsString( CUserItem *pUserItem, wxString& strUser );
+    
+    /*!
      * Fetch all users in semicolon separated string form ready for transfer.
      * 
      * Format is:

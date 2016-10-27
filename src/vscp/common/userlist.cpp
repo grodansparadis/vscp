@@ -826,21 +826,61 @@ CUserItem * CUserList::validateUserDomain( const wxString& user,
     return pUserItem;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// getUserAsString
+//
+// userid;name;password;fullname;filter;mask;rights;remotes;events;note
+//
+
+bool CUserList::getUserAsString( CUserItem *pUserItem, wxString& strUser )
+{
+    wxString wxstr;
+    strUser.Empty();
+    
+    strUser += wxString::Format( _("%ld;"), pUserItem->getUserID() );
+    strUser += pUserItem->getUser();
+    strUser += _(";");
+    strUser += pUserItem->getPassword();
+    strUser += _(";");
+    strUser += pUserItem->getFullname();
+    strUser += _(";");
+    vscp_writeFilterToString( pUserItem->getFilter(), wxstr );
+    strUser += wxstr;
+    strUser += _(";");
+    vscp_writeMaskToString( pUserItem->getFilter(), wxstr );
+    strUser += wxstr;
+    strUser += _(";");
+    strUser += pUserItem->getRightsAsString();
+    strUser += _(";");
+    strUser += pUserItem->getAllowedRemotesAsString();
+    strUser += _(";");
+    strUser += pUserItem->getAllowedEventsAsString();
+    strUser += _(";");
+    strUser += pUserItem->getNote();
+    
+    return true;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // getAllUsers
+//
+// userid;name;password;fullname;filter;mask;rights;remotes;events;note
 //
 
 bool CUserList::getAllUsers( wxString& strAllusers )
 {
+    wxString wxstr;
     strAllusers.Empty();
     
     VSCPUSERHASH::iterator it;
     for( it = m_userhashmap.begin(); it != m_userhashmap.end(); ++it ) {
         wxString key = it->first;
         CUserItem *pUserItem = it->second;
-        strAllusers += wxString::Format( _("%ld;"), pUserItem->getUserID() );
-        strAllusers += pUserItem->getUser();
-        strAllusers += _(";");
+        if ( getUserAsString( pUserItem, wxstr ) ) {
+            strAllusers += wxstr;
+            strAllusers += _("\r\n");
+        }
     }
     
     return true;

@@ -1845,7 +1845,7 @@ bool vscp_readFilterFromString(vscpEventFilter *pFilter, const wxString& strFilt
 // vscp_writeFilterToString
 //
 
-bool vscp_writeFilterToString(vscpEventFilter *pFilter, wxString& strFilter)
+bool vscp_writeFilterToString( const vscpEventFilter *pFilter, wxString& strFilter)
 {
     cguid guid;
     
@@ -1922,7 +1922,7 @@ bool vscp_readMaskFromString(vscpEventFilter *pFilter, wxString& strMask)
 // vscp_writeMaskToString
 //
 
-bool vscp_writeMaskToString(vscpEventFilter *pFilter, wxString& strFilter)
+bool vscp_writeMaskToString( const vscpEventFilter *pFilter, wxString& strFilter)
 {
     cguid guid;
     
