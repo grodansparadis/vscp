@@ -360,6 +360,23 @@ public:
         @return Pointer to useritem if valid, NULL if not.
     */
     CUserItem *validateUserDomain( const wxString& user, const wxString& md5password );
+    
+    /*!
+     * Get number of users on the system
+     * @return number of users.
+     */
+    uint32_t getUserCount( void ) { return m_userhashmap.size(); };
+    
+    /*!
+     * Fetch all users in semicolon separated string form ready for transfer.
+     * 
+     * Format is:
+     *   userid;name;password;fullname;filter;mask;rights;remotes;events;note
+     *   note is always BINHEX64 coded.
+     * 
+     * @param  strAllUser String containing user records in string form.
+     */
+    bool getAllUsers( wxString& strAllusers ); 
 
 protected:
 

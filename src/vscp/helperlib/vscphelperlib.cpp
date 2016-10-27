@@ -1,21 +1,21 @@
 // VSCP helper dll.cpp : Defines the initialization routines for the DLL.
 //
-// This file is part of the VSCP (http://www.vscp.org) 
+// This file is part of the VSCP (http://www.vscp.org)
 //
 // The MIT License (MIT)
-// 
-// Copyright (c) 2000-2015 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
-// 
+//
+// Copyright (c) 2000-2016 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -63,14 +63,14 @@ extern CVSCPLApp theApp;
 #endif
 
 //-----------------------------------------------------------------------------
-//						 T C P / I P  I N T E R F A C E
+//                  T C P / I P  I N T E R F A C E
 //-----------------------------------------------------------------------------
 
 
 //-------------------------------------------------------------------------
 //
-// To use any of the methods below this point you have to 
-// obtain a handle first with vscphlp_gethandle and remember 
+// To use any of the methods below this point you have to
+// obtain a handle first with vscphlp_gethandle and remember
 // to release it with vscphlp_releasehandle when you are done.
 //
 //-------------------------------------------------------------------------
@@ -80,11 +80,11 @@ extern CVSCPLApp theApp;
 //
 
 #ifdef WIN32
-extern "C" 
+extern "C"
 long WINAPI EXPORT vscphlp_newSession( void )
 #else
-extern "C" long 
-EXPORT vscphlp_newSession( void ) 
+extern "C" long
+EXPORT vscphlp_newSession( void )
 #endif
 {
     VscpRemoteTcpIf *pvscpif = new VscpRemoteTcpIf;
@@ -113,15 +113,15 @@ extern "C" void vscphlp_closeSession(long handle)
 // vscphlp_setResponseTimeout
 //
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setResponseTimeout(long handle, 
+extern "C" int WINAPI EXPORT vscphlp_setResponseTimeout(long handle,
                                                     unsigned long timeout )
 #else
-extern "C" int vscphlp_setResponseTimeout(long handle, 
-                                                    unsigned long timeout )
+extern "C" int vscphlp_setResponseTimeout(long handle,
+                                            unsigned long timeout )
 #endif
 {
     VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     pvscpif->setResponseTimeout( timeout );
 
@@ -133,7 +133,7 @@ extern "C" int vscphlp_setResponseTimeout(long handle,
 //
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_setAfterCommandSleep( long handle,
-                                                         unsigned short sleeptime )
+                                                            unsigned short sleeptime )
 #else
 extern "C" int vscphlp_setAfterCommandSleep( long handle,
                                            unsigned short sleeptime )
@@ -157,7 +157,7 @@ extern "C" int vscphlp_isConnected(const long handle)
 #endif
 {
     VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     return pvscpif->isConnected() ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
@@ -172,7 +172,7 @@ extern "C" int vscphlp_doCommand( long handle, const char * cmd )
 #endif
 {
     VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -191,7 +191,7 @@ extern "C" int vscphlp_checkReply( long handle, int bClear )
 #endif
 {
     VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -209,7 +209,7 @@ extern "C" int vscphlp_clearLocalInputQueue( long handle )
 #endif
 {
     VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     pvscpif->doClrInputQueue();
     return VSCP_ERROR_SUCCESS;
@@ -220,17 +220,17 @@ extern "C" int vscphlp_clearLocalInputQueue( long handle )
 //
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_openInterface( long handle,
-												        const char *pInterface,
+                                                        const char *pInterface,
                                                         unsigned long flags )
 #else
 extern "C" int vscphlp_openInterface( long handle,
-										const char *pInterface,
+                                        const char *pInterface,
                                         unsigned long flags )
 #endif
-{	
-	wxString strInterface;
+{
+    wxString strInterface;
     VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     strInterface = wxString::FromUTF8( pInterface );
     return pvscpif->doCmdOpen( strInterface, flags );
@@ -240,29 +240,30 @@ extern "C" int vscphlp_openInterface( long handle,
 // vscphlp_open
 //
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_open( const long handle,
-												const char *pHostname, 
-                                                const char *pUsername, 
-                                                const char *pPassword )
+extern "C" int WINAPI EXPORT vscphlp_open(const long handle,
+        const char *pHostname,
+        const char *pUsername,
+        const char *pPassword)
 #else
-extern "C" int vscphlp_open( const long handle,
-									const char *pHostname, 
-                                    const char *pUsername, 
-                                    const char *pPassword )
+
+extern "C" int vscphlp_open(const long handle,
+        const char *pHostname,
+        const char *pUsername,
+        const char *pPassword)
 #endif
-{	
-	wxString strHostname;
+{
+    wxString strHostname;
     wxString strUsername;
     wxString strPassword;
 
-    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
+    if (NULL == pvscpif) return VSCP_ERROR_INVALID_HANDLE;
 
-    strHostname = wxString::FromUTF8( pHostname );
-    strUsername = wxString::FromUTF8( pUsername );
-    strPassword = wxString::FromUTF8( pPassword );
+    strHostname = wxString::FromUTF8(pHostname);
+    strUsername = wxString::FromUTF8(pUsername);
+    strPassword = wxString::FromUTF8(pPassword);
 
-    return pvscpif->doCmdOpen( strHostname, strUsername, strPassword );
+    return pvscpif->doCmdOpen(strHostname, strUsername, strPassword);
 }
 
 
@@ -276,8 +277,8 @@ extern "C" int WINAPI EXPORT vscphlp_close( long handle )
 extern "C" int vscphlp_close( long handle )
 #endif
 {
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -295,8 +296,8 @@ extern "C" int WINAPI EXPORT vscphlp_noop( long handle )
 extern "C" int vscphlp_noop( long handle )
 #endif
 {
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -315,8 +316,8 @@ extern "C" int WINAPI EXPORT vscphlp_clearDaemonEventQueue( long handle )
 extern "C" int vscphlp_clearDaemonEventQueue( long handle )
 #endif
 {
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -330,14 +331,14 @@ extern "C" int vscphlp_clearDaemonEventQueue( long handle )
 //
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_sendEvent( long handle,
-												  const vscpEvent *pEvent )
+                                                    const vscpEvent *pEvent )
 #else
 extern "C" int vscphlp_sendEvent( long handle,
-									const vscpEvent *pEvent )
+                                    const vscpEvent *pEvent )
 #endif
 {
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -350,14 +351,14 @@ extern "C" int vscphlp_sendEvent( long handle,
 //
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_sendEventEx( long handle,
-														const vscpEventEx *pEvent )
+                                                    const vscpEventEx *pEvent )
 #else
 extern "C" int vscphlp_sendEventEx( long handle,
-														const vscpEventEx *pEvent )
+                                        const vscpEventEx *pEvent )
 #endif
 {
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -371,10 +372,10 @@ extern "C" int vscphlp_sendEventEx( long handle,
 //
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_receiveEvent( long handle,
-														vscpEvent *pEvent )
+                                                    vscpEvent *pEvent )
 #else
 extern "C" int vscphlp_receiveEvent( long handle,
-														vscpEvent *pEvent )
+                                        vscpEvent *pEvent )
 #endif
 {
 	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
@@ -392,14 +393,14 @@ extern "C" int vscphlp_receiveEvent( long handle,
 
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_receiveEventEx( long handle,
-														vscpEventEx *pEvent )
+                                                        vscpEventEx *pEvent )
 #else
 extern "C" int vscphlp_receiveEventEx( long handle,
-											vscpEventEx *pEvent )
+                                        vscpEventEx *pEvent )
 #endif
 {
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -412,14 +413,14 @@ extern "C" int vscphlp_receiveEventEx( long handle,
 //
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_blockingReceiveEvent( long handle,
-														vscpEvent *pEvent )
+                                                            vscpEvent *pEvent )
 #else
 extern "C" int vscphlp_blockingReceiveEvent( long handle,
                                                 vscpEvent *pEvent )
 #endif
 {
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -433,14 +434,14 @@ extern "C" int vscphlp_blockingReceiveEvent( long handle,
 
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_blockingReceiveEventEx( long handle,
-														vscpEventEx *pEvent )
+                                                            vscpEventEx *pEvent )
 #else
 extern "C" int vscphlp_blockingReceiveEventEx( long handle,
-											vscpEventEx *pEvent )
+                                            vscpEventEx *pEvent )
 #endif
 {
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -457,8 +458,8 @@ extern "C" int WINAPI EXPORT vscphlp_isDataAvailable( long handle, unsigned int 
 extern "C" int vscphlp_isDataAvailable( long handle, unsigned int *pCount )
 #endif
 {
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -475,14 +476,14 @@ extern "C" int vscphlp_isDataAvailable( long handle, unsigned int *pCount )
 
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_getStatus( long handle,
-														VSCPStatus *pStatus )
+                                                        VSCPStatus *pStatus )
 #else
 extern "C" int vscphlp_getStatus( long handle,
-										VSCPStatus *pStatus )
+                                        VSCPStatus *pStatus )
 #endif
 {
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -496,14 +497,14 @@ extern "C" int vscphlp_getStatus( long handle,
 //
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_getStatistics( long handle,
-														VSCPStatistics *pStatistics )
+                                                        VSCPStatistics *pStatistics )
 #else
 extern "C" int vscphlp_getStatistics( long handle,
-										canalStatistics *pStatistics )
+                                        canalStatistics *pStatistics )
 #endif
 {
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -517,14 +518,14 @@ extern "C" int vscphlp_getStatistics( long handle,
 //
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_setFilter( long handle,
-														const vscpEventFilter *pFilter )
+                                                    const vscpEventFilter *pFilter )
 #else
 extern "C" int vscphlp_setFilter( long handle,
-									const vscpEventFilter *pFilter )
+                                    const vscpEventFilter *pFilter )
 #endif
 {
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -537,19 +538,19 @@ extern "C" int vscphlp_setFilter( long handle,
 // vscphlp_getVersion
 //
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVersion( long handle, 
+extern "C" int WINAPI EXPORT vscphlp_getVersion( long handle,
                                                     unsigned char *pMajorVer,
                                                     unsigned char *pMinorVer,
                                                     unsigned char *pSubMinorVer )
 #else
-extern "C" int vscphlp_getVersion( long handle, 
+extern "C" int vscphlp_getVersion( long handle,
                                       unsigned char *pMajorVer,
                                       unsigned char *pMinorVer,
                                       unsigned char *pSubMinorVer )
 #endif
 {
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -566,8 +567,8 @@ extern "C" int WINAPI EXPORT vscphlp_getDLLVersion( long handle, unsigned long *
 extern "C" int vscphlp_getDLLVersion( long handle, unsigned long *pVersion )
 #endif
 {
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -588,15 +589,15 @@ extern "C"  int vscphlp_getVendorString( long handle, char *pVendorStr, int size
 {
     if ( NULL == pVendorStr ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString str =  wxString::FromAscii( pvscpif->doCmdVendorString() );
     strncpy( pVendorStr, str.mbc_str(), size );
-    
+
     return VSCP_ERROR_SUCCESS;
 }
 
@@ -611,15 +612,15 @@ extern "C" int vscphlp_getDriverInfo( long handle, char *pInfoStr, int size )
 {
     if ( NULL == pInfoStr ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString str =  wxString::FromAscii( pvscpif->doCmdGetDriverInfo() );
     strncpy( pInfoStr, str.mbc_str(), size );
-    
+
     return VSCP_ERROR_SUCCESS;
 }
 
@@ -633,8 +634,8 @@ extern "C" int WINAPI EXPORT vscphlp_shutDownServer( long handle )
 extern "C" int vscphlp_shutDownServer( long handle )
 #endif
 {
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -644,11 +645,11 @@ extern "C" int vscphlp_shutDownServer( long handle )
 
 
 /*!
-    This command sets an open interface in the receive loop (RCVLOOP). 
-    It does nothing other then putting the interface in the loop mode and 
+    This command sets an open interface in the receive loop (RCVLOOP).
+    It does nothing other then putting the interface in the loop mode and
     checking that it went there.
 
-    Note! The only way to terminate this receive loop is to close the session with 
+    Note! The only way to terminate this receive loop is to close the session with
     'CLOSE' or sending 'QUITLOOP' .
     \param handle to server object
     \return CANAL_ERROR_SUCCESS if success CANAL_ERROR_GENERIC if not.
@@ -692,7 +693,7 @@ extern "C" int vscphlp_quitReceiveLoop(const long handle)
 
 
 //-------------------------------------------------------------------------
-//                                Variables 
+//                                Variables
 //-------------------------------------------------------------------------
 
 
@@ -711,12 +712,12 @@ extern "C" int vscphlp_deleteVariable( long handle, const char *pName )
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
-    
+
     wxString name = wxString::FromAscii( pName );
     return pvscpif->deleteVariable( name );
 }
@@ -733,13 +734,13 @@ extern "C" int vscphlp_deleteVariable( long handle, const char *pName )
     \return true if the variable is of type string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_createVariable( long handle, 
+extern "C" int WINAPI EXPORT vscphlp_createVariable( long handle,
                                                         const char *pName,
                                                         const char* pType,
                                                         const char* pValue,
                                                         int bPersistent )
 #else
-extern "C" int vscphlp_createVariable( long handle, 
+extern "C" int vscphlp_createVariable( long handle,
                                               const char *pName,
                                               const char* pType,
                                               const char* pValue,
@@ -750,12 +751,12 @@ extern "C" int vscphlp_createVariable( long handle,
     if ( NULL == pType ) return VSCP_ERROR_PARAMETER;
     if ( NULL == pValue ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
-    
+
     wxString name = wxString::FromAscii( pName );
     wxString type = wxString::FromAscii( pType );
     wxString value = wxString::FromAscii( pValue );
@@ -774,19 +775,19 @@ extern "C" int WINAPI EXPORT vscphlp_saveVariablesToDisk( long handle )
 extern "C" int vscphlp_saveVariablesToDisk( long handle )
 #endif
 {
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
-    
+
     return pvscpif->saveVariablesToDisk();
 }
 
 
 
 /*!
-    \fn bool vscphlp_getVariableString( const char *pName, char *pValue ) 
+    \fn bool vscphlp_getVariableString( const char *pName, char *pValue )
     \brief Get variable value from string variable
     \param name of variable
     \param pointer to string that get the value of the string variable.
@@ -794,18 +795,18 @@ extern "C" int vscphlp_saveVariablesToDisk( long handle )
     \return true if the variable is of type string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVariableString( long handle, const char *pName, char *pValue, int size ) 
+extern "C" int WINAPI EXPORT vscphlp_getVariableString( long handle, const char *pName, char *pValue, int size )
 #else
-extern "C" int vscphlp_getVariableString( long handle, const char *pName, char *pValue, int size ) 
+extern "C" int vscphlp_getVariableString( long handle, const char *pName, char *pValue, int size )
 #endif
-{ 
+{
     int rv;
 
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
     if ( NULL == pValue ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -820,23 +821,23 @@ extern "C" int vscphlp_getVariableString( long handle, const char *pName, char *
 }
 
 /*!
-    \fn bool vscphlp_setVariableString( const char *pName, char *pValue ) 
+    \fn bool vscphlp_setVariableString( const char *pName, char *pValue )
     \brief set string variable from a pointer to a string
     \param name of variable
     \param pointer to string that contains the string.
     \return true if the variable is of type string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setVariableString( long handle, const char *pName, char *pValue ) 
+extern "C" int WINAPI EXPORT vscphlp_setVariableString( long handle, const char *pName, char *pValue )
 #else
-extern "C" int vscphlp_setVariableString( long handle, const char *pName, char *pValue ) 
+extern "C" int vscphlp_setVariableString( long handle, const char *pName, char *pValue )
 #endif
-{ 
+{
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
     if ( NULL == pValue ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -867,22 +868,22 @@ extern "C" int vscphlp_getVariableBool( long handle, const char *pName, int *bVa
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
     if ( NULL == bValue ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-	bool bBoolValue;
-    int rv =  pvscpif->getVariableBool( name, &bBoolValue ); 
-	if ( bBoolValue ) {
-		*bValue = 1;
-	}
-	else {
-		*bValue = 0;
-	}
-	return rv;
+    bool bBoolValue;
+    int rv =  pvscpif->getVariableBool( name, &bBoolValue );
+    if ( bBoolValue ) {
+        *bValue = 1;
+    }
+    else {
+        *bValue = 0;
+    }
+    return rv;
 };
 
 
@@ -901,14 +902,14 @@ extern "C" int vscphlp_setVariableBool( long handle, const char *pName, int bVal
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableBool( name, ( bValue ? true : false ) ); 
+    return pvscpif->setVariableBool( name, ( bValue ? true : false ) );
 };
 
 
@@ -928,14 +929,14 @@ extern "C" int vscphlp_getVariableInt( long handle, const char *pName, int *valu
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
     if ( NULL == value ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableInt( name, value ); 
+    return pvscpif->getVariableInt( name, value );
 };
 
 
@@ -954,14 +955,14 @@ extern "C" int vscphlp_setVariableInt( long handle, const char *pName, int value
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableInt( name, value ); 
+    return pvscpif->setVariableInt( name, value );
 };
 
 /*!
@@ -980,8 +981,8 @@ extern "C" int vscphlp_getVariableLong( long handle, const char *pName, long *va
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
     if ( NULL == value ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -1005,8 +1006,8 @@ extern "C" int vscphlp_setVariableLong( long handle, const char *pName, long val
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -1031,8 +1032,8 @@ extern "C" int vscphlp_getVariableDouble( long handle, const char *pName, double
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
     if ( NULL == value ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -1056,8 +1057,8 @@ extern "C" int vscphlp_setVariableDouble( long handle, const char *pName, double
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -1070,7 +1071,7 @@ extern "C" int vscphlp_setVariableDouble( long handle, const char *pName, double
     \fn bool vscphlp_getVariableMeasurement( const char *pName, char *pValue )
     \brief Get variable value from measurement variable
     \param name of variable
-    \param String that get that get the 
+    \param String that get that get the
         value of the measurement.
     \return true if the variable is of type string.
 */
@@ -1079,14 +1080,14 @@ extern "C" int WINAPI EXPORT vscphlp_getVariableMeasurement( long handle, const 
 #else
 extern "C" int vscphlp_getVariableMeasurement( long handle, const char *pName, char *pValue, int size )
 #endif
-{ 
+{
     int rv;
 
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
     if ( NULL == pValue ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -1104,7 +1105,7 @@ extern "C" int vscphlp_getVariableMeasurement( long handle, const char *pName, c
     \fn bool vscphlp_setVariableMeasurement( const char *pName, char *pValue )
     \brief Get variable value from measurement variable
     \param name of variable
-    \param String that get that get the 
+    \param String that get that get the
     value of the measurement.
     \return true if the variable is of type string.
 */
@@ -1113,12 +1114,12 @@ extern "C" int WINAPI EXPORT vscphlp_setVariableMeasurement( long handle, const 
 #else
 extern "C" int vscphlp_setVariableMeasurement( long handle, const char *pName, char *pValue )
 #endif
-{ 
+{
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
     if ( NULL == pValue ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -1144,8 +1145,8 @@ extern "C" int vscphlp_getVariableEvent( long handle, const char *pName, vscpEve
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
     if ( NULL == pEvent ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -1170,8 +1171,8 @@ extern "C" int vscphlp_setVariableEvent( long handle, const char *pName, vscpEve
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
     if ( NULL == pEvent ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -1196,14 +1197,14 @@ extern "C" int vscphlp_getVariableEventEx( long handle, const char *pName, vscpE
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
     if ( NULL == pEvent ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableEventEx( name, pEvent ); 
+    return pvscpif->getVariableEventEx( name, pEvent );
 }
 
 /*!
@@ -1222,8 +1223,8 @@ extern "C" int vscphlp_setVariableEventEx( long handle, const char *pName, vscpE
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
     if ( NULL == pEvent ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -1248,8 +1249,8 @@ extern "C" int vscphlp_getVariableGUIDString( long handle, const char *pName, ch
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
     if ( NULL == pGUID ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -1257,7 +1258,7 @@ extern "C" int vscphlp_getVariableGUIDString( long handle, const char *pName, ch
     cguid GUID;
     wxString strGuid;
     wxString name = wxString::FromAscii( pName );
-    int rv =  pvscpif->getVariableGUID( name, GUID ); 
+    int rv =  pvscpif->getVariableGUID( name, GUID );
     GUID.toString( strGuid );
     strncpy( pGUID, strGuid.mbc_str(), size );
     return rv;
@@ -1279,12 +1280,12 @@ extern "C" int vscphlp_setVariableGUIDString( long handle, const char *pName, co
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
     if ( NULL == pGUID ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
-    
+
     cguid guid;
     guid.getFromString( pGUID );
     wxString name = wxString::FromAscii( pName );
@@ -1307,16 +1308,16 @@ extern "C" int vscphlp_getVariableGUIDArray( long handle, const char *pName, uns
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
     if ( NULL == pGUID ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     cguid GUID;
     wxString name = wxString::FromAscii( pName );
-    int rv =  pvscpif->getVariableGUID( name, GUID ); 
-    memcpy( pGUID, GUID.getGUID(), 16 );  
+    int rv =  pvscpif->getVariableGUID( name, GUID );
+    memcpy( pGUID, GUID.getGUID(), 16 );
     return rv;
 }
 
@@ -1336,12 +1337,12 @@ extern "C" int vscphlp_setVariableGUIDArray( long handle, const char *pName, con
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
     if ( NULL == pGUID ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
-    
+
     cguid guid;
     guid.getFromArray( pGUID );
     wxString name = wxString::FromAscii( pName );
@@ -1353,7 +1354,7 @@ extern "C" int vscphlp_setVariableGUIDArray( long handle, const char *pName, con
     \brief Get variable value from VSCP data variable
     \param name of variable
     \param Pointer to variable that will hold the size of the data array
-    \param pointer to VSCP data array variable (unsigned char [8] ) that get the 
+    \param pointer to VSCP data array variable (unsigned char [8] ) that get the
     value of the string variable.
     \return true if the variable is of type string.
 */
@@ -1362,19 +1363,19 @@ extern "C" int WINAPI EXPORT vscphlp_getVariableVSCPData( long handle, const cha
 #else
 extern "C" int vscphlp_getVariableVSCPData( long handle, const char *pName, unsigned char *pData, unsigned short *psize )
 #endif
-{ 
+{
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
     if ( NULL == pData ) return VSCP_ERROR_PARAMETER;
     if ( NULL == psize ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableVSCPdata( name, pData, psize ); 
+    return pvscpif->getVariableVSCPdata( name, pData, psize );
 }
 
 /*!
@@ -1382,7 +1383,7 @@ extern "C" int vscphlp_getVariableVSCPData( long handle, const char *pName, unsi
     \brief Get variable value from VSCP data variable
     \param name of variable
     \param Pointer to variable that will hold the size of the data array
-    \param pointer to VSCP data array variable (unsigned char [8] ) that get the 
+    \param pointer to VSCP data array variable (unsigned char [8] ) that get the
     value of the string variable.
     \return true if the variable is of type string.
 */
@@ -1391,18 +1392,18 @@ extern "C" int WINAPI EXPORT vscphlp_setVariableVSCPData( long handle, const cha
 #else
 extern "C" int vscphlp_setVariableVSCPData( long handle, const char *pName, uint8_t *pData, unsigned short size )
 #endif
-{ 
+{
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
     if ( NULL == pData ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableVSCPdata( name, pData, size ); 
+    return pvscpif->setVariableVSCPdata( name, pData, size );
 }
 
 /*!
@@ -1421,14 +1422,14 @@ extern "C" int vscphlp_getVariableVSCPClass( long handle, const char *pName, uns
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
     if ( NULL == vscp_class ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableVSCPclass( name, vscp_class ); 
+    return pvscpif->getVariableVSCPclass( name, vscp_class );
 }
 
 /*!
@@ -1446,8 +1447,8 @@ extern "C" int vscphlp_setVariableVSCPClass( long handle, const char *pName, uns
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -1472,8 +1473,8 @@ extern "C" int vscphlp_getVariableVSCPType( long handle, const char *pName, unsi
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
     if ( NULL == vscp_type ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -1497,8 +1498,8 @@ extern "C" int vscphlp_setVariableVSCPType( long handle, const char *pName, unsi
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
 
-	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -1557,15 +1558,15 @@ extern "C" int vscphlp_replaceBackslash( char *pStr )
 
 
 /*!
-    \fn bool vscphlp_convertVSCPtoEx( vscpEventEx *pEventEx, 
+    \fn bool vscphlp_convertVSCPtoEx( vscpEventEx *pEventEx,
                                     const vscpEvent *pEvent )
     \brief Convert VSCP standard event form to ex. form.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_convertVSCPtoEx( vscpEventEx *pEventEx, 
+extern "C" int WINAPI EXPORT vscphlp_convertVSCPtoEx( vscpEventEx *pEventEx,
                                                         const vscpEvent *pEvent )
 #else
-extern "C" int vscphlp_convertVSCPtoEx( vscpEventEx *pEventEx, 
+extern "C" int vscphlp_convertVSCPtoEx( vscpEventEx *pEventEx,
                                                         const vscpEvent *pEvent )
 #endif
 {
@@ -1573,15 +1574,15 @@ extern "C" int vscphlp_convertVSCPtoEx( vscpEventEx *pEventEx,
 }
 
 /*!
-    \fn bool vscphlp_convertVSCPfromEx( vscpEvent *pEvent, 
+    \fn bool vscphlp_convertVSCPfromEx( vscpEvent *pEvent,
                                         const vscpEventEx *pEventEx )
     \brief Convert VSCP ex. event form to standard form.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_convertVSCPfromEx( vscpEvent *pEvent, 
+extern "C" int WINAPI EXPORT vscphlp_convertVSCPfromEx( vscpEvent *pEvent,
                                                         const vscpEventEx *pEventEx )
 #else
-extern "C" int vscphlp_convertVSCPfromEx( vscpEvent *pEvent, 
+extern "C" int vscphlp_convertVSCPfromEx( vscpEvent *pEvent,
                                                         const vscpEventEx *pEventEx )
 #endif
 {
@@ -1718,18 +1719,18 @@ extern "C" unsigned char vscphlp_getVSCPnicknameFromCANALid( const unsigned long
 }
 
 /*!
-    \fn unsigned long vscphlp_getCANALidFromVSCPdata( const unsigned char priority, 
-                                                    const unsigned short vscp_class, 
+    \fn unsigned long vscphlp_getCANALidFromVSCPdata( const unsigned char priority,
+                                                    const unsigned short vscp_class,
                                                     const unsigned short vscp_type )
     \brief Construct a CANAL id (CANAL id ) from VSCP.
 */
 #ifdef WIN32
-extern "C" unsigned long WINAPI EXPORT vscphlp_getCANALidFromVSCPdata( const unsigned char priority, 
-                                                                        const unsigned short vscp_class, 
+extern "C" unsigned long WINAPI EXPORT vscphlp_getCANALidFromVSCPdata( const unsigned char priority,
+                                                                        const unsigned short vscp_class,
                                                                         const unsigned short vscp_type )
 #else
-extern "C" unsigned long vscphlp_getCANALidFromVSCPdata( const unsigned char priority, 
-                                                                    const unsigned short vscp_class, 
+extern "C" unsigned long vscphlp_getCANALidFromVSCPdata( const unsigned char priority,
+                                                                    const unsigned short vscp_class,
                                                                     const unsigned short vscp_type )
 #endif
 {
@@ -1910,17 +1911,17 @@ extern "C" int vscphlp_writeGuidToStringEx( const vscpEventEx *pEvent, char * pS
 
 
 /*!
-    \fn bool vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent, 
+    \fn bool vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent,
                                             wxString& strGUID )
     \brief Write GUID from VSCP event to string with four bytes on each
-    row seperated by \r\n. 
+    row seperated by \r\n.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent, 
-                                                                char *strGUID, 
+extern "C" int WINAPI EXPORT vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent,
+                                                                char *strGUID,
                                                                 int size )
 #else
-extern "C" int vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent, 
+extern "C" int vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent,
                                                                 char *strGUID,
                                                                 int size )
 #endif
@@ -1931,17 +1932,17 @@ extern "C" int vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent,
 
 
 /*!
-    \fn bool vscphlp_writeGuidToString4RowsEx( const vscpEvent *pEvent, 
+    \fn bool vscphlp_writeGuidToString4RowsEx( const vscpEvent *pEvent,
                                             wxString& strGUID )
     \brief Write GUID from VSCP event to string with four bytes on each
-    row seperated by \r\n. 
+    row seperated by \r\n.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_writeGuidToString4RowsEx( const vscpEventEx *pEvent, 
+extern "C" int WINAPI EXPORT vscphlp_writeGuidToString4RowsEx( const vscpEventEx *pEvent,
                                                                 char *strGUID,
                                                                 int size )
 #else
-extern "C" int vscphlp_writeGuidToString4RowsEx( const vscpEventEx *pEvent, 
+extern "C" int vscphlp_writeGuidToString4RowsEx( const vscpEventEx *pEvent,
                                                                 char *strGUID,
                                                                 int size )
 #endif
@@ -1951,25 +1952,25 @@ extern "C" int vscphlp_writeGuidToString4RowsEx( const vscpEventEx *pEvent,
 }
 
 /*!
-    \fn bool vscphlp_writeGuidArrayToString( const unsigned char * pGUID, 
+    \fn bool vscphlp_writeGuidArrayToString( const unsigned char * pGUID,
                                             wxString& strGUID,
                                             int size )
     \brief Write GUID from byte array to string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_writeGuidArrayToString( const unsigned char *pGUID, 
-                                                                char *strGUID, 
+extern "C" int WINAPI EXPORT vscphlp_writeGuidArrayToString( const unsigned char *pGUID,
+                                                                char *strGUID,
                                                                 int size )
 #else
-extern "C" int vscphlp_writeGuidArrayToString( const unsigned char * pGUID, 
-                                                                char *strGUID, 
+extern "C" int vscphlp_writeGuidArrayToString( const unsigned char * pGUID,
+                                                                char *strGUID,
                                                                 int size )
 #endif
 {
     wxString str;
     bool rv = vscp_writeGuidArrayToString( pGUID, str );
     strncpy( strGUID, str.mbc_str(), size );
-    
+
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
@@ -1989,15 +1990,15 @@ extern "C" int vscphlp_isGUIDEmpty( unsigned char *pGUID )
 }
 
 /*!
-    \fn bool vscphlp_isSameGUID( const unsigned char *pGUID1, 
+    \fn bool vscphlp_isSameGUID( const unsigned char *pGUID1,
                                 const unsigned char *pGUID2 )
     \brief Check if two GUID's is equal to each other.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_isSameGUID( const unsigned char *pGUID1, 
+extern "C" int WINAPI EXPORT vscphlp_isSameGUID( const unsigned char *pGUID1,
                                                 const unsigned char *pGUID2 )
 #else
-extern "C" int vscphlp_isSameGUID( const unsigned char *pGUID1, 
+extern "C" int vscphlp_isSameGUID( const unsigned char *pGUID1,
                                                 const unsigned char *pGUID2 )
 #endif
 {
@@ -2040,10 +2041,10 @@ extern "C" void vscphlp_clearVSCPFilter( vscpEventFilter *pFilter )
 /*!
     \fn bool readFilterFromString( vscpEventFilter *pFilter, wxString& strFilter )
     \brief Read a filter from a string
-	\param pFilter Filter structure to write filter to.
-	\param strFilter Filter in string form 
-				filter-priority, filter-class, filter-type, filter-GUID
-	\return true on success, fals eon failure.
+    \param pFilter Filter structure to write filter to.
+    \param strFilter Filter in string form
+            filter-priority, filter-class, filter-type, filter-GUID
+    \return true on success, fals eon failure.
 */
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_readFilterFromString( vscpEventFilter *pFilter, const char *strFilter )
@@ -2052,16 +2053,16 @@ extern "C" int vscphlp_readFilterFromString( vscpEventFilter *pFilter, const cha
 #endif
 {
     wxString str = wxString::FromAscii( strFilter );
-	return vscp_readFilterFromString( pFilter, str ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+    return vscp_readFilterFromString( pFilter, str ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
 /*!
     \fn bool readMaskFromString( vscpEventFilter *pFilter, wxString& strMask )
     \brief Read a mask from a string
-	\param pFilter Filter structure to write mask to.
-	\param strMask Mask in string form 
-				mask-priority, mask-class, mask-type, mask-GUID
-	\return true on success, fals eon failure.
+    \param pFilter Filter structure to write mask to.
+    \param strMask Mask in string form
+            mask-priority, mask-class, mask-type, mask-GUID
+    \return true on success, fals eon failure.
 */
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_readMaskFromString( vscpEventFilter *pFilter, const char *strMask )
@@ -2070,7 +2071,53 @@ extern "C" int vscphlp_readMaskFromString( vscpEventFilter *pFilter, const char 
 #endif
 {
     wxString str = wxString::FromAscii( strMask );
-	return vscp_readMaskFromString( pFilter, str ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+    return vscp_readMaskFromString( pFilter, str ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
+
+/*!
+    \fn bool writeFilterToString( vscpEventFilter *pFilter, wxString& strFilter )
+    \brief Write a filter to a string
+    \param pFilter Filter structure to write filter to.
+    \param strFilter Will get filter in string form
+            filter-priority, filter-class, filter-type, filter-GUID
+    \return true on success, fals eon failure.
+*/
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_writeFilterToString( vscpEventFilter *pFilter, char *strFilter )
+#else
+extern "C" int vscphlp_writeFilterToString( vscpEventFilter *pFilter, char *strFilter )
+#endif
+{
+    int rv;
+    wxString wxstr;
+
+    rv = vscp_writeFilterToString( pFilter, wxstr ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+    if ( VSCP_ERROR_SUCCESS == rv ) memcpy( strFilter, (const char *)wxstr.mbc_str(), strlen( wxstr.mbc_str() ) );
+
+    return rv;
+}
+
+/*!
+    \fn bool writeMaskToString( vscpEventFilter *pFilter, wxString& strMask )
+    \brief Write a mask to a string
+    \param pFilter Filter structure to write mask to.
+    \param strMask Will get mask in string form
+            mask-priority, mask-class, mask-type, mask-GUID
+    \return true on success, fals eon failure.
+*/
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_writeMaskToString( vscpEventFilter *pFilter, char *strMask )
+#else
+extern "C" int vscphlp_writeMaskToString( vscpEventFilter *pFilter, char *strMask )
+#endif
+{
+    int rv;
+    wxString wxstr;
+
+    rv = vscp_writeMaskToString( pFilter, wxstr ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+    if ( VSCP_ERROR_SUCCESS == rv ) memcpy( strMask, (const char *)wxstr.mbc_str(), strlen( wxstr.mbc_str() ) );
+
+    return rv;
 }
 
 /*!
@@ -2201,15 +2248,15 @@ extern "C" unsigned long vscphlp_makeTimeStamp( void )
 
 
 /*!
-    \fn int vscphlp_copyVSCPEvent( vscpEvent *pEventTo, 
+    \fn int vscphlp_copyVSCPEvent( vscpEvent *pEventTo,
                                     const vscpEvent *pEventFrom )
     \brief Copy VSCP event.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_copyVSCPEvent( vscpEvent *pEventTo, 
+extern "C" int WINAPI EXPORT vscphlp_copyVSCPEvent( vscpEvent *pEventTo,
                                                     const vscpEvent *pEventFrom )
 #else
-extern "C" int vscphlp_copyVSCPEvent( vscpEvent *pEventTo, 
+extern "C" int vscphlp_copyVSCPEvent( vscpEvent *pEventTo,
                                                     const vscpEvent *pEventFrom )
 #endif
 {
@@ -2222,26 +2269,26 @@ extern "C" int vscphlp_copyVSCPEvent( vscpEvent *pEventTo,
 
 
 /*!
-    \fn int vscphlp_writeVscpDataToString( const vscpEvent *pEvent, 
-                                            wxString& str, 
+    \fn int vscphlp_writeVscpDataToString( const vscpEvent *pEvent,
+                                            wxString& str,
                                             bool bUseHtmlBreak )
     \brief Write VSCP data in readable form to a (multiline) string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_writeVscpDataToString( const vscpEvent *pEvent, 
-                                                               char *pstr, 
+extern "C" int WINAPI EXPORT vscphlp_writeVscpDataToString( const vscpEvent *pEvent,
+                                                               char *pstr,
                                                                int size,
                                                                int bUseHtmlBreak )
 #else
-extern "C" int vscphlp_writeVscpDataToString( const vscpEvent *pEvent, 
-                                                                  char *pstr, 
+extern "C" int vscphlp_writeVscpDataToString( const vscpEvent *pEvent,
+                                                                  char *pstr,
                                                                   int size,
                                                                   int bUseHtmlBreak )
 #endif
 {
     wxString wxstr;
-    bool rv = vscp_writeVscpDataToString( pEvent, 
-                                         wxstr, 
+    bool rv = vscp_writeVscpDataToString( pEvent,
+                                         wxstr,
                                          bUseHtmlBreak ? true : false );
     strncpy( pstr, wxstr.mbc_str(), size );
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
@@ -2252,15 +2299,15 @@ extern "C" int vscphlp_writeVscpDataToString( const vscpEvent *pEvent,
 
 
 /*!
-    \fn int vscphlp_getVscpDataFromString( vscpEvent *pEvent, 
+    \fn int vscphlp_getVscpDataFromString( vscpEvent *pEvent,
                                             const wxString& str )
     \brief Set data in VSCP event from a string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setVscpDataFromString( vscpEvent *pEvent, 
+extern "C" int WINAPI EXPORT vscphlp_setVscpDataFromString( vscpEvent *pEvent,
                                                                 const char *pstr )
 #else
-extern "C" int vscphlp_setVscpDataFromString( vscpEvent *pEvent, 
+extern "C" int vscphlp_setVscpDataFromString( vscpEvent *pEvent,
                                                    const char *pstr )
 #endif
 {
@@ -2295,7 +2342,7 @@ extern "C" int vscphlp_setVscpDataArrayFromString( unsigned char *pData,
 
 
 /*!
-    \fn int vscphlp_writeVscpEventToString( vscpEvent *pEvent, 
+    \fn int vscphlp_writeVscpEventToString( vscpEvent *pEvent,
                                             char *p )
     \brief Write VSCP data to a string.
 */
@@ -2316,14 +2363,14 @@ extern "C" int vscphlp_writeVscpEventToString( vscpEvent *pEvent, char *p, int s
 
 
 /*!
-    \fn int vscphlp_writeVscpEventExToString( vscpEventEx *pEvent, 
+    \fn int vscphlp_writeVscpEventExToString( vscpEventEx *pEvent,
                                                 char *p )
     \brief Write VSCP data to a string.
 */
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_writeVscpEventExToString( vscpEventEx *pEvent, char *p, int size )
 #else
-extern "C" int vscphlp_writeVscpEventExToString( vscpEventEx *pEvent, 
+extern "C" int vscphlp_writeVscpEventExToString( vscpEventEx *pEvent,
                                                   char *p, int size )
 #endif
 {
@@ -2338,37 +2385,37 @@ extern "C" int vscphlp_writeVscpEventExToString( vscpEventEx *pEvent,
 
 
 /*!
-    \fn int vscphlp_getVscpEventFromString( vscpEvent *pEvent, 
+    \fn int vscphlp_getVscpEventFromString( vscpEvent *pEvent,
                                             const char *p )
     \brief Get VSCP event from string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setVscpEventFromString( vscpEvent *pEvent, 
+extern "C" int WINAPI EXPORT vscphlp_setVscpEventFromString( vscpEvent *pEvent,
                                                                 const char *p )
 #else
 extern "C" int vscphlp_setVscpEventFromString( vscpEvent *pEvent, const char *p )
 #endif
 {
     wxString str = wxString::FromAscii( p );
-    return vscp_setVscpEventFromString( pEvent, str ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR; 
+    return vscp_setVscpEventFromString( pEvent, str ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
 
 /*!
-    \fn int vscphlp_setVscpEventExFromString( vscpEventEx *pEvent, 
+    \fn int vscphlp_setVscpEventExFromString( vscpEventEx *pEvent,
                                             const char *p )
     \brief Get VSCP event from string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setVscpEventExFromString( vscpEventEx *pEvent, 
+extern "C" int WINAPI EXPORT vscphlp_setVscpEventExFromString( vscpEventEx *pEvent,
                                                                   const char *p )
 #else
-extern "C" int vscphlp_setVscpEventExFromString( vscpEventEx *pEvent, 
+extern "C" int vscphlp_setVscpEventExFromString( vscpEventEx *pEvent,
                                                                 const char *p )
 #endif
 {
     wxString str = wxString::FromAscii( p );
-    return vscp_setVscpEventExFromString( pEvent, str ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR; 
+    return vscp_setVscpEventExFromString( pEvent, str ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
 
@@ -2408,10 +2455,10 @@ extern "C" unsigned long long vscphlp_getDataCodingBitArray(const unsigned char 
 //
 
 #ifdef WIN32
-extern "C" unsigned long long WINAPI EXPORT vscphlp_getDataCodingInteger(const unsigned char *pCode, 
+extern "C" unsigned long long WINAPI EXPORT vscphlp_getDataCodingInteger(const unsigned char *pCode,
                                                                             int size )
 #else
-extern "C" unsigned long long vscphlp_getDataCodingInteger(const unsigned char *pCode, 
+extern "C" unsigned long long vscphlp_getDataCodingInteger(const unsigned char *pCode,
                                                               int size )
 #endif
 {
@@ -2423,10 +2470,10 @@ extern "C" unsigned long long vscphlp_getDataCodingInteger(const unsigned char *
 //
 
 #ifdef WIN32
-extern "C" double WINAPI EXPORT vscphlp_getDataCodingNormalizedInteger(const unsigned char *pCode, 
+extern "C" double WINAPI EXPORT vscphlp_getDataCodingNormalizedInteger(const unsigned char *pCode,
                                                                                      int size )
 #else
-extern "C" double vscphlp_getDataCodingNormalizedInteger(const unsigned char *pCode, 
+extern "C" double vscphlp_getDataCodingNormalizedInteger(const unsigned char *pCode,
                                                                        int size )
 #endif
 {
@@ -2441,12 +2488,12 @@ extern "C" double vscphlp_getDataCodingNormalizedInteger(const unsigned char *pC
 
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_getDataCodingString(const unsigned char *pCode,
-                                                              unsigned char dataLength, 
+                                                              unsigned char dataLength,
                                                               char *strResult,
                                                               int size )
 #else
 extern "C" int vscphlp_getDataCodingString(const unsigned char *pCode,
-                                                              unsigned char dataLength, 
+                                                              unsigned char dataLength,
                                                               char *strResult,
                                                               int size )
 #endif
@@ -2457,7 +2504,7 @@ extern "C" int vscphlp_getDataCodingString(const unsigned char *pCode,
     if ( NULL == strResult ) return VSCP_ERROR_ERROR;
 
     bool rv =  vscp_getDataCodingString( pCode,
-                                           dataLength, 
+                                           dataLength,
                                            wxstr );
     strncpy( strResult, wxstr.mbc_str(), size );
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
@@ -2468,12 +2515,12 @@ extern "C" int vscphlp_getDataCodingString(const unsigned char *pCode,
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVSCPMeasurementAsString( const vscpEvent *pEvent, 
-                                                                    char *pResult, 
+extern "C" int WINAPI EXPORT vscphlp_getVSCPMeasurementAsString( const vscpEvent *pEvent,
+                                                                    char *pResult,
                                                                     int size )
 #else
-extern "C" int vscphlp_getVSCPMeasurementAsString(const vscpEvent *pEvent, 
-                                                                    char *pResult, 
+extern "C" int vscphlp_getVSCPMeasurementAsString(const vscpEvent *pEvent,
+                                                                    char *pResult,
                                                                     int size)
 #endif
 {
@@ -2511,12 +2558,12 @@ extern "C" int vscphlp_getVSCPMeasurementAsDouble(const vscpEvent *pEvent, doubl
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, 
-                                                                            char *pStrResult, 
+extern "C" int WINAPI EXPORT vscphlp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent,
+                                                                            char *pStrResult,
                                                                             int size )
 #else
-extern "C" int vscphlp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, 
-                                                                            char *pStrResult, 
+extern "C" int vscphlp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent,
+                                                                            char *pStrResult,
                                                                             int size )
 #endif
 {
@@ -2537,13 +2584,13 @@ extern "C" int vscphlp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_convertFloatToNormalizedEventData( unsigned char *pdata,
                                                                             unsigned short *psize,
-                                                                            double value,                                                
+                                                                            double value,
                                                                             unsigned char unit,
                                                                             unsigned char sensoridx )
 #else
 extern "C" int vscphlp_convertFloatToNormalizedEventData( unsigned char *pdata,
                                                               unsigned short *psize,
-                                                              double value,                                                
+                                                              double value,
                                                               unsigned char unit,
                                                               unsigned char sensoridx )
 #endif
@@ -2554,7 +2601,7 @@ extern "C" int vscphlp_convertFloatToNormalizedEventData( unsigned char *pdata,
 
     bool rv = vscp_convertFloatToNormalizedEventData( pdata,
                                                         psize,
-                                                        value,                                                
+                                                        value,
                                                         unit,
                                                         sensoridx );
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
@@ -2567,13 +2614,13 @@ extern "C" int vscphlp_convertFloatToNormalizedEventData( unsigned char *pdata,
 
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_convertFloatToFloatEventData( unsigned char *pdata,
-                                                                        unsigned short *psize, 
+                                                                        unsigned short *psize,
                                                                         float value,
                                                                         unsigned char unit,
                                                                         unsigned char sensoridx )
 #else
 extern "C" int vscphlp_convertFloatToFloatEventData( unsigned char *pdata,
-                                                                        unsigned short *psize, 
+                                                                        unsigned short *psize,
                                                                         float value,
                                                                         unsigned char unit,
                                                                         unsigned char sensoridx )
@@ -2584,7 +2631,7 @@ extern "C" int vscphlp_convertFloatToFloatEventData( unsigned char *pdata,
     if ( NULL == pdata ) return VSCP_ERROR_ERROR;
 
     bool rv = vscp_convertFloatToFloatEventData( pdata,
-                                                    psize, 
+                                                    psize,
                                                     value,
                                                     unit,
                                                     sensoridx );
@@ -2594,7 +2641,7 @@ extern "C" int vscphlp_convertFloatToFloatEventData( unsigned char *pdata,
 
 ///////////////////////////////////////////////////////////////////////////////
 // vscphlp_convertIntegerToNormalizedEventData
-// 
+//
 
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_convertIntegerToNormalizedEventData( unsigned char *pdata,
@@ -2630,12 +2677,12 @@ extern "C" int vscphlp_convertIntegerToNormalizedEventData( unsigned char *pdata
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_makeFloatMeasurementEvent( vscpEvent *pEvent, 
+extern "C" int WINAPI EXPORT vscphlp_makeFloatMeasurementEvent( vscpEvent *pEvent,
                                                                     float value,
                                                                     unsigned char unit,
                                                                     unsigned char sensoridx )
 #else
-extern "C" int vscphlp_makeFloatMeasurementEvent( vscpEvent *pEvent, 
+extern "C" int vscphlp_makeFloatMeasurementEvent( vscpEvent *pEvent,
                                                       float value,
                                                       unsigned char unit,
                                                       unsigned char sensoridx )
@@ -2645,7 +2692,7 @@ extern "C" int vscphlp_makeFloatMeasurementEvent( vscpEvent *pEvent,
 
     if ( NULL == pEvent ) return VSCP_ERROR_ERROR;
 
-    bool rv = vscp_makeFloatMeasurementEvent( pEvent, 
+    bool rv = vscp_makeFloatMeasurementEvent( pEvent,
                                                  value,
                                                  unit,
                                                  sensoridx );
@@ -2678,11 +2725,11 @@ extern "C" int vscphlp_getVSCPMeasurementZoneAsString(const vscpEvent *pEvent, c
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getMeasurementAsFloat(const unsigned char *pNorm, 
+extern "C" int WINAPI EXPORT vscphlp_getMeasurementAsFloat(const unsigned char *pNorm,
                                                                 unsigned char length,
                                                                 float *pResult )
 #else
-extern "C" int vscphlp_getMeasurementAsFloat(const unsigned char *pNorm, 
+extern "C" int vscphlp_getMeasurementAsFloat(const unsigned char *pNorm,
                                                                 unsigned char length,
                                                                 float *pResult )
 #endif

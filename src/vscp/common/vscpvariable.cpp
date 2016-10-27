@@ -1719,7 +1719,8 @@ bool CVariableStorage::init( void )
             wxstr.Printf( _("Path=%s\n"), (const char *)m_dbFilename.GetFullPath().mbc_str() );
             fprintf( stderr, wxstr.mbc_str() );
             
-            gpctrlObj->logMsg( wxString::Format( _("VSCP Daemon external variable database open  Err=%s\n"), sqlite3_errmsg( m_db_vscp_external_variable ) ) );
+            gpctrlObj->logMsg( wxString::Format( _("VSCP Daemon external variable database open  Err=%s\n"), 
+                                                    sqlite3_errmsg( m_db_vscp_external_variable ) ) );
             
             if ( SQLITE_OK == sqlite3_open( (const char *)m_dbFilename.GetFullPath().mbc_str(),
                                             &m_db_vscp_external_variable ) ) {            
@@ -2262,8 +2263,7 @@ bool CVariableStorage::init( void )
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_DATETIME );
     variable.setNote( _("Date and time for last sent VSCP daemon automation sunset event."), false );
     addStockVariable( variable  );
-    
-       
+           
     
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.automation.twilightsunsetevent.enable") );
@@ -2291,9 +2291,6 @@ bool CVariableStorage::init( void )
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_DATETIME );
     variable.setNote( _("Date and time for last sent VSCP daemon automation calculated noon event."), false );
     addStockVariable( variable  );
-    
-    
-    
     
     
     // *************************************************************************
@@ -2453,6 +2450,7 @@ bool CVariableStorage::init( void )
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Full decision matrix (all rows)."), false );
     addStockVariable( variable  );
+    
     
     // *************************************************************************
     //                             Variables
@@ -3528,7 +3526,13 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     // *************************************************************************
     //                                Users
     // *************************************************************************
-    // TODO 
+    else if ( name.Lower() == _("vscp.user.count") ) {
+        var.setValue( (long)gpctrlObj->m_userList.getUserCount() );
+    }
+    else if ( name.Lower() == _("vscp.user") ) {
+        gpctrlObj->m_userList.getAllUsers( wxstr );
+        var.setValue( wxstr );      
+    }
     
     // *************************************************************************
     //                                Tables

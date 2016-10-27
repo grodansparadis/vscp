@@ -24,9 +24,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// HISTORY:
-//    021107 - AKHE Started this file
-//
 
 /*!
     \file vscphelper.h

@@ -826,5 +826,22 @@ CUserItem * CUserList::validateUserDomain( const wxString& user,
     return pUserItem;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// getAllUsers
+//
 
-
+bool CUserList::getAllUsers( wxString& strAllusers )
+{
+    strAllusers.Empty();
+    
+    VSCPUSERHASH::iterator it;
+    for( it = m_userhashmap.begin(); it != m_userhashmap.end(); ++it ) {
+        wxString key = it->first;
+        CUserItem *pUserItem = it->second;
+        strAllusers += wxString::Format( _("%ld;"), pUserItem->getUserID() );
+        strAllusers += pUserItem->getUser();
+        strAllusers += _(";");
+    }
+    
+    return true;
+}
