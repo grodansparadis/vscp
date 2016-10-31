@@ -379,6 +379,14 @@ public:
     bool getUserAsString( CUserItem *pUserItem, wxString& strUser );
     
     /*!
+     * Get user information on string form from user index
+     * @param idx Index to user in storage array.
+     * @param strUser String that will receive information
+     * @return true on success.
+     */
+    bool getUserAsString( uint32_t idx, wxString& strUser );
+    
+    /*!
      * Fetch all users in semicolon separated string form ready for transfer.
      * 
      * Format is:
@@ -388,6 +396,21 @@ public:
      * @param  strAllUser String containing user records in string form.
      */
     bool getAllUsers( wxString& strAllusers ); 
+    
+    /*!
+     * Fetch all users into a string array
+     * @param arrayUsers Am array with all usernames
+     * @return true on success.
+     */
+    bool getAllUsers( wxArrayString& arrayUsers );
+    
+    /*!
+     * Get user item from ordinal in user array
+     * @param idx Index into user array.
+     * @return A pointer to the useritem at that position or NULL if no item is
+     *          at that position.
+     */
+    CUserItem *getUserItemFromOrdinal( uint32_t idx );
 
 protected:
 

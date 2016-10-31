@@ -653,8 +653,6 @@ bool CUserList::addUser( const wxString& user,
         gpctrlObj->logMsg( _("Failed to read VSCP settings database - not open.") );
         return false;
     }
-    
-    
 
     // New user item
     CUserItem *pItem = new CUserItem; 
@@ -838,6 +836,9 @@ bool CUserList::getUserAsString( CUserItem *pUserItem, wxString& strUser )
     wxString wxstr;
     strUser.Empty();
     
+    // Check pointer
+    if ( NULL == pUserItem ) return false;
+    
     strUser += wxString::Format( _("%ld;"), pUserItem->getUserID() );
     strUser += pUserItem->getUser();
     strUser += _(";");
@@ -863,6 +864,38 @@ bool CUserList::getUserAsString( CUserItem *pUserItem, wxString& strUser )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// getUserAsString
+//
+// userid;name;password;fullname;filter;mask;rights;remotes;events;note
+//
+
+bool CUserList::getUserAsString( uint32_t idx, wxString& strUser )
+{
+    wxString wxstr;
+    uint32_t i = 0;
+    
+    VSCPUSERHASH::iterator it;
+    for( it = m_userhashmap.begin(); it != m_userhashmap.end(); ++it ) {
+        
+        if ( i == idx ) {
+            wxString key = it->first;
+            CUserItem *pUserItem = it->second;
+            if ( getUserAsString( pUserItem, strUser ) ) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        
+        i++;
+        
+    }
+    
+    return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // getAllUsers
 //
 // userid;name;password;fullname;filter;mask;rights;remotes;events;note
@@ -884,4 +917,50 @@ bool CUserList::getAllUsers( wxString& strAllusers )
     }
     
     return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getAllUsers
+//
+//
+
+bool CUserList::getAllUsers( wxArrayString& arrayUsers )
+{
+    wxString wxstr;
+    
+    VSCPUSERHASH::iterator it;
+    for( it = m_userhashmap.begin(); it != m_userhashmap.end(); ++it ) {
+        wxString key = it->first;
+        CUserItem *pUserItem = it->second;
+        arrayUsers.Add( key );
+    }
+    
+    return true;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// getUserItemFromOrdinal
+//
+//
+
+CUserItem *CUserList::getUserItemFromOrdinal( uint32_t idx )
+{
+    wxString wxstr;
+    uint32_t i = 0;
+    
+    VSCPUSERHASH::iterator it;
+    for( it = m_userhashmap.begin(); it != m_userhashmap.end(); ++it ) {
+        
+        if ( i == idx ) {
+            wxString key = it->first;
+            CUserItem *pUserItem = it->second;
+            return pUserItem;
+        }
+        
+        i++;
+        
+    }
+    
+    return NULL;
 }

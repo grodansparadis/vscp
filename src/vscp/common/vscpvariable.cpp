@@ -2615,16 +2615,22 @@ bool CVariableStorage::init( void )
     //                                Users
     // *************************************************************************
     
-    variable.setAccessRights( PERMISSON_ALL_READ );    
+    variable.setAccessRights( PERMISSON_ALL_READ );
     variable.setName( _("vscp.user.count") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("Number of defined users."), false );
     addStockVariable( variable  );
     
-    variable.setAccessRights( PERMISSON_ALL_READ );    
+    variable.setAccessRights( PERMISSON_OWNER_ALL );
     variable.setName( _("vscp.user") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("All defined users."), false );
+    addStockVariable( variable  );
+    
+    variable.setAccessRights( PERMISSON_ALL_READ );
+    variable.setName( _("vscp.user.name") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("All defined users names."), false );
     addStockVariable( variable  );
     
     // *************************************************************************
@@ -2692,45 +2698,54 @@ uint32_t CVariableStorage::find(const wxString& name, CVSCPVariable& variable )
 bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var )
 {
     wxString wxstr;
+    wxString strToken;
+    wxString strrest;
     uint32_t id;
     
     var.init();
     
+    wxString lcname= name.Lower();
+    
+    wxStringTokenizer tkz(lcname, ".");
+    
+    if ( !tkz.HasMoreTokens() ) return false;
+    strToken = tkz.GetNextToken();
+    
     // Make sure it starts with ".vscp"
-    if ( !name.Lower().StartsWith("vscp.") ) return false;  
+    if ( "vscp" != strToken ) return false;  
     
     // Get the stock variable - NOTE!!! all will not be found here so all
     // variables will be let true . But variable with id=0 are uninitialised.
     id = findNonPersistentVariable( name, var ); 
     
-    if ( name.Lower() == _("vscp.version.major") ) {
+    if ( lcname == _("vscp.version.major") ) {
         var.setValue( wxString::Format( _("%d"), VSCPD_MAJOR_VERSION ) );
     }
-    else if ( name.Lower() == _("vscp.version.minor") ) {
+    else if ( lcname == _("vscp.version.minor") ) {
         var.setValue( wxString::Format( _("%d"), VSCPD_MINOR_VERSION ) );
     }
-    else if ( name.Lower() == _("vscp.version.build") ) {
+    else if ( lcname == _("vscp.version.build") ) {
         var.setValue( wxString::Format( _("%d"), VSCPD_BUILD_VERSION ) );
     }
-    else if ( name.Lower() == _("vscp.version.str") ) {
+    else if ( lcname == _("vscp.version.str") ) {
         var.setValue( wxString::Format( _("%s"), VSCPD_DISPLAY_VERSION ) );
     }
-    else if ( name.Lower() == _("vscp.version.wxwidgets.str") ) {
+    else if ( lcname == _("vscp.version.wxwidgets.str") ) {
         var.setValue( wxString::Format( _("%s"), wxVERSION_STRING ) );
     }
-    else if ( name.Lower() == _("vscp.version.wxwidgets.major") ) {
+    else if ( lcname == _("vscp.version.wxwidgets.major") ) {
         var.setValue( wxString::Format( _("%d"), wxMAJOR_VERSION ) );
     }
-    else if ( name.Lower() == _("vscp.version.wxwidgets.minor") ) {
+    else if ( lcname == _("vscp.version.wxwidgets.minor") ) {
         var.setValue( wxString::Format( _("%d"), wxMINOR_VERSION ) );
     }
-    else if ( name.Lower() == _("vscp.version.wxwidgets.release") ) {
+    else if ( lcname == _("vscp.version.wxwidgets.release") ) {
         var.setValue( wxString::Format( _("%d"), wxRELEASE_NUMBER ) );
     }
-    else if ( name.Lower() == _("vscp.version.wxwidgets.sub") ) {
+    else if ( lcname == _("vscp.version.wxwidgets.sub") ) {
         var.setValue( wxString::Format( _("%d"), wxSUBRELEASE_NUMBER ) );
     }
-    else if ( name.Lower() == _("vscp.copyright.vscp") ) {
+    else if ( lcname == _("vscp.copyright.vscp") ) {
         var.setValue( wxString::Format( _("%s"), VSCPD_COPYRIGHT ) );
     }
 
@@ -2738,7 +2753,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
 //                               wxWidgets
 // *****************************************************************************
 
-    else if ( name.Lower() == _("vscp.copyright.wxwidgets") ) {
+    else if ( lcname == _("vscp.copyright.wxwidgets") ) {
         var.setValue( wxString::Format( _("%s"),
                     "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al" ) );
     }
@@ -2747,7 +2762,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
 //                               Mongoose
 // *****************************************************************************
 
-    else if ( name.Lower() == _("vscp.copyright.mongoose") ) {
+    else if ( lcname == _("vscp.copyright.mongoose") ) {
         var.setValue( wxString::Format( _("%s"),
                     "Copyright (c) 2013-2015 Cesanta Software Limited" ) );
     }
@@ -2758,19 +2773,19 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
 
 #ifndef VSCP_DISABLE_LUA
 
-    else if ( name.Lower() == _("vscp.copyright.lua") ) {
+    else if ( lcname == _("vscp.copyright.lua") ) {
         var.setValue( wxString::Format( _("%s"), LUA_COPYRIGHT ) );
     }
-    else if ( name.Lower() == _("vscp.version.lua.major") ) {
+    else if ( lcname == _("vscp.version.lua.major") ) {
         var.setValue( wxString::Format( _("%s"), LUA_VERSION_MAJOR ) );
     }
-    else if ( name.Lower() == _("vscp.version.lua.minor") ) {
+    else if ( lcname == _("vscp.version.lua.minor") ) {
         var.setValue( wxString::Format( _("%s"), LUA_VERSION_MINOR) );
     }
-    else if ( name.Lower() == _("vscp.version.lua.release") ) {
+    else if ( lcname == _("vscp.version.lua.release") ) {
         var.setValue( wxString::Format( _("%s"), LUA_VERSION_RELEASE ) );
     }
-    else if ( name.Lower() == _("vscp.version.lua.str") ) {
+    else if ( lcname == _("vscp.version.lua.str") ) {
         var.setValue( wxString::Format( _("%s.%s.%s"),
                                     LUA_VERSION_MAJOR,
                                     LUA_VERSION_MINOR,
@@ -2783,35 +2798,35 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     //                                SQLite
     // *************************************************************************
 
-    else if ( name.Lower() == _("vscp.version.sqlite.major") ) {
+    else if ( lcname == _("vscp.version.sqlite.major") ) {
         int major, minor, sub, build;
         sscanf( SQLITE_VERSION,
             "%d.%d.%d.%d",
             &major, &minor, &sub, &build );
         var.setValue( wxString::Format( _("%d"), major ) );
     }
-    else if ( name.Lower() == _("vscp.version.sqlite.minor") ) {
+    else if ( lcname == _("vscp.version.sqlite.minor") ) {
         int major, minor, sub, build;
         sscanf( SQLITE_VERSION,
             "%d.%d.%d.%d",
             &major, &minor, &sub, &build );
         var.setValue( wxString::Format( _("%d"), minor ) );
     }
-    else if ( name.Lower() == _("vscp.version.sqlite.release") ) {
+    else if ( lcname == _("vscp.version.sqlite.release") ) {
         int major, minor, sub, build;
         sscanf( SQLITE_VERSION,
             "%d.%d.%d.%d",
             &major, &minor, &sub, &build );
         var.setValue( wxString::Format( _("%d"), sub ) );
     }
-    else if ( name.Lower() == _("vscp.version.sqlite.build") ) {
+    else if ( lcname == _("vscp.version.sqlite.build") ) {
         int major, minor, sub, build;
         sscanf( SQLITE_VERSION,
             "%d.%d.%d.%d",
             &major, &minor, &sub, &build );
         var.setValue( wxString::Format( _("%d"), build ) );
     }
-    else if ( name.Lower() == _("vscp.version.sqllite.str") ) {
+    else if ( lcname == _("vscp.version.sqllite.str") ) {
         var.setValue( _(SQLITE_VERSION) );
     }
 
@@ -2820,7 +2835,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     // *************************************************************************
     
 
-    else if ( name.Lower() == _("vscp.version.openssl.str") ) {
+    else if ( lcname == _("vscp.version.openssl.str") ) {
 #ifdef WIN32        
         var.setValue( _(OPENSSL_VERSION_TEXT) );
 #else       
@@ -2836,31 +2851,31 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     //                               System
     // *************************************************************************
     
-    else if ( name.Lower() == _("vscp.os.str") ) {
+    else if ( lcname == _("vscp.os.str") ) {
         var.setValue( wxGetOsDescription() );
     }
-    else if ( name.Lower() == _("vscp.os.width") ) {
+    else if ( lcname == _("vscp.os.width") ) {
         var.setValue( wxIsPlatform64Bit() ? 64 : 32 );
     }
-    else if ( name.Lower() == _("vscp.os.width.str") ) {
+    else if ( lcname == _("vscp.os.width.str") ) {
         var.setValue( wxIsPlatform64Bit() ? _("64") : _("32") );
     }
-    else if ( name.Lower() == _("vscp.os.width.is64bit") ) {
+    else if ( lcname == _("vscp.os.width.is64bit") ) {
         var.setValue( wxIsPlatform64Bit() ? true : false );
     }
-    else if ( name.Lower() == _("vscp.os.width.is32bit") ) {
+    else if ( lcname == _("vscp.os.width.is32bit") ) {
         var.setValue( !wxIsPlatform64Bit() ? true : false );
     }
-    else if ( name.Lower() == _("vscp.os.endiness.str") ) {
+    else if ( lcname == _("vscp.os.endiness.str") ) {
         var.setValue( wxIsPlatformLittleEndian() ? _("Little endian") : _("Big endian") );
     }
-    else if ( name.Lower() == _("vscp.os.endiness.islittleendian") ) {
+    else if ( lcname == _("vscp.os.endiness.islittleendian") ) {
         var.setValue( wxIsPlatformLittleEndian() ? true : false );
     }
-   else if ( name.Lower() == _("vscp.host.name") ) {
+   else if ( lcname == _("vscp.host.name") ) {
         var.setValue( wxGetFullHostName() );
     }
-    else if ( name.Lower() == _("vscp.host.ip") ) {
+    else if ( lcname == _("vscp.host.ip") ) {
         cguid guid;
  
         if ( !gpctrlObj->getIPAddress( guid ) ) {
@@ -2873,7 +2888,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
                                                     guid.getAt( 9 ),
                                                     guid.getAt( 8 ) ) );
     }
-    else if ( name.Lower() == _("vscp.host.mac") ) {
+    else if ( lcname == _("vscp.host.mac") ) {
         cguid guid;
         
         if ( !gpctrlObj->getMacAddress( guid ) ) {
@@ -2888,19 +2903,19 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
                             guid.getAt( 9 ),
                             guid.getAt( 8 ) ) );
     }
-    else if ( name.Lower() == _("vscp.host.userid") ) {
+    else if ( lcname == _("vscp.host.userid") ) {
         var.setValue( wxGetUserId() );
     }
-    else if ( name.Lower() ==  _("vscp.host.username") ) {
+    else if ( lcname ==  _("vscp.host.username") ) {
         var.setValue( wxGetUserName() );
     }
-    else if ( name.Lower() == _("vscp.host.guid") ) {
+    else if ( lcname == _("vscp.host.guid") ) {
         var.setValue( wxstr );
     }
-    else if ( name.Lower() == _("vscp.loglevel") ) {
+    else if ( lcname == _("vscp.loglevel") ) {
         var.setValue( wxString::Format( _("%d "), gpctrlObj->m_logLevel ) );
     }
-    else if ( name.Lower() == _("vscp.loglevel.str") ) {
+    else if ( lcname == _("vscp.loglevel.str") ) {
         switch ( gpctrlObj->m_logLevel  ) {
             case DAEMON_LOGMSG_NONE:
                 wxstr = _("None");
@@ -2917,11 +2932,11 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
         }
         var.setValue( wxstr );
     }
-    else if ( name.Lower() == _("vscp.client.receivequeue.max") ) {
+    else if ( lcname == _("vscp.client.receivequeue.max") ) {
         var.setValue( wxString::Format( _("%d"), 
                         gpctrlObj->m_maxItemsInClientReceiveQueue ) );
     }
-    else if ( name.Lower() ==  _("vscp.host.root.path") ) {
+    else if ( lcname ==  _("vscp.host.root.path") ) {
         var.setValue( gpctrlObj->m_rootFolder );
     }
     
@@ -2929,7 +2944,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     //                             TCP/IP
     // *************************************************************************
     
-    else if ( name.Lower() == _("vscp.tcpip.address") ) {
+    else if ( lcname == _("vscp.tcpip.address") ) {
         var.setValue( gpctrlObj->m_strTcpInterfaceAddress );
     }
     
@@ -2937,7 +2952,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     //                              Discovery
     // *************************************************************************
     
-    else if ( name.Lower() == _("vscp.discovery.enable") ) {
+    else if ( lcname == _("vscp.discovery.enable") ) {
         var.setValue( gpctrlObj->m_strTcpInterfaceAddress );
     }
     
@@ -2945,10 +2960,10 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     //                             Multicast
     // *************************************************************************
     
-    else if ( name.Lower() == _("vscp.multicast.address") ) {
+    else if ( lcname == _("vscp.multicast.address") ) {
         var.setValue( gpctrlObj->m_strMulticastAnnounceAddress );
     }
-    else if ( name.Lower() == _("vscp.multicast.ttl") ) {
+    else if ( lcname == _("vscp.multicast.ttl") ) {
         var.setValue( gpctrlObj->m_ttlMultiCastAnnounce );
     }
     
@@ -2956,10 +2971,10 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     //                                UDP
     // *************************************************************************
     
-    else if ( name.Lower() == _("vscp.udp.enable") ) {
+    else if ( lcname == _("vscp.udp.enable") ) {
         var.setValue( gpctrlObj->m_bUDP ? true : false );
     }
-    else if ( name.Lower() == _("vscp.udp.address") ) {
+    else if ( lcname == _("vscp.udp.address") ) {
         var.setValue( gpctrlObj->m_strUDPInterfaceAddress );
     }
     
@@ -2967,10 +2982,10 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     //                                 MQTT
     // *************************************************************************
     
-    else if ( name.Lower() == _("vscp.mqtt.broker.enable") ) {
+    else if ( lcname == _("vscp.mqtt.broker.enable") ) {
         var.setValue( gpctrlObj->m_bMQTTBroker ? _("true") : _("false") );
     }
-    else if ( name.Lower() == _("vscp.mqtt.broker.address") ) {
+    else if ( lcname == _("vscp.mqtt.broker.address") ) {
         var.setValue( gpctrlObj->m_strMQTTBrokerInterfaceAddress );
     }
     
@@ -2980,10 +2995,10 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     // *************************************************************************
     
     
-    else if ( name.Lower() == _("vscp.coap.server.enable") ) {
+    else if ( lcname == _("vscp.coap.server.enable") ) {
         var.setValue( gpctrlObj->m_bCoAPServer ? _("true") : _("false") );
     }
-    else if ( name.Lower() == _("vscp.coap.server.address") ) {
+    else if ( lcname == _("vscp.coap.server.address") ) {
         var.setValue( gpctrlObj->m_strCoAPServerInterfaceAddress );
     }
     
@@ -2991,31 +3006,31 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     //                              AUTOMATION
     // *************************************************************************
     
-    else if ( name.Lower() == _("vscp.automation.calc.last") ) {
+    else if ( lcname == _("vscp.automation.calc.last") ) {
         wxstr = gpctrlObj->m_automation.getLastCalculation().FormatISODate();
         wxstr += _( "T" );
         wxstr += gpctrlObj->m_automation.getLastCalculation().FormatISOTime();
         var.setValue( wxstr );
     }
     
-    else if ( name.Lower() == _("vscp.automation.longitude") ) {
+    else if ( lcname == _("vscp.automation.longitude") ) {
         var.setValue( wxString::Format( _("%f"), 
                         gpctrlObj->m_automation.getLongitude() ) );
     }
-    else if ( name.Lower() == _("vscp.automation.latitude") ) {
+    else if ( lcname == _("vscp.automation.latitude") ) {
         var.setValue( wxString::Format( _("%f"), 
                         gpctrlObj->m_automation.getLatitude() ) );
     }
     
     
-    else if ( name.Lower() == _("vscp.automation.heartbeat.enable") ) {
+    else if ( lcname == _("vscp.automation.heartbeat.enable") ) {
         var.setValue( gpctrlObj->m_automation.isSendHeartbeat() ? true : false );
     }
-    else if ( name.Lower() == _("vscp.automation.heartbeat.period") ) {
+    else if ( lcname == _("vscp.automation.heartbeat.period") ) {
         var.setValue( wxString::Format( _("%ld"), 
                         gpctrlObj->m_automation.getIntervalHeartbeat() ) );
     }
-    else if ( name.Lower() == _("vscp.automation.heartbeat.last") ) {
+    else if ( lcname == _("vscp.automation.heartbeat.last") ) {
         wxstr = gpctrlObj->m_automation.getHeartbeatSent().FormatISODate();
         wxstr += _( "T" );
         wxstr += gpctrlObj->m_automation.getHeartbeatSent().FormatISOTime();
@@ -3023,21 +3038,21 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     }
     
     
-    else if ( name.Lower() ==  _("vscp.automation.segctrl-heartbeat.enable") ) {
+    else if ( lcname ==  _("vscp.automation.segctrl-heartbeat.enable") ) {
         var.setValue(gpctrlObj->m_automation.isSendSegmentControllerHeartbeat() ? true : false );
     }
-    else if ( name.Lower() == _("vscp.automation.segctrl.heartbeat.period") ) {
+    else if ( lcname == _("vscp.automation.segctrl.heartbeat.period") ) {
         var.setValue( wxString::Format( _("%ld"), 
                 gpctrlObj->m_automation.getIntervalSegmentControllerHeartbeat() ) );
     }  
-    else if ( name.Lower() == _("vscp.automation.segctrl.heartbeat.last") ) {
+    else if ( lcname == _("vscp.automation.segctrl.heartbeat.last") ) {
         wxstr = gpctrlObj->m_automation.getSegmentControllerHeartbeatSent().FormatISODate();
         wxstr += _( "T" );
         wxstr += gpctrlObj->m_automation.getSegmentControllerHeartbeatSent().FormatISOTime();
         var.setValue( wxstr );
     }
     
-    else if ( name.Lower() == _("vscp.automation.daylength") ) {
+    else if ( lcname == _("vscp.automation.daylength") ) {
         int hour,minute;
         double daylength = gpctrlObj->m_automation.getDayLength();
         gpctrlObj->m_automation.convert2HourMinute( daylength, &hour, &minute );
@@ -3045,22 +3060,22 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
         var.setValue( wxstr );
     }
     
-    else if ( name.Lower() == _("vscp.automation.declination") ) {
+    else if ( lcname == _("vscp.automation.declination") ) {
         double declination = gpctrlObj->m_automation.getDeclination();
         wxstr.Printf(_("%f"), declination );
         var.setValue( wxstr );
     }
     
-    else if ( name.Lower() == _("vscp.automation.sun.max.altitude") ) {
+    else if ( lcname == _("vscp.automation.sun.max.altitude") ) {
         double maxalt = gpctrlObj->m_automation.getSunMaxAltitude();
         wxstr.Printf(_("%f"), maxalt );
         var.setValue( wxstr );
     }
     
-    else if ( name.Lower() == _("vscp.automation.twilightsunriseevent.enable") ) {
+    else if ( lcname == _("vscp.automation.twilightsunriseevent.enable") ) {
         var.setValue( gpctrlObj->m_automation.isSendSunriseTwilightEvent() ? true : false );
     }
-    else if ( name.Lower() == _("vscp.automation.twilightsunriseevent.last") ) {
+    else if ( lcname == _("vscp.automation.twilightsunriseevent.last") ) {
         wxstr = gpctrlObj->m_automation.getSegmentControllerHeartbeatSent().FormatISODate();
         wxstr += _( "T" );
         wxstr += gpctrlObj->m_automation.getSegmentControllerHeartbeatSent().FormatISOTime();
@@ -3068,10 +3083,10 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     }
     
     
-    else if ( name.Lower() == _("vscp.automation.sunriseevent.enable") ) {
+    else if ( lcname == _("vscp.automation.sunriseevent.enable") ) {
         var.setValue( gpctrlObj->m_automation.isSendSunriseEvent() ? true : false );
     }
-    else if ( name.Lower() == _("vscp.automation.sunriseevent.last") ) {
+    else if ( lcname == _("vscp.automation.sunriseevent.last") ) {
         wxstr = gpctrlObj->m_automation.getSunriseEventSent().FormatISODate();
         wxstr += _( "T" );
         wxstr += gpctrlObj->m_automation.getSunriseEventSent().FormatISOTime();
@@ -3080,10 +3095,10 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     
     
     
-    else if ( name.Lower() == _("vscp.automation.sunsetevent.enable") ) {
+    else if ( lcname == _("vscp.automation.sunsetevent.enable") ) {
         var.setValue( gpctrlObj->m_automation.isSendSunsetEvent() ? true : false );
     }
-    else if ( name.Lower() == _("vscp.automation.sunsetevent.last") ) {
+    else if ( lcname == _("vscp.automation.sunsetevent.last") ) {
         wxstr = gpctrlObj->m_automation.getSunsetEventSent().FormatISODate();
         wxstr += _( "T" );
         wxstr += gpctrlObj->m_automation.getSunsetEventSent().FormatISOTime();
@@ -3092,20 +3107,20 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     
     
     
-    else if ( name.Lower() == _("vscp.automation.twilightsunsetevent.enable") ) {
+    else if ( lcname == _("vscp.automation.twilightsunsetevent.enable") ) {
         var.setValue( gpctrlObj->m_automation.isSendSunsetTwilightEvent() ? true : false );
     }
-    else if ( name.Lower() == _("vscp.automation.twilightsunsetevent.last") ) {
+    else if ( lcname == _("vscp.automation.twilightsunsetevent.last") ) {
         wxstr = gpctrlObj->m_automation.getSunsetTwilightEventSent().FormatISODate();
         wxstr += _( "T" );
         wxstr += gpctrlObj->m_automation.getSunsetTwilightEventSent().FormatISOTime();
         var.setValue( wxstr );
     }
     
-    else if ( name.Lower() == _("vscp.automation.calculatednoonevent.enable") ) {
+    else if ( lcname == _("vscp.automation.calculatednoonevent.enable") ) {
         var.setValue( gpctrlObj->m_automation.isSendCalculatedNoonEvent() ? true : false );
     }
-    else if ( name.Lower() == _("vscp.automation.twilightsunsetevent.last") ) {
+    else if ( lcname == _("vscp.automation.twilightsunsetevent.last") ) {
         wxstr = gpctrlObj->m_automation.getCalculatedNoonEventSent().FormatISODate();
         wxstr += _( "T" );
         wxstr += gpctrlObj->m_automation.getCalculatedNoonEventSent().FormatISOTime();
@@ -3113,7 +3128,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     }
     
  
-    else if ( name.Lower() == _("vscp.host.name") ) {
+    else if ( lcname == _("vscp.host.name") ) {
         var.setValue( gpctrlObj->m_strServerName );
     }
     
@@ -3121,7 +3136,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     //                            Websocket-Server
     // *************************************************************************
 
-    else if ( name.Lower() == _("vscp.websocket.auth.enable") ) {
+    else if ( lcname == _("vscp.websocket.auth.enable") ) {
         var.setValue( gpctrlObj->m_bAuthWebsockets ? true : false );
     }
  
@@ -3130,7 +3145,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     //                            Websocket-Server
     // *************************************************************************
 
-    else if ( name.Lower() == _("vscp.websocket.auth.enable") ) {
+    else if ( lcname == _("vscp.websocket.auth.enable") ) {
         var.setValue( gpctrlObj->m_bAuthWebsockets ? true : false );
     }
     
@@ -3140,55 +3155,55 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     // *************************************************************************
 
 
-    else if ( name.Lower() == _("vscp.websrv.address") ) {
+    else if ( lcname == _("vscp.websrv.address") ) {
         var.setValue( gpctrlObj->m_strWebServerInterfaceAddress );
     }
-    else if ( name.Lower() == _("vscp.websrv.authentication.enable") ) {
+    else if ( lcname == _("vscp.websrv.authentication.enable") ) {
         var.setValue( gpctrlObj->m_bDisableSecurityWebServer ? true : false );
     }
-    else if ( name.Lower() == _("vscp.websrv.root.path") ) {
+    else if ( lcname == _("vscp.websrv.root.path") ) {
         var.setValue( wxString::FromUTF8( gpctrlObj->m_pathWebRoot ) );
     }
-    else if ( name.Lower() == _("vscp.websrv.cert.path") ) {
+    else if ( lcname == _("vscp.websrv.cert.path") ) {
         var.setValue( wxString::FromUTF8( gpctrlObj->m_pathCert ) );
     }
-    else if ( name.Lower() == _("vscp.websrv.extramimetypes") ) {
+    else if ( lcname == _("vscp.websrv.extramimetypes") ) {
         var.setValue( wxString::FromUTF8( gpctrlObj->m_extraMimeTypes ) );
     }
 
 
-    else if ( name.Lower() == _("vscp.websrv.ssipatterns") ) {
+    else if ( lcname == _("vscp.websrv.ssipatterns") ) {
         var.setValue( wxString::FromUTF8( gpctrlObj->m_ssi_pattern ) );
     }
 
-    else if ( name.Lower() == _("vscp.websrv.ipacl") ) {
+    else if ( lcname == _("vscp.websrv.ipacl") ) {
         var.setValue( wxString::FromUTF8( gpctrlObj->m_ip_acl ) );
     }
 
-    else if ( name.Lower() == _("vscp.websrv.cgi.interpreter") ) {
+    else if ( lcname == _("vscp.websrv.cgi.interpreter") ) {
         var.setValue( wxString::FromUTF8( gpctrlObj->m_cgiInterpreter ) );
     }
 
-    else if ( name.Lower() == _("vscp.websrv.cgi.pattern") ) {
+    else if ( lcname == _("vscp.websrv.cgi.pattern") ) {
         var.setValue( wxString::FromUTF8( gpctrlObj->m_cgiPattern ) );
     }
-    else if ( name.Lower() == _("vscp.websrv.directorylistings.enable") ) {
+    else if ( lcname == _("vscp.websrv.directorylistings.enable") ) {
         var.setValue( ( NULL != 
             strstr( gpctrlObj->m_EnableDirectoryListings,"yes" ) ) ? _("true") : _("false") );
     }
-    else if ( name.Lower() == _("vscp.websrv.hidefile.pattern") ) {
+    else if ( lcname == _("vscp.websrv.hidefile.pattern") ) {
         var.setValue( wxString::FromUTF8( gpctrlObj->m_hideFilePatterns ) );
     }
-    else if ( name.Lower() == _("vscp.websrv.indexfiles") ) {
+    else if ( lcname == _("vscp.websrv.indexfiles") ) {
         var.setValue( wxString::FromUTF8( gpctrlObj->m_indexFiles ) );
     }
-    else if ( name.Lower() == _("vscp.websrv.urlrewrites") ) {
+    else if ( lcname == _("vscp.websrv.urlrewrites") ) {
         var.setValue( wxString::FromUTF8( gpctrlObj->m_urlRewrites ) );
     }
-    else if ( name.Lower() == _("vscp.websrv.auth.file.directory") ) {
+    else if ( lcname == _("vscp.websrv.auth.file.directory") ) {
         var.setValue( wxString::FromUTF8( gpctrlObj->m_per_directory_auth_file ) );
     }
-    else if ( name.Lower() == _("vscp.websrv.auth.file.global") ) {
+    else if ( lcname == _("vscp.websrv.auth.file.global") ) {
         var.setValue( wxString::FromUTF8( gpctrlObj->m_global_auth_file ) );
     }
 
@@ -3201,16 +3216,16 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     // *************************************************************************
 
 
-    else if ( name.Lower() == _("vscp.dm.logging.enable") ) {
+    else if ( lcname == _("vscp.dm.logging.enable") ) {
         var.setValue( gpctrlObj->m_dm.m_bLogEnable ? true : false );
     }
-    else if ( name.Lower() == _("vscp.dm.logging.path") ) {
+    else if ( lcname == _("vscp.dm.logging.path") ) {
         var.setValue( gpctrlObj->m_dm.m_logPath.GetFullPath() );
     }
-    else if ( name.Lower() == _("vscp.dm.db.path") ) {
+    else if ( lcname == _("vscp.dm.db.path") ) {
         var.setValue( gpctrlObj->m_dm.m_path_db_vscp_dm.GetFullPath() ); 
     }
-    else if ( name.Lower() == _("vscp.dm.xml.path") ) {
+    else if ( lcname == _("vscp.dm.xml.path") ) {
         var.setValue( gpctrlObj->m_dm.m_staticXMLPath ); 
     }
 
@@ -3220,10 +3235,10 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     // *************************************************************************
 
 
-    else if ( name.Lower() == _("vscp.variable.db.path") ) {
+    else if ( lcname == _("vscp.variable.db.path") ) {
         var.setValue( gpctrlObj->m_VSCP_Variables.m_dbFilename.GetFullPath() );
     }
-    else if ( name.Lower() == _("vscp.variable.xml.path") ) {
+    else if ( lcname == _("vscp.variable.xml.path") ) {
         var.setValue( gpctrlObj->m_VSCP_Variables.m_xmlPath );
     }
 
@@ -3233,40 +3248,40 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     // *************************************************************************
 
     // Enable syslog logging
-    else if ( name.Lower() == _("vscp.log.syslog.enable") ) {
+    else if ( lcname == _("vscp.log.syslog.enable") ) {
         var.setValue( gpctrlObj->m_bLogToSysLog ? true : false );
     }
     
     // Enable database logging
-    else if ( name.Lower() == _("vscp.log.database.enable") ) {
+    else if ( lcname == _("vscp.log.database.enable") ) {
         var.setValue( gpctrlObj->m_bLogToDatabase ? true : false );
     }
     
-    else if ( name.Lower() ==  _("vscp.log.database.path") ) {
+    else if ( lcname ==  _("vscp.log.database.path") ) {
         var.setValue( gpctrlObj->m_path_db_vscp_data.GetFullPath() );
     }
     
     // General
-    else if ( name.Lower() == _("vscp.log.general.enable") ) {
+    else if ( lcname == _("vscp.log.general.enable") ) {
         var.setValue( gpctrlObj->m_bLogGeneralEnable ? true : false );
     }
-    else if ( name.Lower() == _("vscp.log.general.path") ) {
+    else if ( lcname == _("vscp.log.general.path") ) {
         var.setValue( gpctrlObj->m_logGeneralFileName.GetFullPath() );
     }
 
     // Access
-    else if ( name.Lower() == _("vscp.log.access.enable") ) {
+    else if ( lcname == _("vscp.log.access.enable") ) {
         var.setValue( gpctrlObj->m_bLogAccessEnable ? true : false );
     }
-    else if ( name.Lower() == _("vscp.log.access.path") ) {
+    else if ( lcname == _("vscp.log.access.path") ) {
         var.setValue( gpctrlObj->m_logAccessFileName.GetFullPath() );
     }
 
     // Security
-    else if ( name.Lower() == _("vscp.log.security.enable") ) {
+    else if ( lcname == _("vscp.log.security.enable") ) {
         var.setValue( gpctrlObj->m_bLogAccessEnable ? true : false );
     }   
-    else if ( name.Lower() == _("vscp.log.security.path") ) {
+    else if ( lcname == _("vscp.log.security.path") ) {
         var.setValue( gpctrlObj->m_logSecurityFileName.GetFullPath() );
     }
 
@@ -3277,10 +3292,10 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     // *************************************************************************    
     
         
-    else if ( name.Lower() ==  _("vscp.database.vscpdata.path") ) {
+    else if ( lcname ==  _("vscp.database.vscpdata.path") ) {
         var.setValue( gpctrlObj->m_path_db_vscp_data.GetFullPath() );
     } 
-    else if ( name.Lower() ==  _("vscp.database.vscpdconfig.path") ) {
+    else if ( lcname ==  _("vscp.database.vscpdconfig.path") ) {
         var.setValue( gpctrlObj->m_path_db_vscp_daemon.GetFullPath() );
     }
     
@@ -3289,13 +3304,13 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     // *************************************************************************
     
     
-    else if ( name.Lower() == _("vscp.dm.count") ) {
+    else if ( lcname == _("vscp.dm.count") ) {
         var.setValue( (long)gpctrlObj->m_dm.getDatabaseRecordCount() );
     }
-    else if ( name.Lower() == _("vscp.dm.count.active") ) {
+    else if ( lcname == _("vscp.dm.count.active") ) {
         var.setValue( gpctrlObj->m_dm.getMemoryElementCount() );      
     }
-    else if ( name.Lower() == _("vscp.dm") ) {
+    else if ( lcname == _("vscp.dm") ) {
         var.setStockVariable();
         var.setPersistent( false );
         var.setAccessRights( PERMISSON_OWNER_READ );           
@@ -3303,7 +3318,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
         gpctrlObj->m_dm.getAllRows( wxstr );
         var.setValue( wxstr );      
     }
-    else if ( wxNOT_FOUND != name.Lower().Find( _("vscp.dm.") ) ) {
+    else if ( wxNOT_FOUND != lcname.Find( _("vscp.dm.") ) ) {
         
         int pos;
         wxString wxstr;
@@ -3509,7 +3524,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
         }
         else {
             // A full DM row is requested ("vscp.dm.35" for row with id = 35)
-            //???  TOD
+            //???  TODO
         }
     }
     
@@ -3526,12 +3541,120 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     // *************************************************************************
     //                                Users
     // *************************************************************************
-    else if ( name.Lower() == _("vscp.user.count") ) {
+    else if ( lcname == _("vscp.user.count") ) {
         var.setValue( (long)gpctrlObj->m_userList.getUserCount() );
     }
-    else if ( name.Lower() == _("vscp.user") ) {
+    else if ( lcname == _("vscp.user") ) {
         gpctrlObj->m_userList.getAllUsers( wxstr );
         var.setValue( wxstr );      
+    }
+    else if ( lcname == _("vscp.user.name") ) {
+        wxArrayString array;
+        wxstr.Empty();
+        gpctrlObj->m_userList.getAllUsers( array );
+        for ( int i=0; i<array.Count(); i++ ) {
+            wxstr += array[ i ];
+            if ( i != ( array.Count()-1 ) ) wxstr += _(",");
+        }
+        var.setValue( wxstr );      
+    }
+    // Individual user  (vscp.user.1 or vscp.user.1.name... )
+    else if ( lcname.StartsWith("vscp.user.", &strrest ) ) {
+        
+        int pos;
+        unsigned long idx;
+        wxStringTokenizer tkz( strrest, _(".") );
+        if ( !tkz.HasMoreTokens() ) return false;   
+        
+        wxString strToken = tkz.GetNextToken(); // Get idx
+        if ( !strToken.ToULong( &idx ) ) return false;
+        
+        if ( !tkz.HasMoreTokens() ) {
+            // vscp.user.n - return user record for index n
+            if ( !gpctrlObj->m_userList.getUserAsString( idx, wxstr ) ) return false;            
+            var.setValue( wxstr );
+        }
+        else {
+            // vscp.user.n.field 
+            CUserItem *pUserItem;
+            if ( !gpctrlObj->m_userList.getUserAsString( idx, wxstr ) ) return false;       // Get name
+            if ( NULL == ( pUserItem = 
+                    gpctrlObj->m_userList.getUserItemFromOrdinal( idx ) ) ) return false;   // UserItem
+            strToken = tkz.GetNextToken();  // Get field
+            if ( _("userid") == strToken ) {
+                wxstr = wxString::Format( _("%ld"), pUserItem->getUserID() );
+                var.setValue( wxstr );
+            }
+            else if ( _("name") == strToken ) {
+                var.setValue( pUserItem->getUser() );
+            }
+            else if ( _("password") == strToken ) {
+                var.setValue( pUserItem->getPassword() );
+            }
+            else if ( _("fullname") == strToken ) {
+                var.setValue( pUserItem->getFullname() );
+            }
+            else if ( _("filter") == strToken ) {
+                var.setValue( wxstr );
+            }
+            else if ( _("rights") == strToken ) {
+                // rights or rights.0..7
+                if ( !tkz.HasMoreTokens() ) {
+                    var.setValue( pUserItem->getRightsAsString() );
+                }
+                else {
+                    strToken = tkz.GetNextToken();   // 0..7
+                    if ( !strToken.ToULong( &idx ) ) return false;
+                    if ( idx > 7 ) return false;
+                    wxstr.Printf(_("%d"), idx );
+                    var.setValue( wxstr );
+                }
+            }
+            else if ( _("allowed") == strToken ) {
+                //allowed.events or allowed.remotes
+                if ( !tkz.HasMoreTokens() ) return false;
+                strToken = tkz.GetNextToken();   // events/remotes
+                if ( _("events") == strToken ) {
+                    var.setValue( pUserItem->getAllowedEventsAsString() );
+                }
+                else if ( _("remotes") == strToken ) { 
+                    var.setValue( pUserItem->getAllowedRemotesAsString() );
+                }
+                else {
+                    return false;
+                }
+            }
+            else if ( _("note") == strToken ) {
+                var.setValue( pUserItem->getNote() );
+            }
+        }
+        
+       
+        // Check for "vscp.user.n"
+        if ( wxNOT_FOUND != ( pos = strrest.Find( '.' ) ) ) {
+            
+            // Yepp - "vscp.user.n"
+            
+            // Get idx
+            
+                        
+            
+            
+        }
+        else {
+            
+            // we have something on the form "vscp.user.n.field"
+            
+            // Get idx
+            if ( !strrest.Left( pos ).ToULong( &idx ) ) return false;
+            
+            if ( wxNOT_FOUND == ( pos = strrest.Find( '.', true ) ) ) return false;
+            
+            if ( !gpctrlObj->m_userList.getUserAsString( idx, wxstr ) ) return false;
+            
+            var.setValue( wxstr );
+            
+        }
     }
     
     // *************************************************************************
@@ -3557,39 +3680,39 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
 bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 {
     wxString wxstr;
-    wxString name = var.getName();
+    wxString lcname = var.getName().Lower();
     
     // Make sure it starts with ".vscp"
-    if ( !name.Lower().StartsWith("vscp.") ) return false;  
+    if ( !lcname.StartsWith("vscp.") ) return false;  
     
-    if ( name.Lower() == _("vscp.version.major") ) {
+    if ( lcname == _("vscp.version.major") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.version.minor") ) {
+    else if ( lcname == _("vscp.version.minor") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.version.build") ) {
+    else if ( lcname == _("vscp.version.build") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.version.str") ) {
+    else if ( lcname == _("vscp.version.str") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.version.wxwidgets.str") ) {
+    else if ( lcname == _("vscp.version.wxwidgets.str") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.version.wxwidgets.major") ) {
+    else if ( lcname == _("vscp.version.wxwidgets.major") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.version.wxwidgets.minor") ) {
+    else if ( lcname == _("vscp.version.wxwidgets.minor") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.version.wxwidgets.release") ) {
+    else if ( lcname == _("vscp.version.wxwidgets.release") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.version.wxwidgets.sub") ) {
+    else if ( lcname == _("vscp.version.wxwidgets.sub") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.copyright.vscp") ) {
+    else if ( lcname == _("vscp.copyright.vscp") ) {
         return false;   // None writable
     }
 
@@ -3597,7 +3720,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 //                               wxWidgets
 // *****************************************************************************
 
-    else if ( name.Lower() == _("vscp.copyright.wxwidgets") ) {
+    else if ( lcname == _("vscp.copyright.wxwidgets") ) {
         return false;   // None writable
     }
 
@@ -3605,7 +3728,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 //                               Mongoose
 // *****************************************************************************
 
-    else if ( name.Lower() == _("vscp.copyright.mongoose") ) {
+    else if ( lcname == _("vscp.copyright.mongoose") ) {
         return false;   // None writable
     }
 
@@ -3615,19 +3738,19 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 
 #ifndef VSCP_DISABLE_LUA
 
-    else if ( name.Lower() == _("vscp.copyright.lua") ) {
+    else if ( lcname == _("vscp.copyright.lua") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.version.lua.major") ) {
+    else if ( lcname == _("vscp.version.lua.major") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.version.lua.minor") ) {
+    else if ( lcname == _("vscp.version.lua.minor") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.version.lua.release") ) {
+    else if ( lcname == _("vscp.version.lua.release") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.version.lua.str") ) {
+    else if ( lcname == _("vscp.version.lua.str") ) {
         return false;   // None writable
     }
 
@@ -3637,19 +3760,19 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 //                                SQLite
 // *****************************************************************************
 
-    else if ( name.Lower() == _("vscp.version.sqlite.major") ) {
+    else if ( lcname == _("vscp.version.sqlite.major") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.version.sqlite.minor") ) {
+    else if ( lcname == _("vscp.version.sqlite.minor") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.version.sqlite.release") ) {
+    else if ( lcname == _("vscp.version.sqlite.release") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.version.sqlite.build") ) {
+    else if ( lcname == _("vscp.version.sqlite.build") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.version.sqllite.str") ) {
+    else if ( lcname == _("vscp.version.sqllite.str") ) {
         return false;   // None writable
     }
 
@@ -3658,7 +3781,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 // *****************************************************************************
     
 #ifndef WIN32
-    else if ( name.Lower() == _("vscp.version.openssl.str") ) {
+    else if ( lcname == _("vscp.version.openssl.str") ) {
         return false;   // None writable
     }
 #endif
@@ -3669,25 +3792,25 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 // *****************************************************************************    
     
     
-    else if ( name.Lower() == _("vscp.os.str") ) {
+    else if ( lcname == _("vscp.os.str") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.os.wordwidth") ) {
+    else if ( lcname == _("vscp.os.wordwidth") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.os.wordwidth.str") ) {
+    else if ( lcname == _("vscp.os.wordwidth.str") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.os.width.is64bit") ) {
+    else if ( lcname == _("vscp.os.width.is64bit") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.os.width.is32bit") ) {
+    else if ( lcname == _("vscp.os.width.is32bit") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.os.endiness.str") ) {
+    else if ( lcname == _("vscp.os.endiness.str") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.os.endiness.islittleendian") ) {
+    else if ( lcname == _("vscp.os.endiness.islittleendian") ) {
         return false;   // None writable
     }
     
@@ -3695,173 +3818,173 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 //                                 HOST
 // *****************************************************************************    
     
-    else if ( name.Lower() == _("vscp.host.rootpath") ) {
+    else if ( lcname == _("vscp.host.rootpath") ) {
         return false;
     }
-    else if ( name.Lower() == _("vscp.host.name") ) {
+    else if ( lcname == _("vscp.host.name") ) {
         gpctrlObj->m_strServerName = var.getValue();
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_servername"), 
                                                     wxString::Format( _("%s"), 
                                                     gpctrlObj->m_strServerName.mbc_str() ) );
     }
-    else if ( name.Lower() == _("vscp.host.ip") ) {
+    else if ( lcname == _("vscp.host.ip") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.host.mac") ) {
+    else if ( lcname == _("vscp.host.mac") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.host.userid") ) {
+    else if ( lcname == _("vscp.host.userid") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() ==  _("vscp.host.username") ) {
+    else if ( lcname ==  _("vscp.host.username") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.host.guid") ) {        
+    else if ( lcname == _("vscp.host.guid") ) {        
         gpctrlObj->m_guid.getFromString( var.getValue() );
     }
-    else if ( name.Lower() == _("vscp.loglevel") ) {
+    else if ( lcname == _("vscp.loglevel") ) {
         int val;
         var.getValue( &val );
         gpctrlObj->m_logLevel = val;
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_LogLevel"), 
                                                     val ? _("1") : _("0") );      
     }
-    else if ( name.Lower() == _("vscp.loglevel.str") ) {
+    else if ( lcname == _("vscp.loglevel.str") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.client.receivequeue.max") ) {
+    else if ( lcname == _("vscp.client.receivequeue.max") ) {
         int val;
         var.getValue( &val );
         gpctrlObj->m_maxItemsInClientReceiveQueue = val;
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd.maxqueue"), 
                                                     wxString::Format( _("%d"), val ) );
     }
-    else if ( name.Lower() == _("vscp.tcpip.address") ) {
+    else if ( lcname == _("vscp.tcpip.address") ) {
         wxString strval;
         strval = var.getValue();
         gpctrlObj->m_strTcpInterfaceAddress = strval;
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_TcpipInterface_Address"), 
                                                         strval );
     }
-    else if ( name.Lower() == _("vscp.udp.enable") ) {
+    else if ( lcname == _("vscp.udp.enable") ) {
         int val;
         var.getValue( &val );
         gpctrlObj->m_bUDP = val;
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_UdpSimpleInterface_Enable"), 
                                                         val ? _("1") : _("0") );
     }
-    else if ( name.Lower() == _("vscp.udp.address") ) {
+    else if ( lcname == _("vscp.udp.address") ) {
         wxString strval;
         strval = var.getValue();
         gpctrlObj->m_strUDPInterfaceAddress = strval;
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_UdpSimpleInterface_Address"), 
                                                     strval );
     }
-    else if ( name.Lower() == _("vscp.mqtt.broker.enable") ) {
+    else if ( lcname == _("vscp.mqtt.broker.enable") ) {
         int val;
         var.getValue( &val );
         gpctrlObj->m_bMQTTBroker = val;
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_MqttBroker_Enable"), 
                                                     val ? _("1") : _("0") );
     }
-    else if ( name.Lower() == _("vscp.mqtt.broker.address") ) {
+    else if ( lcname == _("vscp.mqtt.broker.address") ) {
         wxString strval;
         strval = var.getValue();
         gpctrlObj->m_strMQTTBrokerInterfaceAddress = strval;
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_UdpSimpleInterface_Address"), 
                                                     strval );
     }
-    else if ( name.Lower() == _("vscp.coap.server.enable") ) {
+    else if ( lcname == _("vscp.coap.server.enable") ) {
         int val;
         var.getValue( &val );
         gpctrlObj->m_bCoAPServer = val;
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_CoapServer_Enable"), 
                                                     val ? _("1") : _("0") );
     }
-    else if ( name.Lower() == _("vscp.coap.server.address") ) {
+    else if ( lcname == _("vscp.coap.server.address") ) {
         wxString strval;
         strval = var.getValue();
         gpctrlObj->m_strCoAPServerInterfaceAddress = strval;
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_CoapServer_Address"), 
                                                     strval );
     }
-    else if ( name.Lower() == _("vscp.automation.heartbeat.enable") ) {
+    else if ( lcname == _("vscp.automation.heartbeat.enable") ) {
         bool val;
         var.getValue( &val );
         val ? gpctrlObj->m_automation.enableHeartbeatEvent() : gpctrlObj->m_automation.disableHeartbeatEvent();
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_Automation_HeartbeatEvent_Enable"), 
                                                     val ? _("1") : _("0") );
     }
-    else if ( name.Lower() == _("vscp.automation.heartbeat.period") ) {
+    else if ( lcname == _("vscp.automation.heartbeat.period") ) {
         int val;
         var.getValue( &val );
         gpctrlObj->m_logLevel = val;
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_Automation_HeartbeatEvent_Interval"), 
                                                     wxString::Format(_("%d"), val ) );
     }
-    else if ( name.Lower() == _("vscp.automation.heartbeat.last") ) {
+    else if ( lcname == _("vscp.automation.heartbeat.last") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() ==  _("vscp.automation.segctrl-heartbeat.enable") ) {
+    else if ( lcname ==  _("vscp.automation.segctrl-heartbeat.enable") ) {
         int val;
         var.getValue( &val );
         gpctrlObj->m_logLevel = val;
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_LogLevel"), 
                                                     val ? _("1") : _("0") );
     }
-    else if ( name.Lower() == _("vscp.automation.segctrl.heartbeat.period") ) {
+    else if ( lcname == _("vscp.automation.segctrl.heartbeat.period") ) {
         long val;
         var.getValue( &val );
         gpctrlObj->m_automation.setSegmentControllerHeartbeatInterval( val );
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_Automation_SegmentControllerEvent_Interval"), 
                                                     wxString::Format(_("%ld"), val) );
     }  
-    else if ( name.Lower() == _("vscp.automation.segctrl.heartbeat.last") ) {
+    else if ( lcname == _("vscp.automation.segctrl.heartbeat.last") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.automation.longitude") ) {
+    else if ( lcname == _("vscp.automation.longitude") ) {
         double val;
         var.getValue( &val );
         gpctrlObj->m_automation.setLongitude( val );
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_Automation_Longitude"), 
                                                     wxString::Format( _("%f"), gpctrlObj->m_automation.getLongitude() ) );
     }
-    else if ( name.Lower() == _("vscp.automation.latitude") ) {
+    else if ( lcname == _("vscp.automation.latitude") ) {
         double val;
         var.getValue( &val );
         gpctrlObj->m_automation.setLatitude( val );
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_Automation_Latitude"), 
                                                     wxString::Format( _("%f"), gpctrlObj->m_automation.getLatitude() ) );
     }
-    else if ( name.Lower() == _("vscp.automation.twilightsunriseevent.enable") ) {
+    else if ( lcname == _("vscp.automation.twilightsunriseevent.enable") ) {
         int val;
         var.getValue( &val );
         gpctrlObj->m_automation.enableSunRiseTwilightEvent( val );
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_Automation_SunriseTwilight_Enable"), 
                                                     val ? _("1") : _("0") );
     }
-    else if ( name.Lower() == _("vscp.automation.twilightsunsetevent.enable") ) {
+    else if ( lcname == _("vscp.automation.twilightsunsetevent.enable") ) {
         int val;
         var.getValue( &val );
         gpctrlObj->m_automation.enableSunSetTwilightEvent( val );
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_Automation_SunsetTwilight_Enable"), 
                                                     val ? _("1") : _("0") );
     }
-    else if ( name.Lower() == _("vscp.automation.sunriseevent.enable") ) {
+    else if ( lcname == _("vscp.automation.sunriseevent.enable") ) {
         int val;
         var.getValue( &val );
         gpctrlObj->m_automation.enableSunRiseEvent( val );
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_Automation_Sunrise_Enable"), 
                                                     val ? _("1") : _("0") );
     }
-    else if ( name.Lower() == _("vscp.automation.sunsetevent.enable") ) {
+    else if ( lcname == _("vscp.automation.sunsetevent.enable") ) {
         int val;
         var.getValue( &val );
         gpctrlObj->m_automation.enableSunSetEvent( val );
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_Automation_Sunset_Enable"),
                                                     val ? _("1") : _("0") );
     }
-    else if ( name.Lower() == _("vscp.workingfolder") ) {
+    else if ( lcname == _("vscp.workingfolder") ) {
         return false;   // Not writable
     }
  
@@ -3871,21 +3994,21 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 // *****************************************************************************
 
 
-    else if ( name.Lower() == _("vscp.websrv.address") ) {
+    else if ( lcname == _("vscp.websrv.address") ) {
         wxString strval;
         strval = var.getValue();
         gpctrlObj->m_strWebServerInterfaceAddress = strval;
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_Webserver_Address"), 
                                                     strval );
     }
-    else if ( name.Lower() == _("vscp.websrv.authentication.enable") ) {
+    else if ( lcname == _("vscp.websrv.authentication.enable") ) {
         int val;
         var.getValue( &val );
         gpctrlObj->m_bDisableSecurityWebServer = val;
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_Webserver_Authentication_enable"), 
                                                     val ? _("1") : _("0") );
     }
-    else if ( name.Lower() == _("vscp.websrv.root.path") ) {
+    else if ( lcname == _("vscp.websrv.root.path") ) {
         wxString strval;
         strval = var.getValue();
         memset( gpctrlObj->m_pathWebRoot, 0, sizeof( gpctrlObj->m_pathWebRoot ) );
@@ -3895,7 +4018,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_Webserver_RootPath"), 
                                                     strval );
     }
-    else if ( name.Lower() == _("vscp.websrv.cert.path") ) {
+    else if ( lcname == _("vscp.websrv.cert.path") ) {
         wxString strval;
         strval = var.getValue();
         memset( gpctrlObj->m_pathCert, 0, sizeof( gpctrlObj->m_pathCert ) );
@@ -3905,7 +4028,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_Webserver_PathCert"), 
                                                     strval );
     }
-    else if ( name.Lower() == _("vscp.websrv.extramimetypes") ) {
+    else if ( lcname == _("vscp.websrv.extramimetypes") ) {
         wxString strval;
         strval = var.getValue();
         memset( gpctrlObj->m_extraMimeTypes, 0, sizeof( gpctrlObj->m_extraMimeTypes ) );
@@ -3915,7 +4038,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_Webserver_ExtraMimeTypes"), 
                                                     strval );
     }
-    else if ( name.Lower() == _("vscp.websrv.ssipatterns") ) {
+    else if ( lcname == _("vscp.websrv.ssipatterns") ) {
         wxString strval;
         strval = var.getValue();
         memset( gpctrlObj->m_ssi_pattern, 0, sizeof( gpctrlObj->m_ssi_pattern ) );
@@ -3925,7 +4048,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_Webserver_SSIPattern"), 
                                                     strval );
     }
-    else if ( name.Lower() == _("vscp.websrv.ipacl") ) {
+    else if ( lcname == _("vscp.websrv.ipacl") ) {
         wxString strval;
         strval = var.getValue();
         memset( gpctrlObj->m_ip_acl, 0, sizeof( gpctrlObj->m_ip_acl ) );
@@ -3935,7 +4058,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_Webserver_IpAcl"), 
                                                     strval );
     }
-    else if ( name.Lower() == _("vscp.websrv.cgi.interpreter") ) {
+    else if ( lcname == _("vscp.websrv.cgi.interpreter") ) {
         wxString strval;
         strval = var.getValue();
         memset( gpctrlObj->m_cgiInterpreter, 0, sizeof( gpctrlObj->m_cgiInterpreter ) );
@@ -3945,7 +4068,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_Webserver_CgiInterpreter"), 
                                                     strval );
     }
-    else if ( name.Lower() == _("vscp.websrv.cgi.pattern") ) {
+    else if ( lcname == _("vscp.websrv.cgi.pattern") ) {
         wxString strval;
         strval = var.getValue();
         memset( gpctrlObj->m_cgiPattern, 0, sizeof( gpctrlObj->m_cgiPattern ) );
@@ -3955,7 +4078,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_Webserver_CgiPattern"), 
                                                     strval );
     }
-    else if ( name.Lower() == _("vscp.websrv.directorylistings.enable") ) {
+    else if ( lcname == _("vscp.websrv.directorylistings.enable") ) {
         int val;
         var.getValue( &val );
         strcpy( gpctrlObj->m_EnableDirectoryListings,
@@ -3963,7 +4086,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_Webserver_EnableDirectoryListings"), 
                                                     val ? _("1") : _("0") );
     }
-    else if ( name.Lower() == _("vscp.websrv.hidefile.pattern") ) {
+    else if ( lcname == _("vscp.websrv.hidefile.pattern") ) {
         wxString strval;
         strval = var.getValue();
         memset( gpctrlObj->m_hideFilePatterns, 0, sizeof( gpctrlObj->m_hideFilePatterns ) );
@@ -3973,7 +4096,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_Webserver_HideFilePatterns"), 
                                                     strval );
     }
-    else if ( name.Lower() == _("vscp.websrv.indexfiles") ) {
+    else if ( lcname == _("vscp.websrv.indexfiles") ) {
         wxString strval;
         strval = var.getValue();
         memset( gpctrlObj->m_indexFiles, 0, sizeof( gpctrlObj->m_indexFiles ) );
@@ -3983,7 +4106,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_Webserver_IndexFiles"), 
                                                     strval );
     }
-    else if ( name.Lower() == _("vscp.websrv.urlrewrites") ) {
+    else if ( lcname == _("vscp.websrv.urlrewrites") ) {
         wxString strval;
         strval = var.getValue();
         memset( gpctrlObj->m_urlRewrites, 0, sizeof( gpctrlObj->m_urlRewrites ) );
@@ -3993,7 +4116,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_Webserver_UrlRewrites"), 
                                                     strval );
     }
-    else if ( name.Lower() == _("vscp.websrv.auth.file.directory") ) {
+    else if ( lcname == _("vscp.websrv.auth.file.directory") ) {
         wxString strval;
         strval = var.getValue();
         memset( gpctrlObj->m_per_directory_auth_file, 0, sizeof( gpctrlObj->m_per_directory_auth_file ) );
@@ -4003,7 +4126,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_Webserver_PerDirectoryAuthFile"), 
                                                     strval );
     }
-    else if ( name.Lower() == _("vscp.websrv.auth.file.global") ) {
+    else if ( lcname == _("vscp.websrv.auth.file.global") ) {
         wxString strval;
         strval = var.getValue();
         memset( gpctrlObj->m_global_auth_file, 0, sizeof( gpctrlObj->m_global_auth_file ) );
@@ -4019,7 +4142,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 //                            Websocket-Server
 // *****************************************************************************
 
-    else if ( name.Lower() == _("vscp.websocket.auth.enable") ) {
+    else if ( lcname == _("vscp.websocket.auth.enable") ) {
         bool val;
         var.getValue( &val );
         gpctrlObj->m_bAuthWebsockets = val;
@@ -4033,28 +4156,28 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 // *****************************************************************************
 
 
-    else if ( name.Lower() == _("vscp.dm.logging.enable") ) {
+    else if ( lcname == _("vscp.dm.logging.enable") ) {
         bool val;
         var.getValue( &val );
         gpctrlObj->m_dm.m_bLogEnable = val;
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_DM_Logging_Enable"), 
                                                     val ? _("1") : _("0") );
     }
-    else if ( name.Lower() == _("vscp.dm.logging.path") ) {
+    else if ( lcname == _("vscp.dm.logging.path") ) {
         wxString strval;
         strval = var.getValue();
         var.setValue( gpctrlObj->m_dm.m_logPath.GetFullPath() );
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_DM_Logging_Path"), 
                                                     strval );
     }
-    else if ( name.Lower() == _("vscp.dm.xml.path") ) {
+    else if ( lcname == _("vscp.dm.xml.path") ) {
         wxString strval;
         strval = var.getValue();
         var.setValue( gpctrlObj->m_dm.m_staticXMLPath );
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_DM_XML_Path"), 
                                                     strval );
     }
-    else if ( name.Lower() == _("vscp.dm.db.path") ) {
+    else if ( lcname == _("vscp.dm.db.path") ) {
         wxString strval;
         strval = var.getValue();
         var.setValue( gpctrlObj->m_dm.m_staticXMLPath );
@@ -4067,14 +4190,14 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 //                             Variables
 // *****************************************************************************
 
-    else if ( name.Lower() == _("vscp.variable.db.path") ) {
+    else if ( lcname == _("vscp.variable.db.path") ) {
         wxString strval;
         strval = var.getValue();
         var.setValue( gpctrlObj->m_VSCP_Variables.m_dbFilename.GetFullPath() );
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_Variables_DB_Path"), 
                                                     strval );
     }
-    else if ( name.Lower() == _("vscp.variable.xml.path") ) {
+    else if ( lcname == _("vscp.variable.xml.path") ) {
         wxString strval;
         strval = var.getValue();
         var.setValue( gpctrlObj->m_VSCP_Variables.m_xmlPath );
@@ -4088,7 +4211,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 // *****************************************************************************
 
     // Enable syslog logging
-    else if ( name.Lower() == _("vscp.log.syslog.enable") ) {
+    else if ( lcname == _("vscp.log.syslog.enable") ) {
         bool val;
         var.getValue( &val );
         gpctrlObj->m_bLogToSysLog = val;
@@ -4097,7 +4220,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
     }
     
     // Enable database logging
-    else if ( name.Lower() == _("vscp.log.database.enable") ) {
+    else if ( lcname == _("vscp.log.database.enable") ) {
         bool val;
         var.getValue( &val );
         gpctrlObj->m_bLogToDatabase = val;
@@ -4105,7 +4228,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                                                     val ? _("1") : _("0") );
     }
     
-    else if ( name.Lower() ==  _("vscp.log.database.path") ) {
+    else if ( lcname ==  _("vscp.log.database.path") ) {
         wxString strval;
         strval = var.getValue();
         gpctrlObj->m_path_db_vscp_data.SetPath( strval );
@@ -4114,14 +4237,14 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
     } 
     
     // General
-    else if ( name.Lower() == _("vscp.log.general.enable") ) {
+    else if ( lcname == _("vscp.log.general.enable") ) {
         bool val;
         var.getValue( &val );
         gpctrlObj->m_bLogGeneralEnable = val;
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_GeneralLogFile_Enable"), 
                                                     val ? _("1") : _("0") );
     }
-    else if ( name.Lower() == _("vscp.log.general.path") ) {
+    else if ( lcname == _("vscp.log.general.path") ) {
         wxString strval;
         strval = var.getValue();
         gpctrlObj->m_logGeneralFileName.SetPath( strval );
@@ -4130,14 +4253,14 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
     }
 
     // Access
-    else if ( name.Lower() == _("vscp.log.access.enable") ) {
+    else if ( lcname == _("vscp.log.access.enable") ) {
         bool val;
         var.getValue( &val );
         gpctrlObj->m_bLogAccessEnable = val;
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_AccessLogFile_Enable"), 
                                                     val ? _("1") : _("0") );
     }
-    else if ( name.Lower() == _("vscp.log.access.path") ) {
+    else if ( lcname == _("vscp.log.access.path") ) {
         wxString strval;
         strval = var.getValue();
         gpctrlObj->m_logAccessFileName.SetPath( strval );
@@ -4146,14 +4269,14 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
     }
 
     // Security
-    else if ( name.Lower() == _("vscp.log.security.enable") ) {
+    else if ( lcname == _("vscp.log.security.enable") ) {
         bool val;
         var.getValue( &val );
         gpctrlObj->m_bLogAccessEnable = val;
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_SecurityLogFile_Enable"), 
                                                     val ? _("1") : _("0") );
     }   
-    else if ( name.Lower() == _("vscp.log.security.path") ) {
+    else if ( lcname == _("vscp.log.security.path") ) {
         wxString strval;
         strval = var.getValue();
         gpctrlObj->m_logSecurityFileName.SetPath( strval );
@@ -4167,14 +4290,14 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 //                             Databases
 // *****************************************************************************    
     
-    else if ( name.Lower() ==  _("vscp.database.vscpdata.path") ) {
+    else if ( lcname ==  _("vscp.database.vscpdata.path") ) {
         wxString strval;
         strval = var.getValue();
         gpctrlObj->m_path_db_vscp_data.SetPath( strval );
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_db_data_path"), 
                                                     strval );
     } 
-    else if ( name.Lower() ==  _("vscp.database.vscpdconfig.path") ) {
+    else if ( lcname ==  _("vscp.database.vscpdconfig.path") ) {
         wxString strval;
         strval = var.getValue();
         gpctrlObj->m_path_db_vscp_daemon.SetPath( strval );
@@ -4186,19 +4309,19 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 // *****************************************************************************
 //                             Decision Matrix
 // *****************************************************************************
-    else if ( name.Lower() == _("vscp.dm.count") ) {
+    else if ( lcname == _("vscp.dm.count") ) {
         return false;   // None writable
     }
-    else if ( name.Lower() == _("vscp.dm.count.active") ) {
+    else if ( lcname == _("vscp.dm.count.active") ) {
         return false;   // None writable      
     }
-    else if ( wxNOT_FOUND != name.Lower().Find( _("vscp.dm.") ) ) {
+    else if ( wxNOT_FOUND != lcname.Find( _("vscp.dm.") ) ) {
         
         int pos;
         short row;
         dmElement dmDB;
         wxString wxstr;
-        wxstr = name.Right( name.Length() - 8 );    // remove "vscp.dm."
+        wxstr = lcname.Right( lcname.Length() - 8 );    // remove "vscp.dm."
         if ( wxNOT_FOUND != ( pos = wxstr.Lower().Find( _(".") ) ) ) {
             
             // this is a sub variable.
