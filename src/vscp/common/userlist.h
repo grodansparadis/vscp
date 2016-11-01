@@ -224,9 +224,9 @@ public:
     wxString getNote( void ) { return m_note; };
     void setNote( const wxString& note ) { m_note = note; };
     
-    uint8_t getUserRight( const uint8_t pos ) { return m_userRights[ pos & 0x07 ]; };
-    void setUserRight( const uint8_t pos, const uint8_t right ) { m_userRights[ pos & 0x07 ] = right; };
-    wxString getRightsAsString( void );
+    uint8_t getUserRights( const uint8_t pos ) { return m_userRights[ pos & 0x07 ]; };
+    void setUserRights( const uint8_t pos, const uint8_t right ) { m_userRights[ pos & 0x07 ] = right; };
+    wxString getUserRightsAsString( void );
     
     void clearAllowedEventList( void ) { m_listAllowedEvents.Clear(); };
     void addAllowedEvent( const wxString& strEvent ) { m_listAllowedEvents.Add( strEvent ); };
@@ -240,7 +240,15 @@ public:
     void setFilter( const vscpEventFilter * pFilter ) { if ( NULL != pFilter ) memcpy( &m_filterVSCP, 
                                                                     pFilter,
                                                                     sizeof( vscpEventFilter ) ); };
-    bool setFilterFromString( wxString& strFilter ) { return vscp_readFilterFromString( &m_filterVSCP, strFilter ); };
+    bool setFilterFromString( wxString strFilter ) { return vscp_readFilterFromString( &m_filterVSCP, strFilter ); };
+    
+    /*!
+     * Set user settings from string
+     * @param userSettings User settings in a semicolon separated list in the form
+     *  
+     * @return true on success, false on failure.
+     */
+    bool setFromString( wxString userSettings );
     
 protected:
     
@@ -315,8 +323,9 @@ public:
         The configuration set username is not a valid username.
         @param user Username for user.
         @param password Password.
+        @param fullname Fullname for user.
         @param note An arbitrary note about the user
-        @param Ponter to a VSCP filter associated with this user.
+        @param Pointer to a VSCP filter associated with this user.
         @param userRights list with user rights on the form right1,right2,right3....
                     admin - all rights
                     user - standard user rights
@@ -330,6 +339,7 @@ public:
     */
     bool addUser( const wxString& user,
                             const wxString& password,
+                            const wxString& fullname,
                             const wxString& strNote,
                             const vscpEventFilter *pFilter = NULL,
                             const wxString& userRights = _(""),
@@ -337,7 +347,14 @@ public:
                             const wxString& allowedEvents = _(""),
                             uint32_t bFlags = 0 );
 
-
+    /*!
+     * Add user from comma separated string data
+     * @param strUser Comma separated list with user information. 
+     *      name;password;fullname;filtermask;rights;remotes;events;note
+     * @return true on success. false on failure.
+     */
+    bool addUser( const wxString& strUser );
+    
     /*!
         Get user 
         @param user Username

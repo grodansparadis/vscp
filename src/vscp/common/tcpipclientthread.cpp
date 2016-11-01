@@ -705,7 +705,7 @@ bool VSCPClientThread::checkPrivilege( struct mg_connection *conn,
         return false;
     }
 
-    if ( (pClientItem->m_pUserItem->getUserRight( 0 ) & USER_PRIVILEGE_MASK ) < reqiredPrivilege ) {
+    if ( (pClientItem->m_pUserItem->getUserRights( 0 ) & USER_PRIVILEGE_MASK ) < reqiredPrivilege ) {
         mg_send( conn,  MSG_LOW_PRIVILEGE_ERROR, strlen ( MSG_LOW_PRIVILEGE_ERROR ) );
         return false;
     }

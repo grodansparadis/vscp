@@ -85,6 +85,67 @@ CUserItem::~CUserItem(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// setFromString
+//
+// name;password;fullname;filtermask;rights;remotes;events;note
+
+bool CUserItem::setFromString( wxString userSettings )
+{
+    wxString strToken;
+    wxStringTokenizer tkz( userSettings, _(";") );
+    
+    // name
+    if ( tkz.HasMoreTokens() ) {
+        strToken = tkz.GetNextToken();
+        setUser( strToken );
+    }
+    
+    // password
+    if ( tkz.HasMoreTokens() ) {
+        strToken = tkz.GetNextToken();
+        setPassword( strToken );
+    }
+    
+    // fullname
+    if ( tkz.HasMoreTokens() ) {
+        strToken = tkz.GetNextToken();
+        setFullname( strToken );
+    }
+    
+    // filtermask
+    if ( tkz.HasMoreTokens() ) {
+        strToken = tkz.GetNextToken();
+        setFilterFromString( strToken );
+    }
+    
+    // rights
+    if ( tkz.HasMoreTokens() ) {
+        strToken = tkz.GetNextToken();
+        setUserRightsFromString( strToken );
+    }
+        
+    // remotes
+    if ( tkz.HasMoreTokens() ) {
+        strToken = tkz.GetNextToken();
+        setAllowedRemotesFromString( strToken );
+    }
+    
+    // events
+    if ( tkz.HasMoreTokens() ) {
+        strToken = tkz.GetNextToken();
+        setAllowedEventsFromString( strToken );
+    }    
+    
+    // note
+    if ( tkz.HasMoreTokens() ) {
+        strToken = tkz.GetNextToken();
+        setNote( strToken );
+    }
+    
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // setUserRightsFromString
 //
 
@@ -169,10 +230,10 @@ bool CUserItem::setAllowedRemotesFromString( const wxString& strConnect )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getRightsAsString
+// getUserRightsAsString
 //
 
-wxString CUserItem::getRightsAsString( void  )
+wxString CUserItem::getUserRightsAsString( void  )
 {
     wxString strRights;
     
@@ -350,7 +411,7 @@ bool CUserItem::saveToDatabase( void )
                 (const char *)m_password.mbc_str(),
                 (const char *)m_fullName.mbc_str(),
                 (const char *)strBoth.mbc_str(),
-                (const char *)getRightsAsString().mbc_str(),
+                (const char *)getUserRightsAsString().mbc_str(),
                 (const char *)getAllowedEventsAsString().mbc_str(),
                 (const char *)getAllowedRemotesAsString().mbc_str(),
                 (const char *)m_note.mbc_str() );
@@ -377,7 +438,7 @@ bool CUserItem::saveToDatabase( void )
                 (const char *)m_password.mbc_str(),
                 (const char *)m_fullName.mbc_str(),
                 (const char *)strBoth.mbc_str(),
-                (const char *)getRightsAsString().mbc_str(),
+                (const char *)getUserRightsAsString().mbc_str(),
                 (const char *)getAllowedEventsAsString().mbc_str(),
                 (const char *)getAllowedRemotesAsString().mbc_str(),
                 (const char *)m_note.mbc_str() );
@@ -629,7 +690,8 @@ bool CUserList::loadUsers( void )
 //
 
 bool CUserList::addUser( const wxString& user,
-                            const wxString& password, 
+                            const wxString& password,
+                            const wxString& fullname,
                             const wxString& strNote,
                             const vscpEventFilter *pFilter,
                             const wxString& userRights,
@@ -692,6 +754,7 @@ bool CUserList::addUser( const wxString& user,
 
     pItem->setUser( user );
     pItem->setPassword( password );
+    pItem->setFullname( fullname );
     pItem->setNote( strNote );
     pItem->setFilter( pFilter );
     pItem->setUserRightsFromString( userRights );
@@ -713,22 +776,22 @@ bool CUserList::addUser( const wxString& user,
             if ( str.IsSameAs( _("admin"), false) && ( VSCP_ADD_USER_FLAG_ADMIN & bFlags ) ) {
                 // All rights
                 for (int i= 0; i<USER_PRIVILEGE_BYTES; i++ ) {
-                    pItem->setUserRight( i, 0xff );
+                    pItem->setUserRights( i, 0xff );
                 }
             } 
             else if (str.IsSameAs(_("user"), false)) {
                 // A standard user
-                pItem->setUserRight( 0, 0x06 );
+                pItem->setUserRights( 0, 0x06 );
             } 
             else if (str.IsSameAs(_("driver"), false)) {
                 // A standard driver
-                pItem->setUserRight( 0, 0x0f );
+                pItem->setUserRights( 0, 0x0f );
             } 
             else {
                 // Numerical
                 unsigned long lval;
                 str.ToULong( &lval );
-                pItem->setUserRight( idx++, (uint8_t)lval );
+                pItem->setUserRights( idx++, (uint8_t)lval );
             }
             
         } while ( tkz.HasMoreTokens() && ( idx < USER_PRIVILEGE_BYTES ) );
@@ -772,6 +835,49 @@ bool CUserList::addUser( const wxString& user,
     }
 
     return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// addUser
+//
+
+bool CUserList::addUser( const wxString& strUser )
+{
+    wxString strToken;
+    wxString user;
+    wxString password;
+    wxString fullname;
+    wxString strNote;
+    vscpEventFilter filter;
+    vscpEventFilter *pFilter = NULL;
+    wxString userRights;
+    wxString allowedRemotes;
+    wxString allowedEvents;
+    wxStringTokenizer tkz( strUser, _(";") );
+    
+    // user
+    if ( tkz.HasMoreTokens() ) {
+        user = tkz.GetNextToken();
+    }
+    
+    // password
+    if ( tkz.HasMoreTokens() ) {
+        password = tkz.GetNextToken();
+    }
+    
+    // fullname
+    if ( tkz.HasMoreTokens() ) {
+        password = tkz.GetNextToken();
+    }
+            
+    return addUser( user,
+                        password, 
+                        fullname,
+                        strNote,
+                        pFilter,
+                        userRights,
+                        allowedRemotes,
+                        allowedEvents );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -852,7 +958,7 @@ bool CUserList::getUserAsString( CUserItem *pUserItem, wxString& strUser )
     vscp_writeMaskToString( pUserItem->getFilter(), wxstr );
     strUser += wxstr;
     strUser += _(";");
-    strUser += pUserItem->getRightsAsString();
+    strUser += pUserItem->getUserRightsAsString();
     strUser += _(";");
     strUser += pUserItem->getAllowedRemotesAsString();
     strUser += _(";");

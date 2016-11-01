@@ -837,6 +837,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 
     m_userList.addUser( m_admin_user,
                             m_admin_password,
+                            _("Admin user"),            // full name
                             _("Admin user"),            // note
                             NULL,
                             _("admin"),
@@ -876,6 +877,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 
     m_userList.addUser( m_driverUsername,
                             wxString::FromUTF8( digest ),
+                            _("System added driver user."), // full name
                             _("System added driver user."), // note
                             NULL,
                             _("driver"),
@@ -2862,10 +2864,10 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                 if ( bUser ) {
 
                     if (bFilterPresent && bMaskPresent) {
-                        m_userList.addUser(name, md5, _(""), &VSCPFilter, privilege, allowfrom, allowevent);
+                        m_userList.addUser(name, md5, _(""), _(""), &VSCPFilter, privilege, allowfrom, allowevent);
                     }
                     else {
-                        m_userList.addUser(name, md5, _(""), NULL, privilege, allowfrom, allowevent);
+                        m_userList.addUser(name, md5, _(""), _(""), NULL, privilege, allowfrom, allowevent);
                     }
 
                     bUser = false;

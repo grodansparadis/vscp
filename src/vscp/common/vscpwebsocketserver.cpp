@@ -264,14 +264,14 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
                                                 "+;AUTH1;%ld;%s;%02x;%02x;%02x;%02x;%02x;%02x;%02x;%02x",
                                                 pUser->getUserID(),
                                                 (const char *)pUser->getFullname().mbc_str(),
-                                                pUser->getUserRight( 0 ),
-                                                pUser->getUserRight( 1 ),
-                                                pUser->getUserRight( 2 ),
-                                                pUser->getUserRight( 3 ),
-                                                pUser->getUserRight( 4 ),
-                                                pUser->getUserRight( 5 ),
-                                                pUser->getUserRight( 6 ),
-                                                pUser->getUserRight( 7 ) );
+                                                pUser->getUserRights( 0 ),
+                                                pUser->getUserRights( 1 ),
+                                                pUser->getUserRights( 2 ),
+                                                pUser->getUserRights( 3 ),
+                                                pUser->getUserRights( 4 ),
+                                                pUser->getUserRights( 5 ),
+                                                pUser->getUserRights( 6 ),
+                                                pUser->getUserRights( 7 ) );
             pSession->bAuthenticated = true;    // Authenticated
 
         }
@@ -335,7 +335,7 @@ autherror:
         }
 
         // Check privilege
-        if ( (pSession->m_pClientItem->m_pUserItem->getUserRight( 0 ) & 0xf) < 6 ) {
+        if ( (pSession->m_pClientItem->m_pUserItem->getUserRights( 0 ) & 0xf) < 6 ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
                                     "-;SF;%d;%s",
@@ -418,7 +418,7 @@ autherror:
 
         CLIENTEVENTLIST::iterator iterVSCP;
 
-        // Must be authorized to do this
+        // Must be authorised to do this
         if ( !pSession->bAuthenticated ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
@@ -433,7 +433,7 @@ autherror:
         }
 
         // Check privilege
-        if ( (pSession->m_pClientItem->m_pUserItem->getUserRight( 0 ) & 0xf) < 1 ) {
+        if ( (pSession->m_pClientItem->m_pUserItem->getUserRights( 0 ) & 0xf) < 1 ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
                                     "-;CLRQ;%d;%s",
@@ -496,7 +496,7 @@ autherror:
         }
 
         // Check privilege
-        if ( (pSession->m_pClientItem->m_pUserItem->getUserRight( 0 ) & 0xf) < 6 ) {
+        if ( (pSession->m_pClientItem->m_pUserItem->getUserRights( 0 ) & 0xf) < 6 ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
                                     "-;CVAR;%d;%s",
@@ -613,7 +613,7 @@ autherror:
         }
 
         // Check privilege
-        if ( (pSession->m_pClientItem->m_pUserItem->getUserRight( 0 ) & 0xf) < 4 ) {
+        if ( (pSession->m_pClientItem->m_pUserItem->getUserRights( 0 ) & 0xf) < 4 ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
                                     "-;RVAR;%d;%s",
@@ -670,7 +670,7 @@ autherror:
         }
 
         // Check privilege
-        if ( (pSession->m_pClientItem->m_pUserItem->getUserRight( 0 ) & 0xf) < 6 ) {
+        if ( (pSession->m_pClientItem->m_pUserItem->getUserRights( 0 ) & 0xf) < 6 ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
                                     "-;WVAR;%d;%s",
@@ -769,7 +769,7 @@ autherror:
         }
 
         // Check privilege
-        if ( (pSession->m_pClientItem->m_pUserItem->getUserRight( 0 ) & 0xf) < 6 ) {
+        if ( (pSession->m_pClientItem->m_pUserItem->getUserRights( 0 ) & 0xf) < 6 ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
                                     "-;RSTVAR;%d;%s",
@@ -837,7 +837,7 @@ autherror:
         }
 
         // Check privilege
-        if ( (pSession->m_pClientItem->m_pUserItem->getUserRight( 0 ) & 0xf) < 6 ) {
+        if ( (pSession->m_pClientItem->m_pUserItem->getUserRights( 0 ) & 0xf) < 6 ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
                                     "-;DELVAR;%d;%s",
@@ -894,7 +894,7 @@ autherror:
         }
 
         // Check privilege
-        if ( (pSession->m_pClientItem->m_pUserItem->getUserRight( 0 ) & 0xf) < 4 ) {
+        if ( (pSession->m_pClientItem->m_pUserItem->getUserRights( 0 ) & 0xf) < 4 ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
                                     "-;LENVAR;%d;%s",
@@ -950,7 +950,7 @@ autherror:
         }
 
         // Check privilege
-        if ( (pSession->m_pClientItem->m_pUserItem->getUserRight( 0 ) & 0xf) < 4 ) {
+        if ( (pSession->m_pClientItem->m_pUserItem->getUserRights( 0 ) & 0xf) < 4 ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
                                     "-;LCVAR;%d;%s",
@@ -1009,7 +1009,7 @@ autherror:
         }
 
         // Check privilege
-        if ( (pSession->m_pClientItem->m_pUserItem->getUserRight( 0 ) & 0xf) < 4 ) {
+        if ( (pSession->m_pClientItem->m_pUserItem->getUserRights( 0 ) & 0xf) < 4 ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
                                     "-;LSTVAR;%d;%s",
@@ -1137,7 +1137,7 @@ autherror:
         }
 
         // Check privilege
-        if ( (pSession->m_pClientItem->m_pUserItem->getUserRight( 0 ) & 0xf) < 4 ) {
+        if ( (pSession->m_pClientItem->m_pUserItem->getUserRights( 0 ) & 0xf) < 4 ) {
             mg_printf_websocket_frame( nc,
                                     WEBSOCKET_OP_TEXT,
                                     "-;GT;%d;%s",

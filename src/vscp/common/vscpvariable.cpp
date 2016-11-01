@@ -554,7 +554,7 @@ bool CVSCPVariable::setUserIdFromUserName( wxString& strUser )
 
 void CVSCPVariable::writeValueToString( wxString& strValueOut, bool bBase64 )
 {
-    wxString str = wxT("");
+    wxString str;
     switch ( m_type ) { 
 
         case VSCP_DAEMON_VARIABLE_CODE_STRING:
@@ -3566,7 +3566,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
         wxStringTokenizer tkz( strrest, _(".") );
         if ( !tkz.HasMoreTokens() ) return false;   
         
-        wxString strToken = tkz.GetNextToken(); // Get idx
+        wxString strToken = tkz.GetNextToken();         // Get idx
         if ( !strToken.ToULong( &idx ) ) return false;
         
         if ( !tkz.HasMoreTokens() ) {
@@ -3600,7 +3600,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
             else if ( _("rights") == strToken ) {
                 // rights or rights.0..7
                 if ( !tkz.HasMoreTokens() ) {
-                    var.setValue( pUserItem->getRightsAsString() );
+                    var.setValue( pUserItem->getUserRightsAsString() );
                 }
                 else {
                     strToken = tkz.GetNextToken();   // 0..7
@@ -4836,31 +4836,128 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 //                              Drivers
 // *****************************************************************************
     
+    else if ( wxNOT_FOUND != lcname.Find( _("vscp.driver.") ) ) {
+        
+    }
     
 // *****************************************************************************
 //                             Interfaces
 // ***************************************************************************** 
     
+    else if ( wxNOT_FOUND != lcname.Find( _("vscp.interface.") ) ) {
+        
+    }
     
 // *****************************************************************************
 //                              Discovery
 // ***************************************************************************** 
     
+    else if ( wxNOT_FOUND != lcname.Find( _("vscp.discovery.") ) ) {
+        
+    }
     
 // *****************************************************************************
 //                                 Log
 // *****************************************************************************    
     
+    else if ( wxNOT_FOUND != lcname.Find( _("vscp.log.") ) ) {
+        
+    }
     
 // *****************************************************************************
 //                                Tables
 // *****************************************************************************    
     
+    else if ( wxNOT_FOUND != lcname.Find( _("vscp.table.") ) ) {
+        
+    }
     
 // *****************************************************************************
 //                                Users
 // *****************************************************************************    
       
+    else if ( wxNOT_FOUND != lcname.Find( _("vscp.user.") ) ) {
+        
+        wxStringTokenizer tkz( lcname, _(".") );
+        wxString strToken;
+        strToken = tkz.GetNextToken();  // vscp
+        strToken = tkz.GetNextToken();  // user
+        
+        if ( !tkz.HasMoreTokens() ) return false;
+        strToken = tkz.GetNextToken();  // vscp
+        
+        // Add new record
+        if ( _("add") == strToken ) {
+            if ( !gpctrlObj->m_userList.addUser( var.getValue() ) ) return false;
+        }
+        else {
+            
+            // Token should be a user ordinal number
+            
+            unsigned long idx;
+            if ( !strToken.ToULong( &idx ) ) return false;
+            
+            CUserItem *pUserItem = gpctrlObj->m_userList.getUserItemFromOrdinal( idx );
+            if ( NULL == pUserItem ) return false;
+            
+            if ( !tkz.HasMoreTokens() ) {
+                // write
+                pUserItem->setFromString( var.getValue() );
+            }
+            
+            strToken = tkz.GetNextToken();
+            
+            if ( _("write") == strToken ) {
+                pUserItem->setFromString( var.getValue() );
+            }
+            else if ( _("name") == strToken ) {
+                pUserItem->setUser( var.getValue() );
+            }
+            else if ( _("password") == strToken ) {
+                pUserItem->setPassword( var.getValue() );
+            }
+            else if ( _("fullname") == strToken ) {
+                pUserItem->setFullname( var.getValue() );
+            }
+            else if ( _("filter") == strToken ) {
+                pUserItem->setFilterFromString( var.getValue() );
+            }
+            else if ( _("rights") == strToken ) {
+                if ( !tkz.HasMoreTokens() ) {
+                    pUserItem->setUserRightsFromString( var.getValue() );
+                }
+                else {
+                    unsigned long nRight, value;
+                    strToken = tkz.GetNextToken();  // id
+                    if ( !strToken.ToULong( &nRight ) ) return false;
+                    if ( nRight > 7 ) return false;
+                    if ( !var.getValue().ToULong( &value ) ) return false;
+                    pUserItem->setUserRights( nRight, value );
+                }
+            }
+            else if ( _("allowed") == strToken ) {
+                if ( !tkz.HasMoreTokens() ) return false;
+                strToken = tkz.GetNextToken();
+                if ( _("events") == strToken ) {
+                    pUserItem->setAllowedEventsFromString( var.getValue() );
+                }
+                else if ( _("remotes") == strToken ) {
+                    pUserItem->setAllowedRemotesFromString( var.getValue() );
+                }
+                else {
+                    return false;
+                }
+            }
+            else if ( _("note") == strToken ) {
+                pUserItem->setNote( var.getValue() );
+            }
+            else {
+                return false;
+            }
+            
+        }
+        
+    }
     
 // ----------------------------- Not Found -------------------------------------    
     
