@@ -831,6 +831,9 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
         return FALSE;
     }
     
+    // Read users from database
+    m_userList.loadUsers();
+    
     //==========================================================================
     //                           Add admin user
     //==========================================================================
@@ -855,7 +858,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 
     // Level II Driver Username
     pw.generatePassword(32, buf);
-    m_driverUsername = wxString::FromAscii(buf);
+    m_driverUsername = _("DRVUSR_") + wxString::FromAscii(buf);
 
     // Level II Driver Password
     pw.generatePassword(32, buf);
@@ -883,7 +886,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
                             _("driver"),
                             _("127.0.0.1"),                 // Only local
                             _("*"),                         // All events
-                            VSCP_ADD_USER_FLAG_LOCAL ); 
+                            VSCP_ADD_USER_FLAG_LOCAL );
     
     // Open up the General logging file.
     if ( m_bLogGeneralEnable ) {

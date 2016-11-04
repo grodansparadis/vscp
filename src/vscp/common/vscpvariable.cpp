@@ -1336,68 +1336,6 @@ void CVSCPVariable::setNote( const wxString& strNote, bool bBase64 )
     m_note = wxstr;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// setValue
-//
-
-/*void CVSCPVariable::setValue( wxString value ) 
-{
-    switch ( m_type ) {
-        
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS:
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE:    
-        case VSCP_DAEMON_VARIABLE_CODE_INTEGER:
-            break;
-            
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP:    
-        case VSCP_DAEMON_VARIABLE_CODE_LONG:
-            break;
-            
-        case VSCP_DAEMON_VARIABLE_CODE_DOUBLE:
-            break;
-            
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
-            break;
-            
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
-            break;
-            
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID:
-            break;
-            
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA:
-            break;
-            
-        case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
-            break;
-            
-        case VSCP_DAEMON_VARIABLE_CODE_DATE:
-            break;
-            
-        case VSCP_DAEMON_VARIABLE_CODE_TIME:
-            break;    
-    
-        case VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED:
-        case VSCP_DAEMON_VARIABLE_CODE_STRING:
-        case VSCP_DAEMON_VARIABLE_CODE_BLOB:    
-        case VSCP_DAEMON_VARIABLE_CODE_MIME:
-        case VSCP_DAEMON_VARIABLE_CODE_HTML:
-        case VSCP_DAEMON_VARIABLE_CODE_JAVASCRIPT:
-        case VSCP_DAEMON_VARIABLE_CODE_JSON:
-        case VSCP_DAEMON_VARIABLE_CODE_XML:
-        case VSCP_DAEMON_VARIABLE_CODE_SQL:
-        case VSCP_DAEMON_VARIABLE_CODE_LUA:
-        case VSCP_DAEMON_VARIABLE_CODE_LUA_RESULT:
-        case VSCP_DAEMON_VARIABLE_CODE_UX_TYPE1:
-        case VSCP_DAEMON_VARIABLE_CODE_DM_ROW:
-        case VSCP_DAEMON_VARIABLE_CODE_DRIVER:
-        case VSCP_DAEMON_VARIABLE_CODE_USER:
-        case VSCP_DAEMON_VARIABLE_CODE_FILTER:    
-        default:
-            m_strValue = value;
-            break;
-    } 
-}*/
 
 ///////////////////////////////////////////////////////////////////////////////
 // Reset
@@ -1625,9 +1563,17 @@ void CVSCPVariable::setFalse( void )
 
 
 
+
+
+
+
 //*****************************************************************************
-//                            CVariableStorage
+//                       V A R I A B L E   S T O R A G E
 //*****************************************************************************
+
+
+
+
 
 
 
@@ -2616,21 +2562,31 @@ bool CVariableStorage::init( void )
     // *************************************************************************
     
     variable.setAccessRights( PERMISSON_ALL_READ );
+    variable.setUserID( 0 );
     variable.setName( _("vscp.user.count") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("Number of defined users."), false );
     addStockVariable( variable  );
     
     variable.setAccessRights( PERMISSON_OWNER_ALL );
+    variable.setUserID( 0 );
     variable.setName( _("vscp.user") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("All defined users."), false );
     addStockVariable( variable  );
     
     variable.setAccessRights( PERMISSON_ALL_READ );
-    variable.setName( _("vscp.user.name") );
+    variable.setUserID( 0 );
+    variable.setName( _("vscp.user.names") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("All defined users names."), false );
+    addStockVariable( variable  );
+    
+    variable.setAccessRights( PERMISSON_OWNER_WRITE );
+    variable.setUserID( 0 );
+    variable.setName( _("vscp.user.add") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("Add a new user."), false );
     addStockVariable( variable  );
     
     // *************************************************************************
@@ -2715,7 +2671,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     if ( "vscp" != strToken ) return false;  
     
     // Get the stock variable - NOTE!!! all will not be found here so all
-    // variables will be let true . But variable with id=0 are uninitialised.
+    // variables will be let thru. But variable with id=0 are uninitialised.
     id = findNonPersistentVariable( name, var ); 
     
     if ( lcname == _("vscp.version.major") ) {
@@ -3542,20 +3498,24 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     //                                Users
     // *************************************************************************
     else if ( lcname == _("vscp.user.count") ) {
+        var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
         var.setValue( (long)gpctrlObj->m_userList.getUserCount() );
     }
     else if ( lcname == _("vscp.user") ) {
         gpctrlObj->m_userList.getAllUsers( wxstr );
+        var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
         var.setValue( wxstr );      
     }
-    else if ( lcname == _("vscp.user.name") ) {
+    else if ( lcname == _("vscp.user.names") ) {
         wxArrayString array;
         wxstr.Empty();
+        
         gpctrlObj->m_userList.getAllUsers( array );
         for ( int i=0; i<array.Count(); i++ ) {
             wxstr += array[ i ];
             if ( i != ( array.Count()-1 ) ) wxstr += _(",");
         }
+        var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
         var.setValue( wxstr );      
     }
     // Individual user  (vscp.user.1 or vscp.user.1.name... )
@@ -3571,7 +3531,8 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
         
         if ( !tkz.HasMoreTokens() ) {
             // vscp.user.n - return user record for index n
-            if ( !gpctrlObj->m_userList.getUserAsString( idx, wxstr ) ) return false;            
+            if ( !gpctrlObj->m_userList.getUserAsString( idx, wxstr ) ) return false; 
+            var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
             var.setValue( wxstr );
         }
         else {
@@ -3583,23 +3544,29 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
             strToken = tkz.GetNextToken();  // Get field
             if ( _("userid") == strToken ) {
                 wxstr = wxString::Format( _("%ld"), pUserItem->getUserID() );
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
                 var.setValue( wxstr );
             }
             else if ( _("name") == strToken ) {
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
                 var.setValue( pUserItem->getUser() );
             }
             else if ( _("password") == strToken ) {
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
                 var.setValue( pUserItem->getPassword() );
             }
             else if ( _("fullname") == strToken ) {
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
                 var.setValue( pUserItem->getFullname() );
             }
             else if ( _("filter") == strToken ) {
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_FILTER );
                 var.setValue( wxstr );
             }
             else if ( _("rights") == strToken ) {
                 // rights or rights.0..7
                 if ( !tkz.HasMoreTokens() ) {
+                    var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
                     var.setValue( pUserItem->getUserRightsAsString() );
                 }
                 else {
@@ -3607,6 +3574,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
                     if ( !strToken.ToULong( &idx ) ) return false;
                     if ( idx > 7 ) return false;
                     wxstr.Printf(_("%d"), idx );
+                    var.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
                     var.setValue( wxstr );
                 }
             }
@@ -3615,9 +3583,11 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
                 if ( !tkz.HasMoreTokens() ) return false;
                 strToken = tkz.GetNextToken();   // events/remotes
                 if ( _("events") == strToken ) {
+                    var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
                     var.setValue( pUserItem->getAllowedEventsAsString() );
                 }
                 else if ( _("remotes") == strToken ) { 
+                    var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
                     var.setValue( pUserItem->getAllowedRemotesAsString() );
                 }
                 else {
@@ -3625,36 +3595,12 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
                 }
             }
             else if ( _("note") == strToken ) {
+                var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
                 var.setValue( pUserItem->getNote() );
             }
+            
         }
         
-       
-        // Check for "vscp.user.n"
-        if ( wxNOT_FOUND != ( pos = strrest.Find( '.' ) ) ) {
-            
-            // Yepp - "vscp.user.n"
-            
-            // Get idx
-            
-                        
-            
-            
-        }
-        else {
-            
-            // we have something on the form "vscp.user.n.field"
-            
-            // Get idx
-            if ( !strrest.Left( pos ).ToULong( &idx ) ) return false;
-            
-            if ( wxNOT_FOUND == ( pos = strrest.Find( '.', true ) ) ) return false;
-            
-            if ( !gpctrlObj->m_userList.getUserAsString( idx, wxstr ) ) return false;
-            
-            var.setValue( wxstr );
-            
-        }
     }
     
     // *************************************************************************

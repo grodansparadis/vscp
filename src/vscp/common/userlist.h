@@ -87,7 +87,7 @@
 #define VSCP_USER_RIGHT_PRIORITY0                       0x00000001
 
 #define VSCP_ADD_USER_UNINITIALISED                     -1
-#define VSCP_LOCAL_USER_OFFSET                          0x10000
+#define VSCP_LOCAL_USER_OFFSET                          -1
 
 // Add user flags
 #define VSCP_ADD_USER_FLAG_LOCAL                        0x00000001  // Marks local user not in db
@@ -206,8 +206,8 @@ public:
     bool checkPasswordDomain( const wxString& md5password ) { return ( getPasswordDomain().IsSameAs( md5password ) ? true : false); };
     
     // Getters/Setters
-    int getUserID( void ) { return m_userID; };
-    void setUserID( const int id ) { m_userID = id; };
+    long getUserID( void ) { return m_userID; };
+    void setUserID( const long id ) { m_userID = id; };
     
     wxString getUser( void ) { return m_user; };
     void setUser( const wxString& strUser ) { m_user = strUser; };
@@ -245,10 +245,16 @@ public:
     /*!
      * Set user settings from string
      * @param userSettings User settings in a semicolon separated list in the form
-     *  
      * @return true on success, false on failure.
      */
     bool setFromString( wxString userSettings );
+    
+    /*!
+     * Get user settings as string
+     * @param userSettings String that will get user settings
+     * @return true on success, false on failure.
+     */
+    bool getAsString( wxString& userSettings );
     
 protected:
     
@@ -440,6 +446,11 @@ protected:
         hash with group items
     */
     VSCPGROUPHASH m_grouphashmap;
+    
+private:
+
+    // Counter for internal user id's (all negative)
+    long m_cntLocaluser;    
 
 };
 

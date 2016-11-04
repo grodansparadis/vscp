@@ -145,6 +145,42 @@ bool CUserItem::setFromString( wxString userSettings )
     return true;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// getAsString
+//
+// userid;name;password;fullname;filter;mask;rights;remotes;events;note
+//
+
+bool CUserItem::getAsString( wxString& strUser )
+{
+    wxString wxstr;
+    strUser.Empty();
+        
+    strUser += wxString::Format( _("%ld;"), getUserID() );
+    strUser += getUser();
+    strUser += _(";");
+    strUser += getPassword();
+    strUser += _(";");
+    strUser += getFullname();
+    strUser += _(";");
+    vscp_writeFilterToString( getFilter(), wxstr );
+    strUser += wxstr;
+    strUser += _(";");
+    vscp_writeMaskToString( getFilter(), wxstr );
+    strUser += wxstr;
+    strUser += _(";");
+    strUser += getUserRightsAsString();
+    strUser += _(";");
+    strUser += getAllowedRemotesAsString();
+    strUser += _(";");
+    strUser += getAllowedEventsAsString();
+    strUser += _(";");
+    strUser += getNote();
+    
+    return true;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // setUserRightsFromString
 //
@@ -394,7 +430,7 @@ bool CUserItem::saveToDatabase( void )
     
     // Internal records can't be saved to db
     // driver users is an example on users that are only local
-    if ( m_userID > VSCP_LOCAL_USER_OFFSET ) return false;
+    if ( m_userID < 0 ) return false;
     
     wxString strFilter, strMask, strBoth;
     strBoth = strFilter + _(",") + strMask;
@@ -406,7 +442,6 @@ bool CUserItem::saveToDatabase( void )
  
         // Add
         char *sql = sqlite3_mprintf( VSCPDB_USER_INSERT,
-                m_userID,
                 (const char *)m_user.mbc_str(),
                 (const char *)m_password.mbc_str(),
                 (const char *)m_fullName.mbc_str(),
@@ -555,6 +590,7 @@ bool CUserItem::isUserAllowedToSendEvent( const uint32_t vscp_class,
 
 CUserList::CUserList(void)
 {
+    m_cntLocaluser = VSCP_LOCAL_USER_OFFSET;
     //wxLogDebug( _("Read Configuration: VSCPEnable=%s"), 
     //              ( m_bVSCPEnable ? _("true") : _("false") )  );
 }
@@ -677,7 +713,7 @@ bool CUserList::loadUsers( void )
             gpctrlObj->logMsg( _("Unable to allocate memory for new user.\n") );
         }
     
-        sqlite3_step( ppStmt );
+        //sqlite3_step( ppStmt );
     }
     
     sqlite3_finalize( ppStmt );    
@@ -700,8 +736,6 @@ bool CUserList::addUser( const wxString& user,
                             uint32_t bFlags )
 {
     char buf[ 512 ];
-    static uint32_t cntLocaluser = VSCP_LOCAL_USER_OFFSET;
-    // Check if user is already in the database
     char *pErrMsg = 0;
     sqlite3_stmt *ppStmt;
     
@@ -719,9 +753,15 @@ bool CUserList::addUser( const wxString& user,
     // New user item
     CUserItem *pItem = new CUserItem; 
     if (NULL == pItem) return false;
+    pItem->setUserID( 0 );
+    
+    if ( VSCP_ADD_USER_FLAG_ADMIN & bFlags ) {
+        pItem->setUserID( 0 );              // The one and only admin user
+    }
     
     if ( VSCP_ADD_USER_FLAG_LOCAL & bFlags ) {
-        pItem->setUserID( cntLocaluser++ ); // Never save to DB
+        pItem->setUserID( m_cntLocaluser ); // Never save to DB
+        m_cntLocaluser--;
     }
   
     if ( VSCP_ADD_USER_FLAG_ADMIN & bFlags ) {
@@ -734,7 +774,6 @@ bool CUserList::addUser( const wxString& user,
         return false;
     }
     
-    
     // MD5 Token
     wxString driverhash = user;
     driverhash += _(":");
@@ -743,14 +782,13 @@ bool CUserList::addUser( const wxString& user,
     driverhash += password;
     
     memset( buf, 0, sizeof( buf ) );
-    strncpy( buf,(const char *)driverhash.mbc_str(), driverhash.Length() );
+    strncpy( buf, (const char *)driverhash.mbc_str(), driverhash.Length() );
 
     char digest[33];
     memset( digest, 0, sizeof( digest ) );
     cs_md5( digest, buf, strlen(buf), NULL );
 
-    pItem->setPasswordDomain( wxString::FromUTF8( digest ) );
-    
+    pItem->setPasswordDomain( wxString::FromUTF8( digest ) );  
 
     pItem->setUser( user );
     pItem->setPassword( password );
@@ -798,8 +836,8 @@ bool CUserList::addUser( const wxString& user,
     }
 
     // Allowed remotes (ACL) 
-    if (allowedRemotes.Length()) {
-        wxStringTokenizer tkz(allowedRemotes, wxT(","));
+    if ( allowedRemotes.Length() ) {
+        wxStringTokenizer tkz( allowedRemotes, wxT(",") );
         do {
             wxString remote = tkz.GetNextToken();
             if ( !remote.IsEmpty() ) {
@@ -832,6 +870,11 @@ bool CUserList::addUser( const wxString& user,
     // Clear filter
     if (NULL != pFilter) {
         pItem->setFilter( pFilter );
+    }
+    
+    // Save to database
+    if ( !( VSCP_ADD_USER_FLAG_LOCAL & bFlags ) ) {
+        pItem->saveToDatabase();
     }
 
     return true;
@@ -945,28 +988,7 @@ bool CUserList::getUserAsString( CUserItem *pUserItem, wxString& strUser )
     // Check pointer
     if ( NULL == pUserItem ) return false;
     
-    strUser += wxString::Format( _("%ld;"), pUserItem->getUserID() );
-    strUser += pUserItem->getUser();
-    strUser += _(";");
-    strUser += pUserItem->getPassword();
-    strUser += _(";");
-    strUser += pUserItem->getFullname();
-    strUser += _(";");
-    vscp_writeFilterToString( pUserItem->getFilter(), wxstr );
-    strUser += wxstr;
-    strUser += _(";");
-    vscp_writeMaskToString( pUserItem->getFilter(), wxstr );
-    strUser += wxstr;
-    strUser += _(";");
-    strUser += pUserItem->getUserRightsAsString();
-    strUser += _(";");
-    strUser += pUserItem->getAllowedRemotesAsString();
-    strUser += _(";");
-    strUser += pUserItem->getAllowedEventsAsString();
-    strUser += _(";");
-    strUser += pUserItem->getNote();
-    
-    return true;
+    return pUserItem->getAsString( strUser );    
 }
 
 ///////////////////////////////////////////////////////////////////////////////
