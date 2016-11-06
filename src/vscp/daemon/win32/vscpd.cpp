@@ -24,11 +24,12 @@
 #define XSTR(x) STR(x)
 //#define STR(x) #x
 
-#include <signal.h>
-
 #ifdef WIN32
 #include <winsock2.h>
+#include <wx/msw/winundef.h>    // https://wiki.wxwidgets.org/WxMSW_Issues
 #endif
+
+#include <signal.h>
 
 //#include "wx/wxprec.h"
 #include "wx/wx.h"
