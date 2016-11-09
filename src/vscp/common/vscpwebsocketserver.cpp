@@ -523,6 +523,15 @@ autherror:
                                     WEBSOCK_STR_ERROR_SYNTAX_ERROR );
             return;
         }
+        
+        // name can not start with "vscp." that is it is a stock variable
+        if ( name.Lower().StartsWith( "vscp.") ) {
+            mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
+                                    "-;CVAR;%d;%s",
+                                    WEBSOCK_ERROR_VARIABLE_NO_STOCK,
+                                    WEBSOCK_STR_ERROR_VARIABLE_NO_STOCK );
+            return;
+        }
 
         // Get variable type
         if (tkz.HasMoreTokens()) {

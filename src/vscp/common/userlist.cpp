@@ -755,14 +755,15 @@ bool CUserList::addUser( const wxString& user,
     if (NULL == pItem) return false;
     pItem->setUserID( 0 );
     
-    if ( VSCP_ADD_USER_FLAG_ADMIN & bFlags ) {
-        pItem->setUserID( 0 );              // The one and only admin user
-    }
-    
     if ( VSCP_ADD_USER_FLAG_LOCAL & bFlags ) {
         pItem->setUserID( m_cntLocaluser ); // Never save to DB
         m_cntLocaluser--;
     }
+    
+    if ( VSCP_ADD_USER_FLAG_ADMIN & bFlags ) {
+        pItem->setUserID( 0 );              // The one and only admin user
+        bFlags |= VSCP_ADD_USER_FLAG_LOCAL; // Admin users should not be added to database
+    }    
   
     if ( VSCP_ADD_USER_FLAG_ADMIN & bFlags ) {
         pItem->setUserID( 0 );              // The one and only admin user

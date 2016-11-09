@@ -62,7 +62,6 @@
 #ifdef WIN32
 
 #include <winsock2.h>
-//#include <winsock.h>
 #include "canal_win32_ipc.h"
 
 #else   // UNIX

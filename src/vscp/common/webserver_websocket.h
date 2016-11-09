@@ -50,8 +50,9 @@ enum {
     WEBSOCK_ERROR_MEMORY_ALLOCATION,        // Problem allocating memory.
     WEBSOCK_ERROR_VARIABLE_DEFINED,         // Variable is already defined.
     WEBSOCK_ERROR_VARIABLE_UNKNOWN,         // Cant find variable
+    WEBSOCK_ERROR_VARIABLE_NO_STOCK,        // Cant add stock variable
     WEBSOCK_ERROR_NOT_AUTHORISED,           // Not authorised
-    WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT,// Not authorised
+    WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT,// Not authorized to send events
     WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,   // Not allowed to do that
     WEBSOCK_ERROR_MUST_HAVE_TABLE_NAME,     // Must have a table name
     WEBSOCK_ERROR_END_DATE_IS_WRONG,        // End date must be later than start date
@@ -68,6 +69,7 @@ enum {
 #define WEBSOCK_STR_ERROR_VARIABLE_DEFINED              "Variable is already defined"
 #define WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN              "Unable to find variable"
 #define WEBSOCK_STR_ERROR_VARIABLE_UPDATE               "Unable to update variable"
+#define WEBSOCK_STR_ERROR_VARIABLE_NO_STOCK             "Stock variables can't be added/created"
 #define WEBSOCK_STR_ERROR_NOT_AUTHORISED                "Not authorised"
 #define WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_SEND_EVENT     "Not allowed to send event"
 #define WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT        "Not allowed to do that (check privileges)"

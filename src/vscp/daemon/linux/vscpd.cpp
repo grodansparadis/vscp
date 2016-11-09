@@ -61,7 +61,7 @@
 int gbStopDaemon;
 int gnDebugLevel = 0;
 bool gbDontRunAsDaemon = false;
-bool gbRestart = false;
+bool gbRestart = false;   
 
 CControlObject *gpobj;
 
