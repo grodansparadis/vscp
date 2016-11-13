@@ -365,6 +365,34 @@ const char * CVSCPVariable::getVariableTypeAsString( int type )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// isValueBase64Encoded
+//
+
+bool CVSCPVariable::isValueBase64Encoded( int type ) 
+{
+    if ( VSCP_DAEMON_VARIABLE_CODE_STRING == type || 
+                VSCP_DAEMON_VARIABLE_CODE_BLOB == type || 
+                VSCP_DAEMON_VARIABLE_CODE_MIME ==  type || 
+                VSCP_DAEMON_VARIABLE_CODE_HTML == type || 
+                VSCP_DAEMON_VARIABLE_CODE_JAVASCRIPT == type ||  
+                VSCP_DAEMON_VARIABLE_CODE_JSON == type || 
+                VSCP_DAEMON_VARIABLE_CODE_XML == type || 
+                VSCP_DAEMON_VARIABLE_CODE_SQL == type || 
+                VSCP_DAEMON_VARIABLE_CODE_LUA == type || 
+                VSCP_DAEMON_VARIABLE_CODE_LUA_RESULT == type || 
+                VSCP_DAEMON_VARIABLE_CODE_UX_TYPE1 == type || 
+                VSCP_DAEMON_VARIABLE_CODE_DM_ROW == type || 
+                VSCP_DAEMON_VARIABLE_CODE_DRIVER == type || 
+                VSCP_DAEMON_VARIABLE_CODE_USER == type || 
+                VSCP_DAEMON_VARIABLE_CODE_FILTER == type ) {
+        
+        return true;        
+    }
+    
+    return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // setType
 //
 
@@ -415,11 +443,7 @@ wxString CVSCPVariable::getAsString( bool bShort )
     
     // Long format can be dangerous as it can give **VERY** long lines.
     if ( !bShort ) { 
-        if ( 1 == m_type || 16 == m_type || 
-                100 == m_type || 101 == m_type || 102 == m_type ||   
-                200 == m_type || 201 == m_type || 
-                300 == m_type || 
-                500 == m_type || 501 == m_type || 502 == m_type || 503 == m_type ) {
+        if ( isValueBase64Encoded( m_type ) ) {
             wxstr += _(";");
             wxstr += wxBase64Encode( m_strValue, m_strValue.Length() );
             wxstr += _(";");
@@ -5509,6 +5533,9 @@ bool CVariableStorage::loadFromXML( const wxString& path  )
             if ( wxNOT_FOUND != wxstr.Find( _("TRUE") ) ) {
                 variable.setPersistent( true ); 
             }
+            else if ( wxNOT_FOUND != wxstr.Find( _("YES") ) ) {
+                variable.setPersistent( true ); 
+            } 
                     
             // userid
             if ( child->GetAttribute( wxT("user"), wxT("0") ).ToULong( &lval ) ) {
@@ -5547,8 +5574,16 @@ bool CVariableStorage::loadFromXML( const wxString& path  )
                 else if (subchild->GetName() == wxT("value")) {
                     variable.setValue( subchild->GetNodeContent() );
                 }
+                else if (subchild->GetName() == wxT("value-base64")) {
+                    variable.setValue( (wxString)wxBase64Decode( subchild->GetNodeContent(), 
+                                            subchild->GetNodeContent().Length() ) );
+                }
                 else if (subchild->GetName() == wxT("note")) {
-                    variable.setNote( subchild->GetNodeContent() );
+                    variable.setNote( subchild->GetNodeContent(), false );
+                }
+                else if (subchild->GetName() == wxT("note-base64")) {
+                    variable.setNote( (wxString)wxBase64Decode( subchild->GetNodeContent(), 
+                                            subchild->GetNodeContent().Length() ) );
                 }
 
                 subchild = subchild->GetNext();
@@ -5741,7 +5776,8 @@ bool CVariableStorage::writeVariableToXmlFile( wxFFileOutputStream *pFileStream,
     str.Printf(_(" value=\"%s\" "), (const char *)strtemp.mbc_str() );
     pFileStream->Write(str.mb_str(), strlen(str.mb_str()));
     
-    str.Printf(_(" note=\"%s\" "), (const char *)variable.getNote().mbc_str() );
+    //Allways save on base64 encoded form
+    str.Printf(_(" note-base64=\"%s\" "), (const char *)variable.getNote().mbc_str() );
     pFileStream->Write(str.mb_str(), strlen(str.mb_str()));
 
     pFileStream->Write(" />\n\n", strlen(" />\n\n"));

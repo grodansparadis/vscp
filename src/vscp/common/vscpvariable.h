@@ -121,7 +121,11 @@ public:
         @param variable type in numerical form.
      */
     static uint16_t getVariableTypeFromString(const wxString& strVariableType);
-
+    
+    /*!
+     * Return true if this variable type value is presented BASE64 encoded
+     */
+    static bool isValueBase64Encoded( int type ); 
 
     /*!
         Set variable value from string
