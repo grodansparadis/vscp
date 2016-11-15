@@ -543,9 +543,9 @@ autherror:
             accessrights = vscp_readStringValue( tkz.GetNextToken() );
         }
 
-        // Get variable Persistence
+        // Get variable Persistence 0/1
         if (tkz.HasMoreTokens()) {
-            int val = vscp_readStringValue(tkz.GetNextToken());
+            int val = vscp_readStringValue( tkz.GetNextToken() );
 
             if ( 0 == val ) {
                 bPersistent = false;
@@ -563,14 +563,13 @@ autherror:
         }
 
         // Get variable value
-        if (tkz.HasMoreTokens()) {
-            value = tkz.GetNextToken();
+        if ( tkz.HasMoreTokens() ) {
+            value = tkz.GetNextToken(); // Keep possible coding
         }
-
         
         // Get variable note
         if (tkz.HasMoreTokens()) {
-            note = tkz.GetNextToken();
+            note = tkz.GetNextToken();  // Keep possible coding
         }
 
         // Add the variable
@@ -707,11 +706,13 @@ autherror:
                 return;
             }
 
-            // Set variable value
-            if (tkz.HasMoreTokens()) {
+            // Get variable value
+            if ( tkz.HasMoreTokens() ) {
                 
                 strTok = tkz.GetNextToken();
-                if (!variable.setValueFromString(variable.getType(), strTok)) {
+                if ( !variable.setValueFromString( variable.getType(), 
+                                                        strTok,
+                                                        false ) ) {     // Preserve coding
                     mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
                                     "-;WVAR;%d;%s",
                                     WEBSOCK_ERROR_SYNTAX_ERROR,

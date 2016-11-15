@@ -216,13 +216,13 @@ public:
         getValue
         @param value String that will receive value.
      */
-    void setValue(wxString value) { m_strValue = value; };  
+    void setValue( wxString value, bool bBase64=false  );  
 
     /*!
         setValue
         @param val long to set value to.
      */
-    void setValue(int val);
+    void setValue( int val );
 
 
     /*!
