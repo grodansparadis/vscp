@@ -159,20 +159,21 @@
 #define VSCPDB_ORDINAL_CONFIG_MQTTBROKER_PORT                               49
 #define VSCPDB_ORDINAL_CONFIG_COAPSERVER_ENABLE                             50
 #define VSCPDB_ORDINAL_CONFIG_COAPSERVER_PORT                               51
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_ZONE                               52
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUBZONE                            53
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_LONGITUDE                          54
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_LATITUDE                           55
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISE_ENABLE                     56
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSET_ENABLE                      57
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSETTWILIGHT_ENABLE              58
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISETWILIGHT_ENABLE             59
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_ENABLE      60
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_INTERVAL    61
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_ENABLE              62
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_INTERVAL            63
-#define VSCPDB_ORDINAL_CONFIG_DB_VSCPDATA_PATH                              64
-#define VSCPDB_ORDINAL_CONFIG_DB_VSCPCONF_PATH                              65
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_ENABLE                             52
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_ZONE                               53
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUBZONE                            54
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_LONGITUDE                          55
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_LATITUDE                           56
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISE_ENABLE                     57
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSET_ENABLE                      58
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSETTWILIGHT_ENABLE              59
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISETWILIGHT_ENABLE             60
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_ENABLE      61
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_INTERVAL    62
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_ENABLE              63
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_INTERVAL            64
+#define VSCPDB_ORDINAL_CONFIG_DB_VSCPDATA_PATH                              65
+#define VSCPDB_ORDINAL_CONFIG_DB_VSCPCONF_PATH                              66
 
 //*****************************************************************************
 //                                  LOG
@@ -642,7 +643,7 @@
 	"`maskPriority`                 INTEGER NOT NULL DEFAULT 0,"\
 	"`maskClass`                    NUMERIC NOT NULL DEFAULT 0,"\
 	"`maskType`                     INTEGER NOT NULL DEFAULT 0,"\
-	"`maskGUID`                     TEXT NOT NULL DEFAULT DEFAULT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00',"\
+	"`maskGUID`                     TEXT NOT NULL DEFAULT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00',"\
 	"`filterPriority`               INTEGER NOT NULL DEFAULT 0,"\
 	"`filterClass`                  INTEGER NOT NULL DEFAULT 0,"\
 	"`filterType`                   INTEGER NOT NULL DEFAULT 0,"\
@@ -671,7 +672,7 @@
 	"`measurementUnit`              INTEGER,"\
 	"`measurementCompare`           INTEGER,"\
 	"`comment`                      TEXT"\
-    ")"
+    ");"
 
 #define VSCPDB_DM_INSERT "INSERT INTO 'dm' "\
                 "(GroupID,bEnable,maskPriority,maskClass,maskType,maskGUID,filterPriority,filterClass,filterType,filterGUID,"\
@@ -681,16 +682,16 @@
                 " )VALUES ('%s','%d','%d','%d','%d','%s','%d','%d','%d','%s',"\
                 "'%s','%s','%d','%d','%d','%d','%d','%d','%d',"\
                 "'%d','%s','%d','%d','%d','%d','%d','%d','%d','%d','%d','%s','%f','%d','%s'"\
-                ")"
+                ");"
                         
 #define VSCPDB_DM_UPDATE "UPDATE 'dm' "\
                 "SET GroupID='%s',bEnable='%d',maskPriority='%d',maskClass=%d',maskType=%d',maskGUID=%s',filterPriority=%d',filterClass=%d',filterType=%d',filterGUID=%s',"\
                 "allowedStart=%s',allowedEnd=%s',allowedMonday='%d',allowedTuesday='%d',allowsWednesday='%d',allowedThursday='%d',allowedFriday='%d',allowedSaturday='%d',"\
                 "allowedSunday,allowedTime,bCheckIndex,index,bCheckZone,zone,bCheckSubZone,subzone,bCheckMeasurementIndex,"\
                 "meaurementIndex='%d',actionCode='%d',actionParameter='%s',measurementValue='%f',measurementUnit='%d',measurementCompare='%d'"\
-                " WHERE idx_dm='%d'" 
+                " WHERE idx_dm='%d';" 
 
-#define VSCPDB_DM_UPDATE_ITEM "UPDATE 'dm' SET ( %s='%s' ) WHERE id='%d' "
+#define VSCPDB_DM_UPDATE_ITEM "UPDATE 'dm' SET ( %s='%s' ) WHERE id='%d' ;"
 
 #define VSCPDB_ORDINAL_DM_ID                        0   // 
 #define VSCPDB_ORDINAL_DM_ENABLE                    1   //

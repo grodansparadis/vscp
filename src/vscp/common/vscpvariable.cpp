@@ -1895,7 +1895,7 @@ bool CVariableStorage::init( void )
     addStockVariable( variable  );
     
     variable.setAccessRights( PERMISSON_ALL_READ );    
-    variable.setName( _("vscp.version.sqllite.str") );
+    variable.setName( _("vscp.version.sqlite.str") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("SQLite3 version string."), true );
     addStockVariable( variable  );
@@ -2022,7 +2022,7 @@ bool CVariableStorage::init( void )
     variable.setName( _("vscp.host.username") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Full name for the user the VSCP daemon is running as."), true );
-    addStockVariable( variable  );
+    addStockVariable( variable );
     
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.host.guid") );
@@ -2061,7 +2061,7 @@ bool CVariableStorage::init( void )
     
     variable.setAccessRights( PERMISSON_ALL_READ  | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.tcpip.address") );
-    variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Address for VSCP daemon TCP/IP interface."), true );
     addStockVariable( variable  );
     
@@ -2073,9 +2073,9 @@ bool CVariableStorage::init( void )
     
     variable.setAccessRights( PERMISSON_ALL_READ  | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.multicast.address") );
-    variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Address for VSCP daemon multicast TCP/IP interface (Default: 224.0.23.158)."), true );
-    addStockVariable( variable  );
+    addStockVariable( variable );
     
     variable.setAccessRights( PERMISSON_ALL_READ  | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.multicast.ttl") );
@@ -2839,8 +2839,8 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
             &major, &minor, &sub, &build );
         var.setValue( wxString::Format( _("%d"), build ) );
     }
-    else if ( lcname.StartsWith( _("vscp.version.sqllite.str") ) ) {
-        var.setValue( _(SQLITE_VERSION) );
+    else if ( lcname.StartsWith( _("vscp.version.sqlite.str") ) ) {
+        var.setValue( _(SQLITE_VERSION), true );
     }
 
     // *************************************************************************
@@ -2867,9 +2867,6 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     else if ( lcname.StartsWith( _("vscp.os.str") ) ) {
         var.setValue( wxGetOsDescription(), true );
     }
-    else if ( lcname.StartsWith( _("vscp.os.width") ) ) {
-        var.setValue( wxIsPlatform64Bit() ? 64 : 32 );
-    }
     else if ( lcname.StartsWith( _("vscp.os.width.str") ) ) {
         var.setValue( wxIsPlatform64Bit() ? _("64") : _("32"), true );
     }
@@ -2878,6 +2875,9 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     }
     else if ( lcname.StartsWith( _("vscp.os.width.is32bit") ) ) {
         var.setValue( !wxIsPlatform64Bit() ? true : false );
+    }
+        else if ( lcname.StartsWith( _("vscp.os.width") ) ) {
+        var.setValue( wxIsPlatform64Bit() ? 64 : 32 );
     }
     else if ( lcname.StartsWith( _("vscp.os.endiness.str") ) ) {
         var.setValue( wxIsPlatformLittleEndian() ? _("Little endian") : _("Big endian"), true );
@@ -2920,14 +2920,11 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
         var.setValue( wxGetUserId(), true );
     }
     else if ( lcname.StartsWith( _("vscp.host.username") ) ) {
-        var.setValue( wxGetUserName() );
+        var.setValue( wxGetUserName(), true );
     }
     else if ( lcname.StartsWith( _("vscp.host.guid") ) ) {
         var.setValue( wxstr );
-    }
-    else if ( lcname.StartsWith( _("vscp.loglevel") ) ) {
-        var.setValue( wxString::Format( _("%d "), gpctrlObj->m_logLevel ) );
-    }
+    } 
     else if ( lcname.StartsWith( _("vscp.loglevel.str") ) ) {
         switch ( gpctrlObj->m_logLevel  ) {
             case DAEMON_LOGMSG_NONE:
@@ -2944,6 +2941,9 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
              break;
         }
         var.setValue( wxstr, true );
+    }
+    else if ( lcname.StartsWith( _("vscp.loglevel") ) ) {
+        var.setValue( wxString::Format( _("%d "), gpctrlObj->m_logLevel ) );
     }
     else if ( lcname.StartsWith( _("vscp.client.receivequeue.max") ) ) {
         var.setValue( wxString::Format( _("%d"), 
@@ -2966,7 +2966,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     // *************************************************************************
     
     else if ( lcname.StartsWith( _("vscp.discovery.enable") ) ) {
-        var.setValue( gpctrlObj->m_strTcpInterfaceAddress, true );
+        var.setValue( true );
     }
     
     // *************************************************************************
@@ -3070,7 +3070,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
         double daylength = gpctrlObj->m_automation.getDayLength();
         gpctrlObj->m_automation.convert2HourMinute( daylength, &hour, &minute );
         wxstr.Printf(_("%02d:%02d"), hour, minute );
-        var.setValue( wxstr );
+        var.setValue( wxstr, true );
     }
     
     else if ( lcname.StartsWith( _("vscp.automation.declination") ) ) {
@@ -3317,11 +3317,11 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     // *************************************************************************
     
     
-    else if ( lcname.StartsWith( _("vscp.dm.count") ) ) {
-        var.setValue( (long)gpctrlObj->m_dm.getDatabaseRecordCount() );
-    }
     else if ( lcname.StartsWith( _("vscp.dm.count.active") ) ) {
         var.setValue( gpctrlObj->m_dm.getMemoryElementCount() );      
+    }
+    else if ( lcname.StartsWith( _("vscp.dm.count") ) ) {
+        var.setValue( (long)gpctrlObj->m_dm.getDatabaseRecordCount() );
     }
     else if ( lcname.StartsWith( _("vscp.dm") ) ) {
         var.setStockVariable();
@@ -3775,7 +3775,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
     else if ( lcname.StartsWith( _("vscp.version.sqlite.build") ) ) {
         return false;   // None writable
     }
-    else if ( lcname.StartsWith( _("vscp.version.sqllite.str") ) ) {
+    else if ( lcname.StartsWith( _("vscp.version.sqlite.str") ) ) {
         return false;   // None writable
     }
 

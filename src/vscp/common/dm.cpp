@@ -3465,9 +3465,10 @@ void CDM::init( void )
     }
     else {
         if ( m_path_db_vscp_dm.IsOk() ) {
+            
             // We need to create the database from scratch. This may not work if
             // the database is in a read only location.
-            fprintf( stderr, "VSCP Daemon DM does not exist - will be created.\n" );
+            fprintf( stderr, "VSCP Daemon DM database does not exist - will be created.\n" );
             wxstr.Printf(_("Path=%s\n"), (const char *)m_path_db_vscp_dm.GetFullPath().mbc_str() );
             fprintf( stderr, wxstr.mbc_str() );
             
@@ -4320,7 +4321,7 @@ uint32_t CDM::getDatabaseRecordCount( void )
     }
     
     if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_dm,
-                                            "SELECT count(id) FROM dm WHERE bEnable='true';",
+                                            "SELECT count(*) FROM dm WHERE bEnable!=0;",
                                             -1,
                                             &ppStmt,
                                             NULL ) ) {
