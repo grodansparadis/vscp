@@ -924,13 +924,13 @@ wxString dmElement::getAsString( bool bCRLF )
     strRow += _(",");
 
     // Priority mask
-    strRow += wxString::Format(_("0x%X,"), m_vscpfilter.mask_priority );
+    strRow += wxString::Format(_("0x%02X,"), m_vscpfilter.mask_priority );
 
     // Class mask
-    strRow += wxString::Format(_("0x%X,"), m_vscpfilter.mask_class );
+    strRow += wxString::Format(_("0x%04X,"), m_vscpfilter.mask_class );
 
     // Type mask
-    strRow += wxString::Format(_("0x%X,"), m_vscpfilter.mask_type );
+    strRow += wxString::Format(_("0x%04X,"), m_vscpfilter.mask_type );
 
     // GUID mask
     wxString strGUID;
@@ -939,13 +939,13 @@ wxString dmElement::getAsString( bool bCRLF )
     strRow += _(",");
 
     // Priority filter
-    strRow += wxString::Format(_("0x%X,"), m_vscpfilter.filter_priority );
+    strRow += wxString::Format(_("0x%02X,"), m_vscpfilter.filter_priority );
 
     // Class filter
-    strRow += wxString::Format(_("0x%X,"), m_vscpfilter.filter_class );
+    strRow += wxString::Format(_("0x%04X,"), m_vscpfilter.filter_class );
 
     // Type filter
-    strRow += wxString::Format(_("0x%X,"), m_vscpfilter.filter_type );
+    strRow += wxString::Format(_("0x%04X,"), m_vscpfilter.filter_type );
 
     // GUID filter
     vscp_writeGuidArrayToString( m_vscpfilter.filter_GUID, strGUID );
@@ -1001,17 +1001,17 @@ wxString dmElement::getAsString( bool bCRLF )
     strRow += _(",");
     
     // Action Code
-    strRow += wxString::Format(_("0x%X,"), m_actionCode );
+    strRow += wxString::Format(_("0x%08X,"), m_actionCode );
 
     // Action Parameters
     strRow += m_actionparam;
     strRow += _(",");
 
     // trig-counter:
-    strRow += wxString::Format(_("0x%X,"), m_triggCounter );
+    strRow += wxString::Format(_("%d,"), m_triggCounter );
 
     // error-counter:
-    strRow += wxString::Format(_("0x%X,"), m_errorCounter );
+    strRow += wxString::Format(_("%d,"), m_errorCounter );
     
     // Last error
     strRow += m_strLastError;
