@@ -151,6 +151,7 @@ extern struct websrv_rest_session *gp_websrv_rest_sessions;
 int webserv_url_decode( const char *src, int src_len,
                             char *dst, int dst_len,
                             int is_form_url_encoded );
+
 void webserv_util_sendheader( struct mg_connection *nc,
                                         const int returncode,
                                         const char *content );
@@ -162,6 +163,26 @@ void webserv_util_sendheader( struct mg_connection *nc,
 // Linked list of websocket sessions
 // Protected by the websocketSexxionMutex
 static struct websock_session *gp_websock_sessions;
+
+
+websock_session::websock_session( void )
+{
+    memset( m_key, 0, 33 );
+    memset( m_sid, 0, 33 );
+    m_version = 0;
+    m_referenceCount = 0;
+    bAuthenticated = false;
+    lastActiveTime = 0;
+    m_pClientItem = NULL;
+    bTrigger = false;
+    triggerTimeout = 0;
+    
+};
+
+websock_session::~websock_session( void )
+{
+
+};
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1896,7 +1917,7 @@ VSCPWebServerThread::websock_new_session( struct mg_connection *nc,
     char buf[512];
     char ws_version[10];
     char ws_key[33];
-    struct websock_session *ret;
+    struct websock_session *pSession;
 
     // Check pointer
     if (NULL == nc) return NULL;
@@ -1917,16 +1938,16 @@ VSCPWebServerThread::websock_new_session( struct mg_connection *nc,
     }
 
     // create fresh session
-    ret = (struct websock_session *)calloc(1, sizeof( struct websock_session ) );
-    if  (NULL == ret ) {
+    pSession = (struct websock_session *)calloc(1, sizeof( struct websock_session ) );
+    if  (NULL == pSession ) {
 #ifndef WIN32
         syslog( LOG_ERR, "calloc error: %s\n", strerror(errno));
 #endif
         return NULL;
     }
 
-    memset( ret->m_sid, 0, sizeof( ret->m_sid ) );
-    memset( ret->m_key, 0, sizeof( ret->m_key ) );
+    memset( pSession->m_sid, 0, sizeof( pSession->m_sid ) );
+    memset( pSession->m_key, 0, sizeof( pSession->m_key ) );
 
     // Generate a random session ID
     time_t t;
@@ -1941,42 +1962,42 @@ VSCPWebServerThread::websock_new_session( struct mg_connection *nc,
                 (unsigned int)rand(),
                 1337 );
 
-    memset( ret->m_sid, 0, sizeof( ret->m_sid ) );
-    cs_md5( ret->m_sid, buf, strlen( buf ), NULL );
+    memset( pSession->m_sid, 0, sizeof( pSession->m_sid ) );
+    cs_md5( pSession->m_sid, buf, strlen( buf ), NULL );
 
     // Init.
-    strcpy( ret->m_key, ws_key );           // Save key
-    ret->bAuthenticated = false;            // Not authenticated in yet
-    ret->m_version = atoi( ws_version );    // Store protocol version
-    ret->m_pClientItem = new CClientItem(); // Create client
-    vscp_clearVSCPFilter(&ret->m_pClientItem->m_filterVSCP);    // Clear filter
-    ret->bTrigger = false;
-    ret->triggerTimeout = 0;
+    strcpy( pSession->m_key, ws_key );           // Save key
+    pSession->bAuthenticated = false;            // Not authenticated in yet
+    pSession->m_version = atoi( ws_version );    // Store protocol version
+    pSession->m_pClientItem = new CClientItem(); // Create client
+    vscp_clearVSCPFilter(&pSession->m_pClientItem->m_filterVSCP);    // Clear filter
+    pSession->bTrigger = false;
+    pSession->triggerTimeout = 0;
 
     // This is an active client
-    ret->m_pClientItem->m_bOpen = false;
-    ret->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET;
-    ret->m_pClientItem->m_strDeviceName = _("Internal daemon websocket client. Started at ");
+    pSession->m_pClientItem->m_bOpen = false;
+    pSession->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET;
+    pSession->m_pClientItem->m_strDeviceName = _("Internal daemon websocket client. Started at ");
     wxDateTime now = wxDateTime::Now();
-    ret->m_pClientItem->m_strDeviceName += now.FormatISODate();
-    ret->m_pClientItem->m_strDeviceName += _(" ");
-    ret->m_pClientItem->m_strDeviceName += now.FormatISOTime();
+    pSession->m_pClientItem->m_strDeviceName += now.FormatISODate();
+    pSession->m_pClientItem->m_strDeviceName += _(" ");
+    pSession->m_pClientItem->m_strDeviceName += now.FormatISOTime();
 
     // Add the client to the Client List
     pObject->m_wxClientMutex.Lock();
-    pObject->addClient(ret->m_pClientItem);
+    pObject->addClient(pSession->m_pClientItem);
     pObject->m_wxClientMutex.Unlock();
 
     // Add to linked list
-    ret->m_referenceCount++;
-    ret->lastActiveTime = time(NULL);
+    pSession->m_referenceCount++;
+    pSession->lastActiveTime = time(NULL);
 
     m_websockSessionMutex.Lock();
-    ret->m_next = gp_websock_sessions;
-    gp_websock_sessions = ret;
+    //pSession->m_next = gp_websock_sessions;
+    gp_websock_sessions = pSession;
     m_websockSessionMutex.Unlock();
 
-    return ret;
+    return pSession;
 }
 
 
@@ -1984,6 +2005,7 @@ VSCPWebServerThread::websock_new_session( struct mg_connection *nc,
 // websock_expire_sessions
 //
 
+/*
 void
 VSCPWebServerThread::websock_expire_sessions( struct mg_connection *nc,
                                                 struct http_message *hm )
@@ -2015,16 +2037,20 @@ VSCPWebServerThread::websock_expire_sessions( struct mg_connection *nc,
 
             // expire sessions after WEBSOCKET_EXPIRE_TIME
             if ( NULL == prev ) {
+                // First pos in list
                 gp_websock_sessions = pos->m_next;
             }
             else {
+                // Point to item after this one
                 prev->m_next = next;
             }
 
+            // Remove client and session item
             pObject->m_wxClientMutex.Lock();
             pObject->removeClient( pos->m_pClientItem );
+            pos->m_pClientItem = NULL;
             pObject->m_wxClientMutex.Unlock();
-
+            
             // Free session data
             free( pos );
 
@@ -2038,7 +2064,7 @@ VSCPWebServerThread::websock_expire_sessions( struct mg_connection *nc,
 
     m_websockSessionMutex.Unlock();
 }
-
+*/
 
 ///////////////////////////////////////////////////////////////////////////////
 // websocket_post_incomingEvent
@@ -2082,7 +2108,7 @@ VSCPWebServerThread::websock_post_incomingEvents( void )
                 pSession->m_pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
                 pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
 
-                if (NULL != pEvent) {
+                if ( NULL != pEvent ) {
 
                     if (vscp_doLevel2Filter(pEvent, &pSession->m_pClientItem->m_filterVSCP)) {
 
@@ -2103,9 +2129,10 @@ VSCPWebServerThread::websock_post_incomingEvents( void )
                     vscp_deleteVSCPevent(pEvent);
 
                 } // Valid pEvent pointer
+                
             } // events available
+            
         } // websocket
-
 
     } // for
 

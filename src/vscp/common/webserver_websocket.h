@@ -24,6 +24,8 @@
 #if !defined(WEBSERVER_WEBSOCKET_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_)
 #define WEBSERVER_WEBSOCKET_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_
 
+#include <vscp.h>
+#include <controlobject.h>
 
 //******************************************************************************
 //                                WEBSOCKETS
@@ -79,11 +81,15 @@ enum {
 #define WEBSOCK_STR_ERROR_TABLE_NO_DATA                 "No data in table"
 #define WEBSOCK_STR_ERROR_TABLE_ERROR_READING           "Error reading table"
 
-struct websock_session {
-       
-    // We keep all sessions in a linked list.
-    struct websock_session *m_next;
+WX_DECLARE_LIST(vscpEventFilter, TRIGGERLIST);
 
+class websock_session {
+    
+public:    
+       
+    websock_session(void);
+    ~websock_session(void);
+    
     // Unique ID for this session. 
     char m_key[33];     // Sec-WebSocket-Key
 
@@ -116,5 +122,6 @@ struct websock_session {
 };
 
 
+WX_DECLARE_LIST(websock_session, WEBSOCKETSESSIONLIST);
 
 #endif

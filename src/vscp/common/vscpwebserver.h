@@ -363,7 +363,8 @@ public:
     websock_authentication( struct mg_connection *nc,
                                 struct http_message *hm,
                                 struct websock_session *pSession,
-                                wxString& strUser, wxString& strKey );
+                                wxString& strUser, 
+                                wxString& strKey );
 
     /*!
         Handle incoming websocket command

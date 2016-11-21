@@ -475,7 +475,7 @@ REPEAT_COMMAND:
     //*********************************************************************
     else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "PASS " ) ) ) {
         if ( !handleClientPassword( conn, pCtrlObject ) ) {
-            pCtrlObject->logMsg ( _( "[TCP/IP Clinet] Command: Password. Not authorized.\n" ),
+            pCtrlObject->logMsg ( _( "[TCP/IP Client] Command: Password. Not authorized.\n" ),
                                     DAEMON_LOGMSG_NORMAL,
                                     DAEMON_LOGTYPE_SECURITY );
             conn->flags |= MG_F_CLOSE_IMMEDIATELY;  // Close connection

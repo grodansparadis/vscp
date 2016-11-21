@@ -139,6 +139,7 @@
 #include <dm.h>
 #include <vscpeventhelper.h>
 #include <vscpwebserver.h>
+#include <webserver_websocket.h>
 #include <vscpd_caps.h>
 #include <controlobject.h>
 
@@ -149,8 +150,10 @@
 
 
 // Lists
-WX_DEFINE_LIST(TRIGGERLIST)     // websocket triggers
-WX_DEFINE_LIST(CanalMsgList);
+WX_DEFINE_LIST(WEBSOCKETSESSIONLIST); // websocket sessions
+WX_DEFINE_LIST(TRIGGERLIST);        // websocket triggers
+
+WX_DEFINE_LIST(CanalMsgList); 
 WX_DEFINE_LIST(VSCPEventList);
 
 //#define DEBUGPRINT

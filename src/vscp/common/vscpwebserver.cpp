@@ -516,12 +516,12 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
             // Post incoming web socket events
             pObject->getWebServer()->websock_post_incomingEvents();  // 1
 
-            if ( ( cleanupTime - time(NULL) ) > 60 ) {
+            /*if ( ( cleanupTime - time(NULL) ) > 60 ) {
                 pObject->getWebServer()->websrv_expire_sessions( nc, phm );
                 pObject->getWebServer()->websock_expire_sessions( nc, phm );
                 pObject->getWebServer()->websrv_expire_rest_sessions( nc );
                 cleanupTime = time(NULL);
-            }
+            }*/
             break;
 
         case MG_EV_CLOSE:   // Connection is closed. NULL
@@ -529,8 +529,21 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
                 //nc->connection_param = NULL;
                 pWebSockSession = (struct websock_session *)nc->user_data;
                 if ( NULL != pWebSockSession ) {
-                    pWebSockSession->lastActiveTime  = 0;   // Mark as staled
-                    pObject->getWebServer()->websock_expire_sessions( nc, phm );
+                    //pWebSockSession->lastActiveTime  = 0;   // Mark as staled
+                    //pObject->getWebServer()->websock_expire_sessions( nc, phm );
+                    
+                    // Remove client and session item
+                    pObject->m_wxClientMutex.Lock();
+                    pObject->removeClient( pWebSockSession->m_pClientItem );
+                    pWebSockSession->m_pClientItem = NULL;
+                    pObject->m_wxClientMutex.Unlock();
+            
+                    //pWebSockSession->m_next
+                    //pWebSockSession->
+                    
+                    // Free session data
+                    free( pWebSockSession );                    
+                    nc->user_data = NULL;
                 }
             }
             break;
@@ -871,7 +884,8 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
             // New websocket connection. Send connection ID back to the client.
 
             // Get session
-            return;
+            
+            /*
             pWebSockSession = (struct websock_session *)nc->user_data;
             if ( NULL == pWebSockSession ) {
                 mg_printf_websocket_frame( nc,
@@ -896,7 +910,7 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
                 mg_printf_websocket_frame( nc,
                                             WEBSOCKET_OP_TEXT,
                                             "+;AUTH1" );
-            }
+            }*/
             break;
 
         case MG_EV_WEBSOCKET_CONTROL_FRAME:

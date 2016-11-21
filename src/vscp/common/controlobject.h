@@ -49,6 +49,7 @@
 #include <vscpautomation.h>
 #include <tcpipclientthread.h>
 #include <udpclientthread.h>
+#include <webserver_websocket.h>
 #include <vscpmqttbroker.h>
 #include <vscpcoapserver.h>
 #include <udpthread.h>
@@ -116,7 +117,7 @@ enum {
 
 WX_DECLARE_LIST(canalMsg, CanalMsgList);
 WX_DECLARE_LIST(vscpEvent, VSCPEventList);
-WX_DECLARE_LIST(vscpEventFilter, TRIGGERLIST);
+
 WX_DECLARE_STRING_HASH_MAP( wxString, HashString );
 
 
@@ -786,7 +787,8 @@ public:
     // websocket authentication is needed  (if true)
     bool m_bAuthWebsockets;
 
-
+    // List of active websocket sessions
+    WEBSOCKETSESSIONLIST m_websocketSessions;
 
     //*****************************************************
     //                      Lists
