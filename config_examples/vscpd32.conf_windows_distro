@@ -112,7 +112,7 @@
         <!-- Path to variables storage.                                     -->
 
 
-        <variables enable="true" path="c:\programdata\vscp\variables.xml" autosave="5" />
+        <variables enable="true" pathxml="c:\programdata\vscp\variables.xml" path="c:\programdata\vscp\variables.sqlite3" />
 
         <!-- Set GUID for daemon                                            -->
         <!-- Read more about GUID's in Specification section 4              -->

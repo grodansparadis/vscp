@@ -146,7 +146,7 @@
         <!-- Set to false to disable.                                        -->
         <!-- Path to variables storage.                                      -->
 
-        <variables path="/srv/vscp/variables.xml" path="/srv/vscp/variables.sqlite3" />
+        <variables pathxml="/srv/vscp/variables.xml" path="/srv/vscp/variables.sqlite3" />
 
         <!-- Enable disable the webserver interface.                         -->
         <!-- Set the port to use for the webserver interface                 -->
