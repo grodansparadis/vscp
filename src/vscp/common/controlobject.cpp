@@ -188,6 +188,9 @@ CControlObject::CControlObject()
     m_bQuit = false;            // true if we should quit
     gpctrlObj = this;           // needed by websocket static callbacks, variables etc
     
+    // Delete objects from list when they are removed
+    m_websocketSessions.DeleteContents( true );
+    
     // Default admin user credentials
     m_admin_user = _("admin");
     m_admin_password = _("secret");

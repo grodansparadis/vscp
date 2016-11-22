@@ -347,7 +347,7 @@ public:
     */
     bool
     websock_sendevent( struct mg_connection *nc,
-                            struct websock_session *pSession,
+                            websock_session *pSession,
                             vscpEvent *pEvent );
 
     /*!
@@ -362,7 +362,7 @@ public:
     bool
     websock_authentication( struct mg_connection *nc,
                                 struct http_message *hm,
-                                struct websock_session *pSession,
+                                websock_session *pSession,
                                 wxString& strUser, 
                                 wxString& strKey );
 
@@ -374,7 +374,7 @@ public:
     websock_command( struct mg_connection *nc,
                         struct http_message *hm,
                         struct websocket_message *wm,
-                        struct websock_session *pSession,
+                        websock_session *pSession,
                         wxString& strCommand );
 
     /*!
@@ -382,16 +382,16 @@ public:
         @param nc Webserver connection handle
         @return websock object or NULL if failure
     */
-    struct websock_session *
+    websock_session *
     websock_new_session( struct mg_connection *nc,
                             struct http_message *hm );
 
     /*!
         Remove staled sessions
     */
-    void
+    /*void
     websock_expire_sessions( struct mg_connection *nc,
-                                struct http_message *hm );
+                                struct http_message *hm );*/
 
     /*!
         Post incomming event on open websockets

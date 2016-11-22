@@ -138,11 +138,13 @@ using namespace std;
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
+
 ///////////////////////////////////////////////////
 //                 GLOBALS
 ///////////////////////////////////////////////////
 
 extern CControlObject *gpobj;
+
 
 ///////////////////////////////////////////////////
 //                WEBSERVER
@@ -166,7 +168,6 @@ struct websrv_rest_session *gp_websrv_rest_sessions;
 ///////////////////////////////////////////////////
 //                  HELPERS
 ///////////////////////////////////////////////////
-
 
 
 
@@ -526,11 +527,9 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
 
         case MG_EV_CLOSE:   // Connection is closed. NULL
             if ( vscp_is_websocket( nc ) ) {
-                //nc->connection_param = NULL;
+                
                 pWebSockSession = (struct websock_session *)nc->user_data;
                 if ( NULL != pWebSockSession ) {
-                    //pWebSockSession->lastActiveTime  = 0;   // Mark as staled
-                    //pObject->getWebServer()->websock_expire_sessions( nc, phm );
                     
                     // Remove client and session item
                     pObject->m_wxClientMutex.Lock();
@@ -538,11 +537,8 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
                     pWebSockSession->m_pClientItem = NULL;
                     pObject->m_wxClientMutex.Unlock();
             
-                    //pWebSockSession->m_next
-                    //pWebSockSession->
-                    
-                    // Free session data
-                    free( pWebSockSession );                    
+                    // Remove the session object from the list and delete it
+                    pObject->m_websocketSessions.DeleteObject( pWebSockSession );                                      
                     nc->user_data = NULL;
                 }
             }
