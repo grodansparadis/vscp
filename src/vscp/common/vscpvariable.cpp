@@ -5555,10 +5555,10 @@ bool CVariableStorage::loadFromXML( const wxString& path  )
 
             // Mark last changed as now
             variable.setLastChangedToNow();
-
+                       
             // Get variable type - String is default           
             variable.setType( variable.getVariableTypeFromString( child->GetAttribute( wxT("type"), 
-                                                                    wxT("string") ) ) ); 
+                                                                    wxT("string") ) ) );
             
             // Persistence
             wxstr = child->GetAttribute( wxT("persistent"), wxT("false") );
@@ -5575,10 +5575,10 @@ bool CVariableStorage::loadFromXML( const wxString& path  )
                 variable.setUserID( lval );
             }
             
-            // access-rights
-            if ( child->GetAttribute( wxT("access-rights"), wxT("0") ).ToULong( &lval ) ) {
-                variable.setAccessRights( lval );
-            }
+            // access-rights 0x744 = 1860
+            wxstr = child->GetAttribute( wxT("access-rights"), wxT("0x744") );
+            lval = vscp_readStringValue( wxstr );
+            variable.setAccessRights( lval );
             
             // name
             wxstr = child->GetAttribute( wxT("name"), wxT("") );

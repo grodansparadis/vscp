@@ -102,22 +102,9 @@ int main(int argc, char **argv)
 
     crcInit();
 
-    /*
-      unsigned char ttt[ 50 ];
-      for ( int m=0; m<50; m++ ) {
-      ttt[ m ] = m+8;
-      }
-
-     *((unsigned short *)(ttt + 48 )) = crcFast( ttt, 48 );
-      ttt[ 48 ] = 0x9f;
-      ttt[ 49 ] = 0x87;
-      printf( "CRC for data = %X\n", crcFast( ttt, 48 ) );
-      printf( "CRC for all = %X\n", crcFast( ttt, 50 ) );
-    */
-
     wxInitializer initializer;
     if (!::wxInitialize()) {
-        fprintf(stderr, "Failed to initialise the wxWindows library, aborting.\n");
+        fprintf(stderr, "Failed to initialize the wxWindows library, aborting.\n");
 
         return -1;
     }

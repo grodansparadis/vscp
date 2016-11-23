@@ -35,43 +35,44 @@
 #include <variablecodes.h>
 #include <vscphelper.h>
 
-#define VAR_MAXBUF_SIZE         0x10000     // Size for variable strings etc
+#define VAR_MAXBUF_SIZE             0x10000     // Size for variable strings etc
 
-#define VSCP_VAR_PERSISTENT     true
-#define VSCP_VAR_NON_PERISTENT  false
+#define VSCP_VAR_PERSISTENT         true
+#define VSCP_VAR_NON_PERISTENT      false
 
 // Permissions
-#define PERMISSON_OWNER_READ    0x400
-#define PERMISSON_OWNER_WRITE   0x200
-#define PERMISSON_OWNER_EXECUTE 0x100
-#define PERMISSON_GROUP_READ    0x040   // Not used
-#define PERMISSON_GROUP_WRITE   0x020   // Not used
-#define PERMISSON_GROUP_EXECUTE 0x010   // Not used
-#define PERMISSON_OTHER_READ    0x004
-#define PERMISSON_OTHER_WRITE   0x002
-#define PERMISSON_OTHER_EXECUTE 0x001
+#define PERMISSON_OWNER_READ        0x400
+#define PERMISSON_OWNER_WRITE       0x200
+#define PERMISSON_OWNER_EXECUTE     0x100
+#define PERMISSON_GROUP_READ        0x040   // Not used
+#define PERMISSON_GROUP_WRITE       0x020   // Not used
+#define PERMISSON_GROUP_EXECUTE     0x010   // Not used
+#define PERMISSON_OTHER_READ        0x004
+#define PERMISSON_OTHER_WRITE       0x002
+#define PERMISSON_OTHER_EXECUTE     0x001
 
-#define PERMISSON_OWNER_ALL     0x700
-#define PERMISSON_OWNER_NONE    0x000
-#define PERMISSON_GROUP_ALL     0x070   // Not used
-#define PERMISSON_GROUP_NONE    0x000   // Not used
-#define PERMISSON_OTHER_ALL     0x007
-#define PERMISSON_OTHER_NONE    0x000
+#define PERMISSON_OWNER_ALL         0x700
+#define PERMISSON_OWNER_NONE        0x000
+#define PERMISSON_GROUP_ALL         0x070   // Not used
+#define PERMISSON_GROUP_NONE        0x000   // Not used
+#define PERMISSON_OTHER_ALL         0x007
+#define PERMISSON_OTHER_NONE        0x000
 
-#define PERMISSON_ALL_READ      0x444
-#define PERMISSON_ALL_WRITE     0x222
+#define PERMISSON_ALL_READ          0x444
+#define PERMISSON_ALL_WRITE         0x222
 
-#define PERMISSON_ALL_RIGHTS    0x777
-#define PERMISSON_NO_RIGHTS     0x000
+#define PERMISSON_ALL_RIGHTS        0x777
+#define PERMISSON_NO_RIGHTS         0x000
+#define PERMSSION_VARIABLE_DEFAULT  0x744
 
-#define USER_ID_ADMIN           0x00
+#define USER_ID_ADMIN               0x00
 
-#define ID_NON_PERSISTENT       0x00
+#define ID_NON_PERSISTENT           0x00
 
 // Table types - bit-field
-#define VARIABLE_STOCK          0x01
-#define VARIABLE_INTERNAL       0x02
-#define VARIABLE_EXTERNAL       0x04
+#define VARIABLE_STOCK              0x01
+#define VARIABLE_INTERNAL           0x02
+#define VARIABLE_EXTERNAL           0x04
 
 
 // Forward declarations
