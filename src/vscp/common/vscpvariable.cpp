@@ -2729,7 +2729,16 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     
     // Get the stock variable - NOTE!!! all will not be found here so all
     // variables will be let thru. But variable with id=0 are uninitialised.
-    id = findNonPersistentVariable( name, var ); 
+    id = findNonPersistentVariable( name, var );
+    if ( 0 == id ) {
+        var.setName( lcname );
+        var.setID( ID_NON_PERSISTENT );
+        var.setStockVariable( true );
+        var.setPersistent( false );
+        var.setUserId( USER_ID_ADMIN );
+        var.setLastChangedToNow();
+        var.setNote(_(""));
+    }
     
     if ( lcname.StartsWith( _("vscp.version.major") ) ) {
         var.setValue( wxString::Format( _("%d"), VSCPD_MAJOR_VERSION ) );
@@ -3569,6 +3578,9 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
         }
         var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
         var.setValue( wxstr, true );      
+    }
+    else if ( lcname.StartsWith( _("vscp.user.add") ) ) {
+        // TODO
     }
     // Individual user  (vscp.user.1 or vscp.user.1.name... )
     else if ( lcname.StartsWith( _("vscp.user."), &strrest ) ) {

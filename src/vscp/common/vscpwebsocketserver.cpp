@@ -544,6 +544,13 @@ autherror:
             return;
         }
         
+        // Check if the variable exist
+        CVSCPVariable variable;
+        bool bVariableExist = false;
+        if ( 0 != pCtrlObject->m_VSCP_Variables.find( name, variable ) ) {
+            bVariableExist = true;
+        }
+        
         // name can not start with "vscp." that is it is a stock variable
         if ( name.Lower().StartsWith( "vscp.") ) {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
@@ -554,18 +561,30 @@ autherror:
         }
 
         // Get variable type
-        if (tkz.HasMoreTokens()) {
-            type = vscp_readStringValue( tkz.GetNextToken() );
+        bool bInputType = false;
+        if ( tkz.HasMoreTokens() ) {
+            wxString wxstr = tkz.GetNextToken();
+            wxstr = wxstr.Trim();
+            if ( wxstr.Length() ) bInputType = true;
+            type = vscp_readStringValue( wxstr );
         }
         
         // Get variable access rights
-        if (tkz.HasMoreTokens()) {
-            accessrights = vscp_readStringValue( tkz.GetNextToken() );
+        bool bInputAccessRights = false;
+        if ( tkz.HasMoreTokens() ) {
+            wxString wxstr = tkz.GetNextToken();
+            wxstr = wxstr.Trim();
+            if ( wxstr.Length() ) bInputAccessRights = true;
+            accessrights = vscp_readStringValue( wxstr );
         }
 
         // Get variable Persistence 0/1
-        if (tkz.HasMoreTokens()) {
-            int val = vscp_readStringValue( tkz.GetNextToken() );
+        bool bInputPersistent = false;
+        if ( tkz.HasMoreTokens() ) {
+            wxString wxstr = tkz.GetNextToken();
+            wxstr = wxstr.Trim();
+            if ( wxstr.Length() ) bInputPersistent = true;
+            int val = vscp_readStringValue( wxstr );
 
             if ( 0 == val ) {
                 bPersistent = false;
@@ -583,28 +602,67 @@ autherror:
         }
 
         // Get variable value
+        bool bInputValue = false;
         if ( tkz.HasMoreTokens() ) {
+            bInputValue = true;
             value = tkz.GetNextToken(); // Keep possible coding
         }
         
         // Get variable note
+        bool bInputNote = false;
         if (tkz.HasMoreTokens()) {
+            bInputNote = true;
             note = tkz.GetNextToken();  // Keep possible coding
         }
 
-        // Add the variable
-        if (!pCtrlObject->m_VSCP_Variables.add( name, 
-                            value, 
-                            type, 
-                            pSession->m_pClientItem->m_pUserItem->getUserID(), 
-                            bPersistent, 
-                            accessrights, 
-                            note ) ) {
-            mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
-                                    "-;CVAR;%d;%s",
-                                    WEBSOCK_ERROR_SYNTAX_ERROR,
-                                    WEBSOCK_STR_ERROR_SYNTAX_ERROR );
-            return;
+        if ( !bVariableExist ) {
+            
+            // Add the variable
+            if ( !pCtrlObject->m_VSCP_Variables.add( name, 
+                                value, 
+                                type, 
+                                pSession->m_pClientItem->m_pUserItem->getUserID(), 
+                                bPersistent, 
+                                accessrights, 
+                                note ) ) {
+                mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
+                                        "-;CVAR;%d;%s",
+                                        WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+                return;
+            }
+        }
+        else {
+            
+            // Save changes to the variable 
+            
+            if ( bInputType ) {
+                variable.setType( type );
+            }
+            
+            if ( bInputAccessRights ) {
+                variable.setAccessRights( accessrights );
+            }
+            
+            // Persistence can't be changed
+            
+            if ( bInputValue ) {
+                variable.setValue( value );
+            }
+            
+            if ( bInputNote ) {
+                variable.setNote( note );
+            }
+            
+            // Save the changed variable
+            if ( !pCtrlObject->m_VSCP_Variables.update( variable ) ) {
+                mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
+                                        "-;CVAR;%d;%s",
+                                        WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+                return;
+            }
+            
         }
 
         wxString resultstr = _("+;CVAR;");
