@@ -276,7 +276,7 @@ wxString CUserItem::getUserRightsAsString( void  )
     for ( int i=0; i<USER_PRIVILEGE_BYTES; i++ ) {
         strRights += wxString::Format( _("%d"), m_userRights[ i ] );
         if ( i != ( USER_PRIVILEGE_BYTES - 1 )  ) {
-            strRights += _(",");
+            strRights += _("/");
         }
     }
     
@@ -294,7 +294,7 @@ wxString CUserItem::getAllowedEventsAsString( void )
     for ( int i=0; i<m_listAllowedEvents.Count(); i++ ) {
         strAllowedEvents += m_listAllowedEvents[ i ];
         if ( i != ( m_listAllowedEvents.Count() - 1 )  ) {
-            strAllowedEvents += _(",");
+            strAllowedEvents += _("/");
         }
     }
     
@@ -312,13 +312,13 @@ wxString CUserItem::getAllowedRemotesAsString( void )
     
     for ( i=0; i<m_listAllowedIPV4Remotes.Count(); i++ ) {
         strAllowedRemotes += m_listAllowedIPV4Remotes[ i ];
-        strAllowedRemotes += _(",");
+        strAllowedRemotes += _("/");
     }
     
     for ( i=0; i<m_listAllowedIPV6Remotes.Count(); i++ ) {
         strAllowedRemotes += m_listAllowedIPV6Remotes[ i ];
         if ( i != ( m_listAllowedIPV6Remotes.Count() - 1 )  ) {
-            strAllowedRemotes += _(",");
+            strAllowedRemotes += _("/");
         }
     }
     

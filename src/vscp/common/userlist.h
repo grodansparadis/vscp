@@ -35,7 +35,7 @@
 // permission bits for an object (variables)
 // uuugggooo
 // uuu = user(owner) (rwx)
-// ggg = group       (rwx)
+// ggg = group       (rwx)  // Currently not used
 // ooo = other       (rwx)
 // First user rights is checked. If user have rights to do the operation it is 
 // allowed. If not group rights are checked and if the user is member of a group
