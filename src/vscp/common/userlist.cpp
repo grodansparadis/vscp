@@ -160,7 +160,12 @@ bool CUserItem::getAsString( wxString& strUser )
     strUser += wxString::Format( _("%ld;"), getUserID() );
     strUser += getUser();
     strUser += _(";");
-    strUser += getPassword();
+    // Protect password
+    wxstr = getPassword();
+    for ( int i=0; i<wxstr.Length(); i++ ) {
+        strUser += _("*");
+    }
+    //strUser += getPassword();
     strUser += _(";");
     strUser += getFullname();
     strUser += _(";");
