@@ -280,18 +280,11 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
             // Get user
             CUserItem *pUser = gpobj->m_userList.getUser( strUser );
             if ( NULL == pUser ) goto autherror;
+            wxString userSettings;
+            pUser->getAsString( userSettings );
 	    mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, 
-                                                "+;AUTH1;%ld;%s;%02x;%02x;%02x;%02x;%02x;%02x;%02x;%02x",
-                                                pUser->getUserID(),
-                                                (const char *)pUser->getFullname().mbc_str(),
-                                                pUser->getUserRights( 0 ),
-                                                pUser->getUserRights( 1 ),
-                                                pUser->getUserRights( 2 ),
-                                                pUser->getUserRights( 3 ),
-                                                pUser->getUserRights( 4 ),
-                                                pUser->getUserRights( 5 ),
-                                                pUser->getUserRights( 6 ),
-                                                pUser->getUserRights( 7 ) );
+                                                "+;AUTH1;%s",
+                                                (const char *)userSettings.mbc_str() );
             pSession->bAuthenticated = true;    // Authenticated
 
         }
