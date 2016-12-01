@@ -679,7 +679,7 @@ extern "C" {
         @return true on success, false on failure.
      */
  
-    bool vscp_readMaskFromString( vscpEventFilter *pFilter, wxString& strMask);
+    bool vscp_readMaskFromString( vscpEventFilter *pFilter, const wxString& strMask);
 
     /*!
         Write mask to string

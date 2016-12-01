@@ -242,6 +242,8 @@
 
 #define VSCPDB_USER_CHECK_USER_ID "SELECT username FROM 'user' where idx_user='%lu'"
 
+#define VSCPDB_USER_DELETE_USERNAME "DELETE FROM 'user' where username='%s'"
+
 #define VSCPDB_ORDINAL_USER_ID                      0   // 
 #define VSCPDB_ORDINAL_USER_USERNAME                1   // 
 #define VSCPDB_ORDINAL_USER_PASSWORD                2   // 

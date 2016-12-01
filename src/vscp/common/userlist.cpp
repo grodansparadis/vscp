@@ -44,6 +44,7 @@
 #include <wx/wfstream.h>
 #include <wx/xml/xml.h>
 #include <wx/tokenzr.h>
+#include <wx/base64.h>
 
 #include <sqlite3.h>
 
@@ -112,7 +113,13 @@ bool CUserItem::setFromString( wxString userSettings )
         setFullname( strToken );
     }
     
-    // filtermask
+    // filter
+    if ( tkz.HasMoreTokens() ) {
+        strToken = tkz.GetNextToken();
+        setFilterFromString( strToken );
+    }
+    
+    // mask
     if ( tkz.HasMoreTokens() ) {
         strToken = tkz.GetNextToken();
         setFilterFromString( strToken );
@@ -139,7 +146,8 @@ bool CUserItem::setFromString( wxString userSettings )
     // note
     if ( tkz.HasMoreTokens() ) {
         strToken = tkz.GetNextToken();
-        setNote( strToken );
+        setNote( (wxString)wxBase64Decode( strToken, 
+                    strToken.Length() ) );
     }
     
     return true;
@@ -181,7 +189,8 @@ bool CUserItem::getAsString( wxString& strUser )
     strUser += _(";");
     strUser += getAllowedEventsAsString();
     strUser += _(";");
-    strUser += getNote();
+    strUser += wxBase64Encode( getNote().mbc_str(), strlen( getNote().mbc_str() ) ); 	
+    //strUser += getNote();
     
     return true;
 }
@@ -195,7 +204,7 @@ bool CUserItem::setUserRightsFromString( const wxString& strRights )
     // Privileges
     if ( strRights.Length() ) {
         
-        wxStringTokenizer tkz( strRights, wxT(",") );
+        wxStringTokenizer tkz( strRights, wxT("/") );
         
         int idx=0;
         do {
@@ -235,7 +244,7 @@ bool CUserItem::setAllowedEventsFromString( const wxString& strEvents )
     // Privileges
     if ( strEvents.Length() ) {
         
-        wxStringTokenizer tkz( strEvents, wxT(",") );
+        wxStringTokenizer tkz( strEvents, wxT("/") );
         
         do {
             
@@ -257,7 +266,7 @@ bool CUserItem::setAllowedRemotesFromString( const wxString& strConnect )
     // Privileges
     if ( strConnect.Length() ) {
         
-        wxStringTokenizer tkz( strConnect, wxT(",") );
+        wxStringTokenizer tkz( strConnect, wxT("/") );
         
         do {
             
@@ -889,6 +898,8 @@ bool CUserList::addUser( const wxString& user,
 ///////////////////////////////////////////////////////////////////////////////
 // addUser
 //
+// name;password;fullname;filter;mask;rights;remotes;events;note
+//
 
 bool CUserList::addUser( const wxString& strUser )
 {
@@ -898,10 +909,10 @@ bool CUserList::addUser( const wxString& strUser )
     wxString fullname;
     wxString strNote;
     vscpEventFilter filter;
-    vscpEventFilter *pFilter = NULL;
     wxString userRights;
     wxString allowedRemotes;
     wxString allowedEvents;
+    
     wxStringTokenizer tkz( strUser, _(";") );
     
     // user
@@ -918,16 +929,82 @@ bool CUserList::addUser( const wxString& strUser )
     if ( tkz.HasMoreTokens() ) {
         password = tkz.GetNextToken();
     }
+    
+    // filter
+    if ( tkz.HasMoreTokens() ) {
+        vscp_readFilterFromString( &filter, tkz.GetNextToken() );
+    }
+    
+    // mask
+    if ( tkz.HasMoreTokens() ) {
+        vscp_readMaskFromString( &filter, tkz.GetNextToken() );
+    }
+    
+    // user rights
+    if ( tkz.HasMoreTokens() ) {
+        wxString str = tkz.GetNextToken();
+    }
+    
+    // allowed remotes
+    if ( tkz.HasMoreTokens() ) {
+        wxString str = tkz.GetNextToken();
+    }
+    
+    // allowed events
+    if ( tkz.HasMoreTokens() ) {
+        wxString str = tkz.GetNextToken();
+    }
+    
+    // note
+    if ( tkz.HasMoreTokens() ) {
+        strNote = tkz.GetNextToken();
+    }
             
     return addUser( user,
                         password, 
                         fullname,
                         strNote,
-                        pFilter,
+                        &filter,
                         userRights,
                         allowedRemotes,
                         allowedEvents );
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// deleteUser
+//
+
+ bool CUserList::deleteUser( const wxString& user )
+ {
+     char *zErrMsg = 0;
+     CUserItem *pUser = getUser( user );
+     if ( NULL == pUser ) return false;
+     
+     // Internal users can't be deleted
+     if ( pUser->getUserID() <= 0 ) return false;
+     
+     // Check if database is open
+    if ( NULL == gpctrlObj->m_db_vscp_daemon ) {
+        gpctrlObj->logMsg( _("Failed to read VSCP settings database - not open." ) );
+        return false;
+    }
+    
+    gpctrlObj->m_db_vscp_configMutex.Lock();
+     
+    char *sql = sqlite3_mprintf( VSCPDB_USER_DELETE_USERNAME,
+                                    (const char *)user.mbc_str() );
+    if ( SQLITE_OK != sqlite3_exec( gpctrlObj->m_db_vscp_daemon, sql, NULL, NULL, &zErrMsg ) ) {
+        sqlite3_free( sql );
+        gpctrlObj->logMsg( wxString::Format( _("Delete user: Unable to delete user in db. [%s] Err=%s\n"), sql, zErrMsg ) );
+        gpctrlObj->m_db_vscp_configMutex.Unlock();
+        return false;
+    }
+        
+    gpctrlObj->m_db_vscp_configMutex.Unlock(); 
+    sqlite3_free( sql );
+    
+    return true;
+ }
 
 ///////////////////////////////////////////////////////////////////////////////
 // getUser

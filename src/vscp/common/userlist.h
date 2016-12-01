@@ -241,6 +241,7 @@ public:
                                                                     pFilter,
                                                                     sizeof( vscpEventFilter ) ); };
     bool setFilterFromString( wxString strFilter ) { return vscp_readFilterFromString( &m_filterVSCP, strFilter ); };
+    bool setMaskFromString( wxString strMask ) { return vscp_readMaskFromString( &m_filterVSCP, strMask ); };
     
     /*!
      * Set user settings from string
@@ -360,6 +361,14 @@ public:
      * @return true on success. false on failure.
      */
     bool addUser( const wxString& strUser );
+    
+    /*!
+     * Delete a user given it's userid. 
+     * Only non-system users can be deleted.
+     * @param users Username for user to delete
+     * @param true on success. false on failure.
+     */
+    bool deleteUser( const wxString& user );
     
     /*!
         Get user 

@@ -186,7 +186,7 @@
             <name>user</name>
             <password>secret</password>
             <privilege>user</privilege>
-            <!-- A stricter allowfrom can be 127.0.0.1,192.168.1.*           -->
+            <!-- A stricter allowfrom can be 127.0.0.1/192.168.1.*           -->
             <allowfrom>*</allowfrom>
         </user>	
     </remoteuser>

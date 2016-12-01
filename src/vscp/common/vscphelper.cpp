@@ -1867,7 +1867,7 @@ bool vscp_writeFilterToString( const vscpEventFilter *pFilter, wxString& strFilt
 // readMaskFromString
 //
 
-bool vscp_readMaskFromString(vscpEventFilter *pFilter, wxString& strMask)
+bool vscp_readMaskFromString(vscpEventFilter *pFilter, const wxString& strMask)
 {
     wxString strTok;
 

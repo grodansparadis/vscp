@@ -4901,9 +4901,13 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
         if ( !tkz.HasMoreTokens() ) return false;
         strToken = tkz.GetNextToken();  // vscp
         
-        // Add new record
+        // Add new user record
         if (  strToken.StartsWith( _("add") ) ) {
-            if ( !gpctrlObj->m_userList.addUser( var.getValue() ) ) return false;
+            return gpctrlObj->m_userList.addUser( var.getValue() );
+        }
+        // Delete a user record (value = userid)
+        if (  strToken.StartsWith( _("delete") ) ) {
+            return gpctrlObj->m_userList.deleteUser( var.getValue() );
         }
         else {
             
@@ -4917,7 +4921,9 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
             
             if ( !tkz.HasMoreTokens() ) {
                 // write
-                pUserItem->setFromString( var.getValue() );
+                wxstr = var.getValue();
+                return pUserItem->setFromString( (wxString)wxBase64Decode( wxstr, 
+                                                    wxstr.Length() ) );
             }
             
             strToken = tkz.GetNextToken();
@@ -5373,9 +5379,9 @@ bool CVariableStorage::update( CVSCPVariable& var )
     uint32_t id = 0;
     char *zErrMsg = 0;
     
-    // Can't be stock variables 
+    // If stock variables update locally
     if ( var.isStockVariable() ) {
-        return false;
+        return writeStockVariable( var );
     }
 
     // Must exists    
