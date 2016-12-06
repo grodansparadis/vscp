@@ -218,7 +218,7 @@
         <driver enable="false">
             <name>logger</name>
             <config>/tmp/canallog.txt</config>
-            <path>/usr/local/lib/canallogger.so</path>
+            <path>/usr/local/lib/vscpl1_loggerdrv.so</path>
             <flags>1</flags>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
@@ -227,7 +227,7 @@
         <driver enable="false" >
             <name>can232</name>
             <config>/dev/ttyS0;19200;0;0;125</config>
-            <path>/usr/local/lib/can232drv.so</path>
+            <path>/usr/local/lib/vscpl1_can232drv.so</path>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
             <flags>0</flags>
         </driver>
@@ -236,7 +236,7 @@
         <driver enable="false" >
             <name>xap</name>
             <config>9598;3639</config>
-            <path>/usr/local/lib/xapdrv.so</path>
+            <path>/usr/local/lib/vscpl1_xapdrv.so</path>
             <flags>0</flags>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>

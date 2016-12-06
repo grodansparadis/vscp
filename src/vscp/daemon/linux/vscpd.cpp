@@ -103,7 +103,7 @@ int main(int argc, char **argv)
     crcInit();
 
     wxInitializer initializer;
-    if (!::wxInitialize()) {
+    if ( !::wxInitialize() ) {
         fprintf(stderr, "Failed to initialize the wxWindows library, aborting.\n");
 
         return -1;
