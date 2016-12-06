@@ -256,7 +256,8 @@ public:
     
     /*!
      * Set user settings from string
-     * @param userSettings User settings in a semicolon separated list in the form
+     * @param userSettings User settings in a semicolon separated list in the form. 
+     *          leave fields blank if they should not be updated.
      * @return true on success, false on failure.
      */
     bool setFromString( wxString userSettings );

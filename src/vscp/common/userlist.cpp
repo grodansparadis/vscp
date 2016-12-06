@@ -122,26 +122,42 @@ bool CUserItem::setFromString( wxString userSettings )
     // name
     if ( tkz.HasMoreTokens() ) {
         strToken = tkz.GetNextToken();
-        setUser( strToken );
-        fixName();
+        strToken.Trim();
+        strToken.Trim(false);
+        if ( strToken.Length() ) {
+            setUser( strToken );
+            fixName();
+        }
     }
     
     // password
     if ( tkz.HasMoreTokens() ) {
         strToken = tkz.GetNextToken();
-        setPassword( strToken );
+        strToken.Trim();
+        strToken.Trim(false);
+        if ( strToken.Length() ) {
+            setPassword( strToken );
+        }
     }
     
     // fullname
     if ( tkz.HasMoreTokens() ) {
         strToken = tkz.GetNextToken();
-        setFullname( strToken );
+        strToken.Trim();
+        strToken.Trim(false);
+        if ( strToken.Length() ) {
+            setFullname( strToken );
+        }
     }
     
     // filter
     if ( tkz.HasMoreTokens() ) {
         strToken = tkz.GetNextToken();
-        setFilterFromString( strToken );
+        strToken.Trim();
+        strToken.Trim(false);
+        if ( strToken.Length() ) {
+            setFilterFromString( strToken );
+        }
     }
     
     // mask
@@ -153,7 +169,11 @@ bool CUserItem::setFromString( wxString userSettings )
     // rights
     if ( tkz.HasMoreTokens() ) {
         strToken = tkz.GetNextToken();
-        setUserRightsFromString( strToken );
+        strToken.Trim();
+        strToken.Trim(false);
+        if ( strToken.Length() ) {
+            setUserRightsFromString( strToken );
+        }
     }
         
     // remotes
@@ -165,22 +185,30 @@ bool CUserItem::setFromString( wxString userSettings )
     // events
     if ( tkz.HasMoreTokens() ) {
         strToken = tkz.GetNextToken();
-        setAllowedEventsFromString( strToken );
+        strToken.Trim();
+        strToken.Trim(false);
+        if ( strToken.Length() ) {
+            setAllowedEventsFromString( strToken );
+        }
     }    
     
     // note
     if ( tkz.HasMoreTokens() ) {
         strToken = tkz.GetNextToken();
         
-        size_t len = wxBase64Decode( NULL, 0, strToken );
-        if ( 0 == len ) return false;
-        uint8_t *pbuf = new uint8_t[len];
-        if ( NULL == pbuf ) return false;
-        len = wxBase64Decode( pbuf, len, strToken );
-        strToken = wxString::FromUTF8( (const char *)pbuf, len );
-        delete [] pbuf;
+        strToken.Trim();
+        strToken.Trim(false);
+        if ( strToken.Length() ) {
+            size_t len = wxBase64Decode( NULL, 0, strToken );
+            if ( 0 == len ) return false;
+            uint8_t *pbuf = new uint8_t[len];
+            if ( NULL == pbuf ) return false;
+            len = wxBase64Decode( pbuf, len, strToken );
+            strToken = wxString::FromUTF8( (const char *)pbuf, len );
+            delete [] pbuf;        
         
-        setNote( strToken );
+            setNote( strToken );
+        }
     }
     
     return true;
