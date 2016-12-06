@@ -581,7 +581,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
     // Heartbeat Level I
     wxTimeSpan HeartBeatLevel1Period( 0, 0, m_intervalHeartBeat );
     if ( m_bHeartBeatEvent && 
-         ( ( wxDateTime::Now() - m_Heartbeat_Level1_sent ) > HeartBeatLevel1Period ) ) {
+         ( ( wxDateTime::Now() - m_Heartbeat_Level1_sent ) >= HeartBeatLevel1Period ) ) {
         
         m_Heartbeat_Level1_sent = wxDateTime::Now();
 
@@ -602,7 +602,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
     // Heartbeat Level II
     wxTimeSpan HeartBeatLevel2Period( 0, 0, m_intervalHeartBeat );
     if ( m_bHeartBeatEvent &&
-         ( ( wxDateTime::Now() - m_Heartbeat_Level2_sent ) > HeartBeatLevel2Period ) ) {
+         ( ( wxDateTime::Now() - m_Heartbeat_Level2_sent ) >= HeartBeatLevel2Period ) ) {
 
         m_Heartbeat_Level2_sent = wxDateTime::Now();
 
@@ -623,7 +623,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
     // Segment Controller Heartbeat
     wxTimeSpan SegmentControllerHeartBeatPeriod( 0, 0, m_intervalSegmentControllerHeartbeat );
     if ( m_bSegmentControllerHeartbeat && 
-         ( ( wxDateTime::Now() - m_SegmentHeartbeat_sent ) > SegmentControllerHeartBeatPeriod ) ) {
+         ( ( wxDateTime::Now() - m_SegmentHeartbeat_sent ) >= SegmentControllerHeartBeatPeriod ) ) {
 
         m_SegmentHeartbeat_sent = wxDateTime::Now();
 

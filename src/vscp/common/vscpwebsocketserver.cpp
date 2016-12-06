@@ -780,7 +780,8 @@ autherror:
             // Get variable value
             if ( tkz.HasMoreTokens() ) {
                 
-                strTok = tkz.GetNextToken();
+                strTok = tkz.GetNextToken();                
+                
                 if ( !variable.setValueFromString( variable.getType(), 
                                                         strTok,
                                                         false ) ) {     // Preserve coding
@@ -797,9 +798,8 @@ autherror:
                                     "-;WVAR;%d;%s",
                                     WEBSOCK_STR_ERROR_VARIABLE_UPDATE,
                                     WEBSOCK_STR_ERROR_VARIABLE_UPDATE );
-                return;
+                    return;
                 }
-                
             }
             else {
                 mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,

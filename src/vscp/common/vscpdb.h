@@ -222,7 +222,7 @@
 	"`password`             TEXT NOT NULL,"\
 	"`fullname`             TEXT NOT NULL,"\
         "`filter`               TEXT,"\
-        "`rights`               TEXT DEFAULT 'user',"\
+        "`rights`               TEXT DEFAULT '00/00/00/00/00/00/00/00',"\
         "`allowedevents`        TEXT DEFAULT '*:*',"\
         "`allowedremotes`       TEXT DEFAULT '*',"\
 	"`note`                 TEXT DEFAULT ''"\
@@ -233,8 +233,8 @@
                 " ) VALUES ('%s','%s','%s','%s',%d,'%s','%s','%s' );"
 
 #define VSCPDB_USER_UPDATE "UPDATE 'user' "\
-                "SET username='%s',password='%s',fullname='%s',filter='%s',rights=%d,allowedevents=%s',allowedremotes='%s',allowedremotes='%s',note='%s' "\
-                " WHERE idx_user='%d'"
+                "SET username='%s',password='%s',fullname='%s',filter='%s',rights='%s',allowedevents='%s',allowedremotes='%s',note='%s' "\
+                " WHERE idx_user='%ld'"
 
 #define VSCPDB_USER_ALL "SELECT * from 'user'"
 

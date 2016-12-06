@@ -129,6 +129,11 @@ public:
 
     /// Destructor
     virtual ~CUserItem(void);
+    
+    /*!
+     *  Make sure user name is a valid name      
+     */
+    void fixName( void );
 
     /*!
         Check if a remote client is allowed to connect.
@@ -185,6 +190,12 @@ public:
      * @return true on success.
      */
     bool saveToDatabase( void );
+    
+    /*!
+     * Read record to database
+     * @return true on success.
+     */
+    bool readBackIndexFromDatabase( void );
     
     /*!
      * Check if a user is with a specific userid is available in the db
@@ -360,7 +371,7 @@ public:
      *      name;password;fullname;filtermask;rights;remotes;events;note
      * @return true on success. false on failure.
      */
-    bool addUser( const wxString& strUser );
+    bool addUser( const wxString& strUser, bool bUnpackNote = false );
     
     /*!
      * Delete a user given it's userid. 

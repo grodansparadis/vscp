@@ -86,6 +86,30 @@ CUserItem::~CUserItem(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// fixName
+//
+
+void CUserItem::fixName( void ) 
+{
+    m_user.Trim( false );
+    m_user.Trim( true );
+    
+    // Works only for ASCII names. Should be fixed so
+    // UTF8 names can be used TODO
+    for ( int i=0; i<m_user.Length(); i++ ) {
+        switch ( (const char)m_user[ i ] ) {
+            case ';':
+            case '\'':
+            case '\"':
+            case ',':
+            case ' ':
+                m_user[ i ] = '_';
+                break;
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // setFromString
 //
 // name;password;fullname;filtermask;rights;remotes;events;note
@@ -93,12 +117,13 @@ CUserItem::~CUserItem(void)
 bool CUserItem::setFromString( wxString userSettings )
 {
     wxString strToken;
-    wxStringTokenizer tkz( userSettings, _(";") );
+    wxStringTokenizer tkz( userSettings, _(";") ); 
     
     // name
     if ( tkz.HasMoreTokens() ) {
         strToken = tkz.GetNextToken();
         setUser( strToken );
+        fixName();
     }
     
     // password
@@ -146,8 +171,16 @@ bool CUserItem::setFromString( wxString userSettings )
     // note
     if ( tkz.HasMoreTokens() ) {
         strToken = tkz.GetNextToken();
-        setNote( (wxString)wxBase64Decode( strToken, 
-                    strToken.Length() ) );
+        
+        size_t len = wxBase64Decode( NULL, 0, strToken );
+        if ( 0 == len ) return false;
+        uint8_t *pbuf = new uint8_t[len];
+        if ( NULL == pbuf ) return false;
+        len = wxBase64Decode( pbuf, len, strToken );
+        strToken = wxString::FromUTF8( (const char *)pbuf, len );
+        delete [] pbuf;
+        
+        setNote( strToken );
     }
     
     return true;
@@ -478,6 +511,9 @@ bool CUserItem::saveToDatabase( void )
         
         gpctrlObj->m_db_vscp_configMutex.Unlock();
         
+        // The database item now have a id which we need to read back
+        return readBackIndexFromDatabase();
+        
     }
     else {
         
@@ -490,12 +526,14 @@ bool CUserItem::saveToDatabase( void )
                 (const char *)getUserRightsAsString().mbc_str(),
                 (const char *)getAllowedEventsAsString().mbc_str(),
                 (const char *)getAllowedRemotesAsString().mbc_str(),
-                (const char *)m_note.mbc_str() );
+                (const char *)m_note.mbc_str(),
+                m_userID ); 
         
-        gpctrlObj->m_db_vscp_configMutex.Lock();
+        gpctrlObj->m_db_vscp_configMutex.Lock(); 
         
         if ( SQLITE_OK != sqlite3_exec( gpctrlObj->m_db_vscp_daemon, 
-                                            sql, NULL, NULL, &zErrMsg)) {
+                                            sql, NULL, NULL, &zErrMsg)) { 
+            gpctrlObj->logMsg( wxString::Format( _("Failed to update user database. Err=%s  SQL=%s" ), zErrMsg, sql ) );
             sqlite3_free( sql );
             gpctrlObj->m_db_vscp_configMutex.Unlock();
             return false;
@@ -510,6 +548,44 @@ bool CUserItem::saveToDatabase( void )
     return true;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// readFromDatabase
+//
+
+bool CUserItem::readBackIndexFromDatabase( void )
+{
+    char *zErrMsg = 0;
+    sqlite3_stmt *ppStmt;
+    char *sql = sqlite3_mprintf( VSCPDB_USER_CHECK_USER,
+                                    (const char *)m_user.mbc_str() );
+    
+    gpctrlObj->m_db_vscp_configMutex.Lock(); 
+        
+    if ( SQLITE_OK != sqlite3_prepare( gpctrlObj->m_db_vscp_daemon,
+                                        sql,
+                                        -1,
+                                        &ppStmt,
+                                        NULL ) ) {
+        gpctrlObj->logMsg( wxString::Format( _("Failed to get index for user. SQL=%s" ), sql ) );
+        sqlite3_free( sql );
+        gpctrlObj->m_db_vscp_configMutex.Unlock();
+        return false;
+    }
+    
+    if ( SQLITE_ROW  != sqlite3_step( ppStmt ) ) {
+        gpctrlObj->logMsg( wxString::Format( _("Failed to get index result  for user. SQL=%s" ), sql ) );
+        sqlite3_free( sql );       
+        gpctrlObj->m_db_vscp_configMutex.Unlock();
+    }
+    
+    // Get index
+    m_userID = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_USER_ID );
+    
+    sqlite3_free( sql );       
+    gpctrlObj->m_db_vscp_configMutex.Unlock();
+        
+    return true;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -718,7 +794,14 @@ bool CUserList::loadUsers( void )
             p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_USER_ALLOWED_REMOTES );
             if ( NULL != p ) {
                 pItem->setAllowedRemotesFromString( (const char *)p );
-            }        
+            }
+            
+            // Note
+            p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_USER_NOTE );
+            if ( NULL != p ) {
+                
+                pItem->setNote( (const char *)p );
+            }
             
             m_userhashmap[ pItem->getUser() ] = pItem;
             
@@ -806,6 +889,7 @@ bool CUserList::addUser( const wxString& user,
     pItem->setPasswordDomain( wxString::FromUTF8( digest ) );  
 
     pItem->setUser( user );
+    pItem->fixName();
     pItem->setPassword( password );
     pItem->setFullname( fullname );
     pItem->setNote( strNote );
@@ -901,7 +985,7 @@ bool CUserList::addUser( const wxString& user,
 // name;password;fullname;filter;mask;rights;remotes;events;note
 //
 
-bool CUserList::addUser( const wxString& strUser )
+bool CUserList::addUser( const wxString& strUser, bool bUnpackNote )
 {
     wxString strToken;
     wxString user;
@@ -927,7 +1011,7 @@ bool CUserList::addUser( const wxString& strUser )
     
     // fullname
     if ( tkz.HasMoreTokens() ) {
-        password = tkz.GetNextToken();
+        fullname = tkz.GetNextToken();
     }
     
     // filter
@@ -942,22 +1026,36 @@ bool CUserList::addUser( const wxString& strUser )
     
     // user rights
     if ( tkz.HasMoreTokens() ) {
-        wxString str = tkz.GetNextToken();
+        userRights = tkz.GetNextToken();
     }
     
     // allowed remotes
     if ( tkz.HasMoreTokens() ) {
-        wxString str = tkz.GetNextToken();
+        allowedRemotes = tkz.GetNextToken();
     }
     
     // allowed events
     if ( tkz.HasMoreTokens() ) {
-        wxString str = tkz.GetNextToken();
+        allowedEvents = tkz.GetNextToken();
     }
     
     // note
     if ( tkz.HasMoreTokens() ) {
-        strNote = tkz.GetNextToken();
+        if ( bUnpackNote ) {
+            
+            wxString wxstr = tkz.GetNextToken();
+ 
+            size_t len = wxBase64Decode( NULL, 0, wxstr );
+            if ( 0 == len ) return false;
+            uint8_t *pbuf = new uint8_t[len];
+            if ( NULL == pbuf ) return false;
+            len = wxBase64Decode( pbuf, len, wxstr );
+            strNote = wxString::FromUTF8( (const char *)pbuf, len );
+            delete [] pbuf;
+        }
+        else {
+            strNote = tkz.GetNextToken();
+        }
     }
             
     return addUser( user,
@@ -1002,6 +1100,9 @@ bool CUserList::addUser( const wxString& strUser )
         
     gpctrlObj->m_db_vscp_configMutex.Unlock(); 
     sqlite3_free( sql );
+    
+    // Remove also from internal table
+    m_userhashmap.erase( user );
     
     return true;
  }

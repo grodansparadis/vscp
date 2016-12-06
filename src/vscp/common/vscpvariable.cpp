@@ -2641,9 +2641,18 @@ bool CVariableStorage::init( void )
     
     variable.setAccessRights( PERMISSON_OWNER_WRITE );
     variable.setUserID( 0 );
+    variable.setStockVariable();
     variable.setName( _("vscp.user.add") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Add a new user."), true );
+    addStockVariable( variable  );
+    
+    variable.setAccessRights( PERMISSON_OWNER_WRITE );
+    variable.setUserID( 0 );
+    variable.setStockVariable();
+    variable.setName( _("vscp.user.delete") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("Delete a user."), true );
     addStockVariable( variable  );
     
     // *************************************************************************
@@ -2713,9 +2722,10 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     wxString wxstr;
     wxString strToken;
     wxString strrest;
-    uint32_t id;
+    uint32_t id = 0;
     
     var.init();
+    var.setStockVariable();
     
     wxString lcname= name.Lower();
     
@@ -2731,6 +2741,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     // variables will be let thru. But variable with id=0 are uninitialised.
     id = findNonPersistentVariable( name, var );
     if ( 0 == id ) {
+        // Probably write only variable
         var.setName( lcname );
         var.setID( ID_NON_PERSISTENT );
         var.setStockVariable( true );
@@ -2885,7 +2896,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     else if ( lcname.StartsWith( _("vscp.os.width.is32bit") ) ) {
         var.setValue( !wxIsPlatform64Bit() ? true : false );
     }
-        else if ( lcname.StartsWith( _("vscp.os.width") ) ) {
+    else if ( lcname.StartsWith( _("vscp.os.width") ) ) {
         var.setValue( wxIsPlatform64Bit() ? 64 : 32 );
     }
     else if ( lcname.StartsWith( _("vscp.os.endiness.str") ) ) {
@@ -3580,7 +3591,12 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
         var.setValue( wxstr, true );      
     }
     else if ( lcname.StartsWith( _("vscp.user.add") ) ) {
-        // TODO
+        // holder for write only variable
+        return true;
+    }
+    else if ( lcname.StartsWith( _("vscp.user.delete") ) ) {
+        // holder for write only variable
+        return true;
     }
     // Individual user  (vscp.user.1 or vscp.user.1.name... )
     else if ( lcname.StartsWith( _("vscp.user."), &strrest ) ) {
@@ -3681,7 +3697,11 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     // ----------------------------- Not Found ---------------------------------
     
     else {
-        return false;   // Not a stock variable
+        // if id found the variable has been found and is read only or we have
+        // just been let through to here
+        if ( 0 == id ) {
+            return false;   // Not a stock variable
+        }
     }
     
     return true;
@@ -4903,11 +4923,37 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
         
         // Add new user record
         if (  strToken.StartsWith( _("add") ) ) {
-            return gpctrlObj->m_userList.addUser( var.getValue() );
+            
+            // String is BASE64 encoded so it must be decoded before it
+            // can be used
+            wxstr = var.getValue();  
+            
+            size_t len = wxBase64Decode( NULL, 0, wxstr );
+            if ( 0 == len ) return false;
+            uint8_t *pbuf = new uint8_t[len];
+            if ( NULL == pbuf ) return false;
+            len = wxBase64Decode( pbuf, len, wxstr );
+            wxstr = wxString::FromUTF8( (const char *)pbuf, len );
+            delete [] pbuf;
+            
+            return gpctrlObj->m_userList.addUser( wxstr, true );
         }
         // Delete a user record (value = userid)
         if (  strToken.StartsWith( _("delete") ) ) {
-            return gpctrlObj->m_userList.deleteUser( var.getValue() );
+            
+            // String is BASE64 encoded so it must be decoded before it
+            // can be used
+            wxstr = var.getValue();
+            
+            const char *p = wxstr.mbc_str();
+            size_t len = wxBase64Decode( NULL, 0, wxstr );
+            if ( 0 == len ) return false;
+            uint8_t *pbuf = new uint8_t[len];
+            if ( NULL == pbuf ) return false;
+            len = wxBase64Decode( pbuf, len, wxstr );
+            wxstr = wxString::FromUTF8( (const char *)pbuf, len );
+            delete [] pbuf;
+            return gpctrlObj->m_userList.deleteUser( wxstr );
         }
         else {
             
@@ -4920,10 +4966,22 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
             if ( NULL == pUserItem ) return false;
             
             if ( !tkz.HasMoreTokens() ) {
+                
                 // write
                 wxstr = var.getValue();
-                return pUserItem->setFromString( (wxString)wxBase64Decode( wxstr, 
-                                                    wxstr.Length() ) );
+                
+                size_t len = wxBase64Decode( NULL, 0, wxstr );
+                if ( 0 == len ) return false;
+                uint8_t *pbuf = new uint8_t[len];
+                if ( NULL == pbuf ) return false;
+                len = wxBase64Decode( pbuf, len, wxstr );
+                wxstr = wxString::FromUTF8( (const char *)pbuf, len );
+                delete [] pbuf;
+                
+                if ( pUserItem->setFromString( wxstr ) ) {
+                    pUserItem->saveToDatabase();
+                    return true;
+                }
             }
             
             strToken = tkz.GetNextToken();
@@ -5231,6 +5289,8 @@ bool CVariableStorage::addStockVariable( CVSCPVariable& var )
 {
     uint32_t id = 0;
     char *zErrMsg = 0;
+    
+    var.setStockVariable();  // Make sure it's marked as a stock variable
     
     char *sql = sqlite3_mprintf( VSCPDB_VARIABLE_INSERT_STOCK,
                 (const char *)var.m_lastChanged.Now().FormatISOCombined().mbc_str(),
@@ -5637,8 +5697,17 @@ bool CVariableStorage::loadFromXML( const wxString& path  )
                     variable.setNote( subchild->GetNodeContent(), true );
                 }
                 else if (subchild->GetName() == wxT("note-base64")) {
-                    variable.setNote( (wxString)wxBase64Decode( subchild->GetNodeContent(), 
-                                            subchild->GetNodeContent().Length() ) );
+                    
+                    wxstr = subchild->GetNodeContent();
+                    size_t len = wxBase64Decode( NULL, 0, wxstr );
+                    if ( 0 == len ) return false;
+                    uint8_t *pbuf = new uint8_t[len];
+                    if ( NULL == pbuf ) return false;
+                    len = wxBase64Decode( pbuf, len, wxstr );
+                    wxstr = wxString::FromUTF8( (const char *)pbuf, len );
+                    delete [] pbuf;
+                    
+                    variable.setNote( wxstr );
                 }
 
                 subchild = subchild->GetNext();
