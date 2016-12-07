@@ -113,6 +113,7 @@ void CUserItem::fixName( void )
 // setFromString
 //
 // name;password;fullname;filtermask;rights;remotes;events;note
+//
 
 bool CUserItem::setFromString( wxString userSettings )
 {
@@ -194,8 +195,7 @@ bool CUserItem::setFromString( wxString userSettings )
     
     // note
     if ( tkz.HasMoreTokens() ) {
-        strToken = tkz.GetNextToken();
-        
+        strToken = tkz.GetNextToken();        
         strToken.Trim();
         strToken.Trim(false);
         if ( strToken.Length() ) {
@@ -273,21 +273,25 @@ bool CUserItem::setUserRightsFromString( const wxString& strRights )
             wxString str = tkz.GetNextToken();
             if (str.IsSameAs(_("admin"), false)) {
                 // All rights
-                memset( m_userRights, 0xff, sizeof( m_userRights ) );
+                //memset( m_userRights, 0xff, sizeof( m_userRights ) );
+                // All rights
+                for (int i= 0; i<USER_PRIVILEGE_BYTES; i++ ) {
+                    setUserRights( i, 0xff );
+                }
             } 
             else if (str.IsSameAs(_("user"), false)) {
                 // A standard user
-                m_userRights[ 0 ] = 0x06;
+                setUserRights( 0, 0x06 );
             } 
             else if (str.IsSameAs(_("driver"), false)) {
                 // A standard driver
-                m_userRights[ 0 ] = 0x0f;
+                setUserRights( 0, 0x0f );
             } 
             else {
                 // Numerical
                 unsigned long lval;
                 str.ToULong( &lval );
-                m_userRights[ idx++ ] = (uint8_t)lval;
+                setUserRights( idx++, (uint8_t)lval );
             }
             
         } while ( tkz.HasMoreTokens() && ( idx < sizeof( m_userRights ) ) );
@@ -304,6 +308,8 @@ bool CUserItem::setAllowedEventsFromString( const wxString& strEvents )
 {
     // Privileges
     if ( strEvents.Length() ) {
+        
+        m_listAllowedEvents.Clear();
         
         wxStringTokenizer tkz( strEvents, wxT("/") );
         
@@ -327,16 +333,28 @@ bool CUserItem::setAllowedRemotesFromString( const wxString& strConnect )
     // Privileges
     if ( strConnect.Length() ) {
         
+        m_listAllowedIPV4Remotes.Clear();
+        m_listAllowedIPV6Remotes.Clear();
+        
         wxStringTokenizer tkz( strConnect, wxT("/") );
         
         do {
-            
-            wxString str = tkz.GetNextToken();
-            m_listAllowedIPV4Remotes.Add( str );
-            
+            wxString remote = tkz.GetNextToken();
+            if ( !remote.IsEmpty() ) {
+                remote.Trim();
+                remote.Trim( false );
+                if ( ( _( "*" ) == remote ) || ( _( "*.*.*.*" ) == remote ) ) {
+                    // All is allowed to connect
+                    clearAllowedRemoteList();
+                }
+                else {
+                    addAllowedRemote( remote );
+                }
+            }
         } while ( tkz.HasMoreTokens() );
+        
     }
-    
+        
     return true;
 }
 
@@ -368,9 +386,7 @@ wxString CUserItem::getAllowedEventsAsString( void )
     
     for ( int i=0; i<m_listAllowedEvents.Count(); i++ ) {
         strAllowedEvents += m_listAllowedEvents[ i ];
-        if ( i != ( m_listAllowedEvents.Count() - 1 )  ) {
-            strAllowedEvents += _("/");
-        }
+        if ( i != (m_listAllowedEvents.Count() - 1) ) strAllowedEvents += _("/");
     }
     
     return strAllowedEvents;
@@ -387,14 +403,12 @@ wxString CUserItem::getAllowedRemotesAsString( void )
     
     for ( i=0; i<m_listAllowedIPV4Remotes.Count(); i++ ) {
         strAllowedRemotes += m_listAllowedIPV4Remotes[ i ];
-        strAllowedRemotes += _("/");
+        if ( i != (m_listAllowedIPV4Remotes.Count() - 1) ) strAllowedRemotes += _("/");
     }
     
     for ( i=0; i<m_listAllowedIPV6Remotes.Count(); i++ ) {
         strAllowedRemotes += m_listAllowedIPV6Remotes[ i ];
-        if ( i != ( m_listAllowedIPV6Remotes.Count() - 1 )  ) {
-            strAllowedRemotes += _("/");
-        }
+        if ( i != ( m_listAllowedIPV6Remotes.Count() - 1 )  ) strAllowedRemotes += _("/");
     }
     
     return strAllowedRemotes;
@@ -929,6 +943,7 @@ bool CUserList::addUser( const wxString& user,
     // Add to the map
     m_userhashmap[ user ] = pItem;
 
+    /*
     // Privileges
     if ( userRights.Length() ) {
         
@@ -962,6 +977,7 @@ bool CUserList::addUser( const wxString& user,
         } while ( tkz.HasMoreTokens() && ( idx < USER_PRIVILEGE_BYTES ) );
     }
 
+    
     // Allowed remotes (ACL) 
     if ( allowedRemotes.Length() ) {
         wxStringTokenizer tkz( allowedRemotes, wxT(",") );
@@ -978,8 +994,9 @@ bool CUserList::addUser( const wxString& user,
                     pItem->addAllowedRemote( remote );
                 }
             }
-        } while (tkz.HasMoreTokens());
+        } while ( tkz.HasMoreTokens() );
     }
+     
 
     // Allow Events
     if (allowedEvents.Length()) {
@@ -993,12 +1010,15 @@ bool CUserList::addUser( const wxString& user,
             }
         } while (tkz.HasMoreTokens());
     } 
-
+     */
+    
     // Clear filter
     if (NULL != pFilter) {
         pItem->setFilter( pFilter );
     }
     
+     
+     
     // Save to database
     if ( !( VSCP_ADD_USER_FLAG_LOCAL & bFlags ) ) {
         pItem->saveToDatabase();

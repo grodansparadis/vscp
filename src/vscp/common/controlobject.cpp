@@ -842,7 +842,8 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     //==========================================================================
     //                           Add admin user
     //==========================================================================
-
+    
+    if ( 0 == m_admin_allowfrom.Length() ) m_admin_allowfrom = _("*");
     m_userList.addUser( m_admin_user,
                             m_admin_password,
                             _("Admin user"),            // full name
@@ -850,7 +851,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
                             NULL,
                             _("admin"),
                             m_admin_allowfrom,          // Remotes allows to connect     
-                            _("*"),                     // All events
+                            _("*:*"),                     // All events
                             VSCP_ADD_USER_FLAG_ADMIN ); // Not in DB
     
     //==========================================================================
@@ -863,7 +864,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 
     // Level II Driver Username
     pw.generatePassword(32, buf);
-    m_driverUsername = _("DRVUSR_") + wxString::FromAscii(buf);
+    m_driverUsername = _("drv_") + wxString::FromAscii(buf);
 
     // Level II Driver Password
     pw.generatePassword(32, buf);
@@ -890,7 +891,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
                             NULL,
                             _("driver"),
                             _("127.0.0.1"),                 // Only local
-                            _("*"),                         // All events
+                            _("*:*"),                       // All events
                             VSCP_ADD_USER_FLAG_LOCAL );
     
     // Open up the General logging file.
@@ -2061,7 +2062,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
 
-                if (subchild->GetName() == wxT("secret")) {
+                if (subchild->GetName() == wxT("security")) {
                     m_admin_user = subchild->GetAttribute(wxT("user"), wxT("admin"));
                     m_admin_password = subchild->GetAttribute(wxT("password"), wxT("secret"));
                     m_admin_allowfrom = subchild->GetAttribute(wxT("allowfrom"), wxT("*"));                    
