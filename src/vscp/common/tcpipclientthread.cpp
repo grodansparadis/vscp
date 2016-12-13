@@ -1701,7 +1701,7 @@ void VSCPClientThread::handleClientRcvLoop( struct mg_connection *conn,
                 continue;
         }
         
-        // We must handle the polling here wile in the loop
+        // We must handle the polling here while in the loop
         mg_mgr_poll( &m_pCtrlObject->m_mgrTcpIpServer, 50 );
 
 

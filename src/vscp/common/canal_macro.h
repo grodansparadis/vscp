@@ -40,8 +40,15 @@
 
 #endif
 
-
+#ifndef MAX
 #define MAX( a, b )     ( ( (a) > (b) ) ? (a) : (b) )
+#endif
+
+#ifndef MIN
 #define MIN( a, b )     ( ( (a) < (b) ) ? (a) : (b) )
+#endif
+
+#ifndef ABS
 #define ABS( a )        (( (int) (a) < 0 ) ? ((a) ^ 0xffffffff) + 1 : (a) )
+#endif
 

@@ -1749,7 +1749,7 @@ bool CVariableStorage::init( void )
     
     // * * * VSCP Daemon internal variable database - Always created in-memory * * *
     
-    if ( SQLITE_OK == sqlite3_open( /*":memory:"*/ "/tmp/test.sqlite3", &m_db_vscp_internal_variable ) ) {
+    if ( SQLITE_OK == sqlite3_open( ":memory:", &m_db_vscp_internal_variable ) ) {
         // Should always be created
         doCreateInternalVariableTable();
     }
