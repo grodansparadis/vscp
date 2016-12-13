@@ -265,6 +265,7 @@ void VSCPClientThread::ev_handler( struct mg_connection *conn,
             break;
 
         case MG_EV_POLL:
+            
             if ( conn->flags & MG_F_USER_1) {
 
                 pCtrlObject->getTCPIPServer()->sendOneEventFromQueue( conn, pCtrlObject, false );
@@ -275,6 +276,7 @@ void VSCPClientThread::ev_handler( struct mg_connection *conn,
                     pClientItem->m_timeRcvLoop = wxGetUTCTime();
                     mg_send( conn, "+OK\r\n", 5 );
                 }
+                
             }
             break;
 
@@ -1097,10 +1099,10 @@ bool VSCPClientThread::sendOneEventFromQueue( struct mg_connection *conn,
         }
         pClientItem->m_mutexClientInputQueue.Unlock();
 
-        strOut.Printf( _("%d,%d,%d,%ul,%ul,"),
-                            pqueueEvent->head,
-                            pqueueEvent->vscp_class,
-                            pqueueEvent->vscp_type,
+        strOut.Printf( _("%ud,%ud,%ud,%ul,%ul,"),
+                            (unsigned short)pqueueEvent->head,
+                            (unsigned short)pqueueEvent->vscp_class,
+                            (unsigned short)pqueueEvent->vscp_type,
                             (unsigned long)pqueueEvent->obid,
                             (unsigned long)pqueueEvent->timestamp );
 
@@ -1692,6 +1694,7 @@ void VSCPClientThread::handleClientRcvLoop( struct mg_connection *conn,
     pClientItem->m_readBuffer.Empty();
 
     // Loop until the connection is lost
+    /*
     while ( !TestDestroy() && !m_bQuit && (conn->flags & MG_F_USER_1 ) ) {
 
         // Wait for event
@@ -1706,7 +1709,8 @@ void VSCPClientThread::handleClientRcvLoop( struct mg_connection *conn,
 
 
     } // While 
-
+    */
+    
     return;
 }
 
