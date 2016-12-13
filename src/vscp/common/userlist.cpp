@@ -942,82 +942,11 @@ bool CUserList::addUser( const wxString& user,
     
     // Add to the map
     m_userhashmap[ user ] = pItem;
-
-    /*
-    // Privileges
-    if ( userRights.Length() ) {
-        
-        wxStringTokenizer tkz( userRights, wxT(",") );
-        
-        int idx=0;
-        do {
-            
-            wxString str = tkz.GetNextToken();
-            if ( str.IsSameAs( _("admin"), false) && ( VSCP_ADD_USER_FLAG_ADMIN & bFlags ) ) {
-                // All rights
-                for (int i= 0; i<USER_PRIVILEGE_BYTES; i++ ) {
-                    pItem->setUserRights( i, 0xff );
-                }
-            } 
-            else if (str.IsSameAs(_("user"), false)) {
-                // A standard user
-                pItem->setUserRights( 0, 0x06 );
-            } 
-            else if (str.IsSameAs(_("driver"), false)) {
-                // A standard driver
-                pItem->setUserRights( 0, 0x0f );
-            } 
-            else {
-                // Numerical
-                unsigned long lval;
-                str.ToULong( &lval );
-                pItem->setUserRights( idx++, (uint8_t)lval );
-            }
-            
-        } while ( tkz.HasMoreTokens() && ( idx < USER_PRIVILEGE_BYTES ) );
-    }
-
-    
-    // Allowed remotes (ACL) 
-    if ( allowedRemotes.Length() ) {
-        wxStringTokenizer tkz( allowedRemotes, wxT(",") );
-        do {
-            wxString remote = tkz.GetNextToken();
-            if ( !remote.IsEmpty() ) {
-                remote.Trim();
-                remote.Trim( false );
-                if ( ( _( "*" ) == remote ) || ( _( "*.*.*.*" ) == remote ) ) {
-                    // All is allowed to connect
-                    pItem->clearAllowedRemoteList();
-                }
-                else {
-                    pItem->addAllowedRemote( remote );
-                }
-            }
-        } while ( tkz.HasMoreTokens() );
-    }
-     
-
-    // Allow Events
-    if (allowedEvents.Length()) {
-        wxStringTokenizer tkz(allowedEvents, wxT(","));
-        do {
-            wxString eventpair = tkz.GetNextToken();
-            if (!eventpair.IsEmpty()) {
-                eventpair.Trim();
-                eventpair.Trim(false);
-                pItem->addAllowedEvent( eventpair );
-            }
-        } while (tkz.HasMoreTokens());
-    } 
-     */
     
     // Clear filter
     if (NULL != pFilter) {
         pItem->setFilter( pFilter );
     }
-    
-     
      
     // Save to database
     if ( !( VSCP_ADD_USER_FLAG_LOCAL & bFlags ) ) {

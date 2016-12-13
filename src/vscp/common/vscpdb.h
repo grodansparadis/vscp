@@ -181,9 +181,9 @@
 
 #define VSCPDB_LOG_CREATE "CREATE TABLE 'log' ("\
 	"`idx_log`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-	"`type`         INTEGER DEFAULT 1,"\
+	"`type`         INTEGER DEFAULT 0,"\
 	"`date`         TEXT,"\
-	"`level`	INTEGER DEFAULT 1,"\
+	"`level`	INTEGER DEFAULT 0,"\
 	"`message`	TEXT"\
         ");";\
 
@@ -192,6 +192,11 @@
 #define VSCPDB_ORDINAL_LOG_DATE                     2   // 
 #define VSCPDB_ORDINAL_LOG_LEVEL                    3   // 
 #define VSCPDB_ORDINAL_LOG_MESSAGE                  4   // 
+
+#define VSCPDB_LOG_INSERT "INSERT INTO 'log' "\
+                "(type,date,level,message) VALUES ('%d','%s','%d','%q');"
+
+#define VSCPDB_LOG_COUNT "SELECT COUNT(*) AS nrows FROM log;"
 
 //*****************************************************************************
 //                                 USER
@@ -595,21 +600,17 @@
                                         "link_to_user='%d', "\
                                         "permission='%d', "\
                                         "note='%q' "\
-                                        "WHERE idx_variable='%d';"
+                                        "WHERE idx_variable='%ld';"
 
 #define VSCPDB_VARIABLE_INSERT "INSERT INTO 'variable' "\
                         "(lastchange,name,type,value,bPersistent,link_to_user,permission,note) "\
-                        "VALUES ('%s','%s', '%d','%q','%d','%d','%d','%q');"
-
-#define VSCPDB_VARIABLE_INSERT_STOCK "INSERT INTO 'variable' "\
-                        "(lastchange,name,type,value,bPersistent,link_to_user,permission, note) "\
                         "VALUES ('%s','%s', '%d','%q','%d','%d','%d','%q');"
 
 #define VSCPDB_VARIABLE_FIND_ALL "SELECT * FROM 'variable'"
 
 #define VSCPDB_VARIABLE_FIND_FROM_NAME "SELECT * FROM 'variable' WHERE name='%s'"
 
-#define VSCPDB_VARIABLE_WITH_ID  "DELETE FROM 'variable' WHERE idx_variable='%d';"
+#define VSCPDB_VARIABLE_WITH_ID  "DELETE FROM 'variable' WHERE idx_variable='%ld';"
 
 #define VSCPDB_ORDINAL_VARIABLE_ID              0   //
 #define VSCPDB_ORDINAL_VARIABLE_BSTOCK          1   //

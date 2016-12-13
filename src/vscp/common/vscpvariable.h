@@ -67,7 +67,7 @@
 
 #define USER_ID_ADMIN               0x00
 
-#define ID_NON_PERSISTENT           0x00
+#define ID_NON_PERSISTENT           UINT32_MAX
 
 // Table types - bit-field
 #define VARIABLE_STOCK              0x01
@@ -484,9 +484,10 @@ public:
      * @param name Name of variable
      * @param pVar [OUT] If found supplied variable is filled with data. Can be 
      * set to NULL in which case only availability of the variable is returned.
-     * @return True if the variable is found. 
+     * @return Return id if variable is found, UINT_MAX if variable is internal and dynamic, 
+     *      zero if the variable is not found. 
      */
-    bool getStockVariable( const wxString& name, CVSCPVariable& pVar );
+    uint32_t getStockVariable( const wxString& name, CVSCPVariable& pVar );
     
     /*!
         Write stock variable.    
@@ -669,6 +670,7 @@ public:
     
     // Stock variables names
     //wxArrayString m_StockVariable;
+    
 };
 
 

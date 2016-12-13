@@ -63,6 +63,7 @@ class VSCPWebServerThread;
 class VSCPClientThread;
 class CVSCPAutomation;
 
+// Log level
 enum {
     DAEMON_LOGMSG_NONE = 0,
     DAEMON_LOGMSG_NORMAL,
@@ -76,6 +77,7 @@ enum {
     //DAEMON_LOGMSG_EMERGENCY,  // Deprecated from version 12.4.5
 };
 
+// Log type
 enum {
     DAEMON_LOGTYPE_GENERAL = 0,
     DAEMON_LOGTYPE_SECURITY,
@@ -196,6 +198,15 @@ public:
     void logMsg( const wxString& wxstr,
                     const uint8_t level = DAEMON_LOGMSG_NORMAL,
                     const uint8_t nType = DAEMON_LOGTYPE_GENERAL );
+    
+    /*!
+     * Get records from log database. The variable vscp.log.database.sql
+     * contains the sql expression (without "select * from log")
+     * @param sql Search expression
+     * @param strResult The search result will be returned in this string.
+     * @return True on success.
+     */
+    bool searchLogDB( const char * sql, wxString& strResult );
 
     /*!
         General initialisation
@@ -474,6 +485,11 @@ public:
      * Create userdef table
      */
     bool doCreateUserdefTableTable( void );
+    
+    /*!
+     * Get current number of records in log database
+     */
+    long getCountRecordsLogDB( void );
     
     
 public:

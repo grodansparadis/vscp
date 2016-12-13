@@ -250,7 +250,7 @@
         <!-- Level II Logger -->
         <driver enable="true" >
             <name>VSCP Level II Logger Driver 1</name>	
-            <path>/usr/local/lib/vscpl2_loggerdrv.so</path>
+            <path>/usr/local/lib/vscpl2drv_logger.so</path>
              <config>/tmp/vscp_level2.log</config> 		
              <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>

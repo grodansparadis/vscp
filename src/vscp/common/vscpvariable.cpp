@@ -1749,7 +1749,7 @@ bool CVariableStorage::init( void )
     
     // * * * VSCP Daemon internal variable database - Always created in-memory * * *
     
-    if ( SQLITE_OK == sqlite3_open( NULL, &m_db_vscp_internal_variable ) ) {
+    if ( SQLITE_OK == sqlite3_open( /*":memory:"*/ "/tmp/test.sqlite3", &m_db_vscp_internal_variable ) ) {
         // Should always be created
         doCreateInternalVariableTable();
     }
@@ -1773,67 +1773,77 @@ bool CVariableStorage::init( void )
     variable.setStockVariable( true );
     variable.setPersistent( false );
     variable.setUserId( USER_ID_ADMIN );
-    variable.setLastChangedToNow();
+    variable.setLastChangedToNow(); 
     variable.setNote(_(""));
     
     // *************************************************************************
     //                             Version
     // *************************************************************************
-        
+       
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.version.major") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("VSCP major version number."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.version.minor") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("VSCP minor version number."), true );
     addStockVariable( variable  );
-    
+   
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.version.sub") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("VSCP sub version number."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.version.build") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("VSCP build version number."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.version.str") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("VSCP version string."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.version.wxwidgets.major") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("wxWidgets major version number."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.version.wxwidgets.minor") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("wxWidgets minor version number."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.version.wxwidgets.release") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("wxWidgets release version number."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.version.wxwidgets.sub") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("wxWidgets sub version number."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.version.wxwidgets.str") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
@@ -1844,24 +1854,28 @@ bool CVariableStorage::init( void )
     
 #ifndef VSCP_DISABLE_LUA
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.version.lua.major") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("LUA major version number."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.version.lua.minor") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("LUA minor version number."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.version.lua.release") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("LUA release version number."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.version.lua.str") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
@@ -1870,36 +1884,42 @@ bool CVariableStorage::init( void )
    
 #endif    
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.version.sqlite.major") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("SQLite3 major version number."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.version.sqlite.minor") );
     variable.setNote( _("SQLite3 minor version number."), true );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.version.sqlite.release") );
     variable.setNote( _("SQLite3 release version number."), true );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.version.sqlite.build") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("SQLite3 build version number."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.version.sqlite.str") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("SQLite3 version string."), true );
     addStockVariable( variable  );
       
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.version.openssl.str") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
@@ -1913,18 +1933,21 @@ bool CVariableStorage::init( void )
     //                              Copyright
     // *************************************************************************
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.copyright.vscp") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("VSCP copyright."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.copyright.wxwidgets") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("wxWidgets copyright."), true );
     addStockVariable( variable  );
       
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.copyright.mongoose") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
@@ -1933,6 +1956,7 @@ bool CVariableStorage::init( void )
 
 #ifndef VSCP_DISABLE_LUA
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.copyright.lua") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
@@ -1941,6 +1965,7 @@ bool CVariableStorage::init( void )
     
 #endif
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.copyright.sqlite") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
@@ -1952,102 +1977,119 @@ bool CVariableStorage::init( void )
     //                               System
     // *************************************************************************
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.os.str") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Operating system information string."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.os.width") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("Operating system CPU word width (numerical)."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.os.width.is64bit") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
     variable.setNote( _("True if operating system CPU word width is 64-bit."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.os.width.is32bit") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
     variable.setNote( _("True if operating system CPU word width is 32-bit."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.os.width.str") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Operating system CPU word width (text form)."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.os.endiness.str") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Operating system endiness."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.os.islittleendian") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
     variable.setNote( _("True if Operating system endiness is little endian."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.host.name") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Name of host machine."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.host.ip") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("IP address for host machine."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.host.mac") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("MAC address for host machine."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.host.userid") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("The user the VSCP daemon is running as."), true ); 
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.host.username") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Full name for the user the VSCP daemon is running as."), true );
     addStockVariable( variable );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.host.guid") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID );
     variable.setNote( _("GUID for host."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.loglevel") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("Active log level (numerical form)."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.loglevel.str") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Active log level (text form)."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ  | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.client.receivequeue.max") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
     variable.setNote( _("Maximum number of events in client receive queue."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.host.root.path") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
@@ -2059,6 +2101,7 @@ bool CVariableStorage::init( void )
     //                             TCP/IP
     // *************************************************************************
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ  | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.tcpip.address") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
@@ -2071,12 +2114,14 @@ bool CVariableStorage::init( void )
     //                             Multicast
     // *************************************************************************
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ  | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.multicast.address") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Address for VSCP daemon multicast TCP/IP interface (Default: 224.0.23.158)."), true );
     addStockVariable( variable );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ  | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.multicast.ttl") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
@@ -2087,12 +2132,14 @@ bool CVariableStorage::init( void )
     //                                UDP
     // *************************************************************************
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ  | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.udp.enable") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
     variable.setNote( _("Enable flag for VSCP daemon simple UDP interface."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ  | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.udp.address") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
@@ -2103,12 +2150,14 @@ bool CVariableStorage::init( void )
     //                                 MQTT
     // *************************************************************************
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ  | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.mqtt.broker.enable") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
     variable.setNote( _("Enable flag for VSCP daemon MQTT interface."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ  | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.mqtt.broker.address") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
@@ -2119,22 +2168,25 @@ bool CVariableStorage::init( void )
     //                               CoAP
     // *************************************************************************
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ  | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.coap.server.enable") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
     variable.setNote( _("Enable flag for VSCP daemon CoAP interface."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ  | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.coap.server.address") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Address for VSCP daemon CoAP interface."), true );
     addStockVariable( variable  );
     
-        // *************************************************************************
+    // *************************************************************************
     //                              Discovery
     // *************************************************************************
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.discovery.enable") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
@@ -2145,38 +2197,42 @@ bool CVariableStorage::init( void )
     //                              AUTOMATION
     // *************************************************************************
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.automation.calc.last") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_DATETIME );
     variable.setNote( _("Date and time for last VSCP daemon automation calculation."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.automation.longitude") );
     variable.setNote( _("VSCP daemon automation longitude setting."), true );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_DOUBLE );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.automation.latitude") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_DOUBLE );
     variable.setNote( _("VSCP daemon automation latitude setting."), true );
     addStockVariable( variable  );
     
-    
-    
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ  | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.automation.heartbeat.enable") );
     variable.setNote( _("Enable flag for VSCP daemon automation heartbeat event."), true );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ  | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.automation.heartbeat.period") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
     variable.setNote( _("Period in seconds for VSCP daemon automation heartbeat event."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.automation.heartbeat.last") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_DATETIME );
@@ -2185,65 +2241,70 @@ bool CVariableStorage::init( void )
     
     
     
-    
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.automation.segctrl-heartbeat.enable") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
     variable.setNote( _("Enable flag for VSCP daemon automation segment controller heartbeat event."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.automation.segctrl-heartbeat.period") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
     variable.setNote( _("Period in seconds for VSCP daemon automation heart beat event."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.automation.segctrl-heartbeat.last") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_DATETIME );
     variable.setNote( _("Date and time for last sent VSCP daemon automation heart beat event."), true );
     addStockVariable( variable  );
     
-    
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.automation.daylength") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("VSCP daemon automation calculated daylength."), true );
     addStockVariable( variable  );
     
-    
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.automation.declination") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_DOUBLE );
     variable.setNote( _("VSCP daemon automation calculated sun declination."), true );
     addStockVariable( variable  );  
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.automation.sun.max.altitude") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_DOUBLE );
     variable.setNote( _("VSCP daemon automation calculated max sun altitude."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.automation.twilightsunriseevent.enable") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
     variable.setNote( _("Enable flag for VSCP daemon automation twilight sunrise event."), true );
     addStockVariable( variable  );
        
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.automation.twilightsunriseevent.last") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_DATETIME );
     variable.setNote( _("Date and time for last sent VSCP daemon automation twilight sunrise event."), true );
     addStockVariable( variable  );
     
-    
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.automation.sunriseevent.enable") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
     variable.setNote( _("Enable flag for VSCP daemon automation sunrise event."), true );
     addStockVariable( variable  );
     
-    
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.automation.sunriseevent.last") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_DATETIME );
@@ -2252,42 +2313,42 @@ bool CVariableStorage::init( void )
     
     
     
-    
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.automation.sunsetevent.enable") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
     variable.setNote( _("Enable flag for VSCP daemon automation sunset event."), true );
     addStockVariable( variable  );
     
-    
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.automation.sunsetevent.last") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_DATETIME );
     variable.setNote( _("Date and time for last sent VSCP daemon automation sunset event."), true );
     addStockVariable( variable  );
            
-    
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.automation.twilightsunsetevent.enable") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
     variable.setNote( _("Enable flag for VSCP daemon automation twilight sunset event."), true );
     addStockVariable( variable  );
     
-    
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.automation.twilightsunsetevent.last") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_DATETIME );
     variable.setNote( _("Date and time for last sent VSCP daemon automation twilight sunset event."), true );
     addStockVariable( variable  );
        
-    
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.automation.calculatednoonevent.enable") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
     variable.setNote( _("Enable flag for VSCP daemon automation calculated noon event."), true );
     addStockVariable( variable  );
     
-    
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.automation.calculatednoonevent.last") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_DATETIME );
@@ -2299,6 +2360,7 @@ bool CVariableStorage::init( void )
     //                            Websocket-Server
     // *************************************************************************
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websocket.auth.enable") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
@@ -2310,96 +2372,112 @@ bool CVariableStorage::init( void )
     //                                WEB-Server
     // *************************************************************************
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.address") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Address for VSCP daemon web interface."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.authentication.enable") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
     variable.setNote( _("Flag to enable authentication for VSCP daemon web interface."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.root.path") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Root folder for VSCP daemon web interface."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.authdomain") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Auth domain for VSCP daemon web interface."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.cert.path") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Certification path for VSCP daemon web interface."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.extramimetypes") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Extra mime types for VSCP daemon web interface."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.ssipatterns") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("SSI patterns for VSCP daemon web interface."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.ipacl") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("IP access control list for VSCP daemon web interface."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.cgi.interpreter") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Path to CGI interpreter for VSCP daemon web interface."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.cgi.pattern") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("CGI pattern for VSCP daemon web interface."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.directorylistings.enable") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
     variable.setNote( _("Flag to enable directory listings for VSCP daemon web interface."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.hidefile.pattern") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Hide file pattern for VSCP daemon web interface."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.indexfiles") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("List of indexfiles for VSCP daemon web interface."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.urlrewrites") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("URL rewrites for VSCP daemon web interface."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.auth.file.directory") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Authentication file directory for VSCP daemon web interface."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.auth.file.global") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
@@ -2411,42 +2489,49 @@ bool CVariableStorage::init( void )
     //                            Decision Matrix
     // *************************************************************************
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.dm.logging.enable") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
     variable.setNote( _("Flag for decision matrix logging (true for activated)."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.dm.logging.path") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Path to decision matrix logging,"), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.dm.db.path") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Path to decision matrix database."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.dm.xml.path") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Path to decision matrix XML file to load at startup."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.dm.count") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
     variable.setNote( _("Total number of decision matrix rows."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.dm.count.active") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
     variable.setNote( _("Number of active decision matrix rows."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.dm") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
@@ -2458,12 +2543,14 @@ bool CVariableStorage::init( void )
     //                             Variables
     // *************************************************************************
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.variable.xml.path") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Path to XML file to load variables from on startup."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.variable.db.path") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
@@ -2474,62 +2561,86 @@ bool CVariableStorage::init( void )
     //                              Log files
     // *************************************************************************
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.log.syslog.enable") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
     variable.setNote( _("Flag to enable syslog."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.log.database.enable") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
     variable.setNote( _("Flag to enable logging to database."), true );
     addStockVariable( variable  );
-    
-    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.log.database.count") );
-    variable.setNote( _("Records in logging database."), true );
-    variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
-    addStockVariable( variable  );
-    
-    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+        
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );
     variable.setName( _("vscp.log.database.path") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Path to logging database."), true );
     addStockVariable( variable  );
     
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ );
+    variable.setName( _("vscp.log.database.count") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+    variable.setNote( _("Number of records in log database."), true );
+    addStockVariable( variable  );
     
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );
+    variable.setName( _("vscp.log.database.sql") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_SQL );
+    variable.setNote( _("SQL select for log database retrieval (Default: 'ORDER BY date DESC LIMIT 500) ."), true );
+    // SELECT * FROM log WHERE date BETWEEN '2016-12-01' AND '2011-11-02';
+    // SELECT * FROM log WHERE strftime('%H',date)  BETWEEN '12' AND '13';
+    variable.setValue( _("ORDER BY date DESC LIMIT 500"), true );
+    addStockVariable( variable );
+    
+    /*variable.setAccessRights( PERMISSON_ALL_READ );
+    variable.setName( _("vscp.log.database.search") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("Log database search result."), true );
+    addStockVariable( variable  );*/
+   
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.log.general.enable") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
     variable.setNote( _("Flag to enable general logging to a text file."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.log.general.path") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Path to general logging text file."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.log.access.enable") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
     variable.setNote( _("Flag to enable access logging to a text file."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.log.access.path") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Path to access logging text file."), true );
     addStockVariable( variable  );
     
-    
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.log.security.enable") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
     variable.setNote( _("Flag to enable security logging to a text file."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.log.security.path") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
@@ -2540,12 +2651,14 @@ bool CVariableStorage::init( void )
     //                             Databases
     // *************************************************************************
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.database.vscpdata.path") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Path to VSCP data database."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.database.vscpdconfig.path") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
@@ -2558,24 +2671,28 @@ bool CVariableStorage::init( void )
     //                              Drivers
     // *************************************************************************
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.driver.count") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("Number of loaded drivers."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.driver.level1.count") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("Number of Level I drivers."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.driver.level2.count") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("Number of level II drivers."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.driver") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
@@ -2586,12 +2703,14 @@ bool CVariableStorage::init( void )
     //                             Interfaces
     // *************************************************************************
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.interface.count") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("Number of active interfaces."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.interface") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
@@ -2602,12 +2721,14 @@ bool CVariableStorage::init( void )
     //                              Discovery
     // *************************************************************************
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.discovery.count") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("Number of discovered units."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.discovery") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
@@ -2618,6 +2739,7 @@ bool CVariableStorage::init( void )
     //                                Users
     // *************************************************************************
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );
     variable.setUserID( 0 );
     variable.setName( _("vscp.user.count") );
@@ -2625,6 +2747,7 @@ bool CVariableStorage::init( void )
     variable.setNote( _("Number of defined users."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_OWNER_ALL );
     variable.setUserID( 0 );
     variable.setName( _("vscp.user") );
@@ -2632,6 +2755,7 @@ bool CVariableStorage::init( void )
     variable.setNote( _("All defined users."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );
     variable.setUserID( 0 );
     variable.setName( _("vscp.user.names") );
@@ -2639,6 +2763,7 @@ bool CVariableStorage::init( void )
     variable.setNote( _("All defined users names."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_OWNER_WRITE );
     variable.setUserID( 0 );
     variable.setStockVariable();
@@ -2647,6 +2772,7 @@ bool CVariableStorage::init( void )
     variable.setNote( _("Add a new user."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_OWNER_WRITE );
     variable.setUserID( 0 );
     variable.setStockVariable();
@@ -2659,12 +2785,14 @@ bool CVariableStorage::init( void )
     //                                Tables
     // *************************************************************************   
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.table.count") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("Number of defined user tables."), true );
     addStockVariable( variable  );
     
+    variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.table") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
@@ -2717,7 +2845,7 @@ uint32_t CVariableStorage::find(const wxString& name, CVSCPVariable& variable )
 // getStockVariable
 //
 
-bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var )
+uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var )
 {
     wxString wxstr;
     wxString strToken;
@@ -2743,7 +2871,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     if ( 0 == id ) {
         // Probably write only variable
         var.setName( lcname );
-        var.setID( ID_NON_PERSISTENT );
+        var.setID( ID_NON_PERSISTENT ); 
         var.setStockVariable( true );
         var.setPersistent( false );
         var.setUserId( USER_ID_ADMIN );
@@ -2753,33 +2881,43 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     
     if ( lcname.StartsWith( _("vscp.version.major") ) ) {
         var.setValue( wxString::Format( _("%d"), VSCPD_MAJOR_VERSION ) );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.version.minor") ) ) {
         var.setValue( wxString::Format( _("%d"), VSCPD_MINOR_VERSION ) );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.version.build") ) ) {
         var.setValue( wxString::Format( _("%d"), VSCPD_BUILD_VERSION ) );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.version.str") ) ) {
         var.setValue( wxString::Format( _("%s"), VSCPD_DISPLAY_VERSION ), true );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.version.wxwidgets.str") ) ) {
         var.setValue( wxString::Format( _("%s"), wxVERSION_STRING ), true );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.version.wxwidgets.major") ) ) {
         var.setValue( wxString::Format( _("%d"), wxMAJOR_VERSION ) );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.version.wxwidgets.minor") ) ) {
         var.setValue( wxString::Format( _("%d"), wxMINOR_VERSION ) );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.version.wxwidgets.release") ) ) {
         var.setValue( wxString::Format( _("%d"), wxRELEASE_NUMBER ) );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.version.wxwidgets.sub") ) ) {
         var.setValue( wxString::Format( _("%d"), wxSUBRELEASE_NUMBER ) );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.copyright.vscp") ) ) {
         var.setValue( wxString::Format( _("%s"), VSCPD_COPYRIGHT ), true );
+        return var.getID();
     }
 
 // *****************************************************************************
@@ -2789,6 +2927,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     else if ( lcname.StartsWith( _("vscp.copyright.wxwidgets") ) ) {
         var.setValue( wxString::Format( _("%s"),
                     "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al" ), true );
+        return var.getID();
     }
 
 // *****************************************************************************
@@ -2798,6 +2937,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     else if ( lcname.StartsWith( _("vscp.copyright.mongoose") ) ) {
         var.setValue( wxString::Format( _("%s"),
                     "Copyright (c) 2013-2016 Cesanta Software Limited" ), true );
+        return var.getID();
     }
 
 // *****************************************************************************
@@ -2808,21 +2948,26 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
 
     else if ( lcname.StartsWith( _("vscp.copyright.lua") ) ) {
         var.setValue( wxString::Format( _("%s"), LUA_COPYRIGHT ), true );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.version.lua.major") ) ) {
         var.setValue( wxString::Format( _("%s"), LUA_VERSION_MAJOR ) );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.version.lua.minor") ) ) {
         var.setValue( wxString::Format( _("%s"), LUA_VERSION_MINOR) );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.version.lua.release") ) ) {
         var.setValue( wxString::Format( _("%s"), LUA_VERSION_RELEASE ) );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.version.lua.str") ) ) {
         var.setValue( wxString::Format( _("%s.%s.%s"),
                                     LUA_VERSION_MAJOR,
                                     LUA_VERSION_MINOR,
                                     LUA_VERSION_RELEASE ), true );
+        return var.getID();
     }
 
 #endif
@@ -2837,6 +2982,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
             "%d.%d.%d.%d",
             &major, &minor, &sub, &build );
         var.setValue( wxString::Format( _("%d"), major ) );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.version.sqlite.minor") ) ) {
         int major, minor, sub, build;
@@ -2844,6 +2990,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
             "%d.%d.%d.%d",
             &major, &minor, &sub, &build );
         var.setValue( wxString::Format( _("%d"), minor ) );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.version.sqlite.release") ) ) {
         int major, minor, sub, build;
@@ -2851,6 +2998,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
             "%d.%d.%d.%d",
             &major, &minor, &sub, &build );
         var.setValue( wxString::Format( _("%d"), sub ) );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.version.sqlite.build") ) ) {
         int major, minor, sub, build;
@@ -2858,9 +3006,11 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
             "%d.%d.%d.%d",
             &major, &minor, &sub, &build );
         var.setValue( wxString::Format( _("%d"), build ) );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.version.sqlite.str") ) ) {
         var.setValue( _(SQLITE_VERSION), true );
+        return var.getID();
     }
 
     // *************************************************************************
@@ -2876,6 +3026,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
         //var.setValue( _("OPENSSL_VERSION_NUMBER") );
         wxstr.Printf( _("%s"), SSLeay_version( SSLEAY_VERSION ) );
         var.setValue( wxstr, true );
+        return var.getID();
 #endif        
         
     }
@@ -2886,27 +3037,35 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     
     else if ( lcname.StartsWith( _("vscp.os.str") ) ) {
         var.setValue( wxGetOsDescription(), true );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.os.width.str") ) ) {
         var.setValue( wxIsPlatform64Bit() ? _("64") : _("32"), true );
+        return var.getID();   
     }
     else if ( lcname.StartsWith( _("vscp.os.width.is64bit") ) ) {
         var.setValue( wxIsPlatform64Bit() ? true : false );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.os.width.is32bit") ) ) {
         var.setValue( !wxIsPlatform64Bit() ? true : false );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.os.width") ) ) {
         var.setValue( wxIsPlatform64Bit() ? 64 : 32 );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.os.endiness.str") ) ) {
         var.setValue( wxIsPlatformLittleEndian() ? _("Little endian") : _("Big endian"), true );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.os.endiness.islittleendian") ) ) {
         var.setValue( wxIsPlatformLittleEndian() ? true : false );
+        return var.getID();
     }
    else if ( lcname.StartsWith( _("vscp.host.name") ) ) {
         var.setValue( wxGetFullHostName(), true );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.host.ip") ) ) {
         cguid guid;
@@ -2920,6 +3079,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
                                                     guid.getAt( 10 ),
                                                     guid.getAt( 9 ),
                                                     guid.getAt( 8 ) ), true );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.host.mac") ) ) {
         cguid guid;
@@ -2935,15 +3095,19 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
                             guid.getAt( 10 ),
                             guid.getAt( 9 ),
                             guid.getAt( 8 ) ), true );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.host.userid") ) ) {
         var.setValue( wxGetUserId(), true );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.host.username") ) ) {
         var.setValue( wxGetUserName(), true );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.host.guid") ) ) {
         var.setValue( wxstr );
+        return var.getID();
     } 
     else if ( lcname.StartsWith( _("vscp.loglevel.str") ) ) {
         switch ( gpctrlObj->m_logLevel  ) {
@@ -2961,16 +3125,20 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
              break;
         }
         var.setValue( wxstr, true );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.loglevel") ) ) {
         var.setValue( wxString::Format( _("%d "), gpctrlObj->m_logLevel ) );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.client.receivequeue.max") ) ) {
         var.setValue( wxString::Format( _("%d"), 
                         gpctrlObj->m_maxItemsInClientReceiveQueue ) );
+        return var.getID();
     }
     else if ( lcname.StartsWith(  _("vscp.host.root.path") ) ) {
         var.setValue( gpctrlObj->m_rootFolder, true );
+        return var.getID();
     }
     
     // *************************************************************************
@@ -2979,6 +3147,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     
     else if ( lcname.StartsWith( _("vscp.tcpip.address") ) ) {
         var.setValue( gpctrlObj->m_strTcpInterfaceAddress, true );
+        return var.getID();
     }
     
     // *************************************************************************
@@ -2987,6 +3156,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     
     else if ( lcname.StartsWith( _("vscp.discovery.enable") ) ) {
         var.setValue( true );
+        return var.getID();
     }
     
     // *************************************************************************
@@ -2995,9 +3165,11 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     
     else if ( lcname.StartsWith( _("vscp.multicast.address") ) ) {
         var.setValue( gpctrlObj->m_strMulticastAnnounceAddress, true );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.multicast.ttl") ) ) {
         var.setValue( gpctrlObj->m_ttlMultiCastAnnounce );
+        return var.getID();
     }
     
     // *************************************************************************
@@ -3006,9 +3178,11 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     
     else if ( lcname.StartsWith( _("vscp.udp.enable") ) ) {
         var.setValue( gpctrlObj->m_bUDP ? true : false );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.udp.address") ) ) {
         var.setValue( gpctrlObj->m_strUDPInterfaceAddress, true );
+        return var.getID();
     }
     
     // *************************************************************************
@@ -3017,9 +3191,11 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     
     else if ( lcname.StartsWith( _("vscp.mqtt.broker.enable") ) ) {
         var.setValue( gpctrlObj->m_bMQTTBroker ? _("true") : _("false") );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.mqtt.broker.address") ) ) {
         var.setValue( gpctrlObj->m_strMQTTBrokerInterfaceAddress, true );
+        return var.getID();
     }
     
     
@@ -3030,9 +3206,11 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     
     else if ( lcname.StartsWith( _("vscp.coap.server.enable") ) ) {
         var.setValue( gpctrlObj->m_bCoAPServer ? _("true") : _("false") );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.coap.server.address") ) ) {
         var.setValue( gpctrlObj->m_strCoAPServerInterfaceAddress, true );
+        return var.getID();
     }
     
     // *************************************************************************
@@ -3044,45 +3222,54 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
         wxstr += _( "T" );
         wxstr += gpctrlObj->m_automation.getLastCalculation().FormatISOTime();
         var.setValue( wxstr );
+        return var.getID();
     }
     
     else if ( lcname.StartsWith( _("vscp.automation.longitude") ) ) {
         var.setValue( wxString::Format( _("%f"), 
                         gpctrlObj->m_automation.getLongitude() ) );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.automation.latitude") ) ) {
         var.setValue( wxString::Format( _("%f"), 
                         gpctrlObj->m_automation.getLatitude() ) );
+        return var.getID();
     }
     
     
     else if ( lcname.StartsWith( _("vscp.automation.heartbeat.enable") ) ) {
         var.setValue( gpctrlObj->m_automation.isSendHeartbeat() ? true : false );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.automation.heartbeat.period") ) ) {
         var.setValue( wxString::Format( _("%ld"), 
                         gpctrlObj->m_automation.getIntervalHeartbeat() ) );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.automation.heartbeat.last") ) ) {
         wxstr = gpctrlObj->m_automation.getHeartbeatSent().FormatISODate();
         wxstr += _( "T" );
         wxstr += gpctrlObj->m_automation.getHeartbeatSent().FormatISOTime();
         var.setValue( wxstr );
+        return var.getID();
     }
     
     
     else if ( lcname.StartsWith(  _("vscp.automation.segctrl-heartbeat.enable") ) ) {
         var.setValue(gpctrlObj->m_automation.isSendSegmentControllerHeartbeat() ? true : false );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.automation.segctrl.heartbeat.period") ) ) {
         var.setValue( wxString::Format( _("%ld"), 
                 gpctrlObj->m_automation.getIntervalSegmentControllerHeartbeat() ) );
+        return var.getID();
     }  
     else if ( lcname.StartsWith( _("vscp.automation.segctrl.heartbeat.last") ) ) {
         wxstr = gpctrlObj->m_automation.getSegmentControllerHeartbeatSent().FormatISODate();
         wxstr += _( "T" );
         wxstr += gpctrlObj->m_automation.getSegmentControllerHeartbeatSent().FormatISOTime();
         var.setValue( wxstr );
+        return var.getID();
     }
     
     else if ( lcname.StartsWith( _("vscp.automation.daylength") ) ) {
@@ -3091,78 +3278,92 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
         gpctrlObj->m_automation.convert2HourMinute( daylength, &hour, &minute );
         wxstr.Printf(_("%02d:%02d"), hour, minute );
         var.setValue( wxstr, true );
+        return var.getID();
     }
     
     else if ( lcname.StartsWith( _("vscp.automation.declination") ) ) {
         double declination = gpctrlObj->m_automation.getDeclination();
         wxstr.Printf(_("%f"), declination );
         var.setValue( wxstr );
+        return var.getID();
     }
     
     else if ( lcname.StartsWith( _("vscp.automation.sun.max.altitude") ) ) {
         double maxalt = gpctrlObj->m_automation.getSunMaxAltitude();
         wxstr.Printf(_("%f"), maxalt );
         var.setValue( wxstr );
+        return var.getID();
     }
     
     else if ( lcname.StartsWith( _("vscp.automation.twilightsunriseevent.enable") ) ) {
         var.setValue( gpctrlObj->m_automation.isSendSunriseTwilightEvent() ? true : false );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.automation.twilightsunriseevent.last") ) ) {
         wxstr = gpctrlObj->m_automation.getSegmentControllerHeartbeatSent().FormatISODate();
         wxstr += _( "T" );
         wxstr += gpctrlObj->m_automation.getSegmentControllerHeartbeatSent().FormatISOTime();
         var.setValue( wxstr );
+        return var.getID();
     }
     
     
     else if ( lcname.StartsWith( _("vscp.automation.sunriseevent.enable") ) ) {
         var.setValue( gpctrlObj->m_automation.isSendSunriseEvent() ? true : false );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.automation.sunriseevent.last") ) ) {
         wxstr = gpctrlObj->m_automation.getSunriseEventSent().FormatISODate();
         wxstr += _( "T" );
         wxstr += gpctrlObj->m_automation.getSunriseEventSent().FormatISOTime();
         var.setValue( wxstr );
+        return var.getID();
     }
     
     
     
     else if ( lcname.StartsWith( _("vscp.automation.sunsetevent.enable") ) ) {
         var.setValue( gpctrlObj->m_automation.isSendSunsetEvent() ? true : false );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.automation.sunsetevent.last") ) ) {
         wxstr = gpctrlObj->m_automation.getSunsetEventSent().FormatISODate();
         wxstr += _( "T" );
         wxstr += gpctrlObj->m_automation.getSunsetEventSent().FormatISOTime();
         var.setValue( wxstr );
+        return var.getID();
     }
     
     
     
     else if ( lcname.StartsWith( _("vscp.automation.twilightsunsetevent.enable") ) ) {
         var.setValue( gpctrlObj->m_automation.isSendSunsetTwilightEvent() ? true : false );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.automation.twilightsunsetevent.last") ) ) {
         wxstr = gpctrlObj->m_automation.getSunsetTwilightEventSent().FormatISODate();
         wxstr += _( "T" );
         wxstr += gpctrlObj->m_automation.getSunsetTwilightEventSent().FormatISOTime();
         var.setValue( wxstr );
+        return var.getID();
     }
     
     else if ( lcname.StartsWith( _("vscp.automation.calculatednoonevent.enable") ) ) {
         var.setValue( gpctrlObj->m_automation.isSendCalculatedNoonEvent() ? true : false );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.automation.twilightsunsetevent.last") ) ) {
         wxstr = gpctrlObj->m_automation.getCalculatedNoonEventSent().FormatISODate();
         wxstr += _( "T" );
         wxstr += gpctrlObj->m_automation.getCalculatedNoonEventSent().FormatISOTime();
         var.setValue( wxstr );
+        return var.getID();
     }
     
  
     else if ( lcname.StartsWith( _("vscp.host.name") ) ) {
         var.setValue( gpctrlObj->m_strServerName, true );
+        return var.getID();
     }
     
     // *************************************************************************
@@ -3171,6 +3372,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
 
     else if ( lcname.StartsWith( _("vscp.websocket.auth.enable") ) ) {
         var.setValue( gpctrlObj->m_bAuthWebsockets ? true : false );
+        return var.getID();
     }
  
     
@@ -3180,6 +3382,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
 
     else if ( lcname.StartsWith( _("vscp.websocket.auth.enable") ) ) {
         var.setValue( gpctrlObj->m_bAuthWebsockets ? true : false );
+        return var.getID();
     }
     
 
@@ -3190,54 +3393,69 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
 
     else if ( lcname.StartsWith( _("vscp.websrv.address") ) ) {
         var.setValue( gpctrlObj->m_strWebServerInterfaceAddress, true );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.websrv.authentication.enable") ) ) {
         var.setValue( gpctrlObj->m_bDisableSecurityWebServer ? true : false );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.websrv.root.path") ) ) {
         var.setValue( wxString::FromUTF8( gpctrlObj->m_pathWebRoot ), true );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.websrv.cert.path") ) ) {
         var.setValue( wxString::FromUTF8( gpctrlObj->m_pathCert ), true );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.websrv.extramimetypes") ) ) {
         var.setValue( wxString::FromUTF8( gpctrlObj->m_extraMimeTypes ), true );
+        return var.getID();
     }
 
 
     else if ( lcname.StartsWith( _("vscp.websrv.ssipatterns") ) ) {
         var.setValue( wxString::FromUTF8( gpctrlObj->m_ssi_pattern ), true );
+        return var.getID();
     }
 
     else if ( lcname.StartsWith( _("vscp.websrv.ipacl") ) ) {
         var.setValue( wxString::FromUTF8( gpctrlObj->m_ip_acl ), true );
+        return var.getID();
     }
 
     else if ( lcname.StartsWith( _("vscp.websrv.cgi.interpreter") ) ) {
         var.setValue( wxString::FromUTF8( gpctrlObj->m_cgiInterpreter ), true );
+        return var.getID();
     }
 
     else if ( lcname.StartsWith( _("vscp.websrv.cgi.pattern") ) ) {
         var.setValue( wxString::FromUTF8( gpctrlObj->m_cgiPattern ), true );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.websrv.directorylistings.enable") ) ) {
         var.setValue( ( NULL != 
             strstr( gpctrlObj->m_EnableDirectoryListings,"yes" ) ) ? _("true") : _("false") );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.websrv.hidefile.pattern") ) ) {
         var.setValue( wxString::FromUTF8( gpctrlObj->m_hideFilePatterns ), true );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.websrv.indexfiles") ) ) {
         var.setValue( wxString::FromUTF8( gpctrlObj->m_indexFiles ), true );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.websrv.urlrewrites") ) ) {
         var.setValue( wxString::FromUTF8( gpctrlObj->m_urlRewrites ), true );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.websrv.auth.file.directory") ) ) {
         var.setValue( wxString::FromUTF8( gpctrlObj->m_per_directory_auth_file ), true );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.websrv.auth.file.global") ) ) {
         var.setValue( wxString::FromUTF8( gpctrlObj->m_global_auth_file ), true );
+        return var.getID();
     }
 
 
@@ -3251,15 +3469,19 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
 
     else if ( lcname.StartsWith( _("vscp.dm.logging.enable") ) ) {
         var.setValue( gpctrlObj->m_dm.m_bLogEnable ? true : false );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.dm.logging.path") ) ) {
         var.setValue( gpctrlObj->m_dm.m_logPath.GetFullPath(), true );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.dm.db.path") ) ) {
-        var.setValue( gpctrlObj->m_dm.m_path_db_vscp_dm.GetFullPath(), true ); 
+        var.setValue( gpctrlObj->m_dm.m_path_db_vscp_dm.GetFullPath(), true );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.dm.xml.path") ) ) {
         var.setValue( gpctrlObj->m_dm.m_staticXMLPath, true ); 
+        return var.getID();
     }
 
 
@@ -3270,9 +3492,11 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
 
     else if ( lcname.StartsWith( _("vscp.variable.db.path") ) ) {
         var.setValue( gpctrlObj->m_VSCP_Variables.m_dbFilename.GetFullPath(), true );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.variable.xml.path") ) ) {
         var.setValue( gpctrlObj->m_VSCP_Variables.m_xmlPath, true );
+        return var.getID();
     }
 
 
@@ -3283,39 +3507,96 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     // Enable syslog logging
     else if ( lcname.StartsWith( _("vscp.log.syslog.enable") ) ) {
         var.setValue( gpctrlObj->m_bLogToSysLog ? true : false );
+        return var.getID();
     }
     
     // Enable database logging
     else if ( lcname.StartsWith( _("vscp.log.database.enable") ) ) {
         var.setValue( gpctrlObj->m_bLogToDatabase ? true : false );
+        return var.getID();
     }
     
+    // Read Log database path
     else if ( lcname.StartsWith(  _("vscp.log.database.path") ) ) {
         var.setValue( gpctrlObj->m_path_db_vscp_data.GetFullPath(), true );
+        return var.getID();
+    }
+    
+    // Read Log database row count
+    else if ( lcname.StartsWith(  _("vscp.log.database.count") ) ) {
+        var.setValue( gpctrlObj->getCountRecordsLogDB() );
+        return var.getID();
+    }
+    
+    // Read Log database search result
+    else if ( lcname.StartsWith(  _("vscp.log.database.search") ) ) {
+        wxString strResult;
+        
+        var.setStockVariable();
+        var.setPersistent( false );
+        var.setAccessRights( PERMISSON_OWNER_READ );           
+        var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+        
+        CVSCPVariable sqlvar;
+        if ( 0 == findNonPersistentVariable( _("vscp.log.database.sql"), sqlvar ) ) {
+            var.setValue( _("0,0,0,0,ERROR: sql variable was not found") );
+        }
+        else {
+            
+            wxString wxstr = sqlvar.getValue();
+            size_t len = wxBase64Decode( NULL, 0, wxstr );
+            if ( 0 == len ) return false;
+            uint8_t *pbuf = new uint8_t[len];
+            if ( NULL == pbuf ) return false;
+            len = wxBase64Decode( pbuf, len, wxstr );
+            wxstr = wxString::FromUTF8( (const char *)pbuf, len );
+            delete [] pbuf;
+            
+            wxString searchStr = "SELECT * from log ";
+            searchStr += wxstr;
+            
+            // Do search 
+            gpctrlObj->searchLogDB( (const char *)searchStr.mbc_str(), strResult );
+        
+            // Set the value
+            var.setValue( strResult, true );
+        }
+        
+        return var.getID();
+    }
+    
+    else if ( lcname.StartsWith( _("vscp.log.database.sql") ) ) {
+        return var.getID();
     }
     
     // General
     else if ( lcname.StartsWith( _("vscp.log.general.enable") ) ) {
         var.setValue( gpctrlObj->m_bLogGeneralEnable ? true : false );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.log.general.path") ) ) {
         var.setValue( gpctrlObj->m_logGeneralFileName.GetFullPath(), true );
+        return var.getID();
     }
 
     // Access
     else if ( lcname.StartsWith( _("vscp.log.access.enable") ) ) {
         var.setValue( gpctrlObj->m_bLogAccessEnable ? true : false );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.log.access.path") ) ) {
         var.setValue( gpctrlObj->m_logAccessFileName.GetFullPath(), true );
+        return var.getID();
     }
 
     // Security
     else if ( lcname.StartsWith( _("vscp.log.security.enable") ) ) {
         var.setValue( gpctrlObj->m_bLogAccessEnable ? true : false );
+        return var.getID();
     }   
     else if ( lcname.StartsWith( _("vscp.log.security.path") ) ) {
         var.setValue( gpctrlObj->m_logSecurityFileName.GetFullPath(), true );
+        return var.getID();
     }
 
 
@@ -3327,9 +3608,11 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
         
     else if ( lcname.StartsWith(  _("vscp.database.vscpdata.path") ) ) {
         var.setValue( gpctrlObj->m_path_db_vscp_data.GetFullPath(), true );
+        return var.getID();
     } 
     else if ( lcname.StartsWith(  _("vscp.database.vscpdconfig.path") ) ) {
         var.setValue( gpctrlObj->m_path_db_vscp_daemon.GetFullPath(), true );
+        return var.getID();
     }
     
     // *************************************************************************
@@ -3338,10 +3621,12 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     
     
     else if ( lcname.StartsWith( _("vscp.dm.count.active") ) ) {
-        var.setValue( gpctrlObj->m_dm.getMemoryElementCount() );      
+        var.setValue( gpctrlObj->m_dm.getMemoryElementCount() );   
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.dm.count") ) ) {
         var.setValue( (long)gpctrlObj->m_dm.getDatabaseRecordCount() );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.dm") ) ) {
         var.setStockVariable();
@@ -3349,7 +3634,8 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
         var.setAccessRights( PERMISSON_OWNER_READ );           
         var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
         gpctrlObj->m_dm.getAllRows( wxstr );
-        var.setValue( wxstr, true );      
+        var.setValue( wxstr, true );     
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.dm.") ) ) {
         
@@ -3554,6 +3840,8 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
                 var.setValue( (long)pElement->m_id );
             }
             
+            return var.getID();
+            
         }
         else {
             // A full DM row is requested ("vscp.dm.35" for row with id = 35)
@@ -3577,6 +3865,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     else if ( lcname.StartsWith( _("vscp.user.count") ) ) {
         var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
         var.setValue( (long)gpctrlObj->m_userList.getUserCount() );
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.user.names") ) ) {
         wxArrayString array;
@@ -3588,15 +3877,16 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
             if ( i != ( array.Count()-1 ) ) wxstr += _(",");
         }
         var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-        var.setValue( wxstr, true );      
+        var.setValue( wxstr, true );  
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.user.add") ) ) {
         // holder for write only variable
-        return true;
+        return var.getID();
     }
     else if ( lcname.StartsWith( _("vscp.user.delete") ) ) {
         // holder for write only variable
-        return true;
+        return var.getID();
     }
     // Individual user  (vscp.user.1 or vscp.user.1.name... )
     else if ( lcname.StartsWith( _("vscp.user."), &strrest ) ) {
@@ -3604,23 +3894,23 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
         int pos;
         unsigned long idx;
         wxStringTokenizer tkz( strrest, _(".") );
-        if ( !tkz.HasMoreTokens() ) return false;   
+        if ( !tkz.HasMoreTokens() ) return 0;   
         
         wxString strToken = tkz.GetNextToken();         // Get idx
-        if ( !strToken.ToULong( &idx ) ) return false;
+        if ( !strToken.ToULong( &idx ) ) return 0;
         
         if ( !tkz.HasMoreTokens() ) {
             // vscp.user.n - return user record for index n
-            if ( !gpctrlObj->m_userList.getUserAsString( idx, wxstr ) ) return false; 
+            if ( !gpctrlObj->m_userList.getUserAsString( idx, wxstr ) ) return 0; 
             var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
             var.setValue( wxstr, true );
         }
         else {
             // vscp.user.n.field 
             CUserItem *pUserItem;
-            if ( !gpctrlObj->m_userList.getUserAsString( idx, wxstr ) ) return false;       // Get name
+            if ( !gpctrlObj->m_userList.getUserAsString( idx, wxstr ) ) return 0;       // Get name
             if ( NULL == ( pUserItem = 
-                    gpctrlObj->m_userList.getUserItemFromOrdinal( idx ) ) ) return false;   // UserItem
+                    gpctrlObj->m_userList.getUserItemFromOrdinal( idx ) ) ) return 0;   // UserItem
             strToken = tkz.GetNextToken();  // Get field
             if ( strToken.StartsWith( _("userid") ) ) {
                 wxstr = wxString::Format( _("%ld"), pUserItem->getUserID() );
@@ -3651,7 +3941,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
                 }
                 else {
                     strToken = tkz.GetNextToken();   // 0..7
-                    if ( !strToken.ToULong( &idx ) ) return false;
+                    if ( !strToken.ToULong( &idx ) ) return 0;
                     if ( idx > 7 ) return false;
                     wxstr.Printf(_("%d"), idx );
                     var.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
@@ -3660,7 +3950,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
             }
             else if (  strToken.StartsWith( _("allowed") ) ) {
                 //allowed.events or allowed.remotes
-                if ( !tkz.HasMoreTokens() ) return false;
+                if ( !tkz.HasMoreTokens() ) return 0;
                 strToken = tkz.GetNextToken();   // events/remotes
                 if ( _("events") == strToken ) {
                     var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
@@ -3671,7 +3961,7 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
                     var.setValue( pUserItem->getAllowedRemotesAsString(), true );
                 }
                 else {
-                    return false;
+                    return 0;
                 }
             }
             else if ( strToken.StartsWith( _("note") ) ) {
@@ -3681,11 +3971,14 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
             
         }
         
+        return var.getID();
+        
     }
     else if ( lcname.StartsWith( _("vscp.user") ) ) {
         gpctrlObj->m_userList.getAllUsers( wxstr );
         var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-        var.setValue( wxstr, true );      
+        var.setValue( wxstr, true ); 
+        return var.getID();
     }
     
     // *************************************************************************
@@ -3696,15 +3989,8 @@ bool CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var
     
     // ----------------------------- Not Found ---------------------------------
     
-    else {
-        // if id found the variable has been found and is read only or we have
-        // just been let through to here
-        if ( 0 == id ) {
-            return false;   // Not a stock variable
-        }
-    }
     
-    return true;
+    return 0;
 }
 
 
@@ -4269,7 +4555,13 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
         gpctrlObj->m_path_db_vscp_data.SetPath( strval );
         return gpctrlObj->updateConfigurationRecordItem( _("vscpd_GeneralLogFile_Path"), 
                                                     strval );
-    } 
+    }  
+    
+    // Write SQL value for log database retreival
+    else if ( lcname.StartsWith(  _("vscp.log.database.sql") ) ) {
+        // Handled by the stock variable itself 
+        return true;
+    }
     
     // General
     else if ( lcname.StartsWith( _("vscp.log.general.enable") ) ) {
@@ -5055,7 +5347,7 @@ uint32_t CVariableStorage::findNonPersistentVariable( const wxString& name,
                                                         CVSCPVariable& variable )
 {
     sqlite3_stmt *ppStmt;
-    char psql[ 512 ];
+    char psql[ 8192 ];
     
     variable.setID( 0 );    // Invalid id
     
@@ -5068,10 +5360,10 @@ uint32_t CVariableStorage::findNonPersistentVariable( const wxString& name,
     }
     
     if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_internal_variable,
-                                        psql,
-                                        -1,
-                                        &ppStmt,
-                                        NULL ) ) {
+                                            psql,
+                                            -1,
+                                            &ppStmt,
+                                            NULL ) ) {
         return 0;
     }
     
@@ -5292,7 +5584,7 @@ bool CVariableStorage::addStockVariable( CVSCPVariable& var )
     
     var.setStockVariable();  // Make sure it's marked as a stock variable
     
-    char *sql = sqlite3_mprintf( VSCPDB_VARIABLE_INSERT_STOCK,
+    char *sql = sqlite3_mprintf( VSCPDB_VARIABLE_INSERT,
                 (const char *)var.m_lastChanged.Now().FormatISOCombined().mbc_str(),
                 (const char *)var.getName().mbc_str(),
                 var.getType(),
@@ -5436,14 +5728,9 @@ bool CVariableStorage::add( const wxString& varName,
 
 bool CVariableStorage::update( CVSCPVariable& var )
 {
-    uint32_t id = 0;
+    long id = 0;
     char *zErrMsg = 0;
     
-    // If stock variables update locally
-    if ( var.isStockVariable() ) {
-        return writeStockVariable( var );
-    }
-
     // Must exists    
     if ( 0 == ( id = exist( var.getName() ) ) ) {
         return false;
@@ -5468,6 +5755,12 @@ bool CVariableStorage::update( CVSCPVariable& var )
     }
 
     sqlite3_free(sql);    
+    
+    // If stock variables update locally
+    if ( var.isStockVariable() ) {
+       writeStockVariable( var );
+    }
+    
     return true;
 }
 
@@ -5663,7 +5956,9 @@ bool CVariableStorage::loadFromXML( const wxString& path  )
             wxstr.MakeUpper();
             wxstr.Trim();
             wxstr.Trim( false );
-            variable.setName( wxstr );
+            if ( wxstr.Length() ) {
+                variable.setName( wxstr );
+            }
             
             // value
             wxstr = child->GetAttribute( wxT("value"), wxT("") );

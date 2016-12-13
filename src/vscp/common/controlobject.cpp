@@ -283,7 +283,7 @@ CControlObject::CControlObject()
     // No databases opened yet
     m_db_vscp_daemon = NULL;
     m_db_vscp_data = NULL;
-    m_dm.m_db_vscp_dm = NULL;
+    
 
     // Control UDP Interface
     m_bUDP = false;
@@ -491,14 +491,14 @@ bool CControlObject::getVscpCapabilities( uint8_t *pCapability )
 // logMsg
 //
 
-void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const uint8_t nType )
+void CControlObject::logMsg(const wxString& msg, const uint8_t level, const uint8_t nType )
 {
     m_mutexLogWrite.Lock();
 
     wxDateTime datetime( wxDateTime::GetTimeNow() );
     wxString wxdebugmsg;
 
-    wxdebugmsg = datetime.FormatISODate() + _("T") + datetime.FormatISOTime() + _(" - ") + wxstr;
+    wxdebugmsg = datetime.FormatISODate() + _("T") + datetime.FormatISOTime() + _(" - ") + msg;
 
 #ifdef WIN32
 #ifdef BUILD_VSCPD_SERVICE
@@ -527,39 +527,60 @@ void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const ui
 #endif
 #endif
 
-    if ( !m_bLogToDatabase ) {
+    // Log to database
+    if ( m_bLogToDatabase && 
+            ( NULL != m_db_vscp_log ) && 
+            ( m_logLevel >= level) ) {
+        char *zErrMsg = 0;
+        
+        char *sql = sqlite3_mprintf( VSCPDB_LOG_INSERT,
+            nType, 
+            (const char *)(datetime.FormatISODate() + _("T") + datetime.FormatISOTime() ).mbc_str(),
+            level,
+            (const char *)msg.mbc_str() );
+                
+        if ( SQLITE_OK != sqlite3_exec( m_db_vscp_log,  
+                                        sql, NULL, NULL, &zErrMsg)) {
+            wxPrintf( "Failed to write message to log database. Error is %s Message %s",
+                        zErrMsg,
+                        (const char *)msg.mbc_str() );
+        }
 
-        if ( level >= m_logLevel ) {
+        sqlite3_free( sql );
+         
+    }
+    
+    // Log to textfles
+    if ( m_logLevel >= level ) {
 
-            if ( DAEMON_LOGTYPE_GENERAL == nType ) {
+        if ( DAEMON_LOGTYPE_GENERAL == nType ) {
 
-                // Write to general log file
-                if ( m_fileLogGeneral.IsOpened() ) {
-                    m_fileLogGeneral.Write( wxdebugmsg );
-                }
-
+            // Write to general log file
+            if ( m_fileLogGeneral.IsOpened() ) {
+                m_fileLogGeneral.Write( wxdebugmsg );
             }
 
         }
 
         if ( DAEMON_LOGTYPE_SECURITY == nType ) {
+            
             // Write to Security log file
             if ( m_fileLogSecurity.IsOpened() ) {
                 m_fileLogSecurity.Write( wxdebugmsg );
             }
+            
         }
 
         if ( DAEMON_LOGTYPE_ACCESS == nType ) {
+            
             // Write to Access log file
             if ( m_fileLogAccess.IsOpened() ) {
                 m_fileLogAccess.Write( wxdebugmsg );
             }
+            
         }
-    }
-    // Log to database
-    else {    
 
-    }
+     }
 
 #ifndef WIN32
 
@@ -590,9 +611,96 @@ void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const ui
 
 }
 
+/////////////////////////////////////////////////////////////////////////////
+// getCountRecordsLogDB
+//
+
+long CControlObject::getCountRecordsLogDB( void )
+{
+    long count = 0;
+    sqlite3_stmt *ppStmt;
+    
+    // If not logging to db no records
+    if ( !m_bLogToDatabase ) return 0; 
+    
+    // If not open no records
+    if ( NULL == m_db_vscp_log ) return 0;
+    
+    
+    m_mutexLogWrite.Lock();
+                          
+    if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_log,
+                                        VSCPDB_LOG_COUNT,
+                                        -1,
+                                        &ppStmt,
+                                        NULL ) )  {
+        wxPrintf( "Failed to prepare count for log database. SQL is %s",
+                        VSCPDB_LOG_COUNT  );
+        return 0;
+    }
+    
+    if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
+        count = sqlite3_column_int( ppStmt, 0 );
+    }
+        
+    m_mutexLogWrite.Unlock();
+    
+    return count;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// searchLogDB
+//
+
+bool CControlObject::searchLogDB( const char * sql, wxString& strResult )
+{
+    sqlite3_stmt *ppStmt;
+    
+    // If not logging to db no records
+    if ( !m_bLogToDatabase ) return 0; 
+    
+    // If not open no records
+    if ( NULL == m_db_vscp_log ) return 0;
+    
+    
+    m_mutexLogWrite.Lock();
+                          
+    if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_log,
+                                        sql,
+                                        -1,
+                                        &ppStmt,
+                                        NULL ) )  {
+        logMsg( wxString::Format( _("Failed to get records from log database. SQL is %s"),
+                                    sql )  );
+        return false;
+    }
+    
+    while ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
+        wxString wxstr;
+        wxstr = sqlite3_column_text( ppStmt, 0 );
+        wxstr += _(",");
+        wxstr += sqlite3_column_text( ppStmt, 1 );
+        wxstr += _(",");
+        wxstr += sqlite3_column_text( ppStmt, 2 );
+        wxstr += _(",");
+        wxstr += sqlite3_column_text( ppStmt, 3 );
+        wxstr += _(",");
+        wxString msg = sqlite3_column_text( ppStmt, 4 );
+        wxstr += wxBase64Encode( msg, msg.Length() ); 
+        wxstr += _(";");
+        strResult += wxstr;
+    }
+        
+    m_mutexLogWrite.Unlock();
+    
+    return true;
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 // init
+//
 
 bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 {
@@ -1935,13 +2043,13 @@ bool CControlObject::getMacAddress( cguid& guid )
 
         unsigned char *ptr;
         ptr = (unsigned char *) &s.ifr_ifru.ifru_hwaddr.sa_data[ 0 ];
-        logMsg( wxString::Format( _(" Ethernet MAC address: %02x:%02x:%02x:%02x:%02x:%02x\n"),
-                                        s.ifr_addr.sa_data[ 0 ],
-                                        s.ifr_addr.sa_data[ 1 ],
-                                        s.ifr_addr.sa_data[ 2 ],
-                                        s.ifr_addr.sa_data[ 3 ],
-                                        s.ifr_addr.sa_data[ 4 ],
-                                        s.ifr_addr.sa_data[ 5 ] ), DAEMON_LOGMSG_DEBUG  );
+        logMsg( wxString::Format( _("Ethernet MAC address: %02X:%02X:%02X:%02X:%02X\n"),
+                                        (uint8_t)s.ifr_addr.sa_data[ 0 ],
+                                        (uint8_t)s.ifr_addr.sa_data[ 1 ],
+                                        (uint8_t)s.ifr_addr.sa_data[ 2 ],
+                                        (uint8_t)s.ifr_addr.sa_data[ 3 ],
+                                        (uint8_t)s.ifr_addr.sa_data[ 4 ],
+                                        (uint8_t)s.ifr_addr.sa_data[ 5 ] ), DAEMON_LOGMSG_DEBUG  );
 
         guid.setAt( 0, 0xff );
         guid.setAt( 1, 0xff );
