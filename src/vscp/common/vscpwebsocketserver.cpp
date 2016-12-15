@@ -215,13 +215,6 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
                                         DAEMON_LOGMSG_DEBUG,
                                         DAEMON_LOGTYPE_GENERAL );
 
-    //mg_websocket_write( nc, WEBSOCKET_OP_TEXT, nc->content, nc->content_len );
-    //if ( nc->content_len == 4 && memcmp( nc->content, "exit", 4 ) ) {
-    //	return MG_FALSE;
-    //}
-
-    //mg_websocket_write( nc, WEBSOCKET_OP_PING, NULL, 0 );
-
     wxStringTokenizer tkz( strCmd, _(";"), wxTOKEN_RET_EMPTY_ALL );
 
     // Get command
@@ -1495,7 +1488,7 @@ autherror:
                                     nfetchedRecords );
 
                // Deallocate storage
-               delete[] pRecords;
+               delete [] pRecords;
 
             }
             else {
@@ -1559,48 +1552,7 @@ autherror:
         mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, (const char *)resultstr.mbc_str() );
         
     }
-    
-    // ------------------------------------------------------------------------
-    //                             VARIABLE
-    //
-    //  READ, WRITE, ADD, DEL, LIST, LISTALL
-    //-------------------------------------------------------------------------
-    
-    else if (0 == strTok.Find(_("VARIABLE"))) {
-        
-    }
-    // ------------------------------------------------------------------------
-    //                               DM
-    //
-    //  READ, WRITE, ADD, DEL, LIST, LISTALL
-    //-------------------------------------------------------------------------
-    else if (0 == strTok.Find(_("DM"))) {
-        
-    }
-    // ------------------------------------------------------------------------
-    //                              USER
-    //
-    //  READ, WRITE, ADD, DEL, LIST, LISTALL
-    //-------------------------------------------------------------------------
-    else if (0 == strTok.Find(_("USER"))) {
-        
-    }
-    // ------------------------------------------------------------------------
-    //                              GROUP
-    //
-    //  READ, WRITE, ADD, DEL, LIST, LISTALL
-    //-------------------------------------------------------------------------
-    else if (0 == strTok.Find(_("GROUP"))) {
-        
-    }
-    // ------------------------------------------------------------------------
-    //                              DRIVER
-    //
-    //  READ, WRITE, ADD, DEL, LIST, LISTALL
-    //-------------------------------------------------------------------------
-    else if (0 == strTok.Find(_("DRIVER"))) {
-        
-    }
+
     // ------------------------------------------------------------------------
     //                              TABLE
     //
@@ -1819,6 +1771,11 @@ VSCPWebServerThread::websrv_websocket_message( struct mg_connection *nc,
             wxstr = wxString::FromAscii( p );
 
             if ( vscp_setVscpEventFromString( &vscp_event, wxstr ) ) {
+                
+                // If GUID is all null give it GUID of interface
+                if ( vscp_isGUIDEmpty( vscp_event.GUID ) ) {
+                    pSession->m_pClientItem->m_guid.writeGUID( vscp_event.GUID );
+                }
 
                 // Check if this user is allowed to send this event
                 if ( !pSession->m_pClientItem->m_pUserItem->isUserAllowedToSendEvent( vscp_event.vscp_class, vscp_event.vscp_type ) ) {
@@ -2027,12 +1984,12 @@ VSCPWebServerThread::websock_new_session( struct mg_connection *nc,
     // This is an active client
     pSession->m_pClientItem->m_bOpen = false;
     pSession->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET;
-    pSession->m_pClientItem->m_strDeviceName = _("Internal daemon websocket client. (Started at ");
+    pSession->m_pClientItem->m_strDeviceName = _("Internal daemon websocket client. ");
     wxDateTime now = wxDateTime::Now();
     pSession->m_pClientItem->m_strDeviceName += now.FormatISODate();
-    pSession->m_pClientItem->m_strDeviceName += _("T");
+    pSession->m_pClientItem->m_strDeviceName += _(" ");
     pSession->m_pClientItem->m_strDeviceName += now.FormatISOTime();
-    pSession->m_pClientItem->m_strDeviceName += _(")");
+    //pSession->m_pClientItem->m_strDeviceName += _(")");
 
     // Add the client to the Client List
     pObject->m_wxClientMutex.Lock();

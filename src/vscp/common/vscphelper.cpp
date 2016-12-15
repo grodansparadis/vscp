@@ -1337,11 +1337,13 @@ uint8_t vscp_calcCRC4GUIDString(const wxString &strguid)
 bool vscp_getGuidFromString(vscpEvent *pEvent, const wxString& strGUID)
 {
     unsigned long val;
-
+    
     // Check pointer
     if (NULL == pEvent) return false;
 
-    if (0 == strGUID.Find(_("-"))) {
+    wxString str = strGUID;
+    str.Trim();
+    if ( ( 0 == str.Length() ) || ( 0 == strGUID.Find(_("-") ) ) ) {
         memset(pEvent->GUID, 0, 16);
     } 
     else {

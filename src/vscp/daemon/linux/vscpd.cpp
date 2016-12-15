@@ -105,7 +105,6 @@ int main(int argc, char **argv)
     wxInitializer initializer;
     if ( !::wxInitialize() ) {
         fprintf(stderr, "Failed to initialize the wxWindows library, aborting.\n");
-
         return -1;
     }
 

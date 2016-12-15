@@ -1099,7 +1099,7 @@ bool VSCPClientThread::sendOneEventFromQueue( struct mg_connection *conn,
         }
         pClientItem->m_mutexClientInputQueue.Unlock();
 
-        strOut.Printf( _("%ud,%ud,%ud,%ul,%ul,"),
+        strOut.Printf( _("%hu,%hu,%hu,%lu,%lu,"),
                             (unsigned short)pqueueEvent->head,
                             (unsigned short)pqueueEvent->vscp_class,
                             (unsigned short)pqueueEvent->vscp_type,
