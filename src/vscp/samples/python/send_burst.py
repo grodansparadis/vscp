@@ -3,7 +3,8 @@
 """
 This python program demonstrates how to communicate with the vscpd daemon trough the telnet interface.
 
-This program has been created to test the data troughput of the daemon by sending a number of messages. It is not intended to be bullet proof or to be fit for any purpose.
+This program has been created to test the data troughput of the daemon by sending a number of messages. 
+It is not intended to be bullet proof or to be fit for any purpose.
 
 
 // This program is free software; you can redistribute it and/or
