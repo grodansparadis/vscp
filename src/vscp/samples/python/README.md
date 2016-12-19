@@ -42,3 +42,6 @@ Copyright (C) 2009 Thomas Schulz <tschulz@iprimus.com.au>
 <b>sendvalues.py</b> Script that shows how to take temperature 
 sensor values from the one wire digitemp software and send them to the VSCP daemon.
 Described here: <a href="www.vscp.org/wiki/doku.php/howto/how_to_setup_digitemp">How to setup digitemp</a>
+
+<b>gettempfromyr.py</p> Weather forecast sample. Reads forcast for temperature and wind 
+from yr.no and send to the VSCP daemon.
