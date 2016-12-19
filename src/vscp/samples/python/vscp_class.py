@@ -3,7 +3,7 @@
 """
  /**
  * @brief           VSCP Level I/II class definition file
- * @file            vscp_class.h
+ * @file            vscp_class.py
  * @author          Ake Hedman, eurosource, www.vscp.org
  *
  * @section description Description
@@ -16,7 +16,7 @@
  * VSCP  Very Simple Control Protocol
  * http://www.vscp.org
  *
- * Copyright  C  1995-2011 Ake Hedman,
+ * Copyright  C  1995-2016 Ake Hedman,
  * eurosource, <akhe@eurosource.se>
  *
  * This software is provided 'as-is', without any express or implied

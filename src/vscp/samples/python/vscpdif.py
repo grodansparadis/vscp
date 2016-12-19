@@ -3,7 +3,7 @@
 """
 VSCP daemon interface
 
-This python module demonstrates how to communicate with the vscpd daemon trough the telnet interface.
+This python module demonstrates how to communicate with the vscpd daemon trough the TCP/IP interface.
 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License

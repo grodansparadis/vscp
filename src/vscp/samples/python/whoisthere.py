@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
 """
-Read registers from a node connected to the vscp daemon.
-This module can be used to test the speed of the register update.
+Check which nodes are connected to the daemon.
 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License

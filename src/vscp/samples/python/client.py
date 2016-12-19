@@ -3,7 +3,7 @@
 """
 A Python VSCP Client.
 
-* Connects to vscpd via telnet interface.
+* Connects to vscpd via TCP/IP interface.
 * Implements most important level-1 protocol events.
 * Stores registers in a file.
 * Requires python 2.7
