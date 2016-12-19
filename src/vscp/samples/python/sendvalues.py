@@ -31,7 +31,6 @@
 import getpass
 import sys
 import telnetlib
-import sys
 
 onewire_prefix = "FF:FF:FF:FF:FF:FF:FF:FF:"
 
@@ -44,7 +43,7 @@ host = sys.argv[1]
 user = sys.argv[2]
 password = sys.argv[3]
 
-# Connet to VSCP daemon
+# Connect to VSCP daemon
 tn = telnetlib.Telnet(host, 9598)
 tn.read_until("+OK",2)
 

@@ -630,8 +630,8 @@
 #define VSCP_TYPE_WEATHER_WIND_VERY_HIGH                    9
 #define VSCP_TYPE_WEATHER_AIR_FOGGY                         10
 #define VSCP_TYPE_WEATHER_AIR_FREEZING                      11
-#define VSCP_TYPE_WEATHER_AIR_COLD                          12
-#define VSCP_TYPE_WEATHER_AIR_VERY_COLD                     13
+#define VSCP_TYPE_WEATHER_AIR_VERY_COLD                     12
+#define VSCP_TYPE_WEATHER_AIR_COLD                          13
 #define VSCP_TYPE_WEATHER_AIR_NORMAL                        14
 #define VSCP_TYPE_WEATHER_AIR_HOT                           15
 #define VSCP_TYPE_WEATHER_AIR_VERY_HOT                      16    
@@ -684,8 +684,8 @@
 #define VSCP_TYPE_WEATHER_FORECAST_WIND_VERY_HIGH           9
 #define VSCP_TYPE_WEATHER_FORECAST_AIR_FOGGY                10
 #define VSCP_TYPE_WEATHER_FORECAST_AIR_FREEZING             11
-#define VSCP_TYPE_WEATHER_FORECAST_AIR_COLD                 12
-#define VSCP_TYPE_WEATHER_FORECAST_AIR_VERY_COLD            13
+#define VSCP_TYPE_WEATHER_FORECAST_AIR_VERY_COLD            12
+#define VSCP_TYPE_WEATHER_FORECAST_AIR_COLD                 13
 #define VSCP_TYPE_WEATHER_FORECAST_AIR_NORMAL               14
 #define VSCP_TYPE_WEATHER_FORECAST_AIR_HOT                  15
 #define VSCP_TYPE_WEATHER_FORECAST_AIR_VERY_HOT             16    
