@@ -29,7 +29,7 @@ print "Vindstyrka = " + vindstyrka + " m/s"
 s = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
 
 # connect to server
-host = "dosilos.se"
+host = "192.168.1.9"
 port = 9598
 s.connect( ( host, port ) )
 data = s.recv( 10000 )
