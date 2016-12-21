@@ -1651,7 +1651,7 @@ CVariableStorage::CVariableStorage()
 #endif  
     
 #ifdef WIN32
-    m_path_db_vscp_variable.Assign( wxStandardPaths::Get().GetConfigDir() +
+    m_dbFilename.Assign( wxStandardPaths::Get().GetConfigDir() +
                                             _("/vscp/variable.sqlite3") );
 #else
     m_dbFilename.Assign( _("/srv/vscp/variable.sqlite3") );

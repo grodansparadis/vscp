@@ -120,10 +120,12 @@ int main(int argc, char **argv)
 
     bool bHideWindow = false;
     wxString strCfgFile;
+    wxString rootFolder;
     CControlObject ctrlobj;
 
-   
+    rootFolder = wxStandardPaths::Get().GetUserDataDir();
     strCfgFile = wxStandardPaths::Get().GetConfigDir();
+
 #ifdef WIN32
     // The following needed because wx 3.1 add "vscpd" to standardpath
     int pos;
@@ -211,9 +213,9 @@ int main(int argc, char **argv)
     }
 
 
-    if ( !ctrlobj.init( strCfgFile ) ) {
+    if ( !ctrlobj.init( strCfgFile, rootFolder ) ) {
 		ctrlobj.logMsg( _("Unable to initialize the vscpd application."), 
-                          DAEMON_LOGMSG_CRITICAL );
+                          DAEMON_LOGMSG_NORMAL );
                           
 #if wxUSE_UNICODE
         /* Clean up */
@@ -232,13 +234,13 @@ int main(int argc, char **argv)
 
 	if ( !ctrlobj.run() ) {
 		ctrlobj.logMsg( _("Unable to start the vscpd application."), 
-                          DAEMON_LOGMSG_CRITICAL );
+                        DAEMON_LOGMSG_NORMAL );
 	}
 
 
     if ( !ctrlobj.cleanup() ) {
         ctrlobj.logMsg( _("Unable to clean up the vscpd application."), 
-                        DAEMON_LOGMSG_CRITICAL );
+                        DAEMON_LOGMSG_NORMAL );
     }
 
 #if wxUSE_UNICODE

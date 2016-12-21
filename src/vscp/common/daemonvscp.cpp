@@ -116,7 +116,7 @@ void *daemonVSCPThread::Entry()
     if ( WSAStartup( MAKEWORD( 2, 0 ), &wsaData ) != 0 ) {
         fprintf( stderr, "WSAStartup() failed" );
         m_pCtrlObject->logMsg( _( "Automation multicast announce WSAStartup() failed\n" ),
-                                DAEMON_LOGMSG_CRITICAL,
+                               DAEMON_LOGMSG_NORMAL,
                                 DAEMON_LOGTYPE_GENERAL );
         return NULL;
     }
@@ -125,7 +125,7 @@ void *daemonVSCPThread::Entry()
     if ( ( sock_mc = socket( PF_INET, SOCK_DGRAM, IPPROTO_UDP ) ) < 0 ) {
         perror( "socket() failed" );
         m_pCtrlObject->logMsg( _( "Automation multicast announce sock() failed\n" ),
-                                DAEMON_LOGMSG_CRITICAL,
+                               DAEMON_LOGMSG_NORMAL,
                                 DAEMON_LOGTYPE_GENERAL );
         return NULL;
     }
@@ -135,7 +135,7 @@ void *daemonVSCPThread::Entry()
                        ( const char* )&mc_ttl, sizeof( mc_ttl ) ) ) < 0 ) {
         perror( "setsockopt() failed" );
         m_pCtrlObject->logMsg(  _( "Automation multicast announce setsockopt() failed\n" ),
-                                DAEMON_LOGMSG_CRITICAL,
+                               DAEMON_LOGMSG_NORMAL,
                                 DAEMON_LOGTYPE_GENERAL );
         return NULL;
     }

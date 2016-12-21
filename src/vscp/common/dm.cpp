@@ -3358,7 +3358,7 @@ CDM::CDM( CControlObject *ctrlObj )
 
 
 #ifdef WIN32
-    m_logFileName.SetName( wxStandardPaths::Get().GetConfigDir() + _("vscp_log_dm.txt") );
+    m_logPath.SetName( wxStandardPaths::Get().GetConfigDir() + _("vscp_log_dm.txt") );
 #else
     m_logPath.SetName( _("/srv/vscp/logs/vscp_log_dm") );
 #endif
@@ -3389,15 +3389,16 @@ CDM::CDM( CControlObject *ctrlObj )
     //wxStandardPaths stdPath;
 
     // Set the default dm configuration path
-    m_configPath = wxStandardPaths::Get().GetConfigDir();
-    m_configPath += _("/vscp/dm.xml");
+    m_staticXMLPath = wxStandardPaths::Get().GetConfigDir();
+    m_staticXMLPath += _("/vscp/dm.xml");
     
-    m_path_db_vscp_dm = wxStandardPaths::Get().GetConfigDir();
-    m_path_db_vscp_dm += _("/vscp/dm.sqlite3");
+    //m_path_db_vscp_dm = wxStandardPaths::Get().GetConfigDir();
+    m_path_db_vscp_dm.Assign( wxStandardPaths::Get().GetConfigDir() +
+                                "/vscp/dm.sqlite3");
 #endif
 #else
 	m_staticXMLPath = _("/srv/vscp/dm.xml");
-        m_path_db_vscp_dm.Assign( _("/srv/vscp/dm.sqlite3") ); 
+    m_path_db_vscp_dm.Assign( _("/srv/vscp/dm.sqlite3") ); 
 #endif
         
    m_db_vscp_dm = NULL; 
