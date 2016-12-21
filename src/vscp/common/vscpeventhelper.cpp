@@ -89,7 +89,6 @@ VSCPInformation::VSCPInformation( void )
     m_hashClass[ 90 ] = _("CLASS1_WEATHER");
     m_hashClass[ 95 ] = _("CLASS1_WEATHER_FORECAST");
     m_hashClass[ 100 ] = _("CLASS1_PHONE");
-    m_hashClass[ 101 ] = _("CLASS1_LIN");
     m_hashClass[ 102 ] = _("CLASS1_DISPLAY");
     m_hashClass[ 110 ] = _("CLASS1_REMOTE");
     m_hashClass[ 206 ] = _("CLASS1_GPS");
@@ -139,6 +138,7 @@ VSCPInformation::VSCPInformation( void )
     m_hashType[ MAKE_CLASSTYPE_LONG(0, 2) ] = _("NEW_NODE_ONLINE");
     m_hashType[ MAKE_CLASSTYPE_LONG(0, 3) ] = _("PROBE_ACK");
     m_hashType[ MAKE_CLASSTYPE_LONG(0, 4) ] = _("NO_NICKNAME");
+    m_hashType[ MAKE_CLASSTYPE_LONG(0, 5) ] = _("RESERVED");
     m_hashType[ MAKE_CLASSTYPE_LONG(0, 6) ] = _("SET_NICKNAME");
     m_hashType[ MAKE_CLASSTYPE_LONG(0, 7) ] = _("NICKNAME_ACCEPTED");
     m_hashType[ MAKE_CLASSTYPE_LONG(0, 8) ] = _("DROP_NICKNAME");
@@ -173,6 +173,19 @@ VSCPInformation::VSCPInformation( void )
     m_hashType[ MAKE_CLASSTYPE_LONG(0, 37) ] = _("EXTENDED_PAGE_READ_REGISTER");
     m_hashType[ MAKE_CLASSTYPE_LONG(0, 38) ] = _("EXTENDED_PAGE_WRITE_REGISTER");
     m_hashType[ MAKE_CLASSTYPE_LONG(0, 39) ] = _("EXTENDED_PAGE_RW_RESPONSE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(0, 40) ] = _("GET_EVENT_INTEREST");
+    m_hashType[ MAKE_CLASSTYPE_LONG(0, 41) ] = _("GET_EVENT_INTEREST_RESPONSE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(0, 42) ] = _("RESERVED");
+    m_hashType[ MAKE_CLASSTYPE_LONG(0, 43) ] = _("RESERVED");
+    m_hashType[ MAKE_CLASSTYPE_LONG(0, 44) ] = _("RESERVED");
+    m_hashType[ MAKE_CLASSTYPE_LONG(0, 45) ] = _("RESERVED");
+    m_hashType[ MAKE_CLASSTYPE_LONG(0, 46) ] = _("RESERVED");
+    m_hashType[ MAKE_CLASSTYPE_LONG(0, 47) ] = _("RESERVED");
+    m_hashType[ MAKE_CLASSTYPE_LONG(0, 48) ] = _("ACTIVATE_NEW_IMAGE_ACK");
+    m_hashType[ MAKE_CLASSTYPE_LONG(0, 49) ] = _("ACTIVATE_NEW_IMAGE_NACK");
+    m_hashType[ MAKE_CLASSTYPE_LONG(0, 50) ] = _("START_BLOCK_ACK");
+    m_hashType[ MAKE_CLASSTYPE_LONG(0, 51) ] = _("START_BLOCK_NACK");
+    
 
     // ALARM
     m_hashType[ MAKE_CLASSTYPE_LONG(1, 0) ] = _("ALARM_GENERAL");

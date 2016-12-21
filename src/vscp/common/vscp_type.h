@@ -725,8 +725,6 @@
 #define VSCP_TYPE_WEATHER_FORECAST_WARNING_LEVEL5           50
 #define VSCP_TYPE_WEATHER_FORECAST_ARMAGEDDON               51
 
-
-
 // class 100 (0x64) -- PHONE
 #define VSCP_TYPE_PHONE_GENERAL                             0
 #define VSCP_TYPE_PHONE_INCOMING_CALL                       1

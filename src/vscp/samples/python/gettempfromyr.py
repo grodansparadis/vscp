@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #!usr/bin/env python
 
 """
@@ -42,7 +41,7 @@ password = "secret"
 
 guid = "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:01"
 
-debug = 0
+debug = 1
 usesockets = 0
 url = "http://tinyurl.com/temperaturLos" #Url to yr.no:s rss-feed
 opener = urllib.FancyURLopener({})
