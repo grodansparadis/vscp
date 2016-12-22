@@ -158,7 +158,6 @@ WX_DEFINE_LIST(VSCPEventList);
 
 //#define DEBUGPRINT
 
-//CControlObject *gpctrlObj;
 extern CControlObject *gpobj;
 
 #ifdef WIN32

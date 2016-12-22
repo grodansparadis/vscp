@@ -540,6 +540,8 @@
     <ClCompile Include="..\..\..\common\mongoose.c">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EXCLUDE_COMMON;MG_ENABLE_COAP;MG_ENABLE_MQTT_BROKER;_WINSOCK_DEPRECATED_NO_WARNINGS;NS_ENABLE_EXCLUDE_COMMON;DEBUG;WIN32;_CONSOLE;WINVER=0x0601;_MT;wxUSE_GUI=0;__WXDEBUG__;WXDEBUG=1;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">EXCLUDE_COMMON;MG_ENABLE_COAP;MG_ENABLE_MQTT_BROKER;_WINSOCK_DEPRECATED_NO_WARNINGS;NS_ENABLE_SSL;NOEMBED_NET_SKELETON;NDEBUG;WIN32;_CONSOLE;WINVER=0x0601;_MT;wxUSE_GUI=0;WXDEBUG=0;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">EXCLUDE_COMMON;MG_ENABLE_COAP;MG_ENABLE_MQTT_BROKER;_WINSOCK_DEPRECATED_NO_WARNINGS;NS_ENABLE_SSL;NOEMBED_NET_SKELETON;_CRT_SECURE_NO_WARNINGS;NDEBUG;WIN32;_CONSOLE;WINVER=0x0601;_MT;wxUSE_GUI=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EXCLUDE_COMMON;MG_ENABLE_COAP;MG_ENABLE_MQTT_BROKER;_WINSOCK_DEPRECATED_NO_WARNINGS;NS_ENABLE_SSL;NOEMBED_NET_SKELETON;DEBUG;WIN32;_CONSOLE;WINVER=0x0601;_MT;wxUSE_GUI=0;__WXDEBUG__;WXDEBUG=1;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="..\..\..\common\randpassword.cpp" />
     <ClCompile Include="..\..\..\common\sqlite3.c" />

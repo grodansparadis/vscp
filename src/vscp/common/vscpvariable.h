@@ -380,8 +380,11 @@ public:
     void setAccessRights( uint32_t accessRights ) { m_accessRights = accessRights; };
     uint32_t getAccessRights( void ) { return m_accessRights; };
     
-    bool isWritable( void ) { return m_accessRights; };
-    void makeWritable( bool b ) { m_accessRights = b; };
+    bool isUserWritable( void ) { return ( m_accessRights | 0x02 ) ? true : false; };
+    void makeUserWritable( bool b ) { m_accessRights |= 0x02; };
+
+    bool isOwnerWritable( void ) { return ( m_accessRights | 0x80 ) ? true : false; };
+    void makeOwnerWritable( bool b ) { m_accessRights |= 0x80; };
     
     // user id
     void setUserID( uint32_t uid ) { m_userid = uid; };
