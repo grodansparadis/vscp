@@ -158,7 +158,8 @@ WX_DEFINE_LIST(VSCPEventList);
 
 //#define DEBUGPRINT
 
-CControlObject *gpctrlObj;
+//CControlObject *gpctrlObj;
+extern CControlObject *gpobj;
 
 #ifdef WIN32
 
@@ -186,7 +187,6 @@ CControlObject::CControlObject()
 {
     int i;
     m_bQuit = false;            // true if we should quit
-    gpctrlObj = this;           // needed by websocket static callbacks, variables etc
     
     // Delete objects from list when they are removed
     m_websocketSessions.DeleteContents( true );
@@ -705,6 +705,9 @@ bool CControlObject::searchLogDB( const char * sql, wxString& strResult )
 bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 {
     wxString str;
+
+    // Assign to the global control object
+    gpobj = this;
     
     // Save root folder for later use.
     m_rootFolder = rootFolder;

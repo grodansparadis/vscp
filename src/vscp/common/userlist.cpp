@@ -57,7 +57,7 @@
 //                 GLOBALS
 ///////////////////////////////////////////////////
 
-extern CControlObject *gpctrlObj;
+extern CControlObject *gpobj;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor
@@ -430,19 +430,19 @@ bool CUserItem::isUserInDB(const unsigned long userid )
                 (unsigned long)userid );
     
     // Database must be open
-    if ( NULL != gpctrlObj->m_db_vscp_daemon ) {
-        gpctrlObj->logMsg( _("isUserInDB: VSCP daemon database is not open.") );
+    if ( NULL != gpobj->m_db_vscp_daemon ) {
+        gpobj->logMsg( _("isUserInDB: VSCP daemon database is not open.") );
         return false;
     }
     
-    gpctrlObj->m_db_vscp_configMutex.Lock();
+    gpobj->m_db_vscp_configMutex.Lock();
     
-    if ( SQLITE_OK != sqlite3_prepare( gpctrlObj->m_db_vscp_daemon,
+    if ( SQLITE_OK != sqlite3_prepare( gpobj->m_db_vscp_daemon,
                                         psql,
                                         -1,
                                         &ppStmt,
                                         NULL ) ) {
-        gpctrlObj->m_db_vscp_configMutex.Unlock();
+        gpobj->m_db_vscp_configMutex.Unlock();
         return false;
     }
     
@@ -453,7 +453,7 @@ bool CUserItem::isUserInDB(const unsigned long userid )
     
     sqlite3_finalize( ppStmt );
     
-    gpctrlObj->m_db_vscp_configMutex.Unlock();
+    gpobj->m_db_vscp_configMutex.Unlock();
     
     return rv;
 }
@@ -469,8 +469,8 @@ bool CUserItem::isUserInDB(const wxString& user, long *pid )
     sqlite3_stmt *ppStmt;
     
     // Database must be open
-    if ( NULL == gpctrlObj->m_db_vscp_daemon ) {
-        gpctrlObj->logMsg( _("isUserInDB: VSCP daemon database is not open.\n") );
+    if ( NULL == gpobj->m_db_vscp_daemon ) {
+        gpobj->logMsg( _("isUserInDB: VSCP daemon database is not open.\n") );
         return false;
     }
     
@@ -478,16 +478,16 @@ bool CUserItem::isUserInDB(const wxString& user, long *pid )
     char *sql = sqlite3_mprintf( VSCPDB_USER_CHECK_USER,
                                     (const char *)user.mbc_str() );
     
-    gpctrlObj->m_db_vscp_configMutex.Lock();
+    gpobj->m_db_vscp_configMutex.Lock();
     
-    if ( SQLITE_OK != sqlite3_prepare( gpctrlObj->m_db_vscp_daemon,
+    if ( SQLITE_OK != sqlite3_prepare( gpobj->m_db_vscp_daemon,
                                             sql,
                                             -1,
                                             &ppStmt,
                                             NULL ) ) {
-        gpctrlObj->logMsg( _("isUserInDB: Failed to read user database - prepare query.\n") );
+        gpobj->logMsg( _("isUserInDB: Failed to read user database - prepare query.\n") );
         sqlite3_free( sql );
-        gpctrlObj->m_db_vscp_configMutex.Unlock();
+        gpobj->m_db_vscp_configMutex.Unlock();
         return false;
     }
     
@@ -501,7 +501,7 @@ bool CUserItem::isUserInDB(const wxString& user, long *pid )
     sqlite3_free( sql );
     sqlite3_finalize( ppStmt );
     
-    gpctrlObj->m_db_vscp_configMutex.Unlock();
+    gpobj->m_db_vscp_configMutex.Unlock();
     
     return rv;
 }
@@ -515,7 +515,7 @@ bool CUserItem::saveToDatabase( void )
     char *zErrMsg = 0;
     
     // Database must be open
-    if ( NULL == gpctrlObj->m_db_vscp_daemon ) return false;
+    if ( NULL == gpobj->m_db_vscp_daemon ) return false;
     
     // Internal records can't be saved to db
     // driver users is an example on users that are only local
@@ -540,18 +540,18 @@ bool CUserItem::saveToDatabase( void )
                 (const char *)getAllowedRemotesAsString().mbc_str(),
                 (const char *)m_note.mbc_str() );
         
-        gpctrlObj->m_db_vscp_configMutex.Lock();
+        gpobj->m_db_vscp_configMutex.Lock();
         
-        if ( SQLITE_OK != sqlite3_exec( gpctrlObj->m_db_vscp_daemon, 
+        if ( SQLITE_OK != sqlite3_exec( gpobj->m_db_vscp_daemon,
                                             sql, NULL, NULL, &zErrMsg)) {
             sqlite3_free( sql );
-            gpctrlObj->m_db_vscp_configMutex.Unlock();
+            gpobj->m_db_vscp_configMutex.Unlock();
             return false;
         }
 
         sqlite3_free( sql );
         
-        gpctrlObj->m_db_vscp_configMutex.Unlock();
+        gpobj->m_db_vscp_configMutex.Unlock();
         
         // The database item now have a id which we need to read back
         return readBackIndexFromDatabase();
@@ -571,19 +571,19 @@ bool CUserItem::saveToDatabase( void )
                 (const char *)m_note.mbc_str(),
                 m_userID ); 
         
-        gpctrlObj->m_db_vscp_configMutex.Lock(); 
+        gpobj->m_db_vscp_configMutex.Lock();
         
-        if ( SQLITE_OK != sqlite3_exec( gpctrlObj->m_db_vscp_daemon, 
+        if ( SQLITE_OK != sqlite3_exec( gpobj->m_db_vscp_daemon,
                                             sql, NULL, NULL, &zErrMsg)) { 
-            gpctrlObj->logMsg( wxString::Format( _("Failed to update user database. Err=%s  SQL=%s" ), zErrMsg, sql ) );
+            gpobj->logMsg( wxString::Format( _("Failed to update user database. Err=%s  SQL=%s" ), zErrMsg, sql ) );
             sqlite3_free( sql );
-            gpctrlObj->m_db_vscp_configMutex.Unlock();
+            gpobj->m_db_vscp_configMutex.Unlock();
             return false;
         }
 
         sqlite3_free( sql );
         
-        gpctrlObj->m_db_vscp_configMutex.Unlock();
+        gpobj->m_db_vscp_configMutex.Unlock();
         
     }
     
@@ -601,30 +601,30 @@ bool CUserItem::readBackIndexFromDatabase( void )
     char *sql = sqlite3_mprintf( VSCPDB_USER_CHECK_USER,
                                     (const char *)m_user.mbc_str() );
     
-    gpctrlObj->m_db_vscp_configMutex.Lock(); 
+    gpobj->m_db_vscp_configMutex.Lock();
         
-    if ( SQLITE_OK != sqlite3_prepare( gpctrlObj->m_db_vscp_daemon,
+    if ( SQLITE_OK != sqlite3_prepare( gpobj->m_db_vscp_daemon,
                                         sql,
                                         -1,
                                         &ppStmt,
                                         NULL ) ) {
-        gpctrlObj->logMsg( wxString::Format( _("Failed to get index for user. SQL=%s" ), sql ) );
+        gpobj->logMsg( wxString::Format( _("Failed to get index for user. SQL=%s" ), sql ) );
         sqlite3_free( sql );
-        gpctrlObj->m_db_vscp_configMutex.Unlock();
+        gpobj->m_db_vscp_configMutex.Unlock();
         return false;
     }
     
     if ( SQLITE_ROW  != sqlite3_step( ppStmt ) ) {
-        gpctrlObj->logMsg( wxString::Format( _("Failed to get index result  for user. SQL=%s" ), sql ) );
+        gpobj->logMsg( wxString::Format( _("Failed to get index result  for user. SQL=%s" ), sql ) );
         sqlite3_free( sql );       
-        gpctrlObj->m_db_vscp_configMutex.Unlock();
+        gpobj->m_db_vscp_configMutex.Unlock();
     }
     
     // Get index
     m_userID = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_USER_ID );
     
     sqlite3_free( sql );       
-    gpctrlObj->m_db_vscp_configMutex.Unlock();
+    gpobj->m_db_vscp_configMutex.Unlock();
         
     return true;
 }
@@ -766,20 +766,20 @@ bool CUserList::loadUsers( void )
     const char *psql = VSCPDB_USER_ALL;
 
     // Check if database is open
-    if ( NULL == gpctrlObj->m_db_vscp_daemon ) {
-        gpctrlObj->logMsg( _("Failed to read VSCP settings database - not open." ) );
+    if ( NULL == gpobj->m_db_vscp_daemon ) {
+        gpobj->logMsg( _("Failed to read VSCP settings database - not open." ) );
         return false;
     }
     
-    gpctrlObj->m_db_vscp_configMutex.Lock();
+    gpobj->m_db_vscp_configMutex.Lock();
         
-    if ( SQLITE_OK != sqlite3_prepare( gpctrlObj->m_db_vscp_daemon,
+    if ( SQLITE_OK != sqlite3_prepare( gpobj->m_db_vscp_daemon,
                                             psql,
                                             -1,
                                             &ppStmt,
                                             NULL ) ) {
-        gpctrlObj->logMsg( _("Failed to read VSCP settings database - prepare query.") );
-        gpctrlObj->m_db_vscp_configMutex.Unlock();
+        gpobj->logMsg( _("Failed to read VSCP settings database - prepare query.") );
+        gpobj->m_db_vscp_configMutex.Unlock();
         return false;
     }
     
@@ -849,14 +849,14 @@ bool CUserList::loadUsers( void )
             
         }
         else {
-            gpctrlObj->logMsg( _("Unable to allocate memory for new user.\n") );
+            gpobj->logMsg( _("Unable to allocate memory for new user.\n") );
         }
     
         //sqlite3_step( ppStmt );
     }
     
     sqlite3_finalize( ppStmt );    
-    gpctrlObj->m_db_vscp_configMutex.Unlock();    
+    gpobj->m_db_vscp_configMutex.Unlock();    
     return true;
 }
 
@@ -884,8 +884,8 @@ bool CUserList::addUser( const wxString& user,
     }
 
     // Check if database is open
-    if ( NULL == gpctrlObj->m_db_vscp_daemon ) {
-        gpctrlObj->logMsg( _("Failed to read VSCP settings database - not open.") );
+    if ( NULL == gpobj->m_db_vscp_daemon ) {
+        gpobj->logMsg( _("Failed to read VSCP settings database - not open.") );
         return false;
     }
 
@@ -917,7 +917,7 @@ bool CUserList::addUser( const wxString& user,
     // MD5 Token
     wxString driverhash = user;
     driverhash += _(":");
-    driverhash += wxString::FromUTF8( gpctrlObj->m_authDomain );
+    driverhash += wxString::FromUTF8( gpobj->m_authDomain );
     driverhash += _(":");
     driverhash += password;
     
@@ -1059,23 +1059,23 @@ bool CUserList::addUser( const wxString& strUser, bool bUnpackNote )
      if ( pUser->getUserID() <= 0 ) return false;
      
      // Check if database is open
-    if ( NULL == gpctrlObj->m_db_vscp_daemon ) {
-        gpctrlObj->logMsg( _("Failed to read VSCP settings database - not open." ) );
+    if ( NULL == gpobj->m_db_vscp_daemon ) {
+        gpobj->logMsg( _("Failed to read VSCP settings database - not open." ) );
         return false;
     }
     
-    gpctrlObj->m_db_vscp_configMutex.Lock();
+    gpobj->m_db_vscp_configMutex.Lock();
      
     char *sql = sqlite3_mprintf( VSCPDB_USER_DELETE_USERNAME,
                                     (const char *)user.mbc_str() );
-    if ( SQLITE_OK != sqlite3_exec( gpctrlObj->m_db_vscp_daemon, sql, NULL, NULL, &zErrMsg ) ) {
+    if ( SQLITE_OK != sqlite3_exec( gpobj->m_db_vscp_daemon, sql, NULL, NULL, &zErrMsg ) ) {
         sqlite3_free( sql );
-        gpctrlObj->logMsg( wxString::Format( _("Delete user: Unable to delete user in db. [%s] Err=%s\n"), sql, zErrMsg ) );
-        gpctrlObj->m_db_vscp_configMutex.Unlock();
+        gpobj->logMsg( wxString::Format( _("Delete user: Unable to delete user in db. [%s] Err=%s\n"), sql, zErrMsg ) );
+        gpobj->m_db_vscp_configMutex.Unlock();
         return false;
     }
         
-    gpctrlObj->m_db_vscp_configMutex.Unlock(); 
+    gpobj->m_db_vscp_configMutex.Unlock(); 
     sqlite3_free( sql );
     
     // Remove also from internal table

@@ -43,6 +43,9 @@
 #include <controlobject.h>
 #include <version.h>
 
+// The global control object
+CControlObject *gpobj;
+
 static const wxCmdLineEntryDesc cmdLineDesc[] = { 
   { 
     wxCMD_LINE_OPTION, 
@@ -211,7 +214,6 @@ int main(int argc, char **argv)
         // Restore old title
         SetConsoleTitle( savetitle );
     }
-
 
     if ( !ctrlobj.init( strCfgFile, rootFolder ) ) {
 		ctrlobj.logMsg( _("Unable to initialize the vscpd application."), 
