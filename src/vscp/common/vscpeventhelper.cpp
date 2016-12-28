@@ -280,6 +280,7 @@ VSCPInformation::VSCPInformation( void )
     m_hashType[ MAKE_CLASSTYPE_LONG(10, 55) ] = _("IRRADIANCE");
     m_hashType[ MAKE_CLASSTYPE_LONG(10, 56) ] = _("SPECTRAL RADIANCE");
     m_hashType[ MAKE_CLASSTYPE_LONG(10, 57) ] = _("SPECTRAL IRRADIANCE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(10, 58) ] = _("SOUND PRESSURE");
 
     // Class 15 (0x0f) -- DATA
     m_hashType[ MAKE_CLASSTYPE_LONG(15, 0) ] = _("DATA_GENERAL");
@@ -520,6 +521,7 @@ VSCPInformation::VSCPInformation( void )
     m_hashType[ MAKE_CLASSTYPE_LONG(60, 55) ] = _("IRRADIANCE");
     m_hashType[ MAKE_CLASSTYPE_LONG(60, 56) ] = _("SPECTRAL RADIANCE");
     m_hashType[ MAKE_CLASSTYPE_LONG(60, 57) ] = _("SPECTRAL IRRADIANCE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(60, 58) ] = _("SOUND PRESSURE");
 
     // VSCP_CLASS1_MEASUREZONE
     m_hashType[ MAKE_CLASSTYPE_LONG(65, 0) ] = _("MEASUREMENT_GENERAL");
@@ -579,6 +581,7 @@ VSCPInformation::VSCPInformation( void )
     m_hashType[ MAKE_CLASSTYPE_LONG(65, 55) ] = _("IRRADIANCE");
     m_hashType[ MAKE_CLASSTYPE_LONG(65, 56) ] = _("SPECTRAL RADIANCE");
     m_hashType[ MAKE_CLASSTYPE_LONG(65, 57) ] = _("SPECTRAL IRRADIANCE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(65, 58) ] = _("SOUND PRESSURE");
 
     // class 90 (0x5A) -- WEATHER
     m_hashType[ MAKE_CLASSTYPE_LONG(90, 0) ] = _("WEATHER_GENERAL");
@@ -952,6 +955,7 @@ VSCPInformation::VSCPInformation( void )
     m_hashType[ MAKE_CLASSTYPE_LONG(1040, 55) ] = _("IRRADIANCE");
     m_hashType[ MAKE_CLASSTYPE_LONG(1040, 56) ] = _("SPECTRAL RADIANCE");
     m_hashType[ MAKE_CLASSTYPE_LONG(1040, 57) ] = _("SPECTRAL IRRADIANCE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(1040, 58) ] = _("SOUND PRESSURE");
 
     // Level II Measurement class float Class=1060 (0x424)
     m_hashType[ MAKE_CLASSTYPE_LONG( 1060, 0 ) ] = _( "MEASUREMENT_STR_GENERAL" );
@@ -1011,6 +1015,7 @@ VSCPInformation::VSCPInformation( void )
     m_hashType[ MAKE_CLASSTYPE_LONG( 1060, 55 ) ] = _( "IRRADIANCE" );
     m_hashType[ MAKE_CLASSTYPE_LONG( 1060, 56 ) ] = _( "SPECTRAL RADIANCE" );
     m_hashType[ MAKE_CLASSTYPE_LONG( 1060, 57 ) ] = _( "SPECTRAL IRRADIANCE" );
+    m_hashType[ MAKE_CLASSTYPE_LONG( 1060, 58) ] = _("SOUND PRESSURE");
 
     // Level II VSCPD daemon functionality Class=65535 (0xFFFF)
     m_hashType[ MAKE_CLASSTYPE_LONG(65535, 0) ] = _("VSCPD_GENERAL");

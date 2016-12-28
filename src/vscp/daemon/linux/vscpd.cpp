@@ -76,6 +76,7 @@ void sighandler(int sig)
     wxLogError(_("vscpd: signal received, forced to stop.: %m"));
 }
 
+
 /////////////////////////////////////////////////////////////////////////////
 // VSCPApp
 
