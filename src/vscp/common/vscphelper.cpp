@@ -3009,7 +3009,7 @@ wxString& writeMeasurementValue( uint16_t vscptype,
         }
         break;
 
-        case VSCP_TYPE_MEASUREMENT_ELECTRICAL_RECISTANCE:
+        case VSCP_TYPE_MEASUREMENT_ELECTRICAL_RESISTANCE:
         {
             switch ( unit ) {
                 case 0x00: // default unit = ohms

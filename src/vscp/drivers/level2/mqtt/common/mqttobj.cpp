@@ -177,8 +177,7 @@ static void ev_handler( struct mg_connection *nc, int ev, void *p )
             eventEx.head = VSCP_PRIORITY_NORMAL;
             memset( eventEx.GUID, 0, 16 );
 
-            if ( !strcmp( msg->topic, 
-                            (const char *)pmqttobj->m_topic.mbc_str() ) ) {
+            if ( !strncmp( msg->topic.p, (const char *)pmqttobj->m_topic.mbc_str(), msg->topic.len ) ) {
 
                 char valbuf[512];
                 memset( valbuf, 0, sizeof( valbuf ) );
