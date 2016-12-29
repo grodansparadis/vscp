@@ -3630,7 +3630,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
         {
             wxString strValue;
 
-            // disassemble the data bytes to clear text depending on the datacoding
+            // disassemble the data bytes to clear text depending on the data coding
             // this is the same for all CLASS1_MEASUREMENT events. The only thing thats
             // different is the unit that follows!
             // for debugging we put out in [] the type of data, and its value
