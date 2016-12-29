@@ -1,16 +1,16 @@
 #!/bin/sh
-# /etc/init.d/vscp
+# /etc/init.d/vscpd
 #
-# Written by Ake Hedman <akhe@eurosource.se>
+# Written by Ake Hedman, Grodans Paradis AB <akhe@grodansparadis.com>
 ### BEGIN INIT INFO
-# Provides:          skeleton
+# Provides:          vscpd
 # Required-Start:    $remote_fs $syslog
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Example initscript
-# Description:       This file should be used to construct scripts to be
-#                    placed in /etc/init.d.
+# Short-Description: VSCP daemon init. script
+# Description:       Init. script for the Very Simple Control Protocol (VSCP) 
+# daemon             (vscpd) and should be placed in /etc/init.d
 ### END INIT INFO
 
 
