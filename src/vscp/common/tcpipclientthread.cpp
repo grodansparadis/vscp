@@ -170,7 +170,7 @@ void VSCPClientThread::ev_handler( struct mg_connection *conn,
 
         case MG_EV_ACCEPT:	// New connection accept()-ed. union socket_address *remote_addr
             {
-                pCtrlObject->logMsg(_("TCP Client: --Accept.\n") );
+                pCtrlObject->logMsg(_("TCP Client: -- Accept.\n") );
 
                 // We need to create a clientobject and add this object to the list
                 pClientItem = new CClientItem;
@@ -635,7 +635,15 @@ REPEAT_COMMAND:
     //*********************************************************************
     else if ( ( 0 == pClientItem->m_currentCommandUC.Find ( _( "WHATCANYOUDO" ) ) ) ||
                ( 0 == pClientItem->m_currentCommandUC.Find ( _( "WCYD" ) ) ) ) {
-            handleClientCapabilityRquest( conn, pCtrlObject );
+            handleClientCapabilityRequest( conn, pCtrlObject );
+    }
+
+    //*********************************************************************
+    //                             Measurement
+    //*********************************************************************
+    else if ( ( 0 == pClientItem->m_currentCommandUC.Find ( _( "MEASUREMENT" ) ) ) ||
+               ( 0 == pClientItem->m_currentCommandUC.Find ( _( "MES" ) ) ) ) {
+            handleClientMeasurment( conn, pCtrlObject );
     }
 
     //*********************************************************************
@@ -651,10 +659,40 @@ REPEAT_COMMAND:
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// handleClientCapabilityRquest
+// handleClientMeasurment
+//
+// type,level,vscp-measurement-type,value,unit,guid,idx,zone,subzone,dest-guid
+//
+// type                     float|string|0|1 - float=0, string=1.
+// level                    1|0  1 = VSCP Level I event, 2 = VSCP Level II event.
+// vscp-measurement-type    A valid vscp measurement type.
+// value                    A floating point value.
+// unit                     Optional unit for this type. Default = 0.
+// guid                     Optional GUID (or "-"). Default is "-".
+// idx                      Optional sensor index. Default is 0.
+// zone                     Optional zone. Default is 0.
+// subzone                  Optional subzone- Default is 0.
+// dest-guid                Optional destination GUID. For Level I over Level II.
 //
 
-void VSCPClientThread::handleClientCapabilityRquest( struct mg_connection *conn,
+void VSCPClientThread::handleClientMeasurment( struct mg_connection *conn,
+                                                 CControlObject *pCtrlObject )
+{
+    wxString wxstr;
+    
+    // Check objects
+    if ( ( NULL == conn ) || (NULL == pCtrlObject )  ) {
+        return;
+    }
+   
+    mg_send( conn, MSG_OK, strlen ( MSG_OK ) );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// handleClientCapabilityRequest
+//
+
+void VSCPClientThread::handleClientCapabilityRequest( struct mg_connection *conn,
                                                         CControlObject *pCtrlObject )
 {
     wxString wxstr;
@@ -675,6 +713,11 @@ void VSCPClientThread::handleClientCapabilityRquest( struct mg_connection *conn,
 bool VSCPClientThread::isVerified( struct mg_connection *conn,
                                         CControlObject *pCtrlObject )
 {
+    // Check objects
+    if ( ( NULL == conn ) || (NULL == pCtrlObject )  ) {
+        return false;
+    }
+    
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
@@ -694,6 +737,11 @@ bool VSCPClientThread::checkPrivilege( struct mg_connection *conn,
                                             CControlObject *pCtrlObject,
                                             unsigned char reqiredPrivilege )
 {
+    // Check objects
+    if ( ( NULL == conn ) || (NULL == pCtrlObject )  ) {
+        return false;
+    }
+    
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be loged on

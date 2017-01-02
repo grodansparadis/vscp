@@ -55,9 +55,9 @@
 #define NO_TRANSLATION  0       // No translation bit set
 
 // Out - translation bit definitions
-#define VSCP_DRIVER_OUT_TR_M1M2F     1  // M1 -> M2 Float  
-#define VSCP_DRIVER_OUT_TR_M1M2S     2  // M1 -> M2 String   
-#define VSCP_DRIVER_OUT_TR_ALL512    4  // All to Level II events
+#define VSCP_DRIVER_OUT_TR_M1M2F     0x01  // M1 -> M2 Float  
+#define VSCP_DRIVER_OUT_TR_M1M2S     0x02  // M1 -> M2 String   
+#define VSCP_DRIVER_OUT_TR_ALL512    0x04  // All to Level II events
 
 // In - translation bit definitions
 
@@ -207,7 +207,7 @@ public:
         @param guid Interface GUID
         @param level Mark as Level I or Level II driver
         @param bEnable True to enable driver
-     *  @param translation Bits to set translations to be performed.
+        @param translation Bits to set translations to be performed.
         @return True is returned if the driver was successfully added.
     */
     bool addItem( wxString strName,

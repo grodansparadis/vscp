@@ -466,7 +466,12 @@ public:
     /*!
         Client WhatCanYouDo command
     */
-    void handleClientCapabilityRquest( struct mg_connection *conn, CControlObject *pCtrlObject );
+    void handleClientCapabilityRequest( struct mg_connection *conn, CControlObject *pCtrlObject );
+    
+    /*!
+     * Handle client measurement
+     */
+    void handleClientMeasurment( struct mg_connection *conn, CControlObject *pCtrlObject );
 
 // --- Member variables ---
 

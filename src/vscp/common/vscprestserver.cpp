@@ -2817,16 +2817,16 @@ VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *nc,
 
         strValue.Trim();
         strValue.Trim(false);
-        strValue.ToDouble( &value );        // Measurement value
-        strUnit.ToLong( &unit );            // Measurement unit
-        strSensorIdx.ToLong( &sensoridx );  // Sensor indes
-        strType.ToLong( &vscptype );        // VSCP event type
-        strZone.ToLong( &zone );            // VSCP event type
+        strValue.ToDouble( &value );            // Measurement value
+        strUnit.ToLong( &unit );                // Measurement unit
+        strSensorIdx.ToLong( &sensoridx );      // Sensor index
+        strType.ToLong( &vscptype );            // VSCP event type
+        strZone.ToLong( &zone );                // VSCP event type
         zone &= 0xff;
-        strSubZone.ToLong( &subzone );      // VSCP event type
+        strSubZone.ToLong( &subzone );          // VSCP event type
         subzone &= 0xff;
 
-        strLevel.ToLong( &level );          // Level I or Level II (default)
+        strLevel.ToLong( &level );              // Level I or Level II (default)
         if ( ( level > 2 ) || ( level < 1 ) ) {
             level = 2;
         }
