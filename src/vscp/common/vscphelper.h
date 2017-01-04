@@ -324,7 +324,7 @@ extern "C" {
         string for
 	CLASS1.MEASUREMENT, CLASS2_LEVEL1.MEASUREMENT
         @param value Floating point value to convert.
-        @param pEvent Pointer to event with pdata set to NULL. cscp_class and
+        @param pEvent Pointer to event with pdata set to NULL. vscp_class and
         vscp_type must be set to CLASS1.MEASUREMENT, CLASS2_LEVEL1.MEASUREMENT,
         @param psize Pointer to size for returned data.
         @param unit Unit for the data. Zero is default.

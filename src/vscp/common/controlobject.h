@@ -371,9 +371,17 @@ public:
     void sendEventToClient( CClientItem *pClientItem, vscpEvent *pEvent );
 
     /*!
-        Send Level II event to all clients witch exception
+        Send Level II event to all clients with exception
      */
     void sendEventAllClients( vscpEvent *pEvent, uint32_t excludeID = 0 );
+    
+    /*!
+     * Send event
+     * @param pClientItem Client that send the event.
+     * @param pEvent Event to send
+     * @return True on success false on failure.
+     */
+    bool sendEvent( CClientItem *pClientItem, vscpEvent *peventToSend );
 
 
     /*!

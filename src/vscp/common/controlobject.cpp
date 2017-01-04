@@ -116,10 +116,7 @@
 #include <lua.hpp>
 #endif
 
-#ifndef VSCP_DISABLE_SQLITE
 #include <sqlite3.h>
-#endif
-
 #include <mongoose.h>
 
 #include "canal_macro.h"
@@ -1830,6 +1827,131 @@ void CControlObject::sendEventAllClients( vscpEvent *pEvent,
 
     m_wxClientMutex.Unlock();
 
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// sendEvent
+//
+
+bool CControlObject::sendEvent( CClientItem *pClientItem,
+                                    vscpEvent *peventToSend )
+{
+    bool bSent = false;
+    
+    // Check pointers
+    if ( NULL == pClientItem ) return false; 
+    if ( NULL == peventToSend ) return false;
+    
+    vscpEvent *pEvent = new vscpEvent;  // Create new VSCP Event
+    if ( NULL == pEvent ) {
+        return false;
+    }
+
+    // Copy event
+    vscp_copyVSCPEvent( pEvent, peventToSend );
+
+    // We don't need the original event anymore
+    if ( NULL != peventToSend->pdata ) {        
+        delete [] peventToSend->pdata;
+        peventToSend->pdata = NULL;
+        peventToSend->sizeData = 0;
+    }
+
+    // Save the originating clients id so
+    // this client don't get the message back
+    pEvent->obid = pClientItem->m_clientID;
+
+        // Level II events between 512-1023 is recognised by the daemon and
+        // sent to the correct interface as Level I events if the interface
+        // is addressed by the client.
+        if ( ( pEvent->vscp_class <= 1023 ) &&
+            ( pEvent->vscp_class >= 512 ) &&
+            ( pEvent->sizeData >= 16 )	) {
+
+            // This event should be sent to the correct interface if it is
+            // available on this machine. If not it should be sent to
+            // the rest of the network as normal
+
+            cguid destguid;
+            destguid.getFromArray( pEvent->pdata );
+
+            destguid.setAt(0,0);    // Interface GUID's have LSB bytes nilled
+            destguid.setAt(1,0);
+
+            wxString dbgStr =
+                    wxString::Format( _("Level I event over Level II dest = %d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:"),
+                    destguid.getAt(15),destguid.getAt(14),destguid.getAt(13),destguid.getAt(12),
+                    destguid.getAt(11),destguid.getAt(10),destguid.getAt(9),destguid.getAt(8),
+                    destguid.getAt(7),destguid.getAt(6),destguid.getAt(5),destguid.getAt(4),
+                    destguid.getAt(3),destguid.getAt(2),destguid.getAt(1),destguid.getAt(0) );
+                    logMsg( dbgStr, DAEMON_LOGMSG_DEBUG );
+
+            // Find client
+            m_wxClientMutex.Lock();
+
+            CClientItem *pDestClientItem = NULL;
+            VSCPCLIENTLIST::iterator iter;
+            for (iter = m_clientList.m_clientItemList.begin();
+                    iter != m_clientList.m_clientItemList.end();
+                    ++iter) {
+
+                CClientItem *pItem = *iter;
+                dbgStr =
+                    wxString::Format( _("Test if = %d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:"),
+                    pItem->m_guid.getAt(15),pItem->m_guid.getAt(14),pItem->m_guid.getAt(13),pItem->m_guid.getAt(12),
+                    pItem->m_guid.getAt(11),pItem->m_guid.getAt(10),pItem->m_guid.getAt(9),pItem->m_guid.getAt(8),
+                    pItem->m_guid.getAt(7),pItem->m_guid.getAt(6),pItem->m_guid.getAt(5),pItem->m_guid.getAt(4),
+                    pItem->m_guid.getAt(3),pItem->m_guid.getAt(2),pItem->m_guid.getAt(1),pItem->m_guid.getAt(0) );
+                    dbgStr += _(" ");
+                    dbgStr += pItem->m_strDeviceName;
+                    logMsg( dbgStr, DAEMON_LOGMSG_DEBUG );
+
+                    if ( pItem->m_guid == destguid ) {
+                        // Found
+                        pDestClientItem = pItem;
+                        bSent = true;
+                        dbgStr = _("Match ");
+                        logMsg( dbgStr, DAEMON_LOGMSG_DEBUG );
+                        sendEventToClient( pItem, pEvent );
+                        break;
+                    }
+
+                }
+
+                m_wxClientMutex.Unlock();
+
+        }
+
+
+        if ( !bSent ) {
+
+            // There must be room in the send queue
+            if ( m_maxItemsInClientReceiveQueue >
+                m_clientOutputQueue.GetCount() ) {
+
+                    m_mutexClientOutputQueue.Lock();
+                    m_clientOutputQueue.Append ( pEvent );
+                    m_semClientOutputQueue.Post();
+                    m_mutexClientOutputQueue.Unlock();
+
+                    // TX Statistics
+                    pClientItem->m_statistics.cntTransmitData += pEvent->sizeData;
+                    pClientItem->m_statistics.cntTransmitFrames++;
+
+            }
+            else {
+
+                pClientItem->m_statistics.cntOverruns++;
+
+                vscp_deleteVSCPevent( pEvent );
+                return false;
+            }
+
+        }
+
+
+    return true;
 }
 
 

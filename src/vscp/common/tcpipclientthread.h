@@ -63,11 +63,13 @@
 
 #define MSG_LOW_PRIVILEGE_ERROR             "-OK - User need higher privilege level to perform this operation.\r\n"
 #define MSG_INTERFACE_NOT_FOUND             "-OK - Interface not found.\r\n"
+#define MSG_UNABLE_TO_SEND_EVENT            "-OK - Unable to send event.\r\n"
 
 #define MSG_VARIABLE_NOT_DEFINED            "-OK - Variable is not defined.\r\n"
 #define MSG_VARIABLE_MUST_BE_EVENT_TYPE     "-OK - Variable must be of event type.\r\n"
 #define MSG_VARIABLE_NOT_STOCK              "-OK - Operation does not work with stock variables.\r\n"
 #define MSG_VARIABLE_NO_SAVE                "-OK - Variable could not be saved.\r\n"
+#define MSG_VARIABLE_NOT_NUMERIC            "-OK - Variable is not numeric.\r\n"
 
 //class CControlObject;
 //class CClientItem;

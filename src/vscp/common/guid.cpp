@@ -49,8 +49,6 @@
 
 #include <wx/tokenzr.h>
 
-
-
 #include "guid.h"
 
 
@@ -112,12 +110,20 @@ bool cguid::operator!=(const cguid &guid)
 void cguid::getFromString( const wxString& strGUID )
 {
     unsigned long val;
+    wxString wxstr = strGUID;
 
+    // Check for default string (all nills)
+    wxstr.Trim();
+    if ( "-" == wxstr ) {
+        clear();
+        return;
+    }
+    
     wxStringTokenizer tkz( strGUID, wxT ( ":" ) );
     for ( int i=0; i<16; i++ ) {
         tkz.GetNextToken().ToULong( &val, 16 );
         m_id[ i ] = ( uint8_t ) val;
-        // If no tokens left no use to continue
+        // If no tokens left no meaning to continue
         if ( !tkz.HasMoreTokens() ) break;
     }
 }

@@ -635,15 +635,14 @@ REPEAT_COMMAND:
     //*********************************************************************
     else if ( ( 0 == pClientItem->m_currentCommandUC.Find ( _( "WHATCANYOUDO" ) ) ) ||
                ( 0 == pClientItem->m_currentCommandUC.Find ( _( "WCYD" ) ) ) ) {
-            handleClientCapabilityRequest( conn, pCtrlObject );
+        handleClientCapabilityRequest( conn, pCtrlObject );
     }
 
     //*********************************************************************
     //                             Measurement
     //*********************************************************************
-    else if ( ( 0 == pClientItem->m_currentCommandUC.Find ( _( "MEASUREMENT" ) ) ) ||
-               ( 0 == pClientItem->m_currentCommandUC.Find ( _( "MES" ) ) ) ) {
-            handleClientMeasurment( conn, pCtrlObject );
+    else if ( ( 0 == pClientItem->m_currentCommandUC.Find ( _( "MEASUREMENT" ) ) ) ) {
+        handleClientMeasurment( conn, pCtrlObject );
     }
 
     //*********************************************************************
@@ -661,15 +660,15 @@ REPEAT_COMMAND:
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientMeasurment
 //
-// type,level,vscp-measurement-type,value,unit,guid,idx,zone,subzone,dest-guid
+// format,level,vscp-measurement-type,value,unit,guid,sensoridx,zone,subzone,dest-guid
 //
-// type                     float|string|0|1 - float=0, string=1.
+// format                   float|string|0|1 - float=0, string=1.
 // level                    1|0  1 = VSCP Level I event, 2 = VSCP Level II event.
 // vscp-measurement-type    A valid vscp measurement type.
-// value                    A floating point value.
+// value                    A floating point value. (use $ prefix for variable followed by name)
 // unit                     Optional unit for this type. Default = 0.
 // guid                     Optional GUID (or "-"). Default is "-".
-// idx                      Optional sensor index. Default is 0.
+// sensoridx                Optional sensor index. Default is 0.
 // zone                     Optional zone. Default is 0.
 // subzone                  Optional subzone- Default is 0.
 // dest-guid                Optional destination GUID. For Level I over Level II.
@@ -679,10 +678,419 @@ void VSCPClientThread::handleClientMeasurment( struct mg_connection *conn,
                                                  CControlObject *pCtrlObject )
 {
     wxString wxstr;
+    unsigned long l;
+    double value = 0;
+    cguid guid;             // Initialized to zero
+    cguid destguid;         // Initialized to zero
+    long level = VSCP_LEVEL2;
+    long unit = 0;
+    long vscptype;
+    long sensoridx = 0;
+    long zone = 0;
+    long subzone = 0;
+    long eventFormat = 0;   // float
+    uint8_t data[ VSCP_MAX_DATA ];
+    uint16_t sizeData;
     
     // Check objects
     if ( ( NULL == conn ) || (NULL == pCtrlObject )  ) {
+        mg_send( conn,  MSG_INTERNAL_MEMORY_ERROR, strlen ( MSG_INTERNAL_MEMORY_ERROR ) );
         return;
+    }
+    
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    if ( NULL == pClientItem ) {
+        mg_send( conn,  MSG_INTERNAL_MEMORY_ERROR, strlen ( MSG_INTERNAL_MEMORY_ERROR ) );
+        return;
+    }
+    
+    wxStringTokenizer tkz( pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length() - 11 ),
+                            _(",") );
+
+    // If first character is $ user request us to send content from
+    // a variable
+
+    // * * * event format * * *
+    
+    // Get event format (float | string | 0 | 1 - float=0, string=1.)
+    if ( !tkz.HasMoreTokens() ) {
+        mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    wxstr = tkz.GetNextToken();
+    wxstr.MakeUpper();
+    if ( wxstr.IsNumber() ) {
+        
+        l = 0;
+  
+        if ( wxstr.ToULong( &l ) && ( l > 1 ) ) {
+            mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            return;
+        }
+        
+        eventFormat = l;
+        
+    }
+    else {
+        if ( wxNOT_FOUND != wxstr.Find("STRING") ) {
+            eventFormat = 1;
+        }
+        else if ( wxNOT_FOUND != wxstr.Find("FLOAT") ) {
+            eventFormat = 0;
+        }
+        else {
+            mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            return;
+        }
+    }
+    
+    // * * * Level * * *
+    
+    if ( !tkz.HasMoreTokens() ) {
+        mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    wxstr = tkz.GetNextToken();
+    
+    if ( wxstr.IsNumber() ) {
+        
+        l = VSCP_LEVEL1; 
+  
+        if ( wxstr.ToULong( &l ) && ( l > VSCP_LEVEL2 ) ) {
+            mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            return;
+        }
+        
+        level = l;
+        
+    }
+    else {
+        mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    // * * * vscp-measurement-type * * *
+    
+    if ( !tkz.HasMoreTokens() ) {
+        mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    wxstr = tkz.GetNextToken();
+    
+    if ( wxstr.IsNumber() ) {
+        
+        l = 0; 
+  
+        if ( wxstr.ToULong( &l ) ) {
+            mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            return;
+        }
+        
+        level = l;
+        
+    }
+    else {
+        mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+
+    // * * * value * * *
+    
+        
+    if ( !tkz.HasMoreTokens() ) {
+        mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    wxstr = tkz.GetNextToken();
+    wxstr.Trim();
+    wxstr.Trim(false);
+    
+    // If first character is '$' user request us to send content from
+    // a variable (that must be numeric)
+    if ( '$' == wxstr[0] ) {
+        
+        CVSCPVariable variable;
+        wxstr = wxstr.Right( wxstr.Length() - 1 );  // get variable name
+
+        wxstr.MakeUpper();
+
+        if ( m_pCtrlObject->m_VSCP_Variables.find( wxstr, variable  ) ) {
+            mg_send( conn, MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
+            return;
+        }
+        
+        // get the value
+        wxstr = variable.getValue();
+        if ( !wxstr.IsNumber() ) {
+            mg_send( conn, MSG_VARIABLE_NOT_NUMERIC, strlen ( MSG_VARIABLE_NOT_NUMERIC ) );
+            return;
+        }
+        
+        if ( wxstr.ToCDouble( &value ) ) {
+            mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            return;
+        }
+        
+    }
+    else {
+        if ( !wxstr.ToCDouble( &value ) ) {
+            mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            return;
+        }
+    }
+    
+    
+    // * * * unit * * *
+    
+    
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+        if ( wxstr.IsNumber() ) {
+            if ( wxstr.ToULong( &l ) ) {
+                unit = l;
+            }
+        }
+    }
+    
+    
+    // * * * guid * * *
+    
+       
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+        wxstr.Trim();
+        // If empty set to default.
+        if ( 0 == wxstr.Length() ) wxstr = _("-");
+        guid.getFromString( wxstr );
+    }
+    
+    
+    // * * * sensor index * * *
+    
+    
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+        wxstr.Trim();
+        
+        if ( wxstr.IsNumber() ) { 
+            if ( wxstr.ToULong( &l ) ) {
+                sensoridx = l;
+            }
+        }
+    }
+    
+    
+    // * * * zone * * *
+    
+    
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+        wxstr.Trim();
+        
+        if ( wxstr.IsNumber() ) { 
+            if ( wxstr.ToULong( &l ) ) {
+                zone = l;
+                zone &= 0xff;
+            }
+        }
+    }
+    
+    
+    // * * * subzone * * *
+    
+    
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+        wxstr.Trim();
+        
+        if ( wxstr.IsNumber() ) { 
+            if ( wxstr.ToULong( &l ) ) {
+                subzone = l;
+                subzone &= 0xff;
+            }
+        }
+    }
+    
+    
+    // * * * destguid * * *
+    
+        
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+        wxstr.Trim();
+        // If empty set to default.
+        if ( 0 == wxstr.Length() ) wxstr = _("-");
+        destguid.getFromString( wxstr );
+    }
+    
+    // Range checks
+    if ( VSCP_LEVEL1 == level ) {
+        if (unit > 3) unit = 0;
+        if (sensoridx > 7) unit = 0;
+        if (vscptype > 512) vscptype -= 512;
+    } 
+    else {  // VSCP_LEVEL2
+        if (unit > 255) unit &= 0xff;
+        if (sensoridx > 255) sensoridx &= 0xff;
+    }
+    
+    if ( 1 == level ) {
+
+        if ( 0 == eventFormat ) {
+
+            // * * * Floating point * * *
+            
+            if ( vscp_convertFloatToFloatEventData( data,
+                                                        &sizeData,
+                                                        value,
+                                                        unit,
+                                                        sensoridx ) ) {
+                if ( sizeData > 8 ) sizeData = 8;
+
+                vscpEvent *pEvent = new vscpEvent;
+                if ( NULL == pEvent ) {
+                    mg_send( conn,  MSG_INTERNAL_MEMORY_ERROR, strlen ( MSG_INTERNAL_MEMORY_ERROR ) );
+                    return;
+                }
+                
+                pEvent->pdata = NULL;
+                pEvent->head = VSCP_PRIORITY_NORMAL;
+                pEvent->timestamp = 0;  // Let interface fill in
+                guid.writeGUID( pEvent->GUID );
+                pEvent->sizeData = sizeData;
+                if ( sizeData > 0 ) {
+                    pEvent->pdata = new uint8_t[ sizeData ];
+                    memcpy( pEvent->pdata, data, sizeData );
+                }
+                pEvent->vscp_class = VSCP_CLASS1_MEASUREMENT;
+                pEvent->vscp_type = vscptype;
+
+                // send the event
+                if ( !pCtrlObject->sendEvent( pClientItem, pEvent ) ) {
+                    mg_send( conn,  MSG_UNABLE_TO_SEND_EVENT, strlen ( MSG_UNABLE_TO_SEND_EVENT ) );
+                    return;
+                }
+
+            } 
+            else {
+                mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            }
+        } 
+        else {
+            
+            // * * * String * * *
+            
+            vscpEvent *pEvent = new vscpEvent;
+            if (NULL == pEvent) {
+                mg_send( conn,  MSG_INTERNAL_MEMORY_ERROR, strlen ( MSG_INTERNAL_MEMORY_ERROR ) );
+                return;
+            }
+            
+            pEvent->pdata = NULL;
+
+            if ( !vscp_makeStringMeasurementEvent( pEvent,
+                                                    value,
+                                                    unit,
+                                                    sensoridx ) ) {
+                mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            }
+            
+        }
+    } 
+    else {      // Level II
+        
+        if ( 0 == eventFormat ) {   // float and Level II
+
+            // * * * Floating point * * *
+            
+            vscpEvent *pEvent = new vscpEvent;
+            if ( NULL == pEvent ) {
+                mg_send( conn,  MSG_INTERNAL_MEMORY_ERROR, strlen ( MSG_INTERNAL_MEMORY_ERROR ) );
+                return;
+            }
+
+            pEvent->pdata = NULL;
+
+            pEvent->obid = 0;
+            pEvent->head = VSCP_PRIORITY_NORMAL;
+            pEvent->timestamp = 0; // Let interface fill in timestamp
+            guid.writeGUID( pEvent->GUID );
+            pEvent->head = 0;
+            pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
+            pEvent->vscp_type = vscptype;
+            pEvent->timestamp = 0;
+            pEvent->sizeData = 12;
+
+            data[ 0 ] = sensoridx;
+            data[ 1 ] = zone;
+            data[ 2 ] = subzone;
+            data[ 3 ] = unit;
+
+            memcpy(data + 4, (uint8_t *) & value, 8); // copy in double
+            uint64_t temp = wxUINT64_SWAP_ON_LE(*(data + 4));
+            memcpy(data + 4, (void *) &temp, 8);
+
+            // Copy in data
+            pEvent->pdata = new uint8_t[ 4 + 8 ];
+            if (NULL == pEvent->pdata) {
+                mg_send( conn,  MSG_INTERNAL_MEMORY_ERROR, strlen ( MSG_INTERNAL_MEMORY_ERROR ) );
+                delete pEvent;
+                return;
+            }
+            
+            memcpy(pEvent->pdata, data, 4 + 8);
+
+            // send the event
+            if ( !pCtrlObject->sendEvent( pClientItem, pEvent ) ) {
+                mg_send( conn,  MSG_UNABLE_TO_SEND_EVENT, strlen ( MSG_UNABLE_TO_SEND_EVENT ) );
+                return;
+            }
+            
+        } 
+        else {      // string & Level II
+            
+            // * * * String * * *
+            
+            vscpEvent *pEvent = new vscpEvent;
+            pEvent->pdata = NULL;
+
+            pEvent->obid = 0;
+            pEvent->head = VSCP_PRIORITY_NORMAL;
+            pEvent->timestamp = 0; // Let interface fill in
+            guid.writeGUID( pEvent->GUID );
+            pEvent->head = 0;
+            pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
+            pEvent->vscp_type = vscptype;
+            pEvent->timestamp = 0;
+            pEvent->sizeData = 12;
+            
+            wxString strValue = wxString::Format(_("%f"), value );
+
+            data[ 0 ] = sensoridx;
+            data[ 1 ] = zone;
+            data[ 2 ] = subzone;
+            data[ 3 ] = unit;
+
+            pEvent->pdata = new uint8_t[ 4 + strValue.Length() ];
+            if (NULL == pEvent->pdata) {
+                mg_send( conn,  MSG_INTERNAL_MEMORY_ERROR, strlen ( MSG_INTERNAL_MEMORY_ERROR ) );
+                delete pEvent;
+                return;
+            }
+            memcpy(data + 4, strValue.mbc_str(), strValue.Length()); // copy in double
+
+            // send the event
+            if ( !pCtrlObject->sendEvent( pClientItem, pEvent ) ) {
+                mg_send( conn,  MSG_UNABLE_TO_SEND_EVENT, strlen ( MSG_UNABLE_TO_SEND_EVENT ) );
+                return;
+            }
+            
+        }
     }
    
     mg_send( conn, MSG_OK, strlen ( MSG_OK ) );
@@ -953,13 +1361,20 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn,
         mg_send( conn, MSG_MOT_ALLOWED_TO_SEND_EVENT, strlen ( MSG_MOT_ALLOWED_TO_SEND_EVENT ) );
 
         if ( NULL != event.pdata ) {
-            delete[] event.pdata;
+            delete [] event.pdata;
             event.pdata = NULL;
         }
 
         return;
     }
-
+    
+    // send event
+    if ( !m_pCtrlObject->sendEvent( pClientItem, &event ) ) {
+        mg_send( conn,  MSG_BUFFER_FULL, strlen ( MSG_BUFFER_FULL ) );
+        return;
+    }
+    
+/*
     vscpEvent *pEvent = new vscpEvent;		// Create new VSCP Event
     if ( NULL != pEvent ) {
 
@@ -968,7 +1383,7 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn,
 
         // We don't need the original event anymore
         if ( NULL != event.pdata ) {
-            delete[] event.pdata;
+            delete [] event.pdata;
             event.pdata = NULL;
             event.sizeData = 0;
         }
@@ -977,11 +1392,6 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn,
         // this client don't get the message back
         pEvent->obid = pClientItem->m_clientID;
 
-        /*wxString dbgStr =
-            wxString::Format( _(" obid = %d clientid = %d"),
-            pEvent->obid,
-            pClientItem->m_clientID );
-        m_pCtrlObject->logMsg( dbgStr, DAEMON_LOGMSG_INFO );*/
 
         // Level II events between 512-1023 is recognised by the daemon and
         // sent to the correct interface as Level I events if the interface
@@ -1072,6 +1482,7 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn,
         }
 
     } // Valid pEvent
+*/    
 
    mg_send( conn, MSG_OK, strlen ( MSG_OK ) );
 }

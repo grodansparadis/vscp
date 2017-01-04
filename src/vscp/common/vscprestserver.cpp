@@ -1333,29 +1333,29 @@ VSCPWebServerThread::webserv_rest_doSendEvent( struct mg_connection *nc,
 
     if ( NULL != pSession ) {
 
-        // Level II events betwen 512-1023 is recognized by the daemon and
+        // Level II events between 512-1023 is recognized by the daemon and
         // sent to the correct interface as Level I events if the interface
         // is addressed by the client.
-        if ((pEvent->vscp_class <= 1023) &&
-                (pEvent->vscp_class >= 512) &&
-                (pEvent->sizeData >= 16)) {
+        if ( ( pEvent->vscp_class <= 1023 ) &&
+                ( pEvent->vscp_class >= 512 ) &&
+                ( pEvent->sizeData >= 16 ) ) {
 
-            // This event shold be sent to the correct interface if it is
+            // This event should be sent to the correct interface if it is
             // available on this machine. If not it should be sent to
             // the rest of the network as normal
 
             cguid destguid;
-            destguid.getFromArray(pEvent->pdata);
+            destguid.getFromArray (pEvent->pdata );
             destguid.setAt(0,0);
             destguid.setAt(1,0);
 
-            if (NULL != pSession->pClientItem ) {
+            if ( NULL != pSession->pClientItem ) {
 
                 // Set client id
                 pEvent->obid = pSession->pClientItem->m_clientID;
 
                 // Check if filtered out
-                if (vscp_doLevel2Filter( pEvent, &pSession->pClientItem->m_filterVSCP)) {
+                if ( vscp_doLevel2Filter( pEvent, &pSession->pClientItem->m_filterVSCP ) ) {
 
                     // Lock client
                     pObject->m_wxClientMutex.Lock();
@@ -2841,7 +2841,7 @@ VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *nc,
         // Range checks
         if ( 1 == level ) {
             if ( unit > 3 ) unit = 0;
-            if ( sensoridx > 7 ) unit = 0;
+            if ( sensoridx > 7 ) sensoridx = 0;
             if ( vscptype > 512 ) vscptype -= 512;
         }
         else if ( 2 == level ) {
