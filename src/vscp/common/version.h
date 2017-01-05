@@ -7,7 +7,7 @@
 //
 // This file is part of the VSCP (http://www.vscp.org)
 //
-// Copyright (C) 2000-2016
+// Copyright (C) 2000-2017
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This file is distributed in the hope that it will be useful,
@@ -27,11 +27,11 @@
 #define VSCPD_MAJOR_VERSION     1
 #define VSCPD_MINOR_VERSION     12
 #define VSCPD_RELEASE_VERSION   16
-#define VSCPD_BUILD_VERSION     3
+#define VSCPD_BUILD_VERSION     4
 
-#define VSCPD_DISPLAY_VERSION "1.12.16.3 Magnesium"
+#define VSCPD_DISPLAY_VERSION "1.12.16.4 Magnesium"
 
-#define VSCPD_COPYRIGHT "Copyright (C) 2000-2016, Grodans Paradis AB, http://www.paradiseofthefrog.com"
-#define VSCPD_COPYRIGHT_HTML "Copyright (C) 2000-2016, <a href=\"mailto:info@paradiseofthefrog.com\">Paradise of the Frog</a>, <a href=\"http://www.paradiseofthefrog.com\">http://www.paradiseofthefrog.com</a>"
+#define VSCPD_COPYRIGHT "Copyright (C) 2000-2017, Grodans Paradis AB, http://www.paradiseofthefrog.com"
+#define VSCPD_COPYRIGHT_HTML "Copyright (C) 2000-2017, <a href=\"mailto:info@paradiseofthefrog.com\">Paradise of the Frog</a>, <a href=\"http://www.paradiseofthefrog.com\">http://www.paradiseofthefrog.com</a>"
 
 #endif
