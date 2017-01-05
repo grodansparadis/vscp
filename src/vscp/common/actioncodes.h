@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2016 
+// Copyright (C) 2000-2017 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -136,18 +136,28 @@
 #define VSCP_DAEMON_ACTION_CODE_SUBTRACT_VARIABLE           0x00000053  // Subtract from variable
 
 
-
-
 // Multiply value with variable
 // Format: variable;value to multiply the variable with
 #define VSCP_DAEMON_ACTION_CODE_MULTIPLY_VARIABLE           0x00000054	// Multiply with variable
 
 
-
-
 // Divide value with variable
 // Format: variable;value to divide the variable with
 #define VSCP_DAEMON_ACTION_CODE_DIVIDE_VARIABLE             0x00000055  // Divide with variable
+
+
+// Check variable set other to true
+// Format: value;operation;variable;flag-variable
+#define VSCP_DAEMON_ACTION_CODE_CHECK_VARIABLE_TRUE         0x00000056  // Check variable true
+
+
+// Check variable set other to false
+// Format: value;operation;variable;flag-variable
+#define VSCP_DAEMON_ACTION_CODE_CHECK_VARIABLE_FALSE        0x00000057  // Check variable flase
+
+// Check measurement and set flag value
+// Format: value;operation;flag-variable
+#define VSCP_DAEMON_ACTION_CODE_CHECK_MEASUREMENT           0x00000058  // Check measurement
 
 
 // Start a timer
