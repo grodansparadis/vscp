@@ -1950,7 +1950,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
 {
     wxString logStr;
 
-    // For test of escapes
+    // Leave here for test of escapes
     //handleEscapes( pEvent, wxString( wxT("This is a test %class %type [%sizedata] %data  %data[0] %data[90]") ) );
 
     m_triggCounter++;
@@ -2137,9 +2137,9 @@ bool dmElement::doAction( vscpEvent *pEvent )
             break;
 
 #ifndef VSCP_DISABLE_LUA
-        case VSCP_DAEMON_ACTION_CODE_RUN_LUA:
+        case VSCP_DAEMON_ACTION_CODE_RUN_LUASCRIPT:
 
-            logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_RUN_LUA.") ); // Log
+            logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_RUN_LUASCRIPT.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
             m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
@@ -2167,6 +2167,34 @@ bool dmElement::doAction( vscpEvent *pEvent )
             }
             break;
 #endif
+        case VSCP_DAEMON_ACTION_CODE_RUN_JAVASCRIPT:
+            logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_RUN_JAVASCRIPT.") ); // Log
+            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
+            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            vscp_writeVscpEventToString( pEvent, logStr );
+            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+
+            { 
+                // Write in possible escapes
+                wxString wxstr = m_actionparam;
+                handleEscapes( pEvent, wxstr );
+
+                actionThread_JavaScript *pThread =
+                    new actionThread_JavaScript( m_pDM->m_pCtrlObject, wxstr );
+
+                wxThreadError err;
+                if (wxTHREAD_NO_ERROR == (err = pThread->Create())) {
+                    pThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
+                    if (wxTHREAD_NO_ERROR != (err = pThread->Run())) {
+                        m_pDM->logMsg(_("Unable to run actionThread_JavaScript client thread.") );
+                    }
+                }
+                else {
+                    m_pDM->logMsg(_("Unable to create actionThread_JavaScript client thread.") );
+                }
+
+            }
+            break;
 
         default:
         case VSCP_DAEMON_ACTION_CODE_NOOP:
@@ -5768,7 +5796,7 @@ actionThread_LUA::actionThread_LUA( CControlObject *pCtrlObject,
 {
     //OutputDebugString( "actionThreadURL: Create");
     m_pCtrlObject = pCtrlObject;
-    m_wxstrScript = strScript;
+    m_wxstrScript = strScript;      // Script to execute
 }
 
 actionThread_LUA::~actionThread_LUA()
@@ -5823,3 +5851,60 @@ void actionThread_LUA::OnExit()
 
 
 
+//------------------------------------------------------------------------------
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// actionThread_JavaScript
+//
+// This thread executes a JavaScript 
+//
+
+actionThread_JavaScript::actionThread_JavaScript( CControlObject *pCtrlObject,
+                                                    wxString& strScript,
+                                                    wxThreadKind kind )
+                                            : wxThread( kind )
+{
+    //OutputDebugString( "actionThreadURL: Create");
+    m_pCtrlObject = pCtrlObject;
+    m_wxstrScript = strScript;  // Script to execute
+}
+
+actionThread_JavaScript::~actionThread_JavaScript()
+{
+
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Entry
+//
+//
+
+void *actionThread_JavaScript::Entry()
+{
+    // Create the engine
+    m_v7 = v7_create();
+
+    // Execute a string given in a command line argument 
+    v7_err err = v7_exec( m_v7, 
+                            (const char *)m_wxstrScript.mbc_str(), 
+                            &m_v7_exec_result );
+
+    // Destroy V7 instance 
+    v7_destroy( m_v7 );
+
+    return NULL;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// OnExit
+//
+
+void actionThread_JavaScript::OnExit()
+{
+
+}

@@ -29,6 +29,7 @@
 #include <wx/dynlib.h>
 #include <wx/file.h>
 #include <wx/url.h>
+#include <v7.h>
 #include <dllist.h>
 #include <vscp.h>
 #include <vscpvariable.h>
@@ -1185,5 +1186,60 @@ public:
 
 
 
-#endif // include
 
+////////////////////////////////////////////////////////////////////////////////
+// actionThread_JavaScript
+//
+
+class actionThread_JavaScript : public wxThread {
+    
+public:
+
+    /// Constructor
+    actionThread_JavaScript( CControlObject *pCtrlObject,
+                                wxString& strScript,
+                                wxThreadKind kind = wxTHREAD_DETACHED );
+
+    /// Destructor
+    virtual ~actionThread_JavaScript();
+
+    /*!
+        Thread code entry point
+     */
+    virtual void *Entry();
+
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+     */
+    virtual void OnExit();
+
+    /*!
+        Termination control
+     */
+    bool m_bQuit;
+
+    /*!
+        Pointer to control object.
+     */
+    CControlObject *m_pCtrlObject;
+    
+    /*!
+     * Script
+     */
+    wxString m_wxstrScript;
+    
+    /*!
+     * JavaScript engine
+     */
+    struct v7 *m_v7;
+    
+    /*!
+     * Execute result
+     */       
+    v7_val_t m_v7_exec_result;
+
+};
+
+
+#endif // include

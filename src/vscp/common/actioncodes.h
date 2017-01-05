@@ -155,9 +155,13 @@
 // Format: value;operation;variable;flag-variable
 #define VSCP_DAEMON_ACTION_CODE_CHECK_VARIABLE_FALSE        0x00000057  // Check variable flase
 
-// Check measurement and set flag value
+// Check variable set other to logic outcome
+// Format: value;operation;variable;flag-variable
+#define VSCP_DAEMON_ACTION_CODE_CHECK_VARIABLE              0x00000058  // Check variable flase
+
+// Check measurement and set variable to logic outcome
 // Format: value;operation;flag-variable
-#define VSCP_DAEMON_ACTION_CODE_CHECK_MEASUREMENT           0x00000058  // Check measurement
+#define VSCP_DAEMON_ACTION_CODE_CHECK_MEASUREMENT           0x00000059  // Check measurement
 
 
 // Start a timer
@@ -194,11 +198,15 @@
 // Write to table
 // Format: tablename,date,float
 // Example: temperature_furnice,%unixtime,%measurement.float 
-#define VSCP_DAEMON_ACTION_CODE_WRITE_TABLE	                0x00000080  // Write Table
+#define VSCP_DAEMON_ACTION_CODE_WRITE_TABLE	            0x00000080  // Write Table
 
 // Run LUA script
 // Format: script(params);rv
-#define VSCP_DAEMON_ACTION_CODE_RUN_LUA                     0x00000100  // Run LUA Script
+#define VSCP_DAEMON_ACTION_CODE_RUN_LUASCRIPT               0x00000100  // Run LUA Script
+
+// Run JavaScript
+// Format: script(params);rv
+#define VSCP_DAEMON_ACTION_CODE_RUN_JAVASCRIPT              0x00000200  // Run JavaScript
 
 
 #endif
