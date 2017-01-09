@@ -32,7 +32,7 @@
 import getpass
 import sys
 import telnetlib
-import sys
+
 
 if ( len(sys.argv) < 4 ):
 	sys.exit("Wrong number of parameters - aborting")
@@ -46,6 +46,7 @@ if ( len(sys.argv) > 3 ):
 
 f = open('/sys/class/thermal/thermal_zone0/temp', 'r')
 temperature = f.readline();
+f.close()
 tempfloat = float( temperature )/1000;
 
 # Connet to VSCP daemon
