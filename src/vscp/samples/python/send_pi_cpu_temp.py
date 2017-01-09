@@ -4,7 +4,7 @@
 //
 // Usage: send_pi_cpu_temp host user password [guid]
 //
-// Described here file:///home/akhe/development/send_pi_cpu_temp.py 
+// Described here https://github.com/grodansparadis/vscp/blob/master/src/vscp/samples/python/send_pi_cpu_temp.py
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
