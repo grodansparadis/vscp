@@ -526,7 +526,7 @@ bool actionTime::ShouldWeDoAction( void )
 
         bMatch = false;
         ACTIONTIME::iterator iter;
-        for (iter = m_actionYear.begin(); iter != m_actionYear.end(); ++iter) {
+        for ( iter = m_actionYear.begin(); iter != m_actionYear.end(); ++iter ) {
             if ( NULL != *iter ) {
                 if ( **iter == wxDateTime::Now().GetYear() ) {
                     bMatch = true;
@@ -545,7 +545,7 @@ bool actionTime::ShouldWeDoAction( void )
 
         bMatch = false;
         ACTIONTIME::iterator iter;
-        for (iter = m_actionMonth.begin(); iter != m_actionMonth.end(); ++iter) {
+        for ( iter = m_actionMonth.begin(); iter != m_actionMonth.end(); ++iter ) {
             if ( NULL != *iter ) {
                 if ( **iter == wxDateTime::Now().GetMonth() ) {
                     bMatch = true;
@@ -564,7 +564,7 @@ bool actionTime::ShouldWeDoAction( void )
 
         bMatch = false;
         ACTIONTIME::iterator iter;
-        for (iter = m_actionDay.begin(); iter != m_actionDay.end(); ++iter) {
+        for ( iter = m_actionDay.begin(); iter != m_actionDay.end(); ++iter ) {
             if ( NULL != *iter ) {
                 if ( **iter == wxDateTime::Now().GetDay() ) {
                     bMatch = true;
@@ -582,7 +582,7 @@ bool actionTime::ShouldWeDoAction( void )
 
         bMatch = false;
         ACTIONTIME::iterator iter;
-        for (iter = m_actionHour.begin(); iter != m_actionHour.end(); ++iter) {
+        for ( iter = m_actionHour.begin(); iter != m_actionHour.end(); ++iter ) {
             if ( NULL != *iter ) {
                 if ( **iter == wxDateTime::Now().GetHour() ) {
                     bMatch = true;
@@ -601,7 +601,7 @@ bool actionTime::ShouldWeDoAction( void )
 
         bMatch = false;
         ACTIONTIME::iterator iter;
-        for (iter = m_actionMinute.begin(); iter != m_actionMinute.end(); ++iter) {
+        for ( iter = m_actionMinute.begin(); iter != m_actionMinute.end(); ++iter ) {
             if ( NULL != *iter ) {
                 if ( **iter == wxDateTime::Now().GetMinute() ) {
                     bMatch = true;
@@ -620,7 +620,7 @@ bool actionTime::ShouldWeDoAction( void )
 
         bMatch = false;
         ACTIONTIME::iterator iter;
-        for (iter = m_actionSecond.begin(); iter != m_actionSecond.end(); ++iter) {
+        for ( iter = m_actionSecond.begin(); iter != m_actionSecond.end(); ++iter ) {
             if ( NULL != *iter ) {
                 if ( **iter == wxDateTime::Now().GetSecond() ) {
                     bMatch = true;
@@ -848,9 +848,10 @@ dmElement::dmElement()
     m_timeAllow.parseActionTime( _("*:*:*" ) );
     m_timeAllow.setWeekDays(wxT("mtwtfss"));
     
+    m_bCompareMeasurement = false;  // No measurement comparison
     m_measurementValue = 0;
-    m_measurementUnit = 0;      // Default unit
-    m_measurementCompareCode = DM_MEASUREMENT_COMPARE_EQ;   
+    m_measurementUnit = 0;          // Default unit
+    m_measurementCompareCode = DM_MEASUREMENT_COMPARE_NOOP;   
 
     m_pDM = NULL;	// Initially no owner
 }
@@ -892,6 +893,7 @@ dmElement& dmElement::operator=( const dmElement& dm)
     m_strLastError = dm.m_strLastError;
     m_comment = dm.m_comment;
     m_timeAllow = dm.m_timeAllow;
+    m_bCompareMeasurement = dm.m_bCompareMeasurement;
     m_measurementValue = dm.m_measurementValue;
     m_measurementUnit = dm.m_measurementUnit;
     m_measurementCompareCode = dm.m_measurementCompareCode;
@@ -989,6 +991,9 @@ wxString dmElement::getAsString( bool bCRLF )
     
     // subzone
     strRow += wxString::Format(_("%d,"), m_subzone );
+    
+    // m_bCompareMeasurement
+    strRow += m_bCompareMeasurement ? _("true,") : _("false,");
     
     // measurement value
     strRow += wxString::Format(_("%f,"), m_measurementValue );
@@ -1379,6 +1384,18 @@ bool dmElement::setFromString( wxString& strDM )
     // Action parameter
     if ( tkz.HasMoreTokens() ) {
         m_actionparam = tkz.GetNextToken();
+    }
+    
+    
+    // Measurement compare flag
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken().MakeUpper();
+        if ( wxNOT_FOUND == wxstr.Find( _("TRUE") ) ) {
+            m_bCompareMeasurement = true;
+        }
+        else {
+            m_bCompareMeasurement = false;
+        }
     }
     
     // Measurement value
@@ -4454,6 +4471,7 @@ bool CDM::addDatabaseRecord( dmElement& dm )
                 dm.m_measurementIndex,
                 dm.m_actionCode,
                 (const char *)dm.m_actionparam.mbc_str(),
+                dm.m_bCompareMeasurement,
                 dm.m_measurementValue,
                 dm.m_measurementUnit,
                 dm.m_measurementCompareCode
@@ -4528,6 +4546,7 @@ bool CDM::updateDatabaseRecord( dmElement& dm )
                 dm.m_measurementIndex,
                 dm.m_actionCode,
                 (const char *)dm.m_actionparam.mbc_str(),
+                dm.m_bCompareMeasurement,
                 dm.m_measurementValue,
                 dm.m_measurementUnit,
                 dm.m_measurementCompareCode,
@@ -4763,6 +4782,9 @@ bool CDM::getDatabaseRecord( uint32_t idx, dmElement *pDMitem )
             pDMitem->m_actionparam = wxString::FromUTF8( p );
         }
             
+        // Measurement check value flag
+        pDMitem->m_bCompareMeasurement = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_CHECK_VALUE ) ? true : false;        
+                
         // Measurement value
         pDMitem->m_measurementValue = sqlite3_column_double( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_VALUE );
             
@@ -4972,6 +4994,9 @@ bool CDM::loadFromDatabase( void )
                 pDMitem->m_actionparam = wxString::FromUTF8( p );
             }
             
+            // Measurement check value flag
+            pDMitem->m_bCompareMeasurement = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_CHECK_VALUE ) ? true : false;        
+            
             // Measurement value
             pDMitem->m_measurementValue = sqlite3_column_double( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_VALUE );
             
@@ -4981,8 +5006,8 @@ bool CDM::loadFromDatabase( void )
             // Measurement compare code
             pDMitem->m_measurementCompareCode = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_COMPARE );
 
-            // Add the DM row to the matrix
-            addMemoryElement ( pDMitem );
+            // Add the DM row to the matrix 
+           addMemoryElement ( pDMitem );
             
         }
         
@@ -5169,6 +5194,48 @@ bool CDM::loadFromXML( void )
                 else if ( subchild->GetName() == wxT ( "subzone" ) ) {
                     pDMitem->m_subzone = vscp_readStringValue( subchild->GetNodeContent() );
                 }
+                else if ( subchild->GetName() == wxT ( "measurement" ) ) {
+                    wxString str;
+                    
+                    pDMitem->m_bCompareMeasurement = false;
+                    str = subchild->GetAttribute( wxT( "enable" ), wxT("false") );
+                    str.MakeUpper();
+                    if ( wxNOT_FOUND != str.Find(_("TRUE"))) {
+                        pDMitem->m_bCompareMeasurement = true;
+                    }
+                    
+                    str = subchild->GetAttribute( wxT( "compare" ), wxT("noop") );
+                    str.MakeLower();
+                    str.Trim();
+                    if ( str.StartsWith( _("noop") ) ) {
+                        pDMitem->m_measurementCompareCode = DM_MEASUREMENT_COMPARE_NOOP;
+                    }
+                    else if ( str.StartsWith( _("eq") ) ) {
+                        pDMitem->m_measurementCompareCode = DM_MEASUREMENT_COMPARE_EQ;
+                    }
+                    else if ( str.StartsWith( _("neq") ) ) {
+                        pDMitem->m_measurementCompareCode = DM_MEASUREMENT_COMPARE_NEQ;
+                    }
+                    else if ( str.StartsWith( _("lt") ) ) {
+                        pDMitem->m_measurementCompareCode = DM_MEASUREMENT_COMPARE_LT;
+                    }
+                    else if ( str.StartsWith( _("gt") ) ) {
+                        pDMitem->m_measurementCompareCode = DM_MEASUREMENT_COMPARE_GT;
+                    }
+                    else if ( str.StartsWith( _("gteq") ) ) {
+                        pDMitem->m_measurementCompareCode = DM_MEASUREMENT_COMPARE_GTEQ;
+                    }
+                    else if ( str.StartsWith( _("lteq") ) ) {
+                        pDMitem->m_measurementCompareCode = DM_MEASUREMENT_COMPARE_LTEQ;
+                    }
+                    
+                    str = subchild->GetAttribute( wxT( "unit" ), wxT("0") );
+                    pDMitem->m_measurementUnit = vscp_readStringValue( str );
+                    
+                    str = subchild->GetAttribute( wxT( "value" ), wxT("0") );
+                    str.ToCDouble( &pDMitem->m_measurementValue );
+                            
+                }
 
                 subchild = subchild->GetNext();
 
@@ -5342,6 +5409,54 @@ bool CDM::saveToXML( void )
             buf.Printf( _( "%d" ), pDMitem->m_subzone );
             pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
             pFileStream->Write( "</subzone>\n", strlen ( "</subzone>\n" ) );
+            
+            // measurement
+            pFileStream->Write( "    <measurement ", strlen ( "    <measurement " ) );
+            if ( pDMitem->m_bCompareMeasurement ) {
+                pFileStream->Write( "enable=\"true\" ", strlen ( "enable=\"true\" " ) );
+            }
+            else {
+                pFileStream->Write( "enable=\"false\" ", strlen ( "enable=\"false\" " ) );
+            }
+            
+            switch( pDMitem->m_measurementCompareCode ) {
+                
+                case DM_MEASUREMENT_COMPARE_NOOP: 
+                    pFileStream->Write( "compare=\"noop\" ", strlen ( "compare=\"noop\" " ) );
+                    break;
+                
+                case DM_MEASUREMENT_COMPARE_EQ:
+                    pFileStream->Write( "compare=\"eq\" ", strlen ( "compare=\"eq\" " ) );
+                    break;
+                    
+                case DM_MEASUREMENT_COMPARE_NEQ:
+                    pFileStream->Write( "compare=\"neq\" ", strlen ( "compare=\"neq\" " ) );
+                    break;
+                    
+                case DM_MEASUREMENT_COMPARE_LT:
+                    pFileStream->Write( "compare=\"gt\" ", strlen ( "compare=\"gt\" " ) );
+                    break;
+                    
+                case DM_MEASUREMENT_COMPARE_LTEQ:
+                    pFileStream->Write( "compare=\"gteq\" ", strlen ( "compare=\"gteq\" " ) );
+                    break;
+                    
+                case DM_MEASUREMENT_COMPARE_GT:
+                    pFileStream->Write( "compare=\"lt\" ", strlen ( "compare=\"lt\" " ) );
+                    break;
+                    
+                case DM_MEASUREMENT_COMPARE_GTEQ:    
+                    pFileStream->Write( "compare=\"lteq\" ", strlen ( "compare=\"lteq\" " ) );
+                    break;
+            }
+            
+            buf.Printf( _( "unit=\"%d\" " ), pDMitem->m_measurementUnit );
+            pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
+            
+            buf.Printf( _( "value=\"%f\" " ), pDMitem->m_measurementValue );
+            pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
+            
+            pFileStream->Write( " />\n", strlen ( " />\n" ) );
 
 
             pFileStream->Write( "  </row>\n\n",strlen( "  </row>\n\n" ) );
@@ -5396,9 +5511,33 @@ bool CDM::feed( vscpEvent *pEvent )
                                 ( pEvent->pdata[1] != pDMitem->m_zone ) ) continue;
                 }
 
+                
                 if ( pDMitem->isCheckSubZoneSet() ) {
                     if ( ( 3 > pEvent->sizeData ) ||
                                 ( pEvent->pdata[2] != pDMitem->m_subzone ) ) continue;
+                }
+                
+                // Check if measurement value should be compared
+                if ( pDMitem->isCompareMeasurementSet() &&  
+                        // Level I measurements
+                      ( ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) ||
+                        ( VSCP_CLASS1_MEASUREMENT32 == pEvent->vscp_class ) ||
+                        ( VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class ) || 
+                        ( VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class ) ||                        
+                        ( VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class ) ||
+                        // Level I measurements over Level II
+                        ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class ) ||
+                        ( VSCP_CLASS2_LEVEL1_MEASUREMENT32 == pEvent->vscp_class ) ||
+                        ( VSCP_CLASS2_LEVEL1_MEASUREMENT64 == pEvent->vscp_class ) || 
+                        ( VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class ) ||                        
+                        ( VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class ) ||
+                        // Level II measurements
+                        ( VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class ) ||
+                        ( VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class ) ) ) {
+                    
+                    double value;
+                    if ( !vscp_getVSCPMeasurementAsDouble( pEvent, &value ) ) continue;   // TODO add error logout
+                    
                 }
 
                 // Match do action for this row
@@ -5885,16 +6024,19 @@ actionThread_JavaScript::~actionThread_JavaScript()
 
 void *actionThread_JavaScript::Entry()
 {
+    struct v7 *v7;            // JavaScript engine
+    v7_val_t v7_exec_result;  // Execute result
+    
     // Create the engine
-    m_v7 = v7_create();
+    v7 = v7_create();
 
     // Execute a string given in a command line argument 
-    v7_err err = v7_exec( m_v7, 
+    v7_err err = v7_exec( v7, 
                             (const char *)m_wxstrScript.mbc_str(), 
-                            &m_v7_exec_result );
+                            &v7_exec_result );
 
     // Destroy V7 instance 
-    v7_destroy( m_v7 );
+    v7_destroy( v7 );
 
     return NULL;
 }

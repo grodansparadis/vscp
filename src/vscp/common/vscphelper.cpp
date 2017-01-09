@@ -527,7 +527,57 @@ bool vscp_getVSCPMeasurementAsString( const vscpEvent *pEvent,
         strValue = wxString::Format(_("%f"), *( ( double * )buf ) );
 #endif
     }
-    else {
+    else if ( VSCP_CLASS1_MEASUREMENT32 == pEvent->vscp_class  ) {
+        uint8_t buf[ 4 ];
+        
+        // Must be correct data
+        if ( 4 != pEvent->sizeData  ) return false;
+
+        memset( buf, 0, sizeof( buf ) );
+        memcpy( buf, pEvent->pdata, 4 );    // float     
+        
+        strValue = wxString::FromDouble( *( ( float * )buf ) );
+    }
+    else if ( VSCP_CLASS2_LEVEL1_MEASUREMENT32 == pEvent->vscp_class  ) {
+        uint8_t buf[ 4 ];
+        
+        // Must be correct data
+        if ( (16+4) != pEvent->sizeData  ) return false;
+
+        memset( buf, 0, sizeof( buf ) );
+        memcpy( buf, pEvent->pdata+16, 4 );    // float     
+        
+        strValue = wxString::FromDouble( *( ( float * )buf ) );
+    }
+    else if ( VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class  ) {
+        uint8_t buf[ 8 ];
+        
+        // Must be correct data
+        if ( 8 != pEvent->sizeData  ) return false;
+
+        memset( buf, 0, sizeof( buf ) );
+        memcpy( buf, pEvent->pdata, 8 );    // Double     
+        
+        strValue = wxString::FromDouble( *( ( double * )buf ) );
+    }
+    else if ( VSCP_CLASS2_LEVEL1_MEASUREMENT64 == pEvent->vscp_class  ) {
+        uint8_t buf[ 8 ];
+        
+        // Must be correct data
+        if ( (16+8) != pEvent->sizeData  ) return false;
+
+        memset( buf, 0, sizeof( buf ) );
+        memcpy( buf, pEvent->pdata+16, 8 );    // Double     
+        
+        strValue = wxString::FromDouble( *( ( double * )buf ) );
+    }
+        
+    else if ( ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) ||
+              ( VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class ) ||
+              ( VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class ) ||
+              ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class ) ||
+              ( VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class ) ||
+              ( VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class ) ) {
         
         // If class >= 512 and class < 1024 we
         // have GUID in front of data. 
@@ -537,9 +587,18 @@ bool vscp_getVSCPMeasurementAsString( const vscpEvent *pEvent,
     
         // Must be at least two data bytes
         if (pEvent->sizeData-offset < 2) return false;
+        
+        // Point past index,zone,subzone
+        if ( ( VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class ) ||
+              ( VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class ) ||
+              ( VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class ) ||
+              ( VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class ) ) {
+            offset += 3;
+        }
 
         unsigned short type = (0x07 & (pEvent->pdata[0+offset] >> 5));
-        switch (type) {
+        
+        switch ( type ) {
 
         case 0: // series of bits
             for (i = 1; i < (pEvent->sizeData-offset); i++) {
@@ -647,6 +706,9 @@ bool vscp_getVSCPMeasurementAsString( const vscpEvent *pEvent,
             
         }
     }
+    else {
+        return false;   // Measurement type is not supported
+    }
 
     return true;
 }
@@ -664,10 +726,10 @@ bool vscp_getVSCPMeasurementAsDouble(const vscpEvent *pEvent, double *pvalue)
     if ( NULL == pEvent ) return false;
     if ( NULL == pvalue ) return false;
     
-    if ( (VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class) || 
-             (VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class) ||
-             (VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class) || 
-             (VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class) ) {
+    if ( ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) || 
+             ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class ) ||
+             ( VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class ) || 
+             ( VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class ) ) {
 
             if ( !vscp_getVSCPMeasurementAsString( pEvent, str ) ) return false;
             if ( !str.ToDouble( pvalue ) ) return false;
@@ -692,7 +754,12 @@ bool vscp_getVSCPMeasurementAsDouble(const vscpEvent *pEvent, double *pvalue)
     
     }
     else if ( VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class ) {
-    
+        
+        char buf[8];
+        
+        memcpy( buf, pEvent->pdata + 4, 8 );        
+        *pvalue = *(double *)(buf);
+        
     }
     else {
         return false;

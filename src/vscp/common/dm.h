@@ -414,6 +414,9 @@ public:
     */
     bool isCheckSubZoneSet( void ) { return m_bCheckSubZone; };
     
+    // Check if measurement should be compared.
+    bool isCompareMeasurementSet() { return m_bCompareMeasurement; };
+    
     /*!
         Get measurement compare code from symbolic compare value
         @parfam strCompare Symbolic compare value
@@ -629,6 +632,10 @@ public:
 
     /// Action time 
     actionTime m_timeAllow;
+    
+    // Measurement value should be compare with
+    // measurement event
+    bool m_bCompareMeasurement;
 
     // Value for measurement comparisons
     double m_measurementValue;
@@ -1229,16 +1236,6 @@ public:
      */
     wxString m_wxstrScript;
     
-    /*!
-     * JavaScript engine
-     */
-    struct v7 *m_v7;
-    
-    /*!
-     * Execute result
-     */       
-    v7_val_t m_v7_exec_result;
-
 };
 
 

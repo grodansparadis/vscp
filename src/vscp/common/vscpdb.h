@@ -671,6 +671,7 @@
 	"`meaurementIndex`              INTEGER NOT NULL,"\
 	"`actionCode`                   TEXT NOT NULL,"\
 	"`actionParameter`              NUMERIC NOT NULL,"\
+        "`bCheckMeasurementValue`	INTEGER NOT NULL,"\
 	"`measurementValue`             REAL,"\
 	"`measurementUnit`              INTEGER,"\
 	"`measurementCompare`           INTEGER,"\
@@ -681,17 +682,17 @@
                 "(GroupID,bEnable,maskPriority,maskClass,maskType,maskGUID,filterPriority,filterClass,filterType,filterGUID,"\
                 "allowedStart,allowedEnd,allowedMonday,allowedTuesday,allowsWednesday,allowedThursday,allowedFriday,allowedSaturday,"\
                 "allowedSunday,allowedTime,bCheckIndex,index,bCheckZone,zone,bCheckSubZone,subzone,bCheckMeasurementIndex,"\
-                "meaurementIndex,actionCode,actionParameter,measurementValue,measurementUnit,measurementCompare,comment"\
+                "meaurementIndex,actionCode,actionParameter,bCheckMeasurementValue,measurementValue,measurementUnit,measurementCompare,comment"\
                 " )VALUES ('%s','%d','%d','%d','%d','%s','%d','%d','%d','%s',"\
                 "'%s','%s','%d','%d','%d','%d','%d','%d','%d',"\
-                "'%d','%s','%d','%d','%d','%d','%d','%d','%d','%d','%d','%s','%f','%d','%s'"\
+                "'%d','%s','%d','%d','%d','%d','%d','%d','%d','%d','%d','%s','%d',%f','%d','%s'"\
                 ");"
                         
 #define VSCPDB_DM_UPDATE "UPDATE 'dm' "\
                 "SET GroupID='%s',bEnable='%d',maskPriority='%d',maskClass=%d',maskType=%d',maskGUID=%s',filterPriority=%d',filterClass=%d',filterType=%d',filterGUID=%s',"\
                 "allowedStart=%s',allowedEnd=%s',allowedMonday='%d',allowedTuesday='%d',allowsWednesday='%d',allowedThursday='%d',allowedFriday='%d',allowedSaturday='%d',"\
                 "allowedSunday,allowedTime,bCheckIndex,index,bCheckZone,zone,bCheckSubZone,subzone,bCheckMeasurementIndex,"\
-                "meaurementIndex='%d',actionCode='%d',actionParameter='%s',measurementValue='%f',measurementUnit='%d',measurementCompare='%d'"\
+                "meaurementIndex='%d',actionCode='%d',actionParameter='%s',bCheckMeasurementValue=%d,measurementValue='%f',measurementUnit='%d',measurementCompare='%d'"\
                 " WHERE idx_dm='%d';" 
 
 #define VSCPDB_DM_UPDATE_ITEM "UPDATE 'dm' SET ( %s='%s' ) WHERE id='%d' ;"
@@ -727,10 +728,11 @@
 #define VSCPDB_ORDINAL_DM_MEASUREMENT_INDEX         28   //
 #define VSCPDB_ORDINAL_DM_ACTIONCODE                29   //
 #define VSCPDB_ORDINAL_DM_ACTIONPARAMETER           30   //
-#define VSCPDB_ORDINAL_DM_MEASUREMENT_VALUE         31   //
-#define VSCPDB_ORDINAL_DM_MEASUREMENT_UNIT          32   //
-#define VSCPDB_ORDINAL_DM_MEASUREMENT_COMPARE       33   //
-#define VSCPDB_ORDINAL_DM_MEASUREMENT_COMMENT       34   //
+#define VSCPDB_ORDINAL_DM_MEASUREMENT_CHECK_VALUE   31   //
+#define VSCPDB_ORDINAL_DM_MEASUREMENT_VALUE         32   //
+#define VSCPDB_ORDINAL_DM_MEASUREMENT_UNIT          33   //
+#define VSCPDB_ORDINAL_DM_MEASUREMENT_COMPARE       34   //
+#define VSCPDB_ORDINAL_DM_MEASUREMENT_COMMENT       35   //
 
 
 

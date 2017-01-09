@@ -705,7 +705,6 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
-enable_ssl
 enable_debug
 enable_lua
 enable_unicode
@@ -1337,7 +1336,6 @@ Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
-  --disable-ssl           ssl build (default enabled)
   --enable-debug          debug mode (default disabled)
   --disable-lua            LUA build (default enabled)
   --enable-unicode        UNICODE build (default Unicode build)
@@ -6120,16 +6118,6 @@ PROJ_SUBDIRS_GUI="src/vscp/vscpworks"
 
 
 
-# Check whether --enable-ssl was given.
-if test "${enable_ssl+set}" = set; then :
-  enableval=$enable_ssl; vscp_ssl=no
-else
-  vscp_ssl=yes
-fi
-
-
-
-
 # Check whether --enable-debug was given.
 if test "${enable_debug+set}" = set; then :
   enableval=$enable_debug; vscp_debug=yes
@@ -7152,7 +7140,7 @@ fi
 
 CPPFLAGS="$CPPFLAGS $WX_CPPFLAGS"
 CXXFLAGS="$CXXFLAGS $WX_CXXFLAGS_ONLY"
-CFLAGS="$CFLAGS $WX_CFLAGS_ONLY $SSLFLAGS"
+CFLAGS="$CFLAGS $WX_CFLAGS_ONLY"
 LIBS="$LIBS $WX_LIBS"
 
 WX_BASENAME=`$WX_CONFIG_WITH_ARGS --basename`
@@ -7168,10 +7156,9 @@ fi
 
 EXTRALIBS="${EXTRALIBS} ${LIBS}"
 
-if test "${vscp_ssl}" = yes ; then
-   CPPFLAGS="$CPPFLAGS -D MG_ENABLE_SSL"
-   CFLAGS="$CFLAGS -D MG_ENABLE_SSL"
-fi
+CPPFLAGS="$CPPFLAGS -D MG_ENABLE_SSL"
+CFLAGS="$CFLAGS -D MG_ENABLE_SSL"
+
 
 if test "${vscp_lua}" = yes ; then
    CPPFLAGS="$CPPFLAGS -D VSCP_ENABLE_LUA -I/usr/include/lua5.2"
@@ -8527,13 +8514,6 @@ else
    printf "ANSI "
 fi
 
-if test "${vscp_ssl}" = "yes"
-then
-   printf "SSL "
-else
-   printf "non-SSL "
-fi
-
 if test "${vscp_lua}" = "yes"
 then
    printf "LUA "
@@ -8541,23 +8521,13 @@ else
    printf "non-LUA "
 fi
 
-if test "${vscp_sqlite3}" = "yes"
-then
-   printf "SQLite3 "
-else
-   printf "non-SQLite3 "
-fi
-
-
 
 printf "
 You can tune the compiler flags in vscp-config.
 To build VSCP and friends, type \'make\' followed by \'make install\'
 
  use --enable-debug to build a debug version; release is default.
- use --disable-ssl to build a non SSL version of executables. SSL is default.
  use --disable-lua to build without LUA support. LUA support is default.
- use --disable-sglite3 to build without SQLite3 SQLite3 support is default.
  use --disable-unicode to build an ANSI version. Unicode is default.
 
  \"make\" -- builds VSCP & Friends.
