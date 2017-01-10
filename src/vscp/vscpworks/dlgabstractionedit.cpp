@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     26/05/2009 20:48:56
 // RCS-ID:      
-// Copyright:   (C) 2009-2016 
+// Copyright:   (C) 2009-2017 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or

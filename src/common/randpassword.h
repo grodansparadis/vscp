@@ -4,7 +4,7 @@
 // This file is part is part of VSCP (Very Simple Control Protocol)
 // http://www.vscp.org)
 //
-// Copyright (C) 2000-2016 Ake Hedman, eurosource, <akhe@eurosource.se>
+// Copyright (C) 2000-2017 Ake Hedman, eurosource, <akhe@eurosource.se>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public

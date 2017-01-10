@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 // 
-// Copyright (c) 2000-2016 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// Copyright (c) 2000-2017 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -496,11 +496,13 @@ bool vscp_getVSCPMeasurementAsString( const vscpEvent *pEvent,
     if (NULL == pEvent->pdata) return false;
     
     if ( VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class ) {
+        
         char buf[ 512 ];
         
         memset( buf, 0, sizeof( buf ) );
         memcpy( buf, pEvent->pdata + 4, pEvent->sizeData-4 );
         strValue = wxString::FromUTF8( buf );
+        
     }
     else if ( VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class  ) {
         
@@ -521,13 +523,11 @@ bool vscp_getVSCPMeasurementAsString( const vscpEvent *pEvent,
                                         
         }
 
-#if ( wxMAJOR_VERSION >= 3 )
         strValue = wxString::FromDouble( *( ( double * )buf ) );
-#else
-        strValue = wxString::Format(_("%f"), *( ( double * )buf ) );
-#endif
+
     }
     else if ( VSCP_CLASS1_MEASUREMENT32 == pEvent->vscp_class  ) {
+        
         uint8_t buf[ 4 ];
         
         // Must be correct data
@@ -537,8 +537,10 @@ bool vscp_getVSCPMeasurementAsString( const vscpEvent *pEvent,
         memcpy( buf, pEvent->pdata, 4 );    // float     
         
         strValue = wxString::FromDouble( *( ( float * )buf ) );
+        
     }
     else if ( VSCP_CLASS2_LEVEL1_MEASUREMENT32 == pEvent->vscp_class  ) {
+        
         uint8_t buf[ 4 ];
         
         // Must be correct data
@@ -548,8 +550,10 @@ bool vscp_getVSCPMeasurementAsString( const vscpEvent *pEvent,
         memcpy( buf, pEvent->pdata+16, 4 );    // float     
         
         strValue = wxString::FromDouble( *( ( float * )buf ) );
+        
     }
     else if ( VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class  ) {
+        
         uint8_t buf[ 8 ];
         
         // Must be correct data
@@ -559,17 +563,20 @@ bool vscp_getVSCPMeasurementAsString( const vscpEvent *pEvent,
         memcpy( buf, pEvent->pdata, 8 );    // Double     
         
         strValue = wxString::FromDouble( *( ( double * )buf ) );
+        
     }
     else if ( VSCP_CLASS2_LEVEL1_MEASUREMENT64 == pEvent->vscp_class  ) {
+        
         uint8_t buf[ 8 ];
         
         // Must be correct data
-        if ( (16+8) != pEvent->sizeData  ) return false;
+        if ( ( 16 + 8 ) != pEvent->sizeData  ) return false;
 
         memset( buf, 0, sizeof( buf ) );
         memcpy( buf, pEvent->pdata+16, 8 );    // Double     
         
         strValue = wxString::FromDouble( *( ( double * )buf ) );
+        
     }
         
     else if ( ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) ||
@@ -580,20 +587,22 @@ bool vscp_getVSCPMeasurementAsString( const vscpEvent *pEvent,
               ( VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class ) ) {
         
         // If class >= 512 and class < 1024 we
-        // have GUID in front of data. 
+        // have GUID in front of data.
         if ( ( pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL)  ) {
             offset = 16;
         }
     
         // Must be at least two data bytes
-        if (pEvent->sizeData-offset < 2) return false;
+        if ( pEvent->sizeData-offset < 2 ) return false;
         
         // Point past index,zone,subzone
         if ( ( VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class ) ||
-              ( VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class ) ||
-              ( VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class ) ||
-              ( VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class ) ) {
+             ( VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class ) ||
+             ( VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class ) ||
+             ( VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class ) ) {
+            
             offset += 3;
+            
         }
 
         unsigned short type = (0x07 & (pEvent->pdata[0+offset] >> 5));
@@ -803,7 +812,8 @@ bool vscp_getVSCPMeasurementWithZoneAsString(const vscpEvent *pEvent, wxString& 
     
     // If class >= 512 and class <1024 we
     // have GUID in front of data. 
-    if ( ( pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL)  ) {
+    if ( ( pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL)  && 
+            ( pEvent->vscp_class < VSCP_CLASS2_PROTOCOL ) ) {
         offset = 16;
     }
     
@@ -819,6 +829,87 @@ bool vscp_getVSCPMeasurementWithZoneAsString(const vscpEvent *pEvent, wxString& 
     memcpy( eventMimic.pdata, pEvent->pdata+offset+3, pEvent->sizeData-offset-3 );
     
     return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_getMeasurementUnit
+//
+
+int vscp_getMeasurementUnit( const vscpEvent *pEvent )
+{
+    int rv = -1;
+    int offset = 0;
+    
+    // If class >= 512 and class < 1024 we
+    // have GUID in front of data. 
+    if ( ( pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL )  && 
+            ( pEvent->vscp_class < VSCP_CLASS2_PROTOCOL ) ) {
+        offset = 16;
+    }
+    
+    if ( ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) || 
+             ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class ) ||
+             ( VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class ) || 
+             ( VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class ) || 
+             ( VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class ) ||
+             ( VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class ) ) {
+        
+        if ( ( NULL == pEvent->pdata ) || ( pEvent->sizeData >= (offset + 1) ) ) return -1;
+        
+        return VSCP_DATACODING_UNIT( pEvent->pdata[ offset + 0 ] );
+        
+    }
+    else if ( ( VSCP_CLASS1_MEASUREMENT32 == pEvent->vscp_class ) || 
+             ( VSCP_CLASS2_LEVEL1_MEASUREMENT32 == pEvent->vscp_class ) ) {
+        return 0;   // Always default unit
+    }
+    else if ( ( VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class ) || 
+             ( VSCP_CLASS2_LEVEL1_MEASUREMENT64 == pEvent->vscp_class ) ) {
+        return 0;   // Always default unit 
+    }
+    else if ( ( VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class ) ) {
+        
+        // Check if data length is valid
+        if ( ( NULL == pEvent->pdata ) || ( pEvent->sizeData < 4 ) ) return -1;
+        
+        return pEvent->pdata[3];
+        
+    }
+    else if ( ( VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class ) ) {
+        
+        // Check if data length is valid
+        if ( ( NULL == pEvent->pdata ) || ( 12 != pEvent->sizeData ) ) return -1;
+        
+        return pEvent->pdata[3];
+        
+    }
+    
+    
+    return rv;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_isMeasurement
+//
+
+bool vscp_isMeasurement( const vscpEvent *pEvent )
+{
+    if ( ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) || 
+         ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class ) ||
+         ( VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class ) || 
+         ( VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class ) || 
+         ( VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class ) ||
+         ( VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class ) ||
+         ( VSCP_CLASS1_MEASUREMENT32 == pEvent->vscp_class ) ||
+         ( VSCP_CLASS2_LEVEL1_MEASUREMENT32 == pEvent->vscp_class ) ||
+         ( VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class ) ||
+         ( VSCP_CLASS2_LEVEL1_MEASUREMENT64 == pEvent->vscp_class ) ||
+         ( VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class ) ||
+         ( VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class ) ) {
+        return true;
+    }
+    
+    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2868,7 +2959,7 @@ wxString &vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
 ///////////////////////////////////////////////////////////////////////////////
 // writeMeasurementValue
 //
-//
+// TODO REMOVE !!!!!!!!!
 
 wxString& writeMeasurementValue( uint16_t vscptype,
                                     uint8_t unit,  

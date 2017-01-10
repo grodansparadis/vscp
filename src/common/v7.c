@@ -53,7 +53,8 @@
 #define CS_P_NRF51 12
 #define CS_P_NRF52 10
 #define CS_P_PIC32 11
-/* Next id: 16 */
+#define CS_P_STM32 16
+/* Next id: 17 */
 
 /* If not specified explicitly, we guess platform by defines. */
 #ifndef CS_PLATFORM
@@ -83,6 +84,8 @@
 #elif defined(TARGET_IS_TM4C129_RA0) || defined(TARGET_IS_TM4C129_RA1) || \
     defined(TARGET_IS_TM4C129_RA2)
 #define CS_PLATFORM CS_P_TM4C129
+#elif defined(STM32)
+#define CS_PLATFORM CS_P_STM32
 #endif
 
 #ifndef CS_PLATFORM
@@ -113,6 +116,7 @@
 /* Amalgamated: #include "common/platforms/platform_nxp_lpc.h" */
 /* Amalgamated: #include "common/platforms/platform_nxp_kinetis.h" */
 /* Amalgamated: #include "common/platforms/platform_pic32.h" */
+/* Amalgamated: #include "common/platforms/platform_stm32.h" */
 
 /* Common stuff */
 
@@ -561,7 +565,8 @@ typedef struct stat cs_stat_t;
 #define CS_COMMON_PLATFORMS_SIMPLELINK_CS_SIMPLELINK_H_
 
 /* If simplelink.h is already included, all bets are off. */
-#if MG_NET_IF == MG_NET_IF_SIMPLELINK && !defined(__SIMPLELINK_H__)
+#if defined(MG_NET_IF) && MG_NET_IF == MG_NET_IF_SIMPLELINK && \
+    !defined(__SIMPLELINK_H__)
 
 #include <stdbool.h>
 
@@ -868,9 +873,12 @@ int inet_pton(int af, const char *src, void *dst);
 #include <string.h>
 #include <time.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
 #include <stdio.h>
 
 typedef struct stat cs_stat_t;
+#define DIRSEP '/'
 
 #ifndef CS_ENABLE_STDIO
 #define CS_ENABLE_STDIO 1
@@ -914,6 +922,8 @@ typedef int sock_t;
 const char *inet_ntop(int af, const void *src, char *dst, socklen_t size);
 char *inet_ntoa(struct in_addr in);
 int inet_pton(int af, const char *src, void *dst);
+int inet_aton(const char *cp, struct in_addr *inp);
+in_addr_t inet_addr(const char *cp);
 
 #endif /* MG_NET_IF == MG_NET_IF_SIMPLELINK */
 
@@ -1339,6 +1349,63 @@ char* inet_ntoa(struct in_addr in);
 #endif /* CS_PLATFORM == CS_P_PIC32 */
 
 #endif /* CS_COMMON_PLATFORMS_PLATFORM_PIC32_H_ */
+#ifdef V7_MODULE_LINES
+#line 1 "common/platforms/platform_stm32.h"
+#endif
+/*
+ * Copyright (c) 2014-2016 Cesanta Software Limited
+ * All rights reserved
+ */
+
+#ifndef CS_COMMON_PLATFORMS_PLATFORM_STM32_H_
+#define CS_COMMON_PLATFORMS_PLATFORM_STM32_H_
+#if CS_PLATFORM == CS_P_STM32
+
+#include <stdint.h>
+#include <stdio.h>
+#include <ctype.h>
+#include <errno.h>
+#include <memory.h>
+
+/*
+ * Fake declarations to get c_hello compiling w/out network
+ * TODO(alashkin): remove this during working on stm32/cude networking
+ */
+
+typedef int sock_t;
+
+struct sockaddr {
+};
+
+struct in_addr{
+  int s_addr;
+};
+
+struct sockaddr_in {
+  int sin_family;
+  int sin_port;
+  struct in_addr sin_addr;
+};
+
+#define INVALID_SOCKET -1
+#define SOCK_DGRAM -1
+#define SOCK_STREAM -1
+#define AF_INET -1
+
+#define to64(x) strtoll(x, NULL, 10)
+
+#define INT64_FMT "ld"
+#define SIZE_T_FMT "u"
+
+#define htonl(x) (x)
+#define htons(x) (x)
+#define ntohs(x) (x)
+#define ntohl(x) (x)
+
+const char *inet_ntop(int af, const void *src, char *dst, int size);
+
+#endif /* CS_PLATFORM == CS_P_STM32 */
+#endif /* CS_COMMON_PLATFORMS_PLATFORM_STM32_H_ */
 #ifdef V7_MODULE_LINES
 #line 1 "common/mbuf.h"
 #endif
@@ -1869,6 +1936,8 @@ void cs_hmac_sha1(const unsigned char *key, size_t key_len,
 #ifndef CS_COMMON_CS_DIRENT_H_
 #define CS_COMMON_CS_DIRENT_H_
 
+/* Amalgamated: #include "common/platform.h" */
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -1904,6 +1973,10 @@ typedef struct DIR {
   WIN32_FIND_DATAW info;
   struct dirent result;
 } DIR;
+#endif
+
+#if CS_ENABLE_SPIFFS
+extern spiffs *cs_spiffs_get_fs(void);
 #endif
 
 #if defined(_WIN32) || CS_ENABLE_SPIFFS
@@ -9423,9 +9496,7 @@ static Rune __space2[] = {
     0x0020, 0x0020, /* space */
     0x00a0, 0x00a0, /*   */
     0x2000, 0x200b, /*   - ​ */
-    0x2028, 0x2029, /* 
- - 
- */
+    0x2028, 0x2029, /*   -   */
     0x3000, 0x3000, /* 　 */
     0xfeff, 0xfeff, /* ﻿ */
 };
@@ -11147,10 +11218,14 @@ struct dirent *readdir(DIR *dir) {
 
 DIR *opendir(const char *dir_name) {
   DIR *dir = NULL;
-  extern spiffs fs;
+  spiffs *fs = cs_spiffs_get_fs();
 
-  if (dir_name != NULL && (dir = (DIR *) malloc(sizeof(*dir))) != NULL &&
-      SPIFFS_opendir(&fs, (char *) dir_name, &dir->dh) == NULL) {
+  if (dir_name == NULL || fs == NULL ||
+      (dir = (DIR *) calloc(1, sizeof(*dir))) == NULL) {
+    return NULL;
+  }
+
+  if (SPIFFS_opendir(fs, dir_name, &dir->dh) == NULL) {
     free(dir);
     dir = NULL;
   }
@@ -11173,14 +11248,14 @@ struct dirent *readdir(DIR *dir) {
 /* SPIFFs doesn't support directory operations */
 int rmdir(const char *path) {
   (void) path;
-  return ENOTDIR;
+  return ENOTSUP;
 }
 
 int mkdir(const char *path, mode_t mode) {
   (void) path;
   (void) mode;
   /* for spiffs supports only root dir, which comes from mongoose as '.' */
-  return (strlen(path) == 1 && *path == '.') ? 0 : ENOTDIR;
+  return (strlen(path) == 1 && *path == '.') ? 0 : ENOTSUP;
 }
 
 #endif /* CS_ENABLE_SPIFFS */
@@ -11258,15 +11333,15 @@ char *cs_mmap_file(const char *path, size_t *size) {
 #include <stdint.h>
 #include <stdio.h>
 
-#ifndef MIOT_ENABLE_CALL_TRACE
-#define MIOT_ENABLE_CALL_TRACE 0
+#ifndef MGOS_ENABLE_CALL_TRACE
+#define MGOS_ENABLE_CALL_TRACE 0
 #endif
 
 #ifndef V7_ENABLE_CALL_TRACE
 #define V7_ENABLE_CALL_TRACE 0
 #endif
 
-#if MIOT_ENABLE_CALL_TRACE || V7_ENABLE_CALL_TRACE
+#if MGOS_ENABLE_CALL_TRACE || V7_ENABLE_CALL_TRACE
 /*
  * If we don't have V7's profiling functions, roll our own.
  * This is copy-pasta from v7/src/cyg_profile.c
@@ -11310,7 +11385,7 @@ NOINSTR void print_call_trace() {
   fprintf(stderr, "\n");
 }
 
-#if MIOT_ENABLE_CALL_TRACE && !V7_ENABLE_CALL_TRACE
+#if MGOS_ENABLE_CALL_TRACE && !V7_ENABLE_CALL_TRACE
 IRAM NOINSTR void __cyg_profile_func_enter(void *this_fn, void *call_site) {
   if (call_trace.size < CALL_TRACE_SIZE) {
     call_trace.addresses[call_trace.size] = this_fn;
@@ -11327,7 +11402,7 @@ IRAM NOINSTR void __cyg_profile_func_exit(void *this_fn, void *call_site) {
 }
 #endif
 
-#endif /* MIOT_ENABLE_CALL_TRACE || V7_ENABLE_CALL_TRACE */
+#endif /* MGOS_ENABLE_CALL_TRACE || V7_ENABLE_CALL_TRACE */
 #ifdef V7_MODULE_LINES
 #line 1 "common/cs_strtod.c"
 #endif
@@ -11732,6 +11807,20 @@ int _gettimeofday(struct timeval *tv, void *tzvp) {
   tv->tv_sec = time(NULL);
   tv->tv_usec = 0;
   return 0;
+}
+
+int inet_aton(const char *cp, struct in_addr *inp) {
+  /* We don't have aton, but have pton in mbed */
+  return inet_pton(AF_INET, cp, inp);
+}
+
+in_addr_t inet_addr(const char *cp) {
+  in_addr_t ret;
+  if (inet_pton(AF_INET, cp, &ret) != 1) {
+    return 0;
+  }
+
+  return ret;
 }
 
 #endif /* CS_PLATFORM == CS_P_MBED */

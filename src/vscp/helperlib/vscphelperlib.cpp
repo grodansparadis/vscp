@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright (c) 2000-2016 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// Copyright (c) 2000-2017 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -2744,3 +2744,29 @@ extern "C" int vscphlp_getMeasurementAsFloat(const unsigned char *pNorm,
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+// vscp_getMeasurementUnit
+//
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT  vscphlp_getMeasurementUnit( const vscpEvent *pEvent )
+#else
+extern "C" int vscphlp_getMeasurementUnit( const vscpEvent *pEvent )
+#endif
+{
+    return vscphlp_getMeasurementUnit( pEvent );
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_isMeasurement
+//
+
+#ifdef WIN32
+extern "C" bool WINAPI EXPORT vscphlp_isMeasurement( const vscpEvent *pEvent )
+#else
+extern "C" bool vscphlp_isMeasurement( const vscpEvent *pEvent )
+#endif
+{
+    return vscp_isMeasurement( pEvent );
+}

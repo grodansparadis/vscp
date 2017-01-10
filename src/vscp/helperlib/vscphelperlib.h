@@ -5,7 +5,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright (c) 2000-2016 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// Copyright (c) 2000-2017 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -245,6 +245,8 @@ int WINAPI EXPORT vscphlp_getVSCPMeasurementZoneAsString(const vscpEvent *pEvent
 int WINAPI EXPORT vscphlp_getMeasurementAsFloat(const unsigned char *pNorm,
                                                                 unsigned char length,
                                                                 float *pResult );
+int WINAPI EXPORT vscphlp_getMeasurementUnit( const vscpEvent *pEvent );
+bool WINAPI EXPORT vscphlp_isMeasurement( const vscpEvent *pEvent );
 int WINAPI EXPORT vscphlp_replaceBackslash( char *pStr );
 unsigned char WINAPI EXPORT vscphlp_getVscpPriority( const vscpEvent *pEvent );
 unsigned char WINAPI EXPORT vscphlp_getVscpPriorityEx( const vscpEventEx *pEvent );
@@ -463,6 +465,8 @@ int vscphlp_getVSCPMeasurementZoneAsString(const vscpEvent *pEvent, char *pStr, 
 int vscphlp_getMeasurementAsFloat(const unsigned char *pNorm,
                                                    unsigned char length,
                                                    float *pResult );
+int vscphlp_getMeasurementUnit( const vscpEvent *pEvent );
+bool vscphlp_isMeasurement( const vscpEvent *pEvent );
 int vscphlp_replaceBackslash( char *pStr );
 unsigned char vscphlp_getVscpPriority( const vscpEvent *pEvent );
 unsigned char vscphlp_getVscpPriorityEx( const vscpEventEx *pEvent );

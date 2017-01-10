@@ -2,7 +2,7 @@
 // config.cpp
 //          class Config - Read parameters from config file.
 //
-// Copyright (C) 2000-2016 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2017 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This software is placed into
 // the public domain and may be used for any purpose.  However, this

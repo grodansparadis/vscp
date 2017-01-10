@@ -48,7 +48,6 @@ onewire_prefix = "FF:FF:FF:FF:FF:FF:FF:FF:"
 base_dir = '/sys/bus/w1/devices/'
 #base_dir = '/home/akhe/development/simonewire/'   # for test and simulation during development
 
-
 def construct_guid( line ):
     guid = onewire_prefix + line[0:2].upper() + ":" + \
                 line[3:5].upper() + ":" + \

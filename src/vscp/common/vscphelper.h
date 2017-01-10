@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 // 
-// Copyright (c) 2000-2016 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// Copyright (c) 2000-2017 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
     \file vscphelper.h
     \brief	The vscphelper file contains often used functionality when working with VSCP.
     \details vscphealper have common used functionality to do things in the VSCP world. 
-    It can be seens as the main toolbox for the VSCP programmer.
+    It can be seen as the main toolbox for the VSCP programmer.
  */
 
 
@@ -258,7 +258,7 @@ extern "C" {
       @param value Floating point value to convert.
       @param pdata Pointer to beginning of VSCP returned event data.
       @param psize Pointer to size for returned data.
-      @param unit Untit for the data. Zero is default.
+      @param unit Unit for the data. Zero is default.
       @param sensoridx Sensor index 0-7. Zero is default.
       @return true on success, false on failure.
     */
@@ -292,7 +292,7 @@ extern "C" {
       @param value integer value to convert.
       @param pdata Pointer to beginning of VSCP returned event data.
       @param psize Pointer to size for returned data.
-      @param unit Untit for the data. Zero is default.
+      @param unit Unit for the data. Zero is default.
       @param sensoridx Sensor index 0-7. Zero is default.
       @return true on success, false on failure.
     */
@@ -352,20 +352,32 @@ extern "C" {
     /*!
       Get data in the VSCP data coding format to a float
       @param pNorm Pointer to VSCP event.
-      @param length Number of bytes it consist of including datacoding byte
+      @param length Number of bytes it consist of including data coding byte
       @return value as float
      */
     float vscp_getMeasurementAsFloat(const unsigned char *pNorm, 
                                         const unsigned char length);
-
+    
+    /*!
+     * Get measurement unit for any of the valid measurement events.
+     * @param pEvent Pointer to VSCP event.
+     * @return Measurement unit or -1 for error (event that is not a measurement). 
+     */
+    int vscp_getMeasurementUnit( const vscpEvent *pEvent );
+    
+    /*!
+     * Check if event is a measurement
+     * @param pEvent Pointer to VSCP event.
+     * @return Return true if the event is a measurement.
+     */
+    bool vscp_isMeasurement( const vscpEvent *pEvent );
 
     /*!
-      Replace backshlashes in a string with forward slashes
+      Replace backslashes in a string with forward slashes
       @param strval String that should be handled.
       @return Fixed string.
      */
- 
-    wxString& vscp_replaceBackslash(wxString& strval);
+    wxString& vscp_replaceBackslash( wxString& strval );
 
 
 
@@ -468,7 +480,7 @@ extern "C" {
         calcCRC4GUIDArray
 
         @param Pointer to GUID array (MSB-LSB order)
-        \retur crc for GUID.
+        \return crc for GUID.
     */
     uint8_t vscp_calcCRC4GUIDArray(const uint8_t *pguid);
 
@@ -476,7 +488,7 @@ extern "C" {
         calcCRC4GUIDString
 
         @param Pointer to GUID array (MSB-LSB order)
-        \retur crc for GUID.
+        \return crc for GUID.
     */
     uint8_t vscp_calcCRC4GUIDString(const wxString &strguid);
 
@@ -636,7 +648,7 @@ extern "C" {
       Mask tells *which* bits that are of interest means
       it always returns true if bit set to zero (0=don't care).
 
-      Filter tells the value fo valid bits. If filter bit is == 1 the bits
+      Filter tells the value for valid bits. If filter bit is == 1 the bits
       must be equal to get a true filter return.
 
       So a nill mask will let everything through
@@ -719,7 +731,7 @@ extern "C" {
 
     /*!
         Make a timestamp for events etc 
-        @return Event timestamp as an unigned long
+        @return Event timestamp as an unsigned long
      */
     unsigned long vscp_makeTimeStamp(void);
 
@@ -750,8 +762,8 @@ extern "C" {
 
     /*!
       Write VSCP data to string
-      @param sizeData Number of databytes.
-      @param pData Pointer to datastructure.
+      @param sizeData Number of data bytes.
+      @param pData Pointer to data structure.
        @param str String that receive result.
       @param bUseHtmlBreak Set to true to use <br> instead of \\n as
       line break 
@@ -834,9 +846,9 @@ extern "C" {
     bool vscp_setVscpEventExFromString( vscpEventEx *pEventEx, const wxString& str);
 
     /*!
-        Write in measurement data into realtext string
+        Write in measurement data into real text string
         @param vscptype VSCP type
-        @param unit Measurment unit, 0-3 for Level I, 0-255 for Level II.
+        @param unit Measurement unit, 0-3 for Level I, 0-255 for Level II.
         @param sensoridx Index for sensor, 0-7 for Level I, 0-255 for Level II.
     */
     wxString& writeMeasurementValue( uint16_t vscptype,
@@ -846,7 +858,7 @@ extern "C" {
 
     /*!
       Get Data in real text.
-      This for meaurement class events that can be describes in real text
+      This for measurement class events that can be describes in real text
       in a deterministic way. Temperature event is typical which can be returned
       in clear text as "Temperature = 22.5 C".
       @param pEvent Event that should be presented
@@ -868,7 +880,7 @@ extern "C" {
 
     /*
         Get device HTML status from device
-        @param registers Aray with all 256 registers for the device
+        @param registers Array with all 256 registers for the device
         @param pmdf Optional pointer to CMDF class which gives more info
         about the device if it is supplied.
     */

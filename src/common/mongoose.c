@@ -548,6 +548,8 @@ int cs_base64_decode(const unsigned char *s, int len, char *dst, int *dec_len) {
 #ifndef CS_COMMON_CS_DIRENT_H_
 #define CS_COMMON_CS_DIRENT_H_
 
+/* Amalgamated: #include "common/platform.h" */
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -583,6 +585,10 @@ typedef struct DIR {
   WIN32_FIND_DATAW info;
   struct dirent result;
 } DIR;
+#endif
+
+#if CS_ENABLE_SPIFFS
+extern spiffs *cs_spiffs_get_fs(void);
 #endif
 
 #if defined(_WIN32) || CS_ENABLE_SPIFFS
@@ -692,10 +698,14 @@ struct dirent *readdir(DIR *dir) {
 
 DIR *opendir(const char *dir_name) {
   DIR *dir = NULL;
-  extern spiffs fs;
+  spiffs *fs = cs_spiffs_get_fs();
 
-  if (dir_name != NULL && (dir = (DIR *) malloc(sizeof(*dir))) != NULL &&
-      SPIFFS_opendir(&fs, (char *) dir_name, &dir->dh) == NULL) {
+  if (dir_name == NULL || fs == NULL ||
+      (dir = (DIR *) calloc(1, sizeof(*dir))) == NULL) {
+    return NULL;
+  }
+
+  if (SPIFFS_opendir(fs, dir_name, &dir->dh) == NULL) {
     free(dir);
     dir = NULL;
   }
@@ -718,14 +728,14 @@ struct dirent *readdir(DIR *dir) {
 /* SPIFFs doesn't support directory operations */
 int rmdir(const char *path) {
   (void) path;
-  return ENOTDIR;
+  return ENOTSUP;
 }
 
 int mkdir(const char *path, mode_t mode) {
   (void) path;
   (void) mode;
   /* for spiffs supports only root dir, which comes from mongoose as '.' */
-  return (strlen(path) == 1 && *path == '.') ? 0 : ENOTDIR;
+  return (strlen(path) == 1 && *path == '.') ? 0 : ENOTSUP;
 }
 
 #endif /* CS_ENABLE_SPIFFS */
@@ -2050,7 +2060,9 @@ MG_INTERNAL void mg_add_conn(struct mg_mgr *mgr, struct mg_connection *c) {
   mgr->active_connections = c;
   c->prev = NULL;
   if (c->next != NULL) c->next->prev = c;
-  c->iface->vtable->add_conn(c);
+  if (c->sock != INVALID_SOCKET) {
+    c->iface->vtable->add_conn(c);
+  }
 }
 
 MG_INTERNAL void mg_remove_conn(struct mg_connection *conn) {
@@ -2960,7 +2972,9 @@ double mg_set_timer(struct mg_connection *c, double timestamp) {
 }
 
 void mg_sock_set(struct mg_connection *nc, sock_t sock) {
-  nc->iface->vtable->sock_set(nc, sock);
+  if (sock != INVALID_SOCKET) {
+    nc->iface->vtable->sock_set(nc, sock);
+  }
 }
 
 void mg_if_get_conn_addr(struct mg_connection *nc, int remote,
@@ -3157,7 +3171,8 @@ void mg_socket_if_connect_tcp(struct mg_connection *nc,
 #endif
   rc = connect(nc->sock, &sa->sa, sizeof(sa->sin));
   nc->err = mg_is_error(rc) ? mg_get_errno() : 0;
-  LOG(LL_INFO, ("%p sock %d err %d", nc, nc->sock, nc->err));
+  DBG(("%p sock %d rc %d errno %d err %d", nc, nc->sock, rc, mg_get_errno(),
+       nc->err));
 }
 
 void mg_socket_if_connect_udp(struct mg_connection *nc) {
@@ -3476,8 +3491,7 @@ static void mg_ssl_begin(struct mg_connection *nc) {
 
 void mg_mgr_handle_conn(struct mg_connection *nc, int fd_flags, double now) {
   int worth_logging =
-      fd_flags != 0 || (nc->flags & (MG_F_WANT_READ | MG_F_SSL_HANDSHAKE_DONE |
-                                     MG_F_WANT_WRITE));
+      fd_flags != 0 || (nc->flags & (MG_F_WANT_READ | MG_F_WANT_WRITE));
   if (worth_logging) {
     DBG(("%p fd=%d fd_flags=%d nc_flags=%lu rmbl=%d smbl=%d", nc, nc->sock,
          fd_flags, nc->flags, (int) nc->recv_mbuf.len,
@@ -3492,7 +3506,11 @@ void mg_mgr_handle_conn(struct mg_connection *nc, int fd_flags, double now) {
         socklen_t len = sizeof(err);
         int ret =
             getsockopt(nc->sock, SOL_SOCKET, SO_ERROR, (char *) &err, &len);
-        if (ret != 0) err = 1;
+        if (ret != 0) {
+          err = 1;
+        } else if (err == EAGAIN || err == EWOULDBLOCK) {
+          err = 0;
+        }
       }
 #else
       /*
@@ -3535,10 +3553,7 @@ void mg_mgr_handle_conn(struct mg_connection *nc, int fd_flags, double now) {
     if ((fd_flags & _MG_F_FD_CAN_WRITE) && nc->send_mbuf.len > 0) {
       mg_write_to_socket(nc);
     }
-
-    if (!(fd_flags & (_MG_F_FD_CAN_READ | _MG_F_FD_CAN_WRITE))) {
-      mg_if_poll(nc, (time_t) now);
-    }
+    mg_if_poll(nc, (time_t) now);
     mg_if_timer(nc, now);
   }
 
@@ -3715,8 +3730,10 @@ time_t mg_socket_if_poll(struct mg_iface *iface, int timeout_ms) {
                    (FD_ISSET(nc->sock, &err_set) ? _MG_F_FD_ERROR : 0);
       }
 #if MG_LWIP
-      /* With LWIP socket emulation layer, we don't get write events */
-      fd_flags |= _MG_F_FD_CAN_WRITE;
+      /* With LWIP socket emulation layer, we don't get write events for UDP */
+      if ((nc->flags & MG_F_UDP) && nc->listener == NULL) {
+        fd_flags |= _MG_F_FD_CAN_WRITE;
+      }
 #endif
     }
     tmp = nc->next;
@@ -6221,7 +6238,7 @@ void mg_send_head(struct mg_connection *c, int status_code,
 void mg_http_send_error(struct mg_connection *nc, int code,
                         const char *reason) {
   if (!reason) reason = mg_status_message(code);
-  DBG(("%p %d %s", nc, code, reason));
+  LOG(LL_DEBUG, ("%p %d %s", nc, code, reason));
   mg_send_head(nc, code, strlen(reason),
                "Content-Type: text/plain\r\nConnection: close");
   mg_send(nc, reason, strlen(reason));
@@ -6265,7 +6282,7 @@ void mg_http_serve_file(struct mg_connection *nc, struct http_message *hm,
                         const struct mg_str extra_headers) {
   struct mg_http_proto_data *pd = mg_http_get_proto_data(nc);
   cs_stat_t st;
-  DBG(("%p [%s] %.*s", nc, path, (int) mime_type.len, mime_type.p));
+  LOG(LL_DEBUG, ("%p [%s] %.*s", nc, path, (int) mime_type.len, mime_type.p));
   if (mg_stat(path, &st) != 0 || (pd->file.fp = mg_fopen(path, "rb")) == NULL) {
     int code, err = mg_get_errno();
     switch (err) {
@@ -6703,8 +6720,8 @@ static int mg_is_authorized(struct http_message *hm, const char *path,
     }
   }
 
-  DBG(("%s %s %d %d", path, passwords_file ? passwords_file : "",
-       is_global_pass_file, authorized));
+  LOG(LL_DEBUG, ("%s '%s' %d %d", path, passwords_file ? passwords_file : "",
+                 is_global_pass_file, authorized));
   return authorized;
 }
 #else
@@ -6801,7 +6818,7 @@ static void mg_scan_directory(struct mg_connection *nc, const char *dir,
   struct dirent *dp;
   DIR *dirp;
 
-  DBG(("%p [%s]", nc, dir));
+  LOG(LL_DEBUG, ("%p [%s]", nc, dir));
   if ((dirp = (opendir(dir))) != NULL) {
     while ((dp = readdir(dirp)) != NULL) {
       /* Do not show current dir and hidden files */
@@ -6815,7 +6832,7 @@ static void mg_scan_directory(struct mg_connection *nc, const char *dir,
     }
     closedir(dirp);
   } else {
-    DBG(("%p opendir(%s) -> %d", nc, dir, mg_get_errno()));
+    LOG(LL_DEBUG, ("%p opendir(%s) -> %d", nc, dir, mg_get_errno()));
   }
 }
 
@@ -6912,7 +6929,7 @@ MG_INTERNAL void mg_find_index_file(const char *path, const char *list,
     MG_FREE(*index_file);
     *index_file = NULL;
   }
-  DBG(("[%s] [%s]", path, (*index_file ? *index_file : "")));
+  LOG(LL_DEBUG, ("[%s] [%s]", path, (*index_file ? *index_file : "")));
 }
 
 #if MG_ENABLE_HTTP_URL_REWRITES
@@ -6987,8 +7004,8 @@ void mg_http_reverse_proxy(struct mg_connection *nc,
   be = mg_connect_http_base(nc->mgr, mg_reverse_proxy_handler, opts, "http://",
                             "https://", purl, &path, NULL /* user */,
                             NULL /* pass */, &addr);
-  DBG(("Proxying %.*s to %s (rule: %.*s)", (int) hm->uri.len, hm->uri.p, purl,
-       (int) mount.len, mount.p));
+  LOG(LL_DEBUG, ("Proxying %.*s to %s (rule: %.*s)", (int) hm->uri.len,
+                 hm->uri.p, purl, (int) mount.len, mount.p));
 
   if (be == NULL) {
     LOG(LL_ERROR, ("Error connecting to %s: %s", purl, error));
@@ -7208,7 +7225,8 @@ MG_INTERNAL int mg_uri_to_local_path(struct http_message *hm,
   }
 
 out:
-  DBG(("'%.*s' -> '%s' + '%.*s'", (int) hm->uri.len, hm->uri.p,
+  LOG(LL_DEBUG,
+      ("'%.*s' -> '%s' + '%.*s'", (int) hm->uri.len, hm->uri.p,
        *local_path ? *local_path : "", (int) remainder->len, remainder->p));
   return ok;
 }
@@ -7314,7 +7332,8 @@ MG_INTERNAL void mg_send_http_file(struct mg_connection *nc, char *path,
       (mg_match_prefix(opts->cgi_file_pattern, strlen(opts->cgi_file_pattern),
                        index_file ? index_file : path) > 0);
 
-  DBG(("%p %.*s [%s] exists=%d is_dir=%d is_dav=%d is_cgi=%d index=%s", nc,
+  LOG(LL_DEBUG,
+      ("%p %.*s [%s] exists=%d is_dir=%d is_dav=%d is_cgi=%d index=%s", nc,
        (int) hm->method.len, hm->method.p, path, exists, is_directory, is_dav,
        is_cgi, index_file ? index_file : ""));
 
@@ -13275,7 +13294,7 @@ time_t mg_sl_if_poll(struct mg_iface *iface, int timeout_ms) {
   struct SlTimeval_t tv;
   SlFdSet_t read_set, write_set, err_set;
   sock_t max_fd = INVALID_SOCKET;
-  int num_fds, num_ev, num_timers = 0;
+  int num_fds, num_ev = 0, num_timers = 0;
 
   SL_FD_ZERO(&read_set);
   SL_FD_ZERO(&write_set);
@@ -13330,7 +13349,10 @@ time_t mg_sl_if_poll(struct mg_iface *iface, int timeout_ms) {
   tv.tv_sec = timeout_ms / 1000;
   tv.tv_usec = (timeout_ms % 1000) * 1000;
 
-  num_ev = sl_Select((int) max_fd + 1, &read_set, &write_set, &err_set, &tv);
+  if (num_fds > 0) {
+    num_ev = sl_Select((int) max_fd + 1, &read_set, &write_set, &err_set, &tv);
+  }
+
   now = mg_time();
   DBG(("sl_Select @ %ld num_ev=%d of %d, timeout=%d", (long) now, num_ev,
        num_fds, timeout_ms));
