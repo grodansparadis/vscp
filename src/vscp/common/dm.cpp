@@ -5495,54 +5495,82 @@ bool CDM::feed( vscpEvent *pEvent )
         if ( vscp_doLevel2Filter( pEvent, &pDMitem->m_vscpfilter ) &&
                 pDMitem->m_timeAllow.ShouldWeDoAction() ) {
 
-                if ( pDMitem->isCheckIndexSet() ) {
-                    if ( pDMitem->m_bCheckMeasurementIndex ) {
-                        if ( ( 0 == pEvent->sizeData ) ||
-                                ( ( pEvent->pdata[0] & 7 ) != pDMitem->m_index ) ) continue;
-                    }
-                    else {
-                        if ( ( 0 == pEvent->sizeData ) ||
-                                ( pEvent->pdata[0] != pDMitem->m_index ) ) continue;
-                    }
+            if ( pDMitem->isCheckIndexSet() ) {
+                if ( pDMitem->m_bCheckMeasurementIndex ) {
+                    if ( ( 0 == pEvent->sizeData ) ||
+                        ( ( pEvent->pdata[0] & 7 ) != pDMitem->m_index ) ) continue;
                 }
-
-                if ( pDMitem->isCheckZoneSet() ) {
-                    if ( ( 2 > pEvent->sizeData ) ||
-                                ( pEvent->pdata[1] != pDMitem->m_zone ) ) continue;
+                else {
+                    if ( ( 0 == pEvent->sizeData ) ||
+                        ( pEvent->pdata[0] != pDMitem->m_index ) ) continue;
                 }
+            }
 
+            if ( pDMitem->isCheckZoneSet() ) {
+                if ( ( 2 > pEvent->sizeData ) ||
+                    ( pEvent->pdata[1] != pDMitem->m_zone ) ) continue;
+            }
                 
-                if ( pDMitem->isCheckSubZoneSet() ) {
-                    if ( ( 3 > pEvent->sizeData ) ||
-                                ( pEvent->pdata[2] != pDMitem->m_subzone ) ) continue;
+            if ( pDMitem->isCheckSubZoneSet() ) {
+                if ( ( 3 > pEvent->sizeData ) ||
+                    ( pEvent->pdata[2] != pDMitem->m_subzone ) ) continue;
+            }
+                
+            // Check if measurement value should be compared. 
+            if ( pDMitem->isCompareMeasurementSet() ) {
+                    
+                // Must be a measurement event
+                if ( !vscp_isMeasurement( pEvent ) ) continue;
+
+                // Unit must be same
+                if ( pDMitem->m_measurementUnit != vscp_getMeasurementUnit( pEvent ) ) continue;
+                
+                double value;
+                if ( !vscp_getVSCPMeasurementAsDouble( pEvent, &value ) ) {
+                    wxString strEvent;
+                    vscp_writeVscpEventToString( pEvent, strEvent );
+                    wxString wxstr = _("DM: Conversion to double failed for measurement. Event=") +
+                                        strEvent + _("\n");         
+                    m_pCtrlObject->logMsg ( wxstr, DAEMON_LOGMSG_NORMAL );
+                    continue;
                 }
                 
-                // Check if measurement value should be compared
-                if ( pDMitem->isCompareMeasurementSet() &&  
-                        // Level I measurements
-                      ( ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) ||
-                        ( VSCP_CLASS1_MEASUREMENT32 == pEvent->vscp_class ) ||
-                        ( VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class ) || 
-                        ( VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class ) ||                        
-                        ( VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class ) ||
-                        // Level I measurements over Level II
-                        ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class ) ||
-                        ( VSCP_CLASS2_LEVEL1_MEASUREMENT32 == pEvent->vscp_class ) ||
-                        ( VSCP_CLASS2_LEVEL1_MEASUREMENT64 == pEvent->vscp_class ) || 
-                        ( VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class ) ||                        
-                        ( VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class ) ||
-                        // Level II measurements
-                        ( VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class ) ||
-                        ( VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class ) ) ) {
+
+                switch ( pDMitem->m_measurementCompareCode ) {
                     
-                    double value;
-                    if ( !vscp_getVSCPMeasurementAsDouble( pEvent, &value ) ) continue;   // TODO add error logout
-                    
+                    case DM_MEASUREMENT_COMPARE_NOOP:
+                        // We always accept
+                        break;
+                        
+                    case DM_MEASUREMENT_COMPARE_EQ:
+                        if ( value != pDMitem->m_measurementValue ) continue;
+                        break;   
+                        
+                    case DM_MEASUREMENT_COMPARE_NEQ:
+                        if ( value == pDMitem->m_measurementValue ) continue;
+                        break;
+                        
+                    case DM_MEASUREMENT_COMPARE_LT:
+                        if ( value >= pDMitem->m_measurementValue ) continue;
+                        break;
+                        
+                    case DM_MEASUREMENT_COMPARE_LTEQ:
+                        if ( value > pDMitem->m_measurementValue ) continue;
+                        break;
+                        
+                    case DM_MEASUREMENT_COMPARE_GT:                        
+                        if ( value <= pDMitem->m_measurementValue ) continue;
+                        break;
+                        
+                    case DM_MEASUREMENT_COMPARE_GTEQ:
+                        if ( value < pDMitem->m_measurementValue ) continue;
+                        break;    
                 }
+                    
+            }
 
-                // Match do action for this row
-                pDMitem->doAction( pEvent );
-
+            // Match do action for this row
+            pDMitem->doAction( pEvent );
 
         }
 

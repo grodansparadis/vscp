@@ -1306,7 +1306,6 @@ int main(int argc, char* argv[])
     }
 
 
-
     unsigned char dataArray2[32];
     unsigned short sizeData;
     if ( VSCP_ERROR_SUCCESS == 
@@ -1321,6 +1320,20 @@ int main(int argc, char* argv[])
     }
     else {
         printf( "\aError: vscphlp_setVscpDataArrayFromString\n");
+    }
+    
+    
+    if ( VSCP_ERROR_SUCCESS == 
+             setVscpDataFromString( e,
+                                       "1,2,3,4,5,6,0x07,0x55,3,4,0xaa,0xff,0xff" ) ) {
+        printf( "OK vscphlp_setVscpDataFromString size=%d Data = \n", e.sizeData );
+        for ( int i=0; i<e.sizeData; i++ ) {
+            printf("%d ", e.data[i] );
+        }
+        printf("\n");
+    }
+    else {
+        printf( "\aError: vscphlp_setVscpDataFromString\n");
     }
 
 
