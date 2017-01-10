@@ -2025,6 +2025,8 @@ extern "C" int vscphlp_reverseGUID(unsigned char *pGUID)
 // * * * * *   F I L T E R  * * * * *
 
 
+
+
 /*!
     \fn void vscphlp_clearVSCPFilter( vscpEventFilter *pFilter )
     \brief Clear VSCP filter.
@@ -2763,10 +2765,10 @@ extern "C" int vscphlp_getMeasurementUnit( const vscpEvent *pEvent )
 //
 
 #ifdef WIN32
-extern "C" bool WINAPI EXPORT vscphlp_isMeasurement( const vscpEvent *pEvent )
+extern "C" int WINAPI EXPORT vscphlp_isMeasurement( const vscpEvent *pEvent )
 #else
-extern "C" bool vscphlp_isMeasurement( const vscpEvent *pEvent )
+extern "C" int vscphlp_isMeasurement( const vscpEvent *pEvent )
 #endif
 {
-    return vscp_isMeasurement( pEvent );
+    return vscp_isMeasurement( pEvent ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }

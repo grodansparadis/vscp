@@ -837,7 +837,6 @@ bool vscp_getVSCPMeasurementWithZoneAsString(const vscpEvent *pEvent, wxString& 
 
 int vscp_getMeasurementUnit( const vscpEvent *pEvent )
 {
-    int rv = -1;
     int offset = 0;
     
     // If class >= 512 and class < 1024 we
@@ -854,7 +853,7 @@ int vscp_getMeasurementUnit( const vscpEvent *pEvent )
              ( VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class ) ||
              ( VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class ) ) {
         
-        if ( ( NULL == pEvent->pdata ) || ( pEvent->sizeData >= (offset + 1) ) ) return -1;
+        if ( ( NULL == pEvent->pdata ) || ( pEvent->sizeData >= (offset + 1) ) ) return VSCP_ERROR_ERROR;
         
         return VSCP_DATACODING_UNIT( pEvent->pdata[ offset + 0 ] );
         
@@ -870,7 +869,7 @@ int vscp_getMeasurementUnit( const vscpEvent *pEvent )
     else if ( ( VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class ) ) {
         
         // Check if data length is valid
-        if ( ( NULL == pEvent->pdata ) || ( pEvent->sizeData < 4 ) ) return -1;
+        if ( ( NULL == pEvent->pdata ) || ( pEvent->sizeData < 4 ) ) return VSCP_ERROR_ERROR;
         
         return pEvent->pdata[3];
         
@@ -878,14 +877,14 @@ int vscp_getMeasurementUnit( const vscpEvent *pEvent )
     else if ( ( VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class ) ) {
         
         // Check if data length is valid
-        if ( ( NULL == pEvent->pdata ) || ( 12 != pEvent->sizeData ) ) return -1;
+        if ( ( NULL == pEvent->pdata ) || ( 12 != pEvent->sizeData ) ) return VSCP_ERROR_ERROR;
         
         return pEvent->pdata[3];
         
     }
     
     
-    return rv;
+    return VSCP_ERROR_ERROR;
 }
 
 //////////////////////////////////////////////////////////////////////////////
