@@ -57,9 +57,9 @@
 
 #define VSCP_DAEMON_VARIABLE_CODE_UX_TYPE1                  300 // Contains XML file for User interface
 
-#define VSCP_DAEMON_VARIABLE_CODE_DM_ROW                    500 // A DM row, comma seperated
-#define VSCP_DAEMON_VARIABLE_CODE_DRIVER                    501 // Driver item, comma seperated
-#define VSCP_DAEMON_VARIABLE_CODE_USER                      502 // User item, comma seperated
-#define VSCP_DAEMON_VARIABLE_CODE_FILTER                    503 // Filter item, comma seperated
+#define VSCP_DAEMON_VARIABLE_CODE_DM_ROW                    500 // A DM row, comma separated
+#define VSCP_DAEMON_VARIABLE_CODE_DRIVER                    501 // Driver item, comma separated
+#define VSCP_DAEMON_VARIABLE_CODE_USER                      502 // User item, comma separated
+#define VSCP_DAEMON_VARIABLE_CODE_FILTER                    503 // Filter item, comma separated
 
 #endif

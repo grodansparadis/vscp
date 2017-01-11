@@ -65,6 +65,13 @@ WX_DEFINE_LIST( DMLIST );
 WX_DEFINE_LIST( ACTIONTIME );
 
 
+///////////////////////////////////////////////////
+//                 GLOBALS
+///////////////////////////////////////////////////
+
+extern CControlObject *gpobj;
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor dmTimer
 //
@@ -1978,7 +1985,6 @@ bool dmElement::doAction( vscpEvent *pEvent )
     switch ( m_actionCode ) {
 
         case  VSCP_DAEMON_ACTION_CODE_EXECUTE:
-
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_EXECUTE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
             m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
@@ -1989,7 +1995,6 @@ bool dmElement::doAction( vscpEvent *pEvent )
             break;
 
         case  VSCP_DAEMON_ACTION_CODE_SEND_EVENT:
-
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_SEND_EVENT.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
             m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
@@ -2000,7 +2005,6 @@ bool dmElement::doAction( vscpEvent *pEvent )
             break;
 
         case VSCP_DAEMON_ACTION_CODE_SEND_EVENT_CONDITIONAL:
-
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_SEND_EVENT_CONDITIONAL.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
             m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
@@ -2011,7 +2015,6 @@ bool dmElement::doAction( vscpEvent *pEvent )
             break;
 
         case VSCP_DAEMON_ACTION_CODE_SEND_EVENTS_FROM_FILE:
-
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_SEND_EVENTS_FROM_FILE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
             m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
@@ -2022,7 +2025,6 @@ bool dmElement::doAction( vscpEvent *pEvent )
             break;
 
         case  VSCP_DAEMON_ACTION_CODE_STORE_VARIABLE:
-
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_STORE_VARIABLE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
             m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
@@ -2033,7 +2035,6 @@ bool dmElement::doAction( vscpEvent *pEvent )
             break;
 
         case  VSCP_DAEMON_ACTION_CODE_ADD_VARIABLE:
-
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_ADD_VARIABLE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
             m_pDM->logMsg( _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
@@ -2044,7 +2045,6 @@ bool dmElement::doAction( vscpEvent *pEvent )
             break;
 
         case  VSCP_DAEMON_ACTION_CODE_SUBTRACT_VARIABLE:
-
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_SUBTRACT_VARIABLE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
             m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
@@ -2055,7 +2055,6 @@ bool dmElement::doAction( vscpEvent *pEvent )
             break;
 
         case  VSCP_DAEMON_ACTION_CODE_MULTIPLY_VARIABLE:
-
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_MULTIPLY_VARIABLE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
             m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
@@ -2066,7 +2065,6 @@ bool dmElement::doAction( vscpEvent *pEvent )
             break;
 
         case  VSCP_DAEMON_ACTION_CODE_DIVIDE_VARIABLE:
-
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_DIVIDE_VARIABLE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
             m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
@@ -2075,9 +2073,62 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             doActionDivideVariable( pEvent );
             break;
+            
+        case VSCP_DAEMON_ACTION_CODE_CHECK_VARIABLE_TRUE:
+            logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_CHECK_VARIABLE_TRUE.") ); // Log
+            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
+            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            vscp_writeVscpEventToString( pEvent, logStr );
+            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            
+            doActionCheckVariable( pEvent, VARIABLE_CHECK_SET_TRUE );
+            break;
+            
+        case VSCP_DAEMON_ACTION_CODE_CHECK_VARIABLE_FALSE:
+            logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_CHECK_VARIABLE_FALSE.") ); // Log
+            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
+            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            vscp_writeVscpEventToString( pEvent, logStr );
+            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            
+            doActionCheckVariable( pEvent, VARIABLE_CHECK_SET_FALSE );
+            break;
+            
+        case VSCP_DAEMON_ACTION_CODE_CHECK_VARIABLE:
+            logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_CHECK_VARIABLE.") ); // Log
+            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
+            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            vscp_writeVscpEventToString( pEvent, logStr );
+            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            
+            doActionCheckVariable( pEvent, VARIABLE_CHECK_SET_OUTCOME );
+            break;
+            
+        case VSCP_DAEMON_ACTION_CODE_CHECK_MEASUREMENT:
+            logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_CHECK_MEASUREMENT.") ); // Log
+            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
+            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            vscp_writeVscpEventToString( pEvent, logStr );
+            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            break;
+            
+        case VSCP_DAEMON_ACTION_CODE_STORE_MIN:
+            logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_STOR_MIN.") ); // Log
+            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
+            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            vscp_writeVscpEventToString( pEvent, logStr );
+            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            break;
+            
+        case VSCP_DAEMON_ACTION_CODE_STORE_MAX:
+            logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_STOR_MAX.") ); // Log
+            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
+            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            vscp_writeVscpEventToString( pEvent, logStr );
+            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            break;    
 
         case VSCP_DAEMON_ACTION_CODE_START_TIMER:
-
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_START_TIMER.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
             m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
@@ -2088,7 +2139,6 @@ bool dmElement::doAction( vscpEvent *pEvent )
             break;
 
         case VSCP_DAEMON_ACTION_CODE_PAUSE_TIMER:
-
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_PAUSE_TIMER.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
             m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
@@ -2099,7 +2149,6 @@ bool dmElement::doAction( vscpEvent *pEvent )
             break;
 
         case VSCP_DAEMON_ACTION_CODE_STOP_TIMER:
-
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_STOP_TIMER.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
             m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
@@ -2110,7 +2159,6 @@ bool dmElement::doAction( vscpEvent *pEvent )
             break;
 
         case VSCP_DAEMON_ACTION_CODE_RESUME_TIMER:
-
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_RESUME_TIMER.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
             m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
@@ -2121,7 +2169,6 @@ bool dmElement::doAction( vscpEvent *pEvent )
             break;
 
         case VSCP_DAEMON_ACTION_CODE_WRITE_FILE:
-
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_WRITE_FILE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
             m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
@@ -2132,7 +2179,6 @@ bool dmElement::doAction( vscpEvent *pEvent )
             break;
 
         case VSCP_DAEMON_ACTION_CODE_GET_PUT_POST_URL:
-
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_GET_PUT_POST_URL.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
             m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
@@ -2143,7 +2189,6 @@ bool dmElement::doAction( vscpEvent *pEvent )
             break;
 
         case VSCP_DAEMON_ACTION_CODE_WRITE_TABLE:
-
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_WRITE_TABLE.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
             m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
@@ -2155,7 +2200,6 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
 #ifndef VSCP_DISABLE_LUA
         case VSCP_DAEMON_ACTION_CODE_RUN_LUASCRIPT:
-
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_RUN_LUASCRIPT.") ); // Log
             m_pDM->logMsg( logStr, LOG_DM_NORMAL );
             m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
@@ -2792,27 +2836,41 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
     CVSCPVariable *pVar;
     wxString wxstr = m_actionparam;
     handleEscapes( pDMEvent, wxstr );
+    
+    wxStringTokenizer tkz( wxstr, _(";") );
 
     //if ( !m_pDM->m_pCtrlObject->m_VSCP_Variables.find( pVar ) ) {
     //pVar =
     CVSCPVariable var;
+    
+    if ( tkz.CountTokens() >= 4 ) {
 
-    if ( !( var.getVariableFromString( wxstr ) ) ) {
-        // must be a variable
-        wxString wxstrErr = wxT("[Action] Store Variable: Could not set new variable ");
-        wxstrErr += wxstr;
-        wxstrErr += _("\n");
-        m_pDM->m_pCtrlObject->logMsg( wxstrErr );
-        return false;
+        // The form is variable-name; variable-type; persistence; value
+        
+        if ( !( var.getVariableFromString( wxstr ) ) ) {
+            // must be a variable
+            wxString wxstrErr = wxT("[Action] Store Variable: Could not set new variable ");
+            wxstrErr += wxstr;
+            wxstrErr += _("\n");
+            m_pDM->m_pCtrlObject->logMsg( wxstrErr );
+            return false;
+            
+        }
+
+        if ( !m_pDM->m_pCtrlObject->m_VSCP_Variables.add( var ) ) {
+            // must be a variable
+            wxString wxstrErr = wxT("[Action] Store Variable: Could not add variable ");
+            wxstrErr += wxstr;
+            wxstrErr += _("\n");
+            m_pDM->m_pCtrlObject->logMsg( wxstrErr );
+            return false;
+        }
+    
     }
-
-    if ( !m_pDM->m_pCtrlObject->m_VSCP_Variables.add( var ) ) {
-        // must be a variable
-        wxString wxstrErr = wxT("[Action] Store Variable: Could not add variable ");
-        wxstrErr += wxstr;
-        wxstrErr += _("\n");
-        m_pDM->m_pCtrlObject->logMsg( wxstrErr );
-        return false;
+    else {
+        
+        // variablename; type; persistence
+    
     }
 
     return true;
@@ -2865,9 +2923,7 @@ bool dmElement::doActionAddVariable( vscpEvent *pDMEvent )
     }
 
     // Must be a numerical variable
-    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != variable.getType() ) &&
-        ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != variable.getType() ) &&
-        ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != variable.getType() ) ) {
+    if ( !variable.isNumerical() ) {
             wxString wxstrErr = wxT("[Action] Add to Variable: Variable is not numerical ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
@@ -2945,9 +3001,7 @@ bool dmElement::doActionSubtractVariable( vscpEvent *pDMEvent )
     }
 
     // Must be a numerical variable
-    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != variable.getType() ) &&
-        ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != variable.getType() ) &&
-        ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != variable.getType() ) ) {
+    if ( !variable.isNumerical() ) {
             wxString wxstrErr = wxT("[Action] Add to Variable: Variable is not numerical ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
@@ -3024,9 +3078,7 @@ bool dmElement::doActionMultiplyVariable( vscpEvent *pDMEvent )
     }
 
     // Must be a numerical variable
-    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != variable.getType() ) &&
-        ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != variable.getType() ) &&
-        ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != variable.getType() ) ) {
+    if ( !variable.isNumerical() ) {
             wxString wxstrErr = wxT("[Action] Add to Variable: Variable is not numerical ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
@@ -3103,13 +3155,11 @@ bool dmElement::doActionDivideVariable( vscpEvent *pDMEvent )
     }
 
     // Must be a numerical variable
-    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != variable.getType() ) &&
-        ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != variable.getType() ) &&
-        ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != variable.getType() ) ) {
+    if ( !variable.isNumerical() ) {
             wxString wxstrErr = wxT("[Action] Add to Variable: Variable is not numerical ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
-            m_pDM->m_pCtrlObject->logMsg( wxstrErr );
+            m_pDM->logMsg( wxstrErr );
             return false;
     }
 
@@ -3138,6 +3188,285 @@ bool dmElement::doActionDivideVariable( vscpEvent *pDMEvent )
         }
     }
 
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// doActionCheckVariable
+//
+
+bool dmElement::doActionCheckVariable( vscpEvent *pDMEvent, VariableCheckType type )
+{
+    wxString wxstr;
+    double value = 0;
+    uint8_t unit = 0;
+    uint8_t operation = DM_MEASUREMENT_COMPARE_NOOP;
+    CVSCPVariable varCompare;   // Variable to compare
+    CVSCPVariable varFlag;      // Variable with flag
+    
+    // Write in possible escapes
+    wxString params = m_actionparam;
+    handleEscapes( pDMEvent, params );
+
+    // value;unit;operation;variable;flag-variable
+    wxStringTokenizer tkz( params, wxT(";") );
+    
+    // Value
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+        if ( !wxstr.ToCDouble( &value ) ) {
+            wxstr = _("Failed to convert to double (set to zero). param =") + params;
+            m_pDM->logMsg( wxstr );
+        }
+    }
+    else {
+        wxstr = _("Missing needed parameter (value). param =") + params;
+        m_pDM->logMsg( wxstr );
+        return false;
+    }
+    
+    // Unit
+    if ( tkz.HasMoreTokens() ) {
+        unit = vscp_readStringValue( tkz.GetNextToken() );
+    }
+    else {
+        wxstr = _("Missing needed parameter (unit). param =") + params;
+        m_pDM->logMsg( wxstr );
+        return false;
+    }
+    
+    // Operation
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+        operation = CDM::getCompareCodeFromToken( wxstr );
+        if ( -1 == operation ) {
+            wxstr = _("Invalid compare operation. param =") + params;
+            m_pDM->logMsg( wxstr );
+            operation = DM_MEASUREMENT_COMPARE_NOOP;
+        }
+    }
+    else {
+        wxstr = _("Missing needed parameter (operation). param =") + params;
+        m_pDM->logMsg( wxstr );
+        return false;
+    }
+    
+    // Variable to compare
+    if ( tkz.HasMoreTokens() ) {
+        
+        wxstr.Trim();
+        if ( !gpobj->m_VSCP_Variables.find( wxstr, varCompare ) ) {
+            // Variable not found
+            wxstr = _("Compare variable was not found. param =") + params;
+            m_pDM->logMsg( wxstr );
+            return false;
+        }
+        
+        // The variable must be numerical
+        if ( varCompare.isNumerical() ) {
+            wxstr = _("Compare variable need to be numerical. param =") + params;
+            m_pDM->logMsg( wxstr );
+            return false;
+        }
+        
+    }
+    else {
+        wxstr = _("Missing needed parameter (variable). param =") + params;
+        m_pDM->logMsg( wxstr );
+        return false;
+    }
+    
+    // Variable with flag
+    if ( tkz.HasMoreTokens() ) {
+        
+        wxstr.Trim();
+        if ( !gpobj->m_VSCP_Variables.find( wxstr, varFlag ) ) {
+            // Variable not found
+            wxstr = _("Flag variable was not found. param =") + params;
+            m_pDM->logMsg( wxstr );
+            return false;
+        }
+        
+        // The variable must be boolean
+        if ( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN != varFlag.getType() ) {
+            wxstr = _("Flag variable must be boolean. param =") + params;
+            m_pDM->logMsg( wxstr );
+            return false;
+        }
+        
+    }
+    else {
+        wxstr = _("Missing needed parameter (flag variable). param =") + params;
+        m_pDM->logMsg( wxstr );
+        return false;
+    }
+    
+    double valCompare;
+    varCompare.getValue( &valCompare );
+    
+    switch ( operation ) {
+        
+        case DM_MEASUREMENT_COMPARE_NOOP:
+            if ( VARIABLE_CHECK_SET_TRUE ==  type ) {
+                varFlag.setValue( true );
+            }
+            else if ( VARIABLE_CHECK_SET_FALSE ==  type ) {
+                varFlag.setValue( false );
+            }
+            break;
+        
+        case DM_MEASUREMENT_COMPARE_EQ:
+            if ( value == valCompare ) {
+                if ( VARIABLE_CHECK_SET_TRUE ==  type ) {
+                    varFlag.setValue( true );
+                }
+                else if ( VARIABLE_CHECK_SET_FALSE ==  type ) {
+                    varFlag.setValue( false );
+                }
+                else if ( VARIABLE_CHECK_SET_OUTCOME ==  type ) {
+                    varFlag.setValue( true );
+                }
+            }
+            else {
+                if ( VARIABLE_CHECK_SET_TRUE ==  type ) {
+                    varFlag.setValue( false );
+                }
+                else if ( VARIABLE_CHECK_SET_FALSE ==  type ) {
+                    varFlag.setValue( true );
+                }
+                else if ( VARIABLE_CHECK_SET_OUTCOME ==  type ) {
+                    varFlag.setValue( true );
+                }
+            }
+            break;
+            
+        case DM_MEASUREMENT_COMPARE_NEQ:
+            if ( value != valCompare ) {
+                if ( VARIABLE_CHECK_SET_TRUE ==  type ) {
+                    varFlag.setValue( true );
+                }
+                else if ( VARIABLE_CHECK_SET_FALSE ==  type ) {
+                    varFlag.setValue( false );
+                }
+                else if ( VARIABLE_CHECK_SET_OUTCOME ==  type ) {
+                    varFlag.setValue( true );
+                }
+            }
+            else {
+                if ( VARIABLE_CHECK_SET_TRUE ==  type ) {
+                    varFlag.setValue( false );
+                }
+                else if ( VARIABLE_CHECK_SET_FALSE ==  type ) {
+                    varFlag.setValue( true );
+                }
+                else if ( VARIABLE_CHECK_SET_OUTCOME ==  type ) {
+                    varFlag.setValue( true );
+                }
+            }
+            break;     
+            
+        case DM_MEASUREMENT_COMPARE_LT:
+            if ( value < valCompare ) {
+                if ( VARIABLE_CHECK_SET_TRUE ==  type ) {
+                    varFlag.setValue( true );
+                }
+                else if ( VARIABLE_CHECK_SET_FALSE ==  type ) {
+                    varFlag.setValue( false );
+                }
+                else if ( VARIABLE_CHECK_SET_OUTCOME ==  type ) {
+                    varFlag.setValue( true );
+                }
+            }
+            else {
+                if ( VARIABLE_CHECK_SET_TRUE ==  type ) {
+                    varFlag.setValue( false );
+                }
+                else if ( VARIABLE_CHECK_SET_FALSE ==  type ) {
+                    varFlag.setValue( true );
+                }
+                else if ( VARIABLE_CHECK_SET_OUTCOME ==  type ) {
+                    varFlag.setValue( true );
+                }
+            }
+            break;
+            
+        case DM_MEASUREMENT_COMPARE_LTEQ:
+            if ( value <= valCompare ) {
+                if ( VARIABLE_CHECK_SET_TRUE ==  type ) {
+                    varFlag.setValue( true );
+                }
+                else if ( VARIABLE_CHECK_SET_FALSE ==  type ) {
+                    varFlag.setValue( false );
+                }
+                else if ( VARIABLE_CHECK_SET_OUTCOME ==  type ) {
+                    varFlag.setValue( true );
+                }
+            }
+            else {
+                if ( VARIABLE_CHECK_SET_TRUE ==  type ) {
+                    varFlag.setValue( false );
+                }
+                else if ( VARIABLE_CHECK_SET_FALSE ==  type ) {
+                    varFlag.setValue( true );
+                }
+                else if ( VARIABLE_CHECK_SET_OUTCOME ==  type ) {
+                    varFlag.setValue( true );
+                }
+            }
+            break;
+            
+        case DM_MEASUREMENT_COMPARE_GT:
+            if ( value > valCompare ) {
+                if ( VARIABLE_CHECK_SET_TRUE ==  type ) {
+                    varFlag.setValue( true );
+                }
+                else if ( VARIABLE_CHECK_SET_FALSE ==  type ) {
+                    varFlag.setValue( false );
+                }
+                else if ( VARIABLE_CHECK_SET_OUTCOME ==  type ) {
+                    varFlag.setValue( true );
+                }
+            }
+            else {
+                if ( VARIABLE_CHECK_SET_TRUE ==  type ) {
+                    varFlag.setValue( false );
+                }
+                else if ( VARIABLE_CHECK_SET_FALSE ==  type ) {
+                    varFlag.setValue( true );
+                }
+                else if ( VARIABLE_CHECK_SET_OUTCOME ==  type ) {
+                    varFlag.setValue( true );
+                }
+            }
+            break;      
+            
+        case DM_MEASUREMENT_COMPARE_GTEQ:
+            if ( value >= valCompare ) {
+                if ( VARIABLE_CHECK_SET_TRUE ==  type ) {
+                    varFlag.setValue( true );
+                }
+                else if ( VARIABLE_CHECK_SET_FALSE ==  type ) {
+                    varFlag.setValue( false );
+                }
+                else if ( VARIABLE_CHECK_SET_OUTCOME ==  type ) {
+                    varFlag.setValue( true );
+                }
+            }
+            else {
+               if ( VARIABLE_CHECK_SET_TRUE ==  type ) {
+                    varFlag.setValue( false );
+                }
+                else if ( VARIABLE_CHECK_SET_FALSE ==  type ) {
+                    varFlag.setValue( true );
+                }
+                else if ( VARIABLE_CHECK_SET_OUTCOME ==  type ) {
+                    varFlag.setValue( true );
+                }
+            }
+            break;      
+            
+    }
+    
     return true;
 }
 
@@ -3582,7 +3911,6 @@ void CDM::setControlObject( CControlObject *ctrlObj )
     m_pCtrlObject = ctrlObj;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // logMsg
 //
@@ -3603,6 +3931,102 @@ void CDM::logMsg( const wxString& msg, uint8_t level )
     }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// getCompareCodeFromToken
+//
+
+int CDM::getCompareCodeFromToken( wxString& token ) 
+{
+    
+    token.MakeLower();
+    token.Trim();
+    
+    if ( token.StartsWith(_("noop")) ) {
+        return DM_MEASUREMENT_COMPARE_NOOP;
+    } 
+    else if ( token.StartsWith(_("eq")) ) {
+        return DM_MEASUREMENT_COMPARE_EQ;
+    } 
+    else if ( token.StartsWith(_("==")) ) {
+        return DM_MEASUREMENT_COMPARE_EQ;
+    }
+    else if ( token.StartsWith(_("neq")) ) {
+        return DM_MEASUREMENT_COMPARE_NEQ;
+    } 
+    else if ( token.StartsWith(_("!=")) ) {
+        return DM_MEASUREMENT_COMPARE_NEQ;
+    }
+    else if ( token.StartsWith(_("lt")) ) {
+        return DM_MEASUREMENT_COMPARE_LT;
+    } 
+    else if ( token.StartsWith(_("<")) ) {
+        return DM_MEASUREMENT_COMPARE_LT;
+    }
+    else if ( token.StartsWith(_("gt")) ) {
+        return DM_MEASUREMENT_COMPARE_GT;
+    } 
+    else if ( token.StartsWith(_(">")) ) {
+        return DM_MEASUREMENT_COMPARE_GT;
+    }
+    else if ( token.StartsWith(_("gteq")) ) {
+        return DM_MEASUREMENT_COMPARE_GTEQ;
+    } 
+    else if ( token.StartsWith(_(">=")) ) {
+        return DM_MEASUREMENT_COMPARE_GTEQ;
+    }
+    else if ( token.StartsWith(_("lteq")) ) {
+        return DM_MEASUREMENT_COMPARE_LTEQ;
+    }
+    else if ( token.StartsWith(_("<=")) ) {
+        return DM_MEASUREMENT_COMPARE_LTEQ;
+    }
+    else {
+        return -1;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getTokenFromCompareCode
+//
+
+wxString CDM::getTokenFromCompareCode( uint8_t code ) 
+{
+    switch ( code ) {
+        
+        case DM_MEASUREMENT_COMPARE_NOOP:
+            return _("noop");
+            break;
+            
+        case DM_MEASUREMENT_COMPARE_EQ:
+            return _("eq");
+            break;
+            
+        case  DM_MEASUREMENT_COMPARE_NEQ:
+            return _("neq");
+            break;
+            
+        case  DM_MEASUREMENT_COMPARE_LT:
+            return _("lt");
+            break;
+            
+        case  DM_MEASUREMENT_COMPARE_LTEQ:
+            return _("lteq");
+            break;
+            
+        case  DM_MEASUREMENT_COMPARE_GT:
+            return _("eq");
+            break;
+            
+        case  DM_MEASUREMENT_COMPARE_GTEQ:
+            return _("lteq");
+            break;
+            
+        default:
+            break;
+            
+    }
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // addMemoryElement
@@ -5205,29 +5629,7 @@ bool CDM::loadFromXML( void )
                     }
                     
                     str = subchild->GetAttribute( wxT( "compare" ), wxT("noop") );
-                    str.MakeLower();
-                    str.Trim();
-                    if ( str.StartsWith( _("noop") ) ) {
-                        pDMitem->m_measurementCompareCode = DM_MEASUREMENT_COMPARE_NOOP;
-                    }
-                    else if ( str.StartsWith( _("eq") ) ) {
-                        pDMitem->m_measurementCompareCode = DM_MEASUREMENT_COMPARE_EQ;
-                    }
-                    else if ( str.StartsWith( _("neq") ) ) {
-                        pDMitem->m_measurementCompareCode = DM_MEASUREMENT_COMPARE_NEQ;
-                    }
-                    else if ( str.StartsWith( _("lt") ) ) {
-                        pDMitem->m_measurementCompareCode = DM_MEASUREMENT_COMPARE_LT;
-                    }
-                    else if ( str.StartsWith( _("gt") ) ) {
-                        pDMitem->m_measurementCompareCode = DM_MEASUREMENT_COMPARE_GT;
-                    }
-                    else if ( str.StartsWith( _("gteq") ) ) {
-                        pDMitem->m_measurementCompareCode = DM_MEASUREMENT_COMPARE_GTEQ;
-                    }
-                    else if ( str.StartsWith( _("lteq") ) ) {
-                        pDMitem->m_measurementCompareCode = DM_MEASUREMENT_COMPARE_LTEQ;
-                    }
+                    pDMitem->m_measurementCompareCode = getCompareCodeFromToken( str );
                     
                     str = subchild->GetAttribute( wxT( "unit" ), wxT("0") );
                     pDMitem->m_measurementUnit = vscp_readStringValue( str );
@@ -5419,36 +5821,9 @@ bool CDM::saveToXML( void )
                 pFileStream->Write( "enable=\"false\" ", strlen ( "enable=\"false\" " ) );
             }
             
-            switch( pDMitem->m_measurementCompareCode ) {
-                
-                case DM_MEASUREMENT_COMPARE_NOOP: 
-                    pFileStream->Write( "compare=\"noop\" ", strlen ( "compare=\"noop\" " ) );
-                    break;
-                
-                case DM_MEASUREMENT_COMPARE_EQ:
-                    pFileStream->Write( "compare=\"eq\" ", strlen ( "compare=\"eq\" " ) );
-                    break;
-                    
-                case DM_MEASUREMENT_COMPARE_NEQ:
-                    pFileStream->Write( "compare=\"neq\" ", strlen ( "compare=\"neq\" " ) );
-                    break;
-                    
-                case DM_MEASUREMENT_COMPARE_LT:
-                    pFileStream->Write( "compare=\"gt\" ", strlen ( "compare=\"gt\" " ) );
-                    break;
-                    
-                case DM_MEASUREMENT_COMPARE_LTEQ:
-                    pFileStream->Write( "compare=\"gteq\" ", strlen ( "compare=\"gteq\" " ) );
-                    break;
-                    
-                case DM_MEASUREMENT_COMPARE_GT:
-                    pFileStream->Write( "compare=\"lt\" ", strlen ( "compare=\"lt\" " ) );
-                    break;
-                    
-                case DM_MEASUREMENT_COMPARE_GTEQ:    
-                    pFileStream->Write( "compare=\"lteq\" ", strlen ( "compare=\"lteq\" " ) );
-                    break;
-            }
+            wxString strCode = getTokenFromCompareCode( pDMitem->m_measurementCompareCode );
+            buf = _("compare=\"") + strCode + "\" ";
+            pFileStream->Write( buf.mbc_str(), strlen( buf.mbc_str() ) );
             
             buf.Printf( _( "unit=\"%d\" " ), pDMitem->m_measurementUnit );
             pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );

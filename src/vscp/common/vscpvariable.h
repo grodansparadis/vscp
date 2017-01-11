@@ -125,8 +125,16 @@ public:
     
     /*!
      * Return true if this variable type value is presented BASE64 encoded
+     * @param type Variable type to test.
+     *  @eturn true if type is BASE64 encoded, false otherwise
      */
     static bool isValueBase64Encoded( int type ); 
+    
+    /*!
+     * Check if the variable is a numerical type
+     * @return true if numerical, false otherwise.
+     */
+    bool isNumerical( void );
 
     /*!
         Set variable value from string

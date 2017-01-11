@@ -99,14 +99,9 @@
 #define VSCP_DAEMON_ACTION_CODE_SEND_EVENTS_FROM_FILE       0x00000042 // Send VSCP events from file
 
 
-
-
 // Send event to remote VSCP server
 // Format: Non
 #define VSCP_DAEMON_ACTION_CODE_SEND_TO_REMOTE              0x00000043 // Send VSCP events to remote VSCP server
-
-
-
 
 
 // Store value in variable
@@ -115,20 +110,14 @@
 #define VSCP_DAEMON_ACTION_CODE_STORE_VARIABLE              0x00000050  // Store in variable
 
 
-
-
 // Store value in array
 // Format; array;index;value
 #define VSCP_DAEMON_ACTION_CODE_STORE_ARRAY                 0x00000051  // Store in array
 
 
-
-
 // Add value to variable
 // Format: variable;value to add
 #define VSCP_DAEMON_ACTION_CODE_ADD_VARIABLE                0x00000052  // Add to variable
-
-
 
 
 // Subtract value from variable
@@ -147,20 +136,20 @@
 
 
 // Check variable set other to true
-// Format: value;operation;variable;flag-variable
+// Format: value;unit;operation;variable;flag-variable
 #define VSCP_DAEMON_ACTION_CODE_CHECK_VARIABLE_TRUE         0x00000056  // Check variable true
 
 
 // Check variable set other to false
-// Format: value;operation;variable;flag-variable
+// Format: value;unit;operation;variable;flag-variable
 #define VSCP_DAEMON_ACTION_CODE_CHECK_VARIABLE_FALSE        0x00000057  // Check variable flase
 
 // Check variable set other to logic outcome
-// Format: value;operation;variable;flag-variable
+// Format: value;unit;operation;variable;flag-variable
 #define VSCP_DAEMON_ACTION_CODE_CHECK_VARIABLE              0x00000058  // Check variable flase
 
 // Check measurement and set variable to logic outcome
-// Format: value;operation;flag-variable
+// Format: value;unit;operation;flag-variable
 #define VSCP_DAEMON_ACTION_CODE_CHECK_MEASUREMENT           0x00000059  // Check measurement
 
 
@@ -189,6 +178,14 @@
 // Format: timerid
 // timerid is any numerical id > 0
 #define VSCP_DAEMON_ACTION_CODE_WRITE_FILE                  0x00000070  // Write file
+
+// Store if minimum
+// Format: variable;unit,sensor-index,zone,subzone
+#define VSCP_DAEMON_ACTION_CODE_STORE_MIN                   0x00000071  // Store if minimum
+
+// Store if maximum
+// Format: variable;unit,sensor-index,zone,subzone
+#define VSCP_DAEMON_ACTION_CODE_STORE_MAX                   0x00000072  // Store if maximum
 
 // Get/Post URL
 // Format: url

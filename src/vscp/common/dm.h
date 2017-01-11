@@ -60,14 +60,19 @@ WX_DECLARE_LIST( int, ACTIONTIME );
 #define DM_MEASUREMENT_COMPARE_GT       0x05    // Greater than
 #define DM_MEASUREMENT_COMPARE_GTEQ     0x06    // Greater than or equal tp >=
 
-enum {
+enum DMLogType {
     LOG_DM_NONE = 0,
     LOG_DM_DEBUG,
     LOG_DM_NORMAL,
     LOG_DM_EXTRA
 };
 
-
+// Variable check constants
+enum VariableCheckType {
+    VARIABLE_CHECK_SET_TRUE = 0,
+    VARIABLE_CHECK_SET_FALSE,
+    VARIABLE_CHECK_SET_OUTCOME
+};
 
 // Forward declaration
 class CDM;
@@ -525,6 +530,14 @@ public:
         @returns true if all went well.
     */
     bool doActionDivideVariable( vscpEvent *pDMEvent );
+    
+    /*!
+     * Check variable against measurement
+     * @param pDMEvent Event that triggered the action
+     * @param type Type of check
+       @returns true if all went well.
+     */
+    bool doActionCheckVariable( vscpEvent *pDMEvent, VariableCheckType type );
 
     /*!
         Start a timer 
@@ -718,6 +731,20 @@ public:
         log message
     */
     void logMsg( const wxString& msg, uint8_t level = LOG_DM_NORMAL );
+    
+    /*!
+     * Get compare code from token
+     * @param token String token for compare operation
+     * @return Code for token or -1 f error.
+     */
+    static int getCompareCodeFromToken( wxString& token ); 
+    
+    /*!
+     * Get compare token from code
+     * @param code Compare codee
+     * @return Compare token or empty string if invalid token
+     */
+    static wxString getTokenFromCompareCode( uint8_t code );
 
     /*!
         Add Element to matrix

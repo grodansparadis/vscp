@@ -364,6 +364,22 @@ const char * CVSCPVariable::getVariableTypeAsString( int type )
     }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// isNumerical
+//
+
+bool CVSCPVariable::isNumerical( void )
+{
+    if ( ( VSCP_DAEMON_VARIABLE_CODE_INTEGER == m_type ) ||
+         ( VSCP_DAEMON_VARIABLE_CODE_LONG == m_type ) || 
+         ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE == m_type ) ) {
+        return true;
+    }
+    
+    return false;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // isValueBase64Encoded
 //
