@@ -32,6 +32,7 @@
 #include <wx/tokenzr.h>
 #include <sqlite3.h>
 #include <guid.h>
+#include <userlist.h>
 #include <variablecodes.h>
 #include <vscphelper.h>
 
@@ -65,7 +66,7 @@
 #define PERMISSON_NO_RIGHTS         0x000
 #define PERMSSION_VARIABLE_DEFAULT  0x744
 
-#define USER_ID_ADMIN               0x00
+
 
 #define ID_NON_PERSISTENT           UINT32_MAX
 

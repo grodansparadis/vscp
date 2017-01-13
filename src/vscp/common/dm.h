@@ -538,6 +538,20 @@ public:
        @returns true if all went well.
      */
     bool doActionCheckVariable( vscpEvent *pDMEvent, VariableCheckType type );
+    
+    /*!
+     * Store new minimum of measurement in variable if lower than current.
+     * @param pDMEvent Event that triggered the action
+       @returns true if all went well.
+     */
+    bool doActionStoreMin( vscpEvent *pDMEvent );
+    
+    /*!
+     * Store new maximum of measurement in variable is higher than current.
+     * @param pDMEvent Event that triggered the action
+       @returns true if all went well.
+     */
+    bool doActionStoreMax( vscpEvent *pDMEvent );
 
     /*!
         Start a timer 

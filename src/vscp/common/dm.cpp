@@ -43,6 +43,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <float.h>
 
 #ifndef VSCP_DISABLE_LUA
 #include <lua.hpp>
@@ -55,6 +56,7 @@
 #include <vscpeventhelper.h>
 #include <actioncodes.h>
 #include <vscpvariable.h>
+#include <userlist.h>
 #include <controlobject.h>
 #include <vscpremotetcpif.h>
 #include <dm.h>
@@ -2118,6 +2120,8 @@ bool dmElement::doAction( vscpEvent *pEvent )
             m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            
+            doActionStoreMin( pEvent );
             break;
             
         case VSCP_DAEMON_ACTION_CODE_STORE_MAX:
@@ -2126,6 +2130,8 @@ bool dmElement::doAction( vscpEvent *pEvent )
             m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
             vscp_writeVscpEventToString( pEvent, logStr );
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            
+            doActionStoreMax( pEvent );
             break;    
 
         case VSCP_DAEMON_ACTION_CODE_START_TIMER:
@@ -3750,6 +3756,232 @@ bool dmElement::doActionCheckVariable( vscpEvent *pDMEvent, VariableCheckType ty
             }
             break;      
             
+    }
+    
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// doActionStoreMin
+//
+
+bool dmElement::doActionStoreMin( vscpEvent *pDMEvent )
+{
+    wxString varname;
+    uint8_t unit;
+    uint8_t sensorindex;
+    uint8_t zone;
+    uint8_t subzone;
+    CVSCPVariable variable;     // Variable to store possible new min in
+    double currentValue;        // Current value of variable
+    double value;               // Value of event
+    
+    // Write in possible escapes
+    wxString params = m_actionparam;
+    handleEscapes( pDMEvent, params );
+    
+    // Event must be measurement
+    if ( !vscp_isVSCPMeasurement( pDMEvent ) ) {
+        wxString wxstr = _("Event must be a measurement event. param =") + params;
+        m_pDM->logMsg( wxstr );
+        return false;
+    }
+    
+    // Get value from measurement event
+    vscp_getVSCPMeasurementAsDouble( pDMEvent, &value );
+    
+    // variable;unit;index;zone;subzone
+    wxStringTokenizer tkz( params, wxT(";") );
+    
+    if ( !tkz.HasMoreTokens() ) {
+        wxString wxstr = _("Need variable name. param =") + params;
+        m_pDM->logMsg( wxstr );
+        return false;
+    }
+    
+    // Get variable name
+    varname = tkz.GetNextToken();    
+    varname.Trim();
+    
+    // Find the variable
+    if ( !gpobj->m_VSCP_Variables.find( varname, variable ) ) {
+        
+        variable.setName( varname );
+        variable.setType( VSCP_DAEMON_VARIABLE_CODE_DOUBLE );
+        variable.setUserID( USER_ID_ADMIN );    // Admin user owns variable
+        variable.setPersistent( false );
+        variable.setAccessRights( PERMISSON_ALL_RIGHTS );
+        variable.setValue( DBL_MAX );
+        
+        if ( !gpobj->m_VSCP_Variables.add( variable ) ) {
+            wxString wxstr = _("Unable to add min variable. param =") + params;
+            m_pDM->logMsg( wxstr );
+            return false;
+        }
+    }
+    
+    // Variable must be numerical to be comparable
+    if ( !variable.isNumerical() ) {
+        wxString wxstr = _("Can't compare with non numeric variable. param =") + params;
+        m_pDM->logMsg( wxstr );
+        return false;
+    }
+    
+    // Get variable value
+    variable.getValue( &currentValue );
+    
+    // Unit
+    if ( tkz.HasMoreTokens() ) {
+        unit = vscp_readStringValue( tkz.GetNextToken() );
+    }
+    else {
+        unit = 0;   // Default unit
+    }
+    
+    // Sensor index
+    if ( tkz.HasMoreTokens() ) {
+        sensorindex = vscp_readStringValue( tkz.GetNextToken() );
+    }
+    else {
+        sensorindex = 0;   // Default unit
+    }
+    
+    // zone
+    if ( tkz.HasMoreTokens() ) {
+        zone = vscp_readStringValue( tkz.GetNextToken() );
+    }
+    else {
+        zone = 0;   // Default unit
+    }
+    
+    // subzone
+    if ( tkz.HasMoreTokens() ) {
+        subzone = vscp_readStringValue( tkz.GetNextToken() );
+    }
+    else {
+        subzone = 0;   // Default unit
+    }
+    
+    if ( ( currentValue > value ) &&
+            ( unit == vscp_getVSCPMeasurementUnit( pDMEvent ) ) &&
+            ( sensorindex == vscp_getVSCPMeasurementSensorIndex( pDMEvent ) ) &&
+            ( zone == vscp_getVSCPMeasurementZone( pDMEvent ) ) &&
+            ( subzone == vscp_getVSCPMeasurementSubZone( pDMEvent ) ) ) {
+        // Store new lowest value
+        variable.setValue( value );
+    }
+    
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// doActionStoreMax
+//
+
+bool dmElement::doActionStoreMax( vscpEvent *pDMEvent )
+{
+    wxString varname;
+    uint8_t unit;
+    uint8_t sensorindex;
+    uint8_t zone;
+    uint8_t subzone;
+    CVSCPVariable variable;     // Variable to store possible new max in
+    double currentValue;        // Current value of variable
+    double value;               // Value of event
+    
+    // Write in possible escapes
+    wxString params = m_actionparam;
+    handleEscapes( pDMEvent, params );
+    
+    // Event must be measurement
+    if ( !vscp_isVSCPMeasurement( pDMEvent ) ) {
+        wxString wxstr = _("Event must be a measurement event. param =") + params;
+        m_pDM->logMsg( wxstr );
+        return false;
+    }
+    
+    // Get value from measurement event
+    vscp_getVSCPMeasurementAsDouble( pDMEvent, &value );
+    
+    // variable;unit;index;zone;subzone
+    wxStringTokenizer tkz( params, wxT(";") );
+    
+    if ( !tkz.HasMoreTokens() ) {
+        wxString wxstr = _("Need variable name. param =") + params;
+        m_pDM->logMsg( wxstr );
+        return false;
+    }
+    
+    // Get variable name
+    varname = tkz.GetNextToken();    
+    varname.Trim();
+    
+    // Find the variable
+    if ( !gpobj->m_VSCP_Variables.find( varname, variable ) ) {
+        
+        variable.setName( varname );
+        variable.setType( VSCP_DAEMON_VARIABLE_CODE_DOUBLE );
+        variable.setUserID( USER_ID_ADMIN );    // Admin user owns variable
+        variable.setPersistent( false );
+        variable.setAccessRights( PERMISSON_ALL_RIGHTS );
+        variable.setValue( DBL_MIN );
+        
+        if ( !gpobj->m_VSCP_Variables.add( variable ) ) {
+            wxString wxstr = _("Unable to add max variable. param =") + params;
+            m_pDM->logMsg( wxstr );
+            return false;
+        }
+    }
+    
+    // Variable must be numerical to be comparable
+    if ( !variable.isNumerical() ) {
+        wxString wxstr = _("Can't compare with non numeric variable. param =") + params;
+        m_pDM->logMsg( wxstr );
+        return false;
+    }
+    
+    // Get variable value
+    variable.getValue( &currentValue );
+    
+    // Unit
+    if ( tkz.HasMoreTokens() ) {
+        unit = vscp_readStringValue( tkz.GetNextToken() );
+    }
+    else {
+        unit = 0;   // Default unit
+    }
+    
+    // Sensor index
+    if ( tkz.HasMoreTokens() ) {
+        sensorindex = vscp_readStringValue( tkz.GetNextToken() );
+    }
+    else {
+        sensorindex = 0;   // Default unit
+    }
+    
+    // zone
+    if ( tkz.HasMoreTokens() ) {
+        zone = vscp_readStringValue( tkz.GetNextToken() );
+    }
+    else {
+        zone = 0;   // Default unit
+    }
+    
+    // subzone
+    if ( tkz.HasMoreTokens() ) {
+        subzone = vscp_readStringValue( tkz.GetNextToken() );
+    }
+    else {
+        subzone = 0;   // Default unit
+    }
+    
+    if ( ( currentValue < value ) &&
+            ( unit == vscp_getVSCPMeasurementUnit( pDMEvent ) ) &&
+            ( sensorindex == vscp_getVSCPMeasurementSensorIndex( pDMEvent ) ) &&
+            ( zone == vscp_getVSCPMeasurementZone( pDMEvent ) ) &&
+            ( subzone == vscp_getVSCPMeasurementSubZone( pDMEvent ) ) ) {
+        // Store new hightes value
+        variable.setValue( value );
     }
     
     return true;
