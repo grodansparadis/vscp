@@ -241,6 +241,44 @@ extern "C" {
                                             double *pvalue );
 
     /*!
+     * Get measurement unit for any of the valid measurement events.
+     * @param pEvent Pointer to VSCP event.
+     * @return Measurement unit or -1 for error (event that is not a measurement). 
+     */
+    int vscp_getVSCPMeasurementUnit( const vscpEvent *pEvent );
+    
+    /*!
+     * Get measurement sensor index for any of the valid measurement events.
+     * @param pEvent Pointer to VSCP event.
+     * @return Measurement sensor index or -1 for error or for event that is not a measurement
+     *          or measurement event that does not have a sensor index. 
+     */
+    int vscp_getVSCPMeasurementSensorIndex( const vscpEvent *pEvent );
+    
+    /*!
+     * Get measurement zone for any of the valid measurement events.
+     * @param pEvent Pointer to VSCP event.
+     * @return Measurement zone or 0 for error or event that is not a measurement
+     *          or measurement event that does not have a zone). 
+     */
+    int vscp_getVSCPMeasurementZone( const vscpEvent *pEvent );
+    
+    /*!
+     * Get measurement subzone for any of the valid measurement events.
+     * @param pEvent Pointer to VSCP event.
+     * @return Measurement subzone or -1 for error or for event that is not a measurement
+     *          or measurement event that does not have a subzone. 
+     */
+    int vscp_getVSCPMeasurementSubZone( const vscpEvent *pEvent );
+    
+    /*!
+     * Check if event is a measurement
+     * @param pEvent Pointer to VSCP event.
+     * @return Return true if the event is a measurement.
+     */
+    bool vscp_isVSCPMeasurement( const vscpEvent *pEvent );
+    
+    /*!
         Get data in the VSCP data coding format to a string. Works for
         CLASS1.MEASUREMENT64, CLASS2_LEVEL1.MEASUREMENT64
         @param pEvent Pointer to VSCP event.
@@ -250,6 +288,8 @@ extern "C" {
  
     bool vscp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, 
                                                     wxString& str);
+    
+    
 
     /*!
       Convert a floating point measurement value into VSCP data with the
@@ -350,27 +390,13 @@ extern "C" {
 
 
     /*!
-      Get data in the VSCP data coding format to a float
+      Get data in the VSCP data coding set as float format to a float
       @param pNorm Pointer to VSCP event.
       @param length Number of bytes it consist of including data coding byte
       @return value as float
      */
     float vscp_getMeasurementAsFloat(const unsigned char *pNorm, 
                                         const unsigned char length);
-    
-    /*!
-     * Get measurement unit for any of the valid measurement events.
-     * @param pEvent Pointer to VSCP event.
-     * @return Measurement unit or -1 for error (event that is not a measurement). 
-     */
-    int vscp_getMeasurementUnit( const vscpEvent *pEvent );
-    
-    /*!
-     * Check if event is a measurement
-     * @param pEvent Pointer to VSCP event.
-     * @return Return true if the event is a measurement.
-     */
-    bool vscp_isMeasurement( const vscpEvent *pEvent );
 
     /*!
       Replace backslashes in a string with forward slashes

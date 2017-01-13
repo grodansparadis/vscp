@@ -2834,23 +2834,22 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
 {
     // Write in possible escapes
     CVSCPVariable *pVar;
-    wxString wxstr = m_actionparam;
-    handleEscapes( pDMEvent, wxstr );
+    wxString params = m_actionparam;
+    handleEscapes( pDMEvent, params );
     
-    wxStringTokenizer tkz( wxstr, _(";") );
+    wxStringTokenizer tkz( params, _(";") );
 
-    //if ( !m_pDM->m_pCtrlObject->m_VSCP_Variables.find( pVar ) ) {
-    //pVar =
+    
     CVSCPVariable var;
     
     if ( tkz.CountTokens() >= 4 ) {
 
         // The form is variable-name; variable-type; persistence; value
         
-        if ( !( var.getVariableFromString( wxstr ) ) ) {
+        if ( !( var.getVariableFromString( params ) ) ) {
             // must be a variable
             wxString wxstrErr = wxT("[Action] Store Variable: Could not set new variable ");
-            wxstrErr += wxstr;
+            wxstrErr += params;
             wxstrErr += _("\n");
             m_pDM->m_pCtrlObject->logMsg( wxstrErr );
             return false;
@@ -2860,7 +2859,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
         if ( !m_pDM->m_pCtrlObject->m_VSCP_Variables.add( var ) ) {
             // must be a variable
             wxString wxstrErr = wxT("[Action] Store Variable: Could not add variable ");
-            wxstrErr += wxstr;
+            wxstrErr += params;
             wxstrErr += _("\n");
             m_pDM->m_pCtrlObject->logMsg( wxstrErr );
             return false;
@@ -2870,6 +2869,292 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
     else {
         
         // variablename; type; persistence
+        uint16_t varType = VSCP_DAEMON_VARIABLE_CODE_STRING;
+        bool bPersistent = false;
+        
+        // We must have the name 
+        if ( !tkz.HasMoreTokens() ) return false;
+        wxString varName = tkz.GetString();
+        
+        // Variable type
+        if ( tkz.HasMoreTokens() ) {
+            varType = vscp_readStringValue( tkz.GetString() );
+        }
+        
+        // Persistens
+        if ( tkz.HasMoreTokens() ) {
+            wxString wxstr = tkz.GetString();
+            wxstr.MakeUpper();
+            if ( wxNOT_FOUND != wxstr.Find(_("TRUE") ) ) {
+                bPersistent = true;
+            }
+        }
+        
+        if ( !gpobj->m_VSCP_Variables.find( varName, var ) ) {
+            
+            // The variable was not found - it should be added
+            var.setName( varName );
+            var.setType( varType );
+            var.setPersistent( bPersistent );
+            
+        }
+        
+        
+        
+        // Add/create the variable
+        if ( !m_pDM->m_pCtrlObject->m_VSCP_Variables.add( var ) ) {
+            // must be a variable
+            wxString wxstrErr = wxT("[Action] Store Variable: Could not add variable ");
+            wxstrErr += params;
+            wxstrErr += _("\n");
+            m_pDM->m_pCtrlObject->logMsg( wxstrErr );
+            return false;
+        }
+        
+        switch ( var.getType() ) {
+            
+            case VSCP_DAEMON_VARIABLE_CODE_STRING:
+                if ( vscp_isVSCPMeasurement( pDMEvent ) ) {
+                    wxString strValue;
+                    if ( vscp_getVSCPMeasurementAsString( pDMEvent, strValue ) ) {
+                        var.setValue( strValue );
+                    }
+                    else {
+                        wxString wxstrErr = wxT("[Action] Store Variable: Failed to convert value to string ");
+                        wxstrErr += params;
+                        wxstrErr += _("\n");
+                        m_pDM->m_pCtrlObject->logMsg( wxstrErr );
+                        return false;
+                    }
+                }
+                break;
+                                
+            case VSCP_DAEMON_VARIABLE_CODE_INTEGER:
+                if ( vscp_isVSCPMeasurement( pDMEvent ) ) {
+                    double value;
+                    if ( vscp_getVSCPMeasurementAsDouble( pDMEvent, &value ) ) {
+                        var.setValue( (int)value );
+                    }
+                    else {
+                        wxString wxstrErr = wxT("[Action] Store Variable: Failed to convert value to double ");
+                        wxstrErr += params;
+                        wxstrErr += _("\n");
+                        m_pDM->m_pCtrlObject->logMsg( wxstrErr );
+                        return false;
+                    }
+                }
+                break;
+                
+            case VSCP_DAEMON_VARIABLE_CODE_LONG:
+                if ( vscp_isVSCPMeasurement( pDMEvent ) ) {
+                    double value;
+                    if ( vscp_getVSCPMeasurementAsDouble( pDMEvent, &value ) ) {
+                        var.setValue( (long)value );
+                    }
+                    else {
+                        wxString wxstrErr = wxT("[Action] Store Variable: Failed to convert value to double ");
+                        wxstrErr += params;
+                        wxstrErr += _("\n");
+                        m_pDM->m_pCtrlObject->logMsg( wxstrErr );
+                        return false;
+                    }
+                }
+                break;
+                
+            case VSCP_DAEMON_VARIABLE_CODE_DOUBLE:
+                if ( vscp_isVSCPMeasurement( pDMEvent ) ) {
+                    double value;
+                    if ( vscp_getVSCPMeasurementAsDouble( pDMEvent, &value ) ) {
+                        var.setValue( value );
+                    }
+                    else {
+                        wxString wxstrErr = wxT("[Action] Store Variable: Failed to convert value to double ");
+                        wxstrErr += params;
+                        wxstrErr += _("\n");
+                        m_pDM->m_pCtrlObject->logMsg( wxstrErr );
+                        return false;
+                    }
+                }
+                break;    
+            
+            case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
+                if ( vscp_isVSCPMeasurement( pDMEvent ) ) {
+                    
+                    double value;
+                    uint8_t unit = 0;
+                    uint8_t sensor_index = 0;
+                    uint8_t zone = 0;
+                    uint8_t subzone = 0;
+                    
+                    if ( -1 == ( unit = vscp_getVSCPMeasurementUnit( pDMEvent ) ) ) {
+                        unit = 0;
+                    }
+                    
+                    if ( -1 == ( sensor_index = vscp_getVSCPMeasurementSensorIndex( pDMEvent ) ) ) {
+                        sensor_index = 0;
+                    }
+                    
+                    if ( -1 == ( zone = vscp_getVSCPMeasurementZone( pDMEvent ) ) ) {
+                        zone = 0;
+                    }
+                    
+                    if ( -1 == ( subzone = vscp_getVSCPMeasurementSubZone( pDMEvent ) ) ) {
+                        subzone = 0;
+                    }
+                    
+                    if ( vscp_getVSCPMeasurementAsDouble( pDMEvent, &value ) ) {
+                        
+                        // (MEASUREMENT|6;true|false;)value;unit;sensor-index;zone;subzone
+                        wxString strValue = wxString::Format( _("%f;%d;%d;%d;%d"), 
+                                                                    value,
+                                                                    unit,
+                                                                    sensor_index,
+                                                                    zone,
+                                                                    subzone );
+                        var.setValue( strValue );
+                    }
+                    else {
+                        wxString wxstrErr = wxT("[Action] Store Variable: Failed to convert value to double ");
+                        wxstrErr += params;
+                        wxstrErr += _("\n");
+                        m_pDM->m_pCtrlObject->logMsg( wxstrErr );
+                        return false;
+                    }                    
+                    
+                }
+                break;
+                
+            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
+                {
+                    wxString strEvent;
+                    if ( vscp_writeVscpEventToString( pDMEvent, strEvent ) ) {
+                        var.setValue( strEvent );
+                    }
+                }
+                break;
+                
+            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID:
+                {
+                    wxString wxstr;
+                    cguid guid;
+                    guid.getFromArray( pDMEvent->GUID );
+                    guid.toString( wxstr );
+                    var.setValue( wxstr );
+                }
+                break;
+                
+            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA:
+                {
+                    wxString strData;
+                    if ( vscp_writeVscpDataToString( pDMEvent, strData ) ) {
+                        var.setValue( strData );
+                    }
+                }
+                break;
+                
+            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS:
+                var.setValue( pDMEvent->vscp_class );    
+                break;
+                
+            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE:
+                var.setValue( pDMEvent->vscp_type );
+                break;
+                
+            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP:
+                var.setValue( (double)pDMEvent->timestamp );
+                break;
+                
+            case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
+                {
+                    wxDateTime dt = wxDateTime::Now();
+                    var.setValue( dt.FormatISOCombined() );
+                }
+                break;
+                
+            case VSCP_DAEMON_VARIABLE_CODE_DATE:
+                {
+                    wxDateTime dt = wxDateTime::Now();
+                    var.setValue( dt.FormatISODate() );
+                }                
+                break;
+                
+            case VSCP_DAEMON_VARIABLE_CODE_TIME:
+                {
+                    wxDateTime dt = wxDateTime::Now();
+                    var.setValue( dt.FormatISOTime() );
+                }                
+                break;
+                           
+            case VSCP_DAEMON_VARIABLE_CODE_HTML:
+                {
+                    wxString strData;
+                    vscp_writeVscpDataToString( pDMEvent, strData );
+                    
+                    wxString strGUID;
+                    vscp_writeGuidToString( pDMEvent, strGUID );
+                    
+                    wxString wxstr = wxString::Format( VSCP_HTML_EVENT_TEMPLATE,
+                                                        wxDateTime::Now().FormatISOCombined(),
+                                                        pDMEvent->vscp_class,
+                                                        pDMEvent->vscp_type,
+                                                        pDMEvent->sizeData,
+                                                        (const char *)strData.mbc_str(),
+                                                        (const char *)strGUID.mbc_str(),
+                                                        pDMEvent->head,
+                                                        pDMEvent->timestamp,
+                                                        pDMEvent->obid,
+                                                        "" );
+                    var.setValue( wxstr );
+                }
+                break;
+                             
+            case VSCP_DAEMON_VARIABLE_CODE_JSON:
+                {
+                    wxString strData;
+                    vscp_writeVscpDataToString( pDMEvent, strData );
+                    
+                    wxString strGUID;
+                    vscp_writeGuidToString( pDMEvent, strGUID );
+                    
+                    wxString wxstr = wxString::Format( VSCP_JSON_EVENT_TEMPLATE,
+                                                        wxDateTime::Now().FormatISOCombined(),
+                                                        pDMEvent->head,
+                                                        pDMEvent->timestamp,
+                                                        pDMEvent->obid,
+                                                        pDMEvent->vscp_class,
+                                                        pDMEvent->vscp_type,
+                                                        (const char *)strGUID.mbc_str(),
+                                                        (const char *)strData.mbc_str(),
+                                                        "" );
+                    var.setValue( wxstr );
+                }
+                break;
+                
+            case VSCP_DAEMON_VARIABLE_CODE_XML:
+                {
+                    wxString strData;
+                    vscp_writeVscpDataToString( pDMEvent, strData );
+                    
+                    wxString strGUID;
+                    vscp_writeGuidToString( pDMEvent, strGUID );
+                    
+                    wxString wxstr = wxString::Format( VSCP_XML_EVENT_TEMPLATE,
+                                                        wxDateTime::Now().FormatISOCombined(),
+                                                        pDMEvent->head,
+                                                        pDMEvent->timestamp,
+                                                        pDMEvent->obid,
+                                                        pDMEvent->vscp_class,
+                                                        pDMEvent->vscp_type,
+                                                        (const char *)strGUID.mbc_str(),
+                                                        pDMEvent->sizeData,
+                                                        (const char *)strData.mbc_str(),
+                                                        "" );
+                    var.setValue( wxstr );
+                }
+                break;
+                
+        }
+    
     
     }
 
@@ -5895,10 +6180,10 @@ bool CDM::feed( vscpEvent *pEvent )
             if ( pDMitem->isCompareMeasurementSet() ) {
                     
                 // Must be a measurement event
-                if ( !vscp_isMeasurement( pEvent ) ) continue;
+                if ( !vscp_isVSCPMeasurement( pEvent ) ) continue;
 
                 // Unit must be same
-                if ( pDMitem->m_measurementUnit != vscp_getMeasurementUnit( pEvent ) ) continue;
+                if ( pDMitem->m_measurementUnit != vscp_getVSCPMeasurementUnit( pEvent ) ) continue;
                 
                 double value;
                 if ( !vscp_getVSCPMeasurementAsDouble( pEvent, &value ) ) {

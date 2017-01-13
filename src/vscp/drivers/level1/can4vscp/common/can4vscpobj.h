@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2015 
+// Copyright (C) 2000-2017 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -75,8 +75,8 @@
 // Max messages in output queue
 #define CAN4VSCP_MAX_SNDMSG                                 4096
 
-// Max number of response messages in respnse queue
-#define CAN4VSCP_MAX_RESPONSEMSG	                        32
+// Max number of response messages in response queue
+#define CAN4VSCP_MAX_RESPONSEMSG	                    32
 
 // Byte stuffing start and end characters
 #define DLE                                                 0x10
@@ -84,34 +84,34 @@
 #define ETX                                                 0x03
 
 // RX State machine
-#define INCOMING_STATE_NONE			                        0	// Waiting for <STX>
-#define INCOMING_STATE_STX			                        1	// Reading data
-#define INCOMING_STATE_ETX			                        2	// <ETX> has been received
-#define INCOMING_STATE_COMPLETE		                        3	// Frame received
+#define INCOMING_STATE_NONE                                 0	// Waiting for <STX>
+#define INCOMING_STATE_STX                                  1	// Reading data
+#define INCOMING_STATE_ETX                                  2	// <ETX> has been received
+#define INCOMING_STATE_COMPLETE                             3	// Frame received
 
-#define INCOMING_SUBSTATE_NONE		                        0	// Idle
-#define INCOMING_SUBSTATE_DLE		                        1	// <DLE> received
+#define INCOMING_SUBSTATE_NONE                              0	// Idle
+#define INCOMING_SUBSTATE_DLE                               1	// <DLE> received
 
 
 // CAN4VSCP Commands
 #define RESET_NOOP                                          0x00	// No Operation
-#define	GET_TX_ERR_CNT			                            0x02	// Get TX error count
-#define	GET_RX_ERR_CNT			                            0x03	// Get RX error count
-#define	GET_CANSTAT				                            0x04	// Get CAN statistics
-#define	GET_COMSTAT				                            0x05
-#define	GET_MSGFILTER1			                            0x06	// Get message filter 1
-#define	GET_MSGFILTER2			                            0x07	// Get message filter 2
-#define	SET_MSGFILTER1			                            0x08	// Set message filter 1
-#define	SET_MSGFILTER2			                            0x09	// Set message filter 2
+#define	GET_TX_ERR_CNT                                      0x02	// Get TX error count
+#define	GET_RX_ERR_CNT                                      0x03	// Get RX error count
+#define	GET_CANSTAT                                         0x04	// Get CAN statistics
+#define	GET_COMSTAT                                         0x05
+#define	GET_MSGFILTER1                                      0x06	// Get message filter 1
+#define	GET_MSGFILTER2                                      0x07	// Get message filter 2
+#define	SET_MSGFILTER1                                      0x08	// Set message filter 1
+#define	SET_MSGFILTER2                                      0x09	// Set message filter 2
 
 
 // Emergency flags
-#define EMERGENCY_OVERFLOW		                            0x01
+#define EMERGENCY_OVERFLOW                                  0x01
 #define EMERGENCY_RCV_WARNING                               0x02
 #define EMERGENCY_TX_WARNING                                0x04
 #define EMERGENCY_TXBUS_PASSIVE                             0x08
 #define EMERGENCY_RXBUS_PASSIVE                             0x10
-#define EMERGENCY_BUS_OFF		                            0x20
+#define EMERGENCY_BUS_OFF                                   0x20
 
 // VSCP Driver positions in frame
 #define VSCP_CAN4VSCP_DRIVER_POS_FRAME_TYPE                 0
@@ -158,6 +158,7 @@
 
 #define SET_BAUDRATE_MAX                                    13
 
+// Driver info in BINHEX
 #ifdef WIN32
 #define DRIVERINFO   "PGNvbmZpZz48ZGVzY3JpcHRpb24+Q0FONFZTQ1Agc3RhbmRhcmQgc2VyaWFsIGRyaXZlcjwvZGVzY3JpcHRpb24+PGxldmVsPjE8L2xldmVsPjxibG9ja2luZz55ZXM8L2Jsb2NraW5nPjxpbmZvdXJsPmh0dHA6Ly93d3cuZ3JvZGFuc3BhcmFkaXMuY29tL2ZyYW5rZnVydC9yczIzMi9tYW51YWwvZG9rdS5waHA/aWQ9dGhlX2NhbjR2c2NwX21vZGU8L2luZm91cmw+PGl0ZW1zPjxpdGVtIHBvcz0iMCIgdHlwZT0ic3RyaW5nIiBkZXNjcmlwdGlvbj0iU2VyaWFsIHBvcnQgKENPTTEsIENPTTIuLi4pIiBpbmZvdXJsPSJodHRwOi8vd3d3LnZzY3Aub3JnL2RvY3MvdnNjcGQvZG9rdS5waHA/aWQ9bGV2ZWwxX2RyaXZlcl9jYW40dnNjcCNwYXJhbWV0ZXJfc3RyaW5nIi8+PGl0ZW0gcG9zPSIxIiB0eXBlPSJjaG9pY2UiIG9wdGlvbmFsPSJ0cnVlIiBkZXNjcmlwdGlvbj0iQmF1ZHJhdGUgdG8gdXNlIGZvciBjb21tdW5pY2F0aW9uIHdpdGggdGhlIGFkYXB0ZXIuRGVmYXVsdCBpcyAxMTUyMDAgYmF1ZC4gIiBpbmZvdXJsPSJodHRwOi8vd3d3LnZzY3Aub3JnL2RvY3MvdnNjcGQvZG9rdS5waHA/aWQ9bGV2ZWwxX2RyaXZlcl9jYW40dnNjcCNwYXJhbWV0ZXJfc3RyaW5nIj48Y2hvaWNlIHZhbHVlPSIwIiBkZXNjcmlwdGlvbj0iMTE1MjAwIGJhdWQiLz48Y2hvaWNlIHZhbHVlPSIxIiBkZXNjcmlwdGlvbj0iMTI4MDAwIGJhdWQiLz48Y2hvaWNlIHZhbHVlPSIzIiBkZXNjcmlwdGlvbj0iMjMwNDAwIGJhdWQiLz48Y2hvaWNlIHZhbHVlPSI0IiBkZXNjcmlwdGlvbj0iMjU2MDAwIGJhdWQiLz48Y2hvaWNlIHZhbHVlPSI1IiBkZXNjcmlwdGlvbj0iNDYwODAwIGJhdWQiLz48Y2hvaWNlIHZhbHVlPSI2IiBkZXNjcmlwdGlvbj0iNTAwMDAwIGJhdWQiLz48Y2hvaWNlIHZhbHVlPSI3IiBkZXNjcmlwdGlvbj0iNjI1MDAwIGJhdWQiLz48Y2hvaWNlIHZhbHVlPSI4IiBkZXNjcmlwdGlvbj0iOTIxNjAwIGJhdWQiLz48Y2hvaWNlIHZhbHVlPSI5IiBkZXNjcmlwdGlvbj0iMTAwMDAwMCBiYXVkIi8+PGNob2ljZSB2YWx1ZT0iMCIgZGVzY3JpcHRpb249Ijk2MDAgYmF1ZCIvPjxjaG9pY2UgdmFsdWU9IjEwIiBkZXNjcmlwdGlvbj0iMTkyMDAgYmF1ZCIvPjxjaG9pY2UgdmFsdWU9IjExIiBkZXNjcmlwdGlvbj0iMzg0MDAgYmF1ZCIvPjxjaG9pY2UgdmFsdWU9IjEyIiBkZXNjcmlwdGlvbj0iNTc2MDAgYmF1ZCIvPjwvaXRlbT48L2l0ZW1zPjxmbGFncz48Yml0IHBvcz0iMCIgd2lkdGg9IjIiIHR5cGU9ImNob2ljZSIgZGVzY3JpcHRpb249IlNlbGVjdCB0aGUgbW9kZSB0aGUgZGV2aWNlIHNob3VsZCBiZSBvcGVuZWQgaW4uIFRoZSBub3JtYWwgbW9kZSBvcGVucyB0aGUgaW50ZXJmYWNlIGZvciByZWNlaXZlIGFuZCB0cmFuc21pdC4gVGhlIGxpc3RlbiBtb2RlIG9ubHkgbGlzdGVuIG9uIHRyYWZmaWMgb24gdGhlIGJ1cy4gTG9vcGJhY2sganVzdCBjb25uZWN0IHRoZSByZWNlaXZlIGFuZCB0cmFuc21pdCBsaW5lcyB3aXRob3V0IHNlbmRpbmcgYW55dGhpbmcgb24gdGhlIGJ1cy4gVGhlIG1hbnVhbCBkZXNjcmliZXMgdGhlIG1vZGVzIGluIGRldGFpbC4iIGluZm91cmw9Imh0dHA6Ly93d3cudnNjcC5vcmcvZG9jcy92c2NwZC9kb2t1LnBocD9pZD1sZXZlbDFfZHJpdmVyX2NhbjR2c2NwI2ZsYWdzIj48Y2hvaWNlIHZhbHVlPSIwIiBkZXNjcmlwdGlvbj0iT3BlbiBDQU40VlNDUCBpbnRlcmZhY2UgaW4gbm9ybWFsIG1vZGUuIi8+PGNob2ljZSB2YWx1ZT0iMSIgZGVzY3JpcHRpb249Ik9wZW4gQ0FONFZTQ1AgaW50ZXJmYWNlIGluIGxpc3RlbiBtb2RlLiIvPjxjaG9pY2UgdmFsdWU9IjIiIGRlc2NyaXB0aW9uPSJPcGVuIENBTjRWU0NQIGludGVyZmFjZSBpbiBsb29wYmFjayBtb2RlLiIvPjwvYml0PjxiaXQgcG9zPSIyIiB3aWR0aD0iMSIgdHlwZT0iYm9vbCIgZGVzY3JpcHRpb249IklmIHRoaXMgZmxhZyBpcyBzZXQgdGhlIGRyaXZlciB3aWxsIG5vdCBzd2l0Y2ggdG8gVlNDUCBtb2RlLiBUaGlzIG1lYW5zIGl0IGFscmVhZHkgbXVzdCBiZSBpbiBWU0NQIG1vZGUuIFRoZSBhZHZhbnRhZ2UgaXMgdGhhdCB0aGUgb3BlbiBvcGVyYXRpb24gd2lsbCBiZSBmYXN0ZXIuIiBpbmZvdXJsPSJodHRwOi8vd3d3LnZzY3Aub3JnL2RvY3MvdnNjcGQvZG9rdS5waHA/aWQ9bGV2ZWwxX2RyaXZlcl9jYW40dnNjcCNmbGFncyIvPjxiaXQgcG9zPSIzIiB3aWR0aD0iMSIgdHlwZT0iYm9vbCIgZGVzY3JpcHRpb249IklmIHRoaXMgZmxhZyBpcyBzZXQgdGhlIGRyaXZlciB3aWxsIHdhaXQgZm9yIGFuIEFDSyBmcm9tIHRoZSBwaHlzaWNhbCBkZXZpY2UgZm9yIGV2ZXJ5IHNlbnQgZnJhbWUuIFRoaXMgd2lsbCBzbG93IGRvd24gc2VuZGluZyBidXQgbWFrZSB0cmFuc21pc3Npb24gdmVyeSBzZWN1cmUuIiBpbmZvdXJsPSJodHRwOi8vd3d3LnZzY3Aub3JnL2RvY3MvdnNjcGQvZG9rdS5waHA/aWQ9bGV2ZWwxX2RyaXZlcl9jYW40dnNjcCNmbGFncyIvPjxiaXQgcG9zPSI0IiB3aWR0aD0iMSIgdHlwZT0iYm9vbCIgZGVzY3JpcHRpb249IklmIHRoaXMgZmxhZyBpcyBzZXQgaXQgZW5hYmxlIHRpbWVzdGFtcHMgaW4gaGFyZHdhcmUgbWVhbmluZyB0aGUgdGltZXN0YW1wIHdpbGwgYmUgd3JpdHRlbiBieSB0aGUgaGFyZHdhcmUgaW5zdGVhZCBvZiBieSB0aGUgZHJpdmVyLiBUaGUgZGlzYWR2YW50YWdlIGlzIHRoYXQgaXQgY29uc3VtZXMgYmFuZHdpZHRoLiIgaW5mb3VybD0iaHR0cDovL3d3dy52c2NwLm9yZy9kb2NzL3ZzY3BkL2Rva3UucGhwP2lkPWxldmVsMV9kcml2ZXJfY2FuNHZzY3AjZmxhZ3MiLz48Yml0IHBvcz0iNSIgd2lkdGg9IjEiIHR5cGU9ImJvb2wiIGRlc2NyaXB0aW9uPSJJZiB0aGlzIGZsYWcgaXMgc2V0IGVuYWJsZSBoYXJkd2FyZSBoYW5kc2hha2UuIFJlY29tbWVuZGVkIGZvciBsb3dlciBiYXVkcmF0ZXMgdG8gcHJldmVudCBidWZmZXIgb3ZlcmZsb3dzLiIgaW5mb3VybD0iaHR0cDovL3d3dy52c2NwLm9yZy9kb2NzL3ZzY3BkL2Rva3UucGhwP2lkPWxldmVsMV9kcml2ZXJfY2FuNHZzY3AjZmxhZ3MiLz48L2ZsYWdzPjwvY29uZmlnPg=="
 #else
@@ -176,7 +177,7 @@ typedef struct {
 //
 
 typedef struct {
-    uint8_t op;                 // Operation == framtype
+    uint8_t op;                 // Operation == frametype
     uint8_t seq;                // Sequency number
     uint8_t channel;            // Channel
     uint16_t sizePayload;       // Size of payload
@@ -268,7 +269,7 @@ public:
     /*!
         Read a message from the device (Blocking)
         @param pcanalMsg Pointer to CAN message
-        @param timout Timout in millisconds
+        @param timout Timout in milliseconds
         @return CANAL return code. CANAL_ERROR_SUCCESS on success.
      */
     int readMsgBlocking(canalMsg *pMsg, uint32_t timeout);
@@ -322,7 +323,7 @@ public:
 
         @param pMsg Pointer to response message
         @param cmdcode Command to wait for reply from
-        @param saveseq Squency number when frame was sent.
+        @param saveseq Sequency number when frame was sent.
         @param timeout Timeout in milliseconds
         @return True on success
      */
@@ -348,7 +349,7 @@ public:
     /*!
         Sent a configuration parameter in the device
 
-        @param cmdcode Code for coonfiguration parameter to set
+        @param cmdcode Code for configuration parameter to set
         @param data Pointer to data to send
         @param dataSize Size for datablock
         @return True on success.
@@ -360,7 +361,7 @@ public:
 
         @param pMsg Pointer to response message
         @param codeConfig Configuration code to wait for reply from
-        @param saveseq Squency number when frame was sent.
+        @param saveseq Sequency number when frame was sent.
         @param timeout Timeout in milliseconds
         @return True on success
     */
@@ -415,7 +416,7 @@ public:
 
     /*!
         Send Open Frame
-        \mode is 0=Nomal. 1=Listen, 2=Loopback, 3=Configuration
+        \mode is 0=Normal. 1=Listen, 2=Loopback, 3=Configuration
      */
     void sendOpenInterfaceFrame(uint8_t mode);
 
@@ -437,7 +438,7 @@ public:
     bool serialData2StateMachine(void);
 
     /*!
-        Do reading and interpreet data
+        Do reading and interpret data
      */
     void readSerialData(void);
 
@@ -465,13 +466,13 @@ public:
 
     /*! 
         Max number of VSCP frames in 
-        multifram payload
+        multi frame payload
      */
     uint8_t m_capsMaxVscpFrames;
 
     /*!
         Max number of CANAL frames in
-        multiframe payload.
+        multi frame payload.
      */
     uint8_t m_capsMaxCanalFrames;
 
@@ -622,13 +623,13 @@ public:
     /*!
     Filter for outgoing messages
 
-    mask bit n	|	filter bit n	| msg id bit	|	result
+    mask bit n | filter bit n | msg id bit | result
     ===========================================================
-    0				X					X			Accept				
-    1				0					0			Accept
-    1				0					1			Reject
-    1				1					0			Reject
-    1				1					1			Accept
+        0              X              X        Accept				
+        1              0              0        Accept
+        1              0              1        Reject
+        1              1              0        Reject
+        1              1              1        Accept
 
     Formula is !( ( filter \EEd ) & mask )
      */
@@ -641,7 +642,7 @@ public:
 
 
     ///////////////////////////////////////////////////////////////////////////
-    //				 * * * * *  CAN4VSCP specific * * * * *
+    //            * * * * *  CAN4VSCP specific * * * * *
     ///////////////////////////////////////////////////////////////////////////
 
 
@@ -662,7 +663,7 @@ public:
 
 
     /*!
-            id for worker thread
+        id for worker thread
      */
     pthread_t m_threadId;
 

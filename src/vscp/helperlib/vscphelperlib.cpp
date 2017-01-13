@@ -2756,9 +2756,47 @@ extern "C" int WINAPI EXPORT  vscphlp_getMeasurementUnit( const vscpEvent *pEven
 extern "C" int vscphlp_getMeasurementUnit( const vscpEvent *pEvent )
 #endif
 {
-    return vscphlp_getMeasurementUnit( pEvent );
+    return vscp_getVSCPMeasurementUnit( pEvent );
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// vscp_getMeasurementSensorIndex
+//
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT  vscphlp_getMeasurementSensorIndex( const vscpEvent *pEvent )
+#else
+extern "C" int vscphlp_getMeasurementSensorIndex( const vscpEvent *pEvent )
+#endif
+{
+    return vscp_getVSCPMeasurementSensorIndex( pEvent );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_getMeasurementZone
+//
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT  vscphlp_getMeasurementZone( const vscpEvent *pEvent )
+#else
+extern "C" int vscphlp_getMeasurementZone( const vscpEvent *pEvent )
+#endif
+{
+    return vscp_getVSCPMeasurementZone( pEvent );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_getMeasurementSubZone
+//
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT  vscphlp_getMeasurementSubZone( const vscpEvent *pEvent )
+#else
+extern "C" int vscphlp_getMeasurementSubZone( const vscpEvent *pEvent )
+#endif
+{
+    return vscp_getVSCPMeasurementSubZone( pEvent );
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_isMeasurement
@@ -2770,5 +2808,5 @@ extern "C" int WINAPI EXPORT vscphlp_isMeasurement( const vscpEvent *pEvent )
 extern "C" int vscphlp_isMeasurement( const vscpEvent *pEvent )
 #endif
 {
-    return vscp_isMeasurement( pEvent ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+    return vscp_isVSCPMeasurement( pEvent ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }

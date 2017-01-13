@@ -832,10 +832,10 @@ bool vscp_getVSCPMeasurementWithZoneAsString(const vscpEvent *pEvent, wxString& 
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// vscp_getMeasurementUnit
+// vscp_getVSCPMeasurementUnit
 //
 
-int vscp_getMeasurementUnit( const vscpEvent *pEvent )
+int vscp_getVSCPMeasurementUnit( const vscpEvent *pEvent )
 {
     int offset = 0;
     
@@ -883,15 +883,185 @@ int vscp_getMeasurementUnit( const vscpEvent *pEvent )
         
     }
     
+    return VSCP_ERROR_ERROR;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_getVSCPMeasurementSensorIndex
+//
+
+int vscp_getVSCPMeasurementSensorIndex( const vscpEvent *pEvent )
+{
+    int offset = 0;
+    
+    // If class >= 512 and class < 1024 we
+    // have GUID in front of data. 
+    if ( ( pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL )  && 
+            ( pEvent->vscp_class < VSCP_CLASS2_PROTOCOL ) ) {
+        offset = 16;
+    }
+    
+    if ( ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) || 
+             ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class ) ) {
+                
+        return VSCP_DATACODING_INDEX( pEvent->pdata[ offset + 0 ] );
+        
+    }
+    else if ( ( VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class ) || 
+             ( VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class ) || 
+             ( VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class ) ||
+             ( VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class ) ) {
+        
+        if ( ( NULL == pEvent->pdata ) || ( pEvent->sizeData >= (offset + 3) ) ) return 0;
+        
+        return pEvent->pdata[ offset + 0 ];
+    }
+    else if ( ( VSCP_CLASS1_MEASUREMENT32 == pEvent->vscp_class ) || 
+             ( VSCP_CLASS2_LEVEL1_MEASUREMENT32 == pEvent->vscp_class ) ) {
+        return 0;   // Sensor index is always zero
+    }
+    else if ( ( VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class ) || 
+             ( VSCP_CLASS2_LEVEL1_MEASUREMENT64 == pEvent->vscp_class ) ) {
+        return 0;   // Sensor index is always zero
+    }
+    else if ( ( VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class ) ) {
+        
+        // Check if data length is valid
+        if ( ( NULL == pEvent->pdata ) || ( pEvent->sizeData < 4 ) ) return VSCP_ERROR_ERROR;
+        
+        return pEvent->pdata[0];
+        
+    }
+    else if ( ( VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class ) ) {
+        
+        // Check if data length is valid
+        if ( ( NULL == pEvent->pdata ) || ( 12 != pEvent->sizeData ) ) return VSCP_ERROR_ERROR;
+        
+        return pEvent->pdata[0];
+        
+    }
     
     return VSCP_ERROR_ERROR;
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// vscp_isMeasurement
+// vscp_getVSCPMeasurementZone
 //
 
-bool vscp_isMeasurement( const vscpEvent *pEvent )
+int vscp_getVSCPMeasurementZone( const vscpEvent *pEvent )
+{
+    int offset = 0;
+    
+    // If class >= 512 and class < 1024 we
+    // have GUID in front of data. 
+    if ( ( pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL )  && 
+            ( pEvent->vscp_class < VSCP_CLASS2_PROTOCOL ) ) {
+        offset = 16;
+    }
+    
+    if ( ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) || 
+             ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class )  ) {
+               
+        return 0;   // Always zero
+        
+    }
+    else if ( ( VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class ) || 
+             ( VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class ) || 
+             ( VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class ) ||
+             ( VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class ) ) {
+        
+        if ( ( NULL == pEvent->pdata ) || ( pEvent->sizeData >= (offset + 3) ) ) return 0;
+        
+        return pEvent->pdata[ offset +  1 ];
+    }
+    else if ( ( VSCP_CLASS1_MEASUREMENT32 == pEvent->vscp_class ) || 
+             ( VSCP_CLASS2_LEVEL1_MEASUREMENT32 == pEvent->vscp_class ) ) {
+        return 0;   // Sensor index is always zero
+    }
+    else if ( ( VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class ) || 
+             ( VSCP_CLASS2_LEVEL1_MEASUREMENT64 == pEvent->vscp_class ) ) {
+        return 0;   // Sensor index is always zero
+    }
+    else if ( ( VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class ) ) {
+        
+        // Check if data length is valid
+        if ( ( NULL == pEvent->pdata ) || ( pEvent->sizeData < 4 ) ) return VSCP_ERROR_ERROR;
+        
+        return pEvent->pdata[2];
+        
+    }
+    else if ( ( VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class ) ) {
+        
+        // Check if data length is valid
+        if ( ( NULL == pEvent->pdata ) || ( 12 != pEvent->sizeData ) ) return VSCP_ERROR_ERROR;
+        
+        return pEvent->pdata[2];
+        
+    }
+    
+    return VSCP_ERROR_ERROR;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_getVSCPMeasurementSubZone
+//
+
+int vscp_getVSCPMeasurementSubZone( const vscpEvent *pEvent )
+{
+    int offset = 0;
+    
+    // If class >= 512 and class < 1024 we
+    // have GUID in front of data. 
+    if ( ( pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL )  && 
+            ( pEvent->vscp_class < VSCP_CLASS2_PROTOCOL ) ) {
+        offset = 16;
+    }
+    
+    if ( ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) || 
+             ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class ) ||
+             ( VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class ) || 
+             ( VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class ) || 
+             ( VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class ) ||
+             ( VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class ) ) {
+        
+        if ( ( NULL == pEvent->pdata ) || ( pEvent->sizeData >= (offset + 1) ) ) return 0;
+        
+        return 0;   // Always zero
+        
+    }
+    else if ( ( VSCP_CLASS1_MEASUREMENT32 == pEvent->vscp_class ) || 
+             ( VSCP_CLASS2_LEVEL1_MEASUREMENT32 == pEvent->vscp_class ) ) {
+        return 0;   // Sensor index is always zero
+    }
+    else if ( ( VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class ) || 
+             ( VSCP_CLASS2_LEVEL1_MEASUREMENT64 == pEvent->vscp_class ) ) {
+        return 0;   // Sensor index is always zero
+    }
+    else if ( ( VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class ) ) {
+        
+        // Check if data length is valid
+        if ( ( NULL == pEvent->pdata ) || ( pEvent->sizeData < 4 ) ) return VSCP_ERROR_ERROR;
+        
+        return pEvent->pdata[ offset + 2 ];
+        
+    }
+    else if ( ( VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class ) ) {
+        
+        // Check if data length is valid
+        if ( ( NULL == pEvent->pdata ) || ( 12 != pEvent->sizeData ) ) return VSCP_ERROR_ERROR;
+        
+        return pEvent->pdata[2];
+        
+    }
+    
+    return VSCP_ERROR_ERROR;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_isVSCPMeasurement
+//
+
+bool vscp_isVSCPMeasurement( const vscpEvent *pEvent )
 {
     if ( ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) || 
          ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class ) ||

@@ -469,6 +469,119 @@ struct myNode {
 #define VSCP_ERROR_INVALID_HANDLE               41      // The handle is not valid
 #define VSCP_ERROR_OPERATION_FAILED             42      // Operation failed for some reason
 
+/*!
+    Template for VSCP XML event data
+ 
+    data: datetime,head,timestamp,obid,class,type,guid,sizedata,data,note
+  
+<event>
+    <time>2017-01-13T10:16:02</time>
+    <head>3</head>
+    <timestamp>50817</timestamp>
+    <obid>1234</obid>
+    <class>10</class>
+    <type>6</type>
+    <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02</guid>
+    <sizedata>7</sizedata>
+    <data>0x48,0x34,0x35,0x2E,0x34,0x36,0x34</data>
+    <note></note>
+</event>
+ */
+#define VSCP_XML_EVENT_TEMPLATE "<event>\
+    <time>%s</time>\
+    <head>%d</head>\
+    <timestamp>%lu</timestamp>\
+    <obid>%lu</obid>\
+    <class>%d</class>\
+    <type>%d</type>\
+    <guid>%s</guid>\
+    <sizedata>%d</sizedata>\
+    <data>%s</data>\
+    <note>%s</note>\
+</event>"
+
+
+/*
+  
+    Template for VSCP JSON event data
+    data: datetime,head,timestamp,obid,class,type,guid,data,note 
+  
+{
+    "time": "2017-01-13T10:16:02",
+    "head": 2,
+    "timestamp":50817,
+    "obid"; 123,
+    "class": 10,
+    "type": 8,
+    "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02",
+    "data": [1,2,3,4,5,6,7],
+    "note": "This is some text"
+}
+*/
+#define VSCP_JSON_EVENT_TEMPLATE "{"\
+    "\"time\": \"%s\","\
+    "\"head\": %d,"\
+    "\"timestamp\":%lu,"\
+    "\"obid\";  %lu,"\
+    "\"class\": %d,"\
+    "\"type\": %d,"\
+    "\"guid\": \"%s\","\
+    "\"data\": [%s],"\
+    "\"note\": \"%s\""\
+"}"
+
+/*!
+ 
+    Template for VSCP HTML event data  
+   
+    data: datetime,class,type,data-count,data,guid,head,timestamp,obid,note
+ 
+<h2>VSCP Event</h2>
+<p>
+Time: 2017-01-13T10:16:02 <br>
+</p>
+<p>
+Class: 10 <br>
+Type: 6 <br>
+</p>
+<p>
+Data count: 6<br>
+Data: 1,2,3,4,5,6,7<br>
+</p>
+<p>
+From GUID: 00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02<br>
+</p>
+<p>
+Head: 6 <br>
+Timestamp: 1234 <br>
+obid: 1234 <br>
+note: This is a note <br>
+</p>
+ 
+*/
+
+
+#define VSCP_HTML_EVENT_TEMPLATE "<h2>VSCP Event</h2> "\
+    "<p>"\
+    "Time: %s <br>"\
+    "</p>"\
+    "<p>"\
+    "Class: %d <br>"\
+    "Type: %d <br>"\
+    "</p>"\
+    "<p>"\
+    "Data count: %d<br>"\
+    "Data: %s<br>"\
+    "</p>"\
+    "<p>"\
+    "From GUID: %s<br>"\
+    "</p>"\
+    "<p>"\
+    "Head: %d <br>"\
+    "Timestamp: %lu <br>"\
+    "obid: %lu <br>"\
+    "note: %s <br>"\
+    "</p>"
 
 #ifdef __cplusplus
 }

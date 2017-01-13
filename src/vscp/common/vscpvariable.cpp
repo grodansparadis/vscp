@@ -1442,7 +1442,7 @@ void CVSCPVariable::Reset( void )
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
-                m_strValue = _("");
+                m_strValue = _("0;0;0;0;0");    // value;unit;sensor-index;zone;subzone
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
