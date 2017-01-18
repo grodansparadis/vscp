@@ -483,6 +483,43 @@ wxString CVSCPVariable::getAsString( bool bShort )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// getAsJSON
+//
+
+bool CVSCPVariable::getAsJSON( wxString &strVariable )
+{
+    // name,type,user,rights,persistence,last,value,note
+    strVariable.Printf( VARIABLE_JSON_TEMPLATE,
+                            m_name,
+                            m_type,
+                            m_userid,
+                            m_accessRights,
+                            m_bPersistent ? _("true") : _("false"),
+                            (const char *)m_lastChanged.FormatISOCombined().mbc_str(),
+                            m_strValue,
+                            m_note );
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getAsXML
+//
+
+bool CVSCPVariable::getAsXML( wxString &strVariable )
+{
+    strVariable.Printf( VARIABLE_XML_TEMPLATE,
+                            m_name,
+                            m_type,
+                            m_userid,
+                            m_accessRights,
+                            m_bPersistent ? _("true") : _("false"),
+                            (const char *)m_lastChanged.FormatISOCombined().mbc_str(),
+                            m_strValue,
+                            m_note );
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // setName
 //
 

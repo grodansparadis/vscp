@@ -80,6 +80,42 @@
 class wxFFileOutputStream;
 
 
+// name,type,user,rights,persistence,last,value,note
+//{  
+//	"name": "variable-name",
+//	"type": 1,
+//	"user": 2,
+//	"access-rights": 0x777,
+//        "persistence": true|false,
+//	"last-change": "YYYYMMDDTHHMMSS",
+//	"value": "This is a test variable",
+//	"note": "This is a note about this variable"
+//}
+
+#define VARIABLE_JSON_TEMPLATE "{\n"\
+    "\"name\": '%s',\n"\
+    "\"type\": %u,\n"\
+    "\"user\": %lu,\n"\
+    "\"access-rights\": %lu,\n"\
+    "\"persistence\": %s,\n"\
+    "\"last-change\": '%s',\n"\
+    "\"value\": '%s',\n"\
+    "\"note\": '%s'\n"\
+"}"
+
+
+#define VARIABLE_XML_TEMPLATE "<variable>\n"\
+    "<name>'%s'</name>\n"\
+    "<type>%u</type>\n"\
+    "<user>%lu</user>\n"\
+    "<access-rights>%lu<access-rights>\n"\
+    "<persistence>%s<persistence>\n"\
+    "<last-change>%s<last-change>\n"\
+    "<value>%s</value>\n"\
+    "<note>%s</note>\n"\
+"</variable>"
+
+
 /*
  * Structure used for multi call variable
  * queries. 
@@ -175,6 +211,20 @@ public:
      * @return Variable content in semicolon separated form. 
      */
     wxString getAsString( bool bShort=true );
+    
+    /*!
+     * Get the variable as a JSON object
+     * @param strVariable Filled in with JSON data
+     * @return true of all is OK, false otherwise.
+     */
+    bool getAsJSON( wxString &strVariable );
+    
+    /*!
+     * Get the variable as a XML object
+     * @param strVariable Filled in with JSON data
+     * @return true of all is OK, false otherwise.
+     */
+    bool getAsXML( wxString &strVariable );
 
     /*!
         Reset the variable to it's default value

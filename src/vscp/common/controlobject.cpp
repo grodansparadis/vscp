@@ -344,12 +344,9 @@ CControlObject::CControlObject()
     // Directory listings on by default
     strcpy( m_EnableDirectoryListings, "yes" );
 
-    // Set control object
-    m_dm.setControlObject(this);
-
 #ifdef WIN32
 
-    // Initialise winsock layer
+    // Initialize winsock layer
     WSAStartup(wVersionRequested, &wsaData);
 
     // Also for wx

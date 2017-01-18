@@ -56,6 +56,10 @@ VSCPD_OBJECTS =  vscpd.o \
 	../../common/knownnodes.o \
 	../../common/vscpmqttbroker.o \
 	../../common/vscpcoapserver.o \
+        ../../common/v7callbacks.o \
+        ../../../common/jsonreader.o \
+        ../../../common/jsonwriter.o \
+        ../../../common/jsonval.o \
 
 # The following files are built in the local folder to
 # prevent a mix between dll linkage and exe linkage

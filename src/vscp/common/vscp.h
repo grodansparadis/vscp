@@ -487,18 +487,18 @@ struct myNode {
     <note></note>
 </event>
  */
-#define VSCP_XML_EVENT_TEMPLATE "<event>\
-    <time>%s</time>\
-    <head>%d</head>\
-    <timestamp>%lu</timestamp>\
-    <obid>%lu</obid>\
-    <class>%d</class>\
-    <type>%d</type>\
-    <guid>%s</guid>\
-    <sizedata>%d</sizedata>\
-    <data>%s</data>\
-    <note>%s</note>\
-</event>"
+#define VSCP_XML_EVENT_TEMPLATE "<event>\n"\
+    "<time>%s</time>\n"\
+    "<head>%d</head>\n"\
+    "<timestamp>%lu</timestamp>\n"\
+    "<obid>%lu</obid>\n"\
+    "<class>%d</class>\n"\
+    "<type>%d</type>\n"\
+    "<guid>%s</guid>\n"\
+    "<sizedata>%d</sizedata>\n"\
+    "<data>%s</data>\n"\
+    "<note>%s</note>\n"\
+"</event>"
 
 
 /*
@@ -518,16 +518,16 @@ struct myNode {
     "note": "This is some text"
 }
 */
-#define VSCP_JSON_EVENT_TEMPLATE "{"\
-    "\"time\": \"%s\","\
-    "\"head\": %d,"\
-    "\"timestamp\":%lu,"\
-    "\"obid\";  %lu,"\
-    "\"class\": %d,"\
-    "\"type\": %d,"\
-    "\"guid\": \"%s\","\
-    "\"data\": [%s],"\
-    "\"note\": \"%s\""\
+#define VSCP_JSON_EVENT_TEMPLATE "{\n"\
+    "\"time\": \"%s\",\n"\
+    "\"head\": %d,\n"\
+    "\"timestamp\":%lu,\n"\
+    "\"obid\";  %lu,\n"\
+    "\"class\": %d,\n"\
+    "\"type\": %d,\n"\
+    "\"guid\": \"%s\",\n"\
+    "\"data\": [%s],\n"\
+    "\"note\": \"%s\"\n"\
 "}"
 
 /*!

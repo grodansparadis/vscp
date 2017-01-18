@@ -342,6 +342,7 @@ public:
 
   /// Second when action should be performed, count == 0 is don't care
   ACTIONTIME m_actionSecond;
+  
 };
 
 
@@ -736,10 +737,6 @@ public:
     */
     void init( void );
 
-    /*!
-        Set control object for DM
-    */
-    void setControlObject( CControlObject *ctrlObj );
 
     /*!
         log message
@@ -990,11 +987,6 @@ public:
     vscpEventFilter m_DM_Table_filter;
 
     /*!
-        Control object pointer
-    */
-    CControlObject *m_pCtrlObject;
-
-    /*!
         Client item pointer
     */
     CClientItem *m_pClientItem;
@@ -1085,11 +1077,6 @@ public:
 private:
 
     /*!
-        Control object pointer
-    */
-    CControlObject *m_pCtrlObject;
-
-    /*!
         URL to access  
     */
     wxURL m_url;
@@ -1154,12 +1141,6 @@ public:
 
 private:
 
-
-    /*!
-        Control object pointer
-    */
-    CControlObject *m_pCtrlObject;
-
     /*!
         Hostname  
     */
@@ -1197,8 +1178,7 @@ class actionThread_LUA : public wxThread {
 public:
 
     /// Constructor
-    actionThread_LUA( CControlObject *pCtrlObject,
-                          wxString& strScript,
+    actionThread_LUA( wxString& strScript,
                           wxThreadKind kind = wxTHREAD_DETACHED );
 
     /// Destructor
@@ -1219,16 +1199,17 @@ public:
         Termination control
      */
     bool m_bQuit;
-
-    /*!
-        Pointer to control object.
-     */
-    CControlObject *m_pCtrlObject;
     
     /*!
      * Script
      */
     wxString m_wxstrScript;
+    
+    /// JavaScript executing id
+    uint32_t m_id;
+    
+    // Time when script was started
+    wxDateTime m_start;
 
 };
 
@@ -1244,8 +1225,7 @@ class actionThread_JavaScript : public wxThread {
 public:
 
     /// Constructor
-    actionThread_JavaScript( CControlObject *pCtrlObject,
-                                wxString& strScript,
+    actionThread_JavaScript( wxString& strScript,
                                 wxThreadKind kind = wxTHREAD_DETACHED );
 
     /// Destructor
@@ -1266,16 +1246,20 @@ public:
         Termination control
      */
     bool m_bQuit;
-
-    /*!
-        Pointer to control object.
-     */
-    CControlObject *m_pCtrlObject;
     
     /*!
      * Script
      */
     wxString m_wxstrScript;
+    
+    /// JavaScript executing id
+    uint64_t m_id;
+    
+    // Time when script was started
+    wxDateTime m_start;
+    
+    // Time when script was stopped
+    wxDateTime m_stop;
     
 };
 
