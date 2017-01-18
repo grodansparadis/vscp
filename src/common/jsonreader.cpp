@@ -1849,7 +1849,7 @@ wxJSONReader::ConvertCharByChar( wxString& s, const wxMemoryBuffer& utf8Buffer )
  @return the last char read or -1 in case of EOF
 */
 
-union byte
+union jsonbyte
 {
     unsigned char c[2];
     short int b;
@@ -1864,7 +1864,7 @@ wxJSONReader::ReadMemoryBuff( wxInputStream& is, wxJSONValue& val )
 
     wxMemoryBuffer buff;
     int ch = 0; int errors = 0;
-    unsigned char byte = 0;
+    unsigned char jsonbyte = 0;
     while ( ch >= 0 ) {
         ch = ReadChar( is );
         if ( ch < 0 )  {
@@ -1895,8 +1895,8 @@ wxJSONReader::ReadMemoryBuff( wxInputStream& is, wxJSONValue& val )
             ++errors;
         }
         else {
-            byte = (c1 * 16) + c2;
-            buff.AppendByte( byte );
+            jsonbyte = (c1 * 16) + c2;
+            buff.AppendByte( jsonbyte );
         }
     }   // end while
 
