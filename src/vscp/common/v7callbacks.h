@@ -44,3 +44,24 @@ enum v7_err js_read_VSCP_Variable( struct v7 *v7, v7_val_t *res );
     @return v7 error code.
  */
 enum v7_err js_write_VSCP_Variable( struct v7 *v7, v7_val_t *res );
+
+
+/*!
+ * Send VSCP event on the local client queue
+ */
+enum v7_err js_send_VSCP_Event( struct v7 *v7, v7_val_t *res );
+
+/*!
+ * Fetch on VSCP event from the local client queue
+ */
+enum v7_err js_get_VSCP_Event( struct v7 *v7, v7_val_t *res );
+
+/*!
+ * Return number of events in the local client queue
+ */
+enum v7_err js_count_VSCP_Event( struct v7 *v7, v7_val_t *res ); 
+
+/*!
+ * Set VSCP filter for the local client queue
+ */
+enum v7_err js_set_VSCP_Filter( struct v7 *v7, v7_val_t *res );

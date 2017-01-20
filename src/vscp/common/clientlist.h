@@ -71,6 +71,8 @@ enum {
     CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MQTT,         // MQTT interface
     CLIENT_ITEM_INTERFACE_TYPE_CLIENT_COAP,         // COAP interface
     CLIENT_ITEM_INTERFACE_TYPE_CLIENT_DISCOVERY,    // Discovery interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_JAVASCRIPT,   // JavaScript interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_LUA,          // LUA Script interface
 };
 
 

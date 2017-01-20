@@ -1261,6 +1261,9 @@ public:
     // Time when script was stopped
     wxDateTime m_stop;
     
+    // Client item for script
+    CClientItem *m_pClientItem;
+    
 };
 
 

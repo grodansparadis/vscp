@@ -6931,26 +6931,54 @@ actionThread_JavaScript::~actionThread_JavaScript()
 void *actionThread_JavaScript::Entry()
 {
     struct v7 *v7;                  // JavaScript engine
-    v7_val_t v7_exec_result;        // Execute result
+    v7_val_t v7_result;             // Execute result
     
     m_start = wxDateTime::Now();    // Mark start time
     
     // Create the engine
     v7 = v7_create();
     
-    // Add callbacks
-    v7_set_method( v7, v7_get_global(v7), "vscp_getVariable", &js_read_VSCP_Variable );
+    // Add VSCP methods
+    v7_set_method( v7, v7_get_global( v7 ), "vscp_readVariable", &js_read_VSCP_Variable );
+    v7_set_method( v7, v7_get_global( v7 ), "vscp_writeVariable", &js_write_VSCP_Variable );
+    
+    
+    // Create VSCP client
+    m_pClientItem = new CClientItem();
+    vscp_clearVSCPFilter( &m_pClientItem->m_filterVSCP );
+
+    // This is an active client
+    m_pClientItem->m_bOpen = false;
+    m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_JAVASCRIPT;
+    m_pClientItem->m_strDeviceName = _("Internal daemon JavaScript client. ");
+    wxDateTime now = wxDateTime::Now();
+    m_pClientItem->m_strDeviceName += now.FormatISODate();
+    m_pClientItem->m_strDeviceName += _(" ");
+    m_pClientItem->m_strDeviceName += now.FormatISOTime();
+
+    // Add the client to the Client List
+    gpobj->m_wxClientMutex.Lock();
+    gpobj->addClient( m_pClientItem );
+    gpobj->m_wxClientMutex.Unlock();
+    
+    // Make a JacaScipt object of the ClientItem
+    v7_val_t v7_ClientItem = v7_mk_foreign( v7, (void *)m_pClientItem );
+    v7_set( v7, v7_get_global(v7), "vscp_ClientItem", 15, v7_ClientItem );
 
     // Execute a string given in a command line argument 
-    v7_err err = v7_exec( v7, 
-                            (const char *)m_wxstrScript.mbc_str(), 
-                            &v7_exec_result );
+    v7_err err = v7_exec( v7, (const char *)m_wxstrScript.mbc_str(), &v7_result );
+    
+    // Remove client and session item
+    gpobj->m_wxClientMutex.Lock();
+    gpobj->removeClient( m_pClientItem );
+    m_pClientItem = NULL;
+    gpobj->m_wxClientMutex.Unlock();
 
     // Destroy V7 instance 
     v7_destroy( v7 );
     
     m_stop = wxDateTime::Now();     // Mark stop time
-
+    
     return NULL;
 }
 

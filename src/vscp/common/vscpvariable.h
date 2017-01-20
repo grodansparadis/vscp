@@ -86,7 +86,7 @@ class wxFFileOutputStream;
 //	"type": 1,
 //	"user": 2,
 //	"access-rights": 0x777,
-//        "persistence": true|false,
+//      "persistence": true|false,
 //	"last-change": "YYYYMMDDTHHMMSS",
 //	"value": "This is a test variable",
 //	"note": "This is a note about this variable"
@@ -94,7 +94,7 @@ class wxFFileOutputStream;
 
 #define VARIABLE_JSON_TEMPLATE "{\n"\
     "\"name\": '%s',\n"\
-    "\"type\": %u,\n"\
+    "\"type\": %hu,\n"\
     "\"user\": %lu,\n"\
     "\"access-rights\": %lu,\n"\
     "\"persistence\": %s,\n"\
@@ -106,7 +106,7 @@ class wxFFileOutputStream;
 
 #define VARIABLE_XML_TEMPLATE "<variable>\n"\
     "<name>'%s'</name>\n"\
-    "<type>%u</type>\n"\
+    "<type>%hu</type>\n"\
     "<user>%lu</user>\n"\
     "<access-rights>%lu<access-rights>\n"\
     "<persistence>%s<persistence>\n"\
@@ -365,6 +365,12 @@ public:
      */
     void setValue( wxDateTime& val );
     
+    /*!
+     * Set rights
+     * @param Numerical rights value
+     * @return Always return true.
+     */
+    bool setRighs( uint32_t rights );
     
     /*!
      * setRights

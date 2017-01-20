@@ -491,9 +491,9 @@ bool CVSCPVariable::getAsJSON( wxString &strVariable )
     // name,type,user,rights,persistence,last,value,note
     strVariable.Printf( VARIABLE_JSON_TEMPLATE,
                             m_name,
-                            m_type,
-                            m_userid,
-                            m_accessRights,
+                            (unsigned short int)m_type,
+                            (unsigned long int)m_userid,
+                            (unsigned long int)m_accessRights,
                             m_bPersistent ? _("true") : _("false"),
                             (const char *)m_lastChanged.FormatISOCombined().mbc_str(),
                             m_strValue,
@@ -509,9 +509,9 @@ bool CVSCPVariable::getAsXML( wxString &strVariable )
 {
     strVariable.Printf( VARIABLE_XML_TEMPLATE,
                             m_name,
-                            m_type,
-                            m_userid,
-                            m_accessRights,
+                            (unsigned short int)m_type,
+                            (unsigned long int)m_userid,
+                            (unsigned long int)m_accessRights,
                             m_bPersistent ? _("true") : _("false"),
                             (const char *)m_lastChanged.FormatISOCombined().mbc_str(),
                             m_strValue,
@@ -540,6 +540,15 @@ bool CVSCPVariable::setName( const wxString& strName )
     return true;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// setRighs
+//
+
+bool CVSCPVariable::setRighs( uint32_t rights )
+{
+    m_accessRights = rights;
+    return true;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // setRighs
