@@ -6944,8 +6944,7 @@ void *actionThread_JavaScript::Entry()
     
     // Add VSCP methods
     v7_set_method( v7, v7_get_global( v7 ), "vscp_readVariable", &js_read_VSCP_Variable );
-    v7_set_method( v7, v7_get_global( v7 ), "vscp_writeVariable", &js_write_VSCP_Variable );
-    
+    v7_set_method( v7, v7_get_global( v7 ), "vscp_writeVariable", &js_write_VSCP_Variable );   
     
     // Create VSCP client
     m_pClientItem = new CClientItem();

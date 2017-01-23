@@ -256,6 +256,13 @@ unsigned char WINAPI EXPORT vscphlp_getVscpPriorityEx( const vscpEventEx *pEvent
 void WINAPI EXPORT vscphlp_setVscpPriority( vscpEvent *pEvent, unsigned char priority );
 void WINAPI EXPORT vscphlp_setVscpPriorityEx( vscpEventEx *pEvent, unsigned char priority );
 
+int WINAPI EXPORT vscphlp_convertEventToJSON( vscpEvent *pEvent, char *p, int size );
+int WINAPI EXPORT vscphlp_convertEventExToJSON( vscpEventEx *pEventEx, char *p, int size );
+int WINAPI EXPORT vscphlp_convertEventToXML( vscpEvent *pEvent, char *p, int size );
+int WINAPI EXPORT vscphlp_convertEventExToXML( vscpEventEx *pEventEx, char *p, int size );
+int WINAPI EXPORT vscphlp_convertEventToHTML( vscpEvent *pEvent, char *p, int size );
+int WINAPI EXPORT vscphlp_convertEventExToHTML( vscpEventEx *pEventEx, char *p, int size );
+
 #else
 
 // * * * * *  U N I X  /  L I N U X  * * * * *
@@ -479,6 +486,13 @@ unsigned char vscphlp_getVscpPriorityEx( const vscpEventEx *pEvent );
 void vscphlp_setVscpPriority( vscpEvent *pEvent, unsigned char priority );
 void vscphlp_setVscpPriorityEx( vscpEventEx *pEvent, unsigned char priority );
 
+int vscphlp_convertEventToJSON( vscpEvent *pEvent, char *p, int size );
+int vscphlp_convertEventExToJSON( vscpEventEx *pEventEx, char *p, int size );
+int vscphlp_convertEventToXML( vscpEvent *pEvent, char *p, int size );
+int vscphlp_convertEventExToXML( vscpEventEx *pEventEx, char *p, int size );
+int vscphlp_convertEventToHTML( vscpEvent *pEvent, char *p, int size );
+int vscphlp_convertEventExToHTML( vscpEventEx *pEventEx, char *p, int size );
+
 #endif
 
 #ifdef __cplusplus
@@ -489,3 +503,5 @@ void vscphlp_setVscpPriorityEx( vscpEventEx *pEvent, unsigned char priority );
 /////////////////////////////////////////////////////////////////////////////////////////
 
 
+
+    

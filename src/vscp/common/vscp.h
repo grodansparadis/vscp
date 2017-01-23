@@ -468,6 +468,7 @@ struct myNode {
 #define VSCP_ERROR_CONNECTION                   40      // Could not connect   
 #define VSCP_ERROR_INVALID_HANDLE               41      // The handle is not valid
 #define VSCP_ERROR_OPERATION_FAILED             42      // Operation failed for some reason
+#define VSCP_ERROR_BUFFER_TO_SMALL              43      // Supplied buffer is to small to fit content
 
 /*!
     Template for VSCP XML event data
@@ -582,6 +583,7 @@ note: This is a note <br>
     "obid: %lu <br>"\
     "note: %s <br>"\
     "</p>"
+
 
 #ifdef __cplusplus
 }

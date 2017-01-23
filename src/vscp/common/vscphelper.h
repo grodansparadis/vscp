@@ -654,7 +654,67 @@ extern "C" {
       Delete an Ex event
      */
     void vscp_deleteVSCPeventEx(vscpEventEx *pEventEx);
+    
+    
+    
+    
+    
+    /*!
+     * Convert VSCP Event to JSON formated string
+     */
+    void vscp_convertEventToJSON( vscpEvent *pEvent, wxString& strJSON );
+    
+    /*!
+     * Convert VSCP EventEx to JSON formated string
+     */
+    void vscp_convertEventExToJSON( vscpEventEx *pEventEx, wxString& strJSON );
+    
+    
+    
+    
+    
+    /*!
+     * Convert VSCP Event to XML formated string
+     */
+    void vscp_convertEventToXML( vscpEvent *pEvent, wxString& strXML );
+    
+    /*!
+     * Convert VSCP EventEx to XML formated string
+     */
+    void vscp_convertEventExToXML( vscpEventEx *pEventEx, wxString& strXML );
+    
+    
+    
+    
+    
+    /*!
+     * Convert VSCP Event to HTML formated string
+     */
+    void vscp_convertEventToHTML( vscpEvent *pEvent, wxString& strHTML );
+    
+    /*!
+     * Convert VSCP EventEx to HTML formated string
+     */
+    void vscp_convertEventExToHTML( vscpEventEx *pEventEx, wxString& strHTML );
+    
+    
+    
+    
+    
+     /*!
+     * Convert VSCP Event to XML formated string
+     */
+    void vscp_convertEventToXML( vscpEvent *pEvent, wxString& strXML );
+    
+    /*!
+     * Convert VSCP EventEx to XML formated string
+     */
+    void vscp_convertEventExToXML( vscpEventEx *pEventEx, wxString& strXML );
+    
 
+    
+    
+    
     /*!
       Clear VSCP filter so it will allow all events to go through
       @param pFilter Pointer to VSCP filter.
@@ -773,7 +833,7 @@ extern "C" {
     
 
     /*!
-      Write VSCP data to string
+      Write VSCP data to string    DEPRECATED: USE: vscp_writeVscpDataWithSizeToString
       @param pEvent Pointer to event where data is fetched from
       @param str String that receive result.
       @param bUseHtmlBreak Set to true to use <br> instead of \\n as

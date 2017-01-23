@@ -2810,3 +2810,153 @@ extern "C" int vscphlp_isMeasurement( const vscpEvent *pEvent )
 {
     return vscp_isVSCPMeasurement( pEvent ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vscphlp_convertEventToJSON
+//
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_convertEventToJSON( vscpEvent *pEvent, char *p, int size )
+#else
+extern "C" int vscphlp_convertEventToJSON( vscpEvent *pEvent, char *p, int size )
+#endif
+{
+    wxString str;
+    
+    // Do the conversion
+    vscp_convertEventToJSON( pEvent, str );
+    
+    // Check if there is room for the JSON string
+    if ( size <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
+    
+    // Copy in JSON string
+    strncpy( p, str.mbc_str(), strlen( str.mbc_str() ) );
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscphlp_convertEventExToJSON
+//
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_convertEventExToJSON( vscpEventEx *pEventEx, char *p, int size )
+#else
+extern "C" int vscphlp_convertEventExToJSON( vscpEventEx *pEventEx, char *p, int size )
+#endif
+{
+    wxString str;
+    
+    // Do the conversion
+    vscp_convertEventExToJSON( pEventEx, str );
+    
+    // Check if there is room for the JSON string
+    if ( size <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
+    
+    // Copy in JSON string
+    strncpy( p, str.mbc_str(), strlen( str.mbc_str() ) );
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscphlp_convertEventToXML
+//
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_convertEventToXML( vscpEvent *pEvent, char *p, int size )
+#else
+extern "C" int vscphlp_convertEventToXML( vscpEvent *pEvent, char *p, int size )
+#endif
+{
+    wxString str;
+    
+    // Do the conversion
+    vscp_convertEventToXML( pEvent, str );
+    
+    // Check if there is room for the XML string
+    if ( size <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
+    
+    // Copy in XML string
+    strncpy( p, str.mbc_str(), strlen( str.mbc_str() ) );
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscphlp_convertEventExToXML
+//
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_convertEventExToXML( vscpEventEx *pEventEx, char *p, int size )
+#else
+extern "C" int vscphlp_convertEventExToXML( vscpEventEx *pEventEx, char *p, int size )
+#endif
+{
+    wxString str;
+    
+    // Do the conversion
+    vscp_convertEventExToXML( pEventEx, str );
+    
+    // Check if there is room for the XML string
+    if ( size <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
+    
+    // Copy in XML string
+    strncpy( p, str.mbc_str(), strlen( str.mbc_str() ) );
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vscphlp_convertEventToHTML
+//
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_convertEventToHTML( vscpEvent *pEvent, char *p, int size )
+#else
+extern "C" int vscphlp_convertEventToHTML( vscpEvent *pEvent, char *p, int size )
+#endif
+{
+    wxString str;
+    
+    // Do the conversion
+    vscp_convertEventToHTML( pEvent, str );
+    
+    // Check if there is room for the HTML string
+    if ( size <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
+    
+    // Copy in HTML string
+    strncpy( p, str.mbc_str(), strlen( str.mbc_str() ) );
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscphlp_convertEventExToHTML
+//
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_convertEventExToHTML( vscpEventEx *pEventEx, char *p, int size )
+#else
+extern "C" int vscphlp_convertEventExToHTML( vscpEventEx *pEventEx, char *p, int size )
+#endif
+{
+    wxString str;
+    
+    // Do the conversion
+    vscp_convertEventExToHTML( pEventEx, str );
+    
+    // Check if there is room for the HTML string
+    if ( size <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
+    
+    // Copy in HTML string
+    strncpy( p, str.mbc_str(), strlen( str.mbc_str() ) );
+    
+    return VSCP_ERROR_SUCCESS;
+}
+

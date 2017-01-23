@@ -2016,6 +2016,203 @@ void vscp_deleteVSCPeventEx(vscpEventEx *pEventEx)
     delete pEventEx;
 }
 
+////////////////////////////////////////////////////////////////////////////////////
+// vscp_convertEventToJSON
+//
+
+void vscp_convertEventToJSON( vscpEvent *pEvent, wxString& strJSON )
+{
+    wxString strguid;
+    wxString strdata;
+    
+    // Check pointer
+    if ( NULL == pEvent ) return;
+    
+    vscp_writeGuidArrayToString( pEvent->GUID, strguid );   // GUID to string
+    vscp_writeVscpDataWithSizeToString( pEvent->sizeData,
+                                            pEvent->pdata,
+                                            strJSON,
+                                            false, 
+                                            false );        // Event data to string
+    
+    // datetime,head,timestamp,obid,class,type,guid,data,note
+    strJSON.Printf( VSCP_JSON_EVENT_TEMPLATE,
+                        wxDateTime::Now().FormatISOCombined(),
+                        (unsigned short int)pEvent->head,
+                        (unsigned long)pEvent->timestamp,
+                        (unsigned long)pEvent->obid,
+                        (unsigned short int)pEvent->vscp_class,
+                        (unsigned short int)pEvent->vscp_type,
+                        (const char *)strguid.mbc_str(),
+                        (const char *)strdata.mbc_str(),
+                        "" );
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////
+// vscp_convertEventExToJSON
+//
+
+void vscp_convertEventExToJSON( vscpEventEx *pEventEx, wxString& strJSON )
+{
+    wxString strguid;
+    wxString strdata;
+        
+    // Check pointer
+    if ( NULL == pEventEx ) return;
+    
+    vscp_writeGuidArrayToString( pEventEx->GUID, strguid );     // GUID to string
+    vscp_writeVscpDataWithSizeToString( pEventEx->sizeData,
+                                            pEventEx->data,    
+                                            strJSON,
+                                            false, 
+                                            false );            // Event data to string
+    
+    // datetime,head,timestamp,obid,class,type,guid,data,note
+    strJSON.Printf( VSCP_JSON_EVENT_TEMPLATE,
+                        wxDateTime::Now().FormatISOCombined(),
+                        (unsigned short int)pEventEx->head,
+                        (unsigned long)pEventEx->timestamp,
+                        (unsigned long)pEventEx->obid,
+                        (unsigned short int)pEventEx->vscp_class,
+                        (unsigned short int)pEventEx->vscp_type,
+                        (const char *)strguid.mbc_str(),
+                        (const char *)strdata.mbc_str(),
+                        "" );
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+// vscp_convertEventToXML
+//
+
+void vscp_convertEventToXML( vscpEvent *pEvent, wxString& strXML )
+{
+    wxString strguid;
+    wxString strdata;
+        
+    // Check pointer
+    if ( NULL == pEvent ) return;
+    
+    vscp_writeGuidArrayToString( pEvent->GUID, strguid );   // GUID to string
+    vscp_writeVscpDataWithSizeToString( pEvent->sizeData,
+                                            pEvent->pdata,
+                                            strXML,
+                                            false, 
+                                            false );        // Event data to string
+    
+    // datetime,head,timestamp,obid,class,type,guid,sizedata,data,note
+    strXML.Printf( VSCP_XML_EVENT_TEMPLATE,
+                        wxDateTime::Now().FormatISOCombined(),
+                        (unsigned short int)pEvent->head,
+                        (unsigned long)pEvent->timestamp,
+                        (unsigned long)pEvent->obid,
+                        (unsigned short int)pEvent->vscp_class,
+                        (unsigned short int)pEvent->vscp_type,
+                        (const char *)strguid.mbc_str(),                        
+                        (unsigned short int)pEvent->sizeData,
+                        (const char *)strdata.mbc_str(),
+                        "" );
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+// vscp_convertEventExToXML
+//
+
+void vscp_convertEventExToXML( vscpEventEx *pEventEx, wxString& strXML )
+{
+    wxString strguid;
+    wxString strdata;
+        
+    // Check pointer
+    if ( NULL == pEventEx ) return;
+    
+    vscp_writeGuidArrayToString( pEventEx->GUID, strguid );     // GUID to string
+    vscp_writeVscpDataWithSizeToString( pEventEx->sizeData,
+                                            pEventEx->data,    
+                                            strXML,
+                                            false, 
+                                            false );            // Event data to string
+    
+    // datetime,head,timestamp,obid,class,type,guid,sizedata,data,note
+    strXML.Printf( VSCP_XML_EVENT_TEMPLATE,
+                        wxDateTime::Now().FormatISOCombined(),
+                        (unsigned short int)pEventEx->head,
+                        (unsigned long)pEventEx->timestamp,
+                        (unsigned long)pEventEx->obid,
+                        (unsigned short int)pEventEx->vscp_class,
+                        (unsigned short int)pEventEx->vscp_type,
+                        (const char *)strguid.mbc_str(),                        
+                        (unsigned short int)pEventEx->sizeData,
+                        (const char *)strdata.mbc_str(),
+                        "" );
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+// vscp_convertEventToHTML
+//
+
+void vscp_convertEventToHTML( vscpEvent *pEvent, wxString& strHTML )
+{
+    wxString strguid;
+    wxString strdata;
+        
+    // Check pointer
+    if ( NULL == pEvent ) return;
+    
+    vscp_writeGuidArrayToString( pEvent->GUID, strguid );   // GUID to string
+    vscp_writeVscpDataWithSizeToString( pEvent->sizeData,
+                                            pEvent->pdata,
+                                            strHTML,
+                                            false, 
+                                            false );        // Event data to string
+    
+    // datetime,class,type,data-count,data,guid,head,timestamp,obid,note
+    strHTML.Printf( VSCP_HTML_EVENT_TEMPLATE,
+                        wxDateTime::Now().FormatISOCombined(),
+                        (unsigned short int)pEvent->vscp_class,
+                        (unsigned short int)pEvent->vscp_type,
+                        (unsigned short int)pEvent->sizeData,
+                        (const char *)strdata.mbc_str(),
+                        (const char *)strguid.mbc_str(),            
+                        (unsigned short int)pEvent->head,
+                        (unsigned long)pEvent->timestamp,
+                        (unsigned long)pEvent->obid,                                                                                                
+                        "" );
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+// vscp_convertEventExToHTML
+//
+
+void vscp_convertEventExToHTML( vscpEventEx *pEventEx, wxString& strHTML )
+{
+    wxString strguid;
+    wxString strdata;
+        
+    // Check pointer
+    if ( NULL == pEventEx ) return;
+    
+    vscp_writeGuidArrayToString( pEventEx->GUID, strguid );     // GUID to string
+    vscp_writeVscpDataWithSizeToString( pEventEx->sizeData,
+                                            pEventEx->data,    
+                                            strHTML,
+                                            false, 
+                                            false );            // Event data to string
+    
+    // datetime,class,type,data-count,data,guid,head,timestamp,obid,note
+    strHTML.Printf( VSCP_HTML_EVENT_TEMPLATE,
+                        wxDateTime::Now().FormatISOCombined(),
+                        (unsigned short int)pEventEx->vscp_class,
+                        (unsigned short int)pEventEx->vscp_type,
+                        (unsigned short int)pEventEx->sizeData,
+                        (const char *)strdata.mbc_str(),
+                        (const char *)strguid.mbc_str(),            
+                        (unsigned short int)pEventEx->head,
+                        (unsigned long)pEventEx->timestamp,
+                        (unsigned long)pEventEx->obid,                                                                                                
+                        "" );
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // doLevel2Filter
 //
@@ -2478,7 +2675,7 @@ bool vscp_writeVscpDataToString(const vscpEvent *pEvent, wxString& str, bool bUs
 // writeVscpDataWithSizeToString
 //
 
-bool vscp_writeVscpDataWithSizeToString(const uint16_t sizeData,
+bool vscp_writeVscpDataWithSizeToString( const uint16_t sizeData,
                                             const unsigned char *pData,
                                             wxString& str,
                                             bool bUseHtmlBreak,
