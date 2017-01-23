@@ -1210,6 +1210,9 @@ public:
     
     // Time when script was started
     wxDateTime m_start;
+    
+    /// Feed event
+    vscpEventEx m_eventFeed;
 
 };
 
@@ -1255,14 +1258,17 @@ public:
     /// JavaScript executing id
     uint64_t m_id;
     
-    // Time when script was started
+    /// Time when script was started
     wxDateTime m_start;
     
-    // Time when script was stopped
+    /// Time when script was stopped
     wxDateTime m_stop;
     
-    // Client item for script
+    /// Client item for script
     CClientItem *m_pClientItem;
+    
+    /// Feed event
+    vscpEventEx m_eventFeed;
     
 };
 

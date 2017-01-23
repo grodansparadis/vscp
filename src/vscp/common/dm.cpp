@@ -2218,8 +2218,10 @@ bool dmElement::doAction( vscpEvent *pEvent )
                 wxString wxstr = m_actionparam;
                 handleEscapes( pEvent, wxstr );
 
-                actionThread_LUA *pThread =
-                    new actionThread_LUA( wxstr );
+                actionThread_LUA *pThread = new actionThread_LUA( wxstr );
+                if ( NULL == pThread ) return false;
+                
+                vscp_convertVSCPtoEx( &pThread->m_eventFeed, pEvent );   // Save feed event
 
                 wxThreadError err;
                 if (wxTHREAD_NO_ERROR == (err = pThread->Create())) {
@@ -2248,8 +2250,10 @@ bool dmElement::doAction( vscpEvent *pEvent )
                 wxString wxstr = m_actionparam;
                 handleEscapes( pEvent, wxstr );
 
-                actionThread_JavaScript *pThread =
-                    new actionThread_JavaScript( wxstr );
+                actionThread_JavaScript *pThread = new actionThread_JavaScript( wxstr );
+                if ( NULL == pThread ) return false;
+                
+                vscp_convertVSCPtoEx( &pThread->m_eventFeed, pEvent );   // Save feed event  
 
                 wxThreadError err;
                 if ( wxTHREAD_NO_ERROR == (err = pThread->Create() ) ) {
