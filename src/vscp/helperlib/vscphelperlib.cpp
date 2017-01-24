@@ -596,7 +596,7 @@ extern "C"  int vscphlp_getVendorString( long handle, char *pVendorStr, int size
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString str =  wxString::FromAscii( pvscpif->doCmdVendorString() );
-    strncpy( pVendorStr, str.mbc_str(), size );
+    strncpy( pVendorStr, str.mbc_str(), MIN( strlen( str.mbc_str() ),size) );
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -619,7 +619,7 @@ extern "C" int vscphlp_getDriverInfo( long handle, char *pInfoStr, int size )
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString str =  wxString::FromAscii( pvscpif->doCmdGetDriverInfo() );
-    strncpy( pInfoStr, str.mbc_str(), size );
+    strncpy( pInfoStr, str.mbc_str(), MIN( strlen( str.mbc_str() ),size ) );
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -814,7 +814,7 @@ extern "C" int vscphlp_getVariableString( long handle, const char *pName, char *
     wxString name = wxString::FromAscii( pName );
     wxString strValue;
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getVariableString( name, &strValue ) ) ) {
-        strncpy( pValue, strValue.ToAscii(), size );
+        strncpy( pValue, strValue.mbc_str(), MIN( strlen( strValue.mbc_str() ), size ) );
     }
 
     return rv;
@@ -1095,7 +1095,7 @@ extern "C" int vscphlp_getVariableMeasurement( long handle, const char *pName, c
     wxString name = wxString::FromAscii( pName );
     wxString strValue;
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getVariableMeasurement( name, strValue ) ) ) {
-        strncpy( pValue, strValue.ToAscii(), size );
+        strncpy( pValue, strValue.mbc_str(), MIN( strlen( strValue.mbc_str() ), size ) );
     }
 
     return rv;
@@ -1256,11 +1256,11 @@ extern "C" int vscphlp_getVariableGUIDString( long handle, const char *pName, ch
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     cguid GUID;
-    wxString strGuid;
+    wxString strGUID;
     wxString name = wxString::FromAscii( pName );
     int rv =  pvscpif->getVariableGUID( name, GUID );
-    GUID.toString( strGuid );
-    strncpy( pGUID, strGuid.mbc_str(), size );
+    GUID.toString( strGUID );
+    strncpy( pGUID, strGUID.mbc_str(), MIN( strlen( strGUID.mbc_str() ), size ) );
     return rv;
 }
 
@@ -1887,7 +1887,7 @@ extern "C" int vscphlp_writeGuidToString( const vscpEvent *pEvent, char *pStr, i
 
     wxString strGUID;
     rv = vscp_writeGuidToString( pEvent, strGUID );
-    strncpy( pStr, strGUID.mbc_str(), size );
+    strncpy( pStr, strGUID.mbc_str(), MIN( strlen( strGUID.mbc_str() ), size ) );
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
@@ -1905,7 +1905,7 @@ extern "C" int vscphlp_writeGuidToStringEx( const vscpEventEx *pEvent, char * pS
 
     wxString strGUID;
     rv = vscp_writeGuidToStringEx( pEvent, strGUID );
-    strncpy( pStr, strGUID.mbc_str(), size );
+    strncpy( pStr, strGUID.mbc_str(), MIN( strlen( strGUID.mbc_str() ), size ) );
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
@@ -1969,7 +1969,7 @@ extern "C" int vscphlp_writeGuidArrayToString( const unsigned char * pGUID,
 {
     wxString str;
     bool rv = vscp_writeGuidArrayToString( pGUID, str );
-    strncpy( strGUID, str.mbc_str(), size );
+    strncpy( strGUID, str.mbc_str(), MIN( strlen( str.mbc_str() ), size ) );
 
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
@@ -2292,7 +2292,7 @@ extern "C" int vscphlp_writeVscpDataToString( const vscpEvent *pEvent,
     bool rv = vscp_writeVscpDataToString( pEvent,
                                          wxstr,
                                          bUseHtmlBreak ? true : false );
-    strncpy( pstr, wxstr.mbc_str(), size );
+    strncpy( pstr, wxstr.mbc_str(), MIN( strlen( wxstr.mbc_str() ), size ) );
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
@@ -2358,7 +2358,7 @@ extern "C" int vscphlp_writeVscpEventToString( vscpEvent *pEvent, char *p, int s
 
     wxString str;;
     if ( ( rv =  vscp_writeVscpEventToString( pEvent, str ) ) ) {
-        strncpy( p, str.mbc_str(), size );
+        strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), size ) );
     }
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
@@ -2380,7 +2380,7 @@ extern "C" int vscphlp_writeVscpEventExToString( vscpEventEx *pEvent,
 
     wxString str;
     if ( ( rv =  vscp_writeVscpEventExToString( pEvent, str ) ) ) {
-        strncpy( p, str.mbc_str(), size );
+        strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), size ) );
     }
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
@@ -2508,7 +2508,7 @@ extern "C" int vscphlp_getDataCodingString(const unsigned char *pCode,
     bool rv =  vscp_getDataCodingString( pCode,
                                            dataLength,
                                            wxstr );
-    strncpy( strResult, wxstr.mbc_str(), size );
+    strncpy( strResult, wxstr.mbc_str(), MIN( strlen( wxstr.mbc_str() ), size ) );
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
@@ -2531,7 +2531,7 @@ extern "C" int vscphlp_getVSCPMeasurementAsString(const vscpEvent *pEvent,
     if ( NULL == pEvent ) return VSCP_ERROR_ERROR;
 
     bool rv =  vscp_getVSCPMeasurementAsString( pEvent, wxstr );
-    strncpy( pResult, wxstr.mbc_str(), size );
+    strncpy( pResult, wxstr.mbc_str(), MIN( strlen( wxstr.mbc_str() ), size ) );
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
@@ -2574,7 +2574,7 @@ extern "C" int vscphlp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent
     if ( NULL == pEvent ) return VSCP_ERROR_ERROR;
 
     bool rv = vscp_getVSCPMeasurementFloat64AsString( pEvent, wxstr );
-    strncpy( pStrResult, wxstr.mbc_str(), size );
+    strncpy( pStrResult, wxstr.mbc_str(), MIN( strlen( wxstr.mbc_str() ), size ) );
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
@@ -2716,7 +2716,7 @@ extern "C" int vscphlp_getVSCPMeasurementZoneAsString(const vscpEvent *pEvent, c
 
     if ( NULL == pEvent ) return VSCP_ERROR_ERROR;
     int rv = vscp_getVSCPMeasurementZoneAsString(pEvent, wxstr) ;
-    strncpy( pStr, wxstr.mbc_str(), size );
+    strncpy( pStr, wxstr.mbc_str(), MIN( strlen( wxstr.mbc_str() ), size ) );
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
@@ -2834,7 +2834,7 @@ extern "C" int vscphlp_convertEventToJSON( vscpEvent *pEvent, char *p, int size 
     if ( size <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
     
     // Copy in JSON string
-    strncpy( p, str.mbc_str(), strlen( str.mbc_str() ) );
+    strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), size ) );
     
     return VSCP_ERROR_SUCCESS;
 }
@@ -2858,7 +2858,7 @@ extern "C" int vscphlp_convertEventExToJSON( vscpEventEx *pEventEx, char *p, int
     if ( size <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
     
     // Copy in JSON string
-    strncpy( p, str.mbc_str(), strlen( str.mbc_str() ) );
+    strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), size ) );
     
     return VSCP_ERROR_SUCCESS;
 }
@@ -2882,7 +2882,7 @@ extern "C" int vscphlp_convertEventToXML( vscpEvent *pEvent, char *p, int size )
     if ( size <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
     
     // Copy in XML string
-    strncpy( p, str.mbc_str(), strlen( str.mbc_str() ) );
+    strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), size ) );
     
     return VSCP_ERROR_SUCCESS;
 }
@@ -2906,7 +2906,7 @@ extern "C" int vscphlp_convertEventExToXML( vscpEventEx *pEventEx, char *p, int 
     if ( size <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
     
     // Copy in XML string
-    strncpy( p, str.mbc_str(), strlen( str.mbc_str() ) );
+    strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), size ) );
     
     return VSCP_ERROR_SUCCESS;
 }
@@ -2931,7 +2931,7 @@ extern "C" int vscphlp_convertEventToHTML( vscpEvent *pEvent, char *p, int size 
     if ( size <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
     
     // Copy in HTML string
-    strncpy( p, str.mbc_str(), strlen( str.mbc_str() ) );
+    strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), size ) );
     
     return VSCP_ERROR_SUCCESS;
 }
@@ -2955,7 +2955,7 @@ extern "C" int vscphlp_convertEventExToHTML( vscpEventEx *pEventEx, char *p, int
     if ( size <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
     
     // Copy in HTML string
-    strncpy( p, str.mbc_str(), strlen( str.mbc_str() ) );
+    strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), size ) );
     
     return VSCP_ERROR_SUCCESS;
 }
