@@ -71,10 +71,24 @@ extern CControlObject *gpobj;
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// js_read_VSCP_Variable
+// js_vscp_log
 //
 
-enum v7_err js_read_VSCP_Variable( struct v7 *v7, v7_val_t *res ) 
+enum v7_err js_vscp_log( struct v7 *v7, v7_val_t *res ) 
+{
+    v7_val_t dbgstr = v7_arg(v7, 0);    
+    wxString wxDebug = v7_get_cstring( v7, &dbgstr );
+    
+    gpobj->logMsg( wxDebug );
+    
+    return V7_OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// js_vscp_readVariable
+//
+
+enum v7_err js_vscp_readVariable( struct v7 *v7, v7_val_t *res ) 
 {
     CVSCPVariable variable;
     wxString strResult;
@@ -107,7 +121,7 @@ enum v7_err js_read_VSCP_Variable( struct v7 *v7, v7_val_t *res )
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// js_write_VSCP_Variable
+// js_vscp_writeVariable
 //
 //{  
 //	"name": "variable-name",
@@ -120,7 +134,7 @@ enum v7_err js_read_VSCP_Variable( struct v7 *v7, v7_val_t *res )
 //	"note": "This is a note about this variable"
 //}
 
-enum v7_err js_write_VSCP_Variable( struct v7 *v7, v7_val_t *res ) 
+enum v7_err js_vscp_writeVariable( struct v7 *v7, v7_val_t *res ) 
 {
     CVSCPVariable variable;
     bool bResult;
@@ -233,7 +247,7 @@ enum v7_err js_write_VSCP_Variable( struct v7 *v7, v7_val_t *res )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// js_send_VSCP_Event
+// js_vscp_sendEvent
 //
 // {
 //    "time": "2017-01-13T10:16:02",
@@ -247,7 +261,7 @@ enum v7_err js_write_VSCP_Variable( struct v7 *v7, v7_val_t *res )
 //    "note": "This is some text"
 // }
 
-enum v7_err js_send_VSCP_Event( struct v7 *v7, v7_val_t *res ) 
+enum v7_err js_vscp_sendEvent( struct v7 *v7, v7_val_t *res ) 
 {
     CVSCPVariable variable;
     bool bResult;
@@ -273,10 +287,10 @@ enum v7_err js_send_VSCP_Event( struct v7 *v7, v7_val_t *res )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// js_get_VSCP_Event
+// js_vscp_getEvent
 //
 
-enum v7_err js_get_VSCP_Event( struct v7 *v7, v7_val_t *res ) 
+enum v7_err js_vscp_getEvent( struct v7 *v7, v7_val_t *res ) 
 {
     CVSCPVariable variable;
     bool bResult;
@@ -301,11 +315,11 @@ enum v7_err js_get_VSCP_Event( struct v7 *v7, v7_val_t *res )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// js_count_VSCP_Event
+// js_vscp_getCountEvent
 //
 //
 
-enum v7_err js_count_VSCP_Event( struct v7 *v7, v7_val_t *res ) 
+enum v7_err js_vscp_getCountEvent( struct v7 *v7, v7_val_t *res ) 
 {
     double result;
     
@@ -318,10 +332,10 @@ enum v7_err js_count_VSCP_Event( struct v7 *v7, v7_val_t *res )
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// js_set_VSCP_Filter
+// js_vscp_setFilter
 //
 
-enum v7_err js_set_VSCP_Filter( struct v7 *v7, v7_val_t *res ) 
+enum v7_err js_vscp_setFilter( struct v7 *v7, v7_val_t *res ) 
 {
     CVSCPVariable variable;
     bool bResult;
@@ -343,10 +357,74 @@ enum v7_err js_set_VSCP_Filter( struct v7 *v7, v7_val_t *res )
 }
 
 
-// get measurement
-// unit
-// sensorindex
-// zone
-// subzone
-// send measurement
+///////////////////////////////////////////////////////////////////////////////
+// js_is_Measurement
+//
+
+enum v7_err js_is_Measurement( struct v7 *v7, v7_val_t *res ) 
+{
+    return V7_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// js_get_Measurement
+//
+
+enum v7_err js_get_Measurement( struct v7 *v7, v7_val_t *res ) 
+{
+    return V7_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// js_send_Measurement
+//
+
+enum v7_err js_send_Measurement( struct v7 *v7, v7_val_t *res )
+{
+    return V7_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// js_get_MeasurementUnit
+//
+
+enum v7_err js_get_MeasurementUnit( struct v7 *v7, v7_val_t *res ) 
+{
+    return V7_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// js_get_MeasurementSensorIndex
+//
+
+enum v7_err js_get_MeasurementSensorIndex( struct v7 *v7, v7_val_t *res ) 
+{
+    return V7_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// js_get_MeasurementZone
+//
+
+enum v7_err js_get_MeasurementZone( struct v7 *v7, v7_val_t *res ) 
+{
+    return V7_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// js_get_MeasurementSubZone
+//
+
+enum v7_err js_get_MeasurementSubZone( struct v7 *v7, v7_val_t *res ) 
+{
+    return V7_OK;
+}
+
+
 

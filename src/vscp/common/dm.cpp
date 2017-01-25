@@ -2253,7 +2253,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
                 actionThread_JavaScript *pThread = new actionThread_JavaScript( wxstr );
                 if ( NULL == pThread ) return false;
                 
-                vscp_convertVSCPtoEx( &pThread->m_eventFeed, pEvent );   // Save feed event  
+                vscp_convertVSCPtoEx( &pThread->m_feedEvent, pEvent );   // Save feed event  
 
                 wxThreadError err;
                 if ( wxTHREAD_NO_ERROR == (err = pThread->Create() ) ) {
@@ -6936,6 +6936,7 @@ void *actionThread_JavaScript::Entry()
 {
     struct v7 *v7;                  // JavaScript engine
     v7_val_t v7_result;             // Execute result
+    enum v7_err err;                // Error code
     
     m_start = wxDateTime::Now();    // Mark start time
     
@@ -6943,8 +6944,18 @@ void *actionThread_JavaScript::Entry()
     v7 = v7_create();
     
     // Add VSCP methods
-    v7_set_method( v7, v7_get_global( v7 ), "vscp_readVariable", &js_read_VSCP_Variable );
-    v7_set_method( v7, v7_get_global( v7 ), "vscp_writeVariable", &js_write_VSCP_Variable );   
+    v7_set_method( v7, v7_get_global( v7 ), "vscp_log", &js_vscp_log );
+    v7_set_method( v7, v7_get_global( v7 ), "vscp_readVariable", &js_vscp_readVariable );
+    v7_set_method( v7, v7_get_global( v7 ), "vscp_writeVariable", &js_vscp_writeVariable );
+    
+    // Make object of the feed event 
+    wxString strEvent;
+    vscp_convertEventExToJSON( &m_feedEvent, strEvent );
+    
+    v7_val_t v7_feedEvent;
+    if ( V7_OK == v7_parse_json( v7, (const char *)strEvent.mbc_str(), &v7_feedEvent ) ) {
+        v7_set( v7, v7_get_global(v7), "vscp_feedEvent", 14, v7_feedEvent );
+    }  
     
     // Create VSCP client
     m_pClientItem = new CClientItem();
@@ -6964,12 +6975,18 @@ void *actionThread_JavaScript::Entry()
     gpobj->addClient( m_pClientItem );
     gpobj->m_wxClientMutex.Unlock();
     
+    // Open the channel
+    m_pClientItem->m_bOpen = true;
+    
     // Make a JacaScipt object of the ClientItem
     v7_val_t v7_ClientItem = v7_mk_foreign( v7, (void *)m_pClientItem );
     v7_set( v7, v7_get_global(v7), "vscp_ClientItem", 15, v7_ClientItem );
 
     // Execute a string given in a command line argument 
-    v7_err err = v7_exec( v7, (const char *)m_wxstrScript.mbc_str(), &v7_result );
+    err = v7_exec( v7, (const char *)m_wxstrScript.mbc_str(), &v7_result );
+    
+    // Close the channel
+    m_pClientItem->m_bOpen = false;
     
     // Remove client and session item
     gpobj->m_wxClientMutex.Lock();

@@ -1268,7 +1268,7 @@ public:
     CClientItem *m_pClientItem;
     
     /// Feed event
-    vscpEventEx m_eventFeed;
+    vscpEventEx m_feedEvent;
     
 };
 
