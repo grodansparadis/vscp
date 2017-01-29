@@ -2313,6 +2313,26 @@ void vscp_clearVSCPFilter(vscpEventFilter *pFilter)
 }
 
 //////////////////////////////////////////////////////////////////////////////
+// vscp_copyVSCPFilter
+//
+
+void vscp_copyVSCPFilter( vscpEventFilter *pToFilter, const vscpEventFilter *pFromFilter)
+{
+    // Validate pointers
+    if (NULL == pToFilter) return;
+    if (NULL == pFromFilter) return;
+
+    pToFilter->filter_priority = pFromFilter->filter_priority;
+    pToFilter->mask_priority = pFromFilter->mask_priority;
+    pToFilter->filter_class = pFromFilter->filter_class ;
+    pToFilter->mask_class = pFromFilter->mask_class;
+    pToFilter->filter_type = pFromFilter->filter_type;
+    pToFilter->mask_type = pFromFilter->mask_type;
+    memcpy(pToFilter->filter_GUID, pFromFilter->filter_GUID, 16);
+    memcpy(pToFilter->mask_GUID, pFromFilter->mask_GUID, 16);
+}
+
+//////////////////////////////////////////////////////////////////////////////
 // readFilterFromString
 //
 

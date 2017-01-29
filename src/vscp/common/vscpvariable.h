@@ -80,26 +80,31 @@
 class wxFFileOutputStream;
 
 
-// name,type,user,rights,persistence,last,value,note
+// name,type,user,rights,persistence,last,bnumerical,bbase64,value,note
 //{  
 //	"name": "variable-name",
 //	"type": 1,
 //	"user": 2,
-//	"access-rights": 0x777,
+//	"accessrights": 0x777,
 //      "persistence": true|false,
-//	"last-change": "YYYYMMDDTHHMMSS",
+//	"lastchange": "YYYYMMDDTHHMMSS",
+//      "bnumerical": true|false,
+//      "bbase64": true:false,
 //	"value": "This is a test variable",
 //	"note": "This is a note about this variable"
 //}
+// value is numerical for a numerical variable else string.
 
 #define VARIABLE_JSON_TEMPLATE "{\n"\
     "\"name\": '%s',\n"\
     "\"type\": %hu,\n"\
     "\"user\": %lu,\n"\
-    "\"access-rights\": %lu,\n"\
+    "\"accessrights\": %lu,\n"\
     "\"persistence\": %s,\n"\
-    "\"last-change\": '%s',\n"\
-    "\"value\": '%s',\n"\
+    "\"lastchange\": '%s',\n"\
+    "\"bnumeric\": %s,\n"\
+    "\"bbase64\": %s,\n"\
+    "\"value\": %s,\n"\
     "\"note\": '%s'\n"\
 "}"
 

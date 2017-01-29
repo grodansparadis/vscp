@@ -173,6 +173,7 @@ int WINAPI EXPORT vscphlp_convertVSCPfromEx( vscpEvent *pEvent,
 void WINAPI EXPORT vscphlp_deleteVSCPevent( vscpEvent *pEvent );
 void WINAPI EXPORT vscphlp_deleteVSCPeventEx( vscpEventEx *pEventEx );
 void WINAPI EXPORT vscphlp_clearVSCPFilter( vscpEventFilter *pFilter );
+void WINAPI EXPORT vscphlp_copyVSCPFilter( vscpEventFilter *pToFilter, const vscpEventFilter *pFromFilter );
 int WINAPI EXPORT vscphlp_readFilterFromString( vscpEventFilter *pFilter, const char *strFilter );
 int WINAPI EXPORT vscphlp_readMaskFromString( vscpEventFilter *pFilter, const char *strMask );
 int WINAPI EXPORT vscphlp_writeFilterToString( vscpEventFilter *pFilter, char *strFilter );
@@ -399,6 +400,7 @@ int vscphlp_convertVSCPfromEx( vscpEvent *pEvent,
 void vscphlp_deleteVSCPevent( vscpEvent *pEvent );
 void vscphlp_deleteVSCPeventEx( vscpEventEx *pEventEx );
 void vscphlp_clearVSCPFilter( vscpEventFilter *pFilter );
+void vscphlp_copyVSCPFilter( vscpEventFilter *pToFilter, const vscpEventFilter *pFromFilter );
 int vscphlp_readFilterFromString( vscpEventFilter *pFilter, const char *strFilter );
 int vscphlp_readMaskFromString( vscpEventFilter *pFilter, const char *strMask );
 int vscphlp_writeFilterToString( vscpEventFilter *pFilter, char *strFilter );

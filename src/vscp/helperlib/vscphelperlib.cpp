@@ -2040,6 +2040,20 @@ extern "C" void vscphlp_clearVSCPFilter( vscpEventFilter *pFilter )
     return vscp_clearVSCPFilter( pFilter );
 }
 
+
+/*!
+    \fn void vscphlp_clearVSCPFilter( vscpEventFilter *pFilter )
+    \brief Clear VSCP filter.
+*/
+#ifdef WIN32
+extern "C" void WINAPI EXPORT vscphlp_copyVSCPFilter( vscpEventFilter *pToFilter, const vscpEventFilter *pFromFilter )
+#else
+extern "C" void vscphlp_copyVSCPFilter( vscpEventFilter *pToFilter, const vscpEventFilter *pFromFilter )
+#endif
+{
+    return vscp_copyVSCPFilter( pToFilter, pFromFilter );
+}
+
 /*!
     \fn bool readFilterFromString( vscpEventFilter *pFilter, wxString& strFilter )
     \brief Read a filter from a string

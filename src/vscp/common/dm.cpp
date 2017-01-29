@@ -6947,6 +6947,18 @@ void *actionThread_JavaScript::Entry()
     v7_set_method( v7, v7_get_global( v7 ), "vscp_log", &js_vscp_log );
     v7_set_method( v7, v7_get_global( v7 ), "vscp_readVariable", &js_vscp_readVariable );
     v7_set_method( v7, v7_get_global( v7 ), "vscp_writeVariable", &js_vscp_writeVariable );
+    v7_set_method( v7, v7_get_global( v7 ), "vscp_deleteVariable", &js_vscp_deleteVariable );
+    v7_set_method( v7, v7_get_global( v7 ), "vscp_sendEvent", &js_vscp_sendEvent );
+    v7_set_method( v7, v7_get_global( v7 ), "vscp_receiveEvent", &js_vscp_getEvent );
+    v7_set_method( v7, v7_get_global( v7 ), "vscp_countEvent", &js_vscp_getCountEvent );
+    v7_set_method( v7, v7_get_global( v7 ), "vscp_setFilter", &js_vscp_setFilter );
+    v7_set_method( v7, v7_get_global( v7 ), "vscp_isMeasurement", &js_is_Measurement );    
+    v7_set_method( v7, v7_get_global( v7 ), "vscp_sendMeasurement", &js_send_Measurement );
+    v7_set_method( v7, v7_get_global( v7 ), "vscp_getMeasurementValue", &js_get_Measurement );
+    v7_set_method( v7, v7_get_global( v7 ), "vscp_getMeasurementUnit", &js_get_MeasurementUnit );
+    v7_set_method( v7, v7_get_global( v7 ), "vscp_getMeasurementSensorIndex", &js_get_MeasurementSensorIndex );
+    v7_set_method( v7, v7_get_global( v7 ), "vscp_getMeasurementZone", &js_get_MeasurementZone );
+    v7_set_method( v7, v7_get_global( v7 ), "vscp_getMeasurementSubZone", &js_get_MeasurementSubZone );
     
     // Make object of the feed event 
     wxString strEvent;
@@ -6984,6 +6996,34 @@ void *actionThread_JavaScript::Entry()
 
     // Execute a string given in a command line argument 
     err = v7_exec( v7, (const char *)m_wxstrScript.mbc_str(), &v7_result );
+    
+    if ( V7_OK != err ) {
+        
+        wxString strError;
+        
+        switch ( err ) {
+            
+            case V7_SYNTAX_ERROR:
+                strError = _("JavaScript execution error: Syntax error.\n");                
+                break;
+                
+            case V7_EXEC_EXCEPTION:
+                strError = _("JavaScript execution error: Exception error.\n");
+                break;
+                
+            case V7_AST_TOO_LARGE:
+                strError = _("JavaScript execution error: AST to large error.\n");
+                break;
+                
+            case V7_INTERNAL_ERROR:
+                strError = _("JavaScript execution error: Internal error.\n");
+                break;  
+                
+        }
+        
+        gpobj->logMsg( strError );
+        
+    }
     
     // Close the channel
     m_pClientItem->m_bOpen = false;

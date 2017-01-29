@@ -27,8 +27,8 @@
 /*!
  *  Log data
  * 
- * Javascript Parameter 0: String to log.
- * Javascript Return: Nothing.
+ * JavaScript Parameter 0: String to log.
+ * JavaScript Return: Nothing.
  * 
  */
 enum v7_err js_vscp_log( struct v7 *v7, v7_val_t *res );
@@ -38,9 +38,9 @@ enum v7_err js_vscp_log( struct v7 *v7, v7_val_t *res );
  *  Get variable as a JSON object from it's name. If the variable is
  *  not found a null object is returned.
  *  
- *  Javascript Parameter 0: ClientItem
- *  Javascript Parameter 1: Name of variable to read
- *  Javascript: Return: Variable on JSON format. NULL if no variable with
+ *  JavaScript Parameter 0: ClientItem
+ *  JavaScript Parameter 1: Name of variable to read
+ *  JavaScript: Return: Variable on JSON format. NULL if no variable with
  *                      that name.
  * 
  *  @param v7 Pointer to v7 object.
@@ -52,9 +52,9 @@ enum v7_err js_vscp_readVariable( struct v7 *v7, v7_val_t *res );
 /*!
  *  Write a VSCP variable and create it if it does not exist.
  * 
- *  Javascript Parameter 0: ClientItem
- *  Javascript Parameter 1: Variable as JSON object
- *  Javascript: Return: True if variable got updated/added. 
+ *  JavaScript Parameter 0: ClientItem
+ *  JavaScript Parameter 1: Variable as JSON object
+ *  JavaScript: Return: True if variable got updated/added. 
  * 
  *  @param v7 Pointer to v7 object.
  *  @param res Pointer to JSON object or NULL if variable was not found.
@@ -62,38 +62,51 @@ enum v7_err js_vscp_readVariable( struct v7 *v7, v7_val_t *res );
  */
 enum v7_err js_vscp_writeVariable( struct v7 *v7, v7_val_t *res );
 
+/*!
+ *  Delete VSCP variable
+ * 
+ *  JavaScript Parameter 0: ClientItem
+ *  JavaScript Parameter 1: Name of variable
+ *  JavaScript: Return: True if variable got deleted.
+ * 
+ *  @param v7 Pointer to v7 object.
+ *  @param res Pointer to JSON object or NULL if variable was not found.
+ *  @return v7 error code.
+ */
+enum v7_err js_vscp_deleteVariable( struct v7 *v7, v7_val_t *res );
+
 
 /*!
  *  Send VSCP event on the local client queue
  * 
- *  Javascript Parameter 0: ClientItem
- *  Javascript Parameter 1: Event as JSON object
- *  Javascript: Return: True if variable got updated/added.
+ *  JavaScript Parameter 0: ClientItem
+ *  JavaScript Parameter 1: Event as JSON object
+ *  JavaScript: Return: True if variable got updated/added.
  */
 enum v7_err js_vscp_sendEvent( struct v7 *v7, v7_val_t *res );
 
 /*!
  * Fetch on VSCP event from the local client queue
  * 
- *  Javascript Parameter 0: ClientItem
- *  Javascript: Return: Event as JSON object or NULL if no event available
+ *  JavaScript Parameter 0: ClientItem
+ *  JavaScript: Return: Event as JSON object or NULL if no event available
  */
 enum v7_err js_vscp_getEvent( struct v7 *v7, v7_val_t *res );
 
 /*!
  * Return number of events in the local client queue
  * 
- *  Javascript Parameter 0: ClientItem
- *  Javascript: Return: Number of events in the client queue
+ *  JavaScript Parameter 0: ClientItem
+ *  JavaScript: Return: Number of events in the client queue
  */
 enum v7_err js_vscp_getCountEvent( struct v7 *v7, v7_val_t *res ); 
 
 /*!
  * Set VSCP filter for the local client queue
  * 
- *  Javascript Parameter 0: ClientItem
- *  Javascript Parameter 1: Filter + Mask in JSON format.
- *  Javascript: Return: True for success, False for failure
+ *  JavaScript Parameter 0: ClientItem
+ *  JavaScript Parameter 1: Filter + Mask in JSON format.
+ *  JavaScript: Return: True for success, False for failure
  */
 enum v7_err js_vscp_setFilter( struct v7 *v7, v7_val_t *res );
 
@@ -101,28 +114,34 @@ enum v7_err js_vscp_setFilter( struct v7 *v7, v7_val_t *res );
 /*!
  * Check if a measurement is a measurement event.
  * 
- *  Javascript Parameter 0: Event to check in JSON format.
- *  Javascript: Return: True if event is a measurement, False if not.
+ *  JavaScript Parameter 0: Event to check in JSON format.
+ *  JavaScript: Return: True if event is a measurement, False if not.
  */
 enum v7_err js_is_Measurement( struct v7 *v7, v7_val_t *res );
-
-
-/*!
- * Get measurement value
- * 
- *  Javascript Parameter 0: ClientItem
- *  JAvaScript Parameter 2: Measurement in JSON format.
- *  Javascript: Return: True on success, false otherwise.
- */
-enum v7_err js_get_Measurement( struct v7 *v7, v7_val_t *res );
 
 /*!
  * Send measurement event
  * 
- *  Javascript Parameter 0: Event to check in JSON format.
- *  Javascript: Return: True if event is a measurement, False if not.
+ *  JavaScript Parameter 0: Event to check in JSON format.
+ *  JavaScript: Return: True if event is a measurement, False if not.
  */
 enum v7_err js_send_Measurement( struct v7 *v7, v7_val_t *res );
+
+/*!
+ * Get measurement value
+ * 
+ *  JavaScript Parameter 0: ClientItem
+ *  JavaScript Parameter 2: Measurement in JSON format.
+ *  JavaScript: Return: Measurement in JSON format,
+ */
+enum v7_err js_get_Measurement( struct v7 *v7, v7_val_t *res );
+
+/*!
+ *  Get measurement value
+ *  JavaScript Parameter 0: Event to check in JSON format.
+ *  JavaScript: Return: Value as double.
+ */
+enum v7_err js_get_MeasurementValue( struct v7 *v7, v7_val_t *res ); 
 
 /*!
  * Get unit from measurement event

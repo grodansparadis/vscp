@@ -79,7 +79,19 @@ enum v7_err js_vscp_log( struct v7 *v7, v7_val_t *res )
     v7_val_t dbgstr = v7_arg(v7, 0);    
     wxString wxDebug = v7_get_cstring( v7, &dbgstr );
     
-    gpobj->logMsg( wxDebug );
+    v7_val_t v7_level = v7_arg(v7, 1);
+    uint8_t level = DAEMON_LOGMSG_NORMAL;
+    if ( !v7_is_undefined( v7_level ) && v7_is_number( v7_level ) ) {
+        level = v7_get_int( v7, v7_level );
+    }
+    
+    v7_val_t v7_type = v7_arg(v7, 2);
+    uint8_t type = DAEMON_LOGTYPE_GENERAL;
+    if ( !v7_is_undefined( v7_type ) && v7_is_number( v7_type ) ) {
+        type = v7_get_int( v7, v7_type );
+    }
+    
+    gpobj->logMsg( wxDebug, level, type );
     
     return V7_OK;
 }
@@ -127,9 +139,11 @@ enum v7_err js_vscp_readVariable( struct v7 *v7, v7_val_t *res )
 //	"name": "variable-name",
 //	"type": 1,                      
 //	"user": 2,
-//	"access-rights": 0x777,
+//	"accessrights": 0x777,
 //      "persistence": true|false,
-//	"last-change": "YYYYMMDDTHHMMSS",
+//	"lastchange": "YYYYMMDDTHHMMSS",
+//      "isnumerical": true|false
+//      "isbase64": true|false
 //	"value": "This is a test variable",
 //	"note": "This is a note about this variable"
 //}
@@ -138,45 +152,64 @@ enum v7_err js_vscp_writeVariable( struct v7 *v7, v7_val_t *res )
 {
     CVSCPVariable variable;
     bool bResult;
-    wxJSONValue  root;      // JSON root object
-    wxJSONReader reader;    // JSON parser
     
     v7_val_t valClientItem = v7_arg(v7, 0);
     CClientItem *pClientItem = (CClientItem *)v7_get_ptr( v7, valClientItem );
     
-    v7_val_t val1 = v7_arg(v7, 1);
-    wxString strJSON = v7_get_cstring( v7, &val1 );
+    v7_val_t varObj = v7_arg(v7, 1);
     
-    int numErrors = reader.Parse( strJSON, &root );
-    if ( numErrors > 0 )  {
+    // Must be object
+    if ( !v7_is_object( varObj ) ) {
         // Not good
         *res = v7_mk_boolean( v7, 0 );  // Return error
         return V7_OK;
     }
     
-    // Make sure name is there
-    if ( !root.HasMember( "name" ) ) {
-        // Not good
-        *res = v7_mk_boolean( v7, 0 );  // Return error
-        return V7_OK;
-    }
-    
-    // Get the name of the variable
-    wxString wxName = root["name"].AsString();
-    
-    if ( gpobj->m_VSCP_Variables.find( wxName, variable ) ) {        
+    // Get the variable name
+    v7_val_t v7_varName = v7_get( v7, varObj, "name", 4 );
+    const char *pVarName = v7_get_cstring( v7, &v7_varName );
+     
+    if ( gpobj->m_VSCP_Variables.find( pVarName, variable ) ) {
+       
+        // Found - update
         
-        // If value is present set value
-        if ( root.HasMember( "value" ) ) {
-            variable.setValueFromString( variable.getType(),
-                                           root["value"].AsString(),
-                                           false );
+        // Set the variable value
+        
+        v7_val_t v7_varValue = v7_get( v7, varObj, "value", 5 );
+        if ( v7_is_boolean( v7_varValue ) ) {
+            
+            // Boolean form
+            bool bValue = v7_get_bool( v7, v7_varValue );
+            bValue ? variable.setTrue() : variable.setFalse();
+            
+        }
+        else if ( v7_is_number( v7_varValue ) ) {
+            
+            // Numeric form
+            if ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE == variable.getType() ) {
+                double value = v7_get_double( v7, v7_varValue );
+                variable.setValue( value );
+            }
+            else {
+                long value = v7_get_int( v7, v7_varValue );
+                variable.setValue( value );
+            }
+            
+        }
+        else {
+            
+            // String form
+            const char *pValue = v7_get_cstring( v7, &v7_varValue );
+            if ( NULL != pValue ) {
+                variable.setValue( pValue );
+            }
+            
         }
         
         // If note is present set note
-        if ( root.HasMember( "note" ) ) {
-            variable.setNote( root["note"].AsString(), 
-                                false );
+        v7_val_t v7_varNote = v7_get( v7, varObj, "note", 4 );
+        if ( !v7_is_undefined( v7_varNote ) ) {
+            const char *pVarNote = v7_get_cstring( v7, &v7_varNote );
         }
         
         // Save it
@@ -189,51 +222,79 @@ enum v7_err js_vscp_writeVariable( struct v7 *v7, v7_val_t *res )
     }
     else {
         
-        // Need to be added
+        // Not found - create a new variable
         
-        // Set the name
-        variable.setName( wxName );
+        variable.setName( pVarName );                           // Set name
         
-        // set user id (always admin user)
-        variable.setUserID( 0 );
+        variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );   // Default type
         
-        // access rights
-        if ( root.HasMember( "access-rights" ) ) {
-            variable.setRighs( root["access-rights"].AsInt() );
-        }
-        else {
-            variable.setPersistent( false );
-        }
-        
-        // Persistence
-        if ( root.HasMember( "persistence" ) ) {
-            variable.setPersistent( root["persistence"].AsBool() );
-        }
-        else {
-            variable.setPersistent( false );
+        v7_val_t v7_varType = v7_get( v7, varObj, "type", 4 );
+        if ( !v7_is_undefined( v7_varType ) ) {
+            int type = v7_get_int( v7, v7_varType );
+            variable.setType( type );
         }
                 
-        // If value is present set value
-        if ( root.HasMember( "value" ) ) {
-            variable.setValueFromString( variable.getType(),
-                                           root["value"].AsString(),
-                                           false );
+        // Persistence
+        variable.setPersistent( false );    // Default is non-persistent
+        v7_val_t v7_varPersitence = v7_get( v7, varObj, "persistence", 11 );
+        if ( !v7_is_undefined( v7_varPersitence ) ) {
+            variable.setPersistent( v7_get_bool( v7, v7_varPersitence ) ? true : false );
+        }
+        
+        // User
+        variable.setUserID( USER_ID_ADMIN );    // Default is Admin user
+        v7_val_t v7_varUser = v7_get( v7, varObj, "user", 4 );
+        if ( !v7_is_undefined( v7_varUser ) && v7_is_number( v7_varUser ) ) {
+            variable.setUserID( v7_get_int( v7, v7_varUser ) );
+        }
+        
+        // Access-Rights
+        variable.setAccessRights( PERMISSON_OWNER_ALL );    // Owner have all rights
+        v7_val_t v7_varAccessRights = v7_get( v7, varObj, "accessrights", 12 );
+        if ( !v7_is_undefined( v7_varAccessRights ) && v7_is_number( v7_varAccessRights ) ) {
+            variable.setUserID( v7_get_int( v7, v7_varAccessRights ) );
+        }
+        
+        // Set the variable value
+        
+        v7_val_t v7_varValue = v7_get( v7, varObj, "value", 5 );
+        if ( v7_is_boolean( v7_varValue ) ) {
+            
+            // Boolean form
+            bool bValue = v7_get_bool( v7, v7_varValue );
+            bValue ? variable.setTrue() : variable.setFalse();
+            
+        }
+        else if ( v7_is_number( v7_varValue ) ) {
+            
+            // Numeric form
+            if ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE == variable.getType() ) {
+                double value = v7_get_double( v7, v7_varValue );
+                variable.setValue( value );
+            }
+            else {
+                long value = v7_get_int( v7, v7_varValue );
+                variable.setValue( value );
+            }
+            
+        }
+        else {
+            
+            // String form
+            const char *pValue = v7_get_cstring( v7, &v7_varValue );
+            if ( NULL != pValue ) {
+                variable.setValue( pValue );
+            }
+            
         }
         
         // If note is present set note
-        if ( root.HasMember( "note" ) ) {
-            variable.setNote( root["note"].AsString(), 
-                                false );
+        v7_val_t v7_varNote = v7_get( v7, varObj, "note", 4 );
+        if ( !v7_is_undefined( v7_varNote ) ) {
+            const char *pVarNote = v7_get_cstring( v7, &v7_varNote );
         }
         
         // Save it
-        if ( !gpobj->m_VSCP_Variables.add( variable ) ) {
-            // Not good
-            *res = v7_mk_boolean( v7, 0 );  // Return error
-            return V7_OK;
-        }
-        
-        // Add the variable
         if ( !gpobj->m_VSCP_Variables.add( variable ) ) {
             // Not good
             *res = v7_mk_boolean( v7, 0 );  // Return error
@@ -245,6 +306,43 @@ enum v7_err js_vscp_writeVariable( struct v7 *v7, v7_val_t *res )
     *res = v7_mk_boolean( v7, 1 );  // Return success
     return V7_OK;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// js_vscp_deleteVariable
+//
+
+enum v7_err js_vscp_deleteVariable( struct v7 *v7, v7_val_t *res ) 
+{
+    CVSCPVariable variable;
+    bool bResult;
+
+    v7_val_t valClientItem = v7_arg(v7, 0);
+    CClientItem *pClientItem = (CClientItem *)v7_get_ptr( v7, valClientItem );
+    
+    v7_val_t varObj = v7_arg(v7, 1);
+    
+    // Must be object
+    if ( !v7_is_object( varObj ) ) {
+        // Not good
+        *res = v7_mk_boolean( v7, 0 );  // Return error
+        return V7_OK;
+    }
+    
+    // Get the variable name
+    v7_val_t v7_varName = v7_get( v7, varObj, "name", 4 );
+    const char *pVarName = v7_get_cstring( v7, &v7_varName );
+     
+    wxString strName = pVarName;
+    if ( gpobj->m_VSCP_Variables.remove( strName ) ) {
+        *res = v7_mk_boolean( v7, 1 );  // Return success
+    }
+    else {
+        *res = v7_mk_boolean( v7, 0 );  // Return success
+    }
+    
+    return V7_OK;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // js_vscp_sendEvent
@@ -263,7 +361,7 @@ enum v7_err js_vscp_writeVariable( struct v7 *v7, v7_val_t *res )
 
 enum v7_err js_vscp_sendEvent( struct v7 *v7, v7_val_t *res ) 
 {
-    CVSCPVariable variable;
+    vscpEventEx ex;
     bool bResult;
     wxJSONValue  root;      // JSON root object
     wxJSONReader reader;    // JSON parser
@@ -272,15 +370,107 @@ enum v7_err js_vscp_sendEvent( struct v7 *v7, v7_val_t *res )
     v7_val_t valClientItem = v7_arg(v7, 0);
     CClientItem *pClientItem = (CClientItem *)v7_get_ptr( v7, valClientItem );
     
-    v7_val_t val1 = v7_arg( v7, 1 );
-    wxString strJSON = v7_get_cstring( v7, &val1 );
+    // Get event
+    v7_val_t varObjEvent = v7_arg(v7, 1);
     
-    int numErrors = reader.Parse( strJSON, &root );
-    if ( numErrors > 0 )  {
+    // Must be object
+    if ( !v7_is_object( varObjEvent ) ) {
         // Not good
         *res = v7_mk_boolean( v7, 0 );  // Return error
         return V7_OK;
     }
+      
+    // Head
+    ex.head = VSCP_PRIORITY_NORMAL;
+    v7_val_t v7_head = v7_get( v7, varObjEvent, "head", 4 );
+    if ( !v7_is_undefined( v7_head ) && v7_is_number( v7_head ) ) {
+        ex.head = v7_get_int( v7, v7_head );
+    }
+    
+    // Timestamp
+    ex.timestamp = 0;
+    v7_val_t v7_timestamp = v7_get( v7, varObjEvent, "timestamp", 9 );
+    if ( !v7_is_undefined( v7_timestamp ) && v7_is_number( v7_timestamp ) ) {
+        ex.timestamp = v7_get_int( v7, v7_timestamp );
+    }
+    
+    // obid
+    ex.obid = 0;
+    v7_val_t v7_obid = v7_get( v7, varObjEvent, "obid", 4 );
+    if ( !v7_is_undefined( v7_obid ) && v7_is_number( v7_obid ) ) {
+        ex.obid = v7_get_int( v7, v7_obid );
+    }
+    
+    // class
+    ex.vscp_class = 0;
+    v7_val_t v7_class = v7_get( v7, varObjEvent, "class", 5 );
+    if ( !v7_is_undefined( v7_class ) && v7_is_number( v7_class ) ) {
+        ex.vscp_class = v7_get_int( v7, v7_class );
+    }
+    else {
+        // Must be defined
+        *res = v7_mk_boolean( v7, 0 );  // Return error
+        return V7_OK;
+    }
+    
+    // type
+    ex.vscp_type = 0;
+    v7_val_t v7_type = v7_get( v7, varObjEvent, "type", 4 );
+    if ( !v7_is_undefined( v7_type ) && v7_is_number( v7_type ) ) {
+        ex.vscp_type = v7_get_int( v7, v7_type );
+    }
+    else {
+        // Must be defined
+        *res = v7_mk_boolean( v7, 0 );  // Return error
+        return V7_OK;
+    }
+    
+    //GUID
+    memset( ex.GUID, 0, 16 ); 
+    v7_val_t v7_guid = v7_get( v7, varObjEvent, "guid", 4 );
+    if ( !v7_is_undefined( v7_guid ) && !v7_is_number( v7_guid ) ) {
+        wxString strGUID = v7_get_cstring( v7, &v7_guid );
+        vscp_getGuidFromStringEx( &ex, strGUID );
+    }
+    else {
+        // Must be defined
+        *res = v7_mk_boolean( v7, 0 );  // Return error
+        return V7_OK;
+    }
+    
+    // Data
+    ex.sizeData = 0;
+    v7_val_t v7_dataArray = v7_get( v7, varObjEvent, "data", 4 );
+    if ( !v7_is_undefined( v7_dataArray ) && !v7_is_array( v7, v7_dataArray ) ) {
+        int len = v7_array_length( v7, v7_dataArray );
+        if ( len ) {
+            for ( int i=0; i<len; i++ ) {
+                v7_val_t v7_item = v7_array_get( v7, v7_dataArray, i );
+                if ( !v7_is_undefined( v7_item ) && v7_is_number( v7_item ) && ( i < 512 ) ) {
+                    ex.data[ i ] = v7_get_int( v7, v7_item );
+                }
+            }
+        }
+    }
+    
+    // Send the event
+    vscpEvent *pEvent = new vscpEvent;
+    if ( NULL == pEvent ) {
+        *res = v7_mk_boolean( v7, 0 );  // Return error
+        return V7_OK;
+    }
+    
+    vscp_convertVSCPfromEx( pEvent, &ex );
+    
+    if ( gpobj->sendEvent( pClientItem, pEvent ) ) {
+        // Failed to send event
+        vscp_deleteVSCPevent( pEvent );
+        *res = v7_mk_boolean( v7, 0 );  // Return error
+        return V7_OK;
+    }
+    
+    vscp_deleteVSCPevent( pEvent );
+    
     
     *res = v7_mk_boolean( v7, 1 );  // Return success
     return V7_OK;
@@ -291,27 +481,74 @@ enum v7_err js_vscp_sendEvent( struct v7 *v7, v7_val_t *res )
 //
 
 enum v7_err js_vscp_getEvent( struct v7 *v7, v7_val_t *res ) 
-{
-    CVSCPVariable variable;
-    bool bResult;
-    wxJSONValue  root;      // JSON root object
-    wxJSONReader reader;    // JSON parser
-    
+{    
     v7_val_t valClientItem = v7_arg(v7, 0);
     CClientItem *pClientItem = (CClientItem *)v7_get_ptr( v7, valClientItem );
     
-    v7_val_t val1 = v7_arg(v7, 1);
-    wxString strJSON = v7_get_cstring( v7, &val1 );
+try_again:
     
-    int numErrors = reader.Parse( strJSON, &root );
-    if ( numErrors > 0 )  {
-        // Not good
-        *res = v7_mk_boolean( v7, 0 );  // Return error
-        return V7_OK;
-    }
+    // Check the client queue
+    if ( pClientItem->m_bOpen && pClientItem->m_clientInputQueue.GetCount() ) {
+
+        CLIENTEVENTLIST::compatibility_iterator nodeClient;
+        vscpEvent *pEvent;
+
+        pClientItem->m_mutexClientInputQueue.Lock();
+        nodeClient = pClientItem->m_clientInputQueue.GetFirst();
+        if ( NULL == nodeClient )  {
+            
+            // Exception
+            *res = v7_mk_null();
+            return V7_INTERNAL_ERROR;        
+            
+        }
+        
+        pEvent = nodeClient->GetData();                             
+        pClientItem->m_clientInputQueue.DeleteNode( nodeClient );
+        pClientItem->m_mutexClientInputQueue.Unlock();
+
+        if ( NULL != pEvent ) {
+
+            if ( vscp_doLevel2Filter( pEvent, &pClientItem->m_filterVSCP ) ) {
+
+                // Write it out
+                
+                wxString strResult;
+                vscp_convertEventToJSON( pEvent, strResult );
+                
+                if ( V7_OK != v7_parse_json( v7, (const char *)strResult.mbc_str(), res ) ) {
+                    *res = v7_mk_null();
+                    return V7_OK;        
+                }       
+                
+                // All OK return event
+                return V7_OK;
+   
+            }
+            else {
+                                
+                // Filtered out
+                vscp_deleteVSCPevent( pEvent );
+                goto try_again;
+                
+            }
+            
+            // Remove the event
+            vscp_deleteVSCPevent( pEvent );
+
+        } // Valid pEvent pointer
+        else {
+            // NULL event
+            *res = v7_mk_null();
+            return V7_INTERNAL_ERROR;
+        }
+                
+    } // events available
     
-    *res = v7_mk_boolean( v7, 1 );  // Return success
+    // Fail
+    *res = v7_mk_null();
     return V7_OK;
+    
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -321,12 +558,19 @@ enum v7_err js_vscp_getEvent( struct v7 *v7, v7_val_t *res )
 
 enum v7_err js_vscp_getCountEvent( struct v7 *v7, v7_val_t *res ) 
 {
-    double result;
+    int count = 0;
     
     v7_val_t valClientItem = v7_arg(v7, 0);
     CClientItem *pClientItem = (CClientItem *)v7_get_ptr( v7, valClientItem );
     
-    *res = v7_mk_number( v7, result );  // Return success
+    if ( pClientItem->m_bOpen ) {
+        count = pClientItem->m_clientInputQueue.GetCount();
+    }
+    else {
+        count = 0;
+    }
+    
+    *res = v7_mk_number( v7, count );  // Return success
     return V7_OK;
 }
 
@@ -334,23 +578,104 @@ enum v7_err js_vscp_getCountEvent( struct v7 *v7, v7_val_t *res )
 ///////////////////////////////////////////////////////////////////////////////
 // js_vscp_setFilter
 //
+// {
+//     'mask_priorit: number,
+//     'mask_class': number,
+//     'mask_type': number,
+//     'mask_guid': 'string',
+//     'filter_priority'; number,
+//     'filter_class': number,
+//     'filter_type': number,
+//     'filter_guid' 'string'
+// }
 
 enum v7_err js_vscp_setFilter( struct v7 *v7, v7_val_t *res ) 
 {
-    CVSCPVariable variable;
-    bool bResult;
-    wxJSONValue  root;      // JSON root object
-    wxJSONReader reader;    // JSON parser
+    vscpEventFilter filter;
+
+    v7_val_t valClientItem = v7_arg(v7, 0);
+    CClientItem *pClientItem = (CClientItem *)v7_get_ptr( v7, valClientItem );
     
-    v7_val_t val1 = v7_arg(v7, 0);
-    wxString strJSON = v7_get_cstring( v7, &val1 );
+    // Get filter
+    v7_val_t varObjFilter = v7_arg(v7, 1);
     
-    int numErrors = reader.Parse( strJSON, &root );
-    if ( numErrors > 0 )  {
+    // Must be an object
+    if ( !v7_is_object( varObjFilter ) ) {
         // Not good
         *res = v7_mk_boolean( v7, 0 );  // Return error
         return V7_OK;
     }
+    
+    // Mask priority
+    filter.mask_priority = 0;   // Default is don't care
+    v7_val_t v7_mask_priority = v7_get( v7, varObjFilter, "mask_priority", 13 );
+    if ( !v7_is_undefined( v7_mask_priority ) && v7_is_number( v7_mask_priority ) ) {
+        filter.mask_priority = v7_get_int( v7, v7_mask_priority );
+    }
+    
+    // Mask class
+    filter.mask_class = 0;   // Default is don't care
+    v7_val_t v7_mask_class = v7_get( v7, varObjFilter, "mask_priority", 13 );
+    if ( !v7_is_undefined( v7_mask_class ) && v7_is_number( v7_mask_class ) ) {
+        filter.mask_class = v7_get_int( v7, v7_mask_class );
+    }
+    
+    // Mask type
+    filter.mask_type = 0;   // Default is don't care
+    v7_val_t v7_mask_type = v7_get( v7, varObjFilter, "mask_type", 9 );
+    if ( !v7_is_undefined( v7_mask_type ) && v7_is_number( v7_mask_type ) ) {
+        filter.mask_type = v7_get_int( v7, v7_mask_type );
+    }
+    
+    // mask GUID
+    memset( filter.mask_GUID, 0, 16 ); // Default is don't care
+    v7_val_t v7_mask_guid = v7_get( v7, varObjFilter, "mask_guid", 9 );
+    if ( !v7_is_undefined( v7_mask_guid ) && !v7_is_number( v7_mask_guid ) ) {
+        wxString strGUID = v7_get_cstring( v7, &v7_mask_guid );
+        vscp_getGuidFromStringToArray( filter.mask_GUID, strGUID );
+    }
+    else {
+        // Must be defined
+        *res = v7_mk_boolean( v7, 0 );  // Return error
+        return V7_OK;
+    }
+    
+    // Filter priority
+    filter.mask_priority = 0;
+    v7_val_t v7_filter_priority = v7_get( v7, varObjFilter, "filter_priority", 15 );
+    if ( !v7_is_undefined( v7_filter_priority ) && v7_is_number( v7_filter_priority ) ) {
+        filter.mask_priority = v7_get_int( v7, v7_filter_priority );
+    }
+    
+    // Filter class
+    filter.filter_class = 0;   // Default is don't care
+    v7_val_t v7_filter_class = v7_get( v7, varObjFilter, "filter_priority", 15 );
+    if ( !v7_is_undefined( v7_filter_class ) && v7_is_number( v7_filter_class ) ) {
+        filter.filter_class = v7_get_int( v7, v7_filter_class );
+    }
+    
+    // Filter type
+    filter.filter_type = 0;   // Default is don't care
+    v7_val_t v7_filter_type = v7_get( v7, varObjFilter, "filter_type", 11 );
+    if ( !v7_is_undefined( v7_filter_type ) && v7_is_number( v7_filter_type ) ) {
+        filter.filter_type = v7_get_int( v7, v7_filter_type );
+    }
+    
+    // filter GUID
+    memset( filter.filter_GUID, 0, 16 ); // Default is don't care
+    v7_val_t v7_filter_guid = v7_get( v7, varObjFilter, "filter_guid", 11 );
+    if ( !v7_is_undefined( v7_filter_guid ) && !v7_is_number( v7_filter_guid ) ) {
+        wxString strGUID = v7_get_cstring( v7, &v7_filter_guid );
+        vscp_getGuidFromStringToArray( filter.filter_GUID, strGUID );
+    }
+    else {
+        // Must be defined
+        *res = v7_mk_boolean( v7, 0 );  // Return error
+        return V7_OK;
+    }
+    
+    // Set the filter
+    vscp_copyFilter( &pClientItem->m_filterVSCP, &filter);        
     
     *res = v7_mk_boolean( v7, 1 );  // Return success
     return V7_OK;
@@ -368,6 +693,16 @@ enum v7_err js_is_Measurement( struct v7 *v7, v7_val_t *res )
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// js_send_Measurement
+//
+
+enum v7_err js_send_Measurement( struct v7 *v7, v7_val_t *res )
+{
+    return V7_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 // js_get_Measurement
 //
 
@@ -378,14 +713,13 @@ enum v7_err js_get_Measurement( struct v7 *v7, v7_val_t *res )
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// js_send_Measurement
+// js_get_MeasurementValue
 //
 
-enum v7_err js_send_Measurement( struct v7 *v7, v7_val_t *res )
+enum v7_err js_get_MeasurementValue( struct v7 *v7, v7_val_t *res ) 
 {
     return V7_OK;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // js_get_MeasurementUnit

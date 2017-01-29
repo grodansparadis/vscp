@@ -94,8 +94,8 @@
 #define VSCP_ADD_USER_FLAG_ADMIN                        0x10000000  // Marks the one and only admin user
 
 // Users not in db is local
-//#define USER_IS_LOCAL             -1  // Never saved to db
-//#define USER_IS_UNSAVED           0  // Should be saved to db
+//#define USER_IS_LOCAL                                 -1          // Never saved to db
+//#define USER_IS_UNSAVED                               0           // Should be saved to db
 
 #define USER_PRIVILEGE_MASK                             0x0f
 #define USER_PRIVILEGE_BYTES                            8

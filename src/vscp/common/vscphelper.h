@@ -720,6 +720,13 @@ extern "C" {
       @param pFilter Pointer to VSCP filter.
      */
     void vscp_clearVSCPFilter(vscpEventFilter *pFilter);
+    
+    /*!
+     * Copy filter from one filter to another
+     * @param pToFilter Pointer to filter to copy data to
+     * @param pFromFilter Pinter to filter to copy data from
+     */  
+    void vscp_copyVSCPFilter( vscpEventFilter *pToFilter, const vscpEventFilter *pFromFilter);
 
     /*!
       Check filter/mask to check if filter should be delivered
