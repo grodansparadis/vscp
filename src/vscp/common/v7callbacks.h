@@ -127,14 +127,6 @@ enum v7_err js_is_Measurement( struct v7 *v7, v7_val_t *res );
  */
 enum v7_err js_send_Measurement( struct v7 *v7, v7_val_t *res );
 
-/*!
- * Get measurement value
- * 
- *  JavaScript Parameter 0: ClientItem
- *  JavaScript Parameter 2: Measurement in JSON format.
- *  JavaScript: Return: Measurement in JSON format,
- */
-enum v7_err js_get_Measurement( struct v7 *v7, v7_val_t *res );
 
 /*!
  *  Get measurement value

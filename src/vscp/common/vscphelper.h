@@ -144,11 +144,19 @@ extern "C" {
      */ 
     void vscp_toXMLEscape( char *temp_str );
 
+    
+    
+    
+    
+    
     // ***************************************************************************
-    //                                Data Coding Helpers
+    //                             Measurement Helpers
     // ***************************************************************************
 
     
+    
+    
+        
     /*!
         Fetch data coding byte from measurement events
         @param pEvent Pointer to VSCP event
@@ -207,8 +215,8 @@ extern "C" {
         
         CLASS1.MEASUREMENT
         CLASS2_LEVEL1.MEASUREMENT 
-        - VSCP_CLASS1_MEASUREZONE
-        - VSCP_CLASS1_SETVALUEZONE
+        VSCP_CLASS1_MEASUREZONE
+        VSCP_CLASS1_SETVALUEZONE
         CLASS2_MEASUREMENT_FLOAT
         CLASS2_MEASUREMENT_STR
          
@@ -285,7 +293,6 @@ extern "C" {
         @param str String that holds the result
         @return true on success, false on failure.
      */
- 
     bool vscp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, 
                                                     wxString& str);
     
@@ -361,11 +368,10 @@ extern "C" {
 
     /*!
         Convert a floating point measurement value into VSCP data as a
-        string for
-	CLASS1.MEASUREMENT, CLASS2_LEVEL1.MEASUREMENT
+        string for CLASS1.MEASUREMENT or CLASS2_LEVEL1.MEASUREMENT
         @param value Floating point value to convert.
         @param pEvent Pointer to event with pdata set to NULL. vscp_class and
-        vscp_type must be set to CLASS1.MEASUREMENT, CLASS2_LEVEL1.MEASUREMENT,
+        vscp_type must be set to CLASS1.MEASUREMENT or CLASS2_LEVEL1.MEASUREMENT,
         @param psize Pointer to size for returned data.
         @param unit Unit for the data. Zero is default.
         @param sensoridx Sensor index 0-7. Zero is default.
@@ -397,7 +403,32 @@ extern "C" {
      */
     float vscp_getMeasurementAsFloat(const unsigned char *pNorm, 
                                         const unsigned char length);
-
+    /*!
+     * Convert a Level I measurement event to a Level II double measurement event
+     * VSCP_CLASS2_MEASUREMENT_FLOAT
+     * 
+     * @param pEventLevel1 Pointer to level I measurement event to be converted.
+     * @param pEventÖevel2 Pointer to resulting level II measurement event.
+     * @return true on success, false otherwise.
+     */
+    bool vscp_convertLevel1MeasuremenToLevel2Double( vscpEvent *pEventLevel1 );
+    
+    /*!
+     * Convert a Level I measurement event to a Level II string measurement event
+     * VSCP_CLASS2_MEASUREMENT_STRING
+     * 
+     * @param pEventLevel1 Pointer to level I measurement event to be converted.
+     * @param pEventÖevel2 Pointer to resulting level II measurement event.
+     * @return true on success, false otherwise.
+     */
+    bool vscp_convertLevel1MeasuremenToLevel2String( vscpEvent *pEventLevel1 );
+    
+    // -------------------------------------------------------------------------
+    
+    
+    
+    
+    
     /*!
       Replace backslashes in a string with forward slashes
       @param strval String that should be handled.
@@ -939,7 +970,7 @@ extern "C" {
     bool vscp_setVscpEventExFromString( vscpEventEx *pEventEx, const wxString& str);
 
     /*!
-        Write in measurement data into real text string
+        Write in measurement data into real text string             TODO REMOVE !!!!!!!!!
         @param vscptype VSCP type
         @param unit Measurement unit, 0-3 for Level I, 0-255 for Level II.
         @param sensoridx Index for sensor, 0-7 for Level I, 0-255 for Level II.

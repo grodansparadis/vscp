@@ -6954,7 +6954,7 @@ void *actionThread_JavaScript::Entry()
     v7_set_method( v7, v7_get_global( v7 ), "vscp_setFilter", &js_vscp_setFilter );
     v7_set_method( v7, v7_get_global( v7 ), "vscp_isMeasurement", &js_is_Measurement );    
     v7_set_method( v7, v7_get_global( v7 ), "vscp_sendMeasurement", &js_send_Measurement );
-    v7_set_method( v7, v7_get_global( v7 ), "vscp_getMeasurementValue", &js_get_Measurement );
+    v7_set_method( v7, v7_get_global( v7 ), "vscp_getMeasurementValue", &js_get_MeasurementValue );
     v7_set_method( v7, v7_get_global( v7 ), "vscp_getMeasurementUnit", &js_get_MeasurementUnit );
     v7_set_method( v7, v7_get_global( v7 ), "vscp_getMeasurementSensorIndex", &js_get_MeasurementSensorIndex );
     v7_set_method( v7, v7_get_global( v7 ), "vscp_getMeasurementZone", &js_get_MeasurementZone );

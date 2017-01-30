@@ -1350,6 +1350,255 @@ bool vscp_getVSCPMeasurementZoneAsString(const vscpEvent *pEvent, wxString& str)
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+// vscp_convertLevel1MeasuremenToLevel2Double
+//
+
+bool vscp_convertLevel1MeasuremenToLevel2Double( vscpEvent *pEvent )
+{
+    double val64;
+    
+    // Check pointers
+    if ( NULL != pEvent ) return false;
+    if ( NULL != pEvent->pdata ) return false;
+    
+    // Must be a measurement event
+    if ( !vscp_isVSCPMeasurement( pEvent ) ) return false;
+    
+    if ( vscp_getVSCPMeasurementAsDouble( pEvent, &val64 ) ) {
+
+        pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
+        uint8_t *p = new uint8_t[ 12 ];
+        if (NULL != p) {
+
+            memset(p, 0, 12);
+            /*                                
+            0 	Index for sensor, 0-255.
+            1 	Zone, 0-255.
+            2 	Sub zone, 0-255.
+            3 	Unit from measurements, 0-255.
+            4-11 	64-bit double precision floating point value stored MSB first. 
+             */
+            if (VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class) {
+
+                // Sensor index
+                p[ 0 ] = pEvent->pdata[ 0 ] & VSCP_MASK_DATACODING_INDEX;
+
+                // Zone + Subzone
+                p[ 1 ] = p[ 2 ] = 0x00;
+
+                // unit
+                p[ 3 ] = (pEvent->pdata[ 0 ] & VSCP_MASK_DATACODING_UNIT) >> 3;
+
+                // Floating point value
+                val64 = wxUINT64_SWAP_ON_LE(val64);
+                memcpy(p + 4, &val64, sizeof ( val64));
+
+                delete [] pEvent->pdata;
+
+                pEvent->pdata = p;
+
+            } 
+            else if (VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class) {
+
+                // Index = 0, Unit = 0, Zone = 0, Subzone = 0
+                // Floating point value
+                val64 = wxUINT64_SWAP_ON_LE(val64);
+                memcpy(p + 4, &val64, sizeof ( val64));
+
+                delete [] pEvent->pdata;
+
+                pEvent->pdata = p;
+
+            } 
+            else if (VSCP_CLASS1_MEASUREMENT32 == pEvent->vscp_class) {
+
+                // Index = 0, Unit = 0, Zone = 0, Subzone = 0
+                // Floating point value
+                val64 = wxUINT64_SWAP_ON_LE(val64);
+                memcpy(p + 4, &val64, sizeof ( val64));
+
+                delete [] pEvent->pdata;
+
+                pEvent->pdata = p;
+
+            } 
+            else if (VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class) {
+
+                // Sensor index
+                p[ 0 ] = pEvent->pdata[ 0 ];
+
+                // Zone
+                p[ 1 ] = pEvent->pdata[ 1 ];
+
+                // Subzone
+                p[ 2 ] = pEvent->pdata[ 2 ];
+
+                val64 = wxUINT64_SWAP_ON_LE(val64);
+                memcpy(p + 4, &val64, sizeof ( val64));
+
+                delete [] pEvent->pdata;
+
+                pEvent->pdata = p;
+
+            }
+            else if (VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class) {
+
+                // Sensor index
+                p[ 0 ] = pEvent->pdata[ 0 ];
+
+                // Zone
+                p[ 1 ] = pEvent->pdata[ 1 ];
+
+                // Subzone
+                p[ 2 ] = pEvent->pdata[ 2 ];
+
+                val64 = wxUINT64_SWAP_ON_LE(val64);
+                memcpy(p + 4, &val64, sizeof ( val64));
+
+                delete [] pEvent->pdata;
+
+                pEvent->pdata = p;
+
+            }
+            else {
+                return false;   // Not a measurement event, hmmmm.... strange
+            }
+        }
+        else {
+            return false;   // Unable to allocate data
+        }
+    }
+    else {
+        return false;   // Could not get value
+    }
+    
+    return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_convertLevel1MeasuremenToLevel2String
+//
+
+bool vscp_convertLevel1MeasuremenToLevel2String( vscpEvent *pEvent )
+{
+    wxString strval;
+    
+    // Check pointers
+    if ( NULL != pEvent ) return false;
+    if ( NULL != pEvent->pdata ) return false;
+    
+    // Must be a measurement event
+    if ( !vscp_isVSCPMeasurement( pEvent ) ) return false;
+        
+    if ( vscp_getVSCPMeasurementAsString( pEvent, strval ) ) {
+
+        pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
+
+        char *p = new char[ 4 + strval.Length() ];
+        if ( NULL != p ) {
+
+            memset(p, 0, 4 + strval.Length());
+
+            if (VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class) {
+
+                // Sensor index
+                p[ 0 ] = pEvent->pdata[ 0 ] & VSCP_MASK_DATACODING_INDEX;
+
+                // Zone + Subzone
+                p[ 1 ] = p[ 2 ] = 0x00;
+
+                // unit
+                p[ 3 ] = (pEvent->pdata[ 0 ] & VSCP_MASK_DATACODING_UNIT) >> 3;
+
+                // Copy in the value string
+                strcpy(p + 4, (const char *) strval.mbc_str());
+
+                delete [] pEvent->pdata;
+
+                pEvent->pdata = (uint8_t *) p;
+
+            } 
+            else if (VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class) {
+
+                // Index = 0, Unit = 0, Zone = 0, Subzone = 0
+                // Floating point value
+                // Copy in the value string
+                strcpy(p + 4, (const char *) strval.mbc_str());
+
+                delete [] pEvent->pdata;
+
+                pEvent->pdata = (uint8_t *) p;
+
+            } 
+            else if (VSCP_CLASS1_MEASUREMENT32 == pEvent->vscp_class) {
+
+                // Index = 0, Unit = 0, Zone = 0, Subzone = 0
+                // Floating point value
+                // Copy in the value string
+                strcpy(p + 4, (const char *) strval.mbc_str());
+
+                delete [] pEvent->pdata;
+
+                pEvent->pdata = (uint8_t *) p;
+
+            } 
+            else if (VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class) {
+
+                // Sensor index
+                p[ 0 ] = pEvent->pdata[ 0 ];
+
+                // Zone
+                p[ 1 ] = pEvent->pdata[ 1 ];
+
+                // Subzone
+                p[ 2 ] = pEvent->pdata[ 2 ];
+
+                // Copy in the value string
+                strcpy(p + 4, (const char *) strval.mbc_str());
+
+                delete [] pEvent->pdata;
+
+                pEvent->pdata = (uint8_t *) p;
+
+            }
+            else if (VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class) {
+
+                // Sensor index
+                p[ 0 ] = pEvent->pdata[ 0 ];
+
+                // Zone
+                p[ 1 ] = pEvent->pdata[ 1 ];
+
+                // Subzone
+                p[ 2 ] = pEvent->pdata[ 2 ];
+
+                // Copy in the value string
+                strcpy(p + 4, (const char *) strval.mbc_str());
+
+                delete [] pEvent->pdata;
+
+                pEvent->pdata = (uint8_t *) p;
+
+            }
+            else {
+                return false;   // Not a measurement.... hmm.... strange
+            }
+        }
+        else {
+            return false;   // Unable to allocate data
+        }
+    }
+    else {
+        return false;   // Could not get value
+    }
+    
+    return true;
+}
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // replaceBackslash
 //

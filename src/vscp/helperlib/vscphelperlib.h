@@ -251,6 +251,8 @@ int WINAPI EXPORT vscphlp_getMeasuremenSensorIndex( const vscpEvent *pEvent );
 int WINAPI EXPORT vscphlp_getMeasurementZone( const vscpEvent *pEvent );
 int WINAPI EXPORT vscphlp_getMeasurementSubZone( const vscpEvent *pEvent );
 int WINAPI EXPORT vscphlp_isMeasurement( const vscpEvent *pEvent );
+int WINAPI EXPORT vscphlp_convertLevel1MeasuremenToLevel2Double( vscpEvent *pEventLevel1 );
+int WINAPI EXPORT vscphlp_convertLevel1MeasuremenToLevel2String( vscpEvent *pEventLevel1 );
 int WINAPI EXPORT vscphlp_replaceBackslash( char *pStr );
 unsigned char WINAPI EXPORT vscphlp_getVscpPriority( const vscpEvent *pEvent );
 unsigned char WINAPI EXPORT vscphlp_getVscpPriorityEx( const vscpEventEx *pEvent );
@@ -482,6 +484,9 @@ int vscphlp_getMeasuremenSensorIndex( const vscpEvent *pEvent );
 int vscphlp_getMeasurementZone( const vscpEvent *pEvent );
 int vscphlp_getMeasurementSubZone( const vscpEvent *pEvent );
 int vscphlp_isMeasurement( const vscpEvent *pEvent );
+int vscphlp_convertLevel1MeasuremenToLevel2Double( vscpEvent *pEventLevel1 );
+int vscphlp_convertLevel1MeasuremenToLevel2String( vscpEvent *pEventLevel1 );
+
 int vscphlp_replaceBackslash( char *pStr );
 unsigned char vscphlp_getVscpPriority( const vscpEvent *pEvent );
 unsigned char vscphlp_getVscpPriorityEx( const vscpEventEx *pEvent );

@@ -64,10 +64,103 @@
 #include <v7callbacks.h>
 
 ///////////////////////////////////////////////////
-//                 GLOBALS
+//                   GLOBALS
 ///////////////////////////////////////////////////
 
 extern CControlObject *gpobj;
+
+///////////////////////////////////////////////////
+//                  HELPERS
+///////////////////////////////////////////////////
+
+static bool get_js_Event( struct v7 *v7, v7_val_t *pvarObjEvent, vscpEventEx *pex )
+{
+    // Must be object
+    if ( !v7_is_object( *pvarObjEvent ) ) {
+        // Not good
+        return false;
+    }
+      
+    // Head
+    pex->head = VSCP_PRIORITY_NORMAL;
+    v7_val_t v7_head = v7_get( v7, *pvarObjEvent, "head", 4 );
+    if ( !v7_is_undefined( v7_head ) && v7_is_number( v7_head ) ) {
+        pex->head = v7_get_int( v7, v7_head );
+    }
+    
+    // Timestamp
+    pex->timestamp = 0;
+    v7_val_t v7_timestamp = v7_get( v7, *pvarObjEvent, "timestamp", 9 );
+    if ( !v7_is_undefined( v7_timestamp ) && v7_is_number( v7_timestamp ) ) {
+        pex->timestamp = v7_get_int( v7, v7_timestamp );
+    }
+    
+    // obid
+    pex->obid = 0;
+    v7_val_t v7_obid = v7_get( v7, *pvarObjEvent, "obid", 4 );
+    if ( !v7_is_undefined( v7_obid ) && v7_is_number( v7_obid ) ) {
+        pex->obid = v7_get_int( v7, v7_obid );
+    }
+    
+    // class
+    pex->vscp_class = 0;
+    v7_val_t v7_class = v7_get( v7, *pvarObjEvent, "class", 5 );
+    if ( !v7_is_undefined( v7_class ) && v7_is_number( v7_class ) ) {
+        pex->vscp_class = v7_get_int( v7, v7_class );
+    }
+    else {
+        // Must be defined
+        return false;;
+    }
+    
+    // type
+    pex->vscp_type = 0;
+    v7_val_t v7_type = v7_get( v7, *pvarObjEvent, "type", 4 );
+    if ( !v7_is_undefined( v7_type ) && v7_is_number( v7_type ) ) {
+        pex->vscp_type = v7_get_int( v7, v7_type );
+    }
+    else {
+        // Must be defined
+        return false;;
+    }
+    
+    //GUID
+    memset( pex->GUID, 0, 16 ); 
+    v7_val_t v7_guid = v7_get( v7, *pvarObjEvent, "guid", 4 );
+    if ( !v7_is_undefined( v7_guid ) && !v7_is_number( v7_guid ) ) {
+        wxString strGUID = v7_get_cstring( v7, &v7_guid );
+        vscp_getGuidFromStringEx( pex, strGUID );
+    }
+    else {
+        // Must be defined
+        return false;;
+    }
+    
+    // Data
+    pex->sizeData = 0;
+    v7_val_t v7_dataArray = v7_get( v7, *pvarObjEvent, "data", 4 );
+    if ( !v7_is_undefined( v7_dataArray ) && !v7_is_array( v7, v7_dataArray ) ) {
+        int len = v7_array_length( v7, v7_dataArray );
+        if ( len ) {
+            for ( int i=0; i<len; i++ ) {
+                v7_val_t v7_item = v7_array_get( v7, v7_dataArray, i );
+                if ( !v7_is_undefined( v7_item ) && v7_is_number( v7_item ) && ( i < 512 ) ) {
+                    pex->data[ i ] = v7_get_int( v7, v7_item );
+                }
+            }
+        }
+    }
+    
+    return true;
+}
+
+
+
+///////////////////////////////////////////////////
+//                 CALLABLES
+///////////////////////////////////////////////////
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -362,9 +455,6 @@ enum v7_err js_vscp_deleteVariable( struct v7 *v7, v7_val_t *res )
 enum v7_err js_vscp_sendEvent( struct v7 *v7, v7_val_t *res ) 
 {
     vscpEventEx ex;
-    bool bResult;
-    wxJSONValue  root;      // JSON root object
-    wxJSONReader reader;    // JSON parser
     
     // Get client item object
     v7_val_t valClientItem = v7_arg(v7, 0);
@@ -380,77 +470,10 @@ enum v7_err js_vscp_sendEvent( struct v7 *v7, v7_val_t *res )
         return V7_OK;
     }
       
-    // Head
-    ex.head = VSCP_PRIORITY_NORMAL;
-    v7_val_t v7_head = v7_get( v7, varObjEvent, "head", 4 );
-    if ( !v7_is_undefined( v7_head ) && v7_is_number( v7_head ) ) {
-        ex.head = v7_get_int( v7, v7_head );
-    }
-    
-    // Timestamp
-    ex.timestamp = 0;
-    v7_val_t v7_timestamp = v7_get( v7, varObjEvent, "timestamp", 9 );
-    if ( !v7_is_undefined( v7_timestamp ) && v7_is_number( v7_timestamp ) ) {
-        ex.timestamp = v7_get_int( v7, v7_timestamp );
-    }
-    
-    // obid
-    ex.obid = 0;
-    v7_val_t v7_obid = v7_get( v7, varObjEvent, "obid", 4 );
-    if ( !v7_is_undefined( v7_obid ) && v7_is_number( v7_obid ) ) {
-        ex.obid = v7_get_int( v7, v7_obid );
-    }
-    
-    // class
-    ex.vscp_class = 0;
-    v7_val_t v7_class = v7_get( v7, varObjEvent, "class", 5 );
-    if ( !v7_is_undefined( v7_class ) && v7_is_number( v7_class ) ) {
-        ex.vscp_class = v7_get_int( v7, v7_class );
-    }
-    else {
-        // Must be defined
-        *res = v7_mk_boolean( v7, 0 );  // Return error
+    if ( !get_js_Event( v7, &varObjEvent, &ex ) ) {
+        // Not good
+        *res = v7_mk_boolean( v7, 0 );  
         return V7_OK;
-    }
-    
-    // type
-    ex.vscp_type = 0;
-    v7_val_t v7_type = v7_get( v7, varObjEvent, "type", 4 );
-    if ( !v7_is_undefined( v7_type ) && v7_is_number( v7_type ) ) {
-        ex.vscp_type = v7_get_int( v7, v7_type );
-    }
-    else {
-        // Must be defined
-        *res = v7_mk_boolean( v7, 0 );  // Return error
-        return V7_OK;
-    }
-    
-    //GUID
-    memset( ex.GUID, 0, 16 ); 
-    v7_val_t v7_guid = v7_get( v7, varObjEvent, "guid", 4 );
-    if ( !v7_is_undefined( v7_guid ) && !v7_is_number( v7_guid ) ) {
-        wxString strGUID = v7_get_cstring( v7, &v7_guid );
-        vscp_getGuidFromStringEx( &ex, strGUID );
-    }
-    else {
-        // Must be defined
-        *res = v7_mk_boolean( v7, 0 );  // Return error
-        return V7_OK;
-    }
-    
-    // Data
-    ex.sizeData = 0;
-    v7_val_t v7_dataArray = v7_get( v7, varObjEvent, "data", 4 );
-    if ( !v7_is_undefined( v7_dataArray ) && !v7_is_array( v7, v7_dataArray ) ) {
-        int len = v7_array_length( v7, v7_dataArray );
-        if ( len ) {
-            for ( int i=0; i<len; i++ ) {
-                v7_val_t v7_item = v7_array_get( v7, v7_dataArray, i );
-                if ( !v7_is_undefined( v7_item ) && v7_is_number( v7_item ) && ( i < 512 ) ) {
-                    ex.data[ i ] = v7_get_int( v7, v7_item );
-                }
-            }
-        }
     }
     
     // Send the event
@@ -675,7 +698,7 @@ enum v7_err js_vscp_setFilter( struct v7 *v7, v7_val_t *res )
     }
     
     // Set the filter
-    vscp_copyFilter( &pClientItem->m_filterVSCP, &filter);        
+    vscp_copyVSCPFilter( &pClientItem->m_filterVSCP, &filter);        
     
     *res = v7_mk_boolean( v7, 1 );  // Return success
     return V7_OK;
@@ -688,6 +711,28 @@ enum v7_err js_vscp_setFilter( struct v7 *v7, v7_val_t *res )
 
 enum v7_err js_is_Measurement( struct v7 *v7, v7_val_t *res ) 
 {
+    vscpEventEx ex;
+    
+    // Get event
+    v7_val_t varObjEvent = v7_arg(v7, 0);
+    
+    if ( !get_js_Event( v7, &varObjEvent, &ex ) ) {
+        // Not good
+        *res = v7_mk_boolean( v7, 0 );  
+        return V7_OK;
+    }
+    
+    vscpEvent *pEvent = new vscpEvent;
+    if ( NULL == pEvent ) {
+        *res = v7_mk_boolean( v7, 0 );  // Return error
+        return V7_OK;
+    }
+    
+    vscp_convertVSCPfromEx( pEvent, &ex );
+    bool bMeasurement = vscp_isVSCPMeasurement( pEvent );
+    vscp_deleteVSCPevent( pEvent );
+    
+    *res = v7_mk_boolean( v7, bMeasurement ? 1 : 0 );  // Return result
     return V7_OK;
 }
 
@@ -698,18 +743,24 @@ enum v7_err js_is_Measurement( struct v7 *v7, v7_val_t *res )
 
 enum v7_err js_send_Measurement( struct v7 *v7, v7_val_t *res )
 {
+    v7_val_t valClientItem = v7_arg(v7, 0);
+    CClientItem *pClientItem = (CClientItem *)v7_get_ptr( v7, valClientItem );
+    
+    // Get measurement value
+    v7_val_t value = v7_arg(v7, 1);
+    
+    /*if ( !vscp_makeFloatMeasurementEvent( pEvent, 
+                                            value,
+                                            uint8_t unit,
+                                            uint8_t sensoridx ) ) {
+        *res = v7_mk_boolean( v7, 0 );  // Failed
+        return V7_OK;
+    }*/
+   
+    *res = v7_mk_boolean( v7, 1 );  // Success
     return V7_OK;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////
-// js_get_Measurement
-//
-
-enum v7_err js_get_Measurement( struct v7 *v7, v7_val_t *res ) 
-{
-    return V7_OK;
-}
 
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -2974,3 +2974,30 @@ extern "C" int vscphlp_convertEventExToHTML( vscpEventEx *pEventEx, char *p, int
     return VSCP_ERROR_SUCCESS;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// vscphlp_convertLevel1MeasuremenToLevel2Double
+//
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_convertLevel1MeasuremenToLevel2Double( vscpEvent *pEventLevel1 )
+#else
+extern "C" int vscphlp_convertLevel1MeasuremenToLevel2Double( vscpEvent *pEventLevel1 )
+#endif
+{
+    return vscp_convertLevel1MeasuremenToLevel2Double( pEventLevel1 ) ?
+                    VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscphlp_convertLevel1MeasuremenToLevel2String
+//
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_convertLevel1MeasuremenToLevel2String( vscpEvent *pEventLevel1 )
+#else
+extern "C" int vscphlp_convertLevel1MeasuremenToLevel2String( vscpEvent *pEventLevel1 )
+#endif
+{
+    return vscp_convertLevel1MeasuremenToLevel2String( pEventLevel1 ) ?
+                    VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
