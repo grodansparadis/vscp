@@ -1341,12 +1341,93 @@ bool vscp_makeStringMeasurementEvent( vscpEvent *pEvent,
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// vscp_getVSCPMeasurementZoneAsString
+// vscp_makeLevel2FloatMeasurementEvent
 //
 
-bool vscp_getVSCPMeasurementZoneAsString(const vscpEvent *pEvent, wxString& str)
+bool vscp_makeLevel2FloatMeasurementEvent( vscpEvent *pEvent, 
+                                                    uint16_t type,
+                                                    double value,
+                                                    uint8_t unit,
+                                                    uint8_t sensoridx,
+                                                    uint8_t zone,
+                                                    uint8_t subzone )
 {
-    return false;   // TODO
+    // If the event does not exist we create it
+    if ( NULL == pEvent ) {
+        
+        pEvent = new vscpEvent;
+        pEvent->pdata = NULL;
+        if ( NULL == pEvent ) return false;
+                
+    }
+    
+    pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
+    pEvent->vscp_type = type;
+    pEvent->obid = 0;
+    pEvent->timestamp = 0;
+    memset( pEvent->GUID, 0, 16 );
+    
+    pEvent->pdata = new uint8_t[ 12 ];
+    if ( NULL != pEvent->pdata ) {
+        delete pEvent;
+        return false;
+    }
+    
+    // Copy in data
+    pEvent->pdata[ 0 ] = sensoridx;
+    pEvent->pdata[ 1 ] = zone;
+    pEvent->pdata[ 2 ] = subzone;
+    pEvent->pdata[ 3 ] = unit;
+    memcpy( ( pEvent->pdata + 4 ), (unsigned char *)&value, 8 ); 
+    
+    return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_makeLevel2StringMeasurementEvent
+//
+
+bool vscp_makeLevel2StringMeasurementEvent( vscpEvent *pEvent, 
+                                                    uint16_t type,
+                                                    double value,
+                                                    uint8_t unit,
+                                                    uint8_t sensoridx,
+                                                    uint8_t zone,
+                                                    uint8_t subzone )
+{
+    // If the event does not exist we create it
+    if ( NULL == pEvent ) {
+        
+        pEvent = new vscpEvent;
+        pEvent->pdata = NULL;
+        if ( NULL == pEvent ) return false;
+                
+    }
+    
+    wxString strData = wxString::Format( _("%f"), value );
+    
+    pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
+    pEvent->vscp_type = type;
+    pEvent->obid = 0;
+    pEvent->timestamp = 0;
+    memset( pEvent->GUID, 0, 16 );
+    pEvent->sizeData = 8 + strlen( strData.mbc_str() );
+    
+    pEvent->pdata = new uint8_t[ pEvent->sizeData ];
+    if ( NULL != pEvent->pdata ) {
+        delete pEvent;
+        return false;
+    }
+    
+    // Copy in data
+    pEvent->pdata[ 0 ] = sensoridx;
+    pEvent->pdata[ 1 ] = zone;
+    pEvent->pdata[ 2 ] = subzone;
+    pEvent->pdata[ 3 ] = unit;
+    memcpy( ( pEvent->pdata + 4 ), strData.mbc_str(), pEvent->sizeData ); 
+    
+    return true;
 }
 
 
@@ -1499,7 +1580,7 @@ bool vscp_convertLevel1MeasuremenToLevel2String( vscpEvent *pEvent )
         char *p = new char[ 4 + strval.Length() ];
         if ( NULL != p ) {
 
-            memset(p, 0, 4 + strval.Length());
+            memset(p, 0, 4 + strval.Length() );
 
             if (VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class) {
 

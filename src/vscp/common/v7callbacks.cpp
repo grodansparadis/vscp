@@ -743,19 +743,24 @@ enum v7_err js_is_Measurement( struct v7 *v7, v7_val_t *res )
 
 enum v7_err js_send_Measurement( struct v7 *v7, v7_val_t *res )
 {
+    vscpEvent *pEvent; 
+    double value;
+    int unit;
+    int sensoridx;
+            
     v7_val_t valClientItem = v7_arg(v7, 0);
     CClientItem *pClientItem = (CClientItem *)v7_get_ptr( v7, valClientItem );
     
     // Get measurement value
-    v7_val_t value = v7_arg(v7, 1);
-    
-    /*if ( !vscp_makeFloatMeasurementEvent( pEvent, 
+    v7_val_t v7_value = v7_arg(v7, 1);
+        
+    if ( !vscp_makeFloatMeasurementEvent( pEvent, 
                                             value,
-                                            uint8_t unit,
-                                            uint8_t sensoridx ) ) {
+                                            unit,
+                                            sensoridx ) ) {
         *res = v7_mk_boolean( v7, 0 );  // Failed
         return V7_OK;
-    }*/
+    }
    
     *res = v7_mk_boolean( v7, 1 );  // Success
     return V7_OK;

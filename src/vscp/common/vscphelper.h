@@ -381,18 +381,46 @@ extern "C" {
                                           double value,
                                           uint8_t unit,
                                           uint8_t sensoridx );
-
+    
     /*!
-        Get data in the VSCP data coding format to a string. Works for
-        CLASS1.MEASUREZONE and CLASS1.SETVALUEZONE,CLASS2_LEVEL1.MEASUREZONE
-        CLASS2_LEVEL1.SETVALUEZONE
-        @param pEvent Pointer to VSCP event.
-        @param str String that holds the result
-        @return true on success, false on failure.
-    */
- 
-    bool vscp_getVSCPMeasurementZoneAsString(const vscpEvent *pEvent, 
-                                                wxString& str);
+     * Construct CLASS2.MEASUREMENT_FLOAT level II measurement event 
+     * 
+     * @param pEvent Pointer to event that will be filled with data or NULL
+     *          if event should be allocated.
+     * @param value Floating point value that event should be made from.
+     * @param unit Unit for this measurement. 0-255. Default is zero.
+     * @param sensorsidx Sensor index for this measurement. 0-255. Default us zero.
+     * @param zone Zone for this measurement. 0-255. Zero is default.
+     * @param Subzone Sub zone for this measurement. 0-255- Zero is default.
+     * @return True is returned on success, false if an error occurred.
+     */
+    bool vscp_makeLevel2FloatMeasurementEvent( vscpEvent *pEvent, 
+                                                    uint16_t type,
+                                                    double value,
+                                                    uint8_t unit,
+                                                    uint8_t sensoridx,
+                                                    uint8_t zone,
+                                                    uint8_t subzone );
+    
+    /*!
+     * Construct CLASS2.MEASUREMENT_STRING level II measurement event 
+     * 
+     * @param pEvent Pointer to event that will be filled with data or NULL
+     *          if event should be allocated.
+     * @param value Floating point value that event should be made from.
+     * @param unit Unit for this measurement. 0-255. Default is zero.
+     * @param sensorsidx Sensor index for this measurement. 0-255. Default us zero.
+     * @param zone Zone for this measurement. 0-255. Zero is default.
+     * @param Subzone Sub zone for this measurement. 0-255- Zero is default.
+     * @return True is returned on success, false if an error occurred.
+     */
+    bool vscp_makeLevel2StringMeasurementEvent( vscpEvent *pEvent,
+                                                    uint16_t type,
+                                                    double value,
+                                                    uint8_t unit,
+                                                    uint8_t sensoridx,
+                                                    uint8_t zone,
+                                                    uint8_t subzone );
 
 
     /*!
@@ -401,7 +429,7 @@ extern "C" {
       @param length Number of bytes it consist of including data coding byte
       @return value as float
      */
-    float vscp_getMeasurementAsFloat(const unsigned char *pNorm, 
+    float vscp_getMeasurementAsFloat(const unsigned char *pNorm,
                                         const unsigned char length);
     /*!
      * Convert a Level I measurement event to a Level II double measurement event
@@ -422,6 +450,11 @@ extern "C" {
      * @return true on success, false otherwise.
      */
     bool vscp_convertLevel1MeasuremenToLevel2String( vscpEvent *pEventLevel1 );
+    
+    
+    
+    
+    
     
     // -------------------------------------------------------------------------
     

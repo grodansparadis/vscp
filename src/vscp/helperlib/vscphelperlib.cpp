@@ -2717,26 +2717,6 @@ extern "C" int vscphlp_makeFloatMeasurementEvent( vscpEvent *pEvent,
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// vscphlp_getVSCPMeasurementZoneAsString
-//
-
-#ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVSCPMeasurementZoneAsString(const vscpEvent *pEvent, char *pStr, int size )
-#else
-extern "C" int vscphlp_getVSCPMeasurementZoneAsString(const vscpEvent *pEvent, char *pStr, int size)
-#endif
-{
-    wxString wxstr;
-
-    if ( NULL == pEvent ) return VSCP_ERROR_ERROR;
-    int rv = vscp_getVSCPMeasurementZoneAsString(pEvent, wxstr) ;
-    strncpy( pStr, wxstr.mbc_str(), MIN( strlen( wxstr.mbc_str() ), size ) );
-    return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////
 // vscphlp_getMeasurementAsFloat
 //
 
@@ -2984,8 +2964,8 @@ extern "C" int WINAPI EXPORT vscphlp_convertLevel1MeasuremenToLevel2Double( vscp
 extern "C" int vscphlp_convertLevel1MeasuremenToLevel2Double( vscpEvent *pEventLevel1 )
 #endif
 {
-    return vscp_convertLevel1MeasuremenToLevel2Double( pEventLevel1 ) ?
-                    VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+    return ( vscp_convertLevel1MeasuremenToLevel2Double( pEventLevel1 ) ?
+                    VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2998,6 +2978,71 @@ extern "C" int WINAPI EXPORT vscphlp_convertLevel1MeasuremenToLevel2String( vscp
 extern "C" int vscphlp_convertLevel1MeasuremenToLevel2String( vscpEvent *pEventLevel1 )
 #endif
 {
-    return vscp_convertLevel1MeasuremenToLevel2String( pEventLevel1 ) ?
-                    VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+    return ( vscp_convertLevel1MeasuremenToLevel2String( pEventLevel1 ) ?
+                    VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscphlp_makeLevel2FloatMeasurementEvent
+//
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_makeLevel2FloatMeasurementEvent( vscpEvent *pEvent, 
+                                                                        uint16_t type,
+                                                                        double value,
+                                                                        uint8_t unit,
+                                                                        uint8_t sensoridx,
+                                                                        uint8_t zone,
+                                                                        uint8_t subzone )
+#else
+extern "C" int vscphlp_makeLevel2FloatMeasurementEvent( vscpEvent *pEvent, 
+                                                            uint16_t type,
+                                                            double value,
+                                                            uint8_t unit,
+                                                            uint8_t sensoridx,
+                                                            uint8_t zone,
+                                                            uint8_t subzone )
+#endif
+{
+    return ( vscp_makeLevel2FloatMeasurementEvent( pEvent, 
+                                                    type,
+                                                    value,
+                                                    unit,
+                                                    sensoridx,
+                                                    zone,
+                                                    subzone ) ?
+                    VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR );
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vscphlp_makeLevel2StringMeasurementEvent
+//
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_makeLevel2StringMeasurementEvent( vscpEvent *pEvent, 
+                                                                        uint16_t type,
+                                                                        double value,
+                                                                        uint8_t unit,
+                                                                        uint8_t sensoridx,
+                                                                        uint8_t zone,
+                                                                        uint8_t subzone )
+#else
+extern "C" int vscphlp_makeLevel2StringMeasurementEvent( vscpEvent *pEvent, 
+                                                            uint16_t type,
+                                                            double value,
+                                                            uint8_t unit,
+                                                            uint8_t sensoridx,
+                                                            uint8_t zone,
+                                                            uint8_t subzone )
+#endif
+{
+    return ( vscp_makeLevel2FloatMeasurementEvent( pEvent, 
+                                                    type,
+                                                    value,
+                                                    unit,
+                                                    sensoridx,
+                                                    zone,
+                                                    subzone ) ?
+                    VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR );
 }
