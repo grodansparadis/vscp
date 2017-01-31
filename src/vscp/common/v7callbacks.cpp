@@ -602,7 +602,7 @@ enum v7_err js_vscp_getCountEvent( struct v7 *v7, v7_val_t *res )
 // js_vscp_setFilter
 //
 // {
-//     'mask_priorit: number,
+//     'mask_priorit': number,
 //     'mask_class': number,
 //     'mask_type': number,
 //     'mask_guid': 'string',
@@ -728,6 +728,8 @@ enum v7_err js_is_Measurement( struct v7 *v7, v7_val_t *res )
         return V7_OK;
     }
     
+    pEvent->pdata = NULL;
+    
     vscp_convertVSCPfromEx( pEvent, &ex );
     bool bMeasurement = vscp_isVSCPMeasurement( pEvent );
     vscp_deleteVSCPevent( pEvent );
@@ -740,27 +742,190 @@ enum v7_err js_is_Measurement( struct v7 *v7, v7_val_t *res )
 ///////////////////////////////////////////////////////////////////////////////
 // js_send_Measurement
 //
+// {
+//     'level': 1|2, /defaults to 2
+//     'string': true|false,  (default false, only valid for level II event)
+//     'value': 123.5,
+//     'vscptype': 6,
+//     'unit': 1, (defaults to 0) 
+//     'sensorindex': 0, (defaults to 0)
+//     'zone': 0, (defaults to 0)
+//     'subzone': 0 (defaults to 0)
+// }
+//
 
 enum v7_err js_send_Measurement( struct v7 *v7, v7_val_t *res )
 {
-    vscpEvent *pEvent; 
-    double value;
-    int unit;
-    int sensoridx;
+    vscpEvent *pEvent;
+    double value;           // Measurement value
+    bool bLevel2 = true;    // True if level II
+    bool bString = false;   // If level II string or float
+    int type;               // VSCP type
+    int unit = 0;
+    int sensoridx = 0;
+    int zone = 0;
+    int subzone = 0;
             
     v7_val_t valClientItem = v7_arg(v7, 0);
     CClientItem *pClientItem = (CClientItem *)v7_get_ptr( v7, valClientItem );
     
-    // Get measurement value
-    v7_val_t v7_value = v7_arg(v7, 1);
-        
-    if ( !vscp_makeFloatMeasurementEvent( pEvent, 
-                                            value,
-                                            unit,
-                                            sensoridx ) ) {
+    // Get measurement JSON object
+    v7_val_t varObjMeasurement = v7_arg(v7, 1);
+    
+    // Must be an object
+    if ( !v7_is_object( varObjMeasurement ) ) {
+        // Not good
+        *res = v7_mk_boolean( v7, 0 );  // Return error
+        return V7_OK;
+    }
+    
+    // Value
+    v7_val_t v7_value = v7_get( v7, varObjMeasurement, "value", 5 );
+    if ( !v7_is_undefined( v7_value ) && v7_is_number( v7_value ) ) {
+        value = v7_get_double( v7, v7_value ); 
+    }
+    else {
+        // Must be defined
         *res = v7_mk_boolean( v7, 0 );  // Failed
         return V7_OK;
     }
+    
+    // VSCP type
+    v7_val_t v7_type = v7_get( v7, varObjMeasurement, "vscptype", 8 );
+    if ( !v7_is_undefined( v7_type ) && v7_is_number( v7_type ) ) {
+        type = v7_get_double( v7, v7_type ); 
+    }
+    else {
+        // Must be defined
+        *res = v7_mk_boolean( v7, 0 );  // Failed
+        return V7_OK;
+    }
+    
+    // Level
+    v7_val_t v7_level = v7_get( v7, varObjMeasurement, "level", 5 );
+    if ( !v7_is_undefined( v7_level ) && v7_is_number( v7_level ) ) {
+        if ( 2 != v7_get_int( v7, v7_level ) ) {
+            bLevel2 = false;
+        }
+    }
+    
+    // String
+    v7_val_t v7_string = v7_get( v7, varObjMeasurement, "string", 6 );
+    if ( !v7_is_undefined( v7_string ) && v7_is_boolean( v7_string ) ) {
+        if ( v7_get_bool( v7, v7_string ) ) {
+            bString = true;
+        }
+    }
+        
+    // unit
+    v7_val_t v7_unit = v7_get( v7, varObjMeasurement, "unit", 4 );
+    if ( !v7_is_undefined( v7_unit ) && v7_is_number( v7_unit ) ) {
+        unit = v7_get_int( v7, v7_unit ); 
+    }
+    
+    // zone
+    v7_val_t v7_zone = v7_get( v7, varObjMeasurement, "zone", 4 );
+    if ( !v7_is_undefined( v7_zone ) && v7_is_number( v7_zone ) ) {
+        zone = v7_get_int( v7, v7_zone ); 
+    }
+    
+    // subzone
+    v7_val_t v7_subzone = v7_get( v7, varObjMeasurement, "subzone", 7 );
+    if ( !v7_is_undefined( v7_subzone ) && v7_is_number( v7_subzone ) ) {
+        subzone = v7_get_int( v7, v7_subzone ); 
+    }
+    
+    if ( bLevel2 ) {
+        
+        if ( bString ) {
+            
+            pEvent = NULL;
+            if ( !vscp_makeLevel2StringMeasurementEvent( pEvent, 
+                                                            type,
+                                                            value,
+                                                            unit,
+                                                            sensoridx,
+                                                            zone,
+                                                            subzone ) ) {
+                // Failed
+                *res = v7_mk_boolean( v7, 0 );  // Failed
+                return V7_OK;
+            }
+            
+        }
+        else {
+            
+            pEvent = NULL;
+            if ( !vscp_makeLevel2FloatMeasurementEvent( pEvent, 
+                                                            type,
+                                                            value,
+                                                            unit,
+                                                            sensoridx,
+                                                            zone,
+                                                            subzone ) ) {
+                // Failed
+                *res = v7_mk_boolean( v7, 0 );  // Failed
+                return V7_OK;
+            }
+            
+        }
+        
+    }
+    else {
+        
+        // Level I
+        
+        if ( bString ) { 
+            
+            pEvent = new vscpEvent;
+            if ( NULL == pEvent ) {
+                *res = v7_mk_boolean( v7, 0 );  // Failed
+                return V7_OK;
+            }
+                
+            pEvent->pdata = NULL;
+                
+            if ( !vscp_makeStringMeasurementEvent( pEvent, 
+                                                        value,
+                                                        unit,
+                                                        sensoridx ) ) {
+                *res = v7_mk_boolean( v7, 0 );  // Failed
+                return V7_OK;
+            }
+            
+        }
+        else {
+            
+            pEvent = new vscpEvent;
+            if ( NULL == pEvent ) {
+                *res = v7_mk_boolean( v7, 0 );  // Failed
+                return V7_OK;
+            }
+                
+            pEvent->pdata = NULL;
+                    
+            if ( !vscp_makeFloatMeasurementEvent( pEvent, 
+                                                    value,
+                                                    unit,
+                                                    sensoridx ) ) {
+                *res = v7_mk_boolean( v7, 0 );  // Failed
+                return V7_OK;
+            }
+        
+        }
+        
+    }
+    
+    
+    
+    if ( gpobj->sendEvent( pClientItem, pEvent ) ) {
+        // Failed to send event
+        vscp_deleteVSCPevent( pEvent );
+        *res = v7_mk_boolean( v7, 0 );  // Return error
+        return V7_OK;
+    }
+    
+    vscp_deleteVSCPevent( pEvent );
    
     *res = v7_mk_boolean( v7, 1 );  // Success
     return V7_OK;
@@ -774,6 +939,37 @@ enum v7_err js_send_Measurement( struct v7 *v7, v7_val_t *res )
 
 enum v7_err js_get_MeasurementValue( struct v7 *v7, v7_val_t *res ) 
 {
+    double value;
+    vscpEventEx ex;
+    
+    // Get measurement JSON object
+    v7_val_t varObjEvent = v7_arg(v7, 0);
+    
+    // Must be an object
+    if ( !v7_is_object( varObjEvent ) ) {
+        // Not good
+        *res = v7_mk_null();  // Return error
+        return V7_OK;
+    }
+    
+    if ( !get_js_Event( v7, &varObjEvent, &ex ) ) {
+        *res = v7_mk_null();  // Return error
+        return V7_OK;
+    }
+    
+    vscpEvent *pEvent = new vscpEvent;
+    if ( NULL == pEvent ) {
+        *res = v7_mk_null();  // Return error
+        return V7_OK;
+    }
+    
+    pEvent->pdata = NULL;
+    
+    vscp_convertVSCPfromEx( pEvent, &ex );
+    vscp_getVSCPMeasurementAsDouble( pEvent, &value );
+    vscp_deleteVSCPevent( pEvent );
+           
+    *res = v7_mk_number( v7, value );  // Success
     return V7_OK;
 }
 
@@ -783,6 +979,36 @@ enum v7_err js_get_MeasurementValue( struct v7 *v7, v7_val_t *res )
 
 enum v7_err js_get_MeasurementUnit( struct v7 *v7, v7_val_t *res ) 
 {
+    vscpEventEx ex;
+    
+    // Get measurement JSON object
+    v7_val_t varObjEvent = v7_arg(v7, 0);
+    
+    // Must be an object
+    if ( !v7_is_object( varObjEvent ) ) {
+        // Not good
+        *res = v7_mk_null();  // Return error
+        return V7_OK;
+    }
+    
+    if ( !get_js_Event( v7, &varObjEvent, &ex ) ) {
+        *res = v7_mk_null();  // Return error
+        return V7_OK;
+    }
+           
+    vscpEvent *pEvent = new vscpEvent;
+    if ( NULL == pEvent ) {
+        *res = v7_mk_null();  // Return error
+        return V7_OK;
+    }
+    
+    pEvent->pdata = NULL;
+    
+    vscp_convertVSCPfromEx( pEvent, &ex );
+    int unit = vscp_getVSCPMeasurementUnit( pEvent );
+    vscp_deleteVSCPevent( pEvent );
+           
+    *res = v7_mk_number( v7, unit );  // Success
     return V7_OK;
 }
 
@@ -793,6 +1019,36 @@ enum v7_err js_get_MeasurementUnit( struct v7 *v7, v7_val_t *res )
 
 enum v7_err js_get_MeasurementSensorIndex( struct v7 *v7, v7_val_t *res ) 
 {
+    vscpEventEx ex;
+    
+    // Get measurement JSON object
+    v7_val_t varObjEvent = v7_arg(v7, 0);
+    
+    // Must be an object
+    if ( !v7_is_object( varObjEvent ) ) {
+        // Not good
+        *res = v7_mk_null();  // Return error
+        return V7_OK;
+    }
+    
+    if ( !get_js_Event( v7, &varObjEvent, &ex ) ) {
+        *res = v7_mk_null();  // Return error
+        return V7_OK;
+    }
+           
+    vscpEvent *pEvent = new vscpEvent;
+    if ( NULL == pEvent ) {
+        *res = v7_mk_null();  // Return error
+        return V7_OK;
+    }
+    
+    pEvent->pdata = NULL;
+    
+    vscp_convertVSCPfromEx( pEvent, &ex );
+    int sensorindex = vscp_getVSCPMeasurementSensorIndex( pEvent );
+    vscp_deleteVSCPevent( pEvent );
+           
+    *res = v7_mk_number( v7, sensorindex );  // Success
     return V7_OK;
 }
 
@@ -803,6 +1059,36 @@ enum v7_err js_get_MeasurementSensorIndex( struct v7 *v7, v7_val_t *res )
 
 enum v7_err js_get_MeasurementZone( struct v7 *v7, v7_val_t *res ) 
 {
+    vscpEventEx ex;
+    
+    // Get measurement JSON object
+    v7_val_t varObjEvent = v7_arg(v7, 0);
+    
+    // Must be an object
+    if ( !v7_is_object( varObjEvent ) ) {
+        // Not good
+        *res = v7_mk_null();  // Return error
+        return V7_OK;
+    }
+    
+    if ( !get_js_Event( v7, &varObjEvent, &ex ) ) {
+        *res = v7_mk_null();  // Return error
+        return V7_OK;
+    }
+           
+    vscpEvent *pEvent = new vscpEvent;
+    if ( NULL == pEvent ) {
+        *res = v7_mk_null();  // Return error
+        return V7_OK;
+    }
+    
+    pEvent->pdata = NULL;
+    
+    vscp_convertVSCPfromEx( pEvent, &ex );
+    int zone = vscp_getVSCPMeasurementZone( pEvent );
+    vscp_deleteVSCPevent( pEvent );
+           
+    *res = v7_mk_number( v7, zone );  // Success
     return V7_OK;
 }
 
@@ -813,6 +1099,36 @@ enum v7_err js_get_MeasurementZone( struct v7 *v7, v7_val_t *res )
 
 enum v7_err js_get_MeasurementSubZone( struct v7 *v7, v7_val_t *res ) 
 {
+    vscpEventEx ex;
+    
+    // Get measurement JSON object
+    v7_val_t varObjEvent = v7_arg(v7, 0);
+    
+    // Must be an object
+    if ( !v7_is_object( varObjEvent ) ) {
+        // Not good
+        *res = v7_mk_null();  // Return error
+        return V7_OK;
+    }
+    
+    if ( !get_js_Event( v7, &varObjEvent, &ex ) ) {
+        *res = v7_mk_null();  // Return error
+        return V7_OK;
+    }
+           
+    vscpEvent *pEvent = new vscpEvent;
+    if ( NULL == pEvent ) {
+        *res = v7_mk_null();  // Return error
+        return V7_OK;
+    }
+    
+    pEvent->pdata = NULL;
+    
+    vscp_convertVSCPfromEx( pEvent, &ex );
+    int subzone = vscp_getVSCPMeasurementSubZone( pEvent );
+    vscp_deleteVSCPevent( pEvent );
+           
+    *res = v7_mk_number( v7, subzone );  // Success
     return V7_OK;
 }
 
