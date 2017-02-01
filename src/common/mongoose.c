@@ -294,8 +294,11 @@ double cs_log_ts WEAK;
 
 void cs_log_print_prefix(const char *func) WEAK;
 void cs_log_print_prefix(const char *func) {
+  char prefix[21];
+  strncpy(prefix, func, 20);
+  prefix[20] = '\0';
   if (cs_log_file == NULL) cs_log_file = stderr;
-  fprintf(cs_log_file, "%-20s ", func);
+  fprintf(cs_log_file, "%-20s ", prefix);
 #if CS_LOG_ENABLE_TS_DIFF
   {
     double now = cs_time();
@@ -548,54 +551,31 @@ int cs_base64_decode(const unsigned char *s, int len, char *dst, int *dec_len) {
 #ifndef CS_COMMON_CS_DIRENT_H_
 #define CS_COMMON_CS_DIRENT_H_
 
+#include <limits.h>
+
 /* Amalgamated: #include "common/platform.h" */
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-#ifndef CS_ENABLE_SPIFFS
-#define CS_ENABLE_SPIFFS 0
-#endif
+#ifdef CS_DEFINE_DIRENT
+typedef struct { int dummy; } DIR;
 
-#if CS_ENABLE_SPIFFS
-
-#include <spiffs.h>
-
-typedef struct {
-  spiffs_DIR dh;
-  struct spiffs_dirent de;
-} DIR;
-
-#define d_name name
-#define dirent spiffs_dirent
-
-int rmdir(const char *path);
-int mkdir(const char *path, mode_t mode);
-
-#endif
-
-#if defined(_WIN32)
 struct dirent {
+  int d_ino;
+#ifdef _WIN32
   char d_name[MAX_PATH];
+#else
+  /* TODO(rojer): Use PATH_MAX but make sure it's sane on every platform */
+  char d_name[256];
+#endif
 };
 
-typedef struct DIR {
-  HANDLE handle;
-  WIN32_FIND_DATAW info;
-  struct dirent result;
-} DIR;
-#endif
-
-#if CS_ENABLE_SPIFFS
-extern spiffs *cs_spiffs_get_fs(void);
-#endif
-
-#if defined(_WIN32) || CS_ENABLE_SPIFFS
 DIR *opendir(const char *dir_name);
 int closedir(DIR *dir);
 struct dirent *readdir(DIR *dir);
-#endif
+#endif /* CS_DEFINE_DIRENT */
 
 #ifdef __cplusplus
 }
@@ -628,14 +608,21 @@ struct dirent *readdir(DIR *dir);
 #endif
 
 #ifdef _WIN32
+struct win32_dir {
+  DIR d;
+  HANDLE handle;
+  WIN32_FIND_DATAW info;
+  struct dirent result;
+};
+
 DIR *opendir(const char *name) {
-  DIR *dir = NULL;
+  struct win32_dir *dir = NULL;
   wchar_t wpath[MAX_PATH];
   DWORD attrs;
 
   if (name == NULL) {
     SetLastError(ERROR_BAD_ARGUMENTS);
-  } else if ((dir = (DIR *) MG_MALLOC(sizeof(*dir))) == NULL) {
+  } else if ((dir = (struct win32_dir *) MG_MALLOC(sizeof(*dir))) == NULL) {
     SetLastError(ERROR_NOT_ENOUGH_MEMORY);
   } else {
     to_wchar(name, wpath, ARRAY_SIZE(wpath));
@@ -650,10 +637,11 @@ DIR *opendir(const char *name) {
     }
   }
 
-  return dir;
+  return (DIR *) dir;
 }
 
-int closedir(DIR *dir) {
+int closedir(DIR *d) {
+  struct win32_dir *dir = (struct win32_dir *) d;
   int result = 0;
 
   if (dir != NULL) {
@@ -668,10 +656,12 @@ int closedir(DIR *dir) {
   return result;
 }
 
-struct dirent *readdir(DIR *dir) {
+struct dirent *readdir(DIR *d) {
+  struct win32_dir *dir = (struct win32_dir *) d;
   struct dirent *result = NULL;
 
   if (dir) {
+    memset(&dir->result, 0, sizeof(dir->result));
     if (dir->handle != INVALID_HANDLE_VALUE) {
       result = &dir->result;
       (void) WideCharToMultiByte(CP_UTF8, 0, dir->info.cFileName, -1,
@@ -693,52 +683,6 @@ struct dirent *readdir(DIR *dir) {
   return result;
 }
 #endif
-
-#if CS_ENABLE_SPIFFS
-
-DIR *opendir(const char *dir_name) {
-  DIR *dir = NULL;
-  spiffs *fs = cs_spiffs_get_fs();
-
-  if (dir_name == NULL || fs == NULL ||
-      (dir = (DIR *) calloc(1, sizeof(*dir))) == NULL) {
-    return NULL;
-  }
-
-  if (SPIFFS_opendir(fs, dir_name, &dir->dh) == NULL) {
-    free(dir);
-    dir = NULL;
-  }
-
-  return dir;
-}
-
-int closedir(DIR *dir) {
-  if (dir != NULL) {
-    SPIFFS_closedir(&dir->dh);
-    free(dir);
-  }
-  return 0;
-}
-
-struct dirent *readdir(DIR *dir) {
-  return SPIFFS_readdir(&dir->dh, &dir->de);
-}
-
-/* SPIFFs doesn't support directory operations */
-int rmdir(const char *path) {
-  (void) path;
-  return ENOTSUP;
-}
-
-int mkdir(const char *path, mode_t mode) {
-  (void) path;
-  (void) mode;
-  /* for spiffs supports only root dir, which comes from mongoose as '.' */
-  return (strlen(path) == 1 && *path == '.') ? 0 : ENOTSUP;
-}
-
-#endif /* CS_ENABLE_SPIFFS */
 
 #endif /* EXCLUDE_COMMON */
 
@@ -4456,7 +4400,7 @@ int ssl_socket_recv(void *ctx, unsigned char *buf, size_t len);
 static int ssl_socket_send(void *ctx, const unsigned char *buf, size_t len) {
   struct mg_connection *nc = (struct mg_connection *) ctx;
   int n = (int) MG_SEND_FUNC(nc->sock, buf, len, 0);
-  DBG(("%p %d -> %d", nc, (int) len, n));
+  LOG(LL_DEBUG, ("%p %d -> %d", nc, (int) len, n));
   if (n >= 0) return n;
   n = mg_get_errno();
   return ((n == EAGAIN || n == EINPROGRESS) ? MBEDTLS_ERR_SSL_WANT_WRITE : -1);
@@ -4465,7 +4409,7 @@ static int ssl_socket_send(void *ctx, const unsigned char *buf, size_t len) {
 static int ssl_socket_recv(void *ctx, unsigned char *buf, size_t len) {
   struct mg_connection *nc = (struct mg_connection *) ctx;
   int n = (int) MG_RECV_FUNC(nc->sock, buf, len, 0);
-  DBG(("%p %d <- %d", nc, (int) len, n));
+  LOG(LL_DEBUG, ("%p %d <- %d", nc, (int) len, n));
   if (n >= 0) return n;
   n = mg_get_errno();
   return ((n == EAGAIN || n == EINPROGRESS) ? MBEDTLS_ERR_SSL_WANT_READ : -1);
@@ -4682,139 +4626,6 @@ int mg_ssl_if_mbed_random(void *ctx, unsigned char *buf, size_t len) {
 #endif
 
 #endif /* MG_ENABLE_SSL && MG_SSL_IF == MG_SSL_IF_MBEDTLS */
-#ifdef MG_MODULE_LINES
-#line 1 "mongoose/src/multithreading.c"
-#endif
-/*
- * Copyright (c) 2014 Cesanta Software Limited
- * All rights reserved
- */
-
-/* Amalgamated: #include "mongoose/src/internal.h" */
-/* Amalgamated: #include "mongoose/src/util.h" */
-
-#if MG_ENABLE_THREADS
-
-static void multithreaded_ev_handler(struct mg_connection *c, int ev, void *p);
-
-/*
- * This thread function executes user event handler.
- * It runs an event manager that has only one connection, until that
- * connection is alive.
- */
-static void *per_connection_thread_function(void *param) {
-  struct mg_connection *c = (struct mg_connection *) param;
-  struct mg_mgr m;
-  /* mgr_data can be used subsequently, store its value */
-  int poll_timeout = (intptr_t) c->mgr_data;
-
-  mg_mgr_init(&m, NULL);
-  mg_add_conn(&m, c);
-  mg_call(c, NULL, MG_EV_ACCEPT, &c->sa);
-
-  while (m.active_connections != NULL) {
-    mg_mgr_poll(&m, poll_timeout ? poll_timeout : 1000);
-  }
-  mg_mgr_free(&m);
-
-  return param;
-}
-
-static void link_conns(struct mg_connection *c1, struct mg_connection *c2) {
-  c1->priv_2 = c2;
-  c2->priv_2 = c1;
-}
-
-static void unlink_conns(struct mg_connection *c) {
-  struct mg_connection *peer = (struct mg_connection *) c->priv_2;
-  if (peer != NULL) {
-    peer->flags |= MG_F_SEND_AND_CLOSE;
-    peer->priv_2 = NULL;
-  }
-  c->priv_2 = NULL;
-}
-
-static void forwarder_ev_handler(struct mg_connection *c, int ev, void *p) {
-  (void) p;
-  if (ev == MG_EV_RECV && c->priv_2) {
-    mg_forward(c, (struct mg_connection *) c->priv_2);
-  } else if (ev == MG_EV_CLOSE) {
-    unlink_conns(c);
-  }
-}
-
-static void spawn_handling_thread(struct mg_connection *nc) {
-  struct mg_mgr dummy;
-  sock_t sp[2];
-  struct mg_connection *c[2];
-  int poll_timeout;
-  /*
-   * Create a socket pair, and wrap each socket into the connection with
-   * dummy event manager.
-   * c[0] stays in this thread, c[1] goes to another thread.
-   */
-  mg_mgr_init(&dummy, NULL);
-  mg_socketpair(sp, SOCK_STREAM);
-
-  c[0] = mg_add_sock(&dummy, sp[0], forwarder_ev_handler);
-  c[1] = mg_add_sock(&dummy, sp[1], nc->listener->priv_1.f);
-
-  /* link_conns replaces priv_2, storing its value */
-  poll_timeout = (intptr_t) nc->priv_2;
-
-  /* Interlink client connection with c[0] */
-  link_conns(c[0], nc);
-
-  /*
-   * Switch c[0] manager from the dummy one to the real one. c[1] manager
-   * will be set in another thread, allocated on stack of that thread.
-   */
-  mg_add_conn(nc->mgr, c[0]);
-
-  /*
-   * Dress c[1] as nc.
-   * TODO(lsm): code in accept_conn() looks similar. Refactor.
-   */
-  c[1]->listener = nc->listener;
-  c[1]->proto_handler = nc->proto_handler;
-  c[1]->user_data = nc->user_data;
-  c[1]->sa = nc->sa;
-  c[1]->flags = nc->flags;
-
-  /* priv_2 is used, so, put timeout to mgr_data */
-  c[1]->mgr_data = (void *) (intptr_t) poll_timeout;
-
-  mg_start_thread(per_connection_thread_function, c[1]);
-}
-
-static void multithreaded_ev_handler(struct mg_connection *c, int ev, void *p) {
-  (void) p;
-  if (ev == MG_EV_ACCEPT) {
-    spawn_handling_thread(c);
-    c->handler = forwarder_ev_handler;
-  }
-}
-
-void mg_enable_multithreading_opt(struct mg_connection *nc,
-                                  struct mg_multithreading_opts opts) {
-  /* Wrap user event handler into our multithreaded_ev_handler */
-  nc->priv_1.f = nc->handler;
-  /*
-   * We put timeout to `priv_2` member of the main
-   * (listening) connection, mt is not enabled yet,
-   * and this member is not used
-   */
-  nc->priv_2 = (void *) (intptr_t) opts.poll_timeout;
-  nc->handler = multithreaded_ev_handler;
-}
-
-void mg_enable_multithreading(struct mg_connection *nc) {
-  struct mg_multithreading_opts opts;
-  memset(&opts, 0, sizeof(opts));
-  mg_enable_multithreading_opt(nc, opts);
-}
-
-#endif
 #ifdef MG_MODULE_LINES
 #line 1 "mongoose/src/uri.c"
 #endif
@@ -7505,9 +7316,8 @@ void mg_file_upload_handler(struct mg_connection *nc, int ev, void *ev_data,
           (struct mg_http_multipart_part *) ev_data;
       struct file_upload_state *fus =
           (struct file_upload_state *) calloc(1, sizeof(*fus));
-      mp->user_data = NULL;
-
       struct mg_str lfn = local_name_fn(nc, mg_mk_str(mp->file_name));
+      mp->user_data = NULL;
       if (lfn.p == NULL || lfn.len == 0) {
         LOG(LL_ERROR, ("%p Not allowed to upload %s", nc, mp->file_name));
         mg_printf(nc,
@@ -14402,7 +14212,8 @@ time_t mg_lwip_if_poll(struct mg_iface *iface, int timeout_ms) {
     if ((nc->flags & MG_F_SSL) && cs != NULL && cs->pcb.tcp != NULL &&
         cs->pcb.tcp->state == ESTABLISHED) {
       if (((nc->flags & MG_F_WANT_WRITE) ||
-           (nc->send_mbuf.len > 0) && (nc->flags & MG_F_SSL_HANDSHAKE_DONE)) &&
+           ((nc->send_mbuf.len > 0) &&
+            (nc->flags & MG_F_SSL_HANDSHAKE_DONE))) &&
           cs->pcb.tcp->snd_buf > 0) {
         /* Can write more. */
         if (nc->flags & MG_F_SSL_HANDSHAKE_DONE) {
@@ -14644,7 +14455,7 @@ int ssl_socket_send(void *ctx, const unsigned char *buf, size_t len) {
   struct mg_connection *nc = (struct mg_connection *) ctx;
   struct mg_lwip_conn_state *cs = (struct mg_lwip_conn_state *) nc->sock;
   int ret = mg_lwip_tcp_write(cs->nc, buf, len);
-  DBG(("%p mg_lwip_tcp_write %u = %d", cs->nc, len, ret));
+  LOG(LL_DEBUG, ("%p %d -> %d", nc, len, ret));
   if (ret == 0) ret = MBEDTLS_ERR_SSL_WANT_WRITE;
   return ret;
 }
@@ -14670,6 +14481,7 @@ int ssl_socket_recv(void *ctx, unsigned char *buf, size_t len) {
     pbuf_free(seg);
     cs->rx_offset = 0;
   }
+  LOG(LL_DEBUG, ("%p <- %d", nc, (int) len));
   return len;
 }
 

@@ -889,6 +889,7 @@ enum v7_err js_send_Measurement( struct v7 *v7, v7_val_t *res )
                                                         value,
                                                         unit,
                                                         sensoridx ) ) {
+                vscp_deleteVSCPevent( pEvent );
                 *res = v7_mk_boolean( v7, 0 );  // Failed
                 return V7_OK;
             }
@@ -908,6 +909,7 @@ enum v7_err js_send_Measurement( struct v7 *v7, v7_val_t *res )
                                                     value,
                                                     unit,
                                                     sensoridx ) ) {
+                vscp_deleteVSCPevent( pEvent );
                 *res = v7_mk_boolean( v7, 0 );  // Failed
                 return V7_OK;
             }

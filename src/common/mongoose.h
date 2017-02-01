@@ -274,6 +274,7 @@ typedef struct _stati64 cs_stat_t;
 #define S_ISREG(x) (((x) &_S_IFMT) == _S_IFREG)
 #endif
 #define DIRSEP '\\'
+#define CS_DEFINE_DIRENT
 
 #ifndef va_copy
 #ifdef __va_copy
@@ -528,6 +529,8 @@ typedef struct stat cs_stat_t;
 #define SIZE_T_FMT "u"
 typedef struct stat cs_stat_t;
 #define DIRSEP '/'
+#define CS_DEFINE_DIRENT
+
 #define to64(x) strtoll(x, NULL, 10)
 #define INT64_FMT PRId64
 #define INT64_X_FMT PRIx64
@@ -708,22 +711,6 @@ int _stat(const char *pathname, struct stat *st);
 
 #endif /* __TI_COMPILER_VERSION__ */
 
-#ifdef CC3200_FS_SPIFFS
-#include <common/spiffs/spiffs.h>
-
-typedef struct {
-  spiffs_DIR dh;
-  struct spiffs_dirent de;
-} DIR;
-
-#define d_name name
-#define dirent spiffs_dirent
-
-DIR *opendir(const char *dir_name);
-int closedir(DIR *dir);
-struct dirent *readdir(DIR *dir);
-#endif /* CC3200_FS_SPIFFS */
-
 #ifdef CC3200_FS_SLFS
 #define MG_FS_SLFS
 #endif
@@ -731,6 +718,7 @@ struct dirent *readdir(DIR *dir);
 #if (defined(CC3200_FS_SPIFFS) || defined(CC3200_FS_SLFS)) && \
     !defined(MG_ENABLE_FILESYSTEM)
 #define MG_ENABLE_FILESYSTEM 1
+#define CS_DEFINE_DIRENT
 #endif
 
 #ifndef CS_ENABLE_STDIO
@@ -1302,6 +1290,7 @@ typedef uint32_t in_addr_t;
 #define SIZE_T_FMT "u"
 
 #define DIRSEP '\\'
+#define CS_DEFINE_DIRENT
 
 #ifndef va_copy
 #ifdef __va_copy
@@ -1542,6 +1531,7 @@ char* inet_ntoa(struct in_addr in);
 #include <errno.h>
 #include <memory.h>
 #include <fcntl.h>
+#include <stm32_sdk_hal.h>
 
 #define to64(x) strtoll(x, NULL, 10)
 #define INT64_FMT PRId64
@@ -3291,8 +3281,8 @@ struct mg_connection {
      * void pointers, since some archs might have fat pointers for functions.
      */
     mg_event_handler_t f;
-  } priv_1;       /* Used by mg_enable_multithreading() */
-  void *priv_2;   /* Used by mg_enable_multithreading() */
+  } priv_1;
+  void *priv_2;
   void *mgr_data; /* Implementation-specific event manager's data. */
   struct mg_iface *iface;
   unsigned long flags;
@@ -3701,24 +3691,6 @@ int mg_resolve(const char *domain_name, char *ip_addr_buf, size_t buf_len);
  * Returns -1 if ACL is malformed, 0 if address is disallowed, 1 if allowed.
  */
 int mg_check_ip_acl(const char *acl, uint32_t remote_ip);
-
-/*
- * Optional parameters for mg_enable_multithreading_opt()
- */
-struct mg_multithreading_opts {
-  int poll_timeout; /* Polling interval */
-};
-
-/*
- * Enables multi-threaded handling for the given listening connection `nc`.
- * For each accepted connection, Mongoose will create a separate thread
- * and run an event handler in that thread. Thus, if an event handler is doing
- * a blocking call or some long computation, it will not slow down
- * other connections.
- */
-void mg_enable_multithreading(struct mg_connection *nc);
-void mg_enable_multithreading_opt(struct mg_connection *nc,
-                                  struct mg_multithreading_opts opts);
 
 #if MG_ENABLE_JAVASCRIPT
 /*
