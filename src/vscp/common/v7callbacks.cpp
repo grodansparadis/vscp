@@ -902,9 +902,9 @@ enum v7_err js_send_Measurement( struct v7 *v7, v7_val_t *res )
                 *res = v7_mk_boolean( v7, 0 );  // Failed
                 return V7_OK;
             }
-                
+
             pEvent->pdata = NULL;
-                    
+
             if ( !vscp_makeFloatMeasurementEvent( pEvent, 
                                                     value,
                                                     unit,

@@ -151,14 +151,78 @@ extern struct websrv_rest_session *gp_websrv_rest_sessions;
 
 // Prototypes
 
-
-
 int webserv_url_decode( const char *src, int src_len,
                             char *dst, int dst_len,
                             int is_form_url_encoded );
 void webserv_util_sendheader( struct mg_connection *nc,
                                         const int returncode,
                                         const char *content );
+
+
+
+
+//-----------------------------------------------------------------------------
+//            Old compatibility functions from old frozen library.
+//              Copyright (c) 2004-2013 Sergey Lyubka <valenok@gmail.com>
+//               Copyright (c) 2013 Cesanta Software Limited
+//            TODO: Replace with new frozen code.
+//-----------------------------------------------------------------------------
+
+
+
+
+static int json_emit_long(char *buf, int buf_len, long int value) {
+  char tmp[20];
+  int n = snprintf(tmp, sizeof(tmp), "%ld", value);
+  strncpy(buf, tmp, buf_len > 0 ? buf_len : 0);
+  return n;
+}
+
+static int json_emit_double(char *buf, int buf_len, double value) {
+  char tmp[20];
+  int n = snprintf(tmp, sizeof(tmp), "%g", value);
+  strncpy(buf, tmp, buf_len > 0 ? buf_len : 0);
+  return n;
+}
+
+static int json_emit_quoted_str(char *s, int s_len, const char *str, int len) {
+  const char *begin = s, *end = s + s_len, *str_end = str + len;
+  char ch;
+
+#define EMIT(x) do { if (s < end) *s = x; s++; } while (0)
+
+  EMIT('"');
+  while (str < str_end) {
+    ch = *str++;
+    switch (ch) {
+      case '"':  EMIT('\\'); EMIT('"'); break;
+      case '\\': EMIT('\\'); EMIT('\\'); break;
+      case '\b': EMIT('\\'); EMIT('b'); break;
+      case '\f': EMIT('\\'); EMIT('f'); break;
+      case '\n': EMIT('\\'); EMIT('n'); break;
+      case '\r': EMIT('\\'); EMIT('r'); break;
+      case '\t': EMIT('\\'); EMIT('t'); break;
+      default: EMIT(ch);
+    }
+  }
+  EMIT('"');
+  if (s < end) {
+    *s = '\0';
+  }
+
+  return s - begin;
+}
+
+static int json_emit_unquoted_str(char *buf, int buf_len, const char *str, int len) {
+  if (buf_len > 0 && len > 0) {
+    int n = len < buf_len ? len : buf_len;
+    memcpy(buf, str, n);
+    if (n < buf_len) {
+      buf[n] = '\0';
+    }
+  }
+  return len;
+}
 
 
 //-----------------------------------------------------------------------------
