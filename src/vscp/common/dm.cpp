@@ -40,6 +40,7 @@
 #include <wx/datetime.h>
 #include <wx/filename.h>
 #include <wx/cmdline.h>
+#include <wx/base64.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -1848,35 +1849,17 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                 strResult += vscp_getRealTextData( pEvent );
             }
 
-            // Check for %variable:name (name is name of variable)
-            else if ( str.StartsWith( wxT("%variable:"), &str ) ) {
+            // Check for %variable:[name] (name is name of variable)
+            else if ( str.StartsWith( wxT("%variable:["), &str ) ) {
 
                 str.Trim(); // Trim of leading white space
-                if ( wxNOT_FOUND == ( pos = str.First(' ') ) ) {
-
-                    // OK variable name must be all that is left in the param
+                if ( wxNOT_FOUND != ( pos = str.First(']') ) ) {
+                    
                     CVSCPVariable variable;
-
-                    // Assign value if variable exist
                     
-                     if ( gpobj->m_VSCP_Variables.find( str, variable ) ) {
-
-                        // Existing - get real text value
-                        wxString wxwrk;
-                        variable.writeValueToString( wxwrk );
-                        strResult += wxwrk;
-
-                    }
-                    
-                    str.Empty(); // Not needed anymore
-
-                }
-                else {
                     wxString variableName = str.Left( pos );
-                    str = str.Right( str.Length() - pos );
-
-                    CVSCPVariable variable;
-
+                    str = str.Right( str.Length() - pos - 1 );
+                    
                     // Assign value if variable exist
                     if ( gpobj->m_VSCP_Variables.find( variableName, variable ) ) {
 
@@ -1885,9 +1868,71 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                         strResult += wxwrk;
 
                     }
-
+                    
                 }
 
+            }
+            
+            // Check for %variable:[name] (name is name of variable)
+            else if ( str.StartsWith( wxT("%vardecode:["), &str ) ) {
+                
+                str.Trim(); // Trim of leading white space
+                if ( wxNOT_FOUND != ( pos = str.First(']') ) ) {
+                    
+                    CVSCPVariable variable;
+                    
+                    wxString variableName = str.Left( pos );
+                    str = str.Right( str.Length() - pos - 1 );
+                    
+                    // Assign value if variable exist
+                    if ( gpobj->m_VSCP_Variables.find( variableName, variable ) ) {
+
+                        wxString wxwrk;
+                        variable.writeValueToString( wxwrk );
+                        if ( CVSCPVariable::isValueBase64Encoded( variable.getType() ) ) {
+                            size_t len = wxBase64Decode( NULL, 0, wxwrk );
+                            if ( 0 == len ) continue;
+                            uint8_t *pbuf = new uint8_t[ len ];
+                            if ( NULL == pbuf ) continue;
+                            len = wxBase64Decode( pbuf, len, wxwrk );
+                            wxwrk = wxString::FromUTF8( (const char *)pbuf, len );
+                            delete [] pbuf;
+                        }
+                        strResult += wxwrk;
+
+                    }
+                    
+                }
+                
+            }
+            
+            // Check for %file:[path] (path is path to file to include)
+            else if ( str.StartsWith( wxT("%file:["), &str ) ) {
+                
+                str.Trim(); // Trim of leading white space
+                if ( wxNOT_FOUND != ( pos = str.First(']') ) ) {
+                    
+                    wxString path = str.Left( pos );
+                    str = str.Right( str.Length() - pos - 1 );
+                   
+                    wxFile f;
+                    if ( f.Open( path ) ) {
+                        
+                        char buf[ 0x10000 ];                        
+                        memset( buf, 0, sizeof( buf ) );
+                        
+                        int size= 0;
+                        if ( wxInvalidOffset != 
+                                ( size = f.Read( buf, sizeof( buf ) - 1  ) ) ) {
+                            strResult += wxString::FromUTF8( buf, size );
+                        }
+                                
+                        f.Close();
+                        
+                    }
+                    
+                }           
+                
             }
 
             ////////////////////////////////////////////////////////////////////
@@ -6945,6 +6990,7 @@ void *actionThread_JavaScript::Entry()
     
     // Add VSCP methods
     v7_set_method( v7, v7_get_global( v7 ), "vscp_log", &js_vscp_log );
+    v7_set_method( v7, v7_get_global( v7 ), "vscp_sleep", &js_vscp_sleep );
     v7_set_method( v7, v7_get_global( v7 ), "vscp_readVariable", &js_vscp_readVariable );
     v7_set_method( v7, v7_get_global( v7 ), "vscp_writeVariable", &js_vscp_writeVariable );
     v7_set_method( v7, v7_get_global( v7 ), "vscp_deleteVariable", &js_vscp_deleteVariable );
@@ -6992,7 +7038,7 @@ void *actionThread_JavaScript::Entry()
     
     // Make a JacaScipt object of the ClientItem
     v7_val_t v7_ClientItem = v7_mk_foreign( v7, (void *)m_pClientItem );
-    v7_set( v7, v7_get_global(v7), "vscp_ClientItem", 15, v7_ClientItem );
+    v7_set( v7, v7_get_global(v7), "vscp_clientItem", 15, v7_ClientItem );
 
     // Execute a string given in a command line argument 
     err = v7_exec( v7, (const char *)m_wxstrScript.mbc_str(), &v7_result );
@@ -7004,7 +7050,7 @@ void *actionThread_JavaScript::Entry()
         switch ( err ) {
             
             case V7_SYNTAX_ERROR:
-                strError = _("JavaScript execution error: Syntax error.\n");                
+                strError = wxString::Format( _("JavaScript execution error: Syntax error = %s\n"), v7_get_parser_error( v7 ) );                
                 break;
                 
             case V7_EXEC_EXCEPTION:

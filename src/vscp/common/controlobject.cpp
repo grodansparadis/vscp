@@ -534,7 +534,7 @@ void CControlObject::logMsg(const wxString& msg, const uint8_t level, const uint
                 
         if ( SQLITE_OK != sqlite3_exec( m_db_vscp_log,  
                                         sql, NULL, NULL, &zErrMsg)) {
-            wxPrintf( "Failed to write message to log database. Error is %s Message %s",
+            wxPrintf( "Failed to write message to log database. Error is: %s Message is: %s\n",
                         zErrMsg,
                         (const char *)msg.mbc_str() );
         }
@@ -579,7 +579,7 @@ void CControlObject::logMsg(const wxString& msg, const uint8_t level, const uint
 
     // Print to console if there is one
     if ( m_logLevel >= level ) {
-        wxPrintf( wxdebugmsg );
+        wxPrintf( "%s", wxdebugmsg.mbc_str() );
     }
 
     if ( m_bLogToSysLog ) {
@@ -1840,6 +1840,21 @@ bool CControlObject::sendEvent( CClientItem *pClientItem,
     if ( NULL == pClientItem ) return false; 
     if ( NULL == peventToSend ) return false;
     
+    // If timestamp is nulled make one
+    if ( 0 == peventToSend->timestamp ) {
+        peventToSend->timestamp = vscp_makeTimeStamp();
+    }
+    
+    // If obid is nulled set client interface id
+    if ( 0 == peventToSend->obid ) {
+        peventToSend->obid = pClientItem->m_clientID;
+    }
+    
+    // If GUID is all nilled set interface GUID
+    if ( vscp_isGUIDEmpty( peventToSend->GUID ) ) {
+        memcpy( peventToSend->GUID, pClientItem->m_guid.getGUID(), 16 );
+    }
+    
     vscpEvent *pEvent = new vscpEvent;  // Create new VSCP Event
     if ( NULL == pEvent ) {
         return false;
@@ -1943,6 +1958,7 @@ bool CControlObject::sendEvent( CClientItem *pClientItem,
 
                 vscp_deleteVSCPevent( pEvent );
                 return false;
+                
             }
 
         }

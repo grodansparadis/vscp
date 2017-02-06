@@ -522,8 +522,8 @@ struct myNode {
 #define VSCP_JSON_EVENT_TEMPLATE "{\n"\
     "\"time\": \"%s\",\n"\
     "\"head\": %d,\n"\
-    "\"timestamp\":%lu,\n"\
-    "\"obid\";  %lu,\n"\
+    "\"timestamp\": %lu,\n"\
+    "\"obid\":  %lu,\n"\
     "\"class\": %d,\n"\
     "\"type\": %d,\n"\
     "\"guid\": \"%s\",\n"\

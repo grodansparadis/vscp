@@ -33,6 +33,15 @@
  */
 enum v7_err js_vscp_log( struct v7 *v7, v7_val_t *res );
 
+/*!
+ *  Sleep for some milliseconds
+ * 
+ * JavaScript Parameter 0: Sleep time in milliseconds
+ * JavaScript Return: True on success.
+ * 
+ */
+enum v7_err js_vscp_sleep( struct v7 *v7, v7_val_t *res ) ;
+
 
 /*!
  *  Get variable as a JSON object from it's name. If the variable is
@@ -41,7 +50,7 @@ enum v7_err js_vscp_log( struct v7 *v7, v7_val_t *res );
  *  JavaScript Parameter 0: ClientItem
  *  JavaScript Parameter 1: Name of variable to read
  *  JavaScript: Return: Variable on JSON format. NULL if no variable with
- *                      that name.
+ *                      that name exists.
  * 
  *  @param v7 Pointer to v7 object.
  *  @param res Pointer to JSON object or NULL if variable was not found.

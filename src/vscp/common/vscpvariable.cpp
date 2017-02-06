@@ -967,12 +967,12 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
             // Should we do a BASE64 conversion
             if ( bBase64 ) {
                 m_strValue = wxT("");
-                char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];
+                char *pbuf = new char[ wxBase64EncodedSize( strlen( strValue.mbc_str() ) ) + 1 ];
                 if ( NULL == pbuf ) return false;
                 size_t len = wxBase64Encode( pbuf, 
-                                                wxBase64EncodedSize( strValue.Length() ), 
+                                                wxBase64EncodedSize( strlen( strValue.mbc_str() ) ), 
                                                 (const char *)strValue.mbc_str(),
-                                                strValue.Length() );
+                                                strlen( strValue.mbc_str() ) );
                 if ( wxCONV_FAILED == len ) {
                     delete [] pbuf;
                     return false;
@@ -4933,8 +4933,8 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                     pdm->m_strGroupID = strValue;
                 }
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("groupid"),
-                                                                    strValue );
+                                                               _("groupid"),
+                                                               strValue );
                 
             }
             else if ( wxstr.StartsWith( _("mask.priority") ) ) {

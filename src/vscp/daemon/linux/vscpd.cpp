@@ -159,6 +159,7 @@ int main(int argc, char **argv)
             help(argv[0]);
             exit(-1);
         }
+        
     }
 
     //wxLogDebug(_("ControlObject: Configfile =") + strcfgfile);

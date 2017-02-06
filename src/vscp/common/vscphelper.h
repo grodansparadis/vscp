@@ -563,7 +563,10 @@ extern "C" {
      */
     unsigned short vscp_calc_crc_EventEx(vscpEventEx *pEvent, short bSet);
 
+    
+    
     // Helpers
+    
 
 
     /*!

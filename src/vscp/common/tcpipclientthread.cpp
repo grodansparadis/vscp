@@ -1212,8 +1212,8 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn,
     // If first character is $ user request us to send content from
     // a variable
 
-    // Get head
     if ( tkz.HasMoreTokens() ) {
+        
         str = tkz.GetNextToken();
         str.Trim( false );
         if ( wxNOT_FOUND == str.Find(_("$") ) ) {
@@ -1249,6 +1249,8 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn,
     }
 
     if ( !bVariable ) {
+        
+        // Not a variable
 
         // Get Class
         if ( tkz.HasMoreTokens() ) {
