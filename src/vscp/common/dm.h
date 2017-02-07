@@ -62,9 +62,9 @@ WX_DECLARE_LIST( int, ACTIONTIME );
 
 enum DMLogType {
     LOG_DM_NONE = 0,
-    LOG_DM_DEBUG,
     LOG_DM_NORMAL,
-    LOG_DM_EXTRA
+    LOG_DM_EXTRA,
+    LOG_DM_DEBUG
 };
 
 // Variable check constants

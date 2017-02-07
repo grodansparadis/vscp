@@ -771,6 +771,15 @@ enum v7_err js_send_Measurement( struct v7 *v7, v7_val_t *res )
         return V7_OK;
     }
     
+    // GUID
+    uint8_t guid[16];
+    memset( guid, 0, 16 ); // Default is don't care
+    v7_val_t v7_guid = v7_get( v7, varObjMeasurement, "guid", 4 );
+    if ( !v7_is_undefined( v7_guid ) && !v7_is_number( v7_guid ) ) {
+        wxString strGUID = v7_get_cstring( v7, &v7_guid );
+        vscp_getGuidFromStringToArray( guid, strGUID );
+    }
+    
     // VSCP type
     v7_val_t v7_type = v7_get( v7, varObjMeasurement, "vscptype", 8 );
     if ( !v7_is_undefined( v7_type ) && v7_is_number( v7_type ) ) {
@@ -820,7 +829,16 @@ enum v7_err js_send_Measurement( struct v7 *v7, v7_val_t *res )
         
         if ( bString ) {
             
-            pEvent = NULL;
+            pEvent = new vscpEvent;
+            if ( NULL == pEvent ) {
+                *res = v7_mk_boolean( v7, 0 );  // Failed
+                return V7_OK;
+            }
+            pEvent->pdata = NULL;
+        
+            // Set GUID
+            memcpy( pEvent->GUID, guid, 16 );
+            
             if ( !vscp_makeLevel2StringMeasurementEvent( pEvent, 
                                                             type,
                                                             value,
@@ -836,7 +854,16 @@ enum v7_err js_send_Measurement( struct v7 *v7, v7_val_t *res )
         }
         else {
             
-            pEvent = NULL;
+            pEvent = new vscpEvent;
+            if ( NULL == pEvent ) {
+                *res = v7_mk_boolean( v7, 0 );  // Failed
+                return V7_OK;
+            }
+            pEvent->pdata = NULL;
+        
+            // Set GUID
+            memcpy( pEvent->GUID, guid, 16 );
+                
             if ( !vscp_makeLevel2FloatMeasurementEvent( pEvent, 
                                                             type,
                                                             value,
@@ -864,6 +891,11 @@ enum v7_err js_send_Measurement( struct v7 *v7, v7_val_t *res )
                 return V7_OK;
             }
                 
+            memcpy( pEvent->GUID, guid, 16 );
+            pEvent->vscp_type = type;
+            pEvent->vscp_class = VSCP_CLASS1_MEASUREMENT;
+            pEvent->obid = 0;
+            pEvent->timestamp = 0;                    
             pEvent->pdata = NULL;
                 
             if ( !vscp_makeStringMeasurementEvent( pEvent, 
@@ -875,6 +907,8 @@ enum v7_err js_send_Measurement( struct v7 *v7, v7_val_t *res )
                 return V7_OK;
             }
             
+            //
+            
         }
         else {
             
@@ -884,6 +918,11 @@ enum v7_err js_send_Measurement( struct v7 *v7, v7_val_t *res )
                 return V7_OK;
             }
 
+            memcpy( pEvent->GUID, guid, 16 );
+            pEvent->vscp_type = type;
+            pEvent->vscp_class = VSCP_CLASS1_MEASUREMENT;
+            pEvent->obid = 0;
+            pEvent->timestamp = 0; 
             pEvent->pdata = NULL;
 
             if ( !vscp_makeFloatMeasurementEvent( pEvent, 
@@ -899,9 +938,8 @@ enum v7_err js_send_Measurement( struct v7 *v7, v7_val_t *res )
         
     }
     
-    
-    
-    if ( gpobj->sendEvent( pClientItem, pEvent ) ) {
+    // Send the event
+    if ( !gpobj->sendEvent( pClientItem, pEvent ) ) {
         // Failed to send event
         vscp_deleteVSCPevent( pEvent );
         *res = v7_mk_boolean( v7, 0 );  // Return error

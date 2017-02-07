@@ -2291,8 +2291,27 @@ bool dmElement::doAction( vscpEvent *pEvent )
             m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
             { 
-                // Write in possible escapes
+                // If BASE64 encoded then decode 
                 wxString wxstr = m_actionparam;
+                wxstr.Trim( false );
+                if ( wxstr.StartsWith( _("BASE64:"), &wxstr ) ) {
+                    // Yes should be decoded
+                    size_t len = wxBase64Decode( NULL, 0, wxstr );
+                    if ( 0 == len ) {
+                        m_pDM->logMsg( "Failed to decode BASE64 parameter (len=0)", LOG_DM_NORMAL );
+                        break;
+                    }
+                    uint8_t *pbuf = new uint8_t[len];
+                    if ( NULL == pbuf ) {
+                        m_pDM->logMsg( "Failed to decode BASE64 parameter  pbuf=NULL)", LOG_DM_NORMAL );
+                        break;
+                    }
+                    len = wxBase64Decode( pbuf, len, wxstr );
+                    wxstr = wxString::FromUTF8( (const char *)pbuf, len );
+                    delete [] pbuf;
+                }
+                
+                // Write in possible escapes
                 handleEscapes( pEvent, wxstr );
 
                 actionThread_JavaScript *pThread = new actionThread_JavaScript( wxstr );

@@ -1352,23 +1352,17 @@ bool vscp_makeLevel2FloatMeasurementEvent( vscpEvent *pEvent,
                                                     uint8_t zone,
                                                     uint8_t subzone )
 {
-    // If the event does not exist we create it
-    if ( NULL == pEvent ) {
-        
-        pEvent = new vscpEvent;
-        pEvent->pdata = NULL;
-        if ( NULL == pEvent ) return false;
-                
-    }
+    // Event must have been created
+    if ( NULL == pEvent ) return false;
     
     pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
     pEvent->vscp_type = type;
     pEvent->obid = 0;
     pEvent->timestamp = 0;
-    memset( pEvent->GUID, 0, 16 );
     
-    pEvent->pdata = new uint8_t[ 12 ];
-    if ( NULL != pEvent->pdata ) {
+    pEvent->sizeData = 12;
+    pEvent->pdata = new uint8_t[ pEvent->sizeData ];
+    if ( NULL == pEvent->pdata ) {
         delete pEvent;
         return false;
     }
@@ -1396,14 +1390,8 @@ bool vscp_makeLevel2StringMeasurementEvent( vscpEvent *pEvent,
                                                     uint8_t zone,
                                                     uint8_t subzone )
 {
-    // If the event does not exist we create it
-    if ( NULL == pEvent ) {
-        
-        pEvent = new vscpEvent;
-        pEvent->pdata = NULL;
-        if ( NULL == pEvent ) return false;
-                
-    }
+    // Check pointer
+    if ( NULL == pEvent ) return false;
     
     wxString strData = wxString::Format( _("%f"), value );
     
@@ -1412,13 +1400,16 @@ bool vscp_makeLevel2StringMeasurementEvent( vscpEvent *pEvent,
     pEvent->obid = 0;
     pEvent->timestamp = 0;
     memset( pEvent->GUID, 0, 16 );
-    pEvent->sizeData = 8 + strlen( strData.mbc_str() );
+    pEvent->sizeData = 4 + strlen( strData.mbc_str() ) + 1; // Include null termination
     
     pEvent->pdata = new uint8_t[ pEvent->sizeData ];
-    if ( NULL != pEvent->pdata ) {
+    if ( NULL == pEvent->pdata ) {
         delete pEvent;
         return false;
     }
+    
+    // Nill
+    memset( pEvent->pdata, 0, pEvent->sizeData );
     
     // Copy in data
     pEvent->pdata[ 0 ] = sensoridx;
@@ -5098,10 +5089,14 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
             ///////////////////////////////////////////////////////////////////////////
             case VSCP_CLASS2_MEASUREMENT_FLOAT:
             {
+                double value;
                 wxString strValue;
         
-                if ( !vscp_getVSCPMeasurementAsString( pEvent, strValue ) ) {
+                if ( !vscp_getVSCPMeasurementAsDouble( pEvent, &value ) ) {
                     strValue = _("ERROR");
+                }
+                else {
+                    strValue = wxString::Format( _("%f"), value );
                 }
                 
                 strOutput = _("\n[double] = ") + strValue;
