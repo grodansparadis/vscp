@@ -497,61 +497,60 @@
 
 
 //*****************************************************************************
-//                              USERDEF_TABLE
+//                                 TABLE
 //*****************************************************************************
 
 /*
  * User defined tables with diagram hints
+ * Databases are always created in the 'table' sub folder of the server root.
+ * 
+ * bmem - Is true of the table is a in-memory database
+ * name - 
  * xname - Text on xaxis
  * yname - Text on yaxis
  * title - Text for diagram title
- * xfield - fields for data
  * note - Text to display as note on diagram.
- * tabletype - code for type of table
- * param - parameter for table type
- * size - A specific size for a table with a defined size (round robin).
+ * size - A specific size for a table with a defined size (round robin). Normally
+ *          zero for a ever growing table-.
  * sql_create - SQL expression to use to create table
- * sql_insertvalue - SQL expression to insert value. The value should be set as 
- *  $value in the SQL expression and will be substituted with the real value as 
- *  a floating point value.
- * decription - User description for table
+ * sql_insert - SQL expression to insert value. The value should be set as 
+ *  The SQL expression can contain VSCP decision matrix escapes which are
+ *  filled in before the SQL expression is evaluated.
+ * sql_delete - SQL expression to delete value.
+ * description - User description for table
  */
 
-#define VSCPDB_USERDEF_TABLE_CREATE "CREATE TABLE 'userdef_table' ("\
+#define VSCPDB_TABLE_CREATE "CREATE TABLE 'table' ("\
 	"`idx_table`        INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
+        "`bmem`             INTEGER NOT NULL,"\
 	"`name`             TEXT NOT NULL,"\
 	"`link_to_owner`    INTEGER NOT NULL,"\
 	"`permission`       INTEGER NOT NULL,"\
-	"`xname`            BLOB NOT NULL,"\
+	"`xname`            TEXT NOT NULL,"\
 	"`yname`            TEXT NOT NULL,"\
-	"`title`            REAL NOT NULL,"\
-	"`xfield`           TEXT NOT NULL,"\
-	"`yfield`           TEXT NOT NULL,"\
+	"`title`            TEXT,"\
 	"`note`             TEXT,"\
-        "`tabletype`        INTEGER,"\
-        "`param`            TEXT,"\
 	"`size`             INTEGER DEFAULT 0,"\
 	"`sql_create`       TEXT NOT NULL,"\
-	"`sql_insertvalue`  TEXT NOT NULL,"\
+	"`sql_insert`       TEXT NOT NULL,"\
+        "`sql_delete`       TEXT NOT NULL,"\
         "`description`      TEXT NOT NULL"\
         ");"
 
-#define VSCPDB_ORDINAL_USERDEF_TABLE_ID                 0   //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_NAME               1   //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_LINK_TO_OWNER      2   //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_PERMISSION         3   //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_XNAME              4   //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_YNAME              5   //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_TITLE              6   //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_XFIELD             7   //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_YFIELD             8   //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_NOTE               9   //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_TABLETYPE          10  //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_PARAM              11  //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_SIZE               12  //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_SQL_CREATE         13  //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_SQL_INSERTVALUE    14  //
-#define VSCPDB_ORDINAL_USERDEF_TABLE_DESCRIPTION        15  //
+#define VSCPDB_ORDINAL_TABLE_ID                 0   //
+#define VSCPDB_ORDINAL_TABLE_BMEM               1   //
+#define VSCPDB_ORDINAL_TABLE_NAME               2   //
+#define VSCPDB_ORDINAL_TABLE_LINK_TO_OWNER      3   //
+#define VSCPDB_ORDINAL_TABLE_PERMISSION         4   //
+#define VSCPDB_ORDINAL_TABLE_XNAME              5   //
+#define VSCPDB_ORDINAL_TABLE_YNAME              6   //
+#define VSCPDB_ORDINAL_TABLE_TITLE              7   //
+#define VSCPDB_ORDINAL_TABLE_NOTE               8   //
+#define VSCPDB_ORDINAL_TABLE_SIZE               9   //
+#define VSCPDB_ORDINAL_TABLE_SQL_CREATE         10  //
+#define VSCPDB_ORDINAL_TABLE_SQL_INSERT         11  //
+#define VSCPDB_ORDINAL_TABLE_SQL_DELETE         12  //
+#define VSCPDB_ORDINAL_TABLE_DESCRIPTION        13  //
 
 
 

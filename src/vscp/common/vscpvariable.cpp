@@ -2931,7 +2931,7 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
     if ( "vscp" != strToken ) return false;  
     
     // Get the stock variable - NOTE!!! all will not be found here so all
-    // variables will be let thru. But variable with id=0 are uninitialised.
+    // variables will be let thru. But variable with id=0 are uninitialized.
     id = findNonPersistentVariable( name, var );
     if ( 0 == id ) {
         // Probably write only variable
@@ -5842,6 +5842,7 @@ bool CVariableStorage::add( CVSCPVariable& var )
     }    
 
     if ( id = exist( var.getName() ) ) {
+        
         char *sql = sqlite3_mprintf( VSCPDB_VARIABLE_UPDATE,
                 (const char *) var.m_lastChanged.FormatISOCombined().mbc_str(),
                 (const char *) var.getName().mbc_str(),
@@ -5861,6 +5862,7 @@ bool CVariableStorage::add( CVSCPVariable& var )
         }
 
         sqlite3_free(sql);
+        
     }
     else {
         char *sql = sqlite3_mprintf( VSCPDB_VARIABLE_INSERT,
@@ -6131,7 +6133,7 @@ bool CVariableStorage::loadFromXML( const wxString& path  )
 
     wxXmlNode *child = doc.GetRoot()->GetChildren();
     while (child) {
-
+        
         if ( child->GetName() == wxT("variable") ) {
 
             CVSCPVariable variable;

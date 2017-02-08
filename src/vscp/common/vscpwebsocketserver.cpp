@@ -1192,7 +1192,7 @@ autherror:
     
     else if ( ( 0 == strTok.Find(_("GT") ) ) || 
                 ( 0 == strTok.Find(_("GETTABLE") ) ) ) {
-
+    /*
         // Format is:
         //      tablename;from;to
 
@@ -1517,7 +1517,7 @@ autherror:
             }
 
         }
-
+    */
     }
     
     // ------------------------------------------------------------------------

@@ -31,6 +31,7 @@
 #include <wx/url.h>
 #include <v7.h>
 #include <dllist.h>
+#include <tables.h>
 #include <vscp.h>
 #include <vscpvariable.h>
 
@@ -1270,6 +1271,43 @@ public:
     /// Feed event
     vscpEventEx m_feedEvent;
     
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// actionThread_Table
+//
+
+class actionThread_Table : public wxThread
+{
+
+public:
+
+    /*!
+        Constructor
+        @param pCtrlObject Pointer to main object.
+        @param pTableObj Table object.
+        @param kind Threadtype.
+    */
+    actionThread_Table( CControlObject *pCtrlObject, 
+                            CVSCPTable *pTableObj,
+                            wxThreadKind kind = wxTHREAD_DETACHED );
+  
+    /// Destructor
+    ~actionThread_Table();
+
+    virtual void *Entry();
+
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+    */
+    virtual void OnExit();
+
+private:
+
+    // Table object
+    CVSCPTable *m_pTableObj;
+
 };
 
 

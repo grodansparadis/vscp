@@ -5147,6 +5147,8 @@ void
 VSCPWebServerThread::websrv_table( struct mg_connection *nc,
                                         struct http_message *hm  )
 {
+    
+/*
     wxString str;
     VSCPInformation vscpinfo;
 
@@ -5220,6 +5222,8 @@ VSCPWebServerThread::websrv_table( struct mg_connection *nc,
         buildPage += wxString::Format(_("%d"), ptblItem->m_vscpFileHead.vscp_unit );
         struct _vscptableInfo info;
         ptblItem->m_mutexThisTable.Lock();
+ */
+/*        TODO
         ptblItem->getInfo( &info );
         ptblItem->m_mutexThisTable.Unlock();
         buildPage += _("<br><b>Min-value:</b> ");
@@ -5251,7 +5255,8 @@ VSCPWebServerThread::websrv_table( struct mg_connection *nc,
         ptblItem = NULL;
     } // for
     pObject->m_mutexTableList.Unlock();
-
+*/
+    /*
 
     buildPage += _(WEB_TABLELIST_TABLE_END);
 
@@ -5261,6 +5266,7 @@ VSCPWebServerThread::websrv_table( struct mg_connection *nc,
     mg_send_http_chunk( nc, "", 0 );
 
     return;
+*/     
 }
 
 
@@ -5273,6 +5279,7 @@ void
 VSCPWebServerThread::websrv_tablelist( struct mg_connection *nc,
                                         struct http_message *hm  )
 {
+/*
     char buf[512];
     wxString str;
     VSCPInformation vscpinfo;
@@ -5427,4 +5434,5 @@ VSCPWebServerThread::websrv_tablelist( struct mg_connection *nc,
     mg_send_http_chunk( nc, "", 0 );
 
     return;
+*/ 
 }

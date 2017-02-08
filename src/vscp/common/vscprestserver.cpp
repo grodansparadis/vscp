@@ -3066,6 +3066,7 @@ VSCPWebServerThread::websrc_rest_renderTableData( struct mg_connection *nc,
                                                         struct _vscpFileRecord *pRecords,
                                                         long nfetchedRecords )
 {
+/*    
     char buf[ 2048 ];
     char wrkbuf[ 2048 ];
     long nRecords = 0;
@@ -3258,6 +3259,7 @@ VSCPWebServerThread::websrc_rest_renderTableData( struct mg_connection *nc,
     }
 
     mg_send_http_chunk( nc, "", 0 );    // Terminator
+*/
 }
 
 
@@ -3273,6 +3275,7 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *nc,
                                                         wxString& strFrom,
                                                         wxString& strTo )
 {
+/*   
     //char buf[ 2048 ];
     //char wrkbuf[ 2048 ];
     long nRecords = 0;
@@ -3403,7 +3406,7 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *nc,
                                             pRecords,
                                             nfetchedRecords );
 
-            /*if ( REST_FORMAT_PLAIN == format ) {
+            if ( REST_FORMAT_PLAIN == format ) {
 
                 // Send header
                 webserv_util_sendheader( nc, 200, REST_MIME_TYPE_PLAIN );
@@ -3588,7 +3591,7 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *nc,
 
                 mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf )  );
 
-            }*/
+            }
 
             mg_send_http_chunk( nc, "", 0 );    // Terminator
 
@@ -3626,7 +3629,7 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *nc,
                                              pRecords,
                                              nfetchedRecords );
 
-                    /*// First send start post with number if records
+                    // First send start post with number if records
                     mg_printf_websocket_frame( nc,
                                          WEBSOCKET_OP_TEXT,
                                          "+;GT;START;%d",
@@ -3644,7 +3647,7 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *nc,
                     mg_printf_websocket_frame( nc,
                                          WEBSOCKET_OP_TEXT,
                                          "+;GT;END;%d",
-                                         nfetchedRecords );*/
+                                         nfetchedRecords );
 
                     // Deallocate storage
                     delete[] pRecords;
@@ -3664,7 +3667,7 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *nc,
 
         }
 
-
+*/
     return;
 }
 

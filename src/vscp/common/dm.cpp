@@ -4259,13 +4259,13 @@ bool dmElement::doActionWriteTable( vscpEvent *pDMEvent )
             ++iter)
     {
         CVSCPTable *pTable = *iter;
-        if ( 0 == strcmp( pTable->m_vscpFileHead.nameTable, tblName.mbc_str() ) ) {
+        /*if ( 0 == strcmp( pTable->m_vscpFileHead.nameTable, tblName.mbc_str() ) ) {
             pTable->m_mutexThisTable.Lock();
             pTable->logData( timestamp, value );
             pTable->m_mutexThisTable.Unlock();
             bFound = true;
             break;
-            }
+        }*/
     }
     gpobj->m_mutexTableList.Unlock();
 
@@ -7113,6 +7113,46 @@ void *actionThread_JavaScript::Entry()
 //
 
 void actionThread_JavaScript::OnExit()
+{
+
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// actionThread_Table
+//
+// This thread handles a table action
+//
+
+actionThread_Table::actionThread_Table( CControlObject *pCtrlObject, 
+                                            CVSCPTable *pTableObj,
+                                            wxThreadKind kind )
+                                                : wxThread( kind )
+{
+    //OutputDebugString( "actionThreadURL: Create");
+    
+}
+
+actionThread_Table::~actionThread_Table()
+{
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Entry
+//
+//
+
+void *actionThread_Table::Entry()
+{
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// OnExit
+//
+
+void actionThread_Table::OnExit()
 {
 
 }

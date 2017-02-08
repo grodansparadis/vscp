@@ -206,7 +206,7 @@ CControlObject::CControlObject()
     // Nill the GUID
     m_guid.clear();
 
-    // Initialise the client map
+    // Initialize the client map
     // to all unused
     for (i = 0; i < VSCP_MAX_CLIENTS; i++) {
         m_clientMap[ i ] = 0;
@@ -362,7 +362,7 @@ CControlObject::CControlObject()
 
 #endif
 
-    // Initialise the CRC
+    // Initialize the CRC
     crcInit();
 
 #if (0)
@@ -736,16 +736,16 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     
     // A configuration file must be available
     if ( !wxFile::Exists( strcfgfile ) ) {
-        printf("No configuration file. Can't initialise!.");
-        fprintf( stderr, "No configuration file. Can't initialise!.\n" );
+        printf("No configuration file. Can't initialize!.");
+        fprintf( stderr, "No configuration file. Can't initialize!.\n" );
         str = _("Path = .") + strcfgfile + _("\n");
         fprintf( stderr, str.mbc_str() );
         return false;
     }
 
-    // Initialise the SQLite library
+    // Initialize the SQLite library
     if ( SQLITE_OK != sqlite3_initialize() ) {
-        fprintf( stderr, "Unable to initialise SQLite library!." );
+        fprintf( stderr, "Unable to initialize SQLite library!." );
         return false;
     }
 
@@ -797,7 +797,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
             fprintf( stderr, str.mbc_str() );
             
             if ( SQLITE_OK == sqlite3_open( (const char *)m_path_db_vscp_daemon.GetFullPath().mbc_str(),
-                                            &m_db_vscp_daemon ) ) {
+                                                &m_db_vscp_daemon ) ) {
                 
                 // create the configuration database.
                 doCreateConfigurationTable(); 
@@ -934,13 +934,14 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 
     // Read XML configuration
     if ( !readXMLConfiguration( strcfgfile ) ) {
-        fprintf( stderr, "Unable to open/parse configuration file. Can't initialise!\n" );
+        fprintf( stderr, "Unable to open/parse configuration file. Can't initialize!\n" );
         str = _("Path = .") + strcfgfile + _("\n");
         fprintf( stderr, str.mbc_str() );
         return FALSE;
     }
-    
+      
     // Read users from database
+    logMsg(_("loading users from users db...\n") );
     m_userList.loadUsers();
     
     //==========================================================================
@@ -1053,16 +1054,16 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     str.Printf(_("Log Level=%d\n"), m_logLevel );
     logMsg( str );
 
-    // Initialise DM storage
-    logMsg(_("Init DM.\n") );
+    // Initialize DM storage
+    logMsg(_("Initialize DM.\n") );
     m_dm.init();
 
     // Load decision matrix if mechanism is enabled    
     logMsg(_("Loading DM.\n") );
     m_dm.loadFromXML();
 
-    // Initialise variable storage
-    logMsg(_("Initialise variables.\n") );
+    // Initialize variable storage
+    logMsg(_("Initialize variables.\n") );
     m_VSCP_Variables.init();
     
     // Load variables if mechanism is enabled
@@ -1087,8 +1088,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 
     // Start MQTT Broker if enabled
     if ( m_bMQTTBroker ) {
-        logMsg(_("Starting MQTT interface.\n") );
-        logMsg(_("MQTT Broker enabled.\n") );
+        logMsg(_("MQTT Broker enabled. Starting now...\n") );
         startMQTTBrokerThread();
     }
     else {
@@ -3391,7 +3391,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     else {
                         nType = vscp_readStringValue( attribute );
                     }
-
+/*
                     CVSCPTable *pTable = new CVSCPTable();
                     if ( NULL != pTable ) {
                         memset( &pTable->m_vscpFileHead, 0, sizeof(_vscptableInfo) );
@@ -3409,6 +3409,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                         m_listTables.Append( pTable ) ;
                         m_mutexTableList.Unlock();
                     }
+ */ 
                 }
 
                 subchild = subchild->GetNext();
@@ -4494,7 +4495,7 @@ bool CControlObject::doCreateSubZoneTable( void )
 bool CControlObject::doCreateUserdefTableTable( void )
 {
     char *pErrMsg = 0;
-    const char *psql = VSCPDB_USERDEF_TABLE_CREATE;
+    const char *psql = VSCPDB_TABLE_CREATE;
     
     fprintf( stderr, "Creating userdef table..\n" );
     

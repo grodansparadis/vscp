@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2015
+// Copyright (C) 2000-2017
 // Ake Hedman, Grodans Paradis AB, akhe@grodansparadis.com
 // 
 // This file is distributed in the hope that it will be useful,
@@ -21,74 +21,16 @@
 // Boston, MA 02111-1307, USA.
 //
 
-/*
-http://cplus.about.com/od/learningc/ss/files.htm
-
-Mode Type of file Read Write Create Truncate
---------------------------------------------
-r		text Read
-rb+		binary Read
-r+		text Read Write
-r+b		binary Read Write
-rb+		binary Read Write
-w		text Write Create Truncate
-wb		binary Write Create Truncate
-w+		text Read Write Create Truncate
-w+b		binary Read Write Create Truncate
-wb+		binary Read Write Create Truncate
-a		text Write Create
-ab		binary Write Create
-a+		text Read Write Create
-a+b		binary Write Create
-ab+		binary Write Create
-*/
-
-
 #if !defined(VSCPTABLE_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_)
 #define VSCPTABLE_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_
 
+#include <clientlist.h>
+
 // Table types
-enum  {
+enum vscpTableType {
     VSCP_TABLE_DYNAMIC = 0,
     VSCP_TABLE_STATIC
-};
-
-// This structure is located at the start of the main file.
-struct _vscpFileHead {
-    uint8_t id[2];                      // File id (main: 0x55,0xaa  index 0xaa,0x55
-    uint8_t type;                       // VSCP_TABLE_NORMAL/VSCP_TABLE_STATIC
-    char nameTable[64];                 // Name of table - Used to reference it
-    char descriptionTable[512];         // Description of table
-    char nameXLabel[128];               // Label for X-axis
-    char nameYLabel[128];               // Label for Y-axis
-    uint16_t vscp_class;                // Should be 10 but in future can be 11/12/13...
-    uint16_t vscp_type;                 // Measurement type: temp, current etc
-    uint8_t vscp_unit;                  // Measurement unit: e.g. 
-                                        // Celsius(1)/Fahrenheit(2)/Kelvin(0) 
-                                        // && for temperature class=10/Type=6
-
-    long unsigned int dummy;            // Next read position for static file   
-                                        // !!! NOT USED !!!
-    long unsigned int posStaticWrite;   // Next write position for static file
-
-    unsigned long staticSize;           // Number of records in static file
-};
-
-// All data is written with this record type
-struct _vscpFileRecord {
-    uint64_t timestamp;
-    double measurement;
-};
-
-struct _vscptableInfo {
-    double minValue;
-    double maxValue;
-    uint64_t minTime;
-    uint64_t maxTime;
-    double meanValue;
-    uint32_t nRecords;
-};
-
+} ;
 
 // Class that holds one VSCP table
 
@@ -96,16 +38,32 @@ class CVSCPTable {
 public:
 
     /// Constructor dtable
-    CVSCPTable( const char *file = NULL, int type = VSCP_TABLE_DYNAMIC, uint32_t size = 0 );
+    CVSCPTable( const char *dbpath = NULL, int vscpTableType = VSCP_TABLE_DYNAMIC, uint32_t size = 0 );
 
     // Destructor
     virtual ~CVSCPTable(void);
 
     /*!
         Open/create file and get ready to work with it.
-        @return 0 on success, <0 on error.
+        @return true on success, false on error.
     */
-    int init();
+    bool init();
+    
+    // * * * Database file * * *
+    
+    /*!
+     *  Set path to database
+     *  @param dbpath Pointer to null terminated string with path to 
+     *          database location or where database should b created.
+     *  @return true on success, false on failure.
+     */
+    bool setPathToDB( wxString &dbpath ) { m_pathDB.Assign( dbpath ); };
+    
+    // Get path to database
+    wxString getPathToDB( void ) { return m_pathDB.GetFullPath(); };
+
+    // Return true if database is open
+    bool isOpen( void ) { return 0 ? true : false; };
 
     /*!
         Set table info
@@ -131,34 +89,12 @@ public:
         @return nonzero if file exist, zero if not
     */
     int fileExists( const char *path);
-
+    
     /*!
-        Get size of file
-        @param fd File descriptor
-        @return Size of file.
-    */
-    long fdGetFileSize(const char *path);
+     * Log data
+     */
+    long logData( unsigned long time, double value );
 
-    /*!
-        Read file header
-        @return VSCP_ERROR_ERROR on success.
-    */
-    int readMainHeader( void );
-
-    /*!
-        Write file header
-        @return VSCP_ERROR_ERROR on success.
-    */
-    int writeMainHeader( void );
-
-
-    /*!
-        Log data
-        @param time Log time (since epoch)
-        @param measurement Measurement data
-        @return VSCP_ERROR_ERROR on success
-    */
-    int logData( uint64_t timestamp, double measurement );
 
     /*!
         Get a data range
@@ -211,55 +147,66 @@ public:
     long getStaticRequiredBuffSize( void );
 
     /*!
-        Get statistics for a range for a range
-    */
-    int getInfo( struct _vscptableInfo *pInfo, uint64_t from = 0, uint64_t to = 0 );
-
-    /*!
         Calculate mean over a range
     */
     double calculatMean( uint64_t from, uint64_t to );
 
-    // Get time for firts logged entry
-    uint64_t getTimeStampStart( void ) { return m_timestamp_first; };
+    // Get time for first logged entry
+    uint64_t getTimeStampStart( void );
 
     // Get time for last logged entry
-    uint64_t getTimeStampEnd( void ) { return m_timestamp_last; };
+    uint64_t getTimeStampEnd( void );
 
     // Get number of records in database
-    long getNumberOfRecords( void ) { return m_number_of_records; };
+    long getNumberOfRecords( void );
 
-    // Get file
-    wxString& getFileName( void ) { return m_path; };
-
-    // isOPen()
-    bool isOpen( void ) { return m_ft ? true : false; };
+    
 
 public:
     
     // Protector for this table
     wxMutex m_mutexThisTable;
 
-    /// Main file head structure
-    struct _vscpFileHead m_vscpFileHead;
-
 
 private:
     
-    /// File handel for mainfile
-    FILE *m_ft;
 
-    /// Path to main file
-    wxString m_path;	
+    /// Path to database file
+    wxFileName m_pathDB;	
+    
+    // Name for table.
+    wxString m_tableName;
+    
+    // Table description
+    wxString m_tableDescription;
+    
+    // Label for table header
+    wxString m_labelHeader;
+    
+    // Label for table note
+    wxString m_labelNote;
 
-    /// Timestamp for first record
-    uint64_t m_timestamp_first;
+    // Label for X-axis
+    wxString m_labelX;
+    
+    // Label for y-axis
+    wxString m_labelY;
+    
+    // Size for table with constant size (zero for ever growing)
+    uint32_t m_size;
+    
+    // SQL to create table.
+    wxString m_sqlCreate;
+    
+    // SQL to insert value.
+    wxString m_sqlInsert;
+    
+    // SQL to delete table.
+    wxString m_sqlDelete;
+    
+    // Owner
+    CClientItem *m_pClientItem;
 
-    /// Timestamp for last record
-    uint64_t m_timestamp_last;
-
-    /// Current number of records in database
-    long m_number_of_records;
 };
 
 
