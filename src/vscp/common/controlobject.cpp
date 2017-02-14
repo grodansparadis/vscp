@@ -184,6 +184,12 @@ CControlObject::CControlObject()
     int i;
     m_bQuit = false;            // true if we should quit
     
+#ifdef WIN32
+    m_rootFolder = wxStandardPaths::Get().GetUserDataDir();
+#else
+    m_rootFolder = _("/srv/vscp/");
+#endif            
+    
     // Delete objects from list when they are removed
     m_websocketSessions.DeleteContents( true );
     
@@ -228,7 +234,7 @@ CControlObject::CControlObject()
     m_logGeneralFileName.Assign( wxStandardPaths::Get().GetConfigDir() +
                                         _("/vscp/logs/vscp_log_general.txt") );
 #else
-    m_logGeneralFileName.Assign( _("/srv/vscp/logs/vscp_log_general") );
+    m_logGeneralFileName.Assign( m_rootFolder + _("/logs/vscp_log_general") );
 #endif
 
     // Security logfile is enabled by default
@@ -705,6 +711,15 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     // Save root folder for later use.
     m_rootFolder = rootFolder;
     
+    m_logGeneralFileName.Assign( m_rootFolder + _("/logs/vscp_log_general") );
+    m_logSecurityFileName.Assign( m_rootFolder + _("/logs/vscp_log_security") );
+    m_logAccessFileName.Assign( m_rootFolder + _("/logs/vscp_log_access") );
+    m_path_db_vscp_daemon.Assign( m_rootFolder + _("vscpd.sqlite3") );
+    m_path_db_vscp_data.Assign( m_rootFolder + _("vscp_data.sqlite3") );
+    m_path_db_vscp_log.Assign( m_rootFolder + _("vscpd_log.sqlite3") );
+    wxString strRootwww = m_rootFolder + _("www");
+    strcpy( m_pathWebRoot, (const char *)strRootwww.mbc_str() );
+    
     //wxLog::AddTraceMask( "wxTRACE_doWorkLoop" );
     //wxLog::AddTraceMask(_("wxTRACE_vscpd_receiveQueue")); // Receive queue
     //wxLog::AddTraceMask(_("wxTRACE_vscpd_Msg"));
@@ -831,6 +846,11 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
         
                 // Create userdef table
                 doCreateUserdefTableTable();
+                
+                // * * * All created * * *
+                
+                // Database is open. Read configuration data from it
+                dbReadConfiguration();
             
             }
             
@@ -1053,9 +1073,15 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 
     str.Printf(_("Log Level=%d\n"), m_logLevel );
     logMsg( str );
+    
+    // Load tables from database
+    logMsg(_("Reading in user tables from DB.\n") );
+    m_userTableObjects.readTablesFromDB();
+    logMsg(_("Initializing user tables.\n") );
+    m_userTableObjects.init();
 
     // Initialize DM storage
-    logMsg(_("Initialize DM.\n") );
+    logMsg(_("Initializing DM.\n") );
     m_dm.init();
 
     // Load decision matrix if mechanism is enabled    
@@ -1140,17 +1166,6 @@ bool CControlObject::run(void)
     EventShutDown.vscp_type = VSCP2_TYPE_VSCPD_SHUTTING_DOWN;
     EventShutDown.sizeData = 0;
     EventShutDown.pdata = NULL;
-
-    // Init. table files
-    m_mutexTableList.Lock();
-    listVSCPTables::iterator iter;
-    for ( iter = m_listTables.begin(); iter != m_listTables.end(); ++iter ) {
-        CVSCPTable *pTable = *iter;
-        pTable->m_mutexThisTable.Lock();
-        pTable->init();
-        pTable->m_mutexThisTable.Unlock();
-    }
-    m_mutexTableList.Unlock();
 
     // We need to create a clientItem and add this object to the list
     CClientItem *pClientItem = new CClientItem;
@@ -1262,7 +1277,7 @@ bool CControlObject::run(void)
 /////////////////////////////////////////////////////////////////////////////
 // cleanup
 
-bool CControlObject::cleanup(void)
+bool CControlObject::cleanup( void )
 {
     stopDeviceWorkerThreads();
     stopTcpWorkerThread();
@@ -1270,15 +1285,7 @@ bool CControlObject::cleanup(void)
     stopClientWorkerThread();
     stopDaemonWorkerThread();
 
-    // kill table files
-    m_mutexTableList.Lock();
-    listVSCPTables::iterator iter;
-    for ( iter = m_listTables.begin(); iter != m_listTables.end(); ++iter )
-    {
-        CVSCPTable *pTable = *iter;
-        delete pTable;
-    }
-    m_mutexTableList.Unlock();
+    
 
     // Close logfile
     if ( m_bLogGeneralEnable ) {
@@ -1312,7 +1319,7 @@ bool CControlObject::cleanup(void)
     // Clean up SQLite lib allocations
     sqlite3_shutdown();
 
-    wxLogDebug(_("ControlObject: Cleanup done"));
+    wxLogDebug( _("ControlObject: Cleanup done") );
     return true;
 }
 
@@ -1323,7 +1330,7 @@ bool CControlObject::cleanup(void)
 // startClientWorkerThread
 //
 
-bool CControlObject::startClientWorkerThread(void)
+bool CControlObject::startClientWorkerThread( void )
 {
     /////////////////////////////////////////////////////////////////////////////
     // Load controlobject client message handler
@@ -1333,15 +1340,17 @@ bool CControlObject::startClientWorkerThread(void)
     if (NULL != m_pclientMsgWorkerThread) {
         m_pclientMsgWorkerThread->m_pCtrlObject = this;
         wxThreadError err;
-        if (wxTHREAD_NO_ERROR == (err = m_pclientMsgWorkerThread->Create())) {
+        if ( wxTHREAD_NO_ERROR == ( err = m_pclientMsgWorkerThread->Create() ) ) {
             //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
-            if (wxTHREAD_NO_ERROR != (err = m_pclientMsgWorkerThread->Run())) {
+            if ( wxTHREAD_NO_ERROR != ( err = m_pclientMsgWorkerThread->Run() ) ) {
                 logMsg( _("Unable to run controlobject client thread.") );
             }
-        } else {
+        } 
+        else {
             logMsg( _("Unable to create controlobject client thread.") );
         }
-    } else {
+    } 
+    else {
         logMsg( _("Unable to allocate memory for controlobject client thread.") );
     }
 
@@ -1352,9 +1361,9 @@ bool CControlObject::startClientWorkerThread(void)
 // stopTcpWorkerThread
 //
 
-bool CControlObject::stopClientWorkerThread(void)
+bool CControlObject::stopClientWorkerThread( void )
 {
-    if (NULL != m_pclientMsgWorkerThread) {
+    if ( NULL != m_pclientMsgWorkerThread ) {
         m_mutexclientMsgWorkerThread.Lock();
         m_pclientMsgWorkerThread->m_bQuit = true;
         m_pclientMsgWorkerThread->Wait();
@@ -1377,12 +1386,12 @@ bool CControlObject::startTcpWorkerThread(void)
 
     m_pVSCPClientThread = new VSCPClientThread;
 
-    if (NULL != m_pVSCPClientThread) {
+    if ( NULL != m_pVSCPClientThread ) {
         m_pVSCPClientThread->m_pCtrlObject = this;
         wxThreadError err;
-        if (wxTHREAD_NO_ERROR == (err = m_pVSCPClientThread->Create())) {
+        if ( wxTHREAD_NO_ERROR == ( err = m_pVSCPClientThread->Create() ) ) {
                 //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
-            if (wxTHREAD_NO_ERROR != (err = m_pVSCPClientThread->Run())) {
+            if ( wxTHREAD_NO_ERROR != ( err = m_pVSCPClientThread->Run() ) ) {
                 logMsg(_("Unable to run TCP thread.") );
             }
         }
@@ -1403,7 +1412,7 @@ bool CControlObject::startTcpWorkerThread(void)
 // stopTcpWorkerThread
 //
 
-bool CControlObject::stopTcpWorkerThread(void)
+bool CControlObject::stopTcpWorkerThread( void )
 {
     if ( NULL != m_pVSCPClientThread ) {
         m_mutexTcpClientListenThread.Lock();
@@ -1423,7 +1432,7 @@ bool CControlObject::stopTcpWorkerThread(void)
 // startUDPWorkerThread
 //
 
-bool CControlObject::startUDPWorkerThread(void)
+bool CControlObject::startUDPWorkerThread( void )
 {
     /////////////////////////////////////////////////////////////////////////////
     // Run the UDP server thread
@@ -1432,7 +1441,7 @@ bool CControlObject::startUDPWorkerThread(void)
 
         m_pVSCPClientUDPThread = new VSCPUDPClientThread;
 
-        if (NULL != m_pVSCPClientUDPThread) {
+        if ( NULL != m_pVSCPClientUDPThread ) {
             m_pVSCPClientUDPThread->m_pCtrlObject = this;
             wxThreadError err;
             if (wxTHREAD_NO_ERROR == (err = m_pVSCPClientUDPThread->Create())) {
@@ -1458,7 +1467,7 @@ bool CControlObject::startUDPWorkerThread(void)
 // stopUDPWorkerThread
 //
 
-bool CControlObject::stopUDPWorkerThread(void)
+bool CControlObject::stopUDPWorkerThread( void )
 {
     if ( NULL != m_pVSCPClientUDPThread ) {
         m_mutexVSCPClientnUDPThread.Lock();
@@ -1476,7 +1485,7 @@ bool CControlObject::stopUDPWorkerThread(void)
 // startWebServerThread
 //
 
-bool CControlObject::startWebServerThread(void)
+bool CControlObject::startWebServerThread( void )
 {
     /////////////////////////////////////////////////////////////////////////////
     // Run the WebServer server thread
@@ -1484,12 +1493,12 @@ bool CControlObject::startWebServerThread(void)
 
     m_pwebServerThread = new VSCPWebServerThread;
 
-    if (NULL != m_pwebServerThread) {
+    if ( NULL != m_pwebServerThread ) {
         m_pwebServerThread->m_pCtrlObject = this;
         wxThreadError err;
-        if (wxTHREAD_NO_ERROR == (err = m_pwebServerThread->Create())) {
+        if ( wxTHREAD_NO_ERROR == (err = m_pwebServerThread->Create() ) ) {
             //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
-            if (wxTHREAD_NO_ERROR != (err = m_pwebServerThread->Run())) {
+            if ( wxTHREAD_NO_ERROR != ( err = m_pwebServerThread->Run() ) ) {
                 logMsg( _("Unable to run WeServer thread.") );
             }
         }
@@ -1509,9 +1518,9 @@ bool CControlObject::startWebServerThread(void)
 // stopWebServerThread
 //
 
-bool CControlObject::stopWebServerThread(void)
+bool CControlObject::stopWebServerThread( void )
 {
-    if (NULL != m_pwebServerThread) {
+    if ( NULL != m_pwebServerThread ) {
         m_mutexwebServerThread.Lock();
         m_pwebServerThread->m_bQuit = true;
         m_pwebServerThread->Wait();
@@ -1519,6 +1528,7 @@ bool CControlObject::stopWebServerThread(void)
         m_pwebServerThread = NULL;
         m_mutexwebServerThread.Unlock();
     }
+    
     return true;
 }
 
@@ -1526,20 +1536,20 @@ bool CControlObject::stopWebServerThread(void)
 // startDaemonWorkerThread
 //
 
-bool CControlObject::startDaemonWorkerThread(void)
+bool CControlObject::startDaemonWorkerThread( void )
 {
     /////////////////////////////////////////////////////////////////////////////
     // Run the VSCP daemon thread
     /////////////////////////////////////////////////////////////////////////////
     m_pdaemonVSCPThread = new daemonVSCPThread;
 
-    if (NULL != m_pdaemonVSCPThread) {
+    if ( NULL != m_pdaemonVSCPThread ) {
             m_pdaemonVSCPThread->m_pCtrlObject = this;
 
         wxThreadError err;
-        if (wxTHREAD_NO_ERROR == (err = m_pdaemonVSCPThread->Create())) {
+        if ( wxTHREAD_NO_ERROR == ( err = m_pdaemonVSCPThread->Create() ) ) {
             m_pdaemonVSCPThread->SetPriority(WXTHREAD_DEFAULT_PRIORITY);
-            if (wxTHREAD_NO_ERROR != (err = m_pdaemonVSCPThread->Run())) {
+            if ( wxTHREAD_NO_ERROR != ( err = m_pdaemonVSCPThread->Run() ) ) {
                 logMsg( _("Unable to start TCP VSCP daemon thread.") );
             }
         }
@@ -1558,9 +1568,9 @@ bool CControlObject::startDaemonWorkerThread(void)
 // stopDaemonWorkerThread
 //
 
-bool CControlObject::stopDaemonWorkerThread(void)
+bool CControlObject::stopDaemonWorkerThread( void )
 {
-    if (NULL != m_pdaemonVSCPThread) {
+    if ( NULL != m_pdaemonVSCPThread ) {
         m_mutexdaemonVSCPThread.Lock();
         m_pdaemonVSCPThread->m_bQuit = true;
         m_pdaemonVSCPThread->Wait();
@@ -1568,6 +1578,7 @@ bool CControlObject::stopDaemonWorkerThread(void)
         m_pdaemonVSCPThread = NULL;
         m_mutexdaemonVSCPThread.Unlock();
     }
+    
     return true;
 }
 
@@ -1575,17 +1586,17 @@ bool CControlObject::stopDaemonWorkerThread(void)
 //
 //
 
-bool CControlObject::startDeviceWorkerThreads(void)
+bool CControlObject::startDeviceWorkerThreads( void )
 {
     CDeviceItem *pDeviceItem;
 
     VSCPDEVICELIST::iterator iter;
-    for (iter = m_deviceList.m_devItemList.begin();
+    for ( iter = m_deviceList.m_devItemList.begin();
             iter != m_deviceList.m_devItemList.end();
-            ++iter) {
+            ++iter ) {
 
         pDeviceItem = *iter;
-        if (NULL != pDeviceItem) {
+        if ( NULL != pDeviceItem ) {
 
             // Just start if enabled
             if ( !pDeviceItem->m_bEnable ) continue;
@@ -1607,12 +1618,12 @@ bool CControlObject::stopDeviceWorkerThreads( void )
     CDeviceItem *pDeviceItem;
 
     VSCPDEVICELIST::iterator iter;
-    for (iter = m_deviceList.m_devItemList.begin();
+    for ( iter = m_deviceList.m_devItemList.begin();
             iter != m_deviceList.m_devItemList.end();
             ++iter) {
 
         pDeviceItem = *iter;
-        if (NULL != pDeviceItem) {
+        if ( NULL != pDeviceItem ) {
             pDeviceItem->stopDriver();
         }
 
@@ -1664,7 +1675,7 @@ bool CControlObject::startMQTTBrokerThread(void)
 // stopMQTTBrokerWorkerThread
 //
 
-bool CControlObject::stopMQTTBrokerThread(void)
+bool CControlObject::stopMQTTBrokerThread( void )
 {
     if ( NULL != m_pMQTTBrookerThread ) {
         m_mutexMQTTBrokerThread.Lock();
@@ -1682,7 +1693,7 @@ bool CControlObject::stopMQTTBrokerThread(void)
 // startCoAPServerWorkerThread
 //
 
-bool CControlObject::startCoAPServerThread(void)
+bool CControlObject::startCoAPServerThread( void )
 {
     /////////////////////////////////////////////////////////////////////////////
     // Run the CoAP Server thread if enabled
@@ -1692,12 +1703,12 @@ bool CControlObject::startCoAPServerThread(void)
  #ifdef MG_ENABLE_COAP       
         m_pCoAPServerThread = new VSCPCoAPServerThread;
 
-        if (NULL != m_pCoAPServerThread) {
+        if ( NULL != m_pCoAPServerThread ) {
             m_pCoAPServerThread->m_pCtrlObject = this;
             wxThreadError err;
-            if (wxTHREAD_NO_ERROR == (err = m_pCoAPServerThread->Create())) {
+            if ( wxTHREAD_NO_ERROR == ( err = m_pCoAPServerThread->Create() ) ) {
                 //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
-                if (wxTHREAD_NO_ERROR != (err = m_pCoAPServerThread->Run())) {
+                if ( wxTHREAD_NO_ERROR != (err = m_pCoAPServerThread->Run() ) ) {
                     logMsg( _("Unable to run TCP thread.") );
                 }
             }
@@ -2451,7 +2462,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     }
  
                     // New form
-                    attribute = subchild->GetAttribute(wxT("path"), wxT("/srv/vscp/logs/vscp_log_security"));
+                    attribute = subchild->GetAttribute(wxT("path"), m_rootFolder + _("/logs/vscp_log_security") );
                                       
                     fileName.Assign( subchild->GetNodeContent() );
                     if ( fileName.IsOk() ) {
@@ -2481,7 +2492,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     }
 
                     // New form
-                    attribute = subchild->GetAttribute(wxT("path"), wxT("/srv/vscp/logs/vscp_log_access"));
+                    attribute = subchild->GetAttribute(wxT("path"), m_rootFolder + _("/logs/vscp_log_access"));
                                       
                     fileName.Assign( subchild->GetNodeContent() );
                     if ( fileName.IsOk() ) {
@@ -2692,13 +2703,13 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                         m_VSCP_Variables.m_xmlPath = fileName.GetFullPath();
                     }
                     
-                    attrib = subchild->GetAttribute(wxT("pathxml"), wxT("/srv/vscp/variable.xml"));
+                    attrib = subchild->GetAttribute(wxT("pathxml"), m_rootFolder + _("variable.xml"));
                     fileName.Assign( attrib );
                     if ( fileName.IsOk() ) {
                         m_VSCP_Variables.m_xmlPath = fileName.GetFullPath();
                     }
                     
-                    attrib = subchild->GetAttribute(wxT("pathdb"), wxT("/srv/vscp/variable.sqlite3"));
+                    attrib = subchild->GetAttribute(wxT("pathdb"), m_rootFolder + _("variable.sqlite3"));
                     fileName.Assign( attrib );
                     if ( fileName.IsOk() ) {
                         m_VSCP_Variables.m_dbFilename = fileName;
@@ -3369,48 +3380,86 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
             }
 
         }
-        // <table name="jhjhdjhsdjh" description="jsjdsjhdhsjh" xaxis="lfdlfldk"
-        //      yaxis="dfddfd" path="path" type="normal|static" size="n" class="n"
-        //      type="n" unit="n" />
-        else if (child->GetName() == wxT("tables")) {
+        // Tables
+        else if ( child->GetName() == wxT("tables") ) {
 
             wxXmlNode *subchild = child->GetChildren();
-            while (subchild) {
+            while ( subchild ) {
 
-                if (subchild->GetName() == wxT("table")) {
+                if ( subchild->GetName() == wxT("table") ) {
 
-                    int nType = VSCP_TABLE_DYNAMIC;
-                    wxString attribute =  subchild->GetAttribute( wxT("type"), wxT("0") );
+                    // Get name of table
+                    wxString name = subchild->GetAttribute( wxT("name"), wxT("") );;
+                    
+                    // Get type of table
+                    vscpTableType type = VSCP_TABLE_DYNAMIC;
+                    int size = 0;
+                    wxString attribute = subchild->GetAttribute( wxT("type"), wxT("0") );
                     attribute.MakeUpper();
-                    if ( wxNOT_FOUND  != attribute.Find(_("DYNAMIC")) ) {
-                        nType = VSCP_TABLE_DYNAMIC;
+                    if ( wxNOT_FOUND  != attribute.Find(_("DYNAMIC") ) ) {
+                        type = VSCP_TABLE_DYNAMIC;
                     }
-                    else if ( wxNOT_FOUND  != attribute.Find(_("STATIC")) ) {
-                        nType = VSCP_TABLE_STATIC;
+                    else if ( wxNOT_FOUND  != attribute.Find( _("STATIC") ) ) {
+                        
+                        type = VSCP_TABLE_STATIC;
+                        
+                        // Get size
+                        size = vscp_readStringValue( subchild->GetAttribute( wxT("size"), wxT("0") ) );
+                        
+                    }
+                    else {                       
+                        // Invalid type
+                        logMsg( _("Reading table xml info: Invalid type!") );
+                        goto xml_table_error;
+                    }
+                    
+                    // Should it be created in memory?
+                    bool bMemory = false;
+                    wxString strInMemory = subchild->GetAttribute( wxT("bmemory"), wxT("false") );
+                    strInMemory.MakeUpper();
+                    if ( wxNOT_FOUND != strInMemory.Find( _("TRUE") ) ) {
+                        bMemory = true;
+                    }
+                    
+                    CVSCPTable *pTable = new CVSCPTable( m_rootFolder + _("table/"), name, bMemory, type, size );
+                    if ( NULL != pTable ) {
+                        
+                        if ( !pTable->setTableInfo( subchild->GetAttribute( wxT("owner"), wxT("admin") ),
+                                                vscp_readStringValue( subchild->GetAttribute( wxT("rights"), wxT("0x700") ) ),
+                                                subchild->GetAttribute( wxT("title"), wxT("") ),
+                                                subchild->GetAttribute( wxT("labelx"), wxT("") ),
+                                                subchild->GetAttribute( wxT("labely"), wxT("") ),
+                                                subchild->GetAttribute( wxT("note"), wxT("") ),
+                                                subchild->GetAttribute( wxT("sqlcreate"), wxT("") ),
+                                                subchild->GetAttribute( wxT("sqlinsert"), wxT("") ),
+                                                subchild->GetAttribute( wxT("sqldelete"), wxT("") ),
+                                                subchild->GetAttribute( wxT("description"), wxT("") ) ) ) {
+                            logMsg(_("Reading table xml info: Could not set table info!"));
+                            delete pTable;
+                            goto xml_table_error;
+                        }
+                        
+                        pTable->setTableEventInfo( vscp_readStringValue( subchild->GetAttribute( wxT("vscpclass"), wxT("0") ) ),
+                                vscp_readStringValue( subchild->GetAttribute( wxT("vscptype"), wxT("0") ) ),
+                                vscp_readStringValue( subchild->GetAttribute( wxT("vscpsensorindex"), wxT("0") ) ),
+                                vscp_readStringValue( subchild->GetAttribute( wxT("vscpunit"), wxT("0") ) ),
+                                vscp_readStringValue( subchild->GetAttribute( wxT("vscpzone"), wxT("255") ) ),
+                                vscp_readStringValue( subchild->GetAttribute( wxT("vscpsubzone"), wxT("255") ) )
+                        );
+                        
+                        if ( !m_userTableObjects.addTable( pTable ) ) {
+                            delete pTable;
+                            logMsg(_("Reading table xml info: Could not add new table (name conflict?)!"));
+                        };
+                        
                     }
                     else {
-                        nType = vscp_readStringValue( attribute );
+                        logMsg( _("Reading table xml info: Unable to create table class!") );
                     }
-/*
-                    CVSCPTable *pTable = new CVSCPTable();
-                    if ( NULL != pTable ) {
-                        memset( &pTable->m_vscpFileHead, 0, sizeof(_vscptableInfo) );
-                        pTable->setTableInfo( subchild->GetAttribute( wxT("path"), wxT("") ).mbc_str(),
-                                                    nType,
-                                                    subchild->GetAttribute( wxT("name"), wxT("") ).Upper().mbc_str(),
-                                                    subchild->GetAttribute( wxT("description"), wxT("") ).mbc_str(),
-                                                    subchild->GetAttribute( wxT("labelx"), wxT("") ).mbc_str(),
-                                                    subchild->GetAttribute( wxT("labely"), wxT("") ).mbc_str(),
-                                                    vscp_readStringValue( subchild->GetAttribute( wxT("size"), wxT("0") ) ),
-                                                    vscp_readStringValue( subchild->GetAttribute( wxT("vscpclass"), wxT("10") ) ),
-                                                    vscp_readStringValue( subchild->GetAttribute( wxT("vscptype"), wxT("6") ) ),
-                                                    vscp_readStringValue( subchild->GetAttribute( wxT("vscpunit"), wxT("0") ) ) );
-                        m_mutexTableList.Lock();
-                        m_listTables.Append( pTable ) ;
-                        m_mutexTableList.Unlock();
-                    }
- */ 
+  
                 }
+                
+xml_table_error:                
 
                 subchild = subchild->GetNext();
 

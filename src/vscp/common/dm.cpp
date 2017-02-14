@@ -4252,10 +4252,11 @@ bool dmElement::doActionWriteTable( vscpEvent *pDMEvent )
     }
     value = atof( tkz.GetNextToken().mbc_str() );
 
-    gpobj->m_mutexTableList.Lock();
+    gpobj->m_userTableObjects.m_mutexTableList.Lock();
+    
     listVSCPTables::iterator iter;
-    for (iter = gpobj->m_listTables.begin();
-            iter != gpobj->m_listTables.end();
+    for (iter = gpobj->m_userTableObjects.m_listTables.begin();
+            iter != gpobj->m_userTableObjects.m_listTables.end();
             ++iter)
     {
         CVSCPTable *pTable = *iter;
@@ -4267,7 +4268,8 @@ bool dmElement::doActionWriteTable( vscpEvent *pDMEvent )
             break;
         }*/
     }
-    gpobj->m_mutexTableList.Unlock();
+    
+    gpobj->m_userTableObjects.m_mutexTableList.Unlock();
 
     if ( !bFound ) {
         wxString wxstrErr =

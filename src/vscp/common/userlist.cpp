@@ -879,7 +879,7 @@ bool CUserList::addUser( const wxString& user,
     sqlite3_stmt *ppStmt;
     
     // Cant add user with name that is already defined.
-    if ( NULL!= m_userhashmap[ user ] ) {
+    if ( NULL != m_userhashmap[ user ] ) {
         return false;
     }
 
@@ -1018,6 +1018,7 @@ bool CUserList::addUser( const wxString& strUser, bool bUnpackNote )
     
     // note
     if ( tkz.HasMoreTokens() ) {
+        
         if ( bUnpackNote ) {
             
             wxString wxstr = tkz.GetNextToken();
@@ -1033,6 +1034,7 @@ bool CUserList::addUser( const wxString& strUser, bool bUnpackNote )
         else {
             strNote = tkz.GetNextToken();
         }
+        
     }
             
     return addUser( user,
@@ -1090,12 +1092,25 @@ bool CUserList::addUser( const wxString& strUser, bool bUnpackNote )
 
 CUserItem * CUserList::getUser( const wxString& user )
 {
+    m_userhashmap[ user ];
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getUser
+//
+
+CUserItem *CUserList::getUser( const uint32_t link_to_user )
+{
     VSCPUSERHASH::iterator it;
+    for( it = m_userhashmap.begin(); it != m_userhashmap.end(); ++it ) {
+        wxString key = it->first;
+        CUserItem *pUserItem = it->second;
+        if ( link_to_user == pUserItem->getUserID() ) {
+            return pUserItem;
+        }
+    }
 
-    if ( ( it = m_userhashmap.find( user ) ) ==
-            m_userhashmap.end()) return NULL;
-
-    return it->second;
+    return NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

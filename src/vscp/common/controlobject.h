@@ -839,8 +839,8 @@ public:
     /*!
         This is a list with defined tables
     */
-    listVSCPTables m_listTables;
-    wxMutex m_mutexTableList;
+    CUserTableObjList m_userTableObjects;
+    
 
     /*!
         This is the list with knwon nodes in the system

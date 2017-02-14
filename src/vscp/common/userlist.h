@@ -390,6 +390,14 @@ public:
         @return Pointer to user if available else NULL
     */
     CUserItem *getUser( const wxString& user );
+    
+    /*!
+        Get user 
+        @param link_to_user Index for user in database. 
+                link_to_user == 0 is admin user
+        @return Pointer to user if available else NULL
+    */
+    CUserItem *getUser( const uint32_t link_to_user );
 
     /*!
         Validate a username/password pair
