@@ -1077,6 +1077,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     // Load tables from database
     logMsg(_("Reading in user tables from DB.\n") );
     m_userTableObjects.readTablesFromDB();
+    
     logMsg(_("Initializing user tables.\n") );
     m_userTableObjects.init();
 
@@ -3387,6 +3388,13 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
             while ( subchild ) {
 
                 if ( subchild->GetName() == wxT("table") ) {
+                    
+                    // Check if enabled
+                    wxString strEnabled = subchild->GetAttribute( wxT("enable"), wxT("true") );
+                    strEnabled.MakeUpper();
+                    if ( wxNOT_FOUND != strEnabled.Find( _("FALSE") ) ) {
+                        goto xml_table_error;
+                    }
 
                     // Get name of table
                     wxString name = subchild->GetAttribute( wxT("name"), wxT("") );;

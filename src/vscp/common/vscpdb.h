@@ -504,12 +504,12 @@
  * User defined tables with diagram hints
  * Databases are always created in the 'table' sub folder of the server root.
  * 
- * bmem - Is true of the table is a in-memory database
- * name - Unique name of table
- * xname - Text on xaxis
- * yname - Text on yaxis
- * title - Text for diagram title
- * note - Text to display as note on diagram.
+ * bmem - Is true of the table is a in-memory database.
+ * name - Unique name of table.
+ * xname - Text on xaxis.
+ * yname - Text on yaxis.
+ * title - Text for diagram title.
+ * note - Text to display as note on diagram..
  * size - A specific size for a table with a defined size (round robin). Normally
  *          zero for a ever growing table-.
  * sql_create - SQL expression to use to create table
@@ -544,6 +544,9 @@
         "`vscpzone`         INTEGER NOT NULL,"\
         "`vscpsubzone`      INTEGER NOT NULL"\
         ");"
+
+// Get the columns of a user table (table name inserted in %s)
+#define VSCPDB_TABLE_GET_COLUMNS "pragma table_info ('vscptable');"
 
 #define VSCPDB_ORDINAL_TABLE_ID                 0   //
 #define VSCPDB_ORDINAL_TABLE_ENABLE             1   //

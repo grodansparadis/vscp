@@ -356,8 +356,11 @@ public:
 
 public:
     
-    // Protector for this table
+    /// Protector for this table
     wxMutex m_mutexThisTable;
+    
+    /// List with table columns
+     	wxArrayString m_listColumns;
 
 private:
 

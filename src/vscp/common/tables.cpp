@@ -291,6 +291,29 @@ bool CVSCPTable::init()
 
     }
     
+    // Now find and save the columns of the table
+    int rc;
+
+    sqlite3_stmt *ppStmt;
+    rc = sqlite3_prepare_v2( m_dbTable, 
+                                VSCPDB_TABLE_GET_COLUMNS, 
+                                -1, 
+                                &ppStmt, 
+                                NULL );
+
+    if ( SQLITE_OK == rc ) {
+        
+        while ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
+        
+            const unsigned char *p = sqlite3_column_text( ppStmt, 1 );
+            wxString tblColumn = wxString::FromUTF8( (const char *)p );
+            m_listColumns.Add( tblColumn );
+            gpobj->logMsg( _("User table column:") + tblColumn + _("\n"), DAEMON_LOGMSG_DEBUG );
+            
+        }
+        
+    }
+    
     return true; 
 }
 
@@ -440,6 +463,7 @@ bool CVSCPTable::createDatabase( void )
     }
     
     m_mutexThisTable.Unlock();
+        
     return true;
 }
 
@@ -736,10 +760,12 @@ bool CUserTableObjList::readTablesFromDB( void )
     m_mutexTableList.Lock();
     
     if ( SQLITE_OK != sqlite3_prepare( gpobj->m_db_vscp_daemon,
-                                            "SELECT * FROM table WHERE bEnable=1;",
+                                            "SELECT * FROM 'table' WHERE bEnable;",
                                             -1,
                                             &ppStmt,
                                             NULL ) ) {
+        wxstr = wxString::Format( _("Load tables: Error=%s"), sqlite3_errstr( sqlite3_errcode( gpobj->m_db_vscp_daemon ) ) );
+        gpobj->logMsg( wxstr );
         return false;
     }
     
