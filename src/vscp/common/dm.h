@@ -436,7 +436,7 @@ public:
         @param str String to replace escapes in
         @return true on success, else false.
     */
-    bool handleEscapes( vscpEvent *pEvent, wxString& str );
+    static bool handleEscapes( vscpEvent *pEvent, wxString& str );
     
     /*
         Execute for Unix.

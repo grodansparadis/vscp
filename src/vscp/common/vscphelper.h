@@ -89,10 +89,10 @@ extern "C" {
     int vscp_bigEndian( void );
 
     /*!
-      Read a numerical value from a string
-      The string value can be set as a hex or a decimal value.
-      @param strval wxString containing value to be converted
-      @return Unsigned long containing value
+        Read a numerical value from a string
+        The string value can be set as a hex or a decimal value.
+        @param strval wxString containing value to be converted
+        @return Unsigned long containing value
      */
  
     uint32_t vscp_readStringValue(const wxString& strval);
@@ -145,7 +145,15 @@ extern "C" {
     void vscp_toXMLEscape( char *temp_str );
 
     
-    
+    /*!
+     * Decode string from BASE64 is it have "BASE64:" in the front if not just
+     * leave the string as it is.
+     * 
+     * @param wxstr String to decode
+     * @param strResult String result
+     * @return True if all is OK (decoded or not) and false if decode error.
+     */
+    bool vscp_decodeBase64IfNeeded( wxString &wxstr, wxString &strResult );
     
     
     

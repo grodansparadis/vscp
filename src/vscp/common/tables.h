@@ -234,6 +234,14 @@ public:
     bool logData( wxDateTime &time, double value, const wxString &sqlInsert );
     
     /*!
+     * Log data from SQL expression
+     * 
+     * @param sqlInsert Full SQL expression without variable substitution
+     * @return True on success, false on failure.
+     */
+    bool logData( const wxString &sqlInsert );
+    
+    /*!
      * Insert data into the table
      * 
      * @param strInsert SQL expression for insert. This is usually the 

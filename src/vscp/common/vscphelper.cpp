@@ -47,6 +47,7 @@
 #include <wx/wfstream.h>
 #include <wx/xml/xml.h>
 #include <wx/tokenzr.h>
+#include <wx/base64.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -218,6 +219,39 @@ void vscp_toXMLEscape( char *temp_str )
     }
     
     temp_str[ str_len ] = '\0';
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// decodeBase64IfNeeded
+//
+
+bool vscp_decodeBase64IfNeeded( wxString &wxstr, wxString &strResult ) 
+{
+    // If BASE64 encoded then decode 
+    wxstr.Trim( false );
+    
+    if ( wxstr.StartsWith(_("BASE64:"), &wxstr ) ) {
+        
+        // Yes should be decoded
+        size_t len = wxBase64Decode( NULL, 0, wxstr );
+        if ( 0 == len ) {
+            return false;
+        }
+        
+        uint8_t *pbuf = new uint8_t[ len ];
+        if (NULL == pbuf) {
+            return false;
+        }
+        
+        len = wxBase64Decode( pbuf, len, wxstr );
+        wxstr = wxString::FromUTF8( (const char *) pbuf, len );
+        delete [] pbuf;
+        
+        
+    }
+    
+    return true;
 }
 
 

@@ -595,6 +595,24 @@ bool CVSCPTable::logData( wxDateTime &time, double value, const wxString &sqlIns
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// logData
+//
+
+bool CVSCPTable::logData( const wxString &sqlInsert )
+{        
+    char *zErrMsg = 0;
+    
+    if ( SQLITE_OK != sqlite3_exec( gpobj->m_db_vscp_daemon, 
+                                        sqlInsert.mbc_str(), NULL, NULL, &zErrMsg ) ) {            
+        gpobj->logMsg( wxString::Format( _("Add table item: Unable to insert table item in db. [%s] Err=%s\n"), 
+                                            sqlInsert.mbc_str(), zErrMsg ) );
+        return false;
+    }
+    
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // doInsert
 //
 
