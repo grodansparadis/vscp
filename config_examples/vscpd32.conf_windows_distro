@@ -97,15 +97,8 @@
         <!-- Set to true to enable decision matrix                         -->
         <!-- Set to false to disable.                                      -->
         <!-- Set path to the decision matrix file location                 -->
-        <!-- Decision matrix logging: loglevel="minor|normal|extra|debug"  -->
-        <!-- enablogging="true:false" to enable/disable dm logging         -->
-        <!-- logpath is path to logfile.                                   -->
         
-        <dm enable="true" 
-                path="c:\programdata\vscp\dm.xml" 
-                enablelogging="true" 
-                loglevel="debug" 
-                logpath="c:\programdata\vscp\logs\vscp_log_dm.txt"  />      
+        <dm enable="true" path="c:\programdata\vscp\dm.xml"  />      
 
         <!-- Set to true to enable daemon variables                         -->
         <!-- Set to false to disable.                                       -->

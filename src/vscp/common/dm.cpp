@@ -2034,229 +2034,253 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
         case  VSCP_DAEMON_ACTION_CODE_EXECUTE:
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_EXECUTE.") ); // Log
-            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            gpobj->logMsg( logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg(  _("DM = ") + getAsString( false ), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             vscp_writeVscpEventToString( pEvent, logStr );
-            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            gpobj->logMsg( _("Event = ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
             doActionExecute( pEvent );
             break;
 
         case  VSCP_DAEMON_ACTION_CODE_SEND_EVENT:
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_SEND_EVENT.") ); // Log
-            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            gpobj->logMsg( logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg(  _("DM = ") + getAsString( false ), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             vscp_writeVscpEventToString( pEvent, logStr );
-            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            gpobj->logMsg( _("Event = ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
             doActionSendEvent( pEvent );
             break;
 
         case VSCP_DAEMON_ACTION_CODE_SEND_EVENT_CONDITIONAL:
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_SEND_EVENT_CONDITIONAL.") ); // Log
-            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            gpobj->logMsg( logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg(  _("DM = ") + getAsString( false ), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             vscp_writeVscpEventToString( pEvent, logStr );
-            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            gpobj->logMsg( _("Event = ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
             doActionSendEventConditional( pEvent );
             break;
 
         case VSCP_DAEMON_ACTION_CODE_SEND_EVENTS_FROM_FILE:
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_SEND_EVENTS_FROM_FILE.") ); // Log
-            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            gpobj->logMsg( logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg(  _("DM = ") + getAsString( false ), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             vscp_writeVscpEventToString( pEvent, logStr );
-            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            gpobj->logMsg( _("Event = ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
             doActionSendEventsFromFile( pEvent );
             break;
 
         case  VSCP_DAEMON_ACTION_CODE_STORE_VARIABLE:
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_STORE_VARIABLE.") ); // Log
-            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            gpobj->logMsg( logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg(  _("DM = ") + getAsString( false ), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             vscp_writeVscpEventToString( pEvent, logStr );
-            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            gpobj->logMsg( _("Event = ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
             doActionStoreVariable( pEvent );
             break;
 
         case  VSCP_DAEMON_ACTION_CODE_ADD_VARIABLE:
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_ADD_VARIABLE.") ); // Log
-            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg( _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            gpobj->logMsg( logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg( _("DM = ") + getAsString( false ), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             vscp_writeVscpEventToString( pEvent, logStr );
-            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            gpobj->logMsg( _("Event = ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
             doActionAddVariable( pEvent );
             break;
 
         case  VSCP_DAEMON_ACTION_CODE_SUBTRACT_VARIABLE:
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_SUBTRACT_VARIABLE.") ); // Log
-            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            gpobj->logMsg( logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg(  _("DM = ") + getAsString( false ), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             vscp_writeVscpEventToString( pEvent, logStr );
-            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            gpobj->logMsg( _("Event = ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
             doActionSubtractVariable( pEvent );
             break;
 
         case  VSCP_DAEMON_ACTION_CODE_MULTIPLY_VARIABLE:
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_MULTIPLY_VARIABLE.") ); // Log
-            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            gpobj->logMsg( logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg(  _("DM = ") + getAsString( false ), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             vscp_writeVscpEventToString( pEvent, logStr );
-            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            gpobj->logMsg( _("Event = ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
             doActionMultiplyVariable( pEvent );
             break;
 
         case  VSCP_DAEMON_ACTION_CODE_DIVIDE_VARIABLE:
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_DIVIDE_VARIABLE.") ); // Log
-            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            gpobj->logMsg( logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg(  _("DM = ") + getAsString( false ), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             vscp_writeVscpEventToString( pEvent, logStr );
-            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            gpobj->logMsg( _("Event = ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
             doActionDivideVariable( pEvent );
             break;
             
         case VSCP_DAEMON_ACTION_CODE_CHECK_VARIABLE_TRUE:
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_CHECK_VARIABLE_TRUE.") ); // Log
-            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            gpobj->logMsg( logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg(  _("DM = ") + getAsString( false ), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             vscp_writeVscpEventToString( pEvent, logStr );
-            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            gpobj->logMsg( _("Event = ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             
             doActionCheckVariable( pEvent, VARIABLE_CHECK_SET_TRUE );
             break;
             
         case VSCP_DAEMON_ACTION_CODE_CHECK_VARIABLE_FALSE:
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_CHECK_VARIABLE_FALSE.") ); // Log
-            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            gpobj->logMsg( logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg(  _("DM = ") + getAsString( false ), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             vscp_writeVscpEventToString( pEvent, logStr );
-            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            gpobj->logMsg( _("Event = ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             
             doActionCheckVariable( pEvent, VARIABLE_CHECK_SET_FALSE );
             break;
             
         case VSCP_DAEMON_ACTION_CODE_CHECK_VARIABLE:
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_CHECK_VARIABLE.") ); // Log
-            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            gpobj->logMsg( logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg(  _("DM = ") + getAsString( false ), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             vscp_writeVscpEventToString( pEvent, logStr );
-            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            gpobj->logMsg( _("Event = ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             
             doActionCheckVariable( pEvent, VARIABLE_CHECK_SET_OUTCOME );
             break;
             
         case VSCP_DAEMON_ACTION_CODE_CHECK_MEASUREMENT:
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_CHECK_MEASUREMENT.") ); // Log
-            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            gpobj->logMsg( logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg(  _("DM = ") + getAsString( false ), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             vscp_writeVscpEventToString( pEvent, logStr );
-            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            gpobj->logMsg( _("Event = ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             break;
             
         case VSCP_DAEMON_ACTION_CODE_STORE_MIN:
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_STOR_MIN.") ); // Log
-            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            gpobj->logMsg( logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg(  _("DM = ") + getAsString( false ), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             vscp_writeVscpEventToString( pEvent, logStr );
-            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            gpobj->logMsg( _("Event = ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             
             doActionStoreMin( pEvent );
             break;
             
         case VSCP_DAEMON_ACTION_CODE_STORE_MAX:
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_STOR_MAX.") ); // Log
-            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            gpobj->logMsg( logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg(  _("DM = ") + getAsString( false ), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             vscp_writeVscpEventToString( pEvent, logStr );
-            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            gpobj->logMsg( _("Event = ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             
             doActionStoreMax( pEvent );
             break;    
 
         case VSCP_DAEMON_ACTION_CODE_START_TIMER:
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_START_TIMER.") ); // Log
-            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            gpobj->logMsg( logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg(  _("DM = ") + getAsString( false ), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             vscp_writeVscpEventToString( pEvent, logStr );
-            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            gpobj->logMsg( _("Event = ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
             doActionStartTimer( pEvent );
             break;
 
         case VSCP_DAEMON_ACTION_CODE_PAUSE_TIMER:
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_PAUSE_TIMER.") ); // Log
-            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            gpobj->logMsg( logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg(  _("DM = ") + getAsString( false ), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             vscp_writeVscpEventToString( pEvent, logStr );
-            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            gpobj->logMsg( _("Event = ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
             doActionPauseTimer( pEvent );
             break;
 
         case VSCP_DAEMON_ACTION_CODE_STOP_TIMER:
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_STOP_TIMER.") ); // Log
-            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            gpobj->logMsg( logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg(  _("DM = ") + getAsString( false ), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM);
             vscp_writeVscpEventToString( pEvent, logStr );
-            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            gpobj->logMsg( _("Event = ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
             doActionStopTimer( pEvent );
             break;
 
         case VSCP_DAEMON_ACTION_CODE_RESUME_TIMER:
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_RESUME_TIMER.") ); // Log
-            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            gpobj->logMsg( logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg(  _("DM = ") + getAsString( false ), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             vscp_writeVscpEventToString( pEvent, logStr );
-            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            gpobj->logMsg( _("Event = ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
             doActionResumeTimer( pEvent );
             break;
 
         case VSCP_DAEMON_ACTION_CODE_WRITE_FILE:
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_WRITE_FILE.") ); // Log
-            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            gpobj->logMsg( logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg(  _("DM = ") + getAsString( false ), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             vscp_writeVscpEventToString( pEvent, logStr );
-            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            gpobj->logMsg( _("Event = ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
             doActionWriteFile( pEvent );
             break;
 
         case VSCP_DAEMON_ACTION_CODE_GET_PUT_POST_URL:
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_GET_PUT_POST_URL.") ); // Log
-            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            gpobj->logMsg( logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg(  _("DM = ") + getAsString( false ), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             vscp_writeVscpEventToString( pEvent, logStr );
-            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            gpobj->logMsg( _("Event = ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
             doActionGetURL( pEvent );
             break;
 
         case VSCP_DAEMON_ACTION_CODE_WRITE_TABLE:
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_WRITE_TABLE.") ); // Log
-            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            gpobj->logMsg( logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg(  _("DM = ") + getAsString( false ), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             vscp_writeVscpEventToString( pEvent, logStr );
-            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            gpobj->logMsg( _("Event = ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
-            doActionWriteTable( pEvent );
+            //doActionWriteTable( pEvent );
+            {                
+                // Write in possible escapes
+                wxString strParam = m_actionparam;
+                handleEscapes( pEvent, strParam );
+                
+                actionThread_Table *pThread = new actionThread_Table( strParam );
+                if ( NULL == pThread ) return false;
+                
+                vscp_convertVSCPtoEx( &pThread->m_feedEvent, pEvent );   // Save feed event
+
+                wxThreadError err;
+                if (wxTHREAD_NO_ERROR == (err = pThread->Create())) {
+                    pThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
+                    if (wxTHREAD_NO_ERROR != (err = pThread->Run())) {
+                        gpobj->logMsg(_("Unable to run actionThread_Table client thread."),
+                                        DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+                    }
+                }
+                else {
+                    gpobj->logMsg(_("Unable to create actionThread_Table client thread."),
+                                        DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+                }
+
+            }
             break;
 
 #ifndef VSCP_DISABLE_LUA
         case VSCP_DAEMON_ACTION_CODE_RUN_LUASCRIPT:
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_RUN_LUASCRIPT.") ); // Log
-            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            gpobj->logMsg( logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
+            gpobj->logMsg(  _("DM = ") + getAsString( false ), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM  );
             vscp_writeVscpEventToString( pEvent, logStr );
-            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            gpobj->logMsg( _("Event = ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
             {
                 // Write in possible escapes
@@ -2266,17 +2290,19 @@ bool dmElement::doAction( vscpEvent *pEvent )
                 actionThread_LUA *pThread = new actionThread_LUA( wxstr );
                 if ( NULL == pThread ) return false;
                 
-                vscp_convertVSCPtoEx( &pThread->m_eventFeed, pEvent );   // Save feed event
+                vscp_convertVSCPtoEx( &pThread->m_feedEvent, pEvent );   // Save feed event
 
                 wxThreadError err;
                 if (wxTHREAD_NO_ERROR == (err = pThread->Create())) {
                     pThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
                     if (wxTHREAD_NO_ERROR != (err = pThread->Run())) {
-                        m_pDM->logMsg(_("Unable to run actionThread_LUA client thread.") );
+                        gpobj->logMsg(_("Unable to run actionThread_LUA client thread."),
+                                        DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
                     }
                 }
                 else {
-                    m_pDM->logMsg(_("Unable to create actionThread_LUA client thread.") );
+                    gpobj->logMsg(_("Unable to create actionThread_LUA client thread."),
+                                    DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
                 }
 
             }
@@ -2285,10 +2311,10 @@ bool dmElement::doAction( vscpEvent *pEvent )
         case VSCP_DAEMON_ACTION_CODE_RUN_JAVASCRIPT:
             
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_RUN_JAVASCRIPT.") ); // Log
-            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            gpobj->logMsg( logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg(  _("DM = ") + getAsString( false ), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             vscp_writeVscpEventToString( pEvent, logStr );
-            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            gpobj->logMsg( _("Event = ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
             { 
                 // If BASE64 encoded then decode 
@@ -2298,12 +2324,14 @@ bool dmElement::doAction( vscpEvent *pEvent )
                     // Yes should be decoded
                     size_t len = wxBase64Decode( NULL, 0, wxstr );
                     if ( 0 == len ) {
-                        m_pDM->logMsg( "Failed to decode BASE64 parameter (len=0)", LOG_DM_NORMAL );
+                        gpobj->logMsg( "Failed to decode BASE64 parameter (len=0)", 
+                                            DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
                         break;
                     }
                     uint8_t *pbuf = new uint8_t[len];
                     if ( NULL == pbuf ) {
-                        m_pDM->logMsg( "Failed to decode BASE64 parameter  pbuf=NULL)", LOG_DM_NORMAL );
+                        gpobj->logMsg( "Failed to decode BASE64 parameter  pbuf=NULL)", 
+                                        DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
                         break;
                     }
                     len = wxBase64Decode( pbuf, len, wxstr );
@@ -2323,11 +2351,13 @@ bool dmElement::doAction( vscpEvent *pEvent )
                 if ( wxTHREAD_NO_ERROR == (err = pThread->Create() ) ) {
                     pThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
                     if ( wxTHREAD_NO_ERROR != (err = pThread->Run() ) ) {
-                        m_pDM->logMsg( _("Unable to run actionThread_JavaScript client thread.") );
+                        gpobj->logMsg( _("Unable to run actionThread_JavaScript client thread."),
+                                            DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
                     }
                 }
                 else {
-                    m_pDM->logMsg( _("Unable to create actionThread_JavaScript client thread.") );
+                    gpobj->logMsg( _("Unable to create actionThread_JavaScript client thread."),
+                                       DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
                 }
 
             }
@@ -2337,10 +2367,10 @@ bool dmElement::doAction( vscpEvent *pEvent )
         case VSCP_DAEMON_ACTION_CODE_NOOP:
             // We do nothing
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_NOOP.") ); // Log
-            m_pDM->logMsg( logStr, LOG_DM_NORMAL );
-            m_pDM->logMsg(  _("DM = ") + getAsString( false ), LOG_DM_EXTRA );
+            gpobj->logMsg( logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg(  _("DM = ") + getAsString( false ), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             vscp_writeVscpEventToString( pEvent, logStr );
-            m_pDM->logMsg( _("Event = ") + logStr, LOG_DM_EXTRA );
+            gpobj->logMsg( _("Event = ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             break;
 
     }
@@ -2383,21 +2413,21 @@ bool dmElement::doActionExecute(vscpEvent *pDMEvent)
         wxString wxstr = wxT("[Action] Executed: ");
         wxstr += m_actionparam;
         wxstr += _("\n");
-        m_pDM->logMsg(wxstr, LOG_DM_NORMAL);
+        gpobj->logMsg(wxstr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM);
     }
     else {
         // Failed to execute
         m_errorCounter++;
         if (bOK) {
             m_strLastError = _("[Action] Failed to execute :");
-            m_pDM->logMsg(_("[Action] Failed to execute \n"), LOG_DM_NORMAL);
+            gpobj->logMsg(_("[Action] Failed to execute \n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM);
         } else {
             m_strLastError = _("File does not exists or is not an executable :");
-            m_pDM->logMsg(_("File does not exists or is not an executable \n"), LOG_DM_NORMAL);
+            gpobj->logMsg(_("File does not exists or is not an executable \n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM);
         }
         m_strLastError += m_actionparam;
         m_strLastError += _("\n");
-        m_pDM->logMsg( wxstr );
+        gpobj->logMsg( wxstr );
         return false;
     }
 
@@ -2596,7 +2626,7 @@ bool dmElement::doActionSendEventConditional( vscpEvent *pDMEvent )
             wxString wxstrErr = wxT("[Action] Conditional event: No variable defined ");
             wxstrErr += wxstr;
             wxstrErr += _("\n");
-            gpobj->logMsg( wxstrErr );
+            gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             return false;
         }
 
@@ -2606,7 +2636,7 @@ bool dmElement::doActionSendEventConditional( vscpEvent *pDMEvent )
         wxString wxstrErr = wxT("[Action] Conditional event: No variable defined ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
-        gpobj->logMsg( wxstrErr );
+        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
 
@@ -2623,7 +2653,7 @@ bool dmElement::doActionSendEventConditional( vscpEvent *pDMEvent )
             wxString wxstrErr = wxT("[Action] Conditional event: Unable to parse event ");
             wxstrErr += wxstr;
             wxstrErr += _("\n");
-            gpobj->logMsg( wxstrErr );
+            gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             return false;
         }
     }
@@ -2632,7 +2662,7 @@ bool dmElement::doActionSendEventConditional( vscpEvent *pDMEvent )
         wxString wxstrErr = wxT("[Action] Conditional event: No event defined ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
-        gpobj->logMsg( wxstrErr );
+        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
 
@@ -2674,7 +2704,7 @@ bool dmElement::doActionSendEventsFromFile( vscpEvent *pDMEvent )
         wxString wxstrErr = wxT("[Action] Send event from file: Non existent file  ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
-        gpobj->logMsg( wxstrErr );
+        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
 
@@ -2683,7 +2713,7 @@ bool dmElement::doActionSendEventsFromFile( vscpEvent *pDMEvent )
         wxString wxstrErr = wxT("[Action] Send event from file: Failed to load event XML file  ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
-        gpobj->logMsg( wxstrErr );
+        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
 
@@ -2691,7 +2721,7 @@ bool dmElement::doActionSendEventsFromFile( vscpEvent *pDMEvent )
     if ( doc.GetRoot()->GetName() != wxT ( "vscpevents" ) ) {
         wxString wxstrErr = wxT("[Action] Send event from file: <vscpevents> tag is missing.");
         wxstrErr += _("\n");
-        gpobj->logMsg( wxstrErr );
+        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
 
@@ -2793,7 +2823,7 @@ bool dmElement::doActionWriteFile( vscpEvent *pDMEvent )
         // Must have a path
         wxString wxstrErr = wxT("[Action] Write to file: No path to file given  ");
         wxstrErr += _("\n");
-        gpobj->logMsg( wxstrErr );
+        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
 
@@ -2816,7 +2846,7 @@ bool dmElement::doActionWriteFile( vscpEvent *pDMEvent )
         wxString wxstrErr = wxT("[Action] Write to file: Failed to open file ");
         wxstrErr += path;
         wxstrErr += _("\n");
-        gpobj->logMsg( wxstrErr );
+        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
 
@@ -2839,7 +2869,7 @@ bool dmElement::doActionGetURL( vscpEvent *pDMEvent )
         wxString wxstrErr = wxT("[Action] Get URL: Wrong action parameter (method;URL required");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
-        gpobj->logMsg( wxstrErr );
+        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
 
@@ -2864,7 +2894,7 @@ bool dmElement::doActionGetURL( vscpEvent *pDMEvent )
         wxString wxstrErr = wxT("[Action] Get URL: Wrong action parameter (URL required)");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
-        gpobj->logMsg( wxstrErr );
+        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
 
@@ -2927,7 +2957,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
             wxString wxstrErr = wxT("[Action] Store Variable: Could not set new variable ");
             wxstrErr += params;
             wxstrErr += _("\n");
-            gpobj->logMsg( wxstrErr );
+            gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             return false;
             
         }
@@ -2937,7 +2967,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
             wxString wxstrErr = wxT("[Action] Store Variable: Could not add variable ");
             wxstrErr += params;
             wxstrErr += _("\n");
-            gpobj->logMsg( wxstrErr );
+            gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             return false;
         }
     
@@ -2983,7 +3013,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
             wxString wxstrErr = wxT("[Action] Store Variable: Could not add variable ");
             wxstrErr += params;
             wxstrErr += _("\n");
-            gpobj->logMsg( wxstrErr );
+            gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             return false;
         }
         
@@ -2999,7 +3029,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
                         wxString wxstrErr = wxT("[Action] Store Variable: Failed to convert value to string ");
                         wxstrErr += params;
                         wxstrErr += _("\n");
-                        gpobj->logMsg( wxstrErr );
+                        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
                         return false;
                     }
                 }
@@ -3015,7 +3045,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
                         wxString wxstrErr = wxT("[Action] Store Variable: Failed to convert value to double ");
                         wxstrErr += params;
                         wxstrErr += _("\n");
-                        gpobj->logMsg( wxstrErr );
+                        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
                         return false;
                     }
                 }
@@ -3031,7 +3061,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
                         wxString wxstrErr = wxT("[Action] Store Variable: Failed to convert value to double ");
                         wxstrErr += params;
                         wxstrErr += _("\n");
-                        gpobj->logMsg( wxstrErr );
+                        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
                         return false;
                     }
                 }
@@ -3047,7 +3077,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
                         wxString wxstrErr = wxT("[Action] Store Variable: Failed to convert value to double ");
                         wxstrErr += params;
                         wxstrErr += _("\n");
-                        gpobj->logMsg( wxstrErr );
+                        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
                         return false;
                     }
                 }
@@ -3093,7 +3123,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
                         wxString wxstrErr = wxT("[Action] Store Variable: Failed to convert value to double ");
                         wxstrErr += params;
                         wxstrErr += _("\n");
-                        gpobj->logMsg( wxstrErr );
+                        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
                         return false;
                     }                    
                     
@@ -3276,7 +3306,7 @@ bool dmElement::doActionAddVariable( vscpEvent *pDMEvent )
             wxString wxstrErr = wxT("[Action] Add to Variable: Could not add new variable ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
-            gpobj->logMsg( wxstrErr );
+            gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
 
             return false;
         }
@@ -3288,7 +3318,7 @@ bool dmElement::doActionAddVariable( vscpEvent *pDMEvent )
             wxString wxstrErr = wxT("[Action] Add to Variable: Variable is not numerical ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
-            gpobj->logMsg( wxstrErr );
+            gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             return false;
     }
 
@@ -3354,7 +3384,7 @@ bool dmElement::doActionSubtractVariable( vscpEvent *pDMEvent )
             wxString wxstrErr = wxT("[Action] Add to Variable: Could not add new variable ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
-            gpobj->logMsg( wxstrErr );
+            gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
 
             return false;
         }
@@ -3366,7 +3396,7 @@ bool dmElement::doActionSubtractVariable( vscpEvent *pDMEvent )
             wxString wxstrErr = wxT("[Action] Add to Variable: Variable is not numerical ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
-            gpobj->logMsg( wxstrErr  );
+            gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
             return false;
     }
 
@@ -3431,7 +3461,7 @@ bool dmElement::doActionMultiplyVariable( vscpEvent *pDMEvent )
             wxString wxstrErr = wxT("[Action] Add to Variable: Could not add new variable ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
-            gpobj->logMsg( wxstrErr );
+            gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
 
             return false;
         }
@@ -3443,7 +3473,7 @@ bool dmElement::doActionMultiplyVariable( vscpEvent *pDMEvent )
             wxString wxstrErr = wxT("[Action] Add to Variable: Variable is not numerical ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
-            gpobj->logMsg( wxstrErr );
+            gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             return false;
     }
 
@@ -3508,7 +3538,7 @@ bool dmElement::doActionDivideVariable( vscpEvent *pDMEvent )
             wxString wxstrErr = wxT("[Action] Add to Variable: Could not add new variable ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
-            gpobj->logMsg( wxstrErr );
+            gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
 
             return false;
         }
@@ -3520,7 +3550,7 @@ bool dmElement::doActionDivideVariable( vscpEvent *pDMEvent )
             wxString wxstrErr = wxT("[Action] Add to Variable: Variable is not numerical ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
-            m_pDM->logMsg( wxstrErr );
+            gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             return false;
     }
 
@@ -3577,12 +3607,12 @@ bool dmElement::doActionCheckVariable( vscpEvent *pDMEvent, VariableCheckType ty
         wxstr = tkz.GetNextToken();
         if ( !wxstr.ToCDouble( &value ) ) {
             wxstr = _("Failed to convert to double (set to zero). param =") + params;
-            m_pDM->logMsg( wxstr );
+            gpobj->logMsg( wxstr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         }
     }
     else {
         wxstr = _("Missing needed parameter (value). param =") + params;
-        m_pDM->logMsg( wxstr );
+        gpobj->logMsg( wxstr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
     
@@ -3592,7 +3622,7 @@ bool dmElement::doActionCheckVariable( vscpEvent *pDMEvent, VariableCheckType ty
     }
     else {
         wxstr = _("Missing needed parameter (unit). param =") + params;
-        m_pDM->logMsg( wxstr );
+        gpobj->logMsg( wxstr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
     
@@ -3602,13 +3632,13 @@ bool dmElement::doActionCheckVariable( vscpEvent *pDMEvent, VariableCheckType ty
         operation = CDM::getCompareCodeFromToken( wxstr );
         if ( -1 == operation ) {
             wxstr = _("Invalid compare operation. param =") + params;
-            m_pDM->logMsg( wxstr );
+            gpobj->logMsg( wxstr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             operation = DM_MEASUREMENT_COMPARE_NOOP;
         }
     }
     else {
         wxstr = _("Missing needed parameter (operation). param =") + params;
-        m_pDM->logMsg( wxstr );
+        gpobj->logMsg( wxstr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
     
@@ -3619,21 +3649,21 @@ bool dmElement::doActionCheckVariable( vscpEvent *pDMEvent, VariableCheckType ty
         if ( !gpobj->m_VSCP_Variables.find( wxstr, varCompare ) ) {
             // Variable not found
             wxstr = _("Compare variable was not found. param =") + params;
-            m_pDM->logMsg( wxstr );
+            gpobj->logMsg( wxstr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             return false;
         }
         
         // The variable must be numerical
         if ( varCompare.isNumerical() ) {
             wxstr = _("Compare variable need to be numerical. param =") + params;
-            m_pDM->logMsg( wxstr );
+            gpobj->logMsg( wxstr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             return false;
         }
         
     }
     else {
         wxstr = _("Missing needed parameter (variable). param =") + params;
-        m_pDM->logMsg( wxstr );
+        gpobj->logMsg( wxstr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
     
@@ -3644,21 +3674,21 @@ bool dmElement::doActionCheckVariable( vscpEvent *pDMEvent, VariableCheckType ty
         if ( !gpobj->m_VSCP_Variables.find( wxstr, varFlag ) ) {
             // Variable not found
             wxstr = _("Flag variable was not found. param =") + params;
-            m_pDM->logMsg( wxstr );
+            gpobj->logMsg( wxstr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             return false;
         }
         
         // The variable must be boolean
         if ( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN != varFlag.getType() ) {
             wxstr = _("Flag variable must be boolean. param =") + params;
-            m_pDM->logMsg( wxstr );
+            gpobj->logMsg( wxstr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             return false;
         }
         
     }
     else {
         wxstr = _("Missing needed parameter (flag variable). param =") + params;
-        m_pDM->logMsg( wxstr );
+        gpobj->logMsg( wxstr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
     
@@ -3853,7 +3883,7 @@ bool dmElement::doActionStoreMin( vscpEvent *pDMEvent )
     // Event must be measurement
     if ( !vscp_isVSCPMeasurement( pDMEvent ) ) {
         wxString wxstr = _("Event must be a measurement event. param =") + params;
-        m_pDM->logMsg( wxstr );
+        gpobj->logMsg( wxstr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
     
@@ -3865,7 +3895,7 @@ bool dmElement::doActionStoreMin( vscpEvent *pDMEvent )
     
     if ( !tkz.HasMoreTokens() ) {
         wxString wxstr = _("Need variable name. param =") + params;
-        m_pDM->logMsg( wxstr );
+        gpobj->logMsg( wxstr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
     
@@ -3885,7 +3915,7 @@ bool dmElement::doActionStoreMin( vscpEvent *pDMEvent )
         
         if ( !gpobj->m_VSCP_Variables.add( variable ) ) {
             wxString wxstr = _("Unable to add min variable. param =") + params;
-            m_pDM->logMsg( wxstr );
+            gpobj->logMsg( wxstr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             return false;
         }
     }
@@ -3893,7 +3923,7 @@ bool dmElement::doActionStoreMin( vscpEvent *pDMEvent )
     // Variable must be numerical to be comparable
     if ( !variable.isNumerical() ) {
         wxString wxstr = _("Can't compare with non numeric variable. param =") + params;
-        m_pDM->logMsg( wxstr );
+        gpobj->logMsg( wxstr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
     
@@ -3966,7 +3996,7 @@ bool dmElement::doActionStoreMax( vscpEvent *pDMEvent )
     // Event must be measurement
     if ( !vscp_isVSCPMeasurement( pDMEvent ) ) {
         wxString wxstr = _("Event must be a measurement event. param =") + params;
-        m_pDM->logMsg( wxstr );
+        gpobj->logMsg( wxstr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
     
@@ -3978,7 +4008,7 @@ bool dmElement::doActionStoreMax( vscpEvent *pDMEvent )
     
     if ( !tkz.HasMoreTokens() ) {
         wxString wxstr = _("Need variable name. param =") + params;
-        m_pDM->logMsg( wxstr );
+        gpobj->logMsg( wxstr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
     
@@ -3998,7 +4028,7 @@ bool dmElement::doActionStoreMax( vscpEvent *pDMEvent )
         
         if ( !gpobj->m_VSCP_Variables.add( variable ) ) {
             wxString wxstr = _("Unable to add max variable. param =") + params;
-            m_pDM->logMsg( wxstr );
+            gpobj->logMsg( wxstr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             return false;
         }
     }
@@ -4006,7 +4036,7 @@ bool dmElement::doActionStoreMax( vscpEvent *pDMEvent )
     // Variable must be numerical to be comparable
     if ( !variable.isNumerical() ) {
         wxString wxstr = _("Can't compare with non numeric variable. param =") + params;
-        m_pDM->logMsg( wxstr );
+        gpobj->logMsg( wxstr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
     
@@ -4073,7 +4103,7 @@ bool dmElement::doActionStartTimer( vscpEvent *pDMEvent )
         wxString wxstrErr = wxT("[Action] Start timer: Wrong action parameter ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
-        gpobj->logMsg( wxstrErr );
+        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
 
@@ -4085,7 +4115,7 @@ bool dmElement::doActionStartTimer( vscpEvent *pDMEvent )
         wxString wxstrErr = wxT("[Action] Start timer: Variable name is missing ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
-        gpobj->logMsg( wxstrErr );
+        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
 
@@ -4097,7 +4127,7 @@ bool dmElement::doActionStartTimer( vscpEvent *pDMEvent )
         wxString wxstrErr = wxT("[Action] Start timer: Delay is missing ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
-        gpobj->logMsg( wxstrErr );
+        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
 
@@ -4109,7 +4139,7 @@ bool dmElement::doActionStartTimer( vscpEvent *pDMEvent )
         wxString wxstrErr = wxT("[Action] Start timer: Setvalue is missing ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
-        gpobj->logMsg( wxstrErr );
+        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
 
@@ -4141,7 +4171,7 @@ bool dmElement::doActionPauseTimer( vscpEvent *pDMEvent )
         wxString wxstrErr = wxT("[Action] Stop timer: Wrong action parameter ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
-        gpobj->logMsg( wxstrErr );
+        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
 
@@ -4169,7 +4199,7 @@ bool dmElement::doActionResumeTimer( vscpEvent *pDMEvent )
         wxString wxstrErr = wxT("[Action] Stop timer: Wrong action parameter ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
-        gpobj->logMsg( wxstrErr );
+        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
 
@@ -4197,7 +4227,7 @@ bool dmElement::doActionStopTimer( vscpEvent *pDMEvent )
         wxString wxstrErr = wxT("[Action] Stop timer: Wrong action parameter ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
-        gpobj->logMsg( wxstrErr );
+        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
 
@@ -4209,81 +4239,7 @@ bool dmElement::doActionStopTimer( vscpEvent *pDMEvent )
     return true;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// doActionWriteTable
-//
 
-bool dmElement::doActionWriteTable( vscpEvent *pDMEvent )
-{
-    wxString tblName;
-    time_t timestamp;
-    double value;
-    bool bFound = false;
-
-    // Write in possible escapes
-    wxString wxstr = m_actionparam;
-    handleEscapes( pDMEvent, wxstr );
-
-    wxString wxstrErr = _( "[Action] Write Table: Wrong action parameter. Parameter= ");
-    wxstrErr += wxstr;
-    wxstrErr += _("\n");
-
-    wxStringTokenizer tkz( wxstr, wxT(";") );
-
-    if ( !tkz.HasMoreTokens() ) {
-        // Strange action parameter
-        gpobj->logMsg( wxstrErr );
-        return false;
-    }
-    tblName = tkz.GetNextToken();
-    tblName.MakeUpper(); // Make sure it's upercase
-
-    if ( !tkz.HasMoreTokens() ) {
-        // Strange action parameter
-        gpobj->logMsg( wxstrErr );
-        return false;
-    }
-    timestamp = vscp_readStringValue( tkz.GetNextToken() );
-
-    if ( !tkz.HasMoreTokens() ) {
-        // Strange action parameter
-        gpobj->logMsg( wxstrErr );
-        return false;
-    }
-    value = atof( tkz.GetNextToken().mbc_str() );
-
-    gpobj->m_userTableObjects.m_mutexTableList.Lock();
-    
-    listVSCPTables::iterator iter;
-    for (iter = gpobj->m_userTableObjects.m_listTables.begin();
-            iter != gpobj->m_userTableObjects.m_listTables.end();
-            ++iter)
-    {
-        CVSCPTable *pTable = *iter;
-        /*if ( 0 == strcmp( pTable->m_vscpFileHead.nameTable, tblName.mbc_str() ) ) {
-            pTable->m_mutexThisTable.Lock();
-            pTable->logData( timestamp, value );
-            pTable->m_mutexThisTable.Unlock();
-            bFound = true;
-            break;
-        }*/
-    }
-    
-    gpobj->m_userTableObjects.m_mutexTableList.Unlock();
-
-    if ( !bFound ) {
-        wxString wxstrErr =
-            wxString::Format( _("[Action] Write Table: Table [%s] not found. Parameter='%s' "),
-            (const char *)tblName.c_str(),
-            (const char *)wxstr.c_str() );
-        wxstrErr += wxstr;
-        wxstrErr += _("\n");
-        gpobj->logMsg( wxstrErr );
-        return false;
-    }
-
-    return true;
-}
 
 
 
@@ -4312,18 +4268,6 @@ CDM::CDM( CControlObject *ctrlObj )
 #else
     m_staticXMLPath = _("/srv/vscp/dm.xml");
 #endif
-#endif
-
-    // Security logfile is enabled by default
-    m_bLogEnable = true;
-
-    m_logLevel = LOG_DM_NORMAL;
-
-
-#ifdef WIN32
-    m_logPath.SetName( wxStandardPaths::Get().GetConfigDir() + _("vscp_log_dm.txt") );
-#else
-    m_logPath.SetName( _("/srv/vscp/logs/vscp_log_dm") );
 #endif
 
     // Default is to feed all events through the matrix
@@ -4389,10 +4333,6 @@ CDM::~CDM()
     // Remove all elements
     m_timerHash.clear();
 
-    // Close the logfile
-    if ( m_bLogEnable ) {
-        m_fileLog.Close();
-    }
 
 }
 
@@ -4477,37 +4417,11 @@ void CDM::init( void )
         m_dm.m_db_vscp_dm_memory  = NULL;
     }
 */
-    
-    // Open up the General logging file.
-    if ( m_bLogEnable ) {
-        m_fileLog.Open( m_logPath.GetFullPath(), wxFile::write_append );
-    }
 
-    wxString wxlogmsg =
+    wxString wxlogmsg = 
     wxString::Format(_("DM engine started. DM from [%s]\n"),
                         (const char *)m_staticXMLPath.c_str() );
-    logMsg( wxlogmsg );
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// logMsg
-//
-
-void CDM::logMsg( const wxString& msg, uint8_t level )
-{
-    wxString logmsg;
-    wxDateTime datetime( wxDateTime::GetTimeNow() );
-    wxString wxdebugmsg;
-
-    wxdebugmsg = datetime.FormatISODate() + _(" ") + datetime.FormatISOTime() + _(" - ") + msg + _("\r\n");
-
-    // logging.
-    if ( level >= m_logLevel ) {
-        if ( m_bLogEnable ) {
-            m_fileLog.Write( wxdebugmsg );
-        }
-    }
+    gpobj->logMsg( wxlogmsg, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
 }
 
 
@@ -5053,7 +4967,7 @@ int CDM::addTimer( uint16_t id,
     // Log
     wxString logStr = wxString::Format(_("Add Timer %s."),
                                         (const char *)nameVar.c_str() );
-    logMsg( logStr, LOG_DM_EXTRA );
+    gpobj->logMsg( logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
     // Check if the timer already exist - set new values
     if ( NULL != ( pTimer = m_timerHash[ id ] ) ) {
@@ -5064,7 +4978,7 @@ int CDM::addTimer( uint16_t id,
 
         // Log
         wxString logStr = wxString::Format(_("Timer %d already exist."), id );
-        logMsg( logStr, LOG_DM_DEBUG );
+        gpobj->logMsg( logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
         return id;
     }
 
@@ -5077,7 +4991,7 @@ int CDM::addTimer( uint16_t id,
         // Log
         wxString logStr = wxString::Format(_("Variable is not defined %s"),
                                             (const char *)nameVar.c_str() );
-        logMsg( logStr, LOG_DM_DEBUG );
+        gpobj->logMsg( logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
         // Create a new timer
         dmTimer *pTimer = new dmTimer( nameVar,
@@ -5100,7 +5014,7 @@ int CDM::addTimer( uint16_t id,
         // Log
         wxString logStr = wxString::Format(_("Variable already defined %s."),
                                             (const char *)nameVar.c_str() );
-        logMsg( logStr, LOG_DM_DEBUG );
+        gpobj->logMsg( logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
         if ( gpobj->m_VSCP_Variables.add( nameVar, wxT("false"), 
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN ) ) {
@@ -5139,7 +5053,7 @@ bool CDM::startTimer( int idTimer )
 
     // Log
     wxString logStr = wxString::Format(_("Timer %d started."), idTimer );
-    logMsg( logStr, LOG_DM_EXTRA );
+    gpobj->logMsg( logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM);
 
     return true;
 }
@@ -5160,7 +5074,7 @@ int CDM::startTimer( uint16_t idTimer,
 
         // Log
         wxString logStr = wxString::Format(_("Timer %d created."), idTimer );
-        logMsg( logStr, LOG_DM_EXTRA );
+        gpobj->logMsg( logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
         // Nonexistent timer - create it
         addTimer( idTimer,
@@ -5172,7 +5086,7 @@ int CDM::startTimer( uint16_t idTimer,
 
     // Log
     wxString logStr = wxString::Format(_("Timer %d started."), idTimer );
-    logMsg( logStr, LOG_DM_EXTRA );
+    gpobj->logMsg( logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
     return rv;
 }
@@ -5188,7 +5102,7 @@ bool CDM::stopTimer( int idTimer )
 
     // Log
     wxString logStr = wxString::Format(_("Timer %d stopped."), idTimer );
-    logMsg( logStr, LOG_DM_EXTRA );
+    gpobj->logMsg( logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
     pTimer->stopTimer();
 
@@ -5275,7 +5189,7 @@ bool CDM::doFillMemoryDMTable()
         //sqlite3_free( insert_sql );
     }
            
-    if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_dm,
+    if ( SQLITE_OK != sqlite3_prepare_v2( m_db_vscp_dm,
                                             "SELECT * FROM dm;",
                                             -1,
                                             &ppStmt,
@@ -5365,11 +5279,12 @@ uint32_t CDM::getDatabaseRecordCount( void )
     
     // Database file must be open
     if ( NULL == m_db_vscp_dm ) {
-        logMsg( _("DM: Get record count. Database file is not open.\n") );
+        gpobj->logMsg( _("DM: Get record count. Database file is not open.\n"),
+                        DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
     
-    if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_dm,
+    if ( SQLITE_OK != sqlite3_prepare_v2( m_db_vscp_dm,
                                             "SELECT count(*) FROM dm WHERE bEnable!=0;",
                                             -1,
                                             &ppStmt,
@@ -5398,7 +5313,8 @@ bool CDM::deleteDatabaseRecord( uint32_t idx )
     
     // Database file must be open
     if ( NULL == m_db_vscp_dm ) {
-        logMsg( _("DM: Delete record. Database file is not open.\n") );
+        gpobj->logMsg( _("DM: Delete record. Database file is not open.\n"),
+                        DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
     
@@ -5428,7 +5344,8 @@ bool CDM::addDatabaseRecord( dmElement& dm )
             
     // Database file must be open
     if ( NULL == m_db_vscp_dm ) {
-        logMsg( _("DM: Add record. Database file is not open.\n") );
+        gpobj->logMsg( _("DM: Add record. Database file is not open.\n"),
+                        DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
     
@@ -5503,7 +5420,8 @@ bool CDM::updateDatabaseRecord( dmElement& dm )
             
     // Database file must be open
     if ( NULL == m_db_vscp_dm ) {
-        logMsg( _("DM: Add record. Database file is not open.\n") );
+        gpobj->logMsg( _("DM: Add record. Database file is not open.\n"),
+                        DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
     
@@ -5579,7 +5497,8 @@ bool CDM::updateDatabaseRecordItem( unsigned long id,
             
     // Database file must be open
     if ( NULL == m_db_vscp_dm ) {
-        logMsg( _("DM: Update record. Database file is not open.\n") );
+        gpobj->logMsg( _("DM: Update record. Database file is not open.\n"),
+                        DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
     
@@ -5615,13 +5534,14 @@ bool CDM::getDatabaseRecord( uint32_t idx, dmElement *pDMitem )
     
     // Database file must be open
     if ( NULL == m_db_vscp_dm ) {
-        logMsg( _("DM: Get record. Database file is not open.\n") );
+        gpobj->logMsg( _("DM: Get record. Database file is not open.\n"), 
+                        DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
     
     char *sql = sqlite3_mprintf( "SELECT * FROM dm WHERE id='%d';", idx );
     
-    if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_dm,
+    if ( SQLITE_OK != sqlite3_prepare_v2( m_db_vscp_dm,
                                             sql,
                                             -1,
                                             &ppStmt,
@@ -5819,18 +5739,21 @@ bool CDM::loadFromDatabase( void )
         
     // Database file must be open
     if ( NULL == m_db_vscp_dm ) {
-        logMsg( _("DM: Loading. Database file is not open.\n") );
+        gpobj->logMsg( _("DM: Loading. Database file is not open.\n"), 
+                        DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
     
-    logMsg( _("DM: Loading decision matrix from database :\n") );
+    gpobj->logMsg( _("DM: Loading decision matrix from database :\n"), 
+                        DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
     
     // debug print configuration path
-    logMsg( m_path_db_vscp_dm.GetFullPath() + _("\n") );
+    gpobj->logMsg( m_path_db_vscp_dm.GetFullPath() + _("\n"), 
+                        DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
 
     m_mutexDM.Lock();
     
-    if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_dm,
+    if ( SQLITE_OK != sqlite3_prepare_v2( m_db_vscp_dm,
                                             "SELECT * FROM dm WHERE bEnable='true';",
                                             -1,
                                             &ppStmt,
@@ -6031,26 +5954,31 @@ bool CDM::loadFromDatabase( void )
 
 bool CDM::loadFromXML( void )
 {
-    logMsg( _("DM: Loading decision matrix from :\n") );
+    gpobj->logMsg( _("DM: Loading decision matrix from :\n"), 
+                        DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
 
     // debug print configuration path
-    logMsg( m_staticXMLPath + _("\n") );
+    gpobj->logMsg( m_staticXMLPath + _("\n"), 
+                        DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
 
     // File must exist
     if ( !wxFile::Exists( m_staticXMLPath ) ) {
-        logMsg( _("DM: file does not exist.\n") );
+        gpobj->logMsg( _("DM: file does not exist.\n"), 
+                        DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
 
     wxXmlDocument doc;
     if ( !doc.Load ( m_staticXMLPath ) ) {
-        logMsg( _("Faild to load DM. Check format!\n") );
+        gpobj->logMsg( _("Faild to load DM. Check format!\n"), 
+                        DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
 
     // start processing the XML file
     if ( doc.GetRoot()->GetName() != wxT ( "dm" ) ) {
-        logMsg( _("Faild to load DM. <dm> tahs not found, format is wrong!\n") );
+        gpobj->logMsg( _("Faild to load DM. <dm> not found, format is wrong!\n"), 
+                        DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
 
@@ -6228,7 +6156,7 @@ bool CDM::loadFromXML( void )
 
     }
 
-    logMsg( _("DM: Read success.\n"), LOG_DM_NORMAL );
+    gpobj->logMsg( _("DM: Read success.\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
 
     return true;
 }
@@ -6246,18 +6174,18 @@ bool CDM::saveToXML( void )
     wxString buf;
 
     strLog = _("DM: Saving decision matrix to: ") + m_staticXMLPath + _("\n");
-    logMsg( strLog );
+    gpobj->logMsg( strLog, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
 
     if ( !wxFileName::IsFileWritable( m_staticXMLPath ) ) {
         strLog = _("DM: File is not writable.\n");
-        logMsg( strLog );
+        gpobj->logMsg( strLog, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
 
     wxFFileOutputStream *pFileStream = new wxFFileOutputStream ( m_staticXMLPath );
     if ( NULL == pFileStream ) {
         strLog = _("DM: Failed to save: ") + m_staticXMLPath + _(" (memory allocation)\n");
-        logMsg( strLog );
+        gpobj->logMsg( strLog, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
 
@@ -6485,7 +6413,7 @@ bool CDM::feed( vscpEvent *pEvent )
                     vscp_writeVscpEventToString( pEvent, strEvent );
                     wxString wxstr = _("DM: Conversion to double failed for measurement. Event=") +
                                         strEvent + _("\n");         
-                    gpobj->logMsg ( wxstr, DAEMON_LOGMSG_NORMAL );
+                    gpobj->logMsg ( wxstr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
                     continue;
                 }
                 
@@ -6708,13 +6636,14 @@ void *actionThread_URL::Entry()
                                 m_url.GetPath() +
                                 wxT(",") +
                                 wxString::Format( _("acessMethod = %d" ), m_acessMethod ) +
-                                wxT(" \n")  );
+                                wxT(" \n"), 
+                                DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
 
         }
 
         gpobj->logMsg( _T ( "actionThreadURL: Request: \n" ) +
                 wxstr,
-                DAEMON_LOGMSG_DEBUG );
+                DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
         // Send the request
         sock.Write( wxstr, wxstr.Length() );
@@ -6732,7 +6661,7 @@ void *actionThread_URL::Entry()
                                 m_url.GetPath() +
                                 wxT(",") +
                                 wxString::Format( _("acessMethod = %d" ), m_acessMethod ) +
-                                wxT(" \n")  );
+                                wxT(" \n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
         }
 
         // Get the response
@@ -6749,7 +6678,7 @@ void *actionThread_URL::Entry()
             // Log response
             gpobj->logMsg( _T( "actionThreadURL: OK Response: " ) +
                             strReponse +
-                            wxT(" \n") );
+                            wxT(" \n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
 
             wxStringTokenizer tkz( strReponse );
             if ( tkz.HasMoreTokens() ) {
@@ -6768,7 +6697,7 @@ void *actionThread_URL::Entry()
                                         wxString::Format( _("acessMethod = %d" ), m_acessMethod ) +
                                         wxT(", Response = ") +
                                         strReponse +
-                                        wxT(" \n")  );
+                                        wxT(" \n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
 
                 }
             }
@@ -6784,7 +6713,7 @@ void *actionThread_URL::Entry()
                                 m_url.GetPath() +
                                 wxT(",") +
                                 ( m_acessMethod ? wxT("PUT") : wxT("GET") ) +
-                                wxT(" \n")  );
+                                wxT(" \n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
         }
 
         // Close the socket
@@ -6801,7 +6730,7 @@ void *actionThread_URL::Entry()
                                 m_url.GetPath() +
                                 wxT(",") +
                                 wxString::Format( _("acessMethod = %d" ), m_acessMethod ) +
-                                wxT(" \n")  );
+                                wxT(" \n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
     }
 
     return NULL;
@@ -6871,7 +6800,7 @@ void *actionThread_VSCPSrv::Entry()
         // Failed to connect
         gpobj->logMsg( wxT( "actionThreadVSCPSrv: Unable to connect to remote server : " ) +
                                     m_strHostname +
-                                    wxT(" \n")  );
+                                    wxT(" \n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
     }
 
     // Connected
@@ -6879,7 +6808,7 @@ void *actionThread_VSCPSrv::Entry()
         // Failed to send event
         gpobj->logMsg( wxT( "actionThreadVSCPSrv: Unable to send event to remote server : " ) +
                                 m_strHostname +
-                                wxT(" \n")  );
+                                wxT(" \n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
     }
 
     return NULL;
@@ -7088,7 +7017,7 @@ void *actionThread_JavaScript::Entry()
                 
         }
         
-        gpobj->logMsg( strError );
+        gpobj->logMsg( strError, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         
     }
     
@@ -7126,13 +7055,12 @@ void actionThread_JavaScript::OnExit()
 // This thread handles a table action
 //
 
-actionThread_Table::actionThread_Table( CControlObject *pCtrlObject, 
-                                            CVSCPTable *pTableObj,
+actionThread_Table::actionThread_Table( wxString &strParam,
                                             wxThreadKind kind )
                                                 : wxThread( kind )
 {
     //OutputDebugString( "actionThreadURL: Create");
-    
+    m_strParam = strParam;
 }
 
 actionThread_Table::~actionThread_Table()
@@ -7146,8 +7074,21 @@ actionThread_Table::~actionThread_Table()
 //
 
 void *actionThread_Table::Entry()
-{
+{    
+    CVSCPTable *pTable;    // Table object
+    
+    wxStringTokenizer tkz( m_strParam, wxT(";") );
 
+    if ( !tkz.HasMoreTokens() ) {
+        // Strange action parameter
+        wxString wxstrErr = _( "[Action] Write Table: Action parameter is not correct. Parameter= ");
+        wxstrErr += m_strParam;
+        wxstrErr += _("\n");
+        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return NULL;
+    }
+    
+    
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7158,3 +7099,81 @@ void actionThread_Table::OnExit()
 {
 
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// doActionWriteTable
+//
+/*
+bool doActionWriteTable( vscpEvent *pDMEvent )
+{
+    wxString tblName;
+    time_t timestamp;
+    double value;
+    bool bFound = false;
+
+    // Write in possible escapes
+    wxString wxstr = m_actionparam;
+    handleEscapes( pDMEvent, wxstr );
+
+    wxString wxstrErr = _( "[Action] Write Table: Wrong action parameter. Parameter= ");
+    wxstrErr += wxstr;
+    wxstrErr += _("\n");
+
+    wxStringTokenizer tkz( wxstr, wxT(";") );
+
+    if ( !tkz.HasMoreTokens() ) {
+        // Strange action parameter
+        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
+    }
+    tblName = tkz.GetNextToken();
+    tblName.MakeUpper(); // Make sure it's uppercase
+
+    if ( !tkz.HasMoreTokens() ) {
+        // Strange action parameter
+        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
+    }
+    timestamp = vscp_readStringValue( tkz.GetNextToken() );
+
+    if ( !tkz.HasMoreTokens() ) {
+        // Strange action parameter
+        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
+    }
+    value = atof( tkz.GetNextToken().mbc_str() );
+
+    gpobj->m_userTableObjects.m_mutexTableList.Lock();
+    
+    listVSCPTables::iterator iter;
+    for (iter = gpobj->m_userTableObjects.m_listTables.begin();
+            iter != gpobj->m_userTableObjects.m_listTables.end();
+            ++iter)
+    {
+        CVSCPTable *pTable = *iter;
+        if ( 0 == strcmp( pTable->m_vscpFileHead.nameTable, tblName.mbc_str() ) ) {
+            pTable->m_mutexThisTable.Lock();
+            pTable->logData( timestamp, value );
+            pTable->m_mutexThisTable.Unlock();
+            bFound = true;
+            break;
+        }
+    }
+    
+    gpobj->m_userTableObjects.m_mutexTableList.Unlock();
+
+    if ( !bFound ) {
+        wxString wxstrErr =
+            wxString::Format( _("[Action] Write Table: Table [%s] not found. Parameter='%s' "),
+            (const char *)tblName.c_str(),
+            (const char *)wxstr.c_str() );
+        wxstrErr += wxstr;
+        wxstrErr += _("\n");
+        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
+    }
+
+    return true;
+}
+*/

@@ -85,9 +85,6 @@ enum {
     DAEMON_LOGTYPE_DM
 };
 
-
-
-
 // TTL     Scope
 // ----------------------------------------------------------------------
 // 0       Restricted to the same host.Won't be output by any interface.

@@ -61,12 +61,6 @@ WX_DECLARE_LIST( int, ACTIONTIME );
 #define DM_MEASUREMENT_COMPARE_GT       0x05    // Greater than
 #define DM_MEASUREMENT_COMPARE_GTEQ     0x06    // Greater than or equal tp >=
 
-enum DMLogType {
-    LOG_DM_NONE = 0,
-    LOG_DM_NORMAL,
-    LOG_DM_EXTRA,
-    LOG_DM_DEBUG
-};
 
 // Variable check constants
 enum VariableCheckType {
@@ -598,13 +592,6 @@ public:
     bool doActionGetURL( vscpEvent *pDMEvent );
 
 
-    /*!
-        Write a record to a table
-        @param pDMEvent Event that triggered the action
-        @returns true if all went well.
-    */
-    bool doActionWriteTable( vscpEvent *pDMEvent );
-
     // Database index for record ( 0 if loaded from XML file)
     uint32_t m_id;
     
@@ -738,11 +725,6 @@ public:
     */
     void init( void );
 
-
-    /*!
-        log message
-    */
-    void logMsg( const wxString& msg, uint8_t level = LOG_DM_NORMAL );
     
     /*!
      * Get compare code from token
@@ -1003,18 +985,6 @@ public:
     DMTIMERS m_timerHash;
 
 
-    // ----------------------------------------
-    // Logging
-    // ----------------------------------------
-
-    /*!
-        Path to decision matrix log file
-    */
-    int m_logLevel;
-    bool m_bLogEnable;      // Enable decision matrix logfile
-    wxFileName m_logPath;
-    wxFile m_fileLog;
-
     /*!
         List with Decision Matrix elements
     */
@@ -1213,7 +1183,7 @@ public:
     wxDateTime m_start;
     
     /// Feed event
-    vscpEventEx m_eventFeed;
+    vscpEventEx m_feedEvent;
 
 };
 
@@ -1288,8 +1258,7 @@ public:
         @param pTableObj Table object.
         @param kind Threadtype.
     */
-    actionThread_Table( CControlObject *pCtrlObject, 
-                            CVSCPTable *pTableObj,
+    actionThread_Table( wxString &strParam,
                             wxThreadKind kind = wxTHREAD_DETACHED );
   
     /// Destructor
@@ -1302,11 +1271,12 @@ public:
         stopped with Delete() (but not when it is Kill()ed!)
     */
     virtual void OnExit();
-
-private:
-
-    // Table object
-    CVSCPTable *m_pTableObj;
+    
+    /// Escaped DM action parameter
+    wxString m_strParam;
+    
+    /// Feed event
+    vscpEventEx m_feedEvent;
 
 };
 

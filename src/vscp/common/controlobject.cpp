@@ -2623,52 +2623,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     if ( attribut.Length() ) {
                         m_dm.m_path_db_vscp_dm.Assign( attribut );
                     }
-
-                    // logging enable
-                    m_dm.m_bLogEnable = true;
-                    attribut = subchild->GetAttribute(wxT("enablelogging"), wxT("true"));
-                    attribut.MakeLower();
-                    if (attribut.IsSameAs(_("false"), false)) {
-                        m_dm.m_bLogEnable = false;
-                    }
-
-                    // Get the DM Logpath
-                    wxFileName fileName;
-                    fileName.Assign( subchild->GetAttribute( wxT("logpath"), wxT("") ) );
-                    if ( fileName.IsOk() ) {
-                        m_dm.m_logPath = fileName;
-                    }
-                    
-                    // Get the loglevel
-                    wxString str = subchild->GetAttribute(wxT("loglevel"), wxT("NORMAL"));
-                    str.Trim();
-                    str.Trim(false);
-                    str.MakeUpper();
-                    if ( str.IsSameAs(_("NONE"), false)) {
-                        m_dm.m_logLevel = LOG_DM_NONE;
-                    }
-                    else if ( str.IsSameAs(_("0"), false)) {
-                        m_dm.m_logLevel = LOG_DM_NONE;
-                    }
-                    else if ( str.IsSameAs(_("DEBUG"), false)) {
-                        m_dm.m_logLevel = LOG_DM_DEBUG;
-                    }
-                    else if ( str.IsSameAs(_("1"), false)) {
-                        m_dm.m_logLevel = LOG_DM_DEBUG;
-                    }
-                    else if ( str.IsSameAs(_("NORMAL"), false)) {
-                        m_dm.m_logLevel = LOG_DM_NORMAL;
-                    }
-                    else if ( str.IsSameAs(_("2"), false)) {
-                        m_dm.m_logLevel = LOG_DM_NORMAL;
-                    }
-                    else if ( str.IsSameAs(_("EXTRA"), false)) {
-                        m_dm.m_logLevel = LOG_DM_EXTRA;
-                    }
-                    else if ( str.IsSameAs(_("3"), false)) {
-                        m_dm.m_logLevel = LOG_DM_EXTRA;
-                    }
-                    
+                   
                     // Write into settings database
                     updateConfigurationRecordItem( _("vscpd_DM_DB_Path"), 
                                                     wxString::Format(_("%s"), 
@@ -2678,18 +2633,6 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                                                     wxString::Format(_("%s"), 
                                                     (const char *)m_dm.m_path_db_vscp_dm.GetFullPath().mbc_str() ) );
                     
-                    updateConfigurationRecordItem( _("vscpd_DM_Logging_Enable"), 
-                                                    wxString::Format(_("%d"), 
-                                                    m_dm.m_bLogEnable ? 1 : 0 ) );
-                    
-                    updateConfigurationRecordItem( _("vscpd_DM_Logging_Path"), 
-                                                    wxString::Format(_("%s"), 
-                                                    (const char *)m_dm.m_logPath.GetPath().mbc_str() ) );
-                    
-                    updateConfigurationRecordItem( _("vscpd_DM_Logging_Level"), 
-                                                    wxString::Format(_("%d"), 
-                                                    m_dm.m_logLevel ) );
-
                 }
                 else if (subchild->GetName() == wxT("variables")) {
                     
@@ -3749,10 +3692,13 @@ bool CControlObject::dbReadConfiguration( void )
         
         // Debug level
         if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_LOGLEVEL ) ) {
+            
             m_logLevel = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_CONFIG_LOGLEVEL );
+            
             if ( m_logLevel > DAEMON_LOGMSG_DEBUG ) {
                 m_logLevel = DAEMON_LOGMSG_DEBUG;
             }
+            
         }
 
         // Run as user
@@ -3857,23 +3803,6 @@ bool CControlObject::dbReadConfiguration( void )
         if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_DM_XML_PATH ) ) {
             m_dm.m_staticXMLPath = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
                                         VSCPDB_ORDINAL_CONFIG_DM_XML_PATH ) );
-        }
-  
-        // Enable DM logging
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_DM_LOGGING_ENABLE ) ) {
-            m_dm.m_bLogEnable = sqlite3_column_int( ppStmt, 
-                                        VSCPDB_ORDINAL_CONFIG_DM_LOGGING_ENABLE ) ? true : false;
-        }
-        
-        // Path to DM log file
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_DM_LOGGING_PATH ) ) {
-            m_dm.m_logPath = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                        VSCPDB_ORDINAL_CONFIG_DM_LOGGING_PATH ) );
-        }
-        
-        // DM logging level
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_DM_LOGGING_LEVEL ) ) {
-            m_dm.m_logLevel = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_CONFIG_DM_LOGGING_LEVEL );
         }
         
         // Path to variable database

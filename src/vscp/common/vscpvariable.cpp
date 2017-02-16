@@ -3589,16 +3589,6 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
     //                            Decision Matrix
     // *************************************************************************
 
-
-    if ( lcname.StartsWith( _("vscp.dm.logging.enable") ) ) {
-        var.setValue( gpobj->m_dm.m_bLogEnable ? true : false );
-        return var.getID();
-    }
-    
-    if ( lcname.StartsWith( _("vscp.dm.logging.path") ) ) {
-        var.setValue( gpobj->m_dm.m_logPath.GetFullPath(), true );
-        return var.getID();
-    }
     
     if ( lcname.StartsWith( _("vscp.dm.db.path") ) ) {
         var.setValue( gpobj->m_dm.m_path_db_vscp_dm.GetFullPath(), true );
@@ -4681,22 +4671,6 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 //                            Decision Matrix
 // *****************************************************************************
 
-
-    if ( lcname.StartsWith( _("vscp.dm.logging.enable") ) ) {
-        bool val;
-        var.getValue( &val );
-        gpobj->m_dm.m_bLogEnable = val;
-        return gpobj->updateConfigurationRecordItem( _("vscpd_DM_Logging_Enable"), 
-                                                    val ? _("1") : _("0") );
-    }
-    
-    if ( lcname.StartsWith( _("vscp.dm.logging.path") ) ) {
-        wxString strval;
-        strval = var.getValue();
-        var.setValue( gpobj->m_dm.m_logPath.GetFullPath() );
-        return gpobj->updateConfigurationRecordItem( _("vscpd_DM_Logging_Path"), 
-                                                    strval );
-    }
     
     if ( lcname.StartsWith( _("vscp.dm.xml.path") ) ) {
         wxString strval;
@@ -5571,7 +5545,7 @@ uint32_t CVariableStorage::findNonPersistentVariable( const wxString& name,
         return 0;
     }
     
-    if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_internal_variable,
+    if ( SQLITE_OK != sqlite3_prepare_v2( m_db_vscp_internal_variable,
                                             psql,
                                             -1,
                                             &ppStmt,
@@ -5616,7 +5590,7 @@ uint32_t CVariableStorage::findPersistentVariable(const wxString& name, CVSCPVar
         return 0;
     }
     
-    if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_external_variable,
+    if ( SQLITE_OK != sqlite3_prepare_v2( m_db_vscp_external_variable,
                                         psql,
                                         -1,
                                         &ppStmt,
@@ -5666,7 +5640,7 @@ bool CVariableStorage::getVarlistFromRegExp( wxArrayString& nameArray,
         return false;
     }
         
-    if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_internal_variable,
+    if ( SQLITE_OK != sqlite3_prepare_v2( m_db_vscp_internal_variable,
                                             VSCPDB_VARIABLE_FIND_ALL,
                                             -1,
                                             &ppStmt,
@@ -5690,7 +5664,7 @@ bool CVariableStorage::getVarlistFromRegExp( wxArrayString& nameArray,
 
     sqlite3_finalize( ppStmt );
         
-    if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_external_variable,
+    if ( SQLITE_OK != sqlite3_prepare_v2( m_db_vscp_external_variable,
                                             VSCPDB_VARIABLE_FIND_ALL,
                                             -1,
                                             &ppStmt,
@@ -6295,7 +6269,7 @@ bool CVariableStorage::save( wxString& path, uint8_t whatToSave )
         sqlite3_stmt *ppStmt;
         const char *psql = "SELECT * from variable";        
     
-        if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_internal_variable,
+        if ( SQLITE_OK != sqlite3_prepare_v2( m_db_vscp_internal_variable,
                                             psql,
                                             -1,
                                             &ppStmt,
@@ -6330,7 +6304,7 @@ bool CVariableStorage::save( wxString& path, uint8_t whatToSave )
         sqlite3_stmt *ppStmt;
         const char *psql = "SELECT * from variable";        
     
-        if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_external_variable,
+        if ( SQLITE_OK != sqlite3_prepare_v2( m_db_vscp_external_variable,
                                             psql,
                                             -1,
                                             &ppStmt,
