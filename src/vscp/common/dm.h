@@ -1259,6 +1259,7 @@ public:
         @param kind Threadtype.
     */
     actionThread_Table( wxString &strParam,
+                            vscpEvent *pEvent,
                             wxThreadKind kind = wxTHREAD_DETACHED );
   
     /// Destructor
@@ -1276,8 +1277,8 @@ public:
     wxString m_strParam;
     
     /// Feed event
-    vscpEventEx m_feedEvent;
-
+    vscpEvent *m_pFeedEvent;
+            
 };
 
 

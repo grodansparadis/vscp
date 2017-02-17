@@ -1662,6 +1662,12 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             else if ( str.StartsWith( wxT("%isotime"), &str ) ) {
                 strResult += wxDateTime::Now().FormatISOTime();
             }
+            // Check for isoboth escape
+            else if ( str.StartsWith( wxT("%isoboth"), &str ) ) {
+                strResult += wxDateTime::Now().FormatISODate();
+                strResult += _("T");
+                strResult += wxDateTime::Now().FormatISOTime();
+            }
             // Check for mstime escape
             else if ( str.StartsWith( wxT("%mstime"), &str ) ) {
                 strResult += wxString::Format( wxT("%d"),
@@ -2004,8 +2010,14 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             else if (  str.StartsWith( wxT("%vscp.host.fullname"), &str ) ) {
                 strResult += wxGetFullHostName();
             }
+            // ****************  ESCAPE WAS NOT FOUND ****************
+            else {
+                // Move beyond the '%'
+                strResult += _("%");
+                str = str.Right( str.Length() - 1 );
+            }
 
-        }
+        }        
 
     }
 
@@ -2241,7 +2253,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
             doActionGetURL( pEvent );
             break;
 
-        case VSCP_DAEMON_ACTION_CODE_WRITE_TABLE:
+        case VSCP_DAEMON_ACTION_CODE_WRITE_TABLE: 
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_WRITE_TABLE.\n") ); // Log
             gpobj->logMsg( logStr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             gpobj->logMsg(  _("DM = ") + getAsString( false ) + _("\n"), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
@@ -2254,10 +2266,10 @@ bool dmElement::doAction( vscpEvent *pEvent )
                 wxString strParam = m_actionparam;
                 handleEscapes( pEvent, strParam );
                 
-                actionThread_Table *pThread = new actionThread_Table( strParam );
+                actionThread_Table *pThread = new actionThread_Table( strParam, pEvent );
                 if ( NULL == pThread ) return false;
                 
-                vscp_convertVSCPtoEx( &pThread->m_feedEvent, pEvent );   // Save feed event
+                //vscp_convertVSCPtoEx( &pThread->m_feedEvent, pEvent );   // Save feed event
 
                 wxThreadError err;
                 if (wxTHREAD_NO_ERROR == (err = pThread->Create())) {
@@ -7059,16 +7071,29 @@ void actionThread_JavaScript::OnExit()
 //
 
 actionThread_Table::actionThread_Table( wxString &strParam,
+                                            vscpEvent *pEvent,
                                             wxThreadKind kind )
                                                 : wxThread( kind )
 {
-    //OutputDebugString( "actionThreadURL: Create");
+    m_pFeedEvent = NULL;
     m_strParam = strParam;
+    
+    
+    if ( NULL != pEvent ) {
+        m_pFeedEvent = new vscpEvent;
+        if ( NULL != m_pFeedEvent ) {
+            vscp_copyVSCPEvent( m_pFeedEvent, pEvent );
+        }
+    }
+    
 }
 
 actionThread_Table::~actionThread_Table()
 {
-
+    if ( NULL != m_pFeedEvent ) {
+        vscp_deleteVSCPevent( m_pFeedEvent );
+        m_pFeedEvent = NULL;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7157,8 +7182,13 @@ void *actionThread_Table::Entry()
         // format: dattime;value
         if ( !tkz.HasMoreTokens() ) {
             
+            wxString sql = pTable->getSQLInsert();
+            
+            // Escapes
+            dmElement::handleEscapes( m_pFeedEvent, sql );
+            
             // Log the data
-            if ( !pTable->logData( dt, value ) ) {
+            if ( !pTable->logData( dt, value, sql ) ) {
                 gpobj->logMsg( _( "[Action] Write Table: Failed to log data (datetime,value)"), 
                                     DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             }
@@ -7169,13 +7199,16 @@ void *actionThread_Table::Entry()
             
             // Get custom sql expression
             sql = tkz.GetNextToken();
-            
+                        
             wxString strResult;
-            if ( vscp_decodeBase64IfNeeded( sql, strResult ) ) {
+            if ( !vscp_decodeBase64IfNeeded( sql, strResult ) ) {
                 gpobj->logMsg( _( "[Action] Write Table: Failed to decode sql string. Will continue anyway."), 
                                     DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
                 strResult = sql;
             }
+            
+            // Escapes
+            dmElement::handleEscapes( m_pFeedEvent, strResult );
                     
             // Log the data
             if ( !pTable->logData( dt, value, strResult ) ) {
@@ -7201,7 +7234,7 @@ void *actionThread_Table::Entry()
         sql = tkz.GetNextToken();
             
         wxString strResult;
-        if ( vscp_decodeBase64IfNeeded( sql, strResult ) ) {
+        if ( !vscp_decodeBase64IfNeeded( sql, strResult ) ) {
             gpobj->logMsg( _( "[Action] Write Table: Failed to decode sql string. Will continue anyway."), 
                                     DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             strResult = sql;
@@ -7234,79 +7267,3 @@ void actionThread_Table::OnExit()
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
-// doActionWriteTable
-//
-/*
-bool doActionWriteTable( vscpEvent *pDMEvent )
-{
-    wxString tblName;
-    time_t timestamp;
-    double value;
-    bool bFound = false;
-
-    // Write in possible escapes
-    wxString wxstr = m_actionparam;
-    handleEscapes( pDMEvent, wxstr );
-
-    wxString wxstrErr = _( "[Action] Write Table: Wrong action parameter. Parameter= ");
-    wxstrErr += wxstr;
-    wxstrErr += _("\n");
-
-    wxStringTokenizer tkz( wxstr, wxT(";") );
-
-    if ( !tkz.HasMoreTokens() ) {
-        // Strange action parameter
-        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
-        return false;
-    }
-    tblName = tkz.GetNextToken();
-    tblName.MakeUpper(); // Make sure it's uppercase
-
-    if ( !tkz.HasMoreTokens() ) {
-        // Strange action parameter
-        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
-        return false;
-    }
-    timestamp = vscp_readStringValue( tkz.GetNextToken() );
-
-    if ( !tkz.HasMoreTokens() ) {
-        // Strange action parameter
-        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
-        return false;
-    }
-    value = atof( tkz.GetNextToken().mbc_str() );
-
-    gpobj->m_userTableObjects.m_mutexTableList.Lock();
-    
-    listVSCPTables::iterator iter;
-    for (iter = gpobj->m_userTableObjects.m_listTables.begin();
-            iter != gpobj->m_userTableObjects.m_listTables.end();
-            ++iter)
-    {
-        CVSCPTable *pTable = *iter;
-        if ( 0 == strcmp( pTable->m_vscpFileHead.nameTable, tblName.mbc_str() ) ) {
-            pTable->m_mutexThisTable.Lock();
-            pTable->logData( timestamp, value );
-            pTable->m_mutexThisTable.Unlock();
-            bFound = true;
-            break;
-        }
-    }
-    
-    gpobj->m_userTableObjects.m_mutexTableList.Unlock();
-
-    if ( !bFound ) {
-        wxString wxstrErr =
-            wxString::Format( _("[Action] Write Table: Table [%s] not found. Parameter='%s' "),
-            (const char *)tblName.c_str(),
-            (const char *)wxstr.c_str() );
-        wxstrErr += wxstr;
-        wxstrErr += _("\n");
-        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
-        return false;
-    }
-
-    return true;
-}
-*/

@@ -91,8 +91,12 @@ public:
      *  @param xlavel Name of X-axis
      *  @param ylabel Name of Y axis
      *  @param note Diagram note
-     *  @param sqlcreate SQL to create table
-     *  @param sqlinsert SQL to insert value in table
+     *  @param sqlcreate SQL to create table.  Defaults to
+     *              CREATE TABLE 'vscptable' ( `idx` INTEGER NOT NULL PRIMARY KEY UNIQUE, `datetime` TEXT, `value` REAL DEFAULT 0 );
+     *          if empty.
+     *  @param sqlinsert SQL to insert value in table Defaults to
+     *              INSERT INTO 'vscptable' (datetime,value) VALUES ('%%s','%%f');
+     *          if empty.
      *  @param sqldelete SQL to delete item in table
      *  @param description Description for table
      *  @return true on success, false otherwise
@@ -118,8 +122,12 @@ public:
      *  @param xlavel Name of X-axis
      *  @param ylabel Name of Y axis
      *  @param note Diagram note
-     *  @param sqlcreate SQL to create table
-     *  @param sqlinsert SQL to insert value in table
+     *  @param sqlcreate SQL to create table. Defaults to
+     *              CREATE TABLE 'vscptable' ( `idx` INTEGER NOT NULL PRIMARY KEY UNIQUE, `datetime` TEXT, `value` REAL DEFAULT 0 );
+     *          if empty.
+     *  @param sqlinsert SQL to insert value in table. Defaults to
+     *              INSERT INTO 'vscptable' (datetime,value) VALUES ('%%s','%%f');
+     *          if empty.
      *  @param sqldelete SQL to delete item in table
      *  @param description Description for table
      *  @return true on success, false otherwise

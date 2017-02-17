@@ -1605,6 +1605,7 @@ bool CControlObject::startDeviceWorkerThreads( void )
             pDeviceItem->startDriver( this );
 
         } // Valid device item
+        
     }
 
     return true;

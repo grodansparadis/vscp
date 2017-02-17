@@ -131,22 +131,21 @@ bool CVSCPTable::setTableInfo( const wxString &owner,
                                 const wxString &sqlinsert,
                                 const wxString &sqldelete,
                                 const wxString &description )
-{
-    m_rights = rights;
-    m_labelTitle = title;
-    m_labelX = xname;
-    m_labelY = yname;
-    m_labelNote = note;
-    m_sqlCreate = sqlcreate;
-    m_sqlInsert = sqlinsert;
-    m_sqlDelete = sqldelete;
-    m_tableDescription = description;
-    
+{  
     // Get useritem
-    m_pOwner = gpobj->m_userList.getUser( owner );
-    if ( NULL == m_pOwner ) return false;
+    CUserItem *pUserItem = gpobj->m_userList.getUser( owner );
+    if ( NULL == pUserItem ) return false;
     
-    return true;
+    return setTableInfo( pUserItem,
+                            rights,
+                            title,
+                            xname, 
+                            yname,
+                            note,
+                            sqlcreate,
+                            sqlinsert,
+                            sqldelete,
+                            description );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -188,8 +187,21 @@ bool CVSCPTable::setTableInfo( CUserItem *pUserItem,
     m_labelX = xname;
     m_labelY = yname;
     m_labelNote = note;
-    m_sqlCreate = sqlcreate;
-    m_sqlInsert = sqlinsert;
+    
+    if ( 0 == sqlcreate.Length() ) {
+        m_sqlCreate = _("CREATE TABLE 'vscptable' ( `idx` INTEGER NOT NULL PRIMARY KEY UNIQUE, `datetime` TEXT, `value` REAL DEFAULT 0 );");
+    }
+    else {
+        m_sqlCreate = sqlcreate;
+    }
+    
+    if ( 0 == sqlinsert.Length() ) {
+        m_sqlInsert = _("INSERT INTO 'vscptable' (datetime,value) VALUES ('%%s','%%f');");
+    }
+    else {
+        m_sqlInsert = sqlinsert;
+    }
+    
     m_sqlDelete = sqldelete;
     m_tableDescription = description;
     
@@ -561,16 +573,13 @@ bool CVSCPTable::logData( wxString &strtime, double value )
 
 bool CVSCPTable::logData( wxDateTime &time, double value )
 {
-    wxString strInsert;
-    
-    // Nothing to do if the database is closed
-    if ( NULL != m_dbTable ) return false;
+    wxString strInsert = m_sqlInsert;
     
     if ( m_bValueFirst ) {
-        strInsert.Format( m_sqlInsert, value, time.FormatISOCombined() );
+        strInsert.Printf( m_sqlInsert, value, time.FormatISOCombined().mbc_str() );
     }
     else {
-        strInsert.Format( m_sqlInsert, time.FormatISOCombined(), value );
+        strInsert.Printf( m_sqlInsert, time.FormatISOCombined().mbc_str(), value );
     }
     
     return doInsert( strInsert );
@@ -585,10 +594,10 @@ bool CVSCPTable::logData( wxDateTime &time, double value, const wxString &sqlIns
     wxString strInsertMod;
     
     if ( m_bValueFirst ) {
-        strInsertMod.Format( sqlInsert, value, time.FormatISOCombined() );
+        strInsertMod.Printf( sqlInsert, value, time.FormatISOCombined().mbc_str() );
     }
     else {
-        strInsertMod.Format( sqlInsert, time.FormatISOCombined(), value );
+        strInsertMod.Printf( sqlInsert, time.FormatISOCombined().mbc_str(), value );
     }
     
     return doInsert( strInsertMod );
@@ -602,7 +611,10 @@ bool CVSCPTable::logData( const wxString &sqlInsert )
 {        
     char *zErrMsg = 0;
     
-    if ( SQLITE_OK != sqlite3_exec( gpobj->m_db_vscp_daemon, 
+    // Nothing to do if the database is closed
+    if ( NULL == m_dbTable ) return false;
+    
+    if ( SQLITE_OK != sqlite3_exec( m_dbTable, 
                                         sqlInsert.mbc_str(), NULL, NULL, &zErrMsg ) ) {            
         gpobj->logMsg( wxString::Format( _("Add table item: Unable to insert table item in db. [%s] Err=%s\n"), 
                                             sqlInsert.mbc_str(), zErrMsg ) );
@@ -620,7 +632,10 @@ bool CVSCPTable::doInsert( const wxString strInsert )
 {
     char *zErrMsg = 0;
     
-    if ( SQLITE_OK != sqlite3_exec( gpobj->m_db_vscp_daemon, 
+    // Nothing to do if the database is closed
+    if ( NULL == m_dbTable ) return false;
+    
+    if ( SQLITE_OK != sqlite3_exec( m_dbTable, 
                                         strInsert.mbc_str(), NULL, NULL, &zErrMsg ) ) {            
         gpobj->logMsg( wxString::Format( _("Add table item: Unable to insert table item in db. [%s] Err=%s\n"), 
                                             strInsert.mbc_str(), zErrMsg ) );

@@ -231,6 +231,8 @@ bool vscp_decodeBase64IfNeeded( wxString &wxstr, wxString &strResult )
     // If BASE64 encoded then decode 
     wxstr.Trim( false );
     
+    strResult = wxstr;
+    
     if ( wxstr.StartsWith(_("BASE64:"), &wxstr ) ) {
         
         // Yes should be decoded
