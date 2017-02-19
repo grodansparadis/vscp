@@ -1662,12 +1662,28 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             else if ( str.StartsWith( wxT("%isotime"), &str ) ) {
                 strResult += wxDateTime::Now().FormatISOTime();
             }
+            // Check for isobothms escape
+            else if ( str.StartsWith( wxT("%isobothms"), &str ) ) {
+                // Milliseconds  
+                long            ms; // Milliseconds
+                time_t          s;  // Seconds
+                struct timespec spec;
+                clock_gettime(CLOCK_REALTIME, &spec);
+                s  = spec.tv_sec;
+                ms = round(spec.tv_nsec / 1.0e6); // Convert nanoseconds to milliseconds
+                //int ms = wxDateTime::Now().GetMillisecond();   !!!!! Does not work  !!!!!
+                wxString msstr = wxString::Format(_(".%ld"), ms );
+                strResult += wxDateTime::Now().FormatISODate();
+                strResult += _("T");
+                strResult += wxDateTime::Now().FormatISOTime();
+                strResult += msstr;
+            }
             // Check for isoboth escape
             else if ( str.StartsWith( wxT("%isoboth"), &str ) ) {
                 strResult += wxDateTime::Now().FormatISODate();
                 strResult += _("T");
                 strResult += wxDateTime::Now().FormatISOTime();
-            }
+            }            
             // Check for mstime escape
             else if ( str.StartsWith( wxT("%mstime"), &str ) ) {
                 strResult += wxString::Format( wxT("%d"),

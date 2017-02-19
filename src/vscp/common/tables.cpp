@@ -189,14 +189,14 @@ bool CVSCPTable::setTableInfo( CUserItem *pUserItem,
     m_labelNote = note;
     
     if ( 0 == sqlcreate.Length() ) {
-        m_sqlCreate = _("CREATE TABLE 'vscptable' ( `idx` INTEGER NOT NULL PRIMARY KEY UNIQUE, `datetime` TEXT, `value` REAL DEFAULT 0 );");
+        m_sqlCreate = _(VSCPDB_TABLE_DEFAULT_CREATE);
     }
     else {
         m_sqlCreate = sqlcreate;
     }
     
     if ( 0 == sqlinsert.Length() ) {
-        m_sqlInsert = _("INSERT INTO 'vscptable' (datetime,value) VALUES ('%%s','%%f');");
+        m_sqlInsert = _(VSCPDB_TABLE_DEFAULT_INSERT);
     }
     else {
         m_sqlInsert = sqlinsert;
@@ -244,7 +244,7 @@ bool CVSCPTable::init()
     m_dbFile.Assign( gpobj->m_rootFolder + _("tables/"), m_tableName, _("sqlite3") );
      
     // Check filename 
-    if ( m_dbFile.IsOk() && m_dbFile.FileExists() ) {
+    if ( !m_bInMemory && m_dbFile.IsOk() && m_dbFile.FileExists() ) {
 
         // File name OK - Open database
         
@@ -267,8 +267,9 @@ bool CVSCPTable::init()
     else {
         
         // File does not exist (and should be created) or something else is wrong.
+        // Can also be in-memory db which always should be created,
 
-        if ( m_dbFile.IsOk() ) {
+        if ( m_bInMemory || m_dbFile.IsOk() ) {
             
             // We need to create the database from scratch. This may not work if
             // the database is in a read only location.
@@ -277,7 +278,7 @@ bool CVSCPTable::init()
             str.Printf(_("Path=%s\n"), (const char *)m_dbFile.GetFullPath().mbc_str() );
             gpobj->logMsg( (const char *)str.mbc_str() );
             
-            if ( SQLITE_OK == sqlite3_open( (const char *)m_dbFile.GetFullPath().mbc_str(),
+            if ( SQLITE_OK == sqlite3_open( m_bInMemory ? ":memory:" : (const char *)m_dbFile.GetFullPath().mbc_str(),
                                             &m_dbTable ) ) {            
                 // create the database.
                 if ( !createDatabase() ) {
@@ -575,11 +576,21 @@ bool CVSCPTable::logData( wxDateTime &time, double value )
 {
     wxString strInsert = m_sqlInsert;
     
+    // Milliseconds
+    long    ms; // Milliseconds
+    time_t  s;  // Seconds
+    struct timespec spec;
+    clock_gettime(CLOCK_REALTIME, &spec);
+    s  = spec.tv_sec;
+    ms = round(spec.tv_nsec / 1.0e6); // Convert nanoseconds to milliseconds
+    //int ms = wxDateTime::Now().GetMillisecond();   !!!!! Does not work  !!!!!
+    wxString msstr = wxString::Format(_(".%d"), ms );
+    
     if ( m_bValueFirst ) {
-        strInsert.Printf( m_sqlInsert, value, time.FormatISOCombined().mbc_str() );
+        strInsert.Printf( m_sqlInsert, value, time.FormatISOCombined().mbc_str() + msstr );
     }
     else {
-        strInsert.Printf( m_sqlInsert, time.FormatISOCombined().mbc_str(), value );
+        strInsert.Printf( m_sqlInsert, time.FormatISOCombined().mbc_str() + msstr, value );
     }
     
     return doInsert( strInsert );
@@ -593,11 +604,21 @@ bool CVSCPTable::logData( wxDateTime &time, double value, const wxString &sqlIns
 {        
     wxString strInsertMod;
     
+    // Milliseconds
+    long    ms; // Milliseconds
+    time_t  s;  // Seconds
+    struct timespec spec;
+    clock_gettime(CLOCK_REALTIME, &spec);
+    s  = spec.tv_sec;
+    ms = round(spec.tv_nsec / 1.0e6); // Convert nanoseconds to milliseconds
+    //int ms = wxDateTime::Now().GetMillisecond();   !!!!! Does not work  !!!!!
+    wxString msstr = wxString::Format(_(".%d"), ms );
+    
     if ( m_bValueFirst ) {
-        strInsertMod.Printf( sqlInsert, value, time.FormatISOCombined().mbc_str() );
+        strInsertMod.Printf( sqlInsert, value, time.FormatISOCombined().mbc_str() + msstr );
     }
     else {
-        strInsertMod.Printf( sqlInsert, time.FormatISOCombined().mbc_str(), value );
+        strInsertMod.Printf( sqlInsert, time.FormatISOCombined().mbc_str() + msstr, value );
     }
     
     return doInsert( strInsertMod );
@@ -618,7 +639,20 @@ bool CVSCPTable::logData( const wxString &sqlInsert )
                                         sqlInsert.mbc_str(), NULL, NULL, &zErrMsg ) ) {            
         gpobj->logMsg( wxString::Format( _("Add table item: Unable to insert table item in db. [%s] Err=%s\n"), 
                                             sqlInsert.mbc_str(), zErrMsg ) );
-        return false;
+        return false; 
+    }
+    
+    // If the table is a static table we may need to delete the oldest records here
+    // to keep the table size     
+    if ( ( VSCP_TABLE_STATIC == m_type ) && m_size  ) {  
+        wxString strDel = wxString::Format( VSCPDB_TABLE_DELETE_STATIC, (unsigned long)m_size );
+        if ( SQLITE_OK != sqlite3_exec( m_dbTable, 
+                                            (const char *)strDel.mbc_str(), NULL, NULL, &zErrMsg ) ) {            
+            gpobj->logMsg( wxString::Format( _("Add table item: Unable to delete records from static table. [%s] Err=%s\n"), 
+                                            (const char *)strDel.mbc_str(), zErrMsg ) );
+            return false;
+        }
+    
     }
     
     return true;
