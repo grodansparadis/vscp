@@ -25,8 +25,10 @@
     //#pragma implementation
 #endif
 
-// For compilers that support precompilation, includes "wx.h".
-#include "wx/wxprec.h"
+#ifdef WIN32
+#include <winsock2.h>
+#include <wx/msw/winundef.h>    // https://wiki.wxwidgets.org/WxMSW_Issues
+#endif
 
 #ifdef __BORLANDC__
     #pragma hdrstop
@@ -576,13 +578,19 @@ bool CVSCPTable::logData( wxDateTime &time, double value )
 {
     wxString strInsert = m_sqlInsert;
     
-    // Milliseconds
-    long    ms; // Milliseconds
-    time_t  s;  // Seconds
+    // Milliseconds  
+    long            ms; // Milliseconds
+#ifdef WIN32  
+    SYSTEMTIME st;
+    GetSystemTime( &st );
+    ms = st.wMilliseconds;
+#else                
+    time_t          s;  // Seconds
     struct timespec spec;
-    clock_gettime(CLOCK_REALTIME, &spec);
-    s  = spec.tv_sec;
-    ms = round(spec.tv_nsec / 1.0e6); // Convert nanoseconds to milliseconds
+    clock_gettime( CLOCK_REALTIME, &spec );
+    s = spec.tv_sec;
+    ms = round( spec.tv_nsec / 1.0e6 ); // Convert nanoseconds to milliseconds
+#endif
     //int ms = wxDateTime::Now().GetMillisecond();   !!!!! Does not work  !!!!!
     wxString msstr = wxString::Format(_(".%d"), ms );
     
@@ -604,13 +612,19 @@ bool CVSCPTable::logData( wxDateTime &time, double value, const wxString &sqlIns
 {        
     wxString strInsertMod;
     
-    // Milliseconds
-    long    ms; // Milliseconds
-    time_t  s;  // Seconds
+    // Milliseconds  
+    long            ms; // Milliseconds
+#ifdef WIN32  
+    SYSTEMTIME st;
+    GetSystemTime( &st );
+    ms = st.wMilliseconds;
+#else                
+    time_t          s;  // Seconds
     struct timespec spec;
-    clock_gettime(CLOCK_REALTIME, &spec);
-    s  = spec.tv_sec;
-    ms = round(spec.tv_nsec / 1.0e6); // Convert nanoseconds to milliseconds
+    clock_gettime( CLOCK_REALTIME, &spec );
+    s = spec.tv_sec;
+    ms = round( spec.tv_nsec / 1.0e6 ); // Convert nanoseconds to milliseconds
+#endif
     //int ms = wxDateTime::Now().GetMillisecond();   !!!!! Does not work  !!!!!
     wxString msstr = wxString::Format(_(".%d"), ms );
     

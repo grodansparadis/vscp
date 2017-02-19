@@ -1092,7 +1092,7 @@ bool CUserList::addUser( const wxString& strUser, bool bUnpackNote )
 
 CUserItem * CUserList::getUser( const wxString& user )
 {
-    m_userhashmap[ user ];
+    return m_userhashmap[ user ];
 }
 
 ///////////////////////////////////////////////////////////////////////////////

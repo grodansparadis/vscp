@@ -1666,11 +1666,17 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             else if ( str.StartsWith( wxT("%isobothms"), &str ) ) {
                 // Milliseconds  
                 long            ms; // Milliseconds
+#ifdef WIN32  
+                SYSTEMTIME st;
+                GetSystemTime( &st );
+                ms = st.wMilliseconds;
+#else                
                 time_t          s;  // Seconds
                 struct timespec spec;
                 clock_gettime(CLOCK_REALTIME, &spec);
                 s  = spec.tv_sec;
                 ms = round(spec.tv_nsec / 1.0e6); // Convert nanoseconds to milliseconds
+#endif
                 //int ms = wxDateTime::Now().GetMillisecond();   !!!!! Does not work  !!!!!
                 wxString msstr = wxString::Format(_(".%ld"), ms );
                 strResult += wxDateTime::Now().FormatISODate();

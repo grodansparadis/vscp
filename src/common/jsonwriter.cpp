@@ -12,6 +12,10 @@
     #pragma implementation "jsonwriter.cpp"
 #endif
 
+#ifdef WIN32
+#include <winsock2.h>
+#include <wx/msw/winundef.h>    // https://wiki.wxwidgets.org/WxMSW_Issues
+#endif
 
 #include <wx/jsonwriter.h>
 
