@@ -85,7 +85,7 @@ CVSCPTable::CVSCPTable( const wxString &folder,
                             const vscpTableType type,
                             uint32_t size )
 {
-    m_pOwner = NULL;    // No owner yet
+    m_pUserItemOwner = NULL;    // No owner yet
     m_dbTable = NULL;   // No database handle yet
     
     m_bValueFirst = true;   // %f is placed before %s in insert
@@ -119,6 +119,7 @@ CVSCPTable::~CVSCPTable( void )
         
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // setTableInfo
 //
@@ -133,40 +134,10 @@ bool CVSCPTable::setTableInfo( const wxString &owner,
                                 const wxString &sqlinsert,
                                 const wxString &sqldelete,
                                 const wxString &description )
-{  
-    // Get useritem
-    CUserItem *pUserItem = gpobj->m_userList.getUser( owner );
-    if ( NULL == pUserItem ) return false;
-    
-    return setTableInfo( pUserItem,
-                            rights,
-                            title,
-                            xname, 
-                            yname,
-                            note,
-                            sqlcreate,
-                            sqlinsert,
-                            sqldelete,
-                            description );
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// setTableInfo
-//
-
-bool CVSCPTable::setTableInfo( CUserItem *pUserItem,
-                                const uint16_t rights,
-                                const wxString &title,
-                                const wxString &xname, 
-                                const wxString &yname,
-                                const wxString &note,
-                                const wxString &sqlcreate,
-                                const wxString &sqlinsert,
-                                const wxString &sqldelete,
-                                const wxString &description )
 {
-    // Check pointer
-    if ( NULL == pUserItem ) return NULL;
+    // Owner must have a value
+    if ( 0 == owner.Length() ) return false;
+    m_strOwner = owner;
     
     // the sqlinsert expression must have %f and %s in it for 
     // value and date. It s invalid if not
@@ -204,12 +175,16 @@ bool CVSCPTable::setTableInfo( CUserItem *pUserItem,
         m_sqlInsert = sqlinsert;
     }
     
-    m_sqlDelete = sqldelete;
+    
+    if ( 0 == sqldelete.Length() ) {
+        m_sqlInsert = _(VSCPDB_TABLE_DEFAULT_DELETE);
+    }
+    else {
+        m_sqlInsert = sqldelete;
+    }        
+    
     m_tableDescription = description;
-    
-    // Get useritem
-    m_pOwner = pUserItem;
-    
+        
     return true;
 }
 
@@ -240,9 +215,10 @@ void CVSCPTable::setTableEventInfo( uint16_t vscp_class,
 
 bool CVSCPTable::init() 
 {
-    // Must be initialized
-    if ( NULL == m_pOwner ) return false; 
-    
+    // Get useritem
+    m_pUserItemOwner = gpobj->m_userList.getUser( m_strOwner );
+    if ( NULL == m_pUserItemOwner ) return false;
+        
     m_dbFile.Assign( gpobj->m_rootFolder + _("tables/"), m_tableName, _("sqlite3") );
      
     // Check filename 
@@ -436,10 +412,10 @@ bool CVSCPTable::isThisEventForMe( vscpEvent *pEvent )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// CleanUpAndClose
+// cleanUpAndClose
 //
 
-void CVSCPTable::CleanUpAndClose( void )
+void CVSCPTable::cleanUpAndClose( void )
 {
     // Close the database if it is open
     if ( NULL != m_dbTable ) {
@@ -482,47 +458,40 @@ bool CVSCPTable::createDatabase( void )
     return true;
 }
 
-
-
 ///////////////////////////////////////////////////////////////////////////////
-// getRangeOfDataCount
+// getRecordCount
 //
 
-long CVSCPTable::getRangeOfDataCount( wxDateTime& wxStart, wxDateTime& wxEnd )
+long CVSCPTable::getRecordCount( void )
 {
-    return 0;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// getRangeOfData
-//
-
-long CVSCPTable::getRangeOfData( wxDateTime& wxStart, wxDateTime& wxEnd, void *buf, uint16_t size )
-{
-    return 0;
-}
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// getStaticData
-//
-
-long CVSCPTable::getStaticData( void *buf, uint32_t size )
-{
-
-    return 0;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// getStaticRequiredBuffSize
-//
-
-long CVSCPTable::getStaticRequiredBuffSize( void )
-{
-    return 0;
+    long size = -1; // This is called a pessimistic approach
+    wxString wxstr;
+    char *pErrMsg;
+    sqlite3_stmt *ppStmt;
+        
+    // Check if database is open
+    if ( NULL == m_dbTable ) {
+        gpobj->logMsg( "Database is closed.\n" );
+        return -1;
+    }
+       
+    if ( SQLITE_OK != sqlite3_prepare( m_dbTable,
+                                            VSCPDB_TABLE_COUNT,
+                                            -1,
+                                            &ppStmt,
+                                            NULL ) ) {
+        wxstr = wxString::Format( _("Load tables: Error=%s"), sqlite3_errstr( sqlite3_errcode( m_dbTable ) ) );
+        gpobj->logMsg( wxstr );
+        return false;
+    }
+    
+    if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {              
+        size = sqlite3_column_int( ppStmt, 0 );   // Get record count        
+    } // While
+    
+    sqlite3_finalize( ppStmt );
+    
+    return size;  
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -531,8 +500,7 @@ long CVSCPTable::getStaticRequiredBuffSize( void )
 
 bool CVSCPTable::logData( double jdn, double value )
 {
-    wxDateTime tobj( jdn );
-    
+    wxDateTime tobj( jdn );    
     return logData( tobj, value );
 }
 
@@ -542,8 +510,7 @@ bool CVSCPTable::logData( double jdn, double value )
 
 bool CVSCPTable::logData( const struct tm &tm, double value )
 {
-    wxDateTime tobj( tm );
-    
+    wxDateTime tobj( tm );   
     return logData( tobj, value );
 }
 
@@ -554,7 +521,6 @@ bool CVSCPTable::logData( const struct tm &tm, double value )
 bool CVSCPTable::logData( time_t time, double value )
 {
     wxDateTime tobj( time );
-    
     return logData( tobj, value );
 }
 
@@ -566,7 +532,6 @@ bool CVSCPTable::logData( wxString &strtime, double value )
 {
     wxDateTime tobj;
     tobj.ParseISOCombined( strtime );
-    
     return logData( tobj, value );
 }
 
@@ -601,7 +566,7 @@ bool CVSCPTable::logData( wxDateTime &time, double value )
         strInsert.Printf( m_sqlInsert, time.FormatISOCombined().mbc_str() + msstr, value );
     }
     
-    return doInsert( strInsert );
+    return logData( strInsert );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -635,25 +600,40 @@ bool CVSCPTable::logData( wxDateTime &time, double value, const wxString &sqlIns
         strInsertMod.Printf( sqlInsert, time.FormatISOCombined().mbc_str() + msstr, value );
     }
     
-    return doInsert( strInsertMod );
+    return logData( strInsertMod );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // logData
 //
 
-bool CVSCPTable::logData( const wxString &sqlInsert )
-{        
+bool CVSCPTable::logData( const wxString strInsert )
+{
     char *zErrMsg = 0;
     
-    // Nothing to do if the database is closed
-    if ( NULL == m_dbTable ) return false;
+    // Database file must be open
+    if ( NULL == m_dbTable ) {
+        gpobj->logMsg( _("VSCP database file is not open.\n") );
+        return false;
+    }
+    
+    // If max type and the table contains max number of records it should be
+    // cleard before new data is added
+    long nRecords = getRecordCount();
+    if ( ( 0 < nRecords ) && ( VSCP_TABLE_MAX == m_type ) && ( nRecords >= m_size ) ) { 
+        if ( SQLITE_OK != sqlite3_exec( m_dbTable, 
+                                        VSCPDB_TABLE_DEFAULT_DELETE, NULL, NULL, &zErrMsg ) ) {            
+            gpobj->logMsg( wxString::Format( _("Add table item: Unable to delete items in db [VSCP_TABLE_MAX]. [%s] Err=%s\n"), 
+                                                strInsert.mbc_str(), zErrMsg ) );
+            return false; 
+        }
+    }
     
     if ( SQLITE_OK != sqlite3_exec( m_dbTable, 
-                                        sqlInsert.mbc_str(), NULL, NULL, &zErrMsg ) ) {            
+                                        strInsert.mbc_str(), NULL, NULL, &zErrMsg ) ) {            
         gpobj->logMsg( wxString::Format( _("Add table item: Unable to insert table item in db. [%s] Err=%s\n"), 
-                                            sqlInsert.mbc_str(), zErrMsg ) );
-        return false; 
+                                            strInsert.mbc_str(), zErrMsg ) );
+        return false;
     }
     
     // If the table is a static table we may need to delete the oldest records here
@@ -673,25 +653,105 @@ bool CVSCPTable::logData( const wxString &sqlInsert )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// doInsert
+// executeSQL
 //
 
-bool CVSCPTable::doInsert( const wxString strInsert )
+bool CVSCPTable::executeSQL( wxString &sql )
 {
     char *zErrMsg = 0;
     
-    // Nothing to do if the database is closed
-    if ( NULL == m_dbTable ) return false;
+    // Database file must be open
+    if ( NULL == m_dbTable ) {
+        gpobj->logMsg( _("VSCP database file is not open.\n") );
+        return false;
+    }
     
     if ( SQLITE_OK != sqlite3_exec( m_dbTable, 
-                                        strInsert.mbc_str(), NULL, NULL, &zErrMsg ) ) {            
-        gpobj->logMsg( wxString::Format( _("Add table item: Unable to insert table item in db. [%s] Err=%s\n"), 
-                                            strInsert.mbc_str(), zErrMsg ) );
+                                        sql.mbc_str(), NULL, NULL, &zErrMsg ) ) {            
+        gpobj->logMsg( wxString::Format( _("Table: Unable to delete records of table. [%s] Err=%s\n"), 
+                                            sql.mbc_str(), zErrMsg ) );
         return false;
     }
     
     return true;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// getRangeOfDataCount
+//
+
+long CVSCPTable::getRangeOfDataCount( wxDateTime& wxStart, wxDateTime& wxEnd )
+{
+    wxString wxstr;
+    char *pErrMsg;
+    sqlite3_stmt *ppStmt;
+    long count = 0;
+        
+    // Database file must be open
+    if ( NULL == m_dbTable ) {
+        gpobj->logMsg( _("VSCP database file is not open.\n") );
+        return -1;
+    }
+    
+    wxString sql = wxString::Format( _("SELECT COUNT(*) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"),
+                                        (const char *)wxStart.FormatISOCombined(' ').mbc_str(),
+                                        (const char *)wxEnd.FormatISOCombined(' ').mbc_str() );
+    
+    if ( SQLITE_OK != sqlite3_prepare( m_dbTable,
+                                            (const char *)sql.mbc_str(),
+                                            -1,
+                                            &ppStmt,
+                                            NULL ) ) {
+        wxstr = wxString::Format( _("Failed to count records: Error=%s"), 
+                                    sqlite3_errstr( sqlite3_errcode( m_dbTable ) ) );
+        gpobj->logMsg( wxstr );
+        return -1;
+    }
+    
+    if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
+        count = sqlite3_column_int( ppStmt, 0 );
+    }
+    
+    sqlite3_finalize( ppStmt );
+    
+    return count;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getRangeOfData
+//
+
+long CVSCPTable::getRangeOfData( wxDateTime& wxStart, wxDateTime& wxEnd, void *buf, uint16_t size )
+{
+    return 0;
+}
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// getStaticData
+//
+
+long CVSCPTable::getStaticData( void *buf, uint32_t size )
+{
+
+    return 0;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// getStaticRequiredBuffSize
+//
+
+long CVSCPTable::getStaticRequiredBuffSize( void )
+{
+    return 0;
+}
+
+
+
+
 
 /******************************************************************************/
 /*                           CUserTableObjList                                */
@@ -936,7 +996,7 @@ bool CUserTableObjList::readTablesFromDB( void )
             description = wxString::FromUTF8( p );
         }
         
-        if ( !pTable->setTableInfo( pUserItem,
+        if ( !pTable->setTableInfo( pUserItem->getUser(),
                                         rights,
                                         title,
                                         xname, 

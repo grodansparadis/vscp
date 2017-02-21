@@ -490,9 +490,16 @@ bool CControlObject::getVscpCapabilities( uint8_t *pCapability )
 // logMsg
 //
 
-void CControlObject::logMsg(const wxString& msg, const uint8_t level, const uint8_t nType )
+void CControlObject::logMsg(const wxString& msgin, const uint8_t level, const uint8_t nType )
 {
+    wxString msg = msgin;
+    
     m_mutexLogWrite.Lock();
+    
+    // Add CR if not set.
+    if ( wxNOT_FOUND == msg.find( _("\n") ) ) {
+        msg += _("\n");
+    }
 
     wxDateTime datetime( wxDateTime::GetTimeNow() );
     wxString wxdebugmsg;
@@ -976,7 +983,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
                             NULL,
                             _("admin"),
                             m_admin_allowfrom,          // Remotes allows to connect     
-                            _("*:*"),                     // All events
+                            _("*:*"),                   // All events
                             VSCP_ADD_USER_FLAG_ADMIN ); // Not in DB
     
     //==========================================================================
@@ -2320,12 +2327,12 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
 
-                if (subchild->GetName() == wxT("security")) {
-                    m_admin_user = subchild->GetAttribute(wxT("user"), wxT("admin"));
-                    m_admin_password = subchild->GetAttribute(wxT("password"), wxT("secret"));
-                    m_admin_allowfrom = subchild->GetAttribute(wxT("allowfrom"), wxT("*"));                    
+                if ( subchild->GetName() == wxT("security") ) {
+                    m_admin_user = subchild->GetAttribute( wxT("user"), wxT("admin") );
+                    m_admin_password = subchild->GetAttribute( wxT("password"), wxT("secret") );
+                    m_admin_allowfrom = subchild->GetAttribute( wxT("allowfrom"), wxT("*") );                    
                 }
-                else if (subchild->GetName() == wxT("loglevel")) {
+                else if ( subchild->GetName() == wxT("loglevel") ) {
                     
                     wxString str = subchild->GetNodeContent();
                     str.Trim();
@@ -3361,7 +3368,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     }
                     else {                       
                         // Invalid type
-                        logMsg( _("Reading table xml info: Invalid type!") );
+                        logMsg( _("Reading table xml info: Invalid type!\n") );
                         goto xml_table_error;
                     }
                     
@@ -3386,7 +3393,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                                                 subchild->GetAttribute( wxT("sqlinsert"), wxT("") ),
                                                 subchild->GetAttribute( wxT("sqldelete"), wxT("") ),
                                                 subchild->GetAttribute( wxT("description"), wxT("") ) ) ) {
-                            logMsg(_("Reading table xml info: Could not set table info!"));
+                            logMsg(_("Reading table xml info: Could not set table info!\n"));
                             delete pTable;
                             goto xml_table_error;
                         }
@@ -3401,7 +3408,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                         
                         if ( !m_userTableObjects.addTable( pTable ) ) {
                             delete pTable;
-                            logMsg(_("Reading table xml info: Could not add new table (name conflict?)!"));
+                            logMsg(_("Reading table xml info: Could not add new table (name conflict?)!\n"));
                         };
                         
                     }

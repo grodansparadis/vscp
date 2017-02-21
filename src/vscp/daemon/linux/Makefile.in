@@ -78,6 +78,7 @@ VSCPD_SPECIALS = vscphelper.o \
 	v7.o  \
 	mongoose.o\
 	sqlite3.o \
+	sqlite3math.o\
 
 # Add object files that always should be built here
 ALWAYS_BUILD = 
@@ -149,6 +150,9 @@ frozen.o: ../../../common/frozen.o ../../../common/frozen.h
 	
 sqlite3.o: ../../../common/sqlite3.o
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c  ../../../common/sqlite3.c -o $@
+
+sqlite3math.o: ../../../common/sqlite3math.o
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c  ../../../common/sqlite3math.c -o $@	
 
 vscpd: $(VSCPD_OBJECTS) $(VSCPD_SPECIALS)
 	$(CXX) -o $@ $(VSCPD_OBJECTS) $(VSCPD_SPECIALS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)

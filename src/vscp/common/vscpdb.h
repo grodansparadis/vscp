@@ -543,16 +543,24 @@
 #define VSCPDB_TABLE_GET_COLUMNS "pragma table_info ('vscptable');"
 
 // If the table is a static table we may need to delete the oldest records here
-// to keep the table size constant
-//#define VSCPDB_TABLE_DELETE_STATIC "DELETE FROM vscptable WHERE ROWID IN (SELECT ROWID FROM vscptable ORDER BY ROWID ASC LIMIT %lu);"
-#define VSCPDB_TABLE_DELETE_STATIC "DELETE FROM vscptable WHERE ROWID IN (SELECT ROWID FROM vscptable ORDER BY ROWID DESC LIMIT -1 OFFSET %lu);"
-//DELETE FROM mytable WHERE ROWID IN (SELECT ROWID FROM mytable ORDER BY ROWID DESC LIMIT -1 OFFSET 1000)
+// to keep the table size constant. 
+// Keep last n
+#define VSCPDB_TABLE_DELETE_STATIC "DELETE FROM 'vscptable' WHERE ROWID IN (SELECT ROWID FROM 'vscptable' ORDER BY ROWID DESC LIMIT -1 OFFSET %lu);"
+
+// Delete last n
+#define VSCPDB_TABLE_DELETE_LAST "DELETE FROM 'vscptable' WHERE ROWID IN (SELECT ROWID FROM 'vscptable' ORDER BY ROWID ASC LIMIT %lu);"
 
 // Default table create SQL expression. Use if sqlcreate is empty
 #define VSCPDB_TABLE_DEFAULT_CREATE "CREATE TABLE 'vscptable' ( `idx` INTEGER NOT NULL PRIMARY KEY UNIQUE, `datetime` TEXT, `value` REAL DEFAULT 0 );"
 
 // Default table insert SQL expression. Use if sqlinsert is empty
 #define VSCPDB_TABLE_DEFAULT_INSERT "INSERT INTO 'vscptable' (datetime,value) VALUES ('%%s','%%f');"
+
+// Default table delete SQL expression. Delete all records in vscptable
+#define VSCPDB_TABLE_DEFAULT_DELETE "DELETE FROM vscptable;"
+
+// Count number of records in database.
+#define VSCPDB_TABLE_COUNT "SELECT COUNT(*) FROM vscptable;"
 
 #define VSCPDB_ORDINAL_TABLE_ID                 0   //
 #define VSCPDB_ORDINAL_TABLE_ENABLE             1   //

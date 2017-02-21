@@ -29,8 +29,9 @@
 
 // Table types
 enum vscpTableType {
-    VSCP_TABLE_DYNAMIC = 0,
-    VSCP_TABLE_STATIC
+    VSCP_TABLE_DYNAMIC = 0,     // Ever growing table
+    VSCP_TABLE_STATIC,          // Table with specific size
+    VSCP_TABLE_MAX              // Table that go up to size and then restart.
 } ;
 
 // Holds a table item
@@ -81,37 +82,7 @@ public:
     */
     
     bool createDatabase( void );
-    
-    /*!
-     *  Set table info
-     *   
-     *  @param owner The name of the table owner
-     *  @param rights Permissions for this object
-     *  @param title Diagram title
-     *  @param xlavel Name of X-axis
-     *  @param ylabel Name of Y axis
-     *  @param note Diagram note
-     *  @param sqlcreate SQL to create table.  Defaults to
-     *              CREATE TABLE 'vscptable' ( `idx` INTEGER NOT NULL PRIMARY KEY UNIQUE, `datetime` TEXT, `value` REAL DEFAULT 0 );
-     *          if empty.
-     *  @param sqlinsert SQL to insert value in table Defaults to
-     *              INSERT INTO 'vscptable' (datetime,value) VALUES ('%%s','%%f');
-     *          if empty.
-     *  @param sqldelete SQL to delete item in table
-     *  @param description Description for table
-     *  @return true on success, false otherwise
-     */
-    
-    bool setTableInfo( const wxString &owner,
-                            const uint16_t rights,
-                            const wxString &title,
-                            const wxString &xname, 
-                            const wxString &yname,
-                            const wxString &note,
-                            const wxString &sqlcreate,
-                            const wxString &sqlinsert,
-                            const wxString &sqldelete,
-                            const wxString &description ); 
+     
     
     /*!
      *  Set table info
@@ -133,7 +104,7 @@ public:
      *  @return true on success, false otherwise
      */
     
-    bool setTableInfo( CUserItem *pUserItem,
+    bool setTableInfo( const wxString &owner,
                             const uint16_t rights,
                             const wxString &title,
                             const wxString &xname, 
@@ -176,7 +147,7 @@ public:
      * Clean up everything an close he database
      */
     
-    void CleanUpAndClose( void );
+    void cleanUpAndClose( void );
     
     /*!
      * Log data
@@ -241,13 +212,6 @@ public:
     
     bool logData( wxDateTime &time, double value, const wxString &sqlInsert );
     
-    /*!
-     * Log data from SQL expression
-     * 
-     * @param sqlInsert Full SQL expression without variable substitution
-     * @return True on success, false on failure.
-     */
-    bool logData( const wxString &sqlInsert );
     
     /*!
      * Insert data into the table
@@ -257,7 +221,7 @@ public:
      *          inserted and value and date/time inserted.
      * @return true on success, false if failure.
      */
-    bool doInsert( const wxString strInsert );
+    bool logData( const wxString strInsert );
     
     /*!
      * Clear the content of a VSCP table
@@ -265,6 +229,13 @@ public:
      * @return true om success, false on failure.
      */
     bool clearTable( void );
+    
+    /*!
+     * Return number of records in the table
+     * 
+     * @return Record count if >= 0 or error if -1.
+     */
+    long getRecordCount( void );
     
       
     bool start_RangeOfData( wxDateTime& wxStart, wxDateTime& wxEnd, int *phandle );
@@ -350,6 +321,14 @@ public:
     // Get number of records in database
     long getNumberOfRecords( void );
     
+    /*!
+     * Execute SQL expression
+     * 
+     * @param sql SQL expression to execute.
+     * @return True on success, false on failure.
+     */
+    bool executeSQL( wxString &sql );
+    
     // * * * Getters & setters
         
     /*!
@@ -367,8 +346,14 @@ public:
     // Get the table name
     wxString& getTableName( void ) { return m_tableName; };
     
+    // Get SQL create expression
+    wxString& getSQLCreate( void ) { return m_sqlCreate; };
+    
     // Get SQL insert expression
     wxString& getSQLInsert( void ) { return m_sqlInsert; };
+    
+    // Get SQL delete expression
+    wxString& getSQLDelete( void ) { return m_sqlDelete; };
 
 public:
     
@@ -431,8 +416,10 @@ private:
     // SQL to delete table.
     wxString m_sqlDelete;
     
+    wxString m_strOwner;    // owneritem is not available when config is read
+    
     // Owner
-    CUserItem *m_pOwner;
+    CUserItem *m_pUserItemOwner;
     
     /// Permissions for other user to use this table
     uint16_t m_rights;

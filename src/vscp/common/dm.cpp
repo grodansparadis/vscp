@@ -2282,7 +2282,6 @@ bool dmElement::doAction( vscpEvent *pEvent )
             vscp_writeVscpEventToString( pEvent, logStr );
             gpobj->logMsg( _("Event = ") + logStr + _("\n"), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
-            //doActionWriteTable( pEvent );
             {                
                 // Write in possible escapes
                 wxString strParam = m_actionparam;
@@ -2291,8 +2290,6 @@ bool dmElement::doAction( vscpEvent *pEvent )
                 actionThread_Table *pThread = new actionThread_Table( strParam, pEvent );
                 if ( NULL == pThread ) return false;
                 
-                //vscp_convertVSCPtoEx( &pThread->m_feedEvent, pEvent );   // Save feed event
-
                 wxThreadError err;
                 if (wxTHREAD_NO_ERROR == (err = pThread->Create())) {
                     pThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
@@ -2307,6 +2304,81 @@ bool dmElement::doAction( vscpEvent *pEvent )
                 }
 
             }
+            break;
+            
+        case VSCP_DAEMON_ACTION_CODE_CLEAR_TABLE:
+            logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_CLEAR_TABLE.\n") ); // Log
+            gpobj->logMsg( logStr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg(  _("DM = ") + getAsString( false ) + _("\n"), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
+            vscp_writeVscpEventToString( pEvent, logStr );
+            gpobj->logMsg( _("Event = ") + logStr + _("\n"), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
+            
+            {
+                CVSCPTable *pTable;     // Table object
+                wxString wxstrErr;
+                
+                // Write in possible escapes
+                wxString wxstr = m_actionparam;
+                handleEscapes( pEvent, wxstr );
+                
+                wxStringTokenizer tkz( m_actionparam, wxT(";") );
+
+                if ( !tkz.HasMoreTokens() ) {
+                    // Strange action parameter
+                    wxstrErr = _( "[Action] Delete Table: Action parameter is not correct. Parameter= ");
+                    wxstrErr += m_actionparam;
+                    wxstrErr += _("\n");
+                    gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+                    break;
+                }
+    
+                // Get table name
+                wxString name = tkz.GetNextToken();
+    
+                // Get table object
+                if ( NULL == ( pTable = gpobj->m_userTableObjects.getTable( name ) ) ) {        
+                    wxstrErr = _( "[Action] Delete Table: A table with that name was not found. Parameter= ");
+                    wxstrErr += m_actionparam;
+                    wxstrErr += _("\n");
+                    gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+                    return NULL;        
+                }
+
+                if ( !tkz.HasMoreTokens() ) {
+            
+                    wxString sql = pTable->getSQLDelete();
+            
+                    // Escapes
+                    dmElement::handleEscapes( pEvent, sql );
+                    
+                    // Do the delete
+                    if ( !pTable->executeSQL( sql ) ) {
+                        wxstrErr = _( "[Action] Delete Table (internal SQL): Failed SQL= ");
+                        wxstrErr += sql;
+                        wxstrErr += _("\n");
+                        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+                    }
+                    
+                }
+                else {
+    
+                    wxString sql = tkz.GetNextToken();
+            
+                    // Escapes
+                    dmElement::handleEscapes( pEvent, sql );
+                    
+                    // Do the delete
+                    if ( !pTable->executeSQL( sql ) ) {
+                        wxstrErr = _( "[Action] Delete Table (Action parameter SQL): Failed SQL= ");
+                        wxstrErr += sql;
+                        wxstrErr += _("\n");
+                        gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+                    }
+
+                }                
+                
+            }
+            
             break;
 
 #ifndef VSCP_DISABLE_LUA
@@ -7170,6 +7242,11 @@ void *actionThread_Table::Entry()
         gpobj->logMsg( wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return NULL;        
     }
+    
+    wxDateTime from,to;
+    from.ParseDateTime("2017-01-01 00:00:00");
+    to.ParseDateTime("2017-06-01 00:00:00");
+    long count = pTable->getRangeOfDataCount( from, to );
     
     if ( 0 == type ) {
         

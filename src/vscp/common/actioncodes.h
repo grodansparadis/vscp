@@ -194,8 +194,13 @@
 
 // Write to table
 // Format: tablename,date,float
-// Example: temperature_furnice,%unixtime,%measurement.float 
+// Example: temperature_furnice,%isobothms,%measurement.float 
 #define VSCP_DAEMON_ACTION_CODE_WRITE_TABLE	            0x00000080  // Write Table
+
+// Clear table
+// Format: tablename[,optional SQL expression]
+// Example: table1 
+#define VSCP_DAEMON_ACTION_CODE_CLEAR_TABLE	            0x00000081  // Write Table
 
 // Run LUA script
 // Format: script(params);rv

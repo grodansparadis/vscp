@@ -68,7 +68,7 @@ extern CControlObject *gpobj;
 //
 
 VSCPClientThread::VSCPClientThread()
-: wxThread(wxTHREAD_JOINABLE)
+    : wxThread(wxTHREAD_JOINABLE)
 {
     m_bQuit = false;
     m_pCtrlObject = NULL;
