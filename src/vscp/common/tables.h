@@ -229,30 +229,14 @@ public:
      * @return true om success, false on failure.
      */
     bool clearTable( void );
-    
-    /*!
-     * Return number of records in the table
-     * 
-     * @return Record count if >= 0 or error if -1.
-     */
-    long getRecordCount( void );
-    
-      
+
     bool start_RangeOfData( wxDateTime& wxStart, wxDateTime& wxEnd, int *phandle );
 
     bool end_RangeOfData( int *phandle, vscpTableItem *pItem );
     
     bool getItem_RangeOfData( int *phandle );
 
-    /*! 
-        Get number of records for a range of data
-        @param from date/time from which data should be fetched
-        @param to date/time to which data should be fetched
-        @return Number of records read or to read or -1 if error.
-    */
-    
-    long getRangeOfDataCount( wxDateTime& wxStart, wxDateTime& wxEnd );
-    
+       
     /*!
         Get a data range
         @param from date/time from which data should be fetched
@@ -295,31 +279,89 @@ public:
     
     wxDateTime getLastDate( void );
     
-    /*!
-     * Get max value
-    */
-    
-    double getMax( wxDateTime from, wxDateTime to );
     
     /*!
-     * Get min value
+     * Get number of records in database
+     * 
+     * @param pCount Pointer to uint32_t which will get the total number of 
+     *          records in the table.
+     * @return true on success, false on failure.
+     * 
+     */
+    
+    bool getNumberOfRecords( uint32_t *pCount );
+    
+    /*! 
+        Get number of records for a range of data
+        @param from date/time from which data should be fetched
+        @param to date/time to which data should be fetched
+        @param pCount Pointer to uint32_t that will get count.
+        @return true on success, false on failure.
     */
     
-    double getMin( wxDateTime from, wxDateTime to );
+    bool getNumberOfRecordsForRange( wxDateTime& wxStart, wxDateTime& wxEnd, uint32_t *pCount );
     
     /*!
-     * Calculate mean over a range
-    */
+     * Get sum value  from a range of values
+     * 
+     * @param wxStart Datetime from which median should be searched.
+     * @param wxEnd Datetime to which median should be searched.
+     * @param pSum Pointer to double that will receive the sum value for 
+     *          the range.
+     * @return true on success, false on failure.   
+     */
     
-    double getMean( wxDateTime from, wxDateTime to );
+    bool getSumValue( wxDateTime wxStart, wxDateTime wxEnd, double *pSum  );
     
     /*!
-     * Get median value
-    */
-    double getMedian( wxDateTime from, wxDateTime to );
+     * Get min value from a range of values
+     * 
+     * @param wxStart Datetime from which median should be searched.
+     * @param wxEnd Datetime to which median should be searched.
+     * @param pMedian Pointer to double that will receive the min value for 
+     *          the range.
+     * @return true on success, false on failure.   
+     */
+    
+    bool getMinValue( wxDateTime wxStart, wxDateTime wxEnd, double *pMin  );
+    
 
-    // Get number of records in database
-    long getNumberOfRecords( void );
+    /*!
+     * Get max value from a range of values
+     * 
+     * @param wxStart Datetime from which median should be searched.
+     * @param wxEnd Datetime to which median should be searched.
+     * @param pMedian Pointer to double that will receive the max value for 
+     *          the range.
+     * @return true on success, false on failure.
+     */
+        
+    bool getMaxValue( wxDateTime wxStart, wxDateTime wxEnd, double *pMax );
+    
+    
+    /*!
+     * Calculate mean over a range of values
+     * 
+     * @param wxStart Datetime from which median should be searched.
+     * @param wxEnd Datetime to which median should be searched.
+     * @param pMedian Pointer to double that will receive the avarage for the range.
+     * @return true on success, false on failure.   
+     */
+
+    bool getAverageValue(wxDateTime wxStart, wxDateTime wxEnd, double *pAvarage);
+
+    
+    /*!
+     * Get median value from a range of values
+     * 
+     * @param wxStart Datetime from which median should be searched.
+     * @param wxEnd Datetime to which median should be searched.
+     * @param pMedian Pointer to double that will receive the median for the range.
+     * @return true on success, false on failure.   
+     */
+
+    bool getMedianValue( wxDateTime wxStart, wxDateTime wxEnd, double *pMedian );
+        
     
     /*!
      * Execute SQL expression
@@ -329,7 +371,6 @@ public:
      */
     bool executeSQL( wxString &sql );
     
-    // * * * Getters & setters
         
     /*!
      *  Set path to database

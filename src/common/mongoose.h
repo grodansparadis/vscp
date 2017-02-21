@@ -1547,6 +1547,8 @@ typedef struct stat cs_stat_t;
 #define MG_ENABLE_FILESYSTEM 1
 #endif
 
+#define CS_DEFINE_DIRENT
+
 #endif /* CS_PLATFORM == CS_P_STM32 */
 #endif /* CS_COMMON_PLATFORMS_PLATFORM_STM32_H_ */
 #ifdef MG_MODULE_LINES
@@ -1611,6 +1613,11 @@ struct mg_connection;
 uint32_t mg_lwip_get_poll_delay_ms(struct mg_mgr *mgr);
 void mg_lwip_set_keepalive_params(struct mg_connection *nc, int idle,
                                   int interval, int count);
+#endif
+
+/* For older version of LWIP */
+#ifndef ipX_2_ip
+#define ipX_2_ip(x) (x)
 #endif
 
 #endif /* MG_LWIP */
@@ -3125,6 +3132,8 @@ struct mg_ssl_if_conn_params {
   const char *ca_cert;
   const char *server_name;
   const char *cipher_suites;
+  const char *psk_identity;
+  const char *psk_key;
 };
 
 enum mg_ssl_if_result mg_ssl_if_conn_init(
@@ -3542,6 +3551,15 @@ struct mg_connect_opts {
    * name verification.
    */
   const char *ssl_server_name;
+  /*
+   * PSK identity and key. Identity is a NUL-terminated string and key is a hex
+   * string. Key must be either 16 or 32 bytes (32 or 64 hex digits) for AES-128
+   * or AES-256 respectively.
+   * Note: Default list of cipher suites does not include PSK suites, if you
+   * want to use PSK you will need to set ssl_cipher_suites as well.
+   */
+  const char *ssl_psk_identity;
+  const char *ssl_psk_key;
 #endif
 };
 
@@ -3935,6 +3953,9 @@ void mg_sock_addr_to_str(const union socket_address *sa, char *buf, size_t len,
  * returned length is bigger than `dst_len`, the overflow bytes are discarded.
  */
 int mg_hexdump(const void *buf, int len, char *dst, int dst_len);
+
+/* Same as mg_hexdump, but with output going to file instead of a buffer. */
+void mg_hexdumpf(FILE *fp, const void *buf, int len);
 
 /*
  * Generates human-readable hexdump of the data sent or received by the

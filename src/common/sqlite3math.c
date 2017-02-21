@@ -1,4 +1,9 @@
 /*
+ 
+ http://stackoverflow.com/questions/15763965/how-can-i-calculate-the-median-of-values-in-sqlite
+ http://www.sqlite.org/contrib/download/extension-functions.c?get=25
+ http://www.sqlite.org/loadext.html
+ 
 This library will provide common mathematical and string functions in
 SQL queries using the operating system libraries or provided
 definitions.  It includes the following functions:
@@ -108,7 +113,7 @@ Original code 2006 June 05 by relicoder.
 
 //#include "config.h"
 
-#define COMPILE_SQLITE_EXTENSIONS_AS_LOADABLE_MODULE 1
+//#define COMPILE_SQLITE_EXTENSIONS_AS_LOADABLE_MODULE 1
 #define HAVE_ACOSH 1
 #define HAVE_ASINH 1
 #define HAVE_ATANH 1
@@ -146,6 +151,10 @@ SQLITE_EXTENSION_INIT1
 ** Simple binary tree implementation to use in median, mode and quartile calculations
 ** Tree is not necessarily balanced. That would require something like red&black trees of AVL
 */
+
+#if defined(__cplusplus)
+extern "C" {
+#endif /* __cplusplus */
 
 typedef int(*cmp_func)(const void *, const void *);
 typedef void(*map_iterator)(void*, int64_t, void*);
@@ -1705,7 +1714,9 @@ static void differenceFunc(sqlite3_context *context, int argc, sqlite3_value **a
 ** functions.  This should be the only routine in this file with
 ** external linkage.
 */
-int RegisterExtensionFunctions(sqlite3 *db){
+int RegisterExtensionFunctions( sqlite3 *db )
+{
+    
   static const struct FuncDef {
      char *zName;
      signed char nArg;
@@ -1797,9 +1808,9 @@ int RegisterExtensionFunctions(sqlite3 *db){
       case 2: pArg = (void *)(-1); break;
     }
     //sqlite3CreateFunc
-    /* LMH no error checking */
-    sqlite3_create_function(db, aFuncs[i].zName, aFuncs[i].nArg,
-        aFuncs[i].eTextRep, pArg, aFuncs[i].xFunc, 0, 0);
+    /* LMH no error checking */ 
+    sqlite3_create_function_v2(db, aFuncs[i].zName, aFuncs[i].nArg, 
+        aFuncs[i].eTextRep, pArg, aFuncs[i].xFunc, NULL, NULL, NULL);
 #if 0
     if( aFuncs[i].needCollSeq ){
       struct FuncDef *pFunc = sqlite3FindFunction(db, aFuncs[i].zName, 
@@ -1945,3 +1956,6 @@ void print_elem(void *e, int64_t c, void* p){
   printf("%d => %lld\n", ee,c);
 }
 
+#if defined(__cplusplus)
+}
+#endif /* __cplusplus */

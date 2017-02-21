@@ -7243,10 +7243,21 @@ void *actionThread_Table::Entry()
         return NULL;        
     }
     
+#if 0  // Test of getNumberOfRecordsForRange
     wxDateTime from,to;
-    from.ParseDateTime("2017-01-01 00:00:00");
-    to.ParseDateTime("2017-06-01 00:00:00");
-    long count = pTable->getRangeOfDataCount( from, to );
+    from.ParseDateTime("0000-01-01 00:00:00");
+    to.ParseDateTime("9999-06-01 00:00:00");
+    uint32_t count;
+    pTable->getNumberOfRecordsForRange( from, to, &count );
+#endif  
+    
+#if 1  // Test of getMinValue
+    wxDateTime from,to;
+    from.ParseDateTime("0000-01-01 00:00:00");
+    to.ParseDateTime("9999-06-01 00:00:00");
+    double valueMin;
+    pTable->getSumValue( from, to, &valueMin );
+#endif    
     
     if ( 0 == type ) {
         
