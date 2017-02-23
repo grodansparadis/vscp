@@ -41,13 +41,13 @@
 	"`vscpd_servername`                                 TEXT DEFAULT 'THE-VSCP-DAEMON',"\
 	"`vscpd_syslog_enable`                              INTEGER DEFAULT 1,"\
         "`vscpd_logdb_enable`                               INTEGER DEFAULT 1,"\
-        "`vscpd_db_log_path`                                TEXT DEFAULT '/var/log/vscp/vscpd_log.sqlite3',"\
+        "`vscpd_db_log_path`                                TEXT DEFAULT '/srv/vscp/logs/vscpd_log.sqlite3',"\
 	"`vscpd_generallogfile_enable`                      INTEGER DEFAULT 1,"\
-	"`vscpd_generallogfile_path`                        TEXT DEFAULT '/var/log/vscp/vscpd_log_general',"\
+	"`vscpd_generallogfile_path`                        TEXT DEFAULT '/srv/vscp/logs/vscpd_log_general',"\
 	"`vscpd_securitylogfile_enable`                     INTEGER DEFAULT 1,"\
-	"`vscpd_securitylogfile_path`                       TEXT DEFAULT '/var/log/vscp/vscpd_log_security',"\
+	"`vscpd_securitylogfile_path`                       TEXT DEFAULT '/srv/vscp/logs/vscpd_log_security',"\
 	"`vscpd_accesslogfile_enable`                       INTEGER DEFAULT 1,"\
-	"`vscpd_accesslogFile_path`                         TEXT DEFAULT '/var/log/vscp/vscpd_log_access',"\
+	"`vscpd_accesslogFile_path`                         TEXT DEFAULT '/srv/vscp/logs/vscpd_log_access',"\
 	"`vscpd_tcpipinterface_address`                     TEXT DEFAULT '9598',"\
 	"`vscpd_multicastinterface_address`                 TEXT DEFAULT '9598',"\
 	"`vscpd_mulicastinterface_ttl`                      INTEGER DEFAULT 1,"\
@@ -465,7 +465,7 @@
 //*****************************************************************************
 
 #define VSCPDB_ZONE_CREATE "CREATE TABLE 'zone' ("\
-	"`idx_zone`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,"\
+	"`idx_zone`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`name`         TEXT NOT NULL,"\
 	"`description`	TEXT"\
         ");"
@@ -479,7 +479,7 @@
 //*****************************************************************************
 
 #define VSCPDB_SUBZONE_CREATE "CREATE TABLE `subzone` ("\
-	"`idx_subzone`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"\
+	"`idx_subzone`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`name`         TEXT NOT NULL,"\
 	"`description`	TEXT"\
         ");"

@@ -597,7 +597,7 @@ bool CVSCPTable::logData( const wxString strInsert )
     }
     
     // If max type and the table contains max number of records it should be
-    // cleard before new data is added
+    // cleared before new data is added
     uint32_t nRecords = 0;
     getNumberOfRecords( &nRecords );
     if ( nRecords && ( VSCP_TABLE_MAX == m_type ) && ( nRecords >= m_size ) ) { 
@@ -696,18 +696,20 @@ bool CVSCPTable::getNumberOfRecords( uint32_t *pCount )
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// getNumberOfRecordsForRange
+// getSQLValue
 //
-
-bool CVSCPTable::getNumberOfRecordsForRange( wxDateTime& wxStart, wxDateTime& wxEnd, uint32_t *pCount )
+    
+bool CVSCPTable::getSQLValue( const wxString &sqltemplate, 
+                                    const wxDateTime &wxStart, 
+                                    const wxDateTime &wxEnd, 
+                                    double *pValue  )
 {
     wxString wxstr;
     char *pErrMsg;
     sqlite3_stmt *ppStmt;
-    long count = 0;
     
     // Check pointer
-    if ( NULL == pCount ) return false;
+    if ( NULL == pValue ) return false;
         
     // Database file must be open
     if ( NULL == m_dbTable ) {
@@ -715,7 +717,7 @@ bool CVSCPTable::getNumberOfRecordsForRange( wxDateTime& wxStart, wxDateTime& wx
         return false;
     }
     
-    wxString sql = wxString::Format( _("SELECT COUNT(*) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"),
+    wxString sql = wxString::Format( sqltemplate.mbc_str(),
                                         (const char *)wxStart.FormatISOCombined(' ').mbc_str(),
                                         (const char *)wxEnd.FormatISOCombined(' ').mbc_str() );
     
@@ -724,7 +726,7 @@ bool CVSCPTable::getNumberOfRecordsForRange( wxDateTime& wxStart, wxDateTime& wx
                                             -1,
                                             &ppStmt,
                                             NULL ) ) {
-        wxstr = wxString::Format( _("Failed to count records: Error=%s SQL=%s"), 
+        wxstr = wxString::Format( _("Failed to execute SQL expression: Error=%s SQL=%s"), 
                                     sqlite3_errstr( sqlite3_errcode( m_dbTable ) ),
                                     (const char *)sql.mbc_str());
         gpobj->logMsg( wxstr );
@@ -732,7 +734,7 @@ bool CVSCPTable::getNumberOfRecordsForRange( wxDateTime& wxStart, wxDateTime& wx
     }
     
     if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
-        *pCount = sqlite3_column_int( ppStmt, 0 );
+        *pValue = sqlite3_column_double( ppStmt, 0 );
     }
     
     sqlite3_finalize( ppStmt );
@@ -741,47 +743,27 @@ bool CVSCPTable::getNumberOfRecordsForRange( wxDateTime& wxStart, wxDateTime& wx
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// getNumberOfRecordsForRange
+//
+
+bool CVSCPTable::getNumberOfRecordsForRange( wxDateTime& wxStart, wxDateTime& wxEnd, double *pCount )
+{
+    return getSQLValue( _("SELECT COUNT(*) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"), 
+                                    wxStart, 
+                                    wxEnd, 
+                                    pCount  );
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // getSumValue
 //
     
 bool CVSCPTable::getSumValue( wxDateTime wxStart, wxDateTime wxEnd, double *pSum  )
 {
-    wxString wxstr;
-    char *pErrMsg;
-    sqlite3_stmt *ppStmt;
-    
-    // Check pointer
-    if ( NULL == pSum ) return false;
-        
-    // Database file must be open
-    if ( NULL == m_dbTable ) {
-        gpobj->logMsg( _("VSCP database file is not open.\n") );
-        return false;
-    }
-    
-    wxString sql = wxString::Format( _("SELECT SUM(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"),
-                                        (const char *)wxStart.FormatISOCombined(' ').mbc_str(),
-                                        (const char *)wxEnd.FormatISOCombined(' ').mbc_str() );
-    
-    if ( SQLITE_OK != sqlite3_prepare( m_dbTable,
-                                            (const char *)sql.mbc_str(),
-                                            -1,
-                                            &ppStmt,
-                                            NULL ) ) {
-        wxstr = wxString::Format( _("Failed to count records: Error=%s SQL=%s"), 
-                                    sqlite3_errstr( sqlite3_errcode( m_dbTable ) ),
-                                    (const char *)sql.mbc_str());
-        gpobj->logMsg( wxstr );
-        return false;
-    }
-    
-    if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
-        *pSum = sqlite3_column_int( ppStmt, 0 );
-    }
-    
-    sqlite3_finalize( ppStmt );
-    
-    return true;
+    return getSQLValue( _("SELECT SUM(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"), 
+                                    wxStart, 
+                                    wxEnd, 
+                                    pSum  );
 }
 
 
@@ -791,42 +773,10 @@ bool CVSCPTable::getSumValue( wxDateTime wxStart, wxDateTime wxEnd, double *pSum
     
 bool CVSCPTable::getMinValue( wxDateTime wxStart, wxDateTime wxEnd, double *pMin  )
 {
-    wxString wxstr;
-    char *pErrMsg;
-    sqlite3_stmt *ppStmt;
-    
-    // Check pointer
-    if ( NULL == pMin ) return false;
-        
-    // Database file must be open
-    if ( NULL == m_dbTable ) {
-        gpobj->logMsg( _("VSCP database file is not open.\n") );
-        return false;
-    }
-    
-    wxString sql = wxString::Format( _("SELECT MIN(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"),
-                                        (const char *)wxStart.FormatISOCombined(' ').mbc_str(),
-                                        (const char *)wxEnd.FormatISOCombined(' ').mbc_str() );
-    
-    if ( SQLITE_OK != sqlite3_prepare( m_dbTable,
-                                            (const char *)sql.mbc_str(),
-                                            -1,
-                                            &ppStmt,
-                                            NULL ) ) {
-        wxstr = wxString::Format( _("Failed to count records: Error=%s SQL=%s"), 
-                                    sqlite3_errstr( sqlite3_errcode( m_dbTable ) ),
-                                    (const char *)sql.mbc_str());
-        gpobj->logMsg( wxstr );
-        return false;
-    }
-    
-    if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
-        *pMin = sqlite3_column_int( ppStmt, 0 );
-    }
-    
-    sqlite3_finalize( ppStmt );
-    
-    return true;
+    return getSQLValue( _("SELECT MIN(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"), 
+                                    wxStart, 
+                                    wxEnd, 
+                                    pMin  );
 }
     
 ///////////////////////////////////////////////////////////////////////////////
@@ -835,42 +785,10 @@ bool CVSCPTable::getMinValue( wxDateTime wxStart, wxDateTime wxEnd, double *pMin
     
 bool CVSCPTable::getMaxValue( wxDateTime wxStart, wxDateTime wxEnd, double *pMax )
 {
-    wxString wxstr;
-    char *pErrMsg;
-    sqlite3_stmt *ppStmt;
-    
-    // Check pointer
-    if ( NULL == pMax ) return false;
-     
-    // Database file must be open
-    if ( NULL == m_dbTable ) {
-        gpobj->logMsg( _("VSCP database file is not open.\n") );
-        return false;
-    }
-    
-    wxString sql = wxString::Format( _("SELECT MAX(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"),
-                                        (const char *)wxStart.FormatISOCombined(' ').mbc_str(),
-                                        (const char *)wxEnd.FormatISOCombined(' ').mbc_str() );
-    
-    if ( SQLITE_OK != sqlite3_prepare( m_dbTable,
-                                            (const char *)sql.mbc_str(),
-                                            -1,
-                                            &ppStmt,
-                                            NULL ) ) {
-        wxstr = wxString::Format( _("Failed to count records: Error=%s SQL=%s"), 
-                                    sqlite3_errstr( sqlite3_errcode( m_dbTable ) ),
-                                    (const char *)sql.mbc_str());
-        gpobj->logMsg( wxstr );
-        return false;
-    }
-    
-    if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
-        *pMax = sqlite3_column_int( ppStmt, 0 );
-    }
-    
-    sqlite3_finalize( ppStmt );
-    
-    return true;
+    return getSQLValue( _("SELECT MAX(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"), 
+                                    wxStart, 
+                                    wxEnd, 
+                                    pMax  );
 }
     
 ///////////////////////////////////////////////////////////////////////////////
@@ -879,42 +797,10 @@ bool CVSCPTable::getMaxValue( wxDateTime wxStart, wxDateTime wxEnd, double *pMax
 
 bool CVSCPTable::getAverageValue( wxDateTime wxStart, wxDateTime wxEnd, double *pAvarage ) 
 {
-    wxString wxstr;
-    char *pErrMsg;
-    sqlite3_stmt *ppStmt;
-    
-    // Check pointer
-    if ( NULL == pAvarage ) return false;
-        
-    // Database file must be open
-    if ( NULL == m_dbTable ) {
-        gpobj->logMsg( _("VSCP database file is not open.\n") );
-        return false;
-    }
-    
-    wxString sql = wxString::Format( _("SELECT AVG(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"),
-                                        (const char *)wxStart.FormatISOCombined(' ').mbc_str(),
-                                        (const char *)wxEnd.FormatISOCombined(' ').mbc_str() );
-    
-    if ( SQLITE_OK != sqlite3_prepare( m_dbTable,
-                                            (const char *)sql.mbc_str(),
-                                            -1,
-                                            &ppStmt,
-                                            NULL ) ) {
-        wxstr = wxString::Format( _("Failed to count records: Error=%s SQL=%s"), 
-                                    sqlite3_errstr( sqlite3_errcode( m_dbTable ) ),
-                                    (const char *)sql.mbc_str());
-        gpobj->logMsg( wxstr );
-        return false;
-    }
-    
-    if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
-        *pAvarage = sqlite3_column_int( ppStmt, 0 );
-    }
-    
-    sqlite3_finalize( ppStmt );
-    
-    return true;
+    return getSQLValue( _("SELECT AVG(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"), 
+                                    wxStart, 
+                                    wxEnd, 
+                                    pAvarage  );
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -923,42 +809,160 @@ bool CVSCPTable::getAverageValue( wxDateTime wxStart, wxDateTime wxEnd, double *
 
 bool CVSCPTable::getMedianValue( wxDateTime wxStart, wxDateTime wxEnd, double *pMedian ) 
 {
+    return getSQLValue( _("SELECT MEDIAN(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"), 
+                                    wxStart, 
+                                    wxEnd, 
+                                    pMedian  );
+}
+
+////////////////////////////////////////////////////////////////////////////
+// getStdevValue
+//
+
+bool CVSCPTable::getStdevValue( wxDateTime wxStart, wxDateTime wxEnd, double *pStdev ) 
+{
+    return getSQLValue( _("SELECT STDEV(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"), 
+                                    wxStart, 
+                                    wxEnd, 
+                                    pStdev  );
+}
+
+////////////////////////////////////////////////////////////////////////////
+// getVarianceValue
+//
+
+bool CVSCPTable::getVarianceValue( wxDateTime wxStart, wxDateTime wxEnd, double *pVariance ) 
+{
+    return getSQLValue( _("SELECT VARIANCE(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"), 
+                                    wxStart, 
+                                    wxEnd, 
+                                    pVariance  );
+}
+
+////////////////////////////////////////////////////////////////////////////
+// getModeValue
+//
+
+bool CVSCPTable::getModeValue( wxDateTime wxStart, wxDateTime wxEnd, double *pMode ) 
+{
+    return getSQLValue( _("SELECT MODE(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"), 
+                                    wxStart, 
+                                    wxEnd, 
+                                    pMode  );
+}
+
+
+////////////////////////////////////////////////////////////////////////////
+// getLowerQuartileValue
+//
+
+bool CVSCPTable::getLowerQuartileValue( wxDateTime wxStart, wxDateTime wxEnd, double *pLowerQuartile ) 
+{
+    return getSQLValue( _("SELECT LOWER_QUARTILE(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"), 
+                                    wxStart, 
+                                    wxEnd, 
+                                    pLowerQuartile  );
+}
+
+////////////////////////////////////////////////////////////////////////////
+// getUppeQuartileValue
+//
+
+bool CVSCPTable::getUppeQuartileValue( wxDateTime wxStart, wxDateTime wxEnd, double *pUpperQuartile ) 
+{
+    return getSQLValue( _("SELECT UPPER_QUARTILE(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"), 
+                                    wxStart, 
+                                    wxEnd, 
+                                    pUpperQuartile  );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// prepareRangeOfData
+//
+
+bool CVSCPTable::prepareRangeOfData( wxDateTime& wxStart, 
+                                            wxDateTime& wxEnd, 
+                                            sqlite3_stmt **ppStmt, 
+                                            bool bAll )
+{
+    wxString swlInsert;
     wxString wxstr;
     char *pErrMsg;
-    sqlite3_stmt *ppStmt;
-    
-    // Check pointer
-    if ( NULL == pMedian ) return false;
-    
+            
     // Database file must be open
     if ( NULL == m_dbTable ) {
         gpobj->logMsg( _("VSCP database file is not open.\n") );
         return false;
     }
     
-    wxString sql = wxString::Format( _("SELECT MEDIAN(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"),
+    if ( bAll ) {
+        swlInsert = _("SELECT datetime,value,* FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';");
+    }
+    else  {
+        swlInsert = _("SELECT datetime,value FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';");
+    }
+    
+    wxString sql = wxString::Format( swlInsert.mbc_str(),
                                         (const char *)wxStart.FormatISOCombined(' ').mbc_str(),
                                         (const char *)wxEnd.FormatISOCombined(' ').mbc_str() );
     
     if ( SQLITE_OK != sqlite3_prepare( m_dbTable,
                                             (const char *)sql.mbc_str(),
                                             -1,
-                                            &ppStmt,
+                                            ppStmt,
                                             NULL ) ) {
-        wxstr = wxString::Format( _("Failed to count records: Error=%s SQL=%s"), 
+        wxstr = wxString::Format( _("Failed to execute SQL expression: Error=%s SQL=%s"), 
                                     sqlite3_errstr( sqlite3_errcode( m_dbTable ) ),
                                     (const char *)sql.mbc_str());
         gpobj->logMsg( wxstr );
         return false;
     }
     
-    if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
-        *pMedian = sqlite3_column_int( ppStmt, 0 );
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getRowRangeOfData
+//
+
+bool CVSCPTable::getRowRangeOfData( sqlite3_stmt *ppStmt, wxString& rowData )
+{
+    if ( SQLITE_ROW != sqlite3_step( ppStmt ) ) {
+        return false;
     }
     
-    sqlite3_finalize( ppStmt );
+    rowData.Empty();
+    
+    // Fill in the data
+    int count = sqlite3_data_count( ppStmt );
+    
+    for ( int i=0; i<count; i++ ) {
+        
+        // Skip 'datetime' and 'value' they are in pos 0 and 1
+        if ( i>1 ) {
+            const char *pName = sqlite3_column_name( ppStmt, i );
+            if ( NULL != strstr( pName, "datetime") ) continue;
+            if ( NULL != strstr( pName, "value") ) continue;            
+        }
+        
+        const unsigned char *p = sqlite3_column_text( ppStmt, i );
+        if ( NULL != p ) {
+            rowData += wxString::FromUTF8( (const char *)p );
+        }
+        
+        if ( i<(count-1) ) rowData += _("|");
+    }
     
     return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// finalizeRangeOfData
+//
+
+bool CVSCPTable::finalizeRangeOfData( sqlite3_stmt *ppStmt )
+{
+    return ( SQLITE_OK== sqlite3_finalize( ppStmt ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

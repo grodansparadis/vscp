@@ -2362,8 +2362,15 @@ bool dmElement::doAction( vscpEvent *pEvent )
                 }
                 else {
     
-                    wxString sql = tkz.GetNextToken();
-            
+                    wxString sql;
+                    wxString str = tkz.GetNextToken();
+                    
+                    if ( !vscp_decodeBase64IfNeeded( sql, str ) ) {
+                        gpobj->logMsg( _( "[Action] Write Table: Failed to decode sql string. Will continue anyway."), 
+                                    DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+                        sql = str;
+                    }
+                        
                     // Escapes
                     dmElement::handleEscapes( pEvent, sql );
                     
@@ -7247,17 +7254,50 @@ void *actionThread_Table::Entry()
     wxDateTime from,to;
     from.ParseDateTime("0000-01-01 00:00:00");
     to.ParseDateTime("9999-06-01 00:00:00");
-    uint32_t count;
+    double count;
     pTable->getNumberOfRecordsForRange( from, to, &count );
 #endif  
     
-#if 1  // Test of getMinValue
+#if 0  // Test of getxxxxxValue
     wxDateTime from,to;
     from.ParseDateTime("0000-01-01 00:00:00");
     to.ParseDateTime("9999-06-01 00:00:00");
-    double valueMin;
-    pTable->getSumValue( from, to, &valueMin );
+    double val;
+    //pTable->getSumValue( from, to, &val );
+    //pTable->getMinValue( from, to, &val );
+    //pTable->getMaxValue( from, to, &val );
+    //pTable->getAverageValue( from, to, &val );
+    //pTable->getMedianValue( from, to, &val );
+    //pTable->getStdevValue( from, to, &val );
+    //pTable->getVarianceValue( from, to, &val );
+    //pTable->getModeValue( from, to, &val );
+    pTable->getUppeQuartileValue( from, to, &val );
+#endif
+
+    
+    
+#if 1  // TEST Get range of data
+    wxPrintf( _(">>>>>") + wxDateTime::Now().FormatISOTime() + _("\n") );
+    
+    sqlite3_stmt *ppStmt;
+    wxDateTime from,to;
+    from.ParseDateTime("0000-01-01 00:00:00");
+    to.ParseDateTime("9999-06-01 00:00:00");
+   
+    if ( pTable->prepareRangeOfData( from, to, &ppStmt, true ) ) {
+        
+        wxString rowData;
+        while ( pTable->getRowRangeOfData( ppStmt, rowData ) ) {
+            gpobj->logMsg( rowData, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        }
+        
+        pTable->finalizeRangeOfData( ppStmt );
+    }
+    
+    wxPrintf( _(">>>>>") + wxDateTime::Now().FormatISOTime() + _("\n") );
 #endif    
+    
+    
     
     if ( 0 == type ) {
         

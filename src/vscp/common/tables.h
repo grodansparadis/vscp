@@ -291,21 +291,37 @@ public:
     
     bool getNumberOfRecords( uint32_t *pCount );
     
+    /*!
+     * Get a double value from a SQL expression. HELPER
+     * 
+     * @param sqltemplate Template SQL expression to execute. It should return a numerical
+     *          value as result 0. The template must contain two %s for the dates
+     *          that specifies the range.
+     * @param from date/time from which data should be fetched.
+     * @param to date/time to which data should be fetched.
+     * @param pValue Pointer to double that will receive result.
+     * @return true on success, false on failure.
+     */
+    bool getSQLValue( const wxString& sqltemplate, 
+                        const wxDateTime& wxStart, 
+                        const wxDateTime& wxEnd, 
+                        double *pValue  );
+    
     /*! 
         Get number of records for a range of data
-        @param from date/time from which data should be fetched
-        @param to date/time to which data should be fetched
-        @param pCount Pointer to uint32_t that will get count.
+        @param wxStart Datetime from which data should be searched.
+        @param wxEnd Datetime to which data should be searched.
+        @param pCount Pointer to double that will get count.
         @return true on success, false on failure.
     */
     
-    bool getNumberOfRecordsForRange( wxDateTime& wxStart, wxDateTime& wxEnd, uint32_t *pCount );
+    bool getNumberOfRecordsForRange( wxDateTime& wxStart, wxDateTime& wxEnd, double *pCount );
     
     /*!
      * Get sum value  from a range of values
      * 
-     * @param wxStart Datetime from which median should be searched.
-     * @param wxEnd Datetime to which median should be searched.
+     * @param wxStart Datetime from which data should be searched.
+     * @param wxEnd Datetime to which data should be searched.
      * @param pSum Pointer to double that will receive the sum value for 
      *          the range.
      * @return true on success, false on failure.   
@@ -316,8 +332,8 @@ public:
     /*!
      * Get min value from a range of values
      * 
-     * @param wxStart Datetime from which median should be searched.
-     * @param wxEnd Datetime to which median should be searched.
+     * @param wxStart Datetime from which data should be searched.
+     * @param wxEnd Datetime to which data should be searched.
      * @param pMedian Pointer to double that will receive the min value for 
      *          the range.
      * @return true on success, false on failure.   
@@ -329,8 +345,8 @@ public:
     /*!
      * Get max value from a range of values
      * 
-     * @param wxStart Datetime from which median should be searched.
-     * @param wxEnd Datetime to which median should be searched.
+     * @param wxStart Datetime from which data should be searched.
+     * @param wxEnd Datetime to which data should be searched.
      * @param pMedian Pointer to double that will receive the max value for 
      *          the range.
      * @return true on success, false on failure.
@@ -342,8 +358,8 @@ public:
     /*!
      * Calculate mean over a range of values
      * 
-     * @param wxStart Datetime from which median should be searched.
-     * @param wxEnd Datetime to which median should be searched.
+     * @param wxStart Datetime from which data should be searched.
+     * @param wxEnd Datetime to which data should be searched.
      * @param pMedian Pointer to double that will receive the avarage for the range.
      * @return true on success, false on failure.   
      */
@@ -354,14 +370,70 @@ public:
     /*!
      * Get median value from a range of values
      * 
-     * @param wxStart Datetime from which median should be searched.
-     * @param wxEnd Datetime to which median should be searched.
+     * @param wxStart Datetime from which data should be searched.
+     * @param wxEnd Datetime to which data should be searched.
      * @param pMedian Pointer to double that will receive the median for the range.
      * @return true on success, false on failure.   
      */
 
     bool getMedianValue( wxDateTime wxStart, wxDateTime wxEnd, double *pMedian );
+    
+    
+    /*!
+     * Get standard deviation value from a range of values
+     * 
+     * @param wxStart Datetime from which data should be searched.
+     * @param wxEnd Datetime to which data should be searched.
+     * @param pStdev Pointer to double that will receive the standard deviation for the range.
+     * @return true on success, false on failure.   
+     */
+
+    bool getStdevValue( wxDateTime wxStart, wxDateTime wxEnd, double *pStdev );
         
+    
+    /*!
+     * Get variance value from a range of values
+     * 
+     * @param wxStart Datetime from which data should be searched.
+     * @param wxEnd Datetime to which data should be searched.
+     * @param pVariance Pointer to double that will receive the variance for the range.
+     * @return true on success, false on failure.   
+     */
+
+    bool getVarianceValue( wxDateTime wxStart, wxDateTime wxEnd, double *pVariance );
+    
+    /*!
+     * Get mode value from a range of values
+     * 
+     * @param wxStart Datetime from which data should be searched.
+     * @param wxEnd Datetime to which data should be searched.
+     * @param pMode Pointer to double that will receive the mode for the range.
+     * @return true on success, false on failure.   
+     */
+
+    bool getModeValue( wxDateTime wxStart, wxDateTime wxEnd, double *pMode );
+    
+    /*!
+     * Get lower quartile value from a range of values
+     * 
+     * @param wxStart Datetime from which data should be searched.
+     * @param wxEnd Datetime to which data should be searched.
+     * @param pLowerQuartile Pointer to double that will receive the mode for the range.
+     * @return true on success, false on failure.   
+     */
+
+    bool getLowerQuartileValue( wxDateTime wxStart, wxDateTime wxEnd, double *pLowerQuartile );
+    
+    /*!
+     * Get upper quartile value from a range of values
+     * 
+     * @param wxStart Datetime from which data should be searched.
+     * @param wxEnd Datetime to which data should be searched.
+     * @param pUpperQuartile Pointer to double that will receive the mode for the range.
+     * @return true on success, false on failure.   
+     */
+
+    bool getUppeQuartileValue( wxDateTime wxStart, wxDateTime wxEnd, double *pUpperQuartile );
     
     /*!
      * Execute SQL expression
@@ -370,6 +442,40 @@ public:
      * @return True on success, false on failure.
      */
     bool executeSQL( wxString &sql );
+    
+    /*!
+     * Prepare to get a range of rows with data (columns)
+     * 
+     * @param wxStart Datetime from which data should be searched.
+     * @param wxEnd Datetime to which data should be searched.
+     * @param ppStmt Handle to range.
+     * @param bAll If true all columns will be returned. If false (default)
+     *              only value and datetime will be returned.
+     * @return True on success, false on failure.
+     * 
+     */
+    bool prepareRangeOfData( wxDateTime& wxStart, 
+                                    wxDateTime& wxEnd, 
+                                    sqlite3_stmt **ppStmt, 
+                                    bool bAll=false );
+    
+    /*!
+     * Get row of data as a cmma separated string
+     * 
+     * @param ppStmt Handle to range.
+     * @param rowData Comma separated list with values.
+     * @return True on success, false on failure.
+     * 
+     */
+    bool getRowRangeOfData( sqlite3_stmt *ppStmt, wxString& rowData );
+    
+    /*!
+     * Finalize the range of data set.
+     * 
+     * @param ppStmt Handle to range.
+     * @return True on success, false on failure.
+     */
+    bool finalizeRangeOfData( sqlite3_stmt *ppStmt );
     
         
     /*!
@@ -402,7 +508,7 @@ public:
     wxMutex m_mutexThisTable;
     
     /// List with table columns
-     	wxArrayString m_listColumns;
+    wxArrayString m_listColumns;
 
 private:
 

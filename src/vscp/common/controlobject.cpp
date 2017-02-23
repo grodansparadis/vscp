@@ -244,7 +244,7 @@ CControlObject::CControlObject()
     m_logSecurityFileName.Assign( wxStandardPaths::Get().GetConfigDir() +
                                             _("/vscp/vscp_log_security.txt") );
 #else
-    m_logSecurityFileName.Assign( _("/srv/vscp/logs/vscp_log_security") );
+    m_logSecurityFileName.Assign( m_rootFolder +_("/logs/vscp_log_security") );
 #endif
 
     // Access logfile is enabled by default
@@ -254,7 +254,7 @@ CControlObject::CControlObject()
     m_logAccessFileName.Assign( wxStandardPaths::Get().GetConfigDir() +
                                             _("/vscp/vscp_log_access.txt") );
 #else
-    m_logAccessFileName.Assign( _("/srv/vscp/logs/vscp_log_access") );
+    m_logAccessFileName.Assign( m_rootFolder + _("/logs/vscp_log_access") );
 #endif
 
 // NOTE!!!  Dependent on the root folder
@@ -270,7 +270,7 @@ CControlObject::CControlObject()
     m_path_db_vscp_data.Assign( wxStandardPaths::Get().GetConfigDir() +
                                             _("/vscp/vscp-data.sqlite3") );
 #else
-    m_path_db_vscp_data.Assign( _("/srv/vsc/vscp_data.sqlite3") );
+    m_path_db_vscp_data.Assign( _("/srv/vscp/vscp_data.sqlite3") );
 #endif
  
     
@@ -278,7 +278,7 @@ CControlObject::CControlObject()
     m_path_db_vscp_log.Assign( wxStandardPaths::Get().GetConfigDir() +
                                             _("/vscp/vscp_log.sqlite3") );
 #else
-    m_path_db_vscp_log.Assign( _("/var/log/vscp/vscpd_log.sqlite3") );
+    m_path_db_vscp_log.Assign( m_rootFolder +_("/logs/vscpd_log.sqlite3") );
 #endif   
         
 
@@ -537,8 +537,10 @@ void CControlObject::logMsg(const wxString& msgin, const uint8_t level, const ui
     if ( m_bLogToDatabase && 
             ( NULL != m_db_vscp_log ) && 
             ( m_logLevel >= level) ) {
-        char *zErrMsg = 0;
         
+        
+        char *zErrMsg = 0;
+                
         char *sql = sqlite3_mprintf( VSCPDB_LOG_INSERT,
             nType, 
             (const char *)(datetime.FormatISODate() + _("T") + datetime.FormatISOTime() ).mbc_str(),
@@ -553,7 +555,22 @@ void CControlObject::logMsg(const wxString& msgin, const uint8_t level, const ui
         }
 
         sqlite3_free( sql );
-         
+        
+        /*
+        logToDbThread *pThread = new logToDbThread( m_db_vscp_log, msg, nType, level );
+        if ( NULL != pThread ) {
+            wxThreadError err;
+            if (wxTHREAD_NO_ERROR == (err = pThread->Create())) {
+                    pThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
+                if (wxTHREAD_NO_ERROR != (err = pThread->Run())) {
+                    wxPrintf("Unable to run logToDbThread client thread.\n");
+                }
+            }
+            else {
+                wxPrintf( "Failed to start thread to write logging data in db\n");
+            }        
+        }
+        */
     }
     
     // Log to textfles
@@ -723,7 +740,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     m_logAccessFileName.Assign( m_rootFolder + _("/logs/vscp_log_access") );
     m_path_db_vscp_daemon.Assign( m_rootFolder + _("vscpd.sqlite3") );
     m_path_db_vscp_data.Assign( m_rootFolder + _("vscp_data.sqlite3") );
-    m_path_db_vscp_log.Assign( m_rootFolder + _("vscpd_log.sqlite3") );
+    m_path_db_vscp_log.Assign( m_rootFolder + _("/logs/vscpd_log.sqlite3") );
     wxString strRootwww = m_rootFolder + _("www");
     strcpy( m_pathWebRoot, (const char *)strRootwww.mbc_str() );
     
@@ -919,7 +936,10 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 
     }
     
-    
+    // https://www.sqlite.org/wal.html
+    // http://stackoverflow.com/questions/3852068/sqlite-insert-very-slow
+    sqlite3_exec( m_db_vscp_log, "PRAGMA journal_mode = WAL", NULL, NULL, NULL );
+    sqlite3_exec( m_db_vscp_log, "PRAGMA synchronous = NORMAL", NULL, NULL, NULL );
     
     // * * * VSCP Daemon data database - NEVER created * * *
 
@@ -4609,3 +4629,69 @@ void clientMsgWorkerThread::OnExit()
     ;
 }
 
+
+
+// *****************************************************************************
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// logToDbThread
+//
+
+logToDbThread::logToDbThread( sqlite3 *pdb, 
+                                wxString& logMsg, 
+                                uint8_t type, 
+                                uint8_t level,
+                                        wxThreadKind kind )
+                                            : wxThread( kind )
+{
+    m_pdb = pdb;
+    logMsg = logMsg;
+    m_type = type;         
+    m_level = level;       
+}
+
+logToDbThread::~logToDbThread()
+{
+
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Entry
+//
+//
+
+void *logToDbThread::Entry()
+{
+    char *zErrMsg = 0;
+                
+        char *sql = sqlite3_mprintf( VSCPDB_LOG_INSERT,
+            m_type, 
+            (const char *)(wxDateTime::Now().FormatISODate() + _("T") + wxDateTime::Now().FormatISOTime() ).mbc_str(),
+            m_level,
+            (const char *)logMsg.mbc_str() );
+                
+        if ( SQLITE_OK != sqlite3_exec( m_pdb,  
+                                        sql, NULL, NULL, &zErrMsg)) {
+            wxPrintf( "Failed to write message to log database. Error is: %s Message is: %s\n",
+                        zErrMsg,
+                        (const char *)logMsg.mbc_str() );
+        }
+
+        sqlite3_free( sql );
+
+    return NULL;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// OnExit
+//
+
+void logToDbThread::OnExit()
+{
+
+}

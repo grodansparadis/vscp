@@ -121,6 +121,49 @@ WX_DECLARE_STRING_HASH_MAP( wxString, HashString );
 
 
 /*!
+    Thread that logs messages in the log database
+ */
+
+class logToDbThread : public wxThread {
+public:
+
+    /// Constructor
+    logToDbThread( sqlite3 *pdb, 
+                        wxString& logMsg, 
+                        uint8_t type, 
+                        uint8_t level, 
+                        wxThreadKind kind = wxTHREAD_DETACHED );
+
+    /// Destructor
+    virtual ~logToDbThread();
+
+    /*!
+        Thread code entry point
+     */
+    virtual void *Entry();
+
+    /*!
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+     */
+    virtual void OnExit();
+
+    // Log database 
+    sqlite3 *m_pdb;
+    
+    // Message to log
+    wxString logMsg;
+    
+    // Log type
+    uint8_t m_type;
+    
+    // Log level
+    uint8_t  m_level;
+
+};
+
+
+/*!
     This class implement a thread that handles
     client receive events
  */
