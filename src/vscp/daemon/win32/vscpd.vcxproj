@@ -550,6 +550,7 @@
     </ClCompile>
     <ClCompile Include="..\..\..\common\randpassword.cpp" />
     <ClCompile Include="..\..\..\common\sqlite3.c" />
+    <ClCompile Include="..\..\..\common\sqlite3math.c" />
     <ClCompile Include="..\..\..\common\v7.c" />
     <ClCompile Include="..\..\common\clientlist.cpp" />
     <ClCompile Include="..\..\common\controlobject.cpp" />

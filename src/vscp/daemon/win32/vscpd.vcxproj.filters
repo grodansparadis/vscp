@@ -265,6 +265,9 @@
     <ClCompile Include="..\..\common\v7callbacks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\common\sqlite3math.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="wx\msw\blank.cur">
