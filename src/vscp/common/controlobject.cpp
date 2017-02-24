@@ -556,21 +556,6 @@ void CControlObject::logMsg(const wxString& msgin, const uint8_t level, const ui
 
         sqlite3_free( sql );
         
-        /*
-        logToDbThread *pThread = new logToDbThread( m_db_vscp_log, msg, nType, level );
-        if ( NULL != pThread ) {
-            wxThreadError err;
-            if (wxTHREAD_NO_ERROR == (err = pThread->Create())) {
-                    pThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
-                if (wxTHREAD_NO_ERROR != (err = pThread->Run())) {
-                    wxPrintf("Unable to run logToDbThread client thread.\n");
-                }
-            }
-            else {
-                wxPrintf( "Failed to start thread to write logging data in db\n");
-            }        
-        }
-        */
     }
     
     // Log to textfles
@@ -621,6 +606,7 @@ void CControlObject::logMsg(const wxString& msgin, const uint8_t level, const ui
             break;
 
         case DAEMON_LOGMSG_DEBUG:
+        default:    
             syslog(LOG_DEBUG, "%s", (const char *) wxdebugmsg.ToAscii());
             break;
 
@@ -1162,6 +1148,8 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     // Start daemon worker thread
     logMsg(_("Starting VSCP daemon worker thread.\n") );
     startDaemonWorkerThread();
+    
+
 
     return true;
 }
@@ -3400,7 +3388,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                         bMemory = true;
                     }
                     
-                    CVSCPTable *pTable = new CVSCPTable( m_rootFolder + _("table/"), name, bMemory, type, size );
+                    CVSCPTable *pTable = new CVSCPTable( m_rootFolder + _("table/"), name, true, bMemory, type, size );
                     if ( NULL != pTable ) {
                         
                         if ( !pTable->setTableInfo( subchild->GetAttribute( wxT("owner"), wxT("admin") ),
@@ -3430,6 +3418,15 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                             delete pTable;
                             logMsg(_("Reading table xml info: Could not add new table (name conflict?)!\n"));
                         };
+                        
+                        // Add to database if not there already
+                        if ( !m_userTableObjects.isTableInDB( *pTable ) ) {
+                            m_userTableObjects.addTableToDB( *pTable );
+                        }
+                        else {
+                            // Update
+                            m_userTableObjects.updateTableToDB( *pTable );
+                        }
                         
                     }
                     else {
@@ -4631,67 +4628,3 @@ void clientMsgWorkerThread::OnExit()
 
 
 
-// *****************************************************************************
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// logToDbThread
-//
-
-logToDbThread::logToDbThread( sqlite3 *pdb, 
-                                wxString& logMsg, 
-                                uint8_t type, 
-                                uint8_t level,
-                                        wxThreadKind kind )
-                                            : wxThread( kind )
-{
-    m_pdb = pdb;
-    logMsg = logMsg;
-    m_type = type;         
-    m_level = level;       
-}
-
-logToDbThread::~logToDbThread()
-{
-
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// Entry
-//
-//
-
-void *logToDbThread::Entry()
-{
-    char *zErrMsg = 0;
-                
-        char *sql = sqlite3_mprintf( VSCPDB_LOG_INSERT,
-            m_type, 
-            (const char *)(wxDateTime::Now().FormatISODate() + _("T") + wxDateTime::Now().FormatISOTime() ).mbc_str(),
-            m_level,
-            (const char *)logMsg.mbc_str() );
-                
-        if ( SQLITE_OK != sqlite3_exec( m_pdb,  
-                                        sql, NULL, NULL, &zErrMsg)) {
-            wxPrintf( "Failed to write message to log database. Error is: %s Message is: %s\n",
-                        zErrMsg,
-                        (const char *)logMsg.mbc_str() );
-        }
-
-        sqlite3_free( sql );
-
-    return NULL;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// OnExit
-//
-
-void logToDbThread::OnExit()
-{
-
-}

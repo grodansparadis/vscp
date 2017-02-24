@@ -51,6 +51,7 @@ public:
      *  @param folder The base folder for table database files. Must be a 
      *                  valid path.
      *  @param name Name of this VSCP table. Must be system unique.
+     *  @param bEnable If true the table should be initialized by the system.
      *  @param bMemeory If true the table will be created in memory.
      *  @param type Either static or dynamic table. A static table have a 
      *              static size.
@@ -61,6 +62,7 @@ public:
     
     CVSCPTable( const wxString &folder,    
                     const wxString &name, 
+                    const bool bEnable = true,
                     const bool bInMemory = false, 
                     const vscpTableType type = VSCP_TABLE_DYNAMIC, 
                     uint32_t size = 0 );
@@ -221,51 +223,109 @@ public:
      *          inserted and value and date/time inserted.
      * @return true on success, false if failure.
      */
+    
     bool logData( const wxString strInsert );
+    
+    
     
     /*!
      * Clear the content of a VSCP table
      * 
      * @return true om success, false on failure.
      */
+    
     bool clearTable( void );
 
-    bool start_RangeOfData( wxDateTime& wxStart, wxDateTime& wxEnd, int *phandle );
-
-    bool end_RangeOfData( int *phandle, vscpTableItem *pItem );
-    
-    bool getItem_RangeOfData( int *phandle );
-
-       
     /*!
-        Get a data range
-        @param from date/time from which data should be fetched
-        @param to date/time to which data should be fetched
-        @param buf Buffer where result will be placed. If buffer is NULL
-                no data will be filled only the number of records will be
-                returned.
-        @param size Size of buffer in bytes
-        @return Number of records read or to read or -1 if error.
-    */
+     * Execute SQL expression
+     * 
+     * @param sql SQL expression to execute.
+     * @return True on success, false on failure.
+     */
     
-    long getRangeOfData( wxDateTime& wxStart, wxDateTime& wxEnd, void *buf, uint16_t size );
-
+    bool executeSQL( wxString &sql );
+    
     /*!
-        Get static dataset
-        @param buf Buffer that holds the result
-        @param size of buffer
-        @return Number of records in buffer or zero on error
-    */
+     * Prepare to get a range of rows with data (columns)
+     * 
+     * @param wxStart Datetime from which data should be searched.
+     * @param wxEnd Datetime to which data should be searched.
+     * @param ppStmt Handle to range.
+     * @param bAll If true all columns will be returned. If false (default)
+     *              only value and datetime will be returned.
+     * @return True on success, false on failure.
+     * 
+     */
     
-    long getStaticData( void *buf, uint32_t size );
-
+    bool prepareRangeOfData( wxDateTime& wxStart, 
+                                wxDateTime& wxEnd, 
+                                sqlite3_stmt **ppStmt, 
+                                bool bAll = false );
+    
     /*!
-        Get required buffer size for static file
-        @return Returns the number of bytes needed to hold the
-                static file, -1 on error.
-    */
+     * Prepare to get a range of rows with data (columns)
+     * 
+     * @param sql USer supplied SQL expression
+     * @param ppStmt Handle to range.
+     * @return True on success, false on failure.
+     */
     
-    long getStaticRequiredBuffSize( void );
+    bool prepareRangeOfData( wxString& sql, sqlite3_stmt **ppStmt );
+    
+    /*!
+     * Get row of data as a comma separated string. datetime,value will alway be 
+     * the first two records
+     * 
+     * @param ppStmt Handle to range.
+     * @param rowData Comma separated list with values.
+     * @return True on success, false on failure.
+     * 
+     */
+    bool getRowRangeOfData( sqlite3_stmt *ppStmt, wxString& rowData );
+    
+    /*!
+     * Get row of data in a table item.
+     * 
+     * @param ppStmt Handle to range.
+     * @param vscpTableItem Item data.
+     * @return True on success, false on failure.
+     * 
+     */
+    
+    bool getRowRangeOfData( sqlite3_stmt *ppStmt, vscpTableItem *pTableItem );
+    
+    /*!
+     * Get row of data as a comma separated string. Row will have all fields
+     * 
+     * @param ppStmt Handle to range.
+     * @param rowData Comma separated list with values.
+     * @return True on success, false on failure.
+     * 
+     */
+    bool getRowRangeOfDataRaw( sqlite3_stmt *ppStmt, wxString& rowData );
+    
+    /*!
+     * Finalise the range of data set.
+     * 
+     * @param ppStmt Handle to range.
+     * @return True on success, false on failure.
+     */
+    bool finalizeRangeOfData( sqlite3_stmt *ppStmt );
+    
+    /*!
+     * Get data for a range as a string array
+     * 
+     * @param wxStart Datetime from which data should be searched.
+     * @param wxEnd Datetime to which data should be searched.
+     * @param strArray String array that will hold resulting data.
+     * @return True on success, false on failure.
+     * 
+     */
+    bool getRangeInArray( wxDateTime& wxStart, 
+                            wxDateTime& wxEnd,
+                            wxArrayString& strArray,
+                            bool bAll = false );
+
         
     /*!
      * Get the first date/ime in table
@@ -435,48 +495,6 @@ public:
 
     bool getUppeQuartileValue( wxDateTime wxStart, wxDateTime wxEnd, double *pUpperQuartile );
     
-    /*!
-     * Execute SQL expression
-     * 
-     * @param sql SQL expression to execute.
-     * @return True on success, false on failure.
-     */
-    bool executeSQL( wxString &sql );
-    
-    /*!
-     * Prepare to get a range of rows with data (columns)
-     * 
-     * @param wxStart Datetime from which data should be searched.
-     * @param wxEnd Datetime to which data should be searched.
-     * @param ppStmt Handle to range.
-     * @param bAll If true all columns will be returned. If false (default)
-     *              only value and datetime will be returned.
-     * @return True on success, false on failure.
-     * 
-     */
-    bool prepareRangeOfData( wxDateTime& wxStart, 
-                                    wxDateTime& wxEnd, 
-                                    sqlite3_stmt **ppStmt, 
-                                    bool bAll=false );
-    
-    /*!
-     * Get row of data as a cmma separated string
-     * 
-     * @param ppStmt Handle to range.
-     * @param rowData Comma separated list with values.
-     * @return True on success, false on failure.
-     * 
-     */
-    bool getRowRangeOfData( sqlite3_stmt *ppStmt, wxString& rowData );
-    
-    /*!
-     * Finalize the range of data set.
-     * 
-     * @param ppStmt Handle to range.
-     * @return True on success, false on failure.
-     */
-    bool finalizeRangeOfData( sqlite3_stmt *ppStmt );
-    
         
     /*!
      *  Set path to database
@@ -485,13 +503,38 @@ public:
      *  @return true on success, false on failure.
      */
     
-    bool setPathToDB( const wxString &dbpath ) { m_dbFile.Assign( dbpath ); return m_dbFile.IsOk(); };
+    bool setPathToDB( const wxString &dbpath ) 
+            { m_dbFile.Assign( dbpath ); return m_dbFile.IsOk(); };
     
     // Get path to database
     wxString getPathToDB( void ) { return m_dbFile.GetFullPath(); };
-
+    
+    bool isEnabled( void ) { return m_bEnable; };
+    
+    bool isInMemory( void ) { return m_bInMemory; };
+    
     // Get the table name
     wxString& getTableName( void ) { return m_tableName; };
+    
+    CUserItem *getUserItem( void ) { return m_pUserItemOwner; };
+    
+    long getUserID( void ) { return m_pUserItemOwner->getUserID(); };
+    
+    uint16_t getRights( void ) { return m_rights; };
+    
+    vscpTableType getType( void ) { return m_type; };
+    
+    uint32_t getSize( void ) { return m_size; };
+    
+    wxString& getLabelX( void ) { return m_labelX; };
+    
+    wxString& getLabelY( void ) { return m_labelY; };
+    
+    wxString& getTitle( void ) { return m_labelTitle; };
+    
+    wxString& getNote( void ) { return m_labelNote; };
+    
+    wxString& getDescription( void ) { return m_tableDescription; };
     
     // Get SQL create expression
     wxString& getSQLCreate( void ) { return m_sqlCreate; };
@@ -501,6 +544,19 @@ public:
     
     // Get SQL delete expression
     wxString& getSQLDelete( void ) { return m_sqlDelete; };
+    
+    
+    uint16_t getVSCPClass( void ) { return m_vscp_class; };
+    
+    uint16_t getVSCPType( void ) { return m_vscp_type; };
+    
+    uint8_t VSCPSensorIndex( void ) { return m_vscp_sensorindex; };
+    
+    uint8_t VSCPUnit( void ) { return m_vscp_unit; };
+    
+    uint8_t VSCPZone( void ) { return m_vscp_zone; };
+    
+    uint8_t VSCPSubZone( void ) { return m_vscp_subzone; };
 
 public:
     
@@ -511,6 +567,9 @@ public:
     wxArrayString m_listColumns;
 
 private:
+    
+    /// Enable flag
+    bool m_bEnable;
 
     /// Path to database file
     wxFileName m_dbFile;
@@ -563,7 +622,8 @@ private:
     // SQL to delete table.
     wxString m_sqlDelete;
     
-    wxString m_strOwner;    // owneritem is not available when config is read
+    wxString m_strOwner;    // owner item is not available when config is read
+                            // so it is looked up from name
     
     // Owner
     CUserItem *m_pUserItemOwner;
@@ -659,14 +719,68 @@ public:
     /*!
      * Initialize all tables
      * 
-     * @return true on success
+     * @return True on success, false on failure.
+     * 
      */
     bool init( void );
     
     /*!
+     * Check if a record with a table name exist or not
+     * 
+     * @param table Table record
+     * @return True on success, false on failure.
+     * 
+     */
+    bool isTableInDB( CVSCPTable& table )
+                    { return isTableInDB( table.getTableName() ); };
+                  
+    /*!
+     * Check if a record with a table name exist or not
+     * 
+     * @param name Name of table to search
+     * @return True on success, false on failure.
+     * 
+     */                
+    bool isTableInDB( wxString& name );                   
+    
+    /*!
+     * Add a new table to the table database-
+     * 
+     * @param table VSCP table to add.
+     * @return True on success, false on failure.
+     *  
+     */
+    
+    bool addTableToDB( CVSCPTable& table );
+    
+    /*!
+     * Update data for table
+     * 
+     * @param table VSCP table to update.
+     * @return True on success, false on failure.
+     */
+    bool updateTableToDB( CVSCPTable& table );
+    
+    /*!
+     * Remove a VSCP table from the database
+     * 
+     * @param name Name of table.
+     * @return True on success, false on failure.
+     * 
+     */
+    
+    bool removeTableFromDB( wxString& name );
+    
+    /*!
      * Read tables definitions from database
      */
+    
     bool readTablesFromDB( void );
+    
+    
+    
+    
+  
     
     /// Table list
     listVSCPTables m_listTables;

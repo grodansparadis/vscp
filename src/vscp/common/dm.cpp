@@ -7276,7 +7276,7 @@ void *actionThread_Table::Entry()
 
     
     
-#if 1  // TEST Get range of data
+#if 0  // TEST Get range of data
     wxPrintf( _(">>>>>") + wxDateTime::Now().FormatISOTime() + _("\n") );
     
     sqlite3_stmt *ppStmt;

@@ -90,14 +90,16 @@ WX_DEFINE_LIST( listVSCPTables );
 // Constructor 
 CVSCPTable::CVSCPTable( const wxString &folder,
                             const wxString &name,
+                            const bool bEnable,
                             const bool bInMemory,
                             const vscpTableType type,
                             uint32_t size )
 {
-    m_pUserItemOwner = NULL;    // No owner yet
-    m_dbTable = NULL;   // No database handle yet
     
-    m_bValueFirst = true;   // %f is placed before %s in insert
+    m_pUserItemOwner = NULL;    // No owner yet
+    m_dbTable = NULL;           // No database handle yet
+    
+    m_bValueFirst = true;       // %f is placed before %s in insert
     
     // Initialize event data
     m_vscp_class = 0;
@@ -109,6 +111,7 @@ CVSCPTable::CVSCPTable( const wxString &folder,
     
     m_folder = folder;          // save table root folder
     m_tableName = name;         // save table name
+    m_bEnable = bEnable;        // save enable state
     m_bInMemory = bInMemory;    // save table in memory flag
     m_type = type;              // save table type
     m_size = size;              // save table size
@@ -885,7 +888,7 @@ bool CVSCPTable::prepareRangeOfData( wxDateTime& wxStart,
                                             sqlite3_stmt **ppStmt, 
                                             bool bAll )
 {
-    wxString swlInsert;
+    wxString sqlInsert;
     wxString wxstr;
     char *pErrMsg;
             
@@ -896,13 +899,13 @@ bool CVSCPTable::prepareRangeOfData( wxDateTime& wxStart,
     }
     
     if ( bAll ) {
-        swlInsert = _("SELECT datetime,value,* FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';");
+        sqlInsert = _("SELECT datetime,value,* FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';");
     }
     else  {
-        swlInsert = _("SELECT datetime,value FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';");
+        sqlInsert = _("SELECT datetime,value FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';");
     }
     
-    wxString sql = wxString::Format( swlInsert.mbc_str(),
+    wxString sql = wxString::Format( sqlInsert.mbc_str(),
                                         (const char *)wxStart.FormatISOCombined(' ').mbc_str(),
                                         (const char *)wxEnd.FormatISOCombined(' ').mbc_str() );
     
@@ -920,6 +923,37 @@ bool CVSCPTable::prepareRangeOfData( wxDateTime& wxStart,
     
     return true;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// prepareRangeOfData
+//
+
+bool CVSCPTable::prepareRangeOfData( wxString& sql, sqlite3_stmt **ppStmt )
+{
+    wxString wxstr;
+    char *pErrMsg;
+            
+    // Database file must be open
+    if ( NULL == m_dbTable ) {
+        gpobj->logMsg( _("VSCP database file is not open.\n") );
+        return false;
+    }
+    
+    if ( SQLITE_OK != sqlite3_prepare( m_dbTable,
+                                            (const char *)sql.mbc_str(),
+                                            -1,
+                                            ppStmt,
+                                            NULL ) ) {
+        wxstr = wxString::Format( _("Failed to execute SQL expression: Error=%s SQL=%s"), 
+                                    sqlite3_errstr( sqlite3_errcode( m_dbTable ) ),
+                                    (const char *)sql.mbc_str());
+        gpobj->logMsg( wxstr );
+        return false;
+    }
+    
+    return true;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // getRowRangeOfData
@@ -957,6 +991,60 @@ bool CVSCPTable::getRowRangeOfData( sqlite3_stmt *ppStmt, wxString& rowData )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// getRowRangeOfData
+//
+
+bool getRowRangeOfData( sqlite3_stmt *ppStmt, vscpTableItem *pTableItem )
+{
+    // Check pointer
+    if ( NULL == pTableItem ) {
+        return false;
+    }
+    
+    if ( SQLITE_ROW != sqlite3_step( ppStmt ) ) {
+        return false;
+    }
+    
+    // datetime
+    const unsigned char *p = sqlite3_column_text( ppStmt, 0 );
+    if ( NULL == p ) return false;   
+    pTableItem->date.ParseDateTime( p );
+    
+    // Value
+    pTableItem->value = sqlite3_column_double( ppStmt, 1 );
+      
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getRowRangeOfDataRaw
+//
+
+bool CVSCPTable::getRowRangeOfDataRaw( sqlite3_stmt *ppStmt, wxString& rowData )
+{
+    if ( SQLITE_ROW != sqlite3_step( ppStmt ) ) {
+        return false;
+    }
+    
+    rowData.Empty();
+    
+    // Fill in the data
+    int count = sqlite3_data_count( ppStmt );
+    
+    for ( int i=0; i<count; i++ ) {
+                
+        const unsigned char *p = sqlite3_column_text( ppStmt, i );
+        if ( NULL != p ) {
+            rowData += wxString::FromUTF8( (const char *)p );
+        }
+        
+        if ( i<(count-1) ) rowData += _("|");
+    }
+    
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // finalizeRangeOfData
 //
 
@@ -966,34 +1054,27 @@ bool CVSCPTable::finalizeRangeOfData( sqlite3_stmt *ppStmt )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getRangeOfData
+// getRangeInArray
 //
 
-long CVSCPTable::getRangeOfData( wxDateTime& wxStart, wxDateTime& wxEnd, void *buf, uint16_t size )
+bool CVSCPTable::getRangeInArray( wxDateTime& wxStart, 
+                                    wxDateTime& wxEnd,
+                                    wxArrayString& strArray,
+                                    bool bAll )
 {
-    return 0;
+    sqlite3_stmt *ppStmt;
+    
+    if ( !prepareRangeOfData( wxStart, wxEnd, &ppStmt, bAll ) ) {
+        return false;
+    }
+    
+    wxString rowData;
+    while ( getRowRangeOfDataRaw( ppStmt, rowData ) ) {
+        strArray.Add( rowData );
+    }
+    
+    return finalizeRangeOfData( ppStmt );
 }
-
-///////////////////////////////////////////////////////////////////////////////
-// getStaticData
-//
-
-long CVSCPTable::getStaticData( void *buf, uint32_t size )
-{
-
-    return 0;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// getStaticRequiredBuffSize
-//
-
-long CVSCPTable::getStaticRequiredBuffSize( void )
-{
-    return 0;
-}
-
 
 
 
@@ -1128,6 +1209,117 @@ void CUserTableObjList::clearTable( void )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// isTableInDB
+//
+
+bool CUserTableObjList::isTableInDB( wxString& name )
+{
+    char *zErrMsg = 0;
+    sqlite3_stmt *ppStmt;
+    
+    // Database file must be open
+    if ( NULL == gpobj->m_db_vscp_daemon ) {
+        gpobj->logMsg( _("Load tables: Loading. VSCP database file is not open.\n") );
+        return false;
+    }
+    
+    wxString sql = _("SELECT COUNT(*) FROM 'table' WHERE name='%s';");
+    sql = wxString::Format( sql, (const char *)name.mbc_str() );
+    
+    if ( SQLITE_OK != sqlite3_prepare( gpobj->m_db_vscp_daemon, 
+                                        sql.mbc_str(), 
+                                        -1,
+                                        &ppStmt,
+                                        NULL ) ) {    
+        wxString wxstr = wxString::Format( _("Table: Unable to check if name is defined. Error=%s"), 
+                            sqlite3_errstr( sqlite3_errcode( gpobj->m_db_vscp_daemon ) ) );
+        gpobj->logMsg( wxstr );
+        return false;
+    }
+    
+    int cnt;    
+    if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
+        cnt = sqlite3_column_int( ppStmt, 0 );
+    }
+    
+    sqlite3_finalize( ppStmt );
+    
+    return ( cnt ? true : false );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// addTableToDB
+//
+
+bool CUserTableObjList::addTableToDB( CVSCPTable& table )
+{
+    wxString sql;
+    char *zErrMsg = 0;
+    
+    // Database must be open
+    // Database file must be open
+    if ( NULL == gpobj->m_db_vscp_daemon ) {
+        gpobj->logMsg( _("Load tables: Loading. VSCP database file is not open.\n") );
+        return false;
+    }
+    
+    // No need to add if there allready
+    if ( isTableInDB( table ) ) return false;
+    
+    /*#define VSCPDB_TABLE_INSERT "INSERT INTO 'table' "\
+                "(bEnable,bmem,name,link_to_user,permission,type,size,"\
+                "xname,yname,title,note,sql_create,sql_insert,sql_delete,description,"\
+                "vscpclass,vscptype,vscpsensoridx,vscpunit,vscpzone,vscpsubzone "\
+                " ) VALUES ('%d','%d','%s','%ld',%d,'%d','%lu','%s',"\
+                "'%s','%s','%s','%s','%s','%s','%s',"\
+                "'%d',%d',%d',%d',%d',%d' );"*/
+
+    sql = wxString::Format( VSCPDB_TABLE_INSERT,
+            
+                                1 /* bEnable*/,
+                                table.isInMemory(),
+                                (const char *)table.getTableName().mbc_str(),
+                                table.getUserID(),
+                                (int)table.getRights(),
+                                (int)table.getType(),
+                                table.getSize(),
+            
+                                table.getLabelX(),          
+                                (const char *)table.getLabelY().mbc_str(),
+                                (const char *)table.getTitle().mbc_str(),
+                                (const char *)table.getNote().mbc_str(),
+                                (const char *)table.getSQLCreate().mbc_str(),
+                                (const char *)table.getSQLInsert().mbc_str(),
+                                (const char *)table.getSQLDelete().mbc_str(),
+                                (const char *)table.getDescription().mbc_str(),
+            
+                                (int)table.getVSCPClass(),
+                                (int)table.getVSCPType(),
+                                (int)table.VSCPSensorIndex(),
+                                (int)table.VSCPUnit(),
+                                (int)table.VSCPZone(),
+                                (int)table.VSCPSubZone() );
+    
+    if ( SQLITE_OK != sqlite3_exec( gpobj->m_db_vscp_daemon, 
+                                        sql.mbc_str(), NULL, NULL, &zErrMsg ) ) {            
+        gpobj->logMsg( wxString::Format( _("Table: Unable to insert record in table. [%s] Err=%s\n"), 
+                                            sql.mbc_str(), zErrMsg ) ); 
+        return false;
+    }
+    
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// updateTableToDB
+//
+
+bool CUserTableObjList::updateTableToDB( CVSCPTable& table )
+{
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // readTablesFromDB
 //
 
@@ -1161,6 +1353,7 @@ bool CUserTableObjList::readTablesFromDB( void )
         
         const char *p;
         bool bMemory;
+        bool bEnable;
         wxString name;
         uint32_t link_to_user;
         CUserItem *pUserItem;
@@ -1176,7 +1369,10 @@ bool CUserTableObjList::readTablesFromDB( void )
             continue;
         }
         
-        // bmemory
+        // bEnable
+        bEnable = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_TABLE_ENABLE ) ? true : false;
+        
+        // bMemory
         bMemory = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_TABLE_BMEM ) ? true : false;
         
         // name
@@ -1195,7 +1391,7 @@ bool CUserTableObjList::readTablesFromDB( void )
         
         // Set row default values for row
         CVSCPTable *pTable = new CVSCPTable( gpobj->m_rootFolder + _("table/"),
-                                                name, bMemory, type, size );
+                                                name, bEnable, bMemory, type, size );
         if ( NULL == pTable ) {
             gpobj->logMsg( _("Load tables: Could not create table object, skipped.\n") );
             continue;

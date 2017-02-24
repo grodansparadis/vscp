@@ -519,25 +519,56 @@
         "`bEnable`          INTEGER NOT NULL,"\
         "`bmem`             INTEGER NOT NULL,"\
 	"`name`             TEXT NOT NULL,"\
-	"`link_to_user`     TEXT NOT NULL,"\
-	"`permission`       INTEGER NOT NULL,"\
-        "`type`             INTEGER DEFAULT 0,"\
-        "`size`             INTEGER DEFAULT 0,"\
+	"`link_to_user`     TEXT NOT NULL DEFAULT 0,"\
+	"`permission`       INTEGER NOT NULL DEFAULT 1729,"\
+        "`type`             INTEGER NOT NULL DEFAULT 0,"\
+        "`size`             INTEGER NOT NULL DEFAULT 0,"\
 	"`xname`            TEXT NOT NULL,"\
 	"`yname`            TEXT NOT NULL,"\
-	"`title`            TEXT,"\
-	"`note`             TEXT,"\
+	"`title`            TEXT NOT NULL,"\
+	"`note`             TEXT NOT NULL,"\
 	"`sql_create`       TEXT NOT NULL,"\
 	"`sql_insert`       TEXT NOT NULL,"\
         "`sql_delete`       TEXT NOT NULL,"\
         "`description`      TEXT NOT NULL,"\
-        "`vscpclass`        INTEGER NOT NULL,"\
-        "`vscptype`         INTEGER NOT NULL,"\
-        "`vscpsensoridx`    INTEGER NOT NULL,"\
-        "`vscpunit`         INTEGER NOT NULL,"\
-        "`vscpzone`         INTEGER NOT NULL,"\
-        "`vscpsubzone`      INTEGER NOT NULL"\
+        "`vscpclass`        INTEGER NOT NULL DEFAULT 10,"\
+        "`vscptype`         INTEGER NOT NULL DEFAULT 0,"\
+        "`vscpsensoridx`    INTEGER NOT NULL DEFAULT 0,"\
+        "`vscpunit`         INTEGER NOT NULL DEFAULT 0,"\
+        "`vscpzone`         INTEGER NOT NULL DEFAULT 255,"\
+        "`vscpsubzone`      INTEGER NOT NULL DEFAULT 255"\
         ");"
+
+#define VSCPDB_TABLE_INSERT "INSERT INTO 'table' "\
+                "(bEnable,bmem,name,link_to_user,permission,type,size,"\
+                "xname,yname,title,note,sql_create,sql_insert,sql_delete,description,"\
+                "vscpclass,vscptype,vscpsensoridx,vscpunit,vscpzone,vscpsubzone "\
+                " ) VALUES ('%d','%d','%s','%d',%d,'%d','%lu',"\
+                "'%s','%s','%s','%s','%s','%s','%s','%s',"\
+                "'%d',%d',%d',%d',%d',%d' );"
+
+#define VSCPDB_TABLE_UPDATE "UPDATE 'table' "\
+                "SET benable='%d',"\
+                "bmem='%d',"\
+                "name='%s',"\
+                "permission='%d',"\
+                "type='%d',"\
+                "size='%lu',"\
+                "xman='%s',"\
+                "yname='%s' "\
+                "title='%s',"\
+                "note='%s',"\
+                "sql_create='%s',"\
+                "sql_insert='%s',"\
+                "sql_delete='%s',"\
+                "description='%s',"\
+                "vscpclass='%d',"\
+                "vscptype='%d',"\
+                "vscpsensorindex='%d',"\
+                "vscpunit='%d',"\
+                "vscpzone='%d',"\
+                "vscpsubzone='%d'"\
+                " WHERE link_to_user='%ld'"
 
 // Get the columns of a user table (table name inserted in %s)
 #define VSCPDB_TABLE_GET_COLUMNS "pragma table_info ('vscptable');"
@@ -561,6 +592,9 @@
 
 // Count number of records in database.
 #define VSCPDB_TABLE_COUNT "SELECT COUNT(*) FROM vscptable;"
+
+// Get count number of records in database + data.
+#define VSCPDB_TABLE_COUNT_AND_DATA "SELECT (SELECT COUNT() FROM 'vscptable') AS 'count', * FROM 'vscptable';"
 
 #define VSCPDB_ORDINAL_TABLE_ID                 0   //
 #define VSCPDB_ORDINAL_TABLE_ENABLE             1   //
