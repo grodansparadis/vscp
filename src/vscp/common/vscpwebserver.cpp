@@ -639,24 +639,6 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
             else if ( 0 == strcmp( uri, "/vscp/bootload") ) {
                 pObject->getWebServer()->websrv_bootload( nc, phm );
             }
-            else if ( 0 == strncmp( uri, "/vscp/log/general",17) ) {
-                wxString header = _("Log File 'General'");
-                pObject->getWebServer()->websrv_listFile( nc,
-                                                            pObject->m_logGeneralFileName,
-                                                            header );
-            }
-            else if ( 0 == strncmp( uri, "/vscp/log/security",18) ) {
-                wxString header = _("Log File 'Security'");
-                pObject->getWebServer()->websrv_listFile( nc,
-                                                            pObject->m_logSecurityFileName,
-                                                            header );
-            }
-            else if ( 0 == strncmp( uri, "/vscp/log/access",16) ) {
-                wxString header = _("Log File 'Security'");
-                pObject->getWebServer()->websrv_listFile( nc,
-                                                            pObject->m_logAccessFileName,
-                                                            header );
-            }
             else if ( 0 == strncmp( uri, "/vscp/table",12) ) {
                 pObject->getWebServer()->websrv_table( nc, phm );
             }
@@ -4960,50 +4942,6 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
 
     buildPage += _("<hr>");
 
-    // General log file
-    buildPage += _("<div id=\"small\">");
-    buildPage += _("<b>General log file:</b> ");
-    if ( pObject->m_bLogGeneralEnable ) {
-        buildPage += _("enabled, <b>path:</b> ");
-        buildPage += pObject->m_logGeneralFileName.GetFullPath();
-        buildPage += _("'");
-    }
-    else {
-        buildPage += _("disabled.");
-    }
-    buildPage += _("<br>");
-    buildPage += _("</div>");
-
-    // Access log file
-    buildPage += _("<div id=\"small\">");
-    buildPage += _("<b>Access log file:</b> ");
-    if ( pObject->m_bLogAccessEnable ) {
-        buildPage += _("enabled, <b>path:</b> ");
-        buildPage += pObject->m_logAccessFileName.GetFullPath();
-        buildPage += _("'");
-    }
-    else {
-        buildPage += _("disabled.");
-    }
-    buildPage += _("<br>");
-    buildPage += _("</div>");
-
-    // Security log file
-    buildPage += _("<div id=\"small\">");
-    buildPage += _("<b>Security log file:</b> ");
-    if ( pObject->m_bLogSecurityEnable ) {
-        buildPage += _("enabled, <b>path:</b> ");
-        buildPage += pObject->m_logSecurityFileName.GetFullPath();
-        buildPage += _("'");
-    }
-    else {
-        buildPage += _("disabled.");
-    }
-    buildPage += _("<br>");
-    buildPage += _("</div>");
-
-    buildPage += _("<hr>");
-
     buildPage += _("<div id=\"small\">");
     buildPage += _("<b>Level I Drivers:</b> ");
 
@@ -5011,9 +4949,9 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
 
     CDeviceItem *pDeviceItem;
     VSCPDEVICELIST::iterator iter;
-    for (iter = pObject->m_deviceList.m_devItemList.begin();
+    for ( iter = pObject->m_deviceList.m_devItemList.begin();
             iter != pObject->m_deviceList.m_devItemList.end();
-            ++iter) {
+            ++iter ) {
 
         pDeviceItem = *iter;
         if  ( ( NULL != pDeviceItem ) &&

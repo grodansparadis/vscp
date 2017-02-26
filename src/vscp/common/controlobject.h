@@ -571,36 +571,11 @@ public:
      */
     uint8_t m_logLevel;
 
-    /*!
-        Path to general log file
-    */
-    bool m_bLogGeneralEnable;   // Enable general logfile
-    wxFileName m_logGeneralFileName;
-    wxFile m_fileLogGeneral;
-
-    /*!
-        Path to security log file
-    */
-    bool m_bLogSecurityEnable; // Enable security logfile
-    wxFileName m_logSecurityFileName;
-    wxFile m_fileLogSecurity;
-
-    /*!
-        Path to access log file
-    */
-    bool m_bLogAccessEnable; // Enable security logfile
-    wxFileName m_logAccessFileName;
-    wxFile m_fileLogAccess;
-
 
     /////////////////////////////////////////////////////////
     //              Enable/disable switches
     /////////////////////////////////////////////////////////
 
-    /*!
-        Enable to log to database instead of to separate files
-     */
-    bool m_bLogToDatabase;
     
     /*!
         Log to syslog

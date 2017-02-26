@@ -40,14 +40,7 @@
 	"`vscpd_guid`                                       TEXT DEFAULT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00',"\
 	"`vscpd_servername`                                 TEXT DEFAULT 'THE-VSCP-DAEMON',"\
 	"`vscpd_syslog_enable`                              INTEGER DEFAULT 1,"\
-        "`vscpd_logdb_enable`                               INTEGER DEFAULT 1,"\
         "`vscpd_db_log_path`                                TEXT DEFAULT '/srv/vscp/logs/vscpd_log.sqlite3',"\
-	"`vscpd_generallogfile_enable`                      INTEGER DEFAULT 1,"\
-	"`vscpd_generallogfile_path`                        TEXT DEFAULT '/srv/vscp/logs/vscpd_log_general',"\
-	"`vscpd_securitylogfile_enable`                     INTEGER DEFAULT 1,"\
-	"`vscpd_securitylogfile_path`                       TEXT DEFAULT '/srv/vscp/logs/vscpd_log_security',"\
-	"`vscpd_accesslogfile_enable`                       INTEGER DEFAULT 1,"\
-	"`vscpd_accesslogFile_path`                         TEXT DEFAULT '/srv/vscp/logs/vscpd_log_access',"\
 	"`vscpd_tcpipinterface_address`                     TEXT DEFAULT '9598',"\
 	"`vscpd_multicastinterface_address`                 TEXT DEFAULT '9598',"\
 	"`vscpd_mulicastinterface_ttl`                      INTEGER DEFAULT 1,"\
@@ -112,62 +105,55 @@
 #define VSCPDB_ORDINAL_CONFIG_GUID                                          5
 #define VSCPDB_ORDINAL_CONFIG_SERVER_NAME                                   6
 #define VSCPDB_ORDINAL_CONFIG_SYSLOG_ENABLE                                 7
-#define VSCPDB_ORDINAL_CONFIG_LOGDB_ENABLE                                  8
-#define VSCPDB_ORDINAL_CONFIG_DB_LOG_PATH                                   9
-#define VSCPDB_ORDINAL_CONFIG_GENERALLOGFILE_ENABLE                         10
-#define VSCPDB_ORDINAL_CONFIG_GENERALLOGFILE_PATH                           11
-#define VSCPDB_ORDINAL_CONFIG_SECURITYLOGFILE_ENABLE                        12
-#define VSCPDB_ORDINAL_CONFIG_SECURITYLOGFILE_PATH                          13
-#define VSCPDB_ORDINAL_CONFIG_ACCESSLOGFILE_ENABLE                          14
-#define VSCPDB_ORDINAL_CONFIG_ACCESSLOGFILE_PATH                            15
-#define VSCPDB_ORDINAL_CONFIG_TCPIPINTERFACE_PORT                           16
-#define VSCPDB_ORDINAL_CONFIG_MULTICASTINTERFACE_PORT                       17
-#define VSCPDB_ORDINAL_CONFIG_MULICASTINTERFACE_TTL                         18
-#define VSCPDB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_ENABLE                     19
-#define VSCPDB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_PORT                       20
-#define VSCPDB_ORDINAL_CONFIG_DM_DB_PATH                                    21
-#define VSCPDB_ORDINAL_CONFIG_DM_XML_PATH                                   22
-#define VSCPDB_ORDINAL_CONFIG_VARIABLES_DB_PATH                             23
-#define VSCPDB_ORDINAL_CONFIG_VARIABLES_XML_PATH                            24
-#define VSCPDB_ORDINAL_CONFIG_VSCPD_DEFAULTCLIENTBUFFERSIZE                 25
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_DISABLEAUTHENTICATION               26
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_ROOTPATH                            37
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_PORT                                28
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_PATHCERT                            29
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_AUTHDOMAIN                          30
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_CGIINTERPRETER                      31
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_CGIPATTERN                          32
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_ENABLEDIRECTORYLISTINGS             33
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_HIDEFILEPATTERNS                    34
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_INDEXFILES                          35
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_EXTRAMIMETYPES                      36
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_URLREWRITES                         37
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_SSIPATTERN                          38
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_RUNASUSER                           39
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_PERDIRECTORYAUTHFILE                40
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_GLOBALAUTHFILE                      41
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER__IPACL                              42
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_DAVDOCUMENTROOT                     43
-#define VSCPDB_ORDINAL_CONFIG_WEBSOCKET_ENABLEAUTH                          44
-#define VSCPDB_ORDINAL_CONFIG_MQTTBROKER_ENABLE                             45
-#define VSCPDB_ORDINAL_CONFIG_MQTTBROKER_PORT                               46
-#define VSCPDB_ORDINAL_CONFIG_COAPSERVER_ENABLE                             47
-#define VSCPDB_ORDINAL_CONFIG_COAPSERVER_PORT                               48
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_ENABLE                             49
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_ZONE                               50
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUBZONE                            51
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_LONGITUDE                          52
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_LATITUDE                           53
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISE_ENABLE                     54
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSET_ENABLE                      55
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSETTWILIGHT_ENABLE              56
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISETWILIGHT_ENABLE             57
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_ENABLE      58
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_INTERVAL    59
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_ENABLE              60
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_INTERVAL            61
-#define VSCPDB_ORDINAL_CONFIG_DB_VSCPDATA_PATH                              62
-#define VSCPDB_ORDINAL_CONFIG_DB_VSCPCONF_PATH                              63
+#define VSCPDB_ORDINAL_CONFIG_DB_LOG_PATH                                   8
+#define VSCPDB_ORDINAL_CONFIG_TCPIPINTERFACE_PORT                           9
+#define VSCPDB_ORDINAL_CONFIG_MULTICASTINTERFACE_PORT                       10
+#define VSCPDB_ORDINAL_CONFIG_MULICASTINTERFACE_TTL                         11
+#define VSCPDB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_ENABLE                     12
+#define VSCPDB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_PORT                       13
+#define VSCPDB_ORDINAL_CONFIG_DM_DB_PATH                                    14
+#define VSCPDB_ORDINAL_CONFIG_DM_XML_PATH                                   15
+#define VSCPDB_ORDINAL_CONFIG_VARIABLES_DB_PATH                             16
+#define VSCPDB_ORDINAL_CONFIG_VARIABLES_XML_PATH                            17
+#define VSCPDB_ORDINAL_CONFIG_VSCPD_DEFAULTCLIENTBUFFERSIZE                 18
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_DISABLEAUTHENTICATION               19
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_ROOTPATH                            20
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_PORT                                21
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_PATHCERT                            22
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_AUTHDOMAIN                          23
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_CGIINTERPRETER                      24
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_CGIPATTERN                          25
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_ENABLEDIRECTORYLISTINGS             26
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_HIDEFILEPATTERNS                    27
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_INDEXFILES                          28
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_EXTRAMIMETYPES                      29
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_URLREWRITES                         30
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_SSIPATTERN                          31
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_RUNASUSER                           32
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_PERDIRECTORYAUTHFILE                33
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_GLOBALAUTHFILE                      34
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER__IPACL                              35
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_DAVDOCUMENTROOT                     36
+#define VSCPDB_ORDINAL_CONFIG_WEBSOCKET_ENABLEAUTH                          37
+#define VSCPDB_ORDINAL_CONFIG_MQTTBROKER_ENABLE                             38
+#define VSCPDB_ORDINAL_CONFIG_MQTTBROKER_PORT                               39
+#define VSCPDB_ORDINAL_CONFIG_COAPSERVER_ENABLE                             40
+#define VSCPDB_ORDINAL_CONFIG_COAPSERVER_PORT                               41
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_ENABLE                             42
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_ZONE                               43
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUBZONE                            44
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_LONGITUDE                          45
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_LATITUDE                           46
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISE_ENABLE                     47
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSET_ENABLE                      48
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSETTWILIGHT_ENABLE              49
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISETWILIGHT_ENABLE             50
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_ENABLE      51
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_INTERVAL    52
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_ENABLE              53
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_INTERVAL            54
+#define VSCPDB_ORDINAL_CONFIG_DB_VSCPDATA_PATH                              55
+#define VSCPDB_ORDINAL_CONFIG_DB_VSCPCONF_PATH                              56
 
 //*****************************************************************************
 //                                  LOG
@@ -550,7 +536,6 @@
 #define VSCPDB_TABLE_UPDATE "UPDATE 'table' "\
                 "SET benable='%d',"\
                 "bmem='%d',"\
-                "name='%s',"\
                 "permission='%d',"\
                 "type='%d',"\
                 "size='%lu',"\

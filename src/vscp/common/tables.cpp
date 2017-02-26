@@ -1259,7 +1259,7 @@ bool CUserTableObjList::addTableToDB( CVSCPTable& table )
     // Database must be open
     // Database file must be open
     if ( NULL == gpobj->m_db_vscp_daemon ) {
-        gpobj->logMsg( _("Load tables: Loading. VSCP database file is not open.\n") );
+        gpobj->logMsg( _("addTableToDB: VSCP database file is not open.\n") );
         return false;
     }
     
@@ -1274,9 +1274,8 @@ bool CUserTableObjList::addTableToDB( CVSCPTable& table )
                 "'%s','%s','%s','%s','%s','%s','%s',"\
                 "'%d',%d',%d',%d',%d',%d' );"*/
 
-    sql = wxString::Format( VSCPDB_TABLE_INSERT,
-            
-                                1 /* bEnable*/,
+    sql = wxString::Format( VSCPDB_TABLE_INSERT,         
+                                table.isEnabled(),
                                 table.isInMemory(),
                                 (const char *)table.getTableName().mbc_str(),
                                 table.getUserID(),
@@ -1302,7 +1301,7 @@ bool CUserTableObjList::addTableToDB( CVSCPTable& table )
     
     if ( SQLITE_OK != sqlite3_exec( gpobj->m_db_vscp_daemon, 
                                         sql.mbc_str(), NULL, NULL, &zErrMsg ) ) {            
-        gpobj->logMsg( wxString::Format( _("Table: Unable to insert record in table. [%s] Err=%s\n"), 
+        gpobj->logMsg( wxString::Format( _("addTableToDB: Unable to insert record in table. [%s] Err=%s\n"), 
                                             sql.mbc_str(), zErrMsg ) ); 
         return false;
     }
@@ -1316,6 +1315,74 @@ bool CUserTableObjList::addTableToDB( CVSCPTable& table )
 
 bool CUserTableObjList::updateTableToDB( CVSCPTable& table )
 {
+    wxString sql;
+    char *zErrMsg = 0;
+    
+    // Database must be open
+    // Database file must be open
+    if ( NULL == gpobj->m_db_vscp_daemon ) {
+        gpobj->logMsg( _("updateTableToDB: VSCP database file is not open.\n") );
+        return false;
+    }
+    
+    // No need to add if there allready
+    if ( !isTableInDB( table ) ) return addTableToDB( table );
+    
+/*
+ #define VSCPDB_TABLE_UPDATE "UPDATE 'table' "\
+                "SET benable='%d',"\
+                "bmem='%d',"\
+                "permission='%d',"\
+                "type='%d',"\
+                "size='%lu',"\
+                "xman='%s',"\
+                "yname='%s' "\
+                "title='%s',"\
+                "note='%s',"\
+                "sql_create='%s',"\
+                "sql_insert='%s',"\
+                "sql_delete='%s',"\
+                "description='%s',"\
+                "vscpclass='%d',"\
+                "vscptype='%d',"\
+                "vscpsensorindex='%d',"\
+                "vscpunit='%d',"\
+                "vscpzone='%d',"\
+                "vscpsubzone='%d'"\
+                " WHERE link_to_user='%ld'"
+ */    
+    sql = wxString::Format( VSCPDB_TABLE_UPDATE,
+                                table.isEnabled(),
+                                table.isInMemory(),
+                                (const char *)table.getTableName().mbc_str(),
+                                table.getUserID(),
+                                (int)table.getRights(),
+                                (int)table.getType(),
+                                table.getSize(),
+            
+                                table.getLabelX(),          
+                                (const char *)table.getLabelY().mbc_str(),
+                                (const char *)table.getTitle().mbc_str(),
+                                (const char *)table.getNote().mbc_str(),
+                                (const char *)table.getSQLCreate().mbc_str(),
+                                (const char *)table.getSQLInsert().mbc_str(),
+                                (const char *)table.getSQLDelete().mbc_str(),
+                                (const char *)table.getDescription().mbc_str(),
+            
+                                (int)table.getVSCPClass(),
+                                (int)table.getVSCPType(),
+                                (int)table.VSCPSensorIndex(),
+                                (int)table.VSCPUnit(),
+                                (int)table.VSCPZone(),
+                                (int)table.VSCPSubZone() );
+    
+    if ( SQLITE_OK != sqlite3_exec( gpobj->m_db_vscp_daemon, 
+                                        sql.mbc_str(), NULL, NULL, &zErrMsg ) ) {            
+        gpobj->logMsg( wxString::Format( _("updateTableToDB: Unable to update record in table. [%s] Err=%s\n"), 
+                                            sql.mbc_str(), zErrMsg ) ); 
+        return false;
+    }
+    
     return true;
 }
 

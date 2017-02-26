@@ -199,10 +199,7 @@ CControlObject::CControlObject()
     m_admin_allowfrom = _("*");
     
     m_nConfiguration = 1;       // Default configuration record is read.
-    
-    // Log to database as default
-    m_bLogToDatabase = true;
-    
+       
     // Log to syslog
     m_bLogToSysLog = true;
 
@@ -227,35 +224,6 @@ CControlObject::CControlObject()
     // Set Default Log Level
     m_logLevel = DAEMON_LOGMSG_NORMAL;
 
-    // General logfile is enabled by default
-    m_bLogGeneralEnable = true;
-
-#ifdef WIN32
-    m_logGeneralFileName.Assign( wxStandardPaths::Get().GetConfigDir() +
-                                        _("/vscp/logs/vscp_log_general.txt") );
-#else
-    m_logGeneralFileName.Assign( m_rootFolder + _("/logs/vscp_log_general") );
-#endif
-
-    // Security logfile is enabled by default
-    m_bLogSecurityEnable = true;
-
-#ifdef WIN32
-    m_logSecurityFileName.Assign( wxStandardPaths::Get().GetConfigDir() +
-                                            _("/vscp/vscp_log_security.txt") );
-#else
-    m_logSecurityFileName.Assign( m_rootFolder +_("/logs/vscp_log_security") );
-#endif
-
-    // Access logfile is enabled by default
-    m_bLogAccessEnable = true;
-
-#ifdef WIN32
-    m_logAccessFileName.Assign( wxStandardPaths::Get().GetConfigDir() +
-                                            _("/vscp/vscp_log_access.txt") );
-#else
-    m_logAccessFileName.Assign( m_rootFolder + _("/logs/vscp_log_access") );
-#endif
 
 // NOTE!!!  Dependent on the root folder
 // Therefore this statement (currently) has no effect.    
@@ -534,8 +502,7 @@ void CControlObject::logMsg(const wxString& msgin, const uint8_t level, const ui
 #endif
 
     // Log to database
-    if ( m_bLogToDatabase && 
-            ( NULL != m_db_vscp_log ) && 
+    if ( ( NULL != m_db_vscp_log ) && 
             ( m_logLevel >= level) ) {
         
         
@@ -557,38 +524,6 @@ void CControlObject::logMsg(const wxString& msgin, const uint8_t level, const ui
         sqlite3_free( sql );
         
     }
-    
-    // Log to textfles
-    if ( m_logLevel >= level ) {
-
-        if ( DAEMON_LOGTYPE_GENERAL == nType ) {
-
-            // Write to general log file
-            if ( m_fileLogGeneral.IsOpened() ) {
-                m_fileLogGeneral.Write( wxdebugmsg );
-            }
-
-        }
-
-        if ( DAEMON_LOGTYPE_SECURITY == nType ) {
-            
-            // Write to Security log file
-            if ( m_fileLogSecurity.IsOpened() ) {
-                m_fileLogSecurity.Write( wxdebugmsg );
-            }
-            
-        }
-
-        if ( DAEMON_LOGTYPE_ACCESS == nType ) {
-            
-            // Write to Access log file
-            if ( m_fileLogAccess.IsOpened() ) {
-                m_fileLogAccess.Write( wxdebugmsg );
-            }
-            
-        }
-
-     }
 
 #ifndef WIN32
 
@@ -628,10 +563,7 @@ long CControlObject::getCountRecordsLogDB( void )
 {
     long count = 0;
     sqlite3_stmt *ppStmt;
-    
-    // If not logging to db no records
-    if ( !m_bLogToDatabase ) return 0; 
-    
+        
     // If not open no records
     if ( NULL == m_db_vscp_log ) return 0;
     
@@ -665,9 +597,6 @@ long CControlObject::getCountRecordsLogDB( void )
 bool CControlObject::searchLogDB( const char * sql, wxString& strResult )
 {
     sqlite3_stmt *ppStmt;
-    
-    // If not logging to db no records
-    if ( !m_bLogToDatabase ) return 0; 
     
     // If not open no records
     if ( NULL == m_db_vscp_log ) return 0;
@@ -721,9 +650,6 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     // Save root folder for later use.
     m_rootFolder = rootFolder;
     
-    m_logGeneralFileName.Assign( m_rootFolder + _("/logs/vscp_log_general") );
-    m_logSecurityFileName.Assign( m_rootFolder + _("/logs/vscp_log_security") );
-    m_logAccessFileName.Assign( m_rootFolder + _("/logs/vscp_log_access") );
     m_path_db_vscp_daemon.Assign( m_rootFolder + _("vscpd.sqlite3") );
     m_path_db_vscp_data.Assign( m_rootFolder + _("vscp_data.sqlite3") );
     m_path_db_vscp_log.Assign( m_rootFolder + _("/logs/vscpd_log.sqlite3") );
@@ -1031,30 +957,6 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
                             _("127.0.0.1"),                 // Only local
                             _("*:*"),                       // All events
                             VSCP_ADD_USER_FLAG_LOCAL );
-    
-    // Open up the General logging file.
-    if ( m_bLogGeneralEnable ) {
-        if ( !m_fileLogGeneral.Open( m_logGeneralFileName.GetFullPath(), wxFile::write_append ) ) {
-            logMsg( wxString::Format(_("Could not open general log file. Path=%s\n"),
-                    (const char *)m_logGeneralFileName.GetFullPath().mbc_str() ) );
-        }
-    }
-
-    // Open up the Security logging file
-    if ( m_bLogSecurityEnable ) {
-        if ( !m_fileLogSecurity.Open( m_logSecurityFileName.GetFullPath(), wxFile::write_append ) ) {
-            logMsg( wxString::Format(_("Could not open security log file. Path=%s\n"),
-                    (const char *)m_logSecurityFileName.GetFullPath().mbc_str() ) );
-        }
-    }
-
-    // Open up the Access logging file
-    if ( m_bLogAccessEnable ) {
-        if ( !m_fileLogAccess.Open( m_logAccessFileName.GetFullPath(), wxFile::write_append ) ) {
-            logMsg( wxString::Format(_("Could not open access log file. Path=%s\n"),
-                    (const char *)m_logAccessFileName.GetFullPath().mbc_str() ) );
-        }
-    }
 
     // Calculate sunset etc
     m_automation.calcSun();
@@ -1300,28 +1202,9 @@ bool CControlObject::cleanup( void )
     stopWebServerThread();
     stopClientWorkerThread();
     stopDaemonWorkerThread();
-
-    
-
-    // Close logfile
-    if ( m_bLogGeneralEnable ) {
-        m_fileLogGeneral.Close();
-    }
-
-    // Close security file
-    if ( m_bLogSecurityEnable ) {
-        m_fileLogSecurity.Close();
-    }
-
-    // Close access file
-    if ( m_bLogAccessEnable ) {
-        m_fileLogAccess.Close();
-    }
     
     // Close the VSCP data database
     sqlite3_close( m_db_vscp_data );
-    
-    
     
     // Close the DM database
     sqlite3_close( m_dm.m_db_vscp_dm );
@@ -2418,114 +2301,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                                                     wxString::Format(_("%d"), 
                                                     m_bLogToSysLog ? 1 : 0 ) );
                     
-                }
-                else if (subchild->GetName() == wxT("logdatabase")) {
-
-                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
-                    attribute.MakeLower();
-                    if (attribute.IsSameAs(_("false"), false)) {
-                        m_bLogToDatabase = false;
-                    }
-                    else {
-                        m_bLogToDatabase = true;
-                    }
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_LogDB_Enable"), 
-                                                    wxString::Format(_("%d"), 
-                                                    m_bLogToDatabase ? 1 : 0 ) );
-                    
-                }
-                else if (subchild->GetName() == wxT("generallogfile")) {
-
-                    wxFileName fileName;
-                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
-                    attribute.MakeLower();
-                    if (attribute.IsSameAs(_("false"), false)) {
-                        m_bLogGeneralEnable = false;
-                    }
-                    else {
-                        m_bLogGeneralEnable = true;
-                    }
-  
-                    // New form
-                    attribute = subchild->GetAttribute( wxT("path"), wxT("/srv/vscp/logs/vscp_log_general") );
-                                      
-                    fileName.Assign( subchild->GetNodeContent() );
-                    if ( fileName.IsOk() ) {
-                        m_logGeneralFileName = fileName;
-                    }
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_GeneralLogFile_Enable"), 
-                                                    wxString::Format(_("%d"), 
-                                                    m_bLogGeneralEnable ? 1 : 0 ) );
-                    
-                    updateConfigurationRecordItem( _("vscpd_GeneralLogFile_Path"), 
-                                                    wxString::Format(_("%s"), 
-                                                    (const char *)m_logGeneralFileName.GetFullPath().mbc_str() ) );
-                    
-                }
-                else if (subchild->GetName() == wxT("securitylogfile")) {
-
-                    wxFileName fileName;
-                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
-                    attribute.MakeLower();
-                    if (attribute.IsSameAs(_("false"), false)) {
-                        m_bLogSecurityEnable = false;
-                    }
-                    else {
-                        m_bLogSecurityEnable = true;
-                    }
- 
-                    // New form
-                    attribute = subchild->GetAttribute(wxT("path"), m_rootFolder + _("/logs/vscp_log_security") );
-                                      
-                    fileName.Assign( subchild->GetNodeContent() );
-                    if ( fileName.IsOk() ) {
-                        m_logSecurityFileName = fileName;
-                    } 
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_SecurityLogFile_Enable"), 
-                                                    wxString::Format(_("%d"), 
-                                                    m_bLogSecurityEnable ? 1 : 0 ) );
-                    
-                    updateConfigurationRecordItem( _("vscpd_SecurityLogFile_Path"), 
-                                                    wxString::Format(_("%s"), 
-                                                    (const char *)m_logSecurityFileName.GetFullPath().mbc_str() ) );
-                    
-                }
-                else if (subchild->GetName() == wxT("accesslogfile")) {
-
-                    wxFileName fileName;
-                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
-                    attribute.MakeLower();
-                    if (attribute.IsSameAs(_("false"), false)) {
-                        m_bLogAccessEnable = false;
-                    }
-                    else {
-                        m_bLogAccessEnable = true;
-                    }
-
-                    // New form
-                    attribute = subchild->GetAttribute(wxT("path"), m_rootFolder + _("/logs/vscp_log_access"));
-                                      
-                    fileName.Assign( subchild->GetNodeContent() );
-                    if ( fileName.IsOk() ) {
-                        m_logAccessFileName = fileName;
-                    } 
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_AccessLogFile_Enable"), 
-                                                    wxString::Format(_("%d"), 
-                                                    m_bLogAccessEnable ? 1 : 0 ) );
-                    
-                    updateConfigurationRecordItem( _("vscpd_AccessLogFile_Path"), 
-                                                    wxString::Format(_("%s"), 
-                                                    (const char *)m_logAccessFileName.GetFullPath().mbc_str() ) );
-                    
-                }                
+                }               
                 else if (subchild->GetName() == wxT("tcpip")) {
 
                     m_strTcpInterfaceAddress = subchild->GetAttribute(wxT("interface"), wxT(""));
@@ -3747,46 +3523,6 @@ bool CControlObject::dbReadConfiguration( void )
         // Syslog enable
         if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_SYSLOG_ENABLE ) ) {
             m_bLogToSysLog = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_CONFIG_SYSLOG_ENABLE ) ? true : false;
-        }
-        
-        // Database logging enable
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_LOGDB_ENABLE ) ) {
-            m_bLogToDatabase = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_CONFIG_LOGDB_ENABLE ) ? true : false;
-        }
-        
-        // General log file enable
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_GENERALLOGFILE_ENABLE ) ) {
-            m_bLogGeneralEnable = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_CONFIG_GENERALLOGFILE_ENABLE ) ? true : false;
-        }
-        
-        // Path for general log file
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_GENERALLOGFILE_PATH ) ) {
-            m_logGeneralFileName.Assign( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                                                VSCPDB_ORDINAL_CONFIG_GENERALLOGFILE_PATH ) ) );
-        }
-        
-        // Security log file enable
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_SECURITYLOGFILE_ENABLE ) ) {
-            m_bLogSecurityEnable = sqlite3_column_int( ppStmt, 
-                                                          VSCPDB_ORDINAL_CONFIG_SECURITYLOGFILE_ENABLE ) ? true : false;
-        }
-        
-        // Path to security log file
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_SECURITYLOGFILE_PATH ) ) {
-            m_logSecurityFileName.Assign( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt,  
-                                            VSCPDB_ORDINAL_CONFIG_SECURITYLOGFILE_PATH ) ) );
-        }
-        
-        // Access log file enable
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_ACCESSLOGFILE_ENABLE ) ) {
-            m_bLogAccessEnable = sqlite3_column_int( ppStmt,
-                                                    VSCPDB_ORDINAL_CONFIG_ACCESSLOGFILE_ENABLE ) ? true : false;
-        }
-        
-        // Path to access log file
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_ACCESSLOGFILE_PATH ) ) {
-            m_logAccessFileName.Assign( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                                            VSCPDB_ORDINAL_CONFIG_ACCESSLOGFILE_PATH ) ) );
         }
         
         // TCP/IP port

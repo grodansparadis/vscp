@@ -3626,13 +3626,7 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
         var.setValue( gpobj->m_bLogToSysLog ? true : false );
         return var.getID();
     }
-    
-    // Enable database logging
-    if ( lcname.StartsWith( _("vscp.log.database.enable") ) ) {
-        var.setValue( gpobj->m_bLogToDatabase ? true : false );
-        return var.getID();
-    }
-    
+       
     // Read Log database path
     if ( lcname.StartsWith(  _("vscp.log.database.path") ) ) {
         var.setValue( gpobj->m_path_db_vscp_data.GetFullPath(), true );
@@ -3685,40 +3679,6 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
     if ( lcname.StartsWith( _("vscp.log.database.sql") ) ) {
         return var.getID();
     }
-    
-    // General
-    if ( lcname.StartsWith( _("vscp.log.general.enable") ) ) {
-        var.setValue( gpobj->m_bLogGeneralEnable ? true : false );
-        return var.getID();
-    }
-    
-    if ( lcname.StartsWith( _("vscp.log.general.path") ) ) {
-        var.setValue( gpobj->m_logGeneralFileName.GetFullPath(), true );
-        return var.getID();
-    }
-
-    // Access
-    if ( lcname.StartsWith( _("vscp.log.access.enable") ) ) {
-        var.setValue( gpobj->m_bLogAccessEnable ? true : false );
-        return var.getID();
-    }
-    
-    if ( lcname.StartsWith( _("vscp.log.access.path") ) ) {
-        var.setValue( gpobj->m_logAccessFileName.GetFullPath(), true );
-        return var.getID();
-    }
-
-    // Security
-    if ( lcname.StartsWith( _("vscp.log.security.enable") ) ) {
-        var.setValue( gpobj->m_bLogAccessEnable ? true : false );
-        return var.getID();
-    }
-    
-    if ( lcname.StartsWith( _("vscp.log.security.path") ) ) {
-        var.setValue( gpobj->m_logSecurityFileName.GetFullPath(), true );
-        return var.getID();
-    }
-
 
     
     // *************************************************************************
@@ -4723,15 +4683,6 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                                                     val ? _("1") : _("0") );
     }
     
-    // Enable database logging
-    if ( lcname.StartsWith( _("vscp.log.database.enable") ) ) {
-        bool val;
-        var.getValue( &val );
-        gpobj->m_bLogToDatabase = val;
-        return gpobj->updateConfigurationRecordItem( _("vscpd_LogDB_Enable"), 
-                                                    val ? _("1") : _("0") );
-    }
-    
     if ( lcname.StartsWith(  _("vscp.log.database.path") ) ) {
         wxString strval;
         strval = var.getValue();
@@ -4745,58 +4696,6 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
         // Handled by the stock variable itself 
         return true;
     }
-    
-    // General
-    if ( lcname.StartsWith( _("vscp.log.general.enable") ) ) {
-        bool val;
-        var.getValue( &val );
-        gpobj->m_bLogGeneralEnable = val;
-        return gpobj->updateConfigurationRecordItem( _("vscpd_GeneralLogFile_Enable"), 
-                                                    val ? _("1") : _("0") );
-    }
-    
-    if ( lcname.StartsWith( _("vscp.log.general.path") ) ) {
-        wxString strval;
-        strval = var.getValue();
-        gpobj->m_logGeneralFileName.SetPath( strval );
-        return gpobj->updateConfigurationRecordItem( _("vscpd_GeneralLogFile_Path"), 
-                                                    strval );
-    }
-
-    // Access
-    if ( lcname.StartsWith( _("vscp.log.access.enable") ) ) {
-        bool val;
-        var.getValue( &val );
-        gpobj->m_bLogAccessEnable = val;
-        return gpobj->updateConfigurationRecordItem( _("vscpd_AccessLogFile_Enable"), 
-                                                    val ? _("1") : _("0") );
-    }
-    
-    if ( lcname.StartsWith( _("vscp.log.access.path") ) ) {
-        wxString strval;
-        strval = var.getValue();
-        gpobj->m_logAccessFileName.SetPath( strval );
-        return gpobj->updateConfigurationRecordItem( _("vscpd_AccessLogFile_Path"), 
-                                                    strval );
-    }
-
-    // Security
-    if ( lcname.StartsWith( _("vscp.log.security.enable") ) ) {
-        bool val;
-        var.getValue( &val );
-        gpobj->m_bLogAccessEnable = val;
-        return gpobj->updateConfigurationRecordItem( _("vscpd_SecurityLogFile_Enable"), 
-                                                    val ? _("1") : _("0") );
-    }
-    
-    if ( lcname.StartsWith( _("vscp.log.security.path") ) ) {
-        wxString strval;
-        strval = var.getValue();
-        gpobj->m_logSecurityFileName.SetPath( strval );
-        return gpobj->updateConfigurationRecordItem( _("vscpd_SecurityLogFile_Path"), 
-                                                    strval );
-    }
-    
 
     
 // *****************************************************************************
