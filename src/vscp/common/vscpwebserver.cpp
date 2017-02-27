@@ -4666,22 +4666,6 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
 
     buildPage += _("<hr>");
 
-    // CoAP Server
-    buildPage += _("<div id=\"small\">");
-    buildPage += _("<b>CoAP Server:</b> ");
-    if ( pObject->m_bCoAPServer ) {
-        buildPage += _("enabled on <b>interface:</b> '");
-        buildPage += pObject->m_strCoAPServerInterfaceAddress;
-        buildPage += _("'");
-    }
-    else {
-        buildPage += _("disabled");
-    }
-    buildPage += _("<br>");
-    buildPage += _("</div>");
-
-    buildPage += _("<hr>");
-
 
     // VSCP Internal automation intelligence
     buildPage += _("<div id=\"small\">");

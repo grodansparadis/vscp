@@ -3301,21 +3301,6 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
     
     
     // *************************************************************************
-    //                               CoAP
-    // *************************************************************************
-    
-    
-    if ( lcname.StartsWith( _("vscp.coap.server.enable") ) ) {
-        var.setValue( gpobj->m_bCoAPServer ? _("true") : _("false") );
-        return var.getID();
-    }
-    
-    if ( lcname.StartsWith( _("vscp.coap.server.address") ) ) {
-        var.setValue( gpobj->m_strCoAPServerInterfaceAddress, true );
-        return var.getID();
-    }
-    
-    // *************************************************************************
     //                              AUTOMATION
     // *************************************************************************
     
@@ -4342,21 +4327,6 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                                                     strval );
     }
     
-    if ( lcname.StartsWith( _("vscp.coap.server.enable") ) ) {
-        int val;
-        var.getValue( &val );
-        gpobj->m_bCoAPServer = val;
-        return gpobj->updateConfigurationRecordItem( _("vscpd_CoapServer_Enable"), 
-                                                    val ? _("1") : _("0") );
-    }
-    
-    if ( lcname.StartsWith( _("vscp.coap.server.address") ) ) {
-        wxString strval;
-        strval = var.getValue();
-        gpobj->m_strCoAPServerInterfaceAddress = strval;
-        return gpobj->updateConfigurationRecordItem( _("vscpd_CoapServer_Address"), 
-                                                    strval );
-    }
     
     if ( lcname.StartsWith( _("vscp.automation.heartbeat.enable") ) ) {
         bool val;

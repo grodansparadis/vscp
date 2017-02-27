@@ -518,7 +518,18 @@ public:
     
     CUserItem *getUserItem( void ) { return m_pUserItemOwner; };
     
-    long getUserID( void ) { return m_pUserItemOwner->getUserID(); };
+    /*!
+     * Get user id
+     */
+    long getUserID( void ) { 
+        if ( NULL == m_pUserItemOwner ) {
+            return -1; 
+        }
+        else {
+            m_pUserItemOwner->getUserID(); 
+        } 
+    };
+            
     
     uint16_t getRights( void ) { return m_rights; };
     

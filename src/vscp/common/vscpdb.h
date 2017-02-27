@@ -72,8 +72,6 @@
 	"`vscpd_websocket_enableauth`                       INTEGER DEFAULT 1,"\
 	"`vscpd_mqttbroker_enable`                          INTEGER DEFAULT 0,"\
 	"`vscpd_mqttbroker_address`                         TEXT DEFAULT '1883',"\
-	"`vscpd_coapserver_enable`                          INTEGER DEFAULT 0,"\
-	"`vscpd_coapserver_address`                         TEXT DEFAULT 'udp://:5683',"\
 	"`vscpd_automation_enable`                          INTEGER DEFAULT 1,"\
 	"`vscpd_automation_zone`                            INTEGER DEFAULT 1,"\
 	"`vscpd_automation_subzone`                         INTEGER DEFAULT 2,"\
@@ -137,23 +135,21 @@
 #define VSCPDB_ORDINAL_CONFIG_WEBSOCKET_ENABLEAUTH                          37
 #define VSCPDB_ORDINAL_CONFIG_MQTTBROKER_ENABLE                             38
 #define VSCPDB_ORDINAL_CONFIG_MQTTBROKER_PORT                               39
-#define VSCPDB_ORDINAL_CONFIG_COAPSERVER_ENABLE                             40
-#define VSCPDB_ORDINAL_CONFIG_COAPSERVER_PORT                               41
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_ENABLE                             42
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_ZONE                               43
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUBZONE                            44
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_LONGITUDE                          45
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_LATITUDE                           46
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISE_ENABLE                     47
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSET_ENABLE                      48
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSETTWILIGHT_ENABLE              49
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISETWILIGHT_ENABLE             50
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_ENABLE      51
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_INTERVAL    52
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_ENABLE              53
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_INTERVAL            54
-#define VSCPDB_ORDINAL_CONFIG_DB_VSCPDATA_PATH                              55
-#define VSCPDB_ORDINAL_CONFIG_DB_VSCPCONF_PATH                              56
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_ENABLE                             40
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_ZONE                               41
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUBZONE                            42
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_LONGITUDE                          43
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_LATITUDE                           44
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISE_ENABLE                     45
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSET_ENABLE                      46
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSETTWILIGHT_ENABLE              47
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISETWILIGHT_ENABLE             48
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_ENABLE      49
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_INTERVAL    50
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_ENABLE              51
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_INTERVAL            52
+#define VSCPDB_ORDINAL_CONFIG_DB_VSCPDATA_PATH                              53
+#define VSCPDB_ORDINAL_CONFIG_DB_VSCPCONF_PATH                              54
 
 //*****************************************************************************
 //                                  LOG

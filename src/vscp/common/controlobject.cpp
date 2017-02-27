@@ -261,9 +261,6 @@ CControlObject::CControlObject()
     // Enable MQTT broker
     m_bMQTTBroker = true;
 
-    // Enable CoAP server
-    m_bCoAPServer = true;
-
     // Default TCP/IP interface
     m_strTcpInterfaceAddress = _("9598");
 
@@ -279,15 +276,11 @@ CControlObject::CControlObject()
     // Default MQTT broker interface
     m_strMQTTBrokerInterfaceAddress = _("1883");
 
-    // Default CoAP server interface
-    m_strCoAPServerInterfaceAddress = _("udp://:5683");
-
     m_pclientMsgWorkerThread = NULL;
     m_pVSCPClientThread = NULL;
     m_pdaemonVSCPThread = NULL;
     m_pwebServerThread = NULL;
     m_pMQTTBrookerThread = NULL;
-    m_pCoAPServerThread = NULL;
 
     // Websocket interface
     m_bAuthWebsockets = true;   // Authentication is needed
@@ -1036,16 +1029,6 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     else {
         logMsg(_("MQTTBroker disabled.\n") );
     }
-
-    // Start CoAP server if enabled
-    if ( m_bCoAPServer ) {
-        logMsg(_("Starting CoAP interface.\n") );
-        logMsg(_("CoAP Server enabled.\n") );
-        startCoAPServerThread();
-    }
-    else {
-        logMsg(_("CoAP Server disabled.\n") );
-    }
     
     // Start daemon worker thread
     logMsg(_("Starting VSCP daemon worker thread.\n") );
@@ -1583,62 +1566,6 @@ bool CControlObject::stopMQTTBrokerThread( void )
         m_pMQTTBrookerThread->Wait();
         delete m_pVSCPClientThread;
         m_mutexMQTTBrokerThread.Unlock();
-    }
-
-    return true;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-// startCoAPServerWorkerThread
-//
-
-bool CControlObject::startCoAPServerThread( void )
-{
-    /////////////////////////////////////////////////////////////////////////////
-    // Run the CoAP Server thread if enabled
-    /////////////////////////////////////////////////////////////////////////////
-    if ( m_bCoAPServer ) {
-
- #ifdef MG_ENABLE_COAP       
-        m_pCoAPServerThread = new VSCPCoAPServerThread;
-
-        if ( NULL != m_pCoAPServerThread ) {
-            m_pCoAPServerThread->m_pCtrlObject = this;
-            wxThreadError err;
-            if ( wxTHREAD_NO_ERROR == ( err = m_pCoAPServerThread->Create() ) ) {
-                //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
-                if ( wxTHREAD_NO_ERROR != (err = m_pCoAPServerThread->Run() ) ) {
-                    logMsg( _("Unable to run TCP thread.") );
-                }
-            }
-            else {
-                logMsg( _("Unable to create TCP thread.") );
-            }
-        }
-        else {
-            logMsg( _("Unable to allocate memory for TCP thread.") );
-        }
-#endif
-        
-    }
-
-    return true;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-// stopCoAPServerWorkerThread
-//
-
-bool CControlObject::stopCoAPServerThread(void)
-{
-    if ( NULL != m_pCoAPServerThread ) {
-        m_mutexCoAPServerThread.Lock();
-        m_pCoAPServerThread->m_bQuit = true;
-        m_pCoAPServerThread->Wait();
-        delete m_pVSCPClientThread;
-        m_mutexCoAPServerThread.Unlock();
     }
 
     return true;
@@ -2369,28 +2296,6 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     updateConfigurationRecordItem( _("vscpd_MqttBroker_Address"), 
                                                     wxString::Format(_("%s"), 
                                                     (const char *)m_strMQTTBrokerInterfaceAddress.mbc_str() ) );
-
-                }
-                else if (subchild->GetName() == wxT("coapsrv")) {
-                    wxString attribut = subchild->GetAttribute(wxT("enable"), wxT("true"));
-                    attribut.MakeLower();
-                    if (attribut.IsSameAs(_("false"), false)) {
-                        m_bCoAPServer = false;
-                    }
-                    else {
-                        m_bCoAPServer = true;
-                    }
-
-                    m_strCoAPServerInterfaceAddress = subchild->GetAttribute(wxT("interface"), wxT(""));
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_CoapServer_Enable"), 
-                                                    wxString::Format(_("%d"), 
-                                                    m_bCoAPServer ? 1 : 0 ) );
-                    
-                    updateConfigurationRecordItem( _("vscpd_CoapServer_Address"), 
-                                                    wxString::Format(_("%s"), 
-                                                    (const char *)m_strCoAPServerInterfaceAddress.mbc_str() ) );
 
                 }
                 else if (subchild->GetName() == wxT("dm")) {
@@ -3196,13 +3101,13 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                         };
                         
                         // Add to database if not there already
-                        if ( !m_userTableObjects.isTableInDB( *pTable ) ) {
+                        /*if ( !m_userTableObjects.isTableInDB( *pTable ) ) {
                             m_userTableObjects.addTableToDB( *pTable );
                         }
                         else {
                             // Update
                             m_userTableObjects.updateTableToDB( *pTable );
-                        }
+                        }*/
                         
                     }
                     else {
@@ -3745,19 +3650,7 @@ bool CControlObject::dbReadConfiguration( void )
                     wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
                     VSCPDB_ORDINAL_CONFIG_MQTTBROKER_PORT ) );
         }
-        
-        // Enable COAP server
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_COAPSERVER_ENABLE ) ) {
-            m_bCoAPServer = sqlite3_column_int( ppStmt, 
-                                    VSCPDB_ORDINAL_CONFIG_COAPSERVER_ENABLE ) ? true : false;
-        }
-        
-        // COAP port
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_COAPSERVER_PORT ) ) {
-            m_strCoAPServerInterfaceAddress = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                    VSCPDB_ORDINAL_CONFIG_COAPSERVER_PORT ) );
-        }
-        
+                
         // Automation zone
         if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_ZONE ) ) {
             m_automation.setZone( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_ZONE ) );

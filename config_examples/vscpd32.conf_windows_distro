@@ -22,28 +22,7 @@
     
         <!-- Set the detail of logging you want -->
         <loglevel>debug</loglevel>
-        
-        <!-- The user to run as on Unix                                     -->
-        <runasuser></runasuser>
-        
-        <!-- General logging will be done to syslog on Unix but on          -->
-        <!-- windows this path must be set to get logging saved into a      -->
-        <!-- file. The debug level will determine how much information      -->
-        <!-- you will get into this file.                                   -->
-        
-        <generallogfile enable="true">c:\programdata\vscp\logs\vscp_log_general.txt</generallogfile>
-        
-        <!-- Security logging will be done to this path must be set to      -->
-        <!-- get security logging saved into a file.                        -->
-        
-        <securitylogfile enable="true">c:\programdata\vscp\logs\vscp_log_security.txt</securitylogfile>
-        
-        <!-- Access logging will be done to this path must be set to        -->
-        <!-- get access logging for tcp/ip udp webserver websocket and rest -->
-        <!-- saved into a file.                                             -->
-        
-        <accesslogfile enable="true">c:\programdata\vscp\logs\vscp_log_access.txt</accesslogfile>
-        
+                
         <!-- Databases                                                       -->
         <db_vscp_daemon>/programdata/vscp/db_vscp_daemon.sqlite3</db_vscp_daemon>
         <db_vscp_data>/programdata/vscp/db_vscp_data.sqlite3</db_vscp_data>

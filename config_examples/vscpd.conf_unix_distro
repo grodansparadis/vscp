@@ -25,11 +25,6 @@
 	<!-- Enable syslog logging                                           -->
         <logsyslog enable="true" />        
 
-	<!-- Enable logging to database                                      -->
-	<!-- All logging will go to the logging database instead of to the   -->
-	<!-- text files.                                                     -->
-        <logdatabase enable="true" />
-
         <!-- The user to run as on Unix                                      -->
         <runasuser></runasuser>
         
@@ -54,24 +49,6 @@
         <!-- user is regarded as a client. Default is 1024.                  -->
 
         <clientbuffersize>1024</clientbuffersize>
-        
-        <!-- General logging will be done to syslog on Unix but on           -->
-        <!-- windows this path must be set to get logging saved into a       -->
-        <!-- file. The debug level will determine how much information       -->
-        <!-- you will get into this file.                                    -->
-        
-        <generallogfile enable="true">/var/log/vscp/vscp_log_general</generallogfile>
-        
-        <!-- Security logging will be done to this path must be set to       -->
-        <!-- get security logging saved into a file.                         -->
-        
-        <securitylogfile enable="true">/var/log/vscp/vscp_log_security</securitylogfile>
-        
-        <!-- Access logging will be done to this path must be set to         -->
-        <!-- get access logging for tcp/ip udp webserver websocket and       -->
-        <!-- rest saved into a file.                                         -->
-        
-        <accesslogfile enable="true">/var/log/vscp/vscp_log_access</accesslogfile>
 
         <!-- Databases                                                       -->
         <db_vscp_daemon>/srv/vscp/vscpd.sqlite3</db_vscp_daemon>

@@ -51,7 +51,6 @@
 #include <udpclientthread.h>
 #include <webserver_websocket.h>
 #include <vscpmqttbroker.h>
-#include <vscpcoapserver.h>
 #include <udpthread.h>
 #include <daemonvscp.h>
 #include <dm.h>
@@ -276,16 +275,6 @@ public:
      * Stop MQTT broker
      */
     bool stopMQTTBrokerThread( void );
-
-    /*!
-     * Start CoAP server
-     */
-    bool startCoAPServerThread( void );
-
-    /*!
-     *  Stop CoAP server
-     */
-    bool stopCoAPServerThread( void );
 
     /*!
         Starting WebServer worker thread
@@ -592,10 +581,6 @@ public:
     */
     bool m_bMQTTBroker;
 
-    /*!
-        Enable CoAP server
-    */
-    bool m_bCoAPServer;
 
 
 
@@ -621,8 +606,6 @@ public:
     /// Interface(s) to use for MQTT broker
     wxString m_strMQTTBrokerInterfaceAddress;
 
-    /// Interface(s) to use for CoAP Server
-    wxString m_strCoAPServerInterfaceAddress;
 
 
     /////////////////////////////////////////////////////////
@@ -895,11 +878,7 @@ private:
     VSCPMQTTBrokerThread *m_pMQTTBrookerThread;
     wxMutex m_mutexMQTTBrokerThread;
 
-    /*!
-        The server thread for the CoAP server
-     */
-    VSCPCoAPServerThread *m_pCoAPServerThread;
-    wxMutex m_mutexCoAPServerThread;
+
 };
 
 
