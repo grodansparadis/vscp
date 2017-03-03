@@ -200,9 +200,13 @@ public:
         User can be numeric (userid) or given as a username. It is valid to leave all fields
         blank ";;" except for variablename
         @param str String that will get string representation of variable with all info.
-        @return true if the sting could be parsed correctly
+        @param bBase64 If true value will be BASE64 encoded.
+        @param strUser User name that is used if user field is empty.
+        @return true if the string could be parsed correctly.
      */
-    bool getVariableFromString( const wxString& strVariable, bool bBase64=false );
+    bool getVariableFromString( const wxString& strVariable, 
+                                    const bool bBase64=false,
+                                    const wxString& strUser = _("admin") );
 
     /*!
      * Get string content as semicolon separated string form.
@@ -377,16 +381,6 @@ public:
      */
     bool setRighs( uint32_t rights );
     
-    /*!
-     * setRights
-     * Set rights for the variable. Can be set either on numerical form or
-     * alphanumerical form.
-     * uuugggooo
-     * uuu - owner RWX/numerical
-     * ggg - group RWX/numerical
-     * ooo - other RWX/numerical
-     */
-    bool setRighs( wxString& strRights );
 
     /*!
      * setUser
@@ -700,13 +694,15 @@ public:
     /*!
      * Prepare list functionality. Must be called before any of the other
      * list methods.
-     * @param search Regular expression to use for names of variables.
      * @param nameArray String array that will receive sorted array with variables
      *                  names that meet regular expression.
+     * @param search Regular expression to use for names of variables.
+     * @param type If not zero variable type to list.
      * @return Returns true on success
      */
     bool getVarlistFromRegExp( wxArrayString& nameArray,
-                                const wxString& regex = _("(.*)") );
+                                const wxString& regex = _("(.*)"),
+                                const int type = 0 );
     
     /*!
      * Get next list item

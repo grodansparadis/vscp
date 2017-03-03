@@ -3112,7 +3112,7 @@ bool vscp_setVscpDataFromString(vscpEvent *pEvent, const wxString& str)
         if (pEvent->sizeData >= VSCP_MAX_DATA) break;
     }
 
-    if (pEvent->sizeData > 0) {
+    if ( pEvent->sizeData > 0 ) {
         pEvent->pdata = new uint8_t[pEvent->sizeData];
         if (NULL != pEvent->pdata) {
             memcpy(pEvent->pdata, &data, pEvent->sizeData);

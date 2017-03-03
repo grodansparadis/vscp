@@ -437,7 +437,7 @@ struct myNode {
 
 /// Error Codes
 #define VSCP_ERROR_SUCCESS                      0       // All is OK
-#define VSCP_ERROR_ERROR                        -1       // Error
+#define VSCP_ERROR_ERROR                        -1      // Error
 #define VSCP_ERROR_CHANNEL                      7       // Invalid channel
 #define VSCP_ERROR_FIFO_EMPTY                   8       // FIFO is empty
 #define VSCP_ERROR_FIFO_FULL                    9       // FIFI is full
@@ -469,6 +469,8 @@ struct myNode {
 #define VSCP_ERROR_INVALID_HANDLE               41      // The handle is not valid
 #define VSCP_ERROR_OPERATION_FAILED             42      // Operation failed for some reason
 #define VSCP_ERROR_BUFFER_TO_SMALL              43      // Supplied buffer is to small to fit content
+#define VSCP_ERROR_UNKNOWN_ITEM                 44      // Requested item (remote variable) is unknown
+#define VSCP_ERROR_ALREADY_DEFINED              45      // The name is already in use.
 
 /*!
     Template for VSCP XML event data

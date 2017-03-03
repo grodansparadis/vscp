@@ -290,6 +290,13 @@ public:
         Client FILE command
     */
     void handleClientFile( struct mg_connection *conn, CControlObject *pCtrlObject );
+    
+    /*!
+        Client TABLE command
+        @param conn Connection handler.
+        @param pCtrlObject Pointer to control object
+    */
+    void handleClientTable( struct mg_connection *conn, CControlObject *pCtrlObject );
 
     /*!
         Client VARIABLE command
@@ -309,10 +316,11 @@ public:
         Variable Write
         Write Format: variablename;variabletype;accessrights;persistance;value;note 
             variablename must be given.
-            variabletype can be symbolic ("string") or numeric ("1"). Default: string.
-            persistens can be 0/1 or false/true. Default: false.
-            accessrights must be numeric. Default 744.
-            User always set to logged in user.
+            variabletype can be symbolic ("string") or numeric ("1"). Can be left out and
+                            then defaults to string.
+            persistens can be 0/1 or false/true. Can be left out and then default to false.
+            accessrights must be numeric but can be left out and then defaults to 0x744.
+            User set to logged in user if not given.
         @param conn Connection handler.
         @param pCtrlObject Pointer to control object
     */

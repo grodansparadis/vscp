@@ -553,53 +553,6 @@ bool CVSCPVariable::setRighs( uint32_t rights )
     return true;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// setRighs
-//
-
-bool CVSCPVariable::setRighs( wxString& strRights )
-{
-    unsigned long val;
-    wxString nills = _("000000000");
-    wxString dash = _("---------");
-    strRights.Trim();
-    strRights.Trim( false );
-    strRights.MakeUpper();
-    
-    // Must have a valid length
-    if ( strRights.Length() > 9 ) {
-        strRights = strRights.Left( 9 );
-    }
-    
-    if ( strRights.ToULong( &val ) ) {
-        // This is a numerical version  "777777777"
-        strRights = nills.Left( 9 - strRights.Length() ) + strRights;
-        m_accessRights = val;
-    }
-    else {
-        // This is a character version "rwxrwxrwx"
-        val = 0;
-        strRights = dash.Left( 9 - strRights.Length() ) + strRights;
-        for ( int i=0; i<3; i++ ) {
-            
-            if ( 'R' == strRights[ i*3 ] ) {
-                val+=4;
-            }
-            if ( 'W' == strRights[ i*3 + 1 ] ) {
-                val+=2;
-            }
-            if ( 'X' == strRights[ i*3 + 2 ] ) {
-                val+=1;
-            }
-            
-            if ( 2 != i ) val *= 10;
-        }
-        
-        m_accessRights = val;
-    }
-    
-    return true;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // setUserId
@@ -1327,10 +1280,12 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
 ///////////////////////////////////////////////////////////////////////////////
 // getVariableFromString
 //
-// Format is: "variable name","type","persistence","user","rights","value","note"
+// Format is: "variable name";"type";"persistence";"user";"rights";"value";"note"
 //
 
-bool CVSCPVariable::getVariableFromString( const wxString& strVariable, bool bBase64 )
+bool CVSCPVariable::getVariableFromString( const wxString& strVariable, 
+                                                const bool bBase64,
+                                                const wxString& strUser )
 {
     wxString strRights;             // User rights for variable               
     int      typeVariable;          // Type of variable;
@@ -1354,7 +1309,14 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable, bool bBa
 
     // Type
     if ( tkz.HasMoreTokens() ) {
-        getVariableTypeFromString( tkz.GetNextToken() );
+        wxString str = tkz.GetNextToken();
+        str.Trim();
+        if ( str.Length() ) {
+            getVariableTypeFromString( str );
+        }
+        else {
+            getVariableTypeFromString( _("STRING") );
+        }
     }
     else {
         return false;
@@ -1373,6 +1335,9 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable, bool bBa
                 setPersistent( false );
             }
         }
+        else {
+            setPersistent( false );
+        }
     }
     else {
         return false;
@@ -1388,7 +1353,16 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable, bool bBa
                 setUserId( userid );
             }
             else {
-                setUserIdFromUserName( str );
+                wxString str = strUser;
+                if ( !setUserIdFromUserName( str ) ) {
+                    return false;
+                }
+            }
+        }
+        else {
+            wxString str = _("admin");
+            if ( !setUserIdFromUserName( str ) ) {
+                return false;
             }
         }
     }
@@ -1397,13 +1371,16 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable, bool bBa
     }
     
     // Access rights
-    // uuugggooo
-    // uuu - owner RWX/numerical
-    // ggg - group RWX/numerical
-    // ooo - other RWX/numerical
     if ( tkz.HasMoreTokens() ) {
         wxString str = tkz.GetNextToken();
-        strRights = str.Upper();
+        str.Trim();
+        if ( str.Length() ) {
+            uint32_t rights = vscp_readStringValue( str );
+            setRighs( rights );
+        }
+        else {
+            setRighs( 0x744 );
+        }
     }
     else {
         return false;
@@ -5490,12 +5467,12 @@ uint32_t CVariableStorage::findPersistentVariable(const wxString& name, CVSCPVar
 //
 
 bool CVariableStorage::getVarlistFromRegExp( wxArrayString& nameArray, 
-                            const wxString& regex )
+                                                const wxString& regex,
+                                                const int type )
 {
     wxString varname;
     sqlite3_stmt *ppStmt;
     wxString regexlocal = regex.Upper();
-    //struct slre_cap caps[4];
         
     nameArray.Clear();
     
@@ -5522,11 +5499,6 @@ bool CVariableStorage::getVarlistFromRegExp( wxArrayString& nameArray,
         const unsigned char *p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NAME );
         varname = wxString::FromUTF8Unchecked( (const char *)p );
         if ( wxregex.Matches( varname ) ) {
-        /*if ( slre_match( (const char *)regexlocal.mbc_str(),
-                                        (const char *)varname.mbc_str(), 
-                                        strlen( (const char *)varname.mbc_str() ), 
-                                        caps, 4, 0) > 0) {*/
-        
             nameArray.Add( varname );
         }
     }
@@ -5546,10 +5518,6 @@ bool CVariableStorage::getVarlistFromRegExp( wxArrayString& nameArray,
         
         varname = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NAME ) );
         if ( wxregex.Matches( varname ) ) {
-        /*if ( slre_match( (const char *)regexlocal.mbc_str(),
-                                        (const char *)varname.mbc_str(), 
-                                        strlen( (const char *)varname.mbc_str() ), 
-                                        caps, 4, 0) > 0) {*/
             nameArray.Add( varname );
         }
     }

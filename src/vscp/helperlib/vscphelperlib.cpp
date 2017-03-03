@@ -702,12 +702,12 @@ extern "C" int vscphlp_quitReceiveLoop(const long handle)
     \brief Delete a variable
     \param name of variable
     \param pointer to event variable that get the value of the GUID variable.
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_deleteVariable( long handle, const char *pName )
+extern "C" int WINAPI EXPORT vscphlp_deleteRemoteVariable( long handle, const char *pName )
 #else
-extern "C" int vscphlp_deleteVariable( long handle, const char *pName )
+extern "C" int vscphlp_deleteRemoteVariable( long handle, const char *pName )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
@@ -719,7 +719,7 @@ extern "C" int vscphlp_deleteVariable( long handle, const char *pName )
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->deleteVariable( name );
+    return pvscpif->deleteRemoteVariable( name );
 }
 
 
@@ -731,25 +731,32 @@ extern "C" int vscphlp_deleteVariable( long handle, const char *pName )
     \param type Either numerical (in string form) or as mennomic
     \param strValue Value to set for string
     \param bPersistent Non zero for persistent, zero if not.
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_createVariable( long handle,
-                                                        const char *pName,
+extern "C" int WINAPI EXPORT vscphlp_createRemoteVariable( const char *pName,
                                                         const char* pType,
+                                                        const int bPersistent,
+                                                        const char *pUser,
+                                                        const unsigned long rights,
                                                         const char* pValue,
-                                                        int bPersistent )
+                                                        const char* pNote  )
 #else
-extern "C" int vscphlp_createVariable( long handle,
+extern "C" int vscphlp_createRemoteVariable( long handle,
                                               const char *pName,
                                               const char* pType,
+                                              const int bPersistent,
+                                              const char *pUser,
+                                              const unsigned long rights,
                                               const char* pValue,
-                                              int bPersistent )
+                                              const char* pNote )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
     if ( NULL == pType ) return VSCP_ERROR_PARAMETER;
+    if ( NULL == pUser ) return VSCP_ERROR_PARAMETER;
     if ( NULL == pValue ) return VSCP_ERROR_PARAMETER;
+    if ( NULL == pNote ) return VSCP_ERROR_PARAMETER;
 
     VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
     if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
@@ -759,20 +766,35 @@ extern "C" int vscphlp_createVariable( long handle,
 
     wxString name = wxString::FromAscii( pName );
     wxString type = wxString::FromAscii( pType );
+    wxString user = wxString::FromAscii( pUser );
     wxString value = wxString::FromAscii( pValue );
-    return pvscpif->createVariable( name, type, value, ( bPersistent ? true : false ) );
+    wxString note = wxString::FromAscii( pNote );
+    
+    return pvscpif->createRemoteVariable( name, 
+                                            type,
+                                            ( bPersistent ? true : false ),
+                                            user,
+                                            rights,
+                                            value,
+                                            note );
 }
 
 
 /*!
-    \fn int vscphlp_saveVariablesToDisk( long handle )
+    \fn int vscphlp_saveVariablesToDisk( long handle, const char *pPath )
     \brief Save variables to disk
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_saveVariablesToDisk( long handle )
+extern "C" int WINAPI EXPORT vscphlp_saveRemoteVariablesToDisk( long handle, 
+                                                            const char *pPath,
+                                                            const int select,
+                                                            const char *pRegExp )
 #else
-extern "C" int vscphlp_saveVariablesToDisk( long handle )
+extern "C" int vscphlp_saveRemoteVariablesToDisk( long handle, 
+                                                    const char *pPath,
+                                                    const int select,
+                                                    const char *pRegExp )
 #endif
 {
     VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
@@ -781,7 +803,9 @@ extern "C" int vscphlp_saveVariablesToDisk( long handle )
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
-    return pvscpif->saveVariablesToDisk();
+    wxString path = wxString::FromAscii( pPath );
+    
+    return pvscpif->saveRemoteVariablesToDisk( path );
 }
 
 
@@ -792,12 +816,12 @@ extern "C" int vscphlp_saveVariablesToDisk( long handle )
     \param name of variable
     \param pointer to string that get the value of the string variable.
     \param size fo buffer
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVariableString( long handle, const char *pName, char *pValue, int size )
+extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableString( long handle, const char *pName, char *pValue, int size )
 #else
-extern "C" int vscphlp_getVariableString( long handle, const char *pName, char *pValue, int size )
+extern "C" int vscphlp_getRemoteVariableString( long handle, const char *pName, char *pValue, int size )
 #endif
 {
     int rv;
@@ -813,7 +837,7 @@ extern "C" int vscphlp_getVariableString( long handle, const char *pName, char *
 
     wxString name = wxString::FromAscii( pName );
     wxString strValue;
-    if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getVariableString( name, &strValue ) ) ) {
+    if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableValue( name, strValue ) ) ) {
         strncpy( pValue, strValue.mbc_str(), MIN( strlen( strValue.mbc_str() ), size ) );
     }
 
@@ -825,12 +849,12 @@ extern "C" int vscphlp_getVariableString( long handle, const char *pName, char *
     \brief set string variable from a pointer to a string
     \param name of variable
     \param pointer to string that contains the string.
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setVariableString( long handle, const char *pName, char *pValue )
+extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableString( long handle, const char *pName, char *pValue )
 #else
-extern "C" int vscphlp_setVariableString( long handle, const char *pName, char *pValue )
+extern "C" int vscphlp_setRemoteVariableString( long handle, const char *pName, char *pValue )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
@@ -849,7 +873,7 @@ extern "C" int vscphlp_setVariableString( long handle, const char *pName, char *
     wxString name = wxString::FromAscii( pName );
     wxString strValue = wxString::FromAscii( pValue );
 
-    return pvscpif->setVariableString( name, strValue );
+    return pvscpif->setRemoteVariableValue( name, strValue );
 }
 
 /*!
@@ -857,12 +881,12 @@ extern "C" int vscphlp_setVariableString( long handle, const char *pName, char *
     \brief Get variable value from boolean variable
     \param name of variable
     \param pointer to boolean variable that get the value of the string variable.
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVariableBool( long handle, const char *pName, int *bValue )
+extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableBool( long handle, const char *pName, int *bValue )
 #else
-extern "C" int vscphlp_getVariableBool( long handle, const char *pName, int *bValue )
+extern "C" int vscphlp_getRemoteVariableBool( long handle, const char *pName, int *bValue )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
@@ -876,7 +900,7 @@ extern "C" int vscphlp_getVariableBool( long handle, const char *pName, int *bVa
 
     wxString name = wxString::FromAscii( pName );
     bool bBoolValue;
-    int rv =  pvscpif->getVariableBool( name, &bBoolValue );
+    int rv =  pvscpif->getRemoteVariableBool( name, &bBoolValue );
     if ( bBoolValue ) {
         *bValue = 1;
     }
@@ -892,12 +916,12 @@ extern "C" int vscphlp_getVariableBool( long handle, const char *pName, int *bVa
     \brief Get variable value from boolean variable
     \param name of variable
     \param pointer to boolean variable that get the value of the string variable.
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setVariableBool( long handle, const char *pName, int bValue )
+extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableBool( long handle, const char *pName, int bValue )
 #else
-extern "C" int vscphlp_setVariableBool( long handle, const char *pName, int bValue )
+extern "C" int vscphlp_setRemoteVariableBool( long handle, const char *pName, int bValue )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
@@ -909,7 +933,7 @@ extern "C" int vscphlp_setVariableBool( long handle, const char *pName, int bVal
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableBool( name, ( bValue ? true : false ) );
+    return pvscpif->setRemoteVariableBool( name, ( bValue ? true : false ) );
 };
 
 
@@ -918,12 +942,12 @@ extern "C" int vscphlp_setVariableBool( long handle, const char *pName, int bVal
     \brief Get variable value from integer variable
     \param name of variable
     \param pointer to integer variable that get the value of the string variable.
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVariableInt( long handle, const char *pName, int *value )
+extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableInt( long handle, const char *pName, int *value )
 #else
-extern "C" int vscphlp_getVariableInt( long handle, const char *pName, int *value )
+extern "C" int vscphlp_getRemoteVariableInt( long handle, const char *pName, int *value )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
@@ -936,7 +960,7 @@ extern "C" int vscphlp_getVariableInt( long handle, const char *pName, int *valu
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableInt( name, value );
+    return pvscpif->getRemoteVariableInt( name, value );
 };
 
 
@@ -945,12 +969,12 @@ extern "C" int vscphlp_getVariableInt( long handle, const char *pName, int *valu
     \brief Get variable value from integer variable
     \param name of variable
     \param pointer to integer variable that get the value of the string variable.
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setVariableInt( long handle, const char *pName, int value )
+extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableInt( long handle, const char *pName, int value )
 #else
-extern "C" int vscphlp_setVariableInt( long handle, const char *pName, int value )
+extern "C" int vscphlp_setRemoteVariableInt( long handle, const char *pName, int value )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
@@ -962,7 +986,7 @@ extern "C" int vscphlp_setVariableInt( long handle, const char *pName, int value
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableInt( name, value );
+    return pvscpif->setRemoteVariableInt( name, value );
 };
 
 /*!
@@ -970,12 +994,12 @@ extern "C" int vscphlp_setVariableInt( long handle, const char *pName, int value
     \brief Get variable value from long variable
     \param name of variable
     \param pointer to long variable that get the value of the string variable.
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVariableLong( long handle, const char *pName, long *value )
+extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableLong( long handle, const char *pName, long *value )
 #else
-extern "C" int vscphlp_getVariableLong( long handle, const char *pName, long *value )
+extern "C" int vscphlp_getRemoteVariableLong( long handle, const char *pName, long *value )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
@@ -988,7 +1012,7 @@ extern "C" int vscphlp_getVariableLong( long handle, const char *pName, long *va
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableLong( name, value );
+    return pvscpif->getRemoteVariableLong( name, value );
 };
 
 /*!
@@ -996,12 +1020,12 @@ extern "C" int vscphlp_getVariableLong( long handle, const char *pName, long *va
     \brief Get variable value from long variable
     \param name of variable
     \param pointer to long variable that get the value of the string variable.
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setVariableLong( long handle, const char *pName, long value )
+extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableLong( long handle, const char *pName, long value )
 #else
-extern "C" int vscphlp_setVariableLong( long handle, const char *pName, long value )
+extern "C" int vscphlp_setRemoteVariableLong( long handle, const char *pName, long value )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
@@ -1013,7 +1037,7 @@ extern "C" int vscphlp_setVariableLong( long handle, const char *pName, long val
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableLong( name, value );
+    return pvscpif->setRemoteVariableLong( name, value );
 };
 
 /*!
@@ -1021,12 +1045,12 @@ extern "C" int vscphlp_setVariableLong( long handle, const char *pName, long val
     \brief Get variable value from double variable
     \param name of variable
     \param pointer to double variable that get the value of the string variable.
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code..
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVariableDouble( long handle, const char *pName, double *value )
+extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableDouble( long handle, const char *pName, double *value )
 #else
-extern "C" int vscphlp_getVariableDouble( long handle, const char *pName, double *value )
+extern "C" int vscphlp_getRemoteVariableDouble( long handle, const char *pName, double *value )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
@@ -1039,7 +1063,7 @@ extern "C" int vscphlp_getVariableDouble( long handle, const char *pName, double
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableDouble( name, value );
+    return pvscpif->getRemoteVariableDouble( name, value );
 };
 
 /*!
@@ -1047,12 +1071,12 @@ extern "C" int vscphlp_getVariableDouble( long handle, const char *pName, double
     \brief Get variable value from double variable
     \param name of variable
     \param pointer to double variable that get the value of the string variable.
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setVariableDouble( long handle, const char *pName, double value )
+extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableDouble( long handle, const char *pName, double value )
 #else
-extern "C" int vscphlp_setVariableDouble( long handle, const char *pName, double value )
+extern "C" int vscphlp_setRemoteVariableDouble( long handle, const char *pName, double value )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
@@ -1064,7 +1088,7 @@ extern "C" int vscphlp_setVariableDouble( long handle, const char *pName, double
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableDouble( name, value );
+    return pvscpif->setRemoteVariableDouble( name, value );
 };
 
 /*!
@@ -1073,12 +1097,12 @@ extern "C" int vscphlp_setVariableDouble( long handle, const char *pName, double
     \param name of variable
     \param String that get that get the
         value of the measurement.
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVariableMeasurement( long handle, const char *pName, char *pValue, int size )
+extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableMeasurement( long handle, const char *pName, char *pValue, int size )
 #else
-extern "C" int vscphlp_getVariableMeasurement( long handle, const char *pName, char *pValue, int size )
+extern "C" int vscphlp_getRemoteVariableMeasurement( long handle, const char *pName, char *pValue, int size )
 #endif
 {
     int rv;
@@ -1094,7 +1118,7 @@ extern "C" int vscphlp_getVariableMeasurement( long handle, const char *pName, c
 
     wxString name = wxString::FromAscii( pName );
     wxString strValue;
-    if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getVariableMeasurement( name, strValue ) ) ) {
+    if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableMeasurement( name, strValue ) ) ) {
         strncpy( pValue, strValue.mbc_str(), MIN( strlen( strValue.mbc_str() ), size ) );
     }
 
@@ -1107,12 +1131,12 @@ extern "C" int vscphlp_getVariableMeasurement( long handle, const char *pName, c
     \param name of variable
     \param String that get that get the
     value of the measurement.
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setVariableMeasurement( long handle, const char *pName, const char *pValue )
+extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableMeasurement( long handle, const char *pName, const char *pValue )
 #else
-extern "C" int vscphlp_setVariableMeasurement( long handle, const char *pName, char *pValue )
+extern "C" int vscphlp_setRemoteVariableMeasurement( long handle, const char *pName, char *pValue )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
@@ -1126,7 +1150,7 @@ extern "C" int vscphlp_setVariableMeasurement( long handle, const char *pName, c
 
     wxString name = wxString::FromAscii( pName );
     wxString strValue = wxString::FromAscii( pValue );
-    return pvscpif->setVariableMeasurement( name, strValue );
+    return pvscpif->setRemoteVariableMeasurement( name, strValue );
 };
 
 /*!
@@ -1134,12 +1158,12 @@ extern "C" int vscphlp_setVariableMeasurement( long handle, const char *pName, c
     \breif Get variable value from event variable
     \param name of variable
     \param pointer to event variable that get the value of the string variable.
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVariableEvent( long handle, const char *pName, vscpEvent *pEvent )
+extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableEvent( long handle, const char *pName, vscpEvent *pEvent )
 #else
-extern "C" int vscphlp_getVariableEvent( long handle, const char *pName, vscpEvent *pEvent )
+extern "C" int vscphlp_getRemoteVariableEvent( long handle, const char *pName, vscpEvent *pEvent )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
@@ -1152,7 +1176,7 @@ extern "C" int vscphlp_getVariableEvent( long handle, const char *pName, vscpEve
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableEvent( name, pEvent );
+    return pvscpif->getRemoteVariableEvent( name, pEvent );
 }
 
 /*!
@@ -1160,12 +1184,12 @@ extern "C" int vscphlp_getVariableEvent( long handle, const char *pName, vscpEve
     \breif Get variable value from event variable
     \param name of variable
     \param pointer to event variable that get the value of the string variable.
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setVariableEvent( long handle, const char *pName, vscpEvent *pEvent )
+extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableEvent( long handle, const char *pName, vscpEvent *pEvent )
 #else
-extern "C" int vscphlp_setVariableEvent( long handle, const char *pName, vscpEvent *pEvent )
+extern "C" int vscphlp_setRemoteVariableEvent( long handle, const char *pName, vscpEvent *pEvent )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
@@ -1178,7 +1202,7 @@ extern "C" int vscphlp_setVariableEvent( long handle, const char *pName, vscpEve
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableEvent( name, pEvent );
+    return pvscpif->setRemoteVariableEvent( name, pEvent );
 }
 
 /*!
@@ -1186,12 +1210,12 @@ extern "C" int vscphlp_setVariableEvent( long handle, const char *pName, vscpEve
     \brief Get variable value from event variable
     \param name of variable
     \param pointer to event variable that get the value of the string variable.
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent )
+extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent )
 #else
-extern "C" int vscphlp_getVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent )
+extern "C" int vscphlp_getRemoteVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
@@ -1204,7 +1228,7 @@ extern "C" int vscphlp_getVariableEventEx( long handle, const char *pName, vscpE
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableEventEx( name, pEvent );
+    return pvscpif->getRemoteVariableEventEx( name, pEvent );
 }
 
 /*!
@@ -1212,12 +1236,12 @@ extern "C" int vscphlp_getVariableEventEx( long handle, const char *pName, vscpE
     \brief Get variable value from event variable
     \param name of variable
     \param pointer to event variable that get the value of the string variable.
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent )
+extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent )
 #else
-extern "C" int vscphlp_setVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent )
+extern "C" int vscphlp_setRemoteVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
@@ -1230,7 +1254,7 @@ extern "C" int vscphlp_setVariableEventEx( long handle, const char *pName, vscpE
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableEventEx( name, pEvent );
+    return pvscpif->setRemoteVariableEventEx( name, pEvent );
 }
 
 /*!
@@ -1238,12 +1262,12 @@ extern "C" int vscphlp_setVariableEventEx( long handle, const char *pName, vscpE
     \brief Get variable value from GUID variable
     \param name of variable
     \param pointer to event variable that get the value of the GUID variable.
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVariableGUIDString( long handle, const char *pName, char *pGUID, int size )
+extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableGUIDString( long handle, const char *pName, char *pGUID, int size )
 #else
-extern "C" int vscphlp_getVariableGUIDString( long handle, const char *pName, char *pGUID, int size )
+extern "C" int vscphlp_getRemoteVariableGUIDString( long handle, const char *pName, char *pGUID, int size )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
@@ -1258,7 +1282,7 @@ extern "C" int vscphlp_getVariableGUIDString( long handle, const char *pName, ch
     cguid GUID;
     wxString strGUID;
     wxString name = wxString::FromAscii( pName );
-    int rv =  pvscpif->getVariableGUID( name, GUID );
+    int rv =  pvscpif->getRemoteVariableGUID( name, GUID );
     GUID.toString( strGUID );
     strncpy( pGUID, strGUID.mbc_str(), MIN( strlen( strGUID.mbc_str() ), size ) );
     return rv;
@@ -1269,12 +1293,12 @@ extern "C" int vscphlp_getVariableGUIDString( long handle, const char *pName, ch
     \brief Get variable value from GUID variable
     \param name of variable
     \param pointer to event variable that get the value of the GUID variable.
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setVariableGUIDString( long handle, const char *pName, const char *pGUID )
+extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableGUIDString( long handle, const char *pName, const char *pGUID )
 #else
-extern "C" int vscphlp_setVariableGUIDString( long handle, const char *pName, const char *pGUID )
+extern "C" int vscphlp_setRemoteVariableGUIDString( long handle, const char *pName, const char *pGUID )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
@@ -1289,7 +1313,7 @@ extern "C" int vscphlp_setVariableGUIDString( long handle, const char *pName, co
     cguid guid;
     guid.getFromString( pGUID );
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableGUID( name, guid );
+    return pvscpif->setRemoteVariableGUID( name, guid );
 }
 
 /*!
@@ -1297,12 +1321,12 @@ extern "C" int vscphlp_setVariableGUIDString( long handle, const char *pName, co
     \brief Get variable value from GUID variable
     \param name of variable
     \param pointer GUID array
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVariableGUIDArray( long handle, const char *pName, unsigned char *pGUID )
+extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableGUIDArray( long handle, const char *pName, unsigned char *pGUID )
 #else
-extern "C" int vscphlp_getVariableGUIDArray( long handle, const char *pName, unsigned char *pGUID )
+extern "C" int vscphlp_getRemoteVariableGUIDArray( long handle, const char *pName, unsigned char *pGUID )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
@@ -1316,7 +1340,7 @@ extern "C" int vscphlp_getVariableGUIDArray( long handle, const char *pName, uns
 
     cguid GUID;
     wxString name = wxString::FromAscii( pName );
-    int rv =  pvscpif->getVariableGUID( name, GUID );
+    int rv =  pvscpif->getRemoteVariableGUID( name, GUID );
     memcpy( pGUID, GUID.getGUID(), 16 );
     return rv;
 }
@@ -1326,12 +1350,12 @@ extern "C" int vscphlp_getVariableGUIDArray( long handle, const char *pName, uns
     \brief Get variable value from GUID variable
     \param name of variable
     \param pointer to event variable that get the value of the GUID variable.
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setVariableGUIDArray( long handle, const char *pName, const unsigned char *pGUID )
+extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableGUIDArray( long handle, const char *pName, const unsigned char *pGUID )
 #else
-extern "C" int vscphlp_setVariableGUIDArray( long handle, const char *pName, const unsigned char *pGUID )
+extern "C" int vscphlp_setRemoteVariableGUIDArray( long handle, const char *pName, const unsigned char *pGUID )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
@@ -1346,7 +1370,7 @@ extern "C" int vscphlp_setVariableGUIDArray( long handle, const char *pName, con
     cguid guid;
     guid.getFromArray( pGUID );
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableGUID( name, guid );
+    return pvscpif->setRemoteVariableGUID( name, guid );
 }
 
 /*!
@@ -1356,12 +1380,12 @@ extern "C" int vscphlp_setVariableGUIDArray( long handle, const char *pName, con
     \param Pointer to variable that will hold the size of the data array
     \param pointer to VSCP data array variable (unsigned char [8] ) that get the
     value of the string variable.
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVariableVSCPData( long handle, const char *pName, unsigned char *pData, unsigned short *psize )
+extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableVSCPData( long handle, const char *pName, unsigned char *pData, unsigned short *psize )
 #else
-extern "C" int vscphlp_getVariableVSCPData( long handle, const char *pName, unsigned char *pData, unsigned short *psize )
+extern "C" int vscphlp_getRemoteVariableVSCPData( long handle, const char *pName, unsigned char *pData, unsigned short *psize )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
@@ -1375,7 +1399,7 @@ extern "C" int vscphlp_getVariableVSCPData( long handle, const char *pName, unsi
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableVSCPdata( name, pData, psize );
+    return pvscpif->getRemoteVariableVSCPdata( name, pData, psize );
 }
 
 /*!
@@ -1385,12 +1409,12 @@ extern "C" int vscphlp_getVariableVSCPData( long handle, const char *pName, unsi
     \param Pointer to variable that will hold the size of the data array
     \param pointer to VSCP data array variable (unsigned char [8] ) that get the
     value of the string variable.
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setVariableVSCPData( long handle, const char *pName,  uint8_t *pData, unsigned short size )
+extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableVSCPData( long handle, const char *pName,  uint8_t *pData, unsigned short size )
 #else
-extern "C" int vscphlp_setVariableVSCPData( long handle, const char *pName, uint8_t *pData, unsigned short size )
+extern "C" int vscphlp_setRemoteVariableVSCPData( long handle, const char *pName, uint8_t *pData, unsigned short size )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
@@ -1403,7 +1427,7 @@ extern "C" int vscphlp_setVariableVSCPData( long handle, const char *pName, uint
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableVSCPdata( name, pData, size );
+    return pvscpif->setRemoteVariableVSCPdata( name, pData, size );
 }
 
 /*!
@@ -1411,12 +1435,12 @@ extern "C" int vscphlp_setVariableVSCPData( long handle, const char *pName, uint
     \brief Get variable value from class variable
     \param name of variable
     \param pointer to int that get the value of the class variable.
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVariableVSCPClass( long handle, const char *pName, unsigned short *vscp_class )
+extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableVSCPClass( long handle, const char *pName, unsigned short *vscp_class )
 #else
-extern "C" int vscphlp_getVariableVSCPClass( long handle, const char *pName, unsigned short *vscp_class )
+extern "C" int vscphlp_getRemoteVariableVSCPClass( long handle, const char *pName, unsigned short *vscp_class )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
@@ -1429,7 +1453,7 @@ extern "C" int vscphlp_getVariableVSCPClass( long handle, const char *pName, uns
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableVSCPclass( name, vscp_class );
+    return pvscpif->getRemoteVariableVSCPclass( name, vscp_class );
 }
 
 /*!
@@ -1437,12 +1461,12 @@ extern "C" int vscphlp_getVariableVSCPClass( long handle, const char *pName, uns
     \brief Get variable value from class variable
     \param name of variable
     \param pointer to int that get the value of the class variable.
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setVariableVSCPClass( long handle, const char *pName, unsigned short vscp_class )
+extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableVSCPClass( long handle, const char *pName, unsigned short vscp_class )
 #else
-extern "C" int vscphlp_setVariableVSCPClass( long handle, const char *pName, unsigned short vscp_class )
+extern "C" int vscphlp_setRemoteVariableVSCPClass( long handle, const char *pName, unsigned short vscp_class )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
@@ -1454,7 +1478,7 @@ extern "C" int vscphlp_setVariableVSCPClass( long handle, const char *pName, uns
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableVSCPclass( name, vscp_class );
+    return pvscpif->setRemoteVariableVSCPclass( name, vscp_class );
 }
 
 /*!
@@ -1462,12 +1486,12 @@ extern "C" int vscphlp_setVariableVSCPClass( long handle, const char *pName, uns
     \brief Get variable value from type variable
     \param name of variable
     \param pointer to int that get the value of the type variable.
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVariableVSCPType( long handle, const char *pName, unsigned short *vscp_type )
+extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableVSCPType( long handle, const char *pName, unsigned short *vscp_type )
 #else
-extern "C" int vscphlp_getVariableVSCPType( long handle, const char *pName, unsigned short *vscp_type )
+extern "C" int vscphlp_getRemoteVariableVSCPType( long handle, const char *pName, unsigned short *vscp_type )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
@@ -1480,7 +1504,7 @@ extern "C" int vscphlp_getVariableVSCPType( long handle, const char *pName, unsi
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableVSCPtype( name, vscp_type );
+    return pvscpif->getRemoteVariableVSCPtype( name, vscp_type );
 }
 
 /*!
@@ -1488,12 +1512,12 @@ extern "C" int vscphlp_getVariableVSCPType( long handle, const char *pName, unsi
     \brief Get variable value from type variable
     \param name of variable
     \param pointer to int that get the value of the type variable.
-    \return true if the variable is of type string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setVariableVSCPType( long handle, const char *pName, unsigned short vscp_type )
+extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableVSCPType( long handle, const char *pName, unsigned short vscp_type )
 #else
-extern "C" int vscphlp_setVariableVSCPType( long handle, const char *pName, unsigned short vscp_type )
+extern "C" int vscphlp_setRemoteVariableVSCPType( long handle, const char *pName, unsigned short vscp_type )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
@@ -1505,7 +1529,7 @@ extern "C" int vscphlp_setVariableVSCPType( long handle, const char *pName, unsi
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableVSCPtype( name, vscp_type );
+    return pvscpif->setRemoteVariableVSCPtype( name, vscp_type );
 }
 
 

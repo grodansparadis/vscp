@@ -79,54 +79,65 @@ int WINAPI EXPORT vscphlp_shutDownServer( long handle );
 //                                Variables
 //-------------------------------------------------------------------------
 
-int WINAPI EXPORT vscphlp_deleteVariable( long handle, const char *pName );
+int WINAPI EXPORT vscphlp_deleteRemoteVariable( long handle, const char *pName );
 
-int WINAPI EXPORT vscphlp_createVariable( long handle,
-                                             const char *pName,
-                                             const char* pType,
-                                             const char* pValue,
-                                             int bPersistent );
+int WINAPI EXPORT vscphlp_createRemoteVariable( const char *pName,
+                                              const char* pType,
+                                              const int bPersistent,
+                                              const char *pUser,
+                                              const unsigned long rights,
+                                              const char* pValue,
+                                              const char* pNote  );
 
-int WINAPI EXPORT vscphlp_saveVariablesToDisk( long handle );
+int WINAPI EXPORT vscphlp_saveRemoteVariablesToDisk( long handle, 
+                                                        const char *pPath,
+                                                        const int select,
+                                                        const char *pRegExp );
 
-int WINAPI EXPORT vscphlp_getVariableString( long handle, const char *pName, char *pValue, int size );
-int WINAPI EXPORT vscphlp_setVariableString( long handle, const char *pName, char *pValue );
+int WINAPI EXPORT vscphlp_loadRemoteVariablesFromDisk( long handle, 
+                                                        const char *pPath );
 
-int WINAPI EXPORT vscphlp_getVariableBool( long handle, const char *pName, int *pvalue );
-int WINAPI EXPORT vscphlp_setVariableBool( long handle, const char *pName, int value );
+int WINAPI EXPORT vscphlp_getRemoteVariableValue( long handle, const char *pName, char *pvalue, int size );
+int WINAPI EXPORT vscphlp_setRemoteVariableValue( long handle, const char *pName, char *pValue );
 
-int WINAPI EXPORT vscphlp_getVariableInt( long handle, const char *pName, int *pvalue );
-int WINAPI EXPORT vscphlp_setVariableInt( long handle, const char *pName, int value );
+int WINAPI EXPORT vscphlp_getRemoteVariableString( long handle, const char *pName, char *pValue, int size );
+int WINAPI EXPORT vscphlp_setRemoteVariableString( long handle, const char *pName, char *pValue );
 
-int WINAPI EXPORT vscphlp_getVariableLong( long handle, const char *pName, long *pvalue );
-int WINAPI EXPORT vscphlp_setVariableLong( long handle, const char *pName, long value );
+int WINAPI EXPORT vscphlp_getRemoteVariableBool( long handle, const char *pName, int *pvalue );
+int WINAPI EXPORT vscphlp_setRemoteVariableBool( long handle, const char *pName, int value );
 
-int WINAPI EXPORT vscphlp_getVariableDouble( long handle, const char *pName, double *pvalue );
-int WINAPI EXPORT vscphlp_setVariableDouble( long handle, const char *pName, double value );
+int WINAPI EXPORT vscphlp_getRemoteVariableInt( long handle, const char *pName, int *pvalue );
+int WINAPI EXPORT vscphlp_setRemoteVariableInt( long handle, const char *pName, int value );
 
-int WINAPI EXPORT vscphlp_getVariableMeasurement( long handle, const char *pName, char *pvalue, int size );
-int WINAPI EXPORT vscphlp_setVariableMeasurement( long handle, const char *pName, char *pValue );
+int WINAPI EXPORT vscphlp_getRemoteVariableLong( long handle, const char *pName, long *pvalue );
+int WINAPI EXPORT vscphlp_setRemoteVariableLong( long handle, const char *pName, long value );
 
-int WINAPI EXPORT vscphlp_getVariableEvent( long handle, const char *pName, vscpEvent *pEvent );
-int WINAPI EXPORT vscphlp_setVariableEvent( long handle, const char *pName, vscpEvent *pEvent );
+int WINAPI EXPORT vscphlp_getRemoteVariableDouble( long handle, const char *pName, double *pvalue );
+int WINAPI EXPORT vscphlp_setRemoteVariableDouble( long handle, const char *pName, double value );
 
-int WINAPI EXPORT vscphlp_getVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent );
-int WINAPI EXPORT vscphlp_setVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent );
+int WINAPI EXPORT vscphlp_getRemoteVariableMeasurement( long handle, const char *pName, char *pvalue, int size );
+int WINAPI EXPORT vscphlp_setRemoteVariableMeasurement( long handle, const char *pName, char *pValue );
 
-int WINAPI EXPORT vscphlp_getVariableGUIDString( long handle, const char *pName, const char *pGUID, int size );
-int WINAPI EXPORT vscphlp_setVariableGUIDString( long handle, const char *pName, const char *pGUID );
+int WINAPI EXPORT vscphlp_getRemoteVariableEvent( long handle, const char *pName, vscpEvent *pEvent );
+int WINAPI EXPORT vscphlp_setRemoteVariableEvent( long handle, const char *pName, vscpEvent *pEvent );
 
-int WINAPI EXPORT vscphlp_getVariableGUIDArray( long handle, const char *pName, unsigned char *pGUID );
-int WINAPI EXPORT vscphlp_setVariableGUIDArray( long handle, const char *pName, const unsigned char *pGUID );
+int WINAPI EXPORT vscphlp_getRemoteVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent );
+int WINAPI EXPORT vscphlp_setRemoteVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent );
 
-int WINAPI EXPORT vscphlp_getVariableVSCPData( long handle, const char *pName, unsigned char *pData, unsigned short *psize );
-int WINAPI EXPORT vscphlp_setVariableVSCPData( long handle, const char *pName, unsigned char *pData, unsigned short size );
+int WINAPI EXPORT vscphlp_getRemoteVariableGUIDString( long handle, const char *pName, const char *pGUID, int size );
+int WINAPI EXPORT vscphlp_setRemoteVariableGUIDString( long handle, const char *pName, const char *pGUID );
 
-int WINAPI EXPORT vscphlp_getVariableVSCPClass( long handle, const char *pName, unsigned short *vscp_class );
-int WINAPI EXPORT vscphlp_setVariableVSCPClass( long handle, const char *pName, unsigned short vscp_class );
+int WINAPI EXPORT vscphlp_getRemoteVariableGUIDArray( long handle, const char *pName, unsigned char *pGUID );
+int WINAPI EXPORT vscphlp_setRemoteVariableGUIDArray( long handle, const char *pName, const unsigned char *pGUID );
 
-int WINAPI EXPORT vscphlp_getVariableVSCPType( long handle, const char *pName, unsigned short *vscp_type );
-int WINAPI EXPORT vscphlp_setVariableVSCPType( long handle, const char *pName, unsigned short vscp_type );
+int WINAPI EXPORT vscphlp_getRemoteVariableVSCPData( long handle, const char *pName, unsigned char *pData, unsigned short *psize );
+int WINAPI EXPORT vscphlp_setRemoteVariableVSCPData( long handle, const char *pName, unsigned char *pData, unsigned short size );
+
+int WINAPI EXPORT vscphlp_getRemoteVariableVSCPClass( long handle, const char *pName, unsigned short *vscp_class );
+int WINAPI EXPORT vscphlp_setRemoteVariableVSCPClass( long handle, const char *pName, unsigned short vscp_class );
+
+int WINAPI EXPORT vscphlp_getRemoteVariableVSCPType( long handle, const char *pName, unsigned short *vscp_type );
+int WINAPI EXPORT vscphlp_setRemoteVariableVSCPType( long handle, const char *pName, unsigned short vscp_type );
 
 //-------------------------------------------------------------------------
 //                                Helpers
@@ -319,54 +330,66 @@ int vscphlp_serverShutDown( long handle );
 //                                Variables
 //-------------------------------------------------------------------------
 
-int vscphlp_deleteVariable( long handle, const char *pName );
+int vscphlp_deleteRemoteVariable( long handle, const char *pName );
 
-int vscphlp_createVariable( long handle,
-                                const char *pName,
-                                const char* pType,
-                                const char* pValue,
-                                int bPersistent );
+int vscphlp_createRemoteVariable( long handle,
+                                        const char *pName,
+                                        const char* pType,
+                                        const int bPersistent,
+                                        const char *pUser,
+                                        const unsigned long rights,
+                                        const char* pValue,
+                                        const char* pNote  );
 
-int vscphlp_saveVariablesToDisk( long handle );
+int vscphlp_saveRemoteVariablesToDisk( long handle,
+                                            const char *pPath,
+                                            const int select,
+                                            const char *pRegExp );
 
-int vscphlp_getVariableString( long handle, const char *pName, char *pvalue, int size );
-int vscphlp_setVariableString( long handle, const char *pName, char *pValue );
+int vscphlp_loadRemoteVariablesFromDisk( long handle, 
+                                            const char *pPath );
 
-int vscphlp_getVariableBool( long handle, const char *pName, int *bValue );
-int vscphlp_setVariableBool( long handle, const char *pName, int value );
+int vscphlp_getRemoteVariableValue( long handle, const char *pName, char *pvalue, int size );
+int vscphlp_setRemoteVariableValue( long handle, const char *pName, char *pValue );
 
-int vscphlp_getVariableInt( long handle, const char *pName, int *value );
-int vscphlp_setVariableInt( long handle, const char *pName, int value );
+int vscphlp_getRemoteVariableString( long handle, const char *pName, char *pvalue, int size );
+int vscphlp_setRemoteVariableString( long handle, const char *pName, char *pValue );
 
-int vscphlp_getVariableLong( long handle, const char *pName, long *value );
-int vscphlp_setVariableLong( long handle, const char *pName, long value );
+int vscphlp_getRemoteVariableBool( long handle, const char *pName, int *bValue );
+int vscphlp_setRemoteVariableBool( long handle, const char *pName, int value );
 
-int vscphlp_getVariableDouble( long handle, const char *pName, double *value );
-int vscphlp_setVariableDouble( long handle, const char *pName, double value );
+int vscphlp_getRemoteVariableInt( long handle, const char *pName, int *value );
+int vscphlp_setRemoteVariableInt( long handle, const char *pName, int value );
 
-int vscphlp_getVariableMeasurement( long handle, const char *pName, char *pvalue, int size );
-int vscphlp_setVariableMeasurement( long handle, const char *pName, char *pValue );
+int vscphlp_getRemoteVariableLong( long handle, const char *pName, long *value );
+int vscphlp_setRemoteVariableLong( long handle, const char *pName, long value );
 
-int vscphlp_getVariableEvent( long handle, const char *pName, vscpEvent *pEvent );
-int vscphlp_setVariableEvent( long handle, const char *pName, vscpEvent *pEvent );
+int vscphlp_getRemoteVariableDouble( long handle, const char *pName, double *value );
+int vscphlp_setRemoteVariableDouble( long handle, const char *pName, double value );
 
-int vscphlp_getVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent );
-int vscphlp_setVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent );
+int vscphlp_getRemoteVariableMeasurement( long handle, const char *pName, char *pvalue, int size );
+int vscphlp_setRemoteVariableMeasurement( long handle, const char *pName, char *pValue );
 
-int vscphlp_getVariableGUIDString( long handle, const char *pName, const char *pGUID, int size );
-int vscphlp_setVariableGUIDString( long handle, const char *pName, const char *pGUID );
+int vscphlp_getRemoteVariableEvent( long handle, const char *pName, vscpEvent *pEvent );
+int vscphlp_setRemoteVariableEvent( long handle, const char *pName, vscpEvent *pEvent );
 
-int vscphlp_getVariableGUIDArray( long handle, const char *pName, unsigned char *pGUID );
-int vscphlp_setVariableGUIDArray( long handle, const char *pName, const unsigned char *pGUID );
+int vscphlp_getRemoteVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent );
+int vscphlp_setRemoteVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent );
 
-int vscphlp_getVariableVSCPData( long handle, const char *pName, unsigned char *pData, unsigned short *psize );
-int vscphlp_setVariableVSCPData( long handle, const char *pName, unsigned char *pData, unsigned short size );
+int vscphlp_getRemoteVariableGUIDString( long handle, const char *pName, const char *pGUID, int size );
+int vscphlp_setRemoteVariableGUIDString( long handle, const char *pName, const char *pGUID );
 
-int vscphlp_getVariableVSCPClass( long handle, const char *pName, unsigned short *vscp_class );
-int vscphlp_setVariableVSCPClass( long handle, const char *pName, unsigned short vscp_class );
+int vscphlp_getRemoteVariableGUIDArray( long handle, const char *pName, unsigned char *pGUID );
+int vscphlp_setRemoteVariableGUIDArray( long handle, const char *pName, const unsigned char *pGUID );
 
-int vscphlp_getVariableVSCPType( long handle, const char *pName, unsigned short *vscp_type );
-int vscphlp_setVariableVSCPType( long handle, const char *pName, unsigned short vscp_type );
+int vscphlp_getRemoteVariableVSCPData( long handle, const char *pName, unsigned char *pData, unsigned short *psize );
+int vscphlp_setRemoteVariableVSCPData( long handle, const char *pName, unsigned char *pData, unsigned short size );
+
+int vscphlp_getRemoteVariableVSCPClass( long handle, const char *pName, unsigned short *vscp_class );
+int vscphlp_setRemoteVariableVSCPClass( long handle, const char *pName, unsigned short vscp_class );
+
+int vscphlp_getRemoteVariableVSCPType( long handle, const char *pName, unsigned short *vscp_type );
+int vscphlp_setRemoteVariableVSCPType( long handle, const char *pName, unsigned short vscp_type );
 
 
 //-------------------------------------------------------------------------
