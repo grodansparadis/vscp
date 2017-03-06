@@ -1939,7 +1939,7 @@ int VscpRemoteTcpIf::createRemoteVariable( const wxString& name,
     strCmd = _("VAR WRITE ") + name + _(";");
     strCmd += type + _(";");
     strCmd += ( ( bPersistent ) ? _("TRUE") : _("FALSE") ) + _(";");
-    strCmd += strUser + _(";") + wxString::Format( _("0x%lX"), rights ) + _(";");
+    strCmd += strUser + _(";") + wxString::Format( _("0x%lX"), (unsigned long)rights ) + _(";");
     strCmd += strValue + _(";") + strNote + _("\r\n");
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;

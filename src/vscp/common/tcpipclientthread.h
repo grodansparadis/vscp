@@ -70,6 +70,7 @@
 #define MSG_VARIABLE_NOT_STOCK              "-OK - Operation does not work with stock variables.\r\n"
 #define MSG_VARIABLE_NO_SAVE                "-OK - Variable could not be saved.\r\n"
 #define MSG_VARIABLE_NOT_NUMERIC            "-OK - Variable is not numeric.\r\n"
+#define MSG_VARIABLE_UNABLE_ADD             "-OK - Unable to add variable.\r\n"
 
 //class CControlObject;
 //class CClientItem;

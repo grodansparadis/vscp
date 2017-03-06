@@ -584,7 +584,7 @@ bool CVSCPVariable::setUserIdFromUserName( wxString& strUser )
     long userid;
     
     // Check for admin user
-    if ( gpobj->m_admin_user == strUser.Upper() ) {
+    if ( gpobj->m_admin_user.Upper() == strUser.Upper() ) {
         m_userid = USER_ID_ADMIN;
         return true;
     }
@@ -1288,20 +1288,19 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable,
                                                 const wxString& strUser )
 {
     wxString strRights;             // User rights for variable               
-    int      typeVariable;          // Type of variable;
     bool     bPersistent = false;   // Persistence of variable
     bool     brw = true;            // Writable    
     
     // Update last changed
     setLastChangedToNow();
 
-    wxStringTokenizer tkz( strVariable, _(";") );
+    wxStringTokenizer tkz( strVariable, _(";\r\n") );
 
     // Name
     if ( tkz.HasMoreTokens() ) {
         wxString str = tkz.GetNextToken();
         str.Trim();
-        if ( str.Length() ) setName( tkz.GetNextToken() );
+        if ( str.Length() ) setName( str );
     }
     else {
         return false;	
@@ -1312,10 +1311,10 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable,
         wxString str = tkz.GetNextToken();
         str.Trim();
         if ( str.Length() ) {
-            getVariableTypeFromString( str );
+            m_type = getVariableTypeFromString( str );
         }
         else {
-            getVariableTypeFromString( _("STRING") );
+            m_type = getVariableTypeFromString( _("STRING") );
         }
     }
     else {
@@ -1360,7 +1359,7 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable,
             }
         }
         else {
-            wxString str = _("admin");
+            wxString str = strUser;
             if ( !setUserIdFromUserName( str ) ) {
                 return false;
             }
@@ -1390,7 +1389,10 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable,
     
     // Get the value of the variable
     if ( tkz.HasMoreTokens() ) {
-        setValueFromString( typeVariable, tkz.GetNextToken(), bBase64 );
+        
+        wxString value = tkz.GetNextToken();       
+        setValueFromString( m_type, value, bBase64 );
+
     }
     else {
         return false;
@@ -1399,7 +1401,10 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable,
     // Get the note (if any)
     // Get the value of the variable
     if ( tkz.HasMoreTokens() ) {
-        setNote( tkz.GetNextToken() );
+        
+        wxString note = tkz.GetNextToken();
+        setNote( note );
+
     }
     
     return true;

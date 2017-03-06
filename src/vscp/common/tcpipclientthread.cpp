@@ -32,6 +32,8 @@
 #include <wx/listimpl.cpp>
 #include <wx/tokenzr.h>
 #include <wx/stdpaths.h>
+#include <wx/base64.h>
+
 #include <time.h>
 
 #ifndef DWORD
@@ -567,12 +569,18 @@ REPEAT_COMMAND:
             handleClientVariable( conn, pCtrlObject );
         }
     }*/
-    else if ( pClientItem->m_currentCommand.Upper().StartsWith( _("VARIABLE"), &pClientItem->m_currentCommand ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("VARIABLE"), 
+                        &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("variable"), 
+                        &pClientItem->m_currentCommand )) {
         if ( checkPrivilege( conn, pCtrlObject, 4 ) ) {
             handleClientVariable( conn, pCtrlObject );
         }
     }
-    else if ( pClientItem->m_currentCommand.Upper().StartsWith( _("VAR"), &pClientItem->m_currentCommand ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("VAR"),
+                        &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("var"),
+                        &pClientItem->m_currentCommand )) {
         if ( checkPrivilege( conn, pCtrlObject, 4 ) ) {
             handleClientVariable( conn, pCtrlObject );
         }
@@ -2688,60 +2696,88 @@ void VSCPClientThread::handleClientVariable( struct mg_connection *conn,
 
     pClientItem->m_currentCommand.Trim( false );
 
-    if ( pClientItem->m_currentCommand.Upper().StartsWith( _("LIST"), 
-            &pClientItem->m_currentCommand ) )	{
+    if ( pClientItem->m_currentCommand.StartsWith( _("LIST"), 
+                    &pClientItem->m_currentCommand ) || 
+         pClientItem->m_currentCommand.StartsWith( _("list"), 
+                    &pClientItem->m_currentCommand ))	{
         handleVariable_List( conn, pCtrlObject );
     }
-    else if ( pClientItem->m_currentCommand.Upper().StartsWith( _("WRITE"), 
-            &pClientItem->m_currentCommand ) )	{
-        handleVariable_Write( conn, pCtrlObject );
-    }
-    else if ( pClientItem->m_currentCommand.Upper().StartsWith( _("WRITEVALUE"), 
-            &pClientItem->m_currentCommand ) )	{
+    else if ( pClientItem->m_currentCommand.StartsWith( _("WRITEVALUE"), 
+                    &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("writevalue"), 
+                    &pClientItem->m_currentCommand ) )	{
         handleVariable_WriteValue( conn, pCtrlObject );
     }
-    else if ( pClientItem->m_currentCommand.Upper().StartsWith( _("WRITENOTE"), 
-            &pClientItem->m_currentCommand ) )	{
+    else if ( pClientItem->m_currentCommand.StartsWith( _("WRITENOTE"), 
+                    &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("writenote"), 
+                    &pClientItem->m_currentCommand ) )	{
         handleVariable_WriteNote( conn, pCtrlObject );
     }
-    else if ( pClientItem->m_currentCommand.Upper().StartsWith( _("READ"), 
-            &pClientItem->m_currentCommand ) )	{
-        handleVariable_Read( conn, pCtrlObject );
+    else if ( pClientItem->m_currentCommand.StartsWith( _("WRITE"), 
+                    &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("write"), 
+                    &pClientItem->m_currentCommand ) )	{
+        handleVariable_Write( conn, pCtrlObject );
     }
-    else if ( pClientItem->m_currentCommand.Upper().StartsWith( _("READVALUE"), 
-            &pClientItem->m_currentCommand ) )	{
+    else if ( pClientItem->m_currentCommand.StartsWith( _("READVALUE"), 
+                    &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("readvalue"), 
+                    &pClientItem->m_currentCommand ) )	{
         handleVariable_ReadValue( conn, pCtrlObject );
     }
-    else if ( pClientItem->m_currentCommand.Upper().StartsWith( _("READNOTE"), 
-            &pClientItem->m_currentCommand ) )	{
+    else if ( pClientItem->m_currentCommand.StartsWith( _("READNOTE"), 
+                    &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("readnote"), 
+                    &pClientItem->m_currentCommand ) )	{
         handleVariable_ReadNote( conn, pCtrlObject );
     }
-    else if ( pClientItem->m_currentCommand.Upper().StartsWith( _("READRESET"), 
-            &pClientItem->m_currentCommand ) )	{
+    else if ( pClientItem->m_currentCommand.StartsWith( _("READRESET"), 
+                    &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("readreset"), 
+                    &pClientItem->m_currentCommand ))	{
         handleVariable_ReadReset( conn, pCtrlObject );
-    }
-    else if ( pClientItem->m_currentCommand.Upper().StartsWith( _("RESET"), 
-            &pClientItem->m_currentCommand ) )	{
-        handleVariable_Reset( conn, pCtrlObject );
-    }
-    else if ( pClientItem->m_currentCommand.Upper().StartsWith( _("REMOVE"), 
-            &pClientItem->m_currentCommand ) )	{
-        handleVariable_Remove( conn, pCtrlObject );
-    }
-    else if ( pClientItem->m_currentCommand.Upper().StartsWith( _("READREMOVE"), 
-            &pClientItem->m_currentCommand ) )	{
+    }  
+    else if ( pClientItem->m_currentCommand.StartsWith( _("READREMOVE"), 
+                    &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("readremove"), 
+                    &pClientItem->m_currentCommand ) ) {
         handleVariable_ReadRemove( conn, pCtrlObject );
     }
-    else if ( pClientItem->m_currentCommand.Upper().StartsWith( _("LENGTH"), 
-            &pClientItem->m_currentCommand ) )	{
+    else if ( pClientItem->m_currentCommand.StartsWith( _("READ"), 
+                    &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("read"), 
+                    &pClientItem->m_currentCommand ) )	{
+        handleVariable_Read( conn, pCtrlObject );
+    }  
+    else if ( pClientItem->m_currentCommand.StartsWith( _("RESET"), 
+                    &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("reset"), 
+                    &pClientItem->m_currentCommand ) )	{
+        handleVariable_Reset( conn, pCtrlObject );
+    }
+    else if ( pClientItem->m_currentCommand.StartsWith( _("REMOVE"), 
+                    &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("remove"), 
+                    &pClientItem->m_currentCommand ) ) {
+        handleVariable_Remove( conn, pCtrlObject );
+    }    
+    else if ( pClientItem->m_currentCommand.StartsWith( _("LENGTH"), 
+                    &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("length"), 
+                    &pClientItem->m_currentCommand ) )	{
         handleVariable_Length( conn, pCtrlObject );
     }
-    else if ( pClientItem->m_currentCommand.Upper().StartsWith( _("LOAD"), 
-            &pClientItem->m_currentCommand ) )	{
+    else if ( pClientItem->m_currentCommand.StartsWith( _("LOAD"), 
+                    &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("load"), 
+                    &pClientItem->m_currentCommand ) )	{
         handleVariable_Load( conn, pCtrlObject );
     }
-    else if ( pClientItem->m_currentCommand.Upper().StartsWith( _("SAVE"), 
-            &pClientItem->m_currentCommand ) )	{
+    else if ( pClientItem->m_currentCommand.StartsWith( _("SAVE"), 
+                    &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("save"), 
+                    &pClientItem->m_currentCommand ) )	{
         handleVariable_Save( conn, pCtrlObject );
     }
     else {
@@ -2862,9 +2898,12 @@ void VSCPClientThread::handleVariable_Write( struct mg_connection *conn,
     }
     else {
        
-        // If the variable exist change value
+        // If the variable exist change value 
         // if not - add it.
-        m_pCtrlObject->m_VSCP_Variables.add( variable ); 
+        if ( !m_pCtrlObject->m_VSCP_Variables.add( variable ) ) {
+            mg_send( conn, MSG_VARIABLE_UNABLE_ADD, strlen ( MSG_VARIABLE_UNABLE_ADD ) );
+            return;
+        }
         
     }
     
@@ -2884,7 +2923,7 @@ void VSCPClientThread::handleVariable_WriteValue( struct mg_connection *conn,
     
     pClientItem->m_currentCommand.Trim( false );
     
-    wxStringTokenizer tkz( pClientItem->m_currentCommand, _(" ") );
+    wxStringTokenizer tkz( pClientItem->m_currentCommand, _(" \r\n") );
     
     // Variable name
     if ( tkz.HasMoreTokens() ) {
@@ -2897,7 +2936,9 @@ void VSCPClientThread::handleVariable_WriteValue( struct mg_connection *conn,
     
     // Variable value
     if ( tkz.HasMoreTokens() ) {
+        
         value = tkz.GetNextToken();
+        
     }
     else {
         mg_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
@@ -2908,7 +2949,7 @@ void VSCPClientThread::handleVariable_WriteValue( struct mg_connection *conn,
     if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( name, variable ) ) {
         
         // Set value and encode as BASE64 when expected
-        variable.setValueFromString( variable.getType(), value, true );
+        variable.setValueFromString( variable.getType(), value, false );
         
         // Update in database
         if ( !m_pCtrlObject->m_VSCP_Variables.update( variable ) ) {
@@ -2952,7 +2993,9 @@ void VSCPClientThread::handleVariable_WriteNote( struct mg_connection *conn,
     
     // Variable value
     if ( tkz.HasMoreTokens() ) {
+        
         note = tkz.GetNextToken();
+        
     }
     else {
         mg_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
@@ -3022,10 +3065,10 @@ void VSCPClientThread::handleVariable_ReadValue( struct mg_connection *conn,
     pClientItem->m_currentCommand.Trim( false );
 
     CVSCPVariable variable;
-    if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommandUC,variable ) ) {
+    if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommand, variable ) ) {
         
         variable.writeValueToString( str );
-        str = _("+OK - ") + str + _("\r\n");
+        str += _("\r\n");
         mg_send( conn,  str.mbc_str(), strlen( str.mbc_str() ) );
 
         mg_send( conn, MSG_OK, strlen ( MSG_OK ) );
@@ -3050,7 +3093,7 @@ void VSCPClientThread::handleVariable_ReadNote( struct mg_connection *conn,
     pClientItem->m_currentCommand.Trim( false );
 
     CVSCPVariable variable;
-    if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommandUC,variable ) ) {
+    if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommand,variable ) ) {
         
         str = variable.getNote();
         str = _("+OK - ") + str + _("\r\n");
@@ -3078,7 +3121,7 @@ void VSCPClientThread::handleVariable_Reset( struct mg_connection *conn,
 
     CVSCPVariable variable;
     
-    if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommandUC, variable ) ) {
+    if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommand, variable ) ) {
         
         variable.Reset();
         
@@ -3108,14 +3151,15 @@ void VSCPClientThread::handleVariable_ReadReset( struct mg_connection *conn,
 
     pClientItem->m_currentCommand.Trim( false );
     
-    if ( pClientItem->m_currentCommandUC.StartsWith( _("VSCP.") ) ) {
+    if ( pClientItem->m_currentCommand.StartsWith( _("VSCP.") ) || 
+         pClientItem->m_currentCommand.StartsWith( _("vscp.") )   ) {
         mg_send( conn, MSG_VARIABLE_NOT_STOCK, strlen ( MSG_VARIABLE_NOT_STOCK ) );
         return;
     }
 
     CVSCPVariable variable;
     
-    if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommandUC, variable ) ) {
+    if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommand, variable ) ) {
         
         variable.writeValueToString( str );
         str = _("+OK - ") + str + _("\r\n");
@@ -3150,7 +3194,8 @@ void VSCPClientThread::handleVariable_Remove( struct mg_connection *conn,
 
     pClientItem->m_currentCommand.Trim( false );
     
-    if ( pClientItem->m_currentCommandUC.StartsWith( _("VSCP.") ) ) {
+    if ( pClientItem->m_currentCommand.StartsWith( _("VSCP.") ) || 
+         pClientItem->m_currentCommand.StartsWith( _("vscp.") )   ) {
         mg_send( conn, MSG_VARIABLE_NOT_STOCK, strlen ( MSG_VARIABLE_NOT_STOCK ) );
         return;
     }
@@ -3175,13 +3220,14 @@ void VSCPClientThread::handleVariable_ReadRemove( struct mg_connection *conn,
 
     pClientItem->m_currentCommand.Trim( false );
     
-    if ( pClientItem->m_currentCommandUC.StartsWith( _("VSCP.") ) ) {
+    if ( pClientItem->m_currentCommand.StartsWith( _("VSCP.") ) || 
+         pClientItem->m_currentCommand.StartsWith( _("vscp.") )   ) {
         mg_send( conn, MSG_VARIABLE_NOT_STOCK, strlen ( MSG_VARIABLE_NOT_STOCK ) );
         return;
     }
 
     CVSCPVariable variable;
-    if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommandUC, variable ) ) {
+    if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommand, variable ) ) {
         
         variable.writeValueToString( str );
         str = _("+OK - ") + str + _("\r\n");
@@ -3210,7 +3256,7 @@ void VSCPClientThread::handleVariable_Length( struct mg_connection *conn,
     pClientItem->m_currentCommand.Trim( false );
 
     CVSCPVariable variable;
-    if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommandUC, variable ) ) {
+    if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommand, variable ) ) {
         
         str = wxString::Format( _("%zu"), variable.getLength() );
         str = _("+OK - ") + str + _("\r\n");
