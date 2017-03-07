@@ -170,27 +170,15 @@ uint16_t CVSCPVariable::getVariableTypeFromString( const wxString& strVariableTy
         }
         else if ( 0 == str.Find( _("MEASUREMENT") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT;
-        }         
+        }   
         else if ( 0 == str.Find( _("EVENTGUID") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID;
         }
-        else if ( 0 == str.Find( _("GUID") ) ) {
-            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID;
-        }        
         else if ( 0 == str.Find( _("EVENTDATA") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA;
         }
-        else if ( 0 == str.Find( _("DATA") ) ) {
-            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA;
-        }
-        else if ( 0 == str.Find( _("VSCPCLASS") ) ) {
-            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS;
-        }
         else if ( 0 == str.Find( _("EVENTCLASS") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS;
-        }
-        else if ( 0 == str.Find( _("VSCPTYPE") ) ) {
-            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE;
         }
         else if ( 0 == str.Find( _("EVENTTYPE") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE;
@@ -198,6 +186,21 @@ uint16_t CVSCPVariable::getVariableTypeFromString( const wxString& strVariableTy
         else if ( 0 == str.Find( _("EVENTTIMESTAMP") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP;
         }
+        else if ( 0 == str.Find( _("EVENT") ) ) {
+            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT;
+        }        
+        else if ( 0 == str.Find( _("GUID") ) ) {
+            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID;
+        }        
+        else if ( 0 == str.Find( _("DATA") ) ) {
+            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA;
+        }
+        else if ( 0 == str.Find( _("VSCPCLASS") ) ) {
+            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS;
+        }       
+        else if ( 0 == str.Find( _("VSCPTYPE") ) ) {
+            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE;
+        }    
         else if ( 0 == str.Find( _("TIMESTAMP") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP;
         }		
@@ -1390,8 +1393,15 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable,
     // Get the value of the variable
     if ( tkz.HasMoreTokens() ) {
         
-        wxString value = tkz.GetNextToken();       
-        setValueFromString( m_type, value, bBase64 );
+        wxString value = tkz.GetNextToken();
+        value.Trim();
+        if ( value.Length() ) {
+            setValueFromString( m_type, value, bBase64 );
+        }
+        else {
+            // If no value given use RESET value
+            Reset();
+        }
 
     }
     else {
@@ -1473,7 +1483,7 @@ void CVSCPVariable::Reset( void )
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
-                m_strValue = _("0;0;0;0;0");    // value;unit;sensor-index;zone;subzone
+                m_strValue = _("0,0,0,255,255");    // value,unit,sensor-index,zone,subzone
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:

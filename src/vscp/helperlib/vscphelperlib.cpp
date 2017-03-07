@@ -1100,15 +1100,28 @@ extern "C" int vscphlp_setRemoteVariableDouble( long handle, const char *pName, 
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableMeasurement( long handle, const char *pName, char *pValue, int size )
+extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableMeasurement( long handle, 
+                                                                    const char *pName, 
+                                                                    double *pvalue,
+                                                                    int *punit,
+                                                                    int *psensoridx,
+                                                                    int *pzone,
+                                                                    int *psubzone )
 #else
-extern "C" int vscphlp_getRemoteVariableMeasurement( long handle, const char *pName, char *pValue, int size )
+extern "C" int vscphlp_getRemoteVariableMeasurement( long handle, 
+                                                        const char *pName, 
+                                                        double *pvalue,
+                                                        int *punit,
+                                                        int *psensoridx,
+                                                        int *pzone,
+                                                        int *psubzone )
 #endif
 {
     int rv;
+    uint8_t unit,sensoridx,zone,subzone;
 
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
-    if ( NULL == pValue ) return VSCP_ERROR_PARAMETER;
+    if ( NULL == pvalue ) return VSCP_ERROR_PARAMETER;
 
     VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
     if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
@@ -1117,9 +1130,18 @@ extern "C" int vscphlp_getRemoteVariableMeasurement( long handle, const char *pN
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    wxString strValue;
-    if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableMeasurement( name, strValue ) ) ) {
-        strncpy( pValue, strValue.mbc_str(), MIN( strlen( strValue.mbc_str() ), size ) );
+    
+    if ( VSCP_ERROR_SUCCESS == 
+            ( rv = pvscpif->getRemoteVariableMeasurement( name, 
+                                                            pvalue,
+                                                            &unit,
+                                                            &sensoridx,
+                                                            &zone,
+                                                            &subzone ) ) ) {
+        *punit = unit;
+        *psensoridx = sensoridx;
+        *pzone = zone;
+        *psubzone = subzone;
     }
 
     return rv;
@@ -1134,13 +1156,24 @@ extern "C" int vscphlp_getRemoteVariableMeasurement( long handle, const char *pN
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableMeasurement( long handle, const char *pName, const char *pValue )
+extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableMeasurement( long handle, 
+                                                                    const char *pName, 
+                                                                    double value,
+                                                                    int unit,
+                                                                    int sensoridx,
+                                                                    int zone,
+                                                                    int subzone )
 #else
-extern "C" int vscphlp_setRemoteVariableMeasurement( long handle, const char *pName, char *pValue )
+extern "C" int vscphlp_setRemoteVariableMeasurement( long handle, 
+                                                        const char *pName, 
+                                                        double value,
+                                                        int unit,
+                                                        int sensoridx,
+                                                        int zone,
+                                                        int subzone )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
-    if ( NULL == pValue ) return VSCP_ERROR_PARAMETER;
 
     VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
     if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
@@ -1149,8 +1182,13 @@ extern "C" int vscphlp_setRemoteVariableMeasurement( long handle, const char *pN
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    wxString strValue = wxString::FromAscii( pValue );
-    return pvscpif->setRemoteVariableMeasurement( name, strValue );
+    
+    return pvscpif->setRemoteVariableMeasurement( name, 
+                                                    value,
+                                                    (uint8_t)unit,
+                                                    (uint8_t)sensoridx,
+                                                    (uint8_t)zone,
+                                                    (uint8_t)subzone );
 };
 
 /*!

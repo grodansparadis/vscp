@@ -115,8 +115,20 @@ int WINAPI EXPORT vscphlp_setRemoteVariableLong( long handle, const char *pName,
 int WINAPI EXPORT vscphlp_getRemoteVariableDouble( long handle, const char *pName, double *pvalue );
 int WINAPI EXPORT vscphlp_setRemoteVariableDouble( long handle, const char *pName, double value );
 
-int WINAPI EXPORT vscphlp_getRemoteVariableMeasurement( long handle, const char *pName, char *pvalue, int size );
-int WINAPI EXPORT vscphlp_setRemoteVariableMeasurement( long handle, const char *pName, char *pValue );
+int WINAPI EXPORT vscphlp_getRemoteVariableMeasurement( long handle, 
+                                                const char *pName, 
+                                                double *pvalue,
+                                                int *punit,
+                                                int *psensoridx,
+                                                int *pzone,
+                                                int *psubzone );
+int WINAPI EXPORT vscphlp_setRemoteVariableMeasurement( long handle, 
+                                                const char *pName, 
+                                                double value,
+                                                int unit,
+                                                int sensoridx,
+                                                int zone,
+                                                int subzone );
 
 int WINAPI EXPORT vscphlp_getRemoteVariableEvent( long handle, const char *pName, vscpEvent *pEvent );
 int WINAPI EXPORT vscphlp_setRemoteVariableEvent( long handle, const char *pName, vscpEvent *pEvent );
@@ -367,8 +379,20 @@ int vscphlp_setRemoteVariableLong( long handle, const char *pName, long value );
 int vscphlp_getRemoteVariableDouble( long handle, const char *pName, double *value );
 int vscphlp_setRemoteVariableDouble( long handle, const char *pName, double value );
 
-int vscphlp_getRemoteVariableMeasurement( long handle, const char *pName, char *pvalue, int size );
-int vscphlp_setRemoteVariableMeasurement( long handle, const char *pName, char *pValue );
+int vscphlp_getRemoteVariableMeasurement( long handle, 
+                                                const char *pName, 
+                                                double *pvalue,
+                                                int *punit,
+                                                int *psensoridx,
+                                                int *pzone,
+                                                int *psubzone );
+int vscphlp_setRemoteVariableMeasurement( long handle, 
+                                                const char *pName, 
+                                                double value,
+                                                int unit,
+                                                int sensoridx,
+                                                int zone,
+                                                int subzone );
 
 int vscphlp_getRemoteVariableEvent( long handle, const char *pName, vscpEvent *pEvent );
 int vscphlp_setRemoteVariableEvent( long handle, const char *pName, vscpEvent *pEvent );

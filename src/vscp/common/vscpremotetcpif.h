@@ -746,22 +746,39 @@ public:
         Get variable value from measurement variable
      
         @param name of variable.
-        @param strValue String that get that get the 
-        value of the measurement.
+        @param pvalue Pointer to a double that will get the value for the measurement.
+        @param punit Pointer to uint8_t that will get the unit for the measurement.
+        @param psensoridx Pointer to uint8_t that will get the sensor index for the measurement.
+        @param pzone Pointer to a uint8_t that will get the zone for the measurement.
+        @param psubzone Pointer to a unit8_t that will get the sub zone for the measurement.
         @return VSCP_ERROR_SUCCESS if the variable is of type measurement and the operation
-        was successful.
+                was successful.
      */
-    int getRemoteVariableMeasurement( const wxString& name, wxString& strValue);
+    int getRemoteVariableMeasurement( const wxString& name, 
+                                        double *pvalue,
+                                        uint8_t *punit,
+                                        uint8_t *psensoridx,
+                                        uint8_t *pzone,
+                                        uint8_t *psubzone );
 
     /*!
         set variable value from double variable
      
         @param name of variable.
-        @param strValue pointer to double variable that get the value of the string variable.
+        @param value Double containing the value for the measurement.
+        @param unit The unit for the measurement.
+        @param sensoridx The sensor index for the measurement.
+        @param zone The zone for the measurement.
+        @param subzone The sub zone for the measurement.
         @return VSCP_ERROR_SUCCESS if the variable is of type double and the operation
         was successful.
      */
-    int setRemoteVariableMeasurement( const wxString& name, wxString& strValue);
+    int setRemoteVariableMeasurement( const wxString& name, 
+                                        double value,
+                                        uint8_t unit = 0,
+                                        uint8_t sensoridx = 0,
+                                        uint8_t zone = 255,
+                                        uint8_t subzone = 255 );
 
     /*!
         Get variable value from event variable

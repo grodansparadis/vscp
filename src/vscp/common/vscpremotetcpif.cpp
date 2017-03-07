@@ -2227,7 +2227,7 @@ int VscpRemoteTcpIf::getRemoteVariableDouble( const wxString& name, double *valu
         
     // Get the value
     double retval;
-    if ( strValue.ToDouble( &retval ) ) {
+    if ( strValue.ToCDouble( &retval ) ) {
         *value = retval;
     }
 
@@ -2250,17 +2250,83 @@ int VscpRemoteTcpIf::setRemoteVariableDouble( const wxString& name, double value
 // getRemoteVariableMeasurement
 //
 
-int VscpRemoteTcpIf::getRemoteVariableMeasurement( const wxString& name, wxString& strValue )
+int VscpRemoteTcpIf::getRemoteVariableMeasurement( const wxString& name, 
+                                                        double *pvalue,
+                                                        uint8_t *punit,
+                                                        uint8_t *psensoridx,
+                                                        uint8_t *pzone,
+                                                        uint8_t *psubzone )
 {
-    return getRemoteVariableValue( name, strValue );
+    int rv;
+    wxString str;
+    wxString strValue;
+    
+    // Check pointers
+    if ( NULL != pvalue ) return VSCP_ERROR_PARAMETER;
+    if ( NULL != punit ) return VSCP_ERROR_PARAMETER;
+    if ( NULL != psensoridx ) return VSCP_ERROR_PARAMETER;
+    if ( NULL != pzone ) return VSCP_ERROR_PARAMETER;
+    if ( NULL != psubzone ) return VSCP_ERROR_PARAMETER;
+    
+    if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, strValue ) ) ) {
+        return rv;
+    }
+    
+    // value,unit,sensoridx,zone,subzone
+    wxStringTokenizer tkz( strValue, _(",") );
+    
+    // Must have value
+    if ( !tkz.HasMoreTokens() ) {
+        return VSCP_ERROR_INTERNAL;  // Value should be there
+    }
+    
+    str = tkz.GetNextToken();
+    if ( !str.ToCDouble( pvalue ) ) {
+        return VSCP_ERROR_INTERNAL;  // Value should have correct format
+    }
+    
+    *punit = 0;
+    if ( tkz.HasMoreTokens() ) {
+        *punit = vscp_readStringValue( tkz.GetNextToken() );
+    }
+    
+    *psensoridx = 0;
+    if ( tkz.HasMoreTokens() ) {
+        *psensoridx = vscp_readStringValue( tkz.GetNextToken() );
+    }
+    
+    *pzone = 255;
+    if ( tkz.HasMoreTokens() ) {
+        *pzone = vscp_readStringValue( tkz.GetNextToken() );
+    }
+    
+    *psubzone = 255;
+    if ( tkz.HasMoreTokens() ) {
+        *psubzone = vscp_readStringValue( tkz.GetNextToken() );
+    }
+    
+    return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // setRemoteVariableMeasurement
 //
 
-int VscpRemoteTcpIf::setRemoteVariableMeasurement( const wxString& name, wxString& strValue )
+int VscpRemoteTcpIf::setRemoteVariableMeasurement( const wxString& name, 
+                                                        double value,
+                                                        uint8_t unit,
+                                                        uint8_t sensoridx,
+                                                        uint8_t zone,
+                                                        uint8_t subzone )
 {
+    wxString strValue;
+    
+    strValue = wxString::Format( _("%f,%d,%d,%d"), 
+                                    value, 
+                                    (int)unit, 
+                                    (int)sensoridx, 
+                                    (int)zone, 
+                                    (int)subzone );
     return setRemoteVariableValue( name, strValue );
 }
 
