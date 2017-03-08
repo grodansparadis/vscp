@@ -193,7 +193,9 @@ int WINAPI EXPORT vscphlp_convertVSCPtoEx( vscpEventEx *pEventEx,
                                                const vscpEvent *pEvent );
 int WINAPI EXPORT vscphlp_convertVSCPfromEx( vscpEvent *pEvent,
                                                const vscpEventEx *pEventEx );
+int WINAPI EXPORT vscphlp_newVSCPevent( vscpEvent **ppEvent );
 void WINAPI EXPORT vscphlp_deleteVSCPevent( vscpEvent *pEvent );
+void WINAPI EXPORT vscphlp_deleteVSCPevent_v2( vscpEvent **ppEvent );
 void WINAPI EXPORT vscphlp_deleteVSCPeventEx( vscpEventEx *pEventEx );
 void WINAPI EXPORT vscphlp_clearVSCPFilter( vscpEventFilter *pFilter );
 void WINAPI EXPORT vscphlp_copyVSCPFilter( vscpEventFilter *pToFilter, const vscpEventFilter *pFromFilter );
@@ -330,7 +332,8 @@ int vscphlp_isDataAvailable( long handle, unsigned int *pCount );
 int vscphlp_getStatus( long handle, VSCPStatus *pStatus );
 int vscphlp_getStatistics( long handle, VSCPStatistics *pStatistics );
 int vscphlp_setFilter( long handle, const vscpEventFilter *pFilter );
-int vscphlp_getVersion( long handle, unsigned char *pMajorVer,
+int vscphlp_getVersion( long handle, 
+                            unsigned char *pMajorVer,
                             unsigned char *pMinorVer,
                             unsigned char *pSubMinorVer );
 int vscphlp_getDLLVersion( long handle, unsigned long *pVersion );
@@ -459,7 +462,9 @@ int vscphlp_convertVSCPtoEx( vscpEventEx *pEventEx,
                                        const vscpEvent *pEvent );
 int vscphlp_convertVSCPfromEx( vscpEvent *pEvent,
                                        const vscpEventEx *pEventEx );
+int vscphlp_newVSCPevent( vscpEvent **ppEvent );
 void vscphlp_deleteVSCPevent( vscpEvent *pEvent );
+void vscphlp_deleteVSCPevent_v2( vscpEvent **ppEvent );
 void vscphlp_deleteVSCPeventEx( vscpEventEx *pEventEx );
 void vscphlp_clearVSCPFilter( vscpEventFilter *pFilter );
 void vscphlp_copyVSCPFilter( vscpEventFilter *pToFilter, const vscpEventFilter *pFromFilter );

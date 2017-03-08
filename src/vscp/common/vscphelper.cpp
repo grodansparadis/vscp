@@ -2353,16 +2353,56 @@ bool vscp_copyVSCPEvent(vscpEvent *pEventTo, const vscpEvent *pEventFrom)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
+// vscp_newVSCPevent
+//
+
+bool vscp_newVSCPevent(vscpEvent **ppEvent)
+{
+    *ppEvent = new vscpEvent;
+    if ( NULL == *ppEvent ) return false;
+    
+    // No data allocated yet
+    (*ppEvent)->pdata = NULL;
+    
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////////
 // deleteVSCPevent
 //
 
 void vscp_deleteVSCPevent(vscpEvent *pEvent)
 {
+    // Check pointer
+    if ( NULL == pEvent ) return;
+    
     if ( NULL != pEvent->pdata ) {
         delete [] pEvent->pdata;
+        pEvent->pdata = NULL;
     }
-    delete pEvent;
 }
+
+////////////////////////////////////////////////////////////////////////////////////
+// deleteVSCPevent_v2
+//
+
+void vscp_deleteVSCPevent_v2(vscpEvent **ppEvent)
+{
+    // Check pointer
+    if ( NULL == *ppEvent ) return;
+    
+    if ( NULL != (*ppEvent)->pdata ) {
+        delete [] (*ppEvent)->pdata;
+        (*ppEvent)->pdata = NULL;
+    }
+    
+    // Delete the event and mark it as unused.
+    delete *ppEvent;    
+    *ppEvent = NULL;
+}
+
+
+
 
 ////////////////////////////////////////////////////////////////////////////////////
 // deleteVSCPevent

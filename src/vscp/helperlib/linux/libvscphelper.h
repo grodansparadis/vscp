@@ -50,7 +50,7 @@ typedef int BOOL;
 
 
 // This is the version info for this DLL - Change to your own value
-#define VSCP_DLL_VERSION	1
+#define VSCP_DLL_VERSION	2
 
 // This is the vendor string - Change to your own value
 #define VSCP_DLL_VENDOR "Grodans Paradis AB, Sweden, http://www.grodansparadis.com"

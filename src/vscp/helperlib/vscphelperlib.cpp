@@ -1120,8 +1120,13 @@ extern "C" int vscphlp_getRemoteVariableMeasurement( long handle,
     int rv;
     uint8_t unit,sensoridx,zone,subzone;
 
+    // Check pointers
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
     if ( NULL == pvalue ) return VSCP_ERROR_PARAMETER;
+    if ( NULL == punit ) return VSCP_ERROR_PARAMETER;
+    if ( NULL == psensoridx ) return VSCP_ERROR_PARAMETER;
+    if ( NULL == pzone ) return VSCP_ERROR_PARAMETER;
+    if ( NULL == psubzone ) return VSCP_ERROR_PARAMETER;
 
     VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
     if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
@@ -1145,7 +1150,8 @@ extern "C" int vscphlp_getRemoteVariableMeasurement( long handle,
     }
 
     return rv;
-};
+    
+}
 
 /*!
     \fn bool vscphlp_setVariableMeasurement( const char *pName, char *pValue )
@@ -1189,7 +1195,7 @@ extern "C" int vscphlp_setRemoteVariableMeasurement( long handle,
                                                     (uint8_t)sensoridx,
                                                     (uint8_t)zone,
                                                     (uint8_t)subzone );
-};
+}
 
 /*!
     \fn bool vscphlp_getVariableEvent( const char *pName, vscpEvent *pEvent )
@@ -1653,6 +1659,20 @@ extern "C" int vscphlp_convertVSCPfromEx( vscpEvent *pEvent,
 
 
 /*!
+    \fn int vscphlp_newVSCPevent( vscpEvent **ppEvent )
+    \brief Create a new VSCP event.
+*/
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_newVSCPevent( vscpEvent **ppEvent )
+#else
+extern "C" int vscphlp_newVSCPevent( vscpEvent **ppEvent )
+#endif
+{
+    return vscp_newVSCPevent( ppEvent ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
+
+
+/*!
     \fn void vscphlp_deleteVSCPevent( vscpEvent *pEvent )
     \brief Delete VSCP event.
 */
@@ -1664,6 +1684,21 @@ extern "C" void vscphlp_deleteVSCPevent( vscpEvent *pEvent )
 {
     return vscp_deleteVSCPevent( pEvent );
 }
+
+
+/*!
+    \fn void vscphlp_deleteVSCPevent_v2( vscpEvent **ppEvent )
+    \brief Delete and null VSCP event.
+*/
+#ifdef WIN32
+extern "C" void WINAPI EXPORT vscphlp_deleteVSCPevent_v2( vscpEvent **ppEvent )
+#else
+extern "C" void vscphlp_deleteVSCPevent_v2( vscpEvent **ppEvent )
+#endif
+{
+    return vscp_deleteVSCPevent_v2( ppEvent );
+}
+
 
 /*!
     \fn void vscphlp_deleteVSCPeventEx( vscpEventEx *pEventEx )

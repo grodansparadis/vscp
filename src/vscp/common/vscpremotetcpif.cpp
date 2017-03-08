@@ -2262,11 +2262,11 @@ int VscpRemoteTcpIf::getRemoteVariableMeasurement( const wxString& name,
     wxString strValue;
     
     // Check pointers
-    if ( NULL != pvalue ) return VSCP_ERROR_PARAMETER;
-    if ( NULL != punit ) return VSCP_ERROR_PARAMETER;
-    if ( NULL != psensoridx ) return VSCP_ERROR_PARAMETER;
-    if ( NULL != pzone ) return VSCP_ERROR_PARAMETER;
-    if ( NULL != psubzone ) return VSCP_ERROR_PARAMETER;
+    if ( NULL == pvalue ) return VSCP_ERROR_PARAMETER;
+    if ( NULL == punit ) return VSCP_ERROR_PARAMETER;
+    if ( NULL == psensoridx ) return VSCP_ERROR_PARAMETER;
+    if ( NULL == pzone ) return VSCP_ERROR_PARAMETER;
+    if ( NULL == psubzone ) return VSCP_ERROR_PARAMETER;
     
     if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, strValue ) ) ) {
         return rv;
@@ -2321,7 +2321,7 @@ int VscpRemoteTcpIf::setRemoteVariableMeasurement( const wxString& name,
 {
     wxString strValue;
     
-    strValue = wxString::Format( _("%f,%d,%d,%d"), 
+    strValue = wxString::Format( _("%f,%d,%d,%d,%d"), 
                                     value, 
                                     (int)unit, 
                                     (int)sensoridx, 

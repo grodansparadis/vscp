@@ -236,10 +236,9 @@ int main(int argc, char* argv[])
         printf("\aCommand error: vscphlp_receiveEvent on channel 2  Error code=%d\n", rv);
     }
 
-    //delete pEvent->pdata;
-    //delete pEvent;
-    vscphlp_deleteVSCPevent( pEvent );  // This helper is the same as the above two commented lines
 
+    vscphlp_deleteVSCPevent( pEvent );  // This helper is the same as the above two commented lines
+    pEvent = NULL;
     
     
     
@@ -264,7 +263,7 @@ int main(int argc, char* argv[])
 
     // Free the event
     vscphlp_deleteVSCPevent( pEvent );
-
+    pEvent = NULL;
 
     // Read event3   -  Use vscpEventEx
     vscpEventEx ex2;
@@ -444,6 +443,7 @@ int main(int argc, char* argv[])
             cntEvents++;
         }
         vscphlp_deleteVSCPevent( pEvent );
+        pEvent = NULL;
     }
 
 
@@ -463,6 +463,13 @@ int main(int argc, char* argv[])
 #ifdef TEST_VARIABLE_HANDLING
 
     printf("\n\n\n* * * * * Variables  * * * * *\n\n\a");
+    
+    
+    printf("\n\n********************************************************************\n");
+    printf("               Test string variable reading/writing \n");
+    printf("********************************************************************\n\n");
+    
+    
 
     // Create a string variable
     printf("\n\n===== vscphlp_createRemoteVariable =====\n");
@@ -536,7 +543,33 @@ int main(int argc, char* argv[])
             printf("\aCommand error: vscphlp_getRemoteVariableString on channel 1  Error code=%d\n", rv);
         }
     }
+    
+    
+    
+    printf("\n\n********************************************************************\n");
+    printf("               Test delete variable reading/writing \n");
+    printf("********************************************************************\n\n");
+    
 
+    // Delete a variable
+    printf("\n\n===== vscphlp_deleteRemoteVariable =====\n");
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_deleteRemoteVariable( handle1, 
+                                             "test_string_variable" ) ) )  {
+        printf( "Command success: vscphlp_deleteRemoteVariable on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_deleteRemoteVariable on channel 1  Error code=%d\n", rv);
+    }
+    
+    
+    
+    printf("\n\n********************************************************************\n");
+    printf("               Test boolean variable reading/writing \n");
+    printf("********************************************************************\n\n");
+    
+
+    
     // Create a boolean variable
     printf("\n\n===== vscphlp_createRemoteVariable =====\n");
 
@@ -579,6 +612,12 @@ int main(int argc, char* argv[])
     }
 
 
+    
+    printf("\n\n********************************************************************\n");
+    printf("               Test integer variable reading/writing \n");
+    printf("********************************************************************\n\n");
+    
+    
 
 
     // Create an int variable
@@ -630,6 +669,13 @@ int main(int argc, char* argv[])
 
 
 
+    
+    printf("\n\n********************************************************************\n");
+    printf("               Test long variable reading/writing \n");
+    printf("********************************************************************\n\n");
+    
+    
+    
 
 
     // Create a  long variable
@@ -681,7 +727,12 @@ int main(int argc, char* argv[])
 
 
 
-
+    printf("\n\n********************************************************************\n");
+    printf("               Test floating point variable reading/writing \n");
+    printf("********************************************************************\n\n");
+    
+    
+    
 
     // Create a float variable
     printf("\n\n===== vscphlp_createRemoteVariable =====\n");
@@ -732,9 +783,14 @@ int main(int argc, char* argv[])
 
 
 
-
+    printf("\n\n********************************************************************\n");
+    printf("               Test measurement variable reading/writing \n");
+    printf("********************************************************************\n\n");
+    
+    
 
     // Create measurement variable
+    printf("\n----------------- vscphlp_createRemoteVariable -----------------\n");
     if ( VSCP_ERROR_SUCCESS == 
         ( rv = vscphlp_createRemoteVariable( handle1, 
                         "test_measurement_variable", 
@@ -742,7 +798,7 @@ int main(int argc, char* argv[])
                         0,
                         "",
                         0x744,
-                        "138,0,99",
+                        "13.82,1,0,255,255",
                         "VGhpcyBpcyBhIG5vdGU=")  ) ) {
         printf( "Command success: vscphlp_createRemoteVariable on channel 1\n" );
     }
@@ -751,9 +807,15 @@ int main(int argc, char* argv[])
     }
     
     // Write a value to an measurement variable
-    printf("\n\n===== vscphlp_setRemoteVariableMeasurement =====\n");
+    printf("\n----------------- vscphlp_setRemoteVariableMeasurement -----------------\n");
     if ( VSCP_ERROR_SUCCESS == 
-            (rv = vscphlp_setRemoteVariableMeasurement( handle1, "test_measurement_variable", "138,0,23" )  ) ) {
+            (rv = vscphlp_setRemoteVariableMeasurement( handle1, 
+                                                            "test_measurement_variable", 
+                                                            1.234,
+                                                            2,
+                                                            7,
+                                                            11,
+                                                            22 ) ) ) {
         printf( "Command success: vscphlp_setRemoteVariableMeasurement on channel 1\n" );
     }
     else {
@@ -762,14 +824,32 @@ int main(int argc, char* argv[])
 
 
     // Read a value from a measurement variable 
+    printf("\n----------------- vscphlp_getRemoteVariableMeasurement -----------------\n");
     {
-        char strBuf[2000];
-        memset( strBuf, 0, sizeof( strBuf ) );
-        printf("\n\n===== vscphlp_getRemoteVariableMeasurement =====\n");
+        double value;
+        int unit,sensoridx,zone,subzone;
+
         if ( VSCP_ERROR_SUCCESS == 
-                (rv = vscphlp_getRemoteVariableMeasurement( handle1, "test_measurement_variable", strBuf, sizeof(strBuf)-1  ) ) ) {
+                ( rv = vscphlp_getRemoteVariableMeasurement( handle1, 
+                                                                "test_measurement_variable",
+                                                                &value,
+                                                                &unit,
+                                                                &sensoridx,
+                                                                &zone,
+                                                                &subzone ) ) ) {
             printf( "Command success: vscphlp_getRemoteVariableMeasurement on channel 1\n" );
-            printf(" Value = %s\n", strBuf );
+            printf(" Value = %f, unit = %d, sensoridx = %d, zone = %d, subzone = %d\n", 
+                    value, unit, sensoridx, zone, subzone  );
+            if ( ((round( 10000*value )/10000 ) == 1.2340 ) &&
+                    ( 2 == unit ) &&
+                    ( 7 == sensoridx ) && 
+                    ( 11 == zone ) &&
+                    ( 22 == subzone ) ) {
+                printf("\aRead values is correct (value checked for four decimals)!\n");
+            }
+            else {
+                printf("\aError: Read values is NOT correct (value checked four decimals)!\n");
+            }
         }
         else {
             printf("\aCommand error: vscphlp_getRemoteVariableMeasurement on channel 1  Error code=%d\n", rv);
@@ -777,6 +857,11 @@ int main(int argc, char* argv[])
     }
 
 
+    
+    printf("\n\n********************************************************************\n");
+    printf("               Test event variable reading/writing \n");
+    printf("********************************************************************\n\n");
+    
 
 
     // Create event variable
@@ -845,9 +930,15 @@ int main(int argc, char* argv[])
 
     // Free the event
     vscphlp_deleteVSCPevent( pEvent );
+    pEvent = NULL;
 
+    
 
-
+    printf("\n\n********************************************************************\n");
+    printf("               Test eventx variable reading/writing \n");
+    printf("********************************************************************\n\n");
+    
+    
     
     // Create eventex variable
     if ( VSCP_ERROR_SUCCESS == 
@@ -912,6 +1003,11 @@ int main(int argc, char* argv[])
 
     
     
+    printf("\n\n********************************************************************\n");
+    printf("               Test GUID [string] variable reading/writing \n");
+    printf("********************************************************************\n\n");
+    
+    
     
     // Create GUID variable
     if ( VSCP_ERROR_SUCCESS == 
@@ -922,7 +1018,7 @@ int main(int argc, char* argv[])
                         "",
                         0x744,
                         "",     /* Empty value is reset value */
-                        "VGhpcyBpcyBhIG5vdGU=")  ) ) {
+                        "VGhpcyBpcyBhIG5vdGU=") ) ) {
         printf( "Command success: vscphlp_createRemoteVariable on channel 1\n" );
     }
     else {
@@ -950,13 +1046,43 @@ int main(int argc, char* argv[])
             (rv = vscphlp_getRemoteVariableGUIDString( handle1, "test_guidstr_variable", strGUID, sizeof(strGUID)-1 )  ) )  {
         printf( "Command success: vscphlp_getRemoteVariableGUIDString on channel 1\n" );
         printf(" Value = %s\n", strGUID );
+        if ( 0 == strcmp( strGUID, "FF:FF:FF:FF:FF:FF:FF:00:00:00:00:7F:00:01:01:FD") ) {
+            printf(" GUID strings are the same.\n");
+        }
+        else {
+            printf("Error: Read GUID string are NOT the same.\n");
+        }
     }
     else {
         printf("\aCommand error: vscphlp_getRemoteVariableGUIDString on channel 1  Error code=%d\n", rv);
     }
+    
+    
+    
+    
+    printf("\n\n********************************************************************\n");
+    printf("               Test GUID [array] variable reading/writing \n");
+    printf("********************************************************************\n\n");
+    
 
 
 
+    // Create GUID variable
+    if ( VSCP_ERROR_SUCCESS == 
+        ( rv = vscphlp_createRemoteVariable( handle1, 
+                        "test_guidarray_variable", 
+                        "eventguid",    /* Alternative name */
+                        0,
+                        "",
+                        0x744,
+                        "",     /* Empty value is reset value */
+                        "VGhpcyBpcyBhIG5vdGU=") ) ) {
+        printf( "Command success: vscphlp_createRemoteVariable on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_createRemoteVariable on channel 1  Error code=%d\n", rv);
+    }
+    
     // Write a value to an GUID variable - array type
     printf("\n\n===== vscphlp_setRemoteVariableGUIDArray =====\n");
     unsigned char GUID[16];
@@ -985,13 +1111,46 @@ int main(int argc, char* argv[])
             printf("%d ", GUID[i] );    
         }
         printf("\n");
+        int err = 0;
+        for ( int i=0; i<16; i++ ) {
+            if ( i != GUID[i] ) {
+                printf("Error: GUID's are NOT the same\n " );
+                err = 1;
+                break;
+            } 
+        }
+        if ( !err ) printf(" GUID's are the same\n " );
     }
     else {
         printf("\aCommand error: vscphlp_getRemoteVariableGUIDArray on channel 1  Error code=%d\n", rv);
     }
 
+    
+    
+    
+    printf("\n\n********************************************************************\n");
+    printf("              Test VCSP Data variable reading/writing \n");
+    printf("********************************************************************\n\n");
+    
+    
 
 
+    // Create fata array variable
+    if ( VSCP_ERROR_SUCCESS == 
+        ( rv = vscphlp_createRemoteVariable( handle1, 
+                        "test_dataarray_variable", 
+                        "eventdata",    /* Alternative name */
+                        0,
+                        "",
+                        0x744,
+                        "",     /* Empty value is reset value */
+                        "VGhpcyBpcyBhIG5vdGU=") ) ) {
+        printf( "Command success: vscphlp_createRemoteVariable on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_createRemoteVariable on channel 1  Error code=%d\n", rv);
+    }
+    
     unsigned char dataArray[10];
     memset( dataArray, 0, sizeof(dataArray) );
     for ( int i=0; i<sizeof(dataArray); i++ ) {
@@ -1026,42 +1185,33 @@ int main(int argc, char* argv[])
     }
 
 
+    
+    
 
-    // Write a value to an GUID variable 
-    printf("\n\n===== vscphlp_setRemoteVariableGUIDArray =====\n");
-    //unsigned char GUID[16];
-    memset( GUID, 0, 16 );
-    for ( int i=0;i<16; i++ ) {
-        GUID[i] = i;
-    }
 
+    printf("\n\n********************************************************************\n");
+    printf("               Test VSCP class variable reading/writing \n");
+    printf("********************************************************************\n\n");
+    
+    
+
+    
+    // Create event class variable
     if ( VSCP_ERROR_SUCCESS == 
-            (rv = vscphlp_setRemoteVariableGUIDArray( handle1, "test_guidarray_variable", GUID ) ) ) {
-        printf( "Command success: vscphlp_setRemoteVariableGUIDArray on channel 1\n" );
+        ( rv = vscphlp_createRemoteVariable( handle1, 
+                        "test_vscp_class_variable", 
+                        "eventclass",    /* Alternative name */
+                        0,
+                        "",
+                        0x744,
+                        "",     /* Empty value is reset value */
+                        "VGhpcyBpcyBhIG5vdGU=") ) ) {
+        printf( "Command success: vscphlp_createRemoteVariable on channel 1\n" );
     }
     else {
-        printf("\aCommand error: vscphlp_setRemoteVariableGUIDArray on channel 1  Error code=%d\n", rv);
+        printf("\aCommand error: vscphlp_createRemoteVariable on channel 1  Error code=%d\n", rv);
     }
-
-    memset( GUID, 0, 16 );
-   
-    // Read a value from a GUID variable - string type
-    printf("\n\n===== vscphlp_getRemoteVariableGUIDArray =====\n");
-    if ( VSCP_ERROR_SUCCESS == 
-            (rv = vscphlp_getRemoteVariableGUIDArray( handle1, "test_guidarray_variable", GUID  ) ) )  {
-        printf( "Command success: vscphlp_getRemoteVariableGUIDArray on channel 1\n" );
-        printf(" Value = " );
-        for ( int i=0; i<16; i++ ) {
-            printf("%d ", GUID[i] );    
-        }
-        printf("\n");
-    }
-    else {
-        printf("\aCommand error: vscphlp_getRemoteVariableGUIDArray on channel 1  Error code=%d\n", rv);
-    }
-
-
-
+    
     // Write a value for VSCP class type
     printf("\n\n===== vscphlp_setRemoteVariableVSCPClass =====\n");
     if ( VSCP_ERROR_SUCCESS == 
@@ -1080,12 +1230,42 @@ int main(int argc, char* argv[])
             (rv = vscphlp_getRemoteVariableVSCPClass( handle1, "test_vscp_class_variable", &vscpclass ) ) )  {
         printf( "Command success: vscphlp_getRemoteVariableVSCPClass on channel 1\n" );
         printf(" Value = %d\n", vscpclass );
+        if ( 10 == vscpclass ) {
+            printf("Read value is the same as written\n");
+        }
+        else {
+            printf("\aError: Read value is NOT the same as written\n");
+        }
     }
     else {
         printf("\aCommand error: vscphlp_getRemoteVariableVSCPClass on channel 1  Error code=%d\n", rv);
     }
 
+    
+    
+    printf("\n\n********************************************************************\n");
+    printf("               Test VSCP type variable reading/writing \n");
+    printf("********************************************************************\n\n");
+    
+    
+    
 
+    // Create event type variable
+    if ( VSCP_ERROR_SUCCESS == 
+        ( rv = vscphlp_createRemoteVariable( handle1, 
+                        "test_vscp_type_variable", 
+                        "eventtype",    /* Alternative name */
+                        0,
+                        "",
+                        0x744,
+                        "",     /* Empty value is reset value */
+                        "VGhpcyBpcyBhIG5vdGU=") ) ) {
+        printf( "Command success: vscphlp_createRemoteVariable on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_createRemoteVariable on channel 1  Error code=%d\n", rv);
+    }
+    
     // Write a value for VSCP type type
     printf("\n\n===== vscphlp_setRemoteVariableVSCPType =====\n");
     if ( VSCP_ERROR_SUCCESS == 
@@ -1104,64 +1284,31 @@ int main(int argc, char* argv[])
             (rv = vscphlp_getRemoteVariableVSCPType( handle1, "test_vscp_type_variable", &vscptype ) ) )  {
         printf( "Command success: vscphlp_getRemoteVariableVSCPType on channel 1\n" );
         printf(" Value = %d\n", vscptype );
+        if ( 22 == vscptype ) {
+            printf("Read value is the same as written\n");
+        }
+        else {
+            printf("\aError: Read value is NOT the same as written\n");
+        }
     }
     else {
         printf("\aCommand error: vscphlp_getRemoteVariableVSCPType on channel 1  Error code=%d\n", rv);
     }
 
 
-    // Create a variable
-    {
-        char strBuf[2000];
-        memset( strBuf, 0, sizeof( strBuf ) );
-        printf("\n\n===== vscphlp_createRemoteVariable =====\n");
-        if ( VSCP_ERROR_SUCCESS == 
-                (rv = vscphlp_createRemoteVariable( handle1, 
-                                                    "test_of_create_variable",
-                                                    "string",
-                                                    1,
-                                                    "",
-                                                    0x744,
-                                                    "Carpe Diem",
-                                                    "This is a note" ) ) )  {
-            printf( "Command success: vscphlp_createRemoteVariable on channel 1\n" );
-        }
-        else {
-            printf("\aCommand error: vscphlp_createRemoteVariable on channel 1  Error code=%d\n", rv);
-        }
-
-        if ( VSCP_ERROR_SUCCESS == 
-            (rv = vscphlp_getRemoteVariableString( handle1, "test_of_create_variable", strBuf, sizeof( strBuf )-1 ) ) ) {
-            printf( "Command success: vscphlp_getRemoteVariableString on channel 1\n" );
-            printf(" Value = %s\n", strBuf );
-        }
-        else {
-            printf("\aCommand error: vscphlp_getRemoteVariableString on channel 1  Error code=%d\n", rv);
-        }
-    }
-
-
-    // Delete a variable
-    printf("\n\n===== vscphlp_deleteRemoteVariable =====\n");
-    if ( VSCP_ERROR_SUCCESS == 
-            (rv = vscphlp_deleteRemoteVariable( handle1, 
-                                             "test_of_create_variable" ) ) )  {
-        printf( "Command success: vscphlp_deleteRemoteVariable on channel 1\n" );
-    }
-    else {
-        printf("\aCommand error: vscphlp_deleteRemoteVariable on channel 1  Error code=%d\n", rv);
-    }
+    
+    
 
 
     // Save variables marked as persistent
-    printf("\n\n===== vscphlp_saveRemoteVariablesToDisk =====\n");
+    /*printf("\n\n===== vscphlp_saveRemoteVariablesToDisk =====\n");
     if ( VSCP_ERROR_SUCCESS == 
             (rv = vscphlp_saveRemoteVariablesToDisk( handle1, "download", 0, "" ) ) )  {
         printf( "Command success: vscphlp_saveRemoteVariablesToDisk on channel 1\n" );
     }
     else {
         printf("\aCommand error: vscphlp_saveRemoteVariablesToDisk on channel 1  Error code=%d\n", rv);
-    }
+    }*/
     
 #endif
 
@@ -1432,6 +1579,7 @@ int main(int argc, char* argv[])
         printf( "\aError: vscphlp_convertVSCPfromEx\n");
     }
     vscphlp_deleteVSCPevent( pEvent2 );
+    pEvent2 = NULL;
 
     //vscpEventFilter filter;
     vscphlp_clearVSCPFilter( &filter );
@@ -1479,6 +1627,7 @@ int main(int argc, char* argv[])
 
     // Free the event
     vscphlp_deleteVSCPevent( pEvent3 );
+    pEvent3 = NULL;
 
     vscpEventEx ex5;
     if ( VSCP_ERROR_SUCCESS == vscphlp_convertCanalToEventEx( &ex5,
@@ -1533,7 +1682,10 @@ int main(int argc, char* argv[])
 
     // Free the events
     vscphlp_deleteVSCPevent( pEventFrom );
+    pEventFrom = NULL;
+    
     vscphlp_deleteVSCPevent( pEventTo );
+    pEventTo = NULL;
 
     char dataBuf[80];
     if ( VSCP_ERROR_SUCCESS == vscphlp_writeVscpDataToString( pEvent, 
@@ -1608,7 +1760,7 @@ int main(int argc, char* argv[])
 
     // Free the events
     vscphlp_deleteVSCPevent( pEventString1 );
-
+    pEventString1 = NULL;
 
 
     vscpEventEx ex6;
@@ -1620,6 +1772,9 @@ int main(int argc, char* argv[])
     else {
         printf( "\aError: vscphlp_setVscpEventExFromString\n");
     }
+    
+    vscphlp_deleteVSCPevent( pEvent );
+    pEvent = NULL;
 
 
 #endif
@@ -1855,26 +2010,30 @@ int main(int argc, char* argv[])
 
     // Free the event
     vscphlp_deleteVSCPevent( pEventfloat );
-
+    pEventFloat = NULL;
 
     // Free the event
     vscphlp_deleteVSCPevent( pEventMeasurement );
-
+    pEventMeasurement = NULL;    
 
 #endif
 
 
     // -------------------------------------------------------------------------------------------------
+    
 
     // Free the event
+    if ( NULL == pEvent ) printf("pEvent is NULL.\n");
+    printf("Delete pEvent working event.\n");
     vscphlp_deleteVSCPevent( pEvent );
-
+    pEvent = NULL;
 
     printf("\n\n\n");
 
 
     // free data
-    free( e.pdata );
+    printf("Free 'e' working event data.\n");
+    if ( NULL != pEvent) free( e.pdata );
 
     if ( VSCP_ERROR_SUCCESS == vscphlp_close( handle1 ) ) {
         printf( "Command success: vscphlp_close on channel 1\n" );
@@ -1890,5 +2049,5 @@ int main(int argc, char* argv[])
     printf("\n\nHit ENTER to terminate\n");
     (void)getchar();
    
-	return 0;
+    return 0;
 }

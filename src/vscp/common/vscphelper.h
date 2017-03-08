@@ -721,9 +721,23 @@ extern "C" {
                                     const vscpEventEx *pEventEx);
 
     /*!
+     * Create a standard VSCP event
+     * @param ppEvent Pointer to a pointer toa standard VSCP event.
+     * @return True if the event was created successfully, 
+     *              false otherwise.
+     */
+    bool vscp_newVSCPevent(vscpEvent **ppEvent);
+    
+    /*!
       Delete a standard VSCP event
      */
     void vscp_deleteVSCPevent(vscpEvent *pEvent);
+    
+    /*!
+     * Delete standard VSCP event and NULL
+     * @param Pointer to pointer to standard VSCP event.
+     */
+    void vscp_deleteVSCPevent_v2(vscpEvent **pEvent);
 
     /*!
       Delete an Ex event

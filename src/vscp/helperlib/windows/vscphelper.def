@@ -25,7 +25,7 @@ EXPORTS
     vscphlp_quitReceiveLoop
     vscphlp_blockingReceiveEvent
     vscphlp_blockingReceiveEventEx
-	vscphlp_isDataAvailable
+    vscphlp_isDataAvailable
     vscphlp_getStatus
     vscphlp_getStatistics 
     vscphlp_setFilter
@@ -34,35 +34,35 @@ EXPORTS
     vscphlp_getVendorString
     vscphlp_getDriverInfo
     vscphlp_shutDownServer
-    vscphlp_deleteVariable
-    vscphlp_createVariable
-    vscphlp_saveVariablesToDisk
-    vscphlp_getVariableString 
-    vscphlp_setVariableString
-    vscphlp_getVariableBool
-    vscphlp_setVariableBool
-    vscphlp_getVariableInt
-    vscphlp_setVariableInt
-    vscphlp_getVariableLong
-    vscphlp_setVariableLong
-    vscphlp_getVariableDouble
-    vscphlp_setVariableDouble
-    vscphlp_getVariableMeasurement
-    vscphlp_setVariableMeasurement
-    vscphlp_getVariableEvent
-    vscphlp_setVariableEvent
-    vscphlp_getVariableEventEx
-    vscphlp_setVariableEventEx
-    vscphlp_getVariableGUIDString
-    vscphlp_setVariableGUIDString
-    vscphlp_getVariableGUIDArray
-    vscphlp_setVariableGUIDArray
-    vscphlp_getVariableVSCPData
-    vscphlp_setVariableVSCPData
-    vscphlp_getVariableVSCPClass
-    vscphlp_setVariableVSCPClass
-    vscphlp_getVariableVSCPType
-    vscphlp_setVariableVSCPType
+    vscphlp_deleteRemoteVariable
+    vscphlp_createRemoteVariable
+    vscphlp_saveRemoteVariablesToDisk
+    vscphlp_getRemoteVariableString 
+    vscphlp_setRemoteVariableString
+    vscphlp_getRemoteVariableBool
+    vscphlp_setRemoteVariableBool
+    vscphlp_getRemoteVariableInt
+    vscphlp_setRemoteVariableInt
+    vscphlp_getRemoteVariableLong
+    vscphlp_setRemoteVariableLong
+    vscphlp_getRemoteVariableDouble
+    vscphlp_setRemoteVariableDouble
+    vscphlp_getRemoteVariableMeasurement
+    vscphlp_setRemoteVariableMeasurement
+    vscphlp_getRemoteVariableEvent
+    vscphlp_setRemoteVariableEvent
+    vscphlp_getRemoteVariableEventEx
+    vscphlp_setRemoteVariableEventEx
+    vscphlp_getRemoteVariableGUIDString
+    vscphlp_setRemoteVariableGUIDString
+    vscphlp_getRemoteVariableGUIDArray
+    vscphlp_setRemoteVariableGUIDArray
+    vscphlp_getRemoteVariableVSCPData
+    vscphlp_setRemoteVariableVSCPData
+    vscphlp_getRemoteVariableVSCPClass
+    vscphlp_setRemoteVariableVSCPClass
+    vscphlp_getRemoteVariableVSCPType
+    vscphlp_setRemoteVariableVSCPType
     vscphlp_readStringValue
     vscphlp_replaceBackslash
     vscphlp_getVscpPriority
