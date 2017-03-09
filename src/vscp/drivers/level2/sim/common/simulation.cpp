@@ -214,7 +214,7 @@ CSim::open(const char *pUsername,
     int value;
     wxString strName = m_prefix +
             wxString::FromAscii("_NumberOfNodes");
-    if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableInt( strName, &value ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srvLocal.getRemoteVariableInt( strName, &value ) ) {
         m_nNodes = value;
     }
 
@@ -235,26 +235,26 @@ CSim::open(const char *pUsername,
             bool bvalue;
             strName = m_prefix +
                 wxString::FromAscii( "_bLevel2" ) + strIteration;
-            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableBool( strName, &bvalue ) ) {
+            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getRemoteVariableBool( strName, &bvalue ) ) {
                 m_pthreadWork[ i ]->m_bLevel2 = bvalue;
             }
 
             strName = m_prefix +
                 wxString::FromAscii( "_zone" ) + strIteration;
-            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableInt( strName, &value ) ) {
+            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getRemoteVariableInt( strName, &value ) ) {
                 m_pthreadWork[ i ]->m_registers[ SIM_USER_REG_ZONE ] = value;
             }
 
             strName = m_prefix +
                 wxString::FromAscii( "_subzone" ) + strIteration;
-            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableInt( strName, &value ) ) {
+            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getRemoteVariableInt( strName, &value ) ) {
                 m_pthreadWork[ i ]->m_registers[ SIM_USER_REG_SUBZONE ] = value;
             }
 
             cguid guidval;
             strName = m_prefix +
                 wxString::FromAscii( "_guid" ) + strIteration;
-            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableGUID(strName, guidval ) ) {
+            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getRemoteVariableGUID(strName, guidval ) ) {
                 m_pthreadWork[ i ]->m_guid = guidval;
                 memcpy( m_pthreadWork[ i ]->m_registers + VSCP_REG_GUID, guidval.getGUID(), 16 );
             }
@@ -262,50 +262,50 @@ CSim::open(const char *pUsername,
             wxString strvalue;
             strName = m_prefix +
                 wxString::FromAscii( "_path" ) + strIteration;
-            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableString( strName, &strvalue ) ) {
+            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getRemoteVariableValue( strName, strvalue ) ) {
                 m_pthreadWork[ i ]->m_path = strvalue;
             }
 
             strName = m_prefix +
                 wxString::FromAscii( "_interval" ) + strIteration;
-            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableInt( strName, &value ) ) {
+            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getRemoteVariableInt( strName, &value ) ) {
                 m_pthreadWork[ i ]->m_registers[ SIM_USER_REG_INTERVAL ] = value;
             }
 
             strName = m_prefix +
                 wxString::FromAscii( "_unit" ) + strIteration;
-            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableInt( strName, &value ) ) {
+            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getRemoteVariableInt( strName, &value ) ) {
                 m_pthreadWork[ i ]->m_registers[ SIM_USER_REG_UNIT ] = value;
             }
 
             strName = m_prefix +
                 wxString::FromAscii( "_index" ) + strIteration;
-            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableInt( strName, &value ) ) {
+            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getRemoteVariableInt( strName, &value ) ) {
                 m_pthreadWork[ i ]->m_registers[ SIM_USER_REG_INDEX ] = value;
             }
 
             strName = m_prefix +
                 wxString::FromAscii( "_coding" ) + strIteration;
-            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableInt( strName, &value ) ) {
+            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getRemoteVariableInt( strName, &value ) ) {
                 m_pthreadWork[ i ]->m_registers[ SIM_USER_REG_CODING ] = value;
             }
 
             long lvalue;
             strName = m_prefix +
                 wxString::FromAscii( "_measurementclass" ) + strIteration;
-            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableLong( strName, &lvalue ) ) {
+            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getRemoteVariableLong( strName, &lvalue ) ) {
                 m_pthreadWork[ i ]->m_measurementClass = lvalue;
             }
 
             strName = m_prefix +
                 wxString::FromAscii( "_measurementtype" ) + strIteration;
-            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableLong( strName, &lvalue ) ) {
+            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getRemoteVariableLong( strName, &lvalue ) ) {
                 m_pthreadWork[ i ]->m_measurementType = lvalue;
             }
 
             strName = m_prefix +
                 wxString::FromAscii( "_decisionmatrix" ) + strIteration;
-            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableString( strName, &strvalue ) ) {
+            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getRemoteVariableValue( strName, strvalue ) ) {
                 wxStringTokenizer tkz( strvalue, _( "," ) );
 
                 for ( int k = 0; k < ( 8 * SIM_DECISION_MATRIX_ROWS ); k++ ) {

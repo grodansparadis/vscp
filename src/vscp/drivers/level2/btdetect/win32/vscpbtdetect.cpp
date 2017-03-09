@@ -586,39 +586,39 @@ void *CVSCPBTDetectWrkTread::Entry()
 
     int intvalue;
     bool bvalue;
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableInt( m_pObj->m_prefix + _( "_pausetime" ), &intvalue ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableInt( m_pObj->m_prefix + _( "_pausetime" ), &intvalue ) ) {
         if ( intvalue >= 0 ) pausTime = intvalue;
     }
 
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableInt( m_pObj->m_prefix + _( "_zone" ), &intvalue ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableInt( m_pObj->m_prefix + _( "_zone" ), &intvalue ) ) {
         zone = intvalue;
     }
 
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableInt( m_pObj->m_prefix + _( "_subzone" ), &intvalue ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableInt( m_pObj->m_prefix + _( "_subzone" ), &intvalue ) ) {
         subzone = intvalue;
     }
 
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableInt( m_pObj->m_prefix + _( "_detectindex" ), &intvalue ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableInt( m_pObj->m_prefix + _( "_detectindex" ), &intvalue ) ) {
         detectIndex = intvalue;
     }
 
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableInt( m_pObj->m_prefix + _( "_detectzone" ), &intvalue ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableInt( m_pObj->m_prefix + _( "_detectzone" ), &intvalue ) ) {
         detectZone = intvalue;
     }
 
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableInt( m_pObj->m_prefix + _( "_detectsubzone" ), &intvalue ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableInt( m_pObj->m_prefix + _( "_detectsubzone" ), &intvalue ) ) {
         detectSubzone = intvalue;
     }
 
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableBool( m_pObj->m_prefix + _( "_send_token_activity" ), &bvalue ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableBool( m_pObj->m_prefix + _( "_send_token_activity" ), &bvalue ) ) {
         bSendTokenActivity = bvalue;
     }
 
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableBool( m_pObj->m_prefix + _( "_send_detect" ), &bvalue ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableBool( m_pObj->m_prefix + _( "_send_detect" ), &bvalue ) ) {
         bSendDetect = bvalue;
     }
 
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableBool( m_pObj->m_prefix + _( "_disable_radio_detect" ), &bvalue ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableBool( m_pObj->m_prefix + _( "_disable_radio_detect" ), &bvalue ) ) {
         bDisableRadiodetect = bvalue;
     }
 

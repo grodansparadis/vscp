@@ -552,13 +552,13 @@ Cmqttobj::open( const char *pUsername,
     
     *pstrName = m_prefix +
                 wxString::FromAscii("_sessionid");
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( *pstrName, pwrkstr ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableValue( *pstrName, *pwrkstr ) ) {
         m_sessionid = *pwrkstr;
     }
     
     *pstrName = m_prefix +
                     wxString::FromAscii("_type");
-    m_srv.getVariableString( *pstrName, pwrkstr );
+    m_srv.getRemoteVariableValue( *pstrName, *pwrkstr );
 
     // Check for subscribe/publish
     pwrkstr->Trim();
@@ -570,25 +570,25 @@ Cmqttobj::open( const char *pUsername,
 
     *pstrName = m_prefix +
                 wxString::FromAscii("_topic");
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( *pstrName, pwrkstr ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableValue( *pstrName, *pwrkstr ) ) {
         m_topic = *pwrkstr;
     }
 
     *pstrName = m_prefix +
                 wxString::FromAscii("_host");
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( *pstrName, &m_hostMQTT ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableValue( *pstrName, m_hostMQTT ) ) {
         m_hostMQTT = *pwrkstr;
     }
 
     *pstrName = m_prefix +
                 wxString::FromAscii("_username");
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( *pstrName, pwrkstr ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableValue( *pstrName, *pwrkstr ) ) {
         m_usernameMQTT = *pwrkstr;
     }
 
     *pstrName = m_prefix +
                 wxString::FromAscii("_password");
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( *pstrName, &m_passwordMQTT ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableValue( *pstrName, m_passwordMQTT ) ) {
         m_passwordMQTT = *pwrkstr;
     }
 
@@ -596,13 +596,13 @@ Cmqttobj::open( const char *pUsername,
                 wxString::FromAscii("_keepalive");
     int * pint = new int;
     assert( NULL != pint );
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableInt( *pstrName, pint ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableInt( *pstrName, pint ) ) {
         m_keepalive = *pint;
     }
 
     *pstrName = m_prefix +
         wxString::FromAscii( "_qos" );
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableInt( *pstrName, pint ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableInt( *pstrName, pint ) ) {
         m_topic_list[ 0 ].qos = *pint;
     }
     
@@ -610,13 +610,13 @@ Cmqttobj::open( const char *pUsername,
 
     *pstrName = m_prefix +
                 wxString::FromAscii("_filter");
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( *pstrName, pwrkstr ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableValue( *pstrName, *pwrkstr ) ) {
         vscp_readFilterFromString(&m_vscpfilter, *pwrkstr );
     }
 
     *pstrName = m_prefix +
                 wxString::FromAscii("_mask");
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( *pstrName, pwrkstr ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableValue( *pstrName, *pwrkstr ) ) {
         vscp_readMaskFromString(&m_vscpfilter, *pwrkstr );
     }
     
@@ -639,7 +639,7 @@ Cmqttobj::open( const char *pUsername,
     *pstrName = m_prefix +
                 wxString::FromAscii("_simplify");
     if ( VSCP_ERROR_SUCCESS == 
-                        m_srv.getVariableString( *pstrName, pwrkstr ) ) {
+                        m_srv.getRemoteVariableValue( *pstrName, *pwrkstr ) ) {
         m_simplify = *pwrkstr;
     }
     
@@ -651,7 +651,7 @@ Cmqttobj::open( const char *pUsername,
         // simple type
         if ( tkzSimple.HasMoreTokens() ) {
             m_simple_vscpclass = 
-                            vscp_readStringValue(tkzSimple.GetNextToken());
+                            vscp_readStringValue( tkzSimple.GetNextToken() );
         }
         
         switch ( m_simple_vscpclass ) {
@@ -661,7 +661,7 @@ Cmqttobj::open( const char *pUsername,
                 // simple vscp-type
                 if ( tkzSimple.HasMoreTokens() ) {
                     m_simple_vscptype = 
-                        vscp_readStringValue(tkzSimple.GetNextToken());
+                        vscp_readStringValue( tkzSimple.GetNextToken() );
                 }
                 
                 // simple sensorindex

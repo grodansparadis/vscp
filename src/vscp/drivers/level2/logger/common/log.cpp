@@ -487,8 +487,8 @@ CVSCPLogWrkTread::Entry()
 		wxString::FromAscii("_filter");
 	wxString strMask = m_pLog->m_prefix +
 		wxString::FromAscii("_mask");
-    if ( ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( strFilter, &varFilter ) ) &&
-         ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( strMask, &varMask ) ) ) {
+    if ( ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableValue( strFilter, varFilter ) ) &&
+         ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableValue( strMask, varMask ) ) ) {
 		m_srv.doCmdFilter(varFilter, varMask);
 	}
 
@@ -496,14 +496,14 @@ CVSCPLogWrkTread::Entry()
 	wxString strPath = m_pLog->m_prefix +
 		wxString::FromAscii("_path");
 	wxString varPath;
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( strPath, &varPath ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableValue( strPath, varPath ) ) {
 		m_pLog->m_path = varPath;
 	}
 
 	wxString strRewrite = m_pLog->m_prefix +
 		wxString::FromAscii("_rewrite");
 	bool bOverwrite;
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableBool( strRewrite, &bOverwrite ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableBool( strRewrite, &bOverwrite ) ) {
 		if (bOverwrite) {
 			m_pLog->m_flags |= LOG_FILE_OVERWRITE;
 		} 
@@ -515,7 +515,7 @@ CVSCPLogWrkTread::Entry()
 	bool bVSCPWorksFormat;
 	wxString strVscpWorkdFmt = m_pLog->m_prefix +
 		wxString::FromAscii("_vscpworksfmt");
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableBool( strVscpWorkdFmt, &bVSCPWorksFormat ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableBool( strVscpWorkdFmt, &bVSCPWorksFormat ) ) {
 		if (bVSCPWorksFormat) {
 			m_pLog->m_flags |= LOG_FILE_VSCP_WORKS;
 		} 

@@ -483,12 +483,12 @@ bool CRawEthernet::open( const char *pUsername,
 
     // Interface
     wxString varInterface;
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( m_prefix + _T( "_interface" ), &varInterface ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableValue( m_prefix + _T( "_interface" ), varInterface ) ) {
         m_interface = varInterface;
     }
 
     wxString varLocalMac;
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( m_prefix + _T( "_localmac" ), &varLocalMac ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableValue( m_prefix + _T( "_localmac" ), varLocalMac ) ) {
         varLocalMac.MakeUpper();
         wxStringTokenizer tkz( varLocalMac, ":\n" );
         for ( int i = 0; i < 6; i++ ) {
@@ -501,17 +501,17 @@ bool CRawEthernet::open( const char *pUsername,
     }
 
     wxString strFilter;
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( m_prefix + _T( "_filter" ), &strFilter ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableValue( m_prefix + _T( "_filter" ), strFilter ) ) {
         vscp_readFilterFromString( &m_vscpfilter, strFilter );
     }
 
     wxString strMask;
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( m_prefix + _T( "_mask" ), &strMask ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableValue( m_prefix + _T( "_mask" ), strMask ) ) {
         vscp_readMaskFromString( &m_vscpfilter, strMask );
     }
 
     long subaddr;
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableLong( m_prefix + _T( "_subaddr" ), &subaddr ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableLong( m_prefix + _T( "_subaddr" ), &subaddr ) ) {
         m_subaddr = subaddr;
     }
 
