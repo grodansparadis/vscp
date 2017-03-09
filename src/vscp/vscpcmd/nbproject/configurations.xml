@@ -4,12 +4,16 @@
     <logicalFolder name="src" displayName="src" projectFiles="true" root="../..">
       <logicalFolder name="common" displayName="common" projectFiles="true">
         <itemPath>../../common/crc.c</itemPath>
+        <itemPath>../../common/crc.h</itemPath>
         <itemPath>../../common/crc8.c</itemPath>
         <itemPath>../../common/mongoose.c</itemPath>
       </logicalFolder>
       <logicalFolder name="vscp" displayName="vscp" projectFiles="true">
         <logicalFolder name="common" displayName="common" projectFiles="true">
+          <itemPath>../common/canal.h</itemPath>
           <itemPath>../common/guid.cpp</itemPath>
+          <itemPath>../common/vscp_class.h</itemPath>
+          <itemPath>../common/vscp_type.h</itemPath>
           <itemPath>../common/vscphelper.cpp</itemPath>
           <itemPath>../common/vscpremotetcpif.cpp</itemPath>
         </logicalFolder>

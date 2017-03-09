@@ -899,12 +899,322 @@ public:
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
     int setRemoteVariableVSCPtype( const wxString& name, uint16_t vscp_type);
+    
+    // -------------------------------------------------------------------------
+    
+    /*!
+        Get variable value from timestamp variable
+     
+        @param name of variable.
+        @param vscp_timestamp pointer to uint32_t that get the value of the timestamp variable.
+        @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
+        was successful.
+     */
+    int getRemoteVariableVSCPtimestamp( const wxString& name, uint32_t *vscp_timestamp);
 
 
+    /*!
+        Set variable value from vscp_timestamp.
+     
+        @param name of variable.
+        @param vscp_timestamp as uint32_t to write to variable.
+        @return VSCP_ERROR_SUCCESS if the operation was successful.
+     */
+    int setRemoteVariableVSCPtimestamp( const wxString& name, uint32_t vscp_timestamp);
+
+    /*!
+        Get variable value from datetime variable
+     
+        @param name of variable.
+        @param datetime that get the value of the datetime variable.
+        @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
+        was successful.
+     */
+    int getRemoteVariableDateTime( const wxString& name, wxDateTime& datetime );
+
+
+    /*!
+        Set variable value from datetime.
+     
+        @param name of variable.
+        @param datetime to write to variable.
+        @return VSCP_ERROR_SUCCESS if the operation was successful.
+     */
+    int setRemoteVariableDateTime( const wxString& name, wxDateTime& datetimes );
+    
+    /*!
+        Get variable value from a date variable
+     
+        @param name of variable.
+        @param date that get the value of the date variable.
+        @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
+        was successful.
+     */
+    int getRemoteVariableDate( const wxString& name, wxDateTime& date );
+
+
+    /*!
+        Set variable value from date.
+     
+        @param name of variable.
+        @param date to write to variable.
+        @return VSCP_ERROR_SUCCESS if the operation was successful.
+     */
+    int setRemoteVariableDate( const wxString& name, wxDateTime& date );
+    
+    /*!
+        Get variable value from a time variable
+     
+        @param name of variable.
+        @param time that get the value of the time variable.
+        @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
+        was successful.
+     */
+    int getRemoteVariableTime( const wxString& name, wxDateTime& time );
+
+
+    /*!
+        Set variable value from time.
+     
+        @param name of variable.
+        @param time to write to variable.
+        @return VSCP_ERROR_SUCCESS if the operation was successful.
+     */
+    int setRemoteVariableTime( const wxString& name, wxDateTime& time );
+    
+    
+    /*!
+        Get variable value from a base64 ENCODED blob variable
+     
+        @param name of variable.
+        @param blob that get the value of the BASE64 encoded blob variable.
+        @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
+        was successful.
+     */
+    int getRemoteVariableBlob( const wxString& name, wxString& blob );
+
+
+    /*!
+        Set variable value from BASE64 encoded  blob.
+     
+        @param name of variable.
+        @param BASE64 encoded blob to write to variable.
+        @return VSCP_ERROR_SUCCESS if the operation was successful.
+     */
+    int setRemoteVariableBlob( const wxString& name, wxString& blob );
+    
+    
+    /*!
+        Get variable value from a base64 ENCODED MIME variable
+     
+        @param name of variable.
+        @param MIME data that get the value of the BASE64 encoded MIME variable.
+        @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
+        was successful.
+     */
+    int getRemoteVariableMIME( const wxString& name, wxString& mime );
+
+
+    /*!
+        Set variable value from BASE64 encoded MIME data.
+     
+        @param name of variable.
+        @param BASE64 encoded MIME data to write to variable.
+        @return VSCP_ERROR_SUCCESS if the operation was successful.
+     */
+    int setRemoteVariableMIME( const wxString& name, wxString& mime );
+    
+    /*!
+        Get variable value from a base64 ENCODED HTML variable
+     
+        @param name of variable.
+        @param HTML data that get the value of the BASE64 encoded HTML variable.
+        @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
+        was successful.
+     */
+    int getRemoteVariableHTML( const wxString& name, wxString& html );
+
+
+    /*!
+        Set variable value from BASE64 encoded HTML data.
+     
+        @param name of variable.
+        @param BASE64 encoded HTML data to write to variable.
+        @return VSCP_ERROR_SUCCESS if the operation was successful.
+     */
+    int setRemoteVariableHTML( const wxString& name, wxString& html );
+    
+   /*!
+        Get variable value from a base64 ENCODED JavaScript variable
+     
+        @param name of variable.
+        @param JavaScript data that get the value of the BASE64 encoded JavaScript variable.
+        @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
+        was successful.
+     */
+    int getRemoteVariableJavaScript( const wxString& name, wxString& js );
+
+
+    /*!
+        Set variable value from BASE64 encoded JavaScript data.
+     
+        @param name of variable.
+        @param BASE64 encoded JavaScript data to write to variable.
+        @return VSCP_ERROR_SUCCESS if the operation was successful.
+     */
+    int setRemoteVariableJavaScript( const wxString& name, wxString& js );    
+    
+    /*!
+        Get variable value from a base64 ENCODED LUA variable
+     
+        @param name of variable.
+        @param LUA data that get the value of the BASE64 encoded LUA variable.
+        @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
+        was successful.
+     */
+    int getRemoteVariableLUA( const wxString& name, wxString& lua );
+
+
+    /*!
+        Set variable value from BASE64 encoded LUA data.
+     
+        @param name of variable.
+        @param BASE64 encoded LUA data to write to variable.
+        @return VSCP_ERROR_SUCCESS if the operation was successful.
+     */
+    int setRemoteVariableLUA( const wxString& name, wxString& lua );
+    
+    /*!
+        Get variable value from a base64 ENCODED LUARES variable
+     
+        @param name of variable.
+        @param LUARES data that get the value of the BASE64 encoded LUARES variable.
+        @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
+        was successful.
+     */
+    int getRemoteVariableLUARES( const wxString& name, wxString& luares );
+
+
+    /*!
+        Set variable value from BASE64 encoded LUARES data.
+     
+        @param name of variable.
+        @param BASE64 encoded LUARES data to write to variable.
+        @return VSCP_ERROR_SUCCESS if the operation was successful.
+     */
+    int setRemoteVariableLUARES( const wxString& name, wxString& luares );    
+    
+    
+    /*!
+        Get variable value from a base64 ENCODED UX1 variable
+     
+        @param name of variable.
+        @param UX1 data that get the value of the BASE64 encoded UX1 variable.
+        @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
+        was successful.
+     */
+    int getRemoteVariableUX1( const wxString& name, wxString& ux1 );
+
+
+    /*!
+        Set variable value from BASE64 encoded UX1 data.
+     
+        @param name of variable.
+        @param BASE64 encoded UX1 data to write to variable.
+        @return VSCP_ERROR_SUCCESS if the operation was successful.
+     */
+    int setRemoteVariableUX1( const wxString& name, wxString& ux1 ); 
+    
+    
+    /*!
+        Get variable value from a base64 ENCODED DM row variable
+     
+        @param name of variable.
+        @param DM row data that get the value of the BASE64 encoded DM row variable.
+        @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
+        was successful.
+     */
+    int getRemoteVariableDMROW( const wxString& name, wxString& dmrow );
+
+
+    /*!
+        Set variable value from BASE64 encoded DM row data.
+     
+        @param name of variable.
+        @param BASE64 encoded DM row data to write to variable.
+        @return VSCP_ERROR_SUCCESS if the operation was successful.
+     */
+    int setRemoteVariableDMROW( const wxString& name, wxString& dmrow );
+    
+    /*!
+        Get variable value from a base64 ENCODED driver variable
+     
+        @param name of variable.
+        @param Driver data that get the value of the BASE64 encoded driver variable.
+        @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
+        was successful.
+     */
+    int getRemoteVariableDriver( const wxString& name, wxString& drv );
+
+
+    /*!
+        Set variable value from BASE64 encoded driver data.
+     
+        @param name of variable.
+        @param BASE64 encoded driver data to write to variable.
+        @return VSCP_ERROR_SUCCESS if the operation was successful.
+     */
+    int setRemoteVariableDriver( const wxString& name, wxString& drv );
+    
+    /*!
+        Get variable value from a base64 ENCODED user variable
+     
+        @param name of variable.
+        @param User data that get the value of the BASE64 encoded user variable.
+        @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
+        was successful.
+     */
+    int getRemoteVariableUser( const wxString& name, wxString& user );
+
+
+    /*!
+        Set variable value from BASE64 encoded user data.
+     
+        @param name of variable.
+        @param BASE64 encoded user data to write to variable.
+        @return VSCP_ERROR_SUCCESS if the operation was successful.
+     */
+    int setRemoteVariableUser( const wxString& name, wxString& user );
+    
+    /*!
+        Get variable value from a base64 ENCODED filter variable
+     
+        @param name of variable.
+        @param Filter data that get the value of the BASE64 encoded filter variable.
+        @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
+        was successful.
+     */
+    int getRemoteVariableFilter( const wxString& name, wxString& filter );
+
+
+    /*!
+        Set variable value from BASE64 encoded filter data.
+     
+        @param name of variable.
+        @param BASE64 encoded filter data to write to variable.
+        @return VSCP_ERROR_SUCCESS if the operation was successful.
+     */
+    int setRemoteVariableFilter( const wxString& name, wxString& filter );
+    
+    
     // ------------------------------------------------------------------------
     //                           R E G I S T E R S
     // ------------------------------------------------------------------------
 
+    
+    
+    
+    
     /*!
         Read a level II register
      

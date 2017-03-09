@@ -2546,10 +2546,435 @@ int VscpRemoteTcpIf::setRemoteVariableVSCPtype( const wxString& name,
     return setRemoteVariableValue( name, strValue );
 }
 
+// ----
+
+///////////////////////////////////////////////////////////////////////////////
+// getRemoteVariableVSCPtimestamp
+//
+
+int VscpRemoteTcpIf::getRemoteVariableVSCPtimestamp( const wxString& name, 
+                                                        uint32_t *vscp_timestamp )
+{
+    int rv;
+    wxString strValue;
+    
+    // Check pointer
+    if ( NULL == vscp_timestamp ) return VSCP_ERROR_PARAMETER;
+    
+    if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, strValue ) ) ) {
+        return rv;
+    }
+
+    unsigned long longVal;
+    strValue.ToULong( &longVal );
+    *vscp_timestamp = (uint32_t)longVal;
+
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setRemoteVariableVSCPtimestamp
+//
+
+int VscpRemoteTcpIf::setRemoteVariableVSCPtimestamp( const wxString& name, 
+                                                        uint32_t vscp_timestamp)
+{
+    wxString strValue;
+
+    strValue.Printf( _("%lu"), vscp_timestamp );
+    return setRemoteVariableValue( name, strValue );
+}
 
 
+///////////////////////////////////////////////////////////////////////////////
+// getRemoteVariableDateTime
+//
+
+int VscpRemoteTcpIf::getRemoteVariableDateTime( const wxString& name, wxDateTime& datetime )
+{
+    int rv;
+    wxString strValue;
+         
+    if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, strValue ) ) ) {
+        return rv;
+    }
+
+    datetime.ParseDateTime( strValue );
+
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setRemoteVariableDateTime
+// 
+
+int VscpRemoteTcpIf::setRemoteVariableDateTime( const wxString& name, wxDateTime& datetime )
+{
+    wxString strValue;
+
+    strValue = datetime.FormatISOCombined();
+    return setRemoteVariableValue( name, strValue );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getRemoteVariableDate
+//
+
+int VscpRemoteTcpIf::getRemoteVariableDate( const wxString& name, wxDateTime& date )
+{
+    int rv;
+    wxString strValue;
+         
+    if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, strValue ) ) ) {
+        return rv;
+    }
+
+    date.ParseISODate( strValue );
+
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setRemoteVariableDate
+//
+
+int VscpRemoteTcpIf::setRemoteVariableDate( const wxString& name, wxDateTime& date )
+{
+    wxString strValue;
+
+    strValue = date.FormatISODate();
+    return setRemoteVariableValue( name, strValue );
+}
+    
+///////////////////////////////////////////////////////////////////////////////
+// getRemoteVariableTime
+//
+
+int VscpRemoteTcpIf::getRemoteVariableTime( const wxString& name, wxDateTime& time )
+{
+    int rv;
+    wxString strValue;
+         
+    if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, strValue ) ) ) {
+        return rv;
+    }
+
+    time.ParseISOTime( strValue );
+
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setRemoteVariableTime
+//
+
+int VscpRemoteTcpIf::setRemoteVariableTime( const wxString& name, wxDateTime& time )
+{
+    wxString strValue;
+
+    strValue = time.FormatISOTime();
+    return setRemoteVariableValue( name, strValue );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getRemoteVariableBlob
+//
+
+int VscpRemoteTcpIf::getRemoteVariableBlob( const wxString& name, wxString& blob )
+{
+    int rv;
+    wxString strValue;
+         
+    if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, blob ) ) ) {
+        return rv;
+    }
+
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setRemoteVariableBlob
+//
+
+int VscpRemoteTcpIf::setRemoteVariableBlob( const wxString& name, wxString& blob )
+{
+    wxString strValue;
+
+    return setRemoteVariableValue( name, blob );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getRemoteVariableMIME
+//
+
+int VscpRemoteTcpIf::getRemoteVariableMIME( const wxString& name, wxString& mime )
+{
+    int rv;
+    wxString strValue;
+         
+    if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, mime ) ) ) {
+        return rv;
+    }
+
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setRemoteVariableMIME
+//
+
+int VscpRemoteTcpIf::setRemoteVariableMIME( const wxString& name, wxString& mime )
+{
+    wxString strValue;
+
+    return setRemoteVariableValue( name, mime );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getRemoteVariableHTML
+//
+
+int VscpRemoteTcpIf::getRemoteVariableHTML( const wxString& name, wxString& html )
+{
+    int rv;
+    wxString strValue;
+         
+    if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, html ) ) ) {
+        return rv;
+    }
+
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setRemoteVariableHTML
+//
+
+int VscpRemoteTcpIf::setRemoteVariableHTML( const wxString& name, wxString& html )
+{
+    wxString strValue;
+
+    return setRemoteVariableValue( name, html );
+}
+    
+///////////////////////////////////////////////////////////////////////////////
+// getRemoteVariableJavaScript
+//
+
+int VscpRemoteTcpIf::getRemoteVariableJavaScript( const wxString& name, wxString& js )
+{
+    int rv;
+    wxString strValue;
+         
+    if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, js ) ) ) {
+        return rv;
+    }
+
+    return VSCP_ERROR_SUCCESS;
+}
 
 
+///////////////////////////////////////////////////////////////////////////////
+// setRemoteVariableJavaScript
+//
+
+int VscpRemoteTcpIf::setRemoteVariableJavaScript( const wxString& name, wxString& js )
+{
+    wxString strValue;
+
+    return setRemoteVariableValue( name, js );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vgetRemoteVariableLUA
+//
+
+int VscpRemoteTcpIf::getRemoteVariableLUA( const wxString& name, wxString& lua )
+{
+    int rv;
+    wxString strValue;
+         
+    if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, lua ) ) ) {
+        return rv;
+    }
+
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setRemoteVariableLUA
+//
+
+int VscpRemoteTcpIf::setRemoteVariableLUA( const wxString& name, wxString& lua )
+{
+    wxString strValue;
+
+    return setRemoteVariableValue( name, lua );
+}
+    
+///////////////////////////////////////////////////////////////////////////////
+// getRemoteVariableLUARES
+//
+
+int VscpRemoteTcpIf::getRemoteVariableLUARES( const wxString& name, wxString& luares )
+{
+    int rv;
+    wxString strValue;
+         
+    if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, luares ) ) ) {
+        return rv;
+    }
+
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setRemoteVariableLUARES
+//
+
+int VscpRemoteTcpIf::setRemoteVariableLUARES( const wxString& name, wxString& luares )
+{
+    wxString strValue;
+
+    return setRemoteVariableValue( name, luares );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getRemoteVariableUX1
+//
+
+int VscpRemoteTcpIf::getRemoteVariableUX1( const wxString& name, wxString& ux1 )
+{
+    int rv;
+    wxString strValue;
+         
+    if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, ux1 ) ) ) {
+        return rv;
+    }
+
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setRemoteVariableUX1
+//
+
+int VscpRemoteTcpIf::setRemoteVariableUX1( const wxString& name, wxString& ux1 )
+{
+    wxString strValue;
+
+    return setRemoteVariableValue( name, ux1 );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getRemoteVariableDMROW
+//
+
+int VscpRemoteTcpIf::getRemoteVariableDMROW( const wxString& name, wxString& dmrow )
+{
+    int rv;
+    wxString strValue;
+         
+    if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, dmrow ) ) ) {
+        return rv;
+    }
+
+    return VSCP_ERROR_SUCCESS;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// setRemoteVariableDMROW
+//
+
+int VscpRemoteTcpIf::setRemoteVariableDMROW( const wxString& name, wxString& dmrow )
+{
+    wxString strValue;
+
+    return setRemoteVariableValue( name, dmrow );
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// getRemoteVariableDriver
+//
+
+int VscpRemoteTcpIf::getRemoteVariableDriver( const wxString& name, wxString& drv )
+{
+    int rv;
+    wxString strValue;
+         
+    if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, drv ) ) ) {
+        return rv;
+    }
+
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setRemoteVariableDriver
+//
+
+int VscpRemoteTcpIf::setRemoteVariableDriver( const wxString& name, wxString& drv )
+{
+    wxString strValue;
+
+    return setRemoteVariableValue( name, drv );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getRemoteVariableUser
+//
+
+int VscpRemoteTcpIf::getRemoteVariableUser( const wxString& name, wxString& user )
+{
+    int rv;
+    wxString strValue;
+         
+    if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, user ) ) ) {
+        return rv;
+    }
+
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setRemoteVariableUser
+//
+
+int VscpRemoteTcpIf::setRemoteVariableUser( const wxString& name, wxString& user )
+{
+    wxString strValue;
+
+    return setRemoteVariableValue( name, user );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getRemoteVariableFilter
+//
+
+int VscpRemoteTcpIf::getRemoteVariableFilter( const wxString& name, wxString& filter )
+{
+    int rv;
+    wxString strValue;
+         
+    if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, filter ) ) ) {
+        return rv;
+    }
+
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setRemoteVariableFilter
+//
+
+int VscpRemoteTcpIf::setRemoteVariableFilter( const wxString& name, wxString& filter )
+{
+    wxString strValue;
+
+    return setRemoteVariableValue( name, filter );
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////

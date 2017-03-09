@@ -1591,6 +1591,9 @@ extern "C" int vscphlp_setRemoteVariableVSCPType( long handle, const char *pName
 
 
 
+
+
+
 // * * * * *    G E N E R A L   * * * * *
 
 
@@ -2537,7 +2540,13 @@ extern "C" int vscphlp_setVscpEventExFromString( vscpEventEx *pEvent,
 }
 
 
+
+
+
 // * * * * *    D A T A C O D I N G   * * * * *
+
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
