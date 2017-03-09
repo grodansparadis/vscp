@@ -175,17 +175,17 @@ Csocketcan::open(const char *pUsername,
 	wxString str;
 	wxString strName = m_prefix +
 			wxString::FromAscii("_interface");
-	m_srv.getVariableString(strName, &m_interface);
+	m_srv.getRemoteVariableValue(strName, m_interface);
 
 	strName = m_prefix +
 			wxString::FromAscii("_filter");
-	if (m_srv.getVariableString(strName, &str)) {
+	if (m_srv.getRemoteVariableValue(strName, str)) {
 		vscp_readFilterFromString(&m_vscpfilter, str);
 	}
 
 	strName = m_prefix +
 			wxString::FromAscii("_mask");
-	if (m_srv.getVariableString(strName, &str)) {
+	if (m_srv.getRemoteVariableValue(strName, str)) {
 		vscp_readMaskFromString(&m_vscpfilter, str);
 	}
 	

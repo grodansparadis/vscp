@@ -104,165 +104,165 @@ CWire1::open(const char *pUsername,
                 const char *pPrefix,
                 const char *pConfig)
 {
-	bool rv = true;
-	wxString wxstr = wxString::FromAscii(pConfig);
+    bool rv = true;
+    wxString wxstr = wxString::FromAscii(pConfig);
 
-	m_username = wxString::FromAscii(pUsername);
-	m_password = wxString::FromAscii(pPassword);
-	m_host = wxString::FromAscii(pHost);
-	m_port = port;
-	m_prefix = wxString::FromAscii(pPrefix);
+    m_username = wxString::FromAscii(pUsername);
+    m_password = wxString::FromAscii(pPassword);
+    m_host = wxString::FromAscii(pHost);
+    m_port = port;
+    m_prefix = wxString::FromAscii(pPrefix);
 
-	// Parse the configuration string. It should
-	// have the following form
-	// path
-	// 
-	wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";\n"));
+    // Parse the configuration string. It should
+    // have the following form
+    // path
+    // 
+    wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";\n"));
 
-	// Check for # of sensors in configuration string
-	if (tkz.HasMoreTokens()) {
-		// Path
-		m_nSensors = vscp_readStringValue(tkz.GetNextToken());
-	}
+    // Check for # of sensors in configuration string
+    if (tkz.HasMoreTokens()) {
+        // Path
+	m_nSensors = vscp_readStringValue(tkz.GetNextToken());
+    }
 
-	// First log on to the host and get configuration 
-	// variables
+    // First log on to the host and get configuration 
+    // variables
 
-	if ( VSCP_ERROR_SUCCESS != m_srv.doCmdOpen( m_host,
+    if ( VSCP_ERROR_SUCCESS != m_srv.doCmdOpen( m_host,
                                                     m_username,
                                                     m_password ) ) {
-		syslog(LOG_ERR,
-				"%s",
-				(const char *) "Unable to connect to VSCP TCP/IP interface. Terminating!");
-		return false;
-	}
+        syslog( LOG_ERR,
+                    "%s",
+                    (const char *) "Unable to connect to VSCP TCP/IP interface. Terminating!");
+                    return false;
+    }
 
-	// Find the channel id
-	uint32_t ChannelID;
-	m_srv.doCmdGetChannelID(&ChannelID);
+    // Find the channel id
+    uint32_t ChannelID;
+    m_srv.doCmdGetChannelID(&ChannelID);
 
-	// The server should hold configuration data for each sensor
-	// we want to monitor.
-	// 
-	// We look for 
-	//
-	//	 _numberofsensors - This is the number of sensors 
-	// 	   that the driver is supposed
-	//	   to read. Sensors are numbered staring with zero. 
-	//
-	//   _guid[n] - GUID for sensor n. guid0, guid1, guid2 etc. If not
-	//     give the 1wire guid + the sensor id is used.
-	//
-	//	 _path[n] - Path to value for the sensor value file
-	//				/sys/bus/w1/devices/10-00080192afa8/w1_slave
-	//	 		 
-	//   _interval[n]  - Interval in Seconds the event should be sent out. 
-	//						Zero disables.   
-	//
+    // The server should hold configuration data for each sensor
+    // we want to monitor.
+    // 
+    // We look for 
+    //
+    //	 _numberofsensors - This is the number of sensors 
+    // 	   that the driver is supposed
+    //	   to read. Sensors are numbered staring with zero. 
+    //
+    //   _guid[n] - GUID for sensor n. guid0, guid1, guid2 etc. If not
+    //     give the 1wire guid + the sensor id is used.
+    //
+    //	 _path[n] - Path to value for the sensor value file
+    //				/sys/bus/w1/devices/10-00080192afa8/w1_slave
+    //	 		 
+    //   _interval[n]  - Interval in Seconds the event should be sent out. 
+    //						Zero disables.   
+    //
     //   _unit[n] - 0=Kelvin, 1=Celsius (default), 2=Fahrenheit 
-	//
-	//   _index[n] - Sensorindex 0-7
-	//
+    //
+    //   _index[n] - Sensorindex 0-7
+    //
 
-	// Get configuration data
-	int varNumberOfSensors = 0;
+    // Get configuration data
+    int varNumberOfSensors = 0;
 
-	wxString strNumberOfSensors = m_prefix +
-			wxString::FromAscii("_numberofsensors");
+    wxString strNumberOfSensors = m_prefix +
+                wxString::FromAscii("_numberofsensors");
 
-	if ( !m_srv.getVariableInt(strNumberOfSensors, &varNumberOfSensors ) ) {	
-		// We use default 1 or config parameter supplied
-	}
+    if ( !m_srv.getRemoteVariableInt(strNumberOfSensors, &varNumberOfSensors ) ) {	
+        // We use default 1 or config parameter supplied
+    }
 
-	// Read in the configuration values for each sensor
-	for (int i = 0; i < varNumberOfSensors; i++) {
+    // Read in the configuration values for each sensor
+    for (int i = 0; i < varNumberOfSensors; i++) {
 
-		wxString strIteration;
-		strIteration.Printf(_("%d"), i);
-		strIteration.Trim();
+        wxString strIteration;
+        strIteration.Printf(_("%d"), i);
+        strIteration.Trim();
 
-		CWrkTread *pthreadWork = new CWrkTread();
-		if (NULL != pthreadWork) {
+        CWrkTread *pthreadWork = new CWrkTread();
+        if ( NULL != pthreadWork ) {
 			
-			// Get sample interval
-			wxString strVariableName = m_prefix +
-					wxString::FromAscii("_interval") + strIteration;
-			if (VSCP_ERROR_SUCCESS == m_srv.getVariableInt(strVariableName, &pthreadWork->m_interval)) {
-				// Node need to log error as optional
-			}
-			
-			// Disabled if interval is zero
-			if ( 0 == pthreadWork->m_interval ) continue;
+            // Get sample interval
+            wxString strVariableName = m_prefix +
+                        wxString::FromAscii("_interval") + strIteration;
+            if (VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableInt(strVariableName, &pthreadWork->m_interval)) {
+                // Node need to log error as optional
+            }
 
-			// Get the path
-			strVariableName = m_prefix +
-					wxString::FromAscii("_path") + strIteration;
-			
-			if ( VSCP_ERROR_SUCCESS != m_srv.getVariableString(strVariableName, &pthreadWork->m_path)) {
-				syslog(LOG_ERR,
-						"%s prefix=%s i=%d",
-						(const char *) "Failed to read variable _path.",
-						(const char *)m_prefix.ToAscii(),
-						i);
-			}
+            // Disabled if interval is zero
+            if (0 == pthreadWork->m_interval) continue;
 
-			// Get GUID
-			strVariableName = m_prefix +
-					wxString::FromAscii("_guid") + strIteration;
-			if (!m_srv.getVariableGUID(strVariableName, pthreadWork->m_guid)) {
-				// Node need to log error as optional
-			}
+            // Get the path
+            strVariableName = m_prefix +
+                    wxString::FromAscii("_path") + strIteration;
 
-			// Get unit
-			strVariableName = m_prefix +
-					wxString::FromAscii("_unit") + strIteration;
-			if ( VSCP_ERROR_SUCCESS != m_srv.getVariableInt(strVariableName, &pthreadWork->m_unit)) {
-				// Node need to log error as optional
-			}
-			
-			// Check read unit value
-			if ( pthreadWork->m_unit > 3 ) pthreadWork->m_unit = DEFAULT_UNIT; // Celsius
-			
-			// Get index
-			strVariableName = m_prefix +
-					wxString::FromAscii("_index") + strIteration;
-			if ( VSCP_ERROR_SUCCESS != m_srv.getVariableInt(strVariableName, &pthreadWork->m_index)) {
-				// Node need to log error as optional
-			}
-            
+            if (VSCP_ERROR_SUCCESS != m_srv.getRemoteVariableValue(strVariableName, pthreadWork->m_path)) {
+                syslog(LOG_ERR,
+                        "%s prefix=%s i=%d",
+                        (const char *) "Failed to read variable _path.",
+                        (const char *) m_prefix.ToAscii(),
+                        i);
+            }
+
+            // Get GUID
+            strVariableName = m_prefix +
+                    wxString::FromAscii("_guid") + strIteration;
+            if (!m_srv.getRemoteVariableGUID(strVariableName, pthreadWork->m_guid)) {
+                // Node need to log error as optional
+            }
+
+            // Get unit
+            strVariableName = m_prefix +
+                    wxString::FromAscii("_unit") + strIteration;
+            if (VSCP_ERROR_SUCCESS != m_srv.getRemoteVariableInt(strVariableName, &pthreadWork->m_unit)) {
+                // Node need to log error as optional
+            }
+
+            // Check read unit value
+            if (pthreadWork->m_unit > 3) pthreadWork->m_unit = DEFAULT_UNIT; // Celsius
+
+            // Get index
+            strVariableName = m_prefix +
+                    wxString::FromAscii("_index") + strIteration;
+            if (VSCP_ERROR_SUCCESS != m_srv.getRemoteVariableInt(strVariableName, &pthreadWork->m_index)) {
+                // Node need to log error as optional
+            }
+
             // Check read index value
-			if ( pthreadWork->m_index > 7 ) pthreadWork->m_index = 0;
-            
+            if (pthreadWork->m_index > 7) pthreadWork->m_index = 0;
+
             // Get coding
-			strVariableName = m_prefix +
-					wxString::FromAscii("_coding") + strIteration;
-			if ( VSCP_ERROR_SUCCESS != m_srv.getVariableInt( strVariableName, &pthreadWork->m_coding)) {
-				// Node need to log error as optional
-			}
-            
+            strVariableName = m_prefix +
+                    wxString::FromAscii("_coding") + strIteration;
+            if (VSCP_ERROR_SUCCESS != m_srv.getRemoteVariableInt(strVariableName, &pthreadWork->m_coding)) {
+                // Node need to log error as optional
+            }
+
             // Check read coding value
-			if ( pthreadWork->m_coding > 2 ) pthreadWork->m_coding = 0;
+            if (pthreadWork->m_coding > 2) pthreadWork->m_coding = 0;
 
-			// start the workerthread
-			pthreadWork->m_pObj = this;
-			pthreadWork->Create();
-			pthreadWork->Run();
+            // start the workerthread
+            pthreadWork->m_pObj = this;
+            pthreadWork->Create();
+            pthreadWork->Run();
 
-		}
-		else {
-			syslog(LOG_ERR,
-					"%s prefix=%s i=%d",
-					(const char *) "Failed to start workerthread.",
-					(const char *)m_prefix.ToAscii(),
-					i);
-			rv = false;
-		}
-	}
+        } 
+        else {
+            syslog(LOG_ERR,
+                    "%s prefix=%s i=%d",
+                    (const char *) "Failed to start workerthread.",
+                    (const char *) m_prefix.ToAscii(),
+                    i);
+            rv = false;
+        }
+    }
 
-	// Close the channel
-	m_srv.doCmdClose();
+    // Close the channel
+    m_srv.doCmdClose();
 
-	return rv;
+    return rv;
 }
 
 
@@ -271,13 +271,13 @@ CWire1::open(const char *pUsername,
 //
 
 void
-CWire1::close(void)
+CWire1::close( void ) 
 {
-	// Do nothing if already terminated
-	if (m_bQuit) return;
+    // Do nothing if already terminated
+    if (m_bQuit) return;
 
-	m_bQuit = true; // terminate the thread
-	wxSleep(1); // Give the thread some time to terminate
+    m_bQuit = true; // terminate the thread
+    wxSleep(1); // Give the thread some time to terminate
 
 }
 
@@ -286,13 +286,13 @@ CWire1::close(void)
 //
 
 bool 
-CWire1::addEvent2SendQueue(const vscpEvent *pEvent)
+CWire1::addEvent2SendQueue(const vscpEvent *pEvent) 
 {
     m_mutexSendQueue.Lock();
-	//m_sendQueue.Append((vscpEvent *)pEvent);
-    m_sendList.push_back((vscpEvent *)pEvent);
-	m_semSendQueue.Post();
-	m_mutexSendQueue.Unlock();
+    //m_sendQueue.Append((vscpEvent *)pEvent);
+    m_sendList.push_back((vscpEvent *) pEvent);
+    m_semSendQueue.Post();
+    m_mutexSendQueue.Unlock();
     return true;
 }
 
@@ -302,14 +302,14 @@ CWire1::addEvent2SendQueue(const vscpEvent *pEvent)
 //                           Workerthread
 //////////////////////////////////////////////////////////////////////
 
-CWrkTread::CWrkTread()
+CWrkTread::CWrkTread() 
 {
-	m_pObj = NULL;
-	m_path.Empty();
-	m_guid.clear(); // Interface GUID
-	m_interval = DEFAULT_INTERVAL; 
+    m_pObj = NULL;
+    m_path.Empty();
+    m_guid.clear(); // Interface GUID
+    m_interval = DEFAULT_INTERVAL;
     m_index = 0;
-	m_unit = DEFAULT_UNIT;
+    m_unit = DEFAULT_UNIT;
     m_coding = DEFAULT_CODING;
 }
 
@@ -324,97 +324,97 @@ CWrkTread::~CWrkTread()
 //
 
 void *
-CWrkTread::Entry()
+CWrkTread::Entry() 
 {
-	// Check pointers
-	if (NULL == m_pObj) return NULL;
-	
-	while (!TestDestroy() && !m_pObj->m_bQuit) {
-        
+    // Check pointers
+    if (NULL == m_pObj) return NULL;
+
+    while (!TestDestroy() && !m_pObj->m_bQuit) {
+
         // Open the file
-        if ( NULL == ( m_pFile = fopen( m_path.mbc_str() , "r") ) ) {
+        if (NULL == (m_pFile = fopen(m_path.mbc_str(), "r"))) {
             syslog(LOG_ERR,
                     "%s",
                     (const char *) "Workerthread. File to open 1-wire data file. Terminating!");
 
             return NULL;
         }
-        
+
         // Go to beginning
-        fseek( m_pFile, SEEK_SET, 0 );
+        fseek(m_pFile, SEEK_SET, 0);
 
         // Read line 1
-		if ( NULL == fgets( m_line1, sizeof( m_line1 )-1, m_pFile ) ) {
-						
-            // Close the file
-            fclose (m_pFile);
-    
-			syslog(LOG_ERR,
-                    "%s",
-                    (const char *) "Workerthread. Failed to read 1-wire data from file.");
-			
-			wxSleep( 2 );   // We sleep before trying again.
-			continue;       // Try again
-		}
-	
-		// Read line 2
-		if ( NULL == fgets( m_line2, sizeof( m_line2 )-1, m_pFile ) ) {
-						
-            // Close the file
-            fclose (m_pFile);
-            
-			syslog(LOG_ERR,
-                    "%s",
-                    (const char *) "Workerthread. Failed to read 1-wire data from file.");
-            
-			wxSleep( 2 );   // We sleep before trying again.
-			continue;       // Try again
-		}
+        if (NULL == fgets(m_line1, sizeof ( m_line1) - 1, m_pFile)) {
 
-		
-		// 08 00 4b 46 ff ff 0d 10 ff : crc=ff YES
-		sscanf( m_line1, "%02x %02x %02x %02x %02x %02x %02x %02x %02x",
- 				&m_id[0],&m_id[1],&m_id[2],&m_id[3],&m_id[4],&m_id[5],&m_id[6],&m_id[7],&m_id[8] );
-				
-		if ( NULL == strstr( m_line1, "YES" ) ) {
             // Close the file
-            fclose (m_pFile);
-            wxSleep( 2 );   // We sleep before trying again.
-			continue;       // Try again
-		}	
-        
-        // Close the file
-        fclose (m_pFile);
-		
-		sscanf( m_line2, "%*s %*s %*s %*s %*s %*s %*s %*s %*s t=%d", &m_temperature );
-				
-        double val = (double)m_temperature/1000;
-        bool bNegative = false;
-		if (val < 0) {
-            bNegative = true;
-            val = (val< 0) ? -1.0 * val : val;
+            fclose(m_pFile);
+
+            syslog(LOG_ERR,
+                    "%s",
+                    (const char *) "Workerthread. Failed to read 1-wire data from file.");
+
+            wxSleep(2); // We sleep before trying again.
+            continue; // Try again
         }
-        
+
+        // Read line 2
+        if (NULL == fgets(m_line2, sizeof ( m_line2) - 1, m_pFile)) {
+
+            // Close the file
+            fclose(m_pFile);
+
+            syslog(LOG_ERR,
+                    "%s",
+                    (const char *) "Workerthread. Failed to read 1-wire data from file.");
+
+            wxSleep(2); // We sleep before trying again.
+            continue; // Try again
+        }
+
+
+        // 08 00 4b 46 ff ff 0d 10 ff : crc=ff YES
+        sscanf(m_line1, "%02x %02x %02x %02x %02x %02x %02x %02x %02x",
+                &m_id[0], &m_id[1], &m_id[2], &m_id[3], &m_id[4], &m_id[5], &m_id[6], &m_id[7], &m_id[8]);
+
+        if (NULL == strstr(m_line1, "YES")) {
+            // Close the file
+            fclose(m_pFile);
+            wxSleep(2); // We sleep before trying again.
+            continue; // Try again
+        }
+
+        // Close the file
+        fclose(m_pFile);
+
+        sscanf(m_line2, "%*s %*s %*s %*s %*s %*s %*s %*s %*s t=%d", &m_temperature);
+
+        double val = (double) m_temperature / 1000;
+        bool bNegative = false;
+        if (val < 0) {
+            bNegative = true;
+            val = (val < 0) ? -1.0 * val : val;
+        }
+
         // If unit is other than Celsius do conversion
-        if ( 0 == m_unit )  {       // Kelvin?
+        if (0 == m_unit) { // Kelvin?
             val += 273.15;
         }
-        else if ( 2 == m_unit ) {   // Fahrenheit
+        else if (2 == m_unit) { // Fahrenheit
             val = (9.0 / 5.0) * val + 32.0;
         }
-        
-        
+
+
         // If no GUID set we use the 1-wire GUID
-        if ( m_guid.isNULL() ) {
-            m_guid.getFromArray( guid1w );
-            m_guid.setAt( 8, m_id[0] );
-            m_guid.setAt( 9, m_id[1] );
-            m_guid.setAt( 10, m_id[2] );
-            m_guid.setAt( 11, m_id[3] );
-            m_guid.setAt( 12, m_id[4] );
-            m_guid.setAt( 13, m_id[5] );
-            m_guid.setAt( 14, m_id[6] );
-            m_guid.setAt( 15, m_id[7] );
+        if (m_guid.isNULL()) {
+            m_guid.getFromArray(guid1w);
+            m_guid.setAt(8, m_id[0]);
+            m_guid.setAt(9, m_id[1]);
+            m_guid.setAt(10, m_id[2]);
+            m_guid.setAt(11, m_id[3]);
+            m_guid.setAt(12, m_id[4]);
+            m_guid.setAt(13, m_id[5]);
+            m_guid.setAt(14, m_id[6]);
+            m_guid.setAt(15, m_id[7]);
         }
 
         vscpEvent *pEvent = new vscpEvent();
@@ -427,24 +427,23 @@ CWrkTread::Entry()
             pEvent->vscp_class = VSCP_CLASS1_MEASUREMENT;
             pEvent->vscp_type = VSCP_TYPE_MEASUREMENT_TEMPERATURE;
 
-            switch ( m_coding ) {
-                
-                case 0:     // Normalized integer
+            switch (m_coding) {
+
+                case 0: // Normalized integer
                 {
                     uint8_t buf[8];
                     uint16_t size;
-                    if ( vscp_convertFloatToNormalizedEventData( buf,
-                                        &size,
-                                        val,
-                                        m_unit,
-                                        m_index ) ) {
-                            
+                    if (vscp_convertFloatToNormalizedEventData(buf,
+                            &size,
+                            val,
+                            m_unit,
+                            m_index)) {
+
                         pEvent->pdata = new uint8_t[size];
                         if (NULL != pEvent->pdata) {
                             pEvent->sizeData = size;
-                            memcpy( pEvent->pdata, buf, size);
-                        }
-                        else {
+                            memcpy(pEvent->pdata, buf, size);
+                        } else {
                             pEvent->sizeData = 0;
                             pEvent->pdata = NULL;
                         }
@@ -452,7 +451,7 @@ CWrkTread::Entry()
                 }
                 break;
 
-                case 1:     // String
+                case 1: // String
                 {
                     pEvent->sizeData = 8;
                     pEvent->pdata = new uint8_t[8];
@@ -466,10 +465,10 @@ CWrkTread::Entry()
 
                         strcpy((char *) (pEvent->pdata + 1), str.ToAscii());
 
-                    } 
+                    }
                     else {
-                       pEvent->sizeData = 0;
-                       pEvent->pdata = NULL;
+                        pEvent->sizeData = 0;
+                        pEvent->pdata = NULL;
                     }
 
                     // Set data coding
@@ -494,44 +493,44 @@ CWrkTread::Entry()
                             for (int i = 0; i < 6; i++) {
                                 pEvent->pdata[1 + i] = buf[5 - i];
                             }
-                        } 
+                        }
                         else {
                             memcpy(pEvent->pdata + 1, buf, 6);
                         }
 
                         // Set data coding
                         pEvent->pdata[0] = VSCP_DATACODING_SINGLE;
-                    } 
+                    }
                     else {
                         pEvent->sizeData = 0;
                         pEvent->pdata = NULL;
                     }
                 }
                 break;
-                
+
             } // switch
-                
+
 
             if (vscp_doLevel2Filter(pEvent, &m_pObj->m_vscpfilter)) {
                 m_pObj->m_mutexReceiveQueue.Lock();
                 m_pObj->m_receiveList.push_back(pEvent);
                 m_pObj->m_semReceiveQueue.Post();
                 m_pObj->m_mutexReceiveQueue.Unlock();
-            }
+            } 
             else {
                 vscp_deleteVSCPevent(pEvent);
             }
 
-		} // event
+        } // event
 
-		::wxSleep( m_interval ? m_interval : 10 );
-        
-	}
-    
+        ::wxSleep(m_interval ? m_interval : 10);
+
+    }
+
     // Close the file
-	//fclose (m_pFile);
+    //fclose (m_pFile);
 
-	return NULL;
+    return NULL;
 
 }
 

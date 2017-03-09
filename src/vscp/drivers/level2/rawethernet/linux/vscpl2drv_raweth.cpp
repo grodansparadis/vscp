@@ -427,7 +427,7 @@ CRawEthernet::open(const char *pUsername,
 	wxString str;
 	wxString strName = m_prefix +
 			wxString::FromAscii("_interface");
-	if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( strName, &str ) ) {
+	if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableValue( strName, str ) ) {
 		m_interface = str;
 	}
 
@@ -435,7 +435,7 @@ CRawEthernet::open(const char *pUsername,
 	strName = m_prefix +
 			wxString::FromAscii("_localmac");
 	
-	if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( strName, &str ) ) {
+	if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableValue( strName, str ) ) {
 		
 		localMac = str;
 	
@@ -454,13 +454,13 @@ CRawEthernet::open(const char *pUsername,
 
 	strName = m_prefix +
 			wxString::FromAscii("_filter");
-	if (VSCP_ERROR_SUCCESS ==  m_srv.getVariableString(strName, &str)) {
+	if (VSCP_ERROR_SUCCESS ==  m_srv.getRemoteVariableValue(strName, str)) {
 		vscp_readFilterFromString(&m_vscpfilter, str);
 	}
 
 	strName = m_prefix +
 			wxString::FromAscii("_mask");
-	if (VSCP_ERROR_SUCCESS == m_srv.getVariableString(strName, &str)) {
+	if (VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableValue(strName, str)) {
 		vscp_readMaskFromString(&m_vscpfilter, str);
 	}
 
@@ -468,7 +468,7 @@ CRawEthernet::open(const char *pUsername,
     // subaddr
     strName = m_prefix +
         wxString::FromAscii( "_subaddr" );
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( strName, &str ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableValue( strName, str ) ) {
         vscp_readMaskFromString( &m_vscpfilter, str );
     }
 

@@ -163,7 +163,7 @@ Clmsensors::open(const char *pUsername,
 	wxString strNumberOfSensors = m_prefix +
 			wxString::FromAscii("_numberofsensors");
 
-	if (VSCP_ERROR_SUCCESS != m_srv.getVariableInt(strNumberOfSensors, &varNumberOfSensors)) {
+	if (VSCP_ERROR_SUCCESS != m_srv.getRemoteVariableInt(strNumberOfSensors, &varNumberOfSensors)) {
 		// The variable must be available - terminate
 		syslog(LOG_ERR,
 				"%s",
@@ -195,7 +195,7 @@ Clmsensors::open(const char *pUsername,
 			// Get the path
 			wxString strVariableName = m_prefix +
 					wxString::FromAscii("_path") + strIteration;
-			if (VSCP_ERROR_SUCCESS != m_srv.getVariableString(strVariableName, &pthreadWork->m_path)) {
+			if (VSCP_ERROR_SUCCESS != m_srv.getRemoteVariableValue(strVariableName, pthreadWork->m_path)) {
 				syslog(LOG_ERR,
 						"%s prefix=%s i=%d",
 						(const char *) "Failed to read variable _path.",
@@ -206,7 +206,7 @@ Clmsensors::open(const char *pUsername,
 			// Get GUID
 			strVariableName = m_prefix +
 					wxString::FromAscii("_guid") + strIteration;
-			if (VSCP_ERROR_SUCCESS != m_srv.getVariableGUID(strVariableName, pthreadWork->m_guid)) {
+			if (VSCP_ERROR_SUCCESS != m_srv.getRemoteVariableGUID(strVariableName, pthreadWork->m_guid)) {
 				syslog(LOG_ERR,
 						"%s prefix=%s i=%d",
 						(const char *) "Failed to read variable _guid.",
@@ -217,7 +217,7 @@ Clmsensors::open(const char *pUsername,
 			// Get sample interval
 			strVariableName = m_prefix +
 					wxString::FromAscii("_interval") + strIteration;
-			if (VSCP_ERROR_SUCCESS != m_srv.getVariableInt(strVariableName, &pthreadWork->m_interval)) {
+			if (VSCP_ERROR_SUCCESS != m_srv.getRemoteVariableInt(strVariableName, &pthreadWork->m_interval)) {
 				syslog(LOG_ERR,
 						"%s prefix=%s i=%d",
 						(const char *) "Failed to read variable _interval.",
@@ -228,7 +228,7 @@ Clmsensors::open(const char *pUsername,
 			// Get VSCP type
 			strVariableName = m_prefix +
 					wxString::FromAscii("_vscptype") + strIteration;
-			if (VSCP_ERROR_SUCCESS != m_srv.getVariableInt(strVariableName,
+			if (VSCP_ERROR_SUCCESS != m_srv.getRemoteVariableInt(strVariableName,
 					&pthreadWork->m_vscptype)) {
 				syslog(LOG_ERR,
 						"%s prefix=%s i=%d",
@@ -240,7 +240,7 @@ Clmsensors::open(const char *pUsername,
 			// Get measurement coding (first data byte)
 			strVariableName = m_prefix +
 					wxString::FromAscii("_datacoding") + strIteration;
-			if (VSCP_ERROR_SUCCESS != m_srv.getVariableInt(strVariableName,
+			if (VSCP_ERROR_SUCCESS != m_srv.getRemoteVariableInt(strVariableName,
 					&pthreadWork->m_datacoding)) {
 				syslog(LOG_ERR,
 						"%s prefix=%s i=%d",
@@ -252,7 +252,7 @@ Clmsensors::open(const char *pUsername,
 			// Get divide value
 			strVariableName = m_prefix +
 					wxString::FromAscii("_divide") + strIteration;
-			if (VSCP_ERROR_SUCCESS != m_srv.getVariableDouble(strVariableName,
+			if (VSCP_ERROR_SUCCESS != m_srv.getRemoteVariableDouble(strVariableName,
 					&pthreadWork->m_divideValue)) {
 				syslog(LOG_ERR,
 						"%s prefix=%s i=%d",
@@ -264,7 +264,7 @@ Clmsensors::open(const char *pUsername,
 			// Get multiply value
 			strVariableName = m_prefix +
 					wxString::FromAscii("_multiply") + strIteration;
-			if (VSCP_ERROR_SUCCESS != m_srv.getVariableDouble(strVariableName,
+			if (VSCP_ERROR_SUCCESS != m_srv.getRemoteVariableDouble(strVariableName,
 					&pthreadWork->m_multiplyValue)) {
 				syslog(LOG_ERR,
 						"%s prefix=%s i=%d",
@@ -276,7 +276,7 @@ Clmsensors::open(const char *pUsername,
             // Get read offset
 			strVariableName = m_prefix +
 					wxString::FromAscii("_readoffset") + strIteration;
-			if (VSCP_ERROR_SUCCESS != m_srv.getVariableInt(strVariableName,
+			if (VSCP_ERROR_SUCCESS != m_srv.getRemoteVariableInt(strVariableName,
 					&pthreadWork->m_readOffset)) {
 				syslog(LOG_ERR,
 						"%s prefix=%s i=%d",
@@ -288,7 +288,7 @@ Clmsensors::open(const char *pUsername,
             // Get index
 			strVariableName = m_prefix +
 					wxString::FromAscii("_index") + strIteration;
-			if (VSCP_ERROR_SUCCESS != m_srv.getVariableInt(strVariableName,
+			if (VSCP_ERROR_SUCCESS != m_srv.getRemoteVariableInt(strVariableName,
 					&pthreadWork->m_index)) {
 				syslog(LOG_ERR,
 						"%s prefix=%s i=%d",
@@ -300,7 +300,7 @@ Clmsensors::open(const char *pUsername,
             // Get zone
 			strVariableName = m_prefix +
 					wxString::FromAscii("_zone") + strIteration;
-			if (VSCP_ERROR_SUCCESS != m_srv.getVariableInt(strVariableName,
+			if (VSCP_ERROR_SUCCESS != m_srv.getRemoteVariableInt(strVariableName,
 					&pthreadWork->m_zone)) {
 				syslog(LOG_ERR,
 						"%s prefix=%s i=%d",
@@ -312,7 +312,7 @@ Clmsensors::open(const char *pUsername,
             // Get subzone
 			strVariableName = m_prefix +
 					wxString::FromAscii("_subzone") + strIteration;
-			if (VSCP_ERROR_SUCCESS != m_srv.getVariableInt(strVariableName,
+			if (VSCP_ERROR_SUCCESS != m_srv.getRemoteVariableInt(strVariableName,
 					&pthreadWork->m_subzone)) {
 				syslog(LOG_ERR,
 						"%s prefix=%s i=%d",
@@ -324,7 +324,7 @@ Clmsensors::open(const char *pUsername,
             // Get unit
 			strVariableName = m_prefix +
 					wxString::FromAscii("_unit") + strIteration;
-			if (VSCP_ERROR_SUCCESS != m_srv.getVariableInt(strVariableName,
+			if (VSCP_ERROR_SUCCESS != m_srv.getRemoteVariableInt(strVariableName,
 					&pthreadWork->m_unit)) {
 				syslog(LOG_ERR,
 						"%s prefix=%s i=%d",
@@ -363,12 +363,11 @@ Clmsensors::open(const char *pUsername,
 void
 Clmsensors::close(void)
 {
-	// Do nothing if already terminated
-	if (m_bQuit) return;
+    // Do nothing if already terminated
+    if (m_bQuit) return;
 
-	m_bQuit = true; // terminate the thread
-	wxSleep(1); // Give the thread some time to terminate
-
+    m_bQuit = true; // terminate the thread
+    wxSleep(1); // Give the thread some time to terminate
 }
 
 //////////////////////////////////////////////////////////////////////
