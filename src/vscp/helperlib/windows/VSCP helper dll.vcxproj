@@ -432,7 +432,6 @@ copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\$(PlatformTarget)"
     <ClCompile Include="vscphelperdll.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="vscphelper.def" />
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>

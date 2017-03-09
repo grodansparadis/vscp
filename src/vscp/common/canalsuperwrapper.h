@@ -347,7 +347,7 @@ public:
     */
     int getVariableString( wxString& name, wxString *strValue )
     { 
-        return m_vscptcpif.getVariableString( name, strValue ); 
+        return m_vscptcpif.getRemoteVariable( name, strValue ); 
     };
 
     /*!

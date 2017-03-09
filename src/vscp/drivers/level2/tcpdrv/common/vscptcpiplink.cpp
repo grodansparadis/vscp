@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP Project (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2015 Ake Hedman, 
+// Copyright (C) 2000-2017 Ake Hedman, 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -209,29 +209,29 @@ CTcpipLink::open(const char *pUsername,
 	wxString str;
 	wxString strName = m_prefix +
 			wxString::FromAscii("_host_remote");
-	m_srvLocal.getVariableString(strName, &m_hostRemote);
+	m_srvLocal.getRemoteVariable(strName, m_hostRemote);
 	
 	strName = m_prefix +
 			wxString::FromAscii("_port_remote");
-	m_srvLocal.getVariableInt(strName, &m_portRemote);
+	m_srvLocal.getRemoteVariableInt(strName, &m_portRemote);
 	
 	strName = m_prefix +
 			wxString::FromAscii("_user_remote");
-	m_srvLocal.getVariableString(strName, &m_usernameRemote);
+	m_srvLocal.getRemoteVariable(strName, m_usernameRemote);
 	
 	strName = m_prefix +
 			wxString::FromAscii("_password_remote");
-	m_srvLocal.getVariableString(strName, &m_passwordRemote);
+	m_srvLocal.getRemoteVariable(strName, m_passwordRemote);
 
 	strName = m_prefix +
 			wxString::FromAscii("_filter");
-    if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableString( strName, &str ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srvLocal.getRemoteVariable( strName, str ) ) {
 		vscp_readFilterFromString(&m_vscpfilter, str);
 	}
 
 	strName = m_prefix +
 			wxString::FromAscii("_mask");
-    if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableString( strName, &str ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srvLocal.getRemoteVariable( strName, str ) ) {
 		vscp_readMaskFromString(&m_vscpfilter, str);
 	}
 

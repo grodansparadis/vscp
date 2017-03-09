@@ -571,7 +571,6 @@
     <ClCompile Include="..\..\common\userlist.cpp" />
     <ClCompile Include="..\..\common\v7callbacks.cpp" />
     <ClCompile Include="..\..\common\vscpautomation.cpp" />
-    <ClCompile Include="..\..\common\vscpcoapserver.cpp" />
     <ClCompile Include="..\..\common\vscpeventhelper.cpp" />
     <ClCompile Include="..\..\common\vscpmqttbroker.cpp" />
     <ClCompile Include="..\..\common\vscpremotetcpif.cpp" />

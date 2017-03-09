@@ -62,6 +62,10 @@ extern CHelpDllObj theApp;
 extern CVSCPLApp theApp;
 #endif
 
+#ifdef WIN32
+#define DllExport   __declspec( dllexport ) 
+#endif
+
 //-----------------------------------------------------------------------------
 //                  T C P / I P  I N T E R F A C E
 //-----------------------------------------------------------------------------
@@ -81,7 +85,7 @@ extern CVSCPLApp theApp;
 
 #ifdef WIN32
 extern "C"
-long WINAPI EXPORT vscphlp_newSession( void )
+DllExport long WINAPI EXPORT vscphlp_newSession( void )
 #else
 extern "C" long
 EXPORT vscphlp_newSession( void )
@@ -98,7 +102,7 @@ EXPORT vscphlp_newSession( void )
 //
 
 #ifdef WIN32
-extern "C" void WINAPI EXPORT vscphlp_closeSession(long handle)
+extern "C" DllExport void WINAPI EXPORT vscphlp_closeSession(long handle)
 #else
 extern "C" void vscphlp_closeSession(long handle)
 #endif
@@ -113,7 +117,7 @@ extern "C" void vscphlp_closeSession(long handle)
 // vscphlp_setResponseTimeout
 //
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setResponseTimeout(long handle,
+extern "C" DllExport int WINAPI EXPORT vscphlp_setResponseTimeout(long handle,
                                                     unsigned long timeout )
 #else
 extern "C" int vscphlp_setResponseTimeout(long handle,
@@ -132,7 +136,7 @@ extern "C" int vscphlp_setResponseTimeout(long handle,
 // vscphlp_setAfterCommandSleep
 //
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setAfterCommandSleep( long handle,
+extern "C" DllExport int WINAPI EXPORT vscphlp_setAfterCommandSleep( long handle,
                                                             unsigned short sleeptime )
 #else
 extern "C" int vscphlp_setAfterCommandSleep( long handle,
@@ -151,7 +155,7 @@ extern "C" int vscphlp_setAfterCommandSleep( long handle,
 // vscphlp_isConnected
 //
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_isConnected(const long handle)
+extern "C" DllExport int WINAPI EXPORT vscphlp_isConnected(const long handle)
 #else
 extern "C" int vscphlp_isConnected(const long handle)
 #endif
@@ -166,7 +170,7 @@ extern "C" int vscphlp_isConnected(const long handle)
 // vscphlp_doCommand
 //
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_doCommand( long handle, const char * cmd )
+extern "C" DllExport int WINAPI EXPORT vscphlp_doCommand( long handle, const char * cmd )
 #else
 extern "C" int vscphlp_doCommand( long handle, const char * cmd )
 #endif
@@ -185,7 +189,7 @@ extern "C" int vscphlp_doCommand( long handle, const char * cmd )
 // vscphlp_checkReply
 //
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_checkReply( long handle, int bClear )
+extern "C" DllExport int WINAPI EXPORT vscphlp_checkReply( long handle, int bClear )
 #else
 extern "C" int vscphlp_checkReply( long handle, int bClear )
 #endif
@@ -203,7 +207,7 @@ extern "C" int vscphlp_checkReply( long handle, int bClear )
 // vscphlp_clearLocalInputQueue
 //
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_clearLocalInputQueue( long handle )
+extern "C" DllExport int WINAPI EXPORT vscphlp_clearLocalInputQueue( long handle )
 #else
 extern "C" int vscphlp_clearLocalInputQueue( long handle )
 #endif
@@ -219,7 +223,7 @@ extern "C" int vscphlp_clearLocalInputQueue( long handle )
 // vscphlp_OpenInterface
 //
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_openInterface( long handle,
+extern "C" DllExport int WINAPI EXPORT vscphlp_openInterface( long handle,
                                                         const char *pInterface,
                                                         unsigned long flags )
 #else
@@ -240,10 +244,10 @@ extern "C" int vscphlp_openInterface( long handle,
 // vscphlp_open
 //
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_open(const long handle,
-        const char *pHostname,
-        const char *pUsername,
-        const char *pPassword)
+extern "C" DllExport int WINAPI EXPORT vscphlp_open(const long handle,
+                                                        const char *pHostname,
+                                                        const char *pUsername,
+                                                        const char *pPassword)
 #else
 
 extern "C" int vscphlp_open(const long handle,
@@ -272,7 +276,7 @@ extern "C" int vscphlp_open(const long handle,
 // vscphlp_close
 //
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_close( long handle )
+extern "C" DllExport int WINAPI EXPORT vscphlp_close( long handle )
 #else
 extern "C" int vscphlp_close( long handle )
 #endif
@@ -291,7 +295,7 @@ extern "C" int vscphlp_close( long handle )
 // vscphlp_noop
 //
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_noop( long handle )
+extern "C" DllExport int WINAPI EXPORT vscphlp_noop( long handle )
 #else
 extern "C" int vscphlp_noop( long handle )
 #endif
@@ -311,7 +315,7 @@ extern "C" int vscphlp_noop( long handle )
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_clearDaemonEventQueue( long handle )
+extern "C" DllExport int WINAPI EXPORT vscphlp_clearDaemonEventQueue( long handle )
 #else
 extern "C" int vscphlp_clearDaemonEventQueue( long handle )
 #endif
@@ -330,7 +334,7 @@ extern "C" int vscphlp_clearDaemonEventQueue( long handle )
 // vscphlp_sendEvent
 //
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_sendEvent( long handle,
+extern "C" DllExport int WINAPI EXPORT vscphlp_sendEvent( long handle,
                                                     const vscpEvent *pEvent )
 #else
 extern "C" int vscphlp_sendEvent( long handle,
@@ -350,7 +354,7 @@ extern "C" int vscphlp_sendEvent( long handle,
 // vscphlp_sendEventEx
 //
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_sendEventEx( long handle,
+extern "C" DllExport int WINAPI EXPORT vscphlp_sendEventEx( long handle,
                                                     const vscpEventEx *pEvent )
 #else
 extern "C" int vscphlp_sendEventEx( long handle,
@@ -371,7 +375,7 @@ extern "C" int vscphlp_sendEventEx( long handle,
 // vscphlp_receiveEvent
 //
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_receiveEvent( long handle,
+extern "C" DllExport int WINAPI EXPORT vscphlp_receiveEvent( long handle,
                                                     vscpEvent *pEvent )
 #else
 extern "C" int vscphlp_receiveEvent( long handle,
@@ -392,7 +396,7 @@ extern "C" int vscphlp_receiveEvent( long handle,
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_receiveEventEx( long handle,
+extern "C" DllExport int WINAPI EXPORT vscphlp_receiveEventEx( long handle,
                                                         vscpEventEx *pEvent )
 #else
 extern "C" int vscphlp_receiveEventEx( long handle,
@@ -412,7 +416,7 @@ extern "C" int vscphlp_receiveEventEx( long handle,
 // vscphlp_blockingReceiveEvent
 //
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_blockingReceiveEvent( long handle,
+extern "C" DllExport int WINAPI EXPORT vscphlp_blockingReceiveEvent( long handle,
                                                             vscpEvent *pEvent )
 #else
 extern "C" int vscphlp_blockingReceiveEvent( long handle,
@@ -433,7 +437,7 @@ extern "C" int vscphlp_blockingReceiveEvent( long handle,
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_blockingReceiveEventEx( long handle,
+extern "C" DllExport int WINAPI EXPORT vscphlp_blockingReceiveEventEx( long handle,
                                                             vscpEventEx *pEvent )
 #else
 extern "C" int vscphlp_blockingReceiveEventEx( long handle,
@@ -453,7 +457,7 @@ extern "C" int vscphlp_blockingReceiveEventEx( long handle,
 // vscphlp_isDataAvailable
 //
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_isDataAvailable( long handle, unsigned int *pCount )
+extern "C" DllExport int WINAPI EXPORT vscphlp_isDataAvailable( long handle, unsigned int *pCount )
 #else
 extern "C" int vscphlp_isDataAvailable( long handle, unsigned int *pCount )
 #endif
@@ -475,7 +479,7 @@ extern "C" int vscphlp_isDataAvailable( long handle, unsigned int *pCount )
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getStatus( long handle,
+extern "C" DllExport int WINAPI EXPORT vscphlp_getStatus( long handle,
                                                         VSCPStatus *pStatus )
 #else
 extern "C" int vscphlp_getStatus( long handle,
@@ -496,7 +500,7 @@ extern "C" int vscphlp_getStatus( long handle,
 // vscphlp_getStatistics
 //
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getStatistics( long handle,
+extern "C" DllExport int WINAPI EXPORT vscphlp_getStatistics( long handle,
                                                         VSCPStatistics *pStatistics )
 #else
 extern "C" int vscphlp_getStatistics( long handle,
@@ -517,7 +521,7 @@ extern "C" int vscphlp_getStatistics( long handle,
 // vscphlp_setFilter
 //
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setFilter( long handle,
+extern "C" DllExport int WINAPI EXPORT vscphlp_setFilter( long handle,
                                                     const vscpEventFilter *pFilter )
 #else
 extern "C" int vscphlp_setFilter( long handle,
@@ -538,7 +542,7 @@ extern "C" int vscphlp_setFilter( long handle,
 // vscphlp_getVersion
 //
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVersion( long handle,
+extern "C" DllExport int WINAPI EXPORT vscphlp_getVersion( long handle,
                                                     unsigned char *pMajorVer,
                                                     unsigned char *pMinorVer,
                                                     unsigned char *pSubMinorVer )
@@ -562,7 +566,7 @@ extern "C" int vscphlp_getVersion( long handle,
 // vscphlp_getDLLVersion
 //
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getDLLVersion( long handle, unsigned long *pVersion )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getDLLVersion( long handle, unsigned long *pVersion )
 #else
 extern "C" int vscphlp_getDLLVersion( long handle, unsigned long *pVersion )
 #endif
@@ -582,7 +586,7 @@ extern "C" int vscphlp_getDLLVersion( long handle, unsigned long *pVersion )
 // vscphlp_getVendorString
 //
 #ifdef WIN32
-extern "C"  int WINAPI EXPORT vscphlp_getVendorString( long handle, char *pVendorStr, int size )
+extern "C"  DllExport int WINAPI EXPORT vscphlp_getVendorString( long handle, char *pVendorStr, int size )
 #else
 extern "C"  int vscphlp_getVendorString( long handle, char *pVendorStr, int size  )
 #endif
@@ -605,7 +609,7 @@ extern "C"  int vscphlp_getVendorString( long handle, char *pVendorStr, int size
 // vscphlp_getDriverInfo
 //
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getDriverInfo( long handle, char *pInfoStr, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getDriverInfo( long handle, char *pInfoStr, int size )
 #else
 extern "C" int vscphlp_getDriverInfo( long handle, char *pInfoStr, int size )
 #endif
@@ -629,7 +633,7 @@ extern "C" int vscphlp_getDriverInfo( long handle, char *pInfoStr, int size )
 // vscphlp_shutDownServer
 //
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_shutDownServer( long handle )
+extern "C" DllExport int WINAPI EXPORT vscphlp_shutDownServer( long handle )
 #else
 extern "C" int vscphlp_shutDownServer( long handle )
 #endif
@@ -655,7 +659,7 @@ extern "C" int vscphlp_shutDownServer( long handle )
     \return CANAL_ERROR_SUCCESS if success CANAL_ERROR_GENERIC if not.
  */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_enterReceiveLoop(const long handle)
+extern "C" DllExport int WINAPI EXPORT vscphlp_enterReceiveLoop(const long handle)
 #else
 extern "C" int vscphlp_enterReceiveLoop(const long handle)
 #endif
@@ -674,7 +678,7 @@ extern "C" int vscphlp_enterReceiveLoop(const long handle)
     Quit the receiveloop
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_quitReceiveLoop(const long handle)
+extern "C" DllExport int WINAPI EXPORT vscphlp_quitReceiveLoop(const long handle)
 #else
 extern "C" int vscphlp_quitReceiveLoop(const long handle)
 #endif
@@ -705,7 +709,7 @@ extern "C" int vscphlp_quitReceiveLoop(const long handle)
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_deleteRemoteVariable( long handle, const char *pName )
+extern "C" DllExport int WINAPI EXPORT vscphlp_deleteRemoteVariable( long handle, const char *pName )
 #else
 extern "C" int vscphlp_deleteRemoteVariable( long handle, const char *pName )
 #endif
@@ -734,7 +738,8 @@ extern "C" int vscphlp_deleteRemoteVariable( long handle, const char *pName )
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_createRemoteVariable( const char *pName,
+extern "C" DllExport int WINAPI EXPORT vscphlp_createRemoteVariable( long handle,
+                                                        const char *pName,
                                                         const char* pType,
                                                         const int bPersistent,
                                                         const char *pUser,
@@ -786,7 +791,7 @@ extern "C" int vscphlp_createRemoteVariable( long handle,
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_saveRemoteVariablesToDisk( long handle, 
+extern "C" DllExport int WINAPI EXPORT vscphlp_saveRemoteVariablesToDisk( long handle,
                                                             const char *pPath,
                                                             const int select,
                                                             const char *pRegExp )
@@ -819,7 +824,7 @@ extern "C" int vscphlp_saveRemoteVariablesToDisk( long handle,
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableString( long handle, const char *pName, char *pValue, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableString( long handle, const char *pName, char *pValue, int size )
 #else
 extern "C" int vscphlp_getRemoteVariableString( long handle, const char *pName, char *pValue, int size )
 #endif
@@ -852,7 +857,7 @@ extern "C" int vscphlp_getRemoteVariableString( long handle, const char *pName, 
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableString( long handle, const char *pName, char *pValue )
+extern "C" DllExport int WINAPI EXPORT vscphlp_setRemoteVariableString( long handle, const char *pName, char *pValue )
 #else
 extern "C" int vscphlp_setRemoteVariableString( long handle, const char *pName, char *pValue )
 #endif
@@ -884,7 +889,7 @@ extern "C" int vscphlp_setRemoteVariableString( long handle, const char *pName, 
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableBool( long handle, const char *pName, int *bValue )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableBool( long handle, const char *pName, int *bValue )
 #else
 extern "C" int vscphlp_getRemoteVariableBool( long handle, const char *pName, int *bValue )
 #endif
@@ -919,7 +924,7 @@ extern "C" int vscphlp_getRemoteVariableBool( long handle, const char *pName, in
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableBool( long handle, const char *pName, int bValue )
+extern "C" DllExport int WINAPI EXPORT vscphlp_setRemoteVariableBool( long handle, const char *pName, int bValue )
 #else
 extern "C" int vscphlp_setRemoteVariableBool( long handle, const char *pName, int bValue )
 #endif
@@ -945,7 +950,7 @@ extern "C" int vscphlp_setRemoteVariableBool( long handle, const char *pName, in
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableInt( long handle, const char *pName, int *value )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableInt( long handle, const char *pName, int *value )
 #else
 extern "C" int vscphlp_getRemoteVariableInt( long handle, const char *pName, int *value )
 #endif
@@ -972,7 +977,7 @@ extern "C" int vscphlp_getRemoteVariableInt( long handle, const char *pName, int
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableInt( long handle, const char *pName, int value )
+extern "C" DllExport int WINAPI EXPORT vscphlp_setRemoteVariableInt( long handle, const char *pName, int value )
 #else
 extern "C" int vscphlp_setRemoteVariableInt( long handle, const char *pName, int value )
 #endif
@@ -997,7 +1002,7 @@ extern "C" int vscphlp_setRemoteVariableInt( long handle, const char *pName, int
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableLong( long handle, const char *pName, long *value )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableLong( long handle, const char *pName, long *value )
 #else
 extern "C" int vscphlp_getRemoteVariableLong( long handle, const char *pName, long *value )
 #endif
@@ -1023,7 +1028,7 @@ extern "C" int vscphlp_getRemoteVariableLong( long handle, const char *pName, lo
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableLong( long handle, const char *pName, long value )
+extern "C" DllExport int WINAPI EXPORT vscphlp_setRemoteVariableLong( long handle, const char *pName, long value )
 #else
 extern "C" int vscphlp_setRemoteVariableLong( long handle, const char *pName, long value )
 #endif
@@ -1048,7 +1053,7 @@ extern "C" int vscphlp_setRemoteVariableLong( long handle, const char *pName, lo
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code..
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableDouble( long handle, const char *pName, double *value )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableDouble( long handle, const char *pName, double *value )
 #else
 extern "C" int vscphlp_getRemoteVariableDouble( long handle, const char *pName, double *value )
 #endif
@@ -1074,7 +1079,7 @@ extern "C" int vscphlp_getRemoteVariableDouble( long handle, const char *pName, 
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableDouble( long handle, const char *pName, double value )
+extern "C" DllExport int WINAPI EXPORT vscphlp_setRemoteVariableDouble( long handle, const char *pName, double value )
 #else
 extern "C" int vscphlp_setRemoteVariableDouble( long handle, const char *pName, double value )
 #endif
@@ -1100,7 +1105,7 @@ extern "C" int vscphlp_setRemoteVariableDouble( long handle, const char *pName, 
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableMeasurement( long handle, 
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableMeasurement( long handle,
                                                                     const char *pName, 
                                                                     double *pvalue,
                                                                     int *punit,
@@ -1162,7 +1167,7 @@ extern "C" int vscphlp_getRemoteVariableMeasurement( long handle,
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableMeasurement( long handle, 
+extern "C" DllExport int WINAPI EXPORT vscphlp_setRemoteVariableMeasurement( long handle,
                                                                     const char *pName, 
                                                                     double value,
                                                                     int unit,
@@ -1205,7 +1210,7 @@ extern "C" int vscphlp_setRemoteVariableMeasurement( long handle,
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableEvent( long handle, const char *pName, vscpEvent *pEvent )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableEvent( long handle, const char *pName, vscpEvent *pEvent )
 #else
 extern "C" int vscphlp_getRemoteVariableEvent( long handle, const char *pName, vscpEvent *pEvent )
 #endif
@@ -1231,7 +1236,7 @@ extern "C" int vscphlp_getRemoteVariableEvent( long handle, const char *pName, v
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableEvent( long handle, const char *pName, vscpEvent *pEvent )
+extern "C" DllExport int WINAPI EXPORT vscphlp_setRemoteVariableEvent( long handle, const char *pName, vscpEvent *pEvent )
 #else
 extern "C" int vscphlp_setRemoteVariableEvent( long handle, const char *pName, vscpEvent *pEvent )
 #endif
@@ -1257,7 +1262,7 @@ extern "C" int vscphlp_setRemoteVariableEvent( long handle, const char *pName, v
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent )
 #else
 extern "C" int vscphlp_getRemoteVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent )
 #endif
@@ -1283,7 +1288,7 @@ extern "C" int vscphlp_getRemoteVariableEventEx( long handle, const char *pName,
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent )
+extern "C" DllExport int WINAPI EXPORT vscphlp_setRemoteVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent )
 #else
 extern "C" int vscphlp_setRemoteVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent )
 #endif
@@ -1309,7 +1314,7 @@ extern "C" int vscphlp_setRemoteVariableEventEx( long handle, const char *pName,
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableGUIDString( long handle, const char *pName, char *pGUID, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableGUIDString( long handle, const char *pName, char *pGUID, int size )
 #else
 extern "C" int vscphlp_getRemoteVariableGUIDString( long handle, const char *pName, char *pGUID, int size )
 #endif
@@ -1340,7 +1345,7 @@ extern "C" int vscphlp_getRemoteVariableGUIDString( long handle, const char *pNa
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableGUIDString( long handle, const char *pName, const char *pGUID )
+extern "C" DllExport int WINAPI EXPORT vscphlp_setRemoteVariableGUIDString( long handle, const char *pName, const char *pGUID )
 #else
 extern "C" int vscphlp_setRemoteVariableGUIDString( long handle, const char *pName, const char *pGUID )
 #endif
@@ -1368,7 +1373,7 @@ extern "C" int vscphlp_setRemoteVariableGUIDString( long handle, const char *pNa
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableGUIDArray( long handle, const char *pName, unsigned char *pGUID )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableGUIDArray( long handle, const char *pName, unsigned char *pGUID )
 #else
 extern "C" int vscphlp_getRemoteVariableGUIDArray( long handle, const char *pName, unsigned char *pGUID )
 #endif
@@ -1397,7 +1402,7 @@ extern "C" int vscphlp_getRemoteVariableGUIDArray( long handle, const char *pNam
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableGUIDArray( long handle, const char *pName, const unsigned char *pGUID )
+extern "C" DllExport int WINAPI EXPORT vscphlp_setRemoteVariableGUIDArray( long handle, const char *pName, const unsigned char *pGUID )
 #else
 extern "C" int vscphlp_setRemoteVariableGUIDArray( long handle, const char *pName, const unsigned char *pGUID )
 #endif
@@ -1427,7 +1432,7 @@ extern "C" int vscphlp_setRemoteVariableGUIDArray( long handle, const char *pNam
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableVSCPData( long handle, const char *pName, unsigned char *pData, unsigned short *psize )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableVSCPData( long handle, const char *pName, unsigned char *pData, unsigned short *psize )
 #else
 extern "C" int vscphlp_getRemoteVariableVSCPData( long handle, const char *pName, unsigned char *pData, unsigned short *psize )
 #endif
@@ -1456,7 +1461,7 @@ extern "C" int vscphlp_getRemoteVariableVSCPData( long handle, const char *pName
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableVSCPData( long handle, const char *pName,  uint8_t *pData, unsigned short size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_setRemoteVariableVSCPData( long handle, const char *pName,  uint8_t *pData, unsigned short size )
 #else
 extern "C" int vscphlp_setRemoteVariableVSCPData( long handle, const char *pName, uint8_t *pData, unsigned short size )
 #endif
@@ -1482,7 +1487,7 @@ extern "C" int vscphlp_setRemoteVariableVSCPData( long handle, const char *pName
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableVSCPClass( long handle, const char *pName, unsigned short *vscp_class )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableVSCPClass( long handle, const char *pName, unsigned short *vscp_class )
 #else
 extern "C" int vscphlp_getRemoteVariableVSCPClass( long handle, const char *pName, unsigned short *vscp_class )
 #endif
@@ -1508,7 +1513,7 @@ extern "C" int vscphlp_getRemoteVariableVSCPClass( long handle, const char *pNam
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableVSCPClass( long handle, const char *pName, unsigned short vscp_class )
+extern "C" DllExport int WINAPI EXPORT vscphlp_setRemoteVariableVSCPClass( long handle, const char *pName, unsigned short vscp_class )
 #else
 extern "C" int vscphlp_setRemoteVariableVSCPClass( long handle, const char *pName, unsigned short vscp_class )
 #endif
@@ -1533,7 +1538,7 @@ extern "C" int vscphlp_setRemoteVariableVSCPClass( long handle, const char *pNam
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getRemoteVariableVSCPType( long handle, const char *pName, unsigned short *vscp_type )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableVSCPType( long handle, const char *pName, unsigned short *vscp_type )
 #else
 extern "C" int vscphlp_getRemoteVariableVSCPType( long handle, const char *pName, unsigned short *vscp_type )
 #endif
@@ -1559,7 +1564,7 @@ extern "C" int vscphlp_getRemoteVariableVSCPType( long handle, const char *pName
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setRemoteVariableVSCPType( long handle, const char *pName, unsigned short vscp_type )
+extern "C" DllExport int WINAPI EXPORT vscphlp_setRemoteVariableVSCPType( long handle, const char *pName, unsigned short vscp_type )
 #else
 extern "C" int vscphlp_setRemoteVariableVSCPType( long handle, const char *pName, unsigned short vscp_type )
 #endif
@@ -1595,7 +1600,7 @@ extern "C" int vscphlp_setRemoteVariableVSCPType( long handle, const char *pName
 	\return The converted number.
 */
 #ifdef WIN32
-extern "C" unsigned long WINAPI EXPORT vscphlp_readStringValue( const char * pStrValue )
+extern "C" DllExport unsigned long WINAPI EXPORT vscphlp_readStringValue( const char * pStrValue )
 #else
 extern "C" unsigned long vscphlp_readStringValue( const char * pStrValue )
 #endif
@@ -1608,7 +1613,7 @@ extern "C" unsigned long vscphlp_readStringValue( const char * pStrValue )
 
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_replaceBackslash( char *pStr )
+extern "C" DllExport int WINAPI EXPORT vscphlp_replaceBackslash( char *pStr )
 #else
 extern "C" int vscphlp_replaceBackslash( char *pStr )
 #endif
@@ -1631,7 +1636,7 @@ extern "C" int vscphlp_replaceBackslash( char *pStr )
     \brief Convert VSCP standard event form to ex. form.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_convertVSCPtoEx( vscpEventEx *pEventEx,
+extern "C" DllExport int WINAPI EXPORT vscphlp_convertVSCPtoEx( vscpEventEx *pEventEx,
                                                         const vscpEvent *pEvent )
 #else
 extern "C" int vscphlp_convertVSCPtoEx( vscpEventEx *pEventEx,
@@ -1647,7 +1652,7 @@ extern "C" int vscphlp_convertVSCPtoEx( vscpEventEx *pEventEx,
     \brief Convert VSCP ex. event form to standard form.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_convertVSCPfromEx( vscpEvent *pEvent,
+extern "C" DllExport int WINAPI EXPORT vscphlp_convertVSCPfromEx( vscpEvent *pEvent,
                                                         const vscpEventEx *pEventEx )
 #else
 extern "C" int vscphlp_convertVSCPfromEx( vscpEvent *pEvent,
@@ -1663,7 +1668,7 @@ extern "C" int vscphlp_convertVSCPfromEx( vscpEvent *pEvent,
     \brief Create a new VSCP event.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_newVSCPevent( vscpEvent **ppEvent )
+extern "C" DllExport int WINAPI EXPORT vscphlp_newVSCPevent( vscpEvent **ppEvent )
 #else
 extern "C" int vscphlp_newVSCPevent( vscpEvent **ppEvent )
 #endif
@@ -1677,7 +1682,7 @@ extern "C" int vscphlp_newVSCPevent( vscpEvent **ppEvent )
     \brief Delete VSCP event.
 */
 #ifdef WIN32
-extern "C" void WINAPI EXPORT vscphlp_deleteVSCPevent( vscpEvent *pEvent )
+extern "C" DllExport void WINAPI EXPORT vscphlp_deleteVSCPevent( vscpEvent *pEvent )
 #else
 extern "C" void vscphlp_deleteVSCPevent( vscpEvent *pEvent )
 #endif
@@ -1691,7 +1696,7 @@ extern "C" void vscphlp_deleteVSCPevent( vscpEvent *pEvent )
     \brief Delete and null VSCP event.
 */
 #ifdef WIN32
-extern "C" void WINAPI EXPORT vscphlp_deleteVSCPevent_v2( vscpEvent **ppEvent )
+extern "C" DllExport void WINAPI EXPORT vscphlp_deleteVSCPevent_v2( vscpEvent **ppEvent )
 #else
 extern "C" void vscphlp_deleteVSCPevent_v2( vscpEvent **ppEvent )
 #endif
@@ -1705,7 +1710,7 @@ extern "C" void vscphlp_deleteVSCPevent_v2( vscpEvent **ppEvent )
     \brief Delete VSCP event ex.
 */
 #ifdef WIN32
-extern "C" void WINAPI EXPORT vscphlp_deleteVSCPeventEx( vscpEventEx *pEventEx )
+extern "C" DllExport void WINAPI EXPORT vscphlp_deleteVSCPeventEx( vscpEventEx *pEventEx )
 #else
 extern "C" void vscphlp_deleteVSCPeventEx( vscpEventEx *pEventEx )
 #endif
@@ -1719,7 +1724,7 @@ extern "C" void vscphlp_deleteVSCPeventEx( vscpEventEx *pEventEx )
     \brief Get VSCP priority.
 */
 #ifdef WIN32
-extern "C" unsigned char WINAPI EXPORT vscphlp_getVscpPriority( const vscpEvent *pEvent )
+extern "C" DllExport unsigned char WINAPI EXPORT vscphlp_getVscpPriority( const vscpEvent *pEvent )
 #else
 extern "C" unsigned char vscphlp_getVscpPriority( const vscpEvent *pEvent )
 #endif
@@ -1728,7 +1733,7 @@ extern "C" unsigned char vscphlp_getVscpPriority( const vscpEvent *pEvent )
 }
 
 #ifdef WIN32
-extern "C" unsigned char WINAPI EXPORT vscphlp_getVscpPriorityEx( const vscpEventEx *pEvent )
+extern "C" DllExport unsigned char WINAPI EXPORT vscphlp_getVscpPriorityEx( const vscpEventEx *pEvent )
 #else
 extern "C" unsigned char vscphlp_getVscpPriorityEx( const vscpEventEx *pEvent )
 #endif
@@ -1742,7 +1747,7 @@ extern "C" unsigned char vscphlp_getVscpPriorityEx( const vscpEventEx *pEvent )
     \brief Set VSCP priority.
 */
 #ifdef WIN32
-extern "C" void WINAPI EXPORT vscphlp_setVscpPriority( vscpEvent *pEvent, unsigned char priority )
+extern "C" DllExport void WINAPI EXPORT vscphlp_setVscpPriority( vscpEvent *pEvent, unsigned char priority )
 #else
 extern "C" void vscphlp_setVscpPriority( vscpEvent *pEvent, unsigned char priority )
 #endif
@@ -1751,7 +1756,7 @@ extern "C" void vscphlp_setVscpPriority( vscpEvent *pEvent, unsigned char priori
 }
 
 #ifdef WIN32
-extern "C" void WINAPI EXPORT vscphlp_setVscpPriorityEx( vscpEventEx *pEvent, unsigned char priority )
+extern "C" DllExport void WINAPI EXPORT vscphlp_setVscpPriorityEx( vscpEventEx *pEvent, unsigned char priority )
 #else
 extern "C" void vscphlp_setVscpPriorityEx( vscpEventEx *pEvent, unsigned char priority )
 #endif
@@ -1767,7 +1772,7 @@ extern "C" void vscphlp_setVscpPriorityEx( vscpEventEx *pEvent, unsigned char pr
     \brief Get the VSCP head from a CANAL message id (CANAL id).
 */
 #ifdef WIN32
-extern "C" unsigned char WINAPI EXPORT vscphlp_getVSCPheadFromCANALid( const unsigned long id )
+extern "C" DllExport unsigned char WINAPI EXPORT vscphlp_getVSCPheadFromCANALid( const unsigned long id )
 #else
 extern "C" unsigned char vscphlp_getVSCPheadFromCANALid( const unsigned long id )
 #endif
@@ -1780,7 +1785,7 @@ extern "C" unsigned char vscphlp_getVSCPheadFromCANALid( const unsigned long id 
     \brief Get the VSCP class from a CANAL message id (CANAL id).
 */
 #ifdef WIN32
-extern "C" unsigned short WINAPI EXPORT vscphlp_getVSCPclassFromCANALid( const unsigned long id )
+extern "C" DllExport unsigned short WINAPI EXPORT vscphlp_getVSCPclassFromCANALid( const unsigned long id )
 #else
 extern "C" unsigned short vscphlp_getVSCPclassFromCANALid( const unsigned long id )
 #endif
@@ -1794,7 +1799,7 @@ extern "C" unsigned short vscphlp_getVSCPclassFromCANALid( const unsigned long i
     \brief Get the VSCP type from a a CANAL message id (CANAL id).
 */
 #ifdef WIN32
-extern "C" unsigned short WINAPI EXPORT vscphlp_getVSCPtypeFromCANALid( const unsigned long id )
+extern "C" DllExport unsigned short WINAPI EXPORT vscphlp_getVSCPtypeFromCANALid( const unsigned long id )
 #else
 extern "C" unsigned short vscphlp_getVSCPtypeFromCANALid( const unsigned long id )
 #endif
@@ -1807,7 +1812,7 @@ extern "C" unsigned short vscphlp_getVSCPtypeFromCANALid( const unsigned long id
     \brief Get the VSCP nickname from a a CANAL message id (CANAL id).
 */
 #ifdef WIN32
-extern "C" unsigned char WINAPI EXPORT vscphlp_getVSCPnicknameFromCANALid( const unsigned long id )
+extern "C" DllExport unsigned char WINAPI EXPORT vscphlp_getVSCPnicknameFromCANALid( const unsigned long id )
 #else
 extern "C" unsigned char vscphlp_getVSCPnicknameFromCANALid( const unsigned long id )
 #endif
@@ -1822,7 +1827,7 @@ extern "C" unsigned char vscphlp_getVSCPnicknameFromCANALid( const unsigned long
     \brief Construct a CANAL id (CANAL id ) from VSCP.
 */
 #ifdef WIN32
-extern "C" unsigned long WINAPI EXPORT vscphlp_getCANALidFromVSCPdata( const unsigned char priority,
+extern "C" DllExport unsigned long WINAPI EXPORT vscphlp_getCANALidFromVSCPdata( const unsigned char priority,
                                                                         const unsigned short vscp_class,
                                                                         const unsigned short vscp_type )
 #else
@@ -1839,7 +1844,7 @@ extern "C" unsigned long vscphlp_getCANALidFromVSCPdata( const unsigned char pri
     \brief Get CANAL id (CAN id) from VSCP event.
 */
 #ifdef WIN32
-extern "C" unsigned long WINAPI EXPORT vscphlp_getCANALidFromVSCPevent( const vscpEvent *pEvent )
+extern "C" DllExport unsigned long WINAPI EXPORT vscphlp_getCANALidFromVSCPevent( const vscpEvent *pEvent )
 #else
 extern "C" unsigned long vscphlp_getCANALidFromVSCPevent( const vscpEvent *pEvent )
 #endif
@@ -1853,7 +1858,7 @@ extern "C" unsigned long vscphlp_getCANALidFromVSCPevent( const vscpEvent *pEven
     \brief Get CANAL id (CAN id) from VSCP event.
 */
 #ifdef WIN32
-extern "C" unsigned long WINAPI EXPORT vscphlp_getCANALidFromVSCPeventEx( const vscpEventEx *pEvent )
+extern "C" DllExport unsigned long WINAPI EXPORT vscphlp_getCANALidFromVSCPeventEx( const vscpEventEx *pEvent )
 #else
 extern "C" unsigned long vscphlp_getCANALidFromVSCPeventEx( const vscpEventEx *pEvent )
 #endif
@@ -1866,7 +1871,7 @@ extern "C" unsigned long vscphlp_getCANALidFromVSCPeventEx( const vscpEventEx *p
     \brief Calculate VSCP crc.
 */
 #ifdef WIN32
-extern "C" unsigned short WINAPI EXPORT vscphlp_calc_crc_Event( vscpEvent *pEvent, short bSet )
+extern "C" DllExport unsigned short WINAPI EXPORT vscphlp_calc_crc_Event( vscpEvent *pEvent, short bSet )
 #else
 extern "C" unsigned short vscphlp_calc_crc_Event( vscpEvent *pEvent, short bSet )
 #endif
@@ -1880,7 +1885,7 @@ extern "C" unsigned short vscphlp_calc_crc_Event( vscpEvent *pEvent, short bSet 
     \brief Calculate VSCP crc.
 */
 #ifdef WIN32
-extern "C" unsigned short WINAPI EXPORT vscphlp_calc_crc_EventEx( vscpEventEx *pEvent, short bSet )
+extern "C" DllExport unsigned short WINAPI EXPORT vscphlp_calc_crc_EventEx( vscpEventEx *pEvent, short bSet )
 #else
 extern "C" unsigned short vscphlp_calc_crc_EventEx( vscpEventEx *pEvent, short bSet )
 #endif
@@ -1901,7 +1906,7 @@ extern "C" unsigned short vscphlp_calc_crc_EventEx( vscpEventEx *pEvent, short b
         \return crc for GUID.
     */
 #ifdef WIN32
-extern "C" unsigned char WINAPI EXPORT vscphlp_calcCRC4GUIDArray( unsigned char *pguid )
+extern "C" DllExport unsigned char WINAPI EXPORT vscphlp_calcCRC4GUIDArray( unsigned char *pguid )
 #else
 extern "C" unsigned char vscphlp_calcCRC4GUIDArray( unsigned char *pguid)
 #endif
@@ -1917,7 +1922,7 @@ extern "C" unsigned char vscphlp_calcCRC4GUIDArray( unsigned char *pguid)
   \return crc for GUID.
 */
 #ifdef WIN32
-extern "C" unsigned char WINAPI EXPORT vscphlp_calcCRC4GUIDString(const char *strguid)
+extern "C" DllExport unsigned char WINAPI EXPORT vscphlp_calcCRC4GUIDString(const char *strguid)
 #else
 extern "C" unsigned char vscphlp_calcCRC4GUIDString(const char *strguid)
 #endif
@@ -1932,7 +1937,7 @@ extern "C" unsigned char vscphlp_calcCRC4GUIDString(const char *strguid)
     \brief Write GUID into VSCP event from string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getGuidFromString( vscpEvent *pEvent, const char * pGUID )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getGuidFromString( vscpEvent *pEvent, const char * pGUID )
 #else
 extern "C" int vscphlp_getGuidFromString( vscpEvent *pEvent, const char * pGUID )
 #endif
@@ -1947,7 +1952,7 @@ extern "C" int vscphlp_getGuidFromString( vscpEvent *pEvent, const char * pGUID 
 */
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getGuidFromStringEx( vscpEventEx *pEvent, const char * pGUID )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getGuidFromStringEx( vscpEventEx *pEvent, const char * pGUID )
 #else
 extern "C" int vscphlp_getGuidFromStringEx( vscpEventEx *pEvent, const char * pGUID )
 #endif
@@ -1961,7 +1966,7 @@ extern "C" int vscphlp_getGuidFromStringEx( vscpEventEx *pEvent, const char * pG
     \brief Write GUID from string into array.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getGuidFromStringToArray( uint8_t *pGUID, const char * pStr )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getGuidFromStringToArray( uint8_t *pGUID, const char * pStr )
 #else
 extern "C" int vscphlp_getGuidFromStringToArray( uint8_t *pGUID, const char * pStr )
 #endif
@@ -1975,7 +1980,7 @@ extern "C" int vscphlp_getGuidFromStringToArray( uint8_t *pGUID, const char * pS
     \brief Write GUID froom VSCP event to string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_writeGuidToString( const vscpEvent *pEvent, char * pStr, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_writeGuidToString( const vscpEvent *pEvent, char * pStr, int size )
 #else
 extern "C" int vscphlp_writeGuidToString( const vscpEvent *pEvent, char *pStr, int size )
 #endif
@@ -1993,7 +1998,7 @@ extern "C" int vscphlp_writeGuidToString( const vscpEvent *pEvent, char *pStr, i
     \brief Write GUID froom VSCP event to string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_writeGuidToStringEx( const vscpEventEx *pEvent, char *pStr, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_writeGuidToStringEx( const vscpEventEx *pEvent, char *pStr, int size )
 #else
 extern "C" int vscphlp_writeGuidToStringEx( const vscpEventEx *pEvent, char * pStr, int size )
 #endif
@@ -2014,7 +2019,7 @@ extern "C" int vscphlp_writeGuidToStringEx( const vscpEventEx *pEvent, char * pS
     row seperated by \r\n.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent,
+extern "C" DllExport int WINAPI EXPORT vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent,
                                                                 char *strGUID,
                                                                 int size )
 #else
@@ -2035,7 +2040,7 @@ extern "C" int vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent,
     row seperated by \r\n.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_writeGuidToString4RowsEx( const vscpEventEx *pEvent,
+extern "C" DllExport int WINAPI EXPORT vscphlp_writeGuidToString4RowsEx( const vscpEventEx *pEvent,
                                                                 char *strGUID,
                                                                 int size )
 #else
@@ -2055,7 +2060,7 @@ extern "C" int vscphlp_writeGuidToString4RowsEx( const vscpEventEx *pEvent,
     \brief Write GUID from byte array to string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_writeGuidArrayToString( const unsigned char *pGUID,
+extern "C" DllExport int WINAPI EXPORT vscphlp_writeGuidArrayToString( const unsigned char *pGUID,
                                                                 char *strGUID,
                                                                 int size )
 #else
@@ -2078,7 +2083,7 @@ extern "C" int vscphlp_writeGuidArrayToString( const unsigned char * pGUID,
     \brief Check if GUID is empty (all nills).
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_isGUIDEmpty( unsigned char *pGUID )
+extern "C" DllExport int WINAPI EXPORT vscphlp_isGUIDEmpty( unsigned char *pGUID )
 #else
 extern "C" int vscphlp_isGUIDEmpty( unsigned char *pGUID )
 #endif
@@ -2092,7 +2097,7 @@ extern "C" int vscphlp_isGUIDEmpty( unsigned char *pGUID )
     \brief Check if two GUID's is equal to each other.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_isSameGUID( const unsigned char *pGUID1,
+extern "C" DllExport int WINAPI EXPORT vscphlp_isSameGUID( const unsigned char *pGUID1,
                                                 const unsigned char *pGUID2 )
 #else
 extern "C" int vscphlp_isSameGUID( const unsigned char *pGUID1,
@@ -2108,7 +2113,7 @@ extern "C" int vscphlp_isSameGUID( const unsigned char *pGUID1,
     \brief Reverse a GUID
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_reverseGUID(unsigned char *pGUID)
+extern "C" DllExport int WINAPI EXPORT vscphlp_reverseGUID(unsigned char *pGUID)
 #else
 extern "C" int vscphlp_reverseGUID(unsigned char *pGUID)
 #endif
@@ -2129,7 +2134,7 @@ extern "C" int vscphlp_reverseGUID(unsigned char *pGUID)
     \brief Clear VSCP filter.
 */
 #ifdef WIN32
-extern "C" void WINAPI EXPORT vscphlp_clearVSCPFilter( vscpEventFilter *pFilter )
+extern "C" DllExport void WINAPI EXPORT vscphlp_clearVSCPFilter( vscpEventFilter *pFilter )
 #else
 extern "C" void vscphlp_clearVSCPFilter( vscpEventFilter *pFilter )
 #endif
@@ -2143,7 +2148,7 @@ extern "C" void vscphlp_clearVSCPFilter( vscpEventFilter *pFilter )
     \brief Clear VSCP filter.
 */
 #ifdef WIN32
-extern "C" void WINAPI EXPORT vscphlp_copyVSCPFilter( vscpEventFilter *pToFilter, const vscpEventFilter *pFromFilter )
+extern "C" DllExport void WINAPI EXPORT vscphlp_copyVSCPFilter( vscpEventFilter *pToFilter, const vscpEventFilter *pFromFilter )
 #else
 extern "C" void vscphlp_copyVSCPFilter( vscpEventFilter *pToFilter, const vscpEventFilter *pFromFilter )
 #endif
@@ -2160,7 +2165,7 @@ extern "C" void vscphlp_copyVSCPFilter( vscpEventFilter *pToFilter, const vscpEv
     \return true on success, fals eon failure.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_readFilterFromString( vscpEventFilter *pFilter, const char *strFilter )
+extern "C" DllExport int WINAPI EXPORT vscphlp_readFilterFromString( vscpEventFilter *pFilter, const char *strFilter )
 #else
 extern "C" int vscphlp_readFilterFromString( vscpEventFilter *pFilter, const char * strFilter )
 #endif
@@ -2178,7 +2183,7 @@ extern "C" int vscphlp_readFilterFromString( vscpEventFilter *pFilter, const cha
     \return true on success, fals eon failure.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_readMaskFromString( vscpEventFilter *pFilter, const char *strMask )
+extern "C" DllExport int WINAPI EXPORT vscphlp_readMaskFromString( vscpEventFilter *pFilter, const char *strMask )
 #else
 extern "C" int vscphlp_readMaskFromString( vscpEventFilter *pFilter, const char *strMask )
 #endif
@@ -2196,7 +2201,7 @@ extern "C" int vscphlp_readMaskFromString( vscpEventFilter *pFilter, const char 
     \return true on success, fals eon failure.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_writeFilterToString( vscpEventFilter *pFilter, char *strFilter )
+extern "C" DllExport int WINAPI EXPORT vscphlp_writeFilterToString( vscpEventFilter *pFilter, char *strFilter )
 #else
 extern "C" int vscphlp_writeFilterToString( vscpEventFilter *pFilter, char *strFilter )
 #endif
@@ -2219,7 +2224,7 @@ extern "C" int vscphlp_writeFilterToString( vscpEventFilter *pFilter, char *strF
     \return true on success, fals eon failure.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_writeMaskToString( vscpEventFilter *pFilter, char *strMask )
+extern "C" DllExport int WINAPI EXPORT vscphlp_writeMaskToString( vscpEventFilter *pFilter, char *strMask )
 #else
 extern "C" int vscphlp_writeMaskToString( vscpEventFilter *pFilter, char *strMask )
 #endif
@@ -2239,7 +2244,7 @@ extern "C" int vscphlp_writeMaskToString( vscpEventFilter *pFilter, char *strMas
     \brief Check VSCP filter condition.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_doLevel2Filter( const vscpEvent *pEvent,
+extern "C" DllExport int WINAPI EXPORT vscphlp_doLevel2Filter( const vscpEvent *pEvent,
                                                     const vscpEventFilter *pFilter )
 #else
 extern "C" int vscphlp_doLevel2Filter( const vscpEvent *pEvent,
@@ -2258,7 +2263,7 @@ extern "C" int vscphlp_doLevel2Filter( const vscpEvent *pEvent,
     \brief Convert CANAL message to VSCP event.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_convertCanalToEvent( vscpEvent *pvscpEvent,
+extern "C" DllExport int WINAPI EXPORT vscphlp_convertCanalToEvent( vscpEvent *pvscpEvent,
                                                             const canalMsg *pcanalMsg,
                                                             unsigned char *pGUID )
 #else
@@ -2281,7 +2286,7 @@ extern "C" int vscphlp_convertCanalToEvent( vscpEvent *pvscpEvent,
     \brief Convert CANAL message to VSCP event.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_convertCanalToEventEx( vscpEventEx *pvscpEvent,
+extern "C" DllExport int WINAPI EXPORT vscphlp_convertCanalToEventEx( vscpEventEx *pvscpEvent,
                                                                const canalMsg *pcanalMsg,
                                                                unsigned char *pGUID )
 #else
@@ -2306,7 +2311,7 @@ extern "C" int vscphlp_convertCanalToEventEx( vscpEventEx *pvscpEvent,
     \brief Convert VSCP event to CANAL message.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_convertEventToCanal( canalMsg *pcanalMsg,
+extern "C" DllExport int WINAPI EXPORT vscphlp_convertEventToCanal( canalMsg *pcanalMsg,
                                                             const vscpEvent *pvscpEvent )
 #else
 extern "C" int vscphlp_convertEventToCanal( canalMsg *pcanalMsg,
@@ -2327,7 +2332,7 @@ extern "C" int vscphlp_convertEventToCanal( canalMsg *pcanalMsg,
     \brief Convert VSCP event to CANAL message.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_convertEventExToCanal( canalMsg *pcanalMsg,
+extern "C" DllExport int WINAPI EXPORT vscphlp_convertEventExToCanal( canalMsg *pcanalMsg,
                                                             const vscpEventEx *pvscpEvent )
 #else
 extern "C" int vscphlp_convertEventExToCanal( canalMsg *pcanalMsg,
@@ -2347,7 +2352,7 @@ extern "C" int vscphlp_convertEventExToCanal( canalMsg *pcanalMsg,
     \brief Get VSCP timestamp.
 */
 #ifdef WIN32
-extern "C" unsigned long WINAPI EXPORT vscphlp_makeTimeStamp( void )
+extern "C" DllExport unsigned long WINAPI EXPORT vscphlp_makeTimeStamp( void )
 #else
 extern "C" unsigned long vscphlp_makeTimeStamp( void )
 #endif
@@ -2366,7 +2371,7 @@ extern "C" unsigned long vscphlp_makeTimeStamp( void )
     \brief Copy VSCP event.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_copyVSCPEvent( vscpEvent *pEventTo,
+extern "C" DllExport int WINAPI EXPORT vscphlp_copyVSCPEvent( vscpEvent *pEventTo,
                                                     const vscpEvent *pEventFrom )
 #else
 extern "C" int vscphlp_copyVSCPEvent( vscpEvent *pEventTo,
@@ -2388,7 +2393,7 @@ extern "C" int vscphlp_copyVSCPEvent( vscpEvent *pEventTo,
     \brief Write VSCP data in readable form to a (multiline) string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_writeVscpDataToString( const vscpEvent *pEvent,
+extern "C" DllExport int WINAPI EXPORT vscphlp_writeVscpDataToString( const vscpEvent *pEvent,
                                                                char *pstr,
                                                                int size,
                                                                int bUseHtmlBreak )
@@ -2417,7 +2422,7 @@ extern "C" int vscphlp_writeVscpDataToString( const vscpEvent *pEvent,
     \brief Set data in VSCP event from a string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setVscpDataFromString( vscpEvent *pEvent,
+extern "C" DllExport int WINAPI EXPORT vscphlp_setVscpDataFromString( vscpEvent *pEvent,
                                                                 const char *pstr )
 #else
 extern "C" int vscphlp_setVscpDataFromString( vscpEvent *pEvent,
@@ -2440,7 +2445,7 @@ extern "C" int vscphlp_setVscpDataFromString( vscpEvent *pEvent,
     \brief Set data in VSCP event from a string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setVscpDataArrayFromString( unsigned char *pData,
+extern "C" DllExport int WINAPI EXPORT vscphlp_setVscpDataArrayFromString( unsigned char *pData,
                                                                     unsigned short *psizeData,
                                                                     const char *pstr )
 #else
@@ -2460,7 +2465,7 @@ extern "C" int vscphlp_setVscpDataArrayFromString( unsigned char *pData,
     \brief Write VSCP data to a string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_writeVscpEventToString( vscpEvent *pEvent, char *p, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_writeVscpEventToString( vscpEvent *pEvent, char *p, int size )
 #else
 extern "C" int vscphlp_writeVscpEventToString( vscpEvent *pEvent, char *p, int size )
 #endif
@@ -2481,7 +2486,7 @@ extern "C" int vscphlp_writeVscpEventToString( vscpEvent *pEvent, char *p, int s
     \brief Write VSCP data to a string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_writeVscpEventExToString( vscpEventEx *pEvent, char *p, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_writeVscpEventExToString( vscpEventEx *pEvent, char *p, int size )
 #else
 extern "C" int vscphlp_writeVscpEventExToString( vscpEventEx *pEvent,
                                                   char *p, int size )
@@ -2503,7 +2508,7 @@ extern "C" int vscphlp_writeVscpEventExToString( vscpEventEx *pEvent,
     \brief Get VSCP event from string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setVscpEventFromString( vscpEvent *pEvent,
+extern "C" DllExport int WINAPI EXPORT vscphlp_setVscpEventFromString( vscpEvent *pEvent,
                                                                 const char *p )
 #else
 extern "C" int vscphlp_setVscpEventFromString( vscpEvent *pEvent, const char *p )
@@ -2520,7 +2525,7 @@ extern "C" int vscphlp_setVscpEventFromString( vscpEvent *pEvent, const char *p 
     \brief Get VSCP event from string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setVscpEventExFromString( vscpEventEx *pEvent,
+extern "C" DllExport int WINAPI EXPORT vscphlp_setVscpEventExFromString( vscpEventEx *pEvent,
                                                                   const char *p )
 #else
 extern "C" int vscphlp_setVscpEventExFromString( vscpEventEx *pEvent,
@@ -2540,7 +2545,7 @@ extern "C" int vscphlp_setVscpEventExFromString( vscpEventEx *pEvent,
 //
 
 #ifdef WIN32
-extern "C" unsigned char WINAPI EXPORT vscphlp_getMeasurementDataCoding( const vscpEvent *pEvent )
+extern "C" DllExport unsigned char WINAPI EXPORT vscphlp_getMeasurementDataCoding( const vscpEvent *pEvent )
 #else
 extern "C" unsigned char vscphlp_getMeasurementDataCoding( const vscpEvent *pEvent )
 #endif
@@ -2554,7 +2559,7 @@ extern "C" unsigned char vscphlp_getMeasurementDataCoding( const vscpEvent *pEve
 //
 
 #ifdef WIN32
-extern "C" unsigned long long WINAPI EXPORT vscphlp_getDataCodingBitArray(const unsigned char *pCode, int size )
+extern "C" DllExport unsigned long long WINAPI EXPORT vscphlp_getDataCodingBitArray(const unsigned char *pCode, int size )
 #else
 extern "C" unsigned long long vscphlp_getDataCodingBitArray(const unsigned char *pCode, int size )
 #endif
@@ -2568,7 +2573,7 @@ extern "C" unsigned long long vscphlp_getDataCodingBitArray(const unsigned char 
 //
 
 #ifdef WIN32
-extern "C" unsigned long long WINAPI EXPORT vscphlp_getDataCodingInteger(const unsigned char *pCode,
+extern "C" DllExport unsigned long long WINAPI EXPORT vscphlp_getDataCodingInteger(const unsigned char *pCode,
                                                                             int size )
 #else
 extern "C" unsigned long long vscphlp_getDataCodingInteger(const unsigned char *pCode,
@@ -2583,7 +2588,7 @@ extern "C" unsigned long long vscphlp_getDataCodingInteger(const unsigned char *
 //
 
 #ifdef WIN32
-extern "C" double WINAPI EXPORT vscphlp_getDataCodingNormalizedInteger(const unsigned char *pCode,
+extern "C" DllExport double WINAPI EXPORT vscphlp_getDataCodingNormalizedInteger(const unsigned char *pCode,
                                                                                      int size )
 #else
 extern "C" double vscphlp_getDataCodingNormalizedInteger(const unsigned char *pCode,
@@ -2600,7 +2605,7 @@ extern "C" double vscphlp_getDataCodingNormalizedInteger(const unsigned char *pC
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getDataCodingString(const unsigned char *pCode,
+extern "C" DllExport int WINAPI EXPORT vscphlp_getDataCodingString(const unsigned char *pCode,
                                                               unsigned char dataLength,
                                                               char *strResult,
                                                               int size )
@@ -2628,7 +2633,7 @@ extern "C" int vscphlp_getDataCodingString(const unsigned char *pCode,
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVSCPMeasurementAsString( const vscpEvent *pEvent,
+extern "C" DllExport int WINAPI EXPORT vscphlp_getVSCPMeasurementAsString( const vscpEvent *pEvent,
                                                                     char *pResult,
                                                                     int size )
 #else
@@ -2653,7 +2658,7 @@ extern "C" int vscphlp_getVSCPMeasurementAsString(const vscpEvent *pEvent,
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVSCPMeasurementAsDouble(const vscpEvent *pEvent, double *pvalue)
+extern "C" DllExport int WINAPI EXPORT vscphlp_getVSCPMeasurementAsDouble(const vscpEvent *pEvent, double *pvalue)
 #else
 extern "C" int vscphlp_getVSCPMeasurementAsDouble(const vscpEvent *pEvent, double *pvalue)
 #endif
@@ -2671,7 +2676,7 @@ extern "C" int vscphlp_getVSCPMeasurementAsDouble(const vscpEvent *pEvent, doubl
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent,
+extern "C" DllExport int WINAPI EXPORT vscphlp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent,
                                                                             char *pStrResult,
                                                                             int size )
 #else
@@ -2695,7 +2700,7 @@ extern "C" int vscphlp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_convertFloatToNormalizedEventData( unsigned char *pdata,
+extern "C" DllExport int WINAPI EXPORT vscphlp_convertFloatToNormalizedEventData( unsigned char *pdata,
                                                                             unsigned short *psize,
                                                                             double value,
                                                                             unsigned char unit,
@@ -2726,7 +2731,7 @@ extern "C" int vscphlp_convertFloatToNormalizedEventData( unsigned char *pdata,
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_convertFloatToFloatEventData( unsigned char *pdata,
+extern "C" DllExport int WINAPI EXPORT vscphlp_convertFloatToFloatEventData( unsigned char *pdata,
                                                                         unsigned short *psize,
                                                                         float value,
                                                                         unsigned char unit,
@@ -2757,7 +2762,7 @@ extern "C" int vscphlp_convertFloatToFloatEventData( unsigned char *pdata,
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_convertIntegerToNormalizedEventData( unsigned char *pdata,
+extern "C" DllExport int WINAPI EXPORT vscphlp_convertIntegerToNormalizedEventData( unsigned char *pdata,
                                                                             unsigned short *psize,
                                                                             unsigned long long val64,
                                                                             unsigned char unit,
@@ -2790,7 +2795,7 @@ extern "C" int vscphlp_convertIntegerToNormalizedEventData( unsigned char *pdata
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_makeFloatMeasurementEvent( vscpEvent *pEvent,
+extern "C" DllExport int WINAPI EXPORT vscphlp_makeFloatMeasurementEvent( vscpEvent *pEvent,
                                                                     float value,
                                                                     unsigned char unit,
                                                                     unsigned char sensoridx )
@@ -2818,7 +2823,7 @@ extern "C" int vscphlp_makeFloatMeasurementEvent( vscpEvent *pEvent,
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getMeasurementAsFloat(const unsigned char *pNorm,
+extern "C" DllExport int WINAPI EXPORT vscphlp_getMeasurementAsFloat(const unsigned char *pNorm,
                                                                 unsigned char length,
                                                                 float *pResult )
 #else
@@ -2842,7 +2847,7 @@ extern "C" int vscphlp_getMeasurementAsFloat(const unsigned char *pNorm,
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT  vscphlp_getMeasurementUnit( const vscpEvent *pEvent )
+extern "C" DllExport int WINAPI EXPORT  vscphlp_getMeasurementUnit( const vscpEvent *pEvent )
 #else
 extern "C" int vscphlp_getMeasurementUnit( const vscpEvent *pEvent )
 #endif
@@ -2855,7 +2860,7 @@ extern "C" int vscphlp_getMeasurementUnit( const vscpEvent *pEvent )
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT  vscphlp_getMeasurementSensorIndex( const vscpEvent *pEvent )
+extern "C" DllExport int WINAPI EXPORT  vscphlp_getMeasurementSensorIndex( const vscpEvent *pEvent )
 #else
 extern "C" int vscphlp_getMeasurementSensorIndex( const vscpEvent *pEvent )
 #endif
@@ -2868,7 +2873,7 @@ extern "C" int vscphlp_getMeasurementSensorIndex( const vscpEvent *pEvent )
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT  vscphlp_getMeasurementZone( const vscpEvent *pEvent )
+extern "C" DllExport int WINAPI EXPORT  vscphlp_getMeasurementZone( const vscpEvent *pEvent )
 #else
 extern "C" int vscphlp_getMeasurementZone( const vscpEvent *pEvent )
 #endif
@@ -2881,7 +2886,7 @@ extern "C" int vscphlp_getMeasurementZone( const vscpEvent *pEvent )
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT  vscphlp_getMeasurementSubZone( const vscpEvent *pEvent )
+extern "C" DllExport int WINAPI EXPORT  vscphlp_getMeasurementSubZone( const vscpEvent *pEvent )
 #else
 extern "C" int vscphlp_getMeasurementSubZone( const vscpEvent *pEvent )
 #endif
@@ -2894,7 +2899,7 @@ extern "C" int vscphlp_getMeasurementSubZone( const vscpEvent *pEvent )
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_isMeasurement( const vscpEvent *pEvent )
+extern "C" DllExport int WINAPI EXPORT vscphlp_isMeasurement( const vscpEvent *pEvent )
 #else
 extern "C" int vscphlp_isMeasurement( const vscpEvent *pEvent )
 #endif
@@ -2911,7 +2916,7 @@ extern "C" int vscphlp_isMeasurement( const vscpEvent *pEvent )
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_convertEventToJSON( vscpEvent *pEvent, char *p, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_convertEventToJSON( vscpEvent *pEvent, char *p, int size )
 #else
 extern "C" int vscphlp_convertEventToJSON( vscpEvent *pEvent, char *p, int size )
 #endif
@@ -2935,7 +2940,7 @@ extern "C" int vscphlp_convertEventToJSON( vscpEvent *pEvent, char *p, int size 
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_convertEventExToJSON( vscpEventEx *pEventEx, char *p, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_convertEventExToJSON( vscpEventEx *pEventEx, char *p, int size )
 #else
 extern "C" int vscphlp_convertEventExToJSON( vscpEventEx *pEventEx, char *p, int size )
 #endif
@@ -2959,7 +2964,7 @@ extern "C" int vscphlp_convertEventExToJSON( vscpEventEx *pEventEx, char *p, int
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_convertEventToXML( vscpEvent *pEvent, char *p, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_convertEventToXML( vscpEvent *pEvent, char *p, int size )
 #else
 extern "C" int vscphlp_convertEventToXML( vscpEvent *pEvent, char *p, int size )
 #endif
@@ -2983,7 +2988,7 @@ extern "C" int vscphlp_convertEventToXML( vscpEvent *pEvent, char *p, int size )
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_convertEventExToXML( vscpEventEx *pEventEx, char *p, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_convertEventExToXML( vscpEventEx *pEventEx, char *p, int size )
 #else
 extern "C" int vscphlp_convertEventExToXML( vscpEventEx *pEventEx, char *p, int size )
 #endif
@@ -3008,7 +3013,7 @@ extern "C" int vscphlp_convertEventExToXML( vscpEventEx *pEventEx, char *p, int 
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_convertEventToHTML( vscpEvent *pEvent, char *p, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_convertEventToHTML( vscpEvent *pEvent, char *p, int size )
 #else
 extern "C" int vscphlp_convertEventToHTML( vscpEvent *pEvent, char *p, int size )
 #endif
@@ -3032,7 +3037,7 @@ extern "C" int vscphlp_convertEventToHTML( vscpEvent *pEvent, char *p, int size 
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_convertEventExToHTML( vscpEventEx *pEventEx, char *p, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_convertEventExToHTML( vscpEventEx *pEventEx, char *p, int size )
 #else
 extern "C" int vscphlp_convertEventExToHTML( vscpEventEx *pEventEx, char *p, int size )
 #endif
@@ -3056,7 +3061,7 @@ extern "C" int vscphlp_convertEventExToHTML( vscpEventEx *pEventEx, char *p, int
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_convertLevel1MeasuremenToLevel2Double( vscpEvent *pEventLevel1 )
+extern "C" DllExport int WINAPI EXPORT vscphlp_convertLevel1MeasuremenToLevel2Double( vscpEvent *pEventLevel1 )
 #else
 extern "C" int vscphlp_convertLevel1MeasuremenToLevel2Double( vscpEvent *pEventLevel1 )
 #endif
@@ -3070,7 +3075,7 @@ extern "C" int vscphlp_convertLevel1MeasuremenToLevel2Double( vscpEvent *pEventL
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_convertLevel1MeasuremenToLevel2String( vscpEvent *pEventLevel1 )
+extern "C" DllExport int WINAPI EXPORT vscphlp_convertLevel1MeasuremenToLevel2String( vscpEvent *pEventLevel1 )
 #else
 extern "C" int vscphlp_convertLevel1MeasuremenToLevel2String( vscpEvent *pEventLevel1 )
 #endif
@@ -3084,7 +3089,7 @@ extern "C" int vscphlp_convertLevel1MeasuremenToLevel2String( vscpEvent *pEventL
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_makeLevel2FloatMeasurementEvent( vscpEvent *pEvent, 
+extern "C" DllExport int WINAPI EXPORT vscphlp_makeLevel2FloatMeasurementEvent( vscpEvent *pEvent,
                                                                         uint16_t type,
                                                                         double value,
                                                                         uint8_t unit,
@@ -3117,7 +3122,7 @@ extern "C" int vscphlp_makeLevel2FloatMeasurementEvent( vscpEvent *pEvent,
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_makeLevel2StringMeasurementEvent( vscpEvent *pEvent, 
+extern "C" DllExport int WINAPI EXPORT vscphlp_makeLevel2StringMeasurementEvent( vscpEvent *pEvent,
                                                                         uint16_t type,
                                                                         double value,
                                                                         uint8_t unit,
