@@ -910,7 +910,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
         was successful.
      */
-    int getRemoteVariableVSCPtimestamp( const wxString& name, uint32_t *vscp_timestamp);
+    int getRemoteVariableVSCPTimestamp( const wxString& name, uint32_t *vscp_timestamp);
 
 
     /*!
@@ -920,7 +920,7 @@ public:
         @param vscp_timestamp as uint32_t to write to variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableVSCPtimestamp( const wxString& name, uint32_t vscp_timestamp);
+    int setRemoteVariableVSCPTimestamp( const wxString& name, uint32_t vscp_timestamp);
 
     /*!
         Get variable value from datetime variable

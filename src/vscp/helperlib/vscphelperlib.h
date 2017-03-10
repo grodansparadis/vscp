@@ -153,6 +153,51 @@ DllExport int WINAPI EXPORT vscphlp_setRemoteVariableVSCPClass( long handle, con
 DllExport int WINAPI EXPORT vscphlp_getRemoteVariableVSCPType( long handle, const char *pName, unsigned short *vscp_type );
 DllExport int WINAPI EXPORT vscphlp_setRemoteVariableVSCPType( long handle, const char *pName, unsigned short vscp_type );
 
+DllExport int WINAPI EXPORT vscphlp_getRemoteVariableVSCPTimestamp( long handle, const char *pName, unsigned long *vscp_timestamp );
+DllExport int WINAPI EXPORT vscphlp_setRemoteVariableVSCPTimestamp( long handle, const char *pName, unsigned short vscp_type );
+
+DllExport int WINAPI EXPORT vscphlp_getRemoteVariableDateTime( long handle, const char *pName, char *pValue, int size );
+DllExport int WINAPI EXPORT vscphlp_setRemoteVariableDateTime( long handle, const char *pName, char *pValue );
+
+DllExport int WINAPI EXPORT vscphlp_getRemoteVariableDate( long handle, const char *pName, char *pValue, int size );
+DllExport int WINAPI EXPORT vscphlp_setRemoteVariableDate( long handle, const char *pName, char *pValue );
+
+DllExport int WINAPI EXPORT vscphlp_getRemoteVariableTime( long handle, const char *pName, char *pValue, int size );
+DllExport int WINAPI EXPORT vscphlp_setRemoteVariableTime( long handle, const char *pName, char *pValue );
+
+DllExport int WINAPI EXPORT vscphlp_getRemoteVariableBlob( long handle, const char *pName, char *pValue, int size );
+DllExport int WINAPI EXPORT vscphlp_setRemoteVariableBlob( long handle, const char *pName, char *pValue );
+
+DllExport int WINAPI EXPORT vscphlp_getRemoteVariableMIME( long handle, const char *pName, char *pValue, int size );
+DllExport int WINAPI EXPORT vscphlp_setRemoteVariableMIME( long handle, const char *pName, char *pValue );
+
+DllExport int WINAPI EXPORT vscphlp_getRemoteVariableHTML( long handle, const char *pName, char *pValue, int size );
+DllExport int WINAPI EXPORT vscphlp_setRemoteVariableHTML( long handle, const char *pName, char *pValue );
+
+DllExport int WINAPI EXPORT vscphlp_getRemoteVariableJavaScript( long handle, const char *pName, char *pValue, int size ):
+DllExport int WINAPI EXPORT vscphlp_setRemoteVariableJavaScript( long handle, const char *pName, char *pValue );
+
+DllExport int WINAPI EXPORT vscphlp_getRemoteVariableLUA( long handle, const char *pName, char *pValue, int size );
+DllExport int WINAPI EXPORT vscphlp_setRemoteVariableLUA( long handle, const char *pName, char *pValue );
+
+DllExport int WINAPI EXPORT vscphlp_getRemoteVariableLUARES( long handle, const char *pName, char *pValue, int size );
+DllExport int WINAPI EXPORT vscphlp_setRemoteVariableLUARES( long handle, const char *pName, char *pValue );
+
+DllExport int WINAPI EXPORT vscphlp_getRemoteVariableUX1( long handle, const char *pName, char *pValue, int size );
+DllExport int WINAPI EXPORT vscphlp_setRemoteVariableUX1( long handle, const char *pName, char *pValue );
+
+DllExport int WINAPI EXPORT vscphlp_getRemoteVariableDMROW( long handle, const char *pName, char *pValue, int size );
+DllExport int WINAPI EXPORT vscphlp_setRemoteVariableDMROW( long handle, const char *pName, char *pValue );
+
+DllExport int WINAPI EXPORT vscphlp_getRemoteVariableDriver( long handle, const char *pName, char *pValue, int size );
+DllExport int WINAPI EXPORT vscphlp_setRemoteVariableDriver( long handle, const char *pName, char *pValue );
+
+DllExport int WINAPI EXPORT vscphlp_getRemoteVariableUser( long handle, const char *pName, char *pValue, int size );
+DllExport int WINAPI EXPORT vscphlp_setRemoteVariableUser( long handle, const char *pName, char *pValue );
+
+DllExport int WINAPI EXPORT vscphlp_getRemoteVariableFilter( long handle, const char *pName, char *pValue, int size );
+DllExport int WINAPI EXPORT vscphlp_setRemoteVariableFilter( long handle, const char *pName, char *pValue );
+
 //-------------------------------------------------------------------------
 //                                Helpers
 //-------------------------------------------------------------------------
@@ -419,6 +464,51 @@ int vscphlp_setRemoteVariableVSCPClass( long handle, const char *pName, unsigned
 
 int vscphlp_getRemoteVariableVSCPType( long handle, const char *pName, unsigned short *vscp_type );
 int vscphlp_setRemoteVariableVSCPType( long handle, const char *pName, unsigned short vscp_type );
+
+int vscphlp_getRemoteVariableVSCPTimestamp( long handle, const char *pName, unsigned long *vscp_timestamp );
+int vscphlp_setRemoteVariableVSCPTimestamp( long handle, const char *pName, unsigned short vscp_type );
+
+int vscphlp_getRemoteVariableDateTime( long handle, const char *pName, char *pValue, int size );
+int vscphlp_setRemoteVariableDateTime( long handle, const char *pName, char *pValue );
+
+int vscphlp_getRemoteVariableDate( long handle, const char *pName, char *pValue, int size );
+int vscphlp_setRemoteVariableDate( long handle, const char *pName, char *pValue );
+
+int vscphlp_getRemoteVariableTime( long handle, const char *pName, char *pValue, int size );
+int vscphlp_setRemoteVariableTime( long handle, const char *pName, char *pValue );
+
+int vscphlp_getRemoteVariableBlob( long handle, const char *pName, char *pValue, int size );
+int vscphlp_setRemoteVariableBlob( long handle, const char *pName, char *pValue );
+
+int vscphlp_getRemoteVariableMIME( long handle, const char *pName, char *pValue, int size );
+int vscphlp_setRemoteVariableMIME( long handle, const char *pName, char *pValue );
+
+int vscphlp_getRemoteVariableHTML( long handle, const char *pName, char *pValue, int size );
+int vscphlp_setRemoteVariableHTML( long handle, const char *pName, char *pValue );
+
+int vscphlp_getRemoteVariableJavaScript( long handle, const char *pName, char *pValue, int size );
+int vscphlp_setRemoteVariableJavaScript( long handle, const char *pName, char *pValue );
+
+int vscphlp_getRemoteVariableLUA( long handle, const char *pName, char *pValue, int size );
+int vscphlp_setRemoteVariableLUA( long handle, const char *pName, char *pValue );
+
+int vscphlp_getRemoteVariableLUARES( long handle, const char *pName, char *pValue, int size );
+int vscphlp_setRemoteVariableLUARES( long handle, const char *pName, char *pValue );
+
+int vscphlp_getRemoteVariableUX1( long handle, const char *pName, char *pValue, int size );
+int vscphlp_setRemoteVariableUX1( long handle, const char *pName, char *pValue );
+
+int vscphlp_getRemoteVariableDMROW( long handle, const char *pName, char *pValue, int size );
+int vscphlp_setRemoteVariableDMROW( long handle, const char *pName, char *pValue );
+
+int vscphlp_getRemoteVariableDriver( long handle, const char *pName, char *pValue, int size );
+int vscphlp_setRemoteVariableDriver( long handle, const char *pName, char *pValue );
+
+int vscphlp_getRemoteVariableUser( long handle, const char *pName, char *pValue, int size );
+int vscphlp_setRemoteVariableUser( long handle, const char *pName, char *pValue );
+
+int vscphlp_getRemoteVariableFilter( long handle, const char *pName, char *pValue, int size );
+int vscphlp_setRemoteVariableFilter( long handle, const char *pName, char *pValue );
 
 
 //-------------------------------------------------------------------------

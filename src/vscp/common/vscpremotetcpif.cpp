@@ -2549,10 +2549,10 @@ int VscpRemoteTcpIf::setRemoteVariableVSCPtype( const wxString& name,
 // ----
 
 ///////////////////////////////////////////////////////////////////////////////
-// getRemoteVariableVSCPtimestamp
+// getRemoteVariableVSCPTimestamp
 //
 
-int VscpRemoteTcpIf::getRemoteVariableVSCPtimestamp( const wxString& name, 
+int VscpRemoteTcpIf::getRemoteVariableVSCPTimestamp( const wxString& name, 
                                                         uint32_t *vscp_timestamp )
 {
     int rv;
@@ -2573,10 +2573,10 @@ int VscpRemoteTcpIf::getRemoteVariableVSCPtimestamp( const wxString& name,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// setRemoteVariableVSCPtimestamp
+// setRemoteVariableVSCPTimestamp
 //
 
-int VscpRemoteTcpIf::setRemoteVariableVSCPtimestamp( const wxString& name, 
+int VscpRemoteTcpIf::setRemoteVariableVSCPTimestamp( const wxString& name, 
                                                         uint32_t vscp_timestamp)
 {
     wxString strValue;
@@ -2975,6 +2975,13 @@ int VscpRemoteTcpIf::setRemoteVariableFilter( const wxString& name, wxString& fi
 
     return setRemoteVariableValue( name, filter );
 }
+
+
+
+
+
+
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
