@@ -2599,7 +2599,7 @@ int VscpRemoteTcpIf::getRemoteVariableDateTime( const wxString& name, wxDateTime
         return rv;
     }
 
-    datetime.ParseDateTime( strValue );
+    datetime.ParseISOCombined( strValue );
 
     return VSCP_ERROR_SUCCESS;
 }

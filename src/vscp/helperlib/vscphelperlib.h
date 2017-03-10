@@ -154,7 +154,7 @@ DllExport int WINAPI EXPORT vscphlp_getRemoteVariableVSCPType( long handle, cons
 DllExport int WINAPI EXPORT vscphlp_setRemoteVariableVSCPType( long handle, const char *pName, unsigned short vscp_type );
 
 DllExport int WINAPI EXPORT vscphlp_getRemoteVariableVSCPTimestamp( long handle, const char *pName, unsigned long *vscp_timestamp );
-DllExport int WINAPI EXPORT vscphlp_setRemoteVariableVSCPTimestamp( long handle, const char *pName, unsigned short vscp_type );
+DllExport int WINAPI EXPORT vscphlp_setRemoteVariableVSCPTimestamp( long handle, const char *pName, unsigned long vscp_type );
 
 DllExport int WINAPI EXPORT vscphlp_getRemoteVariableDateTime( long handle, const char *pName, char *pValue, int size );
 DllExport int WINAPI EXPORT vscphlp_setRemoteVariableDateTime( long handle, const char *pName, char *pValue );
@@ -466,7 +466,7 @@ int vscphlp_getRemoteVariableVSCPType( long handle, const char *pName, unsigned 
 int vscphlp_setRemoteVariableVSCPType( long handle, const char *pName, unsigned short vscp_type );
 
 int vscphlp_getRemoteVariableVSCPTimestamp( long handle, const char *pName, unsigned long *vscp_timestamp );
-int vscphlp_setRemoteVariableVSCPTimestamp( long handle, const char *pName, unsigned short vscp_type );
+int vscphlp_setRemoteVariableVSCPTimestamp( long handle, const char *pName, unsigned long vscp_timestamp );
 
 int vscphlp_getRemoteVariableDateTime( long handle, const char *pName, char *pValue, int size );
 int vscphlp_setRemoteVariableDateTime( long handle, const char *pName, char *pValue );

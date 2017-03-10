@@ -1708,9 +1708,10 @@ extern "C" int vscphlp_setRemoteVariableDateTime( long handle, const char *pName
     if ( NULL == pName ) return false;
     if ( NULL == pValue ) return false;
 
-    wxString name = wxString::FromUTF8( pName );    
+    wxString name = wxString::FromUTF8( pName );   
+    wxString value = wxString::FromUTF8( pValue );
     wxDateTime datetime;
-    if ( !datetime.ParseDateTime( pValue ) ) {
+    if ( !datetime.ParseISOCombined( value ) ) {
         return VSCP_ERROR_PARAMETER;
     }
     
@@ -1782,7 +1783,7 @@ extern "C" int vscphlp_setRemoteVariableDate( long handle, const char *pName, ch
 
     wxString name = wxString::FromUTF8( pName );    
     wxDateTime datetime;
-    if ( !datetime.ParseDate( pValue ) ) {
+    if ( !datetime.ParseISODate( pValue ) ) {
         return VSCP_ERROR_PARAMETER;
     }
     
@@ -1854,7 +1855,7 @@ extern "C" int vscphlp_setRemoteVariableTime( long handle, const char *pName, ch
 
     wxString name = wxString::FromUTF8( pName );    
     wxDateTime datetime;
-    if ( !datetime.ParseTime( pValue ) ) {
+    if ( !datetime.ParseISOTime( pValue ) ) {
         return VSCP_ERROR_PARAMETER;
     }
     

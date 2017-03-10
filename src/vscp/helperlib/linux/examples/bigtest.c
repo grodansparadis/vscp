@@ -20,6 +20,8 @@
 // Uncomment to test measurement functionality
 //#define TEST_MEASUREMENT
 
+int error_cnt = 0;
+
 
 int main(int argc, char* argv[])
 {
@@ -35,6 +37,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aError: Failed to get handle for channel 1\n");
+        error_cnt++;
     }
 
     handle2 = vscphlp_newSession();
@@ -1298,8 +1301,276 @@ int main(int argc, char* argv[])
 
     
     
+    printf("\n\n********************************************************************\n");
+    printf("               Test VSCP timestamp variable reading/writing \n");
+    printf("********************************************************************\n\n");
+    
+    
+    
+
+    // Create variable
+    if ( VSCP_ERROR_SUCCESS == 
+        ( rv = vscphlp_createRemoteVariable( handle1, 
+                        "test_vscp_timestamp_variable", 
+                        "timestamp",    
+                        0,
+                        "",
+                        0x744,
+                        "",     /* Empty value is reset value */
+                        "VGhpcyBpcyBhIG5vdGU=") ) ) {
+        printf( "Command success: vscphlp_createRemoteVariable on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_createRemoteVariable on channel 1  Error code=%d\n", rv);
+        error_cnt++;
+    }
+    
+    // Write a value 
+    printf("\n\n===== vscphlp_setRemoteVariableVSCPTimestamp =====\n");
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_setRemoteVariableVSCPTimestamp( handle1, "test_vscp_timestamp_variable", 223344 ) ) ) {
+        printf( "Command success: vscphlp_setRemoteVariableVSCPTimestamp on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_setRemoteVariableVSCPTimestamp on channel 1  Error code=%d\n", rv);
+        error_cnt++;
+    }
+   
+    unsigned long vscptimestamp;
+
+    // Read a value from aVSCP type type
+    printf("\n\n===== vscphlp_getRemoteVariableVSCPTimestamp =====\n");
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_getRemoteVariableVSCPTimestamp( handle1, 
+                                                            "test_vscp_timestamp_variable", 
+                                                            &vscptimestamp ) ) )  {
+        printf( "Command success: vscphlp_getRemoteVariableVSCPTimestamp on channel 1\n" );
+        printf(" Value = %lu\n", vscptimestamp );
+        if ( 223344 == vscptimestamp ) {
+            printf("Read value is the same as written\n");
+        }
+        else {
+            printf("\aError: Read value is NOT the same as written\n");
+            error_cnt++;
+        }
+    }
+    else {
+        printf("\aCommand error: vscphlp_getRemoteVariableVSCPTimestamp on channel 1  Error code=%d\n", rv);
+        error_cnt++;
+    }
 
 
+
+
+
+
+
+    
+    
+    printf("\n\n********************************************************************\n");
+    printf("               Test DateTime variable reading/writing \n");
+    printf("********************************************************************\n\n");
+    
+    
+    
+
+    // Create variable
+    if ( VSCP_ERROR_SUCCESS == 
+        ( rv = vscphlp_createRemoteVariable( handle1, 
+                        "test_datetime_variable", 
+                        "datetime", 
+                        0,
+                        "",
+                        0x744,
+                        "",     /* Empty value is reset value */
+                        "VGhpcyBpcyBhIG5vdGU=") ) ) {
+        printf( "Command success: vscphlp_createRemoteVariable on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_createRemoteVariable on channel 1  Error code=%d\n", rv);
+        error_cnt++;
+    }
+    
+    // Write a value 
+    printf("\n\n===== vscphlp_setRemoteVariableDateTime =====\n");
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_setRemoteVariableDateTime( handle1, "test_datetime_variable", "1956-11-02T17:12:01" ) ) ) {
+        printf( "Command success: vscphlp_setRemoteVariableDateTime on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_setRemoteVariableDateTime on channel 1  Error code=%d\n", rv);
+        error_cnt++;
+    }
+   
+    char datetimebuf[80];
+    memset( datetimebuf, 0, sizeof( datetimebuf) );
+
+    // Read a value from a VSCP type type
+    printf("\n\n===== vscphlp_getRemoteVariableDateTime =====\n");
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_getRemoteVariableDateTime( handle1, 
+                                                            "test_datetime_variable", 
+                                                            datetimebuf,
+                                                            sizeof( datetimebuf ) ) ) )  {
+        printf( "Command success: vscphlp_getRemoteVariableDateTime on channel 1\n" );
+        printf(" Value = %s\n", datetimebuf );
+        if ( 0 == strcmp( datetimebuf, "1956-11-02T17:12:01" ) ) {
+            printf("Read value is the same as written\n");
+        }
+        else {
+            printf("\aError: Read value is NOT the same as written\n");
+            error_cnt++;
+        }
+    }
+    else {
+        printf("\aCommand error: vscphlp_getRemoteVariableDate on channel 1  Error code=%d\n", rv);
+        error_cnt++;
+    }
+
+
+
+
+
+
+
+
+
+
+    
+    
+    printf("\n\n********************************************************************\n");
+    printf("               Test Date variable reading/writing \n");
+    printf("********************************************************************\n\n");
+    
+    
+    
+
+    // Create variable
+    if ( VSCP_ERROR_SUCCESS == 
+        ( rv = vscphlp_createRemoteVariable( handle1, 
+                        "test_date_variable", 
+                        "date", 
+                        0,
+                        "",
+                        0x744,
+                        "",     /* Empty value is reset value */
+                        "VGhpcyBpcyBhIG5vdGU=") ) ) {
+        printf( "Command success: vscphlp_createRemoteVariable on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_createRemoteVariable on channel 1  Error code=%d\n", rv);
+        error_cnt++;
+    }
+    
+    // Write a value 
+    printf("\n\n===== vscphlp_setRemoteVariableDate =====\n");
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_setRemoteVariableDate( handle1, "test_date_variable", "1956-11-02" ) ) ) {
+        printf( "Command success: vscphlp_setRemoteVariableDate on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_setRemoteVariableDate on channel 1  Error code=%d\n", rv);
+        error_cnt++;
+    }
+   
+    char datebuf[80];
+    memset( datebuf, 0, sizeof( datebuf) );
+
+    // Read a value from a VSCP type type
+    printf("\n\n===== vscphlp_getRemoteVariableDate =====\n");
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_getRemoteVariableDate( handle1, 
+                                                            "test_date_variable", 
+                                                            datebuf,
+                                                            sizeof( datebuf ) ) ) )  {
+        printf( "Command success: vscphlp_getRemoteVariableDate on channel 1\n" );
+        printf(" Value = %s\n", datebuf );
+        if ( 0 == strcmp( datebuf, "1956-11-02" ) ) {
+            printf("Read value is the same as written\n");
+        }
+        else {
+            printf("\aError: Read value is NOT the same as written\n");
+            error_cnt++;
+        }
+    }
+    else {
+        printf("\aCommand error: vscphlp_getRemoteVariableDate on channel 1  Error code=%d\n", rv);
+        error_cnt++;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+    printf("\n\n********************************************************************\n");
+    printf("               Test Time variable reading/writing \n");
+    printf("********************************************************************\n\n");
+    
+    
+    
+
+    // Create variable
+    if ( VSCP_ERROR_SUCCESS == 
+        ( rv = vscphlp_createRemoteVariable( handle1, 
+                        "test_time_variable", 
+                        "time", 
+                        0,
+                        "",
+                        0x744,
+                        "",     /* Empty value is reset value */
+                        "VGhpcyBpcyBhIG5vdGU=") ) ) {
+        printf( "Command success: vscphlp_createRemoteVariable on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_createRemoteVariable on channel 1  Error code=%d\n", rv);
+        error_cnt++;
+    }
+    
+    // Write a value 
+    printf("\n\n===== vscphlp_setRemoteVariableTime =====\n");
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_setRemoteVariableTime( handle1, "test_time_variable", "19:22:11" ) ) ) {
+        printf( "Command success: vscphlp_setRemoteVariableTime on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_setRemoteVariableTime on channel 1  Error code=%d\n", rv);
+        error_cnt++;
+    }
+   
+    char timebuf[80];
+    memset( timebuf, 0, sizeof( timebuf) );
+
+    // Read a value from a VSCP type type
+    printf("\n\n===== vscphlp_getRemoteVariableTime =====\n");
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_getRemoteVariableTime( handle1, 
+                                                            "test_time_variable", 
+                                                            timebuf,
+                                                            sizeof( timebuf ) ) ) )  {
+        printf( "Command success: vscphlp_getRemoteVariableTime on channel 1\n" );
+        printf(" Value = %s\n", timebuf );
+        if ( 0 == strcmp( timebuf, "19:22:11" ) ) {
+            printf("Read value is the same as written\n");
+        }
+        else {
+            printf("\aError: Read value is NOT the same as written\n");
+            error_cnt++;
+        }
+    }
+    else {
+        printf("\aCommand error: vscphlp_getRemoteVariableTime on channel 1  Error code=%d\n", rv);
+        error_cnt++;
+    }
     // Save variables marked as persistent
     /*printf("\n\n===== vscphlp_saveRemoteVariablesToDisk =====\n");
     if ( VSCP_ERROR_SUCCESS == 
@@ -1314,7 +1585,17 @@ int main(int argc, char* argv[])
 
 
 
-    // ------------------------------------------------------------------------
+
+
+
+
+
+// -------------------------------------------------------------------------------------------------
+
+
+
+
+
 
 
 
@@ -1781,6 +2062,26 @@ int main(int argc, char* argv[])
 
 
 
+
+
+
+
+
+
+
+
+// -------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
 #ifdef TEST_MEASUREMENT
 
 
@@ -2046,7 +2347,7 @@ int main(int argc, char* argv[])
     vscphlp_closeSession( handle1 );
     vscphlp_closeSession( handle2 );
 
-    printf("\n\nHit ENTER to terminate\n");
+    printf("\n\nHit ENTER to terminate Error Count= %d\n", error_cnt );
     (void)getchar();
    
     return 0;
