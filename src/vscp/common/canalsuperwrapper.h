@@ -347,7 +347,7 @@ public:
     */
     int getVariableString( wxString& name, wxString *strValue )
     { 
-        return m_vscptcpif.getRemoteVariable( name, strValue ); 
+        return m_vscptcpif.getRemoteVariable( name, *strValue ); 
     };
 
     /*!
@@ -358,7 +358,7 @@ public:
     */
     int setVariableString( wxString& name, wxString& strValue )
     { 
-        return m_vscptcpif.setVariableString( name, strValue ); 
+        return m_vscptcpif.getRemoteVariableValue( name, strValue ); 
     };
 
     /*!
@@ -369,7 +369,7 @@ public:
     */
     int getVariableBool( wxString& name, bool *bValue )
     { 
-        return m_vscptcpif.getVariableBool( name, bValue ); 
+        return m_vscptcpif.getRemoteVariableBool( name, bValue ); 
     };
 
     /*!
@@ -380,7 +380,7 @@ public:
     */
     int setVariableBool( wxString& name, bool bValue )
     { 
-        return m_vscptcpif.setVariableBool( name, bValue ); 
+        return m_vscptcpif.setRemoteVariableBool( name, bValue ); 
     };
 
     /*!
@@ -391,7 +391,7 @@ public:
     */
     int getVariableInt( wxString& name, int *value )
     { 
-        return m_vscptcpif.getVariableInt( name, value ); 
+        return m_vscptcpif.getRemoteVariableInt( name, value ); 
     };
 
     /*!
@@ -402,7 +402,7 @@ public:
     */
     int setVariableInt( wxString& name, int value )
     { 
-        return m_vscptcpif.setVariableInt( name, value ); 
+        return m_vscptcpif.setRemoteVariableInt( name, value ); 
     };
 
     /*!
@@ -413,7 +413,7 @@ public:
     */
     int getVariableLong( wxString& name, long *value )
     { 
-        return m_vscptcpif.getVariableLong( name, value );  
+        return m_vscptcpif.getRemoteVariableLong( name, value );  
     };
 
     /*!
@@ -424,7 +424,7 @@ public:
     */
     int setVariableLong( wxString& name, long value )
     { 
-        return m_vscptcpif.setVariableLong( name, value );  
+        return m_vscptcpif.setRemoteVariableLong( name, value );  
     };
 
     /*!
@@ -435,7 +435,7 @@ public:
     */
     int getVariableDouble( wxString& name, double *value )
     { 
-        return m_vscptcpif.getVariableDouble( name, value ); 
+        return m_vscptcpif.getRemoteVariableDouble( name, value ); 
     };
 
     /*!
@@ -446,7 +446,7 @@ public:
     */
     int setVariableDouble( wxString& name, double value )
     { 
-        return m_vscptcpif.setVariableDouble( name, value ); 
+        return m_vscptcpif.setRemoteVariableDouble( name, value ); 
     };
 
     /*!
@@ -458,7 +458,7 @@ public:
     */
     int getVariableMeasurement( wxString& name, wxString& strValue )
     { 
-        return m_vscptcpif.getVariableMeasurement( name, strValue ); 
+        return m_vscptcpif.getRemoteVariableValue( name, strValue ); 
     };
 
     /*!
@@ -470,7 +470,7 @@ public:
     */
     int setVariableMeasurement( wxString& name, wxString& strValue )
     { 
-        return m_vscptcpif.setVariableMeasurement( name, strValue ); 
+        return m_vscptcpif.setRemoteVariableValue( name, strValue ); 
     };
 
     /*!
@@ -481,7 +481,7 @@ public:
     */
     int getVariableEvent( wxString& name, vscpEvent *pEvent )
     { 
-        return m_vscptcpif.getVariableEvent( name, pEvent ); 
+        return m_vscptcpif.getRemoteVariableEvent( name, pEvent ); 
     };
 
     /*!
@@ -492,7 +492,7 @@ public:
     */
     int setVariableEvent( wxString& name, vscpEvent *pEvent )
     { 
-        return m_vscptcpif.setVariableEvent( name, pEvent ); 
+        return m_vscptcpif.setRemoteVariableEvent( name, pEvent ); 
     };
 
     /*!
@@ -503,7 +503,7 @@ public:
     */
     int getVariableEventEx( wxString& name, vscpEventEx *pEvent )
     { 
-        return m_vscptcpif.getVariableEventEx( name, pEvent ); 
+        return m_vscptcpif.getRemoteVariableEventEx( name, pEvent ); 
     };
 
     /*!
@@ -514,7 +514,7 @@ public:
     */
     int setVariableEventEx( wxString& name, vscpEventEx *pEvent )
     { 
-        return m_vscptcpif.setVariableEventEx( name, pEvent ); 
+        return m_vscptcpif.setRemoteVariableEventEx( name, pEvent ); 
     };
 
     /*!
@@ -525,7 +525,7 @@ public:
     */
     int getVariableGUID( wxString& name, cguid& GUID )
     { 
-        return m_vscptcpif.getVariableGUID( name, GUID ); 
+        return m_vscptcpif.getRemoteVariableGUID( name, GUID ); 
     };
 
     /*!
@@ -536,7 +536,7 @@ public:
     */
     int setVariableGUID( wxString& name, cguid& GUID )
     { 
-        return m_vscptcpif.setVariableGUID( name, GUID ); 
+        return m_vscptcpif.setRemoteVariableGUID( name, GUID ); 
     };
 
     /*!
@@ -549,7 +549,7 @@ public:
     */
     int getVariableVSCPdata( wxString& name, uint8_t *pData, uint16_t *psizeData )
     { 
-        return m_vscptcpif.getVariableVSCPdata( name, pData, psizeData ); 
+        return m_vscptcpif.getRemoteVariableVSCPdata( name, pData, psizeData ); 
     };
 
     /*!
@@ -562,7 +562,7 @@ public:
     */
     int setVariableVSCPdata( wxString& name, uint16_t sizeData, uint8_t *pData )
     { 
-        return m_vscptcpif.setVariableVSCPdata( name, pData, sizeData ); 
+        return m_vscptcpif.setRemoteVariableVSCPdata( name, pData, sizeData ); 
     };
 
     /*!
@@ -573,7 +573,7 @@ public:
     */
     int getVariableVSCPclass( wxString& name, uint16_t *vscp_class )
     { 
-        return m_vscptcpif.getVariableVSCPclass( name, vscp_class ); 
+        return m_vscptcpif.getRemoteVariableVSCPclass( name, vscp_class ); 
     };
 
     /*!
@@ -584,7 +584,7 @@ public:
     */
     int setVariableVSCPclass( wxString& name, uint16_t vscp_class )
     { 
-        return m_vscptcpif.setVariableVSCPclass( name, vscp_class ); 
+        return m_vscptcpif.setRemoteVariableVSCPclass( name, vscp_class ); 
     };
 
     /*!
@@ -595,7 +595,7 @@ public:
     */
     int getVariableVSCPtype( wxString& name, uint16_t *vscp_type )
     { 
-        return m_vscptcpif.getVariableVSCPtype( name, vscp_type ); 
+        return m_vscptcpif.getRemoteVariableVSCPtype( name, vscp_type ); 
     };
 
 
@@ -607,7 +607,7 @@ public:
     */
     int setVariableVSCPtype( wxString& name, uint16_t vscp_type )
     { 
-        return m_vscptcpif.setVariableVSCPtype( name, vscp_type ); 
+        return m_vscptcpif.setRemoteVariableVSCPtype( name, vscp_type ); 
     };
 
     /*!
