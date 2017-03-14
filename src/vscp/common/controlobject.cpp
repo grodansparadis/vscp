@@ -942,7 +942,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     cs_md5( digest, buf, len_buf, NULL );
 
     m_userList.addUser( m_driverUsername,
-                            wxString::FromUTF8( digest ),
+                            /*wxString::FromUTF8( digest )*/ m_driverPassword,
                             _("System added driver user."), // full name
                             _("System added driver user."), // note
                             NULL,
@@ -1884,10 +1884,10 @@ void CControlObject::addClient( CClientItem *pClientItem,
                                     uint32_t id )
 {
     // Add client to client list
-    m_clientList.addClient(pClientItem, id);
+    m_clientList.addClient( pClientItem, id );
 
     // Add mapped item
-    addIdToClientMap(pClientItem->m_clientID);
+    addIdToClientMap( pClientItem->m_clientID );
 
     // Set GUID for interface
     pClientItem->m_guid = m_guid;
@@ -2769,7 +2769,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                 // Add user
                 if ( bUser ) {
 
-                    if (bFilterPresent && bMaskPresent) {
+                    if ( bFilterPresent && bMaskPresent ) {
                         m_userList.addUser(name, md5, _(""), _(""), &VSCPFilter, privilege, allowfrom, allowevent);
                     }
                     else {
@@ -2873,7 +2873,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                 }
 
                 // Add the device
-                if (bCanalDriver && bEnabled ) {
+                if ( bCanalDriver && bEnabled ) {
 
                     if (!m_deviceList.addItem( strName,
                                                 strConfig,
@@ -2993,14 +2993,14 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                 // Add the device
                 if ( bLevel2Driver && bEnabled ) {
 
-                    if (!m_deviceList.addItem(strName,
+                    if (!m_deviceList.addItem( strName,
                                                 strConfig,
                                                 strPath,
                                                 0,
                                                 guid,
                                                 VSCP_DRIVER_LEVEL2,
                                                 bEnabled )) {
-                        wxString errMsg = _("Driver not added. Path does not exist. - [ ") +
+                        wxString errMsg = _("Driver was not added. Path does not exist. - [ ") +
                                     strPath + _(" ]\n");
                         logMsg(errMsg);
 
@@ -3057,7 +3057,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     }
                     else {                       
                         // Invalid type
-                        logMsg( _("Reading table xml info: Invalid type!\n") );
+                        logMsg( _("Reading VSCP table xml info: Invalid table type (static/dynamic)!\n") );
                         goto xml_table_error;
                     }
                     
