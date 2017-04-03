@@ -214,7 +214,7 @@ public:
     wxString m_currentCommand;
 
     /// Current command i all upper case
-    wxString m_currentCommandUC;
+    //wxString m_currentCommandUC;
 };
 
 // List with clientitems

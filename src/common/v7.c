@@ -191,6 +191,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <ctype.h>
 
 #ifdef _MSC_VER
 #pragma comment(lib, "ws2_32.lib") /* Linking with winsock library */
@@ -217,13 +218,13 @@
 #define __func__ __FILE__ ":" STR(__LINE__)
 #endif
 #define snprintf _snprintf
-#define fileno _fileno
 #define vsnprintf _vsnprintf
 #define sleep(x) Sleep((x) *1000)
 #define to64(x) _atoi64(x)
 #if !defined(__MINGW32__) && !defined(__MINGW64__)
 #define popen(x, y) _popen((x), (y))
 #define pclose(x) _pclose(x)
+#define fileno _fileno
 #endif
 #define rmdir _rmdir
 #if defined(_MSC_VER) && _MSC_VER >= 1400
@@ -1064,6 +1065,10 @@ int gettimeofday(struct timeval *tp, void *tzp);
 #define EWOULDBLOCK WSAEWOULDBLOCK
 #endif
 
+#ifndef EAGAIN
+#define EAGAIN EWOULDBLOCK
+#endif
+
 #ifndef __func__
 #define STRX(x) #x
 #define STR(x) STRX(x)
@@ -1463,6 +1468,34 @@ void mbuf_trim(struct mbuf *);
 
 #endif /* CS_COMMON_MBUF_H_ */
 #ifdef V7_MODULE_LINES
+#line 1 "common/mg_mem.h"
+#endif
+/*
+ * Copyright (c) 2014-2016 Cesanta Software Limited
+ * All rights reserved
+ */
+
+#ifndef CS_COMMON_MG_MEM_H_
+#define CS_COMMON_MG_MEM_H_
+
+#ifndef MG_MALLOC
+#define MG_MALLOC malloc
+#endif
+
+#ifndef MG_CALLOC
+#define MG_CALLOC calloc
+#endif
+
+#ifndef MG_REALLOC
+#define MG_REALLOC realloc
+#endif
+
+#ifndef MG_FREE
+#define MG_FREE free
+#endif
+
+#endif /* CS_COMMON_MG_MEM_H_ */
+#ifdef V7_MODULE_LINES
 #line 1 "common/str_util.h"
 #endif
 /*
@@ -1797,8 +1830,8 @@ void cs_log_printf(const char *fmt, ...);
 
 /* Amalgamated: #include "common/platform.h" */
 
-#ifndef DISABLE_MD5
-#define DISABLE_MD5 0
+#ifndef CS_DISABLE_MD5
+#define CS_DISABLE_MD5 0
 #endif
 
 #ifdef __cplusplus
@@ -1868,11 +1901,11 @@ char *cs_md5(char buf[33], ...);
 #ifndef CS_COMMON_SHA1_H_
 #define CS_COMMON_SHA1_H_
 
-#ifndef DISABLE_SHA1
-#define DISABLE_SHA1 0
+#ifndef CS_DISABLE_SHA1
+#define CS_DISABLE_SHA1 0
 #endif
 
-#if !DISABLE_SHA1
+#if !CS_DISABLE_SHA1
 
 /* Amalgamated: #include "common/platform.h" */
 
@@ -1896,7 +1929,7 @@ void cs_hmac_sha1(const unsigned char *key, size_t key_len,
 }
 #endif /* __cplusplus */
 
-#endif /* DISABLE_SHA1 */
+#endif /* CS_DISABLE_SHA1 */
 
 #endif /* CS_COMMON_SHA1_H_ */
 #ifdef V7_MODULE_LINES
@@ -8594,6 +8627,7 @@ void mbuf_remove(struct mbuf *mb, size_t n) {
 
 #ifndef EXCLUDE_COMMON
 
+/* Amalgamated: #include "common/mg_mem.h" */
 /* Amalgamated: #include "common/platform.h" */
 /* Amalgamated: #include "common/str_util.h" */
 
@@ -8601,13 +8635,7 @@ void mbuf_remove(struct mbuf *mb, size_t n) {
 #define C_DISABLE_BUILTIN_SNPRINTF 0
 #endif
 
-#ifndef MG_MALLOC
-#define MG_MALLOC malloc
-#endif
-
-#ifndef MG_FREE
-#define MG_FREE free
-#endif
+/* Amalgamated: #include "common/mg_mem.h" */
 
 size_t c_strnlen(const char *s, size_t maxlen) WEAK;
 size_t c_strnlen(const char *s, size_t maxlen) {
@@ -8873,7 +8901,7 @@ const char *c_strnstr(const char *s, const char *find, size_t slen) {
 char *strdup(const char *src) WEAK;
 char *strdup(const char *src) {
   size_t len = strlen(src) + 1;
-  char *ret = malloc(len);
+  char *ret = MG_MALLOC(len);
   if (ret != NULL) {
     strcpy(ret, src);
   }
@@ -10602,7 +10630,7 @@ int cs_base64_decode(const unsigned char *s, int len, char *dst, int *dec_len) {
 /* Amalgamated: #include "common/str_util.h" */
 
 #if !defined(EXCLUDE_COMMON)
-#if !DISABLE_MD5
+#if !CS_DISABLE_MD5
 
 /* Amalgamated: #include "common/cs_endian.h" */
 
@@ -10789,7 +10817,6 @@ void MD5_Final(unsigned char digest[16], MD5_CTX *ctx) {
   memcpy(digest, ctx->buf, 16);
   memset((char *) ctx, 0, sizeof(*ctx));
 }
-#endif /* DISABLE_MD5 */
 
 char *cs_md5(char buf[33], ...) {
   unsigned char hash[16];
@@ -10812,6 +10839,7 @@ char *cs_md5(char buf[33], ...) {
   return buf;
 }
 
+#endif /* CS_DISABLE_MD5 */
 #endif /* EXCLUDE_COMMON */
 #ifdef V7_MODULE_LINES
 #line 1 "common/sha1.c"
@@ -10821,7 +10849,7 @@ char *cs_md5(char buf[33], ...) {
 
 /* Amalgamated: #include "common/sha1.h" */
 
-#if !DISABLE_SHA1 && !defined(EXCLUDE_COMMON)
+#if !CS_DISABLE_SHA1 && !defined(EXCLUDE_COMMON)
 
 /* Amalgamated: #include "common/cs_endian.h" */
 
@@ -11079,20 +11107,13 @@ void cs_hmac_sha1(const unsigned char *key, size_t keylen,
 
 #ifndef EXCLUDE_COMMON
 
+/* Amalgamated: #include "common/mg_mem.h" */
 /* Amalgamated: #include "common/cs_dirent.h" */
 
 /*
  * This file contains POSIX opendir/closedir/readdir API implementation
  * for systems which do not natively support it (e.g. Windows).
  */
-
-#ifndef MG_FREE
-#define MG_FREE free
-#endif
-
-#ifndef MG_MALLOC
-#define MG_MALLOC malloc
-#endif
 
 #ifdef _WIN32
 struct win32_dir {

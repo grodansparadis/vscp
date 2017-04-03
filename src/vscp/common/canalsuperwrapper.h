@@ -456,7 +456,7 @@ public:
     value of the measurement.
     \return true if the variable is of type string.
     */
-    int getVariableMeasurement( wxString& name, wxString& strValue )
+    int getVariableMeasurement( wxString& name, wxString& strValue )    // TODO Fix
     { 
         return m_vscptcpif.getRemoteVariableValue( name, strValue ); 
     };
@@ -468,7 +468,7 @@ public:
     value of the measurement.
     \return true if the variable is of type string.
     */
-    int setVariableMeasurement( wxString& name, wxString& strValue )
+    int setVariableMeasurement( wxString& name, wxString& strValue )    // TODO Fix
     { 
         return m_vscptcpif.setRemoteVariableValue( name, strValue ); 
     };

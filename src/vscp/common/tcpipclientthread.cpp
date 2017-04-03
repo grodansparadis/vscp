@@ -59,8 +59,6 @@
 extern CControlObject *gpobj;
 
 
-//WX_DEFINE_LIST(TCPCLIENTS);
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // VSCPWebServerThread
@@ -317,7 +315,6 @@ VSCPClientThread::CommandHandler( struct mg_connection *conn,
     }
 
     pClientItem->m_currentCommand = strCommand;
-    pClientItem->m_currentCommandUC = pClientItem->m_currentCommand.Upper();
     pClientItem->m_currentCommand.Trim();
     pClientItem->m_currentCommand.Trim( false );
 
@@ -327,13 +324,12 @@ VSCPClientThread::CommandHandler( struct mg_connection *conn,
         return;
     }
 
-    pClientItem->m_currentCommandUC.Trim();
-    pClientItem->m_currentCommandUC.Trim( false );
-    //wxLogDebug( _("Argument = ") + pClientItem->m_currentCommandUC );
-
     // If we are in a receive loop only the quitloop command works
     if ( conn->flags & MG_F_USER_1 ) {
-        if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "QUITLOOP" ) ) ) {
+        if ( pClientItem->m_currentCommand.StartsWith( _("QUITLOOP"), 
+                                                       &pClientItem->m_currentCommand ) || 
+             pClientItem->m_currentCommand.StartsWith( _("quitloop"), 
+                                                       &pClientItem->m_currentCommand ) ) {
             conn->flags &= ~(unsigned int)MG_F_USER_1;
             mg_send( conn, MSG_QUIT_LOOP, strlen ( MSG_QUIT_LOOP ) );
             return;
@@ -348,14 +344,20 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                            No Operation
     //*********************************************************************
-    if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "NOOP" ) ) ) {
+    if ( pClientItem->m_currentCommand.StartsWith( _("NOOP"),
+                                                   &pClientItem->m_currentCommand ) ||
+         pClientItem->m_currentCommand.StartsWith( _("noop"),
+                                                   &pClientItem->m_currentCommand ) ) {
         mg_send( conn,  MSG_OK, strlen ( MSG_OK ) );
     }
 
     //*********************************************************************
     //                             Send event
     //*********************************************************************
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "SEND " ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("SEND "),
+                                                        &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("send "),
+                                                        &pClientItem->m_currentCommand ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 4 ) ) {
             handleClientSend( conn, pCtrlObject );
         }
@@ -363,8 +365,15 @@ REPEAT_COMMAND:
 
     //*********************************************************************
     //                            Read event
-    //*********************************************************************
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "RETR" ) ) ) {
+    //********************************************************************* 
+    else if ( pClientItem->m_currentCommand.StartsWith( _("RETR"),
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("retr"),
+                                                        &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("RETRIEVE"),
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("retrieve"),
+                                                        &pClientItem->m_currentCommand )) {
         if ( checkPrivilege( conn, pCtrlObject, 2 ) ) {
             handleClientReceive( conn, pCtrlObject );
         }
@@ -373,8 +382,18 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                            Data Available
     //*********************************************************************
-    else if ( ( 0 == pClientItem->m_currentCommandUC.Find ( _( "CDTA" ) ) ) ||
-               ( 0 == pClientItem->m_currentCommandUC.Find ( _( "CHKDATA" ) ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("CDTA"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("cdta"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("CHKDATA"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("chkdata"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("CHECKDATA"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("checkdata"),
+                                                            &pClientItem->m_currentCommand ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 1 ) ) {
             handleClientDataAvailable( conn, pCtrlObject );
         }
@@ -383,8 +402,18 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                          Clear input queue
     //*********************************************************************
-    else if ( ( 0 == pClientItem->m_currentCommandUC.Find ( _( "CLRA" ) ) ) ||
-                ( 0 == pClientItem->m_currentCommandUC.Find ( _( "CLRALL" ) ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("CLRA"),
+                                                               &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("clra"),
+                                                               &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("CLRALL"),
+                                                                &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("clrall"),
+                                                                &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("CLEARALL"),
+                                                                &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("clearall"),
+                                                                &pClientItem->m_currentCommand ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 1 ) ) {
             handleClientClearInputQueue( conn, pCtrlObject );
         }
@@ -394,7 +423,10 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                           Get Statistics
     //*********************************************************************
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "STAT" ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("STAT"),
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("stat"),
+                                                        &pClientItem->m_currentCommand ) ) {
          if ( checkPrivilege( conn, pCtrlObject, 1 ) ) {
              handleClientGetStatistics( conn, pCtrlObject );
          }
@@ -403,7 +435,10 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                            Get Status
     //*********************************************************************
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "INFO" ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("INFO"),
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("info"),
+                                                        &pClientItem->m_currentCommand ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 1 ) ) {
             handleClientGetStatus( conn, pCtrlObject );
         }
@@ -412,8 +447,14 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                           Get Channel ID
     //*********************************************************************
-    else if ( ( 0 == pClientItem->m_currentCommandUC.Find ( _( "CHID" ) ) ) ||
-                ( 0 == pClientItem->m_currentCommandUC.Find ( _( "GETCHID" ) ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("CHID"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("chid"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("GETCHID"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("GETCHID"),
+                                                            &pClientItem->m_currentCommand ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 1 ) ) {
             handleClientGetChannelID( conn, pCtrlObject );
         }
@@ -422,8 +463,14 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                          Set Channel GUID
     //*********************************************************************
-    else if ( ( 0 == pClientItem->m_currentCommandUC.Find ( _( "SGID" ) ) ) ||
-                ( 0 == pClientItem->m_currentCommandUC.Find ( _( "SETGUID" ) ) )) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("SGID"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("sgid"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("SETGUID"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("setguid"),
+                                                            &pClientItem->m_currentCommand ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 6 ) ) {
             handleClientSetChannelGUID( conn, pCtrlObject );
         }
@@ -432,8 +479,14 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                          Get Channel GUID
     //*********************************************************************
-    else if ( ( 0 == pClientItem->m_currentCommandUC.Find ( _( "GGID" ) ) ) ||
-                ( 0 == pClientItem->m_currentCommandUC.Find ( _( "GETGUID" ) ) )  ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("GGID"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("ggid"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("GETGUID" ),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("getguid"),
+                                                            &pClientItem->m_currentCommand ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 1 ) ) {
             handleClientGetChannelGUID( conn, pCtrlObject );
         }
@@ -442,16 +495,28 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                           Get Version
     //*********************************************************************
-    else if ( ( 0 == pClientItem->m_currentCommandUC.Find ( _( "VERS" ) ) ) ||
-            ( 0 == pClientItem->m_currentCommandUC.Find ( _( "VERSION" ) ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("VERS"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("vers"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("VERSION"),
+                                                            &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("version"),
+                                                            &pClientItem->m_currentCommand ) ) {
         handleClientGetVersion( conn, pCtrlObject );
     }
 
     //*********************************************************************
     //                           Set Filter
     //*********************************************************************
-    else if ( ( 0 == pClientItem->m_currentCommandUC.Find ( _( "SFLT" ) ) ) ||
-               ( 0 == pClientItem->m_currentCommandUC.Find ( _( "SETFILTER" ) ) )  ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("SFLT"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("sflt"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("SETFILTER"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("setfilter"),
+                                                            &pClientItem->m_currentCommand ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 6 ) ) {
             handleClientSetFilter( conn, pCtrlObject );
         }
@@ -460,8 +525,14 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                           Set Mask
     //*********************************************************************
-    else if ( ( 0 == pClientItem->m_currentCommandUC.Find ( _( "SMSK" ) ) ) ||
-                ( 0 == pClientItem->m_currentCommandUC.Find ( _( "SETMASK" ) ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("SMSK"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("smsk"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("SETMASK"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("setmask"),
+                                                            &pClientItem->m_currentCommand ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 6 ) ) {
             handleClientSetMask( conn, pCtrlObject );
         }
@@ -470,14 +541,20 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                           Username
     //*********************************************************************
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "USER " ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("USER"),
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("user"),
+                                                            &pClientItem->m_currentCommand ) ) {
         handleClientUser( conn, pCtrlObject );
     }
 
     //*********************************************************************
     //                            Password
     //*********************************************************************
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "PASS " ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("PASS"),
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("pass"),
+                                                            &pClientItem->m_currentCommand ) ) {
         if ( !handleClientPassword( conn, pCtrlObject ) ) {
             pCtrlObject->logMsg ( _( "[TCP/IP Client] Command: Password. Not authorized.\n" ),
                                     DAEMON_LOGMSG_NORMAL,
@@ -490,24 +567,34 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                           Challenge
     //*********************************************************************
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "CHALLENGE " ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("CHALLENGE"),
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("challenge"),
+                                                            &pClientItem->m_currentCommand ) ) {
         handleChallenge( conn, pCtrlObject );
     }
 
     //*********************************************************************
     //                        + (repeat last command)
     //*********************************************************************
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "+" ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("+"),
+                                                        &pClientItem->m_currentCommand ) ) {
         // Repeat last command
         pClientItem->m_currentCommand = pClientItem->m_lastCommand;
-        pClientItem->m_currentCommandUC = pClientItem->m_lastCommand.Upper();
         goto REPEAT_COMMAND;
     }
 
     //*********************************************************************
     //                             Rcvloop
     //*********************************************************************
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "RCVLOOP" ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("RCVLOOP"),
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("rcvloop"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("RECEIVELOOP"),
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("receiveloop"),
+                                                            &pClientItem->m_currentCommand ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 2 ) ) {
             pClientItem->m_timeRcvLoop = wxGetUTCTime();
             handleClientRcvLoop( conn, pCtrlObject );
@@ -518,7 +605,10 @@ REPEAT_COMMAND:
     // *********************************************************************
     //                                 QUIT
     // *********************************************************************
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "QUIT" ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("QUIT"),
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("quit"),
+                                                            &pClientItem->m_currentCommand ) ) {
         //long test = MG_F_CLOSE_IMMEDIATELY;
         pCtrlObject->logMsg( _( "[TCP/IP Client] Command: Close.\n" ) );
         mg_send( conn, MSG_GOODBY, strlen ( MSG_GOODBY ) );
@@ -530,14 +620,20 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                             Help
     //*********************************************************************
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "HELP" ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("HELP"),
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("help"),
+                                                            &pClientItem->m_currentCommand ) ) {
         handleClientHelp( conn, pCtrlObject );
     }
 
     //*********************************************************************
     //                             Restart
     //*********************************************************************
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "RESTART" ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("RESTART"),
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("restart"),
+                                                            &pClientItem->m_currentCommand ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
             handleClientRestart( conn, pCtrlObject );
         }
@@ -546,7 +642,10 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                             Driver
     //*********************************************************************
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "DRIVER " ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("DRIVER"),
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("driver"),
+                                                            &pClientItem->m_currentCommand ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
             handleClientDriver( conn, pCtrlObject );
         }
@@ -555,7 +654,10 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                               DM
     //*********************************************************************
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "DM " ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("DM"),
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("dm"),
+                                                            &pClientItem->m_currentCommand ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
             handleClientDm( conn, pCtrlObject );
         }
@@ -570,17 +672,17 @@ REPEAT_COMMAND:
         }
     }*/
     else if ( pClientItem->m_currentCommand.StartsWith( _("VARIABLE"), 
-                        &pClientItem->m_currentCommand ) || 
+                                                        &pClientItem->m_currentCommand ) || 
               pClientItem->m_currentCommand.StartsWith( _("variable"), 
-                        &pClientItem->m_currentCommand )) {
+                                                        &pClientItem->m_currentCommand )) {
         if ( checkPrivilege( conn, pCtrlObject, 4 ) ) {
             handleClientVariable( conn, pCtrlObject );
         }
     }
     else if ( pClientItem->m_currentCommand.StartsWith( _("VAR"),
-                        &pClientItem->m_currentCommand ) || 
+                                                        &pClientItem->m_currentCommand ) || 
               pClientItem->m_currentCommand.StartsWith( _("var"),
-                        &pClientItem->m_currentCommand )) {
+                                                        &pClientItem->m_currentCommand )) {
         if ( checkPrivilege( conn, pCtrlObject, 4 ) ) {
             handleClientVariable( conn, pCtrlObject );
         }
@@ -590,7 +692,10 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                               File
     //*********************************************************************
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "FILE " ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("FILE"),
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("file"),
+                                                            &pClientItem->m_currentCommand ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
             handleClientFile( conn, pCtrlObject );
         }
@@ -599,7 +704,10 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                               UDP
     //*********************************************************************
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "UDP " ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("UDP"),
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("udp"),
+                                                            &pClientItem->m_currentCommand ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
             handleClientUdp( conn, pCtrlObject );
         }
@@ -608,16 +716,18 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                         Client/interface
     //*********************************************************************
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "CLIENT " ) ) ) {
-        pClientItem->m_currentCommandUC =
-            pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-7 ); // Remove "CLIENT "
+    else if ( pClientItem->m_currentCommand.StartsWith( _("CLIENT"),
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("client"),
+                                                            &pClientItem->m_currentCommand ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
             handleClientInterface( conn, pCtrlObject );
         }
     }
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "INTERFACE " ) ) ) {
-        pClientItem->m_currentCommandUC =
-            pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-10 ); // Remove "INTERFACE "
+    else if ( pClientItem->m_currentCommand.StartsWith( _("INTERFACE"),
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("interface"),
+                                                            &pClientItem->m_currentCommand ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
             handleClientInterface( conn, pCtrlObject );
         }
@@ -626,14 +736,20 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                               User
     //*********************************************************************
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "USER " ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("USER"),
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("user"),
+                                                            &pClientItem->m_currentCommand ) ) {
         handleClientUser( conn, pCtrlObject );
     }
 
     //*********************************************************************
     //                               Test
     //*********************************************************************
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "TEST" ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("TEST"),
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("test"),
+                                                            &pClientItem->m_currentCommand ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
             handleClientTest( conn, pCtrlObject );
         }
@@ -643,7 +759,10 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                              Shutdown
     //*********************************************************************
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "SHUTDOWN" ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("SHUTDOWN"),
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("shutdown"),
+                                                            &pClientItem->m_currentCommand ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
             handleClientShutdown( conn, pCtrlObject );
         }
@@ -652,22 +771,34 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                             WhatCanYouDo
     //*********************************************************************
-    else if ( ( 0 == pClientItem->m_currentCommandUC.Find ( _( "WHATCANYOUDO" ) ) ) ||
-               ( 0 == pClientItem->m_currentCommandUC.Find ( _( "WCYD" ) ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("WHATCANYOUDO"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("whatcanyoudo"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("WCYD"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("wcyd"),
+                                                            &pClientItem->m_currentCommand ) ) {
         handleClientCapabilityRequest( conn, pCtrlObject );
     }
 
     //*********************************************************************
     //                             Measurement
     //*********************************************************************
-    else if ( ( 0 == pClientItem->m_currentCommandUC.Find ( _( "MEASUREMENT" ) ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("MEASUREMENT"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("measurement"),
+                                                            &pClientItem->m_currentCommand ) ) {
         handleClientMeasurment( conn, pCtrlObject );
     }
 
     //*********************************************************************
     //                                Table
     //*********************************************************************
-    else if ( ( 0 == pClientItem->m_currentCommandUC.Find ( _( "TABLE" ) ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("TABLE"),
+                                                            &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("table"),
+                                                            &pClientItem->m_currentCommand ) ) {
         handleClientTable( conn, pCtrlObject );
     }
 
@@ -1786,16 +1917,10 @@ void VSCPClientThread::handleClientSetChannelGUID ( struct mg_connection *conn,
         return;
     }
 
-    wxString str;
-    if ( ( 0 == pClientItem->m_currentCommandUC.Find ( _( "SGID" ) ) ) ) {
-        str = pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length() - 5 ); // remove: command + space
-    }
-    else {
-        str = pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length() - 8 ); // remove: command + space
-    }
-
-    pClientItem->m_guid.getFromString(str);
-
+    pClientItem->m_currentCommand.Trim();
+    pClientItem->m_currentCommand.Trim( true );
+    
+    pClientItem->m_guid.getFromString( pClientItem->m_currentCommand );
     mg_send( conn,  MSG_OK, strlen ( MSG_OK ) );
 }
 
@@ -1872,13 +1997,9 @@ void VSCPClientThread::handleClientSetFilter ( struct mg_connection *conn,
     }
 
     wxString str;
-    if (  0 == pClientItem->m_currentCommandUC.Find ( _( "SFLT" ) ) ) {
-        str = pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length() - 5 );
-    }
-    else {
-        str = pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length() - 10 );  // SETFILTER
-    }
-    wxStringTokenizer tkz( str, _(",") );
+    pClientItem->m_currentCommand.Trim();
+    pClientItem->m_currentCommand.Trim( true );
+    wxStringTokenizer tkz( pClientItem->m_currentCommand, _(",") );
 
     // Get priority
     if ( tkz.HasMoreTokens() ) {
@@ -1941,12 +2062,8 @@ void VSCPClientThread::handleClientSetMask ( struct mg_connection *conn,
     }
 
     wxString str;
-    if (  0 == pClientItem->m_currentCommandUC.Find ( _( "SMSK" ) ) ) {
-        str = pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length() - 5 );
-    }
-    else {
-        str = pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length() - 8 );  // SETMASK
-    }
+    pClientItem->m_currentCommand.Trim();
+    pClientItem->m_currentCommand.Trim( true );
     wxStringTokenizer tkz( str, _(",") );
 
     // Get priority
@@ -2148,12 +2265,12 @@ void VSCPClientThread::handleChallenge( struct mg_connection *conn,
     wxString wxstr;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    wxString strcmd = pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-4 );
-    strcmd.Trim();
-    strcmd.Trim(false);
+    pClientItem->m_currentCommand.Trim();
+    pClientItem->m_currentCommand.Trim( true );
 
     memset( pClientItem->m_sid, 0, sizeof( pClientItem->m_sid ) );
-    if ( !gpobj->generateSessionId( (const char *)strcmd.mbc_str(), pClientItem->m_sid ) ) {
+    if ( !gpobj->generateSessionId( (const char *)pClientItem->m_currentCommand.mbc_str(), 
+                                    pClientItem->m_sid ) ) {
         mg_send( conn,  MSG_FAILD_TO_GENERATE_SID, strlen ( MSG_FAILD_TO_GENERATE_SID ) );
         return; 
     }
@@ -2210,11 +2327,10 @@ void VSCPClientThread::handleClientHelp( struct mg_connection *conn,
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    wxString strcmd = pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-4 );
-    strcmd.Trim();
-    strcmd.Trim(false);
+    pClientItem->m_currentCommand.Trim();
+    pClientItem->m_currentCommand.Trim( true );
 
-    if ( _("") == strcmd ) {
+    if ( 0 == pClientItem->m_currentCommand.Length() ) {
 
         wxString str = _("Help for the VSCP tcp/ip interface\r\n");
                 str += _("====================================================================\r\n");
@@ -2253,111 +2369,216 @@ void VSCPClientThread::handleClientHelp( struct mg_connection *conn,
                 str += _("WCYD/WHATCANYOUDO - Check server capabilities. \r\n");
                 mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( _("+") == strcmd ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("+"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'+' repeats the last given command.\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( _("NOOP") == strcmd ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("NOOP"), 
+                                                        &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("noop"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'NOOP' Does absolutly nothing but giving a success in return.\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( _("QUIT") == strcmd ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("QUIT"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("quit"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'QUIT' Quit a session with the VSCP daemon and closes the connection.\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( _("USER") == strcmd ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("USER"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("user"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'USER' Used to login to the system together with PASS. Connection will be closed if bad credentials are given.\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( _("PASS") == strcmd ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("PASS"), 
+                                                        &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("pass"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'PASS' Used to login to the system together with USER. Connection will be closed if bad credentials are given.\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( _("QUIT") == strcmd ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("QUIT"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("quit"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'QUIT' Quit a session with the VSCP daemon and closes the connection.\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( _("SEND") == strcmd ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("SEND"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("send"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'SEND event'.\r\nThe event is given as 'head,class,type,obid,time-stamp,GUID,data1,data2,data3....' \r\n");
         str += _("Normally set 'head' and 'obid' to zero. \r\nIf timestamp is set to zero it will be set by the server. \r\nIf GUID is given as '-' ");
         str += _("the GUID of the interface will be used. \r\nThe GUID should be given on the form MSB-byte:MSB-byte-1:MSB-byte-2. \r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( _("RETR") == strcmd ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("RETR"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("retr"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'RETR count' - Retrieve one (if no argument) or 'count' event(s). ");
         str += _("Events are retrived on the form head,class,type,obid,time-stamp,GUID,data0,data1,data2,...........\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( _("RCVLOOP") == strcmd ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("RCVLOOP"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("rcvloop"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'RCVLOOP' - Enter the receive loop and receive events continously or until ");
         str += _("terminated with 'QUITLOOP'. Events are retrived on the form head,class,type,obid,time-stamp,GUID,data0,data1,data2,...........\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( _("QUITLOOP") == strcmd ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("QUITLOOP"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("quitloop"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'QUITLOOP' - End 'RCVLOOP' event receives.\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( ( _("CDTA") == strcmd ) || ( ( _("CHKDATA") == strcmd ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("CDTA"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("cdta"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("CHKDATA"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("chkdata"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'CDTA' or 'CHKDATA' - Check if there is events in the input queue.\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( ( _("CLRA") == strcmd ) || ( ( _("CLRALL") == strcmd ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("CLRA"), 
+                                                        &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("clra"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("CLRALL"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("clrall"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'CLRA' or 'CLRALL' - Clear input queue.\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( _("STAT") == strcmd ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("STAT"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("stat"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'STAT' - Get statistical information.\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( _("INFO") == strcmd ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("INFO"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("info"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'INFO' - Get status information.\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( ( _("CHID") == strcmd ) || ( ( _("GETCHID") == strcmd ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("CHID"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("chid"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("GETCHID"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("getchid"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'CHID' or 'GETCHID' - Get channel id.\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( ( _("SGID") == strcmd ) || ( ( _("SETGUID") == strcmd ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("SGID"), 
+                                                        &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("sqid"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("SETGUID"), 
+                                                        &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("SETGUID"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'SGID' or 'SETGUID' - Set GUID for channel.\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( ( _("GGID") == strcmd ) || ( ( _("GETGUID") == strcmd ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("GGID"), 
+                                                        &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("ggid"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("GETGUID"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("getguid"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'GGID' or 'GETGUID' - Get GUID for channel.\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( ( _("VERS") == strcmd ) || ( ( _("VERSION") == strcmd ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("VERS"), 
+                                                        &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("vers"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("VERSION"), 
+                                                        &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("version"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'VERS' or 'VERSION' - Get version of VSCP daemon.\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( ( _("SFLT") == strcmd ) || ( ( _("SETFILTER") == strcmd ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("SFLT"), 
+                                                        &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("sflt"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("SETFILTER"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("setfilter"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'SFLT' or 'SETFILTER' - Set filter for channel. ");
         str += _("The format is 'filter-priority, filter-class, filter-type, filter-GUID' \r\n");
         str += _("Example:  \r\nSETFILTER 1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( ( _("SMSK") == strcmd ) || ( ( _("SETMASK") == strcmd ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("SMSK"), 
+                                                        &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("smsk"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("SETMASK"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("setmask"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'SMSK' or 'SETMASK' - Set mask for channel. ");
         str += _("The format is 'mask-priority, mask-class, mask-type, mask-GUID' \r\n");
         str += _("Example:  \r\nSETMASK 0x0f,0xffff,0x00ff,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00 \r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( _("HELP") == strcmd ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("HELP"), 
+                                                        &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("help"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'HELP [command]' This command. Gives help about available commands and the usage.\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( _("TEST") == strcmd ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("TEST"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("test"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'TEST [sequency]' Test command for debugging.\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( _("SHUTDOWN") == strcmd ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("SHUTDOWN"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("shutdown"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'SHUTDOWN' Shutdown the daemon.\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( _("RESTART") == strcmd ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("RESTART"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("restart"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'RESTART' Restart the daemon.\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( _("DRIVER") == strcmd ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("DRIVER"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("driver"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'DRIVER' Handle (load/unload/update/start/stop) Level I/Level II drivers.\r\n");
         str += _("'DRIVER install package' .\r\n");
         str += _("'DRIVER uninstall package' .\r\n");
@@ -2367,7 +2588,10 @@ void VSCPClientThread::handleClientHelp( struct mg_connection *conn,
         str += _("'DRIVER reload package' .\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( _("FILE") == strcmd ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("FILE"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("file"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'FILE' Handle daemon files.\r\n");
         str += _("'FILE dir'.\r\n");
         str += _("'FILE copy'.\r\n");
@@ -2376,13 +2600,19 @@ void VSCPClientThread::handleClientHelp( struct mg_connection *conn,
         str += _("'FILE list'.\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( _("UDP") == strcmd ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("UDP"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("udp"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'UDP' Handle UDP interface.\r\n");
         str += _("'UDP enable'.\r\n");
         str += _("'UDP disable' .\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( _("REMOTE") == strcmd ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("REMOTE"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("remote"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'REMOTE' User management.\r\n");
         str += _("'REMOTE list'.\r\n");
         str += _("'REMOTE add 'username','MD5 password','from-host(s)','access-right-list','event-list','filter','mask''. Add a user.\r\n");
@@ -2395,13 +2625,19 @@ void VSCPClientThread::handleClientHelp( struct mg_connection *conn,
         str += _("'REMOTE mask 'username','mask''.\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( _("INTERFACE") == strcmd ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("INTERFACE"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("interface"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'INTERFACE' Handle interfaces on the daemon.\r\n");
         str += _("'INTERFACE list'.\r\n");
         str += _("'INTERFACE close'.\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( _("DM") == strcmd ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("DM"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("dm"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'DM' Handle decision matrix on the daemon.\r\n");
         str += _("'DM enable'.\r\n");
         str += _("'DM disable'.\r\n");
@@ -2415,7 +2651,14 @@ void VSCPClientThread::handleClientHelp( struct mg_connection *conn,
         str += _("'DM save'.\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
-    else if ( ( _("VARIABLE") == strcmd ) || ( _("VAR") == strcmd ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("VARIABLE"), 
+                                                        &pClientItem->m_currentCommand ) || 
+              pClientItem->m_currentCommand.StartsWith( _("variable"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("VAR"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("var"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         wxString str = _("'VARIABLE' Handle variables on the daemon.\r\n");
         str += _("'VARIABLE list <regular-expression>'.\r\n");        
         str += _("'VARIABLE read <variable-name>'.\r\n");
@@ -2505,19 +2748,30 @@ void VSCPClientThread::handleClientInterface( struct mg_connection *conn, CContr
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    m_pCtrlObject->logMsg ( pClientItem->m_currentCommandUC, DAEMON_LOGMSG_NORMAL );
+    m_pCtrlObject->logMsg ( pClientItem->m_currentCommand, DAEMON_LOGMSG_NORMAL );
 
-    if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "LIST" ) ) )  {
+    if ( pClientItem->m_currentCommand.StartsWith( _("LIST"),
+                                                   &pClientItem->m_currentCommand ) ||
+         pClientItem->m_currentCommand.StartsWith( _("list"), 
+                                                        &pClientItem->m_currentCommand ) )  {
         handleClientInterface_List( conn, pCtrlObject );
     }
-    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "UNIQUE " ) ) )  {
-        pClientItem->m_currentCommandUC = pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-7 );            // Remove "UNIQUE "
+    else if ( pClientItem->m_currentCommand.StartsWith ( _("UNIQUE "),
+                                                         &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("unique"), 
+                                                        &pClientItem->m_currentCommand ) )  {
         handleClientInterface_Unique( conn, pCtrlObject );
     }
-    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "NORMAL" ) ) )   {
+    else if ( pClientItem->m_currentCommand.StartsWith ( _("NORMAL"),
+                                                         &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("normal"), 
+                                                        &pClientItem->m_currentCommand ) )   {
         handleClientInterface_Normal( conn, pCtrlObject );
     }
-    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "CLOSE" ) ) )    {
+    else if ( pClientItem->m_currentCommand.StartsWith ( _("CLOSE"),
+                                                         &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("close"), 
+                                                        &pClientItem->m_currentCommand ) )    {
         handleClientInterface_Close( conn, pCtrlObject );
     }
 }
@@ -2572,8 +2826,9 @@ void VSCPClientThread::handleClientInterface_Unique( struct mg_connection *conn,
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Get GUID
-    pClientItem->m_currentCommandUC.Trim( false );
-    vscp_getGuidFromStringToArray( ifGUID, pClientItem->m_currentCommandUC );
+    pClientItem->m_currentCommand.Trim(true);
+    pClientItem->m_currentCommand.Trim(false);
+    vscp_getGuidFromStringToArray( ifGUID, pClientItem->m_currentCommand );
 
     // Add the client to the Client List
     // TODO
@@ -2633,53 +2888,67 @@ void VSCPClientThread::handleClientTable( struct mg_connection *conn,
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    pClientItem->m_currentCommandUC =
-        pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-6 );    // remove "TABLE "
-    pClientItem->m_currentCommandUC.Trim( false );
-    
-    pClientItem->m_currentCommand =
-        pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length()-6 );        // remove "TABLE "    
-    pClientItem->m_currentCommand.Trim( false );
+    pClientItem->m_currentCommand.Trim(true);
+    pClientItem->m_currentCommand.Trim(false);    
     
     // List tables or table definition
-    if ( pClientItem->m_currentCommand.Upper().StartsWith( _("LIST"), &pClientItem->m_currentCommand ) ) {
-        
+    if ( pClientItem->m_currentCommand.StartsWith( _("LIST"), 
+                                                   &pClientItem->m_currentCommand ) ||
+         pClientItem->m_currentCommand.StartsWith( _("list"), 
+                                                   &pClientItem->m_currentCommand ) ) {
+        // TODO
     }
     // Get table content
-    else if ( pClientItem->m_currentCommand.Upper().StartsWith( _("GET"), &pClientItem->m_currentCommand ) ) {
-        
+    else if ( pClientItem->m_currentCommand.StartsWith( _("GET"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("get"), 
+                                                        &pClientItem->m_currentCommand ) ) {
+        // TODO
     }
     // Delete table data
-    else if ( pClientItem->m_currentCommand.Upper().StartsWith( _("CLEAR"), &pClientItem->m_currentCommand ) ) {
-        
+    else if ( pClientItem->m_currentCommand.StartsWith( _("CLEAR"), 
+                                                                &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("clear"), 
+                                                        &pClientItem->m_currentCommand ) ) {
+        // TODO
     }
     // New table (create)
-    else if ( pClientItem->m_currentCommand.Upper().StartsWith( _("NEW"), &pClientItem->m_currentCommand ) ) {
-        
+    else if ( pClientItem->m_currentCommand.StartsWith( _("NEW"), 
+                                                                &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("new"), 
+                                                        &pClientItem->m_currentCommand ) ) {
+        // TODO
     }
     // Delete table
-    else if ( pClientItem->m_currentCommand.Upper().StartsWith( _("DEL"), &pClientItem->m_currentCommand ) ) {
-        
+    else if ( pClientItem->m_currentCommand.StartsWith( _("DEL"), 
+                                                                &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("del"), 
+                                                        &pClientItem->m_currentCommand ) ) {
+        // TODO
     }
     // Log data
-    else if ( pClientItem->m_currentCommand.Upper().StartsWith( _("LOG"), &pClientItem->m_currentCommand ) ) {
-        
+    else if ( pClientItem->m_currentCommand.StartsWith( _("LOG"), 
+                                                                &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("log"), 
+                                                        &pClientItem->m_currentCommand ) ) {
+        // TODO
     }
     // Log data use SQL
-    else if ( pClientItem->m_currentCommand.Upper().StartsWith( _("LOGSQL"), &pClientItem->m_currentCommand ) ) {
-        
+    else if ( pClientItem->m_currentCommand.StartsWith( _("LOGSQL"), 
+                                                                &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("logsql"), 
+                                                        &pClientItem->m_currentCommand ) ) {
+        // TODO
     }
     
     
-    if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "LIST " ) ) )	{
+    else if ( pClientItem->m_currentCommand.StartsWith( _("LIST "), 
+                                                   &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("list"), 
+                                                        &pClientItem->m_currentCommand ) )	{
         handleVariable_List( conn, pCtrlObject );
     }
-    // Hack to handle "variable list" without further parameters
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( wxT( "LIST" ) ) )	{
-        pClientItem->m_currentCommandUC += _(" ");
-        pClientItem->m_currentCommand += _(" ");
-        handleVariable_List( conn, pCtrlObject );
-    }
+
     else {
         mg_send( conn, MSG_UNKNOWN_COMMAND, strlen( MSG_UNKNOWN_COMMAND ) );
     }
@@ -2697,87 +2966,87 @@ void VSCPClientThread::handleClientVariable( struct mg_connection *conn,
     pClientItem->m_currentCommand.Trim( false );
 
     if ( pClientItem->m_currentCommand.StartsWith( _("LIST"), 
-                    &pClientItem->m_currentCommand ) || 
+                                                    &pClientItem->m_currentCommand ) || 
          pClientItem->m_currentCommand.StartsWith( _("list"), 
-                    &pClientItem->m_currentCommand ))	{
+                                                    &pClientItem->m_currentCommand ))	{
         handleVariable_List( conn, pCtrlObject );
     }
     else if ( pClientItem->m_currentCommand.StartsWith( _("WRITEVALUE"), 
-                    &pClientItem->m_currentCommand ) || 
+                                                            &pClientItem->m_currentCommand ) || 
               pClientItem->m_currentCommand.StartsWith( _("writevalue"), 
-                    &pClientItem->m_currentCommand ) )	{
+                                                            &pClientItem->m_currentCommand ) )	{
         handleVariable_WriteValue( conn, pCtrlObject );
     }
     else if ( pClientItem->m_currentCommand.StartsWith( _("WRITENOTE"), 
-                    &pClientItem->m_currentCommand ) || 
+                                                        &pClientItem->m_currentCommand ) || 
               pClientItem->m_currentCommand.StartsWith( _("writenote"), 
-                    &pClientItem->m_currentCommand ) )	{
+                                                        &pClientItem->m_currentCommand ) )	{
         handleVariable_WriteNote( conn, pCtrlObject );
     }
     else if ( pClientItem->m_currentCommand.StartsWith( _("WRITE"), 
-                    &pClientItem->m_currentCommand ) || 
+                                                        &pClientItem->m_currentCommand ) || 
               pClientItem->m_currentCommand.StartsWith( _("write"), 
-                    &pClientItem->m_currentCommand ) )	{
+                                                        &pClientItem->m_currentCommand ) )	{
         handleVariable_Write( conn, pCtrlObject );
     }
     else if ( pClientItem->m_currentCommand.StartsWith( _("READVALUE"), 
-                    &pClientItem->m_currentCommand ) ||
+                                                        &pClientItem->m_currentCommand ) ||
               pClientItem->m_currentCommand.StartsWith( _("readvalue"), 
-                    &pClientItem->m_currentCommand ) )	{
+                                                        &pClientItem->m_currentCommand ) )	{
         handleVariable_ReadValue( conn, pCtrlObject );
     }
     else if ( pClientItem->m_currentCommand.StartsWith( _("READNOTE"), 
-                    &pClientItem->m_currentCommand ) || 
+                                                        &pClientItem->m_currentCommand ) || 
               pClientItem->m_currentCommand.StartsWith( _("readnote"), 
-                    &pClientItem->m_currentCommand ) )	{
+                                                        &pClientItem->m_currentCommand ) )	{
         handleVariable_ReadNote( conn, pCtrlObject );
     }
     else if ( pClientItem->m_currentCommand.StartsWith( _("READRESET"), 
-                    &pClientItem->m_currentCommand ) ||
+                                                        &pClientItem->m_currentCommand ) ||
               pClientItem->m_currentCommand.StartsWith( _("readreset"), 
-                    &pClientItem->m_currentCommand ))	{
+                                                        &pClientItem->m_currentCommand ))	{
         handleVariable_ReadReset( conn, pCtrlObject );
     }  
     else if ( pClientItem->m_currentCommand.StartsWith( _("READREMOVE"), 
-                    &pClientItem->m_currentCommand ) ||
+                                                        &pClientItem->m_currentCommand ) ||
               pClientItem->m_currentCommand.StartsWith( _("readremove"), 
-                    &pClientItem->m_currentCommand ) ) {
+                                                        &pClientItem->m_currentCommand ) ) {
         handleVariable_ReadRemove( conn, pCtrlObject );
     }
     else if ( pClientItem->m_currentCommand.StartsWith( _("READ"), 
-                    &pClientItem->m_currentCommand ) || 
+                                                        &pClientItem->m_currentCommand ) || 
               pClientItem->m_currentCommand.StartsWith( _("read"), 
-                    &pClientItem->m_currentCommand ) )	{
+                                                        &pClientItem->m_currentCommand ) )	{
         handleVariable_Read( conn, pCtrlObject );
     }  
     else if ( pClientItem->m_currentCommand.StartsWith( _("RESET"), 
-                    &pClientItem->m_currentCommand ) || 
+                                                        &pClientItem->m_currentCommand ) || 
               pClientItem->m_currentCommand.StartsWith( _("reset"), 
-                    &pClientItem->m_currentCommand ) )	{
+                                                        &pClientItem->m_currentCommand ) )	{
         handleVariable_Reset( conn, pCtrlObject );
     }
     else if ( pClientItem->m_currentCommand.StartsWith( _("REMOVE"), 
-                    &pClientItem->m_currentCommand ) || 
+                                                        &pClientItem->m_currentCommand ) || 
               pClientItem->m_currentCommand.StartsWith( _("remove"), 
-                    &pClientItem->m_currentCommand ) ) {
+                                                        &pClientItem->m_currentCommand ) ) {
         handleVariable_Remove( conn, pCtrlObject );
     }    
     else if ( pClientItem->m_currentCommand.StartsWith( _("LENGTH"), 
-                    &pClientItem->m_currentCommand ) || 
+                                                        &pClientItem->m_currentCommand ) || 
               pClientItem->m_currentCommand.StartsWith( _("length"), 
-                    &pClientItem->m_currentCommand ) )	{
+                                                        &pClientItem->m_currentCommand ) )	{
         handleVariable_Length( conn, pCtrlObject );
     }
     else if ( pClientItem->m_currentCommand.StartsWith( _("LOAD"), 
-                    &pClientItem->m_currentCommand ) || 
+                                                        &pClientItem->m_currentCommand ) || 
               pClientItem->m_currentCommand.StartsWith( _("load"), 
-                    &pClientItem->m_currentCommand ) )	{
+                                                        &pClientItem->m_currentCommand ) )	{
         handleVariable_Load( conn, pCtrlObject );
     }
     else if ( pClientItem->m_currentCommand.StartsWith( _("SAVE"), 
-                    &pClientItem->m_currentCommand ) || 
+                                                        &pClientItem->m_currentCommand ) || 
               pClientItem->m_currentCommand.StartsWith( _("save"), 
-                    &pClientItem->m_currentCommand ) )	{
+                                                        &pClientItem->m_currentCommand ) )	{
         handleVariable_Save( conn, pCtrlObject );
     }
     else {
@@ -2805,7 +3074,7 @@ void VSCPClientThread::handleVariable_List( struct mg_connection *conn,
 
     pClientItem->m_currentCommand.Trim( false );
 
-    wxStringTokenizer tkz( pClientItem->m_currentCommandUC, _(" ") );
+    wxStringTokenizer tkz( pClientItem->m_currentCommand, _(" ") );
     
     // Check for variable name
     if ( tkz.HasMoreTokens() ) {
@@ -3036,7 +3305,7 @@ void VSCPClientThread::handleVariable_Read( struct mg_connection *conn,
     pClientItem->m_currentCommand.Trim( false );
 
     CVSCPVariable variable;
-    if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommandUC,variable ) ) {
+    if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommand,variable ) ) {
         
         str = variable.getAsString( false );
         str = _("+OK - ") + str + _("\r\n");
@@ -3152,7 +3421,7 @@ void VSCPClientThread::handleVariable_ReadReset( struct mg_connection *conn,
     pClientItem->m_currentCommand.Trim( false );
     
     if ( pClientItem->m_currentCommand.StartsWith( _("VSCP.") ) || 
-         pClientItem->m_currentCommand.StartsWith( _("vscp.") )   ) {
+         pClientItem->m_currentCommand.StartsWith( _("vscp.") ) ) {
         mg_send( conn, MSG_VARIABLE_NOT_STOCK, strlen ( MSG_VARIABLE_NOT_STOCK ) );
         return;
     }
@@ -3195,12 +3464,12 @@ void VSCPClientThread::handleVariable_Remove( struct mg_connection *conn,
     pClientItem->m_currentCommand.Trim( false );
     
     if ( pClientItem->m_currentCommand.StartsWith( _("VSCP.") ) || 
-         pClientItem->m_currentCommand.StartsWith( _("vscp.") )   ) {
+         pClientItem->m_currentCommand.StartsWith( _("vscp.") ) ) {
         mg_send( conn, MSG_VARIABLE_NOT_STOCK, strlen ( MSG_VARIABLE_NOT_STOCK ) );
         return;
     }
     
-    if ( !m_pCtrlObject->m_VSCP_Variables.remove( pClientItem->m_currentCommandUC ) ) {
+    if ( !m_pCtrlObject->m_VSCP_Variables.remove( pClientItem->m_currentCommand ) ) {
         mg_send( conn, MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );        
     }
 
@@ -3221,7 +3490,7 @@ void VSCPClientThread::handleVariable_ReadRemove( struct mg_connection *conn,
     pClientItem->m_currentCommand.Trim( false );
     
     if ( pClientItem->m_currentCommand.StartsWith( _("VSCP.") ) || 
-         pClientItem->m_currentCommand.StartsWith( _("vscp.") )   ) {
+         pClientItem->m_currentCommand.StartsWith( _("vscp.") ) ) {
         mg_send( conn, MSG_VARIABLE_NOT_STOCK, strlen ( MSG_VARIABLE_NOT_STOCK ) );
         return;
     }
@@ -3303,7 +3572,7 @@ void VSCPClientThread::handleVariable_Save( struct mg_connection *conn,
     // Construct path to save to (always relative to root)
     // may not contain ".."
     path = m_pCtrlObject->m_rootFolder;
-    path += pClientItem->m_currentCommandUC;
+    path += pClientItem->m_currentCommand;
     
     if ( wxNOT_FOUND != path.Find( _("..") ) ) {
         mg_send( conn, MSG_INVALID_PATH, strlen( MSG_INVALID_PATH ) );
@@ -3331,36 +3600,62 @@ void VSCPClientThread::handleClientDm( struct mg_connection *conn,
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    m_pCtrlObject->logMsg ( pClientItem->m_currentCommandUC, DAEMON_LOGMSG_NORMAL );
+    m_pCtrlObject->logMsg ( pClientItem->m_currentCommand, DAEMON_LOGMSG_NORMAL );
 
-    pClientItem->m_currentCommandUC = pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-3 );
-    pClientItem->m_currentCommandUC.Trim( false );
+    pClientItem->m_currentCommand.Trim( false );
 
-    if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "ENABLE " ) ) )   {
+    if ( pClientItem->m_currentCommand.StartsWith( _("ENABLE "),
+                                                &pClientItem->m_currentCommand ) ||
+         pClientItem->m_currentCommand.StartsWith( _("enable "), 
+                                                        &pClientItem->m_currentCommand ) )   {
         handleDM_Enable( conn, pCtrlObject );
     }
-    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "DISABLE " ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("DISABLE "),
+                                                &pClientItem->m_currentCommand  ) ||
+              pClientItem->m_currentCommand.StartsWith( _("disable "), 
+                                                        &pClientItem->m_currentCommand ) ) {
         handleDM_Enable( conn, pCtrlObject );
     }
-    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "LIST" ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("LIST"),
+                                                &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("list "), 
+                                                        &pClientItem->m_currentCommand ) ) {
         handleDM_List( conn, pCtrlObject );
     }
-    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "ADD " ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("ADD "),
+                                                &pClientItem->m_currentCommand  ) ||
+              pClientItem->m_currentCommand.StartsWith( _("add "), 
+                                                        &pClientItem->m_currentCommand ) ) {
         handleDM_Add( conn, pCtrlObject );
     }
-    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "DELETE " ) ) )  {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("DELETE "),
+                                                &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("delete "), 
+                                                        &pClientItem->m_currentCommand ) )  {
         handleDM_Delete( conn, pCtrlObject );
     }
-    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "RESET" ) ) )    {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("RESET"),
+                                                &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("reset"), 
+                                                        &pClientItem->m_currentCommand ) )    {
         handleDM_Reset( conn, pCtrlObject );
     }
-    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "TRIG " ) ) )    {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("TRIG "),
+                                                &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("trig "), 
+                                                        &pClientItem->m_currentCommand ) )    {
         handleDM_Trigger( conn, pCtrlObject );
     }
-    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "CLRTRIG " ) ) ) {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("CLRTRIG "),
+                                                &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("clrtrig"), 
+                                                        &pClientItem->m_currentCommand ) ) {
         handleDM_ClearTriggerCount( conn, pCtrlObject );
     }
-    else if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "CLRERR " ) ) )  {
+    else if ( pClientItem->m_currentCommand.StartsWith( _("CLRERR "),
+                                                &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("clrerr"), 
+                                                        &pClientItem->m_currentCommand ) )  {
         handleDM_ClearErrorCount( conn, pCtrlObject );
     }
 }
@@ -3375,7 +3670,10 @@ void VSCPClientThread::handleDM_Enable( struct mg_connection *conn,
     unsigned short pos;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "ALL" ) ) )   {
+    if ( pClientItem->m_currentCommand.StartsWith( _("ALL"),
+                                                    &pClientItem->m_currentCommand ) ||
+         pClientItem->m_currentCommand.StartsWith( _("all"), 
+                                                        &pClientItem->m_currentCommand ) )   {
 
         m_pCtrlObject->m_dm.m_mutexDM.Lock();
 
@@ -3422,7 +3720,10 @@ void VSCPClientThread::handleDM_Disable( struct mg_connection *conn,
     unsigned short pos;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "ALL" ) ) )   {
+    if ( pClientItem->m_currentCommand.StartsWith( _("ALL"),
+                                                    &pClientItem->m_currentCommand ) ||
+         pClientItem->m_currentCommand.StartsWith( _("all"), 
+                                                        &pClientItem->m_currentCommand ) )   {
 
         m_pCtrlObject->m_dm.m_mutexDM.Lock();
 
@@ -3440,7 +3741,7 @@ void VSCPClientThread::handleDM_Disable( struct mg_connection *conn,
     else {
 
         // Get the position
-        wxStringTokenizer tkz( pClientItem->m_currentCommandUC, _(",") );
+        wxStringTokenizer tkz( pClientItem->m_currentCommand, _(",") );
         while ( tkz.HasMoreTokens() ) {
 
             pos = vscp_readStringValue( tkz.GetNextToken() );
@@ -3481,18 +3782,19 @@ void VSCPClientThread::handleDM_List( struct mg_connection *conn,
 
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    // Remove "LIST"
-    pClientItem->m_currentCommandUC =
-        pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length() - 4 );
-    pClientItem->m_currentCommandUC.Trim( false );
+    pClientItem->m_currentCommand.Trim( false );
 
     // if "list" add "all"
-    if ( 0 == pClientItem->m_currentCommandUC.Length() ) {
-        pClientItem->m_currentCommandUC = _("ALL");
+    if ( 0 == pClientItem->m_currentCommand.Length() ) {
+        pClientItem->m_currentCommand = _("ALL");
     }
 
-    if ( ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "ALL" ) ) ) ||
-            ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "*" ) ) ) )	{
+    if ( pClientItem->m_currentCommand.StartsWith( _("ALL"),
+                                                        &pClientItem->m_currentCommand ) ||
+         pClientItem->m_currentCommand.StartsWith( _("all"), 
+                                                        &pClientItem->m_currentCommand ) ||   
+         pClientItem->m_currentCommand.StartsWith( _( "*" ),
+                                                        &pClientItem->m_currentCommand   ) )	{
 
         m_pCtrlObject->m_dm.m_mutexDM.Lock();
 
@@ -3518,7 +3820,7 @@ void VSCPClientThread::handleDM_List( struct mg_connection *conn,
         //      first parse the argument to get the rows
         //WX_DEFINE_ARRAY_INT( int, ArrayOfSortedInts );
         wxArrayInt rowArray;
-        wxStringTokenizer tok( pClientItem->m_currentCommandUC, _(",") );
+        wxStringTokenizer tok( pClientItem->m_currentCommand, _(",") );
         while ( tok.HasMoreTokens() ) {
 
             int n = vscp_readStringValue( tok.GetNextToken() );
@@ -3543,7 +3845,7 @@ void VSCPClientThread::handleDM_Add( struct mg_connection *conn,
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
     dmElement *pDMItem = new dmElement;
 
-    wxStringTokenizer tkz( pClientItem->m_currentCommandUC, _(",") );
+    wxStringTokenizer tkz( pClientItem->m_currentCommand, _(",") );
 
     // Priority
     pDMItem->m_vscpfilter.mask_priority = vscp_readStringValue( tkz.GetNextToken() );
@@ -3588,7 +3890,10 @@ void VSCPClientThread::handleDM_Delete( struct mg_connection *conn,
     unsigned short pos;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "ALL" ) ) )   {
+    if ( pClientItem->m_currentCommand.StartsWith( _("ALL"),
+                                                   &pClientItem->m_currentCommand ) ||
+         pClientItem->m_currentCommand.StartsWith( _("all"), 
+                                                        &pClientItem->m_currentCommand ) )   {
 
         m_pCtrlObject->m_dm.m_mutexDM.Lock();
 
@@ -3606,7 +3911,7 @@ void VSCPClientThread::handleDM_Delete( struct mg_connection *conn,
     else {
 
         // Get the position
-        wxStringTokenizer tkz( pClientItem->m_currentCommandUC, _(",") );
+        wxStringTokenizer tkz( pClientItem->m_currentCommand, _(",") );
         while ( tkz.HasMoreTokens() ) {
 
             pos = vscp_readStringValue( tkz.GetNextToken() );
@@ -3656,7 +3961,7 @@ void VSCPClientThread::handleDM_Trigger( struct mg_connection *conn,
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Get the position
-    wxStringTokenizer tkz( pClientItem->m_currentCommandUC, _(",") );
+    wxStringTokenizer tkz( pClientItem->m_currentCommand, _(",") );
     while ( tkz.HasMoreTokens() ) {
 
         pos = vscp_readStringValue( tkz.GetNextToken() );
@@ -3691,7 +3996,10 @@ void VSCPClientThread::handleDM_ClearTriggerCount( struct mg_connection *conn,
     unsigned short pos;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "ALL" ) ) )	{
+    if ( pClientItem->m_currentCommand.StartsWith( _("ALL"),
+                                                    &pClientItem->m_currentCommand ) ||
+         pClientItem->m_currentCommand.StartsWith( _("all"), 
+                                                        &pClientItem->m_currentCommand ) )	{
 
         m_pCtrlObject->m_dm.m_mutexDM.Lock();
 
@@ -3709,7 +4017,7 @@ void VSCPClientThread::handleDM_ClearTriggerCount( struct mg_connection *conn,
     else {
 
         // Get the position
-        wxStringTokenizer tkz( pClientItem->m_currentCommandUC, _(",") );
+        wxStringTokenizer tkz( pClientItem->m_currentCommand, _(",") );
         while ( tkz.HasMoreTokens() ) {
 
             pos = vscp_readStringValue( tkz.GetNextToken() );
@@ -3747,7 +4055,10 @@ void VSCPClientThread::handleDM_ClearErrorCount( struct mg_connection *conn,
     unsigned short pos;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    if ( wxNOT_FOUND != pClientItem->m_currentCommandUC.Find ( _( "ALL" ) ) )	{
+    if ( pClientItem->m_currentCommand.StartsWith( _("ALL"),
+                                                   &pClientItem->m_currentCommand ) ||
+         pClientItem->m_currentCommand.StartsWith( _("all"), 
+                                                   &pClientItem->m_currentCommand ) )	{
 
         m_pCtrlObject->m_dm.m_mutexDM.Lock();
 
@@ -3765,7 +4076,7 @@ void VSCPClientThread::handleDM_ClearErrorCount( struct mg_connection *conn,
     else {
 
         // Get the position
-        wxStringTokenizer tkz( pClientItem->m_currentCommandUC, _(",") );
+        wxStringTokenizer tkz( pClientItem->m_currentCommand, _(",") );
         while ( tkz.HasMoreTokens() ) {
 
             pos = vscp_readStringValue( tkz.GetNextToken() );

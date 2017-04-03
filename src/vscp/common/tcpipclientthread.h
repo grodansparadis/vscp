@@ -33,7 +33,6 @@
 #include "controlobject.h"
 
 #define VSCP_TCP_MAX_CLIENTS                1024
-#define MSG_COPYRIGHT                       "Copyright (c) 2000-2015, Grodans Paradis AB, http://www.grodansparadis.com\r\n"
 #define MSG_WELCOME                         "Welcome to the VSCP daemon.\r\n"
 #define MSG_OK                              "+OK - Success.\r\n"
 #define MSG_GOODBY                          "+OK - Connection closed by client.\r\n"
@@ -43,7 +42,7 @@
 #define MSG_QUEUE_CLEARED                   "+OK - All events cleared.\r\n"
 #define MSG_RECEIVE_LOOP                    "+OK - Receive loop entered. QUITLOOP to terminate.\r\n"
 #define MSG_QUIT_LOOP                       "+OK - Quit receive loop.\r\n"
-#define MSG_CAN_MODE                        "+OK - CAN mode set.\r\n"
+//#define MSG_CAN_MODE                        "+OK - CAN mode set.\r\n"
 
 #define MSG_ERROR                           "-OK - Error\r\n"
 #define MSG_UNKNOWN_COMMAND                 "-OK - Unknown command\r\n"
