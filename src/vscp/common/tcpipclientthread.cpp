@@ -94,14 +94,14 @@ void *VSCPClientThread::Entry()
 
     // Construct bind interface address
     //[PROTO://][IP_ADDRESS]:PORT where host part is optional
-    m_pCtrlObject->m_strTcpInterfaceAddress.Trim();
-    m_pCtrlObject->m_strTcpInterfaceAddress.Trim( false );
+    m_pCtrlObject->m_strTcpInterfaceAddress.Trim(true);
+    m_pCtrlObject->m_strTcpInterfaceAddress.Trim(false);
     wxStringTokenizer tkz( m_pCtrlObject->m_strTcpInterfaceAddress, _(" ") );
     while ( tkz.HasMoreTokens() ) {
 
         wxString str = tkz.GetNextToken();
-        str.Trim();
-        str.Trim( false );
+        str.Trim(true);
+        str.Trim(false);
         if ( 0 == str.Length() ) continue;
 
         // Bind to this interface
@@ -315,8 +315,8 @@ VSCPClientThread::CommandHandler( struct mg_connection *conn,
     }
 
     pClientItem->m_currentCommand = strCommand;
-    pClientItem->m_currentCommand.Trim();
-    pClientItem->m_currentCommand.Trim( false );
+    pClientItem->m_currentCommand.Trim(true);
+    pClientItem->m_currentCommand.Trim(false);
 
     // If nothing to handle just return
     if ( 0 == pClientItem->m_currentCommand.Length() ) {
@@ -861,7 +861,7 @@ void VSCPClientThread::handleClientMeasurment( struct mg_connection *conn,
         return;
     }
     
-    wxStringTokenizer tkz( pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length() - 11 ),
+    wxStringTokenizer tkz( pClientItem->m_currentCommand,
                             _(",") );
 
     // If first character is $ user request us to send content from
@@ -964,7 +964,7 @@ void VSCPClientThread::handleClientMeasurment( struct mg_connection *conn,
     }
     
     wxstr = tkz.GetNextToken();
-    wxstr.Trim();
+    wxstr.Trim(true);
     wxstr.Trim(false);
     
     // If first character is '$' user request us to send content from
@@ -1019,8 +1019,11 @@ void VSCPClientThread::handleClientMeasurment( struct mg_connection *conn,
     
        
     if ( tkz.HasMoreTokens() ) {
+        
         wxstr = tkz.GetNextToken();
-        wxstr.Trim();
+        
+        wxstr.Trim(true);
+        wxstr.Trim(false);
         // If empty set to default.
         if ( 0 == wxstr.Length() ) wxstr = _("-");
         guid.getFromString( wxstr );
@@ -1031,8 +1034,11 @@ void VSCPClientThread::handleClientMeasurment( struct mg_connection *conn,
     
     
     if ( tkz.HasMoreTokens() ) {
+        
         wxstr = tkz.GetNextToken();
-        wxstr.Trim();
+        
+        wxstr.Trim(true);
+        wxstr.Trim(false);
         
         if ( wxstr.IsNumber() ) { 
             if ( wxstr.ToULong( &l ) ) {
@@ -1046,8 +1052,11 @@ void VSCPClientThread::handleClientMeasurment( struct mg_connection *conn,
     
     
     if ( tkz.HasMoreTokens() ) {
+        
         wxstr = tkz.GetNextToken();
-        wxstr.Trim();
+        
+        wxstr.Trim(true);
+        wxstr.Trim(false);
         
         if ( wxstr.IsNumber() ) { 
             if ( wxstr.ToULong( &l ) ) {
@@ -1062,8 +1071,11 @@ void VSCPClientThread::handleClientMeasurment( struct mg_connection *conn,
     
     
     if ( tkz.HasMoreTokens() ) {
+        
         wxstr = tkz.GetNextToken();
-        wxstr.Trim();
+        
+        wxstr.Trim(true);
+        wxstr.Trim(false);
         
         if ( wxstr.IsNumber() ) { 
             if ( wxstr.ToULong( &l ) ) {
@@ -1078,8 +1090,12 @@ void VSCPClientThread::handleClientMeasurment( struct mg_connection *conn,
     
         
     if ( tkz.HasMoreTokens() ) {
+        
         wxstr = tkz.GetNextToken();
-        wxstr.Trim();
+        
+        wxstr.Trim(true);
+        wxstr.Trim(false);
+        
         // If empty set to default.
         if ( 0 == wxstr.Length() ) wxstr = _("-");
         destguid.getFromString( wxstr );
@@ -1363,8 +1379,8 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn,
         return;
     }
 
-    wxString str = pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length() - 5 );
-    wxStringTokenizer tkz( str, _(",") );
+    wxString str;
+    wxStringTokenizer tkz( pClientItem->m_currentCommand, _(",") );
 
     // If first character is $ user request us to send content from
     // a variable
@@ -1372,7 +1388,10 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn,
     if ( tkz.HasMoreTokens() ) {
         
         str = tkz.GetNextToken();
-        str.Trim( false );
+        
+        str.Trim(true);
+        str.Trim(false);
+        
         if ( wxNOT_FOUND == str.Find(_("$") ) ) {
             event.head = vscp_readStringValue( str );
         }
@@ -1662,8 +1681,8 @@ void VSCPClientThread::handleClientReceive ( struct mg_connection *conn,
         return;
     }
 
-    wxString str = pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length() - 4 );
-    cnt = vscp_readStringValue( str );
+    wxString str;
+    cnt = vscp_readStringValue( pClientItem->m_currentCommand );
 
     if ( !cnt ) cnt = 1;	// No arg is "read one"
 
@@ -1917,8 +1936,8 @@ void VSCPClientThread::handleClientSetChannelGUID ( struct mg_connection *conn,
         return;
     }
 
-    pClientItem->m_currentCommand.Trim();
-    pClientItem->m_currentCommand.Trim( true );
+    pClientItem->m_currentCommand.Trim(true);
+    pClientItem->m_currentCommand.Trim(false);
     
     pClientItem->m_guid.getFromString( pClientItem->m_currentCommand );
     mg_send( conn,  MSG_OK, strlen ( MSG_OK ) );
@@ -1997,8 +2016,8 @@ void VSCPClientThread::handleClientSetFilter ( struct mg_connection *conn,
     }
 
     wxString str;
-    pClientItem->m_currentCommand.Trim();
-    pClientItem->m_currentCommand.Trim( true );
+    pClientItem->m_currentCommand.Trim(true);
+    pClientItem->m_currentCommand.Trim(false);
     wxStringTokenizer tkz( pClientItem->m_currentCommand, _(",") );
 
     // Get priority
@@ -2062,8 +2081,8 @@ void VSCPClientThread::handleClientSetMask ( struct mg_connection *conn,
     }
 
     wxString str;
-    pClientItem->m_currentCommand.Trim();
-    pClientItem->m_currentCommand.Trim( true );
+    pClientItem->m_currentCommand.Trim(true);
+    pClientItem->m_currentCommand.Trim(false);
     wxStringTokenizer tkz( str, _(",") );
 
     // Get priority
@@ -2125,10 +2144,9 @@ void VSCPClientThread::handleClientUser ( struct mg_connection *conn,
         return;
     }
 
-    pClientItem->m_UserName =
-        pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length() - 4 );
-    pClientItem->m_UserName.Trim();         // Trim right side
-    pClientItem->m_UserName.Trim( false );  // Trim left
+    pClientItem->m_UserName = pClientItem->m_currentCommand;
+    pClientItem->m_UserName.Trim(true);     // Trim right side
+    pClientItem->m_UserName.Trim(false );   // Trim left
     if ( pClientItem->m_UserName.IsEmpty() ) {
         mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
         return;
@@ -2158,10 +2176,10 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn,
         return true;
     }
 
-    wxString strPassword =
-            pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length() - 4 );
-    strPassword.Trim();             // Trim right side
-    strPassword.Trim( false );      // Trim left
+    wxString strPassword = pClientItem->m_currentCommand;
+    strPassword.Trim(true);         // Trim right side
+    strPassword.Trim(false);        // Trim left
+
     if ( strPassword.IsEmpty() ) {
         pClientItem->m_UserName = _("");
         mg_send( conn,  MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
@@ -2265,8 +2283,8 @@ void VSCPClientThread::handleChallenge( struct mg_connection *conn,
     wxString wxstr;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    pClientItem->m_currentCommand.Trim();
-    pClientItem->m_currentCommand.Trim( true );
+    pClientItem->m_currentCommand.Trim(true);
+    pClientItem->m_currentCommand.Trim(false);
 
     memset( pClientItem->m_sid, 0, sizeof( pClientItem->m_sid ) );
     if ( !gpobj->generateSessionId( (const char *)pClientItem->m_currentCommand.mbc_str(), 
@@ -2327,14 +2345,14 @@ void VSCPClientThread::handleClientHelp( struct mg_connection *conn,
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    pClientItem->m_currentCommand.Trim();
-    pClientItem->m_currentCommand.Trim( true );
+    pClientItem->m_currentCommand.Trim(true);
+    pClientItem->m_currentCommand.Trim(false);
 
     if ( 0 == pClientItem->m_currentCommand.Length() ) {
 
         wxString str = _("Help for the VSCP tcp/ip interface\r\n");
                 str += _("====================================================================\r\n");
-                str += _("To get more information about a specific command issue 'HELP comman'\r\n");
+                str += _("To get more information about a specific command issue 'HELP command'\r\n");
                 str += _("+                 - Repeat last command.\r\n");
                 str += _("NOOP              - No operation. Does nothing.\r\n");
                 str += _("QUIT              - Close the connection.\r\n");
@@ -2963,7 +2981,8 @@ void VSCPClientThread::handleClientVariable( struct mg_connection *conn,
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    pClientItem->m_currentCommand.Trim( false );
+    pClientItem->m_currentCommand.Trim(false);
+    pClientItem->m_currentCommand.Trim(true);
 
     if ( pClientItem->m_currentCommand.StartsWith( _("LIST"), 
                                                     &pClientItem->m_currentCommand ) || 
@@ -3072,15 +3091,18 @@ void VSCPClientThread::handleVariable_List( struct mg_connection *conn,
     
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    pClientItem->m_currentCommand.Trim( false );
+    pClientItem->m_currentCommand.Trim(false);
+    pClientItem->m_currentCommand.Trim(true);
 
     wxStringTokenizer tkz( pClientItem->m_currentCommand, _(" ") );
     
     // Check for variable name
     if ( tkz.HasMoreTokens() ) {
+        
         wxString token = tkz.GetNextToken();
-        token.Trim();
-        token.Trim( false );
+        
+        token.Trim(true);
+        token.Trim(false);
         if ( !token.empty() ) {
             strSearch = token;
         }
@@ -3095,7 +3117,8 @@ void VSCPClientThread::handleVariable_List( struct mg_connection *conn,
     // Check for variable type
     if ( tkz.HasMoreTokens() ) {
         wxString str = tkz.GetNextToken();
-        str.Trim();
+        str.Trim(true);
+        str.Trim(false);
         type = vscp_readStringValue( str );
     }
 
@@ -3146,7 +3169,8 @@ void VSCPClientThread::handleVariable_Write( struct mg_connection *conn,
     bool bPersistence = false;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    pClientItem->m_currentCommand.Trim( false );
+    pClientItem->m_currentCommand.Trim(false);
+    pClientItem->m_currentCommand.Trim(true);
     
     if ( !variable.getVariableFromString( pClientItem->m_currentCommand, 
                                                 false, 
@@ -3190,7 +3214,8 @@ void VSCPClientThread::handleVariable_WriteValue( struct mg_connection *conn,
     wxString value;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
     
-    pClientItem->m_currentCommand.Trim( false );
+    pClientItem->m_currentCommand.Trim(false);
+    pClientItem->m_currentCommand.Trim(true);
     
     wxStringTokenizer tkz( pClientItem->m_currentCommand, _(" \r\n") );
     
@@ -3244,7 +3269,8 @@ void VSCPClientThread::handleVariable_WriteNote( struct mg_connection *conn,
     wxString str;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
     
-    pClientItem->m_currentCommand.Trim( false );
+    pClientItem->m_currentCommand.Trim(false);
+    pClientItem->m_currentCommand.Trim(true);
     
     wxString name;
     wxString note;
@@ -3302,7 +3328,8 @@ void VSCPClientThread::handleVariable_Read( struct mg_connection *conn,
     wxString str;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    pClientItem->m_currentCommand.Trim( false );
+    pClientItem->m_currentCommand.Trim(false);
+    pClientItem->m_currentCommand.Trim(true);
 
     CVSCPVariable variable;
     if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommand,variable ) ) {
@@ -3331,7 +3358,8 @@ void VSCPClientThread::handleVariable_ReadValue( struct mg_connection *conn,
     wxString str;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    pClientItem->m_currentCommand.Trim( false );
+    pClientItem->m_currentCommand.Trim(false);
+    pClientItem->m_currentCommand.Trim(true);
 
     CVSCPVariable variable;
     if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommand, variable ) ) {
@@ -3359,7 +3387,8 @@ void VSCPClientThread::handleVariable_ReadNote( struct mg_connection *conn,
     wxString str;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    pClientItem->m_currentCommand.Trim( false );
+    pClientItem->m_currentCommand.Trim(false);
+    pClientItem->m_currentCommand.Trim(true);
 
     CVSCPVariable variable;
     if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommand,variable ) ) {
@@ -3386,7 +3415,8 @@ void VSCPClientThread::handleVariable_Reset( struct mg_connection *conn,
     wxString str;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    pClientItem->m_currentCommand.Trim( false );
+    pClientItem->m_currentCommand.Trim(false);
+    pClientItem->m_currentCommand.Trim(true);
 
     CVSCPVariable variable;
     
@@ -3418,7 +3448,8 @@ void VSCPClientThread::handleVariable_ReadReset( struct mg_connection *conn,
     wxString str;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    pClientItem->m_currentCommand.Trim( false );
+    pClientItem->m_currentCommand.Trim(false);
+    pClientItem->m_currentCommand.Trim(true);
     
     if ( pClientItem->m_currentCommand.StartsWith( _("VSCP.") ) || 
          pClientItem->m_currentCommand.StartsWith( _("vscp.") ) ) {
@@ -3461,7 +3492,8 @@ void VSCPClientThread::handleVariable_Remove( struct mg_connection *conn,
     wxString str;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    pClientItem->m_currentCommand.Trim( false );
+    pClientItem->m_currentCommand.Trim(false);
+    pClientItem->m_currentCommand.Trim(true);
     
     if ( pClientItem->m_currentCommand.StartsWith( _("VSCP.") ) || 
          pClientItem->m_currentCommand.StartsWith( _("vscp.") ) ) {
@@ -3487,7 +3519,8 @@ void VSCPClientThread::handleVariable_ReadRemove( struct mg_connection *conn,
     wxString str;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    pClientItem->m_currentCommand.Trim( false );
+    pClientItem->m_currentCommand.Trim(false);
+    pClientItem->m_currentCommand.Trim(true);
     
     if ( pClientItem->m_currentCommand.StartsWith( _("VSCP.") ) || 
          pClientItem->m_currentCommand.StartsWith( _("vscp.") ) ) {
@@ -3522,7 +3555,8 @@ void VSCPClientThread::handleVariable_Length( struct mg_connection *conn,
     wxString str;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    pClientItem->m_currentCommand.Trim( false );
+    pClientItem->m_currentCommand.Trim(false);
+    pClientItem->m_currentCommand.Trim(true);
 
     CVSCPVariable variable;
     if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommand, variable ) ) {
@@ -3567,7 +3601,8 @@ void VSCPClientThread::handleVariable_Save( struct mg_connection *conn,
     wxString path;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    pClientItem->m_currentCommand.Trim( false );
+    pClientItem->m_currentCommand.Trim(false);
+    pClientItem->m_currentCommand.Trim(true);
 
     // Construct path to save to (always relative to root)
     // may not contain ".."
@@ -3602,7 +3637,8 @@ void VSCPClientThread::handleClientDm( struct mg_connection *conn,
 
     m_pCtrlObject->logMsg ( pClientItem->m_currentCommand, DAEMON_LOGMSG_NORMAL );
 
-    pClientItem->m_currentCommand.Trim( false );
+    pClientItem->m_currentCommand.Trim(false);
+    pClientItem->m_currentCommand.Trim(true);
 
     if ( pClientItem->m_currentCommand.StartsWith( _("ENABLE "),
                                                 &pClientItem->m_currentCommand ) ||
@@ -3782,7 +3818,8 @@ void VSCPClientThread::handleDM_List( struct mg_connection *conn,
 
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    pClientItem->m_currentCommand.Trim( false );
+    pClientItem->m_currentCommand.Trim(false);
+    pClientItem->m_currentCommand.Trim(true);
 
     // if "list" add "all"
     if ( 0 == pClientItem->m_currentCommand.Length() ) {
