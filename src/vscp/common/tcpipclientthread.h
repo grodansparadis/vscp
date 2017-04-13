@@ -297,6 +297,59 @@ public:
         @param pCtrlObject Pointer to control object
     */
     void handleClientTable( struct mg_connection *conn, CControlObject *pCtrlObject );
+    
+    /*!
+        Client TABLE list command.
+        list - List all defined tables.
+        list 'table-name' - List info about selected table.
+        @param conn Connection handler.
+    */
+    void handleClientTable_List( struct mg_connection *conn );
+    
+    /*!
+        Client TABLE get command
+        get 'table-name' to from ["full"]
+        @param conn Connection handler.
+    */
+    void handleClientTable_Get( struct mg_connection *conn );
+    
+    /*!
+        Client TABLE getraw command
+        get 'table-name' to from
+        @param conn Connection handler.
+    */
+    void handleClientTable_GetRaw( struct mg_connection *conn );
+    
+    /*!
+        Client TABLE clear command
+        @param conn Connection handler.
+    */
+    void handleClientTable_Clear( struct mg_connection *conn );
+    
+    /*!
+        Client TABLE log command
+        @param conn Connection handler.
+    */
+    void handleClientTable_Log( struct mg_connection *conn );
+    
+    /*!
+        Client TABLE logSQL command
+        @param conn Connection handler.
+    */
+    void handleClientTable_LogSQL( struct mg_connection *conn );
+    
+    /*!
+        Client TABLE new command
+        @param conn Connection handler.
+    */
+    void handleClientTable_New( struct mg_connection *conn );
+    
+    /*!
+        Client TABLE delete command
+        @param conn Connection handler.
+    */
+    void handleClientTable_Delete( struct mg_connection *conn );
+    
 
     /*!
         Client VARIABLE command

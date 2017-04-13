@@ -795,6 +795,7 @@ public:
         This is a list with defined tables
     */
     CUserTableObjList m_userTableObjects;
+    wxMutex m_mutexUserTables;
     
 
     /*!

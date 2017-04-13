@@ -67,6 +67,12 @@
 #define MSG_INVALID_PATH                    "-OK - Invalid path.\r\n"
 #define MSG_FAILD_TO_GENERATE_SID           "-OK - Failed to generate sid.\r\n"
 
+#define MSG_FAILED_GET_TABLE_NAMES          "-OK - Failed to get table names.\r\n"
+#define MSG_FAILED_UNKNOWN_TABLE            "-OK - No table with that name can be found.\r\n"
+#define MSG_FAILED_TO_PREPARE_TABLE         "-OK - Failed to prepare table search.\r\n"
+#define MSG_FAILED_TO_FINALIZE_TABLE        "-OK - Failed to finalize table search.\r\n"
+#define MSG_FAILED_TO_CLEAR_TABLE           "-OK - Failed to clear table.\r\n"
+
 //class CControlObject;
 //class CClientItem;
 

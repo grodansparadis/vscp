@@ -1396,6 +1396,7 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn,
             event.head = vscp_readStringValue( str );
         }
         else {
+            
             CVSCPVariable variable;
             bVariable = true;   // Yes this is a variable send
 
@@ -2186,32 +2187,6 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn,
         return false;
     }
 
-    /*
-    // Calculate MD5 for username:authdomain:password
-    char buf[2148];
-    memset( buf, 0, sizeof( buf ) );
-    strncpy( buf,
-                (const char *)pClientItem->m_UserName.mbc_str(),
-                pClientItem->m_UserName.Length() );
-    strncat( buf, ":", 1 );
-    strncat( buf,
-                (const char *)pCtrlObject->m_authDomain,
-                strlen( pCtrlObject->m_authDomain ) );
-    strncat( buf, ":", 1 );
-    strncat( (char *)buf, strPassword.mbc_str(), strPassword.Length() );
-
-    MD5_CTX ctx;
-    MD5_Init( &ctx );
-    MD5_Update( &ctx, (const unsigned char *)buf, strlen( buf ) );
-    unsigned char bindigest[16];
-    MD5_Final( bindigest, &ctx );
-    char digest[33];
-    memset( digest, 0, sizeof( digest ) );
-    cs_to_hex( digest, bindigest, 16 );
-
-    wxString md5Password = wxString( digest, wxConvUTF8 );
-    */
-    
     m_pCtrlObject->m_mutexUserList.Lock();
 #if  0
     ::wxLogDebug( _("Username: ") + m_UserName );
@@ -2754,6 +2729,19 @@ void VSCPClientThread::handleClientRemote( struct mg_connection *conn,
 }
 
 
+
+
+
+// -----------------------------------------------------------------------------
+//                            I N T E R F A C E
+// -----------------------------------------------------------------------------
+
+
+
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientInterface
 //
@@ -2762,7 +2750,8 @@ void VSCPClientThread::handleClientRemote( struct mg_connection *conn,
 // normal   Normal access to interfaces. Full format is INTERFACE NORMAL id
 // close    Close interfaces. Full format is INTERFACE CLOSE id
 
-void VSCPClientThread::handleClientInterface( struct mg_connection *conn, CControlObject *pCtrlObject )
+void VSCPClientThread::handleClientInterface( struct mg_connection *conn, 
+                                                CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
@@ -2770,7 +2759,7 @@ void VSCPClientThread::handleClientInterface( struct mg_connection *conn, CContr
 
     if ( pClientItem->m_currentCommand.StartsWith( _("LIST"),
                                                    &pClientItem->m_currentCommand ) ||
-         pClientItem->m_currentCommand.StartsWith( _("list"), 
+        pClientItem->m_currentCommand.StartsWith( _("list"), 
                                                         &pClientItem->m_currentCommand ) )  {
         handleClientInterface_List( conn, pCtrlObject );
     }
@@ -2876,6 +2865,20 @@ void VSCPClientThread::handleClientInterface_Close( struct mg_connection *conn,
 }
 
 
+
+
+
+// -----------------------------------------------------------------------------
+//                          E N D   I N T E R F A C E
+// -----------------------------------------------------------------------------
+
+
+
+
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientUdp
 //
@@ -2885,6 +2888,26 @@ void VSCPClientThread::handleClientUdp( struct mg_connection *conn,
 {
     // TODO
 }
+
+
+
+
+
+// -----------------------------------------------------------------------------
+//                            E N D   U D P
+// -----------------------------------------------------------------------------
+
+
+
+
+
+// -----------------------------------------------------------------------------
+//                               F I L E
+// -----------------------------------------------------------------------------
+
+
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2897,6 +2920,27 @@ void VSCPClientThread::handleClientFile( struct mg_connection *conn,
     // TODO
 }
 
+
+
+
+
+// -----------------------------------------------------------------------------
+//                            E N D   F I L E
+// -----------------------------------------------------------------------------
+
+
+
+
+
+// -----------------------------------------------------------------------------
+//                         S T A R T   T A B L E
+// -----------------------------------------------------------------------------
+
+
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientTable
 //
@@ -2905,6 +2949,7 @@ void VSCPClientThread::handleClientTable( struct mg_connection *conn,
                                             CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    if ( NULL == pClientItem ) return;
 
     pClientItem->m_currentCommand.Trim(true);
     pClientItem->m_currentCommand.Trim(false);    
@@ -2914,63 +2959,828 @@ void VSCPClientThread::handleClientTable( struct mg_connection *conn,
                                                    &pClientItem->m_currentCommand ) ||
          pClientItem->m_currentCommand.StartsWith( _("list"), 
                                                    &pClientItem->m_currentCommand ) ) {
-        // TODO
+        handleClientTable_List( conn );
     }
     // Get table content
     else if ( pClientItem->m_currentCommand.StartsWith( _("GET"), 
                                                         &pClientItem->m_currentCommand ) ||
               pClientItem->m_currentCommand.StartsWith( _("get"), 
                                                         &pClientItem->m_currentCommand ) ) {
-        // TODO
+        handleClientTable_Get( conn );
+    }
+    // Get rawtable content
+    else if ( pClientItem->m_currentCommand.StartsWith( _("GETRAW"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("getraw"), 
+                                                        &pClientItem->m_currentCommand ) ) {
+        handleClientTable_GetRaw( conn );
     }
     // Delete table data
     else if ( pClientItem->m_currentCommand.StartsWith( _("CLEAR"), 
                                                                 &pClientItem->m_currentCommand ) ||
               pClientItem->m_currentCommand.StartsWith( _("clear"), 
                                                         &pClientItem->m_currentCommand ) ) {
-        // TODO
+        handleClientTable_Clear( conn );
     }
     // New table (create)
     else if ( pClientItem->m_currentCommand.StartsWith( _("NEW"), 
                                                                 &pClientItem->m_currentCommand ) ||
               pClientItem->m_currentCommand.StartsWith( _("new"), 
                                                         &pClientItem->m_currentCommand ) ) {
-        // TODO
+        handleClientTable_New( conn );
     }
     // Delete table
     else if ( pClientItem->m_currentCommand.StartsWith( _("DEL"), 
                                                                 &pClientItem->m_currentCommand ) ||
               pClientItem->m_currentCommand.StartsWith( _("del"), 
+                                                        &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("DELETE"), 
+                                                                &pClientItem->m_currentCommand ) ||
+              pClientItem->m_currentCommand.StartsWith( _("delete"), 
                                                         &pClientItem->m_currentCommand ) ) {
-        // TODO
+        handleClientTable_Delete( conn );
     }
     // Log data
     else if ( pClientItem->m_currentCommand.StartsWith( _("LOG"), 
                                                                 &pClientItem->m_currentCommand ) ||
               pClientItem->m_currentCommand.StartsWith( _("log"), 
                                                         &pClientItem->m_currentCommand ) ) {
-        // TODO
+        handleClientTable_Log( conn );
     }
     // Log data use SQL
     else if ( pClientItem->m_currentCommand.StartsWith( _("LOGSQL"), 
                                                                 &pClientItem->m_currentCommand ) ||
               pClientItem->m_currentCommand.StartsWith( _("logsql"), 
                                                         &pClientItem->m_currentCommand ) ) {
-        // TODO
+        handleClientTable_LogSQL( conn );
     }
-    
-    
-    else if ( pClientItem->m_currentCommand.StartsWith( _("LIST "), 
-                                                   &pClientItem->m_currentCommand ) ||
-              pClientItem->m_currentCommand.StartsWith( _("list"), 
-                                                        &pClientItem->m_currentCommand ) )	{
-        handleVariable_List( conn, pCtrlObject );
-    }
-
+    // unrecognised
     else {
         mg_send( conn, MSG_UNKNOWN_COMMAND, strlen( MSG_UNKNOWN_COMMAND ) );
     }
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// handleClientTable_List
+//
+
+void VSCPClientThread::handleClientTable_List( struct mg_connection *conn )
+{
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    if ( NULL == pClientItem ) return;
+    
+    pClientItem->m_currentCommand.Trim(true);
+    pClientItem->m_currentCommand.Trim(false); 
+    
+    if ( 0 == pClientItem->m_currentCommand.Length() ) {
+        // list without argument - list all defined tables
+        wxArrayString arrayNames;
+        gpobj->m_mutexUserTables.Lock();
+        if ( gpobj->m_userTableObjects.getTableNames( arrayNames ) ) {
+            
+            // OK
+            
+            wxString str = wxString::Format( _("%d rows \r\n"), 
+                                                arrayNames.Count() );
+            mg_send( conn, 
+                        (const char *)str.mbc_str(), 
+                        strlen( (const char *)str.mbc_str() ) );
+            
+            for ( int i=0; i<arrayNames.Count(); i++ ) {
+                
+                CVSCPTable *pTable = 
+                    gpobj->m_userTableObjects.getTable( arrayNames[i] );
+                
+                str = arrayNames[i];
+                str += _(";");
+                if ( NULL != pTable ) {
+                    
+                    switch( pTable->getType() ) {
+                        case VSCP_TABLE_DYNAMIC:
+                            str += _("dynamic");
+                            break;
+                            
+                        case VSCP_TABLE_STATIC:
+                            str += _("static");
+                            break;
+                            
+                        case VSCP_TABLE_MAX:
+                            str += _("max");
+                            break;
+                            
+                        default:
+                            str += _("Error: Invalid type");
+                            break;
+                    }
+                    
+                }
+                str += _(";");
+                if ( NULL != pTable ) {
+                    str += pTable->getDescription();
+                }
+                str += _("\r\n");
+                mg_send( conn, 
+                            (const char *)str.mbc_str(), 
+                            strlen( (const char *)str.mbc_str() ) );
+            }
+            
+            mg_send( conn,
+                        MSG_OK, 
+                        strlen( MSG_OK ) );
+            
+        }
+        else {
+            
+            // Failed
+            mg_send( conn, 
+                        MSG_FAILED_GET_TABLE_NAMES, 
+                        strlen( MSG_FAILED_GET_TABLE_NAMES ) );
+        }
+        gpobj->m_mutexUserTables.Unlock();
+    }
+    else {
+        
+        // list with argument - list info about table given as argument
+        
+        gpobj->m_mutexUserTables.Lock();
+        CVSCPTable *pTable = 
+                gpobj->m_userTableObjects.getTable( pClientItem->m_currentCommand );
+        if ( NULL == pTable ) {
+            // Failed
+            mg_send( conn, 
+                        MSG_FAILED_UNKNOWN_TABLE, 
+                        strlen( MSG_FAILED_UNKNOWN_TABLE ) );
+        }   
+        else {
+            
+            wxString str;
+
+            str = _("name=") + pTable->getTableName();
+            str += _("\r\n");
+            
+            str += _("enabled=");
+            str += pTable->isEnabled() ? _("true") : _("false");
+            str += _("\r\n");
+            
+            str += _("type=");
+            switch( pTable->getType() ) {
+                case VSCP_TABLE_DYNAMIC:
+                    str += _("dynamic");
+                    break;
+                            
+                case VSCP_TABLE_STATIC:
+                    str += _("static");
+                    break;
+                            
+                case VSCP_TABLE_MAX:
+                    str += _("max");
+                    break;
+                            
+                default:
+                    str += _("Error: Invalid type");
+                    break;
+            }
+            str += _("\r\n");
+            
+            str += _("bmemory=");
+            str += pTable->isInMemory() ? _("true") : _("false");
+            str += _("\r\n");
+            
+            str += _("size=");
+            str += wxString::Format( _("%lu "), (unsigned long)pTable->getSize() );
+            str += _("\r\n");
+            
+            str += _("owner=");
+            CUserItem *pUserItem = pTable->getUserItem();
+            if ( NULL == pUserItem ) {
+                str += _("ERROR");
+            }
+            else {
+                str += pUserItem->getUser();
+            }
+            str += _("\r\n");
+            
+            str += _("permission=");
+            str += wxString::Format( _("0x%0X "), (int)pTable->getRights() );
+            str += _("\r\n");
+            
+            str += _("description=");
+            str += pTable->getDescription();
+            str += _("\r\n");
+            
+            str += _("xname=");
+            str += pTable->getLabelX();
+            str += _("\r\n");
+            
+            str += _("yname=");
+            str += pTable->getLabelY();
+            str += _("\r\n");
+            
+            str += _("title=");
+            str += pTable->getTitle();
+            str += _("\r\n");
+            
+            str += _("note=");
+            str += pTable->getNote();
+            str += _("\r\n");
+            
+            str += _("vscp-class=");
+            str += wxString::Format( _("%d"), (int)pTable->getVSCPClass() );
+            str += _("\r\n");
+            
+            str += _("vscp-type=");
+            str += wxString::Format( _("%d"), (int)pTable->getVSCPType() );
+            str += _("\r\n");
+            
+            str += _("vscp-sensor-index=");
+            str += wxString::Format( _("%d"), (int)pTable->getVSCPSensorIndex() );
+            str += _("\r\n");
+            
+            str += _("vscp-unit=");
+            str += wxString::Format( _("%d"), (int)pTable->getVSCPUnit() );
+            str += _("\r\n");
+            
+            str += _("vscp-zone=");
+            str += wxString::Format( _("%d"), (int)pTable->getVSCPZone() );
+            str += _("\r\n");
+            
+            str += _("vscp-subzone=");
+            str += wxString::Format( _("%d"), (int)pTable->getVSCPSubZone() );
+            str += _("\r\n");
+            
+            str += _("vscp-create=");
+            str += pTable->getSQLCreate();
+            str += _("\r\n");
+            
+            str += _("vscp-insert=");
+            str += pTable->getSQLInsert();
+            str += _("\r\n");
+            
+            str += _("vscp-delete=");
+            str += pTable->getSQLDelete();
+            str += _("\r\n");
+            
+            // Send response
+            mg_send( conn,
+                        (const char *)str.mbc_str(), 
+                        strlen( (const char *)str.mbc_str() ) );
+            
+            // Tell user we are content with things.
+            mg_send( conn,
+                        MSG_OK, 
+                        strlen( MSG_OK ) );
+            
+        }
+        gpobj->m_mutexUserTables.Unlock();
+    }
+        
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// handleClientTable_Get
+//
+// get 'table-name' start end ["full"]
+//
+
+void VSCPClientThread::handleClientTable_Get( struct mg_connection *conn )
+{
+    wxString strTable;
+    wxDateTime wxStart;   
+    wxDateTime wxEnd;
+    bool bAll = false;
+    
+    // Initialize date range to 'all'
+    wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
+    wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+    
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    if ( NULL == pClientItem ) return;    
+    
+    pClientItem->m_currentCommand.Trim(true);
+    pClientItem->m_currentCommand.Trim(false);
+    
+    wxStringTokenizer tkz( pClientItem->m_currentCommand, _(" ") );
+    
+    // Get table name 
+    if ( tkz.HasMoreTokens() ) {
+        strTable = tkz.GetNextToken();
+        strTable.Trim(true);
+        strTable.Trim(false);
+    }
+    else {
+        // Problems: A table name must be given
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    // The start and end parameters must be present
+    
+    // start
+    if ( tkz.HasMoreTokens() ) {
+        
+        wxStart.ParseISOCombined( tkz.GetNextToken() );
+        
+        if ( !wxStart.IsValid() ) {
+            mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+            return;
+        }
+        
+    }
+    else {
+        // Problems: A start date must be given
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    // end
+    if ( tkz.HasMoreTokens() ) {
+        
+        wxEnd.ParseISOCombined( tkz.GetNextToken() );
+        
+        if ( !wxEnd.IsValid() ) {
+            mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+            return;
+        }
+        
+    }
+    else {
+        // Problems: An end date must be given
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    // "full" flag
+    if ( tkz.HasMoreTokens() ) {
+        wxString str = tkz.GetNextToken();
+        if ( str.Upper().StartsWith( _("FULL") ) ) {
+            bAll = true;
+        }
+    }
+    
+    gpobj->m_mutexUserTables.Lock();
+    
+    CVSCPTable *pTable = 
+                gpobj->m_userTableObjects.getTable( strTable );
+    if ( NULL == pTable ) {
+        // Failed
+        mg_send( conn, 
+                    MSG_FAILED_UNKNOWN_TABLE, 
+                    strlen( MSG_FAILED_UNKNOWN_TABLE ) );
+        
+        gpobj->m_mutexUserTables.Unlock();
+        return;
+    }   
+
+    sqlite3_stmt *ppStmt;
+    if ( !pTable->prepareRangeOfData( wxStart, wxEnd, &ppStmt, bAll ) ) {
+        // Failed
+        mg_send( conn, 
+                    MSG_FAILED_TO_PREPARE_TABLE, 
+                    strlen( MSG_FAILED_TO_PREPARE_TABLE ) );
+        
+        gpobj->m_mutexUserTables.Unlock();
+        return;
+    }
+    
+    wxString str;
+    wxArrayString strArray;
+    while ( pTable->getRowRangeOfData( ppStmt, str ) ) {
+        strArray.Add( str );
+    }
+    
+    str = wxString::Format( _("%d rows.\r\n"), (int)strArray.Count() );
+    mg_send( conn, 
+                (const char *)str.mbc_str(), 
+                strlen( (const char *)str.mbc_str() ) );
+    
+    if ( strArray.Count() ) {
+        for ( int i=0; i<strArray.Count(); i++ ) {
+            str = strArray[i];
+            str += _("\r\n");
+            mg_send( conn, 
+                    (const char *)str.mbc_str(), 
+                    strlen( (const char *)str.mbc_str() ) );
+        }
+    }    
+    
+    if ( !pTable->finalizeRangeOfData( ppStmt )  ) {
+        // Failed
+        mg_send( conn, 
+                    MSG_FAILED_TO_FINALIZE_TABLE, 
+                    strlen( MSG_FAILED_TO_FINALIZE_TABLE ) );
+        
+        gpobj->m_mutexUserTables.Unlock();
+        return;
+    }
+    
+    gpobj->m_mutexUserTables.Unlock();
+        
+    // Everything is OK
+    mg_send( conn, MSG_OK, strlen( MSG_OK ) );
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// handleClientTable_GetRaw
+//
+// get 'table-name' start end ["full"]
+//
+
+void VSCPClientThread::handleClientTable_GetRaw( struct mg_connection *conn )
+{
+    wxString strTable;
+    wxDateTime wxStart;   
+    wxDateTime wxEnd;
+    
+    // Initialize date range to 'all'
+    wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
+    wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+    
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    if ( NULL == pClientItem ) return;    
+    
+    pClientItem->m_currentCommand.Trim(true);
+    pClientItem->m_currentCommand.Trim(false);
+    
+    wxStringTokenizer tkz( pClientItem->m_currentCommand, _(" ") );
+    
+    // Get table name 
+    if ( tkz.HasMoreTokens() ) {
+        strTable = tkz.GetNextToken();
+        strTable.Trim(true);
+        strTable.Trim(false);
+    }
+    else {
+        // Problems: A table name must be given
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    // The start and end parameters must be present
+    
+    // start
+    if ( tkz.HasMoreTokens() ) {
+        
+        wxStart.ParseISOCombined( tkz.GetNextToken() );
+        
+        if ( !wxStart.IsValid() ) {
+            mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+            return;
+        }
+        
+    }
+    else {
+        // Problems: A start date must be given
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    // end
+    if ( tkz.HasMoreTokens() ) {
+        
+        wxEnd.ParseISOCombined( tkz.GetNextToken() );
+        
+        if ( !wxEnd.IsValid() ) {
+            mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+            return;
+        }
+        
+    }
+    else {
+        // Problems: An end date must be given
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+        
+    gpobj->m_mutexUserTables.Lock();
+    
+    CVSCPTable *pTable = 
+                gpobj->m_userTableObjects.getTable( strTable );
+    if ( NULL == pTable ) {
+        // Failed
+        mg_send( conn, 
+                    MSG_FAILED_UNKNOWN_TABLE, 
+                    strlen( MSG_FAILED_UNKNOWN_TABLE ) );
+        
+        gpobj->m_mutexUserTables.Unlock();
+        return;
+    }   
+
+    sqlite3_stmt *ppStmt;
+    if ( !pTable->prepareRangeOfData( wxStart, wxEnd, &ppStmt, true ) ) {
+        // Failed
+        mg_send( conn, 
+                    MSG_FAILED_TO_PREPARE_TABLE, 
+                    strlen( MSG_FAILED_TO_PREPARE_TABLE ) );
+        
+        gpobj->m_mutexUserTables.Unlock();
+        return;
+    }
+    
+    wxString str;
+    wxArrayString strArray;
+    while ( pTable->getRowRangeOfDataRaw( ppStmt, str ) ) {
+        strArray.Add( str );
+    }
+    
+    str = wxString::Format( _("%d rows.\r\n"), (int)strArray.Count() );
+    mg_send( conn, 
+                (const char *)str.mbc_str(), 
+                strlen( (const char *)str.mbc_str() ) );
+    
+    if ( strArray.Count() ) {
+        for ( int i=0; i<strArray.Count(); i++ ) {
+            str = strArray[i];
+            str += _("\r\n");
+            mg_send( conn, 
+                    (const char *)str.mbc_str(), 
+                    strlen( (const char *)str.mbc_str() ) );
+        }
+    }    
+    
+    if ( !pTable->finalizeRangeOfData( ppStmt )  ) {
+        // Failed
+        mg_send( conn, 
+                    MSG_FAILED_TO_FINALIZE_TABLE, 
+                    strlen( MSG_FAILED_TO_FINALIZE_TABLE ) );
+        
+        gpobj->m_mutexUserTables.Unlock();
+        return;
+    }
+    
+    gpobj->m_mutexUserTables.Unlock();
+        
+    // Everything is OK
+    mg_send( conn, MSG_OK, strlen( MSG_OK ) );
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// handleClientTable_Clear
+//
+// clear 'table-name' [to,from]
+//
+
+void VSCPClientThread::handleClientTable_Clear( struct mg_connection *conn )
+{    
+    wxString strTable;
+    wxDateTime wxStart;   
+    wxDateTime wxEnd;
+    bool bClearAll = false;
+    
+    // Initialize date range to 'all'
+    wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
+    wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+    
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    if ( NULL == pClientItem ) return;
+    
+    pClientItem->m_currentCommand.Trim(true);
+    pClientItem->m_currentCommand.Trim(false);
+    
+    wxStringTokenizer tkz( pClientItem->m_currentCommand, _(" ") );
+    
+    // Get table name
+    if ( tkz.HasMoreTokens() ) {
+        strTable = tkz.GetNextToken();
+        strTable.Trim(true);
+        strTable.Trim(false);
+    }
+    else {
+        // Problems: A table name must be given
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    // get range if given
+    if ( tkz.CountTokens() >= 2 ) {
+        
+        if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+            mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+            return;
+        }
+        
+        if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+            mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+            return;
+        }
+        
+    }
+    else {
+        bClearAll = true;
+    }
+    
+    gpobj->m_mutexUserTables.Lock();
+    
+    CVSCPTable *pTable = 
+                gpobj->m_userTableObjects.getTable( strTable );
+    
+    if ( NULL == pTable ) {
+        // Failed
+        mg_send( conn, 
+                    MSG_FAILED_UNKNOWN_TABLE, 
+                    strlen( MSG_FAILED_UNKNOWN_TABLE ) );
+        
+        gpobj->m_mutexUserTables.Unlock();
+        return;
+    } 
+    
+    if ( bClearAll ) {
+        if ( !pTable->clearTable() ) {
+            mg_send( conn, 
+                    MSG_FAILED_TO_CLEAR_TABLE, 
+                    strlen( MSG_FAILED_TO_CLEAR_TABLE ) );
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        }
+    }
+    else {
+        if ( !pTable->clearTableRange( wxStart, wxEnd ) ) {
+            mg_send( conn, 
+                    MSG_FAILED_TO_CLEAR_TABLE, 
+                    strlen( MSG_FAILED_TO_CLEAR_TABLE ) );
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        }
+    }
+        
+    
+    gpobj->m_mutexUserTables.Unlock();
+    
+    return;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// handleClientTable_Log
+//
+
+void VSCPClientThread::handleClientTable_Log( struct mg_connection *conn )
+{
+    wxString strTable;
+    
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    if ( NULL == pClientItem ) return;    
+    
+    pClientItem->m_currentCommand.Trim(true);
+    pClientItem->m_currentCommand.Trim(false);
+    
+    wxStringTokenizer tkz( pClientItem->m_currentCommand, _(" ") );
+    
+    // Get table name 
+    if ( tkz.HasMoreTokens() ) {
+        strTable = tkz.GetNextToken();
+        strTable.Trim(true);
+        strTable.Trim(false);
+    }
+    else {
+        // Problems: A table name must be given
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// handleClientTable_LogSQL
+//
+
+void VSCPClientThread::handleClientTable_LogSQL( struct mg_connection *conn )
+{
+    wxString strTable;
+    
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    if ( NULL == pClientItem ) return;    
+    
+    pClientItem->m_currentCommand.Trim(true);
+    pClientItem->m_currentCommand.Trim(false);
+    
+    wxStringTokenizer tkz( pClientItem->m_currentCommand, _(" ") );
+    
+    // Get table name 
+    if ( tkz.HasMoreTokens() ) {
+        strTable = tkz.GetNextToken();
+        strTable.Trim(true);
+        strTable.Trim(false);
+    }
+    else {
+        // Problems: A table name must be given
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// handleClientTable_New
+//
+
+void VSCPClientThread::handleClientTable_New( struct mg_connection *conn )
+{
+    wxString strTable;
+    
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    if ( NULL == pClientItem ) return;    
+    
+    pClientItem->m_currentCommand.Trim(true);
+    pClientItem->m_currentCommand.Trim(false);
+    
+    wxStringTokenizer tkz( pClientItem->m_currentCommand, _(" ") );
+    
+    // Get table name 
+    if ( tkz.HasMoreTokens() ) {
+        strTable = tkz.GetNextToken();
+        strTable.Trim(true);
+        strTable.Trim(false);
+    }
+    else {
+        // Problems: A table name must be given
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// handleClientTable_Delete
+//
+
+void VSCPClientThread::handleClientTable_Delete( struct mg_connection *conn )
+{
+    wxString strTable;
+    
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    if ( NULL == pClientItem ) return;    
+    
+    pClientItem->m_currentCommand.Trim(true);
+    pClientItem->m_currentCommand.Trim(false);
+    
+    wxStringTokenizer tkz( pClientItem->m_currentCommand, _(" ") );
+    
+    // Get table name 
+    if ( tkz.HasMoreTokens() ) {
+        strTable = tkz.GetNextToken();
+        strTable.Trim(true);
+        strTable.Trim(false);
+    }
+    else {
+        // Problems: A table name must be given
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    
+}
+
+
+
+
+
+
+
+
+// -----------------------------------------------------------------------------
+//                            E N D   T A B L E
+// -----------------------------------------------------------------------------
+
+
+
+
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientVariable
@@ -3095,7 +3905,7 @@ void VSCPClientThread::handleVariable_List( struct mg_connection *conn,
     pClientItem->m_currentCommand.Trim(true);
 
     wxStringTokenizer tkz( pClientItem->m_currentCommand, _(" ") );
-    
+                                       
     // Check for variable name
     if ( tkz.HasMoreTokens() ) {
         
@@ -3382,7 +4192,7 @@ void VSCPClientThread::handleVariable_ReadValue( struct mg_connection *conn,
 //
 
 void VSCPClientThread::handleVariable_ReadNote( struct mg_connection *conn,
-                                                CControlObject *pCtrlObject, bool bOKResponse )
+                                                    CControlObject *pCtrlObject, bool bOKResponse )
 {
     wxString str;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;

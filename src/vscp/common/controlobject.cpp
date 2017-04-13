@@ -636,7 +636,14 @@ bool CControlObject::searchLogDB( const char * sql, wxString& strResult )
 bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 {
     wxString str;
-
+    
+    /*
+    wxDateTime ttt;
+    ttt.ParseISOCombined(_("1970-12-31T12:00:00.444"));
+    ttt.SetMillisecond( 123 );
+    unsigned short ms = ttt.GetMillisecond();
+    */
+            
     // Assign to the global control object
     gpobj = this;
     
@@ -984,7 +991,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     
     // Load tables from database
     logMsg(_("Reading in user tables from DB.\n") );
-    m_userTableObjects.readTablesFromDB();
+    m_userTableObjects.loadTablesFromDB();
     
     logMsg(_("Initializing user tables.\n") );
     m_userTableObjects.init();

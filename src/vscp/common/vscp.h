@@ -82,17 +82,29 @@ extern "C" {
     //
 
     typedef struct {
-        uint16_t crc;           // crc checksum - currently only used for UDP and RF
+        uint16_t crc;           // crc checksum (calculated from here to end)
+                                // Used for UDP/Ethernet etc
+        
         uint8_t *pdata;         // Pointer to data. Max 487 (512- 25) bytes
         // Following two are for daemon internal use
         uint32_t obid;          // Used by driver for channel info etc.
         uint32_t timestamp;     // Relative time stamp for package in microseconds
+        
+        // Time block - Always UTC time
+        uint16_t year; 
+        uint8_t month;	// 1-12
+        uint8_t day;	// 1-31
+        uint8_t hour;	// 0-23
+        uint8_t minute;	// 0-59
+        uint8_t second;	// 0-59
+        
         // ----- CRC should be calculated from here to end + data block ----
-        uint16_t head;          // Bit 16   GUID is IP v.6 address.
-                                // Bit 8-15 = Reserved
+        uint16_t head;          // Bit 15   GUID is IP v.6 address.
+                                // Bit 8-14 = Reserved
                                 // bit 765  priority, Priority 0-7 where 0 is highest.
                                 // bit 4 = hard coded, true for a hard coded device.
                                 // bit 3 = Don't calculate CRC, false for CRC usage.
+                                //          Just checked when CRC is used.        
                                 // bit 2 = Reserved.
                                 // bit 1 = Reserved.
                                 // bit 0 = Reserved.
@@ -112,17 +124,29 @@ typedef vscpEvent *PVSCPEVENT;
 
 typedef struct { 
     
-    uint16_t crc;                   // crc checksum
+    uint16_t crc;                   // crc checksum (calculated from here to end)
+                                    // Used for UDP/Ethernet etc
  
     // Following two are for daemon internal use
     uint32_t obid;                  // Used by driver for channel info etc.
     uint32_t timestamp;             // Relative time stamp for package in microseconds.
     
+    // Time block - Always UTC time
+    uint16_t year; 
+    uint8_t month;	// 1-12
+    uint8_t day;	// 1-31
+    uint8_t hour;	// 0-23
+    uint8_t minute;	// 0-59
+    uint8_t second;	// 0-59
+    
     // CRC should be calculated from
     // here to end + datablock
-    uint8_t head;                   // bit 7,6,5 priority => Priority 0-7 where 0 is highest.
+    uint8_t head;                   // Bit 15   GUID is IP v.6 address.
+                                    // Bit 8-14 = Reserved
+                                    // bit 7,6,5 priority => Priority 0-7 where 0 is highest.
                                     // bit 4 = hard coded, true for a hard coded device.
                                     // bit 3 = Don't calculate CRC, Set to zero to use CRC.
+                                    //          Just checked when CRC is used.    
                                     // bit 2 = Reserved.
                                     // bit 1 = Reserved.
                                     // bit 0 = Reserved.

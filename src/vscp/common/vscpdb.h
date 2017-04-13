@@ -571,11 +571,59 @@
 // Default table delete SQL expression. Delete all records in vscptable
 #define VSCPDB_TABLE_DEFAULT_DELETE "DELETE FROM vscptable;"
 
+// Default table delete range SQL expression. Delete records in date range in vscptable
+#define VSCPDB_TABLE_DELETE_RANGE "DELETE FROM vscptable;"
+
 // Count number of records in database.
 #define VSCPDB_TABLE_COUNT "SELECT COUNT(*) FROM vscptable;"
 
 // Get count number of records in database + data.
 #define VSCPDB_TABLE_COUNT_AND_DATA "SELECT (SELECT COUNT() FROM 'vscptable') AS 'count', * FROM 'vscptable';"
+
+// Get record count over range
+#define VSCPDB_TABLE_COUNT_RANGE "SELECT COUNT(*) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"
+
+// Get first date from database.
+#define VSCPDB_TABLE_DATE_FIRST "SELECT datetime FROM vscptable ORDER BY datetime ASC LIMIT 1;"
+
+// Get last date from database.
+#define VSCPDB_TABLE_DATE_LAST "SELECT datetime FROM vscptable ORDER BY datetime DESC LIMIT 1;"
+
+// Select date, time and the rest of the columns in a range
+#define VSCPDB_TABLE_SELECT_STANDARD_RANGE "SELECT datetime,value,* FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"
+
+// Select date, time and the rest of the columns in a range
+#define VSCPDB_TABLE_SELECT_CUSTOM_RANGE "SELECT datetime,value FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"
+
+// Get sum for a range
+#define VSCPDB_TABLE_GET_SUM "SELECT SUM(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"
+
+// Get min for a range
+#define VSCPDB_TABLE_GET_MIN "SELECT MIN(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"
+
+// Get max for a range
+#define VSCPDB_TABLE_GET_MAX "SELECT MAX(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"
+
+// Get average for a range
+#define VSCPDB_TABLE_GET_AVG "SELECT AVG(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"
+
+// Get median for a range
+#define VSCPDB_TABLE_GET_MEDIAN "SELECT MEDIAN(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"
+
+// Get standard deviation
+#define VSCPDB_TABLE_GET_STDDEV "SELECT STDEV(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"
+
+// Get variance
+#define VSCPDB_TABLE_GET_VARIANCE "SELECT VARIANCE(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"
+
+// Get mode
+#define VSCPDB_TABLE_GET_MODE "SELECT MODE(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"
+
+// Get lower quartile
+#define VSCPDB_TABLE_GET_LOWER_QUARTILE "SELECT LOWER_QUARTILE(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"
+
+// Get upper quartile
+#define VSCPDB_TABLE_GET_UPPER_QUARTILE "SELECT UPPER_QUARTILE(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"
 
 #define VSCPDB_ORDINAL_TABLE_ID                 0   //
 #define VSCPDB_ORDINAL_TABLE_ENABLE             1   //

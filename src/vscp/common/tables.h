@@ -36,13 +36,14 @@ enum vscpTableType {
 
 // Holds a table item
 struct vscpTableItem {
-    wxDateTime date;
-    double value;
+    wxDateTime date;    // YYYY-MM-DDTHH:MM:SS.sss
+    double value;       // Measurement value
 };
 
 // Class that holds one VSCP table
 
 class CVSCPTable {
+    
 public:
 
     /*!
@@ -159,7 +160,7 @@ public:
      * @return true on success, false if failure.
      */
     
-    bool logData( time_t time, double value );
+    bool logData( time_t time, double value, int ms = 0 );
     
     /*!
      * Log data
@@ -169,7 +170,7 @@ public:
      * @return true on success, false if failure.
      */
     
-    bool logData( double jdn, double value );
+    bool logData( double jdn, double value, int ms = 0 );
     
     /*!
      * Log data
@@ -179,7 +180,7 @@ public:
      * @return true on success, false if failure.
      */
     
-    bool logData( const struct tm &tm, double value );
+    bool logData( const struct tm &tm, double value, int ms = 0 );
     
     /*!
      * Log data
@@ -194,17 +195,17 @@ public:
     /*!
      * Log data
      * 
-     * @param Date DateTime object.
+     * @param dt DateTime object.
      * @param value Double that represent the value for the measurement.
      * @return true on success, false if failure.
      */
     
-    bool logData( wxDateTime &time, double value );
+    bool logData( wxDateTime &dt, double value );
     
     /*!
      * Log data
      * 
-     * @param Date DateTime object.
+     * @param dt DateTime object.
      * @param value Double that represent the value for the measurement.
      * @param sqlInsert This is the original sqlInsert expression after VSCP
      *          decision matrix escapes has been inserted in it but before value 
@@ -212,7 +213,7 @@ public:
      * @return true on success, false if failure.
      */
     
-    bool logData( wxDateTime &time, double value, const wxString &sqlInsert );
+    bool logData( wxDateTime &dt, double value, const wxString &sqlInsert );
     
     
     /*!
@@ -235,6 +236,16 @@ public:
      */
     
     bool clearTable( void );
+    
+    /*!
+        Clear a date range of records in a table
+      
+       @param wxStart Start of range to delete.
+       @param wxStart End of range to delete.
+       @return true om success, false on failure.
+     */
+    bool clearTableRange( wxDateTime& wxStart,
+                            wxDateTime& wxEnd );    
 
     /*!
      * Execute SQL expression
@@ -257,10 +268,21 @@ public:
      * 
      */
     
-    bool prepareRangeOfData( wxDateTime& wxStart, 
-                                wxDateTime& wxEnd, 
+    bool prepareRangeOfData( wxDateTime& wxStart,
+                                wxDateTime& wxEnd,
                                 sqlite3_stmt **ppStmt, 
                                 bool bAll = false );
+    
+    /*!
+     * Prepare to get ALL rows with data (columns)
+     * 
+     * @param ppStmt Handle to range.
+     * @param bAll If true all columns will be returned. If false (default)
+     *              only value and datetime will be returned.
+     * @return True on success, false on failure.
+     * 
+     */
+    bool prepareRangeOfData( sqlite3_stmt **ppStmt, bool bAll = false );
     
     /*!
      * Prepare to get a range of rows with data (columns)
@@ -329,15 +351,21 @@ public:
         
     /*!
      * Get the first date/ime in table
+     * 
+     * @param dt Date time for first date in table.
+     * @return true on success false on failure.
      */
     
-    wxDateTime getFirstDate( void );
+    bool getFirstDate( wxDateTime& dt );
     
     /*!
      * Get the last date/time in table
+     * 
+     * @param dt Date time for last date time in table.
+     * @return true on success false on failure.
     */
     
-    wxDateTime getLastDate( void );
+    bool getLastDate( wxDateTime& dt  );
     
     
     /*!
@@ -375,7 +403,9 @@ public:
         @return true on success, false on failure.
     */
     
-    bool getNumberOfRecordsForRange( wxDateTime& wxStart, wxDateTime& wxEnd, double *pCount );
+    bool getNumberOfRecordsForRange( wxDateTime& wxStart, 
+                                        wxDateTime& wxEnd, 
+                                        double *pCount );
     
     /*!
      * Get sum value  from a range of values
@@ -561,13 +591,13 @@ public:
     
     uint16_t getVSCPType( void ) { return m_vscp_type; };
     
-    uint8_t VSCPSensorIndex( void ) { return m_vscp_sensorindex; };
+    uint8_t getVSCPSensorIndex( void ) { return m_vscp_sensorindex; };
     
-    uint8_t VSCPUnit( void ) { return m_vscp_unit; };
+    uint8_t getVSCPUnit( void ) { return m_vscp_unit; };
     
-    uint8_t VSCPZone( void ) { return m_vscp_zone; };
+    uint8_t getVSCPZone( void ) { return m_vscp_zone; };
     
-    uint8_t VSCPSubZone( void ) { return m_vscp_subzone; };
+    uint8_t getVSCPSubZone( void ) { return m_vscp_subzone; };
 
 public:
     
@@ -710,8 +740,7 @@ public:
      * @return True if name is used, false otherwise.
      * 
      */
-    
-    
+        
     bool isNameUsed( wxString &name );
     
     /*!
@@ -783,14 +812,19 @@ public:
     bool removeTableFromDB( wxString& name );
     
     /*!
-     * Read tables definitions from database
+     * Load tables definitions from database into
+     * internal structure.
      */
     
-    bool readTablesFromDB( void );
+    bool loadTablesFromDB( void );
     
     
-    
-    
+    /*!
+     * Get list of tablenames
+     * @param Reference to string array
+     * @return True on success, false on failure.
+     */
+     bool getTableNames( wxArrayString& arrayNames );
   
     
     /// Table list

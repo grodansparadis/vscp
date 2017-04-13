@@ -480,7 +480,7 @@ bool CVSCPTable::createDatabase( void )
 // logData
 //
 
-bool CVSCPTable::logData( double jdn, double value )
+bool CVSCPTable::logData( double jdn, double value, int ms )
 {
     wxDateTime tobj( jdn );    
     return logData( tobj, value );
@@ -490,7 +490,7 @@ bool CVSCPTable::logData( double jdn, double value )
 // logData
 //
 
-bool CVSCPTable::logData( const struct tm &tm, double value )
+bool CVSCPTable::logData( const struct tm &tm, double value, int ms )
 {
     wxDateTime tobj( tm );   
     return logData( tobj, value );
@@ -500,7 +500,7 @@ bool CVSCPTable::logData( const struct tm &tm, double value )
 // logData
 //
 
-bool CVSCPTable::logData( time_t time, double value )
+bool CVSCPTable::logData( time_t time, double value, int ms )
 {
     wxDateTime tobj( time );
     return logData( tobj, value );
@@ -526,7 +526,7 @@ bool CVSCPTable::logData( wxDateTime &time, double value )
     wxString strInsert = m_sqlInsert;
     
     // Milliseconds  
-    long            ms; // Milliseconds
+    long ms; // Milliseconds
 #ifdef WIN32  
     SYSTEMTIME st;
     GetSystemTime( &st );
@@ -555,7 +555,7 @@ bool CVSCPTable::logData( wxDateTime &time, double value )
 // logData
 //
 
-bool CVSCPTable::logData( wxDateTime &time, double value, const wxString &sqlInsert )
+bool CVSCPTable::logData( wxDateTime &dt, double value, const wxString &sqlInsert )
 {        
     wxString strInsertMod;
     
@@ -566,7 +566,7 @@ bool CVSCPTable::logData( wxDateTime &time, double value, const wxString &sqlIns
     GetSystemTime( &st );
     ms = st.wMilliseconds;
 #else                
-    time_t          s;  // Seconds
+    time_t s;  // Seconds
     struct timespec spec;
     clock_gettime( CLOCK_REALTIME, &spec );
     s = spec.tv_sec;
@@ -576,10 +576,10 @@ bool CVSCPTable::logData( wxDateTime &time, double value, const wxString &sqlIns
     wxString msstr = wxString::Format(_(".%d"), ms );
     
     if ( m_bValueFirst ) {
-        strInsertMod.Printf( sqlInsert, value, time.FormatISOCombined().mbc_str() + msstr );
+        strInsertMod.Printf( sqlInsert, value, dt.FormatISOCombined().mbc_str() + msstr );
     }
     else {
-        strInsertMod.Printf( sqlInsert, time.FormatISOCombined().mbc_str() + msstr, value );
+        strInsertMod.Printf( sqlInsert, dt.FormatISOCombined().mbc_str() + msstr, value );
     }
     
     return logData( strInsertMod );
@@ -636,6 +636,31 @@ bool CVSCPTable::logData( const wxString strInsert )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// clearTable
+//
+
+bool CVSCPTable::clearTable( void )
+{
+    wxString str = wxString::FromAscii( VSCPDB_TABLE_DEFAULT_DELETE );
+    return executeSQL( str );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// clearTableRange
+//
+
+bool CVSCPTable::clearTableRange( wxDateTime& wxStart, wxDateTime& wxEnd )
+{
+    // Range must be valid
+    if ( !wxStart.IsValid() || !wxEnd.IsValid() ) return false;
+    
+    wxString str = wxString::Format( VSCPDB_TABLE_DELETE_RANGE,
+                                        wxStart.FormatISOCombined(),
+                                        wxEnd.FormatISOCombined() );
+    return executeSQL( str );
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // executeSQL
 //
 
@@ -657,6 +682,94 @@ bool CVSCPTable::executeSQL( wxString &sql )
     }
     
     return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getFirstDate
+//
+
+bool CVSCPTable::getFirstDate( wxDateTime& dt )
+{
+    bool rv = true;
+    wxString wxstr;
+    char *pErrMsg;
+    sqlite3_stmt *ppStmt;
+        
+    // Check if database is open
+    if ( NULL == m_dbTable ) {
+        gpobj->logMsg( "Database is closed.\n" );
+        return false;
+    }
+       
+    if ( SQLITE_OK != sqlite3_prepare( m_dbTable,
+                                            VSCPDB_TABLE_DATE_FIRST,
+                                            -1,
+                                            &ppStmt,
+                                            NULL ) ) {
+        wxstr = wxString::Format( _("Load tables: Error=%s"), sqlite3_errstr( sqlite3_errcode( m_dbTable ) ) );
+        gpobj->logMsg( wxstr );
+        return false;
+    }
+    
+    if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {              
+        const unsigned char *p = sqlite3_column_text( ppStmt, 0 );   // Get first date 
+        if ( NULL != p ) {
+            if ( !dt.ParseISOCombined( wxString::FromAscii( p ) ) ) {
+                rv = false;
+            }
+        }
+        else {
+            rv = false;
+        }
+    } // While
+    
+    sqlite3_finalize( ppStmt );
+    
+    return rv;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getLastDate
+//
+
+bool CVSCPTable::getLastDate( wxDateTime& dt )
+{
+   bool rv = true;
+    wxString wxstr;
+    char *pErrMsg;
+    sqlite3_stmt *ppStmt;
+        
+    // Check if database is open
+    if ( NULL == m_dbTable ) {
+        gpobj->logMsg( "Database is closed.\n" );
+        return false;
+    }
+       
+    if ( SQLITE_OK != sqlite3_prepare( m_dbTable,
+                                            VSCPDB_TABLE_DATE_LAST,
+                                            -1,
+                                            &ppStmt,
+                                            NULL ) ) {
+        wxstr = wxString::Format( _("Load tables: Error=%s"), sqlite3_errstr( sqlite3_errcode( m_dbTable ) ) );
+        gpobj->logMsg( wxstr );
+        return false;
+    }
+    
+    if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {              
+        const unsigned char *p = sqlite3_column_text( ppStmt, 0 );   // Get first date 
+        if ( NULL != p ) {
+            if ( !dt.ParseISOCombined( wxString::FromAscii( p ) ) ) {
+                rv = false;
+            }
+        }
+        else {
+            rv = false;
+        }
+    } // While
+    
+    sqlite3_finalize( ppStmt );
+    
+    return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -751,7 +864,7 @@ bool CVSCPTable::getSQLValue( const wxString &sqltemplate,
 
 bool CVSCPTable::getNumberOfRecordsForRange( wxDateTime& wxStart, wxDateTime& wxEnd, double *pCount )
 {
-    return getSQLValue( _("SELECT COUNT(*) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"), 
+    return getSQLValue( _( VSCPDB_TABLE_COUNT_RANGE ), 
                                     wxStart, 
                                     wxEnd, 
                                     pCount  );
@@ -763,7 +876,7 @@ bool CVSCPTable::getNumberOfRecordsForRange( wxDateTime& wxStart, wxDateTime& wx
     
 bool CVSCPTable::getSumValue( wxDateTime wxStart, wxDateTime wxEnd, double *pSum  )
 {
-    return getSQLValue( _("SELECT SUM(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"), 
+    return getSQLValue( _( VSCPDB_TABLE_GET_SUM ), 
                                     wxStart, 
                                     wxEnd, 
                                     pSum  );
@@ -776,7 +889,7 @@ bool CVSCPTable::getSumValue( wxDateTime wxStart, wxDateTime wxEnd, double *pSum
     
 bool CVSCPTable::getMinValue( wxDateTime wxStart, wxDateTime wxEnd, double *pMin  )
 {
-    return getSQLValue( _("SELECT MIN(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"), 
+    return getSQLValue( _( VSCPDB_TABLE_GET_MIN ), 
                                     wxStart, 
                                     wxEnd, 
                                     pMin  );
@@ -788,7 +901,7 @@ bool CVSCPTable::getMinValue( wxDateTime wxStart, wxDateTime wxEnd, double *pMin
     
 bool CVSCPTable::getMaxValue( wxDateTime wxStart, wxDateTime wxEnd, double *pMax )
 {
-    return getSQLValue( _("SELECT MAX(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"), 
+    return getSQLValue( _( VSCPDB_TABLE_GET_MAX ), 
                                     wxStart, 
                                     wxEnd, 
                                     pMax  );
@@ -800,7 +913,7 @@ bool CVSCPTable::getMaxValue( wxDateTime wxStart, wxDateTime wxEnd, double *pMax
 
 bool CVSCPTable::getAverageValue( wxDateTime wxStart, wxDateTime wxEnd, double *pAvarage ) 
 {
-    return getSQLValue( _("SELECT AVG(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"), 
+    return getSQLValue( _( VSCPDB_TABLE_GET_AVG ), 
                                     wxStart, 
                                     wxEnd, 
                                     pAvarage  );
@@ -812,7 +925,7 @@ bool CVSCPTable::getAverageValue( wxDateTime wxStart, wxDateTime wxEnd, double *
 
 bool CVSCPTable::getMedianValue( wxDateTime wxStart, wxDateTime wxEnd, double *pMedian ) 
 {
-    return getSQLValue( _("SELECT MEDIAN(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"), 
+    return getSQLValue( _( VSCPDB_TABLE_GET_MEDIAN ), 
                                     wxStart, 
                                     wxEnd, 
                                     pMedian  );
@@ -824,7 +937,7 @@ bool CVSCPTable::getMedianValue( wxDateTime wxStart, wxDateTime wxEnd, double *p
 
 bool CVSCPTable::getStdevValue( wxDateTime wxStart, wxDateTime wxEnd, double *pStdev ) 
 {
-    return getSQLValue( _("SELECT STDEV(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"), 
+    return getSQLValue( _( VSCPDB_TABLE_GET_STDDEV ), 
                                     wxStart, 
                                     wxEnd, 
                                     pStdev  );
@@ -836,7 +949,7 @@ bool CVSCPTable::getStdevValue( wxDateTime wxStart, wxDateTime wxEnd, double *pS
 
 bool CVSCPTable::getVarianceValue( wxDateTime wxStart, wxDateTime wxEnd, double *pVariance ) 
 {
-    return getSQLValue( _("SELECT VARIANCE(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"), 
+    return getSQLValue( _( VSCPDB_TABLE_GET_VARIANCE ), 
                                     wxStart, 
                                     wxEnd, 
                                     pVariance  );
@@ -848,7 +961,7 @@ bool CVSCPTable::getVarianceValue( wxDateTime wxStart, wxDateTime wxEnd, double 
 
 bool CVSCPTable::getModeValue( wxDateTime wxStart, wxDateTime wxEnd, double *pMode ) 
 {
-    return getSQLValue( _("SELECT MODE(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"), 
+    return getSQLValue( _( VSCPDB_TABLE_GET_MODE ), 
                                     wxStart, 
                                     wxEnd, 
                                     pMode  );
@@ -861,7 +974,7 @@ bool CVSCPTable::getModeValue( wxDateTime wxStart, wxDateTime wxEnd, double *pMo
 
 bool CVSCPTable::getLowerQuartileValue( wxDateTime wxStart, wxDateTime wxEnd, double *pLowerQuartile ) 
 {
-    return getSQLValue( _("SELECT LOWER_QUARTILE(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"), 
+    return getSQLValue( _( VSCPDB_TABLE_GET_LOWER_QUARTILE ), 
                                     wxStart, 
                                     wxEnd, 
                                     pLowerQuartile  );
@@ -873,7 +986,7 @@ bool CVSCPTable::getLowerQuartileValue( wxDateTime wxStart, wxDateTime wxEnd, do
 
 bool CVSCPTable::getUppeQuartileValue( wxDateTime wxStart, wxDateTime wxEnd, double *pUpperQuartile ) 
 {
-    return getSQLValue( _("SELECT UPPER_QUARTILE(value) FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';"), 
+    return getSQLValue( _( VSCPDB_TABLE_GET_UPPER_QUARTILE ), 
                                     wxStart, 
                                     wxEnd, 
                                     pUpperQuartile  );
@@ -899,10 +1012,10 @@ bool CVSCPTable::prepareRangeOfData( wxDateTime& wxStart,
     }
     
     if ( bAll ) {
-        sqlInsert = _("SELECT datetime,value,* FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';");
+        sqlInsert = _( VSCPDB_TABLE_SELECT_STANDARD_RANGE );
     }
     else  {
-        sqlInsert = _("SELECT datetime,value FROM 'vscptable' WHERE datetime(datetime) between '%s' AND '%s';");
+        sqlInsert = _( VSCPDB_TABLE_SELECT_CUSTOM_RANGE );
     }
     
     wxString sql = wxString::Format( sqlInsert.mbc_str(),
@@ -922,6 +1035,22 @@ bool CVSCPTable::prepareRangeOfData( wxDateTime& wxStart,
     }
     
     return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// prepareRangeOfData
+//
+
+bool CVSCPTable::prepareRangeOfData( sqlite3_stmt **ppStmt, bool bAll )
+{
+    wxDateTime wxStart;   
+    wxDateTime wxEnd;
+    
+    // Initialize date range to 'all'
+    wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
+    wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+    
+    return prepareRangeOfData( wxStart, wxEnd, ppStmt, bAll );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1294,10 +1423,10 @@ bool CUserTableObjList::addTableToDB( CVSCPTable& table )
             
                                 (int)table.getVSCPClass(),
                                 (int)table.getVSCPType(),
-                                (int)table.VSCPSensorIndex(),
-                                (int)table.VSCPUnit(),
-                                (int)table.VSCPZone(),
-                                (int)table.VSCPSubZone() );
+                                (int)table.getVSCPSensorIndex(),
+                                (int)table.getVSCPUnit(),
+                                (int)table.getVSCPZone(),
+                                (int)table.getVSCPSubZone() );
     
     if ( SQLITE_OK != sqlite3_exec( gpobj->m_db_vscp_daemon, 
                                         sql.mbc_str(), NULL, NULL, &zErrMsg ) ) {            
@@ -1371,10 +1500,10 @@ bool CUserTableObjList::updateTableToDB( CVSCPTable& table )
             
                                 (int)table.getVSCPClass(),
                                 (int)table.getVSCPType(),
-                                (int)table.VSCPSensorIndex(),
-                                (int)table.VSCPUnit(),
-                                (int)table.VSCPZone(),
-                                (int)table.VSCPSubZone() );
+                                (int)table.getVSCPSensorIndex(),
+                                (int)table.getVSCPUnit(),
+                                (int)table.getVSCPZone(),
+                                (int)table.getVSCPSubZone() );
     
     if ( SQLITE_OK != sqlite3_exec( gpobj->m_db_vscp_daemon, 
                                         sql.mbc_str(), NULL, NULL, &zErrMsg ) ) {            
@@ -1387,10 +1516,10 @@ bool CUserTableObjList::updateTableToDB( CVSCPTable& table )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// readTablesFromDB
+// loadTablesFromDB
 //
 
-bool CUserTableObjList::readTablesFromDB( void )
+bool CUserTableObjList::loadTablesFromDB( void )
 {
     wxString wxstr;
     char *pErrMsg;
@@ -1544,4 +1673,27 @@ bool CUserTableObjList::readTablesFromDB( void )
     m_mutexTableList.Unlock();
     
     return true;    
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getTableNames
+//
+
+bool CUserTableObjList::getTableNames( wxArrayString& arrayNames )
+{
+    // Empty
+    arrayNames.Clear();
+    
+    // If no tables defined return empty list
+    if ( 0 == m_listTables.GetCount() ) {
+        return true;
+    }
+    
+    listVSCPTables::iterator iter;
+    for (iter = m_listTables.begin(); iter != m_listTables.end(); ++iter) {
+        CVSCPTable *pTable = *iter;
+        arrayNames.Add( pTable->getTableName() );
+    }
+            
+    return true;
 }

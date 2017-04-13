@@ -7338,6 +7338,7 @@ void *actionThread_Table::Entry()
             dmElement::handleEscapes( m_pFeedEvent, sql );
             
             // Log the data
+            dt.SetMillisecond( m_pFeedEvent->timestamp / 1000 );
             if ( !pTable->logData( dt, value, sql ) ) {
                 gpobj->logMsg( _( "[Action] Write Table: Failed to log data (datetime,value)"), 
                                     DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -7361,6 +7362,7 @@ void *actionThread_Table::Entry()
             dmElement::handleEscapes( m_pFeedEvent, strResult );
                     
             // Log the data
+            dt.SetMillisecond( m_pFeedEvent->timestamp / 1000 );
             if ( !pTable->logData( dt, value, strResult ) ) {
                 gpobj->logMsg( _( "[Action] Write Table: Failed to log data (datetime,value,sql)"), 
                                     DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
