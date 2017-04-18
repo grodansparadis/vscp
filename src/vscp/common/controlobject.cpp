@@ -178,9 +178,11 @@ WSADATA wsaData;                            // WSA functions
 
 // Prototypes
 
-// Fix for missing cs_md5 in last build
+// Fix for missing cs_md5 in last mongoose/v7
+// Should be removed later TODO
 
-char *cs_md5(char buf[33], ...) {
+char *cs_md5(char buf[33], ...) 
+{
   unsigned char hash[16];
   const unsigned char *p;
   va_list ap;
