@@ -118,6 +118,7 @@
 
 #include <sqlite3.h>
 #include <mongoose.h>
+#include <v7.h>
 
 #include "canal_macro.h"
 #include <vscp.h>
@@ -172,7 +173,33 @@ WSADATA wsaData;                            // WSA functions
 
 #endif
 
+// Forward declares
+
+
 // Prototypes
+
+// Fix for missing cs_md5 in last build
+
+char *cs_md5(char buf[33], ...) {
+  unsigned char hash[16];
+  const unsigned char *p;
+  va_list ap;
+  MD5_CTX ctx;
+
+  MD5_Init(&ctx);
+
+  va_start(ap, buf);
+  while ((p = va_arg(ap, const unsigned char *) ) != NULL) {
+    size_t len = va_arg(ap, size_t);
+    MD5_Update(&ctx, p, len);
+  }
+  va_end(ap);
+
+  MD5_Final(hash, &ctx);
+  cs_to_hex(buf, hash, sizeof(hash));
+
+  return buf;
+}
 
 
 //////////////////////////////////////////////////////////////////////
@@ -394,6 +421,8 @@ CControlObject::~CControlObject()
     m_mutexClientOutputQueue.Unlock();
 }
 
+
+
 /////////////////////////////////////////////////////////////////////////////
 // generateSessionId
 //
@@ -422,8 +451,9 @@ bool CControlObject::generateSessionId( const char *pKey, char *psid )
                 1337 );
 
     memset( psid, 0, sizeof( 33 ) );
-    cs_md5( psid, buf, strlen( buf ), NULL );
-    
+    MD5_CTX ctx;
+    cs_md5( psid, (const unsigned char *)buf, strlen( buf ), NULL );
+
     return true;
 }
 

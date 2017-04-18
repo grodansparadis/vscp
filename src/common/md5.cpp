@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 // md5.cpp: implementation of the Cmd5 class.
-// Calcule MD5 Digest using the WIN Crypto API.
+// Calculate MD5 Digest using the WIN Crypto API.
 //
 // Copyright (C) 2000-2017 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
