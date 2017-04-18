@@ -32,6 +32,7 @@
 #define VSCP_HELPER_PRE	WINAPI EXPORT
 #endif
 
+#include <time.h>
 #include <vscp.h>
 
 #ifdef __cplusplus
@@ -263,6 +264,8 @@ DllExport int WINAPI EXPORT vscphlp_convertEventToCanal( canalMsg *pcanalMsg,
 DllExport int WINAPI EXPORT vscphlp_convertEventExToCanal( canalMsg *pcanalMsg,
                                                     const vscpEventEx *pvscpEventEx );
 DllExport unsigned long WINAPI EXPORT vscphlp_makeTimeStamp( void );
+DllExport int WINAPI EXPORT vscphlp_setEventDateTimeBlockToNow( vscpEvent *pEvent );
+DllExport int WINAPI EXPORT vscphlp_setEventExDateTimeBlockToNow( vscpEventEx *pEventEx );
 DllExport int WINAPI EXPORT vscphlp_copyVSCPEvent( vscpEvent *pEventTo,
                                                     const vscpEvent *pEventFrom );
 DllExport int WINAPI EXPORT vscphlp_writeVscpDataToString( const vscpEvent *pEvent,
@@ -350,6 +353,12 @@ DllExport int WINAPI EXPORT vscphlp_convertEventToXML( vscpEvent *pEvent, char *
 DllExport int WINAPI EXPORT vscphlp_convertEventExToXML( vscpEventEx *pEventEx, char *p, int size );
 DllExport int WINAPI EXPORT vscphlp_convertEventToHTML( vscpEvent *pEvent, char *p, int size );
 DllExport int WINAPI EXPORT vscphlp_convertEventExToHTML( vscpEventEx *pEventEx, char *p, int size );
+
+DllExport int WINAPI EXPORT vscphlp_getTimeString( char *buf, size_t buf_len, time_t *t );
+DllExport int WINAPI EXPORT vscphlp_getISOTimeString( char *buf, size_t buf_len, time_t *t );
+
+DllExport int WINAPI EXPORT vscphlp_getDateStringFromEvent( char *buf, size_t buf_len, vscpEvent *pEvent );
+DllExport int WINAPI EXPORT vscphlp_getDateStringFromEventEx( char *buf, size_t buf_len, vscpEventEx *pEventEx );
 
 #else
 
@@ -577,6 +586,8 @@ int vscphlp_convertEventToCanal( canalMsg *pcanalMsg,
 int vscphlp_convertEventExToCanal( canalMsg *pcanalMsg,
                                     const vscpEventEx *pvscpEventEx );
 unsigned long vscphlp_makeTimeStamp( void );
+int vscphlp_setEventDateTimeBlockToNow( vscpEvent *pEvent );
+int vscphlp_setEventExDateTimeBlockToNow( vscpEventEx *pEventEx );
 int vscphlp_copyVSCPEvent( vscpEvent *pEventTo,
                               const vscpEvent *pEventFrom );
 int vscphlp_writeVscpDataToString( const vscpEvent *pEvent,
@@ -669,6 +680,12 @@ int vscphlp_convertEventToXML( vscpEvent *pEvent, char *p, int size );
 int vscphlp_convertEventExToXML( vscpEventEx *pEventEx, char *p, int size );
 int vscphlp_convertEventToHTML( vscpEvent *pEvent, char *p, int size );
 int vscphlp_convertEventExToHTML( vscpEventEx *pEventEx, char *p, int size );
+
+int vscphlp_getTimeString( char *buf, size_t buf_len, time_t *t );
+int vscphlp_getISOTimeString( char *buf, size_t buf_len, time_t *t );
+
+int vscphlp_getDateStringFromEvent( char *buf, size_t buf_len, vscpEvent *pEvent );
+int vscphlp_getDateStringFromEventEx( char *buf, size_t buf_len, vscpEventEx *pEventEx );
 
 #endif
 

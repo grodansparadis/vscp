@@ -81,9 +81,31 @@
 //                                General Helpers
 // ***************************************************************************
 
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_readStringValue
+
+uint32_t vscp_readStringValue(const wxString& strval)
+{
+    unsigned long val=0;
+    wxString str = strval;
+    
+    str.Trim();
+    str.Trim(false);
+    str.MakeLower();
+    if (wxNOT_FOUND != str.Find(_("0x"))) {
+        str.ToULong( &val, 16 );
+    } 
+    else {
+        str.ToULong( &val );
+    }
+
+    return val;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_littleEndian
-//
 //
 
 int vscp_littleEndian( void ) 
@@ -165,11 +187,32 @@ void vscp_bin2str(char *to, const unsigned char *p, size_t len  )
 // vscp_getTimeString
 //
 
-void vscp_getTimeString( char *buf, size_t buf_len, time_t *t ) 
+bool vscp_getTimeString( char *buf, size_t buf_len, time_t *t ) 
 {
+    // Check pointers
+    if ( NULL == buf ) return false;
+    if ( NULL == t ) return false;
+    
     strftime(buf, buf_len, "%a, %d %b %Y %H:%M:%S GMT", gmtime( t ) );
+    
+    return true;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_getISOTimeString
+//
+
+bool vscp_getISOTimeString( char *buf, size_t buf_len, time_t *t ) 
+{
+    // Check pointers
+    if ( NULL == buf ) return false;
+    if ( NULL == t ) return false;
+    
+    strftime(buf, buf_len, "%Y-%m-%dT%H:%M:%SZ", gmtime( t ) );
+    
+    return true;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_toXMLEscape
@@ -258,7 +301,7 @@ bool vscp_decodeBase64IfNeeded( wxString &wxstr, wxString &strResult )
 
 
 // ***************************************************************************
-//                                Data Coding Helpers
+//                              Data Coding Helpers
 // ***************************************************************************
 
 
@@ -1705,8 +1748,6 @@ bool vscp_convertLevel1MeasuremenToLevel2String( vscpEvent *pEvent )
     return true;
 }
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // replaceBackslash
 //
@@ -1720,29 +1761,6 @@ wxString& vscp_replaceBackslash(wxString& wxstr)
 
     return wxstr;
 }
-
-
-////////////////////////////////////////////////////////////////////////////////
-// readStringValue
-
-uint32_t vscp_readStringValue(const wxString& strval)
-{
-    unsigned long val=0;
-    wxString str = strval;
-    
-    str.Trim();
-    str.Trim(false);
-    str.MakeLower();
-    if (wxNOT_FOUND != str.Find(_("0x"))) {
-        str.ToULong( &val, 16 );
-    } 
-    else {
-        str.ToULong( &val );
-    }
-
-    return val;
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // getVscpPriority
@@ -2301,6 +2319,12 @@ bool vscp_convertVSCPfromEx(vscpEvent *pEvent, const vscpEventEx *pEventEx)
     // Convert
     pEvent->crc = pEventEx->crc;
     pEvent->obid = pEventEx->obid;
+    pEvent->year = pEventEx->year;
+    pEvent->month = pEventEx->month;
+    pEvent->day = pEventEx->day;
+    pEvent->hour = pEventEx->hour;
+    pEvent->minute = pEventEx->minute;
+    pEvent->second = pEventEx->second;
     pEvent->timestamp = pEventEx->timestamp;
     pEvent->head = pEventEx->head;
     pEvent->obid = pEventEx->obid;
@@ -2327,6 +2351,12 @@ bool vscp_copyVSCPEvent(vscpEvent *pEventTo, const vscpEvent *pEventFrom)
     // Convert
     pEventTo->crc = pEventFrom->crc;
     pEventTo->obid = pEventFrom->obid;
+    pEventTo->year = pEventFrom->year;
+    pEventTo->month = pEventFrom->month;
+    pEventTo->day = pEventFrom->day;
+    pEventTo->hour = pEventFrom->hour;
+    pEventTo->minute = pEventFrom->minute;
+    pEventTo->second = pEventFrom->second;
     pEventTo->timestamp = pEventFrom->timestamp;
     pEventTo->head = pEventFrom->head;
     pEventTo->obid = pEventFrom->obid;
@@ -2402,8 +2432,6 @@ void vscp_deleteVSCPevent_v2(vscpEvent **ppEvent)
 }
 
 
-
-
 ////////////////////////////////////////////////////////////////////////////////////
 // deleteVSCPevent
 //
@@ -2412,6 +2440,45 @@ void vscp_deleteVSCPeventEx(vscpEventEx *pEventEx)
 {
     delete pEventEx;
 }
+
+
+////////////////////////////////////////////////////////////////////////////////////
+// vscp_getDateStringFromEvent
+//
+
+wxString vscp_getDateStringFromEvent( const vscpEvent *pEvent )
+{
+    // Check pointer
+    if ( NULL == pEvent ) return wxString::Format("");
+    
+    return wxString::Format( _("%04d-%02d-%02dT%02d:%02d:%02dZ"),
+                                                (int)pEvent->year,
+                                                (int)pEvent->month,
+                                                (int)pEvent->day,
+                                                (int)pEvent->hour,
+                                                (int)pEvent->minute,
+                                                (int)pEvent->second );
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////
+// vscp_getDateStringFromEventEx
+//
+
+wxString vscp_getDateStringFromEventEx( vscpEventEx *pEventEx )
+{
+    // Check pointer
+    if ( NULL == pEventEx ) return wxString::Format("");
+    
+    return wxString::Format( _("%04d-%02d-%02dT%02d:%02d:%02dZ"),
+                                                (int)pEventEx->year,
+                                                (int)pEventEx->month,
+                                                (int)pEventEx->day,
+                                                (int)pEventEx->hour,
+                                                (int)pEventEx->minute,
+                                                (int)pEventEx->second );
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////
 // vscp_convertEventToJSON
@@ -2431,13 +2498,13 @@ void vscp_convertEventToJSON( vscpEvent *pEvent, wxString& strJSON )
                                             strJSON,
                                             false, 
                                             false );        // Event data to string
-    
-    // datetime,head,timestamp,obid,class,type,guid,data,note
+        
+    // datetime,head,obid,datetime,timestamp,class,type,guid,data,note
     strJSON.Printf( VSCP_JSON_EVENT_TEMPLATE,
-                        wxDateTime::Now().FormatISOCombined(),
                         (unsigned short int)pEvent->head,
-                        (unsigned long)pEvent->timestamp,
                         (unsigned long)pEvent->obid,
+                        (const char *)vscp_getDateStringFromEvent( pEvent ),
+                        (unsigned long)pEvent->timestamp,                        
                         (unsigned short int)pEvent->vscp_class,
                         (unsigned short int)pEvent->vscp_type,
                         (const char *)strguid.mbc_str(),
@@ -2465,12 +2532,12 @@ void vscp_convertEventExToJSON( vscpEventEx *pEventEx, wxString& strJSON )
                                             false, 
                                             false );            // Event data to string
     
-    // datetime,head,timestamp,obid,class,type,guid,data,note
+    // datetime,head,obid,datetime,timestamp,class,type,guid,data,note
     strJSON.Printf( VSCP_JSON_EVENT_TEMPLATE,
-                        wxDateTime::Now().FormatISOCombined(),
                         (unsigned short int)pEventEx->head,
-                        (unsigned long)pEventEx->timestamp,
                         (unsigned long)pEventEx->obid,
+                        (const char *)vscp_getDateStringFromEventEx( pEventEx ),
+                        (unsigned long)pEventEx->timestamp,                        
                         (unsigned short int)pEventEx->vscp_class,
                         (unsigned short int)pEventEx->vscp_type,
                         (const char *)strguid.mbc_str(),
@@ -2497,12 +2564,12 @@ void vscp_convertEventToXML( vscpEvent *pEvent, wxString& strXML )
                                             false, 
                                             false );        // Event data to string
     
-    // datetime,head,timestamp,obid,class,type,guid,sizedata,data,note
+    // datetime,head,obid,datetime,timestamp,class,type,guid,sizedata,data,note
     strXML.Printf( VSCP_XML_EVENT_TEMPLATE,
-                        wxDateTime::Now().FormatISOCombined(),
                         (unsigned short int)pEvent->head,
-                        (unsigned long)pEvent->timestamp,
                         (unsigned long)pEvent->obid,
+                        (const char *)vscp_getDateStringFromEvent( pEvent ),
+                        (unsigned long)pEvent->timestamp,                        
                         (unsigned short int)pEvent->vscp_class,
                         (unsigned short int)pEvent->vscp_type,
                         (const char *)strguid.mbc_str(),                        
@@ -2530,12 +2597,12 @@ void vscp_convertEventExToXML( vscpEventEx *pEventEx, wxString& strXML )
                                             false, 
                                             false );            // Event data to string
     
-    // datetime,head,timestamp,obid,class,type,guid,sizedata,data,note
+    // datetime,head,obid,datetime,timestamp,class,type,guid,sizedata,data,note
     strXML.Printf( VSCP_XML_EVENT_TEMPLATE,
-                        wxDateTime::Now().FormatISOCombined(),
                         (unsigned short int)pEventEx->head,
-                        (unsigned long)pEventEx->timestamp,
                         (unsigned long)pEventEx->obid,
+                        (const char *)vscp_getDateStringFromEventEx( pEventEx ),
+                        (unsigned long)pEventEx->timestamp,                        
                         (unsigned short int)pEventEx->vscp_class,
                         (unsigned short int)pEventEx->vscp_type,
                         (const char *)strguid.mbc_str(),                        
@@ -2572,6 +2639,7 @@ void vscp_convertEventToHTML( vscpEvent *pEvent, wxString& strHTML )
                         (const char *)strdata.mbc_str(),
                         (const char *)strguid.mbc_str(),            
                         (unsigned short int)pEvent->head,
+                        (const char *)vscp_getDateStringFromEvent( pEvent ),
                         (unsigned long)pEvent->timestamp,
                         (unsigned long)pEvent->obid,                                                                                                
                         "" );
@@ -2605,6 +2673,7 @@ void vscp_convertEventExToHTML( vscpEventEx *pEventEx, wxString& strHTML )
                         (const char *)strdata.mbc_str(),
                         (const char *)strguid.mbc_str(),            
                         (unsigned short int)pEventEx->head,
+                        (const char *)vscp_getDateStringFromEventEx( pEventEx ),
                         (unsigned long)pEventEx->timestamp,
                         (unsigned long)pEventEx->obid,                                                                                                
                         "" );
@@ -2931,6 +3000,7 @@ bool vscp_convertCanalToEvent(vscpEvent *pvscpEvent,
     pvscpEvent->vscp_type = vscp_getVSCPtypeFromCANALid(pcanalMsg->id);
 
     // Timestamp
+    vscp_setEventDateTimeBlockToNow( pvscpEvent );
     pvscpEvent->timestamp = pcanalMsg->timestamp;
 
     // Set nickname id
@@ -3016,12 +3086,12 @@ bool vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pvscpEvent)
     // but for class=512 events nodeid
     // is present in GUID LSB
 
-    if (pvscpEvent->head & VSCP_HEADER_HARD_CODED) {
+    if ( pvscpEvent->head & VSCP_HEADER_HARD_CODED ) {
         pcanalMsg->id |= VSCP_CAN_ID_HARD_CODED;
     }
 
     if (NULL != pvscpEvent->pdata) {
-        memcpy(pcanalMsg->data, pvscpEvent->pdata, pcanalMsg->sizeData);
+        memcpy( pcanalMsg->data, pvscpEvent->pdata, pcanalMsg->sizeData );
     }
 
     return true;
@@ -3197,6 +3267,13 @@ bool vscp_setVscpDataArrayFromString(uint8_t *pData,
 
 unsigned long vscp_makeTimeStamp( void )
 {
+    return wxGetUTCTimeUSec().GetLo();
+/*    
+#ifdef WIN32
+    return GetTickCount();
+#else
+    return ::wxGetLocalTimeMillis().GetLo(); 
+#endif    
 #ifdef WIN32
     return ( uint32_t )( ( 1000 * ( float )clock() ) / CLOCKS_PER_SEC );
 #else
@@ -3215,11 +3292,61 @@ unsigned long vscp_makeTimeStamp( void )
 */
 }
 
+////////////////////////////////////////////////////////////////////////////////////
+// vscp_setEventDateTimeBlockToNow
+//
+
+bool vscp_setEventDateTimeBlockToNow( vscpEvent *pEvent )
+{
+    // Check pointer 
+    if ( NULL == pEvent ) return false;
+    
+    time_t rawtime;
+    struct tm * ptm;
+
+    time( &rawtime );
+    ptm = gmtime( &rawtime );
+    
+    pEvent->year = ptm->tm_year;
+    pEvent->month = ptm->tm_mon;
+    pEvent->day = ptm->tm_mday;
+    pEvent->hour = ptm->tm_hour;
+    pEvent->minute = ptm->tm_min;
+    pEvent->second = ptm->tm_sec;
+    
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+// vscp_setEventExDateTimeBlockToNow
+//
+
+bool vscp_setEventExDateTimeBlockToNow( vscpEventEx *pEventEx )
+{
+    // Check pointer 
+    if ( NULL == pEventEx ) return false;
+    
+    time_t rawtime;
+    struct tm * ptm;
+
+    time( &rawtime );
+    ptm = gmtime( &rawtime );
+    
+    pEventEx->year = ptm->tm_year;
+    pEventEx->month = ptm->tm_mon;
+    pEventEx->day = ptm->tm_mday;
+    pEventEx->hour = ptm->tm_hour;
+    pEventEx->minute = ptm->tm_min;
+    pEventEx->second = ptm->tm_sec;
+    
+    return true;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////
 // writeVscpEventToString
 //
-// head,class,type,obid,timestamp,GUID,data1,data2,data3....
+// head,class,type,obid,datetime,timestamp,GUID,data1,data2,data3....
 //
 
 bool vscp_writeVscpEventToString( const vscpEvent *pEvent, wxString& str)
@@ -3227,13 +3354,15 @@ bool vscp_writeVscpEventToString( const vscpEvent *pEvent, wxString& str)
     // Check pointer
     if (NULL == pEvent) return false;
 
-    str.Printf(_("%u,%u,%u,%lu,%lu,"),
-                    (unsigned int)pEvent->head,
-                    (unsigned int)pEvent->vscp_class,
-                    (unsigned int)pEvent->vscp_type,
-                    (unsigned long)pEvent->obid,
-                    (unsigned long)pEvent->timestamp );
-
+    //head,class,type,obid,datetime,timestamp
+    str.Printf( _("%hu,%hu,%hu,%lu,%s,%lu"), 
+                            (unsigned short)pEvent->head,
+                            (unsigned short)pEvent->vscp_class,
+                            (unsigned short)pEvent->vscp_type,
+                            (unsigned long)pEvent->obid,
+                            (const char *)vscp_getDateStringFromEvent( pEvent ).mbc_str(),
+                            (unsigned long)pEvent->timestamp );
+        
     wxString strGUID;
     vscp_writeGuidToString(pEvent, strGUID);
     str += strGUID;
@@ -3251,7 +3380,7 @@ bool vscp_writeVscpEventToString( const vscpEvent *pEvent, wxString& str)
 ////////////////////////////////////////////////////////////////////////////////////
 // writeVscpEventExToString
 //
-// head,class,type,obid,timestamp,GUID,data1,data2,data3....
+// head,class,type,obid,datetime,timestamp,GUID,data1,data2,data3....
 //
 
 bool vscp_writeVscpEventExToString( const vscpEventEx *pEventEx, wxString& str)
@@ -3274,7 +3403,7 @@ bool vscp_writeVscpEventExToString( const vscpEventEx *pEventEx, wxString& str)
 // setVscpEventFromString
 //
 // Format: 
-//      head,class,type,obid,timestamp,GUID,data1,data2,data3....
+//      head,class,type,obid,datetime,timestamp,GUID,data1,data2,data3....
 //
 
 bool vscp_setVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)

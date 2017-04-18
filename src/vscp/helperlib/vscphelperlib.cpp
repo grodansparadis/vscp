@@ -3405,6 +3405,31 @@ extern "C" unsigned long vscphlp_makeTimeStamp( void )
 
 
 
+/*!
+    \fn int vscphlp_setEventDateTimeBlock( vscpEvent *pEvent )
+    \brief date/time stamp for event.
+*/
+#ifdef WIN32
+extern "C" DllExport int WINAPI EXPORT vscphlp_setEventDateTimeBlockToNow( vscpEvent *pEvent )
+#else
+extern "C" int vscphlp_setEventDateTimeBlockToNow( vscpEvent *pEvent )
+#endif
+{
+    return vscp_setEventDateTimeBlockToNow( pEvent ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
+
+/*!
+    \fn int vscphlp_setEventDateTimeBlockEx( vscpEventEx *pEventEx )
+    \briefSet date/time stamp for Ex event.
+*/
+#ifdef WIN32
+extern "C" DllExport int WINAPI EXPORT vscphlp_setEventExDateTimeBlockToNow( vscpEventEx *pEventEx )
+#else
+extern "C" int vscphlp_setEventExDateTimeBlockToNow( vscpEventEx *pEventEx )
+#endif
+{
+    return vscp_setEventExDateTimeBlockToNow( pEventEx ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
 
 
 /*!
@@ -4195,4 +4220,82 @@ extern "C" int vscphlp_makeLevel2StringMeasurementEvent( vscpEvent *pEvent,
                                                     zone,
                                                     subzone ) ?
                     VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR );
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vscphlp_getTimeString
+//
+
+#ifdef WIN32
+extern "C" DllExport int WINAPI EXPORT vscphlp_getTimeString( char *buf, size_t buf_len, time_t *t )
+#else
+extern "C" int vscphlp_getTimeString( char *buf, size_t buf_len, time_t *t )
+#endif
+{
+    // Check pointers
+    if ( NULL == buf ) return VSCP_ERROR_PARAMETER;
+    if ( NULL == t ) return VSCP_ERROR_PARAMETER;
+    
+    return vscp_getTimeString( buf, buf_len, t ) ?  VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vscphlp_getISOTimeString
+//
+
+#ifdef WIN32
+extern "C" DllExport int WINAPI EXPORT vscphlp_getISOTimeString( char *buf, size_t buf_len, time_t *t )
+#else
+extern "C" int vscphlp_getISOTimeString( char *buf, size_t buf_len, time_t *t )
+#endif
+{
+    // Check pointers
+    if ( NULL == buf ) return VSCP_ERROR_PARAMETER;
+    if ( NULL == t ) return VSCP_ERROR_PARAMETER;
+    
+    return vscp_getISOTimeString( buf, buf_len, t ) ?  VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscphlp_getDateStringFromEvent
+//
+
+#ifdef WIN32
+extern "C" DllExport int WINAPI EXPORT vscphlp_getDateStringFromEvent( char *buf, size_t buf_len, vscpEvent *pEvent )
+#else
+extern "C" int vscphlp_getDateStringFromEvent( char *buf, size_t buf_len, vscpEvent *pEvent )
+#endif
+{
+    // Check pointers
+    if ( NULL == buf ) return VSCP_ERROR_PARAMETER;
+    if ( NULL == pEvent ) return VSCP_ERROR_PARAMETER;
+    
+    wxString str = vscp_getDateStringFromEvent( pEvent );
+    if ( 0 == str.Length() ) return VSCP_ERROR_ERROR;
+    
+    memcpy( buf, (const char *)str.mbc_str(), MIN( buf_len, str.Length() ) );
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscphlp_getDateStringFromEventEx
+//
+
+#ifdef WIN32
+extern "C" DllExport int WINAPI EXPORT vscphlp_getDateStringFromEventEx( char *buf, size_t buf_len, vscpEventEx *pEventEx )
+#else
+extern "C" int vscphlp_getDateStringFromEventEx( char *buf, size_t buf_len, vscpEventEx *pEventEx )
+#endif
+{
+    // Check pointers
+    if ( NULL == buf ) return VSCP_ERROR_PARAMETER;
+    if ( NULL == pEventEx ) return VSCP_ERROR_PARAMETER;
+    
+    wxString str = vscp_getDateStringFromEventEx( pEventEx );
+    if ( 0 == str.Length() ) return VSCP_ERROR_ERROR;
+    
+    memcpy( buf, (const char *)str.mbc_str(), MIN( buf_len, str.Length() ) );
+    return VSCP_ERROR_SUCCESS;
 }

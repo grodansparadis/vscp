@@ -79,16 +79,13 @@ extern "C" {
     //          * * * General structure for VSCP * * *
 
     // This structure is for VSCP Level II
-    //
+    
 
     typedef struct {
         uint16_t crc;           // crc checksum (calculated from here to end)
                                 // Used for UDP/Ethernet etc
-        
-        uint8_t *pdata;         // Pointer to data. Max 487 (512- 25) bytes
-        // Following two are for daemon internal use
-        uint32_t obid;          // Used by driver for channel info etc.
-        uint32_t timestamp;     // Relative time stamp for package in microseconds
+       
+        uint32_t obid;          // Used by driver for channel info etc.        
         
         // Time block - Always UTC time
         uint16_t year; 
@@ -98,7 +95,11 @@ extern "C" {
         uint8_t minute;	// 0-59
         uint8_t second;	// 0-59
         
+        uint32_t timestamp;     // Relative time stamp for package in microseconds
+                                // ~71 minutes before roll over
+        
         // ----- CRC should be calculated from here to end + data block ----
+        
         uint16_t head;          // Bit 15   GUID is IP v.6 address.
                                 // Bit 8-14 = Reserved
                                 // bit 765  priority, Priority 0-7 where 0 is highest.
@@ -112,6 +113,9 @@ extern "C" {
         uint16_t vscp_type;     // VSCP type
         uint8_t GUID[ 16 ];     // Node globally unique id MSB(0) -> LSB(15)
         uint16_t sizeData;      // Number of valid data bytes
+        
+        uint8_t *pdata;         // Pointer to data. Max 487 (512- 25) bytes
+        
     } /*__attribute__((packed, aligned(1)))*/ vscpEvent;
 
 
@@ -119,17 +123,14 @@ typedef vscpEvent *PVSCPEVENT;
 
 
 
-// This structure is for VSCP Level II with data embedded which is used
-// for the TCP interface.// 
+// This structure is for VSCP Level II with data embedded == big!!!
 
 typedef struct { 
     
     uint16_t crc;                   // crc checksum (calculated from here to end)
                                     // Used for UDP/Ethernet etc
  
-    // Following two are for daemon internal use
-    uint32_t obid;                  // Used by driver for channel info etc.
-    uint32_t timestamp;             // Relative time stamp for package in microseconds.
+    uint32_t obid;                  // Used by driver for channel info etc.    
     
     // Time block - Always UTC time
     uint16_t year; 
@@ -139,8 +140,10 @@ typedef struct {
     uint8_t minute;	// 0-59
     uint8_t second;	// 0-59
     
-    // CRC should be calculated from
-    // here to end + datablock
+    uint32_t timestamp;             // Relative time stamp for package in microseconds.
+                                    // ~71 minutes before roll over
+    
+    // CRC should be calculated from here to end + datablock
     uint8_t head;                   // Bit 15   GUID is IP v.6 address.
                                     // Bit 8-14 = Reserved
                                     // bit 7,6,5 priority => Priority 0-7 where 0 is highest.
@@ -499,13 +502,13 @@ struct myNode {
 /*!
     Template for VSCP XML event data
  
-    data: datetime,head,timestamp,obid,class,type,guid,sizedata,data,note
+    data: datetime,head,obid,datetime,timestamp,class,type,guid,sizedata,data,note
   
-<event>
-    <time>2017-01-13T10:16:02</time>
+<event>    
     <head>3</head>
-    <timestamp>50817</timestamp>
     <obid>1234</obid>
+    <datetime>2017-01-13T10:16:02</datetime>
+    <timestamp>50817</timestamp>
     <class>10</class>
     <type>6</type>
     <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02</guid>
@@ -515,10 +518,10 @@ struct myNode {
 </event>
  */
 #define VSCP_XML_EVENT_TEMPLATE "<event>\n"\
-    "<time>%s</time>\n"\
     "<head>%d</head>\n"\
-    "<timestamp>%lu</timestamp>\n"\
     "<obid>%lu</obid>\n"\
+    "<datetime>%s</datetime>\n"\
+    "<timestamp>%lu</timestamp>\n"\
     "<class>%d</class>\n"\
     "<type>%d</type>\n"\
     "<guid>%s</guid>\n"\
@@ -531,13 +534,13 @@ struct myNode {
 /*
   
     Template for VSCP JSON event data
-    data: datetime,head,timestamp,obid,class,type,guid,data,note 
+    data: datetime,head,obid,datetime,timestamp,class,type,guid,data,note 
   
-{
-    "time": "2017-01-13T10:16:02",
+{    
     "head": 2,
-    "timestamp":50817,
     "obid"; 123,
+    "datetime": "2017-01-13T10:16:02",
+    "timestamp":50817,
     "class": 10,
     "type": 8,
     "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02",
@@ -546,10 +549,10 @@ struct myNode {
 }
 */
 #define VSCP_JSON_EVENT_TEMPLATE "{\n"\
-    "\"time\": \"%s\",\n"\
     "\"head\": %d,\n"\
-    "\"timestamp\": %lu,\n"\
     "\"obid\":  %lu,\n"\
+    "\"datetime\": \"%s\",\n"\
+    "\"timestamp\": %lu,\n"\
     "\"class\": %d,\n"\
     "\"type\": %d,\n"\
     "\"guid\": \"%s\",\n"\
@@ -580,6 +583,7 @@ From GUID: 00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02<br>
 </p>
 <p>
 Head: 6 <br>
+DateTime: 2013-11-02T12:34:22Z
 Timestamp: 1234 <br>
 obid: 1234 <br>
 note: This is a note <br>
@@ -589,9 +593,6 @@ note: This is a note <br>
 
 
 #define VSCP_HTML_EVENT_TEMPLATE "<h2>VSCP Event</h2> "\
-    "<p>"\
-    "Time: %s <br>"\
-    "</p>"\
     "<p>"\
     "Class: %d <br>"\
     "Type: %d <br>"\
@@ -605,6 +606,9 @@ note: This is a note <br>
     "</p>"\
     "<p>"\
     "Head: %d <br>"\
+    "<p>"\
+    "DateTime: %s <br>"\
+    "</p>"\
     "Timestamp: %lu <br>"\
     "obid: %lu <br>"\
     "note: %s <br>"\

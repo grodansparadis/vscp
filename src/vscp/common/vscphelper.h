@@ -131,10 +131,16 @@ extern "C" {
     void vscp_bin2str( char *to, const unsigned char *p, size_t len ); 
 
     /*!
-        Get GMT time // http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3
+        Get GMT time 
+        http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3
     */
-    void vscp_getTimeString( char *buf, size_t buf_len, time_t *t ); 
+    bool vscp_getTimeString( char *buf, size_t buf_len, time_t *t ); 
     
+    /*!
+        Get ISO GMT datetime
+    */
+    bool vscp_getISOTimeString( char *buf, size_t buf_len, time_t *t ); 
+        
     
     /*!
      *  Escape XML string 
@@ -745,7 +751,44 @@ extern "C" {
     void vscp_deleteVSCPeventEx(vscpEventEx *pEventEx);
     
     
+    /*!
+        Make a timestamp for events etc 
+        @return Event timestamp as an unsigned long
+     */
+    unsigned long vscp_makeTimeStamp(void);
     
+    /*!
+        Set date & time in stamp block
+     * 
+     * @param pEvent Event to set date/time block in.
+     * @return True on success.
+     */
+    bool vscp_setEventDateTimeBlockToNow( vscpEvent *pEvent );
+    
+    /*!
+        Set date & time in stamp block
+       
+       @param pEventEx EventEx to set date/time block in.
+       @return True on success.
+     */
+    bool vscp_setEventExDateTimeBlockToNow( vscpEventEx *pEventEx );
+    
+    /*!
+        Get datestring from VSCP event
+        @param pEvent Event to get date/time info from
+        @return wString that contain datestring on ISO format.
+     */
+    wxString vscp_getDateStringFromEvent( const vscpEvent *pEvent );
+    
+    /*!
+        Get datestring from VSCP Event ex
+        @param pEventEx EventEx to get date/time info from
+        @return wString that contain datestring on ISO format.
+     */
+    wxString vscp_getDateStringFromEventEx( const vscpEventEx *pEventEx );
+        
+    
+
     
     
     /*!
@@ -758,9 +801,8 @@ extern "C" {
      */
     void vscp_convertEventExToJSON( vscpEventEx *pEventEx, wxString& strJSON );
     
-    
-    
-    
+
+
     
     /*!
      * Convert VSCP Event to XML formated string
@@ -911,12 +953,7 @@ extern "C" {
                                        const vscpEventEx *pvscpEvent);
 
 
-    /*!
-        Make a timestamp for events etc 
-        @return Event timestamp as an unsigned long
-     */
-    unsigned long vscp_makeTimeStamp(void);
-
+    
 
     /*!
       Copy a VSCP event to another

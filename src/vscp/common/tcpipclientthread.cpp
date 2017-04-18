@@ -1133,7 +1133,8 @@ void VSCPClientThread::handleClientMeasurment( struct mg_connection *conn,
                 
                 pEvent->pdata = NULL;
                 pEvent->head = VSCP_PRIORITY_NORMAL;
-                pEvent->timestamp = 0;  // Let interface fill in
+                pEvent->timestamp = 0;  // Let interface fill in 
+                                        // Will fill in date/time block also
                 guid.writeGUID( pEvent->GUID );
                 pEvent->sizeData = sizeData;
                 if ( sizeData > 0 ) {
@@ -1191,12 +1192,12 @@ void VSCPClientThread::handleClientMeasurment( struct mg_connection *conn,
 
             pEvent->obid = 0;
             pEvent->head = VSCP_PRIORITY_NORMAL;
-            pEvent->timestamp = 0; // Let interface fill in timestamp
+            pEvent->timestamp = 0;  // Let interface fill in timestamp
+                                    // Will fill in date/time block also
             guid.writeGUID( pEvent->GUID );
             pEvent->head = 0;
             pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
             pEvent->vscp_type = vscptype;
-            pEvent->timestamp = 0;
             pEvent->sizeData = 12;
 
             data[ 0 ] = sensoridx;
@@ -1234,12 +1235,12 @@ void VSCPClientThread::handleClientMeasurment( struct mg_connection *conn,
 
             pEvent->obid = 0;
             pEvent->head = VSCP_PRIORITY_NORMAL;
-            pEvent->timestamp = 0; // Let interface fill in
+            pEvent->timestamp = 0;      // Let interface fill in
+                                        // Will fill in date/time block also
             guid.writeGUID( pEvent->GUID );
             pEvent->head = 0;
             pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
             pEvent->vscp_type = vscptype;
-            pEvent->timestamp = 0;
             pEvent->sizeData = 12;
             
             wxString strValue = wxString::Format(_("%f"), value );
@@ -1360,6 +1361,9 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn,
     if ( NULL == conn ) {
         return;
     }
+    
+    // Set timestamp block for event
+    vscp_setEventDateTimeBlockToNow( &event );
 
     if ( NULL == pCtrlObject ) {
         mg_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
@@ -1458,12 +1462,44 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn,
             mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
             return;
         }
-
-        // Get Timestamp
+        
+        // Get date/time - can be empty
         if ( tkz.HasMoreTokens() ) {
             str = tkz.GetNextToken();
-            event.timestamp = vscp_readStringValue( str );
-            if ( !event.timestamp ) {
+            str.Trim();
+            if ( str.Length() ) {
+                wxDateTime dt;
+                if ( dt.ParseISOCombined( str ) ) {
+                    event.year = dt.GetYear();
+                    event.month = dt.GetMonth();
+                    event.day = dt.GetDay();
+                    event.hour = dt.GetHour();
+                    event.minute = dt.GetMinute();
+                    event.second = dt.GetSecond();
+                }
+                else {
+                    vscp_setEventDateTimeBlockToNow( &event );
+                }
+            }
+            else {
+                // set current time
+                vscp_setEventDateTimeBlockToNow( &event );
+            }
+
+        }
+        else {
+            mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            return;
+        }
+
+        // Get Timestamp - can be empty
+        if ( tkz.HasMoreTokens() ) {
+            str = tkz.GetNextToken();
+            str.Trim();
+            if ( str.Length() ) {
+                event.timestamp = vscp_readStringValue( str );
+            }
+            else {
                 event.timestamp = vscp_makeTimeStamp();
             }
         }
@@ -1737,34 +1773,7 @@ bool VSCPClientThread::sendOneEventFromQueue( struct mg_connection *conn,
         }
         pClientItem->m_mutexClientInputQueue.Unlock();
 
-        strOut.Printf( _("%hu,%hu,%hu,%lu,%lu,"),
-                            (unsigned short)pqueueEvent->head,
-                            (unsigned short)pqueueEvent->vscp_class,
-                            (unsigned short)pqueueEvent->vscp_type,
-                            (unsigned long)pqueueEvent->obid,
-                            (unsigned long)pqueueEvent->timestamp );
-
-        wxString strGUID;
-        vscp_writeGuidToString( pqueueEvent, strGUID );
-        strOut += strGUID;
-
-        // Handle data
-        if ( NULL != pqueueEvent->pdata ) {
-
-            strOut += _(",");
-            for ( int i=0; i<pqueueEvent->sizeData; i++ ) {
-                wxString wrk;
-                wrk.Printf(_("%d"), pqueueEvent->pdata[ i ] );
-                if ( ( pqueueEvent->sizeData - 1 ) != i ) {
-                    wrk += _(",");
-                }
-
-                strOut += wrk;
-
-            }
-
-        }
-
+        vscp_writeVscpEventToString( pqueueEvent, strOut );
         strOut += _("\r\n");
         mg_send( conn,  strOut.mb_str(), strlen ( strOut.mb_str() ) );
 
@@ -2406,7 +2415,7 @@ void VSCPClientThread::handleClientHelp( struct mg_connection *conn,
                                                         &pClientItem->m_currentCommand ) ||
               pClientItem->m_currentCommand.StartsWith( _("send"), 
                                                         &pClientItem->m_currentCommand ) ) {
-        wxString str = _("'SEND event'.\r\nThe event is given as 'head,class,type,obid,time-stamp,GUID,data1,data2,data3....' \r\n");
+        wxString str = _("'SEND event'.\r\nThe event is given as 'head,class,type,obid,datetime,time-stamp,GUID,data1,data2,data3....' \r\n");
         str += _("Normally set 'head' and 'obid' to zero. \r\nIf timestamp is set to zero it will be set by the server. \r\nIf GUID is given as '-' ");
         str += _("the GUID of the interface will be used. \r\nThe GUID should be given on the form MSB-byte:MSB-byte-1:MSB-byte-2. \r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
@@ -2416,7 +2425,7 @@ void VSCPClientThread::handleClientHelp( struct mg_connection *conn,
               pClientItem->m_currentCommand.StartsWith( _("retr"), 
                                                         &pClientItem->m_currentCommand ) ) {
         wxString str = _("'RETR count' - Retrieve one (if no argument) or 'count' event(s). ");
-        str += _("Events are retrived on the form head,class,type,obid,time-stamp,GUID,data0,data1,data2,...........\r\n");
+        str += _("Events are retrived on the form head,class,type,obid,datetime,time-stamp,GUID,data0,data1,data2,...........\r\n");
         mg_send( conn, (const char *)str.mbc_str(), str.Length() );
     }
     else if ( pClientItem->m_currentCommand.StartsWith( _("RCVLOOP"), 
