@@ -1661,6 +1661,24 @@ bool CUserTableObjList::loadTablesFromDB( void )
         
         int vscp_class, vscp_type, vscp_sensorindex, vscp_unit, vscp_zone, vscp_subzone;
         
+        // vscp_class
+        vscp_class = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_TABLE_VSCP_CLASS ); 
+  
+        // vscp_type
+        vscp_type = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_TABLE_VSCP_TYPE );   
+        
+        // sensor index
+        vscp_sensorindex = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_TABLE_VSCP_SENSOR_INDEX );
+        
+        // unit
+        vscp_unit = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_TABLE_VSCP_UNIT );
+        
+        // zone
+        vscp_zone = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_TABLE_VSCP_ZONE );
+        
+        // sub zone
+        vscp_subzone = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_TABLE_VSCP_SUBZONE );
+        
         pTable->setTableEventInfo( vscp_class,
                                         vscp_type,
                                         vscp_sensorindex,
