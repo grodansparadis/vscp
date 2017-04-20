@@ -106,7 +106,7 @@
 
 #include <v7.h>
 #include <mongoose.h>
-//#include <frozen.h>
+//#include <frozen.h>   // Not needed anymore
 
 #include <canal_macro.h>
 #include <vscp.h>
