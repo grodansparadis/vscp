@@ -71,6 +71,26 @@
 #define MSG_VARIABLE_NOT_NUMERIC            "-OK - Variable is not numeric.\r\n"
 #define MSG_VARIABLE_UNABLE_ADD             "-OK - Unable to add variable.\r\n"
 
+#define MSG_LOW_PRIVILEGE_ERROR             "-OK - User need higher privilege level to perform this operation.\r\n"
+#define MSG_INTERFACE_NOT_FOUND             "-OK - Interface not found.\r\n"
+
+#define MSG_VARIABLE_NOT_DEFINED            "-OK - Variable is not defined.\r\n"
+#define MSG_MOT_ALLOWED_TO_SEND_EVENT       "-OK - Not allowed to sen this event (contact admin).\r\n"
+#define MSG_INVALID_PATH                    "-OK - Invalid path.\r\n"
+#define MSG_FAILD_TO_GENERATE_SID           "-OK - Failed to generate sid.\r\n"
+
+#define MSG_FAILED_TO_CREATE_TABLE          "-OK - Failed to create table.\r\n"
+#define MSG_FAILED_TO_ADD_TABLE_TO_DB       "-OK - Failed to add table to database.\r\n"
+#define MSG_FAILED_TO_INIT_TABLE            "-OK - Failed to initialize table.\r\n"
+#define MSG_FAILED_GET_TABLE_NAMES          "-OK - Failed to get table names.\r\n"
+#define MSG_FAILED_UNKNOWN_TABLE            "-OK - No table with that name can be found.\r\n"
+#define MSG_FAILED_TABLE_NAME_IN_USE        "-OK - This table name is already in use.\r\n"
+#define MSG_FAILED_TO_PREPARE_TABLE         "-OK - Failed to prepare table search.\r\n"
+#define MSG_FAILED_TO_FINALIZE_TABLE        "-OK - Failed to finalize table search.\r\n"
+#define MSG_FAILED_TO_CLEAR_TABLE           "-OK - Failed to clear table.\r\n"
+#define MSG_FAILED_TO_WRITE_TABLE           "-OK - Failed to write data to table.\r\n"
+#define MSG_FAILED_TO_REMOVE_TABLE          "-OK - Failed to remove table.\r\n"
+
 //class CControlObject;
 //class CClientItem;
 

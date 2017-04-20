@@ -272,9 +272,11 @@ void vscp_toXMLEscape( char *temp_str )
 bool vscp_decodeBase64IfNeeded( wxString &wxstr, wxString &strResult ) 
 {
     // If BASE64 encoded then decode 
-    wxstr.Trim( false );
-    
+    wxstr.Trim( false );    
     strResult = wxstr;
+    
+    // A zero length string is accepted
+    if ( strResult.Length() ) return true;
     
     if ( wxstr.StartsWith(_("BASE64:"), &wxstr ) ) {
         
@@ -285,16 +287,15 @@ bool vscp_decodeBase64IfNeeded( wxString &wxstr, wxString &strResult )
         }
         
         uint8_t *pbuf = new uint8_t[ len ];
-        if (NULL == pbuf) {
+        if ( NULL == pbuf ) {
             return false;
         }
         
         len = wxBase64Decode( pbuf, len, wxstr );
         wxstr = wxString::FromUTF8( (const char *) pbuf, len );
-        delete [] pbuf;
+        delete [] pbuf;      
         
-        
-    }
+    } 
     
     return true;
 }
@@ -2446,18 +2447,19 @@ void vscp_deleteVSCPeventEx(vscpEventEx *pEventEx)
 // vscp_getDateStringFromEvent
 //
 
-wxString vscp_getDateStringFromEvent( const vscpEvent *pEvent )
+bool vscp_getDateStringFromEvent( const vscpEvent *pEvent, wxString& dt )
 {
     // Check pointer
-    if ( NULL == pEvent ) return wxString::Format("");
+    if ( NULL == pEvent ) return false;
     
-    return wxString::Format( _("%04d-%02d-%02dT%02d:%02d:%02dZ"),
+    dt =  wxString::Format( _("%04d-%02d-%02dT%02d:%02d:%02dZ"),
                                                 (int)pEvent->year,
                                                 (int)pEvent->month,
                                                 (int)pEvent->day,
                                                 (int)pEvent->hour,
                                                 (int)pEvent->minute,
                                                 (int)pEvent->second );
+    return true;
 }
 
 
@@ -2465,18 +2467,19 @@ wxString vscp_getDateStringFromEvent( const vscpEvent *pEvent )
 // vscp_getDateStringFromEventEx
 //
 
-wxString vscp_getDateStringFromEventEx( vscpEventEx *pEventEx )
+bool vscp_getDateStringFromEventEx( vscpEventEx *pEventEx, wxString& dt )
 {
     // Check pointer
-    if ( NULL == pEventEx ) return wxString::Format("");
+    if ( NULL == pEventEx ) return false;
     
-    return wxString::Format( _("%04d-%02d-%02dT%02d:%02d:%02dZ"),
+    dt = wxString::Format( _("%04d-%02d-%02dT%02d:%02d:%02dZ"),
                                                 (int)pEventEx->year,
                                                 (int)pEventEx->month,
                                                 (int)pEventEx->day,
                                                 (int)pEventEx->hour,
                                                 (int)pEventEx->minute,
                                                 (int)pEventEx->second );
+    return true;
 }
 
 
@@ -2498,12 +2501,15 @@ void vscp_convertEventToJSON( vscpEvent *pEvent, wxString& strJSON )
                                             strJSON,
                                             false, 
                                             false );        // Event data to string
+    
+    wxString dt;
+    vscp_getDateStringFromEvent( pEvent, dt );
         
     // datetime,head,obid,datetime,timestamp,class,type,guid,data,note
     strJSON.Printf( VSCP_JSON_EVENT_TEMPLATE,
                         (unsigned short int)pEvent->head,
                         (unsigned long)pEvent->obid,
-                        (const char *)vscp_getDateStringFromEvent( pEvent ),
+                        (const char *)dt.mbc_str(),
                         (unsigned long)pEvent->timestamp,                        
                         (unsigned short int)pEvent->vscp_class,
                         (unsigned short int)pEvent->vscp_type,
@@ -2532,11 +2538,14 @@ void vscp_convertEventExToJSON( vscpEventEx *pEventEx, wxString& strJSON )
                                             false, 
                                             false );            // Event data to string
     
+    wxString dt;
+    vscp_getDateStringFromEventEx( pEventEx, dt );
+    
     // datetime,head,obid,datetime,timestamp,class,type,guid,data,note
     strJSON.Printf( VSCP_JSON_EVENT_TEMPLATE,
                         (unsigned short int)pEventEx->head,
                         (unsigned long)pEventEx->obid,
-                        (const char *)vscp_getDateStringFromEventEx( pEventEx ),
+                        (const char *)dt.mbc_str(),
                         (unsigned long)pEventEx->timestamp,                        
                         (unsigned short int)pEventEx->vscp_class,
                         (unsigned short int)pEventEx->vscp_type,
@@ -2564,11 +2573,14 @@ void vscp_convertEventToXML( vscpEvent *pEvent, wxString& strXML )
                                             false, 
                                             false );        // Event data to string
     
+    wxString dt;
+    vscp_getDateStringFromEvent( pEvent, dt );
+    
     // datetime,head,obid,datetime,timestamp,class,type,guid,sizedata,data,note
     strXML.Printf( VSCP_XML_EVENT_TEMPLATE,
                         (unsigned short int)pEvent->head,
                         (unsigned long)pEvent->obid,
-                        (const char *)vscp_getDateStringFromEvent( pEvent ),
+                        (const char *)dt.mbc_str(),
                         (unsigned long)pEvent->timestamp,                        
                         (unsigned short int)pEvent->vscp_class,
                         (unsigned short int)pEvent->vscp_type,
@@ -2597,11 +2609,14 @@ void vscp_convertEventExToXML( vscpEventEx *pEventEx, wxString& strXML )
                                             false, 
                                             false );            // Event data to string
     
+    wxString dt;
+    vscp_getDateStringFromEventEx( pEventEx, dt );
+    
     // datetime,head,obid,datetime,timestamp,class,type,guid,sizedata,data,note
     strXML.Printf( VSCP_XML_EVENT_TEMPLATE,
                         (unsigned short int)pEventEx->head,
                         (unsigned long)pEventEx->obid,
-                        (const char *)vscp_getDateStringFromEventEx( pEventEx ),
+                        (const char *)dt.mbc_str(),
                         (unsigned long)pEventEx->timestamp,                        
                         (unsigned short int)pEventEx->vscp_class,
                         (unsigned short int)pEventEx->vscp_type,
@@ -2630,6 +2645,9 @@ void vscp_convertEventToHTML( vscpEvent *pEvent, wxString& strHTML )
                                             false, 
                                             false );        // Event data to string
     
+    wxString dt;
+    vscp_getDateStringFromEvent( pEvent, dt );
+    
     // datetime,class,type,data-count,data,guid,head,timestamp,obid,note
     strHTML.Printf( VSCP_HTML_EVENT_TEMPLATE,
                         wxDateTime::Now().FormatISOCombined(),
@@ -2639,7 +2657,7 @@ void vscp_convertEventToHTML( vscpEvent *pEvent, wxString& strHTML )
                         (const char *)strdata.mbc_str(),
                         (const char *)strguid.mbc_str(),            
                         (unsigned short int)pEvent->head,
-                        (const char *)vscp_getDateStringFromEvent( pEvent ),
+                        (const char *)dt.mbc_str(),
                         (unsigned long)pEvent->timestamp,
                         (unsigned long)pEvent->obid,                                                                                                
                         "" );
@@ -2664,6 +2682,9 @@ void vscp_convertEventExToHTML( vscpEventEx *pEventEx, wxString& strHTML )
                                             false, 
                                             false );            // Event data to string
     
+    wxString dt;
+    vscp_getDateStringFromEventEx( pEventEx, dt );
+    
     // datetime,class,type,data-count,data,guid,head,timestamp,obid,note
     strHTML.Printf( VSCP_HTML_EVENT_TEMPLATE,
                         wxDateTime::Now().FormatISOCombined(),
@@ -2673,7 +2694,7 @@ void vscp_convertEventExToHTML( vscpEventEx *pEventEx, wxString& strHTML )
                         (const char *)strdata.mbc_str(),
                         (const char *)strguid.mbc_str(),            
                         (unsigned short int)pEventEx->head,
-                        (const char *)vscp_getDateStringFromEventEx( pEventEx ),
+                        (const char *)dt.mbc_str(),
                         (unsigned long)pEventEx->timestamp,
                         (unsigned long)pEventEx->obid,                                                                                                
                         "" );
@@ -3354,13 +3375,16 @@ bool vscp_writeVscpEventToString( const vscpEvent *pEvent, wxString& str)
     // Check pointer
     if (NULL == pEvent) return false;
 
+    wxString dt;
+    vscp_getDateStringFromEvent( pEvent, dt );
+    
     //head,class,type,obid,datetime,timestamp
     str.Printf( _("%hu,%hu,%hu,%lu,%s,%lu"), 
                             (unsigned short)pEvent->head,
                             (unsigned short)pEvent->vscp_class,
                             (unsigned short)pEvent->vscp_type,
                             (unsigned long)pEvent->obid,
-                            (const char *)vscp_getDateStringFromEvent( pEvent ).mbc_str(),
+                            (const char *)dt.mbc_str(),
                             (unsigned long)pEvent->timestamp );
         
     wxString strGUID;

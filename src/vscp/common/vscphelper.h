@@ -776,16 +776,18 @@ extern "C" {
     /*!
         Get datestring from VSCP event
         @param pEvent Event to get date/time info from
-        @return wString that contain datestring on ISO format.
+        @param dt Reference to wxString that will get ISO datetime string
+        @return True on success.
      */
-    wxString vscp_getDateStringFromEvent( const vscpEvent *pEvent );
+    bool vscp_getDateStringFromEvent( const vscpEvent *pEvent, wxString& dt );
     
     /*!
         Get datestring from VSCP Event ex
         @param pEventEx EventEx to get date/time info from
-        @return wString that contain datestring on ISO format.
+        @param dt Reference to wxString that will get ISO datetime string
+        @return True on success.
      */
-    wxString vscp_getDateStringFromEventEx( const vscpEventEx *pEventEx );
+    bool vscp_getDateStringFromEventEx( const vscpEventEx *pEventEx, wxString& dt );
         
     
 

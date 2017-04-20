@@ -54,7 +54,7 @@ public:
      *  @param name Name of this VSCP table. Must be system unique.
      *  @param bEnable If true the table should be initialized by the system.
      *  @param bMemeory If true the table will be created in memory.
-     *  @param type Either static or dynamic table. A static table have a 
+     *  @param type Either max, static or dynamic table. A static and max table have a 
      *              static size.
      *  @param size This is the size for a static table. Must be greater than 
      *                  zero for a static table but is a no care for a dynamic 
@@ -70,22 +70,6 @@ public:
 
     // Destructor
     virtual ~CVSCPTable(void);
-
-    /*!
-        Open/create file and get ready to work with it.
-        @return true on success, false on error.
-    */
-    
-    bool init();
-    
-
-   /*!
-    * Create the database
-    * @return true in success, false on failure
-    */
-    
-    bool createDatabase( void );
-     
     
     /*!
      *  Set table info
@@ -110,7 +94,7 @@ public:
     bool setTableInfo( const wxString &owner,
                             const uint16_t rights,
                             const wxString &title,
-                            const wxString &xname, 
+                            const wxString &xname,
                             const wxString &yname,
                             const wxString &note,
                             const wxString &sqlcreate,
@@ -135,6 +119,21 @@ public:
                                 uint8_t vscp_unit = 0,
                                 uint8_t vscp_zone = 255,
                                 uint8_t vscp_subzone = 255 );
+    
+    /*!
+        Open/create file and get ready to work with it.
+        @return true on success, false on error.
+    */
+    
+    bool init();
+    
+
+   /*!
+    * Create the database
+    * @return true in success, false on failure
+    */
+    
+    bool createDatabase( void );
     
     /*!
      * Test if a measurement event match the data that should be logged.
@@ -744,12 +743,13 @@ public:
     bool isNameUsed( wxString &name );
     
     /*!
-     * Remove one table item from it's name
+     * Remove one table item from the internal structure
      * 
-     * @param name NAme of table
+     * @param name Name of table
+     * @param bRemoveFile If true the database file is deleted
      * @return True on success, false on failure.
      */
-    bool removeTable( wxString &name );
+    bool removeTable( wxString &name, bool bRemoveFile = true );
     
     /*!
      * Remove all items in the table

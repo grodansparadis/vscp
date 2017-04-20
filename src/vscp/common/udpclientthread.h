@@ -42,7 +42,7 @@
 #define MSG_RECEIVE_LOOP                    "+OK - Receive loop entered. QUITLOOP to terminate.\r\n"
 #define MSG_QUIT_LOOP                       "+OK - Quit receive loop.\r\n"
 #define MSG_CAN_MODE                        "+OK - CAN mode set.\r\n"
-
+/*
 #define MSG_ERROR                           "-OK - Error\r\n"
 #define MSG_UNKNOWN_COMMAND                 "-OK - Unknown command\r\n"
 #define MSG_PARAMETER_ERROR                 "-OK - Invalid parameter or format\r\n"
@@ -57,21 +57,7 @@
 #define MSG_MAX_NUMBER_OF_CLIENTS           "-OK - Max number of clients connected.\r\n"
 #define MSG_INTERNAL_ERROR                  "-OK - Server Internal error.\r\n"
 #define MSG_INTERNAL_MEMORY_ERROR           "-OK - Internal Memory error.\r\n"
-#define MSG_INVALID_REMOTE_ERROR            "-OK - Invalid or unknown peer.\r\n"
-
-#define MSG_LOW_PRIVILEGE_ERROR             "-OK - User need higher privilege level to perform this operation.\r\n"
-#define MSG_INTERFACE_NOT_FOUND             "-OK - Interface not found.\r\n"
-
-#define MSG_VARIABLE_NOT_DEFINED            "-OK - Variable is not defined.\r\n"
-#define MSG_MOT_ALLOWED_TO_SEND_EVENT       "-OK - Not allowed to sen this event (contact admin).\r\n"
-#define MSG_INVALID_PATH                    "-OK - Invalid path.\r\n"
-#define MSG_FAILD_TO_GENERATE_SID           "-OK - Failed to generate sid.\r\n"
-
-#define MSG_FAILED_GET_TABLE_NAMES          "-OK - Failed to get table names.\r\n"
-#define MSG_FAILED_UNKNOWN_TABLE            "-OK - No table with that name can be found.\r\n"
-#define MSG_FAILED_TO_PREPARE_TABLE         "-OK - Failed to prepare table search.\r\n"
-#define MSG_FAILED_TO_FINALIZE_TABLE        "-OK - Failed to finalize table search.\r\n"
-#define MSG_FAILED_TO_CLEAR_TABLE           "-OK - Failed to clear table.\r\n"
+#define MSG_INVALID_REMOTE_ERROR            "-OK - Invalid or unknown peer.\r\n"  */
 
 //class CControlObject;
 //class CClientItem;

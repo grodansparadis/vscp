@@ -668,8 +668,30 @@ bool CControlObject::searchLogDB( const char * sql, wxString& strResult )
 bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 {
     wxString str;
-    
+        
     /*
+    wxDateTime ttt;
+    ttt.ParseISOCombined(_("1970-12-31T12:00:00+02:00"));
+    //ttt = ttt.ToTimezone( wxDateTime::TimeZone(-2 ) ); // .ToUTC(true);
+    str = ttt.FormatISOCombined();
+    
+    str = _("1970-12-31T12:00:00.345+02:00Z");
+    str = str.AfterFirst('.');
+    uint32_t ms = vscp_readStringValue( str );
+    
+    str = str.AfterFirst('+');
+    if ( str.Length() ) {
+        
+    }
+    else {
+        str = str.AfterFirst('+');
+    }
+    
+    wxString strMinus = str.AfterFirst('-');
+    */
+            
+    /*
+    // https://www.w3.org/TR/NOTE-datetime 
     wxDateTime ttt;
     ttt.ParseISOCombined(_("1970-12-31T12:00:00.444"));
     ttt.SetMillisecond( 123 );

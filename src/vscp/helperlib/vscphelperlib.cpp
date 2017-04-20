@@ -4272,7 +4272,8 @@ extern "C" int vscphlp_getDateStringFromEvent( char *buf, size_t buf_len, vscpEv
     if ( NULL == buf ) return VSCP_ERROR_PARAMETER;
     if ( NULL == pEvent ) return VSCP_ERROR_PARAMETER;
     
-    wxString str = vscp_getDateStringFromEvent( pEvent );
+    wxString str;
+    vscp_getDateStringFromEvent( pEvent, str );
     if ( 0 == str.Length() ) return VSCP_ERROR_ERROR;
     
     memcpy( buf, (const char *)str.mbc_str(), MIN( buf_len, str.Length() ) );
@@ -4293,7 +4294,8 @@ extern "C" int vscphlp_getDateStringFromEventEx( char *buf, size_t buf_len, vscp
     if ( NULL == buf ) return VSCP_ERROR_PARAMETER;
     if ( NULL == pEventEx ) return VSCP_ERROR_PARAMETER;
     
-    wxString str = vscp_getDateStringFromEventEx( pEventEx );
+    wxString str;
+    vscp_getDateStringFromEventEx( pEventEx, str );    
     if ( 0 == str.Length() ) return VSCP_ERROR_ERROR;
     
     memcpy( buf, (const char *)str.mbc_str(), MIN( buf_len, str.Length() ) );

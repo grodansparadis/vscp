@@ -124,7 +124,7 @@ CVSCPTable::CVSCPTable( const wxString &folder,
 
 CVSCPTable::~CVSCPTable( void )
 {
-    // Clos ethe database if it is open
+    // Close the database if it is open
     if ( NULL != m_dbTable ) {
         sqlite3_close( m_dbTable );
     }
@@ -734,7 +734,7 @@ bool CVSCPTable::getFirstDate( wxDateTime& dt )
 
 bool CVSCPTable::getLastDate( wxDateTime& dt )
 {
-   bool rv = true;
+    bool rv = true;
     wxString wxstr;
     char *pErrMsg;
     sqlite3_stmt *ppStmt;
@@ -1035,6 +1035,7 @@ bool CVSCPTable::prepareRangeOfData( wxDateTime& wxStart,
     }
     
     return true;
+    
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1081,6 +1082,7 @@ bool CVSCPTable::prepareRangeOfData( wxString& sql, sqlite3_stmt **ppStmt )
     }
     
     return true;
+    
 }
 
 
@@ -1168,6 +1170,7 @@ bool CVSCPTable::getRowRangeOfDataRaw( sqlite3_stmt *ppStmt, wxString& rowData )
         }
         
         if ( i<(count-1) ) rowData += _("|");
+        
     }
     
     return true;
@@ -1218,7 +1221,7 @@ bool CVSCPTable::getRangeInArray( wxDateTime& wxStart,
 // Constructor
 CUserTableObjList::CUserTableObjList( void )
 {
-    
+    ;
 }
 
 // Destructor
@@ -1253,7 +1256,7 @@ CVSCPTable *CUserTableObjList::getTable( wxString &name )
 {
     m_mutexTableList.Lock();
     listVSCPTables::iterator iter;
-    for ( iter = m_listTables.begin(); iter != m_listTables.end(); ++iter ){
+    for ( iter = m_listTables.begin(); iter != m_listTables.end(); ++iter ) {
         
         CVSCPTable *pTable = *iter;
         if ( ( NULL!= pTable ) && ( name == pTable->getTableName() ) ) {
@@ -1265,26 +1268,7 @@ CVSCPTable *CUserTableObjList::getTable( wxString &name )
     return NULL;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// removeTable
-//
 
-bool CUserTableObjList::removeTable( wxString &name )
-{
-    m_mutexTableList.Lock();
-    listVSCPTables::iterator iter;
-    for ( iter = m_listTables.begin(); iter != m_listTables.end(); ++iter )
-    {
-        CVSCPTable *pTable = *iter;
-        if ( ( NULL!= pTable ) && ( name == pTable->getTableName() ) ) {
-            delete pTable;
-            m_listTables.DeleteNode( iter.m_node );
-            return true;
-        }
-    }
-    m_mutexTableList.Unlock();
-    return false;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // isNameUsed
@@ -1317,6 +1301,31 @@ bool CUserTableObjList::init( void )
     return true;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// removeTable
+//
+
+bool CUserTableObjList::removeTable( wxString &name, bool bRemoveFile )
+{
+    m_mutexTableList.Lock();
+    
+    listVSCPTables::iterator iter;
+    for ( iter = m_listTables.begin(); iter != m_listTables.end(); ++iter ) {
+        CVSCPTable *pTable = *iter;
+        if ( ( NULL!= pTable ) && ( name == pTable->getTableName() ) ) {
+            pTable->cleanUpAndClose();
+            delete pTable;
+            m_listTables.DeleteNode( iter.m_node );
+            if ( bRemoveFile ) {
+                wxRemoveFile(   gpobj->m_rootFolder + _("tables/") + name + _("sqlite3") );
+            }
+            return true;
+        }
+    }
+    
+    m_mutexTableList.Unlock();
+    return false;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // clearTable
@@ -1327,11 +1336,11 @@ void CUserTableObjList::clearTable( void )
     m_mutexTableList.Lock();
     
     listVSCPTables::iterator iter;
-    for ( iter = m_listTables.begin(); iter != m_listTables.end(); ++iter )
-    {
+    for ( iter = m_listTables.begin(); iter != m_listTables.end(); ++iter ) {
         CVSCPTable *pTable = *iter;
         delete pTable;
         m_listTables.DeleteNode( iter.m_node );
+        
     }
     
     m_mutexTableList.Unlock();

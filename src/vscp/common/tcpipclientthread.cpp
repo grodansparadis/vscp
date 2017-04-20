@@ -3645,13 +3645,18 @@ void VSCPClientThread::handleClientTable_Clear( struct mg_connection *conn )
     return;
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_Log
+//
+// log table-name value [datetime]
 //
 
 void VSCPClientThread::handleClientTable_Log( struct mg_connection *conn )
 {
     wxString strTable;
+    double value;
+    wxDateTime dt;
     
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
     if ( NULL == pClientItem ) return;    
@@ -3674,6 +3679,84 @@ void VSCPClientThread::handleClientTable_Log( struct mg_connection *conn )
                     strlen( MSG_PARAMETER_ERROR ) );
         return;
     }
+    
+    // Get the value
+    if ( tkz.HasMoreTokens() ) {
+        wxString str = tkz.GetNextToken();
+        if ( !str.ToDouble( &value ) ) {
+            // Problems: The value is not in a valid format
+            mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+            return;            
+        }
+    }
+    else {
+        // Problems: A value must be given
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    // Get the datetime if its there
+    if ( tkz.HasMoreTokens() ) {
+        
+        uint32_t ms = 0;
+        
+        wxString str = tkz.GetNextToken();
+        str.Trim(true);
+        str.Trim(false);
+        
+        if ( !dt.ParseISOCombined( str ) ) {
+            // Problems: The value is not in a valid format
+            mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+            return;            
+        }
+        
+        // Get possible millisecond part
+        str = str.AfterFirst('.');
+        str.Trim();
+        if ( str.Length() ) {
+            ms = vscp_readStringValue( str );
+        }    
+        
+        dt.SetMillisecond( ms );
+        
+    }
+    else {
+        // Set to now
+        dt = wxDateTime::UNow();
+    }
+    
+    
+    gpobj->m_mutexUserTables.Lock();
+    
+    CVSCPTable *pTable = 
+                gpobj->m_userTableObjects.getTable( strTable );
+    
+    if ( NULL == pTable ) {
+        // Failed
+        mg_send( conn, 
+                    MSG_FAILED_UNKNOWN_TABLE, 
+                    strlen( MSG_FAILED_UNKNOWN_TABLE ) );
+        
+        gpobj->m_mutexUserTables.Unlock();
+        return;
+    }
+    
+    // Log data
+    if ( !pTable->logData( dt, value ) ) {
+        gpobj->m_mutexUserTables.Unlock();
+        mg_send( conn,
+                    MSG_FAILED_TO_WRITE_TABLE,  
+                    strlen( MSG_FAILED_TO_WRITE_TABLE ) );
+        return;
+    }
+    
+    gpobj->m_mutexUserTables.Unlock();
 }
 
 
@@ -3683,7 +3766,7 @@ void VSCPClientThread::handleClientTable_Log( struct mg_connection *conn )
 
 void VSCPClientThread::handleClientTable_LogSQL( struct mg_connection *conn )
 {
-    wxString strTable;
+    wxString strTable, strSQL;
     
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
     if ( NULL == pClientItem ) return;    
@@ -3706,30 +3789,98 @@ void VSCPClientThread::handleClientTable_LogSQL( struct mg_connection *conn )
                     strlen( MSG_PARAMETER_ERROR ) );
         return;
     }
+    
+    
+    // Get SQL expression 
+    if ( tkz.HasMoreTokens() ) {
+        strSQL = tkz.GetNextToken();
+        strSQL.Trim(true);
+        strSQL.Trim(false);
+    }
+    else {
+        // Problems: A SQL expression must be given
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    
+    gpobj->m_mutexUserTables.Lock();
+    
+    CVSCPTable *pTable = 
+                gpobj->m_userTableObjects.getTable( strTable );
+    
+    if ( NULL == pTable ) {
+        // Failed
+        mg_send( conn, 
+                    MSG_FAILED_UNKNOWN_TABLE, 
+                    strlen( MSG_FAILED_UNKNOWN_TABLE ) );
+        
+        gpobj->m_mutexUserTables.Unlock();
+        return;
+    }
+    
+    // Log data
+    if ( !pTable->logData( strSQL ) ) {
+        gpobj->m_mutexUserTables.Unlock();
+        mg_send( conn,
+                    MSG_FAILED_TO_WRITE_TABLE,  
+                    strlen( MSG_FAILED_TO_WRITE_TABLE ) );
+        return;
+    }
+    
+    gpobj->m_mutexUserTables.Unlock();
+    
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_New
 //
+// name, owner, rights, title, xname, yname, note, 
+//  sqlcreate, sqlinsert, sqldelete, description,
+//  vscpclass, vscptype, 
+// Optional parameter follow
+//  sensorindex, unit, zone, subzone
+//
+// Table name must be unique
+//
 
 void VSCPClientThread::handleClientTable_New( struct mg_connection *conn )
 {
-    wxString strTable;
+    wxString strName;
+    bool bEnable = true;
+    bool bInMemory = false;
+    vscpTableType type = VSCP_TABLE_DYNAMIC;
+    uint32_t size = 0;
+    wxString strOwner;
+    uint16_t rights;
+    wxString strTitle;
+    wxString strXname;
+    wxString strYname;
+    wxString strNote;
+    wxString strSqlCreate;
+    wxString strSqlInsert;
+    wxString strSqlDelete;
+    wxString strDescription;
+    uint16_t vscpclass;
+    uint16_t vscptype;
+    uint8_t sensorindex = 0;
+    uint8_t unit = 0;
+    uint8_t zone = 255;
+    uint8_t subzone = 255;
     
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
     if ( NULL == pClientItem ) return;    
-    
-    pClientItem->m_currentCommand.Trim(true);
-    pClientItem->m_currentCommand.Trim(false);
-    
+       
     wxStringTokenizer tkz( pClientItem->m_currentCommand, _(" ") );
     
     // Get table name 
     if ( tkz.HasMoreTokens() ) {
-        strTable = tkz.GetNextToken();
-        strTable.Trim(true);
-        strTable.Trim(false);
+        strName = tkz.GetNextToken();
+        strName.Trim(true);
+        strName.Trim(false);
     }
     else {
         // Problems: A table name must be given
@@ -3739,11 +3890,437 @@ void VSCPClientThread::handleClientTable_New( struct mg_connection *conn )
         return;
     }
     
+    // Check if table name is already used
+    if ( gpobj->m_userTableObjects.isNameUsed( strName ) ) {
+        // The table name must be unique
+        mg_send( conn,
+                    MSG_FAILED_TABLE_NAME_IN_USE, 
+                    strlen( MSG_FAILED_TABLE_NAME_IN_USE ) );
+        return;
+    }
+    
+    // bEnabled (can be empty)
+    if ( tkz.HasMoreTokens() ) {
+        wxString str = tkz.GetNextToken();
+        if ( wxNOT_FOUND != str.Upper().Find( _("FALSE") ) ) {
+            bEnable = false;
+        }
+    }
+    else {
+        // Problems: A table name must be given
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    // bInMemory (can be empty)
+    if ( tkz.HasMoreTokens() ) {
+        wxString str = tkz.GetNextToken();
+        if ( wxNOT_FOUND != str.Upper().Find( _("TRUE") ) ) {
+            bInMemory = TRUE;
+        }
+    }
+    else {
+        // Problems: A table name must be given
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    // type "STATIC"/"DYNAMIC"/"MAX" (can be empty)
+    if ( tkz.HasMoreTokens() ) {
+        wxString str = tkz.GetNextToken();
+        if ( wxNOT_FOUND != str.Upper().Find( _("STATIC") ) ) {
+            type = VSCP_TABLE_STATIC;
+        }
+        else if ( wxNOT_FOUND != str.Upper().Find( _("DYNAMIC") ) ) {
+            type = VSCP_TABLE_DYNAMIC;
+        }
+        else if ( wxNOT_FOUND != str.Upper().Find( _("MAX") ) ) {
+            type = VSCP_TABLE_MAX;
+        }
+    }
+    else {
+        // Problems: A table name must be given
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    // Get size (can be empty)
+    if ( tkz.HasMoreTokens() ) {
+        unsigned long l;
+        wxString str = tkz.GetNextToken();
+        if ( str.ToULong( &l ) ) {
+            size = (uint32_t)l;
+        } 
+        else {
+            mg_send( conn,
+                        MSG_PARAMETER_ERROR, 
+                        strlen( MSG_PARAMETER_ERROR ) );
+            return;
+        }
+    }
+    else {
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    // Check if size value is valid for static table
+    if ( ( VSCP_TABLE_STATIC == type ) && ( 0 == size ) ) {
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }   
+    
+    // Check if size value is valid for max table
+    if ( ( VSCP_TABLE_MAX == type ) && ( 0 == size ) ) {
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    } 
+    
+    // Get owner
+    if ( tkz.HasMoreTokens() ) {
+        strOwner = tkz.GetNextToken();
+    }
+    else {
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    
+    // Get rights
+    if ( tkz.HasMoreTokens() ) {
+        long l;
+        wxString str = tkz.GetNextToken();
+        if ( str.ToCLong( &l ) ) {
+            rights = (uint16_t)l;
+        } 
+        else {
+            mg_send( conn,
+                        MSG_PARAMETER_ERROR, 
+                        strlen( MSG_PARAMETER_ERROR ) );
+            return;
+        }
+    }
+    else {
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }    
+    
+    
+    // Get title
+    if ( tkz.HasMoreTokens() ) {
+        wxString str = tkz.GetNextToken();
+        if ( !vscp_decodeBase64IfNeeded( str, strTitle ) ) {
+            mg_send( conn,
+                        MSG_PARAMETER_ERROR, 
+                        strlen( MSG_PARAMETER_ERROR ) );
+            return;
+        }
+    }
+    else {
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    
+    // Get X-Label
+    if ( tkz.HasMoreTokens() ) {
+        wxString str = tkz.GetNextToken();
+        if ( !vscp_decodeBase64IfNeeded( str, strXname ) ) {
+            mg_send( conn,
+                        MSG_PARAMETER_ERROR, 
+                        strlen( MSG_PARAMETER_ERROR ) );
+            return;
+        }
+    }
+    else {
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    
+    // Get Y-Label
+    if ( tkz.HasMoreTokens() ) {
+        wxString str = tkz.GetNextToken();
+        if ( !vscp_decodeBase64IfNeeded( str, strYname ) ) {
+            mg_send( conn,
+                        MSG_PARAMETER_ERROR, 
+                        strlen( MSG_PARAMETER_ERROR ) );
+            return;
+        }
+    }
+    else {
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    
+    // Get diagram note
+    if ( tkz.HasMoreTokens() ) {
+        wxString str = tkz.GetNextToken();
+        if ( !vscp_decodeBase64IfNeeded( str, strNote ) ) {
+            mg_send( conn,
+                        MSG_PARAMETER_ERROR, 
+                        strlen( MSG_PARAMETER_ERROR ) );
+            return;
+        }
+    }
+    else {
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    
+    // Get SQL create statement
+    if ( tkz.HasMoreTokens() ) {
+        wxString str = tkz.GetNextToken();
+        if ( !vscp_decodeBase64IfNeeded( str, strSqlCreate ) ) {
+            mg_send( conn,
+                        MSG_PARAMETER_ERROR, 
+                        strlen( MSG_PARAMETER_ERROR ) );
+            return;
+        }
+    }
+    else {
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }   
+    
+    
+    // Get SQL insert statement
+    if ( tkz.HasMoreTokens() ) {
+        wxString str = tkz.GetNextToken();
+        if ( !vscp_decodeBase64IfNeeded( str, strSqlInsert ) ) {
+            mg_send( conn,
+                        MSG_PARAMETER_ERROR, 
+                        strlen( MSG_PARAMETER_ERROR ) );
+            return;
+        }
+    }
+    else {
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }    
+    
+    
+    // Get SQL delete statement
+    if ( tkz.HasMoreTokens() ) {
+        wxString str = tkz.GetNextToken();
+        if ( !vscp_decodeBase64IfNeeded( str, strSqlDelete ) ) {
+            mg_send( conn,
+                        MSG_PARAMETER_ERROR, 
+                        strlen( MSG_PARAMETER_ERROR ) );
+            return;
+        }
+    }
+    else {
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }    
+    
+    
+    // VSCP Class
+    if ( tkz.HasMoreTokens() ) {
+        long l;
+        wxString str = tkz.GetNextToken();
+        if ( str.ToCLong( &l ) ) {
+            vscpclass = (uint16_t)l;
+        } 
+        else {
+            mg_send( conn,
+                        MSG_PARAMETER_ERROR, 
+                        strlen( MSG_PARAMETER_ERROR ) );
+            return;
+        }
+    }
+    else {
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    
+    // VSCP Type
+    if ( tkz.HasMoreTokens() ) {
+        long l;
+        wxString str = tkz.GetNextToken();
+        if ( str.ToCLong( &l ) ) {
+            vscptype = (uint16_t)l;
+        } 
+        else {
+            mg_send( conn,
+                        MSG_PARAMETER_ERROR, 
+                        strlen( MSG_PARAMETER_ERROR ) );
+            return;
+        }
+    }
+    else {
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    
+    // Parameters after this point are optional
+    
+    
+    // SensorIndex
+    if ( tkz.HasMoreTokens() ) {
+        long l;
+        wxString str = tkz.GetNextToken();
+        if ( str.ToCLong( &l ) ) {
+            sensorindex = (uint8_t)l;
+        } 
+    }
+    
+    
+    // Unit
+    if ( tkz.HasMoreTokens() ) {
+        long l;
+        wxString str = tkz.GetNextToken();
+        if ( str.ToCLong( &l ) ) {
+            unit = (uint8_t)l;
+        } 
+    }
+    
+    
+    // Zone
+    if ( tkz.HasMoreTokens() ) {
+        long l;
+        wxString str = tkz.GetNextToken();
+        if ( str.ToCLong( &l ) ) {
+            zone = (uint8_t)l;
+        } 
+    }
+    
+    
+    // SubZone
+    if ( tkz.HasMoreTokens() ) {
+        long l;
+        wxString str = tkz.GetNextToken();
+        if ( str.ToCLong( &l ) ) {
+            subzone = (uint8_t)l;
+        } 
+    }
+    
+    
+    // Create the table
+ 
+    CVSCPTable *pTable = new CVSCPTable( gpobj->m_rootFolder + _("table/"),    
+                                            strName, 
+                                            bEnable,
+                                            bInMemory, 
+                                            type, 
+                                            size );
+    
+    if ( NULL == pTable ) {
+        mg_send( conn,
+                    MSG_FAILED_TO_CREATE_TABLE, 
+                    strlen( MSG_FAILED_TO_CREATE_TABLE ) );
+        return;
+    }
+    
+    // Set table info
+    if ( !pTable->setTableInfo( strOwner,
+                                rights,
+                                strTitle,
+                                strXname,
+                                strYname,
+                                strNote,
+                                strSqlCreate,
+                                strSqlInsert,
+                                strSqlDelete,
+                                strDescription ) ) {
+        
+        delete pTable;
+        
+        mg_send( conn,
+                    MSG_FAILED_TO_CREATE_TABLE, 
+                    strlen( MSG_FAILED_TO_CREATE_TABLE ) );
+        return;
+    }
+    
+    // Set event info
+    pTable->setTableEventInfo( vscpclass,
+                                vscptype,
+                                sensorindex,
+                                unit,
+                                zone,
+                                subzone );
+    
+    // Add the table to the database
+    if ( !gpobj->m_userTableObjects.addTableToDB( *pTable ) ) {
+        
+        delete pTable;
+        
+        mg_send( conn,
+                    MSG_FAILED_TO_ADD_TABLE_TO_DB, 
+                    strlen( MSG_FAILED_TO_ADD_TABLE_TO_DB ) );
+        return;
+    }
+    
+    // Add the table to the system table
+    if ( !gpobj->m_userTableObjects.addTable( pTable ) ) {
+        
+        delete pTable;
+        
+        mg_send( conn,
+                    MSG_FAILED_TO_CREATE_TABLE, 
+                    strlen( MSG_FAILED_TO_CREATE_TABLE ) );
+        return;
+        
+    }
+    
+    // Initialize the table
+    if ( !pTable->init() ) {
+        
+        delete pTable;
+        
+        mg_send( conn,
+                    MSG_FAILED_TO_INIT_TABLE, 
+                    strlen( MSG_FAILED_TO_INIT_TABLE ) );
+        return;
+        
+    }
+    
+    // All went well
+    mg_send( conn, MSG_OK,  strlen( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_Delete
 //
+
 
 void VSCPClientThread::handleClientTable_Delete( struct mg_connection *conn )
 {
@@ -3751,10 +4328,7 @@ void VSCPClientThread::handleClientTable_Delete( struct mg_connection *conn )
     
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
     if ( NULL == pClientItem ) return;    
-    
-    pClientItem->m_currentCommand.Trim(true);
-    pClientItem->m_currentCommand.Trim(false);
-    
+        
     wxStringTokenizer tkz( pClientItem->m_currentCommand, _(" ") );
     
     // Get table name 
@@ -3771,12 +4345,27 @@ void VSCPClientThread::handleClientTable_Delete( struct mg_connection *conn )
         return;
     }
     
+    // Remove the table from the internal system
+    if ( gpobj->m_userTableObjects.removeTable( strTable ) ) {
+         // Failed
+        mg_send( conn, 
+                    MSG_FAILED_TO_REMOVE_TABLE, 
+                    strlen( MSG_FAILED_TO_REMOVE_TABLE ) );
+    }
+    
+    mg_send( conn,
+                MSG_OK, 
+                strlen( MSG_OK ) );
     
 }
 
 
-
-
+// Number of records
+// firstdate
+// lastdate
+// max
+// min
+// other stats
 
 
 
