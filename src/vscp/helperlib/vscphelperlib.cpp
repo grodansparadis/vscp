@@ -1628,7 +1628,7 @@ extern "C" int vscphlp_getRemoteVariableVSCPTimestamp( long handle, const char *
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_setRemoteVariableVSCPTimestamp( long handle, const char *pName, unsigned short vscp_type )
+extern "C" DllExport int WINAPI EXPORT vscphlp_setRemoteVariableVSCPTimestamp( long handle, const char *pName, unsigned long vscp_timestamp )
 #else
 extern "C" int vscphlp_setRemoteVariableVSCPTimestamp( long handle, const char *pName, unsigned long vscp_timestamp )
 #endif
@@ -4295,7 +4295,7 @@ extern "C" int vscphlp_getDateStringFromEventEx( char *buf, size_t buf_len, vscp
     if ( NULL == pEventEx ) return VSCP_ERROR_PARAMETER;
     
     wxString str;
-    vscp_getDateStringFromEventEx( pEventEx, str );    
+    vscp_getDateStringFromEventEx( pEventEx, str );
     if ( 0 == str.Length() ) return VSCP_ERROR_ERROR;
     
     memcpy( buf, (const char *)str.mbc_str(), MIN( buf_len, str.Length() ) );

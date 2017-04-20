@@ -2467,7 +2467,7 @@ bool vscp_getDateStringFromEvent( const vscpEvent *pEvent, wxString& dt )
 // vscp_getDateStringFromEventEx
 //
 
-bool vscp_getDateStringFromEventEx( vscpEventEx *pEventEx, wxString& dt )
+bool vscp_getDateStringFromEventEx( const vscpEventEx *pEventEx, wxString& dt )
 {
     // Check pointer
     if ( NULL == pEventEx ) return false;
