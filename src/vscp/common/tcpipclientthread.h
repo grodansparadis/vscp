@@ -347,6 +347,84 @@ public:
     void handleClientTable_Clear( struct mg_connection *conn );
     
     /*!
+        Client TABLE records command
+        @param conn Connection handler.
+    */
+    void handleClientTable_NumberOfRecords( struct mg_connection *conn );
+    
+    /*!
+        Client TABLE firstdate command
+        @param conn Connection handler.
+    */
+    void handleClientTable_FirstDate( struct mg_connection *conn );
+    
+    /*!
+        Client TABLE lastdate command
+        @param conn Connection handler.
+    */
+    void handleClientTable_LastDate( struct mg_connection *conn );
+    
+    /*!
+        Client TABLE sum command
+        @param conn Connection handler.
+    */
+    void handleClientTable_Sum( struct mg_connection *conn );
+    
+    /*!
+        Client TABLE min command
+        @param conn Connection handler.
+    */
+    void handleClientTable_Min( struct mg_connection *conn );
+    
+    /*!
+        Client TABLE max command
+        @param conn Connection handler.
+    */
+    void handleClientTable_Max( struct mg_connection *conn );
+    
+    /*!
+        Client TABLE average command
+        @param conn Connection handler.
+    */
+    void handleClientTable_Average( struct mg_connection *conn );
+    
+    /*!
+        Client TABLE median command
+        @param conn Connection handler.
+    */
+    void handleClientTable_Median( struct mg_connection *conn );
+    
+    /*!
+        Client TABLE stddev command
+        @param conn Connection handler.
+    */
+    void handleClientTable_StdDev( struct mg_connection *conn );
+    
+    /*!
+        Client TABLE variance command
+        @param conn Connection handler.
+    */
+    void handleClientTable_Variance( struct mg_connection *conn );
+    
+    /*!
+        Client TABLE mode command
+        @param conn Connection handler.
+    */
+    void handleClientTable_Mode( struct mg_connection *conn );
+    
+    /*!
+        Client TABLE lowerq command
+        @param conn Connection handler.
+    */
+    void handleClientTable_LowerQ( struct mg_connection *conn );
+    
+    /*!
+        Client TABLE upperq command
+        @param conn Connection handler.
+    */
+    void handleClientTable_UpperQ( struct mg_connection *conn );
+    
+    /*!
         Client TABLE log command
         @param conn Connection handler.
     */
