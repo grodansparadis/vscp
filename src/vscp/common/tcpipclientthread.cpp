@@ -4269,7 +4269,7 @@ void VSCPClientThread::handleClientTable_Max( struct mg_connection *conn )
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_Average
 //
-// averege 'table-name' [to,from]
+// average 'table-name' [to,from]
 //
 
 void VSCPClientThread::handleClientTable_Average( struct mg_connection *conn )
