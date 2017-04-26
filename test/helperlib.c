@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "../../vscphelperlib.h"
+#include "../src/vscp/helperlib/vscphelperlib.h"
 
 // If TEST_RECEIVE_LOOP is uncommented the rcvloop commands
 // will be tested. Must send five events externally to test
@@ -21,7 +21,6 @@
 //#define TEST_MEASUREMENT
 
 int error_cnt = 0;
-
 
 int main(int argc, char* argv[])
 {
