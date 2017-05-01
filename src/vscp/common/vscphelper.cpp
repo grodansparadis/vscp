@@ -125,7 +125,7 @@ int vscp_bigEndian( void )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// vhlp_lowercase
+// vscp_lowercase
 //
 
 int vscp_lowercase(const char *s) 
@@ -135,7 +135,7 @@ int vscp_lowercase(const char *s)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// vhlp_strcasecmp
+// vscp_strcasecmp
 //
 
 int vscp_strcasecmp(const char *s1, const char *s2) 
@@ -150,7 +150,7 @@ int vscp_strcasecmp(const char *s1, const char *s2)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// vhlp_strncasecmp
+// vscp_strncasecmp
 //
 
 int vscp_strncasecmp(const char *s1, const char *s2, size_t len) 
@@ -168,7 +168,7 @@ int vscp_strncasecmp(const char *s1, const char *s2, size_t len)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// vhlp_bin2str
+// vscp_bin2str
 //
 
 void vscp_bin2str(char *to, const unsigned char *p, size_t len  ) 

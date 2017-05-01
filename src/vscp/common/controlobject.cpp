@@ -117,8 +117,8 @@
 #endif
 
 #include <sqlite3.h>
-#include <mongoose.h>
-#include <v7.h>
+//#include <mongoose.h>
+//#include <v7.h>
 
 #include "canal_macro.h"
 #include <vscp.h>
@@ -174,13 +174,13 @@ WSADATA wsaData;                            // WSA functions
 #endif
 
 // Forward declares
-
+//char *cs_md5(char buf[33], ...);
 
 // Prototypes
 
 // Fix for missing cs_md5 in last mongoose/v7
 // Should be removed later TODO
-
+/*
 char *cs_md5(char buf[33], ...) 
 {
   unsigned char hash[16];
@@ -202,7 +202,7 @@ char *cs_md5(char buf[33], ...)
 
   return buf;
 }
-
+*/
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction

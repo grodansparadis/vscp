@@ -840,8 +840,7 @@ bool CUserList::loadUsers( void )
             
             // Note
             p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_USER_NOTE );
-            if ( NULL != p ) {
-                
+            if ( NULL != p ) {                
                 pItem->setNote( (const char *)p );
             }
             
