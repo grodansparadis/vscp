@@ -38,7 +38,7 @@
 randPassword::randPassword( unsigned char type )
 {
     memset( m_pool, 0, sizeof( m_pool ) );
-    generatePool( type, m_pool );
+    generatePool( type, m_pool ); 
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -56,11 +56,13 @@ randPassword::~randPassword()
 
 void randPassword::generatePassword( unsigned char length, char *pPassword )
 {
-    memset( pPassword, 0, length + 1 );
-    srand( (unsigned)time( NULL ) );
-    while( strlen( pPassword ) < length ) {  
-        pPassword[ strlen( pPassword ) ] = m_pool[ rand() % strlen( m_pool ) ];  
-        pPassword[ strlen( pPassword ) ] = 0;
+    static int seed = 8;
+    int len = strlen( m_pool );
+    int cnt = 0;
+    memset( pPassword, 0, length );
+    srand( (unsigned)time( NULL ) + seed++ );
+    while( cnt < length ) {  
+        pPassword[ cnt++ ] = m_pool[ rand() % strlen( m_pool ) ];  
     } 
 }
 
@@ -72,44 +74,44 @@ void randPassword::generatePassword( unsigned char length, char *pPassword )
 char *randPassword::generatePool( unsigned char type, char *pstr )  
 {  
     int i;
-    char buf[ 256 ];
-
-    memset( buf, 0, sizeof( buf ) );
-
+    int cnt = 0;
+    
     switch ( type ) { 
-
-        case 1:     // a - z
-            for ( i = 0x61; i <= 0x7A; i++ )  {  
-                pstr[ strlen( pstr ) ] = (char)i;  
-            }  
-            break;
-
-        case 2:     // A - Z   
-            for (i = 0x41; i <= 0x5A; i++ ) {  
-                pstr[ strlen( pstr ) ] = (char)i;  
-            }  
-            break;
-
-        case 3:     // a - z and A - Z      
-            strcat( pstr, generatePool( 1, buf ) );  
-            strcat( pstr, generatePool( 2, buf ) );  
-            break;
-
-        case 4:     // 0 - 9, A - Z and a - z 
-            strcat( pstr, generatePool ( 3, buf ) );    // get chars a - z and A - Z first  
-            for (i = 0x30; i <= 0x39; i++ ) {  
-                pstr[ strlen( pstr ) ] = (char)i; // add chars 0 - 9;  
-            }  
-            break;  
-                        
+        
         case 5:  
             // This will add these chars into the string !#$%&() 
-            strcat( pstr, generatePool( 4, buf ) );  
             for ( i = 0x21; i < 0x29; i++ ) {  
                 if ( i == 0x22 || i == 0x27) continue;  // Exclude characters " and '  
-                pstr[ strlen( pstr ) ] = (char)i;  
+                pstr[ cnt++ ] = (char)i;  
             }  
-            break;  
+            
+            // Fall trough 
+            
+        case 4:     // 0 - 9, A - Z and a - z 
+    
+            for (i = 0x30; i <= 0x39; i++ ) {  
+                pstr[ cnt++  ] = (char)i;       // add chars 0 - 9;  
+            }  
+            
+            // Fall trough 
+                
+        case 3:     // a - z and A - Z      
+            
+            // Fall trough 
+            
+        case 2:     // A - Z   
+            for (i = 0x41; i <= 0x5A; i++ ) {  
+                pstr[ cnt++  ] = (char)i;  
+            }  
+                
+            // Fall trough 
+            
+        default:    
+        case 1:     // a - z
+            for ( i = 0x61; i <= 0x7A; i++ )  {  
+                pstr[ cnt++  ] = (char)i;  
+            }  
+            break;    
 
     } 
 

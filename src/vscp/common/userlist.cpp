@@ -54,6 +54,10 @@
 #include "userlist.h"
 
 
+// Forward declarations
+void vscp_md5( char *digest, const unsigned char *buf, size_t len );
+
+
 ///////////////////////////////////////////////////
 //                 GLOBALS
 ///////////////////////////////////////////////////
@@ -925,8 +929,9 @@ bool CUserList::addUser( const wxString& user,
     strncpy( buf, (const char *)driverhash.mbc_str(), driverhash.Length() );
 
     char digest[33];
-    memset( digest, 0, sizeof( digest ) );
-    cs_md5( digest, buf, strlen(buf), NULL );
+    vscp_md5( digest, (const unsigned char *)buf, strlen( buf ) );
+    //memset( digest, 0, sizeof( digest ) );
+    //cs_md5( digest, buf, strlen(buf), NULL );
 
     pItem->setPasswordDomain( wxString::FromUTF8( digest ) );  
 

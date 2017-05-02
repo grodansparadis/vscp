@@ -119,7 +119,7 @@
 
 #include <sqlite3.h>
 #include <mongoose.h>
-//#include <v7.h>
+#include <v7.h>
 
 #include "canal_macro.h"
 #include <vscp.h>
@@ -179,31 +179,19 @@ WSADATA wsaData;                            // WSA functions
 
 // Prototypes
 
-// Fix for missing cs_md5 in last mongoose/v7
-// Should be removed later TODO
 
-/*char *mongoose_md5(char buf[33], ...) 
+void vscp_md5( char *digest, const unsigned char *buf, size_t len ) 
 {
-  unsigned char hash[16];
-  const unsigned char *p;
-  va_list ap;
-  MD5_CTX ctx;
+    unsigned char hash[16];
+  
+    MD5_CTX ctx;
 
-  MD5_Init(&ctx);
-
-  va_start(ap, buf);
-  while ((p = va_arg(ap, const unsigned char *) ) != NULL) {
-    size_t len = va_arg(ap, size_t);
-    MD5_Update(&ctx, p, len);
-  }
-  va_end(ap);
-
-  MD5_Final(hash, &ctx);
-  cs_to_hex(buf, hash, sizeof(hash));
-
-  return buf;
+    MD5_Init( &ctx );
+    MD5_Update( &ctx, buf, len );
+    MD5_Final( hash, &ctx );
+    cs_to_hex( digest, hash, sizeof( hash ) );
 }
-*/
+
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -662,6 +650,7 @@ bool CControlObject::searchLogDB( const char * sql, wxString& strResult )
 }
 
 
+
 /////////////////////////////////////////////////////////////////////////////
 // init
 //
@@ -973,20 +962,24 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
                             _("*:*"),                   // All events
                             VSCP_ADD_USER_FLAG_ADMIN ); // Not in DB
     
+    
     //==========================================================================
     //                           Add driver user
     //==========================================================================
     
     // Generate username and password for drivers
-    char buf[ 512 ];
-    randPassword pw(3);
+    char buf[128];
+    randPassword pw;
 
     // Level II Driver Username
-    pw.generatePassword(32, buf);
-    m_driverUsername = _("drv_") + wxString::FromAscii(buf);
+    memset( buf, 0, sizeof( buf ) );
+    pw.generatePassword( 32, buf );
+    m_driverUsername = _("drv_");
+    m_driverUsername += wxString::FromAscii( buf );
 
     // Level II Driver Password
-    pw.generatePassword(32, buf);
+    memset( buf, 0, sizeof( buf ) );
+    pw.generatePassword( 32, buf );
     m_driverPassword = wxString::FromAscii( buf );
 
     wxString driverhash = m_driverUsername;
@@ -995,16 +988,16 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     driverhash += _(":");
     driverhash += m_driverPassword;
 
-    memset( buf, 0, sizeof( buf ) );
-    strncpy( buf,(const char *)driverhash.mbc_str(), driverhash.Length() );
-
+    /*strncpy( buf, (const char *)driverhash.mbc_str(), driverhash.Length() );
+    //strcpy( buf, "0123456789012345678901234567890123456789");
+    
     char digest[33];
-    memset( digest, 0, sizeof( digest ) );
-    static const size_t len_buf = strlen( buf );
-    cs_md5( digest, buf, len_buf, NULL );
+    vscp_md5( digest, (const unsigned char *)buf, strlen( buf ) );
+    //cs_md5( digest, buf, strlen(buf), NULL );
+    */
 
     m_userList.addUser( m_driverUsername,
-                            /*wxString::FromUTF8( digest )*/ m_driverPassword,
+                            m_driverPassword,
                             _("System added driver user."), // full name
                             _("System added driver user."), // note
                             NULL,

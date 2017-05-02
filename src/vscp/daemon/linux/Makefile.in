@@ -14,7 +14,8 @@ CXX = @CXX@
 CFLAGS = @CFLAGS@ -D MG_ENABLE_THREADS  -D MG_ENABLE_MQTT_BROKER -D MG_ENABLE_COAP -I../../common -I../../../common
 CXXFLAGS = @CXXFLAGS@ 
 CPPFLAGS = @CPPFLAGS@ -fno-var-tracking-assignments -D MG_ENABLE_THREADS  -D MG_ENABLE_MQTT_BROKER -D MG_ENABLE_COAP -I../../common -I../../../common
-MONGOOSE_CFLAGS = -D EXCLUDE_COMMON -DV7_ENABLE_JS_GETTERS -DV7_ENABLE_JS_SETTERS -DV7_BUILD_PROFILE=3 -D V7_ENABLE_CRYPTO -D V7_ENABLE_FILE -DV7_ENABLE_SOCKET
+MONGOOSE_CFLAGS = -D EXCLUDE_COMMON
+V7_CFLAGS = -DV7_ENABLE_JS_GETTERS -DV7_ENABLE_JS_SETTERS -DV7_BUILD_PROFILE=3 -D V7_ENABLE_CRYPTO -D V7_ENABLE_FILE -DV7_ENABLE_SOCKET
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
 STRIP = strip
@@ -75,7 +76,7 @@ VSCPD_SPECIALS = vscphelper.o \
 	randpassword.o \
 	frozen.o  \
 	v7.o  \
-	mongoose.o\
+	mongoose.o \
 	sqlite3.o \
 	sqlite3math.o\
 
@@ -139,10 +140,10 @@ randpassword.o: ../../../common/randpassword.o ../../../common/randpassword.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../common/randpassword.cpp -o $@
 
 mongoose.o: ../../../common/mongoose.o ../../../common/mongoose.h
-	$(CC) $(CFLAGS) -D EXCLUDE_COMMON -c ../../../common/mongoose.c -o $@  
+	$(CC) $(CFLAGS) $(MONGOOSE_CFLAGS) -c ../../../common/mongoose.c -o $@  
 
 v7.o: ../../../common/v7.o ../../../common/v7.h
-	$(CC) $(CFLAGS) -c ../../../common/v7.c -o $@
+	$(CC) $(CFLAGS) $(V7_CFLAGS) -c ../../../common/v7.c -o $@
 
 frozen.o: ../../../common/frozen.o ../../../common/frozen.h
 	$(CC) $(CFLAGS) -c ../../../common/frozen.c -o $@

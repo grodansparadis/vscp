@@ -10659,7 +10659,7 @@ static void byteReverse(unsigned char *buf, unsigned longs) {
  * Start MD5 accumulation.  Set bit count to 0 and buffer to mysterious
  * initialization constants.
  */
-void cs_md5_init(cs_md5_ctx *ctx) {
+void cs_md5_init(cs_md5_ctx *ctx) { 
   ctx->buf[0] = 0x67452301;
   ctx->buf[1] = 0xefcdab89;
   ctx->buf[2] = 0x98badcfe;
