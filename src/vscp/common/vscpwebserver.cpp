@@ -342,29 +342,6 @@ static void vscp_mkmd5resp( const char *method, size_t method_len, const char *u
                         size_t nc_len, const char *cnonce, size_t cnonce_len,
                         const char *qop, size_t qop_len, char *resp )
 {
-    /*static const char colon[] = ":";
-    static const size_t one = 1;
-    static const size_t len_32 = 32;
-    char ha2[33];
-
-    cs_md5( ha2, 
-                method, method_len, 
-                colon, one, 
-                uri, uri_len, 
-                NULL);
-    cs_md5( resp, 
-                ha1, ha1_len, 
-                colon, one, 
-                nonce, nonce_len, 
-                colon, one, 
-                nc, nc_len, 
-                colon, one, 
-                cnonce, cnonce_len, 
-                colon, one, 
-                qop, qop_len,
-                colon, one, 
-                ha2, len_32, 
-                NULL );*/
     char ha2[33];
     unsigned char hash[16]; 
     MD5_CTX ctx;
@@ -428,30 +405,6 @@ static int vscp_is_authorized( struct mg_connection *conn,
         // Check if user is valid
         pUserItem = pObject->m_userList.getUser( wxString::FromAscii( user ) );
         if ( NULL == pUserItem ) return 0;
-
-        /*
-            Fix when moongose (6.0) misbehaved)
-            Does not work on windows
-
-        socklen_t len;
-        struct sockaddr_storage addr;
-        char ipstr[INET6_ADDRSTRLEN];
-        int port;
-
-         * len = sizeof addr;
-        getpeername( conn->sock, (struct sockaddr*)&addr, &len);
-
-        // deal with both IPv4 and IPv6:
-        if (addr.ss_family == AF_INET) {
-            struct sockaddr_in *s = (struct sockaddr_in *)&addr;
-            port = ntohs(s->sin_port);
-            inet_ntop(AF_INET, &s->sin_addr, ipstr, sizeof ipstr);
-        }
-        else { // AF_INET6
-            struct sockaddr_in6 *s = (struct sockaddr_in6 *)&addr;
-            port = ntohs(s->sin6_port);
-            inet_ntop(AF_INET6, &s->sin6_addr, ipstr, sizeof ipstr);
-        }*/
 
         // Check if remote ip is valid
         pObject->m_mutexUserList.Lock();
@@ -1410,15 +1363,6 @@ VSCPWebServerThread::websrv_check_password( const char *method,
     }
 #endif
 
-    /*static const char colon[] = ":";
-    static const size_t one = 1;        // !!!!! Length must be size_t  !!!!!
-    static const size_t len_32 = 32;    // !!!!! Length must be size_t  !!!!!
-
-    cs_md5( ha2,
-                method, strlen( method ),
-                colon, one,
-                uri, strlen( uri ),
-                NULL );*/
     MD5_CTX ctx;
     unsigned char hash[16];
 

@@ -930,8 +930,6 @@ bool CUserList::addUser( const wxString& user,
 
     char digest[33];
     vscp_md5( digest, (const unsigned char *)buf, strlen( buf ) );
-    //memset( digest, 0, sizeof( digest ) );
-    //cs_md5( digest, buf, strlen(buf), NULL );
 
     pItem->setPasswordDomain( wxString::FromUTF8( digest ) );  
 

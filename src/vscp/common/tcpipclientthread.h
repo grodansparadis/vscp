@@ -642,11 +642,6 @@ public:
     bool m_bQuit;
     
 
-    /*!
-        Pointer to ower owner
-    */
-    CControlObject *m_pCtrlObject;
-
 };
 
 

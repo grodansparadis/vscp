@@ -71,7 +71,6 @@ VSCPClientThread::VSCPClientThread()
     : wxThread(wxTHREAD_JOINABLE)
 {
     m_bQuit = false;
-    m_pCtrlObject = NULL;
 }
 
 
@@ -88,15 +87,14 @@ VSCPClientThread::~VSCPClientThread()
 void *VSCPClientThread::Entry()
 {
     // Check pointers
-    if ( NULL == m_pCtrlObject ) return NULL;
+    if ( NULL == gpobj ) return NULL;
 
-    mg_mgr_init( &m_pCtrlObject->m_mgrTcpIpServer, m_pCtrlObject );
+    mg_mgr_init( &gpobj->m_mgrTcpIpServer, gpobj );
 
     // Construct bind interface address
     //[PROTO://][IP_ADDRESS]:PORT where host part is optional
-    m_pCtrlObject->m_strTcpInterfaceAddress.Trim(true);
-    m_pCtrlObject->m_strTcpInterfaceAddress.Trim(false);
-    wxStringTokenizer tkz( m_pCtrlObject->m_strTcpInterfaceAddress, _(" ") );
+    
+    wxStringTokenizer tkz( gpobj->m_strTcpInterfaceAddress, _(" ") );
     while ( tkz.HasMoreTokens() ) {
 
         wxString str = tkz.GetNextToken();
@@ -105,23 +103,23 @@ void *VSCPClientThread::Entry()
         if ( 0 == str.Length() ) continue;
 
         // Bind to this interface
-        mg_bind( &m_pCtrlObject->m_mgrTcpIpServer,
+        mg_bind( &gpobj->m_mgrTcpIpServer,
                     (const char *)str.mbc_str(),
                     VSCPClientThread::ev_handler );
 
     }
 
-    m_pCtrlObject->logMsg(_T("TCP Client: Thread started.\n") );
+    gpobj->logMsg(_T("TCP Client: Thread started.\n") );
 
     while ( !TestDestroy() && !m_bQuit ) {
-        mg_mgr_poll( &m_pCtrlObject->m_mgrTcpIpServer, 50 );
+        mg_mgr_poll( &gpobj->m_mgrTcpIpServer, 50 );
         Yield();
     }
 
     // release the server
-    mg_mgr_free( &m_pCtrlObject->m_mgrTcpIpServer );
+    mg_mgr_free( &gpobj->m_mgrTcpIpServer );
 
-    m_pCtrlObject->logMsg( _T( "TCP ClientThread: Quit.\n" )  );
+    gpobj->logMsg( _T( "TCP ClientThread: Quit.\n" )  );
 
     return NULL;
 }
@@ -976,7 +974,7 @@ void VSCPClientThread::handleClientMeasurment( struct mg_connection *conn,
 
         wxstr.MakeUpper();
 
-        if ( m_pCtrlObject->m_VSCP_Variables.find( wxstr, variable  ) ) {
+        if ( gpobj->m_VSCP_Variables.find( wxstr, variable  ) ) {
             mg_send( conn, MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
             return;
         }
@@ -1408,7 +1406,7 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn,
             nameVariable = str.Right( str.Length() - 1 );
             nameVariable.MakeUpper();
 
-            if ( m_pCtrlObject->m_VSCP_Variables.find( nameVariable, variable  ) ) {
+            if ( gpobj->m_VSCP_Variables.find( nameVariable, variable  ) ) {
                 mg_send( conn, MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
                 return;
             }
@@ -1584,7 +1582,7 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn,
     }
     
     // send event
-    if ( !m_pCtrlObject->sendEvent( pClientItem, &event ) ) {
+    if ( !gpobj->sendEvent( pClientItem, &event ) ) {
         mg_send( conn,  MSG_BUFFER_FULL, strlen ( MSG_BUFFER_FULL ) );
         return;
     }
@@ -1631,15 +1629,15 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn,
                     destguid.getAt(11),destguid.getAt(10),destguid.getAt(9),destguid.getAt(8),
                     destguid.getAt(7),destguid.getAt(6),destguid.getAt(5),destguid.getAt(4),
                     destguid.getAt(3),destguid.getAt(2),destguid.getAt(1),destguid.getAt(0) );
-                    m_pCtrlObject->logMsg( dbgStr, DAEMON_LOGMSG_DEBUG );
+                    gpobj->logMsg( dbgStr, DAEMON_LOGMSG_DEBUG );
 
             // Find client
-            m_pCtrlObject->m_wxClientMutex.Lock();
+            gpobj->m_wxClientMutex.Lock();
 
             CClientItem *pDestClientItem = NULL;
             VSCPCLIENTLIST::iterator iter;
-            for (iter = m_pCtrlObject->m_clientList.m_clientItemList.begin();
-                    iter != m_pCtrlObject->m_clientList.m_clientItemList.end();
+            for (iter = gpobj->m_clientList.m_clientItemList.begin();
+                    iter != gpobj->m_clientList.m_clientItemList.end();
                     ++iter) {
 
                 CClientItem *pItem = *iter;
@@ -1651,21 +1649,21 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn,
                     pItem->m_guid.getAt(3),pItem->m_guid.getAt(2),pItem->m_guid.getAt(1),pItem->m_guid.getAt(0) );
                     dbgStr += _(" ");
                     dbgStr += pItem->m_strDeviceName;
-                    m_pCtrlObject->logMsg( dbgStr, DAEMON_LOGMSG_DEBUG );
+                    gpobj->logMsg( dbgStr, DAEMON_LOGMSG_DEBUG );
 
                     if ( pItem->m_guid == destguid ) {
                         // Found
                         pDestClientItem = pItem;
                         bSent = true;
                         dbgStr = _("Match ");
-                        m_pCtrlObject->logMsg( dbgStr, DAEMON_LOGMSG_DEBUG );
-                        m_pCtrlObject->sendEventToClient( pItem, pEvent );
+                        gpobj->logMsg( dbgStr, DAEMON_LOGMSG_DEBUG );
+                        gpobj->sendEventToClient( pItem, pEvent );
                         break;
                     }
 
                 }
 
-                m_pCtrlObject->m_wxClientMutex.Unlock();
+                gpobj->m_wxClientMutex.Unlock();
 
         }
 
@@ -1673,13 +1671,13 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn,
         if ( !bSent ) {
 
             // There must be room in the send queue
-            if ( m_pCtrlObject->m_maxItemsInClientReceiveQueue >
-                m_pCtrlObject->m_clientOutputQueue.GetCount() ) {
+            if ( gpobj->m_maxItemsInClientReceiveQueue >
+                gpobj->m_clientOutputQueue.GetCount() ) {
 
-                    m_pCtrlObject->m_mutexClientOutputQueue.Lock();
-                    m_pCtrlObject->m_clientOutputQueue.Append ( pEvent );
-                    m_pCtrlObject->m_semClientOutputQueue.Post();
-                    m_pCtrlObject->m_mutexClientOutputQueue.Unlock();
+                    gpobj->m_mutexClientOutputQueue.Lock();
+                    gpobj->m_clientOutputQueue.Append ( pEvent );
+                    gpobj->m_semClientOutputQueue.Post();
+                    gpobj->m_mutexClientOutputQueue.Unlock();
 
                     // TX Statistics
                     pClientItem->m_statistics.cntTransmitData += pEvent->sizeData;
@@ -1781,7 +1779,7 @@ bool VSCPClientThread::sendOneEventFromQueue( struct mg_connection *conn,
         vscp_deleteVSCPevent( pqueueEvent );
 
         // Let the system work a little
-        //ns_mgr_poll( &m_pCtrlObject->m_mgrTcpIpServer, 1 );
+        //ns_mgr_poll( &gpobj->m_mgrTcpIpServer, 1 );
     }
     else {
         if ( bStatusMsg ) {
@@ -2196,14 +2194,14 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn,
         return false;
     }
 
-    m_pCtrlObject->m_mutexUserList.Lock();
+    gpobj->m_mutexUserList.Lock();
 #if  0
     ::wxLogDebug( _("Username: ") + m_UserName );
     ::wxLogDebug( _("Password: ") + strPassword );
     ::wxLogDebug( _("MD5 of Password: ") + md5Password );
 #endif
-    pClientItem->m_pUserItem = m_pCtrlObject->m_userList.validateUser( pClientItem->m_UserName, strPassword );
-    m_pCtrlObject->m_mutexUserList.Unlock();
+    pClientItem->m_pUserItem = gpobj->m_userList.validateUser( pClientItem->m_UserName, strPassword );
+    gpobj->m_mutexUserList.Unlock();
 
     if ( NULL == pClientItem->m_pUserItem ) {
 
@@ -2224,10 +2222,10 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn,
     wxString remoteaddr = wxString::FromAscii( inet_ntoa( cli_addr.sin_addr ) );
 
     // Check if this user is allowed to connect from this location
-    m_pCtrlObject->m_mutexUserList.Lock();
+    gpobj->m_mutexUserList.Lock();
     bool bValidHost =
             pClientItem->m_pUserItem->isAllowedToConnect( remoteaddr );
-    m_pCtrlObject->m_mutexUserList.Unlock();
+    gpobj->m_mutexUserList.Unlock();
 
     if ( !bValidHost ) {
         wxString strErr = wxString::Format(_("[TCP/IP Client] Host [%s] not allowed to connect.\n"),
@@ -2311,7 +2309,7 @@ void VSCPClientThread::handleClientRcvLoop( struct mg_connection *conn,
         }
         
         // We must handle the polling here while in the loop
-        mg_mgr_poll( &m_pCtrlObject->m_mgrTcpIpServer, 50 );
+        mg_mgr_poll( &gpobj->m_mgrTcpIpServer, 50 );
 
 
     } // While 
@@ -2722,7 +2720,7 @@ void VSCPClientThread::handleClientShutdown ( struct mg_connection *conn,
 
     mg_send( conn,  MSG_GOODBY, strlen ( MSG_GOODBY ) );
     conn->flags |= MG_F_CLOSE_IMMEDIATELY;
-    //m_pCtrlObject->m_bQuit = true;
+    //gpobj->m_bQuit = true;
     //m_bRun = false;
 }
 
@@ -2764,7 +2762,7 @@ void VSCPClientThread::handleClientInterface( struct mg_connection *conn,
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    m_pCtrlObject->logMsg ( pClientItem->m_currentCommand, DAEMON_LOGMSG_NORMAL );
+    gpobj->logMsg ( pClientItem->m_currentCommand, DAEMON_LOGMSG_NORMAL );
 
     if ( pClientItem->m_currentCommand.StartsWith( _("LIST"),
                                                    &pClientItem->m_currentCommand ) ||
@@ -2803,10 +2801,10 @@ void VSCPClientThread::handleClientInterface_List( struct mg_connection *conn,
     wxString strBuf;
 
     // Display Interface List
-    m_pCtrlObject->m_wxClientMutex.Lock();
+    gpobj->m_wxClientMutex.Lock();
     VSCPCLIENTLIST::iterator iter;
-    for (iter = m_pCtrlObject->m_clientList.m_clientItemList.begin();
-        iter != m_pCtrlObject->m_clientList.m_clientItemList.end();
+    for (iter = gpobj->m_clientList.m_clientItemList.begin();
+        iter != gpobj->m_clientList.m_clientItemList.end();
         ++iter) {
 
             CClientItem *pItem = *iter;
@@ -2826,7 +2824,7 @@ void VSCPClientThread::handleClientInterface_List( struct mg_connection *conn,
 
     mg_send( conn, MSG_OK, strlen ( MSG_OK ) );
 
-    m_pCtrlObject->m_wxClientMutex.Unlock();
+    gpobj->m_wxClientMutex.Unlock();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5822,7 +5820,7 @@ void VSCPClientThread::handleVariable_List( struct mg_connection *conn,
     }
 
     wxArrayString arrayVars;
-    m_pCtrlObject->m_VSCP_Variables.getVarlistFromRegExp( arrayVars, strSearch );
+    gpobj->m_VSCP_Variables.getVarlistFromRegExp( arrayVars, strSearch );
     
     if ( arrayVars.Count() ) {
         
@@ -5831,7 +5829,7 @@ void VSCPClientThread::handleVariable_List( struct mg_connection *conn,
     
         int cnt = 0;
         for ( int i=0; i<arrayVars.Count(); i++ ) {
-            if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( arrayVars[ i ], variable ) ) {
+            if ( 0 != gpobj->m_VSCP_Variables.find( arrayVars[ i ], variable ) ) {
                 if ( ( 0 == type ) || ( variable.getType() == type ) ) {
                     wxstr = wxString::Format( _("%d;"), cnt );
                     wxstr += variable.getAsString();
@@ -5879,10 +5877,10 @@ void VSCPClientThread::handleVariable_Write( struct mg_connection *conn,
         return;
     }
     
-    if ( m_pCtrlObject->m_VSCP_Variables.exist( variable.getName() ) ) {
+    if ( gpobj->m_VSCP_Variables.exist( variable.getName() ) ) {
         
         // Update in database
-        if ( !m_pCtrlObject->m_VSCP_Variables.update( variable ) ) {
+        if ( !gpobj->m_VSCP_Variables.update( variable ) ) {
             mg_send( conn, MSG_VARIABLE_NO_SAVE, strlen ( MSG_VARIABLE_NO_SAVE ) );
             return;
         }
@@ -5892,7 +5890,7 @@ void VSCPClientThread::handleVariable_Write( struct mg_connection *conn,
        
         // If the variable exist change value 
         // if not - add it.
-        if ( !m_pCtrlObject->m_VSCP_Variables.add( variable ) ) {
+        if ( !gpobj->m_VSCP_Variables.add( variable ) ) {
             mg_send( conn, MSG_VARIABLE_UNABLE_ADD, strlen ( MSG_VARIABLE_UNABLE_ADD ) );
             return;
         }
@@ -5939,13 +5937,13 @@ void VSCPClientThread::handleVariable_WriteValue( struct mg_connection *conn,
     }
 
     CVSCPVariable variable;
-    if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( name, variable ) ) {
+    if ( 0 != gpobj->m_VSCP_Variables.find( name, variable ) ) {
         
         // Set value and encode as BASE64 when expected
         variable.setValueFromString( variable.getType(), value, false );
         
         // Update in database
-        if ( !m_pCtrlObject->m_VSCP_Variables.update( variable ) ) {
+        if ( !gpobj->m_VSCP_Variables.update( variable ) ) {
             mg_send( conn, MSG_VARIABLE_NO_SAVE, strlen ( MSG_VARIABLE_NO_SAVE ) );
             return;
         }
@@ -5997,13 +5995,13 @@ void VSCPClientThread::handleVariable_WriteNote( struct mg_connection *conn,
     }
 
     CVSCPVariable variable;
-    if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( name, variable ) ) {
+    if ( 0 != gpobj->m_VSCP_Variables.find( name, variable ) ) {
         
         // Set value and encode as BASE64 when expected
         variable.setNote( note, true );
         
         // Update in database
-        if ( !m_pCtrlObject->m_VSCP_Variables.update( variable ) ) {
+        if ( !gpobj->m_VSCP_Variables.update( variable ) ) {
             mg_send( conn, MSG_VARIABLE_NO_SAVE, strlen ( MSG_VARIABLE_NO_SAVE ) );
             return;
         }
@@ -6031,7 +6029,7 @@ void VSCPClientThread::handleVariable_Read( struct mg_connection *conn,
     pClientItem->m_currentCommand.Trim(true);
 
     CVSCPVariable variable;
-    if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommand,variable ) ) {
+    if ( 0 != gpobj->m_VSCP_Variables.find( pClientItem->m_currentCommand,variable ) ) {
         
         str = variable.getAsString( false );
         str = _("+OK - ") + str + _("\r\n");
@@ -6061,7 +6059,7 @@ void VSCPClientThread::handleVariable_ReadValue( struct mg_connection *conn,
     pClientItem->m_currentCommand.Trim(true);
 
     CVSCPVariable variable;
-    if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommand, variable ) ) {
+    if ( 0 != gpobj->m_VSCP_Variables.find( pClientItem->m_currentCommand, variable ) ) {
         
         variable.writeValueToString( str );
         str += _("\r\n");
@@ -6090,7 +6088,7 @@ void VSCPClientThread::handleVariable_ReadNote( struct mg_connection *conn,
     pClientItem->m_currentCommand.Trim(true);
 
     CVSCPVariable variable;
-    if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommand,variable ) ) {
+    if ( 0 != gpobj->m_VSCP_Variables.find( pClientItem->m_currentCommand,variable ) ) {
         
         str = variable.getNote();
         str = _("+OK - ") + str + _("\r\n");
@@ -6119,12 +6117,12 @@ void VSCPClientThread::handleVariable_Reset( struct mg_connection *conn,
 
     CVSCPVariable variable;
     
-    if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommand, variable ) ) {
+    if ( 0 != gpobj->m_VSCP_Variables.find( pClientItem->m_currentCommand, variable ) ) {
         
         variable.Reset();
         
         // Update in database
-        if ( !m_pCtrlObject->m_VSCP_Variables.update( variable ) ) {
+        if ( !gpobj->m_VSCP_Variables.update( variable ) ) {
             mg_send( conn, MSG_VARIABLE_NO_SAVE, strlen ( MSG_VARIABLE_NO_SAVE ) );
             return;
         }
@@ -6158,7 +6156,7 @@ void VSCPClientThread::handleVariable_ReadReset( struct mg_connection *conn,
 
     CVSCPVariable variable;
     
-    if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommand, variable ) ) {
+    if ( 0 != gpobj->m_VSCP_Variables.find( pClientItem->m_currentCommand, variable ) ) {
         
         variable.writeValueToString( str );
         str = _("+OK - ") + str + _("\r\n");
@@ -6167,7 +6165,7 @@ void VSCPClientThread::handleVariable_ReadReset( struct mg_connection *conn,
         variable.Reset();
         
         // Update in database
-        if ( !m_pCtrlObject->m_VSCP_Variables.update( variable ) ) {
+        if ( !gpobj->m_VSCP_Variables.update( variable ) ) {
             mg_send( conn, MSG_VARIABLE_NO_SAVE, strlen ( MSG_VARIABLE_NO_SAVE ) );
             return;
         }
@@ -6200,7 +6198,7 @@ void VSCPClientThread::handleVariable_Remove( struct mg_connection *conn,
         return;
     }
     
-    if ( !m_pCtrlObject->m_VSCP_Variables.remove( pClientItem->m_currentCommand ) ) {
+    if ( !gpobj->m_VSCP_Variables.remove( pClientItem->m_currentCommand ) ) {
         mg_send( conn, MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );        
     }
 
@@ -6228,13 +6226,13 @@ void VSCPClientThread::handleVariable_ReadRemove( struct mg_connection *conn,
     }
 
     CVSCPVariable variable;
-    if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommand, variable ) ) {
+    if ( 0 != gpobj->m_VSCP_Variables.find( pClientItem->m_currentCommand, variable ) ) {
         
         variable.writeValueToString( str );
         str = _("+OK - ") + str + _("\r\n");
         mg_send( conn,  str.mbc_str(), strlen( str.mbc_str() ) );
     
-        m_pCtrlObject->m_VSCP_Variables.remove( variable );
+        gpobj->m_VSCP_Variables.remove( variable );
         
     }
     else {
@@ -6258,13 +6256,13 @@ void VSCPClientThread::handleVariable_Length( struct mg_connection *conn,
     pClientItem->m_currentCommand.Trim(true);
 
     CVSCPVariable variable;
-    if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( pClientItem->m_currentCommand, variable ) ) {
+    if ( 0 != gpobj->m_VSCP_Variables.find( pClientItem->m_currentCommand, variable ) ) {
         
         str = wxString::Format( _("%zu"), variable.getLength() );
         str = _("+OK - ") + str + _("\r\n");
         mg_send( conn,  str.mbc_str(), strlen( str.mbc_str() ) );
     
-        m_pCtrlObject->m_VSCP_Variables.remove( variable );
+        gpobj->m_VSCP_Variables.remove( variable );
         
     }
     else {
@@ -6284,7 +6282,7 @@ void VSCPClientThread::handleVariable_Load( struct mg_connection *conn,
                                                 CControlObject *pCtrlObject )
 {
     wxString path;  // Empty to load from default path
-    m_pCtrlObject->m_VSCP_Variables.loadFromXML( path );  // TODO add path + type
+    gpobj->m_VSCP_Variables.loadFromXML( path );  // TODO add path + type
 
     mg_send( conn, MSG_OK, strlen( MSG_OK ) );
 }
@@ -6305,7 +6303,7 @@ void VSCPClientThread::handleVariable_Save( struct mg_connection *conn,
 
     // Construct path to save to (always relative to root)
     // may not contain ".."
-    path = m_pCtrlObject->m_rootFolder;
+    path = gpobj->m_rootFolder;
     path += pClientItem->m_currentCommand;
     
     if ( wxNOT_FOUND != path.Find( _("..") ) ) {
@@ -6313,7 +6311,7 @@ void VSCPClientThread::handleVariable_Save( struct mg_connection *conn,
         return;
     }
 
-    m_pCtrlObject->m_VSCP_Variables.save( path );
+    gpobj->m_VSCP_Variables.save( path );
 
     mg_send( conn, MSG_OK, strlen( MSG_OK ) );
 }
@@ -6334,7 +6332,7 @@ void VSCPClientThread::handleClientDm( struct mg_connection *conn,
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    m_pCtrlObject->logMsg ( pClientItem->m_currentCommand, DAEMON_LOGMSG_NORMAL );
+    gpobj->logMsg ( pClientItem->m_currentCommand, DAEMON_LOGMSG_NORMAL );
 
     pClientItem->m_currentCommand.Trim(false);
     pClientItem->m_currentCommand.Trim(true);
@@ -6410,16 +6408,16 @@ void VSCPClientThread::handleDM_Enable( struct mg_connection *conn,
          pClientItem->m_currentCommand.StartsWith( _("all"), 
                                                         &pClientItem->m_currentCommand ) )   {
 
-        m_pCtrlObject->m_dm.m_mutexDM.Lock();
+        gpobj->m_dm.m_mutexDM.Lock();
 
         DMLIST::iterator iter;
-        for (iter = m_pCtrlObject->m_dm.m_DMList.begin(); iter != m_pCtrlObject->m_dm.m_DMList.end(); ++iter)
+        for (iter = gpobj->m_dm.m_DMList.begin(); iter != gpobj->m_dm.m_DMList.end(); ++iter)
         {
             dmElement *pDMItem = *iter;
             pDMItem->enableRow();
         }
 
-        m_pCtrlObject->m_dm.m_mutexDM.Unlock();
+        gpobj->m_dm.m_mutexDM.Unlock();
 
     }
     else {
@@ -6427,17 +6425,17 @@ void VSCPClientThread::handleDM_Enable( struct mg_connection *conn,
         // Get the position
         pos = 0;
 
-        m_pCtrlObject->m_dm.m_mutexDM.Lock();
+        gpobj->m_dm.m_mutexDM.Lock();
 
-        if ( pos > ( m_pCtrlObject->m_dm.m_DMList.GetCount() - 1 ) ) {
+        if ( pos > ( gpobj->m_dm.m_DMList.GetCount() - 1 ) ) {
             mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
-            m_pCtrlObject->m_dm.m_mutexDM.Unlock();
+            gpobj->m_dm.m_mutexDM.Unlock();
             return;
         }
 
-        DMLIST::compatibility_iterator node = m_pCtrlObject->m_dm.m_DMList.Item( pos );
+        DMLIST::compatibility_iterator node = gpobj->m_dm.m_DMList.Item( pos );
         ( node->GetData() )->enableRow();
-        m_pCtrlObject->m_dm.m_mutexDM.Unlock();
+        gpobj->m_dm.m_mutexDM.Unlock();
 
     }
 
@@ -6460,17 +6458,17 @@ void VSCPClientThread::handleDM_Disable( struct mg_connection *conn,
          pClientItem->m_currentCommand.StartsWith( _("all"), 
                                                         &pClientItem->m_currentCommand ) )   {
 
-        m_pCtrlObject->m_dm.m_mutexDM.Lock();
+        gpobj->m_dm.m_mutexDM.Lock();
 
         DMLIST::iterator iter;
-        for (iter = m_pCtrlObject->m_dm.m_DMList.begin();
-            iter != m_pCtrlObject->m_dm.m_DMList.end();
+        for (iter = gpobj->m_dm.m_DMList.begin();
+            iter != gpobj->m_dm.m_DMList.end();
             ++iter )
         {
             dmElement *pDMItem = *iter;
             pDMItem->disableRow();
         }
-        m_pCtrlObject->m_dm.m_mutexDM.Unlock();
+        gpobj->m_dm.m_mutexDM.Unlock();
 
     }
     else {
@@ -6481,18 +6479,18 @@ void VSCPClientThread::handleDM_Disable( struct mg_connection *conn,
 
             pos = vscp_readStringValue( tkz.GetNextToken() );
 
-            m_pCtrlObject->m_dm.m_mutexDM.Lock();
+            gpobj->m_dm.m_mutexDM.Lock();
 
-            if ( pos > ( m_pCtrlObject->m_dm.m_DMList.GetCount() - 1 ) ) {
+            if ( pos > ( gpobj->m_dm.m_DMList.GetCount() - 1 ) ) {
                 mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
-                m_pCtrlObject->m_dm.m_mutexDM.Unlock();
+                gpobj->m_dm.m_mutexDM.Unlock();
                 return;
             }
 
-            DMLIST::compatibility_iterator node = m_pCtrlObject->m_dm.m_DMList.Item( pos );
+            DMLIST::compatibility_iterator node = gpobj->m_dm.m_DMList.Item( pos );
             ( node->GetData() )->disableRow();
 
-            m_pCtrlObject->m_dm.m_mutexDM.Unlock();
+            gpobj->m_dm.m_mutexDM.Unlock();
 
         }
 
@@ -6532,11 +6530,11 @@ void VSCPClientThread::handleDM_List( struct mg_connection *conn,
          pClientItem->m_currentCommand.StartsWith( _( "*" ),
                                                         &pClientItem->m_currentCommand   ) )	{
 
-        m_pCtrlObject->m_dm.m_mutexDM.Lock();
+        gpobj->m_dm.m_mutexDM.Lock();
 
         DMLIST::iterator iter;
-        for (iter = m_pCtrlObject->m_dm.m_DMList.begin();
-                iter != m_pCtrlObject->m_dm.m_DMList.end();
+        for (iter = gpobj->m_dm.m_DMList.begin();
+                iter != gpobj->m_dm.m_DMList.end();
                 ++iter) {
 
             dmElement *pDMItem = *iter;
@@ -6547,7 +6545,7 @@ void VSCPClientThread::handleDM_List( struct mg_connection *conn,
 
         }
 
-        m_pCtrlObject->m_dm.m_mutexDM.Unlock();
+        gpobj->m_dm.m_mutexDM.Unlock();
 
     }
     else {
@@ -6609,9 +6607,9 @@ void VSCPClientThread::handleDM_Add( struct mg_connection *conn,
     pDMItem->m_actionparam = tkz.GetNextToken();
 
     // add the DM row to the matrix
-    m_pCtrlObject->m_dm.m_mutexDM.Lock();
-    m_pCtrlObject->m_dm.addMemoryElement ( pDMItem );
-    m_pCtrlObject->m_dm.m_mutexDM.Unlock();
+    gpobj->m_dm.m_mutexDM.Lock();
+    gpobj->m_dm.addMemoryElement ( pDMItem );
+    gpobj->m_dm.m_mutexDM.Unlock();
 
     mg_send( conn, MSG_OK, strlen( MSG_OK ) );
 }
@@ -6631,17 +6629,17 @@ void VSCPClientThread::handleDM_Delete( struct mg_connection *conn,
          pClientItem->m_currentCommand.StartsWith( _("all"), 
                                                         &pClientItem->m_currentCommand ) )   {
 
-        m_pCtrlObject->m_dm.m_mutexDM.Lock();
+        gpobj->m_dm.m_mutexDM.Lock();
 
         DMLIST::iterator iter;
-        for (iter = m_pCtrlObject->m_dm.m_DMList.begin();
-            iter != m_pCtrlObject->m_dm.m_DMList.end();
+        for (iter = gpobj->m_dm.m_DMList.begin();
+            iter != gpobj->m_dm.m_DMList.end();
             ++iter) {
                 dmElement *pDMItem = *iter;
                 delete pDMItem;
         }
-        m_pCtrlObject->m_dm.m_DMList.Clear();
-        m_pCtrlObject->m_dm.m_mutexDM.Unlock();
+        gpobj->m_dm.m_DMList.Clear();
+        gpobj->m_dm.m_mutexDM.Unlock();
 
     }
     else {
@@ -6652,20 +6650,20 @@ void VSCPClientThread::handleDM_Delete( struct mg_connection *conn,
 
             pos = vscp_readStringValue( tkz.GetNextToken() );
 
-            m_pCtrlObject->m_dm.m_mutexDM.Lock();
+            gpobj->m_dm.m_mutexDM.Lock();
 
-            if ( pos > ( m_pCtrlObject->m_dm.m_DMList.GetCount() - 1 ) ) {
+            if ( pos > ( gpobj->m_dm.m_DMList.GetCount() - 1 ) ) {
                 mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
-                m_pCtrlObject->m_dm.m_mutexDM.Unlock();
+                gpobj->m_dm.m_mutexDM.Unlock();
                 return;
             }
 
-            DMLIST::compatibility_iterator node = m_pCtrlObject->m_dm.m_DMList.Item( pos );
+            DMLIST::compatibility_iterator node = gpobj->m_dm.m_DMList.Item( pos );
             dmElement *pDMItem = node->GetData();
-            m_pCtrlObject->m_dm.m_DMList.DeleteNode( node );    // Delete the node
+            gpobj->m_dm.m_DMList.DeleteNode( node );    // Delete the node
             delete pDMItem;                                     // Delete the object
 
-            m_pCtrlObject->m_dm.m_mutexDM.Unlock();
+            gpobj->m_dm.m_mutexDM.Unlock();
 
         }
 
@@ -6680,8 +6678,8 @@ void VSCPClientThread::handleDM_Delete( struct mg_connection *conn,
 
 void VSCPClientThread::handleDM_Reset( struct mg_connection *conn, CControlObject *pCtrlObject  )
 {
-    m_pCtrlObject->stopDaemonWorkerThread();
-    m_pCtrlObject->startDaemonWorkerThread();
+    gpobj->stopDaemonWorkerThread();
+    gpobj->startDaemonWorkerThread();
 
     mg_send( conn, MSG_OK, strlen( MSG_OK ) );
 }
@@ -6702,19 +6700,19 @@ void VSCPClientThread::handleDM_Trigger( struct mg_connection *conn,
 
         pos = vscp_readStringValue( tkz.GetNextToken() );
 
-        m_pCtrlObject->m_dm.m_mutexDM.Lock();
+        gpobj->m_dm.m_mutexDM.Lock();
 
-        if ( pos > ( m_pCtrlObject->m_dm.m_DMList.GetCount() - 1 ) ) {
+        if ( pos > ( gpobj->m_dm.m_DMList.GetCount() - 1 ) ) {
             mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
-            m_pCtrlObject->m_dm.m_mutexDM.Unlock();
+            gpobj->m_dm.m_mutexDM.Unlock();
             return;
         }
 
-        DMLIST::compatibility_iterator node = m_pCtrlObject->m_dm.m_DMList.Item( pos );
+        DMLIST::compatibility_iterator node = gpobj->m_dm.m_DMList.Item( pos );
         dmElement *pDMItem = node->GetData();
         pDMItem->doAction( NULL );
 
-        m_pCtrlObject->m_dm.m_mutexDM.Unlock();
+        gpobj->m_dm.m_mutexDM.Unlock();
 
     }
 
@@ -6737,17 +6735,17 @@ void VSCPClientThread::handleDM_ClearTriggerCount( struct mg_connection *conn,
          pClientItem->m_currentCommand.StartsWith( _("all"), 
                                                         &pClientItem->m_currentCommand ) )	{
 
-        m_pCtrlObject->m_dm.m_mutexDM.Lock();
+        gpobj->m_dm.m_mutexDM.Lock();
 
         DMLIST::iterator iter;
-        for (iter = m_pCtrlObject->m_dm.m_DMList.begin();
-            iter != m_pCtrlObject->m_dm.m_DMList.end();
+        for (iter = gpobj->m_dm.m_DMList.begin();
+            iter != gpobj->m_dm.m_DMList.end();
             ++iter) {
                 dmElement *pDMItem = *iter;
                 pDMItem->m_triggCounter = 0;
         }
 
-        m_pCtrlObject->m_dm.m_mutexDM.Unlock();
+        gpobj->m_dm.m_mutexDM.Unlock();
 
     }
     else {
@@ -6758,20 +6756,20 @@ void VSCPClientThread::handleDM_ClearTriggerCount( struct mg_connection *conn,
 
             pos = vscp_readStringValue( tkz.GetNextToken() );
 
-            m_pCtrlObject->m_dm.m_mutexDM.Lock();
+            gpobj->m_dm.m_mutexDM.Lock();
 
-            if ( pos > ( m_pCtrlObject->m_dm.m_DMList.GetCount() - 1 ) ) {
+            if ( pos > ( gpobj->m_dm.m_DMList.GetCount() - 1 ) ) {
                 mg_send( conn,  MSG_PARAMETER_ERROR,
                     strlen ( MSG_PARAMETER_ERROR ) );
-                m_pCtrlObject->m_dm.m_mutexDM.Unlock();
+                gpobj->m_dm.m_mutexDM.Unlock();
                 return;
             }
 
-            DMLIST::compatibility_iterator node = m_pCtrlObject->m_dm.m_DMList.Item( pos );
+            DMLIST::compatibility_iterator node = gpobj->m_dm.m_DMList.Item( pos );
             dmElement *pDMItem = node->GetData();
             pDMItem->m_triggCounter = 0;
 
-            m_pCtrlObject->m_dm.m_mutexDM.Unlock();
+            gpobj->m_dm.m_mutexDM.Unlock();
 
         }
 
@@ -6796,17 +6794,17 @@ void VSCPClientThread::handleDM_ClearErrorCount( struct mg_connection *conn,
          pClientItem->m_currentCommand.StartsWith( _("all"), 
                                                    &pClientItem->m_currentCommand ) )	{
 
-        m_pCtrlObject->m_dm.m_mutexDM.Lock();
+        gpobj->m_dm.m_mutexDM.Lock();
 
         DMLIST::iterator iter;
-        for (iter = m_pCtrlObject->m_dm.m_DMList.begin();
-            iter != m_pCtrlObject->m_dm.m_DMList.end();
+        for (iter = gpobj->m_dm.m_DMList.begin();
+            iter != gpobj->m_dm.m_DMList.end();
             ++iter) {
                 dmElement *pDMItem = *iter;
                 pDMItem->m_errorCounter = 0;
         }
 
-        m_pCtrlObject->m_dm.m_mutexDM.Unlock();
+        gpobj->m_dm.m_mutexDM.Unlock();
 
     }
     else {
@@ -6817,19 +6815,19 @@ void VSCPClientThread::handleDM_ClearErrorCount( struct mg_connection *conn,
 
             pos = vscp_readStringValue( tkz.GetNextToken() );
 
-            m_pCtrlObject->m_dm.m_mutexDM.Lock();
+            gpobj->m_dm.m_mutexDM.Lock();
 
-            if ( pos > ( m_pCtrlObject->m_dm.m_DMList.GetCount() - 1 ) ) {
+            if ( pos > ( gpobj->m_dm.m_DMList.GetCount() - 1 ) ) {
                 mg_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
-                m_pCtrlObject->m_dm.m_mutexDM.Unlock();
+                gpobj->m_dm.m_mutexDM.Unlock();
                 return;
             }
 
-            DMLIST::compatibility_iterator node = m_pCtrlObject->m_dm.m_DMList.Item( pos );
+            DMLIST::compatibility_iterator node = gpobj->m_dm.m_DMList.Item( pos );
             dmElement *pDMItem = node->GetData();
             pDMItem->m_errorCounter = 0;
 
-            m_pCtrlObject->m_dm.m_mutexDM.Unlock();
+            gpobj->m_dm.m_mutexDM.Unlock();
 
         }
 

@@ -686,9 +686,6 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     ttt.SetMillisecond( 123 );
     unsigned short ms = ttt.GetMillisecond();
     */
-            
-    // Assign to the global control object
-    gpobj = this;
     
     // Save root folder for later use.
     m_rootFolder = rootFolder;
@@ -932,8 +929,6 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     str = _("Using configuration file: ") + strcfgfile + _("\n");
     fprintf( stderr, str.mbc_str() );
 
-       
-
     // Read XML configuration
     if ( !readXMLConfiguration( strcfgfile ) ) {
         fprintf( stderr, "Unable to open/parse configuration file. Can't initialize!\n" );
@@ -980,20 +975,6 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     memset( buf, 0, sizeof( buf ) );
     pw.generatePassword( 32, buf );
     m_driverPassword = wxString::FromAscii( buf );
-
-    wxString driverhash = m_driverUsername;
-    driverhash += _(":");
-    driverhash += wxString::FromUTF8( m_authDomain );
-    driverhash += _(":");
-    driverhash += m_driverPassword;
-
-    /*strncpy( buf, (const char *)driverhash.mbc_str(), driverhash.Length() );
-    //strcpy( buf, "0123456789012345678901234567890123456789");
-    
-    char digest[33];
-    vscp_md5( digest, (const unsigned char *)buf, strlen( buf ) );
-    //cs_md5( digest, buf, strlen(buf), NULL );
-    */
 
     m_userList.addUser( m_driverUsername,
                             m_driverPassword,
@@ -1088,8 +1069,6 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     logMsg(_("Starting VSCP daemon worker thread.\n") );
     startDaemonWorkerThread();
     
-
-
     return true;
 }
 
@@ -1323,7 +1302,7 @@ bool CControlObject::startTcpWorkerThread(void)
     m_pVSCPClientThread = new VSCPClientThread;
 
     if ( NULL != m_pVSCPClientThread ) {
-        m_pVSCPClientThread->m_pCtrlObject = this;
+        
         wxThreadError err;
         if ( wxTHREAD_NO_ERROR == ( err = m_pVSCPClientThread->Create() ) ) {
                 //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
@@ -1334,6 +1313,7 @@ bool CControlObject::startTcpWorkerThread(void)
         else {
             logMsg( _("Unable to create TCP thread.") );
         }
+        
     }
     else {
         logMsg(_("Unable to allocate memory for TCP thread.") );
@@ -2286,6 +2266,8 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                 else if (subchild->GetName() == wxT("tcpip")) {
 
                     m_strTcpInterfaceAddress = subchild->GetAttribute(wxT("interface"), wxT(""));
+                    m_strTcpInterfaceAddress.Trim(true);
+                    m_strTcpInterfaceAddress.Trim(false);
                     
                     updateConfigurationRecordItem( _("vscpd_TcpipInterface_Address"), 
                                                     wxString::Format(_("%s"), 
@@ -3488,6 +3470,8 @@ bool CControlObject::dbReadConfiguration( void )
         if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_TCPIPINTERFACE_PORT ) ) {
             m_strTcpInterfaceAddress = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
                                         VSCPDB_ORDINAL_CONFIG_TCPIPINTERFACE_PORT ) );
+            m_strTcpInterfaceAddress.Trim(true);
+            m_strTcpInterfaceAddress.Trim(false);
         }
         
         // Port for Multicast interface

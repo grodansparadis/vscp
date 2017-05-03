@@ -2098,6 +2098,8 @@ void
 VSCPWebServerThread::websock_post_incomingEvents( void )
 {
     struct mg_connection *nc;
+    
+
 
     // Iterate over all connections, and push current time message to websocket ones.
     for ( nc = mg_next( &gmgr, NULL);
