@@ -984,6 +984,7 @@ void MD5_Final(unsigned char digest[16], MD5_CTX *ctx) {
 #endif /* EXCLUDE_COMMON */
 
 
+
 char *cs_md5(char buf[33], ...) {
   unsigned char hash[16];
   const unsigned char *p;
@@ -997,14 +998,14 @@ char *cs_md5(char buf[33], ...) {
     size_t len = va_arg(ap, size_t);
     MD5_Update(&ctx, p, len);
   }
-  
   va_end(ap);
 
   MD5_Final(hash, &ctx);
   cs_to_hex(buf, hash, sizeof(hash));
-  
+
   return buf;
 }
+
 
 
 #ifdef MG_MODULE_LINES

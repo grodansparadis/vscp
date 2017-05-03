@@ -180,6 +180,7 @@ WSADATA wsaData;                            // WSA functions
 // Prototypes
 
 
+
 void vscp_md5( char *digest, const unsigned char *buf, size_t len ) 
 {
     unsigned char hash[16];
@@ -441,9 +442,7 @@ bool CControlObject::generateSessionId( const char *pKey, char *psid )
                 (unsigned int)rand(),
                 1337 );
 
-    memset( psid, 0, sizeof( 33 ) );
-    MD5_CTX ctx;
-    cs_md5( psid, (const unsigned char *)buf, strlen( buf ), NULL );
+    vscp_md5( psid, (const unsigned char *)buf, strlen( buf ) );
 
     return true;
 }

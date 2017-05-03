@@ -112,6 +112,14 @@ enum {
 #define MAX_ITEMS_CLIENT_RECEIVE_QUEUE          8191
 #define VSCP_TCPIPIF_DEFAULT_PORT               9598
 
+///////////////////////////////////////////////////////////////////////
+// vscp_md5
+//
+// Replacement for abandon csenta version
+//
+
+void vscp_md5( char *digest, const unsigned char *buf, size_t len ) ;
+
 
 WX_DECLARE_LIST(canalMsg, CanalMsgList);
 WX_DECLARE_LIST(vscpEvent, VSCPEventList);

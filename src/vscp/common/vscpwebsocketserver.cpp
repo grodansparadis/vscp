@@ -49,6 +49,9 @@
 #include <sstream>
 #include <fstream>
 
+#include <mongoose.h>
+#include <v7.h>
+
 #ifdef WIN32
 
 #include <winsock2.h>
@@ -1866,7 +1869,7 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *nc,
 
         strncpy( response, strKey.mbc_str(), MIN( sizeof(response), strKey.Length() ) );
 
-        static const char colon[] = ":";
+        /*static const char colon[] = ":";
         static const size_t one = 1;        // !!!!! Length must be size_t  !!!!!
         static const size_t n32 = 32;       // !!!!! Length must be size_t  !!!!!
         cs_md5( expected_response,
@@ -1875,7 +1878,20 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *nc,
                     (const char *)pUser->getPasswordDomain().mbc_str(), pUser->getPasswordDomain().Length(),
                     colon, one,
                     pSession->m_sid, n32,
-                    NULL );
+                    NULL );*/
+        
+        unsigned char hash[16];
+        MD5_CTX ctx;
+
+        MD5_Init( &ctx );
+        MD5_Update( &ctx, (const unsigned char *)( (const char *)strUser.mbc_str() ), strUser.Length() );
+        MD5_Update( &ctx, (const unsigned char *)":", 1 );
+        MD5_Update( &ctx, (const unsigned char *)( (const char *)pUser->getPasswordDomain().mbc_str() ), 
+                                                 pUser->getPasswordDomain().Length() );
+        MD5_Update( &ctx, (const unsigned char *)":", 1 );
+        MD5_Update( &ctx, (const unsigned char *)pSession->m_sid, 32 );
+        MD5_Final( hash, &ctx );
+        cs_to_hex( expected_response, hash, sizeof( hash ) );
 
         rv = ( vscp_strcasecmp( response, expected_response ) == 0 ) ? true : false;
 
@@ -1970,7 +1986,8 @@ VSCPWebServerThread::websock_new_session( struct mg_connection *nc,
                 1337 );
 
     memset( pSession->m_sid, 0, sizeof( pSession->m_sid ) );
-    cs_md5( pSession->m_sid, buf, strlen( buf ), NULL );
+    //cs_md5( pSession->m_sid, buf, strlen( buf ), NULL );
+    vscp_md5( pSession->m_sid, (const unsigned char *)buf, strlen( buf ) ); 
 
     // Init.
     strcpy( pSession->m_key, ws_key );           // Save key
