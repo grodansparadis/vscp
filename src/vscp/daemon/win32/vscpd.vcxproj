@@ -181,7 +181,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>.\;$(OPENSSL32)\include;$(WXWIN)\include\msvc;$(WXWIN)\include\;$(LUA32)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>MG_ENABLE_COAP;MG_ENABLE_MQTT_BROKER;_WINSOCK_DEPRECATED_NO_WARNINGS;NS_ENABLE_SSL;NOEMBED_NET_SKELETON;DEBUG;WIN32;_CONSOLE;WINVER=0x0601;_MT;wxUSE_GUI=0;__WXDEBUG__;WXDEBUG=1;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINSOCK_DEPRECATED_NO_WARNINGS;DEBUG;WIN32;_CONSOLE;WINVER=0x0601;_MT;wxUSE_GUI=0;__WXDEBUG__;WXDEBUG=1;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;MG_ENABLE_THREADS;MG_ENABLE_IPV6;MG_ENABLE_SSL;MG_ENABLE_MQTT_BROKER;MG_ENABLE_JAVASCRIPT;MG_ENABLE_HTTP_CGI;MG_ENABLE_HTTP_SSI;MG_ENABLE_HTTP_SSI_EXEC;MG_ENABLE_HTTP_WEBDAV;MG_ENABLE_GETADDRINFO;V7_ENABLE_JS_GETTERS;V7_ENABLE_JS_SETTERS;V7_BUILD_PROFILE=3;V7_ENABLE_CRYPTO;V7_ENABLE_FILE;V7_ENABLE_SOCKET;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>$(OutDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
@@ -226,7 +226,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>.\;$(OPENSSL64)\include;$(WXWIN)\include\msvc;$(WXWIN)\include\;$(LUA64)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>MG_ENABLE_COAP;MG_ENABLE_MQTT_BROKER;_WINSOCK_DEPRECATED_NO_WARNINGS;NS_ENABLE_EXCLUDE_COMMON;DEBUG;WIN32;_CONSOLE;WINVER=0x0601;_MT;wxUSE_GUI=0;__WXDEBUG__;WXDEBUG=1;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINSOCK_DEPRECATED_NO_WARNINGS;NS_ENABLE_EXCLUDE_COMMON;DEBUG;WIN32;_CONSOLE;WINVER=0x0601;_MT;wxUSE_GUI=0;__WXDEBUG__;WXDEBUG=1;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;MG_ENABLE_THREADS;MG_ENABLE_IPV6;MG_ENABLE_SSL;MG_ENABLE_MQTT_BROKER;MG_ENABLE_JAVASCRIPT;MG_ENABLE_HTTP_CGI;MG_ENABLE_HTTP_SSI;MG_ENABLE_HTTP_SSI_EXEC;MG_ENABLE_HTTP_WEBDAV;MG_ENABLE_GETADDRINFO;V7_ENABLE_JS_GETTERS;V7_ENABLE_JS_SETTERS;V7_BUILD_PROFILE=3;V7_ENABLE_CRYPTO;V7_ENABLE_FILE;V7_ENABLE_SOCKET;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>$(OutDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
@@ -315,7 +315,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>.\;$(OPENSSL32)\include;$(wxwin)\include\msvc;$(WXWIN)\include\;$(LUA32)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>MG_ENABLE_COAP;MG_ENABLE_MQTT_BROKER;_WINSOCK_DEPRECATED_NO_WARNINGS;NS_ENABLE_SSL;NOEMBED_NET_SKELETON;_CRT_SECURE_NO_WARNINGS;NDEBUG;WIN32;_CONSOLE;WINVER=0x0601;_MT;wxUSE_GUI=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINSOCK_DEPRECATED_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;NDEBUG;WIN32;_CONSOLE;WINVER=0x0601;_MT;wxUSE_GUI=0;MG_ENABLE_THREADS;MG_ENABLE_IPV6;MG_ENABLE_SSL;MG_ENABLE_MQTT_BROKER;MG_ENABLE_JAVASCRIPT;MG_ENABLE_HTTP_CGI;MG_ENABLE_HTTP_SSI;MG_ENABLE_HTTP_SSI_EXEC;MG_ENABLE_HTTP_WEBDAV;MG_ENABLE_GETADDRINFO;V7_ENABLE_JS_GETTERS;V7_ENABLE_JS_SETTERS;V7_BUILD_PROFILE=3;V7_ENABLE_CRYPTO;V7_ENABLE_FILE;V7_ENABLE_SOCKET;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>$(OutDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
@@ -360,7 +360,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>.\;$(OPENSSL64)\include;$(wxwin)\include\msvc;$(WXWIN)\include\;$(LUA64)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>MG_ENABLE_COAP;MG_ENABLE_MQTT_BROKER;_WINSOCK_DEPRECATED_NO_WARNINGS;NS_ENABLE_SSL;NOEMBED_NET_SKELETON;NDEBUG;WIN32;_CONSOLE;WINVER=0x0601;_MT;wxUSE_GUI=0;WXDEBUG=0;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;WIN32;_CONSOLE;WINVER=0x0601;_MT;wxUSE_GUI=0;WXDEBUG=0;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;MG_ENABLE_THREADS;MG_ENABLE_IPV6;MG_ENABLE_SSL;MG_ENABLE_MQTT_BROKER;MG_ENABLE_JAVASCRIPT;MG_ENABLE_HTTP_CGI;MG_ENABLE_HTTP_SSI;MG_ENABLE_HTTP_SSI_EXEC;MG_ENABLE_HTTP_WEBDAV;MG_ENABLE_GETADDRINFO;V7_ENABLE_JS_GETTERS;V7_ENABLE_JS_SETTERS;V7_BUILD_PROFILE=3;V7_ENABLE_CRYPTO;V7_ENABLE_FILE;V7_ENABLE_SOCKET;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>$(OutDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
