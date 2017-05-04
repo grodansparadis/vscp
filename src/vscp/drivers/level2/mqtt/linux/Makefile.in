@@ -10,7 +10,8 @@ top_wxsrcdir = @top_wxsrcdir@
 top_builddir = @top_builddir@
 top_wxbuilddir = @top_wxbuilddir@
 CXX = @CXX@
-CXXFLAGS = @CXXFLAGS@ -fPIC -I../../../../common -I../../../../../common
+MONGOOSE_FLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL -DMG_ENABLE_GETADDRINFO
+CXXFLAGS = -g -O2  -fPIC $(MONGOOSE_FLAGS) -I../../../../common -I../../../../../common
 CPPFLAGS = -I include  @CPPFLAGS@ -D MG_ENABLE_THREADS -fPIC -I../../../../common -I../../../../../common
 CFLAGS = -fPIC -I../../../../common -I../../../../../common
 LDFLAGS = @LDFLAGS@
@@ -32,7 +33,7 @@ DLLPREFIX = lib
 
 ### Variables: ###
 
-WX_RELEASE = 2.8
+WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
 MQTT_OBJECTS = ../common/mqttobj.o\

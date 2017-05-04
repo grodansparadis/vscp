@@ -117,13 +117,10 @@ int main(int argc, char **argv)
     rootFolder = _("/srv/vscp/");
 #endif    
 
-    //wxStandardPaths *strpath = wxStandardPaths::Get();
-    //strcfgFile =  _("/etc/vscp/vscpd.conf" );     // default config path
     strcfgfile = wxStandardPaths::Get().GetConfigDir() + _("/vscp/vscpd.conf");
     gbStopDaemon = false;
 
     VSCPApp theApp;
-    //IMPLEMENT_APP(theApp)
 
     wxSocketBase::Initialize();
 
@@ -162,7 +159,6 @@ int main(int argc, char **argv)
         
     }
 
-    //wxLogDebug(_("ControlObject: Configfile =") + strcfgfile);
     gpobj->logMsg( _("ControlObject: Configfile =") + strcfgfile + _(" \n") );
     if ( !theApp.init( strcfgfile, rootFolder ) ) {
         fprintf(stderr,"ControlObject: Failed to configure. Terminating.\n");
