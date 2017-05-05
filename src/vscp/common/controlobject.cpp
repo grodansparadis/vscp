@@ -1042,24 +1042,24 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 
     // Start daemon internal client worker thread
     logMsg(_("Starting client worker thread.\n") );
-    //startClientWorkerThread();
+    startClientWorkerThread();
 
     // Start TCP/IP interface
     logMsg(_("Starting TCP/IP interface.\n") );
-    //startTcpWorkerThread();
+    startTcpWorkerThread();
 
     // Start web sockets
     logMsg(_("Starting websockets interface.\n") );
-    //startWebServerThread();
+    startWebServerThread();
 
     // Load drivers
     logMsg(_("Starting drivers.\n") );
-    //startDeviceWorkerThreads();
+    startDeviceWorkerThreads();
 
     // Start MQTT Broker if enabled
     if ( m_bMQTTBroker ) {
         logMsg(_("MQTT Broker enabled. Starting now...\n") );
-        //startMQTTBrokerThread();
+        startMQTTBrokerThread();
     }
     else {
         logMsg(_("MQTTBroker disabled.\n") );
