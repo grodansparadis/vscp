@@ -299,7 +299,6 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
     // Remove the pid file
     unlink("/var/run/vscp/vscpd/vscpd.pid");
 
-
     return TRUE;
 }
 

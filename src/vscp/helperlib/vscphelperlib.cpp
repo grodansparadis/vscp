@@ -586,9 +586,9 @@ extern "C" int vscphlp_getDLLVersion( long handle, unsigned long *pVersion )
 // vscphlp_getVendorString
 //
 #ifdef WIN32
-extern "C"  DllExport int WINAPI EXPORT vscphlp_getVendorString( long handle, char *pVendorStr, int size )
+extern "C"  DllExport int WINAPI EXPORT vscphlp_getVendorString( long handle, char *pVendorStr, size_t len )
 #else
-extern "C"  int vscphlp_getVendorString( long handle, char *pVendorStr, int size  )
+extern "C"  int vscphlp_getVendorString( long handle, char *pVendorStr, size_t len  )
 #endif
 {
     if ( NULL == pVendorStr ) return VSCP_ERROR_PARAMETER;
@@ -600,7 +600,7 @@ extern "C"  int vscphlp_getVendorString( long handle, char *pVendorStr, int size
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString str =  wxString::FromUTF8( pvscpif->doCmdVendorString() );
-    strncpy( pVendorStr, str.mbc_str(), MIN( strlen( str.mbc_str() ),size) );
+    strncpy( pVendorStr, str.mbc_str(), MIN( strlen( str.mbc_str() ), len ) );
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -609,9 +609,9 @@ extern "C"  int vscphlp_getVendorString( long handle, char *pVendorStr, int size
 // vscphlp_getDriverInfo
 //
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_getDriverInfo( long handle, char *pInfoStr, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getDriverInfo( long handle, char *pInfoStr, size_t len )
 #else
-extern "C" int vscphlp_getDriverInfo( long handle, char *pInfoStr, int size )
+extern "C" int vscphlp_getDriverInfo( long handle, char *pInfoStr, size_t len )
 #endif
 {
     if ( NULL == pInfoStr ) return VSCP_ERROR_PARAMETER;
@@ -623,7 +623,7 @@ extern "C" int vscphlp_getDriverInfo( long handle, char *pInfoStr, int size )
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString str =  wxString::FromUTF8( pvscpif->doCmdGetDriverInfo() );
-    strncpy( pInfoStr, str.mbc_str(), MIN( strlen( str.mbc_str() ),size ) );
+    strncpy( pInfoStr, str.mbc_str(), MIN( strlen( str.mbc_str() ), len ) );
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -820,13 +820,13 @@ extern "C" int vscphlp_saveRemoteVariablesToDisk( long handle,
     \brief Get variable value from string variable
     \param name of variable
     \param pointer to string that get the value of the string variable.
-    \param size fo buffer
+    \param size for buffer
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableString( long handle, const char *pName, char *pValue, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableString( long handle, const char *pName, char *pValue, size_t len )
 #else
-extern "C" int vscphlp_getRemoteVariableString( long handle, const char *pName, char *pValue, int size )
+extern "C" int vscphlp_getRemoteVariableString( long handle, const char *pName, char *pValue, size_t len )
 #endif
 {
     int rv;
@@ -843,11 +843,12 @@ extern "C" int vscphlp_getRemoteVariableString( long handle, const char *pName, 
     wxString name = wxString::FromUTF8( pName );
     wxString strValue;
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableValue( name, strValue ) ) ) {
-        strncpy( pValue, strValue.mbc_str(), MIN( strlen( strValue.mbc_str() ), size ) );
+        strncpy( pValue, strValue.mbc_str(), MIN( strlen( strValue.mbc_str() ), len ) );
     }
 
     return rv;
 }
+
 
 /*!
     \fn bool vscphlp_setVariableString( const char *pName, char *pValue )
@@ -880,6 +881,40 @@ extern "C" int vscphlp_setRemoteVariableString( long handle, const char *pName, 
 
     return pvscpif->setRemoteVariableValue( name, strValue );
 }
+
+/*!
+    \fn bool vscphlp_getVariableValue( const char *pName, char *pValue )
+    \brief Get variable value from string variable
+    \param name of variable
+    \param pointer to string that get the value of the string variable.
+    \param size for buffer
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
+*/
+#ifdef WIN32
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableValue( long handle, const char *pName, char *pValue, size_t len )
+#else
+extern "C" int vscphlp_getRemoteVariableValue( long handle, const char *pName, char *pValue, size_t len )
+#endif
+{
+    return vscphlp_getRemoteVariableString( handle, pName, pValue, len );
+}
+
+/*!
+    \fn bool vscphlp_setVariableValue( const char *pName, char *pValue )
+    \brief set string variable from a pointer to a string
+    \param name of variable
+    \param pointer to string that contains the string.
+    \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
+*/
+#ifdef WIN32
+extern "C" DllExport int WINAPI EXPORT vscphlp_setRemoteVariableValue( long handle, const char *pName, char *pValue )
+#else
+extern "C" int vscphlp_setRemoteVariableValue( long handle, const char *pName, char *pValue )
+#endif
+{
+    return vscphlp_setRemoteVariableString( handle, pName, pValue );
+}
+
 
 /*!
     \fn bool vscphlp_getVariableBool( const char *pName, bool *bValue )
@@ -1314,9 +1349,9 @@ extern "C" int vscphlp_setRemoteVariableEventEx( long handle, const char *pName,
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableGUIDString( long handle, const char *pName, char *pGUID, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableGUIDString( long handle, const char *pName, char *pGUID, size_t len )
 #else
-extern "C" int vscphlp_getRemoteVariableGUIDString( long handle, const char *pName, char *pGUID, int size )
+extern "C" int vscphlp_getRemoteVariableGUIDString( long handle, const char *pName, char *pGUID, size_t len )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
@@ -1333,7 +1368,7 @@ extern "C" int vscphlp_getRemoteVariableGUIDString( long handle, const char *pNa
     wxString name = wxString::FromUTF8( pName );
     int rv =  pvscpif->getRemoteVariableGUID( name, GUID );
     GUID.toString( strGUID );
-    strncpy( pGUID, strGUID.mbc_str(), MIN( strlen( strGUID.mbc_str() ), size ) );
+    strncpy( pGUID, strGUID.mbc_str(), MIN( strlen( strGUID.mbc_str() ), len ) );
     return rv;
 }
 
@@ -1655,9 +1690,9 @@ extern "C" int vscphlp_setRemoteVariableVSCPTimestamp( long handle, const char *
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableDateTime( long handle, const char *pName, char *pValue, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableDateTime( long handle, const char *pName, char *pValue, size_t len )
 #else
-extern "C" int vscphlp_getRemoteVariableDateTime( long handle, const char *pName, char *pValue, int size )
+extern "C" int vscphlp_getRemoteVariableDateTime( long handle, const char *pName, char *pValue, size_t len )
 #endif
 {
     int rv;
@@ -1675,7 +1710,7 @@ extern "C" int vscphlp_getRemoteVariableDateTime( long handle, const char *pName
     wxDateTime datetime;
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableDateTime( name, datetime ) ) ) {
         wxString str = datetime.FormatISOCombined();
-        strncpy( pValue, (const char *)str.mbc_str(), MIN( strlen( (const char *)str.mbc_str() ), size )  );
+        strncpy( pValue, (const char *)str.mbc_str(), MIN( strlen( (const char *)str.mbc_str() ), len )  );
     }
 
     return rv;
@@ -1728,9 +1763,9 @@ extern "C" int vscphlp_setRemoteVariableDateTime( long handle, const char *pName
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableDate( long handle, const char *pName, char *pValue, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableDate( long handle, const char *pName, char *pValue, size_t len )
 #else
-extern "C" int vscphlp_getRemoteVariableDate( long handle, const char *pName, char *pValue, int size )
+extern "C" int vscphlp_getRemoteVariableDate( long handle, const char *pName, char *pValue, size_t len )
 #endif
 {
     int rv;
@@ -1748,7 +1783,7 @@ extern "C" int vscphlp_getRemoteVariableDate( long handle, const char *pName, ch
     wxDateTime datetime;
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableDate( name, datetime ) ) ) {
         wxString str = datetime.FormatISODate();
-        strncpy( pValue, (const char *)str.mbc_str(), MIN( strlen( (const char *)str.mbc_str() ), size )  );
+        strncpy( pValue, (const char *)str.mbc_str(), MIN( strlen( (const char *)str.mbc_str() ), len )  );
     }
 
     return rv;
@@ -1800,9 +1835,9 @@ extern "C" int vscphlp_setRemoteVariableDate( long handle, const char *pName, ch
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableTime( long handle, const char *pName, char *pValue, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableTime( long handle, const char *pName, char *pValue, size_t len )
 #else
-extern "C" int vscphlp_getRemoteVariableTime( long handle, const char *pName, char *pValue, int size )
+extern "C" int vscphlp_getRemoteVariableTime( long handle, const char *pName, char *pValue, size_t len )
 #endif
 {
     int rv;
@@ -1820,7 +1855,7 @@ extern "C" int vscphlp_getRemoteVariableTime( long handle, const char *pName, ch
     wxDateTime datetime;
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableTime( name, datetime ) ) ) {
         wxString str = datetime.FormatISOTime();
-        strncpy( pValue, (const char *)str.mbc_str(), MIN( strlen( (const char *)str.mbc_str() ), size )  );
+        strncpy( pValue, (const char *)str.mbc_str(), MIN( strlen( (const char *)str.mbc_str() ), len )  );
     }
 
     return rv;
@@ -1872,9 +1907,9 @@ extern "C" int vscphlp_setRemoteVariableTime( long handle, const char *pName, ch
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableBlob( long handle, const char *pName, char *pValue, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableBlob( long handle, const char *pName, char *pValue, size_t len )
 #else
-extern "C" int vscphlp_getRemoteVariableBlob( long handle, const char *pName, char *pValue, int size )
+extern "C" int vscphlp_getRemoteVariableBlob( long handle, const char *pName, char *pValue, size_t len )
 #endif
 {
     int rv;
@@ -1892,7 +1927,7 @@ extern "C" int vscphlp_getRemoteVariableBlob( long handle, const char *pName, ch
     wxString blob;
    
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableBlob( name, blob ) ) ) {
-        strncpy( pValue, (const char *)blob.mbc_str(), MIN( strlen( (const char *)blob.mbc_str() ), size )  );
+        strncpy( pValue, (const char *)blob.mbc_str(), MIN( strlen( (const char *)blob.mbc_str() ), len )  );
     }
 
     return rv;
@@ -1940,9 +1975,9 @@ extern "C" int vscphlp_setRemoteVariableBlob( long handle, const char *pName, ch
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableMIME( long handle, const char *pName, char *pValue, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableMIME( long handle, const char *pName, char *pValue, size_t len )
 #else
-extern "C" int vscphlp_getRemoteVariableMIME( long handle, const char *pName, char *pValue, int size )
+extern "C" int vscphlp_getRemoteVariableMIME( long handle, const char *pName, char *pValue, size_t len )
 #endif
 {
     int rv;
@@ -1960,7 +1995,7 @@ extern "C" int vscphlp_getRemoteVariableMIME( long handle, const char *pName, ch
     wxString mime;
    
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableMIME( name, mime ) ) ) {
-        strncpy( pValue, (const char *)mime.mbc_str(), MIN( strlen( (const char *)mime.mbc_str() ), size )  );
+        strncpy( pValue, (const char *)mime.mbc_str(), MIN( strlen( (const char *)mime.mbc_str() ), len )  );
     }
 
     return rv;
@@ -2009,9 +2044,9 @@ extern "C" int vscphlp_setRemoteVariableMIME( long handle, const char *pName, ch
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableHTML( long handle, const char *pName, char *pValue, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableHTML( long handle, const char *pName, char *pValue, size_t len )
 #else
-extern "C" int vscphlp_getRemoteVariableHTML( long handle, const char *pName, char *pValue, int size )
+extern "C" int vscphlp_getRemoteVariableHTML( long handle, const char *pName, char *pValue, size_t len )
 #endif
 {
     int rv;
@@ -2029,7 +2064,7 @@ extern "C" int vscphlp_getRemoteVariableHTML( long handle, const char *pName, ch
     wxString html;
    
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableHTML( name, html ) ) ) {
-        strncpy( pValue, (const char *)html.mbc_str(), MIN( strlen( (const char *)html.mbc_str() ), size )  );
+        strncpy( pValue, (const char *)html.mbc_str(), MIN( strlen( (const char *)html.mbc_str() ), len )  );
     }
 
     return rv;
@@ -2077,9 +2112,9 @@ extern "C" int vscphlp_setRemoteVariableHML( long handle, const char *pName, cha
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableJavaScript( long handle, const char *pName, char *pValue, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableJavaScript( long handle, const char *pName, char *pValue, size_t len )
 #else
-extern "C" int vscphlp_getRemoteVariableJavaScript( long handle, const char *pName, char *pValue, int size )
+extern "C" int vscphlp_getRemoteVariableJavaScript( long handle, const char *pName, char *pValue, size_t len )
 #endif
 {
     int rv;
@@ -2097,7 +2132,7 @@ extern "C" int vscphlp_getRemoteVariableJavaScript( long handle, const char *pNa
     wxString js;
    
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableJavaScript( name, js ) ) ) {
-        strncpy( pValue, (const char *)js.mbc_str(), MIN( strlen( (const char *)js.mbc_str() ), size )  );
+        strncpy( pValue, (const char *)js.mbc_str(), MIN( strlen( (const char *)js.mbc_str() ), len )  );
     }
 
     return rv;
@@ -2145,9 +2180,9 @@ extern "C" int vscphlp_setRemoteVariableJavaScript( long handle, const char *pNa
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableLUA( long handle, const char *pName, char *pValue, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableLUA( long handle, const char *pName, char *pValue, size_t len )
 #else
-extern "C" int vscphlp_getRemoteVariableLUA( long handle, const char *pName, char *pValue, int size )
+extern "C" int vscphlp_getRemoteVariableLUA( long handle, const char *pName, char *pValue, size_t len )
 #endif
 {
     int rv;
@@ -2165,7 +2200,7 @@ extern "C" int vscphlp_getRemoteVariableLUA( long handle, const char *pName, cha
     wxString lua;
    
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableLUA( name, lua ) ) ) {
-        strncpy( pValue, (const char *)lua.mbc_str(), MIN( strlen( (const char *)lua.mbc_str() ), size )  );
+        strncpy( pValue, (const char *)lua.mbc_str(), MIN( strlen( (const char *)lua.mbc_str() ), len )  );
     }
 
     return rv;
@@ -2214,9 +2249,9 @@ extern "C" int vscphlp_setRemoteVariableLUA( long handle, const char *pName, cha
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableLUARES( long handle, const char *pName, char *pValue, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableLUARES( long handle, const char *pName, char *pValue, size_t len )
 #else
-extern "C" int vscphlp_getRemoteVariableLUARES( long handle, const char *pName, char *pValue, int size )
+extern "C" int vscphlp_getRemoteVariableLUARES( long handle, const char *pName, char *pValue, size_t len )
 #endif
 {
     int rv;
@@ -2234,7 +2269,7 @@ extern "C" int vscphlp_getRemoteVariableLUARES( long handle, const char *pName, 
     wxString luares;
    
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableLUARES( name, luares ) ) ) {
-        strncpy( pValue, (const char *)luares.mbc_str(), MIN( strlen( (const char *)luares.mbc_str() ), size )  );
+        strncpy( pValue, (const char *)luares.mbc_str(), MIN( strlen( (const char *)luares.mbc_str() ), len )  );
     }
 
     return rv;
@@ -2282,9 +2317,9 @@ extern "C" int vscphlp_setRemoteVariableLUARES( long handle, const char *pName, 
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableUX1( long handle, const char *pName, char *pValue, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableUX1( long handle, const char *pName, char *pValue, size_t len )
 #else
-extern "C" int vscphlp_getRemoteVariableUX1( long handle, const char *pName, char *pValue, int size )
+extern "C" int vscphlp_getRemoteVariableUX1( long handle, const char *pName, char *pValue, size_t len )
 #endif
 {
     int rv;
@@ -2302,7 +2337,7 @@ extern "C" int vscphlp_getRemoteVariableUX1( long handle, const char *pName, cha
     wxString ux1;
    
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableUX1( name, ux1 ) ) ) {
-        strncpy( pValue, (const char *)ux1.mbc_str(), MIN( strlen( (const char *)ux1.mbc_str() ), size )  );
+        strncpy( pValue, (const char *)ux1.mbc_str(), MIN( strlen( (const char *)ux1.mbc_str() ), len )  );
     }
 
     return rv;
@@ -2350,9 +2385,9 @@ extern "C" int vscphlp_setRemoteVariableUX1( long handle, const char *pName, cha
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableDMROW( long handle, const char *pName, char *pValue, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableDMROW( long handle, const char *pName, char *pValue, size_t len )
 #else
-extern "C" int vscphlp_getRemoteVariableDMROW( long handle, const char *pName, char *pValue, int size )
+extern "C" int vscphlp_getRemoteVariableDMROW( long handle, const char *pName, char *pValue, size_t len )
 #endif
 {
     int rv;
@@ -2370,7 +2405,7 @@ extern "C" int vscphlp_getRemoteVariableDMROW( long handle, const char *pName, c
     wxString dm;
    
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableDMROW( name, dm ) ) ) {
-        strncpy( pValue, (const char *)dm.mbc_str(), MIN( strlen( (const char *)dm.mbc_str() ), size )  );
+        strncpy( pValue, (const char *)dm.mbc_str(), MIN( strlen( (const char *)dm.mbc_str() ), len )  );
     }
 
     return rv;
@@ -2419,9 +2454,9 @@ extern "C" int vscphlp_setRemoteVariableDMROW( long handle, const char *pName, c
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableDriver( long handle, const char *pName, char *pValue, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableDriver( long handle, const char *pName, char *pValue, size_t len )
 #else
-extern "C" int vscphlp_getRemoteVariableDriver( long handle, const char *pName, char *pValue, int size )
+extern "C" int vscphlp_getRemoteVariableDriver( long handle, const char *pName, char *pValue, size_t len )
 #endif
 {
     int rv;
@@ -2439,7 +2474,7 @@ extern "C" int vscphlp_getRemoteVariableDriver( long handle, const char *pName, 
     wxString driver;
    
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableDriver( name, driver ) ) ) {
-        strncpy( pValue, (const char *)driver.mbc_str(), MIN( strlen( (const char *)driver.mbc_str() ), size )  );
+        strncpy( pValue, (const char *)driver.mbc_str(), MIN( strlen( (const char *)driver.mbc_str() ), len )  );
     }
 
     return rv;
@@ -2488,9 +2523,9 @@ extern "C" int vscphlp_setRemoteVariableDriver( long handle, const char *pName, 
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableUser( long handle, const char *pName, char *pValue, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableUser( long handle, const char *pName, char *pValue, size_t len )
 #else
-extern "C" int vscphlp_getRemoteVariableUser( long handle, const char *pName, char *pValue, int size )
+extern "C" int vscphlp_getRemoteVariableUser( long handle, const char *pName, char *pValue, size_t len )
 #endif
 {
     int rv;
@@ -2508,7 +2543,7 @@ extern "C" int vscphlp_getRemoteVariableUser( long handle, const char *pName, ch
     wxString user;
    
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableUser( name, user ) ) ) {
-        strncpy( pValue, (const char *)user.mbc_str(), MIN( strlen( (const char *)user.mbc_str() ), size )  );
+        strncpy( pValue, (const char *)user.mbc_str(), MIN( strlen( (const char *)user.mbc_str() ), len )  );
     }
 
     return rv;
@@ -2556,9 +2591,9 @@ extern "C" int vscphlp_setRemoteVariableUser( long handle, const char *pName, ch
     \return Returns VSCP_ERROR_SUCCESS on success, otherwise error code.
 */
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableFilter( long handle, const char *pName, char *pValue, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_getRemoteVariableFilter( long handle, const char *pName, char *pValue, size_t len )
 #else
-extern "C" int vscphlp_getRemoteVariableFilter( long handle, const char *pName, char *pValue, int size )
+extern "C" int vscphlp_getRemoteVariableFilter( long handle, const char *pName, char *pValue, size_t len )
 #endif
 {
     int rv;
@@ -2576,7 +2611,7 @@ extern "C" int vscphlp_getRemoteVariableFilter( long handle, const char *pName, 
     wxString filter;
    
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableFilter( name, filter ) ) ) {
-        strncpy( pValue, (const char *)filter.mbc_str(), MIN( strlen( (const char *)filter.mbc_str() ), size )  );
+        strncpy( pValue, (const char *)filter.mbc_str(), MIN( strlen( (const char *)filter.mbc_str() ), len )  );
     }
 
     return rv;
@@ -3022,16 +3057,16 @@ extern "C" int vscphlp_getGuidFromStringToArray( uint8_t *pGUID, const char * pS
     \brief Write GUID froom VSCP event to string.
 */
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_writeGuidToString( const vscpEvent *pEvent, char * pStr, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_writeGuidToString( const vscpEvent *pEvent, char * pStr, size_t len )
 #else
-extern "C" int vscphlp_writeGuidToString( const vscpEvent *pEvent, char *pStr, int size )
+extern "C" int vscphlp_writeGuidToString( const vscpEvent *pEvent, char *pStr, size_t len )
 #endif
 {
     bool rv;
 
     wxString strGUID;
     rv = vscp_writeGuidToString( pEvent, strGUID );
-    strncpy( pStr, strGUID.mbc_str(), MIN( strlen( strGUID.mbc_str() ), size ) );
+    strncpy( pStr, strGUID.mbc_str(), MIN( strlen( strGUID.mbc_str() ), len ) );
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
@@ -3040,16 +3075,16 @@ extern "C" int vscphlp_writeGuidToString( const vscpEvent *pEvent, char *pStr, i
     \brief Write GUID froom VSCP event to string.
 */
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_writeGuidToStringEx( const vscpEventEx *pEvent, char *pStr, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_writeGuidToStringEx( const vscpEventEx *pEvent, char *pStr, size_t len )
 #else
-extern "C" int vscphlp_writeGuidToStringEx( const vscpEventEx *pEvent, char * pStr, int size )
+extern "C" int vscphlp_writeGuidToStringEx( const vscpEventEx *pEvent, char * pStr, size_t len )
 #endif
 {
     bool rv;
 
     wxString strGUID;
     rv = vscp_writeGuidToStringEx( pEvent, strGUID );
-    strncpy( pStr, strGUID.mbc_str(), MIN( strlen( strGUID.mbc_str() ), size ) );
+    strncpy( pStr, strGUID.mbc_str(), MIN( strlen( strGUID.mbc_str() ), len ) );
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
@@ -3063,15 +3098,18 @@ extern "C" int vscphlp_writeGuidToStringEx( const vscpEventEx *pEvent, char * pS
 #ifdef WIN32
 extern "C" DllExport int WINAPI EXPORT vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent,
                                                                 char *strGUID,
-                                                                int size )
+                                                                size_t len )
 #else
 extern "C" int vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent,
                                                                 char *strGUID,
-                                                                int size )
+                                                                size_t len )
 #endif
 {
     wxString str = wxString::FromUTF8( strGUID );
-    return vscp_writeGuidToString4Rows( pEvent, str ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+    bool rv =  vscp_writeGuidToString4Rows( pEvent, str );
+    strncpy( strGUID, str.mbc_str(), MIN( strlen( str.mbc_str() ), len ) );
+
+    return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
 
@@ -3084,15 +3122,19 @@ extern "C" int vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent,
 #ifdef WIN32
 extern "C" DllExport int WINAPI EXPORT vscphlp_writeGuidToString4RowsEx( const vscpEventEx *pEvent,
                                                                 char *strGUID,
-                                                                int size )
+                                                                size_t len )
 #else
 extern "C" int vscphlp_writeGuidToString4RowsEx( const vscpEventEx *pEvent,
                                                                 char *strGUID,
-                                                                int size )
+                                                                size_t len )
 #endif
 {
     wxString str = wxString::FromUTF8( strGUID );
-    return vscp_writeGuidToString4RowsEx( pEvent, str ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+    bool rv = vscp_writeGuidToString4RowsEx( pEvent, str );
+    
+    strncpy( strGUID, str.mbc_str(), MIN( strlen( str.mbc_str() ), len ) );
+
+    return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
 /*!
@@ -3104,16 +3146,16 @@ extern "C" int vscphlp_writeGuidToString4RowsEx( const vscpEventEx *pEvent,
 #ifdef WIN32
 extern "C" DllExport int WINAPI EXPORT vscphlp_writeGuidArrayToString( const unsigned char *pGUID,
                                                                 char *strGUID,
-                                                                int size )
+                                                                size_t len )
 #else
 extern "C" int vscphlp_writeGuidArrayToString( const unsigned char * pGUID,
                                                                 char *strGUID,
-                                                                int size )
+                                                                size_t len )
 #endif
 {
     wxString str;
     bool rv = vscp_writeGuidArrayToString( pGUID, str );
-    strncpy( strGUID, str.mbc_str(), MIN( strlen( str.mbc_str() ), size ) );
+    strncpy( strGUID, str.mbc_str(), MIN( strlen( str.mbc_str() ), len ) );
 
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
@@ -3455,19 +3497,20 @@ extern "C" int vscphlp_copyVSCPEvent( vscpEvent *pEventTo,
 
 /*!
     \fn int vscphlp_writeVscpDataToString( const vscpEvent *pEvent,
-                                            wxString& str,
-                                            bool bUseHtmlBreak )
-    \brief Write VSCP data in readable form to a (multiline) string.
+                                                char *pstr,
+                                                size_t len,
+                                                int bUseHtmlBreak  )
+    \brief Write VSCP data in readable form to a (multi line) string.
 */
 #ifdef WIN32
 extern "C" DllExport int WINAPI EXPORT vscphlp_writeVscpDataToString( const vscpEvent *pEvent,
-                                                               char *pstr,
-                                                               int size,
+                                                               char *pStr,
+                                                               size_t len,
                                                                int bUseHtmlBreak )
 #else
 extern "C" int vscphlp_writeVscpDataToString( const vscpEvent *pEvent,
-                                                                  char *pstr,
-                                                                  int size,
+                                                                  char *pStr,
+                                                                  size_t len,
                                                                   int bUseHtmlBreak )
 #endif
 {
@@ -3475,11 +3518,47 @@ extern "C" int vscphlp_writeVscpDataToString( const vscpEvent *pEvent,
     bool rv = vscp_writeVscpDataToString( pEvent,
                                          wxstr,
                                          bUseHtmlBreak ? true : false );
-    strncpy( pstr, wxstr.mbc_str(), MIN( strlen( wxstr.mbc_str() ), size ) );
+    strncpy( pStr, wxstr.mbc_str(), MIN( strlen( wxstr.mbc_str() ), len ) );
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
 
+
+/*!
+    \fn int vscphlp_writeVscpDataWithSizeToString( const unsigned short sizeData,
+                                                        const unsigned char *pData,
+                                                        char *pStr,
+                                                        size_t len,
+                                                        int bUseHtmlBreak,
+                                                        int bBreak )
+    \brief Write VSCP data given with size in readable form to a (multi line) string.
+*/
+#ifdef WIN32
+extern "C" DllExport int WINAPI EXPORT vscphlp_writeVscpDataWithSizeToString( const unsigned short sizeData,
+                                                                                const unsigned char *pData,
+                                                                                char *pStr,
+                                                                                size_t len,
+                                                                                int bUseHtmlBreak,
+                                                                                int bBreak )
+#else
+extern "C" int vscphlp_writeVscpDataWithSizeToString( const unsigned short sizeData,
+                                                        const unsigned char *pData,
+                                                        char *pStr,
+                                                        size_t len,
+                                                        int bUseHtmlBreak,
+                                                        int bBreak )
+#endif
+{
+    wxString wxstr;
+    bool rv = vscp_writeVscpDataWithSizeToString( sizeData,
+                                                        pData,
+                                                        wxstr,
+                                                        bUseHtmlBreak ? true : false,
+                                                        bBreak ? true : false );
+    
+    strncpy( pStr, wxstr.mbc_str(), MIN( strlen( wxstr.mbc_str() ), len ) );
+    return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
 
 
 
@@ -3532,16 +3611,16 @@ extern "C" int vscphlp_setVscpDataArrayFromString( unsigned char *pData,
     \brief Write VSCP data to a string.
 */
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_writeVscpEventToString( vscpEvent *pEvent, char *p, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_writeVscpEventToString( vscpEvent *pEvent, char *p, size_t len )
 #else
-extern "C" int vscphlp_writeVscpEventToString( vscpEvent *pEvent, char *p, int size )
+extern "C" int vscphlp_writeVscpEventToString( vscpEvent *pEvent, char *p, size_t len )
 #endif
 {
     bool rv;
 
     wxString str;;
     if ( ( rv =  vscp_writeVscpEventToString( pEvent, str ) ) ) {
-        strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), size ) );
+        strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), len ) );
     }
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
@@ -3553,17 +3632,17 @@ extern "C" int vscphlp_writeVscpEventToString( vscpEvent *pEvent, char *p, int s
     \brief Write VSCP data to a string.
 */
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_writeVscpEventExToString( vscpEventEx *pEvent, char *p, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_writeVscpEventExToString( vscpEventEx *pEvent, char *p, size_t len )
 #else
 extern "C" int vscphlp_writeVscpEventExToString( vscpEventEx *pEvent,
-                                                  char *p, int size )
+                                                  char *p, size_t len )
 #endif
 {
     bool rv;
 
     wxString str;
     if ( ( rv =  vscp_writeVscpEventExToString( pEvent, str ) ) ) {
-        strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), size ) );
+        strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), len ) );
     }
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
@@ -3681,12 +3760,12 @@ extern "C" double vscphlp_getDataCodingNormalizedInteger(const unsigned char *pC
 extern "C" DllExport int WINAPI EXPORT vscphlp_getDataCodingString(const unsigned char *pCode,
                                                               unsigned char dataLength,
                                                               char *strResult,
-                                                              int size )
+                                                              size_t len )
 #else
 extern "C" int vscphlp_getDataCodingString(const unsigned char *pCode,
                                                               unsigned char dataLength,
                                                               char *strResult,
-                                                              int size )
+                                                              size_t len )
 #endif
 {
     wxString wxstr;
@@ -3697,7 +3776,7 @@ extern "C" int vscphlp_getDataCodingString(const unsigned char *pCode,
     bool rv =  vscp_getDataCodingString( pCode,
                                            dataLength,
                                            wxstr );
-    strncpy( strResult, wxstr.mbc_str(), MIN( strlen( wxstr.mbc_str() ), size ) );
+    strncpy( strResult, wxstr.mbc_str(), MIN( strlen( wxstr.mbc_str() ), len ) );
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
@@ -3708,11 +3787,11 @@ extern "C" int vscphlp_getDataCodingString(const unsigned char *pCode,
 #ifdef WIN32
 extern "C" DllExport int WINAPI EXPORT vscphlp_getVSCPMeasurementAsString( const vscpEvent *pEvent,
                                                                     char *pResult,
-                                                                    int size )
+                                                                    size_t len )
 #else
 extern "C" int vscphlp_getVSCPMeasurementAsString(const vscpEvent *pEvent,
                                                                     char *pResult,
-                                                                    int size)
+                                                                    size_t len )
 #endif
 {
     wxString wxstr;
@@ -3720,7 +3799,7 @@ extern "C" int vscphlp_getVSCPMeasurementAsString(const vscpEvent *pEvent,
     if ( NULL == pEvent ) return VSCP_ERROR_ERROR;
 
     bool rv =  vscp_getVSCPMeasurementAsString( pEvent, wxstr );
-    strncpy( pResult, wxstr.mbc_str(), MIN( strlen( wxstr.mbc_str() ), size ) );
+    strncpy( pResult, wxstr.mbc_str(), MIN( strlen( wxstr.mbc_str() ), len ) );
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
@@ -3751,11 +3830,11 @@ extern "C" int vscphlp_getVSCPMeasurementAsDouble(const vscpEvent *pEvent, doubl
 #ifdef WIN32
 extern "C" DllExport int WINAPI EXPORT vscphlp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent,
                                                                             char *pStrResult,
-                                                                            int size )
+                                                                            size_t len )
 #else
 extern "C" int vscphlp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent,
                                                                             char *pStrResult,
-                                                                            int size )
+                                                                            size_t len )
 #endif
 {
     wxString wxstr;
@@ -3763,7 +3842,7 @@ extern "C" int vscphlp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent
     if ( NULL == pEvent ) return VSCP_ERROR_ERROR;
 
     bool rv = vscp_getVSCPMeasurementFloat64AsString( pEvent, wxstr );
-    strncpy( pStrResult, wxstr.mbc_str(), MIN( strlen( wxstr.mbc_str() ), size ) );
+    strncpy( pStrResult, wxstr.mbc_str(), MIN( strlen( wxstr.mbc_str() ), len ) );
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
@@ -3989,9 +4068,9 @@ extern "C" int vscphlp_isMeasurement( const vscpEvent *pEvent )
 //
 
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_convertEventToJSON( vscpEvent *pEvent, char *p, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_convertEventToJSON( vscpEvent *pEvent, char *p, size_t len )
 #else
-extern "C" int vscphlp_convertEventToJSON( vscpEvent *pEvent, char *p, int size )
+extern "C" int vscphlp_convertEventToJSON( vscpEvent *pEvent, char *p, size_t len )
 #endif
 {
     wxString str;
@@ -4000,10 +4079,10 @@ extern "C" int vscphlp_convertEventToJSON( vscpEvent *pEvent, char *p, int size 
     vscp_convertEventToJSON( pEvent, str );
     
     // Check if there is room for the JSON string
-    if ( size <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
+    if ( len <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
     
     // Copy in JSON string
-    strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), size ) );
+    strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), len ) );
     
     return VSCP_ERROR_SUCCESS;
 }
@@ -4013,9 +4092,9 @@ extern "C" int vscphlp_convertEventToJSON( vscpEvent *pEvent, char *p, int size 
 //
 
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_convertEventExToJSON( vscpEventEx *pEventEx, char *p, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_convertEventExToJSON( vscpEventEx *pEventEx, char *p, size_t len )
 #else
-extern "C" int vscphlp_convertEventExToJSON( vscpEventEx *pEventEx, char *p, int size )
+extern "C" int vscphlp_convertEventExToJSON( vscpEventEx *pEventEx, char *p, size_t len )
 #endif
 {
     wxString str;
@@ -4024,10 +4103,10 @@ extern "C" int vscphlp_convertEventExToJSON( vscpEventEx *pEventEx, char *p, int
     vscp_convertEventExToJSON( pEventEx, str );
     
     // Check if there is room for the JSON string
-    if ( size <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
+    if ( len <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
     
     // Copy in JSON string
-    strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), size ) );
+    strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), len ) );
     
     return VSCP_ERROR_SUCCESS;
 }
@@ -4037,9 +4116,9 @@ extern "C" int vscphlp_convertEventExToJSON( vscpEventEx *pEventEx, char *p, int
 //
 
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_convertEventToXML( vscpEvent *pEvent, char *p, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_convertEventToXML( vscpEvent *pEvent, char *p, size_t len )
 #else
-extern "C" int vscphlp_convertEventToXML( vscpEvent *pEvent, char *p, int size )
+extern "C" int vscphlp_convertEventToXML( vscpEvent *pEvent, char *p, size_t len )
 #endif
 {
     wxString str;
@@ -4048,10 +4127,10 @@ extern "C" int vscphlp_convertEventToXML( vscpEvent *pEvent, char *p, int size )
     vscp_convertEventToXML( pEvent, str );
     
     // Check if there is room for the XML string
-    if ( size <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
+    if ( len <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
     
     // Copy in XML string
-    strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), size ) );
+    strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), len ) );
     
     return VSCP_ERROR_SUCCESS;
 }
@@ -4061,9 +4140,9 @@ extern "C" int vscphlp_convertEventToXML( vscpEvent *pEvent, char *p, int size )
 //
 
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_convertEventExToXML( vscpEventEx *pEventEx, char *p, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_convertEventExToXML( vscpEventEx *pEventEx, char *p, size_t len )
 #else
-extern "C" int vscphlp_convertEventExToXML( vscpEventEx *pEventEx, char *p, int size )
+extern "C" int vscphlp_convertEventExToXML( vscpEventEx *pEventEx, char *p, size_t len )
 #endif
 {
     wxString str;
@@ -4072,10 +4151,10 @@ extern "C" int vscphlp_convertEventExToXML( vscpEventEx *pEventEx, char *p, int 
     vscp_convertEventExToXML( pEventEx, str );
     
     // Check if there is room for the XML string
-    if ( size <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
+    if ( len <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
     
     // Copy in XML string
-    strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), size ) );
+    strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), len ) );
     
     return VSCP_ERROR_SUCCESS;
 }
@@ -4086,9 +4165,9 @@ extern "C" int vscphlp_convertEventExToXML( vscpEventEx *pEventEx, char *p, int 
 //
 
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_convertEventToHTML( vscpEvent *pEvent, char *p, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_convertEventToHTML( vscpEvent *pEvent, char *p, size_t len )
 #else
-extern "C" int vscphlp_convertEventToHTML( vscpEvent *pEvent, char *p, int size )
+extern "C" int vscphlp_convertEventToHTML( vscpEvent *pEvent, char *p, size_t len )
 #endif
 {
     wxString str;
@@ -4097,10 +4176,10 @@ extern "C" int vscphlp_convertEventToHTML( vscpEvent *pEvent, char *p, int size 
     vscp_convertEventToHTML( pEvent, str );
     
     // Check if there is room for the HTML string
-    if ( size <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
+    if ( len <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
     
     // Copy in HTML string
-    strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), size ) );
+    strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), len ) );
     
     return VSCP_ERROR_SUCCESS;
 }
@@ -4110,9 +4189,9 @@ extern "C" int vscphlp_convertEventToHTML( vscpEvent *pEvent, char *p, int size 
 //
 
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_convertEventExToHTML( vscpEventEx *pEventEx, char *p, int size )
+extern "C" DllExport int WINAPI EXPORT vscphlp_convertEventExToHTML( vscpEventEx *pEventEx, char *p, size_t len )
 #else
-extern "C" int vscphlp_convertEventExToHTML( vscpEventEx *pEventEx, char *p, int size )
+extern "C" int vscphlp_convertEventExToHTML( vscpEventEx *pEventEx, char *p, size_t len )
 #endif
 {
     wxString str;
@@ -4121,10 +4200,10 @@ extern "C" int vscphlp_convertEventExToHTML( vscpEventEx *pEventEx, char *p, int
     vscp_convertEventExToHTML( pEventEx, str );
     
     // Check if there is room for the HTML string
-    if ( size <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
+    if ( len <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
     
     // Copy in HTML string
-    strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), size ) );
+    strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), len ) );
     
     return VSCP_ERROR_SUCCESS;
 }
