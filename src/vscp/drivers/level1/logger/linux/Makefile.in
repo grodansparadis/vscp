@@ -32,7 +32,7 @@ DLLPREFIX = lib
 
 ### Variables: ###
 
-WX_RELEASE = 2.8
+WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
 CANALLOGGER_OBJECTS =  vscpl1_loggerdrv.o\

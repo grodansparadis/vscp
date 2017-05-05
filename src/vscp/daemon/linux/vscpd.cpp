@@ -68,12 +68,14 @@ CControlObject *gpobj;
 void copyleft(void);
 void help(char *szPrgname);
 
-void sighandler(int sig)
+void _sighandler(int sig)
 {
     gpobj->m_bQuit = true;
     gbStopDaemon = true;
+    gbRestart = false;
     syslog(LOG_CRIT, "vscpd: signal received, forced to stop.: %m");
-    wxLogError(_("vscpd: signal received, forced to stop.: %m"));
+    wxLogError(_("vscpd: signal received, forced to stop."));
+    gpobj->logMsg(_("vscpd: signal received, forced to stop."));
 }
 
 
@@ -100,7 +102,7 @@ int main(int argc, char **argv)
 
     // Ignore return value from defunct processes
     signal( SIGCHLD, SIG_IGN );
-
+    
     crcInit();
 
     wxInitializer initializer;
@@ -159,14 +161,18 @@ int main(int argc, char **argv)
         
     }
 
-    gpobj->logMsg( _("ControlObject: Configfile =") + strcfgfile + _(" \n") );
+    gpobj->logMsg( _("VSCPD: Configfile =") + strcfgfile + _(" \n") );
     if ( !theApp.init( strcfgfile, rootFolder ) ) {
-        fprintf(stderr,"ControlObject: Failed to configure. Terminating.\n");
-        wxLogDebug(_("ControlObject: Failed to configure. Terminating.\n"));
+        fprintf(stderr,"VSCPD: Failed to configure. Terminating.\n");
+        wxLogDebug(_("VSCP: Failed to configure. Terminating.\n"));
+        exit( -1 );
     }
 
+    wxLogDebug(_("VSCPD: Deleting the controlobject."));
     delete gpobj;
 
+    wxLogDebug(_("VSCPD: Bye, bye."));
+    exit( 0 );
 }
 
 
@@ -176,6 +182,7 @@ int main(int argc, char **argv)
 
 BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
 {
+    
     if ( !gbDontRunAsDaemon ) {
 
         pid_t pid, sid;
@@ -183,7 +190,7 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
         // Fork child
         if (0 > (pid = fork())) {
             // Failure
-            fprintf(stderr,"Failed to fork.\n");
+            gpobj->logMsg(_("Failed to fork.\n"));
             return -1;
         }
         else if (0 != pid) {
@@ -193,7 +200,7 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
         sid = setsid(); // Become session leader
         if (sid < 0) {
             // Failure
-            fprintf(stderr,"Failed to become session leader.\n");
+            gpobj->logMsg(_("Failed to become session leader.\n"));
             return -1;
         }
 
@@ -206,7 +213,7 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
         }
 
         if ( chdir("/") ) { // Change working directory
-            syslog( LOG_WARNING, "VSCPD: Failed to change dir to rootdir");
+            gpobj->logMsg(_("VSCPD: Failed to change dir to rootdir"));
         }
 
         umask(0); // Clear out file mode creation mask
@@ -217,41 +224,42 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
         close(STDERR_FILENO);
 
         if (open("/", 0)) {
-            syslog(LOG_CRIT, "VSCPD: open / not 0: %m");
+            gpobj->logMsg(_("VSCPD: open / not 0: %m"));
         }
 
         dup2(0, 1);
         dup2(0, 2);
+        
+    }    
+    
 
-        struct sigaction my_action;
+    struct sigaction my_action;
 
-        // Ignore SIGPIPE
-        my_action.sa_handler = SIG_IGN;
-        my_action.sa_flags = SA_RESTART;
-        sigaction(SIGPIPE, &my_action, NULL);
+        
+    // Ignore SIGPIPE
+    my_action.sa_handler = SIG_IGN;
+    my_action.sa_flags = SA_RESTART;
+    sigaction(SIGPIPE, &my_action, NULL);
 
-        // Redirect SIGQUIT
-        my_action.sa_handler = sighandler;
-        my_action.sa_flags = SA_RESTART;
-        sigaction(SIGQUIT, &my_action, NULL);
+    // Redirect SIGQUIT
+    my_action.sa_handler = _sighandler;
+    my_action.sa_flags = SA_RESTART;
+    sigaction(SIGQUIT, &my_action, NULL);
 
-        // Redirect SIGABRT
-        my_action.sa_handler = sighandler;
-        my_action.sa_flags = SA_RESTART;
-        sigaction(SIGABRT, &my_action, NULL);
+    // Redirect SIGABRT
+    my_action.sa_handler = _sighandler;
+    my_action.sa_flags = SA_RESTART;
+    sigaction(SIGABRT, &my_action, NULL);
 
-        // Redirect SIGINT
-        my_action.sa_handler = sighandler;
-        my_action.sa_flags = SA_RESTART;
-        sigaction(SIGINT, &my_action, NULL);
+    // Redirect SIGINT
+    my_action.sa_handler = _sighandler;
+    my_action.sa_flags = SA_RESTART;
+    sigaction(SIGINT, &my_action, NULL);
 
-        // Redirect SIGTERM
-        my_action.sa_handler = sighandler;
-        my_action.sa_flags = SA_RESTART;
-        sigaction(SIGTERM, &my_action, NULL);
-
-    }
-
+    // Redirect SIGTERM
+    my_action.sa_handler = _sighandler;
+    my_action.sa_flags = SA_RESTART;
+    sigaction(SIGTERM, &my_action, NULL);
 
 
     do {
@@ -259,22 +267,31 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
         gbRestart = false;
         
         wxLogDebug(_("VSCPD: init."));
-        if (!gpobj->init(strcfgfile, rootFolder)) {
+        if ( !gpobj->init( strcfgfile, rootFolder ) ) {
             fprintf(stderr, "Can't initialise daemon. Exiting.\n");
             syslog(LOG_CRIT, "Can't initialise daemon. Exiting.");
             return FALSE;
         }
 
-        wxLogDebug(_("VSCPD: run"));
-        if (!gpobj->run()) {
+        wxLogDebug(_("VSCPD: run."));
+        if ( !gpobj->run() ) {
             fprintf(stderr, "Unable to start the VSCPD application. Exiting.\n");
             syslog(LOG_CRIT, "Unable to start the VSCPD application. Exiting.");
+            return FALSE;
         }
 
         wxLogDebug(_("VSCPD: cleanup"));
-        if (!gpobj->cleanup()) {
+        if ( !gpobj->cleanup() ) {
             fprintf(stderr, "Unable to clean up the VSCPD application.\n");
-            syslog(LOG_CRIT, "Unable to clean up the VSCPD application.");
+            syslog( LOG_CRIT, "Unable to clean up the VSCPD application.");
+            return FALSE;
+        }
+        
+        if ( gbRestart ) {
+            wxLogDebug(_("VSCPD: Will try to restart."));
+        }
+        else {
+            wxLogDebug(_("VSCPD: Will end things."));
         }
         
     } while ( gbRestart );
@@ -283,7 +300,7 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
     unlink("/var/run/vscp/vscpd/vscpd.pid");
 
 
-    return FALSE;
+    return TRUE;
 }
 
 

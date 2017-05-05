@@ -402,15 +402,15 @@ CControlObject::~CControlObject()
     // Remove objects in Client send queue
     VSCPEventList::iterator iterVSCP;
 
-    m_mutexClientOutputQueue.Lock();
+    //m_mutexClientOutputQueue.Lock();
     for (iterVSCP = m_clientOutputQueue.begin();
             iterVSCP != m_clientOutputQueue.end(); ++iterVSCP) {
         vscpEvent *pEvent = *iterVSCP;
-        vscp_deleteVSCPevent(pEvent);
+        vscp_deleteVSCPevent( pEvent );
     }
 
     m_clientOutputQueue.Clear();
-    m_mutexClientOutputQueue.Unlock();
+    //m_mutexClientOutputQueue.Unlock();
 }
 
 
@@ -1042,24 +1042,24 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 
     // Start daemon internal client worker thread
     logMsg(_("Starting client worker thread.\n") );
-    startClientWorkerThread();
+    //startClientWorkerThread();
 
     // Start TCP/IP interface
     logMsg(_("Starting TCP/IP interface.\n") );
-    startTcpWorkerThread();
+    //startTcpWorkerThread();
 
     // Start web sockets
     logMsg(_("Starting websockets interface.\n") );
-    startWebServerThread();
+    //startWebServerThread();
 
     // Load drivers
     logMsg(_("Starting drivers.\n") );
-    startDeviceWorkerThreads();
+    //startDeviceWorkerThreads();
 
     // Start MQTT Broker if enabled
     if ( m_bMQTTBroker ) {
         logMsg(_("MQTT Broker enabled. Starting now...\n") );
-        startMQTTBrokerThread();
+        //startMQTTBrokerThread();
     }
     else {
         logMsg(_("MQTTBroker disabled.\n") );
@@ -1067,7 +1067,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     
     // Start daemon worker thread
     logMsg(_("Starting VSCP daemon worker thread.\n") );
-    startDaemonWorkerThread();
+    //startDaemonWorkerThread();
     
     return true;
 }
@@ -1213,11 +1213,26 @@ bool CControlObject::run(void)
 
 bool CControlObject::cleanup( void )
 {
-    stopDeviceWorkerThreads();
-    stopTcpWorkerThread();
-    stopWebServerThread();
-    stopClientWorkerThread();
+    logMsg(_("Giving threads time to stop operations."),DAEMON_LOGMSG_DEBUG);
+    sleep( 2 ); // Give threads some time to end
+    
+    logMsg(_("Stopping daemon worker thread."),DAEMON_LOGMSG_DEBUG);
     stopDaemonWorkerThread();
+    
+    logMsg(_("Stopping client worker thread."),DAEMON_LOGMSG_DEBUG);
+    stopClientWorkerThread();
+    
+    logMsg(_("Stopping device worker thread."),DAEMON_LOGMSG_DEBUG);
+    stopDeviceWorkerThreads();
+    
+    logMsg(_("Stopping TCP/IP worker thread."),DAEMON_LOGMSG_DEBUG);
+    //stopTcpWorkerThread();
+    
+    logMsg(_("Stopping Web Server worker thread."),DAEMON_LOGMSG_DEBUG);
+    stopWebServerThread();
+    
+   
+    logMsg(_("Closing databases."),DAEMON_LOGMSG_DEBUG);
     
     // Close the VSCP data database
     sqlite3_close( m_db_vscp_data );
@@ -1233,8 +1248,8 @@ bool CControlObject::cleanup( void )
 
     // Clean up SQLite lib allocations
     sqlite3_shutdown();
-
-    wxLogDebug( _("ControlObject: Cleanup done") );
+    
+    wxLogDebug( _("ControlObject: Cleanup done.") );
     return true;
 }
 
@@ -4278,7 +4293,7 @@ void *clientMsgWorkerThread::Entry()
         } // while
 
     } // while
-
+    
     return NULL;
 
 }

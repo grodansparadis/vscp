@@ -109,17 +109,19 @@ void *VSCPClientThread::Entry()
 
     }
 
-    gpobj->logMsg(_T("TCP Client: Thread started.\n") );
+    gpobj->logMsg( _("TCP Client: Thread started.\n"), DAEMON_LOGMSG_DEBUG  );
 
     while ( !TestDestroy() && !m_bQuit ) {
         mg_mgr_poll( &gpobj->m_mgrTcpIpServer, 50 );
         Yield();
     }
+    
+    gpobj->logMsg( _("TCP ClientThread: Free.\n"), DAEMON_LOGMSG_DEBUG );
 
     // release the server
     mg_mgr_free( &gpobj->m_mgrTcpIpServer );
 
-    gpobj->logMsg( _T( "TCP ClientThread: Quit.\n" )  );
+    gpobj->logMsg( _("TCP ClientThread: Quit.\n"), DAEMON_LOGMSG_DEBUG );
 
     return NULL;
 }
@@ -131,7 +133,7 @@ void *VSCPClientThread::Entry()
 
 void VSCPClientThread::OnExit()
 {
-    ;
+    gpobj->logMsg( _("TCP ClientThread: Exit.\n"), DAEMON_LOGMSG_DEBUG );;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -147,7 +147,7 @@ CVSCPAutomation::CVSCPAutomation( void )
 
 CVSCPAutomation::~CVSCPAutomation( void )
 {
-
+    ;
 }
 
 

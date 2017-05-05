@@ -1,8 +1,0 @@
-# KDevelop Custom Project File List
-Makefile
-Makefile.in
-Makefile.orig
-latex/Makefile
-vscpd.cpp
-vscpd.h
-xmltest.xml

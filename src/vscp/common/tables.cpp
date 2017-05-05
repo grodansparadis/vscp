@@ -1260,6 +1260,7 @@ CVSCPTable *CUserTableObjList::getTable( wxString &name )
         
         CVSCPTable *pTable = *iter;
         if ( ( NULL!= pTable ) && ( name == pTable->getTableName() ) ) {
+            m_mutexTableList.Unlock();
             return pTable;
         }
         
@@ -1319,6 +1320,7 @@ bool CUserTableObjList::removeTable( wxString &name, bool bRemoveFile )
             if ( bRemoveFile ) {
                 wxRemoveFile(   gpobj->m_rootFolder + _("tables/") + name + _("sqlite3") );
             }
+            m_mutexTableList.Unlock();
             return true;
         }
     }
@@ -1551,6 +1553,7 @@ bool CUserTableObjList::loadTablesFromDB( void )
                                             NULL ) ) {
         wxstr = wxString::Format( _("Load tables: Error=%s"), sqlite3_errstr( sqlite3_errcode( gpobj->m_db_vscp_daemon ) ) );
         gpobj->logMsg( wxstr );
+        m_mutexTableList.Unlock();
         return false;
     }
     
