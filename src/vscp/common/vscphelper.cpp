@@ -85,7 +85,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // vscp_readStringValue
 
-uint32_t vscp_readStringValue(const wxString& strval)
+int32_t vscp_readStringValue( const wxString& strval )
 {
     unsigned long val=0;
     wxString str = strval;

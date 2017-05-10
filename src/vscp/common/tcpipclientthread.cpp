@@ -1959,7 +1959,7 @@ void VSCPClientThread::handleClientSetMask ( struct mg_connection *conn,
     wxString str;
     pClientItem->m_currentCommand.Trim(true);
     pClientItem->m_currentCommand.Trim(false);
-    wxStringTokenizer tkz( str, _(",") );
+    wxStringTokenizer tkz( pClientItem->m_currentCommand, _(",") );
 
     // Get priority
     if ( tkz.HasMoreTokens() ) {

@@ -95,7 +95,7 @@ extern "C" {
         @return Unsigned long containing value
      */
  
-    uint32_t vscp_readStringValue(const wxString& strval);
+    int32_t vscp_readStringValue(const wxString& strval);
 
     /*!
         Convert string to lowercase

@@ -1447,7 +1447,7 @@ int VscpRemoteTcpIf::doCmdFilter( const vscpEventFilter *pFilter )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// doCmdFilter
+// doCmdFilter  (with mask)
 //
 
 int VscpRemoteTcpIf::doCmdFilter( const wxString& filter, const wxString& mask )
@@ -2581,7 +2581,7 @@ int VscpRemoteTcpIf::setRemoteVariableVSCPTimestamp( const wxString& name,
 {
     wxString strValue;
 
-    strValue.Printf( _("%lu"), vscp_timestamp );
+    strValue.Printf( _("%lu"), (unsigned long)vscp_timestamp );
     return setRemoteVariableValue( name, strValue );
 }
 
