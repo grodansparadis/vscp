@@ -30,6 +30,7 @@
 #include <wx/defs.h>
 #include <wx/app.h>
 #include <wx/listimpl.cpp>
+#include <wx/tokenzr.h>
 
 #ifdef WIN32
 
@@ -85,7 +86,7 @@ CClientItem::CClientItem()
     m_statistics.cntReceiveData = 0;        // # of received data bytes
     m_statistics.cntTransmitData = 0;       // # of transmitted data bytes	
     m_statistics.cntOverruns = 0;           // # of overruns
-    m_statistics.cntBusWarnings = 0;        // # of bys warnings
+    m_statistics.cntBusWarnings = 0;        // # of bus warnings
     m_statistics.cntBusOff = 0;             // # of bus off's
 
     m_status.channel_status = 0;
@@ -123,7 +124,24 @@ CClientItem::~CClientItem()
 
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// CommandStartWith
+//
 
+bool CClientItem::CommandStartsWith( const wxString &cmd, bool bFix )
+{      
+    if ( !m_currentCommand.Upper().StartsWith( cmd.Upper() ) ) {
+        return false;
+    }
+    
+    // If asked to do so remove the command.
+    if ( bFix ) {
+        m_currentCommand = m_currentCommand.Right( m_currentCommand.length() - cmd.Length() );
+        m_currentCommand.Trim(false);        
+    }
+    
+    return true;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Construction/Destruction

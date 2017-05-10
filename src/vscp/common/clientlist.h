@@ -97,6 +97,15 @@ public:
 
 
 public:
+    
+    /*!
+        Check if the command line start with the command
+        The command is checked case insensitive
+        @param cmd The command to look for.
+        @param bFix The command string have the command removed.
+        @return true if command is found
+     */
+    bool CommandStartsWith( const wxString &cmd, bool bFix = true );
  
     /*!
         Input Queue
@@ -213,8 +222,9 @@ public:
     // Current command
     wxString m_currentCommand;
 
-    /// Current command i all upper case
-    //wxString m_currentCommandUC;
+    // Current token is the first space separated
+    // item in the command string
+    wxString m_currentToken;
 };
 
 // List with clientitems

@@ -978,7 +978,8 @@ extern "C" {
 
     bool vscp_writeVscpDataToString(const vscpEvent *pEvent, 
                                         wxString& str, 
-                                        bool bUseHtmlBreak = false);
+                                        bool bUseHtmlBreak = false,
+                                        bool bBreak = true );
 
 
     /*!

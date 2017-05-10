@@ -3534,15 +3534,15 @@ extern "C" int vscphlp_writeVscpDataToString( const vscpEvent *pEvent,
     \brief Write VSCP data given with size in readable form to a (multi line) string.
 */
 #ifdef WIN32
-extern "C" DllExport int WINAPI EXPORT vscphlp_writeVscpDataWithSizeToString( const unsigned short sizeData,
-                                                                                const unsigned char *pData,
+extern "C" DllExport int WINAPI EXPORT vscphlp_writeVscpDataWithSizeToString( const unsigned char *pData,
+                                                                                const unsigned short sizeData,                                                                                
                                                                                 char *pStr,
                                                                                 size_t len,
                                                                                 int bUseHtmlBreak,
                                                                                 int bBreak )
 #else
-extern "C" int vscphlp_writeVscpDataWithSizeToString( const unsigned short sizeData,
-                                                        const unsigned char *pData,
+extern "C" int vscphlp_writeVscpDataWithSizeToString( const unsigned char *pData,
+                                                        const unsigned short sizeData,                                                        
                                                         char *pStr,
                                                         size_t len,
                                                         int bUseHtmlBreak,

@@ -3148,7 +3148,10 @@ bool vscp_convertEventExToCanal(canalMsg *pcanalMsg, const vscpEventEx *pvscpEve
 // writeVscpDataToString
 //
 
-bool vscp_writeVscpDataToString(const vscpEvent *pEvent, wxString& str, bool bUseHtmlBreak)
+bool vscp_writeVscpDataToString( const vscpEvent *pEvent, 
+                                    wxString& str, 
+                                    bool bUseHtmlBreak,
+                                    bool bBreak )
 {
     wxString wrk, strBreak;
 
@@ -3172,7 +3175,9 @@ bool vscp_writeVscpDataToString(const vscpEvent *pEvent, wxString& str, bool bUs
             wrk += _(",");
         }
 
-        if (!((i + 1) % 8)) wrk += strBreak;
+        if ( bBreak ) {
+            if (!((i + 1) % 8)) wrk += strBreak;
+        }
         str += wrk;
     }
 
