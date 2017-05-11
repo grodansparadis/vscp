@@ -27,7 +27,7 @@
 
 // If TEST_RECEIVE_LOOP is uncommented the rcvloop commands
 // will be tested. Must send five events externally to test
-//#define TEST_RECEIVE_LOOP 
+#define TEST_RECEIVE_LOOP 
 
 // Uncomment to test variable handling
 #define TEST_VARIABLE_HANDLING 
@@ -498,7 +498,10 @@ int main(int argc, char* argv[])
         error_cnt++;
     }
 
-    if (verbose_info) printf("* * * * Waiting for five received events on channel 2 * * * * *\n");
+    if (verbose_info) {
+        printf("* * * * Waiting for five received events on channel 2 * * * * *\n");
+        printf("You should send them. For example \"send 0,2,3,4,,,-\" in the tcp/ip interface will work \n");
+    }
 
     int cntEvents = 0;
     while ( cntEvents < 5 ) {
