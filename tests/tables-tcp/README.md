@@ -1,3 +1,3 @@
-This folder contains testfiles for the VSCP & friends suite
+<h2>test_vesphelper</h2>  
 
-test_vesphelper  - test for the tcp/if interface and the libvscphelper library code.
+tests of the table interface of the libvscphelper library code.

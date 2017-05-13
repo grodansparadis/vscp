@@ -182,7 +182,7 @@ static const wxChar* storeTraceMask = _T("StoreComment");
  JSON parser objects should always be constructed on the stack but
  it does not hurt to have a global JSON parser.
 
- \param flags this paramter controls how much error-tolerant should the
+ \param flags this parameter controls how much error-tolerant should the
         parser be
 
  \param maxErrors the maximum number of errors (and warnings, too) that are
@@ -191,22 +191,22 @@ static const wxChar* storeTraceMask = _T("StoreComment");
     reported.
 
  The \c flag parameter is the combination of ZERO or more of the
- following constants OR'ed toghether:
+ following constants OR'ed together:
 
- \li wxJSONREADER_ALLOW_COMMENTS: C/C++ comments are recognized by the
+ \li wxJSONREADER_ALLOW_COMMENTS: C/C++ comments are recognizee by the
      parser; a warning is reported by the parser
- \li wxJSONREADER_STORE_COMMENTS: C/C++ comments, if recognized, are
+ \li wxJSONREADER_STORE_COMMENTS: C/C++ comments, if recognizee, are
      stored in the value they refer to and can be rewritten back to
      the JSON text
- \li wxJSONREADER_CASE: the parser recognizes mixed-case literal strings
+ \li wxJSONREADER_CASE: the parser recognizee mixed-case literal strings
  \li wxJSONREADER_MISSING: the parser allows missing or wrong close-object
      and close-array characters
  \li wxJSONREADER_MULTISTRING: strings may be splitted in two or more
      lines
  \li wxJSONREADER_COMMENTS_AFTER: if STORE_COMMENTS if defined, the parser
-     assumes that comment lines apear \b before the value they
+     assumes that comment lines appear \b before the value they
      refer to unless this constant is specified. In the latter case,
-     comments apear \b after the value they refer to.
+     comments appear \b after the value they refer to.
  \li wxJSONREADER_NOUTF8_STREAM: suppress UTF-8 conversion when reading a
          string value from a stream: the reader assumes that the input stream
          is encoded in ANSI format and not in UTF-8; only meaningfull in ANSI

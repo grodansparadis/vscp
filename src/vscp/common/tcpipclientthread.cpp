@@ -32,7 +32,9 @@
 #include <wx/listimpl.cpp>
 #include <wx/tokenzr.h>
 #include <wx/stdpaths.h>
+#include <wx/xml/xml.h>
 #include <wx/base64.h>
+#include <wx/sstream.h>
 
 #include <time.h>
 
@@ -47,6 +49,7 @@
 #include <canal.h>
 #include <vscphelper.h>
 #include <dllist.h>
+#include <frozen.h>
 #include <mongoose.h>
 #include <version.h>
 #include <controlobject.h>
@@ -2473,8 +2476,8 @@ void VSCPClientThread::handleClientTable( struct mg_connection *conn,
         handleClientTable_Clear( conn );
     }
     // New table (create)
-    else if ( pClientItem->CommandStartsWith(_("new") ) ) {
-        handleClientTable_New( conn );
+    else if ( pClientItem->CommandStartsWith(_("create") ) ) {
+        handleClientTable_Create( conn );
     }
     // Delete table
     else if ( pClientItem->CommandStartsWith(_("del") ) || 
@@ -4553,8 +4556,9 @@ void VSCPClientThread::handleClientTable_LogSQL( struct mg_connection *conn )
 }
 
 
+
 ///////////////////////////////////////////////////////////////////////////////
-// handleClientTable_New
+// handleClientTable_Create
 //
 // name, bEnable, bInMemory, type, size, owner, rights, title, xname, yname, note, 
 //  sqlcreate, sqlinsert, sqldelete, description,
@@ -4565,472 +4569,42 @@ void VSCPClientThread::handleClientTable_LogSQL( struct mg_connection *conn )
 // Table name must be unique
 //
 
-void VSCPClientThread::handleClientTable_New( struct mg_connection *conn )
+
+void VSCPClientThread::handleClientTable_Create( struct mg_connection *conn )
 {
+    wxString wxstr;
     wxString strName;
     bool bEnable = true;
-    bool bInMemory = false;
+    bool bInMemory = false;  
     vscpTableType type = VSCP_TABLE_DYNAMIC;
     uint32_t size = 0;
     wxString strOwner;
     uint16_t rights;
     wxString strTitle;
     wxString strXname;
-    wxString strYname;
+    wxString strYname;   
     wxString strNote;
     wxString strSqlCreate;
     wxString strSqlInsert;
     wxString strSqlDelete;
     wxString strDescription;
-    uint16_t vscpclass;
-    uint16_t vscptype;
+    uint8_t vscpclass;
+    uint8_t vscptype;
     uint8_t sensorindex = 0;
     uint8_t unit = 0;
     uint8_t zone = 255;
     uint8_t subzone = 255;
-    
+      
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
-    if ( NULL == pClientItem ) return;    
+    if ( NULL == pClientItem ) return;
+    
+    if ( !gpobj->m_userTableObjects.createTableFromXML( pClientItem->m_currentCommand ) ) {
+        mg_send( conn,
+                    MSG_FAILED_TO_CREATE_TABLE, 
+                    strlen( MSG_FAILED_TO_CREATE_TABLE ) );
+        return;
+    }
        
-    wxStringTokenizer tkz( pClientItem->m_currentCommand, _(" ") );
-    
-    // Get table name 
-    if ( tkz.HasMoreTokens() ) {
-        strName = tkz.GetNextToken();
-        strName.Trim(true);
-        strName.Trim(false);
-    }
-    else {
-        // Problems: A table name must be given
-        mg_send( conn,
-                    MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
-        return;
-    }
-    
-    // Check if table name is already used
-    if ( gpobj->m_userTableObjects.isNameUsed( strName ) ) {
-        // The table name must be unique
-        mg_send( conn,
-                    MSG_FAILED_TABLE_NAME_IN_USE, 
-                    strlen( MSG_FAILED_TABLE_NAME_IN_USE ) );
-        return;
-    }
-    
-    // bEnabled (can be empty)
-    if ( tkz.HasMoreTokens() ) {
-        wxString str = tkz.GetNextToken();
-        if ( wxNOT_FOUND != str.Upper().Find( _("FALSE") ) ) {
-            bEnable = false;
-        }
-    }
-    else {
-        // Problems: A table name must be given
-        mg_send( conn,
-                    MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
-        return;
-    }
-    
-    // bInMemory (can be empty)
-    if ( tkz.HasMoreTokens() ) {
-        wxString str = tkz.GetNextToken();
-        if ( wxNOT_FOUND != str.Upper().Find( _("TRUE") ) ) {
-            bInMemory = TRUE;
-        }
-    }
-    else {
-        // Problems: A table name must be given
-        mg_send( conn,
-                    MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
-        return;
-    }
-    
-    // type "STATIC"/"DYNAMIC"/"MAX" (can be empty)
-    if ( tkz.HasMoreTokens() ) {
-        wxString str = tkz.GetNextToken();
-        if ( wxNOT_FOUND != str.Upper().Find( _("STATIC") ) ) {
-            type = VSCP_TABLE_STATIC;
-        }
-        else if ( wxNOT_FOUND != str.Upper().Find( _("DYNAMIC") ) ) {
-            type = VSCP_TABLE_DYNAMIC;
-        }
-        else if ( wxNOT_FOUND != str.Upper().Find( _("MAX") ) ) {
-            type = VSCP_TABLE_MAX;
-        }
-    }
-    else {
-        // Problems: A table name must be given
-        mg_send( conn,
-                    MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
-        return;
-    }
-    
-    // Get size (can be empty)
-    if ( tkz.HasMoreTokens() ) {
-        unsigned long l;
-        wxString str = tkz.GetNextToken();
-        if ( str.ToULong( &l ) ) {
-            size = (uint32_t)l;
-        } 
-        else {
-            mg_send( conn,
-                        MSG_PARAMETER_ERROR, 
-                        strlen( MSG_PARAMETER_ERROR ) );
-            return;
-        }
-    }
-    else {
-        mg_send( conn,
-                    MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
-        return;
-    }
-    
-    // Check if size value is valid for static table
-    if ( ( VSCP_TABLE_STATIC == type ) && ( 0 == size ) ) {
-        mg_send( conn,
-                    MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
-        return;
-    }   
-    
-    // Check if size value is valid for max table
-    if ( ( VSCP_TABLE_MAX == type ) && ( 0 == size ) ) {
-        mg_send( conn,
-                    MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
-        return;
-    } 
-    
-    // Get owner
-    if ( tkz.HasMoreTokens() ) {
-        strOwner = tkz.GetNextToken();
-    }
-    else {
-        mg_send( conn,
-                    MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
-        return;
-    }
-    
-    
-    // Get rights
-    if ( tkz.HasMoreTokens() ) {
-        long l;
-        wxString str = tkz.GetNextToken();
-        if ( str.ToCLong( &l ) ) {
-            rights = (uint16_t)l;
-        } 
-        else {
-            mg_send( conn,
-                        MSG_PARAMETER_ERROR, 
-                        strlen( MSG_PARAMETER_ERROR ) );
-            return;
-        }
-    }
-    else {
-        mg_send( conn,
-                    MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
-        return;
-    }    
-    
-    
-    // Get title
-    if ( tkz.HasMoreTokens() ) {
-        wxString str = tkz.GetNextToken();
-        if ( !vscp_decodeBase64IfNeeded( str, strTitle ) ) {
-            mg_send( conn,
-                        MSG_PARAMETER_ERROR, 
-                        strlen( MSG_PARAMETER_ERROR ) );
-            return;
-        }
-    }
-    else {
-        mg_send( conn,
-                    MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
-        return;
-    }
-    
-    
-    // Get X-Label
-    if ( tkz.HasMoreTokens() ) {
-        wxString str = tkz.GetNextToken();
-        if ( !vscp_decodeBase64IfNeeded( str, strXname ) ) {
-            mg_send( conn,
-                        MSG_PARAMETER_ERROR, 
-                        strlen( MSG_PARAMETER_ERROR ) );
-            return;
-        }
-    }
-    else {
-        mg_send( conn,
-                    MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
-        return;
-    }
-    
-    
-    // Get Y-Label
-    if ( tkz.HasMoreTokens() ) {
-        wxString str = tkz.GetNextToken();
-        if ( !vscp_decodeBase64IfNeeded( str, strYname ) ) {
-            mg_send( conn,
-                        MSG_PARAMETER_ERROR, 
-                        strlen( MSG_PARAMETER_ERROR ) );
-            return;
-        }
-    }
-    else {
-        mg_send( conn,
-                    MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
-        return;
-    }
-    
-    
-    // Get diagram note
-    if ( tkz.HasMoreTokens() ) {
-        wxString str = tkz.GetNextToken();
-        if ( !vscp_decodeBase64IfNeeded( str, strNote ) ) {
-            mg_send( conn,
-                        MSG_PARAMETER_ERROR, 
-                        strlen( MSG_PARAMETER_ERROR ) );
-            return;
-        }
-    }
-    else {
-        mg_send( conn,
-                    MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
-        return;
-    }
-    
-    
-    // Get SQL create statement
-    if ( tkz.HasMoreTokens() ) {
-        wxString str = tkz.GetNextToken();
-        if ( !vscp_decodeBase64IfNeeded( str, strSqlCreate ) ) {
-            mg_send( conn,
-                        MSG_PARAMETER_ERROR, 
-                        strlen( MSG_PARAMETER_ERROR ) );
-            return;
-        }
-    }
-    else {
-        mg_send( conn,
-                    MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
-        return;
-    }   
-    
-    
-    // Get SQL insert statement
-    if ( tkz.HasMoreTokens() ) {
-        wxString str = tkz.GetNextToken();
-        if ( !vscp_decodeBase64IfNeeded( str, strSqlInsert ) ) {
-            mg_send( conn,
-                        MSG_PARAMETER_ERROR, 
-                        strlen( MSG_PARAMETER_ERROR ) );
-            return;
-        }
-    }
-    else {
-        mg_send( conn,
-                    MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
-        return;
-    }    
-    
-    
-    // Get SQL delete statement
-    if ( tkz.HasMoreTokens() ) {
-        wxString str = tkz.GetNextToken();
-        if ( !vscp_decodeBase64IfNeeded( str, strSqlDelete ) ) {
-            mg_send( conn,
-                        MSG_PARAMETER_ERROR, 
-                        strlen( MSG_PARAMETER_ERROR ) );
-            return;
-        }
-    }
-    else {
-        mg_send( conn,
-                    MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
-        return;
-    }    
-    
-    
-    // VSCP Class
-    if ( tkz.HasMoreTokens() ) {
-        long l;
-        wxString str = tkz.GetNextToken();
-        if ( str.ToCLong( &l ) ) {
-            vscpclass = (uint16_t)l;
-        } 
-        else {
-            mg_send( conn,
-                        MSG_PARAMETER_ERROR, 
-                        strlen( MSG_PARAMETER_ERROR ) );
-            return;
-        }
-    }
-    else {
-        mg_send( conn,
-                    MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
-        return;
-    }
-    
-    
-    // VSCP Type
-    if ( tkz.HasMoreTokens() ) {
-        long l;
-        wxString str = tkz.GetNextToken();
-        if ( str.ToCLong( &l ) ) {
-            vscptype = (uint16_t)l;
-        } 
-        else {
-            mg_send( conn,
-                        MSG_PARAMETER_ERROR, 
-                        strlen( MSG_PARAMETER_ERROR ) );
-            return;
-        }
-    }
-    else {
-        mg_send( conn,
-                    MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
-        return;
-    }
-    
-    
-    // Parameters after this point are optional
-    
-    
-    // SensorIndex
-    if ( tkz.HasMoreTokens() ) {
-        long l;
-        wxString str = tkz.GetNextToken();
-        if ( str.ToCLong( &l ) ) {
-            sensorindex = (uint8_t)l;
-        } 
-    }
-    
-    
-    // Unit
-    if ( tkz.HasMoreTokens() ) {
-        long l;
-        wxString str = tkz.GetNextToken();
-        if ( str.ToCLong( &l ) ) {
-            unit = (uint8_t)l;
-        } 
-    }
-    
-    
-    // Zone
-    if ( tkz.HasMoreTokens() ) {
-        long l;
-        wxString str = tkz.GetNextToken();
-        if ( str.ToCLong( &l ) ) {
-            zone = (uint8_t)l;
-        } 
-    }
-    
-    
-    // SubZone
-    if ( tkz.HasMoreTokens() ) {
-        long l;
-        wxString str = tkz.GetNextToken();
-        if ( str.ToCLong( &l ) ) {
-            subzone = (uint8_t)l;
-        } 
-    }
-    
-    
-    // Create the table
- 
-    CVSCPTable *pTable = new CVSCPTable( gpobj->m_rootFolder + _("table/"),    
-                                            strName, 
-                                            bEnable,
-                                            bInMemory, 
-                                            type, 
-                                            size );
-    
-    if ( NULL == pTable ) {
-        mg_send( conn,
-                    MSG_FAILED_TO_CREATE_TABLE, 
-                    strlen( MSG_FAILED_TO_CREATE_TABLE ) );
-        return;
-    }
-    
-    // Set table info
-    if ( !pTable->setTableInfo( strOwner,
-                                rights,
-                                strTitle,
-                                strXname,
-                                strYname,
-                                strNote,
-                                strSqlCreate,
-                                strSqlInsert,
-                                strSqlDelete,
-                                strDescription ) ) {
-        
-        delete pTable;
-        
-        mg_send( conn,
-                    MSG_FAILED_TO_CREATE_TABLE, 
-                    strlen( MSG_FAILED_TO_CREATE_TABLE ) );
-        return;
-    }
-    
-    // Set event info
-    pTable->setTableEventInfo( vscpclass,
-                                vscptype,
-                                sensorindex,
-                                unit,
-                                zone,
-                                subzone );
-    
-    // Add the table to the database
-    if ( !gpobj->m_userTableObjects.addTableToDB( *pTable ) ) {
-        
-        delete pTable;
-        
-        mg_send( conn,
-                    MSG_FAILED_TO_ADD_TABLE_TO_DB, 
-                    strlen( MSG_FAILED_TO_ADD_TABLE_TO_DB ) );
-        return;
-    }
-    
-    // Add the table to the system table
-    if ( !gpobj->m_userTableObjects.addTable( pTable ) ) {
-        
-        delete pTable;
-        
-        mg_send( conn,
-                    MSG_FAILED_TO_CREATE_TABLE, 
-                    strlen( MSG_FAILED_TO_CREATE_TABLE ) );
-        return;
-        
-    }
-    
-    // Initialize the table
-    if ( !pTable->init() ) {
-        
-        delete pTable;
-        
-        mg_send( conn,
-                    MSG_FAILED_TO_INIT_TABLE, 
-                    strlen( MSG_FAILED_TO_INIT_TABLE ) );
-        return;
-        
-    }
-    
     // All went well
     mg_send( conn, MSG_OK,  strlen( MSG_OK ) );
 }
@@ -5078,12 +4652,8 @@ void VSCPClientThread::handleClientTable_Delete( struct mg_connection *conn )
 }
 
 
-// Number of records
-// firstdate
-// lastdate
-// max
-// min
-// other stats
+
+
 
 
 

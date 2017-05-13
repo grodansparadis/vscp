@@ -440,7 +440,7 @@ public:
         Client TABLE new command
         @param conn Connection handler.
     */
-    void handleClientTable_New( struct mg_connection *conn );
+    void handleClientTable_Create( struct mg_connection *conn );
     
     /*!
         Client TABLE delete command
