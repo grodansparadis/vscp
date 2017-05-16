@@ -79,7 +79,7 @@
 #define MSG_INVALID_PATH                    "-OK - Invalid path.\r\n"
 #define MSG_FAILD_TO_GENERATE_SID           "-OK - Failed to generate sid.\r\n"
 
-#define MSG_FAILED_TO_CREATE_TABLE          "-OK - Failed to create table.\r\n"
+#define MSG_FAILED_TO_CREATE_TABLE          "-OK - Failed to create (one or more) table(s).\r\n"
 #define MSG_FAILED_TO_ADD_TABLE_TO_DB       "-OK - Failed to add table to database.\r\n"
 #define MSG_FAILED_TO_INIT_TABLE            "-OK - Failed to initialize table.\r\n"
 #define MSG_FAILED_GET_TABLE_NAMES          "-OK - Failed to get table names.\r\n"

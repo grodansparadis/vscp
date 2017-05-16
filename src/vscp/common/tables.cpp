@@ -167,18 +167,18 @@ bool CVSCPTable::setTableInfo( const wxString &owner,
     }
         
     if ( 0 == sqldelete.Length() ) {
-        m_sqlInsert = _(VSCPDB_TABLE_DEFAULT_DELETE);
+        m_sqlDelete = _(VSCPDB_TABLE_DEFAULT_DELETE);
     }
     else {
-        m_sqlInsert = sqldelete;
+        m_sqlDelete = sqldelete;
     }        
     
     // the sqlinsert expression must have %f and %s in it for 
     // value and date. It s invalid if not
     int posValue;
     int posDate;
-    if ( ( wxNOT_FOUND == ( posValue = sqlinsert.Find( _("%f") ) ) ) ||
-            ( wxNOT_FOUND == ( posDate = sqlinsert.Find( _("%s") ) ) ) ) {
+    if ( ( wxNOT_FOUND == ( posValue = m_sqlInsert.Find( _("%f") ) ) ) ||
+            ( wxNOT_FOUND == ( posDate = m_sqlInsert.Find( _("%s") ) ) ) ) {
         return false;
     }
     
@@ -449,7 +449,7 @@ bool CVSCPTable::createDatabase( void )
 {
     char *pErrMsg = 0;
     
-    gpobj->logMsg( "Creating database for table..\n" );
+    gpobj->logMsg( "Creating database for table.\n" );
     
     // Check if database is open
     if ( NULL == m_dbTable ) {
@@ -1254,6 +1254,8 @@ bool CUserTableObjList::addTable( CVSCPTable *pTable )
 
 bool CUserTableObjList::createTableFromXML( const wxString &strCreateXML )
 {
+    bool bFail = false;
+    
     wxString wxstr;
     wxString strName;
     bool bEnable = true;
@@ -1309,8 +1311,10 @@ bool CUserTableObjList::createTableFromXML( const wxString &strCreateXML )
             strName = child->GetAttribute( _("name"), _("") );
             strName.Trim();
             if ( !strName.Length() ) {
-                gpobj->logMsg( _("createTableFromXML: Table dos not have a name. Skipped.") );
-                return false;
+                gpobj->logMsg( _("createTableFromXML: Table does not have a name. Skipped.") );
+                bFail = true; // Signal failure and handle next record (if any)
+                child = child->GetNext();
+                continue;
             }
             
             // Get enable flag
@@ -1338,7 +1342,9 @@ bool CUserTableObjList::createTableFromXML( const wxString &strCreateXML )
             }
             else {
                 gpobj->logMsg( _("createTableFromXML: Table type is not known.") );
-                return false;
+                bFail = true; // Signal failure and handle next record (if any)
+                child = child->GetNext();
+                continue;
             }
             
             // Get table type
@@ -1348,13 +1354,17 @@ bool CUserTableObjList::createTableFromXML( const wxString &strCreateXML )
             // Check if size value is valid for static table
             if ( ( VSCP_TABLE_STATIC == type ) && ( 0 == size ) ) {
                 gpobj->logMsg( _("createTableFromXML: Invalid table size.") );
-                return false;
+                bFail = true; // Signal failure and handle next record (if any)
+                child = child->GetNext();
+                continue;
             }   
     
             // Check if size value is valid for max table
             if ( ( VSCP_TABLE_MAX == type ) && ( 0 == size ) ) {
                 gpobj->logMsg( _("createTableFromXML: Invalid table size.") );
-                return false;
+                bFail = true; // Signal failure and handle next record (if any)
+                child = child->GetNext();
+                continue;
             }
             
             // Get owner
@@ -1422,24 +1432,28 @@ bool CUserTableObjList::createTableFromXML( const wxString &strCreateXML )
     
             if ( NULL == pTable ) {
                 gpobj->logMsg( _("createTableFromXML: Failed to allocate new table.") );
-                return false;
+                bFail = true; // Signal failure and handle next record (if any)
+                child = child->GetNext();
+                continue;
             }
     
             // Set table info
             if ( !pTable->setTableInfo( strOwner,
-                                        rights,
-                                        strTitle,
-                                        strXname,
-                                        strYname,
-                                        strNote,
-                                        strSqlCreate,
-                                        strSqlInsert,
-                                        strSqlDelete,
-                                        strDescription ) ) {
+                                            rights,
+                                            strTitle,
+                                            strXname,
+                                            strYname,
+                                            strNote,
+                                            strSqlCreate,
+                                            strSqlInsert,
+                                            strSqlDelete,
+                                            strDescription ) ) {
         
                 delete pTable;
                 gpobj->logMsg( _("createTableFromXML: Failed to set table-info.") );
-                return false;
+                bFail = true; // Signal failure and handle next record (if any)
+                child = child->GetNext();
+                continue;
             }
     
             // Set event info
@@ -1450,31 +1464,40 @@ bool CUserTableObjList::createTableFromXML( const wxString &strCreateXML )
                                             zone,
                                             subzone );
     
+            // Initialize the table
+            if ( !pTable->init() ) {     
+                delete pTable;
+                gpobj->logMsg( _("createTableFromXML: Failed to initialize table in system.") );
+                bFail = true; // Signal failure and handle next record (if any)
+                child = child->GetNext();
+                continue;      
+            }
+            
             // Add the table to the database
             if ( !gpobj->m_userTableObjects.addTableToDB( *pTable ) ) {        
                 delete pTable;        
                 gpobj->logMsg( _("createTableFromXML: Failed to add table to database.") );
-                return false;
+                bFail = true; // Signal failure and handle next record (if any)
+                child = child->GetNext();
+                continue;
             }
     
             // Add the table to the system table
             if ( !gpobj->m_userTableObjects.addTable( pTable ) ) {       
                 delete pTable;
                 gpobj->logMsg( _("createTableFromXML: Failed to add table to system.") );
-                return false;       
-            }
-    
-            // Initialize the table
-            if ( !pTable->init() ) {     
-                delete pTable;
-                gpobj->logMsg( _("createTableFromXML: Failed to initialize table in system.") );
-                return false;      
-            }
+                bFail = true; // Signal failure and handle next record (if any)
+                child = child->GetNext();
+                continue;      
+            }            
             
         }        
         
         child = child->GetNext();        
     }
+    
+    // If one one the parts failed bFaile will be set
+    if ( bFail ) return false;
     
     return true;
 }
@@ -1624,7 +1647,6 @@ bool CUserTableObjList::isTableInDB( wxString& name )
 
 bool CUserTableObjList::addTableToDB( CVSCPTable& table )
 {
-    wxString sql;
     char *zErrMsg = 0;
     
     // Database must be open
@@ -1637,15 +1659,8 @@ bool CUserTableObjList::addTableToDB( CVSCPTable& table )
     // No need to add if there already
     if ( isTableInDB( table ) ) return false;
     
-    /*#define VSCPDB_TABLE_INSERT "INSERT INTO 'table' "\
-                "(bEnable,bmem,name,link_to_user,permission,type,size,"\
-                "xname,yname,title,note,sql_create,sql_insert,sql_delete,description,"\
-                "vscpclass,vscptype,vscpsensoridx,vscpunit,vscpzone,vscpsubzone "\
-                " ) VALUES ('%d','%d','%s','%ld',%d,'%d','%lu','%s',"\
-                "'%s','%s','%s','%s','%s','%s','%s',"\
-                "'%d',%d',%d',%d',%d',%d' );"*/
-
-    sql = wxString::Format( VSCPDB_TABLE_INSERT,         
+    char *psql = 
+            sqlite3_mprintf( VSCPDB_TABLE_INSERT,          
                                 table.isEnabled(),
                                 table.isInMemory(),
                                 (const char *)table.getTableName().mbc_str(),
@@ -1654,13 +1669,13 @@ bool CUserTableObjList::addTableToDB( CVSCPTable& table )
                                 (int)table.getType(),
                                 table.getSize(),
             
-                                table.getLabelX(),          
+                                (const char *)table.getLabelX().mbc_str(),          
                                 (const char *)table.getLabelY().mbc_str(),
                                 (const char *)table.getTitle().mbc_str(),
                                 (const char *)table.getNote().mbc_str(),
-                                (const char *)wxBase64Encode( table.getSQLCreate(), table.getSQLCreate().Length() ).mbc_str(),
-                                (const char *)wxBase64Encode( table.getSQLInsert(), table.getSQLCreate().Length() ).mbc_str(),
-                                (const char *)wxBase64Encode( table.getSQLDelete(), table.getSQLCreate().Length() ).mbc_str(),
+                                (const char *)table.getSQLCreate().mbc_str(),
+                                (const char *)table.getSQLInsert().mbc_str(),
+                                (const char *)table.getSQLDelete().mbc_str(),
                                 (const char *)table.getDescription().mbc_str(),
             
                                 (int)table.getVSCPClass(),
@@ -1670,13 +1685,16 @@ bool CUserTableObjList::addTableToDB( CVSCPTable& table )
                                 (int)table.getVSCPZone(),
                                 (int)table.getVSCPSubZone() );
     
+    
     if ( SQLITE_OK != sqlite3_exec( gpobj->m_db_vscp_daemon, 
-                                        sql.mbc_str(), NULL, NULL, &zErrMsg ) ) {            
+                                        psql, NULL, NULL, &zErrMsg ) ) {            
+        sqlite3_free(psql);
         gpobj->logMsg( wxString::Format( _("addTableToDB: Unable to insert record in table. [%s] Err=%s\n"), 
-                                            sql.mbc_str(), zErrMsg ) ); 
+                                            psql, zErrMsg ) ); 
         return false;
     }
     
+    sqlite3_free(psql);
     return true;
 }
 
@@ -1696,32 +1714,9 @@ bool CUserTableObjList::updateTableToDB( CVSCPTable& table )
         return false;
     }
     
-    // No need to add if there allready
+    // No need to add if there already
     if ( !isTableInDB( table ) ) return addTableToDB( table );
-    
-/*
- #define VSCPDB_TABLE_UPDATE "UPDATE 'table' "\
-                "SET benable='%d',"\
-                "bmem='%d',"\
-                "permission='%d',"\
-                "type='%d',"\
-                "size='%lu',"\
-                "xman='%s',"\
-                "yname='%s' "\
-                "title='%s',"\
-                "note='%s',"\
-                "sql_create='%s',"\
-                "sql_insert='%s',"\
-                "sql_delete='%s',"\
-                "description='%s',"\
-                "vscpclass='%d',"\
-                "vscptype='%d',"\
-                "vscpsensorindex='%d',"\
-                "vscpunit='%d',"\
-                "vscpzone='%d',"\
-                "vscpsubzone='%d'"\
-                " WHERE link_to_user='%ld'"
- */    
+        
     sql = wxString::Format( VSCPDB_TABLE_UPDATE,
                                 table.isEnabled(),
                                 table.isInMemory(),
@@ -1794,7 +1789,7 @@ bool CUserTableObjList::loadTablesFromDB( void )
         bool bMemory;
         bool bEnable;
         wxString name;
-        uint32_t link_to_user;
+        long link_to_user;
         CUserItem *pUserItem;
         uint16_t rights;
         vscpTableType type;

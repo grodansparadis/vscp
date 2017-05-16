@@ -100,7 +100,7 @@
 #define USER_PRIVILEGE_MASK                             0x0f
 #define USER_PRIVILEGE_BYTES                            8
 
-#define USER_ID_ADMIN                                   0x00
+#define USER_ID_ADMIN                                   0x00        // The one and only admin user
 
 class CGroupItem {
     
@@ -393,11 +393,12 @@ public:
     
     /*!
         Get user 
-        @param link_to_user Index for user in database. 
+        @param luserid Index for user in database. 
                 link_to_user == 0 is admin user
+                -1 == unknown user
         @return Pointer to user if available else NULL
     */
-    CUserItem *getUser( const uint32_t link_to_user );
+    CUserItem *getUser( const long userid );
 
     /*!
         Validate a username/password pair

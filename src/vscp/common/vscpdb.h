@@ -525,9 +525,9 @@
                 "(bEnable,bmem,name,link_to_user,permission,type,size,"\
                 "xname,yname,title,note,sql_create,sql_insert,sql_delete,description,"\
                 "vscpclass,vscptype,vscpsensoridx,vscpunit,vscpzone,vscpsubzone "\
-                " ) VALUES ('%d','%d','%s','%d',%d,'%d','%lu',"\
-                "'%s','%s','%s','%s','%s','%s','%s','%s',"\
-                "'%d',%d',%d',%d',%d',%d' );"
+                " ) VALUES ('%d','%d','%s','%d','%d','%d','%lu',"\
+                "'%q','%q','%q','%q','%q','%q','%q','%q',"\
+                "'%d','%d','%d','%d','%d','%d' );"
 
 #define VSCPDB_TABLE_UPDATE "UPDATE 'table' "\
                 "SET benable='%d',"\

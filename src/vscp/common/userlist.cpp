@@ -1102,13 +1102,13 @@ CUserItem * CUserList::getUser( const wxString& user )
 // getUser
 //
 
-CUserItem *CUserList::getUser( const uint32_t link_to_user )
+CUserItem *CUserList::getUser( const long userid )
 {
     VSCPUSERHASH::iterator it;
     for( it = m_userhashmap.begin(); it != m_userhashmap.end(); ++it ) {
         wxString key = it->first;
         CUserItem *pUserItem = it->second;
-        if ( link_to_user == pUserItem->getUserID() ) {
+        if ( userid == pUserItem->getUserID() ) {
             return pUserItem;
         }
     }
