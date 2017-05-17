@@ -449,8 +449,8 @@ REPEAT_COMMAND:
     //*********************************************************************
 
     else if ( pClientItem->CommandStartsWith( _("clra") ) ||
-                pClientItem->CommandStartsWith( _("clrall") ) ||
-                pClientItem->CommandStartsWith( _("clearall") ) ) {
+                pClientItem->CommandStartsWith( _("clearall") ) ||
+                pClientItem->CommandStartsWith( _("clrall") ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 1 ) ) {
             handleClientClearInputQueue( conn, pCtrlObject );
         }
@@ -514,8 +514,8 @@ REPEAT_COMMAND:
     //                           Get Version
     //*********************************************************************
 
-    else if ( pClientItem->CommandStartsWith( _("vers") ) ||
-                pClientItem->CommandStartsWith( _("version") ) ) {
+    else if ( pClientItem->CommandStartsWith( _("version") ) ||
+                    pClientItem->CommandStartsWith( _("vers") ) ) {
         handleClientGetVersion( conn, pCtrlObject );
     }
 
@@ -596,8 +596,8 @@ REPEAT_COMMAND:
     //                             Variable
     //*********************************************************************
 
-    else if ( pClientItem->CommandStartsWith( _("var") ) ||
-               pClientItem->CommandStartsWith( _("variable") )  ) {
+    else if ( pClientItem->CommandStartsWith( _("variable") ) ||
+                pClientItem->CommandStartsWith( _("var") ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 4 ) ) {
             handleClientVariable( conn, pCtrlObject );
         }
@@ -2463,14 +2463,14 @@ void VSCPClientThread::handleClientTable( struct mg_connection *conn,
     if ( pClientItem->CommandStartsWith(_("list") ) ) {
         handleClientTable_List( conn );
     }
-    // Get table content
-    else if ( pClientItem->CommandStartsWith(_("get") ) ) {
-        handleClientTable_Get( conn );
-    }
     // Get rawtable content
     else if ( pClientItem->CommandStartsWith(_("getraw") ) ) {
         handleClientTable_GetRaw( conn );
     }
+    // Get table content
+    else if ( pClientItem->CommandStartsWith(_("get") ) ) {
+        handleClientTable_Get( conn );
+    }    
     // Delete table data
     else if ( pClientItem->CommandStartsWith(_("clear") ) ) {
         handleClientTable_Clear( conn );
@@ -2480,18 +2480,18 @@ void VSCPClientThread::handleClientTable( struct mg_connection *conn,
         handleClientTable_Create( conn );
     }
     // Delete table
-    else if ( pClientItem->CommandStartsWith(_("del") ) || 
-                pClientItem->CommandStartsWith(_("delete") ) ) {
+    else if ( pClientItem->CommandStartsWith(_("delete") ) ||
+                pClientItem->CommandStartsWith(_("del") ) ) {
         handleClientTable_Delete( conn );
-    }
-    // Log data
-    else if ( pClientItem->CommandStartsWith(_("log") ) ) {
-        handleClientTable_Log( conn );
     }
     // Log data use SQL
     else if ( pClientItem->CommandStartsWith(_("logsql") ) ) {
         handleClientTable_LogSQL( conn );
     }
+    // Log data
+    else if ( pClientItem->CommandStartsWith(_("log") ) ) {
+        handleClientTable_Log( conn );
+    }    
     // Get number of records
     else if ( pClientItem->CommandStartsWith(_("records") ) ) {
         handleClientTable_NumberOfRecords( conn );
@@ -2552,6 +2552,107 @@ void VSCPClientThread::handleClientTable( struct mg_connection *conn,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// handleClientTable_Create
+//
+// name, bEnable, bInMemory, type, size, owner, rights, title, xname, yname, note, 
+//  sqlcreate, sqlinsert, sqldelete, description,
+//  vscpclass, vscptype, 
+// Optional parameter follow
+//  sensorindex, unit, zone, subzone
+//
+// Table name must be unique
+//
+
+
+void VSCPClientThread::handleClientTable_Create( struct mg_connection *conn )
+{
+    wxString wxstr;
+    wxString strName;
+    bool bEnable = true;
+    bool bInMemory = false;  
+    vscpTableType type = VSCP_TABLE_DYNAMIC;
+    uint32_t size = 0;
+    wxString strOwner;
+    uint16_t rights;
+    wxString strTitle;
+    wxString strXname;
+    wxString strYname;   
+    wxString strNote;
+    wxString strSqlCreate;
+    wxString strSqlInsert;
+    wxString strSqlDelete;
+    wxString strDescription;
+    uint8_t vscpclass;
+    uint8_t vscptype;
+    uint8_t sensorindex = 0;
+    uint8_t unit = 0;
+    uint8_t zone = 255;
+    uint8_t subzone = 255;
+      
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    if ( NULL == pClientItem ) return;
+    
+    if ( !gpobj->m_userTableObjects.createTableFromXML( pClientItem->m_currentCommand ) ) {
+        mg_send( conn,
+                    MSG_FAILED_TO_CREATE_TABLE, 
+                    strlen( MSG_FAILED_TO_CREATE_TABLE ) );
+        return;
+    }
+       
+    // All went well
+    mg_send( conn, MSG_OK,  strlen( MSG_OK ) );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// handleClientTable_Delete
+//
+
+
+void VSCPClientThread::handleClientTable_Delete( struct mg_connection *conn )
+{
+    wxString strTable;
+    bool bRemoveFile = false;
+    
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    if ( NULL == pClientItem ) return;    
+        
+    wxStringTokenizer tkz( pClientItem->m_currentCommand, _(" ") );
+    
+    // Get table name 
+    if ( tkz.HasMoreTokens() ) {
+        strTable = tkz.GetNextToken();
+        strTable.Trim(true);
+        strTable.Trim(false);
+    }
+    else {
+        // Problems: A table name must be given
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    // Get table name 
+    if ( tkz.HasMoreTokens() ) {
+        wxString str = tkz.GetNextToken();
+        if ( wxNOT_FOUND != str.Upper().Find("TRUE") ) {
+            bRemoveFile = true;
+        }
+    }
+    
+    // Remove the table from the internal system
+    if ( !gpobj->m_userTableObjects.removeTable( strTable ), bRemoveFile ) {
+         // Failed
+        mg_send( conn, 
+                    MSG_FAILED_TO_REMOVE_TABLE, 
+                    strlen( MSG_FAILED_TO_REMOVE_TABLE ) );
+    }
+    
+    mg_send( conn, MSG_OK, strlen( MSG_OK ) );
+    
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_List
 //
 
@@ -2564,6 +2665,7 @@ void VSCPClientThread::handleClientTable_List( struct mg_connection *conn )
     pClientItem->m_currentCommand.Trim(false); 
     
     if ( 0 == pClientItem->m_currentCommand.Length() ) {
+        
         // list without argument - list all defined tables
         wxArrayString arrayNames;
         gpobj->m_mutexUserTables.Lock();
@@ -2571,7 +2673,7 @@ void VSCPClientThread::handleClientTable_List( struct mg_connection *conn )
             
             // OK
             
-            wxString str = wxString::Format( _("%d rows \r\n"), 
+            wxString str = wxString::Format( _("%zu rows \r\n"), 
                                                 arrayNames.Count() );
             mg_send( conn, 
                         (const char *)str.mbc_str(), 
@@ -2632,10 +2734,23 @@ void VSCPClientThread::handleClientTable_List( struct mg_connection *conn )
     else {
         
         // list with argument - list info about table given as argument
+        // if table name is followed by another argument 'xml' the table should 
+        // be in XML format.
+        
+        bool bXmlFormat = false;
+        wxStringTokenizer tkz( pClientItem->m_currentCommand, _(" ") );
+        wxString tblName = tkz.GetNextToken();
+        
+        if ( tkz.HasMoreTokens() ) {
+            wxString str = tkz.GetNextToken();
+            if ( wxNOT_FOUND != str.Upper().Find( _("XML") ) ) {
+                bXmlFormat = true;  // Output XML format
+            }
+        }
         
         gpobj->m_mutexUserTables.Lock();
         CVSCPTable *pTable = 
-                gpobj->m_userTableObjects.getTable( pClientItem->m_currentCommand );
+                gpobj->m_userTableObjects.getTable( tblName );
         if ( NULL == pTable ) {
             // Failed
             mg_send( conn, 
@@ -2645,8 +2760,12 @@ void VSCPClientThread::handleClientTable_List( struct mg_connection *conn )
         else {
             
             wxString str;
+            
+            if ( bXmlFormat ) {
+                str = _("<table \r\n");
+            }
 
-            str = _("name=") + pTable->getTableName();
+            str += _("name=") + pTable->getTableName();
             str += _("\r\n");
             
             str += _("enabled=");
@@ -2750,6 +2869,11 @@ void VSCPClientThread::handleClientTable_List( struct mg_connection *conn )
             str += _("vscp-delete=");
             str += pTable->getSQLDelete();
             str += _("\r\n");
+            
+            if ( bXmlFormat ) {
+                str += _("/> \r\n");
+                str = wxBase64Encode( str.ToUTF8(), strlen( str.ToUTF8() ) );        
+            }
             
             // Send response
             mg_send( conn,
@@ -4555,101 +4679,6 @@ void VSCPClientThread::handleClientTable_LogSQL( struct mg_connection *conn )
     
 }
 
-
-
-///////////////////////////////////////////////////////////////////////////////
-// handleClientTable_Create
-//
-// name, bEnable, bInMemory, type, size, owner, rights, title, xname, yname, note, 
-//  sqlcreate, sqlinsert, sqldelete, description,
-//  vscpclass, vscptype, 
-// Optional parameter follow
-//  sensorindex, unit, zone, subzone
-//
-// Table name must be unique
-//
-
-
-void VSCPClientThread::handleClientTable_Create( struct mg_connection *conn )
-{
-    wxString wxstr;
-    wxString strName;
-    bool bEnable = true;
-    bool bInMemory = false;  
-    vscpTableType type = VSCP_TABLE_DYNAMIC;
-    uint32_t size = 0;
-    wxString strOwner;
-    uint16_t rights;
-    wxString strTitle;
-    wxString strXname;
-    wxString strYname;   
-    wxString strNote;
-    wxString strSqlCreate;
-    wxString strSqlInsert;
-    wxString strSqlDelete;
-    wxString strDescription;
-    uint8_t vscpclass;
-    uint8_t vscptype;
-    uint8_t sensorindex = 0;
-    uint8_t unit = 0;
-    uint8_t zone = 255;
-    uint8_t subzone = 255;
-      
-    CClientItem *pClientItem = (CClientItem *)conn->user_data;
-    if ( NULL == pClientItem ) return;
-    
-    if ( !gpobj->m_userTableObjects.createTableFromXML( pClientItem->m_currentCommand ) ) {
-        mg_send( conn,
-                    MSG_FAILED_TO_CREATE_TABLE, 
-                    strlen( MSG_FAILED_TO_CREATE_TABLE ) );
-        return;
-    }
-       
-    // All went well
-    mg_send( conn, MSG_OK,  strlen( MSG_OK ) );
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// handleClientTable_Delete
-//
-
-
-void VSCPClientThread::handleClientTable_Delete( struct mg_connection *conn )
-{
-    wxString strTable;
-    
-    CClientItem *pClientItem = (CClientItem *)conn->user_data;
-    if ( NULL == pClientItem ) return;    
-        
-    wxStringTokenizer tkz( pClientItem->m_currentCommand, _(" ") );
-    
-    // Get table name 
-    if ( tkz.HasMoreTokens() ) {
-        strTable = tkz.GetNextToken();
-        strTable.Trim(true);
-        strTable.Trim(false);
-    }
-    else {
-        // Problems: A table name must be given
-        mg_send( conn,
-                    MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
-        return;
-    }
-    
-    // Remove the table from the internal system
-    if ( gpobj->m_userTableObjects.removeTable( strTable ) ) {
-         // Failed
-        mg_send( conn, 
-                    MSG_FAILED_TO_REMOVE_TABLE, 
-                    strlen( MSG_FAILED_TO_REMOVE_TABLE ) );
-    }
-    
-    mg_send( conn,
-                MSG_OK, 
-                strlen( MSG_OK ) );
-    
-}
 
 
 

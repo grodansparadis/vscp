@@ -1568,11 +1568,12 @@ bool CUserTableObjList::removeTable( wxString &name, bool bRemoveFile )
     for ( iter = m_listTables.begin(); iter != m_listTables.end(); ++iter ) {
         CVSCPTable *pTable = *iter;
         if ( ( NULL!= pTable ) && ( name == pTable->getTableName() ) ) {
-            pTable->cleanUpAndClose();
+            pTable->cleanUpAndClose();  // Close the table
             delete pTable;
-            m_listTables.DeleteNode( iter.m_node );
+            //m_listTables.DeleteNode( iter.m_node );
+            m_listTables.erase( iter );
             if ( bRemoveFile ) {
-                wxRemoveFile(   gpobj->m_rootFolder + _("tables/") + name + _("sqlite3") );
+                wxRemoveFile(   gpobj->m_rootFolder + _("tables/") + name + _(".sqlite3") );
             }
             m_mutexTableList.Unlock();
             return true;
