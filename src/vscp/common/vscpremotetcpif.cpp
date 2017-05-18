@@ -55,6 +55,9 @@
 #include <vscp.h>
 #include <vscpremotetcpif.h>
 
+// Undef to get extra debug info
+//#define DEBUG_INNER_COMMUNICTION
+
 class mg_poll_server;
 class mg_poll_server;
 WX_DEFINE_LIST( EVENT_RX_QUEUE );
@@ -110,27 +113,37 @@ void clientTcpIpWorkerThread::ev_handler( struct mg_connection *conn,
                 connect_status = *( int * )pUser;
 
                 if (connect_status == 0) {
-
+                    
+#ifdef DEBUG_INNER_COMMUNICTION
                     wxLogDebug( _("ev_handler: TCP/IP connect OK.") );
+#endif                    
                     pTcpIfSession->m_semConnected.Post();
                     pTcpIfSession->m_bConnected = true;
                     conn->flags |= MG_F_USER_1;  // We should terminate
                 } 
+#ifdef DEBUG_INNER_COMMUNICTION                
                 else {
                     wxLogDebug( _("ev_handler: TCP/IP connect fail.") );
                 }
+#endif                
             }
             break;
 
         case MG_EV_CLOSE:
+            
+#ifdef DEBUG_INNER_COMMUNICTION            
             wxLogDebug( _("ev_handler: TCP/IP close.") );
+#endif
+            
             pTcpIfSession->m_bConnected = false;
             break;
 
         case MG_EV_RECV:
-
+            
+#ifdef DEBUG_INNER_COMMUNICTION
             wxLogDebug( _("ev_handler: TCP/IP receive.") );
-
+#endif
+            
             // Read new data
             memset( rbuf, 0, sizeof( rbuf ) );
             if ( 0 < io->len ) {
@@ -142,7 +155,10 @@ void clientTcpIpWorkerThread::ev_handler( struct mg_connection *conn,
                 mbuf_remove(io, io->len); 
 
                 pTcpIfSession->m_readBuffer += wxString::FromUTF8( rbuf );
+                
+#ifdef DEBUG_INNER_COMMUNICTION                
                 wxLogDebug( wxString::FromUTF8( rbuf ) );
+#endif                
 
                 // Check if command already is in buffer
                 while ( wxNOT_FOUND != ( pos4lf = pTcpIfSession->m_readBuffer.Find( (const char)0x0a ) ) ) {
@@ -163,11 +179,16 @@ void clientTcpIpWorkerThread::ev_handler( struct mg_connection *conn,
                     // Add to array 
                     wxString wxlog = wxString::Format(_("TCP/IP line: %s "), 
                                             (const char *)strCmdGo.c_str() );
+#ifdef DEBUG_INNER_COMMUNICTION                    
                     wxLogDebug( wxlog );
+#endif                    
                     pTcpIfSession->m_mutexArray.Lock();
                     pTcpIfSession->m_inputStrArray.Add( strCmdGo );
                     pTcpIfSession->m_mutexArray.Unlock();
-                    if ( pTcpIfSession->m_bModeReceiveLoop ) pTcpIfSession->m_psemInputArray->Post(); // Flag that event is available
+                    
+                    // Flag that event is available
+                    if ( pTcpIfSession->m_bModeReceiveLoop ) pTcpIfSession->m_psemInputArray->Post(); 
+                    
                     pTcpIfSession->m_readBuffer = 
                         pTcpIfSession->m_readBuffer.Right( pTcpIfSession->m_readBuffer.Length()-pos4lf-1 );
                 }
@@ -182,7 +203,7 @@ void clientTcpIpWorkerThread::ev_handler( struct mg_connection *conn,
 //
 
 void *clientTcpIpWorkerThread::Entry()
-{
+{    
     wxLogDebug( _("clientTcpIpWorkerThread: Starting.") );
     
     // Set up the net_skeleton communication engine
@@ -258,13 +279,14 @@ bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
     int last = 0;   // last read pos in array
     wxString strReply;
     
-    
+#ifdef DEBUG_INNER_COMMUNICTION
     wxLogDebug( _("------------------------------------------------------------") );
     wxLogDebug( _("checkReturnValue:  Queue before. Responsetime = %u. "), m_responseTimeOut );
     for ( uint16_t i=0; i<m_inputStrArray.Count(); i++) {
         wxLogDebug( "***** {" + m_inputStrArray[ i ] + "} *****" );
     }
     wxLogDebug( _("------------------------------------------------------------") );
+#endif    
 
     if ( bClear ) doClrInputQueue();
 
@@ -276,15 +298,20 @@ bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
             m_mutexArray.Lock();
             strReply = m_inputStrArray[ i ];
             m_mutexArray.Unlock();
-            
+#ifdef DEBUG_INNER_COMMUNICTION            
             wxLogDebug(strReply);
+#endif            
 
             if ( wxNOT_FOUND != strReply.Find(_("+OK")) ) {
+#ifdef DEBUG_INNER_COMMUNICTION                
                 wxLogDebug( _("checkReturnValue: Command success!") );
+#endif                
                 return true;
             }
             else if ( wxNOT_FOUND != strReply.Find(_("-OK")) ) {
+#ifdef DEBUG_INNER_COMMUNICTION                
                 wxLogDebug( _("checkReturnValue: Command failed!") );
+#endif                
                 return false;
             }
 
@@ -306,7 +333,9 @@ bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
 
 int VscpRemoteTcpIf::doCommand( wxString& cmd )
 {
+#ifdef DEBUG_INNER_COMMUNICTION    
     wxLogDebug( _("doCommand: ") + cmd );
+#endif    
         
     doClrInputQueue();    
     mg_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
@@ -325,7 +354,9 @@ int VscpRemoteTcpIf::doCommand( wxString& cmd )
     wxLogDebug( _("------------------------------------------------------------") );*/
     
     if ( !checkReturnValue( false ) ) {
+#ifdef DEBUG_INNER_COMMUNICTION        
         wxLogDebug( _("doCommand: checkReturnValue failed") );
+#endif        
         return VSCP_ERROR_ERROR;
     }
     
@@ -442,7 +473,7 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
 
     wxLogDebug( _("============================================================") );
     wxLogDebug( _("Connect in progress with server ") + strHostname );
-    wxLogDebug( _("============================================================") );
+    wxLogDebug( _("============================================================") );   
     
     //while ( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections &  )
 
@@ -2985,6 +3016,135 @@ int VscpRemoteTcpIf::setRemoteVariableFilter( const wxString& name, wxString& fi
 
 
 ////////////////////////////////////////////////////////////////////////////////
+//                        T A B L E   H E L P E R S
+////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// tableCreate
+//
+
+int VscpRemoteTcpIf::tableCreate( const wxString& defTable )
+{    
+    wxString strCmd;
+
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    
+    strCmd = _("TABLE CREATE ") + defTable;
+    strCmd += _("\r\n");
+    
+    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// tableDelete
+//
+
+int VscpRemoteTcpIf::tableDelete( const wxString& tblName, bool bDeleteFile )
+{
+    wxString strCmd;
+
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    
+    strCmd = _("TABLE DELETE ") + tblName + _(" ");
+    if ( bDeleteFile ) {
+        strCmd += _("TRUE");
+    }
+    strCmd += _("\r\n");
+    
+    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// tableList
+//
+
+int VscpRemoteTcpIf::tableList( wxArrayString &tablesArray )
+{
+    wxString strCmd;
+    
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    
+    strCmd = _("TABLE LIST\r\n");
+    //if ( type ) strCmd += wxString::Format( _("%d"), type );
+    //strCmd += _("\r\n");
+    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+        
+    if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
+    
+    // Handle the data (if any)
+    for ( unsigned int i=0; i<getInputQueueCount(); i++ ) {
+        m_mutexArray.Lock();
+        if ( wxNOT_FOUND == m_inputStrArray[ i ].Find( _("+OK") ) ) { 
+            tablesArray.Add( m_inputStrArray[ i ] );            
+        }
+        m_mutexArray.Unlock();
+    }
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// tableListInfo
+//
+
+int VscpRemoteTcpIf::tableListInfo( const wxString &tblName, wxString &tableInfo, bool bXML )
+{
+    wxString strCmd;
+    
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    
+    strCmd = _("TABLE LIST ");
+    strCmd += tblName + _(" ");
+    if ( bXML ) {
+        strCmd += _("XML");
+    }
+    strCmd += _("\r\n");
+    //if ( type ) strCmd += wxString::Format( _("%d"), type );
+    //strCmd += _("\r\n");
+    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+        
+    if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
+    
+    // Handle the data (if any)
+    for ( unsigned int i=0; i<getInputQueueCount(); i++ ) {
+        m_mutexArray.Lock();
+        if ( wxNOT_FOUND == m_inputStrArray[ i ].Find( _("+OK") ) ) { 
+            tableInfo += m_inputStrArray[ i ];            
+        }
+        m_mutexArray.Unlock();
+    }
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
 //                       R E G I S T E R   H E L P E R S
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -3698,6 +3858,11 @@ error:
 ///////////////////////////////////////////////////////////////////////////////
 //                           Graphical helpers
 ///////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
 
 
 

@@ -2872,7 +2872,8 @@ void VSCPClientThread::handleClientTable_List( struct mg_connection *conn )
             
             if ( bXmlFormat ) {
                 str += _("/> \r\n");
-                str = wxBase64Encode( str.ToUTF8(), strlen( str.ToUTF8() ) );        
+                str = wxBase64Encode( str.ToUTF8(), strlen( str.ToUTF8() ) );
+                str += _("\r\n");
             }
             
             // Send response

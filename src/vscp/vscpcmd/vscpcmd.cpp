@@ -6,7 +6,7 @@
 // 2 of the License, or (at your option) any later version.
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
-// Copyright (C) 2000-2015 
+// Copyright (C) 2000-2017 
 // Ake Hedman, Grodans Paradis AB,<akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -373,7 +373,7 @@ int main(int argc, char **argv)
         }
 
         // Open the interface
-        if (m_vscpif.doCmdOpen(strHost, strUsername, strPassword)) {
+        if ( CANAL_ERROR_SUCCESS == m_vscpif.doCmdOpen(strHost, strUsername, strPassword)) {
 
             if (bVerbose) {
                 wxString wxstr =

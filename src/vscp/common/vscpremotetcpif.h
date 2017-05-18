@@ -1207,6 +1207,60 @@ public:
     int setRemoteVariableFilter( const wxString& name, wxString& filter );
     
     
+    
+    
+    
+    // ------------------------------------------------------------------------
+    //                       T A B L E  H A N D L I N G
+    // ------------------------------------------------------------------------
+    
+    
+    
+    
+    
+
+    /*
+     * Create table from XML data
+     * 
+     * @param defTable XML definition of table.
+     * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
+     */
+    int tableCreate( const wxString& defTable );
+    
+    /*!
+     * Delete named table
+     * 
+     * @param tblName Name of an existing table.
+     * @param bDeleteFile If true the database file will be deleted.
+     * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
+     * 
+     */
+    int tableDelete( const wxString &tblName, bool bDeleteFile=false );
+    
+    /*!
+     * Get a list of all defined tables
+     * 
+     * @param tablesArray List that will get filled with table names.
+     * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
+     */
+    int tableList( wxArrayString &tablesArray );
+    
+    /*!
+     * Get information about a named table
+     * 
+     * @param tblName Name of table to fetch infor about.,
+     * @param tblInfo Parameter that wil get information about table.
+     * @param bXML If true info will be returnd as BASE64 encoded
+     *          XML data.
+     * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
+     */
+    int tableListInfo( const wxString &tblName, wxString &tableInfo, bool bXML = true );
+    
+    
+    
+    
+    
+    
     // ------------------------------------------------------------------------
     //                           R E G I S T E R S
     // ------------------------------------------------------------------------

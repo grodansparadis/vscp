@@ -1109,7 +1109,7 @@ extern "C" {
     wxString& vscp_getDeviceHtmlStatusInfo( const uint8_t *registers, CMDF *pmdf );
 
 
-
+    
 
 #ifdef __cplusplus
 }

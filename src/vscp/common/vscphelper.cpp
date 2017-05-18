@@ -43,7 +43,6 @@
 
 #include "wx/defs.h"
 #include "wx/app.h"
-#include "guid.h"
 #include <wx/wfstream.h>
 #include <wx/xml/xml.h>
 #include <wx/tokenzr.h>
@@ -55,7 +54,6 @@
 #include <limits.h>
 #include <math.h>
 
-
 #ifndef WIN32
 #include <sys/time.h>
 #include <sys/times.h>
@@ -66,6 +64,7 @@
 #include <crc.h> 
 
 #include <vscp.h>
+#include <guid.h>
 #include <mdf.h>
 #include <vscphelper.h>
 
@@ -5356,17 +5355,3 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 
 
 
-// ***************************************************************************
-//                                   Tables
-// ***************************************************************************
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-// vscp_tableCreate
-
-bool vscp_tableCreate( const wxString& strval )
-{
-    return true;
-}

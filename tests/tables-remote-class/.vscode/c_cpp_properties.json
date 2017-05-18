@@ -1,0 +1,72 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceRoot}",
+                "/usr/include",
+                "/usr/local/include",
+                "${workspaceRoot}/../../src/common",
+                "${workspaceRoot}/../../src/vscp/common"
+            ],
+            "defines": [],
+            "browse": {
+                "path": [
+                    "/usr/include",
+                    "/usr/local/include",
+                    "${workspaceRoot}/../../src/common",
+                    "${workspaceRoot}/../../src/vscp/common"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            }
+        },
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceRoot}",
+                "${workspaceRoot}/../../src/common",
+                "${workspaceRoot}/../../src/vscp/common",
+                "/usr/include/x86_64-linux-gnu/c++/4.9",
+                "/usr/include/c++/4.9.2",
+                "/usr/local/include",
+                "/usr/lib/clang/3.5.0/include",
+                "/usr/include/x86_64-linux-gnu",
+                "/usr/include"
+            ],
+            "defines": [],
+            "browse": {
+                "path": [
+                    "/usr/include/x86_64-linux-gnu/c++/4.9",
+                    "/usr/include/c++/4.9.2",
+                    "/usr/local/include",
+                    "/usr/lib/clang/3.5.0/include",
+                    "/usr/include/x86_64-linux-gnu",
+                    "/usr/include"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            }
+        },
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceRoot}",
+                "${workspaceRoot}../../src/common",
+                "${workspaceRoot}../../src/vscp/common",
+                "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE"
+            ],
+            "browse": {
+                "path": [
+                    "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include/*"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            }
+        }
+    ]
+}
