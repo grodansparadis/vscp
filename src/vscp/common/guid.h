@@ -99,7 +99,7 @@ public:
         Return pointer to GUID
         \return pointer to GUID.
     */
-    const uint8_t* getGUID( void ) { return m_id; };
+    const uint8_t *getGUID( void ) { return m_id; };
 
     /*!
         Get GUID for specific position
@@ -173,6 +173,7 @@ public:
      * @param clientid Client id ti write
      */
     void setNicknameID( uint16_t nicknameid );    
+    
               
     // GUID id  MSB (index=0) -> LSB (index=15)
     uint8_t m_id[16];

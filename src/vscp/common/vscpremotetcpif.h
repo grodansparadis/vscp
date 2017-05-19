@@ -147,8 +147,8 @@ public:
 public:
 
     /*!
-        Set response timeout
-        @param to Timeout value in seconds. 
+        Set response timeout.
+        @param to Timeout value in milliseconds. 
      */
     void setResponseTimeout(uint32_t to) {
         if ( to < 100 ) to = 3000;          // To be backward compatible
@@ -410,7 +410,14 @@ public:
         @param pGUID Array with uint8_t GUID's. (Note! Not a string).
         @return CANAL_ERROR_SUCCESS on success and error code if failure.
      */
-    int doCmdSetGUID(const char *pGUID);
+    int doCmdSetGUID(const unsigned char *pGUID);
+    
+    /*!
+        Set GUID for this interface.  
+        @param ifguid GUID to set.
+        @return CANAL_ERROR_SUCCESS on success and error code if failure.
+     */
+    int doCmdSetGUID(cguid& ifguid);
 
     /*!
         Get information about a channel..  
@@ -548,15 +555,28 @@ public:
      */
     int deleteRemoteVariable( const wxString& name );
 
-    /*
-     * Get remote variable (full info).
-     * Format is: "variable name";"type";"persistence";"user";"rights";"value";"note"
-     * 
-     * @param name Name of variable.
-     * @param strVariable Will get variable information.
-     * @return VSCP_ERROR_SUCCESS on success
+    /*!
+        Get remote variable on string form
+        Format is: "variable name";"type";"persistence";"user";"rights";"value";"note"
+     
+        @param name of variable.
+        @param strValue pointer to string that get the variable on string form.
+        @return VSCP_ERROR_SUCCESS if the variable is of type string and the operation
+                    was successful.
      */
-    int getRemoteVariable( const wxString& name, wxString& strVariable );
+    int getRemoteVariableAsString( const wxString& name, wxString& strVariable );
+
+    /*!
+        Set variable from string 
+     
+        @param name of variable.
+        @param strValue Variable on string form.
+        @return VSCP_ERROR_SUCCESS if the operation was successful.
+     */
+    int setRemoteVariableFromString( const wxString& name, 
+                                        const wxString& strValue,
+                                        const bool bPersistent = false,
+                                        const uint32_t rights = 0x744 );
     
     /*!
      * Get last change date/time for remote variable.
@@ -566,13 +586,6 @@ public:
      */
     int getRemoteVariableLastChange( const wxString& name, wxDateTime& lastChange );
     
-    /*!
-     * Get type on string form for variable.
-     * 
-     * @param name Name of variable.
-     * @return VSCP_ERROR_SUCCESS on success
-     */
-    int getRemoteVariableType( const wxString& name, wxString& strType );
     
     /*!
      * Get type on numeric form for variable.
@@ -599,7 +612,7 @@ public:
      * @return VSCP_ERROR_SUCCESS on success
      * 
      */
-    int getRemoteVariableOwner( const wxString& name, wxString& strOwner );
+    int getRemoteVariableOwner( const wxString& name, uint32_t *pOwner );
     
     /*!
      * Get access rights for remote variable.
@@ -608,7 +621,7 @@ public:
      * @return VSCP_ERROR_SUCCESS on success
      * 
      */
-    int getRemoteVariableAccessRights( const wxString& name, uint32_t *pRights );
+    int getRemoteVariableAccessRights( const wxString& name, uint16_t *pRights );
     
     /*!
      * Get value on string form for variable.
@@ -636,30 +649,6 @@ public:
      * 
      */
     int getRemoteVariableNote( const wxString& name, wxString& strNote );
-    
-    
-
-    /*!
-        Get variable value on string form
-     
-        @param name of variable.
-        @param strValue pointer to string that get the value of the string variable.
-        @return VSCP_ERROR_SUCCESS if the variable is of type string and the operation
-                    was successful.
-     */
-    int getRemoteVariableAsString( const wxString& name, wxString& strVariable );
-
-    /*!
-        Set variable from string 
-     
-        @param name of variable.
-        @param strValue Variable on string form.
-        @return VSCP_ERROR_SUCCESS if the operation was successful.
-     */
-    int setRemoteVariableFromString( const wxString& name, 
-                                        const wxString& strValue,
-                                        const bool bPersistent = false,
-                                        const uint32_t rights = 0x744 );
 
 
     /*!

@@ -30,6 +30,8 @@
 #include <wx/hashset.h>
 #include <wx/datetime.h>
 #include <wx/tokenzr.h>
+#include <wx/filename.h>
+
 #include <sqlite3.h>
 #include <guid.h>
 #include <userlist.h>

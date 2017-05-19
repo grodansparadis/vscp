@@ -320,7 +320,7 @@ bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
         }
 
         // Give the server some time to deliver the data
-        //wxMilliSleep( 200 + m_afterCommandSleep );
+        if ( m_afterCommandSleep ) wxMilliSleep( m_afterCommandSleep );
 
     }
 
@@ -1690,7 +1690,7 @@ int VscpRemoteTcpIf::doCmdGetGUID( cguid& ifguid )
 // doCmdSetGUID
 //
 
-int VscpRemoteTcpIf::doCmdSetGUID( const char *pGUID )
+int VscpRemoteTcpIf::doCmdSetGUID( const unsigned char *pGUID )
 {
     wxString strLine;
     wxString strCmd;
@@ -1731,6 +1731,18 @@ int VscpRemoteTcpIf::doCmdSetGUID( const char *pGUID )
     }
     
     return VSCP_ERROR_SUCCESS;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// doCmdSetGUID
+//
+
+int VscpRemoteTcpIf::doCmdSetGUID( cguid& ifguid )
+{
+    unsigned char GUID[16];
+    memcpy( GUID, ifguid.getGUID(), 16 );
+    return doCmdSetGUID( GUID );
 }
 
 
@@ -1994,6 +2006,175 @@ int VscpRemoteTcpIf::deleteRemoteVariable( const wxString& name )
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getRemoteVariableLastChange
+//
+
+int VscpRemoteTcpIf::getRemoteVariableLastChange( const wxString& name, wxDateTime& lastChange )
+{
+    wxString wxstr;
+    wxString strVariable;
+    
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    
+    if ( VSCP_ERROR_SUCCESS != getRemoteVariableAsString( name, strVariable ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    // Format is: "variable name";"type";"persistence";"user";"rights";lastchanged;"value";"note"
+    wxStringTokenizer tkz( strVariable, _(";\r\n") );
+    wxstr = tkz.GetNextToken(); // name
+    wxstr = tkz.GetNextToken(); // type
+    wxstr = tkz.GetNextToken(); // persistence
+    wxstr = tkz.GetNextToken(); // user
+    wxstr = tkz.GetNextToken(); // rights
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken(); // lastchange
+    }
+    else {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    if ( !lastChange.ParseISOCombined( wxstr ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getRemoteVariableType
+//
+
+int VscpRemoteTcpIf::getRemoteVariableType( const wxString& name, uint8_t *pType )
+{
+    wxString wxstr;
+    wxString strVariable;
+    
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    
+    if ( VSCP_ERROR_SUCCESS != getRemoteVariableAsString( name, strVariable ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    // Format is: "variable name";"type";"persistence";"user";"rights";lastchanged;"value";"note"
+    wxStringTokenizer tkz( strVariable, _(";\r\n") );
+    wxstr = tkz.GetNextToken(); // name
+
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken(); // type
+        *pType = vscp_readStringValue( wxstr );
+    }
+    else {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getRemoteVariablePersistence
+//
+
+int VscpRemoteTcpIf::getRemoteVariablePersistence( const wxString& name, bool *pPersistent )
+{
+    wxString wxstr;
+    wxString strVariable;
+    
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    
+    if ( VSCP_ERROR_SUCCESS != getRemoteVariableAsString( name, strVariable ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    // Format is: "variable name";"type";"persistence";"user";"rights";lastchanged;"value";"note"
+    wxStringTokenizer tkz( strVariable, _(";\r\n") );
+    wxstr = tkz.GetNextToken(); // name
+    wxstr = tkz.GetNextToken(); // type
+
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken(); // persistence
+        if ( wxNOT_FOUND != wxstr.Find(_("TRUE")) ) {
+            *pPersistent = true;
+        }
+        else {
+            *pPersistent = false;
+        }
+    }
+    else {
+        return VSCP_ERROR_ERROR;
+    }
+        
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getRemoteVariableOwner
+//
+
+int VscpRemoteTcpIf::getRemoteVariableOwner( const wxString& name, uint32_t *pOwner  )
+{
+    wxString wxstr;
+    wxString strVariable;
+    
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    
+    if ( VSCP_ERROR_SUCCESS != getRemoteVariableAsString( name, strVariable ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    // Format is: "variable name";"type";"persistence";"user";"rights";lastchanged;"value";"note"
+    wxStringTokenizer tkz( strVariable, _(";\r\n") );
+    
+    wxstr = tkz.GetNextToken();     // name
+    wxstr = tkz.GetNextToken();     // type
+    wxstr = tkz.GetNextToken();     // persistence
+
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken(); // user
+        *pOwner = vscp_readStringValue( wxstr );
+    }
+    else {
+        return VSCP_ERROR_ERROR;
+    }
+        
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getRemoteVariableAccessRights
+//
+
+int VscpRemoteTcpIf::getRemoteVariableAccessRights( const wxString& name, 
+                                                        uint16_t *pRights  )
+{
+    wxString wxstr;
+    wxString strVariable;
+    
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    
+    if ( VSCP_ERROR_SUCCESS != getRemoteVariableAsString( name, strVariable ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    // Format is: "variable name";"type";"persistence";"user";"rights";lastchanged;"value";"note"
+    wxStringTokenizer tkz( strVariable, _(";\r\n") );
+    wxstr = tkz.GetNextToken(); // name
+    wxstr = tkz.GetNextToken(); // type
+    wxstr = tkz.GetNextToken(); // persistence
+    wxstr = tkz.GetNextToken(); // user
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken(); // rights
+    }
+    else {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    *pRights = vscp_readStringValue( wxstr );
     
     return VSCP_ERROR_SUCCESS;
 }
