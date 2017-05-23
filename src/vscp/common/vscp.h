@@ -67,7 +67,7 @@
 #define VSCP_ADDRESS_SEGMENT_CONTROLLER	    0x00
 #define VSCP_ADDRESS_NEW_NODE               0xff
 
-#define VSCP_MAX_DATA                       (512-25)
+#define VSCP_MAX_DATA                       (512-25)    // 487 bytes
 
 #define VSCP_LEVEL1                         0           // Changed 151104  Was 1/2
 #define VSCP_LEVEL2                         1

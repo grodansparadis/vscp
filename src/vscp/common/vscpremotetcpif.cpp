@@ -3300,8 +3300,7 @@ int VscpRemoteTcpIf::tableListInfo( const wxString &tblName, wxString &tableInfo
         strCmd += _("XML");
     }
     strCmd += _("\r\n");
-    //if ( type ) strCmd += wxString::Format( _("%d"), type );
-    //strCmd += _("\r\n");
+    
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
@@ -3320,9 +3319,627 @@ int VscpRemoteTcpIf::tableListInfo( const wxString &tblName, wxString &tableInfo
     return VSCP_ERROR_SUCCESS;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// tableGet
+//
+
+int VscpRemoteTcpIf::tableGet( const wxString& tblName, 
+                                const wxDateTime& from, 
+                                const wxDateTime& to,
+                                wxArrayString& resultArray,
+                                bool bFull )
+{
+    wxString strCmd;
+    
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    
+    strCmd = _("TABLE GET ");
+    strCmd += tblName + _(" ");
+    strCmd += from.FormatISOCombined() + _(" ");
+    strCmd += to.FormatISOCombined() + _(" ");
+    if ( bFull ) {
+       strCmd += _("FULL"); 
+    }
+    strCmd += _("\r\n");
+  
+    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+        
+    if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
+    
+    // Handle the data (if any)
+    for ( unsigned int i=0; i<getInputQueueCount(); i++ ) {
+        m_mutexArray.Lock();
+        if ( wxNOT_FOUND == m_inputStrArray[ i ].Find( _("+OK") ) ) { 
+            resultArray.Add( m_inputStrArray[ i ] );            
+        }
+        m_mutexArray.Unlock();
+    }
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// tableGetRaw
+//
+
+int VscpRemoteTcpIf::tableGetRaw( const wxString& tblName, 
+                                const wxDateTime& from, 
+                                const wxDateTime& to,
+                                wxArrayString& resultArray )
+{
+    wxString strCmd;
+    
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    
+    strCmd = _("TABLE GETRAW ");
+    strCmd += tblName + _(" ");
+    strCmd += from.FormatISOCombined() + _(" ");
+    strCmd += to.FormatISOCombined() + _(" ");
+    strCmd += _("\r\n");
+  
+    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+        
+    if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
+    
+    // Handle the data (if any)
+    for ( unsigned int i=0; i<getInputQueueCount(); i++ ) {
+        m_mutexArray.Lock();
+        if ( wxNOT_FOUND == m_inputStrArray[ i ].Find( _("+OK") ) ) { 
+            resultArray.Add( m_inputStrArray[ i ] );            
+        }
+        m_mutexArray.Unlock();
+    }
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// tableLog
+//
+
+int VscpRemoteTcpIf::tableLog( const wxString& tblName, 
+                                    double value, 
+                                    wxDateTime *pdt )
+{
+    wxString strCmd;
+
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    
+    strCmd = _("TABLE LOG ") + tblName + _(" ");
+    strCmd = wxString::Format(_("%f "), value );
+    if ( NULL != pdt  ) {
+        strCmd += pdt->FormatISOCombined();
+    }
+    else {
+        strCmd += wxDateTime::Now().FormatISOCombined();
+    }
+    strCmd += _("\r\n");
+    
+    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    return VSCP_ERROR_SUCCESS;
+}
 
 
+////////////////////////////////////////////////////////////////////////////////
+// tableLogSQL
+//
 
+int VscpRemoteTcpIf::tableLogSQL( const wxString& tblName, const wxString& sql )
+{
+    wxString strCmd;
+
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    
+    strCmd = _("TABLE LOG ") + tblName + _(" ") + sql;
+    strCmd += _("\r\n");
+    
+    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// tableGetNumRecords
+//
+
+int VscpRemoteTcpIf::tableGetNumRecords( const wxString& tblName, 
+                                            const wxDateTime& from, 
+                                            const wxDateTime& to,
+                                            size_t *pRecords )
+{
+    wxString strLine;
+    wxString strCmd;
+
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
+    if ( NULL == pRecords ) return VSCP_ERROR_PARAMETER;    
+    
+    strCmd = _("TABLE RECORDS ") + tblName + _(" ");
+    strCmd += from.FormatISOCombined() + _(" ");
+    strCmd += to.FormatISOCombined() + _(" ");
+    strCmd += _("\r\n");
+    
+    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
+    m_mutexArray.Lock();
+    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    m_mutexArray.Unlock();
+    
+    unsigned long cnt;
+    if ( !strLine.ToCULong( &cnt ) ) return VSCP_ERROR_PARAMETER;
+    *pRecords = cnt;
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// tableGetFirstDate
+//
+
+int VscpRemoteTcpIf::tableGetFirstDate( const wxString& tblName, 
+                                            const wxDateTime& from, 
+                                            const wxDateTime& to,
+                                            wxDateTime& first )
+{
+    wxString strLine;
+    wxString strCmd;
+
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.   
+    
+    strCmd = _("TABLE FIRSTDATE ") + tblName + _(" ");
+    strCmd += from.FormatISOCombined() + _(" ");
+    strCmd += to.FormatISOCombined() + _(" ");
+    strCmd += _("\r\n");
+    
+    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
+    m_mutexArray.Lock();
+    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    m_mutexArray.Unlock();
+    
+    if ( !first.ParseISODate( strLine ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// tableGetLastDate
+//
+
+int VscpRemoteTcpIf::tableGetLastDate( const wxString& tblName, 
+                                            const wxDateTime& from, 
+                                            const wxDateTime& to,
+                                            wxDateTime& last )
+{
+    wxString strLine;
+    wxString strCmd;
+
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.   
+    
+    strCmd = _("TABLE LASTDATE ") + tblName + _(" ");
+    strCmd += from.FormatISOCombined() + _(" ");
+    strCmd += to.FormatISOCombined() + _(" ");
+    strCmd += _("\r\n");
+    
+    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
+    m_mutexArray.Lock();
+    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    m_mutexArray.Unlock();
+    
+    if ( !last.ParseISODate( strLine ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// tableGetSum
+//
+
+int VscpRemoteTcpIf::tableGetSum( const wxString& tblName, 
+                                        const wxDateTime& from, 
+                                        const wxDateTime& to,
+                                        double *pSum )
+{
+    wxString strLine;
+    wxString strCmd;
+
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
+    if ( NULL == pSum ) return VSCP_ERROR_PARAMETER;
+    
+    strCmd = _("TABLE SUM ") + tblName + _(" ");
+    strCmd += from.FormatISOCombined() + _(" ");
+    strCmd += to.FormatISOCombined() + _(" ");
+    strCmd += _("\r\n");
+    
+    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
+    m_mutexArray.Lock();
+    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    m_mutexArray.Unlock();
+    
+    if ( !strLine.ToCDouble( pSum ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// tableGetMin
+//
+
+int VscpRemoteTcpIf::tableGetMin( const wxString& tblName, 
+                                        const wxDateTime& from, 
+                                        const wxDateTime& to,
+                                        double *pMin )
+{
+    wxString strLine;
+    wxString strCmd;
+
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
+    if ( NULL == pMin ) return VSCP_ERROR_PARAMETER;
+    
+    strCmd = _("TABLE MIN ") + tblName + _(" ");
+    strCmd += from.FormatISOCombined() + _(" ");
+    strCmd += to.FormatISOCombined() + _(" ");
+    strCmd += _("\r\n");
+    
+    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
+    m_mutexArray.Lock();
+    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    m_mutexArray.Unlock();
+    
+    if ( !strLine.ToCDouble( pMin ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// tableGetMax
+//
+
+int VscpRemoteTcpIf::tableGetMax( const wxString& tblName, 
+                                        const wxDateTime& from, 
+                                        const wxDateTime& to,
+                                        double *pMax )
+{
+    wxString strLine;
+    wxString strCmd;
+
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
+    if ( NULL == pMax ) return VSCP_ERROR_PARAMETER;
+    
+    strCmd = _("TABLE MAX ") + tblName + _(" ");
+    strCmd += from.FormatISOCombined() + _(" ");
+    strCmd += to.FormatISOCombined() + _(" ");
+    strCmd += _("\r\n");
+    
+    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
+    m_mutexArray.Lock();
+    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    m_mutexArray.Unlock();
+    
+    if ( !strLine.ToCDouble( pMax ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// tableGetAverage
+//
+
+int VscpRemoteTcpIf::tableGetAverage( const wxString& tblName, 
+                                        const wxDateTime& from, 
+                                        const wxDateTime& to,
+                                        double *pAverage )
+{
+    wxString strLine;
+    wxString strCmd;
+
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
+    if ( NULL == pAverage ) return VSCP_ERROR_PARAMETER;
+    
+    strCmd = _("TABLE AVERAGE ") + tblName + _(" ");
+    strCmd += from.FormatISOCombined() + _(" ");
+    strCmd += to.FormatISOCombined() + _(" ");
+    strCmd += _("\r\n");
+    
+    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
+    m_mutexArray.Lock();
+    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    m_mutexArray.Unlock();
+    
+    if ( !strLine.ToCDouble( pAverage ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// tableGetMedian
+//
+
+int VscpRemoteTcpIf::tableGetMedian( const wxString& tblName, 
+                                        const wxDateTime& from, 
+                                        const wxDateTime& to,
+                                        double *pMedian )
+{
+    wxString strLine;
+    wxString strCmd;
+
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
+    if ( NULL == pMedian ) return VSCP_ERROR_PARAMETER;
+    
+    strCmd = _("TABLE MEDIAN ") + tblName + _(" ");
+    strCmd += from.FormatISOCombined() + _(" ");
+    strCmd += to.FormatISOCombined() + _(" ");
+    strCmd += _("\r\n");
+    
+    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
+    m_mutexArray.Lock();
+    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    m_mutexArray.Unlock();
+    
+    if ( !strLine.ToCDouble( pMedian ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// tableGetStdDev
+//
+
+int VscpRemoteTcpIf::tableGetStdDev( const wxString& tblName, 
+                                        const wxDateTime& from, 
+                                        const wxDateTime& to,
+                                        double *pStdDev )
+{
+    wxString strLine;
+    wxString strCmd;
+
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
+    if ( NULL == pStdDev ) return VSCP_ERROR_PARAMETER;
+    
+    strCmd = _("TABLE STDDEV ") + tblName + _(" ");
+    strCmd += from.FormatISOCombined() + _(" ");
+    strCmd += to.FormatISOCombined() + _(" ");
+    strCmd += _("\r\n");
+    
+    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
+    m_mutexArray.Lock();
+    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    m_mutexArray.Unlock();
+    
+    if ( !strLine.ToCDouble( pStdDev ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// tableGetVarianve
+//
+
+int VscpRemoteTcpIf::tableGetVariance( const wxString& tblName, 
+                                        const wxDateTime& from, 
+                                        const wxDateTime& to,
+                                        double *pVariance )
+{
+    wxString strLine;
+    wxString strCmd;
+
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
+    if ( NULL == pVariance ) return VSCP_ERROR_PARAMETER;
+    
+    strCmd = _("TABLE VARIANCE ") + tblName + _(" ");
+    strCmd += from.FormatISOCombined() + _(" ");
+    strCmd += to.FormatISOCombined() + _(" ");
+    strCmd += _("\r\n");
+    
+    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
+    m_mutexArray.Lock();
+    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    m_mutexArray.Unlock();
+    
+    if ( !strLine.ToCDouble( pVariance ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// tableGetMode
+//
+
+int VscpRemoteTcpIf::tableGetMode( const wxString& tblName, 
+                                        const wxDateTime& from, 
+                                        const wxDateTime& to,
+                                        double *pMode )
+{
+    wxString strLine;
+    wxString strCmd;
+
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
+    if ( NULL == pMode ) return VSCP_ERROR_PARAMETER;
+    
+    strCmd = _("TABLE MODE ") + tblName + _(" ");
+    strCmd += from.FormatISOCombined() + _(" ");
+    strCmd += to.FormatISOCombined() + _(" ");
+    strCmd += _("\r\n");
+    
+    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
+    m_mutexArray.Lock();
+    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    m_mutexArray.Unlock();
+    
+    if ( !strLine.ToCDouble( pMode ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// tableGetLowerQ
+//
+
+int VscpRemoteTcpIf::tableGetLowerQ( const wxString& tblName, 
+                                        const wxDateTime& from, 
+                                        const wxDateTime& to,
+                                        double *pLowerq )
+{
+    wxString strLine;
+    wxString strCmd;
+
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
+    if ( NULL == pLowerq ) return VSCP_ERROR_PARAMETER;
+    
+    strCmd = _("TABLE LOWERQ ") + tblName + _(" ");
+    strCmd += from.FormatISOCombined() + _(" ");
+    strCmd += to.FormatISOCombined() + _(" ");
+    strCmd += _("\r\n");
+    
+    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
+    m_mutexArray.Lock();
+    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    m_mutexArray.Unlock();
+    
+    if ( !strLine.ToCDouble( pLowerq ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// tableGetUpperQ
+//
+
+int VscpRemoteTcpIf::tableGetUpperQ( const wxString& tblName, 
+                                        const wxDateTime& from, 
+                                        const wxDateTime& to,
+                                        double *pUpperq )
+{
+    wxString strLine;
+    wxString strCmd;
+
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
+    if ( NULL == pUpperq ) return VSCP_ERROR_PARAMETER;
+    
+    strCmd = _("TABLE UPPERQ ") + tblName + _(" ");
+    strCmd += from.FormatISOCombined() + _(" ");
+    strCmd += to.FormatISOCombined() + _(" ");
+    strCmd += _("\r\n");
+    
+    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
+    m_mutexArray.Lock();
+    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    m_mutexArray.Unlock();
+    
+    if ( !strLine.ToCDouble( pUpperq ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    return VSCP_ERROR_SUCCESS;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// tableClear
+//
+
+int VscpRemoteTcpIf::tableClear( const wxString& tblName, 
+                                        const wxDateTime& from, 
+                                        const wxDateTime& to )
+{
+    wxString strCmd;
+
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
+    
+    strCmd = _("TABLE CLEAR ") + tblName + _(" ");
+    strCmd += from.FormatISOCombined() + _(" ");
+    strCmd += to.FormatISOCombined() + _(" ");
+    strCmd += _("\r\n");
+    
+    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+        
+    return VSCP_ERROR_SUCCESS;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1247,6 +1247,257 @@ public:
     
     
     
+    /*!
+     * Get information about a named table
+     * 
+     * @param tblName Name of table to fetch infor about.,
+     * @param from Date/time from which resulting data should be fetched.
+     * @param to Date/time to which resulting data should be fetched.
+     * @param resultArray String array holding result.
+     * @param bFull True if all fields of the table row should be listed.
+     * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
+     */
+    int tableGet( const wxString& tblName, 
+                        const wxDateTime& from, 
+                        const wxDateTime& to,
+                        wxArrayString& resultArray,
+                        bool bFull = false  );
+    
+    /*!
+     * Get raw information about a named table
+     * 
+     * @param tblName Name of table to fetch infor about.,
+     * @param from Date/time from which resulting data should be fetched.
+     * @param tp Date/time to which resulting data should be fetched.
+     * @param resultArray String array holding result.
+     * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
+     */
+    int tableGetRaw( const wxString& tblName, 
+                        const wxDateTime& from, 
+                        const wxDateTime& to,
+                        wxArrayString& resultArray );
+    
+    
+    /*!
+     * Log data to a named table
+     * 
+     * @param tblName Name of table,
+     * @param value Double to log..
+     * @param pdt Pointer to datetime. If NULL the current date/time will be used.
+     * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
+     */
+    int tableLog( const wxString& tblName, 
+                        double value, 
+                        wxDateTime *pdt = NULL );
+    
+    /*!
+     * Log data to with SQL expression
+     * 
+     * @param tblName Name of table.
+     * @param sql Log SQL expression.
+     * @param pdt Pointer to datetime. If NULL the current date/time will be used.
+     * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
+     */
+    int tableLogSQL( const wxString& tblName, const wxString& sql );
+    
+    
+    /*!
+     * Get number of records for an interval-
+     * 
+     * @param tblName Name of table.
+     * @param from Date/time from which resulting data should be fetched.
+     * @param to Date/time to which resulting data should be fetched.
+     * @param pRecords Filled with number of records in the interval on success.
+     * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
+     */
+    int tableGetNumRecords( const wxString& tblName, 
+                                const wxDateTime& from, 
+                                const wxDateTime& to,
+                                size_t *pRecords );
+    
+    /*!
+     * Get first date/time for an interval-
+     * 
+     * @param tblName Name of table.
+     * @param from Date/time from which resulting data should be fetched.
+     * @param to Date/time to which resulting data should be fetched.
+     * @param first First date/time in the interval on success.
+     * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
+     */
+    int tableGetFirstDate( const wxString& tblName, 
+                                const wxDateTime& from, 
+                                const wxDateTime& to,
+                                wxDateTime& first );
+    
+    /*!
+     * Get last date/time for an interval-
+     * 
+     * @param tblName Name of table.
+     * @param from Date/time from which resulting data should be fetched.
+     * @param to Date/time to which resulting data should be fetched.
+     * @param last Last date/time in the interval on success.
+     * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
+     */
+    int tableGetLastDate( const wxString& tblName, 
+                                const wxDateTime& from, 
+                                const wxDateTime& to,
+                                wxDateTime& last );
+    
+    /*!
+     * Get last sum of values for an interval-
+     * 
+     * @param tblName Name of table.
+     * @param from Date/time from which resulting data should be fetched.
+     * @param to Date/time to which resulting data should be fetched.
+     * @param sum Sum of values in the interval on success.
+     * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
+     */
+    int tableGetSum( const wxString& tblName, 
+                        const wxDateTime& from, 
+                        const wxDateTime& to,
+                        double *pSum );
+    
+    /*!
+     * Get min of values for an interval-
+     * 
+     * @param tblName Name of table.
+     * @param from Date/time from which resulting data should be fetched.
+     * @param to Date/time to which resulting data should be fetched.
+     * @param min Min of values in the interval on success.
+     * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
+     */
+    int tableGetMin( const wxString& tblName, 
+                        const wxDateTime& from, 
+                        const wxDateTime& to,
+                        double *pMin );
+    
+    
+    /*!
+     * Get max of values for an interval-
+     * 
+     * @param tblName Name of table.
+     * @param from Date/time from which resulting data should be fetched.
+     * @param to Date/time to which resulting data should be fetched.
+     * @param max Max of values in the interval on success.
+     * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
+     */
+    int tableGetMax( const wxString& tblName, 
+                        const wxDateTime& from, 
+                        const wxDateTime& to,
+                        double *pMax );
+    
+    /*!
+     * Get average of values for an interval-
+     * 
+     * @param tblName Name of table.
+     * @param from Date/time from which resulting data should be fetched.
+     * @param to Date/time to which resulting data should be fetched.
+     * @param average Average of values in the interval on success.
+     * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
+     */
+    int tableGetAverage( const wxString& tblName, 
+                            const wxDateTime& from, 
+                            const wxDateTime& to,
+                            double *pAverage );
+    
+    /*!
+     * Get median of values for an interval-
+     * 
+     * @param tblName Name of table.
+     * @param from Date/time from which resulting data should be fetched.
+     * @param to Date/time to which resulting data should be fetched.
+     * @param median Median of values in the interval on success.
+     * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
+     */
+    int tableGetMedian( const wxString& tblName, 
+                            const wxDateTime& from, 
+                            const wxDateTime& to,
+                            double *pMedian );
+    
+    /*!
+     * Get stdev of values for an interval-
+     * 
+     * @param tblName Name of table.
+     * @param from Date/time from which resulting data should be fetched.
+     * @param to Date/time to which resulting data should be fetched.
+     * @param stddev Standard deviation of values in the interval on success.
+     * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
+     */
+    int tableGetStdDev( const wxString& tblName, 
+                            const wxDateTime& from, 
+                            const wxDateTime& to,
+                            double *pStdDev );
+    
+    
+    /*!
+     * Get variance of values for an interval-
+     * 
+     * @param tblName Name of table.
+     * @param from Date/time from which resulting data should be fetched.
+     * @param to Date/time to which resulting data should be fetched.
+     * @param variance Variance of values in the interval on success.
+     * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
+     */
+    int tableGetVariance( const wxString& tblName, 
+                            const wxDateTime& from, 
+                            const wxDateTime& to,
+                            double *pVariance );
+    
+    /*!
+     * Get mode of values for an interval-
+     * 
+     * @param tblName Name of table.
+     * @param from Date/time from which resulting data should be fetched.
+     * @param to Date/time to which resulting data should be fetched.
+     * @param mode Mode of values in the interval on success.
+     * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
+     */
+    int tableGetMode( const wxString& tblName, 
+                            const wxDateTime& from, 
+                            const wxDateTime& to,
+                            double *pMode );
+    
+    /*!
+     * Get lower Q of values for an interval-
+     * 
+     * @param tblName Name of table.
+     * @param from Date/time from which resulting data should be fetched.
+     * @param to Date/time to which resulting data should be fetched.
+     * @param lowerq Lower Q of values in the interval on success.
+     * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
+     */
+    int tableGetLowerQ( const wxString& tblName, 
+                            const wxDateTime& from, 
+                            const wxDateTime& to,
+                            double *pLowerQ );
+    
+    /*!
+     * Get Upper Q of values for an interval-
+     * 
+     * @param tblName Name of table.
+     * @param from Date/time from which resulting data should be fetched.
+     * @param to Date/time to which resulting data should be fetched.
+     * @param upperq Upper Q of values in the interval on success.
+     * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
+     */
+    int tableGetUpperQ( const wxString& tblName, 
+                            const wxDateTime& from, 
+                            const wxDateTime& to,
+                            double *pUpperQ );
+    
+    
+    /*!
+     * Clear table over an interval-
+     * 
+     * @param tblName Name of table.
+     * @param from Date/time from which resulting data should be fetched.
+     * @param to Date/time to which resulting data should be fetched.
+     * @param upperq Upper Q of values in the interval on success.
+     * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
+     */
+    int tableClear( const wxString& tblName, 
+                        const wxDateTime& from, 
+                        const wxDateTime& to  );
     
     
     
