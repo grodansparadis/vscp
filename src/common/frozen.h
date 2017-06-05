@@ -28,8 +28,10 @@ extern "C" {
 #include <stddef.h>
 #include <stdio.h>
 
-#ifdef _WIN32
 typedef int bool_t;
+    
+#ifdef _WIN32
+
 #else
 #include <stdbool.h>
 #endif

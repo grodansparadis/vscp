@@ -345,9 +345,9 @@ public:
     \param strValue pointer to string that get the value of the string variable.
     \return true if the variable is of type string.
     */
-    int getVariableString( wxString& name, wxString *strValue )
+    int getVariableString( wxString& name, wxString& strValue )
     { 
-        return m_vscptcpif.getRemoteVariable( name, *strValue ); 
+        return m_vscptcpif.getRemoteVariableAsString( name, strValue ); 
     };
 
     /*!

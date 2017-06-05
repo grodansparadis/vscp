@@ -44,7 +44,7 @@
 	"`vscpd_tcpipinterface_address`                     TEXT DEFAULT '9598',"\
 	"`vscpd_announceinterface_address`                  TEXT DEFAULT '9598',"\
 	"`vscpd_announceinterface_ttl`                      INTEGER DEFAULT 1,"\
-	"`vscpd_udp_enable`                                 INTEGER DEFAULT 0,"\
+	"`vscpd_udp_enable`                                 INTEGER DEFAULT 1,"\
 	"`vscpd_udp_address`                                TEXT DEFAULT 'udp://:33333',"\
         "`vscpd_udp_user`                                   TEXT DEFAULT '',"\
         "`vscpd_udp_password`                               TEXT DEFAULT '',"\
@@ -710,11 +710,11 @@
 #define VSCPDB_UDPNODE_CREATE "CREATE TABLE 'udpnode' ("\
 	"`idx_udpnode`      INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
         "`bEnable`          INTEGER DEFAULT 0,"\
-        "`interface`        TEXT,"\
-	"`filter`           TEXT"\
-        "`mask`             TEXT"\
-        "`encryption`       TEXT"\
-        "`bSetBroadcast`    TEXT"\
+        "`interface`        TEXT NOT NULL,"\
+	"`filter`           TEXT NOT NULL,"\
+        "`mask`             TEXT NOT NULL,"\
+        "`encryption`       TEXT NOT NULL,"\
+        "`bSetBroadcast`    TEXT DEFAULT 0"\
         ");";\
 
 #define VSCPDB_UDPNODE_UPDATE "UPDATE 'udpnode' "\

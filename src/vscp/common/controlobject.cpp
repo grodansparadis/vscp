@@ -912,6 +912,8 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 
     }
     
+    // Read UDP nodes
+    readUdpNodes();
     
     // * * * VSCP Daemon logging database * * *
     
@@ -2384,7 +2386,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     // Password
                     m_udpInfo.m_password = subchild->GetAttribute( _("password"), _(""));
 
-                    // INterface
+                    // Interface
                     m_udpInfo.m_interface = subchild->GetAttribute( _("interface"), _("udp://"+VSCP_MULTICAST_DEFAULT_PORT));
                     
                     // GUID
@@ -2414,13 +2416,18 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                                 continue;
                             }
                                                         
-                            attribute = subchild->GetAttribute( wxT("bEnable"), wxT("false") );
+                            attribute = subchild->GetAttribute( wxT("enable"), wxT("false") );
                             if ( attribute.Lower().IsSameAs(_("false"), false ) ) {
                                 pudpClient->m_bEnable = false; 
                             }
                             else {
                                 pudpClient->m_bEnable = true; 
-                            }                            
+                            }               
+                            
+                            if ( !pudpClient->m_bEnable ) {
+                                delete pudpClient;
+                                continue;
+                            }
                             
                             // remote address
                             pudpClient->m_remoteAddress = subchild->GetAttribute( _("interface"), _("") );    
@@ -3880,7 +3887,7 @@ bool CControlObject::readUdpNodes( void )
 {
     char *pErrMsg = 0;
     const char *psql = "SELECT * from UDPNODE";
-    sqlite3_stmt *ppStmt;
+    sqlite3_stmt *ppStmt; 
     
     // If UDP is disabled we are done
     if ( !m_udpInfo.m_bEnable ) return true;
@@ -3916,25 +3923,20 @@ bool CControlObject::readUdpNodes( void )
         
         // Broadcast
         pudpClient->m_bSetBroadcast = false;
-        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_UDPNODE_SET_BROADCAST );
-        if ( NULL != p ) {
-            wxString wxstr = wxString::FromUTF8( (const char *)p );
-            wxstr.MakeUpper();
-            if ( wxNOT_FOUND != wxstr.Find( _("TRUE") ) ) {
-                pudpClient->m_bSetBroadcast = true;
-            }
+        if ( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_UDPNODE_SET_BROADCAST ) ) {
+            pudpClient->m_bSetBroadcast = true;
         }
         
         // Interface
         p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_UDPNODE_INTERFACE );
         if ( NULL != p ) {
-            pudpClient->m_remoteAddress.FromUTF8( (const char *)p );
+            pudpClient->m_remoteAddress = wxString::FromUTF8Unchecked( (const char *)p );
         }
         
         //  Filter
         p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_UDPNODE_FILTER );
         if ( NULL != p ) {
-            wxString wxstr = wxString::FromUTF8( (const char *)p );
+            wxString wxstr = wxString::FromUTF8Unchecked( (const char *)p );
             if ( !vscp_readFilterFromString( &pudpClient->m_filter, wxstr ) ) {
                 fprintf( stderr, "readUdpNodes: Failed to set filter for UDP node." );
             }
@@ -3943,7 +3945,7 @@ bool CControlObject::readUdpNodes( void )
         // Mask
         p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_UDPNODE_MASK );
         if ( NULL != p ) {
-            wxString wxstr = wxString::FromUTF8( (const char *)p );
+            wxString wxstr = wxString::FromUTF8Unchecked( (const char *)p );
             if ( !vscp_readMaskFromString( &pudpClient->m_filter, wxstr ) ) {
                 fprintf( stderr, "readUdpNodes: Failed to set mask for UDP node." );
             }
@@ -3952,7 +3954,7 @@ bool CControlObject::readUdpNodes( void )
         // Encryption
         p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_UDPNODE_ENCRYPTION );
         if ( NULL != p ) {
-            wxString wxstr = wxString::FromUTF8( (const char *)p );
+            wxString wxstr = wxString::FromUTF8Unchecked( (const char *)p );
             pudpClient->m_nEncryption = vscp_getEncryptionCodeFromToken( wxstr );
         }
         
