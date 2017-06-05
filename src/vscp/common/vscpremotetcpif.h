@@ -1295,14 +1295,13 @@ public:
      * 
      * @param tblName Name of table.
      * @param sql Log SQL expression.
-     * @param pdt Pointer to datetime. If NULL the current date/time will be used.
      * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
      */
     int tableLogSQL( const wxString& tblName, const wxString& sql );
     
     
     /*!
-     * Get number of records for an interval-
+     * Get number of records for an interval.
      * 
      * @param tblName Name of table.
      * @param from Date/time from which resulting data should be fetched.
@@ -1498,6 +1497,8 @@ public:
     int tableClear( const wxString& tblName, 
                         const wxDateTime& from, 
                         const wxDateTime& to  );
+    
+    
     
     
     

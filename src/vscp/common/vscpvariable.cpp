@@ -3268,12 +3268,12 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
     // *************************************************************************
     
     if ( lcname.StartsWith( _("vscp.udp.enable") ) ) {
-        var.setValue( gpobj->m_bUDP ? true : false );
+        var.setValue( gpobj->m_udpInfo.m_bEnable ? true : false );
         return var.getID();
     }
     
     if ( lcname.StartsWith( _("vscp.udp.address") ) ) {
-        var.setValue( gpobj->m_strUDPInterfaceAddress, true );
+        var.setValue( gpobj->m_udpInfo.m_interface , true );
         return var.getID();
     }
     
@@ -4290,7 +4290,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
     if ( lcname.StartsWith( _("vscp.udp.enable") ) ) {
         int val;
         var.getValue( &val );
-        gpobj->m_bUDP = val;
+        gpobj->m_udpInfo.m_bEnable = val;
         return gpobj->updateConfigurationRecordItem( _("vscpd_UdpSimpleInterface_Enable"), 
                                                         val ? _("1") : _("0") );
     }
@@ -4298,7 +4298,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
     if ( lcname.StartsWith( _("vscp.udp.address") ) ) {
         wxString strval;
         strval = var.getValue();
-        gpobj->m_strUDPInterfaceAddress = strval;
+        gpobj->m_udpInfo.m_interface  = strval;
         return gpobj->updateConfigurationRecordItem( _("vscpd_UdpSimpleInterface_Address"), 
                                                     strval );
     }

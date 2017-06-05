@@ -12,13 +12,14 @@
 
     <general>
 
-   	<!-- This is the admin credentials                                    -->
+   	    <!-- This is the admin credentials                                    -->
         <!-- allowfrom="*" allow connections from all hosts                   -->
         <!-- A stricter allowfrom can be 127.0.0.1,192.168.1.*                -->
+        <!-- The VSCP token is used a a key for encryption routines           -->
         <security admin="admin" 
                        password="secret" 
                        allowfrom="*" 
-                       vscptoken="Stay Hungry. Stay Foolish." />
+                       vscptoken="Carpe diem quam minimum credula postero" />
     
         <!-- Set the detail of logging you want -->
         <loglevel>debug</loglevel>
@@ -48,7 +49,33 @@
         <!-- with a space between them. If interface is not preceded with -->
         <!-- "UDP://" it will be added.                                   -->
         
-        <udp enable="true" interface="udp://9598"/>
+        <udp enable="true">
+            <channel enable="true"
+                interface="udp://9598"
+                guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+                txfilter=""
+                txmask=""
+                rxfilter=""
+                rxmask=""
+                encpryption=""
+            />
+        </udp>
+
+        <!-- One or more multicast channels                                  -->
+        <multicast enable="true"> 
+            <channel enable="true"
+                        interface=""
+                        group="224.0.23.158" 
+                        port="32000" 
+                        ttl="1" 
+                        guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+                        txfilter=""
+                        txmask=""
+                        rxfilter=""
+                        rxmask=""
+                        encryption="" 
+            />
+        </multicast>
 
         <!-- It is possible to enable/disable the MQTT Broker               -->
         <!-- You can open the MQTT broker interfaces on several ports or on -->

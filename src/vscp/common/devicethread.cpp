@@ -1074,7 +1074,7 @@ void *deviceLevel2ReceiveThread::Entry()
 
         }
 
-        // There must be room in the receive queue (even if rom (or whisky) has been better)
+        // There must be room in the receive queue (even if room (or whisky) has been better)
         if (m_pMainThreadObj->m_pCtrlObject->m_maxItemsInClientReceiveQueue >
                 m_pMainThreadObj->m_pCtrlObject->m_clientOutputQueue.GetCount()) {
 
@@ -1085,7 +1085,9 @@ void *deviceLevel2ReceiveThread::Entry()
 
         }
         else {
-            if (NULL == pEvent) vscp_deleteVSCPevent(pEvent);
+            if (NULL == pEvent) vscp_deleteVSCPevent( pEvent );
+            delete pEvent;
+            pEvent = NULL;
         }
 
     }

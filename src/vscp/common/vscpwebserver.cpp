@@ -375,14 +375,14 @@ static void vscp_mkmd5resp( const char *method, size_t method_len, const char *u
 
 static int vscp_is_authorized( struct mg_connection *conn,
                                 struct http_message *hm,
-                                CControlObject *pObject ) {
+                                CControlObject *gpobj ) {
 
     CUserItem *pUserItem;
     bool bValidHost;
 
     // Check pointers
     if ( NULL == hm ) return FALSE;
-    if ( NULL == pObject ) return 0;
+    if ( NULL == gpobj ) return 0;
 
     struct mg_str *hdr;
     char user[50], cnonce[50], response[40], uri[200], qop[20], nc[20], nonce[50];
@@ -400,24 +400,24 @@ static int vscp_is_authorized( struct mg_connection *conn,
         return 0;
     }
 
-    if ( !pObject->m_bDisableSecurityWebServer ) {
+    if ( !gpobj->m_bDisableSecurityWebServer ) {
 
         // Check if user is valid
-        pUserItem = pObject->m_userList.getUser( wxString::FromAscii( user ) );
+        pUserItem = gpobj->m_userList.getUser( wxString::FromAscii( user ) );
         if ( NULL == pUserItem ) return 0;
 
         // Check if remote ip is valid
-        pObject->m_mutexUserList.Lock();
+        gpobj->m_mutexUserList.Lock();
         bValidHost = pUserItem->isAllowedToConnect( wxString::FromAscii(
                 (const char *)inet_ntoa( conn->sa.sin.sin_addr ) ) );
-        pObject->m_mutexUserList.Unlock();
+        gpobj->m_mutexUserList.Unlock();
         if ( !bValidHost ) {
             // Host wrong
             wxString strErr =
                 wxString::Format( _( "[Webserver Client] Host [%s] NOT allowed to connect. User [%s]\n" ),
                 wxString::FromAscii( ( const char * )inet_ntoa( conn->sa.sin.sin_addr ) ).wx_str(),
                                             pUserItem->getUser().mbc_str() );
-                pObject->logMsg( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
+                gpobj->logMsg( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
                 return 0;
         }
 
@@ -427,7 +427,7 @@ static int vscp_is_authorized( struct mg_connection *conn,
 
         // Check digest
         if ( TRUE !=
-            pObject->getWebServer()->websrv_check_password( method,
+            gpobj->getWebServer()->websrv_check_password( method,
                             ( const char * )pUserItem->getPasswordDomain().mbc_str(),
                             uri,
                             nonce,
@@ -441,7 +441,7 @@ static int vscp_is_authorized( struct mg_connection *conn,
                 wxString::Format( _( "[Webserver Client] Host [%s] User [%s] NOT allowed to connect.\n" ),
                         wxString::FromAscii( ( const char * )inet_ntoa( conn->sa.sin.sin_addr ) ).wx_str(),
                         pUserItem->getUser().mbc_str() );
-                pObject->logMsg( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
+                gpobj->logMsg( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
                 return 0;
         }
 
@@ -493,8 +493,8 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
     // Web socket data
     struct websocket_message *wm = (struct websocket_message *)p;
 
-    CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if ( NULL == pObject ) return;
+    //CControlObject *gpobj = (CControlObject *)nc->mgr->user_data;
+    //if ( NULL == gpobj ) return;
 
     // Message
     struct http_message *phm = (struct http_message *)p;
@@ -510,12 +510,12 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
         case MG_EV_POLL:    // Sent to each connection on each mg_mgr_poll() call
 
             // Post incoming web socket events
-            pObject->getWebServer()->websock_post_incomingEvents();  // 1
+            gpobj->getWebServer()->websock_post_incomingEvents();  // 1
 
             /*if ( ( cleanupTime - time(NULL) ) > 60 ) {
-                pObject->getWebServer()->websrv_expire_sessions( nc, phm );
-                pObject->getWebServer()->websock_expire_sessions( nc, phm );
-                pObject->getWebServer()->websrv_expire_rest_sessions( nc );
+                gpobj->getWebServer()->websrv_expire_sessions( nc, phm );
+                gpobj->getWebServer()->websock_expire_sessions( nc, phm );
+                gpobj->getWebServer()->websrv_expire_rest_sessions( nc );
                 cleanupTime = time(NULL);
             }*/
             break;
@@ -527,13 +527,13 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
                 if ( NULL != pWebSockSession ) {
                     
                     // Remove client and session item
-                    pObject->m_wxClientMutex.Lock();
-                    pObject->removeClient( pWebSockSession->m_pClientItem );
+                    gpobj->m_wxClientMutex.Lock();
+                    gpobj->removeClient( pWebSockSession->m_pClientItem );
                     pWebSockSession->m_pClientItem = NULL;
-                    pObject->m_wxClientMutex.Unlock();
+                    gpobj->m_wxClientMutex.Unlock();
             
                     // Remove the session object from the list and delete it
-                    pObject->m_websocketSessions.DeleteObject( pWebSockSession );                                      
+                    gpobj->m_websocketSessions.DeleteObject( pWebSockSession );                                      
                     nc->user_data = NULL;
                 }
             }
@@ -543,18 +543,18 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
 
             // Don't authorise here for rest calls
             if ( 0 == strncmp(phm->uri.p, "/vscp/rest", 10 ) ) {
-                pObject->getWebServer()->websrv_restapi( nc, phm );
+                gpobj->getWebServer()->websrv_restapi( nc, phm );
                 return;
             }
             else {
                 // Must be authorised
-                if ( !vscp_is_authorized( nc, phm, pObject ) ) {
+                if ( !vscp_is_authorized( nc, phm, gpobj ) ) {
                     mg_printf( nc,
                                 "HTTP/1.1 401 Unauthorized\r\n"
                                 "WWW-Authenticate: Digest qop=\"auth\", "
                                 "realm=\"%s\", nonce=\"%lu\"\r\n"
                                 "Content-Length: 0\r\n\r\n",
-                                pObject->m_authDomain,
+                                gpobj->m_authDomain,
                                 (unsigned long)time( NULL ) );
                     return;
                 
@@ -562,8 +562,8 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
             }
 
             // Get Session object
-            if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( nc, phm ) ) ) {
-                pObject->getWebServer()->websrv_add_session_cookie( nc, phm );
+            if ( NULL == ( pWebSrvSession = gpobj->getWebServer()->websrv_get_session( nc, phm ) ) ) {
+                gpobj->getWebServer()->websrv_add_session_cookie( nc, phm );
                 return;
             }
 
@@ -574,7 +574,7 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
                                     wxString::FromUTF8((const char *)phm->uri.p, phm->uri.len ).wx_str(),
                                     wxString::FromUTF8((const char *)phm->query_string.p, phm->query_string.len).wx_str(),
                                     wxString::FromUTF8((const char *)phm->method.p, phm->method.len).wx_str() );
-            pObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_ACCESS );
+            gpobj->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_ACCESS );
             
             memset( uri, 0, sizeof(uri) );
             strncpy( uri, phm->uri.p, phm->uri.len );
@@ -582,7 +582,7 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
             strcpy( uri, pstr );
 
             if ( ( 0 == strcmp( uri, "/vscp" ) ) || ( 0 == strcmp( uri, "/vscp/" ) ) ) {
-                pObject->getWebServer()->websrv_mainpage( nc, phm );
+                gpobj->getWebServer()->websrv_mainpage( nc, phm );
             }
             else if ( 0 == strcmp( uri, "/test") ) {
                 mg_printf( nc, "HTTP/1.1 200 OK\r\n"
@@ -593,55 +593,55 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
                 mg_send_http_chunk( nc, "", 0); // Tell the client we're finished
             }
             else if ( 0 == strcmp( uri, "/vscp/interfaces") ) {
-                pObject->getWebServer()->websrv_interfaces( nc, phm );
+                gpobj->getWebServer()->websrv_interfaces( nc, phm );
             }
             else if ( 0 == strcmp( uri, "/vscp/dm") ) {
-                pObject->getWebServer()->websrv_dmlist( nc, phm );
+                gpobj->getWebServer()->websrv_dmlist( nc, phm );
             }
             else if ( 0 == strcmp( uri, "/vscp/dmedit") ) {
-                pObject->getWebServer()->websrv_dmedit( nc, phm );
+                gpobj->getWebServer()->websrv_dmedit( nc, phm );
             }
             else if ( 0 == strcmp( uri, "/vscp/dmpost") ) {
-                pObject->getWebServer()->websrv_dmpost( nc, phm );
+                gpobj->getWebServer()->websrv_dmpost( nc, phm );
             }
             else if ( 0 == strcmp( uri, "/vscp/dmdelete") ) {
-                pObject->getWebServer()->websrv_dmdelete( nc, phm );
+                gpobj->getWebServer()->websrv_dmdelete( nc, phm );
             }
             else if ( 0 == strcmp( uri, "/vscp/variables") ) {
-                pObject->getWebServer()->websrv_variables_list( nc, phm );
+                gpobj->getWebServer()->websrv_variables_list( nc, phm );
             }
             else if ( 0 == strcmp( uri, "/vscp/varedit") ) {
-                pObject->getWebServer()->websrv_variables_edit( nc, phm );
+                gpobj->getWebServer()->websrv_variables_edit( nc, phm );
             }
             else if ( 0 == strcmp( uri, "/vscp/varpost") ) {
-                pObject->getWebServer()->websrv_variables_post( nc, phm );
+                gpobj->getWebServer()->websrv_variables_post( nc, phm );
             }
             else if ( 0 == strcmp( uri, "/vscp/vardelete") ) {
-                pObject->getWebServer()->websrv_variables_delete( nc, phm );
+                gpobj->getWebServer()->websrv_variables_delete( nc, phm );
             }
             else if ( 0 == strcmp( uri, "/vscp/varnew") ) {
-                pObject->getWebServer()->websrv_variables_new( nc, phm );
+                gpobj->getWebServer()->websrv_variables_new( nc, phm );
             }
             else if ( 0 == strcmp( uri, "/vscp/discovery") ) {
-                pObject->getWebServer()->websrv_discovery( nc, phm );
+                gpobj->getWebServer()->websrv_discovery( nc, phm );
             }
             else if ( 0 == strcmp( uri, "/vscp/session") ) {
-                pObject->getWebServer()->websrv_session( nc, phm );
+                gpobj->getWebServer()->websrv_session( nc, phm );
             }
             else if ( 0 == strcmp( uri, "/vscp/configure") ) {
-                pObject->getWebServer()->websrv_configure( nc, phm );
+                gpobj->getWebServer()->websrv_configure( nc, phm );
             }
             else if ( 0 == strcmp( uri, "/vscp/bootload") ) {
-                pObject->getWebServer()->websrv_bootload( nc, phm );
+                gpobj->getWebServer()->websrv_bootload( nc, phm );
             }
             else if ( 0 == strncmp( uri, "/vscp/table",12) ) {
-                pObject->getWebServer()->websrv_table( nc, phm );
+                gpobj->getWebServer()->websrv_table( nc, phm );
             }
             else if ( 0 == strncmp( uri, "/vscp/tablelist",12) ) {
-                pObject->getWebServer()->websrv_tablelist( nc, phm );
+                gpobj->getWebServer()->websrv_tablelist( nc, phm );
             }
             else if ( 0 == strncmp( uri, "/vscp/rest",10) ) {
-                pObject->getWebServer()->websrv_restapi( nc, phm );
+                gpobj->getWebServer()->websrv_restapi( nc, phm );
             }
             else {
                 // Check if uri ends with ".vscp"
@@ -748,7 +748,7 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
                                             e.pdata[3] = 0x5D;
                                             e.sizeData = 4;
                                             dmElement dm;
-                                            dm.m_pDM = &pObject->m_dm; // Needed
+                                            dm.m_pDM = &gpobj->m_dm; // Needed
                                             wxString wxstr = wxString::FromUTF8( pbuf );
                                             dm.handleEscapes( &e, wxstr );
                                             mg_send_http_chunk( nc, wxstr.mbc_str(), wxstr.Length() );
@@ -807,13 +807,13 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
             break;
 
         case MG_EV_WEBSOCKET_FRAME:
-            pObject->getWebServer()->websrv_websocket_message( nc, phm, wm );
+            gpobj->getWebServer()->websrv_websocket_message( nc, phm, wm );
             break;
 
         case MG_EV_WEBSOCKET_HANDSHAKE_REQUEST:
 
             // New websocket connection. Create a session
-            nc->user_data = pObject->getWebServer()->websock_new_session( nc, phm );
+            nc->user_data = gpobj->getWebServer()->websock_new_session( nc, phm );
 
             /*
                 Currently it is impossible to request a specific protocol
@@ -861,7 +861,7 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
                                             WEBSOCK_STR_ERROR_NOT_AUTHORISED );
             }
 
-            if ( pObject->m_bAuthWebsockets ) {
+            if ( gpobj->m_bAuthWebsockets ) {
 
                 // Start authentication
                 mg_printf_websocket_frame( nc,
@@ -1191,8 +1191,8 @@ VSCPWebServerThread::websrv_add_session_cookie( struct mg_connection *nc,
     // Check pointer
     if (NULL == nc) return NULL;
 
-    CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return NULL;
+    //CControlObject *gpobj = (CControlObject *)nc->mgr->user_data;
+    //if (NULL == gpobj) return NULL;
 
     struct mg_str *hdr;
     memset( user, 0, sizeof( user ) );
@@ -1248,7 +1248,7 @@ VSCPWebServerThread::websrv_add_session_cookie( struct mg_connection *nc,
                 uri,
                 uri );
 
-    ret->m_pUserItem = pObject->m_userList.getUser( wxString::FromAscii( user ) );
+    ret->m_pUserItem = gpobj->m_userList.getUser( wxString::FromAscii( user ) );
 
     // Add to linked list
     ret->m_referenceCount++;
@@ -1274,10 +1274,10 @@ VSCPWebServerThread::websrv_GetCreateSession( struct mg_connection *nc,
     // Check pointer
     if (NULL == nc) return NULL;
 
-    CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return NULL;
+    //CControlObject *gpobj = (CControlObject *)nc->mgr->user_data;
+    //if (NULL == gpobj) return NULL;
 
-    if ( NULL == ( rv =  pObject->getWebServer()->websrv_get_session( nc, hm ) ) ) {
+    if ( NULL == ( rv =  gpobj->getWebServer()->websrv_get_session( nc, hm ) ) ) {
 
         if ( NULL == ( pheader = mg_get_http_header( hm, "Authorization") ) ||
                         ( vscp_strncasecmp( pheader->p, "Digest ", 7 ) != 0 ) ) {
@@ -1289,7 +1289,7 @@ VSCPWebServerThread::websrv_GetCreateSession( struct mg_connection *nc,
         }
 
         // Add session cookie
-        rv = pObject->getWebServer()->websrv_add_session_cookie( nc, hm );
+        rv = gpobj->getWebServer()->websrv_add_session_cookie( nc, hm );
     }
 
     return rv;
@@ -1504,8 +1504,8 @@ VSCPWebServerThread::websrv_mainpage( struct mg_connection *nc,
     // Check pointer
     if (NULL == nc) return;
 
-    CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return;
+    //CControlObject *gpobj = (CControlObject *)nc->mgr->user_data;
+    //if (NULL == gpobj) return;
 
     // Get hostname
     mg_str *mgstr = mg_get_http_header( hm, "Host" ); // nc->local_ip; //_("http://localhost:8080");
@@ -1562,8 +1562,8 @@ VSCPWebServerThread::websrv_interfaces( struct mg_connection *nc,
     // Check pointer
     if (NULL == nc) return;
 
-    CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return;
+    //CControlObject *gpobj = (CControlObject *)nc->mgr->user_data;
+    //if (NULL == gpobj) return;
 
     mg_printf( nc,
         "HTTP/1.1 200 OK\r\n"
@@ -1592,10 +1592,10 @@ VSCPWebServerThread::websrv_interfaces( struct mg_connection *nc,
     wxString strBuf;
 
     // Display Interface List
-    pObject->m_wxClientMutex.Lock();
+    gpobj->m_wxClientMutex.Lock();
     VSCPCLIENTLIST::iterator iter;
-    for (iter = pObject->m_clientList.m_clientItemList.begin();
-            iter != pObject->m_clientList.m_clientItemList.end();
+    for (iter = gpobj->m_clientList.m_clientItemList.begin();
+            iter != gpobj->m_clientList.m_clientItemList.end();
             ++iter) {
 
         CClientItem *pItem = *iter;
@@ -1634,7 +1634,7 @@ VSCPWebServerThread::websrv_interfaces( struct mg_connection *nc,
 
     }
 
-    pObject->m_wxClientMutex.Unlock();
+    gpobj->m_wxClientMutex.Unlock();
 
     buildPage += _(WEB_IFLIST_TABLE_END);
 
@@ -1675,8 +1675,8 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *nc,
     // Check pointer
     if (NULL == nc) return;
 
-    CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return;
+    //CControlObject *gpobj = (CControlObject *)nc->mgr->user_data;
+    //if (NULL == gpobj) return;
 
     // light
     bool bLight = false;
@@ -1709,21 +1709,21 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *nc,
         }
         else if (NULL != strstr("next",buf)) {
             nFrom += nCount;
-            if ( nFrom > pObject->m_dm.getMemoryElementCount() - 1 ) {
-                if ( pObject->m_dm.getMemoryElementCount() % nCount ) {
-                    nFrom = pObject->m_dm.getMemoryElementCount()/nCount;
+            if ( nFrom > gpobj->m_dm.getMemoryElementCount() - 1 ) {
+                if ( gpobj->m_dm.getMemoryElementCount() % nCount ) {
+                    nFrom = gpobj->m_dm.getMemoryElementCount()/nCount;
                 }
                 else {
-                    nFrom = (pObject->m_dm.getMemoryElementCount()/nCount) - 1;
+                    nFrom = (gpobj->m_dm.getMemoryElementCount()/nCount) - 1;
                 }
             }
         }
         else if (NULL != strstr("last",buf)) {
-            if ( pObject->m_dm.getMemoryElementCount() % nCount ) {
-                nFrom = (pObject->m_dm.getMemoryElementCount()/nCount)*nCount;
+            if ( gpobj->m_dm.getMemoryElementCount() % nCount ) {
+                nFrom = (gpobj->m_dm.getMemoryElementCount()/nCount)*nCount;
             }
             else {
-                nFrom = ((pObject->m_dm.getMemoryElementCount()/nCount) - 1)*nCount;
+                nFrom = ((gpobj->m_dm.getMemoryElementCount()/nCount) - 1)*nCount;
             }
         }
         else if ( NULL != strstr("first",buf) ) {
@@ -1758,9 +1758,9 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *nc,
         buildPage += wxString::Format( _(WEB_COMMON_LIST_NAVIGATION),
                 _("/vscp/dm"),
                 (unsigned long)nFrom+1,
-                ( (unsigned long)(nFrom + nCount) < pObject->m_dm.getMemoryElementCount()) ?
-                    nFrom + nCount : pObject->m_dm.getMemoryElementCount(),
-                (unsigned long)pObject->m_dm.getMemoryElementCount(),
+                ( (unsigned long)(nFrom + nCount) < gpobj->m_dm.getMemoryElementCount()) ?
+                    nFrom + nCount : gpobj->m_dm.getMemoryElementCount(),
+                (unsigned long)gpobj->m_dm.getMemoryElementCount(),
                 (unsigned long)nCount,
                 (unsigned long)nFrom,
                 (const char *)wxstrlight.mbc_str() );
@@ -1773,7 +1773,7 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *nc,
 
     // Display DM List
 
-    if ( 0 == pObject->m_dm.getMemoryElementCount() ) {
+    if ( 0 == gpobj->m_dm.getMemoryElementCount() ) {
         buildPage += _("<br>Decision Matrix is empty!<br>");
     }
     else {
@@ -1785,9 +1785,9 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *nc,
     for ( int i=0; i<nCount; i++) {
 
         // Check limits
-        if ( ( nFrom+i ) >= pObject->m_dm.getMemoryElementCount() ) break;
+        if ( ( nFrom+i ) >= gpobj->m_dm.getMemoryElementCount() ) break;
 
-        dmElement *pElement = pObject->m_dm.getMemoryElementFromRow( i );
+        dmElement *pElement = gpobj->m_dm.getMemoryElementFromRow( i );
 
         {
             wxString url_dmedit =
@@ -1970,9 +1970,9 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *nc,
         buildPage += wxString::Format( _(WEB_COMMON_LIST_NAVIGATION),
                 _("/vscp/dm"),
                 (unsigned long)nFrom+1,
-                ( (unsigned long)(nFrom + nCount) < pObject->m_dm.getMemoryElementCount()) ?
-                    nFrom + nCount : pObject->m_dm.getMemoryElementCount(),
-                (unsigned long)pObject->m_dm.getMemoryElementCount(),
+                ( (unsigned long)(nFrom + nCount) < gpobj->m_dm.getMemoryElementCount()) ?
+                    nFrom + nCount : gpobj->m_dm.getMemoryElementCount(),
+                (unsigned long)gpobj->m_dm.getMemoryElementCount(),
                 (unsigned long)nCount,
                 (unsigned long)nFrom,
                 wxstrlight.wx_str() );
@@ -2003,8 +2003,8 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
     // Check pointer
     if (NULL == nc) return;
 
-    CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return;
+    //CControlObject *gpobj = (CControlObject *)nc->mgr->user_data;
+    //if (NULL == gpobj) return;
 
     // id
     long id = -1;
@@ -2049,8 +2049,8 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
     buildPage += _(WEB_COMMON_MENU);;
     buildPage += _(WEB_DMEDIT_BODY_START);
 
-    if ( !bNew && id < pObject->m_dm.getMemoryElementCount() ) {
-        pElement = pObject->m_dm.getMemoryElementFromRow(id);
+    if ( !bNew && id < gpobj->m_dm.getMemoryElementCount() ) {
+        pElement = gpobj->m_dm.getMemoryElementFromRow(id);
     }
 
     if (bNew || (NULL != pElement)) {
@@ -2074,11 +2074,11 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *nc,
             buildPage += _("<input name=\"new\" value=\"true\" type=\"hidden\"></input>");
 
             long nFrom;
-             if ( pObject->m_dm.getMemoryElementCount() % nCount ) {
-                nFrom = (pObject->m_dm.getMemoryElementCount()/nCount)*nCount;
+             if ( gpobj->m_dm.getMemoryElementCount() % nCount ) {
+                nFrom = (gpobj->m_dm.getMemoryElementCount()/nCount)*nCount;
             }
             else {
-                nFrom = ((pObject->m_dm.getMemoryElementCount()/nCount) - 1)*nCount;
+                nFrom = ((gpobj->m_dm.getMemoryElementCount()/nCount) - 1)*nCount;
             }
 
             buildPage += wxString::Format( _("<input name=\"from\" value=\"%ld\" type=\"hidden\">"), (long)nFrom );
@@ -2628,8 +2628,8 @@ VSCPWebServerThread::websrv_dmpost( struct mg_connection *nc,
     // Check pointer
     if (NULL == nc) return;
 
-    CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return;
+    //CControlObject *gpobj = (CControlObject *)nc->mgr->user_data;
+    //if (NULL == gpobj) return;
 
     // id
     long id = -1;
@@ -2868,9 +2868,9 @@ VSCPWebServerThread::websrv_dmpost( struct mg_connection *nc,
 
     if ( bNew || ( id >= 0 ) ) {
 
-        if ( bNew || ((0 == id) && !bNew) || ( id < pObject->m_dm.getMemoryElementCount() ) ) {
+        if ( bNew || ((0 == id) && !bNew) || ( id < gpobj->m_dm.getMemoryElementCount() ) ) {
 
-            if (!bNew) pElement = pObject->m_dm.getMemoryElementFromRow(id);
+            if (!bNew) pElement = gpobj->m_dm.getMemoryElementFromRow(id);
 
             if (NULL != pElement) {
 
@@ -2957,11 +2957,11 @@ VSCPWebServerThread::websrv_dmpost( struct mg_connection *nc,
 
                 if ( bNew ) {
                     // add the DM row to the matrix
-                    pObject->m_dm.addMemoryElement(pElement);
+                    gpobj->m_dm.addMemoryElement(pElement);
                 }
 
                 // Save decision matrix
-                pObject->m_dm.saveToXML();
+                gpobj->m_dm.saveToXML();
 
                 buildPage += wxString::Format(_("<br><br>DM Entry has been saved. id=%d"), id);
             }
@@ -3003,8 +3003,8 @@ VSCPWebServerThread::websrv_dmdelete( struct mg_connection *nc,
     // Check pointer
     if (NULL == nc) return;
 
-    CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return;
+    //CControlObject *gpobj = (CControlObject *)nc->mgr->user_data;
+    //if (NULL == gpobj) return;
 
     // id
     long id = -1;
@@ -3048,10 +3048,10 @@ VSCPWebServerThread::websrv_dmdelete( struct mg_connection *nc,
 
     buildPage += _(WEB_DMEDIT_BODY_START);
 
-    if ( pObject->m_dm.removeMemoryElement( id ) ) {
+    if ( gpobj->m_dm.removeMemoryElement( id ) ) {
         buildPage += wxString::Format(_("<br>Deleted record id = %d"), id);
         // Save decision matrix
-        pObject->m_dm.saveToXML();
+        gpobj->m_dm.saveToXML();
     }
     else {
         buildPage += wxString::Format(_("<br>Failed to remove record id = %d"), id);
@@ -3082,8 +3082,8 @@ VSCPWebServerThread::websrv_variables_list( struct mg_connection *nc,
     // Check pointer
     if (NULL == nc) return;
 
-    CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return;
+    //CControlObject *gpobj = (CControlObject *)nc->mgr->user_data;
+    //if (NULL == gpobj) return;
 
     // From
     long nFrom = 0;
@@ -3109,22 +3109,22 @@ VSCPWebServerThread::websrv_variables_list( struct mg_connection *nc,
         else if (NULL != strstr("next",buf)) {
             nFrom += nCount;
             /* TODO
-            if ( (unsigned long)nFrom > pObject->m_VSCP_Variables.m_listVariable.GetCount()-1 ) {
-                if ( pObject->m_VSCP_Variables.m_listVariable.GetCount() % nCount ) {
-                    nFrom = pObject->m_VSCP_Variables.m_listVariable.GetCount()/nCount;
+            if ( (unsigned long)nFrom > gpobj->m_VSCP_Variables.m_listVariable.GetCount()-1 ) {
+                if ( gpobj->m_VSCP_Variables.m_listVariable.GetCount() % nCount ) {
+                    nFrom = gpobj->m_VSCP_Variables.m_listVariable.GetCount()/nCount;
                 }
                 else {
-                    nFrom = (pObject->m_VSCP_Variables.m_listVariable.GetCount()/nCount) - 1;
+                    nFrom = (gpobj->m_VSCP_Variables.m_listVariable.GetCount()/nCount) - 1;
                 }
             }*/
         }
         else if (NULL != strstr("last",buf)) {
             /* TODO
-             if ( pObject->m_VSCP_Variables.m_listVariable.GetCount() % nCount ) {
-                nFrom = (pObject->m_VSCP_Variables.m_listVariable.GetCount()/nCount)*nCount;
+             if ( gpobj->m_VSCP_Variables.m_listVariable.GetCount() % nCount ) {
+                nFrom = (gpobj->m_VSCP_Variables.m_listVariable.GetCount()/nCount)*nCount;
             }
             else {
-                nFrom = ((pObject->m_VSCP_Variables.m_listVariable.GetCount()/nCount) - 1)*nCount;
+                nFrom = ((gpobj->m_VSCP_Variables.m_listVariable.GetCount()/nCount) - 1)*nCount;
             }*/
         }
         else if ( NULL != strstr("first",buf) ) {
@@ -3162,9 +3162,9 @@ VSCPWebServerThread::websrv_variables_list( struct mg_connection *nc,
         buildPage += wxString::Format( _(WEB_COMMON_LIST_NAVIGATION),
                 (const char *)wxstrurl.mbc_str(),
                 (unsigned long)(nFrom+1),
-                ( (unsigned long)(nFrom + nCount) < pObject->m_VSCP_Variables.m_listVariable.GetCount()) ?
-                    nFrom + nCount : pObject->m_VSCP_Variables.m_listVariable.GetCount(),
-                (unsigned long)pObject->m_VSCP_Variables.m_listVariable.GetCount(),
+                ( (unsigned long)(nFrom + nCount) < gpobj->m_VSCP_Variables.m_listVariable.GetCount()) ?
+                    nFrom + nCount : gpobj->m_VSCP_Variables.m_listVariable.GetCount(),
+                (unsigned long)gpobj->m_VSCP_Variables.m_listVariable.GetCount(),
                 (unsigned long)nCount,
                 (unsigned long)nFrom,
                 _("false" ) );
@@ -3177,7 +3177,7 @@ VSCPWebServerThread::websrv_variables_list( struct mg_connection *nc,
     // Display Variables List
 
     /* TODO
-    if ( 0 == pObject->m_VSCP_Variables.m_listVariable.GetCount() ) {
+    if ( 0 == gpobj->m_VSCP_Variables.m_listVariable.GetCount() ) {
         buildPage += _("<br>Variables list is empty!<br>");
     }
     else {
@@ -3189,10 +3189,10 @@ VSCPWebServerThread::websrv_variables_list( struct mg_connection *nc,
     for ( unsigned int i=0;i<nCount;i++) {
 
         // Check if we are done
-        if ( ( nFrom + i ) >= pObject->m_VSCP_Variables.m_listVariable.GetCount() ) break;
+        if ( ( nFrom + i ) >= gpobj->m_VSCP_Variables.m_listVariable.GetCount() ) break;
 
         CVSCPVariable *pVariable =
-                pObject->m_VSCP_Variables.m_listVariable.Item( i )->GetData();
+                gpobj->m_VSCP_Variables.m_listVariable.Item( i )->GetData();
         {
             wxString url_dmedit =
                     wxString::Format(_("/vscp/varedit?id=%ld&from=%ld&count=%ld"),
@@ -3324,9 +3324,9 @@ VSCPWebServerThread::websrv_variables_list( struct mg_connection *nc,
         buildPage += wxString::Format( _(WEB_COMMON_LIST_NAVIGATION),
                 wxstrurl.wx_str(),
                 (unsigned long)(nFrom+1),
-                ( (unsigned long)(nFrom + nCount) < pObject->m_VSCP_Variables.m_listVariable.GetCount()) ?
-                    nFrom + nCount : pObject->m_VSCP_Variables.m_listVariable.GetCount(),
-                (unsigned long)pObject->m_VSCP_Variables.m_listVariable.GetCount(),
+                ( (unsigned long)(nFrom + nCount) < gpobj->m_VSCP_Variables.m_listVariable.GetCount()) ?
+                    nFrom + nCount : gpobj->m_VSCP_Variables.m_listVariable.GetCount(),
+                (unsigned long)gpobj->m_VSCP_Variables.m_listVariable.GetCount(),
                 (unsigned long)nCount,
                 (unsigned long)nFrom,
                 _("false" ) );
@@ -3358,8 +3358,8 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *nc,
     // Check pointer
     if (NULL == nc) return;
 
-    CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return;
+    //CControlObject *gpobj = (CControlObject *)nc->mgr->user_data;
+    //if (NULL == gpobj) return;
 
     // id
     long id = -1;
@@ -3414,8 +3414,8 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *nc,
     buildPage += _(WEB_VAREDIT_BODY_START);
 
     /* TODO
-    if ( !bNew && ( id < (long)pObject->m_VSCP_Variables.m_listVariable.GetCount() ) ) {
-        pVariable = pObject->m_VSCP_Variables.m_listVariable.Item(id)->GetData();
+    if ( !bNew && ( id < (long)gpobj->m_VSCP_Variables.m_listVariable.GetCount() ) ) {
+        pVariable = gpobj->m_VSCP_Variables.m_listVariable.Item(id)->GetData();
     }
      */
 
@@ -3890,8 +3890,8 @@ VSCPWebServerThread::websrv_variables_post( struct mg_connection *nc,
     // Check pointer
     if (NULL == nc) return;
 
-    CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return;
+    //CControlObject *gpobj = (CControlObject *)nc->mgr->user_data;
+    //if (NULL == gpobj) return;
 
     // id
     long id = -1;
@@ -4057,9 +4057,9 @@ VSCPWebServerThread::websrv_variables_post( struct mg_connection *nc,
 
         if (bNew ||
                 ((0 == id) && !bNew) ||
-                (id < (long)pObject->m_VSCP_Variables.m_listVariable.GetCount()) ) {
+                (id < (long)gpobj->m_VSCP_Variables.m_listVariable.GetCount()) ) {
 
-            //if (!bNew) pObject->m_VSCP_Variables.m_listVariable.Item(id)->GetData();
+            //if (!bNew) gpobj->m_VSCP_Variables.m_listVariable.Item(id)->GetData();
 
             if ( 0 ) {
 
@@ -4148,11 +4148,11 @@ VSCPWebServerThread::websrv_variables_post( struct mg_connection *nc,
 
                 // If new variable add it
                 if ( bNew ) {
-                    //pObject->m_VSCP_Variables.add( pVariable );
+                    //gpobj->m_VSCP_Variables.add( pVariable );
                 }
 
                 // Save variables
-                pObject->m_VSCP_Variables.save();
+                gpobj->m_VSCP_Variables.save();
 
                 buildPage += wxString::Format(_("<br><br>Variable has been saved. id=%d"), id);
 
@@ -4196,8 +4196,8 @@ VSCPWebServerThread::websrv_variables_new( struct mg_connection *nc,
     // Check pointer
     if (NULL == nc) return;
 
-    CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return;
+    //CControlObject *gpobj = (CControlObject *)nc->mgr->user_data;
+    //if (NULL == gpobj) return;
 
     // Count
     uint16_t nCount = 50;
@@ -4234,11 +4234,11 @@ VSCPWebServerThread::websrv_variables_new( struct mg_connection *nc,
 
     long nFrom;
     /* TODO
-    if ( pObject->m_VSCP_Variables.m_listVariable.GetCount() % nCount ) {
-        nFrom = (pObject->m_VSCP_Variables.m_listVariable.GetCount()/nCount)*nCount;
+    if ( gpobj->m_VSCP_Variables.m_listVariable.GetCount() % nCount ) {
+        nFrom = (gpobj->m_VSCP_Variables.m_listVariable.GetCount()/nCount)*nCount;
     }
     else {
-        nFrom = ((pObject->m_VSCP_Variables.m_listVariable.GetCount()/nCount) - 1)*nCount;
+        nFrom = ((gpobj->m_VSCP_Variables.m_listVariable.GetCount()/nCount) - 1)*nCount;
     }
      */
 
@@ -4298,8 +4298,8 @@ VSCPWebServerThread::websrv_variables_delete( struct mg_connection *nc,
     // Check pointer
     if (NULL == nc) return;
 
-    CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return;
+    //CControlObject *gpobj = (CControlObject *)nc->mgr->user_data;
+    //if (NULL == gpobj) return;
 
     // id
     long id = -1;
@@ -4341,14 +4341,14 @@ VSCPWebServerThread::websrv_variables_delete( struct mg_connection *nc,
 
     buildPage += _(WEB_VAREDIT_BODY_START);
 /* TODO
-    pVariable = pObject->m_VSCP_Variables.m_listVariable.Item(id)->GetData();
+    pVariable = gpobj->m_VSCP_Variables.m_listVariable.Item(id)->GetData();
     //wxlistVscpVariableNode *node =
-    //        pObject->m_VSCP_Variables.m_listVariable.Item( id );
-    //if ( pObject->m_VSCP_Variables.m_listVariable.DeleteNode( node )  ) {//
-    if ( pObject->m_VSCP_Variables.remove( variable ) )  {
+    //        gpobj->m_VSCP_Variables.m_listVariable.Item( id );
+    //if ( gpobj->m_VSCP_Variables.m_listVariable.DeleteNode( node )  ) {//
+    if ( gpobj->m_VSCP_Variables.remove( variable ) )  {
         buildPage += wxString::Format(_("<br>Deleted record id = %d"), id);
         // Save variables
-        pObject->m_VSCP_Variables.save();
+        gpobj->m_VSCP_Variables.save();
     }
     else {
         buildPage += wxString::Format(_("<br>Failed to remove record id = %d"), id);
@@ -4379,8 +4379,8 @@ VSCPWebServerThread::websrv_discovery( struct mg_connection *nc,
     // Check pointer
     if (NULL == nc) return;
 
-    CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return;
+    //CControlObject *gpobj = (CControlObject *)nc->mgr->user_data;
+    //if (NULL == gpobj) return;
 
     mg_printf( nc,
         "HTTP/1.1 200 OK\r\n"
@@ -4425,8 +4425,8 @@ VSCPWebServerThread::websrv_session( struct mg_connection *nc,
     // Check pointer
     if (NULL == nc) return;
 
-    CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return;
+    //CControlObject *gpobj = (CControlObject *)nc->mgr->user_data;
+    //if (NULL == gpobj) return;
 
     mg_printf( nc,
         "HTTP/1.1 200 OK\r\n"
@@ -4472,8 +4472,8 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     // Check pointer
     if (NULL == nc) return;
 
-    CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return;
+    //CControlObject *gpobj = (CControlObject *)nc->mgr->user_data;
+    //if (NULL == gpobj) return;
 
     mg_printf( nc,
         "HTTP/1.1 200 OK\r\n"
@@ -4581,8 +4581,8 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     // Debuglevel
     buildPage += _("<div id=\"small\">");
     buildPage += _("<b>Debuglevel:</b> ");
-    buildPage += wxString::Format(_("%d "), pObject->m_logLevel );
-    switch ( pObject->m_logLevel  ) {
+    buildPage += wxString::Format(_("%d "), gpobj->m_logLevel );
+    switch ( gpobj->m_logLevel  ) {
         case DAEMON_LOGMSG_NONE:
             buildPage += _("(none)");
             break;
@@ -4621,14 +4621,14 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     // Server GUID
     buildPage += _("<div id=\"small\">");
     buildPage += _("<b>Server GUID:</b> ");
-    pObject->m_guid.toString( str );
+    gpobj->m_guid.toString( str );
     buildPage += str;
     buildPage += _("</div>");
 
     // Client buffer size
     buildPage += _("<div id=\"small\">");
     buildPage += _("<b>Client buffer size:</b> ");
-    buildPage += wxString::Format(_("%d"), pObject->m_maxItemsInClientReceiveQueue );
+    buildPage += wxString::Format(_("%d"), gpobj->m_maxItemsInClientReceiveQueue );
     buildPage += _("</div>");
 
     buildPage += _("<hr>");
@@ -4637,7 +4637,7 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     buildPage += _("<div id=\"small\">");
     buildPage += _("<b>TCP/IP interface:</b> ");
     buildPage += _("enabled on <b>interface:</b> '");
-    buildPage += pObject->m_strTcpInterfaceAddress;
+    buildPage += gpobj->m_strTcpInterfaceAddress;
     buildPage += _("'");
     buildPage += _("<br>");
     buildPage += _("</div>");
@@ -4647,9 +4647,9 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     // UDP interface
     buildPage += _("<div id=\"small\">");
     buildPage += _("<b>UDP interface:</b> ");
-    if ( pObject->m_bUDP ) {
+    if ( gpobj->m_udpInfo.m_bEnable ) {
         buildPage += _("enabled on <b>interface:</b> '");
-        buildPage += pObject->m_strUDPInterfaceAddress;
+        buildPage += gpobj->m_udpInfo.m_interface;
         buildPage += _("'");
     }
     else {
@@ -4663,9 +4663,9 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     // MQTT Broker
     buildPage += _("<div id=\"small\">");
     buildPage += _("<b>MQTT broker:</b> ");
-    if ( pObject->m_bMQTTBroker ) {
+    if ( gpobj->m_bMQTTBroker ) {
         buildPage += _("enabled on <b>interface:</b> '");
-        buildPage += pObject->m_strMQTTBrokerInterfaceAddress;
+        buildPage += gpobj->m_strMQTTBrokerInterfaceAddress;
         buildPage += _("'");
     }
     else {
@@ -4683,7 +4683,7 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     buildPage += _("enabled.");
     buildPage += _("<br>");
     buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Automation:</b> ");
-    if ( pObject->m_automation.isAutomationEnabled() ) {
+    if ( gpobj->m_automation.isAutomationEnabled() ) {
         buildPage += _("enabled.<br>");
     }
     else {
@@ -4692,7 +4692,7 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
 
 
 
-    if ( pObject->m_automation.isSendHeartbeat() ) {
+    if ( gpobj->m_automation.isSendHeartbeat() ) {
         buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;Heartbeat will be sent.<br>" );
     }
     else {
@@ -4700,15 +4700,15 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     }
 
     buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Period for heartbeat</b>: " );
-    buildPage += wxString::Format( _( "%ld" ), pObject->m_automation.getIntervalHeartbeat() ) + _( " seconds<br>" );
+    buildPage += wxString::Format( _( "%ld" ), gpobj->m_automation.getIntervalHeartbeat() ) + _( " seconds<br>" );
 
     buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Heartbeat last sent @</b>: " );
-    buildPage += pObject->m_automation.getHeartbeatSent().FormatISODate() + _( " " );
-    buildPage += pObject->m_automation.getHeartbeatSent().FormatISOTime() + _( "<br>" );
+    buildPage += gpobj->m_automation.getHeartbeatSent().FormatISODate() + _( " " );
+    buildPage += gpobj->m_automation.getHeartbeatSent().FormatISOTime() + _( "<br>" );
 
 
 
-    if ( pObject->m_automation.isSendSegmentControllerHeartbeat() ) {
+    if ( gpobj->m_automation.isSendSegmentControllerHeartbeat() ) {
         buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;Segment controller heartbeat will be sent.<br>" );
     }
     else {
@@ -4716,36 +4716,36 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     }
 
     buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Period for Segment controller heartbeat</b>: " );
-    buildPage += wxString::Format( _( "%ld" ), pObject->m_automation.getIntervalSegmentControllerHeartbeat() ) + _( " seconds<br>" );
+    buildPage += wxString::Format( _( "%ld" ), gpobj->m_automation.getIntervalSegmentControllerHeartbeat() ) + _( " seconds<br>" );
 
     buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Segment controller heartbeat last sent @</b>: " );
-    buildPage += pObject->m_automation.getSegmentControllerHeartbeatSent().FormatISODate() + _( " " );
-    buildPage += pObject->m_automation.getSegmentControllerHeartbeatSent().FormatISOTime() + _( "<br>" );
+    buildPage += gpobj->m_automation.getSegmentControllerHeartbeatSent().FormatISODate() + _( " " );
+    buildPage += gpobj->m_automation.getSegmentControllerHeartbeatSent().FormatISOTime() + _( "<br>" );
 
 
 
     buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Longitude</b>: " );
-    buildPage += wxString::Format( _("%f"), pObject->m_automation.getLongitude() ) + _( "<br>" );
+    buildPage += wxString::Format( _("%f"), gpobj->m_automation.getLongitude() ) + _( "<br>" );
 
     buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Latitude</b>: " );
-    buildPage += wxString::Format( _( "%f" ), pObject->m_automation.getLatitude() ) + _( "<br>" );
+    buildPage += wxString::Format( _( "%f" ), gpobj->m_automation.getLatitude() ) + _( "<br>" );
 
     int hours, minutes;
-    pObject->m_automation.convert2HourMinute( pObject->m_automation.getDayLength(), &hours, &minutes );
+    gpobj->m_automation.convert2HourMinute( gpobj->m_automation.getDayLength(), &hours, &minutes );
     buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Length of day</b>: " );
     buildPage += wxString::Format( _( "%02d:%02d" ), hours, minutes ) + _( "<br>" );
 
     buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Declination</b>: " );
-    buildPage += wxString::Format( _( "%f" ), pObject->m_automation.getDeclination() ) + _( "<br>" );
+    buildPage += wxString::Format( _( "%f" ), gpobj->m_automation.getDeclination() ) + _( "<br>" );
 
     buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Sun max altitude</b>: " );
-    buildPage += wxString::Format( _( "%f" ), pObject->m_automation.getSunMaxAltitude() ) + _( "<br>" );
+    buildPage += wxString::Format( _( "%f" ), gpobj->m_automation.getSunMaxAltitude() ) + _( "<br>" );
 
     buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Last Calculation</b>: " );
-    buildPage += pObject->m_automation.getLastCalculation().FormatISODate() + _( " " );
-    buildPage += pObject->m_automation.getLastCalculation().FormatISOTime() + _("<br>");
+    buildPage += gpobj->m_automation.getLastCalculation().FormatISODate() + _( " " );
+    buildPage += gpobj->m_automation.getLastCalculation().FormatISOTime() + _("<br>");
 
-    if ( pObject->m_automation.isSendSunriseTwilightEvent() ) {
+    if ( gpobj->m_automation.isSendSunriseTwilightEvent() ) {
         buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;Sunrise twilight event should be sent.<br>" );
     }
     else {
@@ -4753,15 +4753,15 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     }
 
     buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Twilight Sunrise Time</b>: " );
-    buildPage += pObject->m_automation.getCivilTwilightSunriseTime().FormatISOTime() + _( "<br>" );
+    buildPage += gpobj->m_automation.getCivilTwilightSunriseTime().FormatISOTime() + _( "<br>" );
 
     buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Twilight Sunrise Time sent @</b>: " );
-    buildPage += pObject->m_automation.getCivilTwilightSunriseTimeSent().FormatISODate() + _( " " );
-    buildPage += pObject->m_automation.getCivilTwilightSunriseTimeSent().FormatISOTime() + _( "<br>" );
+    buildPage += gpobj->m_automation.getCivilTwilightSunriseTimeSent().FormatISODate() + _( " " );
+    buildPage += gpobj->m_automation.getCivilTwilightSunriseTimeSent().FormatISOTime() + _( "<br>" );
 
 
 
-    if ( pObject->m_automation.isSendSunriseEvent() ) {
+    if ( gpobj->m_automation.isSendSunriseEvent() ) {
         buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;Sunrise event should be sent.<br>" );
     }
     else {
@@ -4769,14 +4769,14 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     }
 
     buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Sunrise Time</b>: " );
-    buildPage += pObject->m_automation.getSunriseTime().FormatISOTime() + _( "<br>" );
+    buildPage += gpobj->m_automation.getSunriseTime().FormatISOTime() + _( "<br>" );
 
     buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Sunrise Time sent @</b>: " );
-    buildPage += pObject->m_automation.getSunriseTimeSent().FormatISODate() + _( " " );
-    buildPage += pObject->m_automation.getSunriseTimeSent().FormatISOTime() + _( "<br>" );
+    buildPage += gpobj->m_automation.getSunriseTimeSent().FormatISODate() + _( " " );
+    buildPage += gpobj->m_automation.getSunriseTimeSent().FormatISOTime() + _( "<br>" );
 
 
-    if ( pObject->m_automation.isSendSunsetEvent() ) {
+    if ( gpobj->m_automation.isSendSunsetEvent() ) {
         buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;Sunset event should be sent.<br>" );
     }
     else {
@@ -4784,15 +4784,15 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     }
 
     buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Sunset Time</b>: " );
-    buildPage += pObject->m_automation.getSunsetTime().FormatISOTime() + _( "<br>" );
+    buildPage += gpobj->m_automation.getSunsetTime().FormatISOTime() + _( "<br>" );
 
     buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Sunset Time sent @</b>: " );
-    buildPage += pObject->m_automation.getSunsetTimeSent().FormatISODate() + _( " " );
-    buildPage += pObject->m_automation.getSunsetTimeSent().FormatISOTime() + _( "<br>" );
+    buildPage += gpobj->m_automation.getSunsetTimeSent().FormatISODate() + _( " " );
+    buildPage += gpobj->m_automation.getSunsetTimeSent().FormatISOTime() + _( "<br>" );
 
 
 
-    if ( pObject->m_automation.isSendSunsetTwilightEvent() ) {
+    if ( gpobj->m_automation.isSendSunsetTwilightEvent() ) {
         buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;Twilight sunset event should be sent.<br>" );
     }
     else {
@@ -4800,14 +4800,14 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     }
 
     buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Twilight Sunset Time</b>: " );
-    buildPage += pObject->m_automation.getCivilTwilightSunsetTime().FormatISOTime() + _( "<br>" );
+    buildPage += gpobj->m_automation.getCivilTwilightSunsetTime().FormatISOTime() + _( "<br>" );
 
     buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Twilight Sunset Time sent @</b>: " );
-    buildPage += pObject->m_automation.getCivilTwilightSunsetTimeSent().FormatISODate() + _( " " );
-    buildPage += pObject->m_automation.getCivilTwilightSunsetTimeSent().FormatISOTime() + _( "<br>" );
+    buildPage += gpobj->m_automation.getCivilTwilightSunsetTimeSent().FormatISODate() + _( " " );
+    buildPage += gpobj->m_automation.getCivilTwilightSunsetTimeSent().FormatISOTime() + _( "<br>" );
 
 
-    if ( pObject->m_automation.isSendCalculatedNoonEvent() ) {
+    if ( gpobj->m_automation.isSendCalculatedNoonEvent() ) {
         buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;Calculated noon event should be sent.<br>" );
     }
     else {
@@ -4815,11 +4815,11 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     }
 
     buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Calculated Noon Time</b>: " );
-    buildPage += pObject->m_automation.getNoonTime().FormatISOTime() + _( "<br>" );
+    buildPage += gpobj->m_automation.getNoonTime().FormatISOTime() + _( "<br>" );
 
     buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Calculated Noon Time sent @</b>: " );
-    buildPage += pObject->m_automation.getNoonTimeSent().FormatISODate() + _( " " );
-    buildPage += pObject->m_automation.getNoonTimeSent().FormatISOTime() + _( "<br>" );
+    buildPage += gpobj->m_automation.getNoonTimeSent().FormatISODate() + _( " " );
+    buildPage += gpobj->m_automation.getNoonTimeSent().FormatISOTime() + _( "<br>" );
 
     buildPage += _("</div>");
 
@@ -4831,9 +4831,9 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     buildPage += _("<b>Web server <b>interface:</b></b> ");
 
     buildPage += _("enabled on interface '");
-    buildPage += pObject->m_strWebServerInterfaceAddress;
+    buildPage += gpobj->m_strWebServerInterfaceAddress;
     buildPage += _( "<br>&nbsp;&nbsp;&nbsp;&nbsp;<b>Autentication:</b> " );
-    if ( pObject->m_bDisableSecurityWebServer ) {
+    if ( gpobj->m_bDisableSecurityWebServer ) {
         buildPage += _( "turned off." );
     }
     else {
@@ -4841,48 +4841,48 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     }
     buildPage += _("<br>");
     buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Rootfolder:</b> ");
-    buildPage += wxString::FromUTF8( pObject->m_pathWebRoot );
+    buildPage += wxString::FromUTF8( gpobj->m_pathWebRoot );
     buildPage += _("<br>");
     buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Authdomain:</b> ");
-    buildPage += wxString::FromUTF8( pObject->m_authDomain );
-    if ( 0 == strlen( pObject->m_authDomain ) ) {
+    buildPage += wxString::FromUTF8( gpobj->m_authDomain );
+    if ( 0 == strlen( gpobj->m_authDomain ) ) {
         buildPage += _("Set to default.");
     }
     buildPage += _("<br>");
     buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Path certs:</b> ");
-    buildPage += wxString::FromUTF8( pObject->m_pathCert );
+    buildPage += wxString::FromUTF8( gpobj->m_pathCert );
     buildPage += _("<br>");
     buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>ExtraMimeTypes:</b> ");
-    buildPage += wxString::FromUTF8( pObject->m_extraMimeTypes );
-    if ( 0 == strlen( pObject->m_extraMimeTypes ) ) {
+    buildPage += wxString::FromUTF8( gpobj->m_extraMimeTypes );
+    if ( 0 == strlen( gpobj->m_extraMimeTypes ) ) {
         buildPage += _("Set to default.");
     }
     buildPage += _("<br>");
     buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>CgiInterpreter:</b> ");
-    buildPage += wxString::FromUTF8( pObject->m_cgiInterpreter );
-    if ( 0 == strlen( pObject->m_cgiInterpreter ) ) {
+    buildPage += wxString::FromUTF8( gpobj->m_cgiInterpreter );
+    if ( 0 == strlen( gpobj->m_cgiInterpreter ) ) {
         buildPage += _("Set to default.");
     }
     buildPage += _("<br>");
     buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>CgiPattern:</b> ");
-    buildPage += wxString::FromUTF8( pObject->m_cgiPattern );
-    if ( 0 == strlen( pObject->m_cgiPattern ) ) {
+    buildPage += wxString::FromUTF8( gpobj->m_cgiPattern );
+    if ( 0 == strlen( gpobj->m_cgiPattern ) ) {
         buildPage += _("Set to default.");
     }
     buildPage += _("<br>");
     buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>HiddenFilePatterns:</b> ");
-    buildPage += wxString::FromUTF8( pObject->m_hideFilePatterns );
-    if ( 0 == strlen( pObject->m_hideFilePatterns ) ) {
+    buildPage += wxString::FromUTF8( gpobj->m_hideFilePatterns );
+    if ( 0 == strlen( gpobj->m_hideFilePatterns ) ) {
         buildPage += _("Set to default.");
     }
     buildPage += _("<br>");
     buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>IndexFiles:</b> ");
-    buildPage += wxString::FromUTF8( pObject->m_indexFiles );
-    if ( 0 == strlen( pObject->m_indexFiles ) ) {
+    buildPage += wxString::FromUTF8( gpobj->m_indexFiles );
+    if ( 0 == strlen( gpobj->m_indexFiles ) ) {
         buildPage += _("Set to default.");
     }
     buildPage += _("<br>");
-    if ( NULL != strstr( pObject->m_EnableDirectoryListings, "yes" ) ) {
+    if ( NULL != strstr( gpobj->m_EnableDirectoryListings, "yes" ) ) {
         buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Directory listings</b> is enabled.");
     }
     else {
@@ -4890,8 +4890,8 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     }
     buildPage += _("<br>");
     buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>UrlReqrites:</b> ");
-    buildPage += wxString::FromUTF8( pObject->m_urlRewrites );
-    if ( 0 == strlen( pObject->m_urlRewrites ) ) {
+    buildPage += wxString::FromUTF8( gpobj->m_urlRewrites );
+    if ( 0 == strlen( gpobj->m_urlRewrites ) ) {
        buildPage += _("Set to default.");
     }
 
@@ -4904,7 +4904,7 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     // Websockets
     buildPage += _("<div id=\"small\">");
     buildPage += _("<b>VSCP websocket interface:</b> ");
-    if ( pObject->m_bAuthWebsockets ) {
+    if ( gpobj->m_bAuthWebsockets ) {
         buildPage += _("<b>Authentication</b> enabled.");
     }
     else {
@@ -4920,7 +4920,7 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     buildPage += _("enabled.");
     buildPage += _("<br>");
     buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to DM file:</b> ");
-    buildPage += pObject->m_dm.m_staticXMLPath;
+    buildPage += gpobj->m_dm.m_staticXMLPath;
     buildPage += _("<br>");
 
     buildPage += _("</div>");
@@ -4931,7 +4931,7 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     buildPage += _("<div id=\"small\">");
     buildPage += _("<b>Variable handling :</b> ");
     buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to variables:</b> ");
-    buildPage += pObject->m_VSCP_Variables.m_xmlPath;
+    buildPage += gpobj->m_VSCP_Variables.m_xmlPath;
     buildPage += _("</div>");
 
     buildPage += _("<hr>");
@@ -4943,8 +4943,8 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
 
     CDeviceItem *pDeviceItem;
     VSCPDEVICELIST::iterator iter;
-    for ( iter = pObject->m_deviceList.m_devItemList.begin();
-            iter != pObject->m_deviceList.m_devItemList.end();
+    for ( iter = gpobj->m_deviceList.m_devItemList.begin();
+            iter != gpobj->m_deviceList.m_devItemList.end();
             ++iter ) {
 
         pDeviceItem = *iter;
@@ -4975,8 +4975,8 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
 
     //CDeviceItem *pDeviceItem;
     //VSCPDEVICELIST::iterator iter;
-    for (iter = pObject->m_deviceList.m_devItemList.begin();
-            iter != pObject->m_deviceList.m_devItemList.end();
+    for (iter = gpobj->m_deviceList.m_devItemList.begin();
+            iter != gpobj->m_deviceList.m_devItemList.end();
             ++iter) {
 
         pDeviceItem = *iter;
@@ -5023,8 +5023,8 @@ VSCPWebServerThread::websrv_bootload( struct mg_connection *nc,
     // Check pointer
     if (NULL == nc) return;
 
-    CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return;
+    //CControlObject *gpobj = (CControlObject *)nc->mgr->user_data;
+    //if (NULL == gpobj) return;
 
     mg_printf( nc,
         "HTTP/1.1 200 OK\r\n"
@@ -5072,8 +5072,8 @@ VSCPWebServerThread::websrv_table( struct mg_connection *nc,
     // Check pointer
     if (NULL == nc) return;
 
-    CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return;
+    CControlObject *gpobj = (CControlObject *)nc->mgr->user_data;
+    if (NULL == gpobj) return;
 
     mg_printf( nc,
         "HTTP/1.1 200 OK\r\n"
@@ -5099,9 +5099,9 @@ VSCPWebServerThread::websrv_table( struct mg_connection *nc,
 
     wxString tblName;
     CVSCPTable *ptblItem = NULL;
-    pObject->m_mutexTableList.Lock();
+    gpobj->m_mutexTableList.Lock();
     listVSCPTables::iterator iter;
-    for (iter = pObject->m_listTables.begin(); iter != pObject->m_listTables.end(); ++iter) {
+    for (iter = gpobj->m_listTables.begin(); iter != gpobj->m_listTables.end(); ++iter) {
 
         ptblItem = *iter;
 
@@ -5171,7 +5171,7 @@ VSCPWebServerThread::websrv_table( struct mg_connection *nc,
         buildPage += _("</tr>");
         ptblItem = NULL;
     } // for
-    pObject->m_mutexTableList.Unlock();
+    gpobj->m_mutexTableList.Unlock();
 */
     /*
 
@@ -5204,8 +5204,8 @@ VSCPWebServerThread::websrv_tablelist( struct mg_connection *nc,
     // Check pointer
     if (NULL == nc) return;
 
-    CControlObject *pObject = (CControlObject *)nc->mgr->user_data;
-    if (NULL == pObject) return;
+    CControlObject *gpobj = (CControlObject *)nc->mgr->user_data;
+    if (NULL == gpobj) return;
 
     // From
     long nFrom = 0;
@@ -5225,11 +5225,11 @@ VSCPWebServerThread::websrv_tablelist( struct mg_connection *nc,
         tblName = wxString::FromUTF8( buf );
     }
 
-    pObject->m_mutexTableList.Lock();
+    gpobj->m_mutexTableList.Lock();
     bool bFound = false;
     CVSCPTable *ptblItem = NULL;
     listVSCPTables::iterator iter;
-    for (iter = pObject->m_listTables.begin(); iter != pObject->m_listTables.end(); ++iter) {
+    for (iter = gpobj->m_listTables.begin(); iter != gpobj->m_listTables.end(); ++iter) {
         ptblItem = *iter;
         if ( ( NULL != ptblItem ) &&
                 ( 0 == strcmp( ptblItem->m_vscpFileHead.nameTable, (const char *)tblName.mbc_str() ) ) ) {
@@ -5237,7 +5237,7 @@ VSCPWebServerThread::websrv_tablelist( struct mg_connection *nc,
             break;
         }
     }
-    pObject->m_mutexTableList.Unlock();
+    gpobj->m_mutexTableList.Unlock();
 
     // Navigation button
     if ( mg_get_http_var( &hm->query_string, "navbtn", buf, sizeof( buf ) ) > 0 ) {

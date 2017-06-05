@@ -772,7 +772,7 @@ bool CUserList::loadUsers( void )
 
     // Check if database is open
     if ( NULL == gpobj->m_db_vscp_daemon ) {
-        gpobj->logMsg( _("Failed to read VSCP settings database - not open." ) );
+        gpobj->logMsg( _("loadUsers: Failed to read VSCP settings database - database not open." ) );
         return false;
     }
     
@@ -783,7 +783,7 @@ bool CUserList::loadUsers( void )
                                             -1,
                                             &ppStmt,
                                             NULL ) ) {
-        gpobj->logMsg( _("Failed to read VSCP settings database - prepare query.") );
+        gpobj->logMsg( _("loadUsers: Failed to read VSCP settings database - prepare query.") );
         gpobj->m_db_vscp_configMutex.Unlock();
         return false;
     }
@@ -888,8 +888,9 @@ bool CUserList::addUser( const wxString& user,
     }
 
     // Check if database is open
-    if ( NULL == gpobj->m_db_vscp_daemon ) {
-        gpobj->logMsg( _("Failed to read VSCP settings database - not open.") );
+    if ( !( VSCP_ADD_USER_FLAG_LOCAL & bFlags )&& 
+            ( NULL == gpobj->m_db_vscp_daemon ) ) {
+        gpobj->logMsg( _("addUser: Failed to read VSCP settings database - database not open.") );
         return false;
     }
 
@@ -913,7 +914,8 @@ bool CUserList::addUser( const wxString& user,
     }
     
     // Check if user is defined already
-    if ( pItem->isUserInDB( user ) ) {
+    if ( !( VSCP_ADD_USER_FLAG_LOCAL & bFlags ) && 
+            pItem->isUserInDB( user ) ) {
         delete pItem;
         return false;
     }
@@ -1065,7 +1067,7 @@ bool CUserList::addUser( const wxString& strUser, bool bUnpackNote )
      
      // Check if database is open
     if ( NULL == gpobj->m_db_vscp_daemon ) {
-        gpobj->logMsg( _("Failed to read VSCP settings database - not open." ) );
+        gpobj->logMsg( _("deleteUser: Failed to read VSCP settings database - database not open." ) );
         return false;
     }
     

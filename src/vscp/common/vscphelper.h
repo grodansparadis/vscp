@@ -878,6 +878,9 @@ extern "C" {
       must be equal to get a true filter return.
 
       So a nill mask will let everything through
+     
+      A filter pointer set to NULL will let every event through.
+      
       @return true if message should be delivered false if not.
      */
     bool vscp_doLevel2Filter(const vscpEvent *pEvent,
@@ -928,6 +931,11 @@ extern "C" {
     */
     bool vscp_writeMaskToString( const vscpEventFilter *pFilter, wxString& strFilter);
 
+    
+    
+    
+    
+    
     /*!
       Convert an Event from a CANAL message
      */
@@ -1106,10 +1114,38 @@ extern "C" {
         @param pmdf Optional pointer to CMDF class which gives more info
         about the device if it is supplied.
     */
+    
     wxString& vscp_getDeviceHtmlStatusInfo( const uint8_t *registers, CMDF *pmdf );
 
 
     
+    ////////////////////////////////////////////////////////////////////////////
+    // Encryption
+    ////////////////////////////////////////////////////////////////////////////
+    
+    /*!
+     * Get encryption code from token. 
+     * 
+     * @param token Encryption token to set encryption from. Tokens are
+     *              define in vscp,h
+     * @return Return the encryption code if the encryption code is known. 
+     *         The function does not return an error code and instead set no 
+     *         encryption if the token is invalid. 
+     * 
+     */
+    
+    uint8_t vscp_getEncryptionCodeFromToken( wxString& token );
+    
+    /*!
+     * Fetch encryption token from code.
+     * 
+     * @param code Should be a valid encryption code as defined in vscp.h
+     * @return A encryption token is returned if the code is valid. For a
+     *         a code == 0 which means no encryption an empty string is 
+     *         returned. This is also true for invalid codes.
+     */
+    
+    wxString vscp_getEncryptionTokenFromCode( uint8_t code );
 
 #ifdef __cplusplus
 }

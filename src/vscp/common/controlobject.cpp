@@ -15,7 +15,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
+// You should have received a copy of the GNU General Public License#include <udpclientthread.h>
 // along with this file see the file COPYING.  If not, write to
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
@@ -216,6 +216,7 @@ CControlObject::CControlObject()
     m_admin_user = _("admin");
     m_admin_password = _("secret");
     m_admin_allowfrom = _("*");
+    m_vscptoken = _("Carpe diem quam minimum credula postero");
     
     m_nConfiguration = 1;       // Default configuration record is read.
        
@@ -275,7 +276,12 @@ CControlObject::CControlObject()
     
 
     // Control UDP Interface
-    m_bUDP = false;
+    m_udpInfo.m_bEnable = false;
+    m_udpInfo.m_interface.Empty();
+    m_udpInfo.m_guid.clear();
+    vscp_clearVSCPFilter( &m_udpInfo.m_filter );
+    m_udpInfo.m_bAllowUnsecure = false;
+    m_udpInfo.m_bAck = false;
 
     // Enable MQTT broker
     m_bMQTTBroker = true;
@@ -290,7 +296,7 @@ CControlObject::CControlObject()
     m_ttlMultiCastAnnounce = IP_MULTICAST_DEFAULT_TTL;
 
     // Default UDP interface
-    m_strUDPInterfaceAddress = _("udp://:9598");
+    m_udpInfo.m_interface = _("udp://:" + VSCP_MULTICAST_DEFAULT_PORT);
 
     // Default MQTT broker interface
     m_strMQTTBrokerInterfaceAddress = _("1883");
@@ -411,6 +417,20 @@ CControlObject::~CControlObject()
 
     m_clientOutputQueue.Clear();
     //m_mutexClientOutputQueue.Unlock();
+    
+    
+    udpRemoteClientList::iterator iterUDP;
+    for (iterUDP = m_udpInfo.m_remotes.begin();
+            iterUDP != m_udpInfo.m_remotes.end(); ++iterUDP) {
+        if ( NULL != *iterUDP ) {
+            delete *iterUDP;
+            *iterUDP = NULL;
+        }
+        
+    }
+    
+    m_udpInfo.m_remotes.Clear();
+    
 }
 
 
@@ -690,6 +710,13 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     // Save root folder for later use.
     m_rootFolder = rootFolder;
     
+    // Root folder must exist
+    if ( !wxFileName::DirExists( m_rootFolder ) ) {
+        fprintf(stderr,"The specified rootfolder does not exist (%s).\n",
+                (const char *)m_rootFolder.mbc_str() );
+        return false;
+    } 
+    
     m_path_db_vscp_daemon.Assign( m_rootFolder + _("vscpd.sqlite3") );
     m_path_db_vscp_data.Assign( m_rootFolder + _("vscp_data.sqlite3") );
     m_path_db_vscp_log.Assign( m_rootFolder + _("/logs/vscpd_log.sqlite3") );
@@ -718,12 +745,6 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
         setlocale( LC_NUMERIC, "C" );
     }
 
-    // Root folder must exist
-    if ( !wxFileName::DirExists( rootFolder ) ) {
-        fprintf(stderr,"The specified rootfolder does not exist (%s).\n",
-                (const char *)rootFolder.mbc_str() );
-        return false;
-    } 
     
     // A configuration file must be available
     if ( !wxFile::Exists( strcfgfile ) ) {
@@ -733,6 +754,23 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
         fprintf( stderr, str.mbc_str() );
         return false;
     }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    //                       Read XML configuration
+    ////////////////////////////////////////////////////////////////////////////
+
+    str = _("Using configuration file: ") + strcfgfile + _("\n");
+    fprintf( stderr, str.mbc_str() );
+
+    // Read XML configuration
+    if ( !readXMLConfiguration( strcfgfile ) ) {
+        fprintf( stderr, "Unable to open/parse configuration file. Can't initialize!\n" );
+        str = _("Path = .") + strcfgfile + _("\n");
+        fprintf( stderr, str.mbc_str() );
+        return FALSE;
+    }
+    
+    
 
     // Initialize the SQLite library
     if ( SQLITE_OK != sqlite3_initialize() ) {
@@ -742,7 +780,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 
     
     // The root folder is the basis for the configuration file
-    m_path_db_vscp_daemon.Assign( rootFolder + _("/vscpd.sqlite3") );
+    m_path_db_vscp_daemon.Assign( m_rootFolder + _("/vscpd.sqlite3") );
 
     
     
@@ -791,48 +829,82 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
                                                 &m_db_vscp_daemon ) ) {
                 
                 // create the configuration database.
-                doCreateConfigurationTable(); 
+                if ( !doCreateConfigurationTable() ) {
+                    fprintf( stderr, "Failed to create configuration table.\n" );
+                }
+                
+                // Create the multicast database
+                if ( !doCreateUdpNodeTable() ) {
+                    fprintf( stderr, "Failed to create udpnode table.\n" );
+                }
+                
+                // Create the multicast database
+                if ( !doCreateMulticastTable() ) {
+                    fprintf( stderr, "Failed to create multicast table.\n" );
+                }
                 
                 // Create user table
-                doCreateUserTable();
+                if ( !doCreateUserTable() ) {
+                    fprintf( stderr, "Failed to create user table.\n" );
+                }
         
                 // Create driver table
-                doCreateDriverTable();
+                if ( !doCreateDriverTable() ) {
+                    fprintf( stderr, "Failed to create driver table.\n" );
+                }
 
                 // Create guid table
-                doCreateGuidTable();
+                if ( !doCreateGuidTable() ) {
+                    fprintf( stderr, "Failed to create GUID table.\n" );
+                }
 
                 // Create location table
-                doCreateLocationTable();
+                if ( doCreateLocationTable() ) {
+                    fprintf( stderr, "Failed to create location table.\n" );
+                }
 
                 // Create mdf table
-                doCreateMdfCacheTable();
+                if ( !doCreateMdfCacheTable() ) {
+                    fprintf( stderr, "Failed to create MDF cache table.\n" );
+                }
     
                 // Create simpleui table
-                doCreateSimpleUiTable();
+                if ( !doCreateSimpleUiTable() ) {
+                    fprintf( stderr, "Failed to create Simple UI table.\n" );
+                }
     
                 // Create simpleui item table
-                doCreateSimpleUiItemTable();
+                if ( !doCreateSimpleUiItemTable() ) {
+                    fprintf( stderr, "Failed to create Simple UI item table.\n" );
+                }
     
                 // Create zone table
-                doCreateZoneTable();
+                if ( !doCreateZoneTable() ) {
+                    fprintf( stderr, "Failed to create zone table.\n" );
+                }
     
                 // Create subzone table
-                doCreateSubZoneTable();
+                if ( !doCreateSubZoneTable() ) {
+                    fprintf( stderr, "Failed to create subzone table.\n" );
+                }
         
                 // Create userdef table
-                doCreateUserdefTableTable();
+                if ( !doCreateUserdefTableTable() ) {
+                    fprintf( stderr, "Failed to create userdef table.\n" );
+                }
                 
                 // * * * All created * * *
                 
                 // Database is open. Read configuration data from it
-                dbReadConfiguration();
+                if ( !dbReadConfiguration() ) {
+                    fprintf( stderr, "Failed to rea configuration from configuration database.\n" );
+                }
             
             }
             
         }
         else {
-            fprintf( stderr, "VSCP Daemon configuration database path invalid - will exit.\n" );
+            fprintf( stderr, "VSCP Server configuration database path invalid - will exit.\n" );
             str.Printf(_("Path=%s\n"),(const char *)m_path_db_vscp_daemon.GetFullPath().mbc_str() );
             fprintf( stderr, str.mbc_str() );
             return false;
@@ -851,7 +923,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
                                             &m_db_vscp_log ) ) {
 
             // Failed to open/create the database file
-            fprintf( stderr, "VSCP Daemon logging database could not be opened. - Will not be used.\n" );
+            fprintf( stderr, "VSCP Server logging database could not be opened. - Will not be used.\n" );
             str.Printf( _("Path=%s error=%s\n"),
                             (const char *)m_path_db_vscp_log.GetFullPath().mbc_str(),
                             sqlite3_errmsg( m_db_vscp_log ) );
@@ -867,7 +939,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
         if ( m_path_db_vscp_log.IsOk() ) {
             // We need to create the database from scratch. This may not work if
             // the database is in a read only location.
-            fprintf( stderr, "VSCP Daemon logging database does not exist - will be created.\n" );
+            fprintf( stderr, "VSCP Server logging database does not exist - will be created.\n" );
             str.Printf(_("Path=%s\n"), (const char *)m_path_db_vscp_log.GetFullPath().mbc_str() );
             fprintf( stderr, (const char *)str.mbc_str() );
             
@@ -881,7 +953,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
             }
         }
         else {
-            fprintf( stderr, "VSCP Daemon logging database path invalid - will not be used.\n" );
+            fprintf( stderr, "VSCP Server logging database path invalid - will not be used.\n" );
             str.Printf(_("Path=%s\n"), (const char *)m_path_db_vscp_log.GetFullPath().mbc_str() );
             fprintf( stderr, str.mbc_str() );
         }
@@ -893,7 +965,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     sqlite3_exec( m_db_vscp_log, "PRAGMA journal_mode = WAL", NULL, NULL, NULL );
     sqlite3_exec( m_db_vscp_log, "PRAGMA synchronous = NORMAL", NULL, NULL, NULL );
     
-    // * * * VSCP Daemon data database - NEVER created * * *
+    // * * * VSCP Server data database - NEVER created * * *
 
     if ( SQLITE_OK != sqlite3_open( m_path_db_vscp_data.GetFullPath().mbc_str(),
                                             &m_db_vscp_data ) ) {
@@ -925,21 +997,14 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
         }
     }
 #endif
-
-    str = _("Using configuration file: ") + strcfgfile + _("\n");
-    fprintf( stderr, str.mbc_str() );
-
-    // Read XML configuration
-    if ( !readXMLConfiguration( strcfgfile ) ) {
-        fprintf( stderr, "Unable to open/parse configuration file. Can't initialize!\n" );
-        str = _("Path = .") + strcfgfile + _("\n");
-        fprintf( stderr, str.mbc_str() );
-        return FALSE;
-    }
+    
+        
       
     // Read users from database
     logMsg(_("loading users from users db...\n") );
     m_userList.loadUsers();
+    
+    
     
     //==========================================================================
     //                           Add admin user
@@ -954,7 +1019,8 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
                             _("admin"),
                             m_admin_allowfrom,          // Remotes allows to connect     
                             _("*:*"),                   // All events
-                            VSCP_ADD_USER_FLAG_ADMIN ); // Not in DB
+                            VSCP_ADD_USER_FLAG_ADMIN | 
+                            VSCP_ADD_USER_FLAG_LOCAL ); 
     
     
     //==========================================================================
@@ -1000,13 +1066,13 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 
     // If no server name set construct one
     if ( 0 == m_strServerName.Length() ) {
-        m_strServerName = _( "VSCP Daemon @ " );;
+        m_strServerName = _( "VSCP Server @ " );;
         wxString strguid;
         m_guid.toString( strguid );
         m_strServerName += strguid;
     }
     
-    str = _("VSCP Daemon started\n");
+    str = _("VSCP Server started\n");
     str += _("Version: ");
     str += _(VSCPD_DISPLAY_VERSION);
     str += _("\n");
@@ -1066,8 +1132,8 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     }
     
     // Start daemon worker thread
-    logMsg(_("Starting VSCP daemon worker thread.\n") );
-    //startDaemonWorkerThread();
+    logMsg(_("Starting VSCP Server worker thread.\n") );
+    startDaemonWorkerThread();
     
     return true;
 }
@@ -1120,7 +1186,7 @@ bool CControlObject::run(void)
     // This is an active client
     pClientItem->m_bOpen = true;
     pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL;
-    pClientItem->m_strDeviceName = _("Internal Daemon DM Client. Started at ");
+    pClientItem->m_strDeviceName = _("Internal Server DM Client. Started at ");
     wxDateTime now = wxDateTime::Now();
     pClientItem->m_strDeviceName += now.FormatISODate();
     pClientItem->m_strDeviceName += _(" ");
@@ -1139,6 +1205,7 @@ bool CControlObject::run(void)
     //                            MAIN - LOOP
     //-------------------------------------------------------------------------
 
+    
     // DM Loop
     while ( !m_bQuit ) {
 
@@ -1168,6 +1235,7 @@ bool CControlObject::run(void)
         //----------------------------------------------------------------------
         //                         Event received here
         //----------------------------------------------------------------------
+        
 
         if ( pClientItem->m_clientInputQueue.GetCount() ) {
 
@@ -1216,7 +1284,7 @@ bool CControlObject::cleanup( void )
     logMsg(_("Giving threads time to stop operations."),DAEMON_LOGMSG_DEBUG);
     sleep( 2 ); // Give threads some time to end
     
-    logMsg(_("Stopping daemon worker thread."),DAEMON_LOGMSG_DEBUG);
+    logMsg(_("Stopping VSCP Server worker thread."),DAEMON_LOGMSG_DEBUG);
     stopDaemonWorkerThread();
     
     logMsg(_("Stopping client worker thread."),DAEMON_LOGMSG_DEBUG);
@@ -1368,12 +1436,11 @@ bool CControlObject::startUDPWorkerThread( void )
     /////////////////////////////////////////////////////////////////////////////
     // Run the UDP server thread
     /////////////////////////////////////////////////////////////////////////////
-    if ( m_bUDP ) {
+    if ( m_udpInfo.m_bEnable ) {
 
         m_pVSCPClientUDPThread = new VSCPUDPClientThread;
 
         if ( NULL != m_pVSCPClientUDPThread ) {
-            m_pVSCPClientUDPThread->m_pCtrlObject = this;
             wxThreadError err;
             if (wxTHREAD_NO_ERROR == (err = m_pVSCPClientUDPThread->Create())) {
                 //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
@@ -1481,15 +1548,15 @@ bool CControlObject::startDaemonWorkerThread( void )
         if ( wxTHREAD_NO_ERROR == ( err = m_pdaemonVSCPThread->Create() ) ) {
             m_pdaemonVSCPThread->SetPriority(WXTHREAD_DEFAULT_PRIORITY);
             if ( wxTHREAD_NO_ERROR != ( err = m_pdaemonVSCPThread->Run() ) ) {
-                logMsg( _("Unable to start TCP VSCP daemon thread.") );
+                logMsg( _("Unable to start TCP VSCP Server thread.") );
             }
         }
         else {
-            logMsg( _("Unable to create TCP VSCP daemon thread.") );
+            logMsg( _("Unable to create TCP VSCP Server thread.") );
         }
     }
     else {
-        logMsg( _("Unable to start VSCP daemon thread.") );
+        logMsg( _("Unable to start VSCP Server thread.") );
     }
 
     return true;
@@ -2192,12 +2259,14 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
         if (child->GetName() == wxT("general")) {
 
             wxXmlNode *subchild = child->GetChildren();
-            while (subchild) {
+            while ( subchild ) {
 
                 if ( subchild->GetName() == wxT("security") ) {
                     m_admin_user = subchild->GetAttribute( wxT("user"), wxT("admin") );
                     m_admin_password = subchild->GetAttribute( wxT("password"), wxT("secret") );
-                    m_admin_allowfrom = subchild->GetAttribute( wxT("allowfrom"), wxT("*") );                    
+                    m_admin_allowfrom = subchild->GetAttribute( wxT("allowfrom"), wxT("*") ); 
+                    m_vscptoken = subchild->GetAttribute( wxT("vscptoken"), 
+                                                            wxT("Carpe diem quam minimum credula postero") );
                 }
                 else if ( subchild->GetName() == wxT("loglevel") ) {
                     
@@ -2244,21 +2313,12 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                         }
                     }
                     
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_LogLevel"), 
-                                                    wxString::Format(_("%d"), m_logLevel ) );
-                    
                 }
                 else if (subchild->GetName() == wxT("runasuser")) {
                     
                     m_runAsUser = subchild->GetNodeContent();
                     m_runAsUser.Trim();
                     m_runAsUser.Trim(false);
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_RunAsUser"), 
-                                                    wxString::Format(_("%s"), 
-                                                    (const char *)m_runAsUser.mbc_str() ) );
                     
                 }
                 else if (subchild->GetName() == wxT("logsyslog")) {
@@ -2272,21 +2332,12 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                         m_bLogToSysLog = true;
                     }
                     
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_Syslog_Enable"), 
-                                                    wxString::Format(_("%d"), 
-                                                    m_bLogToSysLog ? 1 : 0 ) );
-                    
                 }               
                 else if (subchild->GetName() == wxT("tcpip")) {
 
                     m_strTcpInterfaceAddress = subchild->GetAttribute(wxT("interface"), wxT(""));
                     m_strTcpInterfaceAddress.Trim(true);
                     m_strTcpInterfaceAddress.Trim(false);
-                    
-                    updateConfigurationRecordItem( _("vscpd_TcpipInterface_Address"), 
-                                                    wxString::Format(_("%s"), 
-                                                    (const char *)m_strTcpInterfaceAddress.mbc_str() ) );
 
                 }
                 else if ( subchild->GetName() == wxT( "multicast-announce" ) ) {
@@ -2294,38 +2345,131 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     m_strMulticastAnnounceAddress = subchild->GetAttribute( wxT( "interface" ), wxT( "" ) );
 
                     m_ttlMultiCastAnnounce = vscp_readStringValue( subchild->GetAttribute( wxT( "ttl" ), wxT( "1" ) ) );
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_MulticastInterface_Address"), 
-                                                    wxString::Format(_("%s"), 
-                                                    (const char *)m_strMulticastAnnounceAddress.mbc_str() ) );
-                                        
-                    updateConfigurationRecordItem( _("vscpd_MulicastInterface_ttl"), 
-                                                    wxString::Format(_("%d"), 
-                                                    m_ttlMultiCastAnnounce ) );
 
                 }
                 else if (subchild->GetName() == wxT("udp")) {
+   
+
+                    // Enable
+                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    attribute.MakeLower();
+                    if (attribute.IsSameAs(_("false"), false)) {
+                        m_udpInfo.m_bEnable = false; 
+                    }
+                    else {
+                        m_udpInfo.m_bEnable  = true; 
+                    }
+                    
+                    // Allow insecure connections
+                    attribute = subchild->GetAttribute( wxT("bAllowUnsecure"), wxT("true") );
+                    if (attribute.Lower().IsSameAs(_("false"), false)) {
+                        m_udpInfo.m_bAllowUnsecure = false; 
+                    }
+                    else {
+                        m_udpInfo.m_bAllowUnsecure  = true; 
+                    }
+                    
+                    // Enable ACK
+                    attribute = subchild->GetAttribute( wxT("bAck"), wxT("false") );
+                    if (attribute.Lower().IsSameAs(_("false"), false)) {
+                        m_udpInfo.m_bAck = false; 
+                    }
+                    else {
+                        m_udpInfo.m_bAck = true; 
+                    }
+                    
+                    // Username
+                    m_udpInfo.m_user = subchild->GetAttribute( _("user"), _("") );
+                        
+                    // Password
+                    m_udpInfo.m_password = subchild->GetAttribute( _("password"), _(""));
+
+                    // INterface
+                    m_udpInfo.m_interface = subchild->GetAttribute( _("interface"), _("udp://"+VSCP_MULTICAST_DEFAULT_PORT));
+                    
+                    // GUID
+                    attribute = subchild->GetAttribute( _("guid"), _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
+                    m_udpInfo.m_guid.getFromString( attribute );
+                    
+                    // Filter
+                    attribute = subchild->GetAttribute( _("filter"), _("") );
+                    if ( attribute.Trim().Length() ) {
+                        vscp_readFilterFromString( &m_udpInfo.m_filter, attribute );
+                    }
+                    
+                    // Mask
+                    attribute = subchild->GetAttribute( _("mask"), _("") );
+                    if ( attribute.Trim().Length() ) {                    
+                        vscp_readMaskFromString( &m_udpInfo.m_filter, attribute );
+                    }
+                 
+                    wxXmlNode *subsubchild = subchild->GetChildren();
+                    while ( subsubchild ) {
+                        
+                        if ( subsubchild->GetName() == _("rxnode") ) {
+                        
+                            udpRemoteClientInfo *pudpClient = new udpRemoteClientInfo;
+                            if ( NULL == pudpClient ) {
+                                logMsg( _("Failed to allocated UDP client remote structure.\n") );
+                                continue;
+                            }
+                                                        
+                            attribute = subchild->GetAttribute( wxT("bEnable"), wxT("false") );
+                            if ( attribute.Lower().IsSameAs(_("false"), false ) ) {
+                                pudpClient->m_bEnable = false; 
+                            }
+                            else {
+                                pudpClient->m_bEnable = true; 
+                            }                            
+                            
+                            // remote address
+                            pudpClient->m_remoteAddress = subchild->GetAttribute( _("interface"), _("") );    
+                                                                
+                            // Filter
+                            attribute = subchild->GetAttribute( _("filter"), _("") );
+                            if ( attribute.Trim().Length() ) {
+                                vscp_readFilterFromString( &pudpClient->m_filter, attribute );
+                            }
+                    
+                            // Mask
+                            attribute = subchild->GetAttribute( _("mask"), _("") );
+                            if ( attribute.Trim().Length() ) {
+                                vscp_readMaskFromString( &pudpClient->m_filter, attribute );
+                            }
+                            
+                            // broadcast
+                            attribute = subchild->GetAttribute( _("bSetBroadcast"), _("false") );
+                            if ( attribute.Lower().IsSameAs(_("false"), false ) ) {
+                                pudpClient->m_bSetBroadcast = false; 
+                            }
+                            else {
+                                pudpClient->m_bSetBroadcast = true; 
+                            }
+                            
+                            // encryption
+                            attribute = subchild->GetAttribute( _("encryption"), _("") );
+                            pudpClient->m_nEncryption = vscp_getEncryptionCodeFromToken( attribute );
+                            
+                            // add to list
+                            m_udpInfo.m_remotes.Append( pudpClient->m_remoteAddress, pudpClient );
+                            
+                        }
+                        
+                        subsubchild = subsubchild->GetNext();    
+                        
+                    }
+
+                }
+                else if (subchild->GetName() == wxT("multicast")) {
+                    
                     wxString attribut = subchild->GetAttribute(wxT("enable"), wxT("true"));
                     attribut.MakeLower();
                     if (attribut.IsSameAs(_("false"), false)) {
-                        m_bUDP = false;
+                        m_bMulticast = false;
                     }
                     else {
-                        m_bUDP = true;
+                        m_bMulticast = true;
                     }
-
-                    m_strUDPInterfaceAddress = subchild->GetAttribute(wxT("interface"), wxT(""));
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_UdpSimpleInterface_Enable"), 
-                                                    wxString::Format(_("%d"), 
-                                                    m_bUDP ? 1 : 0 ) );
-                    
-                    updateConfigurationRecordItem( _("vscpd_UdpSimpleInterface_Address"), 
-                                                    wxString::Format(_("%s"), 
-                                                    (const char *)m_strUDPInterfaceAddress.mbc_str() ) );
-
                 }
                 else if (subchild->GetName() == wxT("mqttbroker")) {
                     wxString attribut = subchild->GetAttribute(wxT("enable"), wxT("true"));
@@ -2339,14 +2483,6 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
 
                     m_strMQTTBrokerInterfaceAddress = subchild->GetAttribute(wxT("interface"), wxT(""));
                     
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_MqttBroker_Enable"), 
-                                                    wxString::Format(_("%d"), 
-                                                    m_bMQTTBroker ? 1 : 0 ) );
-                    
-                    updateConfigurationRecordItem( _("vscpd_MqttBroker_Address"), 
-                                                    wxString::Format(_("%s"), 
-                                                    (const char *)m_strMQTTBrokerInterfaceAddress.mbc_str() ) );
 
                 }
                 else if (subchild->GetName() == wxT("dm")) {
@@ -2371,15 +2507,6 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     if ( attribut.Length() ) {
                         m_dm.m_path_db_vscp_dm.Assign( attribut );
                     }
-                   
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_DM_DB_Path"), 
-                                                    wxString::Format(_("%s"), 
-                                                    (const char *)m_dm.m_staticXMLPath.mbc_str() ) );
-                    
-                    updateConfigurationRecordItem( _("vscpd_DM_XML_Path"), 
-                                                    wxString::Format(_("%s"), 
-                                                    (const char *)m_dm.m_path_db_vscp_dm.GetFullPath().mbc_str() ) );
                     
                 }
                 else if (subchild->GetName() == wxT("variables")) {
@@ -2406,47 +2533,23 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     if ( fileName.IsOk() ) {
                         m_VSCP_Variables.m_dbFilename = fileName;
                     } 
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_Variables_XML_Path"), 
-                                                    wxString::Format(_("%s"), 
-                                                    (const char *)m_VSCP_Variables.m_xmlPath.mbc_str() ) );
-
-                    updateConfigurationRecordItem( _("vscpd_Variables_DB_Path"), 
-                                                    wxString::Format(_("%s"), 
-                                                    (const char *)m_VSCP_Variables.m_dbFilename.GetPath().mbc_str() ) );
-                    
+ 
                 }
                 else if (subchild->GetName() == wxT("guid")) {
                     
                     wxString str = subchild->GetNodeContent();
                     m_guid.getFromString(str);
                     
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_GUID"), 
-                                                    wxString::Format(_("%s"), 
-                                                    (const char *)m_guid.getAsString().mbc_str() ) );
-                    
                 }
                 else if ( subchild->GetName() == wxT( "servername" ) ) {
                     
                     m_strServerName = subchild->GetNodeContent();
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_servername"), 
-                                                    wxString::Format(_("%s"), 
-                                                    (const char *)m_strServerName.mbc_str() ) );
                     
                 }
                 else if (subchild->GetName() == wxT("clientbuffersize")) {
                     
                     wxString str = subchild->GetNodeContent();
                     m_maxItemsInClientReceiveQueue = vscp_readStringValue(str);
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_clientbuffersize"), 
-                                                    wxString::Format(_("%lu"), 
-                                                    (unsigned long)m_maxItemsInClientReceiveQueue ) );
                     
                 }
                 else if (subchild->GetName() == wxT("webserver")) {
@@ -2458,11 +2561,6 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     if ( attribute.IsSameAs( _( "true" ), true ) ) {                        
                         m_bDisableSecurityWebServer = true;
                     }
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_webserver_authentication_enable"), 
-                                                    wxString::Format(_("%d"), 
-                                                    m_bDisableSecurityWebServer ? 0 : 1 ) );
 
                     attribute = subchild->GetAttribute(wxT("port"), wxT("8080"));
                     attribute.Trim();
@@ -2470,11 +2568,6 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     if ( attribute.Length() ) {
                         m_strWebServerInterfaceAddress = attribute;
                     }
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_webserver_address"), 
-                                                    wxString::Format(_("%s"), 
-                                                    (const char *)m_strWebServerInterfaceAddress.mbc_str() ) );
 
                     attribute = subchild->GetAttribute(wxT("extra_mime_types"), wxT(""));
                     attribute.Trim();
@@ -2483,11 +2576,6 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                         //m_pathWebRoot = attribute;
                         strcpy( m_extraMimeTypes, attribute.mbc_str() );
                     }
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_webserver_extramimetypes"), 
-                                                    wxString::Format(_("%s"), 
-                                                    m_extraMimeTypes ) );
 
                     attribute = subchild->GetAttribute(wxT("webrootpath"), wxT(""));
                     attribute.Trim();
@@ -2496,11 +2584,6 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                         //m_pathWebRoot = attribute;
                         strcpy( m_pathWebRoot, attribute.mbc_str() );
                     }
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_webserver_rootpath"), 
-                                                    wxString::Format(_("%s"), 
-                                                    m_pathWebRoot ) );
 
                     attribute = subchild->GetAttribute(wxT("authdoamin"), wxT(""));
                     attribute.Trim();
@@ -2508,11 +2591,6 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     if ( attribute.Length() ) {
                         strcpy( m_authDomain, attribute.mbc_str() );
                     }
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_webserver_authdomain"), 
-                                                    wxString::Format(_("%s"), 
-                                                    m_authDomain ) );
 
                     attribute = subchild->GetAttribute(wxT("pathcert"), wxT(""));
                     attribute.Trim();
@@ -2520,11 +2598,6 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     if ( attribute.Length() ) {
                         strcpy( m_pathCert, attribute.mbc_str() );
                     }
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_webserver_pathcert"), 
-                                                    wxString::Format(_("%s"), 
-                                                    m_pathCert ) );
 
                     attribute = subchild->GetAttribute(wxT("cgi_interpreter"), wxT(""));
                     attribute.Trim();
@@ -2532,11 +2605,6 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     if ( attribute.Length() ) {
                         strcpy( m_cgiInterpreter, attribute.mbc_str() );                    
                     }
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_webserver_cgiinterpreter"), 
-                                                    wxString::Format(_("%s"), 
-                                                    m_cgiInterpreter ) );
 
                     attribute = subchild->GetAttribute(wxT("cgi_pattern"), wxT(""));
                     attribute.Trim();
@@ -2544,11 +2612,6 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     if ( attribute.Length() ) {
                         strcpy( m_cgiPattern, attribute.mbc_str() );
                     }
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_webserver_cgipattern"), 
-                                                    wxString::Format(_("%s"), 
-                                                    m_cgiPattern ) );
 
                     attribute = subchild->GetAttribute(wxT("enable_directory_listing"), wxT("true"));
                     attribute.Trim();
@@ -2557,11 +2620,6 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     if ( attribute.IsSameAs(_("FALSE"), false ) ) {
                         strcpy( m_EnableDirectoryListings, "no" );
                     }
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_webserver_enabledirectorylistings"), 
-                                                    wxString::Format(_("%d"), 
-                                                    ( wxNOT_FOUND != attribute.Find(_("true") ) ? 1 : 0 ) ) );
 
                     attribute = subchild->GetAttribute(wxT("hide_file_patterns"), wxT(""));
                     attribute.Trim();
@@ -2569,11 +2627,6 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     if ( attribute.Length() ) {
                         strcpy( m_hideFilePatterns, attribute.mbc_str() );
                     }
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_webserver_hidefilepatterns"), 
-                                                    wxString::Format(_("%s"), 
-                                                    m_hideFilePatterns ) );
 
                     attribute = subchild->GetAttribute(wxT("index_files"), wxT(""));
                     attribute.Trim();
@@ -2581,11 +2634,6 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     if ( attribute.Length() ) {
                         strcpy( m_indexFiles, attribute.mbc_str() );
                     }
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_webserver_indexfiles"), 
-                                                    wxString::Format(_("%s"), 
-                                                    m_indexFiles ) );
 
                     attribute = subchild->GetAttribute(wxT("url_rewrites"), wxT(""));
                     attribute.Trim();
@@ -2593,11 +2641,6 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     if ( attribute.Length() ) {
                         strcpy( m_urlRewrites, attribute.mbc_str() );
                     }
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_webserver_urlrewrites"), 
-                                                    wxString::Format(_("%s"), 
-                                                    m_urlRewrites ) );
 
                     attribute = subchild->GetAttribute(wxT("per_directory_auth_file"), wxT(""));
                     attribute.Trim();
@@ -2605,11 +2648,6 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     if ( attribute.Length() ) {
                         strcpy( m_per_directory_auth_file, attribute.mbc_str() );
                     }
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_webserver_perdirectoryauthfile"), 
-                                                    wxString::Format(_("%s"), 
-                                                    m_per_directory_auth_file ) );
 
                     attribute = subchild->GetAttribute(wxT("global_auth_file"), wxT(""));
                     attribute.Trim();
@@ -2617,11 +2655,6 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     if ( attribute.Length() ) {
                         strcpy( m_global_auth_file, attribute.mbc_str() );
                     }
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_webserver_globalauthfile"), 
-                                                    wxString::Format(_("%s"), 
-                                                    m_global_auth_file ) );
 
                     attribute = subchild->GetAttribute(wxT("ssi_pattern"), wxT(""));
                     attribute.Trim();
@@ -2629,11 +2662,6 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     if ( attribute.Length() ) {
                         strcpy( m_ssi_pattern, attribute.mbc_str() );
                     }
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_webserver_ssipattern"), 
-                                                    wxString::Format(_("%s"), 
-                                                    m_ssi_pattern ) );
 
                     attribute = subchild->GetAttribute(wxT("ip_acl"), wxT(""));
                     attribute.Trim();
@@ -2641,11 +2669,6 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     if ( attribute.Length() ) {
                         strcpy( m_ip_acl, attribute.mbc_str() );
                     }
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_webserver_ipacl"), 
-                                                    wxString::Format(_("%s"), 
-                                                    m_ip_acl ) );
 
                     attribute = subchild->GetAttribute(wxT("dav_document_root"), wxT(""));
                     attribute.Trim();
@@ -2653,21 +2676,11 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     if ( attribute.Length() ) {
                         strcpy( m_dav_document_root, attribute.mbc_str() );
                     }
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_webserver_davdocumentroot"), 
-                                                    wxString::Format(_("%s"), 
-                                                    m_dav_document_root ) );
 
                     attribute = subchild->GetAttribute(wxT("run_as_user"), wxT(""));
                     attribute.Trim();
                     attribute.Trim(false);
                     m_runAsUserWeb = attribute;
-
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_webserver_runasuser"), 
-                                                    wxString::Format(_("%s"), 
-                                                    (const char *)m_runAsUserWeb.mbc_str() ) );
 
                     // Get webserver sub components
                     wxXmlNode *subsubchild = subchild->GetChildren();
@@ -2683,11 +2696,6 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                                 if (property.IsSameAs(_("false"), false)) {
                                  m_bAuthWebsockets = false;
                             }
-                            
-                            // Write into settings database
-                            updateConfigurationRecordItem( _("vscpd_websocket_enableauth"), 
-                                                    wxString::Format(_("%d"), 
-                                                    m_bAuthWebsockets ? 1 : 0 ) );
 
                         }
 
@@ -2704,11 +2712,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     if (property.IsSameAs(_("false"), false)) {
                         m_bAuthWebsockets = false;
                     }
-                            
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_websocket_enableauth"), 
-                                                    wxString::Format(_("%d"), 
-                                                    m_bAuthWebsockets ? 1 : 0 ) );
+
 
                 }
 
@@ -2821,10 +2825,26 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                 if ( bUser ) {
 
                     if ( bFilterPresent && bMaskPresent ) {
-                        m_userList.addUser(name, md5, _(""), _(""), &VSCPFilter, privilege, allowfrom, allowevent);
+                        m_userList.addUser( name, 
+                                                md5, 
+                                                _(""), 
+                                                _(""), 
+                                                &VSCPFilter, 
+                                                privilege, 
+                                                allowfrom, 
+                                                allowevent, 
+                                                VSCP_ADD_USER_FLAG_LOCAL );
                     }
                     else {
-                        m_userList.addUser(name, md5, _(""), _(""), NULL, privilege, allowfrom, allowevent);
+                        m_userList.addUser( name, 
+                                                md5, 
+                                                _(""), 
+                                                _(""), 
+                                                NULL, 
+                                                privilege, 
+                                                allowfrom, 
+                                                allowevent, 
+                                                VSCP_ADD_USER_FLAG_LOCAL );
                     }
 
                     bUser = false;
@@ -3184,11 +3204,6 @@ xml_table_error:
             else {
                 m_automation.enableAutomation();
             }
-            
-            // Write into settings database
-            updateConfigurationRecordItem( _("vscpd_automation_enable"), 
-                                            wxString::Format(_("%d"), 
-                                            m_automation.isAutomationEnabled() ? 1 : 0 ) );
 
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
@@ -3199,11 +3214,6 @@ xml_table_error:
                     wxString strZone = subchild->GetNodeContent();
                     strZone.ToLong( &zone );
                     m_automation.setZone( zone );
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_automation_zone"), 
-                                            wxString::Format(_("%d"), 
-                                            m_automation.getZone() ) );
             
                 }
                 else if (subchild->GetName() == wxT("sub-zone")) {
@@ -3213,11 +3223,6 @@ xml_table_error:
                     strSubZone.ToLong( &subzone );
                     m_automation.setSubzone( subzone );
                     
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_automation_subzone"), 
-                                            wxString::Format(_("%d"), 
-                                            m_automation.getSubzone() ) );
-                    
                 }
                 else if (subchild->GetName() == wxT("longitude")) {
                     
@@ -3225,11 +3230,7 @@ xml_table_error:
                     double d;
                     strLongitude.ToDouble( &d );
                     m_automation.setLongitude( d );
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_automation_longitude"), 
-                                            wxString::Format(_("%f"), 
-                                            m_automation.getLongitude() ) );
+
                 }
                 else if (subchild->GetName() == wxT("latitude")) {
                     
@@ -3237,11 +3238,6 @@ xml_table_error:
                     double d;
                     strLatitude.ToDouble( &d );
                     m_automation.setLatitude( d );
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_automation_latitude"), 
-                                            wxString::Format(_("%f"), 
-                                            m_automation.getLatitude() ) );
                     
                 }
                 else if (subchild->GetName() == wxT("sunrise")) {
@@ -3251,11 +3247,7 @@ xml_table_error:
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_automation.disableSunRiseEvent();
                     }
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_automation_sunrise_enable"), 
-                                            wxString::Format(_("%d"), 
-                                            m_automation.isSendSunriseEvent() ? 1 : 0 ) );
+
                     
                 }
                 
@@ -3266,11 +3258,7 @@ xml_table_error:
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_automation.disableSunRiseTwilightEvent();
                     }
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_automation_sunrisetwilight_enable"), 
-                                            wxString::Format(_("%d"), 
-                                            m_automation.isSendSunriseTwilightEvent() ? 1 : 0 ) );
+
                     
                 }
                 else if (subchild->GetName() == wxT("sunset")) {
@@ -3281,11 +3269,6 @@ xml_table_error:
                         m_automation.disableSunSetEvent();
                     }
                     
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_automation_sunset_enable"), 
-                                            wxString::Format(_("%d"), 
-                                            m_automation.isSendSunsetEvent() ? 1 : 0 ) );
-                    
                 }
                 else if (subchild->GetName() == wxT("sunset-twilight")) {
                     
@@ -3294,11 +3277,6 @@ xml_table_error:
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_automation.disableSunSetTwilightEvent();
                     }
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_automation_sunrisetwilight_enable"), 
-                                            wxString::Format(_("%d"), 
-                                            m_automation.isSendSunsetTwilightEvent() ? 1 : 0 ) );
                     
                 }
                 else if (subchild->GetName() == wxT("segmentcontrol-event")) {
@@ -3313,15 +3291,6 @@ xml_table_error:
                     long interval;
                     attribute.ToLong( &interval );
                     m_automation.setSegmentControllerHeartbeatInterval( interval );
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem( _("vscpd_automation_segmentcontrollerevent_enable"), 
-                                            wxString::Format(_("%d"), 
-                                            m_automation.isSegmentControllerHeartbeat() ? 1 : 0 ) );
-                    
-                    updateConfigurationRecordItem( _("vscpd_automation_segmentcontrollerevent_interval"), 
-                                            wxString::Format(_("%ld"), 
-                                            m_automation.getSegmentControllerHeartbeatInterval() ) );
                     
                 }
                 else if (subchild->GetName() == wxT("heartbeat-event")) {
@@ -3338,15 +3307,6 @@ xml_table_error:
                     long interval;
                     attribute.ToLong( &interval );
                     m_automation.setHeartbeatEventInterval( interval );
-                    
-                    // Write into settings database
-                    updateConfigurationRecordItem(_("vscpd_automation_heartbeatevent_enable"), 
-                                            wxString::Format(_("%d"), 
-                                            m_automation.isHeartbeatEvent() ? 1 : 0 ) );
-                    
-                    updateConfigurationRecordItem(_("vscpd_automation_heartbeatevent_interval"), 
-                                            wxString::Format(_("%ld"), 
-                                            m_automation.getHeartbeatEventInterval() ) );
                     
                 }
 
@@ -3369,7 +3329,7 @@ xml_table_error:
 // Create configuration table.
 //
 // Note that fprintf needs to be used here as the logging mechanism
-// is not activated yet.
+// is not activated yet.   
 //
 
 bool CControlObject::doCreateConfigurationTable( void )
@@ -3426,7 +3386,7 @@ bool CControlObject::dbReadConfiguration( void )
     // Check if database is open
     if ( NULL == m_db_vscp_daemon ) {
         fprintf( stderr, 
-                    "Failed to read VSCP settings database - not open." );
+                    "dbReadConfiguration: Failed to read VSCP settings database - Database is not open." );
         return false;
     }
     
@@ -3436,7 +3396,7 @@ bool CControlObject::dbReadConfiguration( void )
                                         &ppStmt,
                                         NULL ) ) {
         fprintf( stderr, 
-                    "Failed to read VSCP settings database - prepare query." );
+                    "dbReadConfiguration: Failed to read VSCP settings database - prepare query." );
         return false;
     }
     
@@ -3482,34 +3442,86 @@ bool CControlObject::dbReadConfiguration( void )
         }
         
         // TCP/IP port
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_TCPIPINTERFACE_PORT ) ) {
+        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_TCPIPINTERFACE_ADDRESS ) ) {
             m_strTcpInterfaceAddress = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                        VSCPDB_ORDINAL_CONFIG_TCPIPINTERFACE_PORT ) );
+                                        VSCPDB_ORDINAL_CONFIG_TCPIPINTERFACE_ADDRESS ) );
             m_strTcpInterfaceAddress.Trim(true);
             m_strTcpInterfaceAddress.Trim(false);
         }
         
         // Port for Multicast interface
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_MULTICASTINTERFACE_PORT ) ) {
+        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_ANNOUNCEINTERFACE_ADDRESS ) ) {
             m_strMulticastAnnounceAddress = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                            VSCPDB_ORDINAL_CONFIG_MULTICASTINTERFACE_PORT ) );
+                                        VSCPDB_ORDINAL_CONFIG_ANNOUNCEINTERFACE_ADDRESS ) );
         }
         
         // TTL for Multicast i/f
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_MULICASTINTERFACE_TTL ) ) {
-            m_ttlMultiCastAnnounce = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_CONFIG_MULICASTINTERFACE_TTL );
+        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_ANNOUNCEINTERFACE_TTL ) ) {
+            m_ttlMultiCastAnnounce = sqlite3_column_int( ppStmt, 
+                                        VSCPDB_ORDINAL_CONFIG_ANNOUNCEINTERFACE_TTL );
         }
         
         // Enable UDP interface
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_ENABLE ) ) {
-            m_bUDP = sqlite3_column_int( ppStmt, 
-                                        VSCPDB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_ENABLE ) ? true : false;
+        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDP_ENABLE ) ) {
+            m_udpInfo.m_bEnable = sqlite3_column_int( ppStmt, 
+                                        VSCPDB_ORDINAL_CONFIG_UDP_ENABLE ) ? true : false;
         }
         
-        // UDP interface port
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_PORT ) ) {
-            m_strUDPInterfaceAddress = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                            VSCPDB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_PORT ) );
+        // UDP interface address/port
+        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDP_ADDRESS ) ) {
+            m_udpInfo.m_interface = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_CONFIG_UDP_ADDRESS ) );
+        }
+        
+        // User
+        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDP_USER ) ) {
+            m_udpInfo.m_user = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_CONFIG_UDP_USER ) );
+        }
+        
+        // Password
+        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDP_PASSWORD ) ) {
+            m_udpInfo.m_password = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_CONFIG_UDP_PASSWORD ) );
+        }
+        
+        // Filter
+        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDP_FILTER ) ) {
+            wxString str = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_CONFIG_UDP_FILTER ) );
+            vscp_readFilterFromString( &m_udpInfo.m_filter, str );
+        }
+        
+        // Mask
+        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDP_MASK ) ) {
+            wxString str = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_CONFIG_UDP_MASK ) );
+            vscp_readMaskFromString( &m_udpInfo.m_filter, str );
+        }
+        
+        // GUID
+        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDP_GUID ) ) {
+            wxString str = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_CONFIG_UDP_GUID ) );
+            m_udpInfo.m_guid.getFromString( str );
+        }
+        
+        // Enable un secure
+        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDP_UNSECURE_ENABLE ) ) {
+            m_udpInfo.m_bAllowUnsecure = sqlite3_column_int( ppStmt, 
+                                        VSCPDB_ORDINAL_CONFIG_UDP_UNSECURE_ENABLE ) ? true : false;
+        }
+        
+        // Enable ack
+        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDP_ACK_ENABLE ) ) {
+            m_udpInfo.m_bAck = sqlite3_column_int( ppStmt, 
+                                        VSCPDB_ORDINAL_CONFIG_UDP_ACK_ENABLE ) ? true : false;
+        }
+        
+        // Enable Multicast interface
+        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_MULTICASTINTERFACE_ENABLE ) ) {
+            m_bMulticast = sqlite3_column_int( ppStmt, 
+                                        VSCPDB_ORDINAL_CONFIG_MULTICASTINTERFACE_ENABLE ) ? true : false;
         }
 
         // Path to DM database file
@@ -3871,7 +3883,7 @@ bool CControlObject::doCreateLogTable( void )
     char *pErrMsg = 0;
     const char *psql = VSCPDB_LOG_CREATE;
     
-    fprintf( stderr, "Creating database log table..\n" );
+    fprintf( stderr, "Creating VSCP log database.\n" );
     
     // Check if database is open
     if ( NULL == m_db_vscp_log ) {
@@ -3895,6 +3907,77 @@ bool CControlObject::doCreateLogTable( void )
     return true;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// doCreateUdpNodeTable
+//
+// Create the UDP node database
+//
+//
+
+bool CControlObject::doCreateUdpNodeTable( void )
+{
+    char *pErrMsg = 0;
+    const char *psql = VSCPDB_UDPNODE_CREATE;
+    
+    fprintf( stderr, "Creating udpnode table.\n" );
+    
+    // Check if database is open
+    if ( NULL == m_db_vscp_daemon ) {
+        fprintf( stderr, 
+                    "Failed to create VSCP udpnode table - database closed.\n" );
+        return false;
+    }
+    
+    m_db_vscp_configMutex.Lock();
+    
+    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
+        fprintf( stderr, 
+                    "Failed to create VSCP udpnode table with error %s.\n",
+                    pErrMsg );
+        m_db_vscp_configMutex.Unlock();
+        return false;
+    }
+    
+    m_db_vscp_configMutex.Unlock();
+    
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// doCreateMulticastTable
+//
+// Create the multicast database
+//
+//
+
+bool CControlObject::doCreateMulticastTable( void )
+{
+    char *pErrMsg = 0;
+    const char *psql = VSCPDB_MULTICAST_CREATE;
+    
+    fprintf( stderr, "Creating multicast table.\n" );
+    
+    // Check if database is open
+    if ( NULL == m_db_vscp_daemon ) {
+        fprintf( stderr, 
+                    "Failed to create VSCP multicast table - database closed.\n" );
+        return false;
+    }
+    
+    m_db_vscp_configMutex.Lock();
+    
+    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
+        fprintf( stderr, 
+                    "Failed to create VSCP multicast table with error %s.\n",
+                    pErrMsg );
+        m_db_vscp_configMutex.Unlock();
+        return false;
+    }
+    
+    m_db_vscp_configMutex.Unlock();
+    
+    return true;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////

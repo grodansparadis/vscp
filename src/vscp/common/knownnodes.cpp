@@ -85,7 +85,7 @@ CVSCPServerInformation::CVSCPServerInformation()
     memset( m_ports, 0, sizeof( m_ports ) );
   
     // Multicast announce port
-    m_ports[ 16 ] = VSCP_MULTICAST_PORT;
+    m_ports[ 16 ] = VSCP_MULTICAST_ANNNOUNCE_PORT;
 
     // VSCP TCP/IP interface
     m_ports[ 15 ] = VSCP_LEVEL2_TCP_PORT;
@@ -112,7 +112,7 @@ CVSCPServerInformation::CVSCPServerInformation()
     m_ports[ 8 ] = 1883;
 
     // CoAP interface
-    m_ports[ 7 ] = 8080;
+    m_ports[ 7 ] = 40000;
 
 }
 

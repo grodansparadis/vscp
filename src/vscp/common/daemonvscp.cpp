@@ -1,4 +1,4 @@
-// daemon_VSCP.cpp
+// daemonvscp.cpp
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -148,7 +148,7 @@ void *daemonVSCPThread::Entry()
 
 #else
 
-    // create a socket for sending to the multicast address
+    // create a socket for sending to the VSCP multicast address
     if ( ( sock_mc = socket( PF_INET, SOCK_DGRAM, IPPROTO_UDP ) ) < 0 ) {
         perror( "socket() failed" );
         return NULL;
@@ -172,14 +172,15 @@ void *daemonVSCPThread::Entry()
     // Must have a valid pointer to the control object
     if ( NULL == m_pCtrlObject ) return NULL;
 
-    // We need to create a clientobject and add this object to the list
+    // We need to create a client item and add this object to the list
+    // of clients
     CClientItem *pClientItem = new CClientItem;
     if ( NULL == pClientItem ) return NULL;
 
     // This is an active client
     pClientItem->m_bOpen = true;
     pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL;
-    pClientItem->m_strDeviceName = _("Internal Daemon VSCP Worker Client. Started at ");
+    pClientItem->m_strDeviceName = _("Internal VSCP Server Worker Client. Started at ");
     wxDateTime now = wxDateTime::Now();
     pClientItem->m_strDeviceName += now.FormatISODate();
     pClientItem->m_strDeviceName += _(" ");
@@ -619,25 +620,33 @@ bool daemonVSCPThread::sendMulticastEvent( int sock_mc,
     // Clear buffer
     memset( buf, 0, sizeof( buf ) );
 
-    //  0           Packet type & encryption setings
-    //  1           HEAD
-    //  2           Timestamp microseconds MSB
-    //  3           Timestamp microseconds
+    //  0           Packet type & encryption settings
+    //  1           HEAD MSB
+    //  2           HEAD LSB
+    //  3           Timestamp microseconds MSB
     //  4           Timestamp microseconds
-    //  5           Timestamp microseconds LSB
-    //  6           CLASS MSB
-    //  7           CLASS LSB
-    //  8           TYPE MSB
-    //  9           TYPE LSB
-    //  10 - 25     ORIGINATING GUID
-    //  26      	DATA SIZE MSB
-    //  27 	        DATA SIZE LSB
-    //  28 - n 	    data limited to max 512 - 25 = 487 bytes
-    //  len - 2 	CRC MSB( Calculated on HEAD + CLASS + TYPE + ADDRESS + SIZE + DATA� )
-    //  len - 1 	CRC LSB
+    //  5           Timestamp microseconds
+    //  6           Timestamp microseconds LSB
+    //  7           Year
+    //  8           Month
+    //  9           Day	
+    //  10          Hour
+    //  11          Minute
+    //  12          Second	 
+    //  13          CLASS MSB
+    //  14          CLASS LSB
+    //  15          TYPE MSB
+    //  16          TYPE LSB
+    //  17 - 32     ORIGINATING GUID
+    //  33          DATA SIZE MSB
+    //  34          DATA SIZE LSB
+    //  35 - n 	    data limited to max 512 - 25 = 487 bytes
+    //  len - 2     CRC MSB( Calculated on HEAD + CLASS + TYPE + ADDRESS + SIZE + DATA )
+    //  len - 1     CRC LSB
 
-    // Packe type
-    buf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = SET_VSCP_MULTICAST_TYPE( VSCP_MULTICAST_TYPE_EVENT, VSCP_MULTICAST_ENCRYPTION_NONE );
+    // Packet type
+    buf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = 
+            SET_VSCP_MULTICAST_TYPE( VSCP_MULTICAST_TYPE_EVENT, VSCP_ENCRYPTION_NONE );
 
     // VSCP header
     buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_MSB ] = 0;
@@ -650,6 +659,14 @@ bool daemonVSCPThread::sendMulticastEvent( int sock_mc,
     buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 1 ] = ( timestamp >> 16 ) & 0xff;
     buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] = ( timestamp >> 8 ) & 0xff;
     buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ] = timestamp & 0xff;
+    
+    // Date/Time block
+    buf[ VSCP_MULTICAST_PACKET0_POS_YEAR ] = pEvent->year;
+    buf[ VSCP_MULTICAST_PACKET0_POS_MONTH ] = pEvent->month;
+    buf[ VSCP_MULTICAST_PACKET0_POS_DAY ] = pEvent->day;
+    buf[ VSCP_MULTICAST_PACKET0_POS_HOUR ] = pEvent->hour;
+    buf[ VSCP_MULTICAST_PACKET0_POS_MINUTE ] = pEvent->minute;
+    buf[ VSCP_MULTICAST_PACKET0_POS_SECOND ] = pEvent->second;
 
     // VSCP class
     uint16_t vscp_class = pEvent->vscp_class;
@@ -738,22 +755,29 @@ bool daemonVSCPThread::sendMulticastInformationProxyEvent( int sock,
     // Clear buffer
     memset( buf, 0, sizeof( buf ) );
 
-    //  0 	Packet type & encryption stings
-    //  1 	HEAD
-    //  2 	Timestamp microseconds MSB
-    //  3 	Timestamp microseconds
-    //  4 	Timestamp microseconds
-    //  5 	Timestamp microseconds LSB
-    //  6 	CLASS MSB
-    //  7 	CLASS LSB
-    //  8 	TYPE MSB
-    //  9 	TYPE LSB
-    //  10 - 25  ORIGINATING GUID
-    //  26 	DATA SIZE MSB
-    //  27 	DATA SIZE LSB
-    //  28 - n 	data limited to max 512 - 25 = 487 bytes
-    //  len - 2 	CRC MSB( Calculated on HEAD + CLASS + TYPE + ADDRESS + SIZE + DATA� )
-    //  len - 1 	CRC LSB
+    //  0           Packet type & encryption settings
+    //  1           HEAD MSB
+    //  2           HEAD LSB
+    //  3           Timestamp microseconds MSB
+    //  4           Timestamp microseconds
+    //  5           Timestamp microseconds
+    //  6           Timestamp microseconds LSB
+    //  7           Year
+    //  8           Month
+    //  9           Day	
+    //  10          Hour
+    //  11          Minute
+    //  12          Second	 
+    //  13          CLASS MSB
+    //  14          CLASS LSB
+    //  15          TYPE MSB
+    //  16          TYPE LSB
+    //  17 - 32     ORIGINATING GUID
+    //  33          DATA SIZE MSB
+    //  34          DATA SIZE LSB
+    //  35 - n 	    data limited to max 512 - 25 = 487 bytes
+    //  len - 2     CRC MSB( Calculated on HEAD + CLASS + TYPE + ADDRESS + SIZE + DATA )
+    //  len - 1     CRC LSB
     //
     //  Data
     //  ====================================================================================
@@ -766,7 +790,8 @@ bool daemonVSCPThread::sendMulticastInformationProxyEvent( int sock,
     //  128-191     Real text name of interface ( if any ).Set to all zero if not available.
 
     // Packet type
-    buf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = SET_VSCP_MULTICAST_TYPE( VSCP_MULTICAST_TYPE_EVENT , VSCP_MULTICAST_ENCRYPTION_NONE );
+    buf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = 
+            SET_VSCP_MULTICAST_TYPE( VSCP_MULTICAST_TYPE_EVENT , VSCP_ENCRYPTION_NONE );
 
     // VSCP header
     buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_MSB ] = 0;
@@ -779,6 +804,15 @@ bool daemonVSCPThread::sendMulticastInformationProxyEvent( int sock,
     buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 1 ] = ( timestamp >> 16 ) & 0xff;
     buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] = ( timestamp >> 8 ) & 0xff;
     buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ] = timestamp & 0xff;
+    
+    // Date/Time block
+    wxDateTime now = wxDateTime::UNow();
+    buf[ VSCP_MULTICAST_PACKET0_POS_YEAR ] = now.GetYear();
+    buf[ VSCP_MULTICAST_PACKET0_POS_MONTH ] = now.GetMonth();
+    buf[ VSCP_MULTICAST_PACKET0_POS_DAY ] = now.GetDay();
+    buf[ VSCP_MULTICAST_PACKET0_POS_HOUR ] = now.GetHour();
+    buf[ VSCP_MULTICAST_PACKET0_POS_MINUTE ] = now.GetMinute();
+    buf[ VSCP_MULTICAST_PACKET0_POS_SECOND ] = now.GetSecond();
 
     // VSCP class
     uint16_t vscp_class = VSCP_CLASS2_INFORMATION;

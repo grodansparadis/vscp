@@ -22,8 +22,8 @@
 //
 
 
-#if !defined(UDPCLIENTTHREAD_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_)
-#define UDPCLIENTTHREAD_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_
+#if !defined(UDPCLIENTTHREAD_H__INCLUDED_)
+#define UDPCLIENTTHREAD_H__INCLUDED_
 
 
 #include "wx/thread.h"
@@ -32,46 +32,29 @@
 #include "userlist.h"
 #include "controlobject.h"
 
-#define VSCP_TCP_MAX_CLIENTS                1024
-#define MSG_OK                              "+OK - Success.\r\n"
-#define MSG_GOODBY                          "+OK - Connection closed by client.\r\n"
-#define MSG_GOODBY2                         "+OK - Connection closed.\r\n"
-#define MSG_USENAME_OK                      "+OK - User name accepted, password please\r\n"
-#define MSG_PASSWORD_OK                     "+OK - Ready to work.\r\n"
-#define MSG_QUEUE_CLEARED                   "+OK - All events cleared.\r\n"
-#define MSG_RECEIVE_LOOP                    "+OK - Receive loop entered. QUITLOOP to terminate.\r\n"
-#define MSG_QUIT_LOOP                       "+OK - Quit receive loop.\r\n"
-#define MSG_CAN_MODE                        "+OK - CAN mode set.\r\n"
-/*
-#define MSG_ERROR                           "-OK - Error\r\n"
-#define MSG_UNKNOWN_COMMAND                 "-OK - Unknown command\r\n"
-#define MSG_PARAMETER_ERROR                 "-OK - Invalid parameter or format\r\n"
-#define MSG_BUFFER_FULL                     "-OK - Buffer Full\r\n"
-#define MSG_NO_MSG                          "-OK - No event(s) available\r\n"
-
-#define MSG_PASSWORD_ERROR                  "-OK - Invalid username or password.\r\n"
-#define MSG_NOT_ACCREDITED                  "-OK - Need to log in to perform this command.\r\n"
-#define MSG_INVALID_USER                    "-OK - Invalid user.\r\n"
-#define MSG_NEED_USERNAME                   "-OK - Need a Username before a password can be entered.\r\n"
-
-#define MSG_MAX_NUMBER_OF_CLIENTS           "-OK - Max number of clients connected.\r\n"
-#define MSG_INTERNAL_ERROR                  "-OK - Server Internal error.\r\n"
-#define MSG_INTERNAL_MEMORY_ERROR           "-OK - Internal Memory error.\r\n"
-#define MSG_INVALID_REMOTE_ERROR            "-OK - Invalid or unknown peer.\r\n"  */
-
-//class CControlObject;
-//class CClientItem;
-
-typedef const char * ( * COMMAND_METHOD) (  void );
-
-/*!
-    Class that defines one command
-*/
+// Client structure (Will receive events from VSCP server)
 typedef struct {
-    wxString m_strCmd;                  // Command name
-    uint8_t m_securityLevel;            // Security level for command (0-15)
-    wxProcess *m_pfnCommand;            // Function to execute
-} structUDPCommand;
+    bool                m_bEnable;          // Enable the client
+    wxString            m_remoteAddress;    // Address for remote client "UDP://19.168.1.99:1234
+    vscpEventFilter     m_filter;           // Filter for outgoing events to this UDP client
+    uint8_t             m_nEncryption;      // Encryption algorithm to use for this client
+    bool                m_bSetBroadcast;    // Set broadcast flag  MG_F_ENABLE_BROADCAST
+} udpRemoteClientInfo;
+
+WX_DECLARE_LIST(udpRemoteClientInfo, udpRemoteClientList );
+
+typedef struct  {       
+    bool                m_bEnable;          // Enable udp
+    bool                m_bAllowUnsecure;   // Allow unencrypted datagrams
+    bool                m_bAck;             // ACK received datagram
+    wxString            m_user;             // User account to use for UDP
+    wxString            m_password;         // Password for user account
+    wxString            m_interface;        // Interface to bind to "UDP://33333"
+    cguid               m_guid;             // GUID to use for server client object
+    vscpEventFilter     m_filter;           // Filter for incoming events to this UDP client
+    udpRemoteClientList m_remotes;          // List containing remote receiving clients
+} udpServerInfo;    
+    
 
 
 
@@ -97,10 +80,31 @@ public:
     virtual void *Entry();
 
     /*!
-        TCP/IP handler
+     *  Connection handler
+     * 
+     * @param nc Mongoose connection handle
+     * @param ev Mongoose event.
+     * @param p Pointer to user data.
     */
     static void ev_handler( struct mg_connection *nc, int ev, void *p );
 
+    
+    /*!
+     * Receive an unencrypted UDP frame
+     * 
+     * @param nc Mongoose connection handle
+     * @param pClientItem Client item for this user. Normally "USP"
+     * @param pRxFilter Pointer to receive filter. Can be NULL to accept 
+     *          all events.
+     * @return True on success, false on failure.
+     */
+    static bool receiveUnEncryptedFrame( struct mg_connection *nc, 
+                                            CClientItem *pClientItem,
+                                            vscpEventFilter *pRxFilter );
+    
+    static bool sendUnEncryptedFrame( struct mg_connection *nc, 
+                                            CClientItem *pClientItem );
+    
     /*! 
         called when the thread exits - whether it terminates normally or is
         stopped with Delete() (but not when it is Kill()ed!)
@@ -115,24 +119,13 @@ public:
     */
     bool m_bQuit;
 
-    /*!
-        Pointer to ower owner
-    */
-    CControlObject *m_pCtrlObject;
+private:
 
-    /*!
-        UDP Client
-    */
+    // UDP Client item
     CClientItem *m_pClientItem;
-
-    /// Last connand executed
-    wxString m_lastCommand;
-
-    // Current command
-    wxString m_currentCommand;
-
-    /// Current command i all upper case
-    wxString m_currentCommandUC;
+    
+    
+    //udpServerInfo m_udpInfo;
 
 };
 

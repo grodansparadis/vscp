@@ -340,8 +340,8 @@ bool UDPSendThread::sendUdpEvent(vscpEvent *pEvent)
 
     memset((void *) &broadcast_addr, 0, sizeof(broadcast_addr));
     broadcast_addr.sin_family = AF_INET;
-    broadcast_addr.sin_addr.s_addr = htonl(INADDR_BROADCAST); // =inet_addr(SERVERIP);
-    broadcast_addr.sin_port = htons(m_pCtrlObject->m_UDPPort); // htons( VSCP_LEVEL2_UDP_PORT );
+    broadcast_addr.sin_addr.s_addr = htonl(INADDR_BROADCAST); 
+    broadcast_addr.sin_port = htons(m_pCtrlObject->m_UDPPort); 
 
     wxLogTrace(_("wxTRACE_vscpd_Msg"), _("Sending UDP event. Port=%d"), m_pCtrlObject->m_UDPPort);
 

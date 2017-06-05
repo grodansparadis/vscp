@@ -43,7 +43,7 @@
 
 // VSCP daemon defines
 #define VSCP_MAX_CLIENTS                    4096    // abs. max. is 0xffff
-#define VSCP_MAX_DEVICES                    4096    // abs. max. is 0xffff
+#define VSCP_MAX_DEVICES                    1024    // abs. max. is 0xffff
 
 //
 // daemon
@@ -105,7 +105,9 @@ extern "C" {
                                 // bit 765  priority, Priority 0-7 where 0 is highest.
                                 // bit 4 = hard coded, true for a hard coded device.
                                 // bit 3 = Don't calculate CRC, false for CRC usage.
-                                //          Just checked when CRC is used.        
+                                //          Just checked when CRC is used. 
+                                //          If set the CRC should be set to 0xAA55 for
+                                //          the event to be accepted without a CRC check.
                                 // bit 2 = Reserved.
                                 // bit 1 = Reserved.
                                 // bit 0 = Reserved.
@@ -149,7 +151,9 @@ typedef struct {
                                     // bit 7,6,5 priority => Priority 0-7 where 0 is highest.
                                     // bit 4 = hard coded, true for a hard coded device.
                                     // bit 3 = Don't calculate CRC, Set to zero to use CRC.
-                                    //          Just checked when CRC is used.    
+                                    //          Just checked when CRC is used.
+                                    //          If set the CRC should be set to 0xAA55 for
+                                    //          the event to be accepted without a CRC check.
                                     // bit 2 = Reserved.
                                     // bit 1 = Reserved.
                                     // bit 0 = Reserved.
@@ -195,7 +199,12 @@ typedef vscpEventEx *PVSCPEVENTEX;
 #define VSCP_LEVEL1_MAXDATA                 8
 #define VSCP_LEVEL2_MAXDATA                 (512 - 25)
 
+#define VSCP_NOCRC_CALC_DUMMY_CRC           0xAA55      // If no CRC cal bit is set the CRC value
+                                                        // should be set to this value for the CRC 
+                                                        // calculation to be skipped.
+
 #define VSCP_CAN_ID_HARD_CODED	            0x02000000  // Hard coded bit in CAN frame id
+
 
 // GUID byte positions
 #define VSCP_GUID_MSB                       0
@@ -290,32 +299,56 @@ typedef struct structVSCPChannelInfo {
 
 typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 
+
+// VSCP Encryption types
+#define VSCP_ENCRYPTION_NONE                    0
+#define VSCP_ENCRYPTION_AES128                  1
+#define VSCP_ENCRYPTION_AES192                  2
+#define VSCP_ENCRYPTION_AES256                  3
+
+// VSCP Encryption tokens
+#define VSCP_ENCRYPTION_TOKEN_0                 ""
+#define VSCP_ENCRYPTION_TOKEN_1                 "AES128"
+#define VSCP_ENCRYPTION_TOKEN_2                 "AES192"
+#define VSCP_ENCRYPTION_TOKEN_3                 "AES256"
+
 // * * * Multicast on VSCP reserved IP 224.0.23.158
 
 #define VSCP_MULTICAST_IPV4_ADDRESS_STR         "224.0.23.158"
 
 #define VSCP_MULTICAST_ANNNOUNCE_PORT           9598
-#define VSCP_MULTICAST_PORT                     33333   
+#define VSCP_MULTICAST_DEFAULT_PORT             33333   
 
 // Packet format type = 0
-#define VSCP_MULTICATS_PACKET0_HEADER_LENGTH    28
+//      without byte0 and CRC
+//      total frame size is 1 + 34 + 2 + data-length
+#define VSCP_MULTICATS_PACKET0_HEADER_LENGTH        34
 
-#define VSCP_MULTICAST_PACKET0_POS_PKTTYPE      0
-#define VSCP_MULTICAST_PACKET0_POS_HEAD         1
-#define VSCP_MULTICAST_PACKET0_POS_HEAD_MSB     1
-#define VSCP_MULTICAST_PACKET0_POS_HEAD_LSB     2
-#define VSCP_MULTICAST_PACKET0_POS_TIMESTAMP    3
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS   7
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE    9
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_GUID    11
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE    27
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_DATA    29
+#define VSCP_MULTICAST_PACKET0_POS_PKTTYPE          0
+#define VSCP_MULTICAST_PACKET0_POS_HEAD             1
+#define VSCP_MULTICAST_PACKET0_POS_HEAD_MSB         1
+#define VSCP_MULTICAST_PACKET0_POS_HEAD_LSB         2
+#define VSCP_MULTICAST_PACKET0_POS_TIMESTAMP        3
+#define VSCP_MULTICAST_PACKET0_POS_YEAR             7
+#define VSCP_MULTICAST_PACKET0_POS_MONTH            8
+#define VSCP_MULTICAST_PACKET0_POS_DAY              9
+#define VSCP_MULTICAST_PACKET0_POS_HOUR             10
+#define VSCP_MULTICAST_PACKET0_POS_MINUTE           11
+#define VSCP_MULTICAST_PACKET0_POS_SECOND           12
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS       13
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_MSB   13
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_LSB   14
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE        15
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_MSB    15
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB    16
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_GUID        17
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE        33
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB    33
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB    34
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_DATA        35
 
 // VSCP multicast packet types
-#define VSCP_MULTICAST_TYPE_EVENT               0
-
-// VSCP multicast Encryption types
-#define VSCP_MULTICAST_ENCRYPTION_NONE          0
+#define VSCP_MULTICAST_TYPE_EVENT                   0
 
 #define SET_VSCP_MULTICAST_TYPE( type, encryption )  ( (type<<4) + encryption )
 #define GET_VSCP_MULTICAST_PACKET_TYPE( type)        ( (type>>4) & 0x0f)

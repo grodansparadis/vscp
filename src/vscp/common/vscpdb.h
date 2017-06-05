@@ -42,10 +42,18 @@
 	"`vscpd_syslog_enable`                              INTEGER DEFAULT 1,"\
         "`vscpd_db_log_path`                                TEXT DEFAULT '/srv/vscp/logs/vscpd_log.sqlite3',"\
 	"`vscpd_tcpipinterface_address`                     TEXT DEFAULT '9598',"\
-	"`vscpd_multicastinterface_address`                 TEXT DEFAULT '9598',"\
-	"`vscpd_mulicastinterface_ttl`                      INTEGER DEFAULT 1,"\
-	"`vscpd_udpsimpleinterface_enable`                  INTEGER DEFAULT 0,"\
-	"`vscpd_udpsimpleinterface_address`                 TEXT DEFAULT 'udp://:9598',"\
+	"`vscpd_announceinterface_address`                  TEXT DEFAULT '9598',"\
+	"`vscpd_announceinterface_ttl`                      INTEGER DEFAULT 1,"\
+	"`vscpd_udp_enable`                                 INTEGER DEFAULT 0,"\
+	"`vscpd_udp_address`                                TEXT DEFAULT 'udp://:33333',"\
+        "`vscpd_udp_user`                                   TEXT DEFAULT '',"\
+        "`vscpd_udp_password`                               TEXT DEFAULT '',"\
+        "`vscpd_udp_unsecure_enable`                        INTEGER DEFAULT 1,"\
+        "`vscpd_udp_filter`                                 TEXT DEFAULT '',"\
+        "`vscpd_udp_mask`                                   TEXT DEFAULT '',"\
+        "`vscpd_udp_guid`                                   TEXT DEFAULT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00',"\
+        "`vscpd_udp_ack_enable`                             INTEGER DEFAULT 0,"\
+        "`vscpd_multicastinterface_enable`                  INTEGER DEFAULT 0,"\
 	"`vscpd_dm_db_path`                                 TEXT DEFAULT '/srv/vscp/dm.sqlite3',"\
         "`vscpd_dm_xml_path`                                TEXT DEFAULT '/srv/vscp/dm.xml',"\
 	"`vscpd_variables_db_path`                          TEXT DEFAULT '/srv/vscp/variable.sqlite3',"\
@@ -104,52 +112,65 @@
 #define VSCPDB_ORDINAL_CONFIG_SERVER_NAME                                   6
 #define VSCPDB_ORDINAL_CONFIG_SYSLOG_ENABLE                                 7
 #define VSCPDB_ORDINAL_CONFIG_DB_LOG_PATH                                   8
-#define VSCPDB_ORDINAL_CONFIG_TCPIPINTERFACE_PORT                           9
-#define VSCPDB_ORDINAL_CONFIG_MULTICASTINTERFACE_PORT                       10
-#define VSCPDB_ORDINAL_CONFIG_MULICASTINTERFACE_TTL                         11
-#define VSCPDB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_ENABLE                     12
-#define VSCPDB_ORDINAL_CONFIG_UDPSIMPLEINTERFACE_PORT                       13
-#define VSCPDB_ORDINAL_CONFIG_DM_DB_PATH                                    14
-#define VSCPDB_ORDINAL_CONFIG_DM_XML_PATH                                   15
-#define VSCPDB_ORDINAL_CONFIG_VARIABLES_DB_PATH                             16
-#define VSCPDB_ORDINAL_CONFIG_VARIABLES_XML_PATH                            17
-#define VSCPDB_ORDINAL_CONFIG_VSCPD_DEFAULTCLIENTBUFFERSIZE                 18
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_DISABLEAUTHENTICATION               19
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_ROOTPATH                            20
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_PORT                                21
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_PATHCERT                            22
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_AUTHDOMAIN                          23
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_CGIINTERPRETER                      24
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_CGIPATTERN                          25
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_ENABLEDIRECTORYLISTINGS             26
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_HIDEFILEPATTERNS                    27
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_INDEXFILES                          28
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_EXTRAMIMETYPES                      29
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_URLREWRITES                         30
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_SSIPATTERN                          31
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_RUNASUSER                           32
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_PERDIRECTORYAUTHFILE                33
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_GLOBALAUTHFILE                      34
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER__IPACL                              35
-#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_DAVDOCUMENTROOT                     36
-#define VSCPDB_ORDINAL_CONFIG_WEBSOCKET_ENABLEAUTH                          37
-#define VSCPDB_ORDINAL_CONFIG_MQTTBROKER_ENABLE                             38
-#define VSCPDB_ORDINAL_CONFIG_MQTTBROKER_PORT                               39
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_ENABLE                             40
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_ZONE                               41
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUBZONE                            42
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_LONGITUDE                          43
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_LATITUDE                           44
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISE_ENABLE                     45
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSET_ENABLE                      46
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSETTWILIGHT_ENABLE              47
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISETWILIGHT_ENABLE             48
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_ENABLE      49
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_INTERVAL    50
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_ENABLE              51
-#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_INTERVAL            52
-#define VSCPDB_ORDINAL_CONFIG_DB_VSCPDATA_PATH                              53
-#define VSCPDB_ORDINAL_CONFIG_DB_VSCPCONF_PATH                              54
+#define VSCPDB_ORDINAL_CONFIG_TCPIPINTERFACE_ADDRESS                        9
+#define VSCPDB_ORDINAL_CONFIG_ANNOUNCEINTERFACE_ADDRESS                     10
+#define VSCPDB_ORDINAL_CONFIG_ANNOUNCEINTERFACE_TTL                         11
+#define VSCPDB_ORDINAL_CONFIG_UDP_ENABLE                                    12
+#define VSCPDB_ORDINAL_CONFIG_UDP_ADDRESS                                   13    
+#define VSCPDB_ORDINAL_CONFIG_UDP_USER                                      14
+#define VSCPDB_ORDINAL_CONFIG_UDP_PASSWORD                                  15
+#define VSCPDB_ORDINAL_CONFIG_UDP_UNSECURE_ENABLE                           16
+#define VSCPDB_ORDINAL_CONFIG_UDP_FILTER                                    17
+#define VSCPDB_ORDINAL_CONFIG_UDP_MASK                                      18
+#define VSCPDB_ORDINAL_CONFIG_UDP_GUID                                      19 
+#define VSCPDB_ORDINAL_CONFIG_UDP_ACK_ENABLE                                20
+#define VSCPDB_ORDINAL_CONFIG_MULTICASTINTERFACE_ENABLE                     21
+#define VSCPDB_ORDINAL_CONFIG_DM_DB_PATH                                    22
+#define VSCPDB_ORDINAL_CONFIG_DM_XML_PATH                                   23
+#define VSCPDB_ORDINAL_CONFIG_VARIABLES_DB_PATH                             24
+#define VSCPDB_ORDINAL_CONFIG_VARIABLES_XML_PATH                            25
+#define VSCPDB_ORDINAL_CONFIG_VSCPD_DEFAULTCLIENTBUFFERSIZE                 26
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_DISABLEAUTHENTICATION               27
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_ROOTPATH                            28
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_PORT                                29
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_PATHCERT                            30
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_AUTHDOMAIN                          31
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_CGIINTERPRETER                      32
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_CGIPATTERN                          33
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_ENABLEDIRECTORYLISTINGS             34
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_HIDEFILEPATTERNS                    35
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_INDEXFILES                          36
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_EXTRAMIMETYPES                      37
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_URLREWRITES                         38
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_SSIPATTERN                          39
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_RUNASUSER                           40
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_PERDIRECTORYAUTHFILE                41
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_GLOBALAUTHFILE                      42
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER__IPACL                              43
+#define VSCPDB_ORDINAL_CONFIG_WEBSERVER_DAVDOCUMENTROOT                     44
+#define VSCPDB_ORDINAL_CONFIG_WEBSOCKET_ENABLEAUTH                          45
+#define VSCPDB_ORDINAL_CONFIG_MQTTBROKER_ENABLE                             46
+#define VSCPDB_ORDINAL_CONFIG_MQTTBROKER_PORT                               47
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_ENABLE                             48
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_ZONE                               49
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUBZONE                            50
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_LONGITUDE                          51
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_LATITUDE                           52
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISE_ENABLE                     53
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSET_ENABLE                      54
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSETTWILIGHT_ENABLE              55
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISETWILIGHT_ENABLE             56
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_ENABLE      57
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_INTERVAL    58
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_ENABLE              59
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_INTERVAL            60
+#define VSCPDB_ORDINAL_CONFIG_DB_VSCPDATA_PATH                              61
+#define VSCPDB_ORDINAL_CONFIG_DB_VSCPCONF_PATH                              62
+
+
+
+
+
 
 //*****************************************************************************
 //                                  LOG
@@ -173,6 +194,8 @@
                 "(type,date,level,message) VALUES ('%d','%s','%d','%q');"
 
 #define VSCPDB_LOG_COUNT "SELECT COUNT(*) AS nrows FROM log;"
+
+
 
 //*****************************************************************************
 //                                 USER
@@ -208,6 +231,9 @@
         "`allowedremotes`       TEXT DEFAULT '*',"\
 	"`note`                 TEXT DEFAULT ''"\
         ");"
+
+#define VSCPDB_USER_CREATE_INDEX "CREATE INDEX `idxusername` "\
+                "ON user ('username'):"
 
 #define VSCPDB_USER_INSERT "INSERT INTO 'user' "\
                 "(username,password,fullname,filter,rights,allowedevents,allowedremotes,note "\
@@ -267,6 +293,9 @@
 	"`note`             TEXT"\
         ");"
 
+#define VSCPDB_DRIVER_CREATE_INDEX "CREATE INDEX `idxdrivername` "\
+                "ON driver ('name'):"
+
 #define VSCPDB_ORDINAL_DRIVER_ID                    0   // 
 #define VSCPDB_ORDINAL_DRIVER_ENABLE                1   //
 #define VSCPDB_ORDINAL_DRIVER_LEVEL                 2   //
@@ -323,6 +352,9 @@
         "`description`	TEXT "\
         ");"
 
+#define VSCPDB_GUID_CREATE_INDEX "CREATE INDEX `idxguid` "\
+                "ON guid ('name'):"
+
 #define VSCPDB_ORDINAL_GUID_ID                      0   // 
 #define VSCPDB_ORDINAL_GUID_TYPE                    1   //
 #define VSCPDB_ORDINAL_GUID_GUID                    2   //
@@ -353,6 +385,9 @@
         "`description`	I       TEXT "\
         ");"
 
+#define VSCPDB_LOCATION_CREATE_INDEX "CREATE INDEX `idxlocation` "\
+                "ON location ('name'):"
+
 #define VSCPDB_ORDINAL_LOCATION_ID                  0   //            
 #define VSCPDB_ORDINAL_LOCATION_LINK_TO_ZONE        1   //
 #define VSCPDB_ORDINAL_LOCATION_LINK_TO_SUBZONE     2   //
@@ -381,6 +416,9 @@
 	"`date`         TEXT,"\
         "`guid`         TEXT DEFAULT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00'"\
         ");"
+
+#define VSCPDB_MDF_CACHE_CREATE_INDEX "CREATE INDEX `idxmdf_cache` "\
+                "ON mdf_cache ('url'):"
                 
 #define VSCPDB_ORDINAL_MDF_CACHE_ID                 0   //
 #define VSCPDB_ORDINAL_MDF_CACHE_URL                1   //
@@ -405,6 +443,8 @@
         "`comment`          TEXT"\
         ");";
 
+#define VSCPDB_SIMPLE_UI_CREATE_INDEX "CREATE INDEX `idxsimpleui` "\
+                "ON simpleui ('name'):"
  
 #define VSCPDB_ORDINAL_SIMPLE_UI_NAME               1   //
 #define VSCPDB_ORDINAL_SIMPLE_UI_LINK_TO_OWNER      2   //  
@@ -432,6 +472,9 @@
 	"`rowtype`              INTEGER DEFAULT 0"\
         ");"
 
+#define VSCPDB_SIMPLE_UI_ITEM_CREATE_INDEX "CREATE INDEX `idxsimpleui_item` "\
+                "ON simpleui_item ('link_to_simpleui'):"
+
 #define VSCPDB_ORDINAL_SIMPLE_UI_ITEM_ID                0   //
 #define VSCPDB_ORDINAL_SIMPLE_UI_ITEM_LINK_TO_SIMPLEUI  1   //
 #define VSCPDB_ORDINAL_SIMPLE_UI_ITEM_PARAM_LEFT        2   //
@@ -452,6 +495,9 @@
 	"`description`	TEXT"\
         ");"
 
+#define VSCPDB_ZONE_CREATE_INDEX "CREATE INDEX `idxzone` "\
+                "ON subzone ('name'):"
+
 #define VSCPDB_ORDINAL_ZONE_ID                   0   //
 #define VSCPDB_ORDINAL_ZONE_NAME                 1   //
 #define VSCPDB_ORDINAL_ZONE_DESCRIPTION          2   //
@@ -465,6 +511,9 @@
 	"`name`         TEXT NOT NULL,"\
 	"`description`	TEXT"\
         ");"
+
+#define VSCPDB_SUBZONE_CREATE_INDEX "CREATE INDEX `idxsubzone` "\
+                "ON subzone ('name'):"
 
 #define VSCPDB_ORDINAL_SUBZONE_ID               0   //
 #define VSCPDB_ORDINAL_SUBZONE_NAME             1   //
@@ -549,7 +598,7 @@
                 "vscpunit='%d',"\
                 "vscpzone='%d',"\
                 "vscpsubzone='%d'"\
-                " WHERE link_to_user='%ld'"
+                " WHERE link_to_user='%ld';"
 
 // Get the columns of a user table (table name inserted in %s)
 #define VSCPDB_TABLE_GET_COLUMNS "pragma table_info ('vscptable');"
@@ -647,6 +696,96 @@
 #define VSCPDB_ORDINAL_TABLE_VSCP_UNIT          19  //
 #define VSCPDB_ORDINAL_TABLE_VSCP_ZONE          20  //
 #define VSCPDB_ORDINAL_TABLE_VSCP_SUBZONE       21  //
+
+
+//*****************************************************************************
+//                               UDP nodes
+//*****************************************************************************
+
+#define VSCPDB_UDPNODE_CREATE "CREATE TABLE 'udpnode' ("\
+	"`idx_udpnode`      INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
+        "`bEnable`          INTEGER DEFAULT 0,"\
+        "`interface`        TEXT,"\
+	"`filter`           TEXT"\
+        "`mask`             TEXT"\
+        "`encryption`       TEXT"\
+        "`bSetBroadcast`    TEXT"\
+        ");";\
+
+#define VSCPDB_UDPNODE_UPDATE "UPDATE 'udpnode' "\
+                "SET benable='%d',"\
+                "interface='%s',"\
+                "filter='%s',"\
+                "mask='%s' "\
+                "encryption='%s',"\
+                "bSetBroadcast='%d',"\
+                " WHERE idx_udpnode='%ld';"
+
+#define VSCPDB_UDPNODE_INSERT "INSERT INTO 'udpnode' "\
+                "(bEnable,interface,filter,mask,encryption,bSetBroadcast)"\
+                " VALUES ('%d',%q','%q','%d','%d','%d');"
+
+#define VSCPDB_ORDINAL_UDPNODE_IDX              0   // 
+#define VSCPDB_ORDINAL_UDPNODE_ENABLE           1   // 
+#define VSCPDB_ORDINAL_UDPNODE_INTERFACE        2   //  
+#define VSCPDB_ORDINAL_UDPNODE_FILTER           3   //
+#define VSCPDB_ORDINAL_UDPNODE_MASK             4   //
+#define VSCPDB_ORDINAL_UDPNODE_ENCRYPTION       5   //
+#define VSCPDB_ORDINAL_UDPNODE_SET_BROADCAST    6   //
+
+
+//*****************************************************************************
+//                               MULTICAST
+//*****************************************************************************
+
+#define VSCPDB_MULTICAST_CREATE "CREATE TABLE 'multicast' ("\
+	"`idx_multicast`    INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
+        "`bEnable`          INTEGER DEFAULT 0,"\
+	"`group`            TEXT,"\
+        "`interface`        TEXT,"\
+	"`port`             INTEGER,"\
+	"`ttl`              INTEGER DEFAULT 1,"\
+	"`txfilter`         TEXT"\
+        "`txmask`           TEXT"\
+        "`rxfilter`         TEXT"\
+        "`rxmask`           TEXT"\
+        "`encryption`       TEXT"\
+        ");";\
+        
+#define VSCPDB_MULTICAST_UPDATE "UPDATE 'multicast' "\
+                "SET benable='%d',"\
+                "group='%s',"\
+                "interface='%s',"\
+                "port='%d',"\
+                "ttl='%d',"\
+                "txfilter='%s',"\
+                "txmask='%s' "\
+                "rxfilter='%s',"\
+                "rxmask='%s',"\
+                "encryption='%s',"\
+                " WHERE idx_multicast='%ld';"
+
+#define VSCPDB_MULTICAST_INSERT "INSERT INTO 'multicast' "\
+                "(bEnable,group,interface,port,ttl,txfilter,txmask,rxfilter,rxmask,encryption)"\
+                " VALUES ('%d',%q','%q','%d','%d','%q','%q','%q','%q','%q');"
+
+#define VSCPDB_ORDINAL_MULTICAST_IDX        0   // 
+#define VSCPDB_ORDINAL_MULTICAST_ENABLE     1   // 
+#define VSCPDB_ORDINAL_MULTICAST_GROUP      2   // 
+#define VSCPDB_ORDINAL_MULTICAST_INTERFACE  3   // Empty for INADDR_ANY = 0
+#define VSCPDB_ORDINAL_MULTICAST_PORT       4   // 
+#define VSCPDB_ORDINAL_MULTICAST_TTL        5   // 
+#define VSCPDB_ORDINAL_MULTICAST_TXFILTER   6   //
+#define VSCPDB_ORDINAL_MULTICAST_TXMASK     7   //
+#define VSCPDB_ORDINAL_MULTICAST_RXFILTER   8   //
+#define VSCPDB_ORDINAL_MULTICAST_RXMASK     9   //
+#define VSCPDB_ORDINAL_MULTICAST_ENCRYPTION 10  //
+
+
+
+
+
+
 
 
 

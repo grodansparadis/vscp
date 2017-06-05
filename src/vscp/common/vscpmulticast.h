@@ -31,6 +31,8 @@
 
 #include <knownnodes.h>
 
+// Part of VSCP Works
+
 //WX_DECLARE_LIST( MyListElement, listEvents );
 
 class worksMulticastThread : public wxThread

@@ -77,7 +77,7 @@
 
 
 // ***************************************************************************
-//                                General Helpers
+//                              General Helpers
 // ***************************************************************************
 
 
@@ -2721,8 +2721,8 @@ void vscp_convertEventExToHTML( vscpEventEx *pEventEx, wxString& strHTML )
 bool vscp_doLevel2Filter(const vscpEvent *pEvent,
                             const vscpEventFilter *pFilter)
 {
-    // Must be a valid client
-    if (NULL == pFilter) return false;
+    // A NULL filter is wildcard
+    if (NULL == pFilter) return true;
 
     // Must be a valid message
     if (NULL == pEvent) return false;
@@ -5351,7 +5351,50 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
+// vscp_getEncryptionCodeFromToken
+//
 
+uint8_t vscp_getEncryptionCodeFromToken( wxString& token ) 
+{
+    uint8_t code = 0;
+       
+    if ( wxNOT_FOUND != token.Upper().Find( _(VSCP_ENCRYPTION_TOKEN_1) ) ) {
+        code = VSCP_ENCRYPTION_AES128;
+    }
+    else if ( wxNOT_FOUND != token.Upper().Find( _(VSCP_ENCRYPTION_TOKEN_2) ) ) {
+        code = VSCP_ENCRYPTION_AES192;
+    }
+    else if ( wxNOT_FOUND != token.Upper().Find( _(VSCP_ENCRYPTION_TOKEN_3) ) ) {
+        code = VSCP_ENCRYPTION_AES256;
+    }
+    else {
+        code = 0;
+    }
+            
+    return code;        
+}
 
+////////////////////////////////////////////////////////////////////////////////
+// vscp_getEncryptionTokenFromCode
+//
 
+wxString vscp_getEncryptionTokenFromCode( uint8_t code )
+{
+    switch ( code ) {
+        
+        case VSCP_ENCRYPTION_AES128:
+            return VSCP_ENCRYPTION_TOKEN_1;
+            
+        case VSCP_ENCRYPTION_AES192:
+            return VSCP_ENCRYPTION_TOKEN_2;
+            
+        case VSCP_ENCRYPTION_AES256:
+            return VSCP_ENCRYPTION_TOKEN_3;
+                    
+        default:    
+        case VSCP_ENCRYPTION_NONE:
+            return VSCP_ENCRYPTION_TOKEN_0;
+    }
+}
 

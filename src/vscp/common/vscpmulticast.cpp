@@ -58,6 +58,10 @@
 #include <vscp.h>
 #include "vscpmulticast.h"
 
+
+// Part of VSCP Works
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // worksMulticastThread
 //
@@ -232,10 +236,8 @@ void *worksMulticastThread::Entry()
 
         if ( ( recv_len = recvfrom( sock,
                                     buf, sizeof( buf ), 0,
-                                    ( struct sockaddr* )&from_addr, &from_len ) ) < 0 ) {
-#ifdef WIN32            
-            //nRcv = WSAGetLastError();
-#endif            
+                                    ( struct sockaddr* )&from_addr, &from_len ) ) < 0 ) {          
+            //nRcv = WSAGetLastError();        
         }
 
 #else
@@ -247,6 +249,7 @@ void *worksMulticastThread::Entry()
 #endif
 
         wxString originatingAddress;
+        
 #ifdef WIN32
         char *s = NULL;
         struct sockaddr_in *addr_in = ( struct sockaddr_in * )&from_addr;
@@ -297,12 +300,15 @@ void *worksMulticastThread::Entry()
         crc chksum = crcFast( (unsigned const char *)buf, recv_len  );
         chksum = wxUINT32_SWAP_ON_LE( chksum );
 
-        if ( ( 0 == chksum )  && ( VSCP_MULTICAST_TYPE_EVENT  == GET_VSCP_MULTICAST_PACKET_TYPE( buf[ 0 ] ) ) ) {
+        if ( ( 0 == chksum )  && ( VSCP_MULTICAST_TYPE_EVENT  == 
+                GET_VSCP_MULTICAST_PACKET_TYPE( buf[ 0 ] ) ) ) {
 
-            uint16_t vscp_class = ( ((uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS ]) << 8 ) + buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS + 1 ];
+            uint16_t vscp_class = ( ((uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS ]) << 8 ) + 
+                        buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS + 1 ];
             vscp_class = wxUINT32_SWAP_ON_LE( vscp_class );
 
-            uint16_t vscp_type = ( ( ( uint16_t )buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE ] ) << 8 ) + buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE + 1 ];
+            uint16_t vscp_type = ( ( ( uint16_t )buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE ] ) << 8 ) + 
+                        buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE + 1 ];
             vscp_type = wxUINT32_SWAP_ON_LE( vscp_type );
 
             // Level I node heart beat
@@ -310,7 +316,7 @@ void *worksMulticastThread::Entry()
                  ( VSCP_TYPE_INFORMATION_NODE_HEARTBEAT == vscp_type ) ) {
 
                 // * * * Should not see this event here normally * * *
-                // This event will use the interfae GUID as its originator
+                // This event will use the interface GUID as its originator
                 
 
             }

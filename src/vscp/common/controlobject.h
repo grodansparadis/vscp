@@ -439,6 +439,18 @@ public:
     bool doCreateLogTable( void );
     
     /*!
+     * Create udpnode database
+     * @return true on success
+     */
+    bool doCreateUdpNodeTable( void );
+    
+    /*!
+     * Create multicast database
+     * @return true on success
+     */
+    bool doCreateMulticastTable( void );
+    
+    /*!
      * Create user table
      */
     bool doCreateUserTable( void );
@@ -519,10 +531,11 @@ public:
     //                                 Security
     //**************************************************************************
     
-    // Password is MD5 hash over "username:vscptoken:password"
+    // Password is MD5 hash over "username:domain:password"
     wxString m_admin_user;      // Defaults to "admin"
     wxString m_admin_password;  // Defaults to "13ca88de01ce06e377f74e61c23f630b"
-    wxString m_admin_allowfrom; // Remotes allowed to connect. Defaults to "*"   
+    wxString m_admin_allowfrom; // Remotes allowed to connect. Defaults to "*"  
+    wxString m_vscptoken;       // Key for encryption
 
     /*!
         User to run as for Unix
@@ -557,9 +570,9 @@ public:
     uint32_t m_clientMap[ VSCP_MAX_CLIENTS ];
     
 
-    /////////////////////////////////////////////////////////
+    //**************************************************************************
     //                      Logging
-    /////////////////////////////////////////////////////////
+    //**************************************************************************
 
     wxMutex m_mutexLogWrite;
 
@@ -568,57 +581,81 @@ public:
      */
     uint8_t m_logLevel;
 
-
-    /////////////////////////////////////////////////////////
-    //              Enable/disable switches
-    /////////////////////////////////////////////////////////
-
     
     /*!
         Log to syslog
      */
     bool m_bLogToSysLog;
     
-    /*!
-        Enable UDP interface
-    */
-    bool m_bUDP;
-
-    /*!
-        Enable MQTT broker
-    */
-    bool m_bMQTTBroker;
 
 
+    //**************************************************************************
+    //                           Communication
+    //**************************************************************************
 
-
+    
+    
     /////////////////////////////////////////////////////////
-    //                  Communication
+    //                       TCP/IP
     /////////////////////////////////////////////////////////
-
+    
     /// net_skeleton structure
     struct mg_mgr m_mgrTcpIpServer;
 
     /// Interface(s) used for TCP/IP connection
     wxString m_strTcpInterfaceAddress;
 
+    
+
+    
+
+    
+    /////////////////////////////////////////////////////////
+    //                        UDP
+    /////////////////////////////////////////////////////////
+    
+    
+    udpServerInfo m_udpInfo;
+    
+    
+    
+    /////////////////////////////////////////////////////////
+    //                      MULTICAST
+    /////////////////////////////////////////////////////////
+    
+    /*!
+        Enable Multicast interface (not announce)
+    */
+    bool m_bMulticast;
+
     /// Interface(s) used for multicast announce
     wxString m_strMulticastAnnounceAddress;
 
     // ttl for multicast announce
     uint8_t m_ttlMultiCastAnnounce;
-
-    /// Interface(s) to use for UDP
-    wxString m_strUDPInterfaceAddress;
-
+    
+    
+    /////////////////////////////////////////////////////////
+    //                         MQTT
+    /////////////////////////////////////////////////////////
+    
+     /*!
+        Enable MQTT broker
+    */
+    bool m_bMQTTBroker;
+    
     /// Interface(s) to use for MQTT broker
     wxString m_strMQTTBrokerInterfaceAddress;
+    
 
-
-
-    /////////////////////////////////////////////////////////
-    //                     VARIABLES
-    /////////////////////////////////////////////////////////
+    
+    
+    
+    
+    
+    //**************************************************************************
+    //                               VARIABLES
+    //**************************************************************************
 
 
     /// Hash table for variables
@@ -628,10 +665,14 @@ public:
     wxMutex m_variableMutex;
 
 
+        
+    
+    
+    
 
-    /////////////////////////////////////////////////////////
-    //                     SQLite3
-    /////////////////////////////////////////////////////////
+    //**************************************************************************
+    //                                SQLite3
+    //**************************************************************************
 
 
 
@@ -766,8 +807,6 @@ public:
     // Run as user
     wxString m_runAsUserWeb;
 
-
-
     // * * Websockets * *
 
 
@@ -777,9 +816,13 @@ public:
     // List of active websocket sessions
     WEBSOCKETSESSIONLIST m_websocketSessions;
 
-    //*****************************************************
-    //                      Lists
-    //*****************************************************
+    
+    
+    
+    
+    //**************************************************************************
+    //                                Lists
+    //**************************************************************************
     /*!
         The list with available devices.
      */
@@ -807,7 +850,7 @@ public:
     
 
     /*!
-        This is the list with knwon nodes in the system
+        This is the list with known nodes in the system
     */
     CKnownNodes m_knownNodes;
     wxMutex m_mutexKnownNodes;
@@ -838,9 +881,9 @@ public:
 
 private:
 
-    //*****************************************************
+    //**************************************************************************
     //                          Threads
-    //*****************************************************
+    //**************************************************************************
 
     /*!
         controlobject device thread
@@ -875,11 +918,14 @@ private:
     /*!
         UDP Worker threads
      */
-    //UDPSendThread *m_pudpSendThread;
-    //UDPReceiveThread *m_pudpReceiveThread;
+    VSCPUDPClientThread m_pudpClientThread;
+    wxMutex m_mutexudpClientThread;
+    
+    UDPSendThread *m_pudpSendThread;
+    UDPReceiveThread *m_pudpReceiveThread;
 
-    //wxMutex m_mutexudpSendThread;
-    //wxMutex m_mutexudpReceiveThread;
+    wxMutex m_mutexudpSendThread;
+    wxMutex m_mutexudpReceiveThread;
 
     /*!
         The server thread for the MQTT Broker

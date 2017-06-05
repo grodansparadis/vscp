@@ -53,6 +53,7 @@ VSCPD_OBJECTS =  vscpd.o \
 	../../common/vscprestserver.o \
 	../../common/vscpwebsocketserver.o \
 	../../common/udpclientthread.o \
+	../../common/vscpmulticastclientthread.o \
 	../../common/tables.o \
 	../../common/vscpautomation.o \
 	../../common/knownnodes.o \

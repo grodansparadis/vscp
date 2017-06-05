@@ -1,6 +1,6 @@
 <?xml version = "1.0" encoding = "UTF-8" ?>
 
-<!-- Version 0.6.0      2016-09-08                                           -->
+<!-- Version 0.7.1      2017-06-02                                           -->
 <!-- Example configuration file Unix                                         -->
 <!-- Ake Hedman, akhe@grodansparadis.com                                     -->
 <!-- http://www.grodansparadis.com                                           -->
@@ -12,17 +12,19 @@
 
     <general>
 
-   	<!-- This is the admin credentials                                    -->
-        <!-- allowfrom="*" allow connections from all hosts                   -->
-        <!-- A stricter allowfrom can be 127.0.0.1,192.168.1.*                -->
+        <!-- This is the admin credentials                                   -->
+        <!-- allowfrom="*" allow connections from all hosts                  -->
+        <!-- A stricter allowfrom can be 127.0.0.1,192.168.1.*               -->
+        <!-- The VSCP token is used a a key for encryption routines          -->
         <security admin="admin" 
                        password="secret" 
-                       allowfrom="*"  />
+                       allowfrom="*"
+                       vscptoken="Carpe diem quam minimum credula postero" />
     
         <!-- Set the detail of logging you want                              -->
         <loglevel>debug</loglevel>
 
-	<!-- Enable syslog logging                                           -->
+	    <!-- Enable syslog logging                                           -->
         <logsyslog enable="true" />        
 
         <!-- The user to run as on Unix                                      -->
@@ -63,17 +65,8 @@
         <!-- To specify several interfaces just enter them with a space      -->
         <!-- between them.                                                   -->
 
-        <tcpip interface="9598" />
+        <tcpip interface="tcp://9598" />
 
-
-        <!-- You can open multicast interfaces on several ports or on        -->
-        <!-- on a specific port or on every interface of the computer        -->
-        <!-- Default 9598 will listen on all interfaces while                -->
-        <!-- "127.0.0.1:9598" only will listen on the specified interface.   -->
-        <!-- To specify several interfaces just enter them with a space      -->
-        <!-- between them.                                                   -->
-
-        <tcpip interface="9598" />
         
         <!-- It is possible to enable/disable the UDP interface              -->
         <!-- You can open UDP interfaces on several ports or on              -->
@@ -83,8 +76,54 @@
         <!-- interface. To specify several interfaces just enter them        -->
         <!-- with a space between them. If interface is not preceded with    -->
         <!-- "UDP://" it will be added.                                      -->
-        
-        <udp enable="true" interface="udp://9598"/>
+        <!-- By giving a user/password one can have alist of nodes that are  -->
+        <!-- allowed to connect.                                             -->
+        <!-- filter/mask is used on incoming events.                         -->
+        <!-- GUID is set as GUID for client i/f if not all nills or empty.   -->
+        <!-- CLIENTS                                                         -->
+        <!-- Define nodes that wil get outgoing events. Can be none or many  -->
+        <!-- interface is address:port of node on standard form with "UDP://"-->
+        <!-- prepended.                                                      -->
+        <!-- filter/mask is used for outgoing events.                        -->
+        <!-- encryption is empty for no encryption or set to the encryption  -->
+        <!-- algorithm to use "AEA128", "AES192", "AES256"                   -->
+        <!-- bBrodcast Set to try to set broadcast flag on socket.           -->
+        <!-- MG_F_ENABLE_BROADCAST                                           -->
+
+        <udp enable="true" 
+                interface="udp://44444"
+                user=""
+                password=""                 
+                bAllowUnsecure="true"
+                bSendAck="true"
+                filter=""
+                mask=""
+                guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" >
+            
+            <rxnode enable="false"
+                interface="udp://192.168.1.8:8192"
+                filter=""
+                mask=""
+                encryption=""
+                bSetBroadcast="false"
+            />
+        </udp>
+
+        <!-- One or more multicast channels                                  -->
+        <multicast enable="true"> 
+            <channel enable="true"
+                        interface=""
+                        group="224.0.23.158" 
+                        port="32000" 
+                        ttl="1" 
+                        guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+                        txfilter=""
+                        txmask=""
+                        rxfilter=""
+                        rxmask=""
+                        encryption="" 
+            />
+        </multicast>
 
         <!-- It is possible to enable/disable the MQTT Broker                -->
         <!-- You can open the MQTT broker interfaces on several ports or on  -->
@@ -123,7 +162,7 @@
         <!-- default is 8080.                                                -->
 
         <webserver webrootpath="/srv/vscp/web"
-                    port="8080"
+                    port="tcp://8080"
                     path_cert=""
                     authdomain="mydomain.com"
                     cgi_interpreter=""

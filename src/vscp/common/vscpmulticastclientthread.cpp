@@ -1,4 +1,4 @@
-// version.h
+// vscpmulticast_channel.cpp
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -21,17 +21,50 @@
 // Boston, MA 02111-1307, USA.
 //
 
-#ifndef _____VSCP_VERSION_h_____
-#define _____VSCP_VERSION_h_____
+#ifdef WIN32
+#include <sys/types.h>   // for type definitions
+#include <winsock2.h>
+#include <ws2tcpip.h>    // for win socket structs
+#endif
 
-#define VSCPD_MAJOR_VERSION     1
-#define VSCPD_MINOR_VERSION     12
-#define VSCPD_RELEASE_VERSION   21
-#define VSCPD_BUILD_VERSION     14
+#include "wx/wxprec.h"
+#include "wx/wx.h"
+#include "wx/defs.h"
+#include "wx/app.h"
+#include <wx/datetime.h>
+#include <wx/listimpl.cpp>
+#include <wx/hashmap.h>
 
-#define VSCPD_DISPLAY_VERSION "1.12.21.14 Magnesium"
+#ifdef WIN32
+#else
 
-#define VSCPD_COPYRIGHT "Copyright (C) 2000-2017, Grodans Paradis AB, http://www.paradiseofthefrog.com"
-#define VSCPD_COPYRIGHT_HTML "Copyright (C) 2000-2017, <a href=\"mailto:info@paradiseofthefrog.com\">Paradise of the Frog</a>, <a href=\"http://www.paradiseofthefrog.com\">http://www.paradiseofthefrog.com</a>"
+#define _POSIX
+
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <syslog.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
 
 #endif
+
+#ifndef DWORD
+#define DWORD unsigned long
+#endif
+
+#include <crc.h>
+#include "daemonvscp.h"
+#include "canal_win32_ipc.h"
+#include "canal_macro.h"
+#include "vscp.h"
+#include "vscphelper.h"
+#include "clientlist.h"
+#include <dllist.h>
+#include <mongoose.h>
+//#include <md5.h>
+#include <crc8.h>
+#include "controlobject.h"
+#include "guid.h"
