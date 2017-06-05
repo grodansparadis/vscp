@@ -33,6 +33,7 @@
 #include "controlobject.h"
 
 #define VSCP_TCP_MAX_CLIENTS                1024
+
 #define MSG_WELCOME                         "Welcome to the VSCP daemon.\r\n"
 #define MSG_OK                              "+OK - Success.\r\n"
 #define MSG_GOODBY                          "+OK - Connection closed by client.\r\n"
@@ -42,7 +43,6 @@
 #define MSG_QUEUE_CLEARED                   "+OK - All events cleared.\r\n"
 #define MSG_RECEIVE_LOOP                    "+OK - Receive loop entered. QUITLOOP to terminate.\r\n"
 #define MSG_QUIT_LOOP                       "+OK - Quit receive loop.\r\n"
-//#define MSG_CAN_MODE                        "+OK - CAN mode set.\r\n"
 
 #define MSG_ERROR                           "-OK - Error\r\n"
 #define MSG_UNKNOWN_COMMAND                 "-OK - Unknown command\r\n"
@@ -91,9 +91,6 @@
 #define MSG_FAILED_TO_WRITE_TABLE           "-OK - Failed to write data to table.\r\n"
 #define MSG_FAILED_TO_REMOVE_TABLE          "-OK - Failed to remove table.\r\n"
 
-//class CControlObject;
-//class CClientItem;
-
 typedef const char * ( * COMMAND_METHOD) (  void );
 
 /*!
@@ -135,7 +132,6 @@ public:
                                 int ev, 
                                 void *pUser);
     
-    //static void ev_handler(struct mg_connection *conn, enum ns_event ev, void *p);
 
     /*!
         When a command is received on the TCP/IP interface the command handler is called.
@@ -151,7 +147,7 @@ public:
     virtual void OnExit();
 
     
-        /*!
+    /*!
         Check if a user has been verified
         @return true if verified, else false.
     */
@@ -161,7 +157,9 @@ public:
         Check if a user has enough privilege
         @return true if yes, else false.
     */
-    bool checkPrivilege( struct mg_connection *conn, CControlObject *pCtrlObject, unsigned char reqiredPrivilege );
+    bool checkPrivilege( struct mg_connection *conn, 
+                            CControlObject *pCtrlObject, 
+                            unsigned char reqiredPrivilege );
 
 
     /*!
@@ -179,7 +177,9 @@ public:
         @param 	bStatusMsg True if response messages (+OK/-OK) should be sent. Default.
         @return True on success/false on failure.
     */
-    bool sendOneEventFromQueue( struct mg_connection *conn, CControlObject *pCtrlObject, bool bStatusMsg = true );
+    bool sendOneEventFromQueue( struct mg_connection *conn, 
+                                    CControlObject *pCtrlObject, 
+                                    bool bStatusMsg = true );
 
     /*!
         Client DataAvailable
@@ -266,7 +266,7 @@ public:
     */
     void handleClientRestart ( struct mg_connection *conn, CControlObject *pCtrlObject );
 
-  /*!
+    /*!
         Client Shutdown
     */
     void handleClientShutdown ( struct mg_connection *conn, CControlObject *pCtrlObject );
