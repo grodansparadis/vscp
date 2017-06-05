@@ -183,6 +183,14 @@
 	"`level`	INTEGER DEFAULT 0,"\
 	"`message`	TEXT"\
         ");";\
+        
+#define VSCPDB_LOG_INSERT "INSERT INTO 'log' "\
+                "(type,date,level,message) VALUES ('%d','%s','%d','%q');"
+
+#define VSCPDB_LOG_COUNT "SELECT COUNT(*) AS nrows FROM log;"
+
+#define VSCPDB_LOG_CREATE_INDEX "CREATE INDEX `idxdate` "\
+                "ON log ('date'):"
 
 #define VSCPDB_ORDINAL_LOG_ID                       0   // 
 #define VSCPDB_ORDINAL_LOG_TYPE                     1   // 
@@ -190,10 +198,7 @@
 #define VSCPDB_ORDINAL_LOG_LEVEL                    3   // 
 #define VSCPDB_ORDINAL_LOG_MESSAGE                  4   // 
 
-#define VSCPDB_LOG_INSERT "INSERT INTO 'log' "\
-                "(type,date,level,message) VALUES ('%d','%s','%d','%q');"
 
-#define VSCPDB_LOG_COUNT "SELECT COUNT(*) AS nrows FROM log;"
 
 
 

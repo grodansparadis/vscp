@@ -3869,7 +3869,102 @@ bool CControlObject::updateConfigurationRecordItem( const wxString& strUpdateFie
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+// readUdpNodes
+//
+// Read in defined UDP nodes
+//
+//
 
+bool CControlObject::readUdpNodes( void )
+{
+    char *pErrMsg = 0;
+    const char *psql = "SELECT * from UDPNODE";
+    sqlite3_stmt *ppStmt;
+    
+    // If UDP is disabled we are done
+    if ( !m_udpInfo.m_bEnable ) return true;
+
+    // Check if database is open
+    if ( NULL == m_db_vscp_daemon ) {
+        fprintf( stderr, 
+                    "readUdpNodes: Database is not open." );
+        return false;
+    }
+    
+    if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_daemon,
+                                        psql,
+                                        -1,
+                                        &ppStmt,
+                                        NULL ) ) {
+        fprintf( stderr, "readUdpNodes: prepare query." );
+        return false;
+    }
+    
+    while ( SQLITE_ROW  == sqlite3_step( ppStmt ) ) {
+        
+        const unsigned char * p;
+      
+        // If not enabled move on
+        if ( !sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_UDPNODE_ENABLE ) ) continue;
+        
+        udpRemoteClientInfo *pudpClient = new udpRemoteClientInfo;
+        if ( NULL == pudpClient ) {
+            fprintf( stderr, "readUdpNodes: Failed to allocate storage for UDP node." );
+            continue;
+        }
+        
+        // Broadcast
+        pudpClient->m_bSetBroadcast = false;
+        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_UDPNODE_SET_BROADCAST );
+        if ( NULL != p ) {
+            wxString wxstr = wxString::FromUTF8( (const char *)p );
+            wxstr.MakeUpper();
+            if ( wxNOT_FOUND != wxstr.Find( _("TRUE") ) ) {
+                pudpClient->m_bSetBroadcast = true;
+            }
+        }
+        
+        // Interface
+        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_UDPNODE_INTERFACE );
+        if ( NULL != p ) {
+            pudpClient->m_remoteAddress.FromUTF8( (const char *)p );
+        }
+        
+        //  Filter
+        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_UDPNODE_FILTER );
+        if ( NULL != p ) {
+            wxString wxstr = wxString::FromUTF8( (const char *)p );
+            if ( !vscp_readFilterFromString( &pudpClient->m_filter, wxstr ) ) {
+                fprintf( stderr, "readUdpNodes: Failed to set filter for UDP node." );
+            }
+        }
+        
+        // Mask
+        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_UDPNODE_MASK );
+        if ( NULL != p ) {
+            wxString wxstr = wxString::FromUTF8( (const char *)p );
+            if ( !vscp_readMaskFromString( &pudpClient->m_filter, wxstr ) ) {
+                fprintf( stderr, "readUdpNodes: Failed to set mask for UDP node." );
+            }
+        }
+        
+        // Encryption
+        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_UDPNODE_ENCRYPTION );
+        if ( NULL != p ) {
+            wxString wxstr = wxString::FromUTF8( (const char *)p );
+            pudpClient->m_nEncryption = vscp_getEncryptionCodeFromToken( wxstr );
+        }
+        
+        // Add to list
+        m_udpInfo.m_remotes.Append( pudpClient->m_remoteAddress, pudpClient );
+        
+    }
+    
+    sqlite3_finalize( ppStmt );
+
+    return true;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // doCreateLogTable

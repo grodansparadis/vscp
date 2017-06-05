@@ -432,6 +432,11 @@ public:
      bool updateConfigurationRecordItem( const wxString& strUpdateField, 
                                             const wxString& strUpdateValue );
      
+     /*!
+      * Read in UDP nodes from the database
+      */
+     bool readUdpNodes( void );
+     
     /*!
      * Create log database
      * @return true on success
