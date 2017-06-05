@@ -879,7 +879,7 @@ static void json_scanf_cb(void *callback_data, const char *name,
   switch (info->type) {
     case 'B':
       info->num_conversions++;
-      switch (sizeof(bool)){
+      switch (sizeof(bool_t)){
         case sizeof(char):
           *(char *) info->target = (token->type == JSON_TYPE_TRUE ? 1 : 0);
           break;
