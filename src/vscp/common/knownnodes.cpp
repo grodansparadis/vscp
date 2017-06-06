@@ -88,16 +88,16 @@ CVSCPServerInformation::CVSCPServerInformation()
     m_ports[ 16 ] = VSCP_MULTICAST_ANNNOUNCE_PORT;
 
     // VSCP TCP/IP interface
-    m_ports[ 15 ] = VSCP_LEVEL2_TCP_PORT;
+    m_ports[ 15 ] = VSCP_DEFAULT_TCP_PORT;
 
     // UDP INterface
-    m_ports[ 14 ] = VSCP_LEVEL2_UDP_PORT;
+    m_ports[ 14 ] = VSCP_DEFAULT_UDP_PORT;
 
     // Multicast announce
     m_ports[ 13 ] = VSCP_MULTICAST_ANNNOUNCE_PORT;
 
     // Raw Ethernet
-    m_ports[ 12 ] = VSCP_LEVEL2_TCP_PORT;  // No port is used - This is the Ethernet frame id
+    m_ports[ 12 ] = VSCP_DEFAULT_TCP_PORT;  // No port is used - This is the Ethernet frame id
 
     // Web server
     m_ports[ 11 ] = 8080;

@@ -1155,7 +1155,6 @@ void *deviceLevel2WriteThread::Entry()
             m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_mutexClientInputQueue.Unlock();
 
             if (CANAL_ERROR_SUCCESS ==
-
                 m_pMainThreadObj->m_pDeviceItem->m_proc_VSCPBlockingSend( m_pMainThreadObj->m_pDeviceItem->m_openHandle,
                                                                             pqueueEvent, 300)) {
 

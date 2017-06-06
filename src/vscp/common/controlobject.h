@@ -111,6 +111,9 @@ enum {
 #define MAX_ITEMS_SEND_QUEUE                    1021
 #define MAX_ITEMS_CLIENT_RECEIVE_QUEUE          8191
 #define VSCP_TCPIPIF_DEFAULT_PORT               9598
+// VSCP daemon defines from vscp.h
+#define VSCP_MAX_CLIENTS                        4096    // abs. max. is 0xffff
+#define VSCP_MAX_DEVICES                        1024    // abs. max. is 0xffff
 
 ///////////////////////////////////////////////////////////////////////
 // vscp_md5

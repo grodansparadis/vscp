@@ -151,7 +151,7 @@ void *VSCPUDPClientThread::Entry()
 
     mg_mgr_init( &mgr, this );
 
-    if ( wxNOT_FOUND  != gpobj->m_udpInfo.m_interface.Find(_("udp://") ) ) {
+    if ( wxNOT_FOUND == gpobj->m_udpInfo.m_interface.Find(_("udp://") ) ) {
         gpobj->m_udpInfo.m_interface = _("udp://") + gpobj->m_udpInfo.m_interface;
     }
 
@@ -211,7 +211,10 @@ VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p)
 
         case MG_EV_RECV:
             {
+                // If a user is specified check that this user is allowed to connect
+                // from this location
                 if ( NULL != pUDPClientThread->m_pClientItem->m_pUserItem ) {
+                    
                     // Get remote address
                     wxString remoteaddr = wxString::FromAscii( inet_ntoa( nc->sa.sin.sin_addr )  );
 
@@ -229,8 +232,8 @@ VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p)
                     }
                 }
                 
-                // Must be data
-                if ( nc->recv_mbuf.len >= VSCP_MULTICATS_PACKET0_HEADER_LENGTH ) {
+                // Must be at least a packet-type + header and a crc
+                if ( nc->recv_mbuf.len >= ( 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 ) ) {
                     
                     if ( VSCP_ENCRYPTION_NONE == 
                             GET_VSCP_MULTICAST_PACKET_ENCRYPTION( nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] ) ) {
@@ -315,24 +318,30 @@ VSCPUDPClientThread::receiveUnEncryptedFrame( struct mg_connection *nc,
     //  len - 1     CRC LSB
     
     size_t calcFrameSize = 1 +                                          // packet type & encryption                        
-                        VSCP_MULTICATS_PACKET0_HEADER_LENGTH +          // header
+                        VSCP_MULTICAST_PACKET0_HEADER_LENGTH +          // header
                         2 +                                             // CRC
-                        ((size_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE ] ) << 8 +
-                        nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE + 1 ];
-    
+                        ((uint16_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] << 8 ) +
+                         (uint8_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ];
+        
     // The buffer must hold a frame
     if ( nc->recv_mbuf.len < calcFrameSize ) return false;
     
-    uint16_t calcCRC = ((size_t)nc->recv_mbuf.buf[ calcFrameSize - 2 ]) << 8 +
-                        nc->recv_mbuf.buf[ calcFrameSize - 1 ];
+    crc calcCRC = ((uint16_t)nc->recv_mbuf.buf[ calcFrameSize - 2 ] << 8 ) +
+                        (uint8_t)nc->recv_mbuf.buf[ calcFrameSize - 1 ];
     
     // CRC check (only if not disabled)
-    uint16_t crc = VSCP_NOCRC_CALC_DUMMY_CRC;
+    crc crcnew;
     if ( !( ( nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] | VSCP_HEADER_NO_CRC ) && 
             ( VSCP_NOCRC_CALC_DUMMY_CRC == calcCRC ) ) ) {
+        
         // Calculate & check CRC
-        crc = crcFast( (unsigned char const *)nc->recv_mbuf.buf + 1, calcFrameSize - 2 );
-        if ( crc != calcCRC ) return false;
+        crcnew = crcFast( (unsigned char const *)nc->recv_mbuf.buf + 1, 
+                        VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 
+                            ((uint16_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] << 8 ) +
+                             (uint8_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ] 
+                            + 2 );
+        // CRC is zero if calculated over itself
+        if ( crcnew ) return false;
     }
     
     vscpEvent *pEvent;
@@ -340,8 +349,8 @@ VSCPUDPClientThread::receiveUnEncryptedFrame( struct mg_connection *nc,
     // Allocate a new event
     if ( NULL == ( pEvent = new vscpEvent ) ) return false;
     
-    pEvent->sizeData = ((uint16_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE ]) << 8 +
-                        nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE + 1 ];
+    pEvent->sizeData =  ((uint16_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] << 8 ) +
+                        (uint8_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ];
     
     // Allocate data
     if ( NULL == ( pEvent->pdata = new uint8_t[ pEvent->sizeData ] ) ) {
@@ -353,36 +362,36 @@ VSCPUDPClientThread::receiveUnEncryptedFrame( struct mg_connection *nc,
     memcpy( pEvent->pdata, nc->recv_mbuf.buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA, pEvent->sizeData );
     
     // Head
-    pEvent->head = ((uint16_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_MSB ]) << 8 +
-                        nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB + 1 ];
+    pEvent->head = ((uint16_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_MSB ] << 8 ) +
+                        (uint8_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ];
     
     // Copy in GUID
     memcpy( pEvent->GUID, nc->recv_mbuf.buf + VSCP_MULTICAST_PACKET0_POS_VSCP_GUID, pEvent->sizeData ); 
     
     // Set CRC
-    pEvent->crc = crc;
+    pEvent->crc = calcCRC;
     
     // Set timestamp
-    pEvent->timestamp = ( (uint32_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP ] ) << 24 +
-                        ( (uint32_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 1 ] ) << 16 +
-                        ( (uint32_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] ) << 8 +
-                        nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ];
+    pEvent->timestamp = ( (uint32_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP ]  << 24 ) +
+                        ( (uint32_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 1 ] << 16 ) +
+                        ( (uint32_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] << 8 ) +
+                        (uint8_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ];
     
     // Date/time
-    pEvent->year = nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_YEAR ];
-    pEvent->month = nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_MONTH ];
-    pEvent->day = nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_DAY ];
-    pEvent->hour = nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_HOUR ];
-    pEvent->minute = nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_MINUTE ];
-    pEvent->second = nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_SECOND ];
+    pEvent->year = (uint8_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_YEAR ];
+    pEvent->month = (uint8_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_MONTH ];
+    pEvent->day = (uint8_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_DAY ];
+    pEvent->hour = (uint8_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_HOUR ];
+    pEvent->minute = (uint8_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_MINUTE ];
+    pEvent->second = (uint8_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_SECOND ];
     
     // VSCP Class
-    pEvent->vscp_class = ( (uint16_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS ] ) << 8 +
-                                    nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS + 1 ];
+    pEvent->vscp_class = ( (uint16_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_MSB ] << 8 ) +
+                           (uint8_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_LSB ];
     
     // VSCP Type
-    pEvent->vscp_type = ( (uint16_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE ] ) << 8 +
-                                    nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE + 1 ];                        
+    pEvent->vscp_type = ( (uint16_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_MSB ] << 8 ) +
+                          (uint8_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB ];                        
     
     // obid - set to zero so interface fill it in
     pEvent->obid = 0;
@@ -421,7 +430,7 @@ VSCPUDPClientThread::sendUnEncryptedFrame( struct mg_connection *nc,
                                                 CClientItem *pClientItem )
 {
     CLIENTEVENTLIST::compatibility_iterator nodeClient;
-    unsigned char sendbuf[1 + VSCP_MULTICATS_PACKET0_HEADER_LENGTH + 2 + 512];    // Send buffer
+    unsigned char sendbuf[1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + 512];    // Send buffer
     size_t sizeSend = 0;
     
     // Check if there is an event to send
@@ -485,7 +494,7 @@ VSCPUDPClientThread::sendUnEncryptedFrame( struct mg_connection *nc,
     
     // Calculate CRC
     uint16_t crc = crcFast( sendbuf + VSCP_MULTICAST_PACKET0_POS_HEAD, 
-                                VSCP_MULTICATS_PACKET0_HEADER_LENGTH + pEvent->sizeData );
+                                VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData );
     sendbuf[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + pEvent->sizeData ] = ( crc >> 8 ) & 0xff;
     sendbuf[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + pEvent->sizeData + 1 ] = crc & 0xff;
     

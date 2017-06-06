@@ -696,15 +696,15 @@ bool daemonVSCPThread::sendMulticastEvent( int sock_mc,
 
     // CRC
     crcInit();
-    uint16_t crc = crcFast( buf, VSCP_MULTICATS_PACKET0_HEADER_LENGTH + pEvent->sizeData );
+    uint16_t crc = crcFast( buf, VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData );
     crc = wxUINT32_SWAP_ON_LE( crc );
-    buf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH + pEvent->sizeData + 0 ] = ( crc >> 8 ) & 0xff;
-    buf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH + pEvent->sizeData + 1 ] = crc & 0xff;
+    buf[ VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData + 0 ] = ( crc >> 8 ) & 0xff;
+    buf[ VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData + 1 ] = crc & 0xff;
 
-    return ( ( VSCP_MULTICATS_PACKET0_HEADER_LENGTH + pEvent->sizeData + 2 ) ==
+    return ( ( VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData + 2 ) ==
              sendto( sock_mc,
                      ( const char * )buf,
-                     VSCP_MULTICATS_PACKET0_HEADER_LENGTH + pEvent->sizeData + 2,
+                     VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData + 2,
                      0,
                      ( struct sockaddr * )&mc_addr,
                      sizeof( mc_addr ) ) );
@@ -858,19 +858,19 @@ bool daemonVSCPThread::sendMulticastInformationProxyEvent( int sock,
     // CRC
     crcInit();
     crc chksum = crcFast( buf,
-                            VSCP_MULTICATS_PACKET0_HEADER_LENGTH +
+                            VSCP_MULTICAST_PACKET0_HEADER_LENGTH +
                                 VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE );
     chksum = wxUINT32_SWAP_ON_LE( chksum );
-    buf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH +
+    buf[ VSCP_MULTICAST_PACKET0_HEADER_LENGTH +
             VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE + 0 ] = ( chksum >> 8 ) & 0xff;
-    buf[ VSCP_MULTICATS_PACKET0_HEADER_LENGTH +
+    buf[ VSCP_MULTICAST_PACKET0_HEADER_LENGTH +
             VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE + 1 ] = chksum & 0xff;
 
-    return ( ( VSCP_MULTICATS_PACKET0_HEADER_LENGTH +
+    return ( ( VSCP_MULTICAST_PACKET0_HEADER_LENGTH +
                     VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE + 2 ) ==
              sendto( sock,
                         (const char *)buf,
-                        VSCP_MULTICATS_PACKET0_HEADER_LENGTH +
+                        VSCP_MULTICAST_PACKET0_HEADER_LENGTH +
                             VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE + 2,
                         0,
                         ( struct sockaddr * )&mc_addr,

@@ -189,11 +189,13 @@ void VSCPClientThread::ev_handler( struct mg_connection *conn,
                 // This is now an active Client
                 pClientItem->m_bOpen = true;
                 pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_TCPIP;
-                pClientItem->m_strDeviceName = _("Remote TCP/IP Client. Started at ");
+                pClientItem->m_strDeviceName = _("Remote TCP/IP Client. [");
+                pClientItem->m_strDeviceName += gpobj->m_strTcpInterfaceAddress;
+                pClientItem->m_strDeviceName += _("] Started at ");
                 wxDateTime now = wxDateTime::Now();
-                pClientItem->m_strDeviceName += now.FormatISODate();
+                pClientItem->m_strDeviceName += wxDateTime::Now().FormatISODate();
                 pClientItem->m_strDeviceName += _(" ");
-                pClientItem->m_strDeviceName += now.FormatISOTime();
+                pClientItem->m_strDeviceName += wxDateTime::Now().FormatISOTime();
 
                 // Add the client to the Client List
                 pCtrlObject->m_wxClientMutex.Lock();

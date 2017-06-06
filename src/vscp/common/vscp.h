@@ -41,28 +41,27 @@
 #include <inttypes.h>
 
 
-// VSCP daemon defines
-#define VSCP_MAX_CLIENTS                    4096    // abs. max. is 0xffff
-#define VSCP_MAX_DEVICES                    1024    // abs. max. is 0xffff
+
 
 //
 // daemon
 //
 // Base values for queue or channel id's
 //
-#define VSCP_CLIENT_ID_BASE                 0x00000000
-#define VSCP_DEVICE_ID_BASE                 0x00010000
+//#define VSCP_CLIENT_ID_BASE                 0x00000000
+//#define VSCP_DEVICE_ID_BASE                 0x00010000
 
 
+// Candidate for removal
 /// Names of mutex's
-#define VSCPD_CLIENT_OBJ_MUTEX              _("____VSCPD_CLIENT_OBJ_MUTEX____")
+/*#define VSCPD_CLIENT_OBJ_MUTEX              _("____VSCPD_CLIENT_OBJ_MUTEX____")
 #define VSCPD_UDP_OBJ_MUTEX                 _("____VSCPD_UDP_OBJ_MUTEX____")
 #define VSCPD_SEND_OBJ_MUTEX                _("____VSCPD_SEND_OBJ_MUTEX____")
 #define VSCPD_RECEIVE_OBJ_MUTEX             _("____VSCPD_RECEIVE_OBJ_MUTEX____")
 #define VSCPD_CLIENT_MUTEX                  _("____VSCPD_CLIENT_MUTEX____")
-
-#define	VSCP_LEVEL2_UDP_PORT                9598
-#define	VSCP_LEVEL2_TCP_PORT                9598
+*/
+#define	VSCP_DEFAULT_UDP_PORT               44444
+#define	VSCP_DEFAULT_TCP_PORT               9598
 
 #define VSCP_ADDRESS_SEGMENT_CONTROLLER	    0x00
 #define VSCP_ADDRESS_NEW_NODE               0xff
@@ -274,14 +273,7 @@ typedef  VSCPStatus * PVSCPSTATUS;
  
 
 // VSCP LEVEL II UDP datagram offsets
-#define VSCP_UDP_POS_HEAD                   0
-#define VSCP_UDP_POS_CLASS                  1
-#define VSCP_UDP_POS_TYPE                   3
-#define VSCP_UDP_POS_GUID                   5
-#define VSCP_UDP_POS_SIZE                   21
-
-#define VSCP_UDP_POS_DATA                   23  // Holder for beginning of data
-#define VSCP_UDP_POS_CRC                    25  // dummy: actual is len - 2
+//  Same format as multicast i used below
 
 
 /*!
@@ -319,36 +311,36 @@ typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 #define VSCP_MULTICAST_ANNNOUNCE_PORT           9598
 #define VSCP_MULTICAST_DEFAULT_PORT             33333   
 
-// Packet format type = 0
+// Packet frame format type = 0
 //      without byte0 and CRC
 //      total frame size is 1 + 34 + 2 + data-length
-#define VSCP_MULTICATS_PACKET0_HEADER_LENGTH        34
+#define VSCP_MULTICAST_PACKET0_HEADER_LENGTH            34
 
-#define VSCP_MULTICAST_PACKET0_POS_PKTTYPE          0
-#define VSCP_MULTICAST_PACKET0_POS_HEAD             1
-#define VSCP_MULTICAST_PACKET0_POS_HEAD_MSB         1
-#define VSCP_MULTICAST_PACKET0_POS_HEAD_LSB         2
-#define VSCP_MULTICAST_PACKET0_POS_TIMESTAMP        3
-#define VSCP_MULTICAST_PACKET0_POS_YEAR             7
-#define VSCP_MULTICAST_PACKET0_POS_MONTH            8
-#define VSCP_MULTICAST_PACKET0_POS_DAY              9
-#define VSCP_MULTICAST_PACKET0_POS_HOUR             10
-#define VSCP_MULTICAST_PACKET0_POS_MINUTE           11
-#define VSCP_MULTICAST_PACKET0_POS_SECOND           12
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS       13
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_MSB   13
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_LSB   14
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE        15
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_MSB    15
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB    16
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_GUID        17
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE        33
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB    33
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB    34
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_DATA        35
+#define VSCP_MULTICAST_PACKET0_POS_PKTTYPE              0
+#define VSCP_MULTICAST_PACKET0_POS_HEAD                 1
+#define VSCP_MULTICAST_PACKET0_POS_HEAD_MSB             1
+#define VSCP_MULTICAST_PACKET0_POS_HEAD_LSB             2
+#define VSCP_MULTICAST_PACKET0_POS_TIMESTAMP            3
+#define VSCP_MULTICAST_PACKET0_POS_YEAR                 7
+#define VSCP_MULTICAST_PACKET0_POS_MONTH                8
+#define VSCP_MULTICAST_PACKET0_POS_DAY                  9
+#define VSCP_MULTICAST_PACKET0_POS_HOUR                 10
+#define VSCP_MULTICAST_PACKET0_POS_MINUTE               11
+#define VSCP_MULTICAST_PACKET0_POS_SECOND               12
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS           13
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_MSB       13
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_LSB       14
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE            15
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_MSB        15
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB        16
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_GUID            17
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE            33
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB        33
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB        34
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_DATA            35
 
 // VSCP multicast packet types
-#define VSCP_MULTICAST_TYPE_EVENT                   0
+#define VSCP_MULTICAST_TYPE_EVENT                       0
 
 #define SET_VSCP_MULTICAST_TYPE( type, encryption )  ( (type<<4) + encryption )
 #define GET_VSCP_MULTICAST_PACKET_TYPE( type)        ( (type>>4) & 0x0f)

@@ -287,19 +287,19 @@ CControlObject::CControlObject()
     m_bMQTTBroker = true;
 
     // Default TCP/IP interface
-    m_strTcpInterfaceAddress = _("9598");
+    m_strTcpInterfaceAddress = _("tcp://9598");
 
     // Default multicast announce port
-    m_strMulticastAnnounceAddress = _( "9598" );
+    m_strMulticastAnnounceAddress = _( "udp://:" + VSCP_MULTICAST_DEFAULT_PORT );
 
     // default multicast announce ttl
     m_ttlMultiCastAnnounce = IP_MULTICAST_DEFAULT_TTL;
 
     // Default UDP interface
-    m_udpInfo.m_interface = _("udp://:" + VSCP_MULTICAST_DEFAULT_PORT);
+    m_udpInfo.m_interface = _("udp://:" + VSCP_DEFAULT_UDP_PORT);
 
     // Default MQTT broker interface
-    m_strMQTTBrokerInterfaceAddress = _("1883");
+    m_strMQTTBrokerInterfaceAddress = _("tcp://1883");
 
     m_pclientMsgWorkerThread = NULL;
     m_pVSCPClientThread = NULL;
@@ -312,7 +312,7 @@ CControlObject::CControlObject()
     memset( m_pathCert, 0, sizeof( m_pathCert ) );
 
     // Webserver interface
-    m_strWebServerInterfaceAddress = _("8080");
+    m_strWebServerInterfaceAddress = _("tcp://8080");
 
 #ifdef WIN32
     //m_pathWebRoot = _("/programdata/vscp/www");
@@ -915,6 +915,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     // Read UDP nodes
     readUdpNodes();
     
+    
     // * * * VSCP Daemon logging database * * *
     
     
@@ -1108,33 +1109,25 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     logMsg(_("Loading persistent variables from XML variable default path.\n") );
     m_VSCP_Variables.loadFromXML();
 
-    // Start daemon internal client worker thread
-    logMsg(_("Starting client worker thread.\n") );
+    // Start daemon internal client worker thread    
     startClientWorkerThread();
 
-    // Start TCP/IP interface
-    logMsg(_("Starting TCP/IP interface.\n") );
+    // Start TCP/IP interface    
     startTcpWorkerThread();
+    
+    // Start UDP interface
+    startUDPWorkerThread();
 
-    // Start web sockets
-    logMsg(_("Starting websockets interface.\n") );
+    // Start web sockets    
     startWebServerThread();
 
-    // Load drivers
-    logMsg(_("Starting drivers.\n") );
+    // Load drivers    
     startDeviceWorkerThreads();
 
     // Start MQTT Broker if enabled
-    if ( m_bMQTTBroker ) {
-        logMsg(_("MQTT Broker enabled. Starting now...\n") );
-        startMQTTBrokerThread();
-    }
-    else {
-        logMsg(_("MQTTBroker disabled.\n") );
-    }
+    startMQTTBrokerThread();
     
-    // Start daemon worker thread
-    logMsg(_("Starting VSCP Server worker thread.\n") );
+    // Start daemon worker thread    
     startDaemonWorkerThread();
     
     return true;
@@ -1335,6 +1328,9 @@ bool CControlObject::startClientWorkerThread( void )
     /////////////////////////////////////////////////////////////////////////////
     // Load controlobject client message handler
     /////////////////////////////////////////////////////////////////////////////
+    
+    logMsg(_("Starting client worker thread...\n") );
+    
     m_pclientMsgWorkerThread = new clientMsgWorkerThread;
 
     if (NULL != m_pclientMsgWorkerThread) {
@@ -1383,6 +1379,8 @@ bool CControlObject::startTcpWorkerThread(void)
     /////////////////////////////////////////////////////////////////////////////
     // Run the TCP server thread
     /////////////////////////////////////////////////////////////////////////////
+    
+    logMsg(_("Starting TCP/IP interface...\n") );
 
     m_pVSCPClientThread = new VSCPClientThread;
 
@@ -1440,6 +1438,8 @@ bool CControlObject::startUDPWorkerThread( void )
     /////////////////////////////////////////////////////////////////////////////
     if ( m_udpInfo.m_bEnable ) {
 
+        logMsg(_("Starting UDP simple interface...\n") );
+        
         m_pVSCPClientUDPThread = new VSCPUDPClientThread;
 
         if ( NULL != m_pVSCPClientUDPThread ) {
@@ -1447,15 +1447,15 @@ bool CControlObject::startUDPWorkerThread( void )
             if (wxTHREAD_NO_ERROR == (err = m_pVSCPClientUDPThread->Create())) {
                 //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
                 if (wxTHREAD_NO_ERROR != (err = m_pVSCPClientUDPThread->Run())) {
-                    logMsg( _("Unable to run TCP thread.") );
+                    logMsg( _("Unable to run UDP client thread.") );
                 }
             }
             else {
-                logMsg( _("Unable to create TCP thread.") );
+                logMsg( _("Unable to create UDP client thread.") );
             }
         }
         else {
-            logMsg( _("Unable to allocate memory for TCP thread.") );
+            logMsg( _("Unable to allocate memory for UDP client thread.") );
         }
     }
 
@@ -1490,6 +1490,8 @@ bool CControlObject::startWebServerThread( void )
     /////////////////////////////////////////////////////////////////////////////
     // Run the WebServer server thread
     /////////////////////////////////////////////////////////////////////////////
+    
+    logMsg(_("Starting webserver/websockets interface...\n") );
 
     m_pwebServerThread = new VSCPWebServerThread;
 
@@ -1541,6 +1543,9 @@ bool CControlObject::startDaemonWorkerThread( void )
     /////////////////////////////////////////////////////////////////////////////
     // Run the VSCP daemon thread
     /////////////////////////////////////////////////////////////////////////////
+    
+    logMsg(_("Starting VSCP Server worker thread,,.\n") );
+    
     m_pdaemonVSCPThread = new daemonVSCPThread;
 
     if ( NULL != m_pdaemonVSCPThread ) {
@@ -1589,6 +1594,8 @@ bool CControlObject::stopDaemonWorkerThread( void )
 bool CControlObject::startDeviceWorkerThreads( void )
 {
     CDeviceItem *pDeviceItem;
+    
+    logMsg(_("Starting drivers...\n") );
 
     VSCPDEVICELIST::iterator iter;
     for ( iter = m_deviceList.m_devItemList.begin();
@@ -1647,6 +1654,9 @@ bool CControlObject::startMQTTBrokerThread(void)
     if ( m_bMQTTBroker ) {
 
 #ifdef MG_ENABLE_MQTT_BROKER        
+        
+        logMsg(_("MQTT Broker starting...\n") );
+        
         m_pMQTTBrookerThread = new VSCPMQTTBrokerThread;
 
         if (NULL != m_pMQTTBrookerThread) {

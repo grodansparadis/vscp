@@ -41,11 +41,11 @@
 	"`vscpd_servername`                                 TEXT DEFAULT 'THE-VSCP-DAEMON',"\
 	"`vscpd_syslog_enable`                              INTEGER DEFAULT 1,"\
         "`vscpd_db_log_path`                                TEXT DEFAULT '/srv/vscp/logs/vscpd_log.sqlite3',"\
-	"`vscpd_tcpipinterface_address`                     TEXT DEFAULT '9598',"\
-	"`vscpd_announceinterface_address`                  TEXT DEFAULT '9598',"\
+	"`vscpd_tcpipinterface_address`                     TEXT DEFAULT 'tcp://9598',"\
+	"`vscpd_announceinterface_address`                  TEXT DEFAULT 'udp://9598',"\
 	"`vscpd_announceinterface_ttl`                      INTEGER DEFAULT 1,"\
 	"`vscpd_udp_enable`                                 INTEGER DEFAULT 1,"\
-	"`vscpd_udp_address`                                TEXT DEFAULT 'udp://:33333',"\
+	"`vscpd_udp_address`                                TEXT DEFAULT 'udp://44444',"\
         "`vscpd_udp_user`                                   TEXT DEFAULT '',"\
         "`vscpd_udp_password`                               TEXT DEFAULT '',"\
         "`vscpd_udp_unsecure_enable`                        INTEGER DEFAULT 1,"\
@@ -61,7 +61,7 @@
 	"`vscpd_defaultclientbuffersize`                    INTEGER DEFAULT 1024,"\
 	"`vscpd_webserver_authentication_enable`            INTEGER DEFAULT 1,"\
 	"`vscpd_webserver_rootpath`                         TEXT DEFAULT '/srv/vscp/web',"\
-	"`vscpd_webserver_address`                          TEXT DEFAULT '8080',"\
+	"`vscpd_webserver_address`                          TEXT DEFAULT 'tcp://8080',"\
 	"`vscpd_webserver_pathcert`                         TEXT DEFAULT '',"\
 	"`vscpd_webserver_authdomain`                       TEXT DEFAULT 'mydomain.com',"\
 	"`vscpd_webserver_cgiinterpreter`                   TEXT DEFAULT '',"\
@@ -90,7 +90,7 @@
 	"`vscpd_automation_sunsettwilight_enable`           INTEGER DEFAULT 1,"\
 	"`vscpd_automation_sunrisetwilight_enable`          INTEGER DEFAULT 1,"\
 	"`vscpd_automation_segmentcontrollerevent_enable`   INTEGER DEFAULT 1,"\
-	"`vscpd_automation_segmentcontrollerevent_interval` INTEGER DEFAULT 1,"\
+	"`vscpd_automation_segmentcontrollerevent_interval` INTEGER DEFAULT 60,"\
 	"`vscpd_automation_heartbeatevent_enable`           INTEGER DEFAULT 1,"\
 	"`vscpd_automation_heartbeatevent_interval`         INTEGER DEFAULT 60,"\
 	"`vscpd_db_data_path`                               TEXT DEFAULT '/srv/vscp/vscp_data.sqlite3',"\
