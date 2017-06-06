@@ -180,11 +180,12 @@ void *daemonVSCPThread::Entry()
     // This is an active client
     pClientItem->m_bOpen = true;
     pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL;
-    pClientItem->m_strDeviceName = _("Internal VSCP Server Worker Client. Started at ");
-    wxDateTime now = wxDateTime::Now();
-    pClientItem->m_strDeviceName += now.FormatISODate();
+    pClientItem->m_strDeviceName = _("Internal VSCP Server Worker Client.");
+    
+    pClientItem->m_strDeviceName += _(" Started at ");
+    pClientItem->m_strDeviceName += wxDateTime::Now().FormatISODate();
     pClientItem->m_strDeviceName += _(" ");
-    pClientItem->m_strDeviceName += now.FormatISOTime();
+    pClientItem->m_strDeviceName += wxDateTime::Now().FormatISOTime();
 
     // Add the client to the Client List
     m_pCtrlObject->m_wxClientMutex.Lock();

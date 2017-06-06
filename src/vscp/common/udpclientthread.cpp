@@ -106,10 +106,9 @@ void *VSCPUDPClientThread::Entry()
     m_pClientItem->m_strDeviceName = _("Remote UDP Client Listner. [");
     m_pClientItem->m_strDeviceName += gpobj->m_udpInfo.m_interface;
     m_pClientItem->m_strDeviceName += _("] Started at ");
-    wxDateTime now = wxDateTime::Now();
-    m_pClientItem->m_strDeviceName += now.FormatISODate();
+    m_pClientItem->m_strDeviceName += wxDateTime::Now().FormatISODate();
     m_pClientItem->m_strDeviceName += _(" ");
-    m_pClientItem->m_strDeviceName += now.FormatISOTime();
+    m_pClientItem->m_strDeviceName += wxDateTime::Now().FormatISOTime();
 
     
     // If a user is defined get user item
@@ -293,6 +292,18 @@ VSCPUDPClientThread::receiveUnEncryptedFrame( struct mg_connection *nc,
     if ( NULL == pClientItem ) return false;
     if ( NULL == pRxFilter ) return false;
     
+    vscpEvent *pEvent;
+    
+    // Allocate a new event
+    if ( NULL == ( pEvent = new vscpEvent ) ) return false;
+    pEvent->pdata = NULL;
+    
+    if ( !vscp_getVscpEventFromUdpFrame( pEvent, (const uint8_t *)nc->recv_mbuf.buf, nc->recv_mbuf.len ) ) {
+        vscp_deleteVSCPevent_v2( &pEvent );
+        return false;
+    }
+    
+    /*
     //  0           Packet type & encryption settings
     //  1           HEAD MSB
     //  2           HEAD LSB
@@ -394,7 +405,7 @@ VSCPUDPClientThread::receiveUnEncryptedFrame( struct mg_connection *nc,
                           (uint8_t)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB ];                        
     
     // obid - set to zero so interface fill it in
-    pEvent->obid = 0;
+    pEvent->obid = 0;*/
     
     if ( vscp_doLevel2Filter( pEvent, pRxFilter ) ) {
     

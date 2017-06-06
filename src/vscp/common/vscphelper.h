@@ -844,7 +844,22 @@ extern "C" {
      */
     void vscp_convertEventExToXML( vscpEventEx *pEventEx, wxString& strXML );
     
-
+    /*!
+     * Set the event date to now
+     * 
+     * @param pEvent Pointer to event that will have date set to now
+     * @return True on success, false on failure.
+     */
+    bool vscp_setEventToNow( vscpEvent *pEvent );
+    
+    /*!
+     * Set the event date to now
+     * 
+     * @param pEventEx Pointer to event that will have date set to now
+     * @return True on success, false on failue.
+     */
+    bool vscp_setEventExToNow( vscpEventEx *pEventEx );
+    
     
     
     
@@ -1146,6 +1161,52 @@ extern "C" {
      */
     
     wxString vscp_getEncryptionTokenFromCode( uint8_t code );
+    
+    
+    /*!
+     * Write event on UDP frame format
+     * 
+     * @param buf A pointer to a buffer that will receive the event.
+     * @param len Size of the buffer.
+     * @param pkttype Is the first byte of UDP type frames that holds
+     *          type of packet and encryption.
+     * @param pEvent Pointer to event that should be handled.
+     * @return True on success, false on failure.
+     */
+    bool vscp_writeEventToUdpFrame( uint8_t *buf, size_t len, uint8_t pkttype, const vscpEvent *pEvent );
+    
+    /*!
+     * Write event ex on UDP frame format
+     * 
+     * @param buf A pointer to a buffer that will receive the event.
+     * @param len Size of the buffer.
+     * @param pkttype Is the first byte of UDP type frames that holds
+     *          type of packet and encryption.
+     * @param pEventEx Pointer to event that should be handled.
+     * @return True on success, false on failure.
+     */
+    bool vscp_writeEventExToUdpFrame( uint8_t *buf, size_t len, uint8_t pkttype, const vscpEventEx *pEventEx );
+    
+    
+    /*!
+     * Get VSCP event from UDP frame
+     * 
+     * @param pEvent Pointer to VSCP event that will get data from the frame,
+     * @param buf A pointer to a buffer that will receive the event.
+     * @param len Size of the buffer.
+     * @return True on success, false on failure.
+     */
+    bool vscp_getVscpEventFromUdpFrame( vscpEvent *pEvent, const uint8_t *buf, size_t len );
+    
+    /*!
+     * Get VSCP event ex from UDP frame
+     * 
+     * @param pEventEx Pointer to VSCP event ex that will get data from the frame,
+     * @param buf A pointer to a buffer that will receive the event.
+     * @param len Size of the buffer.
+     * @return True on success, false on failure.
+     */   
+    bool vscp_getVscpEventExFromUdpFrame( vscpEventEx *pEventEx, const uint8_t *buf, size_t len );
 
 #ifdef __cplusplus
 }

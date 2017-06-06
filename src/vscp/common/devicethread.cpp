@@ -112,10 +112,9 @@ void *deviceThread::Entry()
     }
     m_pDeviceItem->m_pClientItem->m_strDeviceName = m_pDeviceItem->m_strName;
     m_pDeviceItem->m_pClientItem->m_strDeviceName += _(" Started at ");
-    wxDateTime now = wxDateTime::Now();
-    m_pDeviceItem->m_pClientItem->m_strDeviceName += now.FormatISODate();
+    m_pDeviceItem->m_pClientItem->m_strDeviceName += wxDateTime::Now().FormatISODate();
     m_pDeviceItem->m_pClientItem->m_strDeviceName += _(" ");
-    m_pDeviceItem->m_pClientItem->m_strDeviceName += now.FormatISOTime();
+    m_pDeviceItem->m_pClientItem->m_strDeviceName += wxDateTime::Now().FormatISOTime();
 
     m_pCtrlObject->logMsg(m_pDeviceItem->m_pClientItem->m_strDeviceName + _("\n"),
                             DAEMON_LOGMSG_DEBUG);

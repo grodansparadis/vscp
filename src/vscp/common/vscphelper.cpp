@@ -2451,8 +2451,14 @@ bool vscp_getDateStringFromEvent( const vscpEvent *pEvent, wxString& dt )
     // Check pointer
     if ( NULL == pEvent ) return false;
     
-    dt =  wxString::Format( _("%04d-%02d-%02dT%02d:%02d:%02dZ"),
-                                                (int)pEvent->year,
+    // We just want a two digit year
+    wxString strYear = wxString::Format(_("%d"), (int)pEvent->year );
+    if ( strYear.Length() > 2 ) {
+        strYear = strYear.Right(2);
+    }
+    
+    dt =  wxString::Format( _("%s-%02d-%02dT%02d:%02d:%02dZ"),
+                                                (const char *)strYear.mbc_str(),
                                                 (int)pEvent->month,
                                                 (int)pEvent->day,
                                                 (int)pEvent->hour,
@@ -2698,6 +2704,46 @@ void vscp_convertEventExToHTML( vscpEventEx *pEventEx, wxString& strHTML )
                         (unsigned long)pEventEx->obid,                                                                                                
                         "" );
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_setEventToNow
+//
+
+bool vscp_setEventToNow( vscpEvent *pEvent )
+{
+    if ( NULL == pEvent ) return false;
+    
+    pEvent->year = wxDateTime::Now().GetYear();
+    pEvent->month = wxDateTime::Now().GetMonth();
+    pEvent->day = wxDateTime::Now().GetDay();
+    pEvent->hour = wxDateTime::Now().GetHour();
+    pEvent->minute = wxDateTime::Now().GetMinute();
+    pEvent->second = wxDateTime::Now().GetSecond();
+    
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_setEventExToNow
+//
+
+bool vscp_setEventExToNow( vscpEventEx *pEventEx )
+{
+    if ( NULL == pEventEx ) return false;
+    
+    pEventEx->year = wxDateTime::Now().GetYear();
+    pEventEx->month = wxDateTime::Now().GetMonth();
+    pEventEx->day = wxDateTime::Now().GetDay();
+    pEventEx->hour = wxDateTime::Now().GetHour();
+    pEventEx->minute = wxDateTime::Now().GetMinute();
+    pEventEx->second = wxDateTime::Now().GetSecond();
+    
+    return true;
+}
+
+
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // doLevel2Filter
@@ -5398,3 +5444,151 @@ wxString vscp_getEncryptionTokenFromCode( uint8_t code )
     }
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_writeEventToUdpFrame
+//
+
+bool vscp_writeEventToUdpFrame( uint8_t *buf, size_t len, uint8_t pkttype, const vscpEvent *pEvent )
+{
+    // Check pointers
+    if ( NULL == buf ) return false;
+    if ( NULL == pEvent ) return false;
+    
+    
+    
+    return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_writeEventExToUdpFrame
+//
+
+bool vscp_writeEventExToUdpFrame( uint8_t *buf, size_t len, uint8_t pkttype, const vscpEventEx *pEventEx )
+{
+    vscpEvent *pEvent;
+    pEvent->pdata = NULL;
+    
+    // Check pointer (rest is checked in vscp_convertVSCPfromEx)
+    if ( NULL == pEventEx ) return false;
+
+    // Convert eventEx to event 
+    if ( !vscp_convertVSCPfromEx( pEvent, pEventEx) ) return false;
+    
+    if ( !vscp_writeEventToUdpFrame( buf, len, pkttype, pEvent ) ) return false;
+    vscp_deleteVSCPevent_v2( &pEvent );
+
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_getVscpEventFromUdpFrame
+//
+
+bool vscp_getVscpEventFromUdpFrame( vscpEvent *pEvent, const uint8_t *buf, size_t len ) 
+{
+    
+    // Check pointers
+    if ( NULL == pEvent ) return false;
+    if ( NULL == buf ) return false;
+    
+    //  0           Packet type & encryption settings
+    //  1           HEAD MSB
+    //  2           HEAD LSB
+    //  3           Timestamp microseconds MSB
+    //  4           Timestamp microseconds
+    //  5           Timestamp microseconds
+    //  6           Timestamp microseconds LSB
+    //  7           Year
+    //  8           Month
+    //  9           Day
+    //  10          Hour
+    //  11          Minute
+    //  12          Second
+    //  13          CLASS MSB
+    //  14          CLASS LSB
+    //  15          TYPE MSB
+    //  16          TYPE LSB
+    //  17 - 32     ORIGINATING GUID
+    //  33          DATA SIZE MSB
+    //  34          DATA SIZE LSB
+    //  35 - n 	    data limited to max 512 - 25 = 487 bytes
+    //  len - 2     CRC MSB( Calculated on HEAD + CLASS + TYPE + ADDRESS + SIZE + DATA )
+    //  len - 1     CRC LSB
+    
+    size_t calcFrameSize = 1 +                                          // packet type & encryption                        
+                        VSCP_MULTICAST_PACKET0_HEADER_LENGTH +          // header
+                        2 +                                             // CRC
+                        ((uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] << 8 ) +
+                         buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ];
+        
+    // The buffer must hold a frame
+    if ( len < calcFrameSize ) return false;
+    
+    crc calcCRC = ((uint16_t)buf[ calcFrameSize - 2 ] << 8 ) +
+                        buf[ calcFrameSize - 1 ];
+    
+    // CRC check (only if not disabled)
+    crc crcnew;
+    if ( !( ( buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] | VSCP_HEADER_NO_CRC ) && 
+            ( VSCP_NOCRC_CALC_DUMMY_CRC == calcCRC ) ) ) {
+        
+        // Calculate & check CRC
+        crcnew = crcFast( (unsigned char const *)buf + 1, 
+                        VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 
+                            ((uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] << 8 ) +
+                             buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ] 
+                            + 2 );
+        // CRC is zero if calculated over itself
+        if ( crcnew ) return false;
+    }
+            
+    pEvent->sizeData =  ((uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] << 8 ) +
+                        buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ];
+    
+    // Allocate data
+    if ( NULL == ( pEvent->pdata = new uint8_t[ pEvent->sizeData ] ) ) {
+        return false;
+    }
+    
+    // copy in data
+    memcpy( pEvent->pdata, buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA, pEvent->sizeData );
+    
+    // Head
+    pEvent->head = ((uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_MSB ] << 8 ) +
+                        buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ];
+    
+    // Copy in GUID
+    memcpy( pEvent->GUID, buf + VSCP_MULTICAST_PACKET0_POS_VSCP_GUID, pEvent->sizeData ); 
+    
+    // Set CRC
+    pEvent->crc = calcCRC;
+    
+    // Set timestamp
+    pEvent->timestamp = ( (uint32_t)buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP ]  << 24 ) +
+                        ( (uint32_t)buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 1 ] << 16 ) +
+                        ( (uint32_t)buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] << 8 ) +
+                        buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ];
+    
+    // Date/time
+    pEvent->year = buf[ VSCP_MULTICAST_PACKET0_POS_YEAR ];
+    pEvent->month = buf[ VSCP_MULTICAST_PACKET0_POS_MONTH ];
+    pEvent->day = buf[ VSCP_MULTICAST_PACKET0_POS_DAY ];
+    pEvent->hour = buf[ VSCP_MULTICAST_PACKET0_POS_HOUR ];
+    pEvent->minute = buf[ VSCP_MULTICAST_PACKET0_POS_MINUTE ];
+    pEvent->second = buf[ VSCP_MULTICAST_PACKET0_POS_SECOND ];
+    
+    // VSCP Class
+    pEvent->vscp_class = ( (uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_MSB ] << 8 ) +
+                           buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_LSB ];
+    
+    // VSCP Type
+    pEvent->vscp_type = ( (uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_MSB ] << 8 ) +
+                          buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB ];                        
+    
+    // obid - set to zero so interface fill it in
+    pEvent->obid = 0;
+    
+    return true;
+}

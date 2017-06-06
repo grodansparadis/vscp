@@ -443,6 +443,8 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         // Send VSCP_CLASS2_VSCPD, Type=30/VSCP2_TYPE_VSCPD_NEW_CALCULATION
         pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
         pEventEx->head = 0;
+        pEventEx->timestamp = 0;
+        vscp_setEventExToNow( pEventEx ); // Set time to current time
         pEventEx->vscp_class = VSCP_CLASS2_VSCPD;
         pEventEx->vscp_type = VSCP2_TYPE_VSCPD_NEW_CALCULATION;
         pEventEx->sizeData = 0;
@@ -471,6 +473,8 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         // Send VSCP_CLASS1_INFORMATION, Type=44/VSCP_TYPE_INFORMATION_SUNRISE
         pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
         pEventEx->head = 0;
+        pEventEx->timestamp = 0;
+        vscp_setEventExToNow( pEventEx ); // Set time to current time
         pEventEx->vscp_class = VSCP_CLASS1_INFORMATION;
         pEventEx->vscp_type = VSCP_TYPE_INFORMATION_SUNRISE;
         pEventEx->sizeData = 3;
@@ -495,6 +499,8 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         // Send VSCP_CLASS1_INFORMATION, Type=52/VSCP_TYPE_INFORMATION_SUNRISE_TWILIGHT_START
         pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
         pEventEx->head = 0;
+        pEventEx->timestamp = 0;
+        vscp_setEventExToNow( pEventEx ); // Set time to current time
         pEventEx->vscp_class = VSCP_CLASS1_INFORMATION;
         pEventEx->vscp_type = VSCP_TYPE_INFORMATION_SUNRISE_TWILIGHT_START;
         pEventEx->sizeData = 3;
@@ -519,6 +525,8 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         // Send VSCP_CLASS1_INFORMATION, Type=45/VSCP_TYPE_INFORMATION_SUNSET
         pEventEx->obid = 0;         // IMPORTANT Must be set by caller before event is sent
         pEventEx->head = 0;
+        pEventEx->timestamp = 0;
+        vscp_setEventExToNow( pEventEx ); // Set time to current time
         pEventEx->vscp_class = VSCP_CLASS1_INFORMATION;
         pEventEx->vscp_type = VSCP_TYPE_INFORMATION_SUNSET;
         pEventEx->sizeData = 3;
@@ -543,6 +551,8 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         // Send VSCP_CLASS1_INFORMATION, Type=53/VSCP_TYPE_INFORMATION_SUNSET_TWILIGHT_START
         pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
         pEventEx->head = 0;
+        pEventEx->timestamp = 0;
+        vscp_setEventExToNow( pEventEx ); // Set time to current time
         pEventEx->vscp_class = VSCP_CLASS1_INFORMATION;
         pEventEx->vscp_type = VSCP_TYPE_INFORMATION_SUNSET_TWILIGHT_START;
         pEventEx->sizeData = 3;
@@ -567,6 +577,8 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         // Send VSCP_CLASS1_INFORMATION, Type=58/VSCP_TYPE_INFORMATION_CALCULATED_NOON
         pEventEx->obid = 0;         // IMPORTANT Must be set by caller before event is sent
         pEventEx->head = 0;
+        pEventEx->timestamp = 0;
+        vscp_setEventExToNow( pEventEx ); // Set time to current time
         pEventEx->vscp_class = VSCP_CLASS1_INFORMATION;
         pEventEx->vscp_type = VSCP_TYPE_INFORMATION_CALCULATED_NOON;
         pEventEx->sizeData = 3;
@@ -588,6 +600,8 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         // Send VSCP_CLASS1_INFORMATION, Type=9/VSCP_TYPE_INFORMATION_NODE_HEARTBEAT
         pEventEx->obid = 0;         // IMPORTANT Must be set by caller before event is sent
         pEventEx->head = 0;
+        pEventEx->timestamp = 0;
+        vscp_setEventExToNow( pEventEx ); // Set time to current time
         pEventEx->vscp_class = VSCP_CLASS1_INFORMATION;
         pEventEx->vscp_type = VSCP_TYPE_INFORMATION_NODE_HEARTBEAT;
         pEventEx->sizeData = 3;
@@ -609,6 +623,8 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         // Send VSCP_CLASS1_INFORMATION, Type=9/VSCP_TYPE_INFORMATION_NODE_HEARTBEAT
         pEventEx->obid = 0;         // IMPORTANT Must be set by caller before event is sent
         pEventEx->head = 0;
+        pEventEx->timestamp = 0;
+        vscp_setEventExToNow( pEventEx ); // Set time to current time
         pEventEx->vscp_class = VSCP_CLASS2_INFORMATION;
         pEventEx->vscp_type = VSCP2_TYPE_INFORMATION_HEART_BEAT;
         pEventEx->sizeData = 64;
@@ -630,6 +646,8 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         // Send VSCP_CLASS1_PROTOCOL, Type=1/VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT
         pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
         pEventEx->head = 0;
+        pEventEx->timestamp = 0;
+        vscp_setEventExToNow( pEventEx ); // Set time to current time
         pEventEx->vscp_class = VSCP_CLASS1_PROTOCOL;
         pEventEx->vscp_type = VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT;
         pEventEx->sizeData = 5;

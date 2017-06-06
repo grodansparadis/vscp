@@ -86,7 +86,7 @@ void *VSCPMQTTBrokerThread::Entry()
     struct mg_mgr mgr;
     struct mg_connection *nc;
     struct mg_mqtt_broker brk;
-    const char *address = "0.0.0.0:1883";
+    const char *address = "tcp://1883";
 
     // Check pointers
     if ( NULL == m_pCtrlObject ) return NULL;
@@ -101,11 +101,12 @@ void *VSCPMQTTBrokerThread::Entry()
     // This is now an active Client
     m_pClientItem->m_bOpen = true;
     m_pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP;
-    m_pClientItem->m_strDeviceName = _("VSCP MQTT Broker: Started at ");
-    wxDateTime now = wxDateTime::Now();
-    m_pClientItem->m_strDeviceName += now.FormatISODate();
+    m_pClientItem->m_strDeviceName = _("VSCP MQTT Broker. [");
+    m_pClientItem->m_strDeviceName += m_pCtrlObject->m_strMQTTBrokerInterfaceAddress;
+    m_pClientItem->m_strDeviceName += _("] Started at ");
+    m_pClientItem->m_strDeviceName += wxDateTime::Now().FormatISODate();
     m_pClientItem->m_strDeviceName += _(" ");
-    m_pClientItem->m_strDeviceName += now.FormatISOTime();
+    m_pClientItem->m_strDeviceName += wxDateTime::Now().FormatISOTime();
 
     // Add the client to the Client List
     m_pCtrlObject->m_wxClientMutex.Lock();
@@ -120,7 +121,7 @@ void *VSCPMQTTBrokerThread::Entry()
     if ( ( nc = mg_bind( &mgr,
                             m_pCtrlObject->m_strMQTTBrokerInterfaceAddress.mbc_str(),
                             mg_mqtt_broker ) ) == NULL) {
-        m_pCtrlObject->logMsg( _("VSCP MQTT Broker: Faild to bind to requested address.\n")  );
+        m_pCtrlObject->logMsg( _("VSCP MQTT Broker: Failed to bind to requested address.\n")  );
         return NULL;
     }
 
