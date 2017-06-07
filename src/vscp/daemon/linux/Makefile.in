@@ -81,6 +81,7 @@ VSCPD_SPECIALS = vscphelper.o \
 	mongoose.o \
 	sqlite3.o \
 	sqlite3math.o\
+	aes.o	
 
 # Add object files that always should be built here
 ALWAYS_BUILD = 
@@ -132,6 +133,9 @@ configfile.o: ../../../common/configfile.o ../../../common/configfile.h
 dllist.o: ../../../common/dllist.o ../../../common/dllist.h
 	$(CC) $(CFLAGS) -c ../../../common/dllist.c  -o $@	
 
+aes.o: ../../../common/aes.o ../../../common/aes.h 
+	$(CC) $(CFLAGS) -c ../../../common/aes.c -o $@
+	
 crc.o: ../../../common/crc.o ../../../common/crc.h 
 	$(CC) $(CFLAGS) -c ../../../common/crc.c -o $@
 
