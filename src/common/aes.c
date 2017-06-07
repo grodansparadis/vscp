@@ -34,6 +34,7 @@ NOTE:   String length must be evenly divisible by 16byte (str_len % 16 == 0)
 /* Includes:                                                                 */
 /*****************************************************************************/
 #include <stdint.h>
+#include <stdio.h>  // file /dev/urandom
 #include <string.h> // CBC mode, for memset
 #include <stdlib.h> // malloc
 #include "aes.h"
@@ -675,6 +676,29 @@ void AES_CBC_decrypt_buffer(uint8_t type,uint8_t* output, uint8_t* input, uint32
   
   cleanup(&state);
   
+}
+
+int getIV( uint8_t *buf, size_t len )
+{
+#ifdef WIN32
+    int random;
+    
+    if ( int i=0; i<len; i++ ) {
+        if ( !rand_s( &random ) ) {
+            buf[i] = (uint8_t)random;
+        }
+        else {
+            buf[i] = i;
+        }
+    }
+#else    
+    FILE *fp;
+    fp = fopen("/dev/urandom", "r");
+    if (NULL == fp) return 0;
+    size_t nread = fread( buf, 1, len, fp);
+    fclose(fp);
+#endif    
+    return nread;
 }
 
 #endif // #if defined(CBC) && CBC

@@ -37,5 +37,16 @@ void AES_CBC_decrypt_buffer(uint8_t type,uint8_t* output, uint8_t* input, uint32
 
 #endif // #if defined(CBC) && CBC
 
+///////////////////////////////////////////////////////////////////////////////
+// getIV
+//
+// Get initialization vector
+//
+// @param buf Pointer to buffer that will get random data
+// @param len Number of random values to fill buffer with.
+// @return Zero on failure, Number of read values on success.
+//
+
+int getIV( uint8_t *buf, size_t len );
 
 #endif //_AES_H_

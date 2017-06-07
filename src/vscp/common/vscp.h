@@ -320,6 +320,9 @@ typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 #define VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB        34
 #define VSCP_MULTICAST_PACKET0_POS_VSCP_DATA            35
 
+// Two byte CRC follow here and if the frame is encrypted
+// the initialization vector follows.
+
 // VSCP multicast packet types
 #define VSCP_MULTICAST_TYPE_EVENT                       0
 
