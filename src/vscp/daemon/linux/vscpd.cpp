@@ -92,7 +92,8 @@ VSCPApp::VSCPApp()
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// The one and only CanalApp object
+// The one and only app object
+//
 
 int main(int argc, char **argv)
 {

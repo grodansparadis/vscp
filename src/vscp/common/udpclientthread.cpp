@@ -243,39 +243,39 @@ VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p)
                 }
                 
                 // Must be at least a packet-type + header and a crc
-                if ( nc->recv_mbuf.len >= ( 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 ) ) {
+                if ( nc->recv_mbuf.len < ( 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 ) ) {
                     
-                    if ( VSCP_ENCRYPTION_NONE == 
-                            GET_VSCP_MULTICAST_PACKET_ENCRYPTION( nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] ) ) {
-                        receiveUnEncryptedFrame( nc, 
-                                                    pUDPClientThread->m_pClientItem,
-                                                    &gpobj->m_udpInfo.m_filter );
-                    }
-                    else if ( VSCP_ENCRYPTION_AES128 == 
-                            GET_VSCP_MULTICAST_PACKET_ENCRYPTION( nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] ) ) {
+                    // Packet to short
+                    gpobj->logMsg( wxString::Format(_("UDP frame have invalid length = %d\n"),
+                                        (int)nc->recv_mbuf.len ) );
+                    return;
                     
-                    }
-                    else if ( VSCP_ENCRYPTION_AES192 == 
-                            GET_VSCP_MULTICAST_PACKET_ENCRYPTION( nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] ) ) {
+                }
+                
+                // If un-secure frames are not supported frames must be encrypted                
+                if ( !gpobj->m_udpInfo.m_bAllowUnsecure && 
+                        !GET_VSCP_MULTICAST_PACKET_ENCRYPTION( nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] ) ) {
+                    gpobj->logMsg( wxString::Format(_("UDP frame must be encrypted (or m_bAllowUnsecure set to true) to be accepted.\n" ) ) );
+                    return;
+                }
+                
+                // OK receive the frame
+                if ( receiveUDPFrame( nc, 
+                                        pUDPClientThread->m_pClientItem,
+                                        &gpobj->m_udpInfo.m_filter )  ) {
                     
-                    }
-                    else if ( VSCP_ENCRYPTION_AES256 == 
-                            GET_VSCP_MULTICAST_PACKET_ENCRYPTION( nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] ) ) {
-                    
-                    }
-                    else { 
-                        gpobj->logMsg( wxString::Format(_("UDP packet specify invalid encryption code %d\n"),
-                                        (int)nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] ) );
-                        return;
+                    if ( gpobj->m_udpInfo.m_bAck ) {
+                        replyUDPAckFrame( nc, nc->recv_mbuf.buf[0] );
                     }
                     
                 }
                 else {
-                    // Packet to short
-                    gpobj->logMsg( wxString::Format(_("UDP packet have invalid length = %d\n"),
-                                        (int)nc->recv_mbuf.len ) );
-                    return;
-                }    
+                    
+                    if ( gpobj->m_udpInfo.m_bAck ) {
+                        replyUDPNackFrame( nc, nc->recv_mbuf.buf[0] );
+                    }
+                    
+                }
 
             }
             break;
@@ -313,11 +313,11 @@ VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// receiveUnEncryptedFrame
+// receiveUDPFrame
 //
 
 bool 
-VSCPUDPClientThread::receiveUnEncryptedFrame( struct mg_connection *nc, 
+VSCPUDPClientThread::receiveUDPFrame( struct mg_connection *nc, 
                                                 CClientItem *pClientItem,
                                                 vscpEventFilter *pRxFilter )
 {
@@ -430,5 +430,77 @@ VSCPUDPClientThread::sendUDPFrame( struct mg_mgr *pmgr,
     pClientItem->m_clientInputQueue.DeleteNode( nodeClient );
     pClientItem->m_mutexClientInputQueue.Unlock();   
             
+    return true;
+}
+
+
+bool 
+VSCPUDPClientThread::replyUDPAckFrame( struct mg_connection *nc, 
+                                        uint8_t pkttype )
+{
+    unsigned char sendbuf[1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + 512 + 16];    // Send buffer
+    vscpEventEx ex;
+    
+    ex.head = 0;
+    ex.obid = 0;
+    ex.timestamp = vscp_makeTimeStamp();
+    ex.year = wxDateTime::UNow().GetYear();
+    ex.month = wxDateTime::UNow().GetMonth();
+    ex.day = wxDateTime::UNow().GetDay();
+    ex.hour = wxDateTime::UNow().GetHour();
+    ex.minute = wxDateTime::UNow().GetMinute();
+    ex.second = wxDateTime::UNow().GetSecond();
+    memcpy( ex.GUID, gpobj->m_udpInfo.m_guid.getGUID(), 16 );
+    ex.vscp_class = VSCP_CLASS1_ERROR;
+    ex.vscp_type = VSCP_TYPE_ERROR_SUCCESS;        
+    ex.sizeData = 3;
+    memset( ex.data, 0, 3 );    // index/zone/subzone = 0
+        
+    if ( !vscp_writeEventExToUdpFrame( sendbuf,  
+                                        sizeof( sendbuf ), 
+                                        pkttype,
+                                        &ex ) ) {
+        return false;
+    }
+    
+    // Send to remote node
+    mg_send( nc, sendbuf, 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + ex.sizeData );
+    
+    return true;
+}
+
+
+bool 
+VSCPUDPClientThread::replyUDPNackFrame( struct mg_connection *nc, 
+                                            uint8_t pkttype )
+{
+    unsigned char sendbuf[1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + 512 + 16];    // Send buffer
+    vscpEventEx ex;
+    
+    ex.head = 0;
+    ex.obid = 0;
+    ex.timestamp = vscp_makeTimeStamp();
+    ex.year = wxDateTime::UNow().GetYear();
+    ex.month = wxDateTime::UNow().GetMonth();
+    ex.day = wxDateTime::UNow().GetDay();
+    ex.hour = wxDateTime::UNow().GetHour();
+    ex.minute = wxDateTime::UNow().GetMinute();
+    ex.second = wxDateTime::UNow().GetSecond();
+    memcpy( ex.GUID, gpobj->m_udpInfo.m_guid.getGUID(), 16 );
+    ex.vscp_class = VSCP_CLASS1_ERROR;
+    ex.vscp_type = VSCP_TYPE_ERROR_ERROR;        
+    ex.sizeData = 3;
+    memset( ex.data, 0, 3 );    // index/zone/subzone = 0
+    
+    if ( !vscp_writeEventExToUdpFrame( sendbuf,  
+                                        sizeof( sendbuf ), 
+                                        pkttype,
+                                        &ex ) ) {
+        return false;
+    }
+    
+    // Send to remote node
+    mg_send( nc, sendbuf, 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + ex.sizeData );
+    
     return true;
 }

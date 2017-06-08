@@ -90,7 +90,7 @@ public:
 
     
     /*!
-     * Receive an unencrypted UDP frame
+     * Receive UDP frame
      * 
      * @param nc Mongoose connection handle
      * @param pClientItem Client item for this user. Normally "USP"
@@ -98,12 +98,19 @@ public:
      *          all events.
      * @return True on success, false on failure.
      */
-    static bool receiveUnEncryptedFrame( struct mg_connection *nc, 
+    static bool receiveUDPFrame( struct mg_connection *nc, 
                                             CClientItem *pClientItem,
                                             vscpEventFilter *pRxFilter );
     
-    static bool sendUDPFrame( struct mg_mgr *pmgr, 
+    static bool replyUDPAckFrame( struct mg_connection *nc, 
+                                    uint8_t pkttype );
+    
+    static bool replyUDPNackFrame( struct mg_connection *nc, 
+                                    uint8_t pkttype );
+    
+    bool sendUDPFrame( struct mg_mgr *pmgr, 
                                 CClientItem *pClientItem );
+
     
     /*! 
         called when the thread exits - whether it terminates normally or is

@@ -1240,8 +1240,10 @@ extern "C" {
      * 
      * @param output Buffer that will receive the encrypted result. The buffer
      *          should be at least 16 bytes larger than the frame.
-     * @param input This is the UDP frame that should be encrypted.
-     * @param len This is the length of the UDP frame to be encrypted.
+     * @param input This is the UDP frame that should be encrypted. The first 
+     *          byte in the frame is the packet type which is not encrypted.
+     * @param len This is the length of the UDP frame to be encrypted. This 
+     *          length includes the packet tye in the first byte.
      * @param key This is a pointer to the secret encryption key. This key should 
      *          be 128 bytes for AES128, 192 bytes for AES192, 256 bytes for AES256.
      * @param iv Pointer to the initialization vector. Should always point to a 128 bit
@@ -1249,8 +1251,6 @@ extern "C" {
      *          cases the end result will have the iv appended to the encrypted block.
      * @param nAlgorithm The VSCP defined algorithm to encrypt the frame with.
      * @return True on success, false on failure.
-     * 
-     * NOTE: Note that VSCP packet type (first byte in UDP frame) is not recognised here.
      * 
      */
     bool vscp_encryptVscpUdpFrame( uint8_t *output, 

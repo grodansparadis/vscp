@@ -17,6 +17,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <crc.h>
+#include <aes.h>
 #include <vscp.h>
  
 #define DEFAULT_SERVER      "127.0.0.1" // Server to connect to
@@ -131,6 +132,7 @@ int main( int argc, char* argv[] )
     int port = VSCP_DEFAULT_UDP_PORT;
     int FrameType = DEFAULT_FRAME_TYPE;
     int cnt = DEFAULT_COUNT;
+    int bReply = 1;
 
     // Init. CRC data
     crcInit();
@@ -194,17 +196,50 @@ int main( int argc, char* argv[] )
             die("sendto()");
         }
          
-        /* 
-        //receive a reply and print it
-        //clear the buffer by filling null, it might have previously received data
-        memset(buf,'\0', BUFLEN);
-        //try to receive some data, this is a blocking call
-        if ( -1 == recvfrom(s, buf, BUFLEN, 0, (struct sockaddr *) &si_other, &slen ) ) {
-            die("recvfrom()");
+        if ( bReply ) {
+
+            printf("Sent frame %d - Waiting for response...\n", i );
+
+            //receive a reply and print it
+
+            //clear the buffer by filling null, it might have previously received data
+            memset(buf,'\0', BUFLEN);
+
+            //try to receive some data, this is a blocking call
+            int rcvcnt;
+            if ( -1 == ( rcvcnt = recvfrom(s, buf, BUFLEN, 0, (struct sockaddr *) &si_other, &slen ) ) ) {
+                die("recvfrom()");
+            }
+
+            printf("Got response len = %d\n", rcvcnt );
+            for ( int n=0; n<rcvcnt; n++ ) {
+                printf("%02X ", buf[n] );
+            }
+            printf("\n");
+
+            uint16_t class = ( (uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_MSB ] << 8 ) +
+                       buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_LSB ];
+
+            uint16_t type = ( (uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_MSB ] << 8 ) +
+                        buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB ];  
+
+            if ( ( VSCP_CLASS1_ERROR == class ) && 
+                 ( VSCP_TYPE_ERROR_SUCCESS == type ) )  {
+                printf("Reply = Success.\n");                    
+            }
+            else if ( ( VSCP_CLASS1_ERROR == class ) && 
+                 ( VSCP_TYPE_ERROR_ERROR == type ) )  {
+                printf("Reply = Error.\n");                    
+            }
+            else  {
+                printf("Unknown reply.\n");                    
+            }
         }
-         
-        puts( buf );*/
-        printf("Sent frame %d\n", i );
+        else {
+            printf("Sent frame %d \n", i );
+        }
+
+        
     }
  
     close(s);

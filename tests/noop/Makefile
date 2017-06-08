@@ -19,6 +19,7 @@ TEST_SPECIALS = vscphelper.o \
 	mongoose.o \
 	crc8.o \
 	crc.o \
+	aes.o
 
 
 
@@ -37,7 +38,10 @@ crc.o: ../../src/common/crc.o ../../src/common/crc.h
 	$(CC) $(CFLAGS) -c ../../src/common/crc.c -o $@
 
 crc8.o: ../../src/common/crc8.o ../../src/common/crc8.h
-	$(CC) $(CFLAGS) -c ../../src/common/crc8.c -o $@	
+	$(CC) $(CFLAGS) -c ../../src/common/crc8.c -o $@
+
+aes.o: ../../src/common/aes.o ../../src/common/aes.h
+	$(CC) $(CFLAGS) -c ../../src/common/aes.c -o $@		
 
 mongoose.o: ../../src/common/mongoose.o ../../src/common/mongoose.h
 	$(CC) $(CFLAGS) $(MONGOOSE_CFLAGS) -c ../../src/common/mongoose.c -o $@ 	

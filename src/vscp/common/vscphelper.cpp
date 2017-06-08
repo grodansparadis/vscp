@@ -5490,7 +5490,7 @@ bool vscp_writeEventToUdpFrame( uint8_t *frame,
     // Check pointers
     if ( NULL == frame ) return false;
     if ( NULL == pEvent ) return false;
-    // Can't have datasize with invalid datapointer
+    // Can't have datasize with invalid data pointer
     if ( pEvent->sizeData && (NULL == pEvent->pdata ) ) return false;
     
     size_t calcSize = 1 +                                       // Packet type
@@ -5527,7 +5527,7 @@ bool vscp_writeEventToUdpFrame( uint8_t *frame,
 
     // Type 
     frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_MSB ] = (pEvent->vscp_type >> 8) & 0xff;
-    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB ] = pEvent->vscp_class & 0xff;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB ] = pEvent->vscp_type & 0xff;
 
     // GUID 
     memcpy( frame + VSCP_MULTICAST_PACKET0_POS_VSCP_GUID,
@@ -5595,8 +5595,7 @@ bool vscp_writeEventExToUdpFrame( uint8_t *frame,
 bool vscp_getEventFromUdpFrame( vscpEvent *pEvent, 
                                     const uint8_t *buf, 
                                     size_t len ) 
-{
-    
+{    
     // Check pointers
     if ( NULL == pEvent ) return false;
     if ( NULL == buf ) return false;
@@ -5624,6 +5623,7 @@ bool vscp_getEventFromUdpFrame( vscpEvent *pEvent,
     //  35 - n 	    data limited to max 512 - 25 = 487 bytes
     //  len - 2     CRC MSB( Calculated on HEAD + CLASS + TYPE + ADDRESS + SIZE + DATA )
     //  len - 1     CRC LSB
+    // if encrypted with AES128/192/256 16.bytes IV here.
     
     size_t calcFrameSize = 
             1 +                                          // packet type & encryption                        
@@ -5686,6 +5686,11 @@ bool vscp_getEventFromUdpFrame( vscpEvent *pEvent,
             ( (uint32_t)buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] << 8 ) +
                         buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ];
     
+    // If timestamp is zero, set it
+    if ( 0 == pEvent->timestamp ) {
+        pEvent->timestamp = vscp_makeTimeStamp();
+    }
+    
     // Date/time
     pEvent->year = buf[ VSCP_MULTICAST_PACKET0_POS_YEAR ];
     pEvent->month = buf[ VSCP_MULTICAST_PACKET0_POS_MONTH ];
@@ -5693,6 +5698,22 @@ bool vscp_getEventFromUdpFrame( vscpEvent *pEvent,
     pEvent->hour = buf[ VSCP_MULTICAST_PACKET0_POS_HOUR ];
     pEvent->minute = buf[ VSCP_MULTICAST_PACKET0_POS_MINUTE ];
     pEvent->second = buf[ VSCP_MULTICAST_PACKET0_POS_SECOND ];
+    
+    // If date/time field is zero set GMT now
+    if ( ( 0 == pEvent->year ) &&
+         ( 0 == pEvent->month ) &&   
+         ( 0 == pEvent->day ) &&
+         ( 0 == pEvent->hour ) &&
+         ( 0 == pEvent->minute ) &&
+         ( 0 == pEvent->second ) ) {
+        
+        pEvent->year = wxDateTime::UNow().GetYear();
+        pEvent->month = wxDateTime::UNow().GetMonth();
+        pEvent->day = wxDateTime::UNow().GetDay();
+        pEvent->hour = wxDateTime::UNow().GetHour();
+        pEvent->minute = wxDateTime::UNow().GetMinute();
+        pEvent->second = wxDateTime::UNow().GetSecond();
+    }
     
     // VSCP Class
     pEvent->vscp_class = 
@@ -5754,7 +5775,8 @@ bool vscp_encryptVscpUdpFrame( uint8_t *output,
     if ( NULL == output ) return false;
     if ( NULL == input ) return false;
     if ( NULL == key ) return false;
-    // If iv is not give it shoulc be generated
+    
+    // If iv is not give it should be generated
     if ( NULL == iv ) {        
         if ( 16 != getRandomIV( generated_iv, 16 ) ) return false;
     }
@@ -5762,22 +5784,25 @@ bool vscp_encryptVscpUdpFrame( uint8_t *output,
         memcpy( generated_iv, iv, 16 );
     }
     
+    // The packet type s always un encrypted
+    output[0] = input[0];
+    
     switch ( nAlgorithm ) {
                     
         case VSCP_ENCRYPTION_AES192:
             AES_CBC_encrypt_buffer( AES192,
-                                        output, 
-                                        input, 
-                                        len, 
+                                        output+1, 
+                                        input+1,    // Not Packet type byte 
+                                        len-1, 
                                         key, 
                                         (const uint8_t *)generated_iv );
             break;
             
         case VSCP_ENCRYPTION_AES256:
             AES_CBC_encrypt_buffer( AES256,
-                                        output, 
-                                        input, 
-                                        len, 
+                                        output+1, 
+                                        input+1,    // Not Packet type byte
+                                        len-1, 
                                         key, 
                                         (const uint8_t *)generated_iv );
             break;
@@ -5785,9 +5810,9 @@ bool vscp_encryptVscpUdpFrame( uint8_t *output,
         default:    
         case VSCP_ENCRYPTION_AES128:
             AES_CBC_encrypt_buffer( AES128,
-                                        output, 
-                                        input, 
-                                        len, 
+                                        output+1, 
+                                        input+1,    // Not Packet type byte 
+                                        len-1, 
                                         key, 
                                         (const uint8_t *)generated_iv );
             break;    
@@ -5817,6 +5842,7 @@ bool vscp_decryptVscpUdpFrame( uint8_t *output,
     if ( NULL == output ) return false;
     if ( NULL == input ) return false;
     if ( NULL == key ) return false;
+    
     // If iv is not given it should be fetched from the end of input (last 16 bytes)
     if ( NULL == iv ) {        
         memcpy( appended_iv, input - 16, 16 );
@@ -5826,22 +5852,25 @@ bool vscp_decryptVscpUdpFrame( uint8_t *output,
         memcpy( appended_iv, iv, 16 );
     }
     
+    // Preserve packet type which always is un encrypted
+    output[0] = input[0];
+    
     switch ( nAlgorithm ) {
                     
         case VSCP_ENCRYPTION_AES192:
             AES_CBC_decrypt_buffer( AES192,
-                                        output, 
-                                        input, 
-                                        real_len, 
+                                        output+1, 
+                                        input+1, 
+                                        real_len-1, 
                                         key, 
                                         (const uint8_t *)appended_iv );
             break;
             
         case VSCP_ENCRYPTION_AES256:
             AES_CBC_decrypt_buffer( AES256,
-                                        output, 
-                                        input, 
-                                        real_len, 
+                                        output+1, 
+                                        input+1, 
+                                        real_len-1, 
                                         key, 
                                         (const uint8_t *)appended_iv );
             break;
@@ -5849,9 +5878,9 @@ bool vscp_decryptVscpUdpFrame( uint8_t *output,
         default:    
         case VSCP_ENCRYPTION_AES128:
             AES_CBC_decrypt_buffer( AES128,
-                                        output, 
-                                        input, 
-                                        real_len, 
+                                        output+1, 
+                                        input+1, 
+                                        real_len-1, 
                                         key, 
                                         (const uint8_t *)appended_iv );
             break;    
