@@ -623,8 +623,15 @@ public:
     /////////////////////////////////////////////////////////
     
     
+    /*!
+     *  Info fro UDP subsystem
+     */
     udpServerInfo m_udpInfo;
     
+    /*!
+     *  Mutex that protect the UDP info structure
+     */
+    wxMutex m_mutexUDPInfo;
     
     
     /////////////////////////////////////////////////////////
@@ -641,6 +648,9 @@ public:
 
     // ttl for multicast announce
     uint8_t m_ttlMultiCastAnnounce;
+    
+    
+    
     
     
     /////////////////////////////////////////////////////////

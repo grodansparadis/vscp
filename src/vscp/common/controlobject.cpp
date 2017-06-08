@@ -418,7 +418,7 @@ CControlObject::~CControlObject()
     m_clientOutputQueue.Clear();
     //m_mutexClientOutputQueue.Unlock();
     
-    
+    //gpobj->m_mutexUDPInfo.Lock();
     udpRemoteClientList::iterator iterUDP;
     for (iterUDP = m_udpInfo.m_remotes.begin();
             iterUDP != m_udpInfo.m_remotes.end(); ++iterUDP) {
@@ -428,6 +428,7 @@ CControlObject::~CControlObject()
         }
         
     }
+    //gpobj->m_mutexUDPInfo.Unlock();
     
     m_udpInfo.m_remotes.Clear();
     
@@ -2360,10 +2361,11 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                 }
                 else if (subchild->GetName() == wxT("udp")) {
    
-
+                    gpobj->m_mutexUDPInfo.Lock();
+                    
                     // Enable
                     wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
-                    attribute.MakeLower();
+                    attribute.MakeLower();          
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_udpInfo.m_bEnable = false; 
                     }
@@ -2381,13 +2383,13 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     }
                     
                     // Enable ACK
-                    attribute = subchild->GetAttribute( wxT("bAck"), wxT("false") );
+                    attribute = subchild->GetAttribute( wxT("bAck"), wxT("false") );                    
                     if (attribute.Lower().IsSameAs(_("false"), false)) {
                         m_udpInfo.m_bAck = false; 
                     }
                     else {
                         m_udpInfo.m_bAck = true; 
-                    }
+                    }                    
                     
                     // Username
                     m_udpInfo.m_user = subchild->GetAttribute( _("user"), _("") );
@@ -2413,7 +2415,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     if ( attribute.Trim().Length() ) {                    
                         vscp_readMaskFromString( &m_udpInfo.m_filter, attribute );
                     }
-                 
+                                    
                     wxXmlNode *subsubchild = subchild->GetChildren();
                     while ( subsubchild ) {
                         
@@ -2422,6 +2424,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                             udpRemoteClientInfo *pudpClient = new udpRemoteClientInfo;
                             if ( NULL == pudpClient ) {
                                 logMsg( _("Failed to allocated UDP client remote structure.\n") );
+                                gpobj->m_mutexUDPInfo.Unlock();
                                 continue;
                             }
                                                         
@@ -2435,6 +2438,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                             
                             if ( !pudpClient->m_bEnable ) {
                                 delete pudpClient;
+                                gpobj->m_mutexUDPInfo.Unlock();
                                 continue;
                             }
                             
@@ -2474,6 +2478,8 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                         subsubchild = subsubchild->GetNext();    
                         
                     }
+                    
+                    gpobj->m_mutexUDPInfo.Unlock();
 
                 }
                 else if (subchild->GetName() == wxT("multicast")) {
@@ -3477,6 +3483,8 @@ bool CControlObject::dbReadConfiguration( void )
                                         VSCPDB_ORDINAL_CONFIG_ANNOUNCEINTERFACE_TTL );
         }
         
+        gpobj->m_mutexUDPInfo.Lock();
+        
         // Enable UDP interface
         if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDP_ENABLE ) ) {
             m_udpInfo.m_bEnable = sqlite3_column_int( ppStmt, 
@@ -3489,40 +3497,40 @@ bool CControlObject::dbReadConfiguration( void )
                                         VSCPDB_ORDINAL_CONFIG_UDP_ADDRESS ) );
         }
         
-        // User
+        // UDP User
         if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDP_USER ) ) {
             m_udpInfo.m_user = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
                                         VSCPDB_ORDINAL_CONFIG_UDP_USER ) );
         }
         
-        // Password
+        // UDP User Password
         if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDP_PASSWORD ) ) {
             m_udpInfo.m_password = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
                                         VSCPDB_ORDINAL_CONFIG_UDP_PASSWORD ) );
         }
         
-        // Filter
+        // UDP Filter
         if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDP_FILTER ) ) {
             wxString str = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
                                         VSCPDB_ORDINAL_CONFIG_UDP_FILTER ) );
             vscp_readFilterFromString( &m_udpInfo.m_filter, str );
         }
         
-        // Mask
+        // USP Mask
         if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDP_MASK ) ) {
             wxString str = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
                                         VSCPDB_ORDINAL_CONFIG_UDP_MASK ) );
             vscp_readMaskFromString( &m_udpInfo.m_filter, str );
         }
         
-        // GUID
+        // UDP GUID
         if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDP_GUID ) ) {
             wxString str = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
                                         VSCPDB_ORDINAL_CONFIG_UDP_GUID ) );
             m_udpInfo.m_guid.getFromString( str );
         }
         
-        // Enable un secure
+        // Enable un-secure
         if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDP_UNSECURE_ENABLE ) ) {
             m_udpInfo.m_bAllowUnsecure = sqlite3_column_int( ppStmt, 
                                         VSCPDB_ORDINAL_CONFIG_UDP_UNSECURE_ENABLE ) ? true : false;
@@ -3533,6 +3541,8 @@ bool CControlObject::dbReadConfiguration( void )
             m_udpInfo.m_bAck = sqlite3_column_int( ppStmt, 
                                         VSCPDB_ORDINAL_CONFIG_UDP_ACK_ENABLE ) ? true : false;
         }
+        
+        gpobj->m_mutexUDPInfo.Unlock();
         
         // Enable Multicast interface
         if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_MULTICASTINTERFACE_ENABLE ) ) {
@@ -3924,9 +3934,12 @@ bool CControlObject::readUdpNodes( void )
         // If not enabled move on
         if ( !sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_UDPNODE_ENABLE ) ) continue;
         
+        gpobj->m_mutexUDPInfo.Lock();
+        
         udpRemoteClientInfo *pudpClient = new udpRemoteClientInfo;
         if ( NULL == pudpClient ) {
             fprintf( stderr, "readUdpNodes: Failed to allocate storage for UDP node." );
+            gpobj->m_mutexUDPInfo.Unlock();
             continue;
         }
         
@@ -3969,6 +3982,8 @@ bool CControlObject::readUdpNodes( void )
         
         // Add to list
         m_udpInfo.m_remotes.Append( pudpClient->m_remoteAddress, pudpClient );
+        
+        gpobj->m_mutexUDPInfo.Unlock();
         
     }
     

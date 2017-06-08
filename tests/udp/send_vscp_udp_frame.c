@@ -32,7 +32,7 @@ void die(char *s)
 }
 
 // Temperature measurement
-int makeFrameType0( unsigned char *frame ) 
+int makeFrameType0( unsigned char *frame )
 {
     // Frame type, Type 0, unencrypted
     frame[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = 0;
@@ -111,7 +111,7 @@ int makeFrameType0( unsigned char *frame )
     frame[ 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 13 ] = ( framecrc >> 8 ) & 0xff;
     frame[ 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 13 + 1 ] = framecrc & 0xff;
 
-    printf("msg = ");
+    printf("Frame = ");
     for ( int i=0; i<50; i++ ) {
         printf("%02x ", frame[i] );
     }
@@ -128,7 +128,7 @@ int main( int argc, char* argv[] )
     unsigned char buf[ BUFLEN ];    
 
     char *pServer = DEFAULT_SERVER;
-    int port = VSCP_LEVEL2_UDP_PORT;
+    int port = VSCP_DEFAULT_UDP_PORT;
     int FrameType = DEFAULT_FRAME_TYPE;
     int cnt = DEFAULT_COUNT;
 
@@ -147,7 +147,7 @@ int main( int argc, char* argv[] )
             port = atoi( argv[2] );
         }
 
-        // Type
+        // Frame type
         if ( argc >= 4 ) {
             FrameType = atoi(argv[3]);
             if ( FrameType > 1 ) {
@@ -158,7 +158,7 @@ int main( int argc, char* argv[] )
 
         // Count
         if ( argc >= 5 ) {
-            cnt = atoi(argv[5]);
+            cnt = atoi(argv[4]);
             if ( !cnt ) {
                 printf("Count must be greater than zero.");
                 die("cnt");

@@ -106,8 +106,8 @@ void *daemonVSCPThread::Entry()
     unsigned short mc_port =
         vscp_readStringValue( m_pCtrlObject->m_strMulticastAnnounceAddress ) ; // multicast port
     unsigned char mc_ttl =
-        m_pCtrlObject->m_ttlMultiCastAnnounce; // time to live (hop count)
-
+        m_pCtrlObject->m_ttlMultiCastAnnounce; // time to live (hop count)    
+                
 #ifdef WIN32
 
     WSADATA wsaData;            // Windows socket DLL structure
@@ -180,8 +180,7 @@ void *daemonVSCPThread::Entry()
     // This is an active client
     pClientItem->m_bOpen = true;
     pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL;
-    pClientItem->m_strDeviceName = _("Internal VSCP Server Worker Client.");
-    
+    pClientItem->m_strDeviceName = _("Internal VSCP Server Worker Client.");    
     pClientItem->m_strDeviceName += _(" Started at ");
     pClientItem->m_strDeviceName += wxDateTime::Now().FormatISODate();
     pClientItem->m_strDeviceName += _(" ");
@@ -217,10 +216,10 @@ void *daemonVSCPThread::Entry()
         pAddr = lpLocalHostEntry->h_addr_list[ cntAddr ];
         if ( NULL != pAddr ) localaddr[ cntAddr ] = * ( ( unsigned long * ) pAddr );
     }
-    while ( ( NULL != pAddr ) && ( cntAddr < 16 ) );
+    while ( ( NULL != pAddr ) && ( cntAddr < 16 ) );    
+    
 
-
-    //                * * *  L O O P  * * *
+    //               * * *  W O R K I N G  L O O P  * * *
 
 
     CLIENTEVENTLIST::compatibility_iterator nodeClient;
@@ -517,8 +516,12 @@ CNodeInformation * daemonVSCPThread::addNodeIfNotKnown( vscpEvent *pEvent )
             m_pCtrlObject->m_mutexDeviceList.Lock();
             CDeviceItem *pDeviceItem =
                 m_pCtrlObject->m_deviceList.getDeviceItemFromClientId( pEvent->obid );
+            m_pCtrlObject->m_mutexDeviceList.Unlock();
+            
             if ( NULL != pDeviceItem ) {
 
+                m_pCtrlObject->m_mutexDeviceList.Lock();
+                
                 pNode->m_level = pDeviceItem->m_driverLevel;
 
                 // Construct a device name if no device name set
@@ -547,7 +550,9 @@ CNodeInformation * daemonVSCPThread::addNodeIfNotKnown( vscpEvent *pEvent )
                     pNode->m_strNodeName += wxString::Format( _( "%u" ),
                                                 ( pEvent->GUID[ 14 ] << 8 ) +
                                                     pEvent->GUID[ 15 ] );
-                }
+                } 
+                
+                m_pCtrlObject->m_mutexDeviceList.Unlock();
 
                 // Now let the discovery thread do the rest of the work
 
@@ -568,13 +573,18 @@ CNodeInformation * daemonVSCPThread::addNodeIfNotKnown( vscpEvent *pEvent )
                 }
                 m_pCtrlObject->m_mutexDeviceList.Unlock();
 
-                // We set name fron client id
+                // We set name from client id
                 // 'client_clientid_nickname'
                 if ( pNode->m_strNodeName.IsEmpty() ) {
                     pNode->m_strNodeName = _( "client_" );
-                    pNode->m_strNodeName +=
-                        wxString::Format( _( "%lu" ),
-                                            pClientItem->m_clientID );
+                    if ( NULL != pClientItem ) {
+                        pNode->m_strNodeName +=                                            
+                            wxString::Format( _( "%lu" ),
+                                                pClientItem->m_clientID );
+                    }
+                    else {
+                        pNode->m_strNodeName += _("isNULL");
+                    }
                     pNode->m_strNodeName += _( "_" );
                     pNode->m_strNodeName +=
                         wxString::Format( _( "%u" ),
@@ -582,9 +592,8 @@ CNodeInformation * daemonVSCPThread::addNodeIfNotKnown( vscpEvent *pEvent )
                                                 pEvent->GUID[ 15 ] );
                 }
 
-
             }
-            m_pCtrlObject->m_mutexDeviceList.Unlock();
+            
         }
 
     }

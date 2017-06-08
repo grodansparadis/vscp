@@ -678,7 +678,7 @@ void AES_CBC_decrypt_buffer(uint8_t type,uint8_t* output, uint8_t* input, uint32
   
 }
 
-int getIV( uint8_t *buf, size_t len )
+int getRandomIV( uint8_t *buf, size_t len )
 {
 #ifdef WIN32
     int random;

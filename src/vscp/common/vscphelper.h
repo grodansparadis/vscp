@@ -1162,6 +1162,21 @@ extern "C" {
     
     wxString vscp_getEncryptionTokenFromCode( uint8_t code );
     
+    /*!
+     * Get UDP frame size from event
+     * 
+     * @param pEvent Pointer to event.
+     * @return Size of resulting UDP frame on success. Zero on failure.
+     */
+    size_t vscp_getUDpFrameSizeFromEvent( vscpEvent *pEvent );
+    
+    /*!
+     * Get UDP frame size from event
+     * 
+     * @param pEventEx Pointer to event ex.
+     * @return Size of resulting UDP frame on success. Zero on failure.
+     */
+    size_t vscp_getUDpFrameSizeFromEventEx( vscpEventEx *pEventEx );
     
     /*!
      * Write event on UDP frame format
@@ -1173,7 +1188,10 @@ extern "C" {
      * @param pEvent Pointer to event that should be handled.
      * @return True on success, false on failure.
      */
-    bool vscp_writeEventToUdpFrame( uint8_t *buf, size_t len, uint8_t pkttype, const vscpEvent *pEvent );
+    bool vscp_writeEventToUdpFrame( uint8_t *frame, 
+                                        size_t len, uint8_t 
+                                        pkttype, 
+                                        const vscpEvent *pEvent );
     
     /*!
      * Write event ex on UDP frame format
@@ -1185,7 +1203,10 @@ extern "C" {
      * @param pEventEx Pointer to event that should be handled.
      * @return True on success, false on failure.
      */
-    bool vscp_writeEventExToUdpFrame( uint8_t *buf, size_t len, uint8_t pkttype, const vscpEventEx *pEventEx );
+    bool vscp_writeEventExToUdpFrame( uint8_t *frame, 
+                                        size_t len, 
+                                        uint8_t pkttype, 
+                                        const vscpEventEx *pEventEx );
     
     
     /*!
@@ -1196,7 +1217,9 @@ extern "C" {
      * @param len Size of the buffer.
      * @return True on success, false on failure.
      */
-    bool vscp_getVscpEventFromUdpFrame( vscpEvent *pEvent, const uint8_t *buf, size_t len );
+    bool vscp_getEventFromUdpFrame( vscpEvent *pEvent, 
+                                        const uint8_t *buf, 
+                                        size_t len );
     
     /*!
      * Get VSCP event ex from UDP frame
@@ -1206,7 +1229,62 @@ extern "C" {
      * @param len Size of the buffer.
      * @return True on success, false on failure.
      */   
-    bool vscp_getVscpEventExFromUdpFrame( vscpEventEx *pEventEx, const uint8_t *buf, size_t len );
+    bool vscp_getEventExFromUdpFrame( vscpEventEx *pEventEx, 
+                                        const uint8_t *buf, 
+                                        size_t len );
+    
+    
+    /*!
+     * Encrypt VSCP UDP frame using the selected encryption algorithm. The iv 
+     * initialization vector) is appended to the end of the encrypted data.
+     * 
+     * @param output Buffer that will receive the encrypted result. The buffer
+     *          should be at least 16 bytes larger than the frame.
+     * @param input This is the UDP frame that should be encrypted.
+     * @param len This is the length of the UDP frame to be encrypted.
+     * @param key This is a pointer to the secret encryption key. This key should 
+     *          be 128 bytes for AES128, 192 bytes for AES192, 256 bytes for AES256.
+     * @param iv Pointer to the initialization vector. Should always point to a 128 bit
+     *          content. If NULL the iv will be created from random system data. In both
+     *          cases the end result will have the iv appended to the encrypted block.
+     * @param nAlgorithm The VSCP defined algorithm to encrypt the frame with.
+     * @return True on success, false on failure.
+     * 
+     * NOTE: Note that VSCP packet type (first byte in UDP frame) is not recognised here.
+     * 
+     */
+    bool vscp_encryptVscpUdpFrame( uint8_t *output, 
+                                        uint8_t *input, 
+                                        size_t len,
+                                        const uint8_t *key,
+                                        const uint8_t *iv,
+                                        uint8_t nAlgorithm );
+    
+    /*!
+     * Decrypt VSCP UDP frame using the selected encryption algorithm. The iv 
+     * initialization vector) is appended to the end of the encrypted data.
+     * 
+     * @param output Buffer that will receive the decrypted result. The buffer
+     *          should have a size at lest equal to the encrypted block.
+     * @param input This is the UDP frame that should be decrypted.
+     * @param len This is the length of the UDP frame to be decrypted.
+     * @param key This is a pointer to the secret encryption key. This key should 
+     *          be 128 bytes for AES128, 192 bytes for AES192, 256 bytes for AES256.
+     * @param iv Pointer to the initialization vector. Should always point to a 128 bit
+     *          content. If NULL the iv is expected to be the last 16 bytes of the 
+     *          encrypted data.
+     * @param nAlgorithm The VSCP defined algorithm to decrypt the frame with.
+     * @return True on success, false on failure.
+     * 
+     * NOTE: Note that VSCP packet type (first byte in UDP frame) is not recognised here.
+     * 
+     */
+    bool vscp_decryptVscpUdpFrame( uint8_t *output, 
+                                        uint8_t *input, 
+                                        size_t len,
+                                        const uint8_t *key,
+                                        const uint8_t *iv,
+                                        uint8_t nAlgorithm );
 
 #ifdef __cplusplus
 }

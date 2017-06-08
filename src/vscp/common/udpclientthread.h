@@ -102,8 +102,8 @@ public:
                                             CClientItem *pClientItem,
                                             vscpEventFilter *pRxFilter );
     
-    static bool sendUnEncryptedFrame( struct mg_connection *nc, 
-                                            CClientItem *pClientItem );
+    static bool sendUDPFrame( struct mg_mgr *pmgr, 
+                                CClientItem *pClientItem );
     
     /*! 
         called when the thread exits - whether it terminates normally or is

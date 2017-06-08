@@ -62,6 +62,7 @@
 
 #include <crc8.h> 
 #include <crc.h> 
+#include <aes.h>
 
 #include <vscp.h>
 #include <guid.h>
@@ -5444,18 +5445,117 @@ wxString vscp_getEncryptionTokenFromCode( uint8_t code )
     }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// vscp_getUDpFrameSizeFromEvent
+//
+
+size_t vscp_getUDpFrameSizeFromEvent( vscpEvent *pEvent )
+{
+    // Check pointer
+    if ( NULL != pEvent ) return false;
+    
+    size_t size = 1 +                                       // Packet type
+                    VSCP_MULTICAST_PACKET0_HEADER_LENGTH +          
+                     pEvent->sizeData +                  
+                     2;                                     // CRC
+    return size;
+}
+    
+///////////////////////////////////////////////////////////////////////////////
+// vscp_getUDpFrameSizeFromEventEx
+//
+
+size_t vscp_getUDpFrameSizeFromEventEx( vscpEventEx *pEventEx )
+{
+    // Check pointer
+    if ( NULL != pEventEx ) return false;
+    
+    size_t size = 1 +                                       // Packet type
+                    VSCP_MULTICAST_PACKET0_HEADER_LENGTH +          
+                     pEventEx->sizeData +                  
+                     2;                                     // CRC    
+    return size;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // vscp_writeEventToUdpFrame
 //
 
-bool vscp_writeEventToUdpFrame( uint8_t *buf, size_t len, uint8_t pkttype, const vscpEvent *pEvent )
+bool vscp_writeEventToUdpFrame( uint8_t *frame, 
+                                    size_t len, 
+                                    uint8_t pkttype, 
+                                    const vscpEvent *pEvent )
 {
     // Check pointers
-    if ( NULL == buf ) return false;
+    if ( NULL == frame ) return false;
     if ( NULL == pEvent ) return false;
+    // Can't have datasize with invalid datapointer
+    if ( pEvent->sizeData && (NULL == pEvent->pdata ) ) return false;
     
+    size_t calcSize = 1 +                                       // Packet type
+                        VSCP_MULTICAST_PACKET0_HEADER_LENGTH +          
+                        pEvent->sizeData +                  
+                        2;                                      // CRC
     
+    if ( len < calcSize ) return false;
+    
+    // Frame type
+    frame[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = pkttype;
+
+    // Packet type
+    frame[ VSCP_MULTICAST_PACKET0_POS_HEAD_MSB ] = (pEvent->head >> 8) & 0xff;
+    frame[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] = pEvent->head & 0xff;
+
+    // Timestamp
+    frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP ] = (pEvent->timestamp >> 24) & 0xff;
+    frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 1 ] = (pEvent->timestamp >> 16) & 0xff;
+    frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] = (pEvent->timestamp >> 8) & 0xff;
+    frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ] = pEvent->timestamp & 0xff;
+
+    // Date / time block GMT
+    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR ] = pEvent->year;
+    frame[ VSCP_MULTICAST_PACKET0_POS_MONTH ] = pEvent->month;
+    frame[ VSCP_MULTICAST_PACKET0_POS_DAY ] = pEvent->day;
+    frame[ VSCP_MULTICAST_PACKET0_POS_HOUR ] = pEvent->hour;
+    frame[ VSCP_MULTICAST_PACKET0_POS_MINUTE ] = pEvent->minute;
+    frame[ VSCP_MULTICAST_PACKET0_POS_SECOND ] = pEvent->second;
+
+    // Class 
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_MSB ] = (pEvent->vscp_class >> 8) & 0xff;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_LSB ] = pEvent->vscp_class & 0xff;
+
+    // Type 
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_MSB ] = (pEvent->vscp_type >> 8) & 0xff;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB ] = pEvent->vscp_class & 0xff;
+
+    // GUID 
+    memcpy( frame + VSCP_MULTICAST_PACKET0_POS_VSCP_GUID,
+                pEvent->GUID,
+                16 );
+
+    // Size
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] = (pEvent->sizeData >> 8) & 0xff;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ] = pEvent->sizeData & 0xff;
+
+    // Data
+    if ( pEvent->sizeData ) {
+        memcpy( frame + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA,
+                    pEvent->pdata,
+                    pEvent->sizeData );
+    }
+    
+    // Calculate CRC
+    crc framecrc = crcFast( (unsigned char const *)frame + 1, 
+                                VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 
+                                pEvent->sizeData );
+
+    // CRC
+    frame[ 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData ] = 
+                ( framecrc >> 8 ) & 0xff;
+    frame[ 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData + 1 ] = 
+                framecrc & 0xff;
+
     
     return true;
 }
@@ -5465,9 +5565,15 @@ bool vscp_writeEventToUdpFrame( uint8_t *buf, size_t len, uint8_t pkttype, const
 // vscp_writeEventExToUdpFrame
 //
 
-bool vscp_writeEventExToUdpFrame( uint8_t *buf, size_t len, uint8_t pkttype, const vscpEventEx *pEventEx )
+bool vscp_writeEventExToUdpFrame( uint8_t *frame, 
+                                    size_t len, 
+                                    uint8_t pkttype, 
+                                    const vscpEventEx *pEventEx )
 {
     vscpEvent *pEvent;
+            
+    pEvent = new vscpEvent;        
+    if ( NULL == pEvent ) return false;
     pEvent->pdata = NULL;
     
     // Check pointer (rest is checked in vscp_convertVSCPfromEx)
@@ -5476,17 +5582,19 @@ bool vscp_writeEventExToUdpFrame( uint8_t *buf, size_t len, uint8_t pkttype, con
     // Convert eventEx to event 
     if ( !vscp_convertVSCPfromEx( pEvent, pEventEx) ) return false;
     
-    if ( !vscp_writeEventToUdpFrame( buf, len, pkttype, pEvent ) ) return false;
+    if ( !vscp_writeEventToUdpFrame( frame, len, pkttype, pEvent ) ) return false;
     vscp_deleteVSCPevent_v2( &pEvent );
 
     return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// vscp_getVscpEventFromUdpFrame
+// vscp_getEventFromUdpFrame
 //
 
-bool vscp_getVscpEventFromUdpFrame( vscpEvent *pEvent, const uint8_t *buf, size_t len ) 
+bool vscp_getEventFromUdpFrame( vscpEvent *pEvent, 
+                                    const uint8_t *buf, 
+                                    size_t len ) 
 {
     
     // Check pointers
@@ -5517,11 +5625,12 @@ bool vscp_getVscpEventFromUdpFrame( vscpEvent *pEvent, const uint8_t *buf, size_
     //  len - 2     CRC MSB( Calculated on HEAD + CLASS + TYPE + ADDRESS + SIZE + DATA )
     //  len - 1     CRC LSB
     
-    size_t calcFrameSize = 1 +                                          // packet type & encryption                        
-                        VSCP_MULTICAST_PACKET0_HEADER_LENGTH +          // header
-                        2 +                                             // CRC
-                        ((uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] << 8 ) +
-                         buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ];
+    size_t calcFrameSize = 
+            1 +                                          // packet type & encryption                        
+            VSCP_MULTICAST_PACKET0_HEADER_LENGTH +          // header
+            2 +                                             // CRC
+            ((uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] << 8 ) +
+            buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ];
         
     // The buffer must hold a frame
     if ( len < calcFrameSize ) return false;
@@ -5536,16 +5645,17 @@ bool vscp_getVscpEventFromUdpFrame( vscpEvent *pEvent, const uint8_t *buf, size_
         
         // Calculate & check CRC
         crcnew = crcFast( (unsigned char const *)buf + 1, 
-                        VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 
-                            ((uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] << 8 ) +
-                             buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ] 
-                            + 2 );
+                    VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 
+                     ((uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] << 8 ) +
+                     buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ] +
+                     2 );
         // CRC is zero if calculated over itself
         if ( crcnew ) return false;
     }
             
-    pEvent->sizeData =  ((uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] << 8 ) +
-                        buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ];
+    pEvent->sizeData =  
+            ((uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] << 8 ) +
+                       buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ];
     
     // Allocate data
     if ( NULL == ( pEvent->pdata = new uint8_t[ pEvent->sizeData ] ) ) {
@@ -5553,22 +5663,27 @@ bool vscp_getVscpEventFromUdpFrame( vscpEvent *pEvent, const uint8_t *buf, size_
     }
     
     // copy in data
-    memcpy( pEvent->pdata, buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA, pEvent->sizeData );
+    memcpy( pEvent->pdata, 
+                buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA, 
+                pEvent->sizeData );
     
     // Head
     pEvent->head = ((uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_MSB ] << 8 ) +
                         buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ];
     
     // Copy in GUID
-    memcpy( pEvent->GUID, buf + VSCP_MULTICAST_PACKET0_POS_VSCP_GUID, pEvent->sizeData ); 
+    memcpy( pEvent->GUID, 
+                buf + VSCP_MULTICAST_PACKET0_POS_VSCP_GUID, 
+                pEvent->sizeData ); 
     
     // Set CRC
     pEvent->crc = calcCRC;
     
     // Set timestamp
-    pEvent->timestamp = ( (uint32_t)buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP ]  << 24 ) +
-                        ( (uint32_t)buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 1 ] << 16 ) +
-                        ( (uint32_t)buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] << 8 ) +
+    pEvent->timestamp = 
+            ( (uint32_t)buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP ]  << 24 ) +
+            ( (uint32_t)buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 1 ] << 16 ) +
+            ( (uint32_t)buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] << 8 ) +
                         buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ];
     
     // Date/time
@@ -5580,15 +5695,167 @@ bool vscp_getVscpEventFromUdpFrame( vscpEvent *pEvent, const uint8_t *buf, size_
     pEvent->second = buf[ VSCP_MULTICAST_PACKET0_POS_SECOND ];
     
     // VSCP Class
-    pEvent->vscp_class = ( (uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_MSB ] << 8 ) +
-                           buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_LSB ];
+    pEvent->vscp_class = 
+           ( (uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_MSB ] << 8 ) +
+                       buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_LSB ];
     
     // VSCP Type
-    pEvent->vscp_type = ( (uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_MSB ] << 8 ) +
-                          buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB ];                        
+    pEvent->vscp_type = 
+            ( (uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_MSB ] << 8 ) +
+                        buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB ];                        
     
     // obid - set to zero so interface fill it in
     pEvent->obid = 0;
+    
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_getEventExFromUdpFrame
+//
+
+bool vscp_getEventExFromUdpFrame( vscpEventEx *pEventEx, 
+                                    const uint8_t *frame, 
+                                    size_t len )
+{
+    vscpEvent *pEvent;
+    
+    pEvent = new vscpEvent;        
+    if ( NULL == pEvent ) return false;
+    pEvent->pdata = NULL;
+     
+    // Check pointer (rest is checked in vscp_getVscpEventFromUdpFrame)
+    if ( NULL == pEventEx ) return false;
+    
+    if ( !vscp_getEventFromUdpFrame( pEvent, frame, len ) ) {
+        return false;
+    }
+    
+    // Convert eventEx to event 
+    if ( !vscp_convertVSCPtoEx( pEventEx, pEvent) ) return false;
+    
+    return true;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_encryptVscpUdpFrame
+//
+
+bool vscp_encryptVscpUdpFrame( uint8_t *output, 
+                                        uint8_t *input, 
+                                        size_t len,
+                                        const uint8_t *key,
+                                        const uint8_t *iv,
+                                        uint8_t nAlgorithm )
+{
+    uint8_t generated_iv[16];
+    
+    if ( NULL == output ) return false;
+    if ( NULL == input ) return false;
+    if ( NULL == key ) return false;
+    // If iv is not give it shoulc be generated
+    if ( NULL == iv ) {        
+        if ( 16 != getRandomIV( generated_iv, 16 ) ) return false;
+    }
+    else {
+        memcpy( generated_iv, iv, 16 );
+    }
+    
+    switch ( nAlgorithm ) {
+                    
+        case VSCP_ENCRYPTION_AES192:
+            AES_CBC_encrypt_buffer( AES192,
+                                        output, 
+                                        input, 
+                                        len, 
+                                        key, 
+                                        (const uint8_t *)generated_iv );
+            break;
+            
+        case VSCP_ENCRYPTION_AES256:
+            AES_CBC_encrypt_buffer( AES256,
+                                        output, 
+                                        input, 
+                                        len, 
+                                        key, 
+                                        (const uint8_t *)generated_iv );
+            break;
+        
+        default:    
+        case VSCP_ENCRYPTION_AES128:
+            AES_CBC_encrypt_buffer( AES128,
+                                        output, 
+                                        input, 
+                                        len, 
+                                        key, 
+                                        (const uint8_t *)generated_iv );
+            break;    
+    }
+    
+    // Append iv
+    memcpy( output + len, generated_iv, 16 );
+    
+    return true;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_encryptVscpUdpFrame
+//
+
+bool vscp_decryptVscpUdpFrame( uint8_t *output, 
+                                        uint8_t *input, 
+                                        size_t len,
+                                        const uint8_t *key,
+                                        const uint8_t *iv,
+                                        uint8_t nAlgorithm )
+{
+    uint8_t appended_iv[16];
+    size_t real_len = len;
+    
+    if ( NULL == output ) return false;
+    if ( NULL == input ) return false;
+    if ( NULL == key ) return false;
+    // If iv is not given it should be fetched from the end of input (last 16 bytes)
+    if ( NULL == iv ) {        
+        memcpy( appended_iv, input - 16, 16 );
+        real_len -= 16; // Adjust frame length accordingly
+    }
+    else {
+        memcpy( appended_iv, iv, 16 );
+    }
+    
+    switch ( nAlgorithm ) {
+                    
+        case VSCP_ENCRYPTION_AES192:
+            AES_CBC_decrypt_buffer( AES192,
+                                        output, 
+                                        input, 
+                                        real_len, 
+                                        key, 
+                                        (const uint8_t *)appended_iv );
+            break;
+            
+        case VSCP_ENCRYPTION_AES256:
+            AES_CBC_decrypt_buffer( AES256,
+                                        output, 
+                                        input, 
+                                        real_len, 
+                                        key, 
+                                        (const uint8_t *)appended_iv );
+            break;
+        
+        default:    
+        case VSCP_ENCRYPTION_AES128:
+            AES_CBC_decrypt_buffer( AES128,
+                                        output, 
+                                        input, 
+                                        real_len, 
+                                        key, 
+                                        (const uint8_t *)appended_iv );
+            break;    
+    }
     
     return true;
 }
