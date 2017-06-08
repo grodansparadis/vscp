@@ -2425,10 +2425,11 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                             if ( NULL == pudpClient ) {
                                 logMsg( _("Failed to allocated UDP client remote structure.\n") );
                                 gpobj->m_mutexUDPInfo.Unlock();
+                                subsubchild = subsubchild->GetNext(); 
                                 continue;
                             }
                                                         
-                            attribute = subchild->GetAttribute( wxT("enable"), wxT("false") );
+                            attribute = subsubchild->GetAttribute( wxT("enable"), wxT("false") );
                             if ( attribute.Lower().IsSameAs(_("false"), false ) ) {
                                 pudpClient->m_bEnable = false; 
                             }
@@ -2439,26 +2440,27 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                             if ( !pudpClient->m_bEnable ) {
                                 delete pudpClient;
                                 gpobj->m_mutexUDPInfo.Unlock();
+                                subsubchild = subsubchild->GetNext(); 
                                 continue;
                             }
                             
                             // remote address
-                            pudpClient->m_remoteAddress = subchild->GetAttribute( _("interface"), _("") );    
+                            pudpClient->m_remoteAddress = subsubchild->GetAttribute( _("interface"), _("") );    
                                                                 
                             // Filter
-                            attribute = subchild->GetAttribute( _("filter"), _("") );
+                            attribute = subsubchild->GetAttribute( _("filter"), _("") );
                             if ( attribute.Trim().Length() ) {
                                 vscp_readFilterFromString( &pudpClient->m_filter, attribute );
                             }
                     
                             // Mask
-                            attribute = subchild->GetAttribute( _("mask"), _("") );
+                            attribute = subsubchild->GetAttribute( _("mask"), _("") );
                             if ( attribute.Trim().Length() ) {
                                 vscp_readMaskFromString( &pudpClient->m_filter, attribute );
                             }
                             
                             // broadcast
-                            attribute = subchild->GetAttribute( _("bSetBroadcast"), _("false") );
+                            attribute = subsubchild->GetAttribute( _("bSetBroadcast"), _("false") );
                             if ( attribute.Lower().IsSameAs(_("false"), false ) ) {
                                 pudpClient->m_bSetBroadcast = false; 
                             }
@@ -2467,11 +2469,11 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                             }
                             
                             // encryption
-                            attribute = subchild->GetAttribute( _("encryption"), _("") );
+                            attribute = subsubchild->GetAttribute( _("encryption"), _("") );
                             pudpClient->m_nEncryption = vscp_getEncryptionCodeFromToken( attribute );
                             
                             // add to list
-                            m_udpInfo.m_remotes.Append( pudpClient->m_remoteAddress, pudpClient );
+                            m_udpInfo.m_remotes.Append( pudpClient );
                             
                         }
                         
@@ -3981,7 +3983,7 @@ bool CControlObject::readUdpNodes( void )
         }
         
         // Add to list
-        m_udpInfo.m_remotes.Append( pudpClient->m_remoteAddress, pudpClient );
+        m_udpInfo.m_remotes.Append( pudpClient );
         
         gpobj->m_mutexUDPInfo.Unlock();
         
