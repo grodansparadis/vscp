@@ -683,7 +683,7 @@ int getRandomIV( uint8_t *buf, size_t len )
 #ifdef WIN32
     int random;
     
-    if ( int i=0; i<len; i++ ) {
+    for ( int i=0; i<len; i++ ) {
         if ( !rand_s( &random ) ) {
             buf[i] = (uint8_t)random;
         }
@@ -691,14 +691,17 @@ int getRandomIV( uint8_t *buf, size_t len )
             buf[i] = i;
         }
     }
+
+    return len;
 #else    
     FILE *fp;
     fp = fopen("/dev/urandom", "r");
     if (NULL == fp) return 0;
     size_t nread = fread( buf, 1, len, fp);
     fclose(fp);
-#endif    
     return nread;
+#endif    
+    
 }
 
 #endif // #if defined(CBC) && CBC

@@ -490,6 +490,7 @@
     <CustomBuild Include="wx\msw\watch1.cur" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\common\aes.h" />
     <ClInclude Include="..\..\..\common\crc8.h" />
     <ClInclude Include="..\..\..\common\frozen.h" />
     <ClInclude Include="..\..\..\common\mongoose.h" />
@@ -537,6 +538,7 @@
     <ClInclude Include="vscpd.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\common\aes.c" />
     <ClCompile Include="..\..\..\common\crc8.c" />
     <ClCompile Include="..\..\..\common\frozen.c" />
     <ClCompile Include="..\..\..\common\jsonreader.cpp" />
