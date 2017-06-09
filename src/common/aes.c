@@ -33,6 +33,11 @@ NOTE:   String length must be evenly divisible by 16byte (str_len % 16 == 0)
 /*****************************************************************************/
 /* Includes:                                                                 */
 /*****************************************************************************/
+#ifdef WIN32
+#define _CRT_RAND_S  
+#include <stdlib.h>
+#endif
+
 #include <stdint.h>
 #include <stdio.h>  // file /dev/urandom
 #include <string.h> // CBC mode, for memset
