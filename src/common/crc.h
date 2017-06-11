@@ -13,8 +13,8 @@
  * expressed or implied by its publication or distribution.
  **********************************************************************/
 
-#ifndef _crc_h
-#define _crc_h
+#ifndef __crc_h
+#define __crc_h
 
 #ifdef __cplusplus
 extern "C" {

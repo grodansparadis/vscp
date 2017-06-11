@@ -296,7 +296,7 @@ CControlObject::CControlObject()
     m_ttlMultiCastAnnounce = IP_MULTICAST_DEFAULT_TTL;
 
     // Default UDP interface
-    m_udpInfo.m_interface = _("udp://:" + VSCP_DEFAULT_UDP_PORT);
+    m_udpInfo.m_interface = _("udp://:" + VSCP_DEFAULT_UDP_PORT );
 
     // Default MQTT broker interface
     m_strMQTTBrokerInterfaceAddress = _("tcp://1883");
@@ -860,7 +860,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
                 }
 
                 // Create location table
-                if ( doCreateLocationTable() ) {
+                if ( !doCreateLocationTable() ) {
                     fprintf( stderr, "Failed to create location table.\n" );
                 }
 

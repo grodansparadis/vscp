@@ -51,7 +51,6 @@
 #include <udpclientthread.h>
 #include <webserver_websocket.h>
 #include <vscpmqttbroker.h>
-//#include <udpthread.h>
 #include <daemonvscp.h>
 #include <dm.h>
 #include <knownnodes.h>
@@ -938,12 +937,6 @@ private:
      */
     VSCPUDPClientThread m_pudpClientThread;
     wxMutex m_mutexudpClientThread;
-    
-    //UDPSendThread *m_pudpSendThread;
-    //UDPReceiveThread *m_pudpReceiveThread;
-
-    wxMutex m_mutexudpSendThread;
-    wxMutex m_mutexudpReceiveThread;
 
     /*!
         The server thread for the MQTT Broker

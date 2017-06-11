@@ -13,7 +13,7 @@ CC = @CC@
 CXX = @CXX@
 MONGOOSE_CFLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL -DMG_ENABLE_MQTT_BROKER -DMG_ENABLE_JAVASCRIPT -DMG_ENABLE_HTTP_CGI -DMG_ENABLE_HTTP_SSI -DMG_ENABLE_HTTP_SSI_EXEC -DMG_ENABLE_HTTP_WEBDAV -DMG_ENABLE_GETADDRINFO -DMG_ENABLE_HTTP_URL_REWRITES
 V7_CFLAGS = -DMG_ENABLE_SSL -DV7_ENABLE_JS_GETTERS -DV7_ENABLE_JS_SETTERS -DV7_BUILD_PROFILE=3 -DV7_ENABLE_CRYPTO -DV7_ENABLE_FILE -DV7_ENABLE_SOCKET
-CFLAGS = @CFLAGS@ -D MG_ENABLE_THREADS  -D MG_ENABLE_MQTT_BROKER -DCBC -I../../common -I../../../common
+CFLAGS = -std=c99 @CFLAGS@ -D MG_ENABLE_THREADS  -D MG_ENABLE_MQTT_BROKER -DCBC -I../../common -I../../../common
 CXXFLAGS = @CXXFLAGS@
 CPPFLAGS = @CPPFLAGS@ -fno-var-tracking-assignments -D MG_ENABLE_THREADS  -D MG_ENABLE_MQTT_BROKER -D MG_ENABLE_COAP -I../../common -I../../../common 
 CPPFLAGS += $(MONGOOSE_CFLAGS) $(V7_CFLAGS)
@@ -81,7 +81,8 @@ VSCPD_SPECIALS = vscphelper.o \
 	mongoose.o \
 	sqlite3.o \
 	sqlite3math.o\
-	aes.o	
+	aes.o\
+	fastpbkdf2.o	
 
 # Add object files that always should be built here
 ALWAYS_BUILD = 
@@ -158,7 +159,10 @@ sqlite3.o: ../../../common/sqlite3.o
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c  ../../../common/sqlite3.c -o $@
 
 sqlite3math.o: ../../../common/sqlite3math.o
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c  ../../../common/sqlite3math.c -o $@	
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c  ../../../common/sqlite3math.c -o $@
+
+fastpbkdf2.o: ../../../common/fastpbkdf2.o ../../../common/fastpbkdf2.h
+	$(CC) $(CFLAGS) -c ../../../common/fastpbkdf2.c -o $@	
 
 vscpd: $(VSCPD_OBJECTS) $(VSCPD_SPECIALS)
 	$(CXX) -o $@ $(VSCPD_OBJECTS) $(VSCPD_SPECIALS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)

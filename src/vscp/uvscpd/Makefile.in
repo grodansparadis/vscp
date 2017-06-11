@@ -52,6 +52,7 @@ ALWAYS_BUILD = ../common/vscphelper.o \
 	../../common/crc.o \
 	../../common/crc8.o \
 	../../common/md5.o \
+	../../common/aes.o \
 	../../common/configfile.o \
 	../../common/randpassword.o
 

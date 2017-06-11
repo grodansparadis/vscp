@@ -5625,6 +5625,8 @@ bool vscp_getEventFromUdpFrame( vscpEvent *pEvent,
     //  len - 1     CRC LSB
     // if encrypted with AES128/192/256 16.bytes IV here.
     
+    
+    
     size_t calcFrameSize = 
             1 +                                          // packet type & encryption                        
             VSCP_MULTICAST_PACKET0_HEADER_LENGTH +          // header
@@ -5769,12 +5771,15 @@ bool vscp_encryptVscpUdpFrame( uint8_t *output,
                                         const uint8_t *key,
                                         const uint8_t *iv,
                                         uint8_t nAlgorithm )
-{
+{    
     uint8_t generated_iv[16];
     
     if ( NULL == output ) return false;
     if ( NULL == input ) return false;
     if ( NULL == key ) return false;
+    
+    // Must pad if needed
+    size_t newlen = len + len % 16;
     
     // If iv is not give it should be generated
     if ( NULL == iv ) {        
@@ -5843,9 +5848,14 @@ bool vscp_decryptVscpUdpFrame( uint8_t *output,
     if ( NULL == input ) return false;
     if ( NULL == key ) return false;
     
+    if ( VSCP_ENCRYPTION_NONE == GET_VSCP_MULTICAST_PACKET_ENCRYPTION( nAlgorithm ) ) {
+        memcpy( output, input, len );
+        return true;
+    }
+    
     // If iv is not given it should be fetched from the end of input (last 16 bytes)
     if ( NULL == iv ) {        
-        memcpy( appended_iv, input - 16, 16 );
+        memcpy( appended_iv, (input + len - 16 ), 16 );
         real_len -= 16; // Adjust frame length accordingly
     }
     else {

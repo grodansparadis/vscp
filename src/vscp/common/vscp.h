@@ -41,7 +41,7 @@
 #include <inttypes.h>
 
 
-#define	VSCP_DEFAULT_UDP_PORT               44444
+#define	VSCP_DEFAULT_UDP_PORT               33333
 #define	VSCP_DEFAULT_TCP_PORT               9598
 
 #define VSCP_ADDRESS_SEGMENT_CONTROLLER	    0x00

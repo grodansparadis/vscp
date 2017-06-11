@@ -45,7 +45,7 @@
 	"`vscpd_announceinterface_address`                  TEXT DEFAULT 'udp://9598',"\
 	"`vscpd_announceinterface_ttl`                      INTEGER DEFAULT 1,"\
 	"`vscpd_udp_enable`                                 INTEGER DEFAULT 1,"\
-	"`vscpd_udp_address`                                TEXT DEFAULT 'udp://44444',"\
+	"`vscpd_udp_address`                                TEXT DEFAULT 'udp://33333',"\
         "`vscpd_udp_user`                                   TEXT DEFAULT '',"\
         "`vscpd_udp_password`                               TEXT DEFAULT '',"\
         "`vscpd_udp_unsecure_enable`                        INTEGER DEFAULT 1,"\

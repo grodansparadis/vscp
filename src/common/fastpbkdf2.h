@@ -2,6 +2,8 @@
  * fastpbkdf2 - Faster PBKDF2-HMAC calculation
  * Written in 2015 by Joseph Birr-Pixton <jpixton@gmail.com>
  *
+ * https://github.com/ctz/fastpbkd
+ *
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
  * public domain worldwide. This software is distributed without any
