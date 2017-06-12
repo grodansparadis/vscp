@@ -41,6 +41,7 @@ VSCPL2LOGGER_OBJECTS =  ../common/log.o\
 	../../../../common/guid.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
+	../../../../../common/aes.o\
 	../../../../../common/mongoose.o
 
 PROJOBJS = ../common/log.o\
@@ -49,6 +50,7 @@ PROJOBJS = ../common/log.o\
 	../../../../common/guid.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
+	../../../../../common/aes.o\
 	../../../../../common/mongoose.o
 
 ALWAYS_BUILD = ../../../../common/vscpremotetcpif.o\
@@ -56,6 +58,7 @@ ALWAYS_BUILD = ../../../../common/vscpremotetcpif.o\
 	../../../../common/guid.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
+	../../../../../common/aes.o\
 	../../../../../common/mongoose.o
 
 ### Targets: ###

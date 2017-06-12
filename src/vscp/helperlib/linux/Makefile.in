@@ -42,7 +42,7 @@ VSCPHELPER_OBJECTS =  libvscphelper.o\
 	../../common/guid.o\
 	../../../common/crc.o\
 	../../../common/crc8.o\
-	../../common/aes.o \
+	../../../common/aes.o \
 	../../../common/mongoose.o
 
 PROJOBJS = ../vscphelperlib.h\
@@ -51,6 +51,7 @@ PROJOBJS = ../vscphelperlib.h\
 	../../../common/crc.o\
 	../../common/guid.o\
 	../../../common/crc8.o\
+	../../../common/aes.o\
 	../../../common/mongoose.o
 
 ALWAYS_BUILD = ../../common/vscpremotetcpif.o\

@@ -41,6 +41,7 @@ WIRE1_OBJECTS = wire1.o\
 	../../../../common/guid.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
+	../../../../../common/aes.o\
 	../../../../../common/mongoose.o\
 
 PROJOBJS =  wire1.o\
@@ -49,6 +50,7 @@ PROJOBJS =  wire1.o\
 	../../../../common/guid.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
+	../../../../../common/aes.o\
 	../../../../../common/mongoose.o\
 
 ALWAYS_BUILD = ../../../../common/vscpremotetcpif.o\
@@ -56,7 +58,7 @@ ALWAYS_BUILD = ../../../../common/vscpremotetcpif.o\
 	../../../../common/guid.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
-	../../../../../common/fossa.o\
+	../../../../../common/aes.o\
 
 
 ### Targets: ###

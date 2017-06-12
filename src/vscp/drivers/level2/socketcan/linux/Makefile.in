@@ -42,6 +42,7 @@ SOCKETCAN_OBJECTS = socketcan.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
 	../../../../../common/mongoose.o\
+	../../../../../common/aes.o\
 
 PROJOBJS =  socketcan.o\
 	../../../../common/vscpremotetcpif.o\
@@ -50,13 +51,14 @@ PROJOBJS =  socketcan.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
 	../../../../../common/mongoose.o\
+	../../../../../common/aes.o\
 
 ALWAYS_BUILD = ../../../../common/vscpremotetcpif.o\
 	../../../../common/vscphelper.o\
 	../../../../common/guid.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
-	../../../../../common/fossa.o\
+	../../../../../common/aes.o\
 
 
 ### Targets: ###

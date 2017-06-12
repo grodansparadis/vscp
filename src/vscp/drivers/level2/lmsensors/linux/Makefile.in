@@ -38,6 +38,7 @@ LIBDIRNAME = $(top_wxbuilddir)lib
 LMSENSOROBJ =  lmsensors.o \
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
+	../../../../../common/aes.o\
 	../../../../../common/mongoose.o\
 	../../../../common/vscpremotetcpif.o\
 	../../../../common/vscphelper.o\
@@ -45,6 +46,7 @@ LMSENSOROBJ =  lmsensors.o \
 PROJOBJS = lmsensors.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
+	../../../../../common/aes.o\
 	../../../../../common/mongoose.o\
 	../../../../common/vscptcpif.o\
 	../../../../common/vscphelper.o\

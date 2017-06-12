@@ -67,6 +67,7 @@ VSCPWORKS_OBJECTS =  vscpworks.o dlgvscpmsg.o \
 	dlgsetmanufactdata.o\
 	../../common/crc.o \
 	../../common/crc8.o \
+	../../common/aes.o \
 	../../common/mongoose.o \
 	../common/canalsuperwrapper.o \
 	../common/dllwrapper.o \
@@ -83,6 +84,7 @@ VSCPWORKS_OBJECTS =  vscpworks.o dlgvscpmsg.o \
 
 ALWAYS_BUILD = ../../common/crc.o \
 	../../common/crc8.o \
+	../../common/aes.o \
 	../../common/mongoose.o \
 	../common/canalsuperwrapper.o \
 	../common/dllwrapper.o \
