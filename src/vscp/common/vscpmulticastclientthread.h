@@ -28,23 +28,27 @@
 #include "userlist.h"
 #include "controlobject.h"
 
+class multicastClientThread;
+
 // Client structure (Will receive events from VSCP server)
 typedef struct {
-    bool                m_bEnable;              // Enable the channel
-    wxString            m_gropupAddress;        // Multicast group address "udp://224.0.23.158:44444"
-    int                 m_ttl;                  // Multicast ttl (defaults to 1)
-    cguid               m_guid;                 // GUID to use for channel
-    vscpEventFilter     m_txFilter;             // Filter for outgoing events
-    vscpEventFilter     m_rxFilter;             // Filter for incoming events
-    uint8_t             m_nEncryption;          // Encryption algorithm to use for this client
+    bool                    m_bEnable;              // Enable the channel
+    wxString                m_gropupAddress;        // Multicast group address "udp://224.0.23.158:44444"
+    int                     m_ttl;                  // Multicast ttl (defaults to 1)
+    cguid                   m_guid;                 // GUID to use for channel
+    vscpEventFilter         m_txFilter;             // Filter for outgoing events
+    vscpEventFilter         m_rxFilter;             // Filter for incoming events
+    uint8_t                 m_nEncryption;          // Encryption algorithm to use for this client
+    bool                    m_bSendAck;             // Send response frame when receiving frame
+    multicastClientThread   *m_pWorkerThread;       // Worker thread
 } multicastChannel;
 
-WX_DECLARE_LIST(udpRemoteClientInfo, multicastChannelList );
+WX_DECLARE_LIST(multicastChannel, MULTICASTCHANNELLIST );
 
 typedef struct  {       
     bool                    m_bEnable;          // Enable multicast interface    
-    multicastChannelList    m_channels;         // List containing multicast channels
-} multicastClientInfo;
+    MULTICASTCHANNELLIST    m_channels;         // List containing multicast channels
+} multicastInfo;
 
 
 

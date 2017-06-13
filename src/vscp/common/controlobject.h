@@ -49,6 +49,7 @@
 #include <vscpautomation.h>
 #include <tcpipclientthread.h>
 #include <udpclientthread.h>
+#include "vscpmulticastclientthread.h"
 #include <webserver_websocket.h>
 #include <vscpmqttbroker.h>
 #include <daemonvscp.h>
@@ -275,6 +276,16 @@ public:
         Stop the UDP Workerthread
     */
     bool stopUDPWorkerThread( void );
+    
+    /*!
+        Start the Multicast worker threads
+    */
+    bool startMulticastWorkerThreads( void );
+
+    /*!
+        Stop the Multicast Workerthreads
+    */
+    bool stopMulticastWorkerThreads( void );
 
     /*!
      *  Start MQTT broker
@@ -446,6 +457,11 @@ public:
       */
      bool readUdpNodes( void );
      
+     /*!
+      * Read in multicast channels from the database
+      */
+     bool readMulticastChannels( void );
+     
     /*!
      * Create log database
      * @return true on success
@@ -585,7 +601,7 @@ public:
     
 
     //**************************************************************************
-    //                      Logging
+    //                             Logging
     //**************************************************************************
 
     wxMutex m_mutexLogWrite;
@@ -616,6 +632,8 @@ public:
     /// net_skeleton structure
     struct mg_mgr m_mgrTcpIpServer;
 
+    bool m_enableTcpip;
+    
     /// Interface(s) used for TCP/IP connection
     wxString m_strTcpInterfaceAddress;
 
@@ -644,10 +662,20 @@ public:
     //                      MULTICAST
     /////////////////////////////////////////////////////////
     
+    // CHANNEL 
+    
     /*!
-        Enable Multicast interface (not announce)
+        Multicast channel interface 
     */
-    bool m_bMulticast;
+
+    multicastInfo m_multicastInfo;
+    
+    /*!
+     *  Mutex that protect the Multicast info structure
+     */
+    wxMutex m_mutexMulticastInfo;
+    
+    // ANNOUNCE
     
     /*!
         Enable Multicast announce interface

@@ -290,7 +290,7 @@ CControlObject::CControlObject()
     m_bMQTTBroker = true;
 
     // Default TCP/IP interface
-    m_strTcpInterfaceAddress = _("tcp://9598");
+    m_strTcpInterfaceAddress = _("tcp://" + VSCP_DEFAULT_TCP_PORT);
 
     // Default multicast announce port
     m_strMulticastAnnounceAddress = _( "udp://:" + VSCP_ANNNOUNCE_MULTICAST_PORT );
@@ -937,6 +937,9 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     // Read UDP nodes
     readUdpNodes();
     
+    // Read multicast channels
+    readMulticastChannels();
+    
     
     // * * * VSCP Daemon logging database * * *
     
@@ -1136,6 +1139,9 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     
     // Start UDP interface
     startUDPWorkerThread();
+    
+    // Start Multicast interface
+    startMulticastWorkerThreads();
 
     // Start web sockets    
     startWebServerThread();
@@ -1159,7 +1165,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 // Most work is done in the threads at the moment
 //
 
-bool CControlObject::run(void)
+bool CControlObject::run( void )
 {
     CLIENTEVENTLIST::compatibility_iterator nodeClient;
 
@@ -1211,7 +1217,7 @@ bool CControlObject::run(void)
     m_wxClientMutex.Unlock();
 
     // Feed startup event
-    m_dm.feed(&EventStartUp);
+    m_dm.feed( &EventStartUp );
 
 
     //-------------------------------------------------------------------------
@@ -1294,25 +1300,28 @@ bool CControlObject::run(void)
 
 bool CControlObject::cleanup( void )
 {
-    logMsg(_("Giving threads time to stop operations."),DAEMON_LOGMSG_DEBUG);
+    logMsg(_("Giving worker threads time to stop operations..."),DAEMON_LOGMSG_DEBUG);
     sleep( 2 ); // Give threads some time to end
     
-    logMsg(_("Stopping VSCP Server worker thread."),DAEMON_LOGMSG_DEBUG);
+    logMsg(_("Stopping VSCP Server worker thread..."),DAEMON_LOGMSG_DEBUG);
     stopDaemonWorkerThread();
     
-    logMsg(_("Stopping client worker thread."),DAEMON_LOGMSG_DEBUG);
+    logMsg(_("Stopping client worker thread..."),DAEMON_LOGMSG_DEBUG);
     stopClientWorkerThread();
     
-    logMsg(_("Stopping device worker thread."),DAEMON_LOGMSG_DEBUG);
+    logMsg(_("Stopping device worker thread..."),DAEMON_LOGMSG_DEBUG);
     stopDeviceWorkerThreads();
     
-    logMsg(_("Stopping TCP/IP worker thread."),DAEMON_LOGMSG_DEBUG);
+    logMsg(_("Stopping TCP/IP worker thread..."),DAEMON_LOGMSG_DEBUG);
     stopTcpWorkerThread();
     
-    logMsg(_("Stopping UDP worker thread."),DAEMON_LOGMSG_DEBUG);
+    logMsg(_("Stopping UDP worker thread..."),DAEMON_LOGMSG_DEBUG);
     stopUDPWorkerThread();
     
-    logMsg(_("Stopping Web Server worker thread."),DAEMON_LOGMSG_DEBUG);
+    logMsg(_("Stopping Multicast worker threads..."),DAEMON_LOGMSG_DEBUG);
+    stopMulticastWorkerThreads();
+    
+    logMsg(_("Stopping Web Server worker thread..."),DAEMON_LOGMSG_DEBUG);
     stopWebServerThread();
     
    
@@ -1500,6 +1509,72 @@ bool CControlObject::stopUDPWorkerThread( void )
 
     return true;
 }
+
+
+/////////////////////////////////////////////////////////////////////////////
+// startMulticastWorkerThreads
+//
+
+bool CControlObject::startMulticastWorkerThreads( void )
+{
+    /////////////////////////////////////////////////////////////////////////////
+    // Start all enabled multicast channel threads
+    /////////////////////////////////////////////////////////////////////////////
+        
+    if ( m_multicastInfo.m_bEnable  && m_multicastInfo.m_channels.GetCount() ) {
+        
+        MULTICASTCHANNELLIST::iterator iter;
+        for ( iter = m_multicastInfo.m_channels.begin(); 
+                   iter != m_multicastInfo.m_channels.end(); ++iter) {
+
+            multicastChannel *pChannel = *iter;
+            if ( NULL == pChannel ) {
+                logMsg(_("Multicast channel table invalid entry.\n") );
+                continue;
+            }
+            
+            logMsg(_("Starting multicast channel interface thread...\n") );      
+            pChannel->m_pWorkerThread = new multicastClientThread;
+
+            if ( NULL != pChannel->m_pWorkerThread) {
+                wxThreadError err;
+                if (wxTHREAD_NO_ERROR == (err = pChannel->m_pWorkerThread->Create())) {
+                    //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
+                    if (wxTHREAD_NO_ERROR != (err = pChannel->m_pWorkerThread->Run())) {
+                        logMsg( _("Unable to run multicast channel thread.") );
+                    }
+                }
+                else {
+                    logMsg( _("Unable to create multicast channel thread.") );
+                }
+            }
+            else {
+                logMsg( _("Unable to allocate memory for multicast channel thread.") );
+            }
+        }
+    }
+
+    return true;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// stopMulticastWorkerThreads
+//
+
+bool CControlObject::stopMulticastWorkerThreads( void )
+{
+    if ( NULL != m_pVSCPClientUDPThread ) {
+        m_mutexVSCPClientnUDPThread.Lock();
+        m_pVSCPClientUDPThread->m_bQuit = true;
+        m_pVSCPClientUDPThread->Wait();
+        delete m_pVSCPClientThread;
+        m_mutexVSCPClientnUDPThread.Unlock();
+    }
+
+    return true;
+}
+
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -2408,29 +2483,40 @@ bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
 bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
 {
     unsigned long val;
+    wxString attribute;
     wxXmlDocument doc;
 
     wxString wxlogmsg = wxString::Format(_("Reading XML configuration from [%s]\n"),
                                             (const char *)strcfgfile.c_str() );
     logMsg( wxlogmsg  );
 
-    if (!doc.Load(strcfgfile)) {
+    if ( !doc.Load( strcfgfile ) ) {
         logMsg(_("Can't load logfile. Is path correct?\n")  );
         return false;
     }
 
     // start processing the XML file
-    if (doc.GetRoot()->GetName() != wxT("vscpconfig")) {
+    if ( doc.GetRoot()->GetName() != wxT("vscpconfig") ) {
         logMsg(_("Can't read logfile. Maybe it is invalid!\n")  );
         return false;
     }
 
     wxXmlNode *child = doc.GetRoot()->GetChildren();
-    while (child) {
+    while ( child ) {
 
         // The "general" settings are read in a pre-step (readXMLConfigurationGeneral) 
         
-        if (child->GetName() == wxT("tcpip")) {
+        if ( child->GetName() == wxT("tcpip") ) {
+            
+            // Enable
+            wxString attribute = child->GetAttribute(wxT("enable"), wxT("true"));
+            attribute.MakeLower();          
+            if (attribute.IsSameAs(_("false"), false)) {
+                m_enableTcpip = false; 
+            }
+            else {
+                m_enableTcpip  = true; 
+            }
 
             m_strTcpInterfaceAddress = child->GetAttribute(wxT("interface"), wxT(""));
             m_strTcpInterfaceAddress.Trim(true);
@@ -2458,7 +2544,10 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
         }
         else if (child->GetName() == wxT("udp")) {
    
-            gpobj->m_mutexUDPInfo.Lock();
+            m_mutexUDPInfo.Lock();
+            
+            // Default is to let everything come through
+            vscp_clearVSCPFilter( &m_udpInfo.m_filter );
                     
             // Enable
             wxString attribute = child->GetAttribute(wxT("enable"), wxT("true"));
@@ -2525,6 +2614,9 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                         subchild = subchild->GetNext(); 
                         continue;
                     }
+                    
+                    // Default is to let everything come through
+                    vscp_clearVSCPFilter( &pudpClient->m_filter );
                                                         
                     attribute = subchild->GetAttribute( wxT("enable"), wxT("false") );
                     if ( attribute.Lower().IsSameAs(_("false"), false ) ) {
@@ -2576,22 +2668,115 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                         
                 subchild = subchild->GetNext();    
                         
-            }
+            } // while
                     
             gpobj->m_mutexUDPInfo.Unlock();
 
         } // udp
         
         else if (child->GetName() == wxT("multicast")) {
+            
+            gpobj->m_mutexMulticastInfo.Lock();
                     
-            wxString attribut = child->GetAttribute(wxT("enable"), wxT("true"));
-            attribut.MakeLower();
-            if (attribut.IsSameAs(_("false"), false)) {
-                m_bMulticast = false;
+            attribute = child->GetAttribute(wxT("enable"), wxT("true"));
+            attribute.MakeLower();
+            if (attribute.IsSameAs(_("false"), false)) {
+                m_multicastInfo.m_bEnable = false;
             }
             else {
-                m_bMulticast = true;
+                m_multicastInfo.m_bEnable = true;
             }
+            
+            wxXmlNode *subchild = child->GetChildren();
+            while ( subchild ) {
+                        
+                if ( subchild->GetName() == _("channel") ) {
+                        
+                    multicastChannel *pChannel = new multicastChannel;
+                    if ( NULL == pChannel ) {
+                        logMsg( _("Failed to allocated multicast channel structure.\n") );
+                        gpobj->m_mutexMulticastInfo.Unlock();
+                        subchild = subchild->GetNext(); 
+                        continue;
+                    }
+                    
+                    // Default is to let everything come through
+                    vscp_clearVSCPFilter( &pChannel->m_txFilter );
+                    vscp_clearVSCPFilter( &pChannel->m_rxFilter );
+                    
+                    // Enable
+                    attribute = child->GetAttribute(wxT("enable"), wxT("true"));
+                    attribute.MakeLower();
+                    if (attribute.IsSameAs(_("false"), false)) {
+                        pChannel->m_bEnable = false;
+                    }
+                    else {
+                        pChannel->m_bEnable = true;
+                    }
+                    
+                    // bSendAck
+                    attribute = child->GetAttribute(wxT("bSendAck"), wxT("false"));
+                    attribute.MakeLower();
+                    if (attribute.IsSameAs(_("false"), false)) {
+                        pChannel->m_bSendAck = false;
+                    }
+                    else {
+                        pChannel->m_bSendAck = true;
+                    }
+                    
+                    // Group
+                    pChannel->m_gropupAddress =
+                            child->GetAttribute( wxT("group"), wxT("udp://224.0.23.158:44444") );
+                    
+                    // ttl
+                    pChannel->m_ttl = 
+                            vscp_readStringValue( child->GetAttribute( wxT("ttl"), wxT("1") ) );
+                    
+                    // guid
+                    attribute = 
+                            child->GetAttribute( wxT("guid"), 
+                                                    wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
+                    pChannel->m_guid.getFromString( attribute );
+                    
+                    // TX Filter
+                    attribute = subchild->GetAttribute( _("txfilter"), _("") );
+                    if ( attribute.Trim().Length() ) {
+                        vscp_readFilterFromString( &pChannel->m_txFilter, attribute );
+                    }
+                    
+                    // TX Mask
+                    attribute = subchild->GetAttribute( _("txmask"), _("") );
+                    if ( attribute.Trim().Length() ) {
+                        vscp_readMaskFromString( &pChannel->m_txFilter, attribute );
+                    }
+                    
+                    // RX Filter
+                    attribute = subchild->GetAttribute( _("rxfilter"), _("") );
+                    if ( attribute.Trim().Length() ) {
+                        vscp_readFilterFromString( &pChannel->m_rxFilter, attribute );
+                    }
+                    
+                    // RX Mask
+                    attribute = subchild->GetAttribute( _("rxmask"), _("") );
+                    if ( attribute.Trim().Length() ) {
+                        vscp_readMaskFromString( &pChannel->m_rxFilter, attribute );
+                    }
+                    
+                    // encryption
+                    attribute = subchild->GetAttribute( _("encryption"), _("") );
+                    pChannel->m_nEncryption = vscp_getEncryptionCodeFromToken( attribute );
+                            
+                    // add to list
+                    m_multicastInfo.m_channels.Append( pChannel );
+                    
+                }
+                
+                subchild = subchild->GetNext(); 
+                
+            } // while       
+            
+            gpobj->m_mutexMulticastInfo.Unlock();
+            
         }
                 
         else if (child->GetName() == wxT("mqttbroker")) {
@@ -3621,7 +3806,7 @@ bool CControlObject::dbReadConfiguration( void )
         
         // Enable Multicast interface
         if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_MULTICASTINTERFACE_ENABLE ) ) {
-            m_bMulticast = sqlite3_column_int( ppStmt, 
+            m_multicastInfo.m_bEnable = sqlite3_column_int( ppStmt, 
                                         VSCPDB_ORDINAL_CONFIG_MULTICASTINTERFACE_ENABLE ) ? true : false;
         }
 
@@ -3980,7 +4165,7 @@ bool CControlObject::updateConfigurationRecordItem( const wxString& strUpdateFie
 bool CControlObject::readUdpNodes( void )
 {
     char *pErrMsg = 0;
-    const char *psql = "SELECT * from UDPNODE";
+    const char *psql = "SELECT * FROM udpnode";
     sqlite3_stmt *ppStmt; 
     
     // If UDP is disabled we are done
@@ -4059,6 +4244,132 @@ bool CControlObject::readUdpNodes( void )
         m_udpInfo.m_remotes.Append( pudpClient );
         
         gpobj->m_mutexUDPInfo.Unlock();
+        
+    }
+    
+    sqlite3_finalize( ppStmt );
+
+    return true;    
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// readMulticastChannels
+//
+// Read in defined multicast channels
+//
+//
+
+bool CControlObject::readMulticastChannels( void )
+{
+   char *pErrMsg = 0;
+    const char *psql = "SELECT * FROM multicast";
+    sqlite3_stmt *ppStmt; 
+    
+    // If multicast is disabled we are done
+    if ( !m_multicastInfo.m_bEnable ) return true;
+
+    // Check if database is open
+    if ( NULL == m_db_vscp_daemon ) {
+        fprintf( stderr, 
+                    "readMulticastChannels: Database is not open." );
+        return false;
+    }
+    
+    if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_daemon,
+                                        psql,
+                                        -1,
+                                        &ppStmt,
+                                        NULL ) ) {
+        fprintf( stderr, "readMulticastChannels: prepare query." );
+        return false;
+    }
+    
+    while ( SQLITE_ROW  == sqlite3_step( ppStmt ) ) {
+        
+        const unsigned char * p;
+      
+        // If not enabled move on
+        if ( !sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_MULTICAST_ENABLE ) ) continue;
+        
+        gpobj->m_mutexMulticastInfo.Lock();
+        
+        multicastChannel *pChannel = new multicastChannel;
+        if ( NULL == pChannel ) {
+            fprintf( stderr, "readMulticastChannels: Failed to allocate storage for multicast node." );
+            m_mutexMulticastInfo.Unlock();
+            continue;
+        }
+        
+        // Default is to let everything come through
+        vscp_clearVSCPFilter( &pChannel->m_txFilter );
+        vscp_clearVSCPFilter( &pChannel->m_rxFilter );
+             
+        // group
+        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_MULTICAST_GROUP );
+        if ( NULL != p ) {
+            pChannel->m_gropupAddress = 
+                    wxString::FromUTF8Unchecked( (const char *)p );
+        }
+        
+        // ttl
+        pChannel->m_ttl = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_MULTICAST_TTL );
+        
+        // bAck
+        pChannel->m_bSendAck = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_MULTICAST_SENDACK );
+        
+        // GUID
+        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_MULTICAST_GROUP );
+        if ( NULL != p ) {
+            pChannel->m_guid.getFromString( p );
+        }
+        
+        //  TX Filter
+        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_MULTICAST_TXFILTER );
+        if ( NULL != p ) {
+            wxString wxstr = wxString::FromUTF8Unchecked( (const char *)p );
+            if ( !vscp_readFilterFromString( &pChannel->m_txFilter, wxstr ) ) {
+                fprintf( stderr, "readMulticastChannels: Failed to set TX filter for multicast channel." );
+            }
+        }
+        
+        // TX Mask
+        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_MULTICAST_TXMASK );
+        if ( NULL != p ) {
+            wxString wxstr = wxString::FromUTF8Unchecked( (const char *)p );
+            if ( !vscp_readMaskFromString( &pChannel->m_txFilter, wxstr ) ) {
+                fprintf( stderr, "readMulticastChannels: Failed to set TX mask for multicast channel." );
+            }
+        }
+        
+        //  RX Filter
+        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_MULTICAST_RXFILTER );
+        if ( NULL != p ) {
+            wxString wxstr = wxString::FromUTF8Unchecked( (const char *)p );
+            if ( !vscp_readFilterFromString( &pChannel->m_rxFilter, wxstr ) ) {
+                fprintf( stderr, "readMulticastChannels: Failed to set RX filter for multicast channel." );
+            }
+        }
+        
+        // RX Mask
+        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_MULTICAST_RXMASK );
+        if ( NULL != p ) {
+            wxString wxstr = wxString::FromUTF8Unchecked( (const char *)p );
+            if ( !vscp_readMaskFromString( &pChannel->m_rxFilter, wxstr ) ) {
+                fprintf( stderr, "readMulticastChannels: Failed to set RX mask for multicast channel." );
+            }
+        }
+        
+        // Encryption
+        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_UDPNODE_ENCRYPTION );
+        if ( NULL != p ) {
+            wxString wxstr = wxString::FromUTF8Unchecked( (const char *)p );
+            pChannel->m_nEncryption = vscp_getEncryptionCodeFromToken( wxstr );
+        }
+        
+        // Add to list
+        m_multicastInfo.m_channels.Append( pChannel );
+        
+        m_mutexMulticastInfo.Unlock();
         
     }
     

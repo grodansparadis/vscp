@@ -138,6 +138,22 @@ public:
         stopped with Delete() (but not when it is Kill()ed!)
     */
     virtual void OnExit();
+    
+    /*!
+     *  Parse the interface string and fetch address and port.
+     * 
+     * @param ifadder Interface address. Three forms are valid
+     *                  udp://9598
+     *                  udp://192.168.1.10:9598
+     *                  udp://192.168.1.10   (port defaults to 9598)
+     * @paran ip ip address part is returned here.
+     * @param pPort Pointer to port whcih get port information.
+     * 
+     */
+    
+    bool parseInterface( const wxString &ifaddr, 
+                            wxString &ip, 
+                            unsigned short *pPort );
 
     /*!
         Add a known node if it is not already known
@@ -155,7 +171,7 @@ public:
     */
     bool sendMulticastEvent( int sock,
                                 vscpEvent *pEvent,
-                                int port );
+                                int port = VSCP_ANNNOUNCE_MULTICAST_PORT );
 
     /*!
         Send multicast event Ex
@@ -166,7 +182,7 @@ public:
     */
     bool sendMulticastEventEx( int sock,
                                 vscpEventEx *pEventEx,
-                                int port );
+                                int port = VSCP_ANNNOUNCE_MULTICAST_PORT);
 
     /*!
         Send multicast information event
@@ -177,7 +193,7 @@ public:
     */
     bool sendMulticastInformationProxyEvent( int sock, 
                                                 CNodeInformation *pNode,
-                                                int port );
+                                                int port = VSCP_ANNNOUNCE_MULTICAST_PORT );
 
     /*!
         Termination control

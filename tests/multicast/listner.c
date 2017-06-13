@@ -1,4 +1,12 @@
-/*
+/* listner.c
+ *
+ * Use to listen for announce frames on the VSCP announce multicast channel
+ *
+ * Changed by Ake Hedman, for use with VSCP & Friends
+ * Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+ *
+ * Original header below
+ *
  * listener.c -- joins a multicast group and echoes all data it receives from
  *		the group to its stdout...
  *
@@ -17,63 +25,87 @@
 #include <string.h>
 #include <stdio.h>
 
+#define HELLO_PORT 9598
+#define HELLO_GROUP "224.0.23.158"
+#define MSGBUFSIZE 1024
 
-#define HELLO_PORT 12345
-#define HELLO_GROUP "225.0.0.37"
-#define MSGBUFSIZE 256
-
-main(int argc, char *argv[])
+int main( int argc, char *argv[] )
 {
-     struct sockaddr_in addr;
-     int fd, nbytes,addrlen;
-     struct ip_mreq mreq;
-     char msgbuf[MSGBUFSIZE];
+  struct sockaddr_in addr;
+  int sock, nbytes,addrlen;
+  struct ip_mreq mreq;
+  unsigned char buf[ MSGBUFSIZE ];
+  u_int yes = 1;
+  int bDumpData = 0;
 
-     u_int yes=1;            /*** MODIFICATION TO ORIGINAL */
+  if ( argc >= 2 ) {
+    if ( NULL != strstr( argv[1], "dump" ) ) {
+      bDumpData = 1;
+    }
+  }
 
-     /* create what looks like an ordinary UDP socket */
-     if ((fd=socket(AF_INET,SOCK_DGRAM,0)) < 0) {
-	  perror("socket");
-	  exit(1);
-     }
+  // create what looks like an ordinary UDP socket
+  if ( ( sock = socket( AF_INET,SOCK_DGRAM, 0 ) ) < 0 ) {
+	   perror("socket");
+	   return -1;
+  }
+
+  // allow multiple sockets to use the same PORT number
+  if  ( setsockopt( sock, SOL_SOCKET,SO_REUSEADDR, &yes, sizeof(yes) ) < 0 ) {
+    perror("Reusing ADDR failed");
+    return -1;
+  }
+
+  // set up destination address
+  memset( &addr, 0, sizeof( addr ) );
+  addr.sin_family = AF_INET;
+  addr.sin_addr.s_addr = htonl( INADDR_ANY ); // N.B.: differs from sender
+  addr.sin_port = htons( HELLO_PORT );
+
+  // bind to receive address
+  if ( bind( sock, (struct sockaddr *)&addr, sizeof( addr ) ) < 0 ) {
+	   perror("bind");
+	   return -1;
+  }
+
+  // use setsockopt() to request that the kernel join a multicast group
+  mreq.imr_multiaddr.s_addr=inet_addr(HELLO_GROUP);
+  mreq.imr_interface.s_addr=htonl(INADDR_ANY);
+  if ( setsockopt( sock, IPPROTO_IP, IP_ADD_MEMBERSHIP,
+                          &mreq, sizeof( mreq ) ) < 0 ) {
+	   perror("setsockopt");
+     return -1;
+   }
+
+   printf("Listen for announce events on the VSCP announce multicast channel.\n\n");
+
+   // now just enter a read-print loop
+   while ( 1 ) {
+	    addrlen = sizeof( addr );
+	    if ( ( nbytes = recvfrom( sock, buf, MSGBUFSIZE, 0,
+			                             (struct sockaddr *)&addr,
+                                            &addrlen ) ) < 0 ) {
+         perror("recvfrom");
+	       return -1;
+	    }
+
+      const char *peer;
+      peer = inet_ntoa( addr.sin_addr  );
+
+      printf("Announce frame received form ");
+      printf("%s %d\n", peer, ntohs( addr.sin_port ) );
+
+      if ( bDumpData ) {
+        printf("size of frame=%d - Frame=", nbytes );
+        for ( int i=0; i<nbytes; i++ ) {
+          printf("%02X ", buf[i] );
+        }
+        printf("\n\n");
+      }
 
 
-/**** MODIFICATION TO ORIGINAL */
-    /* allow multiple sockets to use the same PORT number */
-    if (setsockopt(fd,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(yes)) < 0) {
-       perror("Reusing ADDR failed");
-       exit(1);
-       }
-/*** END OF MODIFICATION TO ORIGINAL */
+  }
 
-     /* set up destination address */
-     memset(&addr,0,sizeof(addr));
-     addr.sin_family=AF_INET;
-     addr.sin_addr.s_addr=htonl(INADDR_ANY); /* N.B.: differs from sender */
-     addr.sin_port=htons(HELLO_PORT);
-     
-     /* bind to receive address */
-     if (bind(fd,(struct sockaddr *) &addr,sizeof(addr)) < 0) {
-	  perror("bind");
-	  exit(1);
-     }
-     
-     /* use setsockopt() to request that the kernel join a multicast group */
-     mreq.imr_multiaddr.s_addr=inet_addr(HELLO_GROUP);
-     mreq.imr_interface.s_addr=htonl(INADDR_ANY);
-     if (setsockopt(fd,IPPROTO_IP,IP_ADD_MEMBERSHIP,&mreq,sizeof(mreq)) < 0) {
-	  perror("setsockopt");
-	  exit(1);
-     }
+  return 0;
 
-     /* now just enter a read-print loop */
-     while (1) {
-	  addrlen=sizeof(addr);
-	  if ((nbytes=recvfrom(fd,msgbuf,MSGBUFSIZE,0,
-			       (struct sockaddr *) &addr,&addrlen)) < 0) {
-	       perror("recvfrom");
-	       exit(1);
-	  }
-	  puts(message);
-     }
 }

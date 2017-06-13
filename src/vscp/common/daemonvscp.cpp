@@ -64,14 +64,13 @@
 #include "clientlist.h"
 #include <dllist.h>
 #include <mongoose.h>
-//#include <md5.h>
 #include <crc8.h>
 #include "controlobject.h"
 #include "guid.h"
 #include "vscpd_caps.h"
 
 
-WX_DEFINE_LIST(DISCOVERYLIST);
+WX_DEFINE_LIST( DISCOVERYLIST );
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -103,10 +102,14 @@ void *daemonVSCPThread::Entry()
 {
     int sock_mc;                    // socket descriptor
     struct sockaddr_in mc_addr;     // socket address structure
-    unsigned short mc_port =
-        vscp_readStringValue( m_pCtrlObject->m_strMulticastAnnounceAddress ) ; // multicast port
+    unsigned short mc_port = VSCP_ANNNOUNCE_MULTICAST_PORT;
     unsigned char mc_ttl =
-        m_pCtrlObject->m_ttlMultiCastAnnounce; // time to live (hop count)    
+        m_pCtrlObject->m_ttlMultiCastAnnounce; // time to live (hop count) 
+    wxString ip;
+    if ( !parseInterface( m_pCtrlObject->m_strMulticastAnnounceAddress, ip, &mc_port ) ) {
+        m_pCtrlObject->logMsg( _( "Multicast announce: Announce address has wrong format.\n" ) );
+        return NULL;
+    }
                 
 #ifdef WIN32
 
@@ -216,10 +219,12 @@ void *daemonVSCPThread::Entry()
         pAddr = lpLocalHostEntry->h_addr_list[ cntAddr ];
         if ( NULL != pAddr ) localaddr[ cntAddr ] = * ( ( unsigned long * ) pAddr );
     }
-    while ( ( NULL != pAddr ) && ( cntAddr < 16 ) );    
+    while ( ( NULL != pAddr ) && ( cntAddr < 16 ) );   
     
-
+    
+    ////////////////////////////////////////////////////////////////////////////
     //               * * *  W O R K I N G  L O O P  * * *
+    ////////////////////////////////////////////////////////////////////////////
 
 
     CLIENTEVENTLIST::compatibility_iterator nodeClient;
@@ -230,6 +235,7 @@ void *daemonVSCPThread::Entry()
 
             // Check if automation event should be sent and send it if
             // that is the case
+            
             vscpEventEx eventEx;
             if ( m_pCtrlObject->m_automation.doWork( &eventEx ) ) {
 
@@ -299,6 +305,7 @@ void *daemonVSCPThread::Entry()
         ///////////////////////////////////////////////////////////////////////
 
         int rv = pClientItem->m_clientInputQueue.GetCount();
+        
         // Wait for incoming event
         if ( wxSEMA_TIMEOUT == pClientItem->m_semClientInputQueue.WaitTimeout( 100 ) ) continue;
 
@@ -608,6 +615,52 @@ CNodeInformation * daemonVSCPThread::addNodeIfNotKnown( vscpEvent *pEvent )
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// parseInterface
+//
+
+bool daemonVSCPThread::parseInterface( const wxString &ifaddr, 
+                                            wxString &ip, 
+                                            unsigned short *pPort )
+{
+    // Check pointer
+    if ( NULL == pPort ) return false;
+    
+    wxString strAddress = ifaddr;
+    strAddress.Trim();
+    strAddress.MakeLower();
+    
+    // If no data return defaults
+    if ( 0 == strAddress.Length() ) {
+        ip = "0.0.0.0";
+        *pPort = VSCP_ANNNOUNCE_MULTICAST_PORT;
+        return true;
+    }
+    
+    if ( !strAddress.StartsWith(_("udp://"), &strAddress ) ) {
+        return false;
+    }
+    
+    // Check for a.b.c.d;port
+    int pos;
+    if ( ( wxNOT_FOUND != ( pos = strAddress.Find(':') ) ) && 
+           ( wxNOT_FOUND != strAddress.Find('.') )  ) {
+        
+    }
+    // Check for a.b.c.d  default port used
+    else if ( ( wxNOT_FOUND != ( pos = strAddress.Find('.') ) ) ) {
+        ip = strAddress;
+        *pPort = VSCP_ANNNOUNCE_MULTICAST_PORT;
+    }
+    // only port
+    else {
+        ip = "0.0.0.0";
+        *pPort = vscp_readStringValue( strAddress );
+    }
+            
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // sendMulticastEvent
 //
 
@@ -617,7 +670,7 @@ bool daemonVSCPThread::sendMulticastEvent( int sock_mc,
 {
     struct sockaddr_in mc_addr;     // socket address structure
     uint8_t buf[ 1024 ];            // frame to send
-
+    
     // Check pointer
     if ( NULL == pEvent ) return false;
 
@@ -652,7 +705,7 @@ bool daemonVSCPThread::sendMulticastEvent( int sock_mc,
     //  34          DATA SIZE LSB
     //  35 - n 	    data limited to max 512 - 25 = 487 bytes
     //  len - 2     CRC MSB( Calculated on HEAD + CLASS + TYPE + ADDRESS + SIZE + DATA )
-    //  len - 1     CRC LSB
+    //  len - 1     CRC LSB    
 
     // Packet type
     buf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = 
@@ -751,8 +804,8 @@ bool daemonVSCPThread::sendMulticastInformationProxyEvent( int sock,
                                                             int port )
 {
     struct sockaddr_in mc_addr;     // socket address structure
-    uint8_t buf[ 1024 ];  // frame to send
-
+    uint8_t buf[ 1024 ];            // frame to send
+    
     // Check pointer
     if ( NULL == pNode ) return false;
 

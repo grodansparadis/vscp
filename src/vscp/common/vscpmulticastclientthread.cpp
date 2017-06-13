@@ -77,7 +77,7 @@
 extern CControlObject *gpobj;
 
 
-WX_DEFINE_LIST(multicastChannelList);
+WX_DEFINE_LIST(MULTICASTCHANNELLIST);
 
 
 multicastClientThread::multicastClientThread() : 
