@@ -760,19 +760,37 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     }
     
     ////////////////////////////////////////////////////////////////////////////
-    //                       Read XML configuration
+    //                  ead XML configuration GENERAL section
     ////////////////////////////////////////////////////////////////////////////
 
     str = _("Using configuration file: ") + strcfgfile + _("\n");
     fprintf( stderr, str.mbc_str() );
 
     // Read XML configuration
-    if ( !readXMLConfiguration( strcfgfile ) ) {
-        fprintf( stderr, "Unable to open/parse configuration file. Can't initialize!\n" );
+    if ( !readXMLConfigurationGeneral( strcfgfile ) ) {
+        fprintf( stderr, "General: Unable to open/parse configuration file. Can't initialize!\n" );
         str = _("Path = .") + strcfgfile + _("\n");
         fprintf( stderr, str.mbc_str() );
         return FALSE;
     }
+    
+    
+    
+#ifndef WIN32
+    if ( m_runAsUser.Length() ) {
+        struct passwd *pw;
+        if ( NULL == ( pw = getpwnam(m_runAsUser.mbc_str() ) ) ) {
+            fprintf( stderr, "Unknown user.\n" );
+        } 
+        else if (setgid(pw->pw_gid) != 0) {
+            fprintf( stderr, "setgid() failed.\n" );
+        } 
+        else if (setuid(pw->pw_uid) != 0) {
+            fprintf( stderr, "setuid() failed.\n" );
+        }
+    }
+#endif
+    
     
     
 
@@ -989,23 +1007,20 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     }
     
     
+    ////////////////////////////////////////////////////////////////////////////
+    //                      Read XML configuration
+    ////////////////////////////////////////////////////////////////////////////
 
-#ifndef WIN32
-    if ( m_runAsUser.Length() ) {
-        struct passwd *pw;
-        if ( NULL == ( pw = getpwnam(m_runAsUser.mbc_str() ) ) ) {
-            fprintf( stderr, "Unknown user.\n" );
-        } 
-        else if (setgid(pw->pw_gid) != 0) {
-            fprintf( stderr, "setgid() failed.\n" );
-        } 
-        else if (setuid(pw->pw_uid) != 0) {
-            fprintf( stderr, "setuid() failed.\n" );
-        }
-    }
-#endif
-    
-        
+    str = _("Using configuration file: ") + strcfgfile + _("\n");
+    fprintf( stderr, str.mbc_str() );
+
+    // Read XML configuration
+    if ( !readXMLConfiguration( strcfgfile ) ) {
+        fprintf( stderr, "Unable to open/parse configuration file. Can't initialize!\n" );
+        str = _("Path = .") + strcfgfile + _("\n");
+        fprintf( stderr, str.mbc_str() );
+        return FALSE;
+    }   
       
     // Read users from database
     logMsg(_("loading users from users db...\n") );
@@ -2243,17 +2258,17 @@ bool CControlObject::getIPAddress( cguid& guid )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// readConfiguration
+// readXMLConfigurationGeneral
 //
 // Read the configuration XML file
 //
 
-bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
+bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
 {
     unsigned long val;
     wxXmlDocument doc;
 
-    wxString wxlogmsg = wxString::Format(_("Reading XML configuration from [%s]\n"),
+    wxString wxlogmsg = wxString::Format(_("Reading XML GENERAL configuration from [%s]\n"),
                                             (const char *)strcfgfile.c_str() );
     logMsg( wxlogmsg  );
 
@@ -2366,16 +2381,53 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     
                 }
                 
-
                 subchild = subchild->GetNext();
                 
-            }
-
-            wxString content = child->GetNodeContent();
+            } // while
+            
+            return true;    // We are done
 
         } // general
         
-        else if (child->GetName() == wxT("tcpip")) {
+        child = child->GetNext();
+
+    } // while
+
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// readConfiguration
+//
+// Read the configuration XML file
+//
+
+bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
+{
+    unsigned long val;
+    wxXmlDocument doc;
+
+    wxString wxlogmsg = wxString::Format(_("Reading XML configuration from [%s]\n"),
+                                            (const char *)strcfgfile.c_str() );
+    logMsg( wxlogmsg  );
+
+    if (!doc.Load(strcfgfile)) {
+        logMsg(_("Can't load logfile. Is path correct?\n")  );
+        return false;
+    }
+
+    // start processing the XML file
+    if (doc.GetRoot()->GetName() != wxT("vscpconfig")) {
+        logMsg(_("Can't read logfile. Maybe it is invalid!\n")  );
+        return false;
+    }
+
+    wxXmlNode *child = doc.GetRoot()->GetChildren();
+    while (child) {
+
+        // The "general" settings are read in a pre-step (readXMLConfigurationGeneral) 
+        
+        if (child->GetName() == wxT("tcpip")) {
 
             m_strTcpInterfaceAddress = child->GetAttribute(wxT("interface"), wxT(""));
             m_strTcpInterfaceAddress.Trim(true);

@@ -347,6 +347,13 @@ public:
         @param pGUID Pointer to GUID class
      */
     bool getIPAddress( cguid& guid );
+    
+    /*!
+        Read XML configuration GENEAL data
+        @param strcfgfile path to configuration file.
+        @return Returns true on success false on failure.
+     */
+    bool readXMLConfigurationGeneral( wxString& strcfgfile );
 
     /*!
         Read configuration data
