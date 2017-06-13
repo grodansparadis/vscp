@@ -641,6 +641,11 @@ public:
         Enable Multicast interface (not announce)
     */
     bool m_bMulticast;
+    
+    /*!
+        Enable Multicast announce interface
+    */
+    bool m_bMulticastAnounce;
 
     /// Interface(s) used for multicast announce
     wxString m_strMulticastAnnounceAddress;

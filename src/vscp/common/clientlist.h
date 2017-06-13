@@ -68,6 +68,7 @@ enum {
     CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET,    // Websocket interface
     CLIENT_ITEM_INTERFACE_TYPE_CLIENT_REST,         // REST interface
     CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MULTICAST,    // Multicast interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MULTICAST_CH, // Multicast channel interface
     CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MQTT,         // MQTT interface
     CLIENT_ITEM_INTERFACE_TYPE_CLIENT_COAP,         // COAP interface
     CLIENT_ITEM_INTERFACE_TYPE_CLIENT_DISCOVERY,    // Discovery interface

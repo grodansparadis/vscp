@@ -93,6 +93,27 @@ void *VSCPUDPClientThread::Entry()
     // Init. CRC data
     crcInit();
 
+    mg_mgr_init( &mgr, this );
+
+    if ( wxNOT_FOUND == gpobj->m_udpInfo.m_interface.Find(_("udp://") ) ) {
+        gpobj->m_udpInfo.m_interface = _("udp://") + gpobj->m_udpInfo.m_interface;
+    }
+
+    // Bind to this interface
+    if ( NULL == ( nc = mg_bind( &mgr, gpobj->m_udpInfo.m_interface.mbc_str(), VSCPUDPClientThread::ev_handler ) ) ) {
+        wxString str = _("UDP Client: Failed to bind to interface. [");
+        str += gpobj->m_udpInfo.m_interface;
+        str += _("]\n");
+        gpobj->logMsg( str );
+        return NULL;
+    }
+    
+    gpobj->logMsg( _("UDP Client: Bind to interface. [") + 
+                        gpobj->m_udpInfo.m_interface +
+                        _("]\n"),
+                        DAEMON_LOGMSG_DEBUG,
+                        DAEMON_LOGTYPE_GENERAL );
+    
     // We need to create a client object and add this object to the list
     m_pClientItem = new CClientItem;
     if ( NULL == m_pClientItem ) {
@@ -148,32 +169,11 @@ void *VSCPUDPClientThread::Entry()
     //vscp_clearVSCPFilter( &m_pClientItem->m_filterVSCP );
     memcpy( &m_pClientItem->m_filterVSCP, &gpobj->m_udpInfo.m_filter, sizeof(vscpEventFilter) );
 
-    mg_mgr_init( &mgr, this );
-
-    if ( wxNOT_FOUND == gpobj->m_udpInfo.m_interface.Find(_("udp://") ) ) {
-        gpobj->m_udpInfo.m_interface = _("udp://") + gpobj->m_udpInfo.m_interface;
-    }
-
-    // Bind to this interface
-    if ( NULL == ( nc = mg_bind( &mgr, gpobj->m_udpInfo.m_interface.mbc_str(), VSCPUDPClientThread::ev_handler ) ) ) {
-        wxString str = _("UDP Client: Failed to bind to interface. [");
-        str += gpobj->m_udpInfo.m_interface;
-        str += _("]\n");
-        gpobj->logMsg( str );
-        return NULL;
-    }
-    
-    gpobj->logMsg( _("UDP Client: Bind to interface. [") + 
-                        gpobj->m_udpInfo.m_interface +
-                        _("]\n"),
-                        DAEMON_LOGMSG_DEBUG,
-                        DAEMON_LOGTYPE_GENERAL );
-
     gpobj->logMsg( _("UDP Client: Thread started.\n") );
 
     while ( !TestDestroy() && !m_bQuit ) {
         mg_mgr_poll( &mgr, 50 );
-        sendUDPFrame( &mgr, m_pClientItem );
+        sendFrame( &mgr, m_pClientItem );
     }
 
     // release the server
@@ -260,19 +260,19 @@ VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p)
                 }
                 
                 // OK receive the frame
-                if ( receiveUDPFrame( nc, 
+                if ( receiveFrame( nc, 
                                         pUDPClientThread->m_pClientItem,
                                         &gpobj->m_udpInfo.m_filter )  ) {
                     
                     if ( gpobj->m_udpInfo.m_bAck ) {
-                        replyUDPAckFrame( nc, nc->recv_mbuf.buf[0] );
+                        replyAckFrame( nc, nc->recv_mbuf.buf[0] );
                     }
                     
                 }
                 else {
                     
                     if ( gpobj->m_udpInfo.m_bAck ) {
-                        replyUDPNackFrame( nc, nc->recv_mbuf.buf[0] );
+                        replyNackFrame( nc, nc->recv_mbuf.buf[0] );
                     }
                     
                 }
@@ -313,13 +313,13 @@ VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// receiveUDPFrame
+// receiveFrame
 //
 
 bool 
-VSCPUDPClientThread::receiveUDPFrame( struct mg_connection *nc, 
-                                                CClientItem *pClientItem,
-                                                vscpEventFilter *pRxFilter )
+VSCPUDPClientThread::receiveFrame( struct mg_connection *nc, 
+                                     CClientItem *pClientItem,
+                                     vscpEventFilter *pRxFilter )
 {
     uint8_t buf[ 1024 ];
     vscpEvent *pEvent;
@@ -389,11 +389,11 @@ VSCPUDPClientThread::receiveUDPFrame( struct mg_connection *nc,
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// sendUDPFrame
+// sendFrame
 //
 
 bool 
-VSCPUDPClientThread::sendUDPFrame( struct mg_mgr *pmgr, 
+VSCPUDPClientThread::sendFrame( struct mg_mgr *pmgr, 
                                       CClientItem *pClientItem )
 {
     CLIENTEVENTLIST::compatibility_iterator nodeClient;
@@ -456,8 +456,12 @@ VSCPUDPClientThread::sendUDPFrame( struct mg_mgr *pmgr,
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
+// replyAckFrame
+//
+
 bool 
-VSCPUDPClientThread::replyUDPAckFrame( struct mg_connection *nc, 
+VSCPUDPClientThread::replyAckFrame( struct mg_connection *nc, 
                                         uint8_t pkttype )
 {
     unsigned char sendbuf[1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + 512 + 16];    // Send buffer
@@ -491,9 +495,12 @@ VSCPUDPClientThread::replyUDPAckFrame( struct mg_connection *nc,
     return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// replyNackFrame
+//
 
 bool 
-VSCPUDPClientThread::replyUDPNackFrame( struct mg_connection *nc, 
+VSCPUDPClientThread::replyNackFrame( struct mg_connection *nc, 
                                             uint8_t pkttype )
 {
     unsigned char sendbuf[1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + 512 + 16];    // Send buffer

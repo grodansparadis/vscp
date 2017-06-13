@@ -290,7 +290,7 @@ typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 #define VSCP_MULTICAST_IPV4_ADDRESS_STR         "224.0.23.158"
 
 #define VSCP_MULTICAST_ANNNOUNCE_PORT           9598
-#define VSCP_MULTICAST_DEFAULT_PORT             33333   
+#define VSCP_MULTICAST_DEFAULT_PORT             44444
 
 // Packet frame format type = 0
 //      without byte0 and CRC

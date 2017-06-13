@@ -98,17 +98,17 @@ public:
      *          all events.
      * @return True on success, false on failure.
      */
-    static bool receiveUDPFrame( struct mg_connection *nc, 
+    static bool receiveFrame( struct mg_connection *nc, 
                                             CClientItem *pClientItem,
                                             vscpEventFilter *pRxFilter );
     
-    static bool replyUDPAckFrame( struct mg_connection *nc, 
+    static bool replyAckFrame( struct mg_connection *nc, 
                                     uint8_t pkttype );
     
-    static bool replyUDPNackFrame( struct mg_connection *nc, 
+    static bool replyNackFrame( struct mg_connection *nc, 
                                     uint8_t pkttype );
     
-    bool sendUDPFrame( struct mg_mgr *pmgr, 
+    bool sendFrame( struct mg_mgr *pmgr, 
                                 CClientItem *pClientItem );
 
     

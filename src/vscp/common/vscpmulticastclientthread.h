@@ -1,4 +1,4 @@
-// vscpmulticast_channel.h
+// vscpmulticastclientthread.h
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -22,20 +22,46 @@
 //
 
 
-#if !defined(VSCPMULTICAST_CHANNEL_H__INCLUDED_)
-#define VSCPMULTICAST_CHANNEL_H__INCLUDED_
+#if !defined(VSCP_MULTICAST_CLIENT_THREAD_H__INCLUDED_)
+#define VSCP_MULTICAST_CLIENT_THREAD_H__INCLUDED_
+
+#include "userlist.h"
+#include "controlobject.h"
+
+// Client structure (Will receive events from VSCP server)
+typedef struct {
+    bool                m_bEnable;              // Enable the channel
+    wxString            m_gropupAddress;        // Multicast group address "udp://224.0.23.158:44444"
+    int                 m_ttl;                  // Multicast ttl (defaults to 1)
+    cguid               m_guid;                 // GUID to use for channel
+    vscpEventFilter     m_txFilter;             // Filter for outgoing events
+    vscpEventFilter     m_rxFilter;             // Filter for incoming events
+    uint8_t             m_nEncryption;          // Encryption algorithm to use for this client
+} multicastChannel;
+
+WX_DECLARE_LIST(udpRemoteClientInfo, multicastChannelList );
+
+typedef struct  {       
+    bool                    m_bEnable;          // Enable multicast interface    
+    multicastChannelList    m_channels;         // List containing multicast channels
+} multicastClientInfo;
 
 
-class multicastChannelVSCPThread : public wxThread
+
+/*!
+ * Class that handle one multicast channel
+ */
+
+class multicastClientThread : public wxThread
 {
 
 public:
     
     /// Constructor
-    multicastChannelVSCPThread();
+    multicastClientThread();
 
     /// Destructor
-    ~multicastChannelVSCPThread();
+    ~multicastClientThread();
 
     /*!
         Thread code entry point
@@ -48,34 +74,50 @@ public:
         stopped with Delete() (but not when it is Kill()ed!)
     */
     virtual void OnExit();
+    
+    
+    static void ev_handler( struct mg_connection *nc, int ev, void *p );
 
 
     /*!
-        Send multicast event
-        @param sock Multicast socket to send on
-        @param pEvent Event to send
-        @param port Port to send multicast frame on.
-        @return true on success, false on failure
-    */
-    bool sendMulticastEvent( int sock,
-                                vscpEvent *pEvent,
-                                int port );
-
+     * Receive Multicast channel frame
+     * 
+     * @param nc Mongoose connection handle
+     * @param pClientItem Client item for this user. Normally "USP"
+     * @param pRxFilter Pointer to receive filter. Can be NULL to accept 
+     *          all events.
+     * @return True on success, false on failure.
+     */
+    static bool receiveFrame( struct mg_connection *nc, 
+                                CClientItem *pClientItem,
+                                vscpEventFilter *pRxFilter );
+    
+    static bool replyAckFrame( struct mg_connection *nc, 
+                                                uint8_t pkttype );
+    
+    static bool replyNackFrame( struct mg_connection *nc, 
+                                                uint8_t pkttype );
+    
     /*!
-        Send multicast event Ex
-        @param sock Multicast socket to send on
-        @param pEventEx Event ex to send
-        @param port Port to send multicast frame on.
-        @return true on success, false on failure
-    */
-    bool sendMulticastEventEx( int sock,
-                                vscpEventEx *pEventEx,
-                                int port );
+     * Sends an outgoing event if there is one in the client queue
+     */
+    bool sendFrame( struct mg_mgr *pmgr, 
+                                        CClientItem *pClientItem );
+
+// --- Member variables ---
 
     /*!
         Termination control
     */
     bool m_bQuit;
+
+private:
+
+    /// Info about this multicast channel
+    multicastChannel m_channel;
+    
+    /// UDP Client item
+    CClientItem *m_pClientItem;
 
 };
 

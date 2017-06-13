@@ -149,8 +149,8 @@
 
 
 // Lists
-WX_DEFINE_LIST(WEBSOCKETSESSIONLIST); // websocket sessions
-WX_DEFINE_LIST(TRIGGERLIST);        // websocket triggers
+WX_DEFINE_LIST(WEBSOCKETSESSIONLIST);   // websocket sessions
+WX_DEFINE_LIST(TRIGGERLIST);            // websocket triggers
 
 WX_DEFINE_LIST(CanalMsgList); 
 WX_DEFINE_LIST(VSCPEventList);
@@ -180,6 +180,9 @@ WSADATA wsaData;                            // WSA functions
 // Prototypes
 
 
+////////////////////////////////////////////////////////////////////////////////
+// vscp_md5
+//
 
 void vscp_md5( char *digest, const unsigned char *buf, size_t len ) 
 {
@@ -2344,221 +2347,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                         m_bLogToSysLog = true;
                     }
                     
-                }               
-                else if (subchild->GetName() == wxT("tcpip")) {
-
-                    m_strTcpInterfaceAddress = subchild->GetAttribute(wxT("interface"), wxT(""));
-                    m_strTcpInterfaceAddress.Trim(true);
-                    m_strTcpInterfaceAddress.Trim(false);
-
-                }
-                else if ( subchild->GetName() == wxT( "multicast-announce" ) ) {
-
-                    m_strMulticastAnnounceAddress = subchild->GetAttribute( wxT( "interface" ), wxT( "" ) );
-
-                    m_ttlMultiCastAnnounce = vscp_readStringValue( subchild->GetAttribute( wxT( "ttl" ), wxT( "1" ) ) );
-
-                }
-                else if (subchild->GetName() == wxT("udp")) {
-   
-                    gpobj->m_mutexUDPInfo.Lock();
-                    
-                    // Enable
-                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
-                    attribute.MakeLower();          
-                    if (attribute.IsSameAs(_("false"), false)) {
-                        m_udpInfo.m_bEnable = false; 
-                    }
-                    else {
-                        m_udpInfo.m_bEnable  = true; 
-                    }
-                    
-                    // Allow insecure connections
-                    attribute = subchild->GetAttribute( wxT("bAllowUnsecure"), wxT("true") );
-                    if (attribute.Lower().IsSameAs(_("false"), false)) {
-                        m_udpInfo.m_bAllowUnsecure = false; 
-                    }
-                    else {
-                        m_udpInfo.m_bAllowUnsecure  = true; 
-                    }
-                    
-                    // Enable ACK
-                    attribute = subchild->GetAttribute( wxT("bAck"), wxT("false") );                    
-                    if (attribute.Lower().IsSameAs(_("false"), false)) {
-                        m_udpInfo.m_bAck = false; 
-                    }
-                    else {
-                        m_udpInfo.m_bAck = true; 
-                    }                    
-                    
-                    // Username
-                    m_udpInfo.m_user = subchild->GetAttribute( _("user"), _("") );
-                        
-                    // Password
-                    m_udpInfo.m_password = subchild->GetAttribute( _("password"), _(""));
-
-                    // Interface
-                    m_udpInfo.m_interface = subchild->GetAttribute( _("interface"), _("udp://"+VSCP_MULTICAST_DEFAULT_PORT));
-                    
-                    // GUID
-                    attribute = subchild->GetAttribute( _("guid"), _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
-                    m_udpInfo.m_guid.getFromString( attribute );
-                    
-                    // Filter
-                    attribute = subchild->GetAttribute( _("filter"), _("") );
-                    if ( attribute.Trim().Length() ) {
-                        vscp_readFilterFromString( &m_udpInfo.m_filter, attribute );
-                    }
-                    
-                    // Mask
-                    attribute = subchild->GetAttribute( _("mask"), _("") );
-                    if ( attribute.Trim().Length() ) {                    
-                        vscp_readMaskFromString( &m_udpInfo.m_filter, attribute );
-                    }
-                                    
-                    wxXmlNode *subsubchild = subchild->GetChildren();
-                    while ( subsubchild ) {
-                        
-                        if ( subsubchild->GetName() == _("rxnode") ) {
-                        
-                            udpRemoteClientInfo *pudpClient = new udpRemoteClientInfo;
-                            if ( NULL == pudpClient ) {
-                                logMsg( _("Failed to allocated UDP client remote structure.\n") );
-                                gpobj->m_mutexUDPInfo.Unlock();
-                                subsubchild = subsubchild->GetNext(); 
-                                continue;
-                            }
-                                                        
-                            attribute = subsubchild->GetAttribute( wxT("enable"), wxT("false") );
-                            if ( attribute.Lower().IsSameAs(_("false"), false ) ) {
-                                pudpClient->m_bEnable = false; 
-                            }
-                            else {
-                                pudpClient->m_bEnable = true; 
-                            }               
-                            
-                            if ( !pudpClient->m_bEnable ) {
-                                delete pudpClient;
-                                gpobj->m_mutexUDPInfo.Unlock();
-                                subsubchild = subsubchild->GetNext(); 
-                                continue;
-                            }
-                            
-                            // remote address
-                            pudpClient->m_remoteAddress = subsubchild->GetAttribute( _("interface"), _("") );    
-                                                                
-                            // Filter
-                            attribute = subsubchild->GetAttribute( _("filter"), _("") );
-                            if ( attribute.Trim().Length() ) {
-                                vscp_readFilterFromString( &pudpClient->m_filter, attribute );
-                            }
-                    
-                            // Mask
-                            attribute = subsubchild->GetAttribute( _("mask"), _("") );
-                            if ( attribute.Trim().Length() ) {
-                                vscp_readMaskFromString( &pudpClient->m_filter, attribute );
-                            }
-                            
-                            // broadcast
-                            attribute = subsubchild->GetAttribute( _("bSetBroadcast"), _("false") );
-                            if ( attribute.Lower().IsSameAs(_("false"), false ) ) {
-                                pudpClient->m_bSetBroadcast = false; 
-                            }
-                            else {
-                                pudpClient->m_bSetBroadcast = true; 
-                            }
-                            
-                            // encryption
-                            attribute = subsubchild->GetAttribute( _("encryption"), _("") );
-                            pudpClient->m_nEncryption = vscp_getEncryptionCodeFromToken( attribute );
-                            
-                            // add to list
-                            m_udpInfo.m_remotes.Append( pudpClient );
-                            
-                        }
-                        
-                        subsubchild = subsubchild->GetNext();    
-                        
-                    }
-                    
-                    gpobj->m_mutexUDPInfo.Unlock();
-
-                }
-                else if (subchild->GetName() == wxT("multicast")) {
-                    
-                    wxString attribut = subchild->GetAttribute(wxT("enable"), wxT("true"));
-                    attribut.MakeLower();
-                    if (attribut.IsSameAs(_("false"), false)) {
-                        m_bMulticast = false;
-                    }
-                    else {
-                        m_bMulticast = true;
-                    }
-                }
-                else if (subchild->GetName() == wxT("mqttbroker")) {
-                    wxString attribut = subchild->GetAttribute(wxT("enable"), wxT("true"));
-                    attribut.MakeLower();
-                    if (attribut.IsSameAs(_("false"), false)) {
-                        m_bMQTTBroker = false;
-                    }
-                    else {
-                        m_bMQTTBroker = true;
-                    }
-
-                    m_strMQTTBrokerInterfaceAddress = subchild->GetAttribute(wxT("interface"), wxT(""));
-                    
-
-                }
-                else if (subchild->GetName() == wxT("dm")) {
-                    
-                    // Should the internal DM be disabled
-                    wxString attribut;
-                    
-                    // Get the path to the DM file  (Deprecated)
-                    attribut = subchild->GetAttribute( wxT("path"), wxT("") );
-                    if ( attribut.Length() ) {
-                        m_dm.m_staticXMLPath = attribut;
-                    }
-                    
-                    // Get the path to the DM file
-                    attribut = subchild->GetAttribute(wxT("pathxml"), wxT(""));
-                    if ( attribut.Length() ) {
-                        m_dm.m_staticXMLPath = attribut;
-                    }
-                    
-                    // Get the path to the DM db file
-                    attribut = subchild->GetAttribute(wxT("pathdb"), wxT(""));
-                    if ( attribut.Length() ) {
-                        m_dm.m_path_db_vscp_dm.Assign( attribut );
-                    }
-                    
-                }
-                else if (subchild->GetName() == wxT("variables")) {
-                    
-                    // Should the internal DM be disabled
-                    wxFileName fileName;
-                    wxString attrib;
-
-                    // Get the path to the DM file
-                    attrib = subchild->GetAttribute(wxT("path"), wxT(""));
-                    fileName.Assign( attrib );
-                    if ( fileName.IsOk() ) {
-                        m_VSCP_Variables.m_xmlPath = fileName.GetFullPath();
-                    }
-                    
-                    attrib = subchild->GetAttribute(wxT("pathxml"), m_rootFolder + _("variable.xml"));
-                    fileName.Assign( attrib );
-                    if ( fileName.IsOk() ) {
-                        m_VSCP_Variables.m_xmlPath = fileName.GetFullPath();
-                    }
-                    
-                    attrib = subchild->GetAttribute(wxT("pathdb"), m_rootFolder + _("variable.sqlite3"));
-                    fileName.Assign( attrib );
-                    if ( fileName.IsOk() ) {
-                        m_VSCP_Variables.m_dbFilename = fileName;
-                    } 
- 
-                }
+                } 
                 else if (subchild->GetName() == wxT("guid")) {
                     
                     wxString str = subchild->GetNodeContent();
@@ -2576,175 +2365,404 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     m_maxItemsInClientReceiveQueue = vscp_readStringValue(str);
                     
                 }
-                else if (subchild->GetName() == wxT("webserver")) {
-
-                    wxString attribute;
-
-                    attribute = subchild->GetAttribute( wxT( "disableauthentication" ), wxT( "false" ) );
-
-                    if ( attribute.IsSameAs( _( "true" ), true ) ) {                        
-                        m_bDisableSecurityWebServer = true;
-                    }
-
-                    attribute = subchild->GetAttribute(wxT("port"), wxT("8080"));
-                    attribute.Trim();
-                    attribute.Trim(false);
-                    if ( attribute.Length() ) {
-                        m_strWebServerInterfaceAddress = attribute;
-                    }
-
-                    attribute = subchild->GetAttribute(wxT("extra_mime_types"), wxT(""));
-                    attribute.Trim();
-                    attribute.Trim(false);
-                    if ( attribute.Length() ) {
-                        //m_pathWebRoot = attribute;
-                        strcpy( m_extraMimeTypes, attribute.mbc_str() );
-                    }
-
-                    attribute = subchild->GetAttribute(wxT("webrootpath"), wxT(""));
-                    attribute.Trim();
-                    attribute.Trim(false);
-                    if ( attribute.Length() ) {
-                        //m_pathWebRoot = attribute;
-                        strcpy( m_pathWebRoot, attribute.mbc_str() );
-                    }
-
-                    attribute = subchild->GetAttribute(wxT("authdoamin"), wxT(""));
-                    attribute.Trim();
-                    attribute.Trim(false);
-                    if ( attribute.Length() ) {
-                        strcpy( m_authDomain, attribute.mbc_str() );
-                    }
-
-                    attribute = subchild->GetAttribute(wxT("pathcert"), wxT(""));
-                    attribute.Trim();
-                    attribute.Trim(false);
-                    if ( attribute.Length() ) {
-                        strcpy( m_pathCert, attribute.mbc_str() );
-                    }
-
-                    attribute = subchild->GetAttribute(wxT("cgi_interpreter"), wxT(""));
-                    attribute.Trim();
-                    attribute.Trim(false);
-                    if ( attribute.Length() ) {
-                        strcpy( m_cgiInterpreter, attribute.mbc_str() );                    
-                    }
-
-                    attribute = subchild->GetAttribute(wxT("cgi_pattern"), wxT(""));
-                    attribute.Trim();
-                    attribute.Trim(false);
-                    if ( attribute.Length() ) {
-                        strcpy( m_cgiPattern, attribute.mbc_str() );
-                    }
-
-                    attribute = subchild->GetAttribute(wxT("enable_directory_listing"), wxT("true"));
-                    attribute.Trim();
-                    attribute.Trim(false);
-                    attribute.MakeUpper();
-                    if ( attribute.IsSameAs(_("FALSE"), false ) ) {
-                        strcpy( m_EnableDirectoryListings, "no" );
-                    }
-
-                    attribute = subchild->GetAttribute(wxT("hide_file_patterns"), wxT(""));
-                    attribute.Trim();
-                    attribute.Trim(false);
-                    if ( attribute.Length() ) {
-                        strcpy( m_hideFilePatterns, attribute.mbc_str() );
-                    }
-
-                    attribute = subchild->GetAttribute(wxT("index_files"), wxT(""));
-                    attribute.Trim();
-                    attribute.Trim(false);
-                    if ( attribute.Length() ) {
-                        strcpy( m_indexFiles, attribute.mbc_str() );
-                    }
-
-                    attribute = subchild->GetAttribute(wxT("url_rewrites"), wxT(""));
-                    attribute.Trim();
-                    attribute.Trim(false);
-                    if ( attribute.Length() ) {
-                        strcpy( m_urlRewrites, attribute.mbc_str() );
-                    }
-
-                    attribute = subchild->GetAttribute(wxT("per_directory_auth_file"), wxT(""));
-                    attribute.Trim();
-                    attribute.Trim(false);
-                    if ( attribute.Length() ) {
-                        strcpy( m_per_directory_auth_file, attribute.mbc_str() );
-                    }
-
-                    attribute = subchild->GetAttribute(wxT("global_auth_file"), wxT(""));
-                    attribute.Trim();
-                    attribute.Trim(false);
-                    if ( attribute.Length() ) {
-                        strcpy( m_global_auth_file, attribute.mbc_str() );
-                    }
-
-                    attribute = subchild->GetAttribute(wxT("ssi_pattern"), wxT(""));
-                    attribute.Trim();
-                    attribute.Trim(false);
-                    if ( attribute.Length() ) {
-                        strcpy( m_ssi_pattern, attribute.mbc_str() );
-                    }
-
-                    attribute = subchild->GetAttribute(wxT("ip_acl"), wxT(""));
-                    attribute.Trim();
-                    attribute.Trim(false);
-                    if ( attribute.Length() ) {
-                        strcpy( m_ip_acl, attribute.mbc_str() );
-                    }
-
-                    attribute = subchild->GetAttribute(wxT("dav_document_root"), wxT(""));
-                    attribute.Trim();
-                    attribute.Trim(false);
-                    if ( attribute.Length() ) {
-                        strcpy( m_dav_document_root, attribute.mbc_str() );
-                    }
-
-                    attribute = subchild->GetAttribute(wxT("run_as_user"), wxT(""));
-                    attribute.Trim();
-                    attribute.Trim(false);
-                    m_runAsUserWeb = attribute;
-
-                    // Get webserver sub components
-                    wxXmlNode *subsubchild = subchild->GetChildren();
-                    while (subsubchild) {
-
-                        // Deprecated (moved outside of webserver)
-                        if (subsubchild->GetName() == wxT("websockets")) {
-
-                            wxString property;
-
-                            property = subsubchild->GetAttribute(wxT("auth"), wxT("true"));
-
-                                if (property.IsSameAs(_("false"), false)) {
-                                 m_bAuthWebsockets = false;
-                            }
-
-                        }
-
-                        subsubchild = subsubchild->GetNext();
-                    }
-
-                }
-                else if (subchild->GetName() == wxT("websockets")) {
-
-                    wxString property;
-
-                    property =subchild->GetAttribute(wxT("auth"), wxT("true"));
-
-                    if (property.IsSameAs(_("false"), false)) {
-                        m_bAuthWebsockets = false;
-                    }
-
-
-                }
+                
 
                 subchild = subchild->GetNext();
                 
             }
 
             wxString content = child->GetNodeContent();
+
+        } // general
+        
+        else if (child->GetName() == wxT("tcpip")) {
+
+            m_strTcpInterfaceAddress = child->GetAttribute(wxT("interface"), wxT(""));
+            m_strTcpInterfaceAddress.Trim(true);
+            m_strTcpInterfaceAddress.Trim(false);
+
+        }
+        else if ( child->GetName() == wxT( "multicast-announce" ) ) {
+                    
+            // Enable
+            wxString attribute = child->GetAttribute(wxT("enable"), wxT("true"));
+            attribute.MakeLower();          
+            if (attribute.IsSameAs(_("false"), false)) {
+                m_bMulticastAnounce = false; 
+            }
+            else {
+                m_bMulticastAnounce  = true; 
+            }
+                    
+            // interface
+            m_strMulticastAnnounceAddress = child->GetAttribute( wxT( "interface" ), wxT( "" ) );
+
+            // ttl
+            m_ttlMultiCastAnnounce = vscp_readStringValue( child->GetAttribute( wxT( "ttl" ), wxT( "1" ) ) );
+
+        }
+        else if (child->GetName() == wxT("udp")) {
+   
+            gpobj->m_mutexUDPInfo.Lock();
+                    
+            // Enable
+            wxString attribute = child->GetAttribute(wxT("enable"), wxT("true"));
+            attribute.MakeLower();          
+            if (attribute.IsSameAs(_("false"), false)) {
+                m_udpInfo.m_bEnable = false; 
+            }
+            else {
+                m_udpInfo.m_bEnable  = true; 
+            }
+                    
+            // Allow insecure connections
+            attribute = child->GetAttribute( wxT("bAllowUnsecure"), wxT("true") );
+            if (attribute.Lower().IsSameAs(_("false"), false)) {
+                m_udpInfo.m_bAllowUnsecure = false; 
+            }
+            else {
+                m_udpInfo.m_bAllowUnsecure  = true; 
+            }
+                    
+            // Enable ACK
+            attribute = child->GetAttribute( wxT("bAck"), wxT("false") );                    
+            if (attribute.Lower().IsSameAs(_("false"), false)) {
+                m_udpInfo.m_bAck = false; 
+            }
+            else {
+                m_udpInfo.m_bAck = true; 
+            }                    
+                    
+            // Username
+            m_udpInfo.m_user = child->GetAttribute( _("user"), _("") );
+                        
+            // Password
+            m_udpInfo.m_password = child->GetAttribute( _("password"), _(""));
+
+            // Interface
+            m_udpInfo.m_interface = child->GetAttribute( _("interface"), _("udp://"+VSCP_MULTICAST_DEFAULT_PORT));
+                    
+            // GUID
+            attribute = child->GetAttribute( _("guid"), _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
+            m_udpInfo.m_guid.getFromString( attribute );
+                    
+            // Filter
+            attribute = child->GetAttribute( _("filter"), _("") );
+            if ( attribute.Trim().Length() ) {
+                vscp_readFilterFromString( &m_udpInfo.m_filter, attribute );
+            }
+                    
+            // Mask
+            attribute = child->GetAttribute( _("mask"), _("") );
+            if ( attribute.Trim().Length() ) {                    
+                vscp_readMaskFromString( &m_udpInfo.m_filter, attribute );
+            }
+                                    
+            wxXmlNode *subchild = child->GetChildren();
+            while ( subchild ) {
+                        
+                if ( subchild->GetName() == _("rxnode") ) {
+                        
+                    udpRemoteClientInfo *pudpClient = new udpRemoteClientInfo;
+                    if ( NULL == pudpClient ) {
+                        logMsg( _("Failed to allocated UDP client remote structure.\n") );
+                        gpobj->m_mutexUDPInfo.Unlock();
+                        subchild = subchild->GetNext(); 
+                        continue;
+                    }
+                                                        
+                    attribute = subchild->GetAttribute( wxT("enable"), wxT("false") );
+                    if ( attribute.Lower().IsSameAs(_("false"), false ) ) {
+                        pudpClient->m_bEnable = false; 
+                    }
+                    else {
+                        pudpClient->m_bEnable = true; 
+                    }               
+                            
+                    if ( !pudpClient->m_bEnable ) {
+                        delete pudpClient;
+                        gpobj->m_mutexUDPInfo.Unlock();
+                        subchild = subchild->GetNext(); 
+                        continue;
+                    }
+                            
+                    // remote address
+                    pudpClient->m_remoteAddress = subchild->GetAttribute( _("interface"), _("") );    
+                                                                
+                    // Filter
+                    attribute = subchild->GetAttribute( _("filter"), _("") );
+                    if ( attribute.Trim().Length() ) {
+                        vscp_readFilterFromString( &pudpClient->m_filter, attribute );
+                    }
+                    
+                    // Mask
+                    attribute = subchild->GetAttribute( _("mask"), _("") );
+                    if ( attribute.Trim().Length() ) {
+                        vscp_readMaskFromString( &pudpClient->m_filter, attribute );
+                    }
+                            
+                    // broadcast
+                    attribute = subchild->GetAttribute( _("bSetBroadcast"), _("false") );
+                    if ( attribute.Lower().IsSameAs(_("false"), false ) ) {
+                        pudpClient->m_bSetBroadcast = false; 
+                    }
+                    else {
+                        pudpClient->m_bSetBroadcast = true; 
+                    }
+                            
+                    // encryption
+                    attribute = subchild->GetAttribute( _("encryption"), _("") );
+                    pudpClient->m_nEncryption = vscp_getEncryptionCodeFromToken( attribute );
+                            
+                    // add to list
+                    m_udpInfo.m_remotes.Append( pudpClient );
+                            
+                }
+                        
+                subchild = subchild->GetNext();    
+                        
+            }
+                    
+            gpobj->m_mutexUDPInfo.Unlock();
+
+        } // udp
+        
+        else if (child->GetName() == wxT("multicast")) {
+                    
+            wxString attribut = child->GetAttribute(wxT("enable"), wxT("true"));
+            attribut.MakeLower();
+            if (attribut.IsSameAs(_("false"), false)) {
+                m_bMulticast = false;
+            }
+            else {
+                m_bMulticast = true;
+            }
+        }
+                
+        else if (child->GetName() == wxT("mqttbroker")) {
+            
+            wxString attribut = child->GetAttribute(wxT("enable"), wxT("true"));
+            attribut.MakeLower();
+            if ( attribut.IsSameAs(_("false"), false)  ) {
+                m_bMQTTBroker = false;
+            }
+            else {
+                m_bMQTTBroker = true;
+            }
+
+            m_strMQTTBrokerInterfaceAddress = child->GetAttribute(wxT("interface"), wxT(""));
+                    
+        }
+        
+        else if (child->GetName() == wxT("dm")) {
+                    
+            // Should the internal DM be disabled
+            wxString attribut;
+                    
+            // Get the path to the DM file  (Deprecated)
+            attribut = child->GetAttribute( wxT("path"), wxT("") );
+            if ( attribut.Length() ) {
+                m_dm.m_staticXMLPath = attribut;
+            }
+                    
+            // Get the path to the DM file
+            attribut = child->GetAttribute(wxT("pathxml"), wxT(""));
+            if ( attribut.Length() ) {
+                m_dm.m_staticXMLPath = attribut;
+            }
+                    
+            // Get the path to the DM db file
+            attribut = child->GetAttribute(wxT("pathdb"), wxT(""));
+            if ( attribut.Length() ) {
+                m_dm.m_path_db_vscp_dm.Assign( attribut );
+            }
+                    
+        }
+        
+        else if (child->GetName() == wxT("variables")) {
+                    
+            // Should the internal DM be disabled
+            wxFileName fileName;
+            wxString attrib;
+
+            // Get the path to the DM file
+            attrib = child->GetAttribute(wxT("path"), wxT(""));
+            fileName.Assign( attrib );
+            if ( fileName.IsOk() ) {
+                m_VSCP_Variables.m_xmlPath = fileName.GetFullPath();
+            }
+                    
+            attrib = child->GetAttribute(wxT("pathxml"), m_rootFolder + _("variable.xml"));
+            fileName.Assign( attrib );
+            if ( fileName.IsOk() ) {
+                m_VSCP_Variables.m_xmlPath = fileName.GetFullPath();
+            }
+                    
+            attrib = child->GetAttribute(wxT("pathdb"), m_rootFolder + _("variable.sqlite3"));
+            fileName.Assign( attrib );
+            if ( fileName.IsOk() ) {
+                m_VSCP_Variables.m_dbFilename = fileName;
+            } 
+ 
+        }
+        
+        else if (child->GetName() == wxT("webserver")) {
+
+            wxString attribute;
+            attribute = child->GetAttribute( wxT( "disableauthentication" ), wxT( "false" ) );
+
+            if ( attribute.IsSameAs( _( "true" ), true ) ) {                        
+                m_bDisableSecurityWebServer = true;
+            }
+
+            attribute = child->GetAttribute( wxT("port"), wxT("8080") );
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_strWebServerInterfaceAddress = attribute;
+            }
+
+            attribute = child->GetAttribute(wxT("extra_mime_types"), wxT(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                strcpy( m_extraMimeTypes, attribute.mbc_str() );
+            }
+
+            attribute = child->GetAttribute(wxT("webrootpath"), wxT(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                strcpy( m_pathWebRoot, attribute.mbc_str() );
+            }
+
+            attribute = child->GetAttribute(wxT("authdoamin"), wxT(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                strcpy( m_authDomain, attribute.mbc_str() );
+            }
+
+            attribute = child->GetAttribute(wxT("pathcert"), wxT(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                strcpy( m_pathCert, attribute.mbc_str() );
+            }
+
+            attribute = child->GetAttribute(wxT("cgi_interpreter"), wxT(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                strcpy( m_cgiInterpreter, attribute.mbc_str() );                    
+            }
+
+            attribute = child->GetAttribute(wxT("cgi_pattern"), wxT(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                strcpy( m_cgiPattern, attribute.mbc_str() );
+            }
+
+            attribute = child->GetAttribute(wxT("enable_directory_listing"), wxT("true"));
+            attribute.Trim();
+            attribute.Trim(false);
+            attribute.MakeUpper();
+            if ( attribute.IsSameAs(_("FALSE"), false ) ) {
+                strcpy( m_EnableDirectoryListings, "no" );
+            }
+
+            attribute = child->GetAttribute(wxT("hide_file_patterns"), wxT(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                strcpy( m_hideFilePatterns, attribute.mbc_str() );
+            }
+
+            attribute = child->GetAttribute(wxT("index_files"), wxT(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                strcpy( m_indexFiles, attribute.mbc_str() );
+            }
+
+            attribute = child->GetAttribute(wxT("url_rewrites"), wxT(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                strcpy( m_urlRewrites, attribute.mbc_str() );
+            }
+
+            attribute = child->GetAttribute(wxT("per_directory_auth_file"), wxT(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                strcpy( m_per_directory_auth_file, attribute.mbc_str() );
+            }
+
+            attribute = child->GetAttribute(wxT("global_auth_file"), wxT(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                strcpy( m_global_auth_file, attribute.mbc_str() );
+            }
+
+            attribute = child->GetAttribute(wxT("ssi_pattern"), wxT(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                strcpy( m_ssi_pattern, attribute.mbc_str() );
+            }
+
+            attribute = child->GetAttribute(wxT("ip_acl"), wxT(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                strcpy( m_ip_acl, attribute.mbc_str() );
+            }
+
+            attribute = child->GetAttribute(wxT("dav_document_root"), wxT(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                strcpy( m_dav_document_root, attribute.mbc_str() );
+            }
+
+            attribute = child->GetAttribute(wxT("run_as_user"), wxT(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            m_runAsUserWeb = attribute;
+
+            // Get webserver sub components
+            wxXmlNode *subchild = child->GetChildren();
+            while ( subchild ) {
+
+                // Deprecated (moved outside of webserver)
+                if (subchild->GetName() == wxT("websockets")) {
+
+                    wxString property;
+                    property = subchild->GetAttribute(wxT("auth"), wxT("true"));
+
+                    if (property.IsSameAs(_("false"), false)) {
+                        m_bAuthWebsockets = false;
+                    }
+
+                }
+
+                subchild = subchild->GetNext();
+                    
+            }
+
+        }
+        
+        else if (child->GetName() == wxT("websockets")) {
+
+            wxString property;
+            property =child->GetAttribute(wxT("auth"), wxT("true"));
+
+            if (property.IsSameAs(_("false"), false)) {
+                m_bAuthWebsockets = false;
+            }
 
         }
         

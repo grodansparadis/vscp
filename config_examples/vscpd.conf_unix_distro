@@ -16,20 +16,20 @@
         <!-- allowfrom="*" allow connections from all hosts                  -->
         <!-- A stricter allowfrom can be 127.0.0.1,192.168.1.*               -->
         <!-- The VSCP token is used a a key for encryption routines          -->
-        <security admin="admin" 
-                       password="secret" 
+        <security admin="admin"
+                       password="secret"
                        allowfrom="*"
                        vscptoken="Carpe diem quam minimum credula postero" />
-    
+
         <!-- Set the detail of logging you want                              -->
         <loglevel>debug</loglevel>
 
 	    <!-- Enable syslog logging                                           -->
-        <logsyslog enable="true" />        
+        <logsyslog enable="true" />
 
         <!-- The user to run as on Unix                                      -->
         <runasuser></runasuser>
-        
+
         <!-- Set GUID for daemon                                             -->
         <!-- All nills, "-" or not set and the mac addess or the             -->
         <!-- IP address of the computer will be used to calculate            -->
@@ -38,10 +38,10 @@
         <guid>
             00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00
         </guid>
-        
+
         <!-- Set symbolic server name for daemon -->
         <servername>Unix VSCP Server</servername>
-        
+
         <!-- Set to true to enable VSCP high end functionality               -->
         <!-- If disabled also automation will be disabled                    -->
         <vscp enable="true"/>
@@ -57,7 +57,7 @@
         <db_vscp_data>/srv/vscp/vscp_data.sqlite3</db_vscp_data>
         <db_vscp_variable>/srv/vscp/variable.sqlite3</db_vscp_variable>
         <db_vscp_dm>/srv/vscp/dm.sqlite3</db_vscp_dm>
-        
+
         <!-- You can open TCP/IP interfaces on several ports or on           -->
         <!-- on a specific port or on every interface of the computer        -->
         <!-- Default 9598 will listen on all interfaces while                -->
@@ -67,7 +67,7 @@
 
         <tcpip interface="tcp://9598" />
 
-        
+
         <!-- It is possible to enable/disable the UDP interface              -->
         <!-- You can open UDP interfaces on several ports or on              -->
         <!-- on a specific port or on every interface of the computer        -->
@@ -90,16 +90,16 @@
         <!-- bBrodcast Set to try to set broadcast flag on socket.           -->
         <!-- MG_F_ENABLE_BROADCAST                                           -->
 
-        <udp enable="true" 
+        <udp enable="true"
                 interface="udp://44444"
                 user=""
-                password=""                 
+                password=""
                 bAllowUnsecure="true"
                 bSendAck="true"
                 filter=""
                 mask=""
                 guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" >
-            
+
             <rxnode enable="false"
                 interface="udp://192.168.1.8:8192"
                 filter=""
@@ -110,18 +110,17 @@
         </udp>
 
         <!-- One or more multicast channels                                  -->
-        <multicast enable="true"> 
+        <multicast enable="true">
             <channel enable="true"
-                        interface=""
-                        group="224.0.23.158" 
-                        port="32000" 
-                        ttl="1" 
+                        group="udp://224.0.23.158:44444"
+                        ttl="1"
                         guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
                         txfilter=""
                         txmask=""
                         rxfilter=""
                         rxmask=""
-                        encryption="" 
+                        encryption=""
+                        bSendAck="false"
             />
         </multicast>
 
@@ -132,8 +131,10 @@
         <!-- "UDP://127.0.0.1:1883" only will listen on the specified        -->
         <!-- interface. To specify several interfaces just enter them        -->
         <!-- with a space between them.                                      -->
-        
-        <mqttbroker enable="true" interface="1883"/>
+
+        <mqttbroker enable="true"
+              interface="1883"
+        />
 
         <!-- It is possible to enable/disable the CoAP Server                -->
         <!-- You can open the CoAP server interfaces on several ports or on  -->
@@ -142,20 +143,26 @@
         <!-- "udp://127.0.0.1:5683" only will listen on the specified        -->
         <!-- interface. To specify several interfaces just enter them        -->
         <!-- with a space between them.                                      -->
-        
-        <coapserver enable="true" interface="udp://:5683"/>
+
+        <coapserver enable="true"
+              interface="udp://:5683"
+        />
 
         <!-- Set to true to enable decision matrix                           -->
         <!-- Set to false to disable.                                        -->
         <!-- Set path to the decision matrix file location                   -->
-        
-        <dm enable="true" path="/srv/vscp/dm.xml" />      
+
+        <dm enable="true"
+              path="/srv/vscp/dm.xml"
+        />
 
         <!-- Set to true to enable daemon variables                          -->
         <!-- Set to false to disable.                                        -->
         <!-- Path to variables storage.                                      -->
 
-        <variables pathxml="/srv/vscp/variables.xml" path="/srv/vscp/variables.sqlite3" />
+        <variables pathxml="/srv/vscp/variables.xml"
+                    path="/srv/vscp/variables.sqlite3"
+        />
 
         <!-- Enable disable the webserver interface.                         -->
         <!-- Set the port to use for the webserver interface                 -->
@@ -173,36 +180,36 @@
                     extra_mime_types=""
                     url_rewrites=""
                     run_as_user="" >
-            
+
             <!-- Enable disable the websocket interface.                     -->
             <!-- Id auth is set to false not authentication will be done     -->
-        
+
             <websockets auth="true" />
-        
-        </webserver>    
-        
+
+        </webserver>
+
     </general>
 
-  
-    <!-- Holds information about one (at least) or more users                --> 
+
+    <!-- Holds information about one (at least) or more users                -->
     <!-- Use mkpassword to generate a new password                           -->
     <!-- Privilege is "admin" or "user" or comma seperated list              -->
     <!-- Same information is used for accessing the daemon                   -->
     <!-- through the TCP/IP interface as through the web-interface           -->
 
-    <remoteuser> 
+    <remoteuser>
         <user>
             <name>user</name>
             <password>secret</password>
             <privilege>user</privilege>
             <!-- A stricter allowfrom can be 127.0.0.1/192.168.1.*           -->
             <allowfrom>*</allowfrom>
-        </user>	
+        </user>
     </remoteuser>
 
     <!-- Here are settings that affect the internal VSCP functionality       -->
     <!-- of the server.                                                      -->
- 
+
     <automation enable="true">
         <!-- zone/subzone server use    -->
         <zone>1</zone>
@@ -218,7 +225,7 @@
         <segmentcontrol-event enable="true" interval="60" />
         <heartbeat-event enable="true" interval="60" />
     </automation>
-    
+
     <!-- List level I/CANAL drivers here                                     -->
 
     <level1driver enable="true" >
@@ -258,12 +265,12 @@
 
         <!-- Level II Logger -->
         <driver enable="true" >
-            <name>VSCP Level II Logger Driver A</name>	
+            <name>VSCP Level II Logger Driver A</name>
             <path>/usr/local/lib/vscpl2drv_logger.so</path>
-             <config>/tmp/vscp_level2.log</config> 		
+             <config>/tmp/vscp_level2.log</config>
              <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
-    
+
         <!-- Level II lmsensors -->
         <driver enable="false" >
             <name>VCCP Level II LM-sensors driver A</name>
@@ -286,19 +293,19 @@
             <path>/usr/local/lib/vscpl2drv_mqtt.so</path>
             <config>mysession;subscribe;vscp;localhost;1883;;60</config>
             <guid>08:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
-        </driver>	
+        </driver>
 
         <!-- Level II tcp/ip link -->
-        <driver enable="false" >                 
+        <driver enable="false" >
             <name>VSCP Level II tcpiplink Driver  A</name>
             <path>/usr/local/lib/vscpl2drv_tcpiplink.so</path>
-            <config>192.168.1.2;9598;admin;secret</config>                 
+            <config>192.168.1.2;9598;admin;secret</config>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
 
         <!-- Level II raw ethernet -->
         <driver enable="false">
-            <name>VSCP Level II RawEthernet Driver A</name> 
+            <name>VSCP Level II RawEthernet Driver A</name>
             <config>eth0</config>
             <path>/usr/local/lib/vscpl2drv_raweth.so</path>
         </driver>
@@ -317,8 +324,8 @@
             <config>eth0</config>
             <path>/usr/local/lib/vscpl2drv_wire1.so</path>
         </driver>
- 
-    </level2driver>	
+
+    </level2driver>
 
     <!-- Collect data in tables                                              -->
     <tables>
@@ -347,7 +354,7 @@
                   vscpunit="3"
         />
 
-    </tables> 
-    
-    
+    </tables>
+
+
 </vscpconfig>
