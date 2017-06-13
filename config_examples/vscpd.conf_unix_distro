@@ -10,6 +10,8 @@
 
 <vscpconfig>
 
+    <!-- The general section is read before the configuration from the       -->
+    <!-- database is read.                                                    -->
     <general>
 
         <!-- This is the admin credentials                                   -->
@@ -58,138 +60,145 @@
         <db_vscp_variable>/srv/vscp/variable.sqlite3</db_vscp_variable>
         <db_vscp_dm>/srv/vscp/dm.sqlite3</db_vscp_dm>
 
-        <!-- You can open TCP/IP interfaces on several ports or on           -->
-        <!-- on a specific port or on every interface of the computer        -->
-        <!-- Default 9598 will listen on all interfaces while                -->
-        <!-- "127.0.0.1:9598" only will listen on the specified interface.   -->
-        <!-- To specify several interfaces just enter them with a space      -->
-        <!-- between them.                                                   -->
-
-        <tcpip interface="tcp://9598" />
-
-
-        <!-- It is possible to enable/disable the UDP interface              -->
-        <!-- You can open UDP interfaces on several ports or on              -->
-        <!-- on a specific port or on every interface of the computer        -->
-        <!-- Default "UDP://:9598" will listen on all interfaces while       -->
-        <!-- "UDP://127.0.0.1:9598" only will listen on the specified        -->
-        <!-- interface. To specify several interfaces just enter them        -->
-        <!-- with a space between them. If interface is not preceded with    -->
-        <!-- "UDP://" it will be added.                                      -->
-        <!-- By giving a user/password one can have alist of nodes that are  -->
-        <!-- allowed to connect.                                             -->
-        <!-- filter/mask is used on incoming events.                         -->
-        <!-- GUID is set as GUID for client i/f if not all nills or empty.   -->
-        <!-- CLIENTS                                                         -->
-        <!-- Define nodes that wil get outgoing events. Can be none or many  -->
-        <!-- interface is address:port of node on standard form with "UDP://"-->
-        <!-- prepended.                                                      -->
-        <!-- filter/mask is used for outgoing events.                        -->
-        <!-- encryption is empty for no encryption or set to the encryption  -->
-        <!-- algorithm to use "AEA128", "AES192", "AES256"                   -->
-        <!-- bBrodcast Set to try to set broadcast flag on socket.           -->
-        <!-- MG_F_ENABLE_BROADCAST                                           -->
-
-        <udp enable="true"
-                interface="udp://44444"
-                user=""
-                password=""
-                bAllowUnsecure="true"
-                bSendAck="true"
-                filter=""
-                mask=""
-                guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" >
-
-            <rxnode enable="false"
-                interface="udp://192.168.1.8:8192"
-                filter=""
-                mask=""
-                encryption=""
-                bSetBroadcast="false"
-            />
-        </udp>
-
-        <!-- One or more multicast channels                                  -->
-        <multicast enable="true">
-            <channel enable="true"
-                        group="udp://224.0.23.158:44444"
-                        ttl="1"
-                        guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
-                        txfilter=""
-                        txmask=""
-                        rxfilter=""
-                        rxmask=""
-                        encryption=""
-                        bSendAck="false"
-            />
-        </multicast>
-
-        <!-- It is possible to enable/disable the MQTT Broker                -->
-        <!-- You can open the MQTT broker interfaces on several ports or on  -->
-        <!-- on a specific port or on every interface of the computer        -->
-        <!-- Default "1883" will listen on all interfaces while              -->
-        <!-- "UDP://127.0.0.1:1883" only will listen on the specified        -->
-        <!-- interface. To specify several interfaces just enter them        -->
-        <!-- with a space between them.                                      -->
-
-        <mqttbroker enable="true"
-              interface="1883"
-        />
-
-        <!-- It is possible to enable/disable the CoAP Server                -->
-        <!-- You can open the CoAP server interfaces on several ports or on  -->
-        <!-- on a specific port or on every interface of the computer        -->
-        <!-- Default "udp://:5683" will listen on all interfaces while       -->
-        <!-- "udp://127.0.0.1:5683" only will listen on the specified        -->
-        <!-- interface. To specify several interfaces just enter them        -->
-        <!-- with a space between them.                                      -->
-
-        <coapserver enable="true"
-              interface="udp://:5683"
-        />
-
-        <!-- Set to true to enable decision matrix                           -->
-        <!-- Set to false to disable.                                        -->
-        <!-- Set path to the decision matrix file location                   -->
-
-        <dm enable="true"
-              path="/srv/vscp/dm.xml"
-        />
-
-        <!-- Set to true to enable daemon variables                          -->
-        <!-- Set to false to disable.                                        -->
-        <!-- Path to variables storage.                                      -->
-
-        <variables pathxml="/srv/vscp/variables.xml"
-                    path="/srv/vscp/variables.sqlite3"
-        />
-
-        <!-- Enable disable the webserver interface.                         -->
-        <!-- Set the port to use for the webserver interface                 -->
-        <!-- default is 8080.                                                -->
-
-        <webserver webrootpath="/srv/vscp/web"
-                    port="tcp://8080"
-                    path_cert=""
-                    authdomain="mydomain.com"
-                    cgi_interpreter=""
-                    cgi_pattern=""
-                    enable_directory_listing="true"
-                    hilde_file_patterns=""
-                    index_files="index.html,index.htm,index.cgi,index.shtml,index.php"
-                    extra_mime_types=""
-                    url_rewrites=""
-                    run_as_user="" >
-
-            <!-- Enable disable the websocket interface.                     -->
-            <!-- Id auth is set to false not authentication will be done     -->
-
-            <websockets auth="true" />
-
-        </webserver>
-
     </general>
 
+
+    <!-- You can open TCP/IP interfaces on several ports or on           -->
+    <!-- on a specific port or on every interface of the computer        -->
+    <!-- Default 9598 will listen on all interfaces while                -->
+    <!-- "127.0.0.1:9598" only will listen on the specified interface.   -->
+    <!-- To specify several interfaces just enter them with a space      -->
+    <!-- between them.                                                   -->
+
+    <tcpip enable="true"
+        interface="tcp://9598" />
+
+    <!-- Multicast announce interface                                    -->
+    <multicast-announce enable="true"
+        interface="udp:9895"
+        ttl = "1"
+    />
+
+
+    <!-- It is possible to enable/disable the UDP interface              -->
+    <!-- You can open UDP interfaces on several ports or on              -->
+    <!-- on a specific port or on every interface of the computer        -->
+    <!-- Default "UDP://:9598" will listen on all interfaces while       -->
+    <!-- "UDP://127.0.0.1:9598" only will listen on the specified        -->
+    <!-- interface. To specify several interfaces just enter them        -->
+    <!-- with a space between them. If interface is not preceded with    -->
+    <!-- "UDP://" it will be added.                                      -->
+    <!-- By giving a user/password one can have alist of nodes that are  -->
+    <!-- allowed to connect.                                             -->
+    <!-- filter/mask is used on incoming events.                         -->
+    <!-- GUID is set as GUID for client i/f if not all nills or empty.   -->
+    <!-- CLIENTS                                                         -->
+    <!-- Define nodes that wil get outgoing events. Can be none or many  -->
+    <!-- interface is address:port of node on standard form with "UDP://"-->
+    <!-- prepended.                                                      -->
+    <!-- filter/mask is used for outgoing events.                        -->
+    <!-- encryption is empty for no encryption or set to the encryption  -->
+    <!-- algorithm to use "AEA128", "AES192", "AES256"                   -->
+    <!-- bBrodcast Set to try to set broadcast flag on socket.           -->
+    <!-- MG_F_ENABLE_BROADCAST                                           -->
+
+    <udp enable="true"
+            interface="udp://44444"
+            user=""
+            password=""
+            bAllowUnsecure="true"
+            bSendAck="true"
+            filter=""
+            mask=""
+            guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" >
+
+        <rxnode enable="false"
+            interface="udp://192.168.1.8:8192"
+            filter=""
+            mask=""
+            encryption=""
+            bSetBroadcast="false"
+        />
+    </udp>
+
+    <!-- One or more multicast channels                                  -->
+    <multicast enable="true">
+        <channel enable="true"
+                    group="udp://224.0.23.158:44444"
+                    ttl="1"
+                    guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+                    txfilter=""
+                    txmask=""
+                    rxfilter=""
+                    rxmask=""
+                    encryption=""
+                    bSendAck="false"
+        />
+    </multicast>
+
+    <!-- It is possible to enable/disable the MQTT Broker                -->
+    <!-- You can open the MQTT broker interfaces on several ports or on  -->
+    <!-- on a specific port or on every interface of the computer        -->
+    <!-- Default "1883" will listen on all interfaces while              -->
+    <!-- "UDP://127.0.0.1:1883" only will listen on the specified        -->
+    <!-- interface. To specify several interfaces just enter them        -->
+    <!-- with a space between them.                                      -->
+
+    <mqttbroker enable="true"
+          interface="1883"
+    />
+
+    <!-- It is possible to enable/disable the CoAP Server                -->
+    <!-- You can open the CoAP server interfaces on several ports or on  -->
+    <!-- on a specific port or on every interface of the computer        -->
+    <!-- Default "udp://:5683" will listen on all interfaces while       -->
+    <!-- "udp://127.0.0.1:5683" only will listen on the specified        -->
+    <!-- interface. To specify several interfaces just enter them        -->
+    <!-- with a space between them.                                      -->
+
+    <coapserver enable="true"
+          interface="udp://:5683"
+    />
+
+    <!-- Set to true to enable decision matrix                           -->
+    <!-- Set to false to disable.                                        -->
+    <!-- Set path to the decision matrix file location                   -->
+
+    <dm enable="true"
+          path="/srv/vscp/dm.xml"
+    />
+
+    <!-- Set to true to enable daemon variables                          -->
+    <!-- Set to false to disable.                                        -->
+    <!-- Path to variables storage.                                      -->
+
+    <variables pathxml="/srv/vscp/variables.xml"
+                path="/srv/vscp/variables.sqlite3"
+    />
+
+    <!-- Enable disable the webserver interface.                         -->
+    <!-- Set the port to use for the webserver interface                 -->
+    <!-- default is 8080.                                                -->
+
+    <webserver webrootpath="/srv/vscp/web"
+                port="tcp://8080"
+                path_cert=""
+                authdomain="mydomain.com"
+                cgi_interpreter=""
+                cgi_pattern=""
+                enable_directory_listing="true"
+                hilde_file_patterns=""
+                index_files="index.html,index.htm,index.cgi,index.shtml,index.php"
+                extra_mime_types=""
+                url_rewrites=""
+                run_as_user="" >
+
+        <!-- Enable disable the websocket interface.                     -->
+        <!-- Id auth is set to false not authentication will be done     -->
+
+        <websockets auth="true" />
+
+    </webserver>
 
     <!-- Holds information about one (at least) or more users                -->
     <!-- Use mkpassword to generate a new password                           -->

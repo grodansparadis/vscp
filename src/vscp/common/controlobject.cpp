@@ -293,7 +293,7 @@ CControlObject::CControlObject()
     m_strTcpInterfaceAddress = _("tcp://9598");
 
     // Default multicast announce port
-    m_strMulticastAnnounceAddress = _( "udp://:" + VSCP_MULTICAST_DEFAULT_PORT );
+    m_strMulticastAnnounceAddress = _( "udp://:" + VSCP_ANNNOUNCE_MULTICAST_PORT );
 
     // default multicast announce ttl
     m_ttlMultiCastAnnounce = IP_MULTICAST_DEFAULT_TTL;
@@ -855,7 +855,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
                     fprintf( stderr, "Failed to create configuration table.\n" );
                 }
                 
-                // Create the multicast database
+                // Create the UDP node database
                 if ( !doCreateUdpNodeTable() ) {
                     fprintf( stderr, "Failed to create udpnode table.\n" );
                 }
@@ -1307,7 +1307,10 @@ bool CControlObject::cleanup( void )
     stopDeviceWorkerThreads();
     
     logMsg(_("Stopping TCP/IP worker thread."),DAEMON_LOGMSG_DEBUG);
-    //stopTcpWorkerThread();
+    stopTcpWorkerThread();
+    
+    logMsg(_("Stopping UDP worker thread."),DAEMON_LOGMSG_DEBUG);
+    stopUDPWorkerThread();
     
     logMsg(_("Stopping Web Server worker thread."),DAEMON_LOGMSG_DEBUG);
     stopWebServerThread();
@@ -2492,7 +2495,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
             m_udpInfo.m_password = child->GetAttribute( _("password"), _(""));
 
             // Interface
-            m_udpInfo.m_interface = child->GetAttribute( _("interface"), _("udp://"+VSCP_MULTICAST_DEFAULT_PORT));
+            m_udpInfo.m_interface = child->GetAttribute( _("interface"), _("udp://"+VSCP_DEFAULT_UDP_PORT));
                     
             // GUID
             attribute = child->GetAttribute( _("guid"), _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
