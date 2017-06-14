@@ -290,6 +290,7 @@ CControlObject::CControlObject()
     m_bMQTTBroker = true;
 
     // Default TCP/IP interface
+    m_enableTcpip = true;
     m_strTcpInterfaceAddress = _("tcp://" + VSCP_DEFAULT_TCP_PORT);
 
     // Default multicast announce port
@@ -315,6 +316,7 @@ CControlObject::CControlObject()
     memset( m_pathCert, 0, sizeof( m_pathCert ) );
 
     // Webserver interface
+    m_bWebServer = true;
     m_strWebServerInterfaceAddress = _("tcp://8080");
 
 #ifdef WIN32
@@ -482,11 +484,89 @@ bool CControlObject::getVscpCapabilities( uint8_t *pCapability )
     
     memset( pCapability, 0, 8 );
     
-    // Fill info in MSB of 16-bit code
-    pCapability[ 14 ] = VSCP_DAEMON_SERVER_CAPABILITIES_6;
-            
-    // Fill info in LSB of 16-bit code
-    pCapability[ 15 ] = VSCP_DAEMON_SERVER_CAPABILITIES_7;
+    // VSCP Multicast interface
+        if ( m_multicastInfo.m_bEnable ) {
+            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_MULTICAST/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_MULTICAST % 8 ) );
+        }
+        
+        // VSCP TCP/IP interface
+        if ( m_enableTcpip ) {
+            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_TCPIP/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_TCPIP % 8 ) );
+        }
+        
+        // VSCP UDP interface
+        if ( m_udpInfo.m_bEnable ) {
+            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_UDP/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_UDP % 8 ) );
+        }
+        
+        // VSCP Multicast announce interface
+        if ( m_bMulticastAnounce ) {
+            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_MULTICAST_ANNOUNCE/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_MULTICAST_ANNOUNCE % 8 ) );
+        }
+        
+        // VSCP raw Ethernet interface
+        if ( 1 ) {
+            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_RAWETH/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_RAWETH % 8 ) );
+        }
+        
+        // VSCP web server
+        if ( m_bWebServer ) {
+            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_WEB/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_WEB % 8 ) );
+        }
+        
+        // VSCP websocket interface
+        if ( m_bWebServer ) {
+            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_WEBSOCKET/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_WEBSOCKET % 8 ) );
+        }
+        
+        // VSCP websocket interface
+        if ( m_bWebServer ) {
+            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_REST/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_REST % 8 ) );
+        }
+        
+        // VSCP websocket interface
+        if ( m_bMQTTBroker ) {
+            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_MQTT/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_MQTT % 8 ) );
+        }
+        
+        // VSCP websocket interface
+        if ( 0 ) {
+            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_COAP/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_COAP % 8 ) );
+        }
+        
+        // IPv6 support
+        if ( 0 ) {
+            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_IP6/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_IP6 % 8 ) );
+        }
+        
+        // IPv4 support
+        if ( 0 ) {
+            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_IP4/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_IP4 % 8 ) );
+        }
+        
+        // SSL support
+        if ( 1 ) {
+            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_SSL/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_SSL % 8 ) );
+        }
+        
+        // +2 tcp/ip connections support
+        if ( m_enableTcpip ) {
+            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_TWO_CONNECTIONS/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_TWO_CONNECTIONS % 8 ) );
+        }
     
     return true;
 }
@@ -3591,6 +3671,22 @@ xml_table_error:
                     m_automation.setHeartbeatEventInterval( interval );
                     
                 }
+                else if (subchild->GetName() == wxT("capabilities-event")) {
+                    
+                    m_automation.enableCapabilitiesEvent();
+                    m_automation.setCapabilitiesEventInterval( 60 );
+
+                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    if (attribute.IsSameAs(_("false"), false)) {
+                        m_automation.disableCapabilitiesEvent();
+                    }
+
+                    attribute = subchild->GetAttribute(wxT("interval"), wxT("30"));
+                    long interval;
+                    attribute.ToLong( &interval );
+                    m_automation.setHeartbeatEventInterval( interval );
+                    
+                }
 
                 subchild = subchild->GetNext();
 
@@ -4095,6 +4191,22 @@ bool CControlObject::dbReadConfiguration( void )
         if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_INTERVAL ) ) {
             m_automation.setHeartbeatEventInterval( sqlite3_column_int( ppStmt, 
                                 VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_INTERVAL ) );
+        }
+        
+        // Automation capabilities event enable
+        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_CAPABILITIES_ENABLE ) ) {
+            if ( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_CAPABILITIES_ENABLE ) ) {
+                m_automation.enableCapabilitiesEvent();
+            }
+            else {
+                m_automation.disableCapabilitiesEvent();
+            }
+        }
+        
+        // Automation capabilities interval
+        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_CAPABILITIES_INTERVAL ) ) {
+            m_automation.setCapabilitiesEventInterval( sqlite3_column_int( ppStmt, 
+                                VSCPDB_ORDINAL_CONFIG_AUTOMATION_CAPABILITIES_INTERVAL ) );
         }
         
         // VSCP data database path

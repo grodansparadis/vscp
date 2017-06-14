@@ -255,6 +255,8 @@
         <!-- High level events -->
         <segmentcontrol-event enable="true" interval="60" />
         <heartbeat-event enable="true" interval="60" />
+        <!-- Server capabilities events -->
+        <capability-event enable="true" interval="60" />
     </automation>
 
     <!-- List level I/CANAL drivers here -->

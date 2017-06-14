@@ -181,6 +181,22 @@ public:
     long getHeartbeatEventInterval( void ) 
                                         { return m_intervalHeartBeat; };                                        
 
+                                         
+    /// setter for m_bCapabilitiesEvent
+    void enableCapabilitiesEvent( void ) { m_bCapabilitiesEvent = true; };
+
+    /// setter for m_bCapabilitiesEvent
+    void disableCapabilitiesEvent( void ) { m_bCapabilitiesEvent = false; };
+    
+    bool isCapabilitiesEvent( void ) { return m_bCapabilitiesEvent; };
+
+    /// setter for setIntervalCapabilitiesEvent
+    void setCapabilitiesEventInterval( long interval ) 
+                                        { m_intervalCapabilities = interval; };
+    long getcapabilitiesEventInterval( void ) 
+                                        { return m_intervalCapabilities; };                                       
+                                        
+                                        
     // Setter/getter for automation enable/diable
     void enableAutomation( void ) { m_bAutomation = true; };
     void disableAutomation( void ) { m_bAutomation = false; };
@@ -231,6 +247,10 @@ public:
     bool  isSendHeartbeat( void ) { return m_bHeartBeatEvent; };
     long getIntervalHeartbeat( void ) { return m_intervalHeartBeat; };
     wxDateTime &getHeartbeatSent( void ) { return m_Heartbeat_Level1_sent; };
+    
+    bool  isSendCapabilities( void ) { return m_bHeartBeatEvent; };
+    long getIntervalCapabilities( void ) { return m_intervalHeartBeat; };
+    wxDateTime &getCapabilitiesSent( void ) { return m_Heartbeat_Level1_sent; };
 
 private:
 
@@ -248,6 +268,12 @@ private:
     */
     //double m_timezone;
 
+    
+    //////////////////////////////////////////////
+    //       Segment controller heartbeat
+    //////////////////////////////////////////////
+    
+    
     /*!
         Set to true for  periodic CLASS1.PROTOCOL, Type=1 (Segment Status Heartbeat) 
         event to be sent from the daemon. The interval between events is set in seconds.
@@ -261,6 +287,11 @@ private:
 
     // Time when segment controller heartbeat send
     wxDateTime m_SegmentHeartbeat_sent;
+    
+    
+    //////////////////////////////////////////////
+    //               Heartbeat
+    //////////////////////////////////////////////
 
     /*!
         Enable/disable heartbeat.
@@ -277,10 +308,26 @@ private:
 
     // Time when heartbeat Level II sent
     wxDateTime m_Heartbeat_Level2_sent;
+    
+    
+    //////////////////////////////////////////////
+    //             Capabilities
+    //////////////////////////////////////////////
+    
+    /*!
+        Enable/disable capabilities event.
+    */
+    bool m_bCapabilitiesEvent;
 
-    // Time when capabilities Level II sent
-    wxDateTime m_Capabilities_Level2_sent;
+    /*!
+        Interval in seconds for capabilities event
+    */
+    long m_intervalCapabilities;                   // long because of .toLong
 
+    // Time when capabilities event was last sent
+    wxDateTime m_Capabilities_sent;
+
+    
     /*!
         Enable/disable the CLASS1.INFORMATION, Type=52 (Civil sunrise twilight time) to be sent. 
         Longitude, latitude and time zone must be set for this to work correctly.

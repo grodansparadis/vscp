@@ -93,6 +93,8 @@
 	"`vscpd_automation_segmentcontrollerevent_interval` INTEGER DEFAULT 60,"\
 	"`vscpd_automation_heartbeatevent_enable`           INTEGER DEFAULT 1,"\
 	"`vscpd_automation_heartbeatevent_interval`         INTEGER DEFAULT 60,"\
+        "`vscpd_automation_capabilities_enable`             INTEGER DEFAULT 1,"\
+	"`vscpd_automation_capabilities_interval`           INTEGER DEFAULT 60,"\
 	"`vscpd_db_data_path`                               TEXT DEFAULT '/srv/vscp/vscp_data.sqlite3',"\
         "`vscpd_db_vscpconf_path`                           TEXT DEFAULT '/srv/vscp/vscpd.sqlite3' "\
         ");";
@@ -164,8 +166,10 @@
 #define VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_INTERVAL    58
 #define VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_ENABLE              59
 #define VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_INTERVAL            60
-#define VSCPDB_ORDINAL_CONFIG_DB_VSCPDATA_PATH                              61
-#define VSCPDB_ORDINAL_CONFIG_DB_VSCPCONF_PATH                              62
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_CAPABILITIES_ENABLE                61
+#define VSCPDB_ORDINAL_CONFIG_AUTOMATION_CAPABILITIES_INTERVAL              62
+#define VSCPDB_ORDINAL_CONFIG_DB_VSCPDATA_PATH                              63
+#define VSCPDB_ORDINAL_CONFIG_DB_VSCPCONF_PATH                              64
 
 
 

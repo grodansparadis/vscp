@@ -1,6 +1,6 @@
 // File: vscpmulticast.cpp
 //
-// VSCP Works
+// Receiving multicast frames (VSCP Works)
 //
 // This file is part of the VSCP (http://www.vscp.org) 
 //

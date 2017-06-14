@@ -471,7 +471,17 @@ struct myNode {
 #define VSCP_SERVER_CAPABILITY_IP4                  (1<<5)
 #define VSCP_SERVER_CAPABILITY_SSL                  (1<<4)
 #define VSCP_SERVER_CAPABILITY_TWO_CONNECTIONS      (1<<3)
+#define VSCP_SERVER_CAPABILITY_AES256               (1<<2)
+#define VSCP_SERVER_CAPABILITY_AES192               (1<<1)
+#define VSCP_SERVER_CAPABILITY_AES128               1
 
+// Offsets into the data of the capabilities event
+// VSCP_CLASS2_PROTOCOL, Type=20/VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS
+#define VSCP_CAPABILITY_OFFSET_CAP_ARRAY            0
+#define VSCP_CAPABILITY_OFFSET_GUID                 8
+#define VSCP_CAPABILITY_OFFSET_IP_ADDR              24
+#define VSCP_CAPABILITY_OFFSET_SRV_NAME             40
+#define VSCP_CAPABILITY_OFFSET_NON_STD_PORTS        104
 
 /// Error Codes
 #define VSCP_ERROR_SUCCESS                      0       // All is OK

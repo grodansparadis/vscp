@@ -111,6 +111,9 @@ CVSCPAutomation::CVSCPAutomation( void )
 
     m_bSegmentControllerHeartbeat = true;
     m_intervalSegmentControllerHeartbeat = 60;
+    
+    m_bCapabilitiesEvent = true;
+    m_intervalCapabilities = 60;
 
     m_bHeartBeatEvent = true;
     m_intervalHeartBeat = 60;
@@ -137,8 +140,8 @@ CVSCPAutomation::CVSCPAutomation( void )
     m_Heartbeat_Level2_sent = wxDateTime::Now() + in_the_past;
     
     m_SegmentHeartbeat_sent =  wxDateTime::Now() + in_the_past;
-    m_Capabilities_Level2_sent = wxDateTime::Now() + in_the_past;
-
+        
+    m_Capabilities_sent = wxDateTime::Now() + in_the_past;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -316,7 +319,7 @@ void CVSCPAutomation::calcSun( void )
     // First get time 
     time( &sekunnit );
 
-    // Next get localtime 
+    // Next get local time 
     p = localtime( &sekunnit );
 
     year = p->tm_year;
@@ -652,12 +655,13 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         pEventEx->vscp_class = VSCP_CLASS1_PROTOCOL;
         pEventEx->vscp_type = VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT;
         pEventEx->sizeData = 5;
+        
         // IMPORTANT - GUID must be set by caller before event is sent
+        
         time_t tnow;
         time( &tnow );
         uint32_t time32 = (uint32_t)tnow;
 
-        time32 = wxUINT32_SWAP_ON_BE( time32 );
         pEventEx->data[ 0 ] = 0;  // 8 - bit crc for VSCP daemon GUID
         pEventEx->data[ 1 ] = (uint8_t)((time32>>24) & 0xff);    // Time since epoch MSB
         pEventEx->data[ 2 ] = (uint8_t)((time32>>16) & 0xff);    
@@ -666,6 +670,55 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
 
         return true;
         
+    }
+    
+    // High end server capabilities
+    wxTimeSpan CapabilitiesPeriod( 0, 0, m_intervalCapabilities );
+    if ( m_bCapabilitiesEvent && 
+         ( ( wxDateTime::Now() - m_Capabilities_sent ) >= SegmentControllerHeartBeatPeriod ) ) {
+
+        m_Capabilities_sent = wxDateTime::Now();
+        // 
+        // Send VSCP_CLASS2_PROTOCOL, Type=20/VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS
+        pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
+        pEventEx->head = 0;
+        pEventEx->timestamp = vscp_makeTimeStamp();
+        vscp_setEventExToNow( pEventEx ); // Set time to current time
+        pEventEx->vscp_class = VSCP_CLASS2_PROTOCOL;
+        pEventEx->vscp_type = VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS;
+        pEventEx->sizeData = 5;
+        
+        // IMPORTANT - GUID must be set by caller before event is sent
+        
+        
+        // Fill in data
+        memset( pEventEx->data, 0, sizeof( pEventEx->data ) );
+        
+        // GUID
+        memcpy( pEventEx->data + VSCP_CAPABILITY_OFFSET_GUID, 
+                    m_pCtrlObj->m_guid.getGUID(), 16 );
+        
+        // Server ip address
+        cguid guid;
+        if ( m_pCtrlObj->getIPAddress( guid ) ) {
+            pEventEx->data[ VSCP_CAPABILITY_OFFSET_IP_ADDR ] = guid.getAt(8);
+            pEventEx->data[ VSCP_CAPABILITY_OFFSET_IP_ADDR + 1 ] = guid.getAt(9);
+            pEventEx->data[ VSCP_CAPABILITY_OFFSET_IP_ADDR + 2 ] = guid.getAt(10);
+            pEventEx->data[ VSCP_CAPABILITY_OFFSET_IP_ADDR + 3 ] = guid.getAt(11);
+        }
+        
+        // Server name
+        memcpy( pEventEx->data + VSCP_CAPABILITY_OFFSET_SRV_NAME, 
+                    (const char *)m_pCtrlObj->m_strServerName.mbc_str(),
+                    MIN( 64, strlen((const char *)m_pCtrlObj->m_strServerName.mbc_str()) ) );
+        
+        // Capabilities array
+        m_pCtrlObj->getVscpCapabilities( pEventEx->data );
+        
+        // non-standard ports
+        // TODO
+
+        return true;
     }
     
     return false;

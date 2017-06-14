@@ -65,7 +65,7 @@ public:
     };
 
     // This flag can be used by a client to mark this item as seen
-    // by an upfate routine.
+    // by an update routine.
     bool m_bUpdated;
 
     // Capabilities for this server
