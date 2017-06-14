@@ -168,7 +168,7 @@ void *daemonVSCPThread::Entry()
     memset( &mc_addr, 0, sizeof( mc_addr ) );
     mc_addr.sin_family = AF_INET;
     mc_addr.sin_addr.s_addr = inet_addr( VSCP_MULTICAST_IPV4_ADDRESS_STR );
-    mc_addr.sin_port = htons( mc_port );
+    mc_addr.sin_port = htons( VSCP_ANNNOUNCE_MULTICAST_PORT );
 
 #endif
 
@@ -255,26 +255,21 @@ void *daemonVSCPThread::Entry()
                     eventEx.data[ 0 ] = vscp_calcCRC4GUIDArray( m_pCtrlObject->m_guid.getGUID() );
 
                     // Send event on multicast information channel
-                    sendMulticastEventEx( sock_mc, &eventEx, mc_port );
+                    sendMulticastEventEx( sock_mc, &eventEx );
 
                 }
                 else if ( ( VSCP_CLASS1_INFORMATION  == eventEx.vscp_class ) &&
                           ( VSCP_TYPE_INFORMATION_NODE_HEARTBEAT == eventEx.vscp_type ) ) {
 
                     // Send event on multicast information channel
-                    sendMulticastEventEx( sock_mc, &eventEx, mc_port );
+                    sendMulticastEventEx( sock_mc, &eventEx );
 
                 }
                 else if ( ( VSCP_CLASS2_INFORMATION == eventEx.vscp_class ) &&
                           ( VSCP2_TYPE_INFORMATION_HEART_BEAT == eventEx.vscp_type ) ) {
 
-                    // Copy in server name.
-                    memcpy( eventEx.data,
-                                m_pCtrlObject->m_strServerName.mbc_str(),
-                                MAX( 64, m_pCtrlObject->m_strServerName.Length() ) );
-
                     // Send event on multicast information channel
-                    sendMulticastEventEx( sock_mc, &eventEx, mc_port );
+                    sendMulticastEventEx( sock_mc, &eventEx );
 
                 }
 
@@ -382,7 +377,7 @@ void *daemonVSCPThread::Entry()
                 if ( NULL != pNode ) {
 
                     // Send multi cast information
-                    sendMulticastInformationProxyEvent( sock_mc, pNode, mc_port );
+                    sendMulticastInformationProxyEvent( sock_mc, pNode );
 
                 }
 
@@ -398,11 +393,11 @@ void *daemonVSCPThread::Entry()
                 if ( NULL != pNode ) {
 
                     // Send multi cast information
-                    sendMulticastInformationProxyEvent( sock_mc, pNode, mc_port );
+                    sendMulticastInformationProxyEvent( sock_mc, pNode );
 
                 }
 
-                /*cguid guid;
+                /*cguid guid;      TODO
                 wxString str;
                 guid.getFromArray( pEvent->GUID );
                 guid.toString( str );
@@ -445,7 +440,7 @@ void *daemonVSCPThread::Entry()
                     ( VSCP_TYPE_INFORMATION_NODE_HEARTBEAT == pEvent->vscp_type ) ) {
 
                 // Send event on multicast information channel
-                sendMulticastEvent( sock_mc, pEvent, mc_port );
+                sendMulticastEvent( sock_mc, pEvent );
 
                 // Add node to knows nodes or return info if known
                 CNodeInformation *pNode = addNodeIfNotKnown( pEvent );
@@ -453,7 +448,7 @@ void *daemonVSCPThread::Entry()
                 if ( NULL != pNode ) {
 
                     // Send multi cast information
-                    sendMulticastInformationProxyEvent( sock_mc, pNode, mc_port );
+                    sendMulticastInformationProxyEvent( sock_mc, pNode );
 
                 }
 
@@ -631,7 +626,7 @@ bool daemonVSCPThread::parseInterface( const wxString &ifaddr,
     
     // If no data return defaults
     if ( 0 == strAddress.Length() ) {
-        ip = "0.0.0.0";
+        ip = "";  // INADDR_ANY
         *pPort = VSCP_ANNNOUNCE_MULTICAST_PORT;
         return true;
     }
@@ -644,7 +639,8 @@ bool daemonVSCPThread::parseInterface( const wxString &ifaddr,
     int pos;
     if ( ( wxNOT_FOUND != ( pos = strAddress.Find(':') ) ) && 
            ( wxNOT_FOUND != strAddress.Find('.') )  ) {
-        
+        ip = strAddress.Left( pos );
+        *pPort = vscp_readStringValue( strAddress.Right( strAddress.Length() - pos - 1 ) );
     }
     // Check for a.b.c.d  default port used
     else if ( ( wxNOT_FOUND != ( pos = strAddress.Find('.') ) ) ) {
@@ -653,7 +649,7 @@ bool daemonVSCPThread::parseInterface( const wxString &ifaddr,
     }
     // only port
     else {
-        ip = "0.0.0.0";
+        ip = "";  // INADDR_ANY
         *pPort = vscp_readStringValue( strAddress );
     }
             
@@ -665,8 +661,7 @@ bool daemonVSCPThread::parseInterface( const wxString &ifaddr,
 //
 
 bool daemonVSCPThread::sendMulticastEvent( int sock_mc,
-                                            vscpEvent *pEvent,
-                                            int port )
+                                            vscpEvent *pEvent )
 {
     struct sockaddr_in mc_addr;     // socket address structure
     uint8_t buf[ 1024 ];            // frame to send
@@ -678,96 +673,23 @@ bool daemonVSCPThread::sendMulticastEvent( int sock_mc,
     memset( &mc_addr, 0, sizeof( mc_addr ) );
     mc_addr.sin_family = AF_INET;
     mc_addr.sin_addr.s_addr = inet_addr( VSCP_MULTICAST_IPV4_ADDRESS_STR );
-    mc_addr.sin_port = htons( port );
+    mc_addr.sin_port = htons( VSCP_ANNNOUNCE_MULTICAST_PORT );
 
     // Clear buffer
     memset( buf, 0, sizeof( buf ) );
-
-    //  0           Packet type & encryption settings
-    //  1           HEAD MSB
-    //  2           HEAD LSB
-    //  3           Timestamp microseconds MSB
-    //  4           Timestamp microseconds
-    //  5           Timestamp microseconds
-    //  6           Timestamp microseconds LSB
-    //  7           Year
-    //  8           Month
-    //  9           Day	
-    //  10          Hour
-    //  11          Minute
-    //  12          Second	 
-    //  13          CLASS MSB
-    //  14          CLASS LSB
-    //  15          TYPE MSB
-    //  16          TYPE LSB
-    //  17 - 32     ORIGINATING GUID
-    //  33          DATA SIZE MSB
-    //  34          DATA SIZE LSB
-    //  35 - n 	    data limited to max 512 - 25 = 487 bytes
-    //  len - 2     CRC MSB( Calculated on HEAD + CLASS + TYPE + ADDRESS + SIZE + DATA )
-    //  len - 1     CRC LSB    
-
-    // Packet type
-    buf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = 
-            SET_VSCP_MULTICAST_TYPE( VSCP_MULTICAST_TYPE_EVENT, VSCP_ENCRYPTION_NONE );
-
-    // VSCP header
-    buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_MSB ] = 0;
-    buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] = VSCP_PRIORITY_NORMAL;
-
-    // Timestamp
-    uint32_t timestamp = pEvent->timestamp;
-    timestamp = wxUINT32_SWAP_ON_LE( timestamp );
-    buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 0 ] = ( pEvent->timestamp >> 24 ) & 0xff;
-    buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 1 ] = ( timestamp >> 16 ) & 0xff;
-    buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] = ( timestamp >> 8 ) & 0xff;
-    buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ] = timestamp & 0xff;
     
-    // Date/Time block
-    buf[ VSCP_MULTICAST_PACKET0_POS_YEAR ] = pEvent->year;
-    buf[ VSCP_MULTICAST_PACKET0_POS_MONTH ] = pEvent->month;
-    buf[ VSCP_MULTICAST_PACKET0_POS_DAY ] = pEvent->day;
-    buf[ VSCP_MULTICAST_PACKET0_POS_HOUR ] = pEvent->hour;
-    buf[ VSCP_MULTICAST_PACKET0_POS_MINUTE ] = pEvent->minute;
-    buf[ VSCP_MULTICAST_PACKET0_POS_SECOND ] = pEvent->second;
-
-    // VSCP class
-    uint16_t vscp_class = pEvent->vscp_class;
-    vscp_class = wxUINT32_SWAP_ON_LE( vscp_class );
-    buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS + 0 ] = ( vscp_class >> 8 ) & 0xff;
-    buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS + 1 ] = vscp_class & 0xff;
-
-    // VSCP Type
-    uint16_t vscp_type = pEvent->vscp_type;
-    vscp_type = wxUINT32_SWAP_ON_LE( vscp_type );
-    buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE + 0 ] = ( vscp_type >> 8 ) & 0xff;
-    buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE + 1 ] = vscp_type & 0xff;
-
-    // Originating GUID
-    memcpy( buf + VSCP_MULTICAST_PACKET0_POS_VSCP_GUID, pEvent->GUID, 16 );
-
-    // Size of payload =  128 bytes
-    uint16_t size = pEvent->sizeData;
-    size = wxUINT32_SWAP_ON_LE( size );
-    buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE + 0 ] = ( size >> 8 ) & 0xff;
-    buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE + 1 ] = size & 0xff;
-
-    // Copy in data
-    if ( pEvent->sizeData ) {
-        memcpy( buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA, pEvent->pdata, pEvent->sizeData );
+    // Wite data to buf
+    if ( !vscp_writeEventToUdpFrame( buf, 
+                                        sizeof(buf), 
+                                        0, 
+                                        pEvent ) ) {
+        return false;
     }
-
-    // CRC
-    crcInit();
-    uint16_t crc = crcFast( buf, VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData );
-    crc = wxUINT32_SWAP_ON_LE( crc );
-    buf[ VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData + 0 ] = ( crc >> 8 ) & 0xff;
-    buf[ VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData + 1 ] = crc & 0xff;
-
-    return ( ( VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData + 2 ) ==
+    
+    return ( ( 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData + 2 ) ==
              sendto( sock_mc,
                      ( const char * )buf,
-                     VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData + 2,
+                     1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData + 2,
                      0,
                      ( struct sockaddr * )&mc_addr,
                      sizeof( mc_addr ) ) );
@@ -779,8 +701,7 @@ bool daemonVSCPThread::sendMulticastEvent( int sock_mc,
 //
 
 bool daemonVSCPThread::sendMulticastEventEx( int sock,
-                                                vscpEventEx *pEventEx,
-                                                int port )
+                                                vscpEventEx *pEventEx )
 {
     bool rv;
     vscpEvent *pEvent = new vscpEvent;
@@ -788,9 +709,7 @@ bool daemonVSCPThread::sendMulticastEventEx( int sock,
     if ( NULL == pEvent ) return false;
 
     vscp_convertVSCPfromEx( pEvent, pEventEx );
-    rv = sendMulticastEvent( sock,
-                                pEvent,
-                                port );
+    rv = sendMulticastEvent( sock, pEvent );
     vscp_deleteVSCPevent( pEvent );
     return rv;
 }
@@ -800,11 +719,11 @@ bool daemonVSCPThread::sendMulticastEventEx( int sock,
 //
 
 bool daemonVSCPThread::sendMulticastInformationProxyEvent( int sock,
-                                                            CNodeInformation *pNode,
-                                                            int port )
+                                                            CNodeInformation *pNode )
 {
     struct sockaddr_in mc_addr;     // socket address structure
     uint8_t buf[ 1024 ];            // frame to send
+    vscpEventEx ex;
     
     // Check pointer
     if ( NULL == pNode ) return false;
@@ -813,35 +732,27 @@ bool daemonVSCPThread::sendMulticastInformationProxyEvent( int sock,
     memset( &mc_addr, 0, sizeof( mc_addr ) );
     mc_addr.sin_family = AF_INET;
     mc_addr.sin_addr.s_addr = inet_addr( VSCP_MULTICAST_IPV4_ADDRESS_STR );
-    mc_addr.sin_port = htons( port );
+    mc_addr.sin_port = htons( VSCP_ANNNOUNCE_MULTICAST_PORT );
 
     // Clear buffer
     memset( buf, 0, sizeof( buf ) );
-
-    //  0           Packet type & encryption settings
-    //  1           HEAD MSB
-    //  2           HEAD LSB
-    //  3           Timestamp microseconds MSB
-    //  4           Timestamp microseconds
-    //  5           Timestamp microseconds
-    //  6           Timestamp microseconds LSB
-    //  7           Year
-    //  8           Month
-    //  9           Day	
-    //  10          Hour
-    //  11          Minute
-    //  12          Second	 
-    //  13          CLASS MSB
-    //  14          CLASS LSB
-    //  15          TYPE MSB
-    //  16          TYPE LSB
-    //  17 - 32     ORIGINATING GUID
-    //  33          DATA SIZE MSB
-    //  34          DATA SIZE LSB
-    //  35 - n 	    data limited to max 512 - 25 = 487 bytes
-    //  len - 2     CRC MSB( Calculated on HEAD + CLASS + TYPE + ADDRESS + SIZE + DATA )
-    //  len - 1     CRC LSB
-    //
+    
+    ex.head = 0;
+    ex.obid = 0;
+    ex.timestamp = 0;
+    ex.year = 0;
+    ex.month= 0;
+    ex.day = 0;
+    ex.hour=0;
+    ex.minute=0;
+    ex.second=0;
+    ex.vscp_class = VSCP_CLASS2_INFORMATION;
+    ex.vscp_type = VSCP2_TYPE_INFORMATION_PROXY_HEART_BEAT;
+    ex.sizeData = VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE;
+    
+    // Originating GUID - Daemon GUID
+    memcpy( ex.GUID, m_pCtrlObject->m_guid.m_id, 16 );
+    
     //  Data
     //  ====================================================================================
     //  0-15 	    Real GUID for node (not interface GUID)
@@ -851,83 +762,36 @@ bool daemonVSCPThread::sendMulticastInformationProxyEvent( int sock,
     //  49-63 	    Reserved
     //  64-127 	    Real text name of node( if any ).Set to all zero if not available.
     //  128-191     Real text name of interface ( if any ).Set to all zero if not available.
-
-    // Packet type
-    buf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = 
-            SET_VSCP_MULTICAST_TYPE( VSCP_MULTICAST_TYPE_EVENT , VSCP_ENCRYPTION_NONE );
-
-    // VSCP header
-    buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_MSB ] = 0;
-    buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] = VSCP_PRIORITY_NORMAL;
-
-    // Timestamp
-    uint32_t timestamp = vscp_makeTimeStamp();
-    timestamp = wxUINT32_SWAP_ON_LE( timestamp );
-    buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 0 ] = ( timestamp >> 24 ) & 0xff;
-    buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 1 ] = ( timestamp >> 16 ) & 0xff;
-    buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] = ( timestamp >> 8 ) & 0xff;
-    buf[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ] = timestamp & 0xff;
     
-    // Date/Time block
-    wxDateTime now = wxDateTime::UNow();
-    buf[ VSCP_MULTICAST_PACKET0_POS_YEAR ] = now.GetYear();
-    buf[ VSCP_MULTICAST_PACKET0_POS_MONTH ] = now.GetMonth();
-    buf[ VSCP_MULTICAST_PACKET0_POS_DAY ] = now.GetDay();
-    buf[ VSCP_MULTICAST_PACKET0_POS_HOUR ] = now.GetHour();
-    buf[ VSCP_MULTICAST_PACKET0_POS_MINUTE ] = now.GetMinute();
-    buf[ VSCP_MULTICAST_PACKET0_POS_SECOND ] = now.GetSecond();
-
-    // VSCP class
-    uint16_t vscp_class = VSCP_CLASS2_INFORMATION;
-    vscp_class = wxUINT32_SWAP_ON_LE( vscp_class );
-    buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS + 0 ] = ( vscp_class >> 8 ) & 0xff;
-    buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS + 1 ] = vscp_class & 0xff;
-
-    // VSCP Type
-    uint16_t vscp_type = VSCP2_TYPE_INFORMATION_PROXY_HEART_BEAT;
-    vscp_type = wxUINT32_SWAP_ON_LE( vscp_type );
-    buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE + 0 ] = ( vscp_type >> 8 ) & 0xff;
-    buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE + 1 ] = vscp_type & 0xff;
-
-    // Originating GUID - Daemon GUID
-    memcpy( buf + VSCP_MULTICAST_PACKET0_POS_VSCP_GUID, m_pCtrlObject->m_guid.m_id, 16 );
-
-    // Size of payload
-    buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE + 0 ] = 0x00;
-    buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE + 1 ] = VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE;
-
     // Real GUID of node
-    memcpy( buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA,
+    memcpy( ex.data,
                 pNode->m_realguid.getGUID(),
                 16 );
 
     // Interface GUID of node
-    memcpy( buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + VSCP_MULTICAST_PROXY_HEARTBEAT_POS_IFGUID,
+    memcpy( ex.data + VSCP_MULTICAST_PROXY_HEARTBEAT_POS_IFGUID,
                 pNode->m_interfaceguid.getGUID(),
                 16 );
 
-    buf[ VSCP_MULTICAST_PROXY_HEARTBEAT_POS_IFLEVEL  ] = pNode->m_level;
+    ex.data[ VSCP_MULTICAST_PROXY_HEARTBEAT_POS_IFLEVEL  ] = pNode->m_level;
 
     // Name of node
-    memcpy( buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + VSCP_MULTICAST_PROXY_HEARTBEAT_POS_NODENAME,
+    memcpy( ex.data + VSCP_MULTICAST_PROXY_HEARTBEAT_POS_NODENAME,
                 pNode->m_strNodeName.mbc_str(),
                 MIN( 64, strlen( pNode->m_strNodeName.mbc_str() ) ) );
 
     // Name of interface node is on
-    memcpy( buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + VSCP_MULTICAST_PROXY_HEARTBEAT_POS_IFNAME,
+    memcpy( ex.data + VSCP_MULTICAST_PROXY_HEARTBEAT_POS_IFNAME,
             pNode->m_deviceName.mbc_str(),
             MIN( 64, strlen( pNode->m_deviceName.mbc_str() ) ) );
-
-    // CRC
-    crcInit();
-    crc chksum = crcFast( buf,
-                            VSCP_MULTICAST_PACKET0_HEADER_LENGTH +
-                                VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE );
-    chksum = wxUINT32_SWAP_ON_LE( chksum );
-    buf[ VSCP_MULTICAST_PACKET0_HEADER_LENGTH +
-            VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE + 0 ] = ( chksum >> 8 ) & 0xff;
-    buf[ VSCP_MULTICAST_PACKET0_HEADER_LENGTH +
-            VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE + 1 ] = chksum & 0xff;
+    
+    // Wite data to buf
+    if ( !vscp_writeEventExToUdpFrame( buf, 
+                                        sizeof(buf), 
+                                        0, 
+                                        &ex ) ) {
+        return false;
+    }
 
     return ( ( VSCP_MULTICAST_PACKET0_HEADER_LENGTH +
                     VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE + 2 ) ==

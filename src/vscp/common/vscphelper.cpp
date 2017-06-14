@@ -2714,12 +2714,12 @@ bool vscp_setEventToNow( vscpEvent *pEvent )
 {
     if ( NULL == pEvent ) return false;
     
-    pEvent->year = wxDateTime::Now().GetYear();
-    pEvent->month = wxDateTime::Now().GetMonth();
-    pEvent->day = wxDateTime::Now().GetDay();
-    pEvent->hour = wxDateTime::Now().GetHour();
-    pEvent->minute = wxDateTime::Now().GetMinute();
-    pEvent->second = wxDateTime::Now().GetSecond();
+    pEvent->year = wxDateTime::UNow().GetYear();
+    pEvent->month = wxDateTime::UNow().GetMonth() + 1;
+    pEvent->day = wxDateTime::UNow().GetDay();
+    pEvent->hour = wxDateTime::UNow().GetHour();
+    pEvent->minute = wxDateTime::UNow().GetMinute();
+    pEvent->second = wxDateTime::UNow().GetSecond();
     
     return true;
 }
@@ -2732,12 +2732,12 @@ bool vscp_setEventExToNow( vscpEventEx *pEventEx )
 {
     if ( NULL == pEventEx ) return false;
     
-    pEventEx->year = wxDateTime::Now().GetYear();
-    pEventEx->month = wxDateTime::Now().GetMonth();
-    pEventEx->day = wxDateTime::Now().GetDay();
-    pEventEx->hour = wxDateTime::Now().GetHour();
-    pEventEx->minute = wxDateTime::Now().GetMinute();
-    pEventEx->second = wxDateTime::Now().GetSecond();
+    pEventEx->year = wxDateTime::UNow().GetYear();
+    pEventEx->month = wxDateTime::UNow().GetMonth() + 1;
+    pEventEx->day = wxDateTime::UNow().GetDay();
+    pEventEx->hour = wxDateTime::UNow().GetHour();
+    pEventEx->minute = wxDateTime::UNow().GetMinute();
+    pEventEx->second = wxDateTime::UNow().GetSecond();
     
     return true;
 }
@@ -5514,7 +5514,8 @@ bool vscp_writeEventToUdpFrame( uint8_t *frame,
     frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ] = pEvent->timestamp & 0xff;
 
     // Date / time block GMT
-    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR ] = pEvent->year;
+    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_MSB ] = ( pEvent->year >> 8 ) & 0xff;
+    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_LSB ] = pEvent->year & 0xff;
     frame[ VSCP_MULTICAST_PACKET0_POS_MONTH ] = pEvent->month;
     frame[ VSCP_MULTICAST_PACKET0_POS_DAY ] = pEvent->day;
     frame[ VSCP_MULTICAST_PACKET0_POS_HOUR ] = pEvent->hour;
@@ -5607,20 +5608,21 @@ bool vscp_getEventFromUdpFrame( vscpEvent *pEvent,
     //  4           Timestamp microseconds
     //  5           Timestamp microseconds
     //  6           Timestamp microseconds LSB
-    //  7           Year
-    //  8           Month
-    //  9           Day
-    //  10          Hour
-    //  11          Minute
-    //  12          Second
-    //  13          CLASS MSB
-    //  14          CLASS LSB
-    //  15          TYPE MSB
-    //  16          TYPE LSB
-    //  17 - 32     ORIGINATING GUID
-    //  33          DATA SIZE MSB
-    //  34          DATA SIZE LSB
-    //  35 - n 	    data limited to max 512 - 25 = 487 bytes
+    //  7           Year MSB
+    //  8           Year LSB
+    //  9           Month
+    //  10           Day
+    //  11          Hour
+    //  12          Minute
+    //  13          Second
+    //  14          CLASS MSB
+    //  15          CLASS LSB
+    //  16          TYPE MSB
+    //  17          TYPE LSB
+    //  18 - 33     ORIGINATING GUID
+    //  34          DATA SIZE MSB
+    //  35          DATA SIZE LSB
+    //  36 - n 	    data limited to max 512 - 25 = 487 bytes
     //  len - 2     CRC MSB( Calculated on HEAD + CLASS + TYPE + ADDRESS + SIZE + DATA )
     //  len - 1     CRC LSB
     // if encrypted with AES128/192/256 16.bytes IV here.
@@ -5694,7 +5696,8 @@ bool vscp_getEventFromUdpFrame( vscpEvent *pEvent,
     }
     
     // Date/time
-    pEvent->year = buf[ VSCP_MULTICAST_PACKET0_POS_YEAR ];
+    pEvent->year = ( (uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_YEAR_MSB ] << 8 ) +
+                               buf[ VSCP_MULTICAST_PACKET0_POS_YEAR_LSB ];
     pEvent->month = buf[ VSCP_MULTICAST_PACKET0_POS_MONTH ];
     pEvent->day = buf[ VSCP_MULTICAST_PACKET0_POS_DAY ];
     pEvent->hour = buf[ VSCP_MULTICAST_PACKET0_POS_HOUR ];
@@ -5709,7 +5712,7 @@ bool vscp_getEventFromUdpFrame( vscpEvent *pEvent,
          ( 0 == pEvent->minute ) &&
          ( 0 == pEvent->second ) ) {
         
-        pEvent->year = wxDateTime::UNow().GetYear();
+        pEvent->year = wxDateTime::UNow().GetYear() - wxDateTime::UNow().GetCentury();
         pEvent->month = wxDateTime::UNow().GetMonth();
         pEvent->day = wxDateTime::UNow().GetDay();
         pEvent->hour = wxDateTime::UNow().GetHour();

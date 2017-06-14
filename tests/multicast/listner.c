@@ -25,6 +25,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <vscp.h>
+
 #define HELLO_PORT 9598
 #define HELLO_GROUP "224.0.23.158"
 #define MSGBUFSIZE 1024
@@ -35,6 +37,7 @@ int main( int argc, char *argv[] )
   int sock, nbytes,addrlen;
   struct ip_mreq mreq;
   unsigned char buf[ MSGBUFSIZE ];
+  char *pFilter = NULL;
   u_int yes = 1;
   int bDumpData = 0;
 
@@ -42,6 +45,10 @@ int main( int argc, char *argv[] )
     if ( NULL != strstr( argv[1], "dump" ) ) {
       bDumpData = 1;
     }
+  }
+
+  if ( argc >= 3 ) {
+      pFilter = argv[2];
   }
 
   // create what looks like an ordinary UDP socket
@@ -92,14 +99,24 @@ int main( int argc, char *argv[] )
       const char *peer;
       peer = inet_ntoa( addr.sin_addr  );
 
-      printf("Announce frame received form ");
-      printf("%s %d\n", peer, ntohs( addr.sin_port ) );
+      if ( NULL != pFilter ) {
+        if ( NULL == strstr( peer, pFilter ) ) continue;
+      }
+
+      printf("Announce frame received from ");
+      printf("%s port=%d\n", peer, ntohs( addr.sin_port ) );
 
       if ( bDumpData ) {
-        printf("size of frame=%d - Frame=", nbytes );
+        printf("Size of frame=%d.\n Frame=", nbytes );
         for ( int i=0; i<nbytes; i++ ) {
           printf("%02X ", buf[i] );
         }
+        printf("\nVSCP Class = %d VSCP Type = %d\n",
+                ((int)buf[VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_MSB] << 8 ) +
+                  buf[VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_LSB],
+                  ((int)buf[VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_MSB] << 8 ) +
+                    buf[VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB] );
+
         printf("\n\n");
       }
 

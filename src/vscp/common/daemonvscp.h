@@ -166,34 +166,26 @@ public:
         Send multicast event
         @param sock Multicast socket to send on
         @param pEvent Event to send
-        @param port Port to send multicast frame on.
         @return true on success, false on failure
     */
-    bool sendMulticastEvent( int sock,
-                                vscpEvent *pEvent,
-                                int port = VSCP_ANNNOUNCE_MULTICAST_PORT );
+    bool sendMulticastEvent( int sock, vscpEvent *pEvent  );
 
     /*!
         Send multicast event Ex
         @param sock Multicast socket to send on
         @param pEventEx Event ex to send
-        @param port Port to send multicast frame on.
         @return true on success, false on failure
     */
-    bool sendMulticastEventEx( int sock,
-                                vscpEventEx *pEventEx,
-                                int port = VSCP_ANNNOUNCE_MULTICAST_PORT);
+    bool sendMulticastEventEx( int sock, vscpEventEx *pEventEx );
 
     /*!
         Send multicast information event
         @param sock Multicast socket to send on
         @param pNode Pointer to information node.
-        @param port Port to send multicast frame on.
         @return true on success, false on failure
     */
     bool sendMulticastInformationProxyEvent( int sock, 
-                                                CNodeInformation *pNode,
-                                                int port = VSCP_ANNNOUNCE_MULTICAST_PORT );
+                                                CNodeInformation *pNode );
 
     /*!
         Termination control
