@@ -272,6 +272,11 @@ void *daemonVSCPThread::Entry()
                     sendMulticastEventEx( sock_mc, &eventEx );
 
                 }
+                else if ( ( VSCP_CLASS2_PROTOCOL == eventEx.vscp_class ) &&
+                          ( VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS == eventEx.vscp_type ) ) {
+                    // Send event on multicast information channel
+                    sendMulticastEventEx( sock_mc, &eventEx );
+                }
 
                 vscpEvent *pnewEvent = new vscpEvent;
                 if ( NULL != pnewEvent ) {

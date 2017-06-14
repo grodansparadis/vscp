@@ -675,7 +675,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
     // High end server capabilities
     wxTimeSpan CapabilitiesPeriod( 0, 0, m_intervalCapabilities );
     if ( m_bCapabilitiesEvent && 
-         ( ( wxDateTime::Now() - m_Capabilities_sent ) >= SegmentControllerHeartBeatPeriod ) ) {
+         ( ( wxDateTime::Now() - m_Capabilities_sent ) >= CapabilitiesPeriod ) ) {
 
         m_Capabilities_sent = wxDateTime::Now();
         // 
@@ -686,7 +686,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         vscp_setEventExToNow( pEventEx ); // Set time to current time
         pEventEx->vscp_class = VSCP_CLASS2_PROTOCOL;
         pEventEx->vscp_type = VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS;
-        pEventEx->sizeData = 5;
+        
         
         // IMPORTANT - GUID must be set by caller before event is sent
         
@@ -717,6 +717,8 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         
         // non-standard ports
         // TODO
+        
+        pEventEx->sizeData = 104;
 
         return true;
     }

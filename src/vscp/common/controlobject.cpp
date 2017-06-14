@@ -568,6 +568,15 @@ bool CControlObject::getVscpCapabilities( uint8_t *pCapability )
                     ( 1 << ( VSCP_SERVER_CAPABILITY_TWO_CONNECTIONS % 8 ) );
         }
     
+        // AES256
+        pCapability[ 15 ] |= (1<<2);
+    
+        // AES192
+        pCapability[ 15 ] |= (1<<1);
+    
+        // AES128
+        pCapability[ 15 ] |= 1;
+    
     return true;
 }
 
