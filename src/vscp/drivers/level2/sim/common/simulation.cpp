@@ -1387,8 +1387,7 @@ dumb_fill_data:
             }
 
             // We are done with the event
-            vscp_deleteVSCPevent( pEvent );
-            pEvent = NULL;
+            vscp_deleteVSCPevent_v2( &pEvent );
             
         } // Send list size
         

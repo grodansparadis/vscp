@@ -2305,7 +2305,7 @@ bool vscp_convertVSCPfromEx(vscpEvent *pEvent, const vscpEventEx *pEventEx)
     if ( NULL == pEvent ) return false;
     if ( NULL == pEventEx ) return false;
     
-    if (pEventEx->sizeData > VSCP_LEVEL2_MAXDATA) return false;
+    if ( pEventEx->sizeData > VSCP_LEVEL2_MAXDATA ) return false;
 
     if (pEventEx->sizeData) {
         // Allocate memory for data
@@ -5656,6 +5656,8 @@ bool vscp_getEventFromUdpFrame( vscpEvent *pEvent,
         // CRC is zero if calculated over itself
         if ( crcnew ) return false;
     }
+    
+    pEvent->crc = calcCRC;
             
     pEvent->sizeData =  
             ((uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] << 8 ) +

@@ -64,7 +64,7 @@ void fastpbkdf2_hmac_sha256(const uint8_t *pw, size_t npw,
 void fastpbkdf2_hmac_sha512(const uint8_t *pw, size_t npw,
                             const uint8_t *salt, size_t nsalt,
                             uint32_t iterations,
-                            uint8_t *out, size_t nout);
+                            uint8_t *out, size_t nout );
 
 #ifdef __cplusplus
 }

@@ -17,7 +17,7 @@
  * http://ntrg.cs.tcd.ie/undergrad/4ba2/multicast/antony/example.html
  */
 
- // Format listen ["dump"] [ip-addr-to filter]
+ // Format listen ["dump|nodump"] [ip-addr-to filter for]
  // for example: listen dump 192.168.1.9
 
 #include <sys/types.h>
@@ -66,6 +66,10 @@ int main( int argc, char *argv[] )
         return -1;
     }
 
+    printf("Listen for announce events on the VSCP announce multicast channel.\n");
+    printf("usage: announce-listner dump|nodump ip-address-to-filter-on\n");
+    printf("CTRL +C to terminate.\n\n");
+
     // set up destination address
     memset( &addr, 0, sizeof( addr ) );
     addr.sin_family = AF_INET;
@@ -87,7 +91,7 @@ int main( int argc, char *argv[] )
        return -1;
    }
 
-   printf("Listen for announce events on the VSCP announce multicast channel.\n\n");
+
 
    // now just enter a read-print loop
    while ( 1 ) {
@@ -109,20 +113,23 @@ int main( int argc, char *argv[] )
             if ( NULL == strstr( peer, pFilter ) ) continue;
         }
 
-        printf("Announce frame received from ");
-        printf("%s port=%d\n", peer, ntohs( addr.sin_port ) );
+        int vscp_class =
+            ( (int)buf[VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_MSB] << 8 ) +
+                        buf[VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_LSB];
+
+        int vscp_type =
+            ((int)buf[VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_MSB] << 8 ) +
+                       buf[VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB];
+
+        printf( "Announce frame received from ");
+        printf( "%s, port=%d - ", peer, ntohs( addr.sin_port ) );
+        printf( "class=%d,type=%d\n", vscp_class, vscp_type );
 
         if ( bDumpData ) {
-            printf("Size of frame=%d.\n Frame=", nbytes );
+            printf("Size of frame=%d.\nFrame=", nbytes );
             for ( int i=0; i<nbytes; i++ ) {
                 printf("%02X ", buf[i] );
             }
-            printf("\nVSCP Class = %d VSCP Type = %d\n",
-                ((int)buf[VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_MSB] << 8 ) +
-                  buf[VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_LSB],
-                  ((int)buf[VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_MSB] << 8 ) +
-                    buf[VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB] );
-
             printf("\n\n");
         }
 

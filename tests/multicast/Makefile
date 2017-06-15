@@ -8,10 +8,10 @@ LDFLAGS =
 EXTRALIBS =  -lz
 OBJ = crc.o crc8.o aes.o
 
-all:	listner sender
+all:	announce-listner sender
 
-listner:	listner.c
-	cc $(CFLAGS) listner.c -o listner
+announce-listener:	announce-listener.c
+	cc $(CFLAGS) announce-listener.c -o announce-listener
 
 sender:     sender.c
 	cc $(CFLAGS) sender.c -o sender
@@ -32,8 +32,6 @@ aes.o: ../../src/common/aes.o ../../src/common/aes.h
 #	$(CXX)  $(CPPFLAGS) -o $@ receive_vscp_udp_frame.o  $(OBJ) $(LDFLAGS) -L$(LIBDIRNAME) $(EXTRALIBS)
 
 clean:
-	rm -f listner
+	rm -f announce-listner
 	rm -f sender
-	rm -f send_vscp_udp_frame
-	rm -f receive_vscp_udp_frame
 	rm -f *.o

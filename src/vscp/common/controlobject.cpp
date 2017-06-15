@@ -121,6 +121,8 @@
 #include <mongoose.h>
 #include <v7.h>
 
+#include <fastpbkdf2.h>
+
 #include "canal_macro.h"
 #include <vscp.h>
 #include <vscphelper.h>
@@ -219,7 +221,7 @@ CControlObject::CControlObject()
     m_admin_user = _("admin");
     m_admin_password = _("secret");
     m_admin_allowfrom = _("*");
-    m_vscptoken = _("Carpe diem quam minimum credula postero");
+    //m_vscptoken = _("Carpe diem quam minimum credula postero");
     
     m_nConfiguration = 1;       // Default configuration record is read.
        
@@ -2425,6 +2427,30 @@ bool CControlObject::getIPAddress( cguid& guid )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// getSystemKey
+//
+
+uint8_t *CControlObject::getSystemKey( uint8_t *pKey ) 
+{
+    if ( NULL != pKey ) {
+        memcpy( pKey, m_systemKey, 32 );
+    }
+    
+    return m_systemKey;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getSystemKeyMD5
+//
+
+void CControlObject::getSystemKeyMD5( wxString &strKey ) 
+{
+    char digest[33];
+    vscp_md5( digest, m_systemKey, 32 ); 
+    strKey.FromAscii( digest );
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // readXMLConfigurationGeneral
 //
 // Read the configuration XML file
@@ -2462,8 +2488,8 @@ bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
                     m_admin_user = subchild->GetAttribute( wxT("user"), wxT("admin") );
                     m_admin_password = subchild->GetAttribute( wxT("password"), wxT("secret") );
                     m_admin_allowfrom = subchild->GetAttribute( wxT("allowfrom"), wxT("*") ); 
-                    m_vscptoken = subchild->GetAttribute( wxT("vscptoken"), 
-                                                            wxT("Carpe diem quam minimum credula postero") );
+                    //m_vscptoken = subchild->GetAttribute( wxT("vscptoken"), 
+                    //                                        wxT("Carpe diem quam minimum credula postero") );
                 }
                 else if ( subchild->GetName() == wxT("loglevel") ) {
                     

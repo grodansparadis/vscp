@@ -536,6 +536,23 @@ public:
     long getCountRecordsLogDB( void );
     
     
+    /*!
+     * Get the system key
+     * 
+     * @param pKey Buffer that will gett 32-byte key. Can be NULL in which
+     *              case the key is not copied.
+     * @return Pointer to the 32 byte key
+     */
+    uint8_t *getSystemKey( uint8_t *pKey );
+    
+    /*!
+     * Get MD5 of system key (vscptoken)
+     * 
+     * @param Reference to string that will receive the MD5 of the key.
+     */
+    void getSystemKeyMD5( wxString &strKey );
+    
+    
 public:
 
 #ifdef BUILD_VSCPD_SERVICE
@@ -565,7 +582,8 @@ public:
     wxString m_admin_user;      // Defaults to "admin"
     wxString m_admin_password;  // Defaults to "13ca88de01ce06e377f74e61c23f630b"
     wxString m_admin_allowfrom; // Remotes allowed to connect. Defaults to "*"  
-    wxString m_vscptoken;       // Key for encryption
+    //wxString m_vscptoken;       // Key for encryption Must be >= 32 chars
+    uint8_t m_systemKey[32];
 
     /*!
         User to run as for Unix

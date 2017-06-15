@@ -43,6 +43,8 @@
 
 #define	VSCP_DEFAULT_UDP_PORT               33333
 #define	VSCP_DEFAULT_TCP_PORT               9598
+#define VSCP_ANNNOUNCE_MULTICAST_PORT       9598
+#define VSCP_DEFAULT_MULTICAST_PORT         44444
 
 #define VSCP_ADDRESS_SEGMENT_CONTROLLER	    0x00
 #define VSCP_ADDRESS_NEW_NODE               0xff
@@ -288,9 +290,6 @@ typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 // * * * Multicast on VSCP reserved IP 224.0.23.158
 
 #define VSCP_MULTICAST_IPV4_ADDRESS_STR         "224.0.23.158"
-
-#define VSCP_ANNNOUNCE_MULTICAST_PORT           9598
-#define VSCP_DEFAULT_MULTICAST_PORT             44444
 
 // Packet frame format type = 0
 //      without byte0 and CRC

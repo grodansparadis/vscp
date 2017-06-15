@@ -261,8 +261,8 @@ VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p)
                 
                 // OK receive the frame
                 if ( receiveFrame( nc, 
-                                        pUDPClientThread->m_pClientItem,
-                                        &gpobj->m_udpInfo.m_filter )  ) {
+                                    pUDPClientThread->m_pClientItem,
+                                    &gpobj->m_udpInfo.m_filter )  ) {
                     
                     if ( gpobj->m_udpInfo.m_bAck ) {
                         replyAckFrame( nc, nc->recv_mbuf.buf[0] );
@@ -318,8 +318,8 @@ VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p)
 
 bool 
 VSCPUDPClientThread::receiveFrame( struct mg_connection *nc, 
-                                     CClientItem *pClientItem,
-                                     vscpEventFilter *pRxFilter )
+                                        CClientItem *pClientItem,
+                                        vscpEventFilter *pRxFilter )
 {
     uint8_t buf[ 1024 ];
     vscpEvent *pEvent;

@@ -96,7 +96,7 @@ void *worksMulticastThread::Entry()
 
     int sock;                                               // socket descriptor 
     struct sockaddr_in mc_addr;                             // socket address structure  
-    unsigned short port = VSCP_MULTICAST_ANNNOUNCE_PORT;    // multicast port 
+    unsigned short port = VSCP_DEFAULT_MULTICAST_PORT;      // multicast port 
     unsigned char ttl = 1;                                  // time to live (hop count) 
     int flag_on = 1;                                        // socket option flag 
 
