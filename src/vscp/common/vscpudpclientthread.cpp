@@ -48,7 +48,7 @@
 #include <mongoose.h>
 #include <version.h>
 #include <controlobject.h>
-#include <udpclientthread.h>
+#include <vscpudpclientthread.h>
 
 // Prototypes
 

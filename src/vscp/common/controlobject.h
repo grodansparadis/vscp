@@ -48,8 +48,8 @@
 #include <vscpvariable.h>
 #include <vscpautomation.h>
 #include <tcpipclientthread.h>
-#include <udpclientthread.h>
-#include "vscpmulticastclientthread.h"
+#include <vscpudpclientthread.h>
+#include <vscpmulticastclientthread.h>
 #include <webserver_websocket.h>
 #include <vscpmqttbroker.h>
 #include <daemonvscp.h>
