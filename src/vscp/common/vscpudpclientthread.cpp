@@ -39,7 +39,7 @@
 
 #include <vscp.h>
 #include <crc.h>
-#include <tcpipclientthread.h>
+#include <vscptcpipclientthread.h>
 #include <canal_win32_ipc.h>
 #include <canal_macro.h>
 #include <canal.h>
@@ -51,7 +51,6 @@
 #include <vscpudpclientthread.h>
 
 // Prototypes
-
 
 // The global control object
 extern CControlObject *gpobj; 

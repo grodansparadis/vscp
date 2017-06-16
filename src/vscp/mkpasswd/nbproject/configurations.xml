@@ -5,6 +5,7 @@
                    displayName="common"
                    projectFiles="true"
                    root="../common">
+      <itemPath>../../common/aes.h</itemPath>
       <itemPath>../common/canal.h</itemPath>
       <itemPath>../common/canal_macro.h</itemPath>
       <itemPath>../../common/crc.c</itemPath>
@@ -67,6 +68,7 @@
               <pElem>.</pElem>
             </incDir>
             <preprocessorList>
+              <Elem>MG_ENABLE_SSL</Elem>
               <Elem>VSCP_ENABLE_LUA</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
@@ -82,6 +84,7 @@
               <pElem>/usr/include/lua5.2</pElem>
             </incDir>
             <preprocessorList>
+              <Elem>MG_ENABLE_SSL</Elem>
               <Elem>VSCP_ENABLE_LUA</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>

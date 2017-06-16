@@ -1129,9 +1129,12 @@ CUserItem * CUserList::validateUser( const wxString& user,
 
     pUserItem = m_userhashmap[ user ];
     if ( NULL == pUserItem ) return NULL;
+    
+    if ( !vscp_isPasswordValid( pUserItem->getPassword(), 
+                            password ) ) return NULL;
 
     // Check password
-    if (!pUserItem->getPassword().IsSameAs( password ) ) return NULL;
+    //if (!pUserItem->getPassword().IsSameAs( password ) ) return NULL;
 
     return pUserItem;
 }

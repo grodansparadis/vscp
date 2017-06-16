@@ -93,7 +93,7 @@ void AES_CBC_decrypt_buffer( uint8_t type,
  *
  */ 
 
-int getRandomIV( uint8_t *buf, size_t len );
+size_t getRandomIV( uint8_t *buf, size_t len );
 
 #ifdef __cplusplus
 }

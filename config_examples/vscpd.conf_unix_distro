@@ -25,7 +25,7 @@
           The VSCP token is used a a key for encryption routines
         -->
         <security admin="admin"
-                       password="secret"
+                       password="450ADCE88F2FDBB20F3318B65E53CA4A;06D3311CC2195E80BE4F8EB12931BFEB5C630F6B154B2D644ABE29CEBDBFB545"
                        allowfrom="*"
                        vscptoken="Carpe diem quam minimum credula postero" />
 

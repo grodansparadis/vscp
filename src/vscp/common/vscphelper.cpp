@@ -63,6 +63,7 @@
 #include <crc8.h> 
 #include <crc.h> 
 #include <aes.h>
+#include <fastpbkdf2.h>
 
 #include <vscp.h>
 #include <guid.h>
@@ -5899,6 +5900,181 @@ bool vscp_decryptVscpUdpFrame( uint8_t *output,
                                         key, 
                                         (const uint8_t *)appended_iv );
             break;    
+    }
+    
+    return true;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////
+//                           Password/key handling
+///////////////////////////////////////////////////////////////////////////
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_convertHexStr2ByteArray
+//
+
+size_t vscp_convertHexStr2ByteArray( uint8_t *array, size_t size, const char *hexstr )
+{
+    int slen = strlen( hexstr );
+    int i = 0, j = 0;
+
+    // The output array size is half the hex_str length (rounded up)
+    int osize = ( slen + 1 ) / 2;
+
+    if ( osize > size ) {
+        // Too big for the output array
+        return -1;
+    }
+
+    if ( slen % 2 == 1 ) {
+        // hex_str is an odd length, so assume an implicit "0" prefix
+        if ( sscanf( &(hexstr[0]), "%1hhx", &(array[0])) != 1 ) {
+            return -1;
+        }
+
+        i = j = 1;
+    }
+
+    for (; i < slen; i+=2, j++) {
+        if ( sscanf( &(hexstr[i]), "%2hhx", &(array[j])) != 1 ) {
+            return -1;
+        }
+    }
+
+    return osize;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_getHashPasswordComponents
+//
+
+bool vscp_getHashPasswordComponents( uint8_t *pSalt, 
+                                        uint8_t *pHash, 
+                                        const wxString &stored_pw )
+{
+    wxString strSalt;
+    wxString strHash;
+    
+    // Check pointers
+    if ( NULL == pSalt ) return false;
+    if ( NULL == pHash ) return false;
+    
+    wxStringTokenizer tkz( stored_pw, _(";"));
+    if ( 2 != tkz.CountTokens() ) return false;
+    
+    strSalt = tkz.GetNextToken();
+    vscp_convertHexStr2ByteArray( pSalt, 16, strSalt.mbc_str() );
+            
+    strHash = tkz.GetNextToken();
+    vscp_convertHexStr2ByteArray( pHash, 32, strHash.mbc_str() );
+    
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_makePasswordHash
+//
+
+bool vscp_makePasswordHash( wxString &result, 
+                                const wxString &password,
+                                uint8_t *pSalt )
+{
+    int i;
+    uint8_t salt[16];
+    uint8_t buf[32];
+    
+    result.Empty();
+    
+    // Get random IV
+    if ( NULL == pSalt ) {
+        if ( 16 != getRandomIV( salt, 16 ) ) {
+            return false;
+        }
+    }
+    else {
+        memcpy( salt, pSalt, 16 );
+    }
+    
+    uint8_t *p = new uint8_t[ strlen( (const char *)password.mbc_str() ) ];
+    if ( NULL == p ) return false;
+    
+    memcpy( p, (const char *)password.mbc_str(), strlen( (const char *)password.mbc_str() ) );
+    
+    fastpbkdf2_hmac_sha256( p, strlen( (const char *)password.mbc_str() ),
+                            salt, 16,
+                            70000,
+                            buf, 32 );
+    delete [] p;
+    
+    for ( i=0; i<16; i++ ) {
+        result += wxString::Format( "%02X", salt[i] );
+    }
+    result += (";");
+    for ( i=0; i<32; i++ ) {
+        result += wxString::Format( "%02X", buf[i] );
+    }
+    
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_isPasswordValid
+//
+
+bool vscp_isPasswordValid( const wxString &stored_pw, const wxString &password )
+{
+    wxString calcHash;  // Calculated hash
+    uint8_t salt[16];   // Stored salt
+    uint8_t hash[32];   // Stored hash
+    
+    if ( !vscp_getHashPasswordComponents( salt, hash, stored_pw ) ) {
+        return false;
+    }
+    
+    if ( !vscp_makePasswordHash( calcHash, password, salt ) ) {
+        return false;
+    }
+    
+    if ( stored_pw != calcHash ) return false;
+    
+    return true;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_getSalt
+//
+
+bool vscp_getSalt( uint8_t *buf, size_t len ) 
+{
+    if( !getRandomIV( buf, len ) ) return false;
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_getSaltHex
+//
+
+bool vscp_getSaltHex( wxString &strSalt, size_t len ) 
+{
+    if ( len ) {
+        uint8_t *pbuf = new uint8_t[ len ];
+        if( len != getRandomIV( pbuf, len ) ) {
+            delete [] pbuf;
+            return false;
+        }
+        
+        strSalt.Empty();
+        for ( int i=0; i<len; i++ ) {
+            strSalt += wxString::Format(_("%02X"), pbuf[i] );
+        }
+        
+        delete [] pbuf;
+        
     }
     
     return true;

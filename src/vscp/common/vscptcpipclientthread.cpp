@@ -43,7 +43,7 @@
 #endif
 
 #include <vscp.h>
-#include "tcpipclientthread.h"
+#include "vscptcpipclientthread.h"
 #include <canal_win32_ipc.h>
 #include <canal_macro.h>
 #include <canal.h>

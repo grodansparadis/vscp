@@ -43,7 +43,7 @@ VSCPD_OBJECTS =  vscpd.o \
 	../../common/clientlist.o \
 	../../common/controlobject.o \
 	../../common/vscpeventhelper.o \
-	../../common/tcpipclientthread.o \
+	../../common/vscptcpipclientthread.o \
 	../../common/dm.o \
 	../../common/vscpvariable.o \
 	../../common/interfacelist.o \

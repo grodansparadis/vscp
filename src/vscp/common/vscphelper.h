@@ -1285,7 +1285,89 @@ extern "C" {
                                         const uint8_t *key,
                                         const uint8_t *iv,
                                         uint8_t nAlgorithm );
+    
+    
+    ///////////////////////////////////////////////////////////////////////////
+    //                             Password/key handling
+    ///////////////////////////////////////////////////////////////////////////
+    
+    
+    /*!
+     * Convert a hext string to a byte array
+     * 
+     * @param array Byte array that will receive result.
+     * @param size Size of byte array.
+     * @param hextstr Hex string that should be converted.
+     * @return Number of bytes written to the byte array.
+     * 
+     */
+    
+    size_t vscp_convertHexStr2ByteArray( uint8_t *array, 
+                                            size_t size, 
+                                            const char *hexstr );
+    
+    
+    /*!
+     * Get components form a hashed password
+     * 
+     * VSCP passwords is stored as two hex strings separated with a ";"-
+     * The first string is the salt, the second the hashed password.
+     * 
+     * @param pSalt Pointer to a 16 byte buffer that will receive the salt.
+     * @param pHash Pointer to a 32 byte buffer that will receive the salt.
+     * @param stored_pw Stored password on the form salt;hash
+     * @return True on success, false on failure.
+     * 
+     */
+    bool vscp_getHashPasswordComponents( uint8_t *pSalt, 
+                                            uint8_t *pHash, 
+                                            const wxString &stored_pw );
+    
+    /*!
+     * Make password hash with prepended salt from clear text password.
+     * 
+     * @param result Will get hex hash string with random salt prepended separated
+     *          with ";". 
+     * @param password Clear text password to be hashed.
+     * @return true on success, false otherwise.
+     */
+    bool vscp_makePasswordHash( wxString &result, 
+                                    const wxString &password,
+                                    uint8_t *pSalt = NULL );
+    
+    /*!
+     * Validate password
+     * 
+     * @param stored_pw Stored password on the form "salt;hash"
+     * @param password Password to test.
+     * @return true on success, false otherwise.
+     */
 
+    bool vscp_isPasswordValid( const wxString &stored_pw, 
+                                    const wxString &password );
+    
+    
+    /*!
+     * Get salt
+     * 
+     * @param Pointer to byte array to write salt to.
+     * @param len Number of bytes to generate.
+     * @return True on success.
+     * 
+     */
+    bool vscp_getSalt( uint8_t *buf, size_t len );
+    
+    
+    /*!
+     * Get salt as hex string
+     * 
+     * @param strSalt String that will get the salt in hex format.
+     * @param len Number of bytes to generate.
+     * @return True on success.
+     */
+    bool vscp_getSaltHex( wxString &strSalt, size_t len );
+    
+    
 #ifdef __cplusplus
 }
 #endif

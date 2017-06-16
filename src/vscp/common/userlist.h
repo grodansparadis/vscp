@@ -229,7 +229,8 @@ public:
     void setPassword( const wxString& strPassword ) { m_password = strPassword; };
     
     wxString getPasswordDomain( void ) { return m_md5PasswordDomain.Lower(); };
-    void setPasswordDomain( const wxString& strPassword ) { m_md5PasswordDomain = strPassword.Lower(); };
+    void setPasswordDomain( const wxString& strPassword ) 
+                                    { m_md5PasswordDomain = strPassword.Lower(); };
     
     wxString getFullname( void ) { return m_fullName; };
     void setFullname( const wxString& strUser ) { m_fullName = strUser; };

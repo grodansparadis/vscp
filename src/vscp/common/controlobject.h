@@ -47,7 +47,7 @@
 #include <vscp.h>
 #include <vscpvariable.h>
 #include <vscpautomation.h>
-#include <tcpipclientthread.h>
+#include <vscptcpipclientthread.h>
 #include <vscpudpclientthread.h>
 #include <vscpmulticastclientthread.h>
 #include <webserver_websocket.h>
@@ -552,6 +552,7 @@ public:
      */
     void getSystemKeyMD5( wxString &strKey );
     
+
     
 public:
 

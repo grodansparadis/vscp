@@ -121,6 +121,7 @@
 #include <mongoose.h>
 #include <v7.h>
 
+#include <aes.h>
 #include <fastpbkdf2.h>
 
 #include "canal_macro.h"
@@ -772,8 +773,11 @@ bool CControlObject::searchLogDB( const char * sql, wxString& strResult )
 bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 {
     wxString str;
-        
+    
     /*
+    vscp_isPasswordValid( _("E2D453EF99FB3FCD19E67876554A8C27;A4A86F7D7E119BA3F0CD06881E371B989B33B6D606A863B633EF529D64544F8E"), 
+            _("secrett") );
+        
     wxDateTime ttt;
     ttt.ParseISOCombined(_("1970-12-31T12:00:00+02:00"));
     //ttt = ttt.ToTimezone( wxDateTime::TimeZone(-2 ) ); // .ToUTC(true);
@@ -2449,6 +2453,8 @@ void CControlObject::getSystemKeyMD5( wxString &strKey )
     vscp_md5( digest, m_systemKey, 32 ); 
     strKey.FromAscii( digest );
 }
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // readXMLConfigurationGeneral
