@@ -12,7 +12,7 @@ top_wxbuilddir = @top_wxbuilddir@
 CXX = @CXX@
 CXXFLAGS = @CXXFLAGS@ -I../common -I../../common -fPIC
 CPPFLAGS = @CPPFLAGS@ -fPIC
-CFLAGS = -I../common -I../../common -fPIC
+CFLAGS = -std=c99 -I../common -I../../common -fPIC
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
 DLFLAGS = -g -shared -fPIC
@@ -42,7 +42,8 @@ VSCPL1_OBJECTS =  vscpl1.o\
 	../../common/crc.o\
 	../../common/crc8.o\
 	../../common/aes.o\
-	../../common/mongoose.o
+	../../common/mongoose.o\
+	../../common/fastpbkdf2.o
 	
 PROJOBJS  =  ../common/vscpremotetcpif.o\
 	../common/vscphelper.o\
@@ -50,7 +51,8 @@ PROJOBJS  =  ../common/vscpremotetcpif.o\
 	../../common/crc.o\
 	../../common/crc8.o\
 	../../common/aes.o\
-	../../common/mongoose.o
+	../../common/mongoose.o\
+	../../common/fastpbkdf2.o
 
 ALWAYS_BUILD = ../common/vscpremotetcpif.o\
 	../common/vscphelper.o\
@@ -58,7 +60,8 @@ ALWAYS_BUILD = ../common/vscpremotetcpif.o\
 	../../common/crc.o\
 	../../common/crc8.o\
 	../../common/aes.o\
-	../../common/mongoose.o
+	../../common/mongoose.o\
+	../../common/fastpbkdf2.o
 
 ### Targets: ###
 

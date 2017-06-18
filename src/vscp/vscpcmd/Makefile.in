@@ -12,6 +12,7 @@ top_wxbuilddir = @top_wxbuilddir@
 CXX = @CXX@
 CXXFLAGS = @CXXFLAGS@
 CPPFLAGS = @CPPFLAGS@ -D MG_ENABLE_THREADS -I../common -I../../common
+CFLAGS = -std=c99 @CFLAGS@
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
 STRIP = strip
@@ -41,6 +42,7 @@ CANCMD_OBJECTS =  vscpcmd.o\
 	../common/guid.o\
 	../../common/aes.o \
 	../../common/mongoose.o\
+	../../common/fastpbkdf2.o
 
 ALWAYS_BUILD = ../common/vscpremotetcpif.o\
 	../common/vscphelper.o\
@@ -49,6 +51,7 @@ ALWAYS_BUILD = ../common/vscpremotetcpif.o\
 	../../common/crc8.o\
 	../../common/aes.o \
 	../../common/mongoose.o\
+	../../common/fastpbkdf2.o
 
 ### Targets: ###
 

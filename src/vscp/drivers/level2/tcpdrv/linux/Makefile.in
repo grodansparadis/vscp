@@ -13,7 +13,7 @@ CXX = @CXX@
 MONGOOSE_FLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL -DMG_ENABLE_GETADDRINFO
 CXXFLAGS = -g -O2 -fPIC $(MONGOOSE_FLAGS) -I../../../../common -I../../../../../common
 CPPFLAGS = -I include  @CPPFLAGS@ -D__LINUX__ -D MG_ENABLE_THREADS -fPIC -I../../../../common -I../../../../../common
-CFLAGS = -D__LINUX__ -fPIC -I../../../../common -I../../../../../common
+CFLAGS = -std=c99 @CFLAGS@ -D__LINUX__ -fPIC -I../../../../common -I../../../../../common
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
 DLFLAGS = -g -shared -fPIC
@@ -44,6 +44,7 @@ VSCPTCPIP_OBJECTS = vscptcpiplink.o\
 	../../../../../common/crc8.o\
 	../../../../../common/aes.o\
 	../../../../../common/mongoose.o\
+	../../../../../common/fastpbkdf2.o
 
 PROJOBJS =  vscptcpiplink.o\
 	../../../../common/vscpremotetcpif.o\
@@ -53,6 +54,7 @@ PROJOBJS =  vscptcpiplink.o\
 	../../../../../common/crc8.o\
 	../../../../../common/aes.o\
 	../../../../../common/mongoose.o\
+	../../../../../common/fastpbkdf2.o
 
 ALWAYS_BUILD = 	../../../../common/vscpremotetcpif.o\
 	../../../../common/vscphelper.o\
@@ -61,6 +63,7 @@ ALWAYS_BUILD = 	../../../../common/vscpremotetcpif.o\
 	../../../../../common/crc8.o\
 	../../../../../common/aes.o\
 	../../../../../common/mongoose.o\
+	../../../../../common/fastpbkdf2.o
 
 ### Targets: ###
 

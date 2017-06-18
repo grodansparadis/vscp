@@ -48,7 +48,7 @@ ALWAYS_BUILD = ../common/vscphelper.o\
 	../common/guid.o\
 	../../common/md5.o\
 	../../common/crc.o\
-	../../common/crc8.o
+	../../common/crc8.o\
 	../../common/aes.o \
 
 

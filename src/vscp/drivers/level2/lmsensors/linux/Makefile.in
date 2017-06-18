@@ -12,7 +12,7 @@ top_wxbuilddir = @top_wxbuilddir@
 CXX = @CXX@
 CXXFLAGS = @CXXFLAGS@ -D__LINUX__ -fPIC -I../../../../common -I../../../../../common
 CPPFLAGS = @CPPFLAGS@ -D__LINUX__ -D MG_ENABLE_THREADS  -fPIC -I../../../../common -I../../../../../common
-CFLAGS = >-D__LINUX__ -fPIC -I../../../../common -I../../../../../common
+CFLAGS = -std=c99 @CFLAGS@  -D__LINUX__ -fPIC -I../../../../common -I../../../../../common
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
 DLFLAGS = -g -shared -fPIC
@@ -42,7 +42,9 @@ LMSENSOROBJ =  lmsensors.o \
 	../../../../../common/mongoose.o\
 	../../../../common/vscpremotetcpif.o\
 	../../../../common/vscphelper.o\
-	../../../../common/guid.o
+	../../../../common/guid.o\
+	../../../../../common/fastpbkdf2.o
+
 PROJOBJS = lmsensors.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
@@ -50,7 +52,8 @@ PROJOBJS = lmsensors.o\
 	../../../../../common/mongoose.o\
 	../../../../common/vscptcpif.o\
 	../../../../common/vscphelper.o\
-	../../../../common/guid.o 
+	../../../../common/guid.o\
+	../../../../../common/fastpbkdf2.o
 
 
 

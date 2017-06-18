@@ -12,6 +12,7 @@ top_wxbuilddir = @top_wxbuilddir@
 CXX = @CXX@
 CXXFLAGS = @CXXFLAGS@
 CPPFLAGS = @CPPFLAGS@ -I../common -I../../common
+CFLAGS= -std=c99 -D _POSIX_SOURCE -D _SVID_SOURCE @CFLAGS@
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
 STRIP = strip
@@ -37,25 +38,16 @@ UVSCPD_OBJECTS =  uvscpd.o\
 	websocket.o\
 	base64_enc.o\
 	sha1.c \
-	../common/vscphelper.o \
-	../common/guid.o\
 	../../common/dllist.o \
 	../../common/crc.o \
 	../../common/crc8.o \
-	../../common/md5.o \
 	../../common/aes.o\
-	../../common/configfile.o \
-	../../common/randpassword.o 
 
-ALWAYS_BUILD = ../common/vscphelper.o \
-	../common/guid.o\
-	../../common/dllist.o \
+ALWAYS_BUILD = ../../common/dllist.o \
 	../../common/crc.o \
 	../../common/crc8.o \
-	../../common/md5.o \
 	../../common/aes.o \
-	../../common/configfile.o \
-	../../common/randpassword.o
+	../../common/randpassword.o\
 
 ### Targets: ###
 

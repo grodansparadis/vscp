@@ -12,7 +12,7 @@ top_wxbuilddir = @top_wxbuilddir@
 CXX = @CXX@
 CXXFLAGS = @CXXFLAGS@ -fPIC -D__LINUX__ -I../../common -I../../../common
 CPPFLAGS = @CPPFLAGS@ -fPIC -D MG_ENABLE_THREADS -I../../common -I../../../common
-CFLAGS = -fPIC -D__LINUX__ 
+CFLAGS = -std=c99 -fPIC -D__LINUX__ 
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
 DLFLAGS = -g -shared -fPIC
@@ -43,7 +43,8 @@ VSCPHELPER_OBJECTS =  libvscphelper.o\
 	../../../common/crc.o\
 	../../../common/crc8.o\
 	../../../common/aes.o \
-	../../../common/mongoose.o
+	../../../common/mongoose.o\
+	../../../common/fastpbkdf2.o
 
 PROJOBJS = ../vscphelperlib.h\
 	../../common/vscpremotetcpif.o\
@@ -52,7 +53,8 @@ PROJOBJS = ../vscphelperlib.h\
 	../../common/guid.o\
 	../../../common/crc8.o\
 	../../../common/aes.o\
-	../../../common/mongoose.o
+	../../../common/mongoose.o\
+	../../../common/fastpbkdf2.o
 
 ALWAYS_BUILD = ../../common/vscpremotetcpif.o\
 	../../common/vscphelper.o\
@@ -60,7 +62,8 @@ ALWAYS_BUILD = ../../common/vscpremotetcpif.o\
 	../../../common/crc.o\
 	../../../common/crc8.o\
 	../../../common/aes.o\
-	../../../common/mongoose.o
+	../../../common/mongoose.o\
+	../../../common/fastpbkdf2.o
 
 ### Targets: ###
 

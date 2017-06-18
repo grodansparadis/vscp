@@ -12,7 +12,7 @@ top_wxbuilddir = @top_wxbuilddir@
 CXX = @CXX@
 CXXFLAGS = @CXXFLAGS@ -fPIC -I../../../../common -I../../../../../common
 CPPFLAGS = -I include  @CPPFLAGS@ -D MG_ENABLE_THREADS -fPIC -I../../../../common -I../../../../../common
-CFLAGS = -fPIC -I../../../../common -I../../../../../common
+CFLAGS = -std=c99 -fPIC -I../../../../common -I../../../../../common
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
 DLFLAGS = -g -shared -fPIC
@@ -43,6 +43,7 @@ SOCKETCAN_OBJECTS = socketcan.o\
 	../../../../../common/crc8.o\
 	../../../../../common/mongoose.o\
 	../../../../../common/aes.o\
+	../../../../../common/fastpbkdf2.o
 
 PROJOBJS =  socketcan.o\
 	../../../../common/vscpremotetcpif.o\
@@ -52,6 +53,7 @@ PROJOBJS =  socketcan.o\
 	../../../../../common/crc8.o\
 	../../../../../common/mongoose.o\
 	../../../../../common/aes.o\
+	../../../../../common/fastpbkdf2.o
 
 ALWAYS_BUILD = ../../../../common/vscpremotetcpif.o\
 	../../../../common/vscphelper.o\
@@ -59,6 +61,7 @@ ALWAYS_BUILD = ../../../../common/vscpremotetcpif.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
 	../../../../../common/aes.o\
+	../../../../../common/fastpbkdf2.o
 
 
 ### Targets: ###
