@@ -1149,7 +1149,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     
     // Generate username and password for drivers
     char buf[128];
-    randPassword pw;
+    randPassword pw(4);
 
     // Level II Driver Username
     memset( buf, 0, sizeof( buf ) );
@@ -1157,10 +1157,12 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     m_driverUsername = _("drv_");
     m_driverUsername += wxString::FromAscii( buf );
 
-    // Level II Driver Password
+    // Level II Driver Password (can't contain ";" character)
     memset( buf, 0, sizeof( buf ) );
     pw.generatePassword( 32, buf );
-    m_driverPassword = wxString::FromAscii( buf );
+    
+    vscp_makePasswordHash( m_driverPassword, 
+                            wxString::FromAscii( buf ) );
 
     m_userList.addUser( m_driverUsername,
                             m_driverPassword,
@@ -1786,7 +1788,7 @@ bool CControlObject::startDeviceWorkerThreads( void )
 {
     CDeviceItem *pDeviceItem;
     
-    logMsg(_("Starting drivers...\n") );
+    logMsg(_("[Driver] - Starting drivers...\n") );
 
     VSCPDEVICELIST::iterator iter;
     for ( iter = m_deviceList.m_devItemList.begin();
@@ -1796,6 +1798,8 @@ bool CControlObject::startDeviceWorkerThreads( void )
         pDeviceItem = *iter;
         if ( NULL != pDeviceItem ) {
 
+            logMsg( _("[Driver] - Preparing: ") + pDeviceItem->m_strName + _("\n") );
+            
             // Just start if enabled
             if ( !pDeviceItem->m_bEnable ) continue;
 
@@ -2454,8 +2458,6 @@ void CControlObject::getSystemKeyMD5( wxString &strKey )
     strKey.FromAscii( digest );
 }
 
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // readXMLConfigurationGeneral
 //
@@ -2494,8 +2496,13 @@ bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
                     m_admin_user = subchild->GetAttribute( wxT("user"), wxT("admin") );
                     m_admin_password = subchild->GetAttribute( wxT("password"), wxT("secret") );
                     m_admin_allowfrom = subchild->GetAttribute( wxT("allowfrom"), wxT("*") ); 
-                    //m_vscptoken = subchild->GetAttribute( wxT("vscptoken"), 
-                    //                                        wxT("Carpe diem quam minimum credula postero") );
+                    m_vscptoken = subchild->GetAttribute( wxT("vscptoken"), 
+                                                            wxT("Carpe diem quam minimum credula postero") );
+                    // Make key
+                    char digest[33];
+                    vscp_md5( digest, (const unsigned char *)((const char *)m_vscptoken.mbc_str()), 32 ); 
+                    vscp_convertHexStr2ByteArray( m_systemKey, 32, digest );
+                    
                 }
                 else if ( subchild->GetName() == wxT("loglevel") ) {
                     

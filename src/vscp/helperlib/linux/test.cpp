@@ -1,4 +1,4 @@
-// test.c : 
+// test.c :
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public License
@@ -50,25 +50,25 @@ static void* handle = NULL;
 #define CanalBlockingSend_Name        "CanalBlockingSend"
 #define CanalBlockingReceive_Name     "CanalBlockingReceive"
 
-static  LPFNDLL_CANALOPEN			CanalOpen_P ;
-static	LPFNDLL_CANALCLOSE			CanalClose_P;
-static	LPFNDLL_CANALGETLEVEL		CanalGetLevel_P;
-static	LPFNDLL_CANALSEND			CanalSend_P;
-static	LPFNDLL_CANALRECEIVE		CanalReceive_P;
-static	LPFNDLL_CANALDATAAVAILABLE	CanalDataAvailable_P;
-static	LPFNDLL_CANALGETSTATUS		CanalGetStatus_P;
-static	LPFNDLL_CANALGETSTATISTICS	CanalGetStatistics_P;
-static	LPFNDLL_CANALSETFILTER		CanalSetFilter_P;
-static	LPFNDLL_CANALSETMASK		CanalSetMask_P;
-static	LPFNDLL_CANALSETBAUDRATE	CanalSetBaudrate_P;
-static	LPFNDLL_CANALGETVERSION		CanalGetVersion_P;
-static	LPFNDLL_CANALGETDLLVERSION	CanalGetDllVersion_P;
-static	LPFNDLL_CANALGETVENDORSTRING	CanalGetVendorString_P;
+static  LPFNDLL_CANALOPEN              CanalOpen_P ;
+static	LPFNDLL_CANALCLOSE             CanalClose_P;
+static	LPFNDLL_CANALGETLEVEL          CanalGetLevel_P;
+static	LPFNDLL_CANALSEND              CanalSend_P;
+static	LPFNDLL_CANALRECEIVE           CanalReceive_P;
+static	LPFNDLL_CANALDATAAVAILABLE     CanalDataAvailable_P;
+static	LPFNDLL_CANALGETSTATUS         CanalGetStatus_P;
+static	LPFNDLL_CANALGETSTATISTICS     CanalGetStatistics_P;
+static	LPFNDLL_CANALSETFILTER         CanalSetFilter_P;
+static	LPFNDLL_CANALSETMASK           CanalSetMask_P;
+static	LPFNDLL_CANALSETBAUDRATE       CanalSetBaudrate_P;
+static	LPFNDLL_CANALGETVERSION        CanalGetVersion_P;
+static	LPFNDLL_CANALGETDLLVERSION     CanalGetDllVersion_P;
+static	LPFNDLL_CANALGETVENDORSTRING   CanalGetVendorString_P;
 // Generation 2
-static	LPFNDLL_CANALBLOCKINGSEND	CanalBlockingSend_P;
-static	LPFNDLL_CANALBLOCKINGRECEIVE	CanalBlockingReceive_P;
+static	LPFNDLL_CANALBLOCKINGSEND      CanalBlockingSend_P;
+static	LPFNDLL_CANALBLOCKINGRECEIVE   CanalBlockingReceive_P;
 
-void displayErrorAndExit(char* funcName)
+void displayErrorAndExit(const char* funcName)
 {
     // Free the library
     dlclose( handle );
@@ -116,7 +116,7 @@ void initLib(void)
     }
 
     // * * * * CANAL DATA AVAILABLE * * * *
-    if ( 0 == ( CanalDataAvailable_P = (LPFNDLL_CANALDATAAVAILABLE)dlsym( handle, 
+    if ( 0 == ( CanalDataAvailable_P = (LPFNDLL_CANALDATAAVAILABLE)dlsym( handle,
 										CanalDataAvailable_Name ) ) )
     {
         displayErrorAndExit(CanalDataAvailable_Name);
@@ -129,7 +129,7 @@ void initLib(void)
     }
 
     // * * * * CANAL GET STATISTICS * * * *
-    if ( 0 == ( CanalGetStatistics_P = (LPFNDLL_CANALGETSTATISTICS)dlsym( handle, 
+    if ( 0 == ( CanalGetStatistics_P = (LPFNDLL_CANALGETSTATISTICS)dlsym( handle,
 										CanalGetStatistics_Name ) ) )
     {
         displayErrorAndExit(CanalGetStatistics_Name);
@@ -160,14 +160,14 @@ void initLib(void)
     }
 
     // * * * * CANAL GET DLL VERSION * * * *
-    if ( 0 == ( CanalGetDllVersion_P = (LPFNDLL_CANALGETDLLVERSION)dlsym( handle,   
+    if ( 0 == ( CanalGetDllVersion_P = (LPFNDLL_CANALGETDLLVERSION)dlsym( handle,
 										CanalGetDllVersion_Name) ) )
     {
         displayErrorAndExit(  CanalGetDllVersion_Name);
     }
 
     // * * * * CANAL GET VENDOR STRING * * * *
-    if ( 0 == ( CanalGetVendorString_P = (LPFNDLL_CANALGETVENDORSTRING)dlsym( handle,   
+    if ( 0 == ( CanalGetVendorString_P = (LPFNDLL_CANALGETVENDORSTRING)dlsym( handle,
 										CanalGetVendorString_Name) ) )
     {
         displayErrorAndExit( CanalGetVendorString_Name);
@@ -261,4 +261,3 @@ int main()
     CanalSend_P (myCanalHandle, &myCanalMsg);
     return EXIT_SUCCESS;
 }
-

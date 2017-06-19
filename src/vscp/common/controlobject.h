@@ -109,8 +109,8 @@ enum {
 
 #define MAX_ITEMS_RECEIVE_QUEUE                 1021
 #define MAX_ITEMS_SEND_QUEUE                    1021
-#define MAX_ITEMS_CLIENT_RECEIVE_QUEUE          8191
-#define VSCP_TCPIPIF_DEFAULT_PORT               9598
+#define MAX_ITEMS_CLIENT_RECEIVE_QUEUE          8192
+
 // VSCP daemon defines from vscp.h
 #define VSCP_MAX_CLIENTS                        4096    // abs. max. is 0xffff
 #define VSCP_MAX_DEVICES                        1024    // abs. max. is 0xffff
@@ -118,7 +118,7 @@ enum {
 ///////////////////////////////////////////////////////////////////////
 // vscp_md5
 //
-// Replacement for abandon csenta version
+// Replacement for abandon Cesanta version
 //
 
 void vscp_md5( char *digest, const unsigned char *buf, size_t len ) ;
@@ -539,8 +539,8 @@ public:
     /*!
      * Get the system key
      * 
-     * @param pKey Buffer that will gett 32-byte key. Can be NULL in which
-     *              case the key is not copied.
+     * @param pKey Buffer that will get 32-byte key. Can be NULL in which
+     *              case the key is not copied to the param.
      * @return Pointer to the 32 byte key
      */
     uint8_t *getSystemKey( uint8_t *pKey );
@@ -580,10 +580,12 @@ public:
     //**************************************************************************
     
     // Password is MD5 hash over "username:domain:password"
-    wxString m_admin_user;      // Defaults to "admin"
-    wxString m_admin_password;  // Defaults to "13ca88de01ce06e377f74e61c23f630b"
-    wxString m_admin_allowfrom; // Remotes allowed to connect. Defaults to "*"  
-    //wxString m_vscptoken;       // Key for encryption Must be >= 32 chars
+    wxString m_admin_user;          // Defaults to "admin"
+    wxString m_admin_password;
+    // Default password salt;key
+    // E2D453EF99FB3FCD19E67876554A8C27;A4A86F7D7E119BA3F0CD06881E371B989B33B6D606A863B633EF529D64544F8E    
+    wxString m_admin_allowfrom;     // Remotes allowed to connect. Defaults to "*"  
+    wxString m_vscptoken;
     uint8_t m_systemKey[32];
 
     /*!

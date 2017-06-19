@@ -142,7 +142,10 @@ bool CDeviceItem::startDriver( CControlObject *pCtrlObject )
     }
 
     // Just start if enabled
-    if ( !m_bEnable ) return false;
+    if ( !m_bEnable ) {
+        pCtrlObject->logMsg(_("[Driver] - Disabled.\n") );
+        return false;
+    }
 
     // *****************************************
     //  Create the worker thread for the device
@@ -157,17 +160,19 @@ bool CDeviceItem::startDriver( CControlObject *pCtrlObject )
         wxThreadError err;
         if (wxTHREAD_NO_ERROR == (err = m_pdeviceThread->Create())) {
             if (wxTHREAD_NO_ERROR != (err = m_pdeviceThread->Run())) {
-                pCtrlObject->logMsg(_("Unable to create DeviceThread.") );
+                pCtrlObject->logMsg(_("[Driver] - Unable to create DeviceThread.\n") );
             }
         }
         else {
-            pCtrlObject->logMsg(_("Unable to run DeviceThread.") );
+            pCtrlObject->logMsg(_("[Driver] - Unable to run DeviceThread.\n") );
         }
 
     }
     else {
-        pCtrlObject->logMsg(_("Unable to allocate memory for DeviceThread.") );
+        pCtrlObject->logMsg(_("[Driver] - Unable to allocate memory for DeviceThread.\n") );
     }
+    
+    pCtrlObject->logMsg(_("[Driver] - Started driver .") + m_strName + _("\n") );
 
     return true;
 }
