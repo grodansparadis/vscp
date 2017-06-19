@@ -5923,9 +5923,9 @@ size_t vscp_convertHexStr2ByteArray( uint8_t *array, size_t size, const char *he
     int i = 0, j = 0;
 
     // The output array size is half the hex_str length (rounded up)
-    int osize = ( slen + 1 ) / 2;
+    int nhexsize = ( slen + 1 ) / 2;
 
-    if ( osize > size ) {
+    if ( size < nhexsize ) {
         // Too big for the output array
         return -1;
     }
@@ -5940,12 +5940,12 @@ size_t vscp_convertHexStr2ByteArray( uint8_t *array, size_t size, const char *he
     }
 
     for (; i < slen; i+=2, j++) {
-        if ( sscanf( &(hexstr[i]), "%2hhx", &(array[j])) != 1 ) {
+        if ( sscanf( &( hexstr[i] ), "%2hhx", &( array[j] ) ) != 1 ) {
             return -1;
         }
     }
 
-    return osize;
+    return nhexsize;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

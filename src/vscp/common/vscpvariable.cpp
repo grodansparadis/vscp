@@ -3276,21 +3276,7 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
         var.setValue( gpobj->m_udpInfo.m_interface , true );
         return var.getID();
     }
-    
-    // *************************************************************************
-    //                                 MQTT
-    // *************************************************************************
-    
-    if ( lcname.StartsWith( _("vscp.mqtt.broker.enable") ) ) {
-        var.setValue( gpobj->m_bMQTTBroker ? _("true") : _("false") );
-        return var.getID();
-    }
-    
-    if ( lcname.StartsWith( _("vscp.mqtt.broker.address") ) ) {
-        var.setValue( gpobj->m_strMQTTBrokerInterfaceAddress, true );
-        return var.getID();
-    }
-    
+       
     
     // *************************************************************************
     //                              AUTOMATION
@@ -4302,23 +4288,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
         return gpobj->updateConfigurationRecordItem( _("vscpd_UdpSimpleInterface_Address"), 
                                                     strval );
     }
-    
-    if ( lcname.StartsWith( _("vscp.mqtt.broker.enable") ) ) {
-        int val;
-        var.getValue( &val );
-        gpobj->m_bMQTTBroker = val;
-        return gpobj->updateConfigurationRecordItem( _("vscpd_MqttBroker_Enable"), 
-                                                    val ? _("1") : _("0") );
-    }
-    
-    if ( lcname.StartsWith( _("vscp.mqtt.broker.address") ) ) {
-        wxString strval;
-        strval = var.getValue();
-        gpobj->m_strMQTTBrokerInterfaceAddress = strval;
-        return gpobj->updateConfigurationRecordItem( _("vscpd_UdpSimpleInterface_Address"), 
-                                                    strval );
-    }
-    
+      
     
     if ( lcname.StartsWith( _("vscp.automation.heartbeat.enable") ) ) {
         bool val;

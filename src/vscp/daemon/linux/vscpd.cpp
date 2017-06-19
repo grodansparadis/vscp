@@ -68,7 +68,7 @@ CControlObject *gpobj;
 void copyleft(void);
 void help(char *szPrgname);
 
-void _sighandler(int sig)
+void _sighandler( int sig )
 {
     gpobj->m_bQuit = true;
     gbStopDaemon = true;
@@ -127,7 +127,7 @@ int main(int argc, char **argv)
 
     wxSocketBase::Initialize();
 
-    while ((arg = getopt(argc, argv, "d:c:f:hgs")) != EOF) {
+    while ( ( arg = getopt( argc, argv, "d:c:f:k:hgs" ) ) != EOF ) {
 
         switch (arg) {
 
@@ -144,6 +144,12 @@ int main(int argc, char **argv)
         case 'r':
             rootFolder = wxString(optarg, wxConvUTF8);
             break;
+            
+        case 'k':
+            vscp_convertHexStr2ByteArray( gpobj->m_systemKey, 
+                                            32,
+                                            (const char *)wxString( optarg, wxConvUTF8 ).mbc_str() );
+            break;    
 
         case 'd':
             gnDebugLevel = atoi(optarg);
@@ -340,12 +346,13 @@ void copyleft(void)
 
 void help(char *szPrgname)
 {
-    fprintf(stderr, "Usage: %s [-ahg] [-c command-file] -dn\n", szPrgname);
+    fprintf(stderr, "Usage: %s [-ahg] [-c command-file] [-c key] -dn\n", szPrgname);
     fprintf(stderr, "\t-h\tThis help message.\n");
     fprintf(stderr, "\t-s\tStandalone (don't run as daemon). \n");
     fprintf(stderr, "\t-r\tSpecify VSCP root folder. \n");
     fprintf(stderr, "\t-c\tSpecify a configuration file. \n");
-    fprintf(stderr, "\t-d\tDebug level. 0=None, 99=Don't run as daemon. ");
+    fprintf(stderr, "\t-k\t32 byte encryption key string in hex format. \n");
+    fprintf(stderr, "\t-d\tDebug level (0-2). 0=Default. ");
     fprintf(stderr, "that should be used (default: /etc/canalworks.conf).\n");
     fprintf(stderr, "\t-g\tPrint the GNU copyleft info.\n");
 }

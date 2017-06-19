@@ -322,23 +322,24 @@ VSCPUDPClientThread::receiveFrame( struct mg_connection *nc,
 {
     uint8_t buf[ 1024 ];
     vscpEvent *pEvent;
-    uint8_t key[] = {
+    /*uint8_t key[] = {
                     1,2,3,4,5,6,7,8,
                     9,10,11,12,13,14,15,16,
                     17,18,19,20,21,22,23,24,
                     25,26,27,28,29,30,31,32
-    };
+    };*/
     
     // Check pointers
     if ( NULL == nc ) return false;
     if ( NULL == pClientItem ) return false;
-    if ( NULL == pRxFilter ) return false;    
+    if ( NULL == pRxFilter ) return false;
     
     memset( buf, 0, sizeof( buf ) );
     if ( !vscp_decryptVscpUdpFrame( buf, 
                 (uint8_t *)nc->recv_mbuf.buf, 
                 nc->recv_mbuf.len,  // actually len-16 but encrypt routine handle this
-                (const uint8_t *)key,
+                gpobj->getSystemKey( NULL ),
+                //(const uint8_t *)key,
                 NULL,   // Will be copied from the last 16-bytes
                 GET_VSCP_MULTICAST_PACKET_ENCRYPTION( nc->recv_mbuf.buf[0] ) ) ) {
         return false;

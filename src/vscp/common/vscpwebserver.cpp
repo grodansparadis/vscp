@@ -4660,22 +4660,6 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
 
     buildPage += _("<hr>");
 
-    // MQTT Broker
-    buildPage += _("<div id=\"small\">");
-    buildPage += _("<b>MQTT broker:</b> ");
-    if ( gpobj->m_bMQTTBroker ) {
-        buildPage += _("enabled on <b>interface:</b> '");
-        buildPage += gpobj->m_strMQTTBrokerInterfaceAddress;
-        buildPage += _("'");
-    }
-    else {
-        buildPage += _("disabled");
-    }
-    buildPage += _("<br>");
-    buildPage += _("</div>");
-
-    buildPage += _("<hr>");
-
 
     // VSCP Internal automation intelligence
     buildPage += _("<div id=\"small\">");

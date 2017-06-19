@@ -12,14 +12,18 @@
 
     <general>
 
-   	    <!-- This is the admin credentials                                    -->
-        <!-- allowfrom="*" allow connections from all hosts                   -->
-        <!-- A stricter allowfrom can be 127.0.0.1,192.168.1.*                -->
-        <!-- The VSCP token is used a a key for encryption routines           -->
+   	    <!--
+            This is the admin credentials
+            allowfrom="*" allow connections from all hosts
+            A stricter allowfrom can be 127.0.0.1,192.168.1.*
+            The VSCP token is used a a key for encryption routines           
+        -->
         <security admin="admin"
-                       password="secret"
-                       allowfrom="*"
-                       vscptoken="Carpe diem quam minimum credula postero" />
+            password="450ADCE88F2FDBB20F3318B65E53CA4A;06D3311CC2195E80BE4F8EB12931BFEB5C630F6B154B2D644ABE29CEBDBFB545"
+            allowfrom="*"
+            vscptoken="Carpe diem quam minimum credula postero"
+            vscpkey="A4A86F7D7E119BA3F0CD06881E371B989B33B6D606A863B633EF529D64544F8E"
+        />
 
         <!-- Set the detail of logging you want -->
         <loglevel>debug</loglevel>
@@ -120,30 +124,7 @@
         />
     </multicast>
 
-    <!-- It is possible to enable/disable the MQTT Broker               -->
-    <!-- You can open the MQTT broker interfaces on several ports or on -->
-    <!-- on a specific port or on every interface of the computer       -->
-    <!-- Default "1883" will listen on all interfaces while             -->
-    <!-- "UDP://127.0.0.1:1883" only will listen on the specified       -->
-    <!-- interface. To specify several interfaces just enter them       -->
-    <!-- with a space between them.                                     -->
-
-    <mqttbroker enable="true"
-        interface="1883"/>
-
-    <!-- It is possible to enable/disable the CoAP Server               -->
-    <!-- You can open the CoAP server interfaces on several ports or on -->
-    <!-- on a specific port or on every interface of the computer       -->
-    <!-- Default "udp://:5683" will listen on all interfaces while      -->
-    <!-- "udp://127.0.0.1:5683" only will listen on the specified       -->
-    <!-- interface. To specify several interfaces just enter them       -->
-    <!-- with a space between them.                                     -->
-
-    <coapserver enable="true"
-        interface="udp://:5683"/>
-
     <!-- Set to true to enable VSCP high end functionality              -->
-
     <vscp enable="true"/>
 
     <!-- Set to true to enable decision matrix                         -->
@@ -154,10 +135,8 @@
         path="c:/programdata/vscp/dm.xml"   />
 
     <!-- Set to true to enable daemon variables                         -->
-    <!-- Set to false to disable.
-                             -->
+    <!-- Set to false to disable. ->
     <!-- Path to variables storage.                                     -->
-
 
     <variables enable="true"
         pathxml="c:/programdata/vscp/variables.xml"

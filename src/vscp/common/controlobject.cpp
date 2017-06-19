@@ -222,7 +222,10 @@ CControlObject::CControlObject()
     m_admin_user = _("admin");
     m_admin_password = _("secret");
     m_admin_allowfrom = _("*");
-    //m_vscptoken = _("Carpe diem quam minimum credula postero");
+    m_vscptoken = _("Carpe diem quam minimum credula postero");
+    vscp_convertHexStr2ByteArray( m_systemKey, 
+                                    32, 
+                                    "A4A86F7D7E119BA3F0CD06881E371B989B33B6D606A863B633EF529D64544F8E" );
     
     m_nConfiguration = 1;       // Default configuration record is read.
        
@@ -289,9 +292,6 @@ CControlObject::CControlObject()
     m_udpInfo.m_bAllowUnsecure = false;
     m_udpInfo.m_bAck = false;
 
-    // Enable MQTT broker
-    m_bMQTTBroker = true;
-
     // Default TCP/IP interface
     m_enableTcpip = true;
     m_strTcpInterfaceAddress = _("tcp://" + VSCP_DEFAULT_TCP_PORT);
@@ -305,14 +305,10 @@ CControlObject::CControlObject()
     // Default UDP interface
     m_udpInfo.m_interface = _("udp://:" + VSCP_DEFAULT_UDP_PORT );
 
-    // Default MQTT broker interface
-    m_strMQTTBrokerInterfaceAddress = _("tcp://1883");
-
     m_pclientMsgWorkerThread = NULL;
     m_pVSCPClientThread = NULL;
     m_pdaemonVSCPThread = NULL;
     m_pwebServerThread = NULL;
-    m_pMQTTBrookerThread = NULL;
 
     // Websocket interface
     m_bAuthWebsockets = true;   // Authentication is needed
@@ -488,97 +484,97 @@ bool CControlObject::getVscpCapabilities( uint8_t *pCapability )
     memset( pCapability, 0, 8 );
     
     // VSCP Multicast interface
-        if ( m_multicastInfo.m_bEnable ) {
-            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_MULTICAST/8 ) ] |= 
+    if ( m_multicastInfo.m_bEnable ) {
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_MULTICAST/8 ) ] |= 
                     ( 1 << ( VSCP_SERVER_CAPABILITY_MULTICAST % 8 ) );
-        }
+    }
         
-        // VSCP TCP/IP interface
-        if ( m_enableTcpip ) {
-            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_TCPIP/8 ) ] |= 
+    // VSCP TCP/IP interface
+    if ( m_enableTcpip ) {
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_TCPIP/8 ) ] |= 
                     ( 1 << ( VSCP_SERVER_CAPABILITY_TCPIP % 8 ) );
-        }
+    }
         
-        // VSCP UDP interface
-        if ( m_udpInfo.m_bEnable ) {
-            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_UDP/8 ) ] |= 
+    // VSCP UDP interface
+    if ( m_udpInfo.m_bEnable ) {
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_UDP/8 ) ] |= 
                     ( 1 << ( VSCP_SERVER_CAPABILITY_UDP % 8 ) );
-        }
+    }
         
-        // VSCP Multicast announce interface
-        if ( m_bMulticastAnounce ) {
-            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_MULTICAST_ANNOUNCE/8 ) ] |= 
+    // VSCP Multicast announce interface
+    if ( m_bMulticastAnounce ) {
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_MULTICAST_ANNOUNCE/8 ) ] |= 
                     ( 1 << ( VSCP_SERVER_CAPABILITY_MULTICAST_ANNOUNCE % 8 ) );
-        }
+    }
         
-        // VSCP raw Ethernet interface
-        if ( 1 ) {
-            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_RAWETH/8 ) ] |= 
+    // VSCP raw Ethernet interface
+    if ( 1 ) {
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_RAWETH/8 ) ] |= 
                     ( 1 << ( VSCP_SERVER_CAPABILITY_RAWETH % 8 ) );
-        }
+    }
         
-        // VSCP web server
-        if ( m_bWebServer ) {
-            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_WEB/8 ) ] |= 
+    // VSCP web server
+    if ( m_bWebServer ) {
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_WEB/8 ) ] |= 
                     ( 1 << ( VSCP_SERVER_CAPABILITY_WEB % 8 ) );
-        }
+    }
         
-        // VSCP websocket interface
-        if ( m_bWebServer ) {
-            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_WEBSOCKET/8 ) ] |= 
+    // VSCP websocket interface
+    if ( m_bWebServer ) {
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_WEBSOCKET/8 ) ] |= 
                     ( 1 << ( VSCP_SERVER_CAPABILITY_WEBSOCKET % 8 ) );
-        }
+    }
         
-        // VSCP websocket interface
-        if ( m_bWebServer ) {
-            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_REST/8 ) ] |= 
+    // VSCP websocket interface
+    if ( m_bWebServer ) {
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_REST/8 ) ] |= 
                     ( 1 << ( VSCP_SERVER_CAPABILITY_REST % 8 ) );
-        }
+    }
         
-        // VSCP websocket interface
-        if ( m_bMQTTBroker ) {
-            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_MQTT/8 ) ] |= 
+    // VSCP MQTT broke
+    if ( 0 ) {
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_MQTT/8 ) ] |= 
                     ( 1 << ( VSCP_SERVER_CAPABILITY_MQTT % 8 ) );
-        }
+    }
         
-        // VSCP websocket interface
-        if ( 0 ) {
-            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_COAP/8 ) ] |= 
+    // VSCP websocket interface
+    if ( 0 ) {
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_COAP/8 ) ] |= 
                     ( 1 << ( VSCP_SERVER_CAPABILITY_COAP % 8 ) );
-        }
+    }
         
-        // IPv6 support
-        if ( 0 ) {
-            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_IP6/8 ) ] |= 
+    // IPv6 support
+    if ( 0 ) {
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_IP6/8 ) ] |= 
                     ( 1 << ( VSCP_SERVER_CAPABILITY_IP6 % 8 ) );
-        }
+    }
         
-        // IPv4 support
-        if ( 0 ) {
-            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_IP4/8 ) ] |= 
+    // IPv4 support
+    if ( 0 ) {
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_IP4/8 ) ] |= 
                     ( 1 << ( VSCP_SERVER_CAPABILITY_IP4 % 8 ) );
-        }
+    }
         
-        // SSL support
-        if ( 1 ) {
-            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_SSL/8 ) ] |= 
+    // SSL support
+    if ( 1 ) {
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_SSL/8 ) ] |= 
                     ( 1 << ( VSCP_SERVER_CAPABILITY_SSL % 8 ) );
-        }
+    }
         
-        // +2 tcp/ip connections support
-        if ( m_enableTcpip ) {
-            pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_TWO_CONNECTIONS/8 ) ] |= 
+    // +2 tcp/ip connections support
+    if ( m_enableTcpip ) {
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_TWO_CONNECTIONS/8 ) ] |= 
                     ( 1 << ( VSCP_SERVER_CAPABILITY_TWO_CONNECTIONS % 8 ) );
-        }
+    }
     
-        // AES256
-        pCapability[ 15 ] |= (1<<2);
+    // AES256
+    pCapability[ 15 ] |= (1<<2);
     
-        // AES192
-        pCapability[ 15 ] |= (1<<1);
+    // AES192
+    pCapability[ 15 ] |= (1<<1);
     
-        // AES128
-        pCapability[ 15 ] |= 1;
+    // AES128
+    pCapability[ 15 ] |= 1;
     
     return true;
 }
@@ -1245,9 +1241,6 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 
     // Load drivers    
     startDeviceWorkerThreads();
-
-    // Start MQTT Broker if enabled
-    startMQTTBrokerThread();
     
     // Start daemon worker thread    
     startDaemonWorkerThread();
@@ -1835,64 +1828,6 @@ bool CControlObject::stopDeviceWorkerThreads( void )
     return true;
 }
 
-
-
-/////////////////////////////////////////////////////////////////////////////
-// startMQTTBrokerWorkerThread
-//
-
-bool CControlObject::startMQTTBrokerThread(void)
-{
-    /////////////////////////////////////////////////////////////////////////////
-    // Run the MQTT Broker thread if enabled
-    /////////////////////////////////////////////////////////////////////////////
-    if ( m_bMQTTBroker ) {
-
-#ifdef MG_ENABLE_MQTT_BROKER        
-        
-        logMsg(_("MQTT Broker starting...\n") );
-        
-        m_pMQTTBrookerThread = new VSCPMQTTBrokerThread;
-
-        if (NULL != m_pMQTTBrookerThread) {
-            m_pMQTTBrookerThread->m_pCtrlObject = this;
-            wxThreadError err;
-            if (wxTHREAD_NO_ERROR == (err = m_pMQTTBrookerThread->Create())) {
-                //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
-                if (wxTHREAD_NO_ERROR != (err = m_pMQTTBrookerThread->Run())) {
-                    logMsg( _("Unable to run TCP thread.") );
-                }
-            }
-            else {
-                logMsg( _("Unable to create TCP thread.") );
-            }
-        }
-        else {
-            logMsg( _("Unable to allocate memory for TCP thread.") );
-         }
-#endif         
-    }
-
-    return true;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-// stopMQTTBrokerWorkerThread
-//
-
-bool CControlObject::stopMQTTBrokerThread( void )
-{
-    if ( NULL != m_pMQTTBrookerThread ) {
-        m_mutexMQTTBrokerThread.Lock();
-        m_pMQTTBrookerThread->m_bQuit = true;
-        m_pMQTTBrookerThread->Wait();
-        delete m_pVSCPClientThread;
-        m_mutexMQTTBrokerThread.Unlock();
-    }
-
-    return true;
-}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2493,15 +2428,18 @@ bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
             while ( subchild ) {
 
                 if ( subchild->GetName() == wxT("security") ) {
+                    
                     m_admin_user = subchild->GetAttribute( wxT("user"), wxT("admin") );
-                    m_admin_password = subchild->GetAttribute( wxT("password"), wxT("secret") );
+                    m_admin_password = subchild->GetAttribute( wxT("password"), 
+                            _("E2D453EF99FB3FCD19E67876554A8C27;A4A86F7D7E119BA3F0CD06881E371B989B33B6D606A863B633EF529D64544F8E") );
                     m_admin_allowfrom = subchild->GetAttribute( wxT("allowfrom"), wxT("*") ); 
                     m_vscptoken = subchild->GetAttribute( wxT("vscptoken"), 
                                                             wxT("Carpe diem quam minimum credula postero") );
-                    // Make key
-                    char digest[33];
-                    vscp_md5( digest, (const unsigned char *)((const char *)m_vscptoken.mbc_str()), 32 ); 
-                    vscp_convertHexStr2ByteArray( m_systemKey, 32, digest );
+                    wxString str = subchild->GetAttribute( wxT("vscpkey"), 
+                                                            wxT("") );
+                    if ( str.Length() ) {
+                        vscp_convertHexStr2ByteArray( m_systemKey, 32, str );
+                    }
                     
                 }
                 else if ( subchild->GetName() == wxT("loglevel") ) {
@@ -2905,21 +2843,6 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
             
             gpobj->m_mutexMulticastInfo.Unlock();
             
-        }
-                
-        else if (child->GetName() == wxT("mqttbroker")) {
-            
-            wxString attribut = child->GetAttribute(wxT("enable"), wxT("true"));
-            attribut.MakeLower();
-            if ( attribut.IsSameAs(_("false"), false)  ) {
-                m_bMQTTBroker = false;
-            }
-            else {
-                m_bMQTTBroker = true;
-            }
-
-            m_strMQTTBrokerInterfaceAddress = child->GetAttribute(wxT("interface"), wxT(""));
-                    
         }
         
         else if (child->GetName() == wxT("dm")) {
@@ -4130,20 +4053,6 @@ bool CControlObject::dbReadConfiguration( void )
         if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_WEBSOCKET_ENABLEAUTH ) ) {
             m_bAuthWebsockets = sqlite3_column_int( ppStmt, 
                     VSCPDB_ORDINAL_CONFIG_WEBSOCKET_ENABLEAUTH ) ? true : false;
-        }
-        
-        
-        // Enable MQTT broker
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_MQTTBROKER_ENABLE ) ) {
-            m_bMQTTBroker = sqlite3_column_int( ppStmt, 
-                    VSCPDB_ORDINAL_CONFIG_MQTTBROKER_ENABLE ) ? true : false;
-        }
-        
-        // MQTT broker port
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_MQTTBROKER_PORT ) ) {
-            m_strMQTTBrokerInterfaceAddress = 
-                    wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                    VSCPDB_ORDINAL_CONFIG_MQTTBROKER_PORT ) );
         }
                 
         // Automation zone

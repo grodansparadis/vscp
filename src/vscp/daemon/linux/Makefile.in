@@ -57,7 +57,6 @@ VSCPD_OBJECTS =  vscpd.o \
 	../../common/tables.o \
 	../../common/vscpautomation.o \
 	../../common/knownnodes.o \
-	../../common/vscpmqttbroker.o \
         ../../common/v7callbacks.o \
         ../../../common/jsonreader.o \
         ../../../common/jsonwriter.o \
