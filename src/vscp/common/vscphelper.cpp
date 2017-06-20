@@ -2452,15 +2452,9 @@ bool vscp_getDateStringFromEvent( const vscpEvent *pEvent, wxString& dt )
 {
     // Check pointer
     if ( NULL == pEvent ) return false;
-    
-    // We just want a two digit year
-    wxString strYear = wxString::Format(_("%d"), (int)pEvent->year );
-    if ( strYear.Length() > 2 ) {
-        strYear = strYear.Right(2);
-    }
-    
-    dt =  wxString::Format( _("%s-%02d-%02dT%02d:%02d:%02dZ"),
-                                                (const char *)strYear.mbc_str(),
+       
+    dt =  wxString::Format( _("%04d-%02d-%02dT%02d:%02d:%02dZ"),
+                                                (int)pEvent->year,
                                                 (int)pEvent->month,
                                                 (int)pEvent->day,
                                                 (int)pEvent->hour,
@@ -5491,7 +5485,7 @@ bool vscp_writeEventToUdpFrame( uint8_t *frame,
     // Check pointers
     if ( NULL == frame ) return false;
     if ( NULL == pEvent ) return false;
-    // Can't have datasize with invalid data pointer
+    // Can't have data size with invalid data pointer
     if ( pEvent->sizeData && (NULL == pEvent->pdata ) ) return false;
     
     size_t calcSize = 1 +                                       // Packet type
@@ -5771,68 +5765,82 @@ bool vscp_getEventExFromUdpFrame( vscpEventEx *pEventEx,
 // vscp_encryptVscpUdpFrame
 //
 
-bool vscp_encryptVscpUdpFrame( uint8_t *output, 
+size_t vscp_encryptVscpUdpFrame( uint8_t *output, 
                                         uint8_t *input, 
                                         size_t len,
                                         const uint8_t *key,
                                         const uint8_t *iv,
                                         uint8_t nAlgorithm )
 {    
-    uint8_t generated_iv[16];
+    uint8_t generated_iv[ 16 ];
     
-    if ( NULL == output ) return false;
-    if ( NULL == input ) return false;
-    if ( NULL == key ) return false;
+    if ( NULL == output ) return 0;
+    if ( NULL == input ) return 0;
+    if ( NULL == key ) return 0;
     
     // Must pad if needed
-    size_t newlen = len + len % 16;
-    
-    // If iv is not give it should be generated
-    if ( NULL == iv ) {        
-        if ( 16 != getRandomIV( generated_iv, 16 ) ) return false;
-    }
-    else {
-        memcpy( generated_iv, iv, 16 );
-    }
+    size_t padlen = len - 1;    // Without packet type
+    padlen = len + ( 16 - ( len % 16 ) );
     
     // The packet type s always un encrypted
     output[0] = input[0];
+        
+    // If iv is not give it should be generated
+    if ( NULL == iv ) {        
+        if ( 16 != getRandomIV( generated_iv, 16 ) ) return 0;
+    }
+    else {
+        memcpy( generated_iv, iv, 16 );
+    }    
     
     switch ( nAlgorithm ) {
                     
         case VSCP_ENCRYPTION_AES192:
             AES_CBC_encrypt_buffer( AES192,
-                                        output+1, 
-                                        input+1,    // Not Packet type byte 
-                                        len-1, 
+                                        output + 1, 
+                                        input + 1,    // Not Packet type byte 
+                                        padlen, 
                                         key, 
                                         (const uint8_t *)generated_iv );
+            // Append iv
+            memcpy( output + 1 + padlen, generated_iv, 16 );
+            padlen += 16;
             break;
             
         case VSCP_ENCRYPTION_AES256:
             AES_CBC_encrypt_buffer( AES256,
-                                        output+1, 
-                                        input+1,    // Not Packet type byte
-                                        len-1, 
+                                        output + 1, 
+                                        input + 1,    // Not Packet type byte
+                                        padlen, 
                                         key, 
                                         (const uint8_t *)generated_iv );
+            // Append iv
+            memcpy( output + 1 + padlen, generated_iv, 16 );
+            padlen += 16;
             break;
-        
-        default:    
+            
         case VSCP_ENCRYPTION_AES128:
             AES_CBC_encrypt_buffer( AES128,
-                                        output+1, 
-                                        input+1,    // Not Packet type byte 
-                                        len-1, 
+                                        output + 1, 
+                                        input + 1,    // Not Packet type byte 
+                                        padlen, 
                                         key, 
                                         (const uint8_t *)generated_iv );
-            break;    
+            // Append iv
+            memcpy( output + 1 + padlen, generated_iv, 16 );
+            padlen += 16;
+            break; 
+            
+        default:    
+        case VSCP_ENCRYPTION_NONE:
+            memcpy( output + 1, input + 1, padlen );
+            break;
+            
     }
     
-    // Append iv
-    memcpy( output + len, generated_iv, 16 );
+    padlen++; // Count packet type byte    
     
-    return true;
+    return padlen;
 }
 
 

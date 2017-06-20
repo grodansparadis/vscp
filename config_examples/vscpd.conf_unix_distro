@@ -129,7 +129,7 @@
 
         <!-- Nodes that will receive VSCP Server events -->
         <rxnode enable="false"
-            interface="udp://192.168.1.8:8192"
+            interface="udp://127.0.0.1:9999"
             filter=""
             mask=""
             encryption=""

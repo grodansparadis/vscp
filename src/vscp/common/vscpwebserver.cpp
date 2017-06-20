@@ -428,7 +428,7 @@ static int vscp_is_authorized( struct mg_connection *conn,
         // Check digest
         if ( TRUE !=
             gpobj->getWebServer()->websrv_check_password( method,
-                            ( const char * )pUserItem->getPasswordDomain().mbc_str(),
+                            ( const char *)pUserItem->getPasswordDomain().mbc_str(),
                             uri,
                             nonce,
                             nc,
@@ -1372,20 +1372,6 @@ VSCPWebServerThread::websrv_check_password( const char *method,
     MD5_Update( &ctx, (const unsigned char *)uri, strlen( uri ) );
     MD5_Final( hash, &ctx );
     cs_to_hex( ha2, hash, sizeof( hash ) );
-
-    /*cs_md5( expected_response,
-                ha1, len_32,
-                colon, one,
-                nonce, strlen( nonce ),
-                colon, one,
-                nc, strlen( nc ),
-                colon, one,
-                cnonce, strlen( cnonce ),
-                colon, one,
-                qop, strlen( qop ),
-                colon, one,
-                ha2, len_32,
-                NULL );*/
     
     MD5_Init( &ctx );
     MD5_Update( &ctx, (const unsigned char *)ha1, 32 );

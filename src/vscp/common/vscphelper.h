@@ -1250,10 +1250,10 @@ extern "C" {
      *          content. If NULL the iv will be created from random system data. In both
      *          cases the end result will have the iv appended to the encrypted block.
      * @param nAlgorithm The VSCP defined algorithm to encrypt the frame with.
-     * @return True on success, false on failure.
+     * @return Packet length on success, zero on failure.
      * 
      */
-    bool vscp_encryptVscpUdpFrame( uint8_t *output, 
+    size_t vscp_encryptVscpUdpFrame( uint8_t *output, 
                                         uint8_t *input, 
                                         size_t len,
                                         const uint8_t *key,

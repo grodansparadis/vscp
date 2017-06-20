@@ -41,11 +41,11 @@ typedef struct {
     bool                m_bSetBroadcast;    // Set broadcast flag  MG_F_ENABLE_BROADCAST
 } udpRemoteClientInfo;
 
-WX_DECLARE_LIST(udpRemoteClientInfo, udpRemoteClientList );
+WX_DECLARE_LIST( udpRemoteClientInfo, udpRemoteClientList );
 
 typedef struct  {       
-    bool                m_bEnable;          // Enable udp
-    bool                m_bAllowUnsecure;   // Allow unencrypted datagrams
+    bool                m_bEnable;          // Enable UDP
+    bool                m_bAllowUnsecure;   // Allow un encrypted datagrams
     bool                m_bAck;             // ACK received datagram
     wxString            m_user;             // User account to use for UDP
     wxString            m_password;         // Password for user account

@@ -2635,7 +2635,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
             }
                     
             // Enable ACK
-            attribute = child->GetAttribute( wxT("bAck"), wxT("false") );                    
+            attribute = child->GetAttribute( wxT("bSendAck"), wxT("false") );                    
             if (attribute.Lower().IsSameAs(_("false"), false)) {
                 m_udpInfo.m_bAck = false; 
             }

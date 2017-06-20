@@ -37,8 +37,9 @@
 #define DWORD unsigned long
 #endif
 
-#include <vscp.h>
 #include <crc.h>
+#include <aes.h>
+#include <vscp.h>
 #include <vscptcpipclientthread.h>
 #include <canal_win32_ipc.h>
 #include <canal_macro.h>
@@ -322,12 +323,6 @@ VSCPUDPClientThread::receiveFrame( struct mg_connection *nc,
 {
     uint8_t buf[ 1024 ];
     vscpEvent *pEvent;
-    /*uint8_t key[] = {
-                    1,2,3,4,5,6,7,8,
-                    9,10,11,12,13,14,15,16,
-                    17,18,19,20,21,22,23,24,
-                    25,26,27,28,29,30,31,32
-    };*/
     
     // Check pointers
     if ( NULL == nc ) return false;
@@ -339,7 +334,6 @@ VSCPUDPClientThread::receiveFrame( struct mg_connection *nc,
                 (uint8_t *)nc->recv_mbuf.buf, 
                 nc->recv_mbuf.len,  // actually len-16 but encrypt routine handle this
                 gpobj->getSystemKey( NULL ),
-                //(const uint8_t *)key,
                 NULL,   // Will be copied from the last 16-bytes
                 GET_VSCP_MULTICAST_PACKET_ENCRYPTION( nc->recv_mbuf.buf[0] ) ) ) {
         return false;
@@ -353,12 +347,7 @@ VSCPUDPClientThread::receiveFrame( struct mg_connection *nc,
         vscp_deleteVSCPevent_v2( &pEvent );
         return false;
     }
-    
-    /*if ( !vscp_getEventFromUdpFrame( pEvent, (const uint8_t *)nc->recv_mbuf.buf, nc->recv_mbuf.len ) ) {
-        vscp_deleteVSCPevent_v2( &pEvent );
-        return false;
-    }*/
-    
+      
     if ( vscp_doLevel2Filter( pEvent, pRxFilter ) ) {
         
         // Set obid to ourself so we don't get events we
@@ -398,7 +387,7 @@ VSCPUDPClientThread::sendFrame( struct mg_mgr *pmgr,
 {
     CLIENTEVENTLIST::compatibility_iterator nodeClient;
     unsigned char sendbuf[1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + 512 + 16];    // Send buffer
-    size_t sizeSend = 0;
+    uint8_t iv[16];
     
     // Check if there is an event to send
     if ( !pClientItem->m_clientInputQueue.GetCount() ) {
@@ -418,27 +407,68 @@ VSCPUDPClientThread::sendFrame( struct mg_mgr *pmgr,
         vscp_deleteVSCPevent_v2( &pEvent );
         return false; 
     }
-    
-    // Packet type
-    sendbuf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = 0;
-    
-    if ( !vscp_writeEventToUdpFrame( sendbuf + 1, 
-                                        sizeof( sendbuf)-1, 
-                                        0,  // Packet type
-                                        pEvent ) ) {
-        vscp_deleteVSCPevent_v2( &pEvent );
-        return false;
-    }
-    
+        
     // Send the event to all clients
     gpobj->m_mutexUDPInfo.Lock();
     udpRemoteClientList::iterator iter;
+    
     for (iter = gpobj->m_udpInfo.m_remotes.begin(); 
             iter != gpobj->m_udpInfo.m_remotes.end(); ++iter) {
         
         udpRemoteClientInfo *pRemoteUDPNode = *iter;
+        
+        // Check if filtered out
+        if ( !vscp_doLevel2Filter( pEvent, &pRemoteUDPNode->m_filter ) ) {
+            continue;
+        }
+               
+        // Packet type
+        sendbuf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = 
+                            SET_VSCP_MULTICAST_TYPE( 0, pRemoteUDPNode->m_nEncryption );
+    
+        // Get initialization vector                    
+        getRandomIV( iv, 16 );
+    
+        uint8_t wrkbuf[1024];
+        memset( wrkbuf, 0, sizeof(wrkbuf) );
+        
+        if ( !vscp_writeEventToUdpFrame( wrkbuf, 
+                                            sizeof( wrkbuf), 
+                                            SET_VSCP_MULTICAST_TYPE( 0, pRemoteUDPNode->m_nEncryption ),
+                                            pEvent ) ) {
+            vscp_deleteVSCPevent_v2( &pEvent );
+            continue;
+        }
+        
+        size_t len = 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData + 2;
+        if ( 0 == ( len = vscp_encryptVscpUdpFrame( sendbuf, 
+                                            wrkbuf, 
+                                            len,
+                                            gpobj->getSystemKey( NULL ),
+                                            iv,
+                                            pRemoteUDPNode->m_nEncryption ) ) ) {
+            vscp_deleteVSCPevent_v2( &pEvent );
+            continue;
+        }
+        
+if ( 0 ) {    
+        int i;
+        wxPrintf("IV = ");
+        for ( i=0; i<16; i++ ) {
+            wxPrintf("%02X ", iv[i] );
+        }
+        wxPrintf("\n");
+        
+        wxPrintf("key = ");
+        uint8_t *pkey = gpobj->getSystemKey( NULL );
+        for ( i=0; i<32; i++ ) {
+            wxPrintf("%02X ", pkey[i] );
+        }
+        wxPrintf("\n");
+}
+        
         mg_connect( pmgr, pRemoteUDPNode->m_remoteAddress, ev_handler );
-        mg_send( pmgr->active_connections, sendbuf, 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + pEvent->sizeData);
+        mg_send( pmgr->active_connections, sendbuf, len );
         
     }
     gpobj->m_mutexUDPInfo.Unlock();

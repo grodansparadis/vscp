@@ -1,38 +1,38 @@
 /*
     Simple send VSCP udp frame client
 
-    [host] [port] [ftype] [cnt]
+    [host] [port] [ftype] [cnt] [bReply]
 
     host    - IP address for remote host (defaults to 127.0.0.1).
     port    - Port for remote host (default to 33333).
     ftype   - Frame type (defaults to type = 0 ).
     cnt     - Number of frames to send.
+    bReply  - 0 or 1 for reply waiting.
 */
 
-#include <unistd.h> 
-#include <stdio.h>   
-#include <string.h>  
-#include <stdlib.h>  
+#include <unistd.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <crc.h>
 #include <aes.h>
 #include <vscp.h>
- 
+
 #define DEFAULT_SERVER      "127.0.0.1" // Server to connect to
-#define DEFAULT_FRAME_TYPE  0       
+#define DEFAULT_FRAME_TYPE  0
 #define DEFAULT_COUNT       1
 
 #define BUFLEN  1024                // Max length of buffer
 
-uint8_t key[] = {
-                    1,2,3,4,5,6,7,8,
-                    9,10,11,12,13,14,15,16,
-                    17,18,19,20,21,22,23,24,
-                    25,26,27,28,29,30,31,32
-};
- 
+// Default key for the VSCP server
+uint8_t key[] = { 0xA4,0xA8,0x6F,0x7D,0x7E,0x11,0x9B,0xA3,
+                  0xF0,0xCD,0x06,0x88,0x1E,0x37,0x1B,0x98,
+                  0x9B,0x33,0xB6,0xD6,0x06,0xA8,0x63,0xB6,
+                  0x33,0xEF,0x52,0x9D,0x64,0x54,0x4F,0x8E };
+
 void die(char *s)
 {
     perror(s);
@@ -56,7 +56,8 @@ int makeFrameType0( unsigned char *frame )
     frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ] = 0;
 
     // Date / time block 1956-11-02 04:23:52 GMT
-    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR ] = 56;
+    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_MSB ] = 0x07;    // 1956
+    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_LSB ] = 0xA4;
     frame[ VSCP_MULTICAST_PACKET0_POS_MONTH ] = 11;
     frame[ VSCP_MULTICAST_PACKET0_POS_DAY ] = 02;
     frame[ VSCP_MULTICAST_PACKET0_POS_HOUR ] = 4;
@@ -110,10 +111,10 @@ int makeFrameType0( unsigned char *frame )
     frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 12 ] = 0x38;  // "8"
 
     // Calculate CRC
-    crc framecrc = crcFast( (unsigned char const *)frame + 1, 
+    crc framecrc = crcFast( (unsigned char const *)frame + 1,
                     VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 13 );
 
-    printf("CRC = %d\n", framecrc );                
+    printf("CRC = %d\n", framecrc );
 
     // CRC
     frame[ 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 13 ] = ( framecrc >> 8 ) & 0xff;
@@ -131,10 +132,10 @@ int makeFrameType0( unsigned char *frame )
 
 
 // Temperature measurement encrypted with AES128
-int makeFrameType1( unsigned char *frame )
+int makeFrameTypeEncrypted( uint8_t type, unsigned char *frame )
 {
     // Frame type, Type 0, unencrypted
-    frame[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = VSCP_ENCRYPTION_AES128;
+    frame[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = type;
 
     // Head
     frame[ VSCP_MULTICAST_PACKET0_POS_HEAD_MSB ] = 0;
@@ -147,7 +148,8 @@ int makeFrameType1( unsigned char *frame )
     frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ] = 0;
 
     // Date / time block 1956-11-02 04:23:52 GMT
-    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR ] = 56;
+    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_MSB ] = 0x07;    // 1956
+    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_LSB ] = 0xA4;
     frame[ VSCP_MULTICAST_PACKET0_POS_MONTH ] = 11;
     frame[ VSCP_MULTICAST_PACKET0_POS_DAY ] = 02;
     frame[ VSCP_MULTICAST_PACKET0_POS_HOUR ] = 4;
@@ -201,10 +203,10 @@ int makeFrameType1( unsigned char *frame )
     frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 12 ] = 0x38;  // "8"
 
     // Calculate CRC
-    crc framecrc = crcFast( (unsigned char const *)frame + 1, 
+    crc framecrc = crcFast( (unsigned char const *)frame + 1,
                     VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 13 );
 
-    printf("CRC = %d\n", framecrc );                
+    printf("CRC = %d\n", framecrc );
 
     // CRC
     frame[ 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 13 ] = ( framecrc >> 8 ) & 0xff;
@@ -217,7 +219,7 @@ int makeFrameType1( unsigned char *frame )
     printf("\n");
 
     // Encrypt frame
-    uint8_t outframe[1024];    
+    uint8_t outframe[1024];
     memset( outframe, 0, sizeof(outframe) );
 
     uint8_t iv[16];
@@ -233,17 +235,17 @@ int makeFrameType1( unsigned char *frame )
     padlen = padlen + ( 16 - (padlen % 16 ) );
 
     AES_CBC_encrypt_buffer( AES128,
-                            outframe, 
-                            frame+1, 
-                            padlen + 1, 
-                            key, 
+                            outframe,
+                            frame + 1,
+                            padlen + 1,
+                            key,
                             iv );
 
-    // Replace with encrypted version                        
+    // Replace with encrypted version
     memcpy( frame + 1, outframe, padlen );
-    
+
     // Append iv
-    memcpy( frame + 1 + padlen, 
+    memcpy( frame + 1 + padlen,
                 iv, 16 );
 
     printf("Encrypted Frame = ");
@@ -254,25 +256,22 @@ int makeFrameType1( unsigned char *frame )
 
     return (padlen + 16 + 1);
 }
- 
+
 int main( int argc, char* argv[] )
 {
     struct sockaddr_in si_other;
     int s, i, slen=sizeof(si_other);
     unsigned char udpframe[ BUFLEN ];
-    unsigned char buf[ BUFLEN ];    
+    unsigned char buf[ BUFLEN ];
 
     char *pServer = DEFAULT_SERVER;
     int port = VSCP_DEFAULT_UDP_PORT;
     int FrameType = DEFAULT_FRAME_TYPE;
     int cnt = DEFAULT_COUNT;
-    int bReply = 1;
+    int bReply = 0;
 
     // Init. CRC data
     crcInit();
-
-    //printf( "mods %d\n", 16- (17 % 16 ) );
-    //return -1;
 
     if ( argc > 1 ) {
 
@@ -297,34 +296,47 @@ int main( int argc, char* argv[] )
 
         // Count
         if ( argc >= 5 ) {
-            cnt = atoi(argv[4]);
+            cnt = atoi( argv[4] );
             if ( !cnt ) {
                 printf("Count must be greater than zero.");
                 die("cnt");
             }
         }
+
+        // bReply
+        if ( argc >= 6 ) {
+            bReply = atoi(argv[5]);
+        }
     }
 
- 
+
     if ( -1 == ( s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP) ) ) {
         die("socket");
     }
- 
+
     memset((char *) &si_other, 0, sizeof(si_other));
     si_other.sin_family = AF_INET;
     si_other.sin_port = htons(port);
-     
+
     if ( 0 == inet_aton( pServer , &si_other.sin_addr) )  {
         fprintf(stderr, "inet_aton() failed\n");
         exit(1);
     }
 
     int len;
-    
+
     switch ( FrameType ) {
 
         case 1:
-            len = makeFrameType1( udpframe );
+            len = makeFrameTypeEncrypted( VSCP_ENCRYPTION_AES128, udpframe );
+            break;
+
+        case 2:
+            len = makeFrameTypeEncrypted( VSCP_ENCRYPTION_AES192, udpframe );
+            break;
+
+        case 3:
+            len = makeFrameTypeEncrypted( VSCP_ENCRYPTION_AES256, udpframe );
             break;
 
         default:
@@ -332,19 +344,19 @@ int main( int argc, char* argv[] )
             len = makeFrameType0( udpframe );
             break;
     }
- 
+
     for ( int i=0; i<cnt; i++ ) {
-         
+
         // send the message
-        if ( -1 == sendto( s, 
-                            udpframe, 
-                            len, 
-                            0, 
-                            (struct sockaddr *) &si_other, 
+        if ( -1 == sendto( s,
+                            udpframe,
+                            len,
+                            0,
+                            (struct sockaddr *) &si_other,
                             slen ) ) {
             die("sendto()");
         }
-         
+
         if ( bReply ) {
 
             printf("Sent frame %d - Waiting for response...\n", i );
@@ -370,27 +382,27 @@ int main( int argc, char* argv[] )
                        buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_LSB ];
 
             uint16_t type = ( (uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_MSB ] << 8 ) +
-                        buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB ];  
+                        buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB ];
 
-            if ( ( VSCP_CLASS1_ERROR == class ) && 
+            if ( ( VSCP_CLASS1_ERROR == class ) &&
                  ( VSCP_TYPE_ERROR_SUCCESS == type ) )  {
-                printf("Reply = Success.\n");                    
+                printf("Reply = Success.\n");
             }
-            else if ( ( VSCP_CLASS1_ERROR == class ) && 
+            else if ( ( VSCP_CLASS1_ERROR == class ) &&
                  ( VSCP_TYPE_ERROR_ERROR == type ) )  {
-                printf("Reply = Error.\n");                    
+                printf("Reply = Error.\n");
             }
             else  {
-                printf("Unknown reply.\n");                    
+                printf("Unknown reply.\n");
             }
         }
         else {
             printf("Sent frame %d \n", i );
         }
 
-        
+
     }
- 
+
     close(s);
     return 0;
 }

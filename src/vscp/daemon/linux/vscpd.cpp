@@ -124,7 +124,6 @@ int main(int argc, char **argv)
     gbStopDaemon = false;
 
     VSCPApp theApp;
-
     wxSocketBase::Initialize();
 
     while ( ( arg = getopt( argc, argv, "d:c:f:k:hgs" ) ) != EOF ) {
@@ -175,7 +174,7 @@ int main(int argc, char **argv)
         exit( -1 );
     }
 
-    wxLogDebug(_("VSCPD: Deleting the controlobject."));
+    wxLogDebug(_("VSCPD: Deleting the control object."));
     delete gpobj;
 
     wxLogDebug(_("VSCPD: Bye, bye."));
