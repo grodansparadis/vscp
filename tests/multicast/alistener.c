@@ -30,9 +30,9 @@
 
 #include <vscp.h>
 
-#define HELLO_PORT    9598
-#define HELLO_GROUP   "224.0.23.158"
-#define MSGBUFSIZE    1024
+#define DEFAULT_PORT    9598
+#define DEFAULT_GROUP   "224.0.23.158"
+#define MSGBUFSIZE      1024
 
 int main( int argc, char *argv[] )
 {
@@ -66,15 +66,15 @@ int main( int argc, char *argv[] )
         return -1;
     }
 
-    printf("Listen for announce events on the VSCP announce multicast channel.\n");
-    printf("usage: announce-listner dump|nodump ip-address-to-filter-on\n");
+    printf("\nListen for announce events on the VSCP announce multicast channel.\n");
+    printf("usage: announce-listner dump|no ip-address-to-filter-on\n");
     printf("CTRL +C to terminate.\n\n");
 
     // set up destination address
     memset( &addr, 0, sizeof( addr ) );
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = htonl( INADDR_ANY ); // N.B.: differs from sender
-    addr.sin_port = htons( HELLO_PORT );
+    addr.sin_port = htons( DEFAULT_PORT );
 
     // bind to receive address
     if ( bind( sock, (struct sockaddr *)&addr, sizeof( addr ) ) < 0 ) {
@@ -83,7 +83,7 @@ int main( int argc, char *argv[] )
    }
 
    // use setsockopt() to request that the kernel join a multicast group
-   mreq.imr_multiaddr.s_addr=inet_addr(HELLO_GROUP);
+   mreq.imr_multiaddr.s_addr=inet_addr(DEFAULT_GROUP);
    mreq.imr_interface.s_addr=htonl(INADDR_ANY);
    if ( setsockopt( sock, IPPROTO_IP, IP_ADD_MEMBERSHIP,
                           &mreq, sizeof( mreq ) ) < 0 ) {
@@ -122,15 +122,33 @@ int main( int argc, char *argv[] )
                        buf[VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB];
 
         printf( "Announce frame received from ");
-        printf( "%s, port=%d - ", peer, ntohs( addr.sin_port ) );
-        printf( "class=%d,type=%d\n", vscp_class, vscp_type );
+        printf( "%s,\tport=%d - ", peer, ntohs( addr.sin_port ) );
+        printf( "\tclass=%d,type=%d\n", vscp_class, vscp_type );
 
         if ( bDumpData ) {
             printf("Size of frame=%d.\nFrame=", nbytes );
             for ( int i=0; i<nbytes; i++ ) {
                 printf("%02X ", buf[i] );
             }
-            printf("\n\n");
+            printf("\n");
+            printf("Class=%d, Type=%d data size=%d\n",
+                    ( ( buf[VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_MSB] >> 8) & 0x0f ) +
+                        buf[VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_LSB],
+                    ( ( buf[VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_MSB] >> 8) & 0x0f ) +
+                        buf[VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB],
+                    ( ( buf[VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB] >> 8) & 0x0f ) +
+                        buf[VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB] );
+            printf("Year=%d, Month=%d Day=%d ",
+                    ( buf[VSCP_MULTICAST_PACKET0_POS_YEAR_MSB] << 8 ) +
+                    buf[VSCP_MULTICAST_PACKET0_POS_YEAR_LSB],
+                    buf[VSCP_MULTICAST_PACKET0_POS_MONTH],
+                    buf[VSCP_MULTICAST_PACKET0_POS_DAY] );
+            printf("Hour=%d, Minute=%d Second=%d \n",
+                            buf[VSCP_MULTICAST_PACKET0_POS_HOUR],
+                            buf[VSCP_MULTICAST_PACKET0_POS_MINUTE],
+                            buf[VSCP_MULTICAST_PACKET0_POS_SECOND] );
+            printf("\n");
+
         }
 
   }

@@ -39,6 +39,7 @@ typedef struct {
     vscpEventFilter     m_filter;           // Filter for outgoing events to this UDP client
     uint8_t             m_nEncryption;      // Encryption algorithm to use for this client
     bool                m_bSetBroadcast;    // Set broadcast flag  MG_F_ENABLE_BROADCAST
+    uint8_t             m_index;            // Rolling send index (only low tree bits used)
 } udpRemoteClientInfo;
 
 WX_DECLARE_LIST( udpRemoteClientInfo, udpRemoteClientList );
@@ -56,6 +57,14 @@ typedef struct  {
 } udpServerInfo;    
     
 
+typedef struct {
+    uint8_t             m_index;            // Frame index
+    vscpEvent           *m_pEvent;          // Event to send
+    uint32_t            m_lastSent;         // Last sent
+    uint8_t             m_nRetry;           // Retry counter
+} eventResendItem;
+
+WX_DECLARE_LIST( eventResendItem, udpResendItemList );
 
 
 /*!
@@ -96,20 +105,44 @@ public:
      * @param pClientItem Client item for this user. Normally "USP"
      * @param pRxFilter Pointer to receive filter. Can be NULL to accept 
      *          all events.
+     * @param index Running packet index.-
      * @return True on success, false on failure.
      */
     static bool receiveFrame( struct mg_connection *nc, 
                                             CClientItem *pClientItem,
                                             vscpEventFilter *pRxFilter );
     
+    /*!
+     *  Send ACk reply
+     * 
+     *  @pram nc Pointer to connection
+     *  @param pkttype Packet type
+     *  @param index Running index 0-7
+     */
     static bool replyAckFrame( struct mg_connection *nc, 
-                                    uint8_t pkttype );
+                                    uint8_t pkttype,
+                                    uint8_t index );
     
+    /*!
+     *  Send NACk reply
+     * 
+     *  @pram nc Pointer to connection
+     *  @param pkttype Packet type
+     *  @param index Running index 0-7
+     */
     static bool replyNackFrame( struct mg_connection *nc, 
-                                    uint8_t pkttype );
+                                    uint8_t pkttype,
+                                    uint8_t index );
     
+    /*!
+     * Send frame to all clients
+     * 
+     * @param pmgt Pointer to communication structure
+     * @param pClientItem Pointer to client
+     * @return True on success false on failure
+     */
     bool sendFrame( struct mg_mgr *pmgr, 
-                                CClientItem *pClientItem );
+                        CClientItem *pClientItem );
 
     
     /*! 
@@ -131,8 +164,6 @@ private:
     // UDP Client item
     CClientItem *m_pClientItem;
     
-    
-    //udpServerInfo m_udpInfo;
 
 };
 

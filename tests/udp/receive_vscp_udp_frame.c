@@ -180,7 +180,7 @@ int main( int argc, char* argv[] )
                         output[VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB],
                     ( ( output[VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB] >> 8) & 0x0f ) +
                         output[VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB] );
-            printf("Year=%d, Month=%d Day=%d \n",
+            printf("Year=%d, Month=%d Day=%d ",
                     ( output[VSCP_MULTICAST_PACKET0_POS_YEAR_MSB] << 8 ) +
                         output[VSCP_MULTICAST_PACKET0_POS_YEAR_LSB],
                     output[VSCP_MULTICAST_PACKET0_POS_MONTH],

@@ -1617,16 +1617,20 @@ bool CControlObject::startMulticastWorkerThreads( void )
         for ( iter = m_multicastInfo.m_channels.begin(); 
                    iter != m_multicastInfo.m_channels.end(); ++iter) {
 
-            multicastChannel *pChannel = *iter;
+            multicastChannelItem *pChannel = *iter;
             if ( NULL == pChannel ) {
-                logMsg(_("Multicast channel table invalid entry.\n") );
+                logMsg(_("Multicast start channel table invalid entry.\n") );
                 continue;
             }
             
             logMsg(_("Starting multicast channel interface thread...\n") );      
-            pChannel->m_pWorkerThread = new multicastClientThread;
+            pChannel->m_pWorkerThread = new VSCPMulticastClientThread;
 
             if ( NULL != pChannel->m_pWorkerThread) {
+                
+                // Share the multicast channel item
+                pChannel->m_pWorkerThread->m_pChannel = pChannel;
+                
                 wxThreadError err;
                 if (wxTHREAD_NO_ERROR == (err = pChannel->m_pWorkerThread->Create())) {
                     //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
@@ -1654,13 +1658,28 @@ bool CControlObject::startMulticastWorkerThreads( void )
 
 bool CControlObject::stopMulticastWorkerThreads( void )
 {
-    if ( NULL != m_pVSCPClientUDPThread ) {
-        m_mutexVSCPClientnUDPThread.Lock();
-        m_pVSCPClientUDPThread->m_bQuit = true;
-        m_pVSCPClientUDPThread->Wait();
-        delete m_pVSCPClientThread;
-        m_mutexVSCPClientnUDPThread.Unlock();
+    MULTICASTCHANNELLIST::iterator iter;
+    for ( iter = m_multicastInfo.m_channels.begin(); 
+                   iter != m_multicastInfo.m_channels.end(); ++iter) {
+        
+        multicastChannelItem *pChannel = *iter;
+        if ( NULL == pChannel ) {
+            logMsg(_("Multicast end channel table invalid entry.\n") );
+            continue;
+        }
+        
+        if ( NULL != pChannel->m_pWorkerThread ) {
+            pChannel->m_mutexVSCPMulticastThread.Lock();
+            pChannel->m_pWorkerThread->m_bQuit = true;
+            pChannel->m_pWorkerThread->Wait();
+            delete pChannel->m_pWorkerThread;
+            pChannel->m_pWorkerThread = NULL;
+            pChannel->m_mutexVSCPMulticastThread.Unlock();
+        }
+        
     }
+    
+    
 
     return true;
 }
@@ -2728,6 +2747,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     pudpClient->m_nEncryption = vscp_getEncryptionCodeFromToken( attribute );
                             
                     // add to list
+                    pudpClient->m_index = 0;
                     m_udpInfo.m_remotes.Append( pudpClient );
                             
                 }
@@ -2758,7 +2778,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                         
                 if ( subchild->GetName() == _("channel") ) {
                         
-                    multicastChannel *pChannel = new multicastChannel;
+                    multicastChannelItem *pChannel = new multicastChannelItem;
                     if ( NULL == pChannel ) {
                         logMsg( _("Failed to allocated multicast channel structure.\n") );
                         gpobj->m_mutexMulticastInfo.Unlock();
@@ -2771,7 +2791,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     vscp_clearVSCPFilter( &pChannel->m_rxFilter );
                     
                     // Enable
-                    attribute = child->GetAttribute(wxT("enable"), wxT("true"));
+                    attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
                     attribute.MakeLower();
                     if (attribute.IsSameAs(_("false"), false)) {
                         pChannel->m_bEnable = false;
@@ -2781,7 +2801,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     }
                     
                     // bSendAck
-                    attribute = child->GetAttribute(wxT("bSendAck"), wxT("false"));
+                    attribute = subchild->GetAttribute(wxT("bSendAck"), wxT("false"));
                     attribute.MakeLower();
                     if (attribute.IsSameAs(_("false"), false)) {
                         pChannel->m_bSendAck = false;
@@ -2790,17 +2810,21 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                         pChannel->m_bSendAck = true;
                     }
                     
+                    // Interface
+                    pChannel->m_interface =
+                            subchild->GetAttribute( wxT("interface"), wxT("") );
+                    
                     // Group
                     pChannel->m_gropupAddress =
-                            child->GetAttribute( wxT("group"), wxT("udp://224.0.23.158:44444") );
+                            subchild->GetAttribute( wxT("group"), wxT("udp://224.0.23.158:44444") );
                     
                     // ttl
                     pChannel->m_ttl = 
-                            vscp_readStringValue( child->GetAttribute( wxT("ttl"), wxT("1") ) );
+                            vscp_readStringValue( subchild->GetAttribute( wxT("ttl"), wxT("1") ) );
                     
                     // guid
                     attribute = 
-                            child->GetAttribute( wxT("guid"), 
+                            subchild->GetAttribute( wxT("guid"), 
                                                     wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
                     pChannel->m_guid.getFromString( attribute );
                     
@@ -2833,6 +2857,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     pChannel->m_nEncryption = vscp_getEncryptionCodeFromToken( attribute );
                             
                     // add to list
+                    pChannel->m_index = 0;
                     m_multicastInfo.m_channels.Append( pChannel );
                     
                 }
@@ -4310,6 +4335,7 @@ bool CControlObject::readUdpNodes( void )
         }
         
         // Add to list
+        pudpClient->m_index = 0;
         m_udpInfo.m_remotes.Append( pudpClient );
         
         gpobj->m_mutexUDPInfo.Unlock();
@@ -4362,7 +4388,7 @@ bool CControlObject::readMulticastChannels( void )
         
         gpobj->m_mutexMulticastInfo.Lock();
         
-        multicastChannel *pChannel = new multicastChannel;
+        multicastChannelItem *pChannel = new multicastChannelItem;
         if ( NULL == pChannel ) {
             fprintf( stderr, "readMulticastChannels: Failed to allocate storage for multicast node." );
             m_mutexMulticastInfo.Unlock();
@@ -4372,6 +4398,13 @@ bool CControlObject::readMulticastChannels( void )
         // Default is to let everything come through
         vscp_clearVSCPFilter( &pChannel->m_txFilter );
         vscp_clearVSCPFilter( &pChannel->m_rxFilter );
+        
+        // interface
+        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_MULTICAST_INTERFACE );
+        if ( NULL != p ) {
+            pChannel->m_interface = 
+                    wxString::FromUTF8Unchecked( (const char *)p );
+        }
              
         // group
         p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_MULTICAST_GROUP );
@@ -4387,7 +4420,7 @@ bool CControlObject::readMulticastChannels( void )
         pChannel->m_bSendAck = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_MULTICAST_SENDACK );
         
         // GUID
-        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_MULTICAST_GROUP );
+        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_MULTICAST_GUID );
         if ( NULL != p ) {
             pChannel->m_guid.getFromString( p );
         }
@@ -4436,6 +4469,7 @@ bool CControlObject::readMulticastChannels( void )
         }
         
         // Add to list
+        pChannel->m_index = 0;
         m_multicastInfo.m_channels.Append( pChannel );
         
         m_mutexMulticastInfo.Unlock();

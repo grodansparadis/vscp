@@ -58,7 +58,7 @@ extern CControlObject *gpobj;
 
 
 WX_DEFINE_LIST(udpRemoteClientList);
-
+WX_DEFINE_LIST(udpResendItemList);
 
 ///////////////////////////////////////////////////////////////////////////////
 // VSCPUDPClientThread
@@ -148,11 +148,8 @@ void *VSCPUDPClientThread::Entry()
                 wxString::Format( _("[UDP Client] User [%s] NOT allowed to connect.\n"),
                                     (const char *)gpobj->m_udpInfo.m_user.mbc_str() );
             gpobj->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
-#if wxMAJOR_VERSION >= 3
             wxLogDebug( _("Password/Username failure.") );
-#else
-            ::wxLogDebug( _("Password/Username failure.") );
-#endif                    
+                 
             return NULL;
         }
     }
@@ -166,8 +163,12 @@ void *VSCPUDPClientThread::Entry()
     gpobj->m_wxClientMutex.Unlock();
 
     // Set receive filter
-    //vscp_clearVSCPFilter( &m_pClientItem->m_filterVSCP );
     memcpy( &m_pClientItem->m_filterVSCP, &gpobj->m_udpInfo.m_filter, sizeof(vscpEventFilter) );
+    
+    // Set GUID for channel
+    if ( !gpobj->m_udpInfo.m_guid.isNULL() ) {
+        m_pClientItem->m_guid = gpobj->m_udpInfo.m_guid;
+    }
 
     gpobj->logMsg( _("UDP Client: Thread started.\n") );
 
@@ -265,14 +266,18 @@ VSCPUDPClientThread::ev_handler(struct mg_connection *nc, int ev, void *p)
                                     &gpobj->m_udpInfo.m_filter )  ) {
                     
                     if ( gpobj->m_udpInfo.m_bAck ) {
-                        replyAckFrame( nc, nc->recv_mbuf.buf[0] );
+                        replyAckFrame( nc, 
+                                        nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ], 
+                                        ( nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] & 0xf8 ) );
                     }
                     
                 }
                 else {
                     
                     if ( gpobj->m_udpInfo.m_bAck ) {
-                        replyNackFrame( nc, nc->recv_mbuf.buf[0] );
+                        replyNackFrame( nc, 
+                                        nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ],
+                                        ( nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] & 0xf8 ) );
                     }
                     
                 }
@@ -386,7 +391,8 @@ VSCPUDPClientThread::sendFrame( struct mg_mgr *pmgr,
                                       CClientItem *pClientItem )
 {
     CLIENTEVENTLIST::compatibility_iterator nodeClient;
-    unsigned char sendbuf[1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + 512 + 16];    // Send buffer
+    unsigned char sendbuf[1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + 
+                            VSCP_LEVEL2_MAXDATA + 16];    // Send buffer
     uint8_t iv[16];
     
     // Check if there is an event to send
@@ -440,6 +446,11 @@ VSCPUDPClientThread::sendFrame( struct mg_mgr *pmgr,
             continue;
         }
         
+        // Write rolling index
+        wrkbuf[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] &= 0xf8;
+        wrkbuf[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] |= (0x07 & pRemoteUDPNode->m_index );
+        pRemoteUDPNode->m_index++;
+        
         size_t len = 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData + 2;
         if ( 0 == ( len = vscp_encryptVscpUdpFrame( sendbuf, 
                                             wrkbuf, 
@@ -473,10 +484,6 @@ if ( 0 ) {
     }
     gpobj->m_mutexUDPInfo.Unlock();
     
-
-    //mg_connect( pmgr, "udp://127.0.0.1:9999", ev_handler );
-    //mg_send( pmgr->active_connections, sendbuf, 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + pEvent->sizeData);
-     
     // Remove the event data node
     pClientItem->m_mutexClientInputQueue.Lock();
     pClientItem->m_clientInputQueue.DeleteNode( nodeClient );
@@ -492,12 +499,14 @@ if ( 0 ) {
 
 bool 
 VSCPUDPClientThread::replyAckFrame( struct mg_connection *nc, 
-                                        uint8_t pkttype )
+                                        uint8_t pkttype,
+                                        uint8_t index )
 {
-    unsigned char sendbuf[1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + 512 + 16];    // Send buffer
+    unsigned char sendbuf[1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + 
+                            VSCP_LEVEL2_MAXDATA + 16];    // Send buffer
     vscpEventEx ex;
     
-    ex.head = 0;
+    ex.head = ( index & 0xf8 );
     ex.obid = 0;
     ex.timestamp = vscp_makeTimeStamp();
     ex.year = wxDateTime::UNow().GetYear();
@@ -511,6 +520,7 @@ VSCPUDPClientThread::replyAckFrame( struct mg_connection *nc,
     ex.vscp_type = VSCP_TYPE_ERROR_SUCCESS;        
     ex.sizeData = 3;
     memset( ex.data, 0, 3 );    // index/zone/subzone = 0
+    ex.data[0] = index;
         
     if ( !vscp_writeEventExToUdpFrame( sendbuf,  
                                         sizeof( sendbuf ), 
@@ -531,12 +541,14 @@ VSCPUDPClientThread::replyAckFrame( struct mg_connection *nc,
 
 bool 
 VSCPUDPClientThread::replyNackFrame( struct mg_connection *nc, 
-                                            uint8_t pkttype )
+                                            uint8_t pkttype,
+                                            uint8_t index )
 {
-    unsigned char sendbuf[1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + 512 + 16];    // Send buffer
+    unsigned char sendbuf[1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + 
+                                VSCP_LEVEL2_MAXDATA + 16];    // Send buffer
     vscpEventEx ex;
     
-    ex.head = 0;
+    ex.head = ( index & 0xf8 );
     ex.obid = 0;
     ex.timestamp = vscp_makeTimeStamp();
     ex.year = wxDateTime::UNow().GetYear();
@@ -550,6 +562,7 @@ VSCPUDPClientThread::replyNackFrame( struct mg_connection *nc,
     ex.vscp_type = VSCP_TYPE_ERROR_ERROR;        
     ex.sizeData = 3;
     memset( ex.data, 0, 3 );    // index/zone/subzone = 0
+    ex.data[0] = index;
     
     if ( !vscp_writeEventExToUdpFrame( sendbuf,  
                                         sizeof( sendbuf ), 

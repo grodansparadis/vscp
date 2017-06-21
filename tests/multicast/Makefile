@@ -8,30 +8,37 @@ LDFLAGS =
 EXTRALIBS =  -lz
 OBJ = crc.o crc8.o aes.o
 
-all:	announce-listner sender
+all: sender alistener mclistener
 
-announce-listener:	announce-listener.c
-	cc $(CFLAGS) announce-listener.c -o announce-listener
-
-sender:     sender.c
-	cc $(CFLAGS) sender.c -o sender
-
-crc.o: ../../src/common/crc.o ../../src/common/crc.h
+crc.o: ../../src/common/crc.c ../../src/common/crc.h
 	$(CC) $(CFLAGS) -c ../../src/common/crc.c -o $@
 
-crc8.o: ../../src/common/crc8.o ../../src/common/crc8.h
+crc8.o: ../../src/common/crc8.c ../../src/common/crc8.h
 	$(CC) $(CFLAGS) -c ../../src/common/crc8.c -o $@
 
-aes.o: ../../src/common/aes.o ../../src/common/aes.h
+aes.o: ../../src/common/aes.c ../../src/common/aes.h
 	$(CC) $(CFLAGS) -c ../../src/common/aes.c -o $@
 
-#send_vscp_udp_frame:     send_vscp_udp_frame.o $(OBJ)
-#	$(CXX)  $(CPPFLAGS) -o $@  send_vscp_udp_frame.o $(OBJ) $(LDFLAGS) -L$(LIBDIRNAME) -L/usr/lib64 -lstdc++ $(EXTRALIBS)
+sender: $(OBJ) sender.c
+	$(CC) $(CFLAGS) sender.c -o $@ $(OBJ)
 
-#receive_vscp_udp_frame:     receive_vscp_udp_frame.o $(OBJ)
-#	$(CXX)  $(CPPFLAGS) -o $@ receive_vscp_udp_frame.o  $(OBJ) $(LDFLAGS) -L$(LIBDIRNAME) $(EXTRALIBS)
+alistener:	$(OBJ) alistener.c
+	$(CC) $(CFLAGS) alistener.c -o $@ $(OBJ)
+
+mclistener:	$(OBJ) mclistener.c
+	$(CC) $(CFLAGS) mclistener.c -o $@ $(OBJ)
 
 clean:
-	rm -f announce-listner
+	rm -f alistener
+	rm -f mclistener
 	rm -f sender
 	rm -f *.o
+
+$(ALWAYS_BUILD):  .FORCE
+
+.FORCE:
+
+# Include dependency info, if present:
+-include .deps/*.d
+
+.PHONY: all install uninstall clean distclean data .FORCE

@@ -20,7 +20,7 @@
  #include <netinet/in.h>
  #include <arpa/inet.h>
 
- #define HELLO_PORT 9598
+ #define HELLO_PORT 44444
  #define HELLO_GROUP "224.0.23.158"
 
  int main( int argc, char *argv[] )

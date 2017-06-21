@@ -3368,18 +3368,20 @@ bool vscp_setEventDateTimeBlockToNow( vscpEvent *pEvent )
     // Check pointer 
     if ( NULL == pEvent ) return false;
     
-    time_t rawtime;
+    /*time_t rawtime;
     struct tm * ptm;
 
     time( &rawtime );
-    ptm = gmtime( &rawtime );
+    ptm = gmtime( &rawtime );*/
     
-    pEvent->year = ptm->tm_year;
-    pEvent->month = ptm->tm_mon;
-    pEvent->day = ptm->tm_mday;
-    pEvent->hour = ptm->tm_hour;
-    pEvent->minute = ptm->tm_min;
-    pEvent->second = ptm->tm_sec;
+    wxDateTime dt = wxDateTime::UNow();
+    
+    pEvent->year = dt.GetYear();
+    pEvent->month = dt.GetMonth() + 1;
+    pEvent->day = dt.GetDay();
+    pEvent->hour = dt.GetHour();
+    pEvent->minute = dt.GetMinute();
+    pEvent->second = dt.GetSecond();
     
     return true;
 }
@@ -5487,7 +5489,7 @@ bool vscp_writeEventToUdpFrame( uint8_t *frame,
     if ( NULL == pEvent ) return false;
     // Can't have data size with invalid data pointer
     if ( pEvent->sizeData && (NULL == pEvent->pdata ) ) return false;
-    
+       
     size_t calcSize = 1 +                                       // Packet type
                         VSCP_MULTICAST_PACKET0_HEADER_LENGTH +          
                         pEvent->sizeData +                  
@@ -5551,7 +5553,22 @@ bool vscp_writeEventToUdpFrame( uint8_t *frame,
                 ( framecrc >> 8 ) & 0xff;
     frame[ 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData + 1 ] = 
                 framecrc & 0xff;
-
+    
+#if 0
+    wxPrintf("CRC1 %02X %02X\n",
+                frame[ 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData ],
+                frame[ 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData + 1 ] );
+    wxPrintf("CRC2 %02X %02X\n",
+                ( framecrc >> 8 ) & 0xff,
+                framecrc & 0xff );
+    crc nnnn = crcFast( frame+1,
+                            VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 
+                            pEvent->sizeData );
+    wxPrintf("CRC3 %02X %02X\n",
+                ( nnnn >> 8 ) & 0xff,
+                nnnn & 0xff );
+    wxPrintf("--------------------------------\n");
+#endif    
     
     return true;
 }
@@ -5590,7 +5607,7 @@ bool vscp_writeEventExToUdpFrame( uint8_t *frame,
 
 bool vscp_getEventFromUdpFrame( vscpEvent *pEvent, 
                                     const uint8_t *buf, 
-                                    size_t len ) 
+                                    size_t len )
 {    
     // Check pointers
     if ( NULL == pEvent ) return false;
@@ -5625,35 +5642,39 @@ bool vscp_getEventFromUdpFrame( vscpEvent *pEvent,
     
     
     size_t calcFrameSize = 
-            1 +                                          // packet type & encryption                        
+            1 +                                             // packet type & encryption                        
             VSCP_MULTICAST_PACKET0_HEADER_LENGTH +          // header
             2 +                                             // CRC
             ((uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] << 8 ) +
-            buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ];
+                buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ];
         
     // The buffer must hold a frame
     if ( len < calcFrameSize ) return false;
     
-    crc calcCRC = ((uint16_t)buf[ calcFrameSize - 2 ] << 8 ) +
+    crc crcFrame = ((uint16_t)buf[ calcFrameSize - 2 ] << 8 ) +
                         buf[ calcFrameSize - 1 ];
     
     // CRC check (only if not disabled)
     crc crcnew;
     if ( !( ( buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] | VSCP_HEADER_NO_CRC ) && 
-            ( VSCP_NOCRC_CALC_DUMMY_CRC == calcCRC ) ) ) {
+            ( VSCP_NOCRC_CALC_DUMMY_CRC == crcFrame ) ) ) {
+        
+#if 0
+    int i;
+    wxPrintf("DUMP = ");
+    for ( i=0; i<calcFrameSize; i++ ) {
+        wxPrintf("%02X ", buf[i] );
+    }
+    wxPrintf("\n");
+#endif        
         
         // Calculate & check CRC
         crcnew = crcFast( (unsigned char const *)buf + 1, 
-                    VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 
-                     ((uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] << 8 ) +
-                     buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ] +
-                     2 );
+                            calcFrameSize - 1 ); 
         // CRC is zero if calculated over itself
         if ( crcnew ) return false;
     }
-    
-    pEvent->crc = calcCRC;
-            
+                
     pEvent->sizeData =  
             ((uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] << 8 ) +
                        buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ];
@@ -5678,7 +5699,7 @@ bool vscp_getEventFromUdpFrame( vscpEvent *pEvent,
                 pEvent->sizeData ); 
     
     // Set CRC
-    pEvent->crc = calcCRC;
+    pEvent->crc = crcFrame;
     
     // Set timestamp
     pEvent->timestamp = 
@@ -5777,10 +5798,16 @@ size_t vscp_encryptVscpUdpFrame( uint8_t *output,
     if ( NULL == output ) return 0;
     if ( NULL == input ) return 0;
     if ( NULL == key ) return 0;
+      
+    // If no encryption needed - return
+    if ( VSCP_ENCRYPTION_NONE == nAlgorithm ) {
+        memcpy( output, input, len );
+        return len;
+    }
     
     // Must pad if needed
     size_t padlen = len - 1;    // Without packet type
-    padlen = len + ( 16 - ( len % 16 ) );
+    padlen = len + ( 16 - ( len % 16 ) );    
     
     // The packet type s always un encrypted
     output[0] = input[0];

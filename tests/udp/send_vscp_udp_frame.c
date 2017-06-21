@@ -40,7 +40,7 @@ void die(char *s)
 }
 
 // Temperature measurement
-int makeFrameType0( unsigned char *frame )
+int makeFrameTypeUnEncrypted( unsigned char *frame )
 {
     // Frame type, Type 0, unencrypted
     frame[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = VSCP_ENCRYPTION_NONE;
@@ -341,7 +341,7 @@ int main( int argc, char* argv[] )
 
         default:
         case 0:
-            len = makeFrameType0( udpframe );
+            len = makeFrameTypeUnEncrypted( udpframe );
             break;
     }
 

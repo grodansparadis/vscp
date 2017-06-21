@@ -90,9 +90,9 @@ extern "C" {
                                 //          Just checked when CRC is used. 
                                 //          If set the CRC should be set to 0xAA55 for
                                 //          the event to be accepted without a CRC check.
-                                // bit 2 = Reserved.
-                                // bit 1 = Reserved.
-                                // bit 0 = Reserved.
+                                // bit 2 = Rolling index.
+                                // bit 1 = Rolling index.
+                                // bit 0 = Rolling index.
         uint16_t vscp_class;    // VSCP class
         uint16_t vscp_type;     // VSCP type
         uint8_t GUID[ 16 ];     // Node globally unique id MSB(0) -> LSB(15)
@@ -136,9 +136,9 @@ typedef struct {
                                     //          Just checked when CRC is used.
                                     //          If set the CRC should be set to 0xAA55 for
                                     //          the event to be accepted without a CRC check.
-                                    // bit 2 = Reserved.
-                                    // bit 1 = Reserved.
-                                    // bit 0 = Reserved.
+                                    // bit 2 = Rolling index.
+                                    // bit 1 = Rolling index.
+                                    // bit 0 = Rolling index.
     uint16_t vscp_class;            // VSCP class
     uint16_t vscp_type;             // VSCP type
     uint8_t  GUID[ 16 ];            // Node globally unique id MSB(0) -> LSB(15)
@@ -327,7 +327,7 @@ typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 // VSCP multicast packet types
 #define VSCP_MULTICAST_TYPE_EVENT                       0
 
-#define SET_VSCP_MULTICAST_TYPE( type, encryption )  ( (type<<4) + encryption )
+#define SET_VSCP_MULTICAST_TYPE( type, encryption )  ( (type<<4) | encryption )
 #define GET_VSCP_MULTICAST_PACKET_TYPE( type)        ( (type>>4) & 0x0f)
 #define GET_VSCP_MULTICAST_PACKET_ENCRYPTION( type)  ( (type) & 0x0f)
 

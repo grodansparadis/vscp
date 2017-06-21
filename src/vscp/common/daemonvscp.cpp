@@ -163,6 +163,9 @@ void *daemonVSCPThread::Entry()
         perror( "setsockopt() failed" );
         return NULL;
     }
+    
+    int one = 1;
+    setsockopt( sock_mc, SOL_SOCKET, SO_REUSEADDR, &one, sizeof( one ) );
 
     // construct a multicast address structure
     memset( &mc_addr, 0, sizeof( mc_addr ) );
@@ -587,7 +590,7 @@ CNodeInformation * daemonVSCPThread::addNodeIfNotKnown( vscpEvent *pEvent )
                     if ( NULL != pClientItem ) {
                         pNode->m_strNodeName +=                                            
                             wxString::Format( _( "%lu" ),
-                                                pClientItem->m_clientID );
+                                                (unsigned long)pClientItem->m_clientID );
                     }
                     else {
                         pNode->m_strNodeName += _("isNULL");

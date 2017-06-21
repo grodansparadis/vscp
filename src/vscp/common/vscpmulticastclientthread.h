@@ -28,22 +28,26 @@
 #include "userlist.h"
 #include "controlobject.h"
 
-class multicastClientThread;
+class VSCPMulticastClientThread;
 
 // Client structure (Will receive events from VSCP server)
 typedef struct {
-    bool                    m_bEnable;              // Enable the channel
-    wxString                m_gropupAddress;        // Multicast group address "udp://224.0.23.158:44444"
-    int                     m_ttl;                  // Multicast ttl (defaults to 1)
-    cguid                   m_guid;                 // GUID to use for channel
-    vscpEventFilter         m_txFilter;             // Filter for outgoing events
-    vscpEventFilter         m_rxFilter;             // Filter for incoming events
-    uint8_t                 m_nEncryption;          // Encryption algorithm to use for this client
-    bool                    m_bSendAck;             // Send response frame when receiving frame
-    multicastClientThread   *m_pWorkerThread;       // Worker thread
-} multicastChannel;
+    bool                        m_bEnable;          // Enable the channel
+    wxString                    m_interface;        // Empty is IPADDR_ANY
+    wxString                    m_gropupAddress;    // Multicast group address "udp://224.0.23.158:44444"
+    int                         m_ttl;              // Multicast ttl (defaults to 1)
+    cguid                       m_guid;             // GUID to use for channel
+    vscpEventFilter             m_txFilter;         // Filter for outgoing events
+    vscpEventFilter             m_rxFilter;         // Filter for incoming events
+    uint8_t                     m_nEncryption;      // Encryption algorithm to use for this client
+    bool                        m_bSendAck;         // Send response frame when receiving frame
+    uint8_t                     m_index;            // Rolling index
+    
+    wxMutex                     m_mutexVSCPMulticastThread;     // Protect thread object
+    VSCPMulticastClientThread   *m_pWorkerThread;   // Worker thread
+} multicastChannelItem;
 
-WX_DECLARE_LIST(multicastChannel, MULTICASTCHANNELLIST );
+WX_DECLARE_LIST(multicastChannelItem, MULTICASTCHANNELLIST );
 
 typedef struct  {       
     bool                    m_bEnable;          // Enable multicast interface    
@@ -56,16 +60,16 @@ typedef struct  {
  * Class that handle one multicast channel
  */
 
-class multicastClientThread : public wxThread
+class VSCPMulticastClientThread : public wxThread
 {
 
 public:
     
     /// Constructor
-    multicastClientThread();
+    VSCPMulticastClientThread();
 
     /// Destructor
-    ~multicastClientThread();
+    ~VSCPMulticastClientThread();
 
     /*!
         Thread code entry point
@@ -97,16 +101,18 @@ public:
                                 vscpEventFilter *pRxFilter );
     
     static bool replyAckFrame( struct mg_connection *nc, 
-                                                uint8_t pkttype );
+                                    uint8_t pkttype,
+                                    uint8_t index );
     
     static bool replyNackFrame( struct mg_connection *nc, 
-                                                uint8_t pkttype );
+                                    uint8_t pkttype,
+                                    uint8_t index );
     
     /*!
      * Sends an outgoing event if there is one in the client queue
      */
     bool sendFrame( struct mg_mgr *pmgr, 
-                                        CClientItem *pClientItem );
+                        CClientItem *pClientItem );
 
 // --- Member variables ---
 
@@ -114,11 +120,11 @@ public:
         Termination control
     */
     bool m_bQuit;
-
-private:
-
+    
     /// Info about this multicast channel
-    multicastChannel m_channel;
+    multicastChannelItem *m_pChannel;
+
+private:    
     
     /// UDP Client item
     CClientItem *m_pClientItem;

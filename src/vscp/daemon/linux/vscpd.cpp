@@ -92,7 +92,7 @@ VSCPApp::VSCPApp()
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// The one and only app object
+// The one and only app. object
 //
 
 int main(int argc, char **argv)
