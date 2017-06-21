@@ -118,10 +118,9 @@ void *VSCPMulticastClientThread::Entry()
     crcInit();
     
     // Bind to interface
-    nc = mg_bind( &mgr, 
-                    (const char *)m_pChannel->m_gropupAddress.mbc_str(), 
-                    ev_handler );
-    if ( NULL == nc ) {
+    if ( NULL == ( nc = mg_bind( &mgr, 
+                    (const char *)m_pChannel->m_interface.mbc_str(), // "udp://44444"
+                    ev_handler ) ) ) {
         wxString str = _( "[Multicast channel] Can not bind to interface ");
         str += (const char *)m_pChannel->m_gropupAddress.mbc_str();
         gpobj->logMsg( str );
@@ -130,33 +129,28 @@ void *VSCPMulticastClientThread::Entry()
     
     int one = 1;
     setsockopt( nc->sock, SOL_SOCKET, SO_REUSEADDR, &one, sizeof( one ) );
-    
+        
     /*mg_conn_addr_to_str( nc, 
                             interface, 
                             sizeof( interface ),
                             MG_SOCK_STRINGIFY_IP );*/
     
     group.imr_multiaddr.s_addr = inet_addr( mcast_group );
-    if ( m_pChannel->m_interface.Trim().Length() ) {
-        group.imr_interface.s_addr = inet_addr( m_pChannel->m_interface );
-    }
-    else {
-        group.imr_interface.s_addr = INADDR_ANY; 
-    }
+    group.imr_interface.s_addr = inet_addr( "192.168.1.9" );  // INADDR_ANY does not work
     
     // Join group
-    if ( 0 > setsockopt( nc->sock, 
+    if ( setsockopt( nc->sock, 
                             IPPROTO_IP, 
                             IP_ADD_MEMBERSHIP, 
                             (char *)&group,
-                            sizeof( group ) ) ) {
+                            sizeof( group ) ) < 0 ) {
         gpobj->logMsg( _( "[Multicast channel] Unable to add to muticast group.\n" )  );
         return NULL;
     }
     
     mreqsrc.imr_interface = group.imr_interface;
     mreqsrc.imr_multiaddr = group.imr_multiaddr;
-    mreqsrc.imr_sourceaddr.s_addr = inet_addr( m_pChannel->m_interface );
+    mreqsrc.imr_sourceaddr.s_addr = inet_addr( "192.168.1.9" );
     if ( 0 > setsockopt( nc->sock, IPPROTO_IP, IP_BLOCK_SOURCE, (char *)&mreqsrc, sizeof( mreqsrc ) ) ) {
         gpobj->logMsg( _( "[Multicast channel] Unable to block source.\n" )  );
         return NULL;
@@ -164,13 +158,13 @@ void *VSCPMulticastClientThread::Entry()
     
     // We don't want to receive what we send
     u_char loop = 0;  // Disable
-    if ( 0 > setsockopt( nc->sock, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof( loop ) ) ) {
+    if ( setsockopt( nc->sock, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof( loop ) ) < 0 ) {
         gpobj->logMsg( _( "[Multicast channel] Failed to reset option IP_MULTICAST_LOOP.\n" )  );
     }
     
     // Set ttl
     u_char ttl = m_pChannel->m_ttl;
-    if ( 0 > setsockopt( nc->sock, IPPROTO_IP, IP_MULTICAST_TTL, &ttl, sizeof( ttl ) ) ) {
+    if ( setsockopt( nc->sock, IPPROTO_IP, IP_MULTICAST_TTL, &ttl, sizeof( ttl ) ) < 0 ) {
         gpobj->logMsg( _( "[Multicast channel] Failed to set ttl.\n" )  );
     }
 
@@ -223,6 +217,7 @@ void *VSCPMulticastClientThread::Entry()
                   IP_DROP_MEMBERSHIP, 
                   (char *)&group,
                    sizeof( group ) );
+    
     mg_mgr_free(&mgr);
 
     return NULL;
@@ -242,8 +237,6 @@ void VSCPMulticastClientThread::ev_handler( struct mg_connection *nc, int ev, vo
 
         case MG_EV_RECV:
             {
-                
-                
                 gpobj->logMsg( wxString::Format( _( "[Multicast channel] Received Multicast event\n" ) ),
                                         DAEMON_LOGMSG_DEBUG,
                                         DAEMON_LOGTYPE_GENERAL );
@@ -251,8 +244,6 @@ void VSCPMulticastClientThread::ev_handler( struct mg_connection *nc, int ev, vo
                 // Get remote address
                 wxString remoteaddr = wxString::FromAscii( inet_ntoa( nc->sa.sin.sin_addr )  );
                 int port = ntohs(nc->sa.sin.sin_port);
-                
-                return;
                 
                 
                 // If a user is specified check that this user is allowed to connect

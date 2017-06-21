@@ -8,7 +8,7 @@ LDFLAGS =
 EXTRALIBS =  -lz
 OBJ = crc.o crc8.o aes.o
 
-all: sender alistener mclistener
+all: sender alistener mclistener mcsender
 
 crc.o: ../../src/common/crc.c ../../src/common/crc.h
 	$(CC) $(CFLAGS) -c ../../src/common/crc.c -o $@
@@ -27,6 +27,9 @@ alistener:	$(OBJ) alistener.c
 
 mclistener:	$(OBJ) mclistener.c
 	$(CC) $(CFLAGS) mclistener.c -o $@ $(OBJ)
+
+mcsender: $(OBJ) mcsender.c
+	$(CC) $(CFLAGS) mcsender.c -o $@ $(OBJ)
 
 clean:
 	rm -f alistener

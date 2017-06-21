@@ -2359,7 +2359,7 @@ bool CControlObject::getIPAddress( cguid& guid )
 #else
     struct hostent *lpLocalHostEntry;
 #endif
-    lpLocalHostEntry = gethostbyname(szName);
+    lpLocalHostEntry = gethostbyname( szName );
     if (NULL == lpLocalHostEntry) {
         return false;
     }
