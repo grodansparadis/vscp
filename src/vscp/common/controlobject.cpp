@@ -2810,6 +2810,16 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                         pChannel->m_bSendAck = true;
                     }
                     
+                    // bAllowUndsecure
+                    attribute = subchild->GetAttribute(wxT("bAllowUnsecure"), wxT("false"));
+                    attribute.MakeLower();
+                    if (attribute.IsSameAs(_("false"), false)) {
+                        pChannel->m_bAllowUnsecure = false;
+                    }
+                    else {
+                        pChannel->m_bAllowUnsecure = true;
+                    }
+                    
                     // Interface
                     pChannel->m_public =
                             subchild->GetAttribute( wxT("public"), wxT("") );
@@ -4424,7 +4434,10 @@ bool CControlObject::readMulticastChannels( void )
         pChannel->m_ttl = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_MULTICAST_TTL );
         
         // bAck
-        pChannel->m_bSendAck = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_MULTICAST_SENDACK );
+        pChannel->m_bSendAck = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_MULTICAST_SENDACK ) ? true : false;
+        
+        // Allow unsecure
+        pChannel->m_bAllowUnsecure = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_MULTICAST_ALLOW_UNSECURE ) ? true : false;
         
         // GUID
         p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_MULTICAST_GUID );

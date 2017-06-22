@@ -128,12 +128,12 @@ public:
 
 private:    
     
-    /// UDP Client item
+    /// Multicast channel Client item
     CClientItem *m_pClientItem;
     
     // Groupaddess + port to send on
     // default: udp://224.0.23.158:44444
-    wxString m_sendAddress;
+    //wxString m_sendAddress;
     
     // Socket for sending
     int m_sendSock;

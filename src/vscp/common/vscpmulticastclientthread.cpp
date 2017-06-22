@@ -85,8 +85,7 @@ wxThread( wxTHREAD_JOINABLE )
 {
     m_bQuit = false;
     m_pClientItem = NULL;
-    m_sendAddress = "udp://224.0.23.158:44444";
-    m_sendSock = 0;
+    m_sendSock = 0; 
 }
 
 
@@ -117,13 +116,7 @@ void *VSCPMulticastClientThread::Entry()
     
     // Init. CRC data
     crcInit();
-    
-    // Construct send address
-    m_sendAddress = _("udp://");
-    m_sendAddress += m_pChannel->m_gropupAddress;
-    m_sendAddress += _(":");
-    m_sendAddress += wxString::Format(_("%d"), m_pChannel->m_port );        
-    
+     
     // Bind to interface
     wxString bindif = wxString::Format( _("udp://%d"), m_pChannel->m_port );
     if ( NULL == ( nc = mg_bind( &mgr, 
@@ -550,7 +543,7 @@ VSCPMulticastClientThread::replyAckFrame( VSCPMulticastClientThread *pMulticastC
     ex.hour = wxDateTime::UNow().GetHour();
     ex.minute = wxDateTime::UNow().GetMinute();
     ex.second = wxDateTime::UNow().GetSecond();
-    memcpy( ex.GUID, gpobj->m_udpInfo.m_guid.getGUID(), 16 );
+    memcpy( ex.GUID, pMulticastClientThread->m_pClientItem->m_guid.getGUID(), 16 );
     ex.vscp_class = VSCP_CLASS1_ERROR;
     ex.vscp_type = VSCP_TYPE_ERROR_SUCCESS;        
     ex.sizeData = 3;
@@ -604,7 +597,7 @@ VSCPMulticastClientThread::replyNackFrame( VSCPMulticastClientThread *pMulticast
     ex.hour = wxDateTime::UNow().GetHour();
     ex.minute = wxDateTime::UNow().GetMinute();
     ex.second = wxDateTime::UNow().GetSecond();
-    memcpy( ex.GUID, gpobj->m_udpInfo.m_guid.getGUID(), 16 );
+    memcpy( ex.GUID, pMulticastClientThread->m_pClientItem->m_guid.getGUID(), 16 );
     ex.vscp_class = VSCP_CLASS1_ERROR;
     ex.vscp_type = VSCP_TYPE_ERROR_ERROR;        
     ex.sizeData = 3;

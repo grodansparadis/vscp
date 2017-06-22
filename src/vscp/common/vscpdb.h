@@ -761,6 +761,7 @@
         "`rxmask`           TEXT,"\
         "`encryption`       TEXT DEFAULT 'none',"\
         "`bSendAck`         INTEGER DEFAULT 0"\
+        "`bAllowUnsecure`   INTEGER DEFAULT 1"\
         ");";\
         
 #define VSCPDB_MULTICAST_UPDATE "UPDATE 'multicast' "\
@@ -776,25 +777,27 @@
                 "rxmask='%s',"\
                 "encryption='%s',"\
                 "bsendack='%d',"\
+                "ballowunsecure='%d',"\
                 " WHERE idx_multicast='%ld';"
 
 #define VSCPDB_MULTICAST_INSERT "INSERT INTO 'multicast' "\
-                "(bEnable,group,public,port,ttl,guid,txfilter,txmask,rxfilter,rxmask,encryption,bsendack)"\
-                " VALUES ('%d',%q','%q','%q','%d','%d','%q','%q','%q','%q','%q','%d');"
+                "(bEnable,group,public,port,ttl,guid,txfilter,txmask,rxfilter,rxmask,encryption,bsendack,allowunsecure)"\
+                " VALUES ('%d',%q','%q','%q','%d','%d','%q','%q','%q','%q','%q','%d','%d');"
 
-#define VSCPDB_ORDINAL_MULTICAST_IDX        0   // 
-#define VSCPDB_ORDINAL_MULTICAST_ENABLE     1   // 
-#define VSCPDB_ORDINAL_MULTICAST_GROUP      2   // 
-#define VSCPDB_ORDINAL_MULTICAST_PUBLIC     3   // 
-#define VSCPDB_ORDINAL_MULTICAST_PORT       4   //
-#define VSCPDB_ORDINAL_MULTICAST_TTL        5   // 
-#define VSCPDB_ORDINAL_MULTICAST_GUID       6   //
-#define VSCPDB_ORDINAL_MULTICAST_TXFILTER   7   //
-#define VSCPDB_ORDINAL_MULTICAST_TXMASK     8   //
-#define VSCPDB_ORDINAL_MULTICAST_RXFILTER   9   //
-#define VSCPDB_ORDINAL_MULTICAST_RXMASK     10  //
-#define VSCPDB_ORDINAL_MULTICAST_ENCRYPTION 11  //
-#define VSCPDB_ORDINAL_MULTICAST_SENDACK    12  //
+#define VSCPDB_ORDINAL_MULTICAST_IDX                0   // 
+#define VSCPDB_ORDINAL_MULTICAST_ENABLE             1   // 
+#define VSCPDB_ORDINAL_MULTICAST_GROUP              2   // 
+#define VSCPDB_ORDINAL_MULTICAST_PUBLIC             3   // 
+#define VSCPDB_ORDINAL_MULTICAST_PORT               4   //
+#define VSCPDB_ORDINAL_MULTICAST_TTL                5   // 
+#define VSCPDB_ORDINAL_MULTICAST_GUID               6   //
+#define VSCPDB_ORDINAL_MULTICAST_TXFILTER           7   //
+#define VSCPDB_ORDINAL_MULTICAST_TXMASK             8   //
+#define VSCPDB_ORDINAL_MULTICAST_RXFILTER           9   //
+#define VSCPDB_ORDINAL_MULTICAST_RXMASK             10  //
+#define VSCPDB_ORDINAL_MULTICAST_ENCRYPTION         11  //
+#define VSCPDB_ORDINAL_MULTICAST_SENDACK            12  //
+#define VSCPDB_ORDINAL_MULTICAST_ALLOW_UNSECURE     13  //
 
 
 
