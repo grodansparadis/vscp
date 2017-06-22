@@ -15,6 +15,7 @@
  #include <time.h>
  #include <string.h>
  #include <stdio.h>
+ #include <time.h>
  #include <sys/types.h>
  #include <sys/socket.h>
  #include <netinet/in.h>
@@ -34,222 +35,230 @@
                    0x33,0xEF,0x52,0x9D,0x64,0x54,0x4F,0x8E };
 
 // Temperature measurement
-int makeFrameTypeUnEncrypted( unsigned char *frame )
-{
+
+int makeFrameTypeUnEncrypted(unsigned char *frame) {
     // Frame type, Type 0, unencrypted
     frame[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = VSCP_ENCRYPTION_NONE;
 
     // Head
-                       frame[ VSCP_MULTICAST_PACKET0_POS_HEAD_MSB ] = 0;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] = 0;
+    frame[ VSCP_MULTICAST_PACKET0_POS_HEAD_MSB ] = 0;
+    frame[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] = 0;
 
-                       // Timestamp
-                       frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP ] = 0;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 1 ] = 0;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] = 0;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ] = 0;
+    // Timestamp
+    frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP ] = 0;
+    frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 1 ] = 0;
+    frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] = 0;
+    frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ] = 0;
 
-                       // Date / time block 1956-11-02 04:23:52 GMT
-                       frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_MSB ] = 0x07;    // 1956
-                       frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_LSB ] = 0xA4;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_MONTH ] = 11;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_DAY ] = 02;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_HOUR ] = 4;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_MINUTE ] = 23;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_SECOND ] = 52;
+    // UTC time
+    time_t t = time(NULL);
+    struct tm tm = *gmtime(&t);
 
-                       // Class = 1040 Measurement String
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_MSB ] = 0x04;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_LSB ] = 0x10;
+    // Date / time block 1956-11-02 04:23:52 GMT
+    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_MSB ] = (tm.tm_year >> 8) & 0xff;
+    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_LSB ] = tm.tm_year & 0xff;
+    frame[ VSCP_MULTICAST_PACKET0_POS_MONTH ] = tm.tm_mon;
+    frame[ VSCP_MULTICAST_PACKET0_POS_DAY ] = tm.tm_mday;
+    frame[ VSCP_MULTICAST_PACKET0_POS_HOUR ] = tm.tm_hour;
+    frame[ VSCP_MULTICAST_PACKET0_POS_MINUTE ] = tm.tm_min;
+    frame[ VSCP_MULTICAST_PACKET0_POS_SECOND ] = tm.tm_sec;
 
-                       // Type = Temperature = 6
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_MSB ] = 0x00;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB ] = 0x06;
+    // Class = 1040 Measurement String
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_MSB ] = 0x04;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_LSB ] = 0x10;
 
-                       // GUID - dummy
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID ] = 0x00;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 1 ] = 0x01;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 2 ] = 0x02;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 3 ] = 0x03;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 4 ] = 0x04;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 5 ] = 0x05;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 6 ] = 0x06;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 7 ] = 0x07;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 8 ] = 0x08;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 9 ] = 0x09;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 10 ] = 0x0A;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 11 ] = 0x0B;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 12 ] = 0x0C;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 13 ] = 0x0D;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 14 ] = 0x0E;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 15 ] = 0x0F;
+    // Type = Temperature = 6
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_MSB ] = 0x00;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB ] = 0x06;
 
-                       // Size
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] = 0;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ] = 13;
+    // GUID - dummy
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID ] = 0x00;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 1 ] = 0x01;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 2 ] = 0x02;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 3 ] = 0x03;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 4 ] = 0x04;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 5 ] = 0x05;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 6 ] = 0x06;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 7 ] = 0x07;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 8 ] = 0x08;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 9 ] = 0x09;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 10 ] = 0x0A;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 11 ] = 0x0B;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 12 ] = 0x0C;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 13 ] = 0x0D;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 14 ] = 0x0E;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 15 ] = 0x0F;
 
-                       // Data  Sensor index=2, Zone=1, sunzone2", Unit=1 (Celsius)
-                       // Temperature = 123.45678
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA ] = 0x02;       // Sensor idx = 2
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 1 ] = 0x01;   // Zone = 1
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 2 ] = 0x02;   // Subzone = 2
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 3 ] = 0x01;   // Unit = 1 Degrees Celsius
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 4 ] = 0x31;   // "1"
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 5 ] = 0x32;   // "2"
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 6 ] = 0x33;   // "3"
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 7 ] = 0x2E;   // "."
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 8 ] = 0x34;   // "4"
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 9 ] = 0x35;   // "5"
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 10 ] = 0x36;  // "6"
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 11 ] = 0x37;  // "7"
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 12 ] = 0x38;  // "8"
+    // Size
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] = 0;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ] = 13;
 
-                       // Calculate CRC
-                       crc framecrc = crcFast( (unsigned char const *)frame + 1,
-                                       VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 13 );
+    // Data  Sensor index=2, Zone=1, sunzone2", Unit=1 (Celsius)
+    // Temperature = 123.45678
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA ] = 0x02; // Sensor idx = 2
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 1 ] = 0x01; // Zone = 1
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 2 ] = 0x02; // Subzone = 2
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 3 ] = 0x01; // Unit = 1 Degrees Celsius
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 4 ] = 0x31; // "1"
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 5 ] = 0x32; // "2"
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 6 ] = 0x33; // "3"
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 7 ] = 0x2E; // "."
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 8 ] = 0x34; // "4"
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 9 ] = 0x35; // "5"
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 10 ] = 0x36; // "6"
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 11 ] = 0x37; // "7"
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 12 ] = 0x38; // "8"
 
-                       printf("CRC = %d\n", framecrc );
+    // Calculate CRC
+    crc framecrc = crcFast((unsigned char const *) frame + 1,
+            VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 13);
 
-                       // CRC
-                       frame[ 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 13 ] = ( framecrc >> 8 ) & 0xff;
-                       frame[ 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 13 + 1 ] = framecrc & 0xff;
+    printf("CRC = %d\n", framecrc);
 
-                       printf("Frame = ");
-                       for ( int i=0; i<50; i++ ) {
-                           printf("%02x ", frame[i] );
-                       }
-                       printf("\n");
+    // CRC
+    frame[ 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 13 ] = (framecrc >> 8) & 0xff;
+    frame[ 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 13 + 1 ] = framecrc & 0xff;
 
-                       return (1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 13 + 2);
-                   }
+    printf("Frame = ");
+    for (int i = 0; i < 50; i++) {
+        printf("%02x ", frame[i]);
+    }
+    printf("\n");
+
+    return (1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 13 + 2);
+}
 
 
 
-                   // Temperature measurement encrypted with AES128
-                   int makeFrameTypeEncrypted( uint8_t type, unsigned char *frame )
-                   {
-                       // Frame type, Type 0, unencrypted
-                       frame[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = type;
+// Temperature measurement encrypted with AES128
 
-                       // Head
-                       frame[ VSCP_MULTICAST_PACKET0_POS_HEAD_MSB ] = 0;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] = 0;
+int makeFrameTypeEncrypted(uint8_t type, unsigned char *frame) {
+    // Frame type, Type 0, unencrypted
+    frame[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = type;
 
-                       // Timestamp
-                       frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP ] = 0;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 1 ] = 0;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] = 0;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ] = 0;
+    // Head
+    frame[ VSCP_MULTICAST_PACKET0_POS_HEAD_MSB ] = 0;
+    frame[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] = 0;
 
-                       // Date / time block 1956-11-02 04:23:52 GMT
-                       frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_MSB ] = 0x07;    // 1956
-                       frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_LSB ] = 0xA4;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_MONTH ] = 11;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_DAY ] = 02;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_HOUR ] = 4;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_MINUTE ] = 23;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_SECOND ] = 52;
+    // Timestamp
+    frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP ] = 0;
+    frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 1 ] = 0;
+    frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] = 0;
+    frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ] = 0;
 
-                       // Class = 1040 Measurement String
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_MSB ] = 0x04;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_LSB ] = 0x10;
+    // UTC time
+    time_t t = time(NULL);
+    struct tm tm = *gmtime(&t);
 
-                       // Type = Temperature = 6
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_MSB ] = 0x00;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB ] = 0x06;
+    // Date / time block 1956-11-02 04:23:52 GMT
+    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_MSB ] = (tm.tm_year >> 8) & 0xff;
+    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_LSB ] = tm.tm_year & 0xff;
+    frame[ VSCP_MULTICAST_PACKET0_POS_MONTH ] = tm.tm_mon;
+    frame[ VSCP_MULTICAST_PACKET0_POS_DAY ] = tm.tm_mday;
+    frame[ VSCP_MULTICAST_PACKET0_POS_HOUR ] = tm.tm_hour;
+    frame[ VSCP_MULTICAST_PACKET0_POS_MINUTE ] = tm.tm_min;
+    frame[ VSCP_MULTICAST_PACKET0_POS_SECOND ] = tm.tm_sec;
 
-                       // GUID - dummy
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID ] = 0x00;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 1 ] = 0x01;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 2 ] = 0x02;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 3 ] = 0x03;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 4 ] = 0x04;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 5 ] = 0x05;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 6 ] = 0x06;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 7 ] = 0x07;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 8 ] = 0x08;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 9 ] = 0x09;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 10 ] = 0x0A;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 11 ] = 0x0B;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 12 ] = 0x0C;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 13 ] = 0x0D;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 14 ] = 0x0E;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 15 ] = 0x0F;
+    // Class = 1040 Measurement String
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_MSB ] = 0x04;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_LSB ] = 0x10;
 
-                       // Size
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] = 0;
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ] = 13;
+    // Type = Temperature = 6
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_MSB ] = 0x00;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB ] = 0x06;
 
-                       // Data  Sensor index=2, Zone=1, sunzone2", Unit=1 (Celsius)
-                       // Temperature = 123.45678
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA ] = 0x02;       // Sensor idx = 2
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 1 ] = 0x01;   // Zone = 1
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 2 ] = 0x02;   // Subzone = 2
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 3 ] = 0x01;   // Unit = 1 Degrees Celsius
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 4 ] = 0x31;   // "1"
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 5 ] = 0x32;   // "2"
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 6 ] = 0x33;   // "3"
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 7 ] = 0x2E;   // "."
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 8 ] = 0x34;   // "4"
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 9 ] = 0x35;   // "5"
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 10 ] = 0x36;  // "6"
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 11 ] = 0x37;  // "7"
-                       frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 12 ] = 0x38;  // "8"
+    // GUID - dummy
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID ] = 0x00;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 1 ] = 0x01;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 2 ] = 0x02;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 3 ] = 0x03;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 4 ] = 0x04;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 5 ] = 0x05;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 6 ] = 0x06;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 7 ] = 0x07;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 8 ] = 0x08;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 9 ] = 0x09;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 10 ] = 0x0A;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 11 ] = 0x0B;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 12 ] = 0x0C;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 13 ] = 0x0D;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 14 ] = 0x0E;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + 15 ] = 0x0F;
 
-                       // Calculate CRC
-                       crc framecrc = crcFast( (unsigned char const *)frame + 1,
-                                       VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 13 );
+    // Size
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] = 0;
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ] = 13;
 
-                       printf("CRC = %d\n", framecrc );
+    // Data  Sensor index=2, Zone=1, sunzone2", Unit=1 (Celsius)
+    // Temperature = 123.45678
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA ] = 0x02; // Sensor idx = 2
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 1 ] = 0x01; // Zone = 1
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 2 ] = 0x02; // Subzone = 2
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 3 ] = 0x01; // Unit = 1 Degrees Celsius
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 4 ] = 0x31; // "1"
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 5 ] = 0x32; // "2"
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 6 ] = 0x33; // "3"
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 7 ] = 0x2E; // "."
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 8 ] = 0x34; // "4"
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 9 ] = 0x35; // "5"
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 10 ] = 0x36; // "6"
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 11 ] = 0x37; // "7"
+    frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 12 ] = 0x38; // "8"
 
-                       // CRC
-                       frame[ 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 13 ] = ( framecrc >> 8 ) & 0xff;
-                       frame[ 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 13 + 1 ] = framecrc & 0xff;
+    // Calculate CRC
+    crc framecrc = crcFast((unsigned char const *) frame + 1,
+            VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 13);
 
-                       printf("Frame = ");
-                       for ( int i=0; i<50; i++ ) {
-                           printf("%02x ", frame[i] );
-                       }
-                       printf("\n");
+    printf("CRC = %d\n", framecrc);
 
-                       // Encrypt frame
-                       uint8_t outframe[1024];
-                       memset( outframe, 0, sizeof(outframe) );
+    // CRC
+    frame[ 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 13 ] = (framecrc >> 8) & 0xff;
+    frame[ 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 13 + 1 ] = framecrc & 0xff;
 
-                       uint8_t iv[16];
-                       getRandomIV( iv, 16 );
+    printf("Frame = ");
+    for (int i = 0; i < 50; i++) {
+        printf("%02x ", frame[i]);
+    }
+    printf("\n");
 
-                       printf("IV = ");
-                       for ( int i=0; i<16; i++ ) {
-                           printf("%02x ", iv[i] );
-                       }
-                       printf("\n");
+    // Encrypt frame
+    uint8_t outframe[1024];
+    memset(outframe, 0, sizeof (outframe));
 
-                       size_t padlen = VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 13 + 2;
-                       padlen = padlen + ( 16 - (padlen % 16 ) );
+    uint8_t iv[16];
+    getRandomIV(iv, 16);
 
-                       AES_CBC_encrypt_buffer( AES128,
-                                               outframe,
-                                               frame + 1,
-                                               padlen + 1,
-                                               key,
-                                               iv );
+    printf("IV = ");
+    for (int i = 0; i < 16; i++) {
+        printf("%02x ", iv[i]);
+    }
+    printf("\n");
 
-                       // Replace with encrypted version
-                       memcpy( frame + 1, outframe, padlen );
+    size_t padlen = VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 13 + 2;
+    padlen = padlen + (16 - (padlen % 16));
 
-                       // Append iv
-                       memcpy( frame + 1 + padlen,
-                                   iv, 16 );
+    AES_CBC_encrypt_buffer(AES128,
+            outframe,
+            frame + 1,
+            padlen + 1,
+            key,
+            iv);
 
-                       printf("Encrypted Frame = ");
-                       for ( int i=0; i<padlen+16; i++ ) {
-                           printf("%02x ", frame[i] );
-                       }
-                       printf("\n");
+    // Replace with encrypted version
+    memcpy(frame + 1, outframe, padlen);
 
-                       return (padlen + 16 + 1);
-                   }
+    // Append iv
+    memcpy(frame + 1 + padlen,
+            iv, 16);
+
+    printf("Encrypted Frame = ");
+    for (int i = 0; i < padlen + 16; i++) {
+        printf("%02x ", frame[i]);
+    }
+    printf("\n");
+
+    return (padlen + 16 + 1);
+}
 
  int main( int argc, char *argv[] )
  {

@@ -140,8 +140,9 @@
     <!-- One or more multicast channels -->
     <multicast enable="true">
         <channel enable="true"
-                    interface="udp:44444"
-                    group="udp://224.0.23.158:44444"
+                    public="192.168.1.9"
+                    port="44444"
+                    group="224.0.23.158"
                     ttl="1"
                     guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
                     txfilter=""

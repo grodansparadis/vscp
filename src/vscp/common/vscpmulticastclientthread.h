@@ -33,7 +33,8 @@ class VSCPMulticastClientThread;
 // Client structure (Will receive events from VSCP server)
 typedef struct {
     bool                        m_bEnable;          // Enable the channel
-    wxString                    m_interface;        // Empty is IPADDR_ANY
+    wxString                    m_public;           // Public interface to bind to
+    uint16_t                    m_port;             // Port for channel
     wxString                    m_gropupAddress;    // Multicast group address "udp://224.0.23.158:44444"
     int                         m_ttl;              // Multicast ttl (defaults to 1)
     cguid                       m_guid;             // GUID to use for channel
@@ -128,6 +129,10 @@ private:
     
     /// UDP Client item
     CClientItem *m_pClientItem;
+    
+    // Groupaddess + port to send on
+    // default: udp://224.0.23.158:44444
+    wxString m_sendAddress;
 
 };
 

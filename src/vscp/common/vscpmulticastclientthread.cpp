@@ -85,6 +85,7 @@ wxThread( wxTHREAD_JOINABLE )
 {
     m_bQuit = false;
     m_pClientItem = NULL;
+    m_sendAddress = "udp://224.0.23.158:44444";
 }
 
 
@@ -110,33 +111,35 @@ void *VSCPMulticastClientThread::Entry()
     struct ip_mreq group;
     struct ip_mreq_source mreqsrc;
     char interface[512];
-    const char *mcast_group = VSCP_MULTICAST_IPV4_ADDRESS_STR;
+    const char *mcast_default_group = VSCP_MULTICAST_IPV4_ADDRESS_STR;
     
     mg_mgr_init( &mgr, this );
     
     // Init. CRC data
     crcInit();
     
+    // Construct send address
+    m_sendAddress = _("udp://");
+    m_sendAddress += m_pChannel->m_gropupAddress;
+    m_sendAddress += _(":");
+    m_sendAddress += wxString::Format(_("%d"), m_pChannel->m_port );        
+    
     // Bind to interface
+    wxString bindif = wxString::Format( _("udp://%d"), m_pChannel->m_port );
     if ( NULL == ( nc = mg_bind( &mgr, 
-                    (const char *)m_pChannel->m_interface.mbc_str(), // "udp://44444"
-                    ev_handler ) ) ) {
+                                    bindif,         // "udp://44444"
+                                    ev_handler ) ) ) {
         wxString str = _( "[Multicast channel] Can not bind to interface ");
-        str += (const char *)m_pChannel->m_gropupAddress.mbc_str();
+        str += bindif;
         gpobj->logMsg( str );
         return NULL;
     }
     
     int one = 1;
     setsockopt( nc->sock, SOL_SOCKET, SO_REUSEADDR, &one, sizeof( one ) );
-        
-    /*mg_conn_addr_to_str( nc, 
-                            interface, 
-                            sizeof( interface ),
-                            MG_SOCK_STRINGIFY_IP );*/
-    
-    group.imr_multiaddr.s_addr = inet_addr( mcast_group );
-    group.imr_interface.s_addr = inet_addr( "192.168.1.9" );  // INADDR_ANY does not work
+            
+    group.imr_multiaddr.s_addr = inet_addr( (const char *)m_pChannel->m_gropupAddress.mbc_str() );
+    group.imr_interface.s_addr = inet_addr( (const char *)m_pChannel->m_public.mbc_str() );  // INADDR_ANY does not work
     
     // Join group
     if ( setsockopt( nc->sock, 
@@ -150,7 +153,7 @@ void *VSCPMulticastClientThread::Entry()
     
     mreqsrc.imr_interface = group.imr_interface;
     mreqsrc.imr_multiaddr = group.imr_multiaddr;
-    mreqsrc.imr_sourceaddr.s_addr = inet_addr( "192.168.1.9" );
+    mreqsrc.imr_sourceaddr.s_addr = inet_addr( (const char *)m_pChannel->m_public.mbc_str() );
     if ( 0 > setsockopt( nc->sock, IPPROTO_IP, IP_BLOCK_SOURCE, (char *)&mreqsrc, sizeof( mreqsrc ) ) ) {
         gpobj->logMsg( _( "[Multicast channel] Unable to block source.\n" )  );
         return NULL;
@@ -170,7 +173,8 @@ void *VSCPMulticastClientThread::Entry()
 
     {
         wxString str = _( "[Multicast channel] Starting multicast channel on group ");
-        str += (const char *)m_pChannel->m_gropupAddress.mbc_str();
+        str += m_pChannel->m_gropupAddress;
+        str += wxString::Format(_(":%d"), m_pChannel->m_port );
         gpobj->logMsg( str );
     }
     
@@ -186,6 +190,7 @@ void *VSCPMulticastClientThread::Entry()
     m_pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MULTICAST_CH;
     m_pClientItem->m_strDeviceName = _("Multicast channel. [");
     m_pClientItem->m_strDeviceName += m_pChannel->m_gropupAddress;
+    m_pClientItem->m_strDeviceName += wxString::Format(_(":%d"), m_pChannel->m_port );
     m_pClientItem->m_strDeviceName += _("] Started at ");
     m_pClientItem->m_strDeviceName += wxDateTime::Now().FormatISODate();
     m_pClientItem->m_strDeviceName += _(" ");
@@ -244,7 +249,6 @@ void VSCPMulticastClientThread::ev_handler( struct mg_connection *nc, int ev, vo
                 // Get remote address
                 wxString remoteaddr = wxString::FromAscii( inet_ntoa( nc->sa.sin.sin_addr )  );
                 int port = ntohs(nc->sa.sin.sin_port);
-                
                 
                 // If a user is specified check that this user is allowed to connect
                 // from this location
@@ -405,7 +409,7 @@ bool VSCPMulticastClientThread::sendFrame( struct mg_mgr *pmgr,
         wxPrintf("\n");
 #endif
         
-        mg_connect( pmgr, m_pChannel->m_gropupAddress, ev_handler );
+        mg_connect( pmgr, (const char *)m_sendAddress.mbc_str(), ev_handler );
         mg_send( pmgr->active_connections, sendbuf, len );
     
     } // filter

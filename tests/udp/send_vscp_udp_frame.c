@@ -55,14 +55,18 @@ int makeFrameTypeUnEncrypted( unsigned char *frame )
     frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] = 0;
     frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ] = 0;
 
+    // UTC time
+    time_t t = time(NULL);
+    struct tm tm = *gmtime(&t);
+
     // Date / time block 1956-11-02 04:23:52 GMT
-    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_MSB ] = 0x07;    // 1956
-    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_LSB ] = 0xA4;
-    frame[ VSCP_MULTICAST_PACKET0_POS_MONTH ] = 11;
-    frame[ VSCP_MULTICAST_PACKET0_POS_DAY ] = 02;
-    frame[ VSCP_MULTICAST_PACKET0_POS_HOUR ] = 4;
-    frame[ VSCP_MULTICAST_PACKET0_POS_MINUTE ] = 23;
-    frame[ VSCP_MULTICAST_PACKET0_POS_SECOND ] = 52;
+    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_MSB ] = (tm.tm_year >> 8) & 0xff;
+    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_LSB ] = tm.tm_year & 0xff;
+    frame[ VSCP_MULTICAST_PACKET0_POS_MONTH ] = tm.tm_mon;
+    frame[ VSCP_MULTICAST_PACKET0_POS_DAY ] = tm.tm_mday;
+    frame[ VSCP_MULTICAST_PACKET0_POS_HOUR ] = tm.tm_hour;q
+    frame[ VSCP_MULTICAST_PACKET0_POS_MINUTE ] = tm.tm_min;
+    frame[ VSCP_MULTICAST_PACKET0_POS_SECOND ] = tm.tm_sec;
 
     // Class = 1040 Measurement String
     frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_MSB ] = 0x04;
@@ -147,14 +151,18 @@ int makeFrameTypeEncrypted( uint8_t type, unsigned char *frame )
     frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] = 0;
     frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ] = 0;
 
+    // UTC time
+    time_t t = time(NULL);
+    struct tm tm = *gmtime(&t);
+
     // Date / time block 1956-11-02 04:23:52 GMT
-    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_MSB ] = 0x07;    // 1956
-    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_LSB ] = 0xA4;
-    frame[ VSCP_MULTICAST_PACKET0_POS_MONTH ] = 11;
-    frame[ VSCP_MULTICAST_PACKET0_POS_DAY ] = 02;
-    frame[ VSCP_MULTICAST_PACKET0_POS_HOUR ] = 4;
-    frame[ VSCP_MULTICAST_PACKET0_POS_MINUTE ] = 23;
-    frame[ VSCP_MULTICAST_PACKET0_POS_SECOND ] = 52;
+    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_MSB ] = (tm.tm_year >> 8) & 0xff;
+    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_LSB ] = tm.tm_year & 0xff;
+    frame[ VSCP_MULTICAST_PACKET0_POS_MONTH ] = tm.tm_mon;
+    frame[ VSCP_MULTICAST_PACKET0_POS_DAY ] = tm.tm_mday;
+    frame[ VSCP_MULTICAST_PACKET0_POS_HOUR ] = tm.tm_hour;q
+    frame[ VSCP_MULTICAST_PACKET0_POS_MINUTE ] = tm.tm_min;
+    frame[ VSCP_MULTICAST_PACKET0_POS_SECOND ] = tm.tm_sec;
 
     // Class = 1040 Measurement String
     frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_MSB ] = 0x04;

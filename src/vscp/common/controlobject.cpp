@@ -2811,8 +2811,12 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     }
                     
                     // Interface
-                    pChannel->m_interface =
-                            subchild->GetAttribute( wxT("interface"), wxT("") );
+                    pChannel->m_public =
+                            subchild->GetAttribute( wxT("public"), wxT("") );
+                    
+                    // Interface
+                    pChannel->m_port =
+                            vscp_readStringValue( subchild->GetAttribute( wxT("port"), wxT("44444") ) );
                     
                     // Group
                     pChannel->m_gropupAddress =
@@ -4399,12 +4403,15 @@ bool CControlObject::readMulticastChannels( void )
         vscp_clearVSCPFilter( &pChannel->m_txFilter );
         vscp_clearVSCPFilter( &pChannel->m_rxFilter );
         
-        // interface
-        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_MULTICAST_INTERFACE );
+        // public interface
+        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_MULTICAST_PUBLIC );
         if ( NULL != p ) {
-            pChannel->m_interface = 
+            pChannel->m_public = 
                     wxString::FromUTF8Unchecked( (const char *)p );
         }
+        
+        // Port
+        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_MULTICAST_PORT );
              
         // group
         p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_MULTICAST_GROUP );
