@@ -34,7 +34,7 @@
 #define VSCPDB_CONFIG_CREATE "CREATE TABLE 'settings' ("\
 	"`vscpd_idx_settings`                               INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`vscpd_dbversion`                                  INTEGER NOT NULL DEFAULT 1,"\
-	"`vscpd_loglevel`                                   INTEGER DEFAULT 1,"\
+	"`vscpd_loglevel`                                   INTEGER DEFAULT 2,"\
         "'vscpd_clientbuffersize'                           INTEGER DEFAULT 8191,"\
 	"`vscpd_runasuser`                                  TEXT DEFAULT '',"\
 	"`vscpd_guid`                                       TEXT DEFAULT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00',"\

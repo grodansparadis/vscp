@@ -2479,6 +2479,7 @@ bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
                     else if ( str.IsSameAs(_("DEBUG"), false)) {
                         m_logLevel = DAEMON_LOGMSG_DEBUG;
                     }
+                    /*
                     // For old deprecated values
                     else if ( str.IsSameAs(_("INFO"), false)) {
                         m_logLevel = DAEMON_LOGMSG_NORMAL;
@@ -2500,7 +2501,7 @@ bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
                     }
                     else if ( str.IsSameAs(_("EMERGENCY"), false)) {
                         m_logLevel = DAEMON_LOGMSG_NORMAL;
-                    }
+                    }*/
                     else {
                         m_logLevel = vscp_readStringValue( str );
                         if ( m_logLevel > DAEMON_LOGMSG_DEBUG ) {
@@ -3800,18 +3801,18 @@ bool CControlObject::dbReadConfiguration( void )
         // Debug level
         if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_LOGLEVEL ) ) {
             
-            m_logLevel = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_CONFIG_LOGLEVEL );
+            /*m_logLevel = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_CONFIG_LOGLEVEL );
             
             if ( m_logLevel > DAEMON_LOGMSG_DEBUG ) {
                 m_logLevel = DAEMON_LOGMSG_DEBUG;
-            }
+            }*/
             
         }
 
         // Run as user
         if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_RUNASUSER ) ) {
-            m_runAsUser = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                    VSCPDB_ORDINAL_CONFIG_RUNASUSER ) );
+            //m_runAsUser = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
+            //        VSCPDB_ORDINAL_CONFIG_RUNASUSER ) );
         }
         
         // Server GUID
@@ -3822,13 +3823,13 @@ bool CControlObject::dbReadConfiguration( void )
         
         // Server name
         if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_SERVER_NAME ) ) {
-            m_strServerName = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                    VSCPDB_ORDINAL_CONFIG_SERVER_NAME ) );
+            //m_strServerName = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
+            //        VSCPDB_ORDINAL_CONFIG_SERVER_NAME ) );
         }
          
         // Syslog enable
         if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_SYSLOG_ENABLE ) ) {
-            m_bLogToSysLog = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_CONFIG_SYSLOG_ENABLE ) ? true : false;
+            //m_bLogToSysLog = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_CONFIG_SYSLOG_ENABLE ) ? true : false;
         }
         
         // TCP/IP port

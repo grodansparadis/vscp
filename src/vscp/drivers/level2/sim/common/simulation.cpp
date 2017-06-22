@@ -319,6 +319,13 @@ CSim::open(const char *pUsername,
                 }
 
             }
+            
+#ifdef WIN32
+#else            
+            syslog( LOG_DEBUG,
+                        "[VSCPSimDrv] %s",
+                        ( const char * ) "Starting worker thread." );
+#endif            
 
             // start the workerthread
             m_pthreadWork[ i ]->m_pObj = this;
@@ -971,6 +978,13 @@ dumb_fill_data:
         }
 
     }
+    
+#ifdef WIN32
+#else            
+            syslog( LOG_DEBUG,
+                        "[VSCPSimDrv] %s",
+                        ( const char * ) "Going into worker thread loop." );
+#endif    
     
     while (!TestDestroy() && !m_pObj->m_bQuit) {
 
