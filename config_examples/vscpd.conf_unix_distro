@@ -137,7 +137,27 @@
         />
     </udp>
 
-    <!-- One or more multicast channels -->
+    <!--
+        Multicast interface
+
+        Can define one or more multicast channels
+        enable - Enable mutlicast interface / enable multicast channel
+        public - The public interface. Not a local address like
+                    127.0.0.1 etc
+        port - The multicast port.
+        group - The multicast group.
+        ttl - Time to live
+        guid - GUID for clinet interface. Will be generated if empty
+                or all zeros.
+        txfiler - Filter for outgoing traffic.
+        txmask - Mask for outgoing traffic.
+        rxfilter - Filter for incoming traffic.
+        rxmask - Mask for incoming traffic.
+        encryption - The encryptin to use. "", "none", "AES128"
+                "AES192" and "AES256" are valid settings.
+        bSendAck - if set to "true" ACK frams are sent when a
+                    datagram is received.
+    -->
     <multicast enable="true">
         <channel enable="true"
                     public="192.168.1.9"
