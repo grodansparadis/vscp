@@ -33,6 +33,7 @@ class VSCPMulticastClientThread;
 // Client structure (Will receive events from VSCP server)
 typedef struct {
     bool                        m_bEnable;          // Enable the channel
+    bool                        m_bAllowUnsecure;   // Allow receive of un encrypted frames
     wxString                    m_public;           // Public interface to bind to
     uint16_t                    m_port;             // Port for channel
     wxString                    m_gropupAddress;    // Multicast group address "udp://224.0.23.158:44444"
@@ -101,11 +102,11 @@ public:
                                 CClientItem *pClientItem,
                                 vscpEventFilter *pRxFilter );
     
-    static bool replyAckFrame( struct mg_connection *nc, 
+    static bool replyAckFrame( VSCPMulticastClientThread *pMulticastClientThread, 
                                     uint8_t pkttype,
                                     uint8_t index );
     
-    static bool replyNackFrame( struct mg_connection *nc, 
+    static bool replyNackFrame( VSCPMulticastClientThread *pMulticastClientThread, 
                                     uint8_t pkttype,
                                     uint8_t index );
     
@@ -133,6 +134,12 @@ private:
     // Groupaddess + port to send on
     // default: udp://224.0.23.158:44444
     wxString m_sendAddress;
+    
+    // Socket for sending
+    int m_sendSock;
+    
+    // Send address
+    struct sockaddr_in m_mc_sendAddr;     
 
 };
 

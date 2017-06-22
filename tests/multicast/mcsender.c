@@ -25,8 +25,8 @@
  #include <aes.h>
  #include <vscp.h>
 
- #define HELLO_PORT 44444
- #define HELLO_GROUP "224.0.23.158"
+ #define DEFAULT_PORT 44444
+ #define DEFAULT_GROUP "224.0.23.158"
 
  // Default key for the VSCP server
  uint8_t key[] = { 0xA4,0xA8,0x6F,0x7D,0x7E,0x11,0x9B,0xA3,
@@ -34,6 +34,9 @@
                    0x9B,0x33,0xB6,0xD6,0x06,0xA8,0x63,0xB6,
                    0x33,0xEF,0x52,0x9D,0x64,0x54,0x4F,0x8E };
 
+////////////////////////////////////////////////////////////////////////////////
+// makeFrameTypeEncrypted
+//
 // Temperature measurement
 
 int makeFrameTypeUnEncrypted(unsigned char *frame) {
@@ -129,8 +132,11 @@ int makeFrameTypeUnEncrypted(unsigned char *frame) {
 }
 
 
-
+////////////////////////////////////////////////////////////////////////////////
+// makeFrameTypeEncrypted
+//
 // Temperature measurement encrypted with AES128
+//
 
 int makeFrameTypeEncrypted(uint8_t type, unsigned char *frame) {
     // Frame type, Type 0, unencrypted
@@ -260,14 +266,16 @@ int makeFrameTypeEncrypted(uint8_t type, unsigned char *frame) {
     return (padlen + 16 + 1);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// main
+//
+
  int main( int argc, char *argv[] )
  {
    struct sockaddr_in addr;
    int sock, cnt;
    unsigned char mcframe[ 1024 ];
-   char *message = "Hello, World!";
-
-   int FrameType = 0;
+   int frameType = 0;
 
    // Init. CRC data
    crcInit();
@@ -281,15 +289,14 @@ int makeFrameTypeEncrypted(uint8_t type, unsigned char *frame) {
     // set up destination address
     memset( &addr, 0, sizeof( addr ) );
     addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = inet_addr( HELLO_GROUP );
-    addr.sin_port=htons( HELLO_PORT );
+    addr.sin_addr.s_addr = inet_addr( DEFAULT_GROUP );
+    addr.sin_port=htons( DEFAULT_PORT );
 
-    // now just sendto() our destination!
     while ( 1 ) {
 
         int len;
 
-        switch ( FrameType ) {
+        switch ( frameType ) {
 
             case 1:
                 len = makeFrameTypeEncrypted( VSCP_ENCRYPTION_AES128, mcframe );
@@ -309,6 +316,7 @@ int makeFrameTypeEncrypted(uint8_t type, unsigned char *frame) {
                 break;
         }
 
+      // now just sendto() our destination!
       if ( sendto( sock, mcframe, len, 0,
                   (struct sockaddr *) &addr,
 		                        sizeof( addr ) ) < 0 ) {

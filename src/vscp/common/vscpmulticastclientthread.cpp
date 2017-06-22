@@ -86,6 +86,7 @@ wxThread( wxTHREAD_JOINABLE )
     m_bQuit = false;
     m_pClientItem = NULL;
     m_sendAddress = "udp://224.0.23.158:44444";
+    m_sendSock = 0;
 }
 
 
@@ -107,10 +108,9 @@ VSCPMulticastClientThread::~VSCPMulticastClientThread()
 void *VSCPMulticastClientThread::Entry()
 {
     struct mg_mgr mgr;
-    struct mg_connection *nc;
-    struct ip_mreq group;
-    struct ip_mreq_source mreqsrc;
-    char interface[512];
+    struct mg_connection *nc;           // Receive connection
+    struct ip_mreq group;               // Group
+    struct ip_mreq_source mreqsrc;      // Source block
     const char *mcast_default_group = VSCP_MULTICAST_IPV4_ADDRESS_STR;
     
     mg_mgr_init( &mgr, this );
@@ -132,6 +132,7 @@ void *VSCPMulticastClientThread::Entry()
         wxString str = _( "[Multicast channel] Can not bind to interface ");
         str += bindif;
         gpobj->logMsg( str );
+        mg_mgr_free( &mgr );
         return NULL;
     }
     
@@ -148,6 +149,7 @@ void *VSCPMulticastClientThread::Entry()
                             (char *)&group,
                             sizeof( group ) ) < 0 ) {
         gpobj->logMsg( _( "[Multicast channel] Unable to add to muticast group.\n" )  );
+        mg_mgr_free( &mgr );
         return NULL;
     }
     
@@ -156,6 +158,7 @@ void *VSCPMulticastClientThread::Entry()
     mreqsrc.imr_sourceaddr.s_addr = inet_addr( (const char *)m_pChannel->m_public.mbc_str() );
     if ( 0 > setsockopt( nc->sock, IPPROTO_IP, IP_BLOCK_SOURCE, (char *)&mreqsrc, sizeof( mreqsrc ) ) ) {
         gpobj->logMsg( _( "[Multicast channel] Unable to block source.\n" )  );
+        mg_mgr_free( &mgr );
         return NULL;
     }
     
@@ -169,6 +172,7 @@ void *VSCPMulticastClientThread::Entry()
     u_char ttl = m_pChannel->m_ttl;
     if ( setsockopt( nc->sock, IPPROTO_IP, IP_MULTICAST_TTL, &ttl, sizeof( ttl ) ) < 0 ) {
         gpobj->logMsg( _( "[Multicast channel] Failed to set ttl.\n" )  );
+        return NULL;
     }
 
     {
@@ -182,8 +186,35 @@ void *VSCPMulticastClientThread::Entry()
     m_pClientItem = new CClientItem;
     if ( NULL == m_pClientItem ) {
         gpobj->logMsg( _( "[Multicast channel] Unable to allocate memory for client, terminating.\n" )  );
+        mg_mgr_free( &mgr );
         return NULL;
     }
+    
+    // * * * Setup Sending * * *
+    
+    // Create a socket for sending to the multicast address 
+    if ( ( m_sendSock = socket( PF_INET, SOCK_DGRAM, IPPROTO_UDP ) ) < 0 ) {
+        gpobj->logMsg( _( "[Multicast channel] Unable to create sending socket.\n" )  );
+        mg_mgr_free( &mgr );
+        return NULL;
+    }
+  
+    // Set the TTL (time to live/hop count) for the send 
+    if ( setsockopt( nc->sock, IPPROTO_IP, IP_MULTICAST_TTL, &ttl, sizeof( ttl ) ) < 0 ) {
+        gpobj->logMsg( _( "[Multicast channel] Unable to set ttl for sending socket.\n" )  );
+        mg_mgr_free( &mgr );
+        close( m_sendSock ); 
+        return NULL;
+    }
+  
+    // construct a multicast address structure  for the send
+    memset( &m_mc_sendAddr, 0, sizeof( m_mc_sendAddr ) );
+    m_mc_sendAddr.sin_family      = AF_INET;
+    m_mc_sendAddr.sin_addr.s_addr = inet_addr( (const char *)m_pChannel->m_gropupAddress.mbc_str() );
+    m_mc_sendAddr.sin_port        = htons( m_pChannel->m_port );
+    
+    
+    // * * * End of send setup * * *
     
     // This is now an active Client
     m_pClientItem->m_bOpen = true;
@@ -223,7 +254,8 @@ void *VSCPMulticastClientThread::Entry()
                   (char *)&group,
                    sizeof( group ) );
     
-    mg_mgr_free(&mgr);
+    mg_mgr_free( &mgr );
+    close( m_sendSock );
 
     return NULL;
 }
@@ -279,7 +311,7 @@ void VSCPMulticastClientThread::ev_handler( struct mg_connection *nc, int ev, vo
                 }
                 
                 // If un-secure frames are not supported frames must be encrypted                
-                if ( !gpobj->m_udpInfo.m_bAllowUnsecure && 
+                if ( !pMulticastClientThread->m_pChannel->m_bAllowUnsecure && 
                         !GET_VSCP_MULTICAST_PACKET_ENCRYPTION( nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] ) ) {
                     gpobj->logMsg( wxString::Format(_("[Multicast channel] Frame must be encrypted (or m_bAllowUnsecure set to true) to be accepted.\n" ) ) );
                     return;
@@ -288,22 +320,22 @@ void VSCPMulticastClientThread::ev_handler( struct mg_connection *nc, int ev, vo
                 // OK receive the frame
                 if ( receiveFrame( nc, 
                                     pMulticastClientThread->m_pClientItem,
-                                    &gpobj->m_udpInfo.m_filter )  ) {
+                                    &pMulticastClientThread->m_pChannel->m_rxFilter )  ) {
                     
-                    /*if ( gpobj->m_udpInfo.m_bAck ) {
-                        replyAckFrame( nc, 
+                    if ( pMulticastClientThread->m_pChannel->m_bSendAck ) {
+                        replyAckFrame( pMulticastClientThread, 
                                         nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ], 
                                         ( nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] & 0xf8 ) );
-                    }*/
+                    }
                     
                 }
                 else {
                     
-                    /*if ( gpobj->m_udpInfo.m_bAck ) {
-                        replyNackFrame( nc, 
+                    if ( pMulticastClientThread->m_pChannel->m_bSendAck ) {
+                        replyNackFrame( pMulticastClientThread, 
                                         nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ],
                                         ( nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] & 0xf8 ) );
-                    }*/
+                    }
                     
                 }
                 
@@ -409,8 +441,15 @@ bool VSCPMulticastClientThread::sendFrame( struct mg_mgr *pmgr,
         wxPrintf("\n");
 #endif
         
-        mg_connect( pmgr, (const char *)m_sendAddress.mbc_str(), ev_handler );
-        mg_send( pmgr->active_connections, sendbuf, len );
+        //mg_connect( pmgr, (const char *)m_sendAddress.mbc_str(), ev_handler );
+        //mg_send( pmgr->active_connections, sendbuf, len );
+        
+        if ( ( sendto( m_sendSock, sendbuf, len, 0, 
+                            (struct sockaddr *) &m_mc_sendAddr, 
+                            sizeof( m_mc_sendAddr ) ) ) != len ) {
+            // Fail
+            gpobj->logMsg( _("[Multicast channel] Failed to send multicast frame.\n" ) );
+        }
     
     } // filter
     
@@ -490,12 +529,16 @@ VSCPMulticastClientThread::receiveFrame( struct mg_connection *nc,
 //
 
 bool 
-VSCPMulticastClientThread::replyAckFrame( struct mg_connection *nc, 
+VSCPMulticastClientThread::replyAckFrame( VSCPMulticastClientThread *pMulticastClientThread, 
                                         uint8_t pkttype,
                                         uint8_t index )
 {
     unsigned char sendbuf[1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + 
                             VSCP_LEVEL2_MAXDATA + 16];    // Send buffer
+    
+    // Check pointer
+    if ( NULL == pMulticastClientThread ) return false;
+    
     vscpEventEx ex;
     
     ex.head = ( index & 0xf8 );
@@ -522,7 +565,14 @@ VSCPMulticastClientThread::replyAckFrame( struct mg_connection *nc,
     }
     
     // Send to remote node
-    mg_send( nc, sendbuf, 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + ex.sizeData );
+    //mg_send( nc, sendbuf, 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + ex.sizeData );
+    size_t len = 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + ex.sizeData;
+    if ( ( sendto( pMulticastClientThread->m_sendSock, sendbuf, len, 0, 
+                            (struct sockaddr *) &pMulticastClientThread->m_mc_sendAddr, 
+                            sizeof( pMulticastClientThread->m_mc_sendAddr ) ) ) != len ) {
+        // Fail
+        gpobj->logMsg( _("[Multicast channel] Failed to send ACK multicast frame.\n" ) );
+    }
     
     return true;
 }
@@ -533,12 +583,16 @@ VSCPMulticastClientThread::replyAckFrame( struct mg_connection *nc,
 //
 
 bool 
-VSCPMulticastClientThread::replyNackFrame( struct mg_connection *nc, 
+VSCPMulticastClientThread::replyNackFrame( VSCPMulticastClientThread *pMulticastClientThread, 
                                             uint8_t pkttype,
                                             uint8_t index )
 {
     unsigned char sendbuf[1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + 
                                 VSCP_LEVEL2_MAXDATA + 16];    // Send buffer
+    
+    // Check pointer
+    if ( NULL == pMulticastClientThread ) return false;
+    
     vscpEventEx ex;
     
     ex.head = ( index & 0xf8 );
@@ -565,7 +619,14 @@ VSCPMulticastClientThread::replyNackFrame( struct mg_connection *nc,
     }
     
     // Send to remote node
-    mg_send( nc, sendbuf, 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + ex.sizeData );
+    //mg_send( nc, sendbuf, 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + ex.sizeData );
+    size_t len = 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + ex.sizeData;
+    if ( ( sendto( pMulticastClientThread->m_sendSock, sendbuf, len, 0, 
+                            (struct sockaddr *) &pMulticastClientThread->m_mc_sendAddr, 
+                            sizeof( pMulticastClientThread->m_mc_sendAddr ) ) ) != len ) {
+        // Fail
+        gpobj->logMsg( _("[Multicast channel] Failed to send NACK multicast frame.\n" ) );
+    }
     
     return true;
 }

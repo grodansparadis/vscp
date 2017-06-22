@@ -88,11 +88,7 @@
     <tcpip enable="true"
         interface="tcp://9598" />
 
-    <!-- Multicast announce interface -->
-    <multicast-announce enable="true"
-        interface="udp://9895"
-        ttl = "1"
-    />
+
 
     <!--
       It is possible to enable/disable the UDP interface
@@ -114,7 +110,7 @@
       filter/mask is used for outgoing events.
       encryption is empty for no encryption or set to the encryption
       algorithm to use "AEA128", "AES192", "AES256"
-      bBrodcast Set to try to set broadcast flag on socket.
+      bBrodcast Set to true to set broadcast flag on socket.
       MG_F_ENABLE_BROADCAST
     -->
     <udp enable="true"
@@ -136,6 +132,12 @@
             bSetBroadcast="false"
         />
     </udp>
+
+    <!-- Multicast announce interface -->
+    <multicast-announce enable="true"
+        interface="udp://9895"
+        ttl = "1"
+    />
 
     <!--
         Multicast interface

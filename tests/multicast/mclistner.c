@@ -17,7 +17,7 @@
  * http://ntrg.cs.tcd.ie/undergrad/4ba2/multicast/antony/example.html
  */
 
- // Format listen ["dump|nodump"] [ip-addr-to filter for]
+ // Format mclisten ["dump|nodump"] [ip-addr-to filter for]
  // for example: mclisten 192.168.1.9 port [interface]
 
 #include <sys/types.h>
@@ -47,7 +47,7 @@ int main( int argc, char *argv[] )
     int bDumpData = 1;
     char group[32];
     char interface[32];
-    int port;
+    int port = DEFAULT_PORT;
 
     if ( argc >= 2 ) {
         if ( NULL != strstr( argv[1], "dump" ) ) {
@@ -56,7 +56,11 @@ int main( int argc, char *argv[] )
     }
 
     if ( argc >= 3 ) {
-        pFilter = argv[2];
+        port = argv[2];
+    }
+
+    if ( argc >= 4 ) {
+        pFilter = argv[3];
     }
 
     // create what looks like an ordinary UDP socket
