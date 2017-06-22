@@ -173,6 +173,7 @@
                     rxmask=""
                     encryption=""
                     bSendAck="false"
+                    bAllowUnsecure="true"
         />
     </multicast>
 

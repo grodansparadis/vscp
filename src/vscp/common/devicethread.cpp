@@ -647,7 +647,7 @@ void *deviceThread::Entry()
 
         if ( 0 == m_pDeviceItem->m_openHandle ) {
             // Free the library
-            m_pCtrlObject->logMsg( _( "[Device tread] Unable to open VSCP driver (check path/rights).\n" ) );
+            m_pCtrlObject->logMsg( _( "[Device tread] Unable to open VSCP driver (check username/password/path/rights).\n" ) );
             return NULL;
         }
 

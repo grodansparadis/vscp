@@ -1156,12 +1156,14 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     // Level II Driver Password (can't contain ";" character)
     memset( buf, 0, sizeof( buf ) );
     pw.generatePassword( 32, buf );
+    m_driverPassword = buf;
     
-    vscp_makePasswordHash( m_driverPassword, 
+    wxString drvhash;
+    vscp_makePasswordHash( drvhash, 
                             wxString::FromAscii( buf ) );
 
     m_userList.addUser( m_driverUsername,
-                            m_driverPassword,
+                            drvhash,        // salt;hash
                             _("System added driver user."), // full name
                             _("System added driver user."), // note
                             NULL,
@@ -2811,9 +2813,9 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     }
                     
                     // bAllowUndsecure
-                    attribute = subchild->GetAttribute(wxT("bAllowUnsecure"), wxT("false"));
+                    attribute = subchild->GetAttribute( wxT("bAllowUnsecure"), wxT("true") );
                     attribute.MakeLower();
-                    if (attribute.IsSameAs(_("false"), false)) {
+                    if ( attribute.IsSameAs(_("false"), false) ) {
                         pChannel->m_bAllowUnsecure = false;
                     }
                     else {

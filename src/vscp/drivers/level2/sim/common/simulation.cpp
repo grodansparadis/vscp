@@ -193,7 +193,7 @@ CSim::open(const char *pUsername,
 #ifndef WIN32
         syslog(LOG_ERR,
                 "%s",
-                (const char *) "Unable to connect to VSCP TCP/IP interface. Terminating!");
+                (const char *) "[VSCPSimDrv]Unable to connect to VSCP TCP/IP interface. Terminating!");
 #endif
         return false;
     }
@@ -330,7 +330,7 @@ CSim::open(const char *pUsername,
 #ifdef WIN32
 #else
             syslog( LOG_ERR,
-                        "%s prefix=%s i=%d",
+                        "[VSCPSimDrv] %s prefix=%s i=%d",
                         ( const char * ) "Failed to start workerthread.",
                         ( const char * )m_prefix.ToAscii(),                        
                         i );
@@ -742,8 +742,8 @@ bool CWrkTread::sendEvent( vscpEventEx& eventEx )
             vscp_deleteVSCPevent( pEvent );
 #ifndef WIN32
             syslog( LOG_ERR,
-                    "%s",
-                    ( const char * ) "Faild to convert event." );
+                    "[VSCPSimDrv] %s",
+                    ( const char * ) "Failed to convert event." );
 #endif
             return false;
         }
@@ -912,7 +912,7 @@ CWrkTread::Entry()
 
 #ifndef WIN32
         syslog( LOG_ERR,
-                "%s",
+                "[VSCPSimDrv] %s",
                 (const char *) "Error while opening remote VSCP TCP/IP interface. Terminating!");
 #endif
         return NULL;
@@ -923,7 +923,7 @@ CWrkTread::Entry()
         if ( !tfile.Open( m_path ) ) {
 #ifndef WIN32
             syslog( LOG_ERR,
-                    "%s",
+                    "[VSCPSimDrv] %s",
                     ( const char * ) "Unable to load simulation data" );
 #endif
             goto dumb_fill_data;
@@ -1029,8 +1029,8 @@ dumb_fill_data:
                                     vscp_deleteVSCPevent( pEvent );
 #ifndef WIN32
                                     syslog( LOG_ERR,
-                                            "%s",
-                                            ( const char * ) "Faild to convert event." );
+                                            "[VSCPSimDrv] %s",
+                                            ( const char * ) "Failed to convert event." );
 #endif
                                 }
                             }
@@ -1038,8 +1038,8 @@ dumb_fill_data:
                                 vscp_deleteVSCPevent( pEvent );
 #ifndef WIN32
                                 syslog( LOG_ERR,
-                                        "%s",
-                                        ( const char * ) "Faild to convert data." );
+                                        "[VSCPSimDrv] %s",
+                                        ( const char * ) "Failed to convert data." );
 #endif
                             }
                         }
@@ -1074,8 +1074,8 @@ dumb_fill_data:
                                 vscp_deleteVSCPevent( pEvent );
 #ifndef WIN32
                                 syslog( LOG_ERR,
-                                        "%s",
-                                        ( const char * ) "Faild to convert data." );
+                                        "[VSCPSimDrv] %s",
+                                        ( const char * ) "Failed to convert data." );
 #endif
                             }
                             
@@ -1111,8 +1111,8 @@ dumb_fill_data:
                                 vscp_deleteVSCPevent( pEvent );
 #ifndef WIN32
                                 syslog( LOG_ERR,
-                                        "%s",
-                                        ( const char * ) "Faild to convert data." );
+                                        "[VSCPSimDrv] %s",
+                                        ( const char * ) "Failed to convert data." );
 #endif
                             }
 
