@@ -14,8 +14,6 @@ import struct
 import socket
 import sys
 import datetime
-from ctypes import *
-from vscp import *
 # pip install pycrc
 from PyCRC.CRCCCITT import CRCCCITT
 
@@ -23,6 +21,31 @@ MCAST_PORT = 44444
 MCAST_GROUP = '224.0.23.158'
 MCAST_TTL = 1   # Increase to reach other networks
 
+VSCP_MULTICAST_PACKET0_HEADER_LENGTH = 35
+VSCP_MULTICAST_PACKET0_POS_PKTTYPE = 0
+VSCP_MULTICAST_PACKET0_POS_HEAD = 1
+VSCP_MULTICAST_PACKET0_POS_HEAD_MSB = 1
+VSCP_MULTICAST_PACKET0_POS_HEAD_LSB = 2
+VSCP_MULTICAST_PACKET0_POS_TIMESTAMP = 3
+VSCP_MULTICAST_PACKET0_POS_YEAR = 7
+VSCP_MULTICAST_PACKET0_POS_YEAR_MSB = 7
+VSCP_MULTICAST_PACKET0_POS_YEAR_LSB = 8
+VSCP_MULTICAST_PACKET0_POS_MONTH = 9
+VSCP_MULTICAST_PACKET0_POS_DAY = 10
+VSCP_MULTICAST_PACKET0_POS_HOUR = 11
+VSCP_MULTICAST_PACKET0_POS_MINUTE = 12
+VSCP_MULTICAST_PACKET0_POS_SECOND = 13
+VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS = 14
+VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_MSB = 14
+VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_LSB = 15
+VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE = 16
+VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_MSB = 16
+VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB = 17
+VSCP_MULTICAST_PACKET0_POS_VSCP_GUID = 18
+VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE = 34
+VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB = 34
+VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB = 35
+VSCP_MULTICAST_PACKET0_POS_VSCP_DATA = 36
 
 ################################################################################
 # main
@@ -42,6 +65,7 @@ def main():
 #
 
 def makeVscpFrame( encryption ):
+
     frame = bytearray( 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 512 + 2 )
 
     # Frame type, Type 0, unencrypted
@@ -118,6 +142,7 @@ def makeVscpFrame( encryption ):
     # Calculate CRC
     frmstr = ''.join('{:02x}'.format(x) for x in frame[ 1:VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 12 ] )
     framecrc = CRCCCITT().calculate( frmstr )
+    print ''.join('{:02x }'.format(x) for x in frame)
 
     # CRC
     frame[ 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 13 ] = (framecrc >> 8) & 0xff
@@ -125,7 +150,6 @@ def makeVscpFrame( encryption ):
 
     #shrink to frame size
     frame = frame[0: (1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 13 + 2 ) ]
-    print 'Frame = ' + ''.join('{:02x} '.format(x) for x in frame)
 
     return frame
 
@@ -140,11 +164,42 @@ def sender( group ):
     sock.setsockopt( socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 1 )
 
     while True:
+        print(".")
         data = repr( time.time() )
         frame = makeVscpFrame( 0 )
         sock.sendto( frame, (MCAST_GROUP, MCAST_PORT ) )
         time.sleep( 1 )
 
+def receiver( group ):
+    print("Receive\n");
+
+    # Look up multicast group address in name server and find out IP version
+    addrinfo = socket.getaddrinfo( group, None )[0]
+
+    # Create a socket
+    sock = socket.socket(addrinfo[0], socket.SOCK_DGRAM)
+
+    # Allow multiple copies of this program on one machine
+    # (not strictly needed)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+    # Bind it to the port
+    sock.bind(('', MYPORT))
+
+    group_bin = socket.inet_pton(addrinfo[0], addrinfo[4][0])
+    # Join group
+    if addrinfo[0] == socket.AF_INET: # IPv4
+        mreq = group_bin + struct.pack('=I', socket.INADDR_ANY)
+        sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+    else:
+        mreq = group_bin + struct.pack('@I', 0)
+        sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_JOIN_GROUP, mreq)
+
+    # Loop, printing any data we receive
+    while True:
+        data, sender = sock.recvfrom(1500)
+        while data[-1:] == '\0': data = data[:-1] # Strip trailing \0's
+        print (str(sender) + '  ' + repr(data))
 
 if __name__ == '__main__':
     main()

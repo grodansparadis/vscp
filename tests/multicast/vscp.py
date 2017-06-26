@@ -1,3 +1,10 @@
+import time
+import struct
+import socket
+import sys
+import datetime
+from ctypes import *
+
 VSCP_DEFAULT_UDP_PORT =             33333
 VSCP_DEFAULT_TCP_PORT =             9598
 VSCP_ANNNOUNCE_MULTICAST_PORT =     9598
@@ -10,7 +17,7 @@ VSCP_ADDRESS_NEW_NODE =             0xff
 VSCP_LEVEL1 =                       0
 VSCP_LEVEL2 =                       1
 
-# VSCP priority 
+# VSCP priority
 VSCP_PRIORITY_0 =                       0x00
 VSCP_PRIORITY_1 =                       0x20
 VSCP_PRIORITY_2 =                       0x40
