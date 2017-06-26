@@ -61,7 +61,6 @@ extern "C" {
     //          * * * General structure for VSCP * * *
 
     // This structure is for VSCP Level II
-    
 
     typedef struct {
         uint16_t crc;           // crc checksum (calculated from here to end)
@@ -296,6 +295,7 @@ typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 //      total frame size is 1 + 34 + 2 + data-length
 #define VSCP_MULTICAST_PACKET0_HEADER_LENGTH            35
 
+// Multicast packet ordinals
 #define VSCP_MULTICAST_PACKET0_POS_PKTTYPE              0
 #define VSCP_MULTICAST_PACKET0_POS_HEAD                 1
 #define VSCP_MULTICAST_PACKET0_POS_HEAD_MSB             1

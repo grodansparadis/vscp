@@ -156,10 +156,10 @@ void *VSCPMulticastClientThread::Entry()
     }
     
     // We don't want to receive what we send
-    u_char loop = 0;  // Disable
+    /*u_char loop = 0;  // Disable
     if ( setsockopt( nc->sock, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof( loop ) ) < 0 ) {
         gpobj->logMsg( _( "[Multicast channel] Failed to reset option IP_MULTICAST_LOOP.\n" )  );
-    }
+    }*/
     
     // Set ttl
     u_char ttl = m_pChannel->m_ttl;

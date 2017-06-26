@@ -39,7 +39,8 @@
 //
 // Temperature measurement
 
-int makeFrameTypeUnEncrypted(unsigned char *frame) {
+int makeFrameTypeUnEncrypted(unsigned char *frame)
+{
     // Frame type, Type 0, unencrypted
     frame[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = VSCP_ENCRYPTION_NONE;
 
@@ -138,7 +139,8 @@ int makeFrameTypeUnEncrypted(unsigned char *frame) {
 // Temperature measurement encrypted with AES128
 //
 
-int makeFrameTypeEncrypted(uint8_t type, unsigned char *frame) {
+int makeFrameTypeEncrypted(uint8_t type, unsigned char *frame)
+{
     // Frame type, Type 0, unencrypted
     frame[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] = type;
 
