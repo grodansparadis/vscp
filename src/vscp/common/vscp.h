@@ -99,7 +99,7 @@ extern "C" {
         
         uint8_t *pdata;         // Pointer to data. Max 487 (512- 25) bytes
         
-    } /*__attribute__((packed, aligned(1)))*/ vscpEvent;
+    } vscpEvent;
 
 
 typedef vscpEvent *PVSCPEVENT;
@@ -110,7 +110,7 @@ typedef vscpEvent *PVSCPEVENT;
 
 typedef struct { 
     
-    uint16_t crc;                   // crc checksum (calculated from here to end)
+    uint16_t crc;                   // CRC checksum (calculated from here to end)
                                     // Used for UDP/Ethernet etc
  
     uint32_t obid;                  // Used by driver for channel info etc.    
@@ -145,7 +145,7 @@ typedef struct {
 
     uint8_t  data[VSCP_MAX_DATA];   // Pointer to data. Max. 487 (512-25) bytes
 
-} /*__attribute__((packed, aligned(1)))*/ vscpEventEx;
+} vscpEventEx;
 
 
 typedef vscpEventEx *PVSCPEVENTEX;
@@ -209,7 +209,7 @@ typedef struct  {
     uint8_t filter_GUID[ 16 ];      // Node address MSB -> LSB, LSB is node nickname id
     uint8_t mask_GUID[ 16 ];        // when interfacing the VSCP daemon.
     
-} /*__attribute__((packed, aligned(1)))*/ vscpEventFilter;
+} vscpEventFilter;
 
 
 typedef vscpEventFilter *PVSCPEVENTFILTER;
@@ -230,7 +230,7 @@ typedef struct structVSCPStatistics {
     unsigned long x;                            // Currently undefined value 
     unsigned long y;                            // Currently undefined value 
     unsigned long z;                            // Currently undefined value 
-} /*__attribute__((packed, aligned(1)))*/ VSCPStatistics;
+} VSCPStatistics;
 
 typedef  VSCPStatistics * PVSCPSTATISTICS;
 
@@ -241,14 +241,14 @@ typedef  VSCPStatistics * PVSCPSTATISTICS;
     This is the general channel state structure
 */
 
-#define VSCP_STATUS_ERROR_STRING_SIZE       80
+#define VSCP_STATUS_ERROR_STRING_SIZE                   80
 
 typedef struct structVSCPStatus {
     unsigned long channel_status;                       // Current state for channel
     unsigned long lasterrorcode;                        // Last error code
     unsigned long lasterrorsubcode;                     // Last error sub code
     char lasterrorstr[VSCP_STATUS_ERROR_STRING_SIZE];   // Last error string
-} /*__attribute__((packed, aligned(1)))*/ VSCPStatus;
+} VSCPStatus;
 
 
 typedef  VSCPStatus * PVSCPSTATUS;
@@ -269,26 +269,26 @@ typedef struct structVSCPChannelInfo {
     unsigned short channel;         // daemon channel number
     char GUID[ 16 ];                // Channel GUID id
     
-} /*__attribute__((packed, aligned(1)))*/ VSCPChannelInfo;
+} VSCPChannelInfo;
 
 typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 
 
 // VSCP Encryption types
-#define VSCP_ENCRYPTION_NONE                    0
-#define VSCP_ENCRYPTION_AES128                  1
-#define VSCP_ENCRYPTION_AES192                  2
-#define VSCP_ENCRYPTION_AES256                  3
+#define VSCP_ENCRYPTION_NONE                            0
+#define VSCP_ENCRYPTION_AES128                          1
+#define VSCP_ENCRYPTION_AES192                          2
+#define VSCP_ENCRYPTION_AES256                          3
 
 // VSCP Encryption tokens
-#define VSCP_ENCRYPTION_TOKEN_0                 ""
-#define VSCP_ENCRYPTION_TOKEN_1                 "AES128"
-#define VSCP_ENCRYPTION_TOKEN_2                 "AES192"
-#define VSCP_ENCRYPTION_TOKEN_3                 "AES256"
+#define VSCP_ENCRYPTION_TOKEN_0                         ""
+#define VSCP_ENCRYPTION_TOKEN_1                         "AES128"
+#define VSCP_ENCRYPTION_TOKEN_2                         "AES192"
+#define VSCP_ENCRYPTION_TOKEN_3                         "AES256"
 
 // * * * Multicast on VSCP reserved IP 224.0.23.158
 
-#define VSCP_MULTICAST_IPV4_ADDRESS_STR         "224.0.23.158"
+#define VSCP_MULTICAST_IPV4_ADDRESS_STR                 "224.0.23.158"
 
 // Packet frame format type = 0
 //      without byte0 and CRC
@@ -327,17 +327,22 @@ typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 // VSCP multicast packet types
 #define VSCP_MULTICAST_TYPE_EVENT                       0
 
-#define SET_VSCP_MULTICAST_TYPE( type, encryption )  ( (type<<4) | encryption )
-#define GET_VSCP_MULTICAST_PACKET_TYPE( type)        ( (type>>4) & 0x0f)
-#define GET_VSCP_MULTICAST_PACKET_ENCRYPTION( type)  ( (type) & 0x0f)
+#define SET_VSCP_MULTICAST_TYPE( type, encryption )     ( (type<<4) | encryption )
+#define GET_VSCP_MULTICAST_PACKET_TYPE( type)           ( (type>>4) & 0x0f)
+#define GET_VSCP_MULTICAST_PACKET_ENCRYPTION( type)     ( (type) & 0x0f)
 
 // Multicast proxy CLASS=1026, TYPE=3 http://www.vscp.org/docs/vscpspec/doku.php?id=class2.information#type_3_0x0003_level_ii_proxy_node_heartbeat
-#define VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE            192
-#define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_REALGUID         0       // The real GUID for the node
-#define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_IFGUID           32      // GUID for interface node is on
-#define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_IFLEVEL          48      // 0=Level I node, 1=Level II node
-#define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_NODENAME         64      // Name of node
-#define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_IFNAME           128     // Name of interface
+#define VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE        192
+#define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_REALGUID     0       // The real GUID for the node
+#define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_IFGUID       32      // GUID for interface node is on
+#define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_IFLEVEL      48      // 0=Level I node, 1=Level II node
+#define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_NODENAME     64      // Name of node
+#define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_IFNAME       128     // Name of interface
+
+// Default key for VSCP Server - !!!! should only be used on test systems !!!!
+#define VSCP_DEFAULT_KEY16 = 'A4A86F7D7E119BA3F0CD06881E371B98'
+#define VSCP_DEFAULT_KEY24 = 'A4A86F7D7E119BA3F0CD06881E371B989B33B6D606A863B6'
+#define VSCP_DEFAULT_KEY32 = 'A4A86F7D7E119BA3F0CD06881E371B989B33B6D606A863B633EF529D64544F8E'
 
 // Bootloaders
 #define VSCP_BOOTLOADER_VSCP                    0x00	// VSCP boot loader algorithm

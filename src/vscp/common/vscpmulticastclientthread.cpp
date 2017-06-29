@@ -156,10 +156,10 @@ void *VSCPMulticastClientThread::Entry()
     }
     
     // We don't want to receive what we send
-    /*u_char loop = 0;  // Disable
+    u_char loop = 0;  // Disable
     if ( setsockopt( nc->sock, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof( loop ) ) < 0 ) {
         gpobj->logMsg( _( "[Multicast channel] Failed to reset option IP_MULTICAST_LOOP.\n" )  );
-    }*/
+    }
     
     // Set ttl
     u_char ttl = m_pChannel->m_ttl;
@@ -267,9 +267,6 @@ void VSCPMulticastClientThread::ev_handler( struct mg_connection *nc, int ev, vo
 
         case MG_EV_RECV:
             {
-                gpobj->logMsg( wxString::Format( _( "[Multicast channel] Received Multicast event\n" ) ),
-                                        DAEMON_LOGMSG_DEBUG,
-                                        DAEMON_LOGTYPE_GENERAL );
                 
                 // Get remote address
                 wxString remoteaddr = wxString::FromAscii( inet_ntoa( nc->sa.sin.sin_addr )  );
@@ -314,6 +311,10 @@ void VSCPMulticastClientThread::ev_handler( struct mg_connection *nc, int ev, vo
                 if ( receiveFrame( nc, 
                                     pMulticastClientThread->m_pClientItem,
                                     &pMulticastClientThread->m_pChannel->m_rxFilter )  ) {
+                    
+                    gpobj->logMsg( wxString::Format( _( "[Multicast channel] Received Multicast event\n" ) ),
+                                        DAEMON_LOGMSG_DEBUG,
+                                        DAEMON_LOGTYPE_GENERAL );
                     
                     if ( pMulticastClientThread->m_pChannel->m_bSendAck ) {
                         replyAckFrame( pMulticastClientThread, 
@@ -460,8 +461,8 @@ bool VSCPMulticastClientThread::sendFrame( struct mg_mgr *pmgr,
 
 bool 
 VSCPMulticastClientThread::receiveFrame( struct mg_connection *nc, 
-                                                        CClientItem *pClientItem,
-                                                        vscpEventFilter *pRxFilter )
+                                            CClientItem *pClientItem,
+                                            vscpEventFilter *pRxFilter )
 {
     uint8_t buf[ 1024 ];
     vscpEvent *pEvent;
@@ -470,6 +471,15 @@ VSCPMulticastClientThread::receiveFrame( struct mg_connection *nc,
     if ( NULL == nc ) return false;
     if ( NULL == pClientItem ) return false;
     if ( NULL == pRxFilter ) return false;
+    
+#if 0
+    int i;
+    wxPrintf("RECEIVE (%d) = ", (int)nc->recv_mbuf.len );
+    for ( i=0; i<nc->recv_mbuf.len; i++ ) {
+        wxPrintf("%02X ", (uint8_t)nc->recv_mbuf.buf[i] );
+    }
+    wxPrintf("\n");
+#endif    
     
     memset( buf, 0, sizeof( buf ) );
     if ( !vscp_decryptVscpUdpFrame( buf, 
