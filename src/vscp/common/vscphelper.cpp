@@ -3064,6 +3064,9 @@ bool vscp_convertCanalToEvent(vscpEvent *pvscpEvent,
     // Timestamp
     vscp_setEventDateTimeBlockToNow( pvscpEvent );
     pvscpEvent->timestamp = pcanalMsg->timestamp;
+    
+    // Date/time block
+    vscp_setEventToNow( pvscpEvent );
 
     // Set nickname id
     pvscpEvent->GUID[ 15 ] = (unsigned char) (0xff & pcanalMsg->id);

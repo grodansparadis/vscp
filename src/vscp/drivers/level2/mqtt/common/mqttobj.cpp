@@ -173,7 +173,8 @@ static void ev_handler( struct mg_connection *nc, int ev, void *p )
             vscpEventEx eventEx;
             
             eventEx.obid = 0;
-            eventEx.timestamp = 0;
+            eventEx.timestamp = vscp_makeTimeStamp();
+            vscp_setEventExDateTimeBlockToNow( &eventEx );
             eventEx.head = VSCP_PRIORITY_NORMAL;
             memset( eventEx.GUID, 0, 16 );
 

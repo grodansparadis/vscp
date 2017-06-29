@@ -861,7 +861,8 @@ void CWrkTread::doActionReplyTurnOn( vscpEvent *pEvent, uint8_t dmflags, uint8_t
     vscpEventEx eventEx;
     eventEx.head = VSCP_PRIORITY_NORMAL;
     memcpy( eventEx.GUID, m_registers + VSCP_STD_REGISTER_GUID, 16 );
-    eventEx.timestamp = 0;
+    eventEx.timestamp = vscp_makeTimeStamp();
+    vscp_setEventExDateTimeBlockToNow( &eventEx );
     eventEx.sizeData = 3;
     //eventEx.data[ 0 ] = m_registers[ SIM_USER_REG_INDEX ];      // Index
     eventEx.data[ 0 ] = dmparam;
@@ -882,7 +883,8 @@ void CWrkTread::doActionReplyTurnOff( vscpEvent *pEvent, uint8_t dmflags, uint8_
     vscpEventEx eventEx;
     eventEx.head = VSCP_PRIORITY_NORMAL;
     memcpy( eventEx.GUID, m_registers + VSCP_STD_REGISTER_GUID, 16 );
-    eventEx.timestamp = 0;
+    eventEx.timestamp = vscp_makeTimeStamp();
+    vscp_setEventExDateTimeBlockToNow( &eventEx );
     eventEx.sizeData = 3;
     //eventEx.data[ 0 ] = m_registers[ SIM_USER_REG_INDEX ];      // Index
     eventEx.data[ 0 ] = dmparam;
@@ -1004,7 +1006,8 @@ dumb_fill_data:
 
                 eventEx.head = VSCP_PRIORITY_NORMAL;
                 memcpy( eventEx.GUID, m_registers + VSCP_STD_REGISTER_GUID, 16 );
-                eventEx.timestamp = 0;
+                eventEx.timestamp = vscp_makeTimeStamp();
+                vscp_setEventExDateTimeBlockToNow( &eventEx );
                 eventEx.sizeData = 0;
                 eventEx.vscp_class = m_measurementClass;
                 eventEx.vscp_type = m_measurementType;
@@ -1061,7 +1064,8 @@ dumb_fill_data:
 
                             pEvent->head = VSCP_PRIORITY_NORMAL;
                             memcpy( pEvent->GUID, m_registers + VSCP_STD_REGISTER_GUID, 16 );
-                            pEvent->timestamp = 0;
+                            pEvent->timestamp = vscp_makeTimeStamp();
+                            vscp_setEventDateTimeBlockToNow( pEvent );
                             pEvent->sizeData = 0;
                             pEvent->vscp_class = m_measurementClass;
                             pEvent->vscp_type = m_measurementType;
@@ -1098,7 +1102,8 @@ dumb_fill_data:
 
                             pEvent->head = VSCP_PRIORITY_NORMAL;
                             memcpy( pEvent->GUID, m_registers + VSCP_STD_REGISTER_GUID, 16 );
-                            pEvent->timestamp = 0;
+                            pEvent->timestamp = vscp_makeTimeStamp();
+                            vscp_setEventDateTimeBlockToNow( pEvent );
                             pEvent->sizeData = 0;
                             pEvent->vscp_class = m_measurementClass;
                             pEvent->vscp_type = m_measurementType;
@@ -1143,7 +1148,8 @@ dumb_fill_data:
 
                 eventEx.head = VSCP_PRIORITY_NORMAL;
                 memcpy( eventEx.GUID, m_registers + VSCP_STD_REGISTER_GUID, 16 );
-                eventEx.timestamp = 0;
+                eventEx.timestamp = vscp_makeTimeStamp();
+                vscp_setEventExDateTimeBlockToNow( &eventEx );
                 eventEx.sizeData = 3;
                 eventEx.data[ 0 ] = 0;
                 eventEx.data[ 1 ] = m_registers[ SIM_USER_REG_ZONE ];       // Zone
@@ -1193,6 +1199,8 @@ dumb_fill_data:
                                 ( 2 == pEvent->sizeData ) &&
                                 ( m_guid.getNickname() == pEvent->pdata[ 0 ] ) ) {
                             eventEx.head = VSCP_PRIORITY_NORMAL;
+                            eventEx.timestamp = vscp_makeTimeStamp();
+                            vscp_setEventExDateTimeBlockToNow( &eventEx );
                             eventEx.sizeData = 2;
                             eventEx.data[ 0 ] = pEvent->pdata[1];   // Reg
                             eventEx.data[ 1 ] = readLevel1Register( pEvent->pdata[ 1 ] );
@@ -1207,6 +1215,8 @@ dumb_fill_data:
                                 ( 3 == pEvent->sizeData ) &&
                                 ( m_guid.getNickname() == pEvent->pdata[ 0 ] ) ) {
                             eventEx.head = VSCP_PRIORITY_NORMAL;
+                            eventEx.timestamp = vscp_makeTimeStamp();
+                            vscp_setEventExDateTimeBlockToNow( &eventEx );
                             eventEx.sizeData = 2;
                             eventEx.data[ 0 ] = pEvent->pdata[ 1 ];   // Reg
                             eventEx.data[ 1 ] = writeLevel1Register( pEvent->pdata[ 1 ], pEvent->pdata[ 2 ] );
@@ -1239,6 +1249,8 @@ dumb_fill_data:
                                         bytes = ( i % 7 ) + 1;
                                     }
 
+                                    eventEx.timestamp = vscp_makeTimeStamp();
+                                    vscp_setEventExDateTimeBlockToNow( &eventEx );
                                     eventEx.sizeData = bytes + 1;
                                     eventEx.head = VSCP_PRIORITY_NORMAL;
                                     eventEx.vscp_class = VSCP_CLASS1_PROTOCOL;
@@ -1271,6 +1283,8 @@ dumb_fill_data:
                             eventEx.vscp_type = VSCP_TYPE_PROTOCOL_RW_PAGE_RESPONSE;
                             eventEx.data[ 0 ] = 0; // index
                             eventEx.sizeData = len + 1;
+                            eventEx.timestamp = vscp_makeTimeStamp();
+                            vscp_setEventExDateTimeBlockToNow( &eventEx );
 
                             // send the event
                             sendEvent( eventEx );
@@ -1315,6 +1329,9 @@ dumb_fill_data:
                             eventEx.data[ 0 ] = 0; // index of event, this is the first
                             eventEx.data[ 1 ] = pEvent->pdata[ 1 ]; // mirror page msb
                             eventEx.data[ 2 ] = pEvent->pdata[ 2 ]; // mirror page lsb
+
+                            eventEx.timestamp = vscp_makeTimeStamp();
+                            vscp_setEventExDateTimeBlockToNow( &eventEx );
 
                             do {
                                 // calculate bytes to transfer in this event
@@ -1380,6 +1397,8 @@ dumb_fill_data:
 
                             eventEx.head = VSCP_PRIORITY_NORMAL;
                             eventEx.sizeData = 4 + ( pEvent->sizeData - 4 );
+                            eventEx.timestamp = vscp_makeTimeStamp();
+                            vscp_setEventExDateTimeBlockToNow( &eventEx );
                             eventEx.vscp_class = VSCP_CLASS1_PROTOCOL;
                             eventEx.vscp_type = VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE;
                             eventEx.data[ 0 ] = 0; // index of event, this is the first and only

@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP Project (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2015 Ake Hedman, 
+// Copyright (C) 2000-2017 Ake Hedman, 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -345,6 +345,13 @@ CVSCPLog::writeEvent(vscpEvent *pEvent)
 		str = wxDateTime::Now().FormatISODate() + _(" ") + wxDateTime::Now().FormatISOTime();
 		m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
 		m_pLogStream->Write("</time>\n", strlen("</time>\n"));
+
+		m_pLogStream->Write("<dt>", strlen("<dt>"));
+		if ( !vscp_getDateStringFromEvent( pEvent, str ) ) {
+			str = _("Failed to get date/time.");
+		}
+		m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
+		m_pLogStream->Write("</dt>\n", strlen("</dt>\n"));
 
 		m_pLogStream->Write("<head>", strlen("<head>"));
 		str.Printf(_("%d"), pEvent->head);
