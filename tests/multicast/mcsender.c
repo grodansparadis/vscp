@@ -3,6 +3,8 @@
  * Changed by Ake Hedman, for use with VSCP & Friends
  * Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
  *
+ * Send VSCP event to VSCP multicast group.
+ *
  * Original header below
  * sender.c -- multicasts "hello, world!" to a multicast group once a second
  *

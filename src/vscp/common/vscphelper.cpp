@@ -3376,15 +3376,13 @@ bool vscp_setEventDateTimeBlockToNow( vscpEvent *pEvent )
 
     time( &rawtime );
     ptm = gmtime( &rawtime );*/
-    
-    wxDateTime dt = wxDateTime::UNow();
-    
-    pEvent->year = dt.GetYear();
-    pEvent->month = dt.GetMonth() + 1;
-    pEvent->day = dt.GetDay();
-    pEvent->hour = dt.GetHour();
-    pEvent->minute = dt.GetMinute();
-    pEvent->second = dt.GetSecond();
+       
+    pEvent->year = wxDateTime::UNow().GetYear();
+    pEvent->month = wxDateTime::UNow().GetMonth() + 1;
+    pEvent->day = wxDateTime::UNow().GetDay();
+    pEvent->hour = wxDateTime::UNow().GetHour();
+    pEvent->minute = wxDateTime::UNow().GetMinute();
+    pEvent->second = wxDateTime::UNow().GetSecond();
     
     return true;
 }
@@ -3398,18 +3396,12 @@ bool vscp_setEventExDateTimeBlockToNow( vscpEventEx *pEventEx )
     // Check pointer 
     if ( NULL == pEventEx ) return false;
     
-    time_t rawtime;
-    struct tm * ptm;
-
-    time( &rawtime );
-    ptm = gmtime( &rawtime );
-    
-    pEventEx->year = ptm->tm_year;
-    pEventEx->month = ptm->tm_mon;
-    pEventEx->day = ptm->tm_mday;
-    pEventEx->hour = ptm->tm_hour;
-    pEventEx->minute = ptm->tm_min;
-    pEventEx->second = ptm->tm_sec;
+    pEventEx->year = wxDateTime::UNow().GetYear();
+    pEventEx->month = wxDateTime::UNow().GetMonth() + 1;
+    pEventEx->day = wxDateTime::UNow().GetDay();
+    pEventEx->hour = wxDateTime::UNow().GetHour();
+    pEventEx->minute = wxDateTime::UNow().GetMinute();
+    pEventEx->second = wxDateTime::UNow().GetSecond();
     
     return true;
 }
@@ -5734,7 +5726,7 @@ bool vscp_getEventFromUdpFrame( vscpEvent *pEvent,
          ( 0 == pEvent->second ) ) {
         
         pEvent->year = wxDateTime::UNow().GetYear() - wxDateTime::UNow().GetCentury();
-        pEvent->month = wxDateTime::UNow().GetMonth();
+        pEvent->month = wxDateTime::UNow().GetMonth() + 1;
         pEvent->day = wxDateTime::UNow().GetDay();
         pEvent->hour = wxDateTime::UNow().GetHour();
         pEvent->minute = wxDateTime::UNow().GetMinute();

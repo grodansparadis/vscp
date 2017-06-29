@@ -40,9 +40,6 @@ def main( argv ):
 
     print("VSCP multicast sender test app.\n")
 
-    print 'Number of arguments:', len(sys.argv), 'arguments.'
-    print 'Argument List:', str(sys.argv)
-
     try:
         opts, args = getopt.getopt(argv,"he:g:p:t:",["encryption=","group=","port=","ttl="])
     except getopt.GetoptError:
@@ -209,15 +206,20 @@ def encryptVscpFrame( frame, encryption ):
 
 def sender( group, port, ttl, encryption ):
     
+    index = 0 # roling frame index 0-7
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt( socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl )
 
     while True:
         frame = makeVscpFrame()
+        # Set rolling index
+        frame[VSCP_MULTICAST_PACKET0_POS_HEAD_LSB] = \
+            (frame[VSCP_MULTICAST_PACKET0_POS_HEAD_LSB] & 0xf8) | (index &0x07)
         frame = encryptVscpFrame( frame, encryption )
         print "Sending: " + binascii.hexlify(frame)
         len = sock.sendto( frame, (group, port ) )
         print "Sent len = %d" % len
+        
         time.sleep( 1 )
 
 if __name__ == '__main__':

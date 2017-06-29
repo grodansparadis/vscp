@@ -18,3 +18,23 @@ with ctrl + C.
 Multicast listner. Used to listen on the traffic on a VSCP multicast channel.
 
 <h2>mcsender</h2>
+
+Send multicast VSCP event to VSCP multicast group once a second.
+
+<h2>mcast_sender.py</h2>
+
+Python sample code that send encrypted or unencrypted frames to a VSCP multicast group.
+
+<pre>
+    mcast_send.py -e <encryption> -g <group> -p <port> -t <ttl>
+
+    or
+
+    mcast_send.py --encrypt=<0|1|2|3> --group=<multicast group> --port=<port> --ttl=<n>
+</pre>
+
+Encryption is 0 for no encryption, 1 for AES128, 2 for AES192, 3 for AES256. The sample code used the default key for the VSCP server.
+
+<h2>mcast_receiver.py</h2>
+
+sample code that receives VSCP events from a VSCP multicast group.
