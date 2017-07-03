@@ -25,4 +25,8 @@
 
 // Debug flags
 #define VSCP_DEBUG1_AUTOMATION      (1 << 0)
-#define VSCP_DEBUG1_VARIABLE        (1 << 1)
+#define VSCP_DEBUG1_DM              (1 << 1)
+#define VSCP_DEBUG1_VARIABLE        (1 << 2)
+#define VSCP_DEBUG1_MULTICAST       (1 << 3)
+#define VSCP_DEBUG1_UDP             (1 << 4)
+#define VSCP_DEBUG1_TCP             (1 << 5)

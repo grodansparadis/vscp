@@ -68,14 +68,12 @@ def main( argv ):
 #
 
 def decryptFrame( encryption, key, frame ):
-    sizeData = ( frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] << 8 ) + \
-                        frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ]
-    iv = frame[-16:]
-    cipher = AES.new( key, AES.MODE_CBC, str(iv) )    
-    frame = cipher.decrypt( str( frame[1:1 + \
-                                    VSCP_MULTICAST_PACKET0_HEADER_LENGTH +\
-                                    sizeData + 2 + 1 ] ) )
-    return frame
+    iv = str(frame[-16:])
+    frame = str(frame[1:len(frame) - 16 ])
+    cipher = AES.new( key, AES.MODE_CBC, iv )
+    frame = cipher.decrypt(frame)
+    prebyte = format("%02X" % encryption)
+    return binascii.unhexlify(prebyte) + frame
 
 ################################################################################
 # getVscpEvent
@@ -85,12 +83,13 @@ def getVscpEvent( frame ):
         
     ev = vscpEventEx()
 
-    if ( VSCP_ENCRYPTION_NONE == ( frame[VSCP_MULTICAST_PACKET0_POS_PKTTYPE] & 0x07 ) ):
+    if ( VSCP_ENCRYPTION_NONE == ( frame[VSCP_MULTICAST_PACKET0_POS_PKTTYPE] & 0x07 ) ):        
         print "Unencrypted frame"
     elif ( VSCP_ENCRYPTION_AES128 == ( frame[VSCP_MULTICAST_PACKET0_POS_PKTTYPE] & 0x07 ) ):
         print "AES128 encrypted frame"
         key = binascii.unhexlify( VSCP_DEFAULT_KEY16 )
         frame = decryptFrame( ( frame[0] & 0x07 ), key, frame)
+        frame = bytearray( frame )
     elif ( VSCP_ENCRYPTION_AES192 == ( frame[VSCP_MULTICAST_PACKET0_POS_PKTTYPE] & 0x07 ) ):
         print "AES192 encrypted frame"
         key = binascii.unhexlify( VSCP_DEFAULT_KEY24 )
@@ -101,7 +100,15 @@ def getVscpEvent( frame ):
         frame = decryptFrame( ( frame[0] & 0x07 ), key, frame)
     else :
         print "unknown encrypted frame"
-    
+
+    # size
+    ev.sizeData = ( frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] << 8 ) + \
+                        frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ]
+
+    # Set correct frame size (remove pading bytes)
+    # packet type + header + data + crc
+    frame = frame[0:1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + ev.sizeData + 2 ]
+
     # head
     ev.head = ( frame[ VSCP_MULTICAST_PACKET0_POS_HEAD_MSB ] << 8 ) + \
                         frame[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ]
@@ -115,7 +122,6 @@ def getVscpEvent( frame ):
     # year
     ev.year = ( frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_MSB ] << 8 ) + \
                         frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_LSB ]
-
     # month
     ev.month = frame[ VSCP_MULTICAST_PACKET0_POS_MONTH ]
 
@@ -138,20 +144,16 @@ def getVscpEvent( frame ):
     # type
     ev.vscptype = ( frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_MSB ] << 8 ) + \
                         frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB ]
-
+        
     # guid    
     for idx in range (0,15) :
         ev.guid[idx] = frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + idx ] 
 
-    # size
-    ev.sizeData = ( frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] << 8 ) + \
-                        frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ]
-
     # data
-    for idx in range (0,ev.sizeData) : 
-                        ev.data[idx] = frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + idx ] 
+    for idx in range (0,min(ev.sizeData,VSCP_LEVEL2_MAXDATA)) : 
+                        ev.data[idx] = frame[ min(VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + idx,len(frame)-1) ] 
 
-    return ev                        
+    return ev,frame                        
 
 
 ################################################################################
@@ -191,8 +193,8 @@ def receiver( group, port ):
             print "Frame have wrong length for a VSCP frame"
             continue
         frame = bytearray( frame )
-        ev = getVscpEvent( frame )
-        print ( str( sender ) + '  ' + binascii.hexlify( frame ) )
+        ev,newframe = getVscpEvent( frame )
+        print ( str( sender ) + '  ' + binascii.hexlify( newframe ) )
         print "Class=%s Type=%d Size=%d (%d)" % (ev.vscpclass, ev.vscptype, ev.sizeData, len(frame))
         print "\n"
 

@@ -192,8 +192,7 @@ def encryptVscpFrame( frame, encryption ):
         frame.append(0)
 
     # Get initialization vector
-    iv = Random.new().read(16)
-    frame[0] = encryption
+    iv = Random.new().read(16)    
     cipher = AES.new( key, AES.MODE_CBC, iv )
     result = prebyte  + \
         cipher.encrypt( str( frame[1:] ) ) + iv

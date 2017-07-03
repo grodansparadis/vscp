@@ -56,6 +56,7 @@
 #endif
 
 #include <crc.h>
+#include <vscp_debug.h>
 #include "daemonvscp.h"
 #include "canal_win32_ipc.h"
 #include "canal_macro.h"
@@ -141,7 +142,7 @@ void *VSCPMulticastClientThread::Entry()
                             IP_ADD_MEMBERSHIP, 
                             (char *)&group,
                             sizeof( group ) ) < 0 ) {
-        gpobj->logMsg( _( "[Multicast channel] Unable to add to muticast group.\n" )  );
+        gpobj->logMsg( _( "[Multicast channel] Unable to add to multicast group.\n" )  );
         mg_mgr_free( &mgr );
         return NULL;
     }
@@ -312,9 +313,11 @@ void VSCPMulticastClientThread::ev_handler( struct mg_connection *nc, int ev, vo
                                     pMulticastClientThread->m_pClientItem,
                                     &pMulticastClientThread->m_pChannel->m_rxFilter )  ) {
                     
+if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_MULTICAST ) {
                     gpobj->logMsg( wxString::Format( _( "[Multicast channel] Received Multicast event\n" ) ),
                                         DAEMON_LOGMSG_DEBUG,
                                         DAEMON_LOGTYPE_GENERAL );
+}
                     
                     if ( pMulticastClientThread->m_pChannel->m_bSendAck ) {
                         replyAckFrame( pMulticastClientThread, 

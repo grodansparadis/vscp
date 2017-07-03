@@ -215,6 +215,9 @@ CControlObject::CControlObject()
     m_debugFlags1 = 0;
     //m_debugFlags1 |= VSCP_DEBUG1_AUTOMATION;
     //m_debugFlags1 |= VSCP_DEBUG1_VARIABLE;
+    //m_debugFlags1 |= VSCP_DEBUG1_MULTICAST;
+    //m_debugFlags1 |= VSCP_DEBUG1_UDP;
+    //m_debugFlags1 |= VSCP_DEBUG1_TCP;
     
 #ifdef WIN32
     m_rootFolder = wxStandardPaths::Get().GetUserDataDir();
