@@ -18,6 +18,7 @@
  #include <string.h>
  #include <stdio.h>
  #include <time.h>
+ #include <sys/time.h>
  #include <sys/types.h>
  #include <sys/socket.h>
  #include <netinet/in.h>
@@ -134,6 +135,16 @@ int makeFrameTypeUnEncrypted(unsigned char *frame)
     return (1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 13 + 2);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// GetTimeStamp
+//
+
+struct timeval GetTimeStamp( void ) 
+{
+    struct timeval tv;
+    gettimeofday( &tv, NULL );
+    return tv;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // makeFrameTypeEncrypted
@@ -150,11 +161,13 @@ int makeFrameTypeEncrypted(uint8_t type, unsigned char *frame)
     frame[ VSCP_MULTICAST_PACKET0_POS_HEAD_MSB ] = 0;
     frame[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] = 0;
 
+    struct timeval tv = GetTimeStamp();
+
     // Timestamp
-    frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP ] = 0;
-    frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 1 ] = 0;
-    frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] = 0;
-    frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ] = 0;
+    frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP ] = (tv.tv_usec >> 24 ) & 0xff;
+    frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 1 ] = (tv.tv_usec >> 16 ) & 0xff;
+    frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] = (tv.tv_usec >> 8 ) & 0xff;
+    frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ] = tv.tv_usec  & 0xff;
 
     // UTC time
     time_t t = time(NULL);
@@ -162,7 +175,7 @@ int makeFrameTypeEncrypted(uint8_t type, unsigned char *frame)
 
     // Date / time block 1956-11-02 04:23:52 GMT
     frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_MSB ] = ((1900 + tm.tm_year) >> 8) & 0xff;
-    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_LSB ] = tm.tm_year & 0xff;
+    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_LSB ] = (1900 + tm.tm_year) & 0xff;
     frame[ VSCP_MULTICAST_PACKET0_POS_MONTH ] = tm.tm_mon;
     frame[ VSCP_MULTICAST_PACKET0_POS_DAY ] = tm.tm_mday;
     frame[ VSCP_MULTICAST_PACKET0_POS_HOUR ] = tm.tm_hour;
