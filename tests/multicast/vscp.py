@@ -70,8 +70,8 @@ class vscpEvent(Structure):
                 ("hour", c_ubyte),
                 ("minute", c_ubyte),
                 ("second", c_ubyte),
-                ("class", c_ushort),
-                ("type", c_ushort),
+                ("vscpclass", c_ushort),
+                ("vscptype", c_ushort),
                 ("guid", c_ubyte * 16),
                 ("sizeData", c_ushort),
                 ("pdata", c_void_p)]
@@ -88,8 +88,8 @@ class vscpEventEx(Structure):
                 ("hour", c_ubyte),
                 ("minute", c_ubyte),
                 ("second", c_ubyte),
-                ("class", c_ushort),
-                ("type", c_ushort),
+                ("vscpclass", c_ushort),
+                ("vscptype", c_ushort),
                 ("guid", c_ubyte * 16),
                 ("sizeData", c_ushort),
                 ("data", c_ubyte * VSCP_LEVEL2_MAXDATA)]

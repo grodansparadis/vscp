@@ -55,6 +55,7 @@
 #define DWORD unsigned long
 #endif
 
+#include <vscp_debug.h>
 #include <crc.h>
 #include "daemonvscp.h"
 #include "canal_win32_ipc.h"
@@ -242,10 +243,12 @@ void *daemonVSCPThread::Entry()
             vscpEventEx eventEx;
             if ( m_pCtrlObject->m_automation.doWork( &eventEx ) ) {
 
+if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_AUTOMATION ) {
                 m_pCtrlObject->logMsg( wxString::Format( _( "Automation event sent: Class=%d Type=%d\n" ),
                                         eventEx.vscp_class, eventEx.vscp_type ),
                                         DAEMON_LOGMSG_DEBUG,
                                         DAEMON_LOGTYPE_GENERAL );
+}
 
                 // Yes event should be sent
                 eventEx.obid = pClientItem->m_clientID;

@@ -52,6 +52,7 @@
 #include <vscp.h>
 #include <vscpdb.h>
 #include <version.h>
+#include <vscp_debug.h>
 #include <controlobject.h>
 #include <vscphelper.h>
 #include <guid.h>
@@ -5898,9 +5899,11 @@ bool CVariableStorage::loadFromXML( const wxString& path  )
     // If a null path is supplied use the configured path
     if ( path.IsEmpty() ) {
         
+if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_VARIABLE ) {         
         gpobj->logMsg( wxString::Format( _("Loading variable XML file from %s.\n"),
                                         (const char *)m_xmlPath.mbc_str() ), 
                                         DAEMON_LOGMSG_DEBUG );
+}
         
         if ( !doc.Load( m_xmlPath ) ) {
             gpobj->logMsg(_("Failed to load variable XML file from standard XML path.\n") );
@@ -5910,9 +5913,11 @@ bool CVariableStorage::loadFromXML( const wxString& path  )
     }
     else {
         
+if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_VARIABLE ) {     
         gpobj->logMsg( wxString::Format( _("Loading variable XML file from %s.\n"),
                                         (const char *)path.mbc_str() ),
                                         DAEMON_LOGMSG_DEBUG );
+}
         
         if (!doc.Load( path ) ) {
             gpobj->logMsg( wxString::Format( _("Failed to load variable XML file from %s.\n"),
@@ -6021,11 +6026,13 @@ bool CVariableStorage::loadFromXML( const wxString& path  )
 
             // Add the variable
             if ( add( variable ) ) {
+if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_VARIABLE ) {                
                 gpobj->logMsg( wxString::Format( _("Loading XML file: Added variable %s.\n"),
                                         (const char *)variable.getName().mbc_str() ),
-                                        DAEMON_LOGMSG_DEBUG );
+                                        DAEMON_LOGMSG_DEBUG ); 
+}
             }
-            else {
+            else { 
                 gpobj->logMsg( wxString::Format( _("Loading XML file: Failed to add variable %s.\n"),
                                         (const char *)variable.getName().mbc_str() ) );
             }

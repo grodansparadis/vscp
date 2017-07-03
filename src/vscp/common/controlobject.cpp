@@ -124,7 +124,8 @@
 #include <aes.h>
 #include <fastpbkdf2.h>
 
-#include "canal_macro.h"
+#include <vscp_debug.h>
+#include <canal_macro.h>
 #include <vscp.h>
 #include <vscphelper.h>
 #include <vscpeventhelper.h>
@@ -208,6 +209,12 @@ CControlObject::CControlObject()
 {
     int i;
     m_bQuit = false;            // true if we should quit
+    
+    // Debug flags
+    //m_debugFlags1 = VSCP_DEBUG1_ALL;
+    m_debugFlags1 = 0;
+    //m_debugFlags1 |= VSCP_DEBUG1_AUTOMATION;
+    //m_debugFlags1 |= VSCP_DEBUG1_VARIABLE;
     
 #ifdef WIN32
     m_rootFolder = wxStandardPaths::Get().GetUserDataDir();

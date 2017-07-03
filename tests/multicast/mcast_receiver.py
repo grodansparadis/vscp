@@ -55,31 +55,103 @@ def main( argv ):
         elif opt in ("-g", "--group"):
             group = arg
 
+    print "Listening on"
+    print "------------"  
     print "Group = ", group
     print "Port = ", port
+    print "\n"
 
     receiver( group, port )
+
+################################################################################
+# decryptFrame
+#
+
+def decryptFrame( encryption, key, frame ):
+    sizeData = ( frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] << 8 ) + \
+                        frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ]
+    cipher = AES.new( key, AES.MODE_CBC, iv )
+    iv = frame[-16:]
+    frame = cipher.decrypt( str( frame[1:1 + \
+                                    VSCP_MULTICAST_PACKET0_HEADER_LENGTH +\
+                                    sizeData + 2 + 1 ] ) )
+    return frame
 
 ################################################################################
 # getVscpEvent
 #
 
-def getVscpEvent( frame, ev ):
+def getVscpEvent( frame ):
         
-    if ( VSCP_ENCRYPTION_NONE == ( frame[0] & 0x07 ) ):
+    ev = vscpEventEx()
+
+    if ( VSCP_ENCRYPTION_NONE == ( frame[VSCP_MULTICAST_PACKET0_POS_PKTTYPE] & 0x07 ) ):
         print "Unencrypted frame"
-    elif ( VSCP_ENCRYPTION_AES128 == ( frame[0] & 0x07 ) ):
+    elif ( VSCP_ENCRYPTION_AES128 == ( frame[VSCP_MULTICAST_PACKET0_POS_PKTTYPE] & 0x07 ) ):
         print "AES128 encrypted frame"
-    elif ( VSCP_ENCRYPTION_AES192 == ( frame[0] & 0x07 ) ):
+        key = binascii.unhexlify( VSCP_DEFAULT_KEY16 )
+        frame = decryptframe( ( frame[0] & 0x07 ), key, frame)
+    elif ( VSCP_ENCRYPTION_AES192 == ( frame[VSCP_MULTICAST_PACKET0_POS_PKTTYPE] & 0x07 ) ):
         print "AES192 encrypted frame"
-    elif ( VSCP_ENCRYPTION_AES256 == ( frame[0] & 0x07 ) ):
+        key = binascii.unhexlify( VSCP_DEFAULT_KEY24 )
+        frame = decryptframe( ( frame[0] & 0x07 ), key, frame)
+    elif ( VSCP_ENCRYPTION_AES256 == ( frame[VSCP_MULTICAST_PACKET0_POS_PKTTYPE] & 0x07 ) ):
         print "AES256 encrypted frame"
+        key = binascii.unhexlify( VSCP_DEFAULT_KEY32 )
+        frame = decryptframe( ( frame[0] & 0x07 ), key, frame)
     else :
         print "unknown encrypted frame"
     
     # head
-    ev.head = frame[ VSCP_MULTICAST_PACKET0_POS_HEAD_MSB ] << 8 + \
-        frame[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ]
+    ev.head = ( frame[ VSCP_MULTICAST_PACKET0_POS_HEAD_MSB ] << 8 ) + \
+                        frame[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ]
+
+    # timestamp
+    ev.timestamp = ( frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP ] << 24 ) + \
+                        ( frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 1 ] << 16 ) + \
+                        ( frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 2 ] << 8 ) + \
+                        frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ]
+
+    # year
+    ev.year = ( frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_MSB ] << 8 ) + \
+                        frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_LSB ]
+
+    # month
+    ev.month = frame[ VSCP_MULTICAST_PACKET0_POS_MONTH ]
+
+    # day
+    ev.day = frame[ VSCP_MULTICAST_PACKET0_POS_DAY ]
+
+    # hour
+    ev.hour = frame[ VSCP_MULTICAST_PACKET0_POS_HOUR ]
+
+    # minute
+    ev.minute = frame[ VSCP_MULTICAST_PACKET0_POS_MINUTE ]
+
+    # second
+    ev.second = frame[ VSCP_MULTICAST_PACKET0_POS_SECOND ]
+
+    # class
+    ev.vscpclass = ( frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_MSB ] << 8 ) + \
+                        frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_LSB ]
+
+    # type
+    ev.vscptype = ( frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_MSB ] << 8 ) + \
+                        frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB ]
+
+    # guid    
+    for idx in range (0,15) :
+        ev.guid[idx] = frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_GUID + idx ] 
+
+    # size
+    ev.sizeData = ( frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] << 8 ) + \
+                        frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ]
+
+    # data
+    for idx in range (0,ev.sizeData) : 
+                        ev.data[idx] = frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + idx ] 
+
+    return ev                        
 
 
 ################################################################################
@@ -113,13 +185,16 @@ def receiver( group, port ):
 
     # Loop, printing any data we receive
     while True:
+        ev = vscpEventEx()
         frame, sender = sock.recvfrom(1500)
-        SizeDate = len(frame)
-        #while data[-1:] == '\0': data = data[:-1] # Strip trailing \0's
-        print ( str( sender ) + '  ' + binascii.hexlify( frame ) )
-        ev = vscpEvent()
+        if len(frame) < (1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2) :
+            print "Frame have wrong length for a VSCP frame"
+            continue
         frame = bytearray( frame )
-        getVscpEvent( frame, ev )
+        ev = getVscpEvent( frame )
+        print ( str( sender ) + '  ' + binascii.hexlify( frame ) )
+        print "Class=%s Type=%d Size=%d (%d)" % (ev.vscpclass, ev.vscptype, ev.sizeData, len(frame))
+        print "\n"
 
 if __name__ == '__main__':
     main(sys.argv[1:])
