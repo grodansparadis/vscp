@@ -90,15 +90,15 @@ def getVscpEvent( frame ):
     elif ( VSCP_ENCRYPTION_AES128 == ( frame[VSCP_MULTICAST_PACKET0_POS_PKTTYPE] & 0x07 ) ):
         print "AES128 encrypted frame"
         key = binascii.unhexlify( VSCP_DEFAULT_KEY16 )
-        frame = decryptframe( ( frame[0] & 0x07 ), key, frame)
+        frame = decryptFrame( ( frame[0] & 0x07 ), key, frame)
     elif ( VSCP_ENCRYPTION_AES192 == ( frame[VSCP_MULTICAST_PACKET0_POS_PKTTYPE] & 0x07 ) ):
         print "AES192 encrypted frame"
         key = binascii.unhexlify( VSCP_DEFAULT_KEY24 )
-        frame = decryptframe( ( frame[0] & 0x07 ), key, frame)
+        frame = decryptFrame( ( frame[0] & 0x07 ), key, frame)
     elif ( VSCP_ENCRYPTION_AES256 == ( frame[VSCP_MULTICAST_PACKET0_POS_PKTTYPE] & 0x07 ) ):
         print "AES256 encrypted frame"
         key = binascii.unhexlify( VSCP_DEFAULT_KEY32 )
-        frame = decryptframe( ( frame[0] & 0x07 ), key, frame)
+        frame = decryptFrame( ( frame[0] & 0x07 ), key, frame)
     else :
         print "unknown encrypted frame"
     
