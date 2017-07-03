@@ -77,7 +77,7 @@ int makeFrameTypeUnEncrypted(unsigned char *frame)
     // Date / time block 1956-11-02 04:23:52 GMT
     frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_MSB ] = ((1900 + tm.tm_year) >> 8) & 0xff;
     frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_LSB ] = (1900 + tm.tm_year) & 0xff;
-    frame[ VSCP_MULTICAST_PACKET0_POS_MONTH ] = tm.tm_mon;
+    frame[ VSCP_MULTICAST_PACKET0_POS_MONTH ] = tm.tm_mon + 1;
     frame[ VSCP_MULTICAST_PACKET0_POS_DAY ] = tm.tm_mday;
     frame[ VSCP_MULTICAST_PACKET0_POS_HOUR ] = tm.tm_hour;
     frame[ VSCP_MULTICAST_PACKET0_POS_MINUTE ] = tm.tm_min;
@@ -180,7 +180,7 @@ int makeFrameTypeEncrypted(uint8_t type, unsigned char *frame)
     // Date / time block 1956-11-02 04:23:52 GMT
     frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_MSB ] = ((1900 + tm.tm_year) >> 8) & 0xff;
     frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_LSB ] = (1900 + tm.tm_year) & 0xff;
-    frame[ VSCP_MULTICAST_PACKET0_POS_MONTH ] = tm.tm_mon;
+    frame[ VSCP_MULTICAST_PACKET0_POS_MONTH ] = tm.tm_mon + 1;
     frame[ VSCP_MULTICAST_PACKET0_POS_DAY ] = tm.tm_mday;
     frame[ VSCP_MULTICAST_PACKET0_POS_HOUR ] = tm.tm_hour;
     frame[ VSCP_MULTICAST_PACKET0_POS_MINUTE ] = tm.tm_min;
