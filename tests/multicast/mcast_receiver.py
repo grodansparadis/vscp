@@ -71,7 +71,7 @@ def decryptFrame( encryption, key, frame ):
     sizeData = ( frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] << 8 ) + \
                         frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ]
     iv = frame[-16:]
-    cipher = AES.new( key, AES.MODE_CBC, iv )    
+    cipher = AES.new( key, AES.MODE_CBC, str(iv) )    
     frame = cipher.decrypt( str( frame[1:1 + \
                                     VSCP_MULTICAST_PACKET0_HEADER_LENGTH +\
                                     sizeData + 2 + 1 ] ) )
