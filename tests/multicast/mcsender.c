@@ -38,6 +38,17 @@
                    0x33,0xEF,0x52,0x9D,0x64,0x54,0x4F,0x8E };
 
 ////////////////////////////////////////////////////////////////////////////////
+// GetTimeStamp
+//
+
+struct timeval GetTimeStamp( void ) 
+{
+    struct timeval tv;
+    gettimeofday( &tv, NULL );
+    return tv;
+}                   
+
+////////////////////////////////////////////////////////////////////////////////
 // makeFrameTypeEncrypted
 //
 // Temperature measurement
@@ -137,16 +148,7 @@ int makeFrameTypeUnEncrypted(unsigned char *frame)
     return (1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 13 + 2);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// GetTimeStamp
-//
 
-struct timeval GetTimeStamp( void ) 
-{
-    struct timeval tv;
-    gettimeofday( &tv, NULL );
-    return tv;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // makeFrameTypeEncrypted
