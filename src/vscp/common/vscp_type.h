@@ -928,6 +928,7 @@
 #define VSCP2_TYPE_PROTOCOL_WRITE_REGISTER                  2
 #define VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE             3
 #define VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS            20
+#define VSCP2_TYPE_PROTOCOL_WHO_IS_THERE_RESPONSE           32
 
 // Level II Control functionality Class=1025 (0x401)
 #define VSCP2_TYPE_CONTROL_GENERAL                          0

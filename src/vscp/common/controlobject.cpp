@@ -495,8 +495,8 @@ bool CControlObject::getVscpCapabilities( uint8_t *pCapability )
     
     // VSCP Multicast interface
     if ( m_multicastInfo.m_bEnable ) {
-        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_MULTICAST/8 ) ] |= 
-                    ( 1 << ( VSCP_SERVER_CAPABILITY_MULTICAST % 8 ) );
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_MULTICAST_CHANNEL/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_MULTICAST_CHANNEL % 8 ) );
     }
         
     // VSCP TCP/IP interface
@@ -539,18 +539,6 @@ bool CControlObject::getVscpCapabilities( uint8_t *pCapability )
     if ( m_bWebServer ) {
         pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_REST/8 ) ] |= 
                     ( 1 << ( VSCP_SERVER_CAPABILITY_REST % 8 ) );
-    }
-        
-    // VSCP MQTT broke
-    if ( 0 ) {
-        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_MQTT/8 ) ] |= 
-                    ( 1 << ( VSCP_SERVER_CAPABILITY_MQTT % 8 ) );
-    }
-        
-    // VSCP websocket interface
-    if ( 0 ) {
-        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_COAP/8 ) ] |= 
-                    ( 1 << ( VSCP_SERVER_CAPABILITY_COAP % 8 ) );
     }
         
     // IPv6 support

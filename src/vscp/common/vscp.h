@@ -456,12 +456,11 @@ struct myNode {
 #define VSCP_LEVEL1_DM_OFFSET_ACTION            6
 #define VSCP_LEVEL1_DM_OFFSET_ACTION_PARAM      7
 
-// Bits for VSCP server 16-bit capability code
+// Bits for VSCP server 64/16-bit capability code
 // used by CLASS1.PROTOCOL, HIGH END SERVER RESPONSE
 // and low end 16-bits for
 // CLASS2.PROTOCOL, HIGH END SERVER HEART BEAT
 
-#define VSCP_SERVER_CAPABILITY_MULTICAST            (1<<16)
 #define VSCP_SERVER_CAPABILITY_TCPIP                (1<<15)
 #define VSCP_SERVER_CAPABILITY_UDP                  (1<<14)
 #define VSCP_SERVER_CAPABILITY_MULTICAST_ANNOUNCE   (1<<13)
@@ -469,8 +468,8 @@ struct myNode {
 #define VSCP_SERVER_CAPABILITY_WEB                  (1<<11)
 #define VSCP_SERVER_CAPABILITY_WEBSOCKET            (1<<10)
 #define VSCP_SERVER_CAPABILITY_REST                 (1<<9)
-#define VSCP_SERVER_CAPABILITY_RESERVED1            (1<<8)
-#define VSCP_SERVER_CAPABILITY_RESERVED2            (1<<7)
+#define VSCP_SERVER_CAPABILITY_MULTICAST_CHANNEL    (1<<8)
+#define VSCP_SERVER_CAPABILITY_RESERVED             (1<<7)
 #define VSCP_SERVER_CAPABILITY_IP6                  (1<<6)
 #define VSCP_SERVER_CAPABILITY_IP4                  (1<<5)
 #define VSCP_SERVER_CAPABILITY_SSL                  (1<<4)

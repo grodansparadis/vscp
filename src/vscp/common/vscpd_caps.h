@@ -41,19 +41,17 @@
 #define VSCP_DAEMON_SERVER_CAPABILITIES_5   0
 
 // Fill info in LSB of 16-bit code
-#define VSCP_DAEMON_SERVER_CAPABILITIES_6  ( (uint8_t)(( VSCP_SERVER_CAPABILITY_MULTICAST | \
-                                        VSCP_SERVER_CAPABILITY_TCPIP | \
+#define VSCP_DAEMON_SERVER_CAPABILITIES_6  ( (uint8_t)(( VSCP_SERVER_CAPABILITY_TCPIP | \
                                         VSCP_SERVER_CAPABILITY_UDP | \
                                         VSCP_SERVER_CAPABILITY_MULTICAST_ANNOUNCE | \
                                         VSCP_SERVER_CAPABILITY_RAWETH | \
                                         VSCP_SERVER_CAPABILITY_WEB | \
                                         VSCP_SERVER_CAPABILITY_WEBSOCKET | \
                                         VSCP_SERVER_CAPABILITY_REST | \
-                                        VSCP_SERVER_CAPABILITY_MQTT ) >> 8 ) )
+                                        VSCP_SERVER_CAPABILITY_MULTICAST_CHANNEL ) >> 8 ) )
             
     // Fill info in LSB of 16-bit code
-#define VSCP_DAEMON_SERVER_CAPABILITIES_7  VSCP_SERVER_CAPABILITY_COAP | \
-                                            VSCP_SERVER_CAPABILITY_IP6 | \
+#define VSCP_DAEMON_SERVER_CAPABILITIES_7  VSCP_SERVER_CAPABILITY_IP6 | \
                                             VSCP_SERVER_CAPABILITY_IP4 | \
                                             VSCP_SERVER_CAPABILITY_SSL | \
                                             VSCP_SERVER_CAPABILITY_TWO_CONNECTIONS
