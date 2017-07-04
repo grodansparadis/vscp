@@ -13,6 +13,7 @@ CXX = @CXX@
 MONGOOSE_FLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL -DMG_ENABLE_GETADDRINFO
 CXXFLAGS = @CXXFLAGS@
 CPPFLAGS = @CPPFLAGS@ -DwxUSE_GUI=1 $(MONGOOSE_FLAGS) -I. -I../common -I../../common
+CFLAGS = -std=c99 @CFLAGS@
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
 STRIP = strip
@@ -69,6 +70,7 @@ VSCPWORKS_OBJECTS =  vscpworks.o dlgvscpmsg.o \
 	../../common/crc8.o \
 	../../common/aes.o \
 	../../common/mongoose.o \
+	../../common/fastpbkdf2.o \
 	../common/canalsuperwrapper.o \
 	../common/dllwrapper.o \
 	../common/guid.o \
@@ -86,6 +88,7 @@ ALWAYS_BUILD = ../../common/crc.o \
 	../../common/crc8.o \
 	../../common/aes.o \
 	../../common/mongoose.o \
+	../../common/fastpbkdf2.o \
 	../common/canalsuperwrapper.o \
 	../common/dllwrapper.o \
 	../common/guid.o \

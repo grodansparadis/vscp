@@ -1013,6 +1013,7 @@ VSCPInformation::VSCPInformation( void )
     m_hashType[ MAKE_CLASSTYPE_LONG(1024, 2) ] = _("WRITE_REGISTER");
     m_hashType[ MAKE_CLASSTYPE_LONG(1024, 3) ] = _("READ_WRITE_RESPONSE");
     m_hashType[ MAKE_CLASSTYPE_LONG( 1024, 20 ) ] = _( "HIGH_END_SERVER_CAPS" );
+    m_hashType[ MAKE_CLASSTYPE_LONG( 1024, 32 ) ] = _( "LEVEL2_WHO_IS_THERE_RESPONSE" );
 
     // Level II Control functionality Class=1025 (0x401)
     m_hashType[ MAKE_CLASSTYPE_LONG(1025, 0) ] = _("CONTROL_GENERAL");

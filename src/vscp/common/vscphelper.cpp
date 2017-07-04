@@ -5286,6 +5286,10 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
                 case VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS:
                     strOutput += _( "CLASS2 PROTOCOL - High End Server Capabilities.\n" );
                     break;
+                    
+                case VSCP2_TYPE_PROTOCOL_WHO_IS_THERE_RESPONSE:
+                    strOutput += _( "CLASS2 PROTOCOL - Level II who is there response.\n" );
+                    break;    
 
                 default:
                     break;
