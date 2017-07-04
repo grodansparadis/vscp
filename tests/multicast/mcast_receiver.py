@@ -105,6 +105,16 @@ def getVscpEvent( frame ):
     ev.sizeData = ( frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] << 8 ) + \
                         frame[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ]
 
+    # Calculate CRC
+    frmstr = ''.join('{:02X}'.format(x) for x in frame[ 1:VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + ev.sizeData ] )
+    hexstr = frmstr.decode("hex")
+    framecrc = CRCCCITT(version='FFFF').calculate( hexstr )    
+
+    if framecrc != (( frame[ len(frame)-2 ] << 8 ) + frame[ len(frame)-1 ] ) :
+        print "CRC is not correct!" 
+    else:
+        print "CRC is correct."                           
+
     # Set correct frame size (remove pading bytes)
     # packet type + header + data + crc
     frame = frame[0:1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + ev.sizeData + 2 ]
