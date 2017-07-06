@@ -113,10 +113,6 @@
 #include "web_js.h"
 #include "web_template.h"
 
-#ifndef VSCP_DISABLE_LUA
-#include <lua.hpp>
-#endif
-
 #include <sqlite3.h>
 #include <mongoose.h>
 #include <v7.h>

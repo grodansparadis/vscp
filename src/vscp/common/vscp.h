@@ -331,7 +331,8 @@ typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 #define GET_VSCP_MULTICAST_PACKET_TYPE( type)           ( (type>>4) & 0x0f)
 #define GET_VSCP_MULTICAST_PACKET_ENCRYPTION( type)     ( (type) & 0x0f)
 
-// Multicast proxy CLASS=1026, TYPE=3 http://www.vscp.org/docs/vscpspec/doku.php?id=class2.information#type_3_0x0003_level_ii_proxy_node_heartbeat
+// Multicast proxy CLASS=1026, TYPE=3 
+// http://www.vscp.org/docs/vscpspec/doku.php?id=class2.information#type_3_0x0003_level_ii_proxy_node_heartbeat
 #define VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE        192
 #define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_REALGUID     0       // The real GUID for the node
 #define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_IFGUID       32      // GUID for interface node is on
@@ -361,8 +362,8 @@ typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 #define VSCP_MASK_DATACODING_UNIT               0x18  // Bits 3,4
 #define VSCP_MASK_DATACODING_INDEX              0x07  // Bits 0,1,2
 
-// Theese bits are coded in the three MSB bytes of the first data byte
-// in a paket and tells the type of the data that follows.
+// These bits are coded in the three MSB bytes of the first data byte
+// in a packet and tells the type of the data that follows.
 #define VSCP_DATACODING_BIT                     0x00
 #define VSCP_DATACODING_BYTE                    0x20
 #define VSCP_DATACODING_STRING                  0x40
@@ -402,7 +403,7 @@ typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 
 // Node data - the required registers are fetched from this 
 //	structure
-struct myNode {
+struct vscpMyNode {
     unsigned char GUID[ 16 ];
     unsigned char nicknameID;
 };
@@ -416,20 +417,23 @@ struct myNode {
 #define VSCP_STD_REGISTER_MINOR_VERSION         0x82
 #define VSCP_STD_REGISTER_SUB_VERSION           0x83
 
-// 0x84 - 0x88
+// 0x84 - 0x88  -   User id space
 #define VSCP_STD_REGISTER_USER_ID               0x84
 
-// 0x89 - 0x8C
+// 0x89 - 0x8C  -   Manufacturer id space
 #define VSCP_STD_REGISTER_USER_MANDEV_ID        0x89
 
-// 0x8D -0x90
+// 0x8D -0x90   -   
 #define VSCP_STD_REGISTER_USER_MANSUBDEV_ID     0x8D
 
+// Nickname id
 #define VSCP_STD_REGISTER_NICKNAME_ID           0x91
 
+// Selected page
 #define VSCP_STD_REGISTER_PAGE_SELECT_MSB       0x92
 #define VSCP_STD_REGISTER_PAGE_SELECT_LSB       0x93
 
+// Firmware version
 #define VSCP_STD_REGISTER_FIRMWARE_MAJOR        0x94
 #define VSCP_STD_REGISTER_FIRMWARE_MINOR        0x95
 #define VSCP_STD_REGISTER_FIRMWARE_SUBMINOR     0x96
@@ -438,10 +442,10 @@ struct myNode {
 #define VSCP_STD_REGISTER_BUFFER_SIZE           0x98
 #define VSCP_STD_REGISTER_PAGES_COUNT           0x99
 
-// 0xd0 - 0xdf
+// 0xd0 - 0xdf  - GUID
 #define VSCP_STD_REGISTER_GUID                  0xD0
 
-// 0xe0 - 0xff
+// 0xe0 - 0xff  - MDF
 #define VSCP_STD_REGISTER_DEVICE_URL            0xE0
 
 // Level I Decision Matrix
@@ -614,8 +618,6 @@ note: This is a note <br>
 </p>
  
 */
-
-
 #define VSCP_HTML_EVENT_TEMPLATE "<h2>VSCP Event</h2> "\
     "<p>"\
     "Class: %d <br>"\

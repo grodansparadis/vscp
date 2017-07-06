@@ -60,8 +60,8 @@ int makeFrameTypeUnEncrypted( unsigned char *frame )
     struct tm tm = *gmtime(&t);
 
     // Date / time block 1956-11-02 04:23:52 GMT
-    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_MSB ] = (tm.tm_year >> 8) & 0xff;
-    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_LSB ] = tm.tm_year & 0xff;
+    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_MSB ] = ((1900 + tm.tm_year ) >> 8) & 0xff;
+    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_LSB ] = (1900 + tm.tm_year) & 0xff;
     frame[ VSCP_MULTICAST_PACKET0_POS_MONTH ] = tm.tm_mon;
     frame[ VSCP_MULTICAST_PACKET0_POS_DAY ] = tm.tm_mday;
     frame[ VSCP_MULTICAST_PACKET0_POS_HOUR ] = tm.tm_hour;q
@@ -156,8 +156,8 @@ int makeFrameTypeEncrypted( uint8_t type, unsigned char *frame )
     struct tm tm = *gmtime(&t);
 
     // Date / time block 1956-11-02 04:23:52 GMT
-    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_MSB ] = (tm.tm_year >> 8) & 0xff;
-    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_LSB ] = tm.tm_year & 0xff;
+    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_MSB ] = (1900 + tm.tm_year) >> 8) & 0xff;
+    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_LSB ] = (1900 + tm.tm_year) & 0xff;
     frame[ VSCP_MULTICAST_PACKET0_POS_MONTH ] = tm.tm_mon;
     frame[ VSCP_MULTICAST_PACKET0_POS_DAY ] = tm.tm_mday;
     frame[ VSCP_MULTICAST_PACKET0_POS_HOUR ] = tm.tm_hour;q
@@ -283,12 +283,12 @@ int main( int argc, char* argv[] )
 
     if ( argc > 1 ) {
 
-        // Host ("127.0.0.1:9598"")
+        // Host ("127.0.0.1"")
         if ( argc >= 2 ) {
             pServer = argv[1];
         }
 
-        // Port
+        // Port 9598
         if ( argc >= 3 ) {
             port = atoi( argv[2] );
         }

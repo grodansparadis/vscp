@@ -56,10 +56,6 @@
 #include <mongoose.h>
 #include <v7.h>
 
-#ifndef VSCP_DISABLE_LUA
-#include <lua.hpp>
-#endif
-
 #ifdef WIN32
 
 #include <winsock2.h>
@@ -4553,14 +4549,6 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *nc,
     buildPage += wxString::FromUTF8( MG_VERSION " Copyright (c) 2013-2015 Cesanta Software Limited" );
     buildPage += _("<br>");
     buildPage += _("</div>");
-
-#ifndef VSCP_DISABLE_LUA
-    buildPage += _("<div id=\"small\">");
-    buildPage += _("<b>LUA version:</b> ");
-    buildPage += wxString::FromUTF8( LUA_COPYRIGHT );
-    buildPage += _("<br>");
-    buildPage += _("</div>");
-#endif
 
     buildPage += _("<hr>");
 

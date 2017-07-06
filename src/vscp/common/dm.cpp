@@ -46,10 +46,6 @@
 #include <string.h>
 #include <float.h>
 
-#ifndef VSCP_DISABLE_LUA
-#include <lua.hpp>
-#endif
-
 #include <vscp.h>
 #include <vscpdb.h>
 #include <version.h>
@@ -1998,11 +1994,6 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             else if (  str.StartsWith( wxT("%vscp.copyright.wxwidgets"), &str ) ) {
                 strResult += wxString::Format( _("%s"), " Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al" );
             }
-#ifndef VSCP_DISABLE_LUA
-            else if (  str.StartsWith( _("%vscp.copyright.lua"), &str ) ) {
-                strResult += wxString::Format( _("%s"), LUA_COPYRIGHT );
-            }
-#endif
             else if (  str.StartsWith( wxT("%vscp.copyright.mongoose"), &str ) ) {
                 strResult += wxString::Format( _("%s"), "Copyright (c) 2013-2015 Cesanta Software Limited" );
             }
@@ -2388,40 +2379,6 @@ bool dmElement::doAction( vscpEvent *pEvent )
             
             break;
 
-#ifndef VSCP_DISABLE_LUA
-        case VSCP_DAEMON_ACTION_CODE_RUN_LUASCRIPT:
-            logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_RUN_LUASCRIPT.\n") ); // Log
-            gpobj->logMsg( logStr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
-            gpobj->logMsg(  _("DM = ") + getAsString( false ) + _("\n"), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM  );
-            vscp_writeVscpEventToString( pEvent, logStr );
-            gpobj->logMsg( _("Event = ") + logStr + _("\n"), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
-
-            {
-                // Write in possible escapes
-                wxString wxstr = m_actionparam;
-                handleEscapes( pEvent, wxstr );
-
-                actionThread_LUA *pThread = new actionThread_LUA( wxstr );
-                if ( NULL == pThread ) return false;
-                
-                vscp_convertVSCPtoEx( &pThread->m_feedEvent, pEvent );   // Save feed event
-
-                wxThreadError err;
-                if (wxTHREAD_NO_ERROR == (err = pThread->Create())) {
-                    pThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
-                    if (wxTHREAD_NO_ERROR != (err = pThread->Run())) {
-                        gpobj->logMsg(_("Unable to run actionThread_LUA client thread.\n"),
-                                        DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
-                    }
-                }
-                else {
-                    gpobj->logMsg(_("Unable to create actionThread_LUA client thread.\n"),
-                                    DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
-                }
-
-            }
-            break;
-#endif
         case VSCP_DAEMON_ACTION_CODE_RUN_JAVASCRIPT:
             
             logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_RUN_JAVASCRIPT.\n") ); // Log
@@ -6941,79 +6898,10 @@ void actionThread_VSCPSrv::OnExit()
 }
 
 
-//------------------------------------------------------------------------------
-
-
-
-
-#ifndef VSCP_DISABLE_LUA
-///////////////////////////////////////////////////////////////////////////////
-// actionThread_LUA
-//
-// This thread executes a LUA script
-//
-
-actionThread_LUA::actionThread_LUA( wxString& strScript,
-                                        wxThreadKind kind )
-                                            : wxThread( kind )
-{
-    //OutputDebugString( "actionThreadURL: Create");
-    m_wxstrScript = strScript;      // Script to execute
-}
-
-actionThread_LUA::~actionThread_LUA()
-{
-
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// Entry
-//
-//
-
-void *actionThread_LUA::Entry()
-{
-    // the Lua interpreter
-    lua_State* L;
-
-    //m_pCtrlObject->logMsg ( _T ( "actionThread_LUA: Quit.\n" ), DAEMON_LOGMSG_INFO );
-
-
-    // initialize Lua
-    L = luaL_newstate();            // opens Lua
-    luaL_openlibs(L);               // opens the standard libraries
-
-    // load Lua base libraries
-    //luaL_baselibopen(L);
-
-    // run the script
-    luaL_dofile(L, "/tmp/add.lua");
-    // luaL_loadstring
-    // luaL_loadfile
-    // luaL_dostring
-    // luaL_dofile
-
-    // cleanup Lua
-    lua_close(L);
-
-    return NULL;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// OnExit
-//
-
-void actionThread_LUA::OnExit()
-{
-
-}
-#endif
-
 
 
 //------------------------------------------------------------------------------
+
 
 
 

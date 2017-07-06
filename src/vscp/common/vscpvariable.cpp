@@ -45,10 +45,6 @@
 
 #include <wx/listimpl.cpp>
 
-#ifndef VSCP_DISABLE_LUA
-#include <lua.hpp>
-#endif
-
 #include <vscp.h>
 #include <vscpdb.h>
 #include <version.h>
@@ -3007,41 +3003,6 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
         return var.getID();
     }
 
-// *****************************************************************************
-//                                 LUA
-// *****************************************************************************
-
-#ifndef VSCP_DISABLE_LUA
-
-    if ( lcname.StartsWith( _("vscp.copyright.lua") ) ) {
-        var.setValue( wxString::Format( _("%s"), LUA_COPYRIGHT ), true );
-        return var.getID();
-    }
-    
-    if ( lcname.StartsWith( _("vscp.version.lua.major") ) ) {
-        var.setValue( wxString::Format( _("%s"), LUA_VERSION_MAJOR ) );
-        return var.getID();
-    }
-    
-    if ( lcname.StartsWith( _("vscp.version.lua.minor") ) ) {
-        var.setValue( wxString::Format( _("%s"), LUA_VERSION_MINOR) );
-        return var.getID();
-    }
-    
-    if ( lcname.StartsWith( _("vscp.version.lua.release") ) ) {
-        var.setValue( wxString::Format( _("%s"), LUA_VERSION_RELEASE ) );
-        return var.getID();
-    }
-    
-    if ( lcname.StartsWith( _("vscp.version.lua.str") ) ) {
-        var.setValue( wxString::Format( _("%s.%s.%s"),
-                                    LUA_VERSION_MAJOR,
-                                    LUA_VERSION_MINOR,
-                                    LUA_VERSION_RELEASE ), true );
-        return var.getID();
-    }
-
-#endif
 
     // *************************************************************************
     //                                SQLite

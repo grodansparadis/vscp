@@ -1,7 +1,9 @@
 dnl Autoconf settings for VSCP
 dnl $Id: configure.in,v 1.5 2005/10/03 16:30:06 akhe Exp $
 
-AC_INIT(vscp, [1.12.0], [info@grodansparadis.com])
+AC_INIT( [vscp], [1.12.26], [akhe@grodansparadis.com])
+AC_CONFIG_SRCDIR([src/vscp/common/canalsuperwrapper.cpp])
+#AM_INIT_AUTOMAKE
 
 CONFIGURE_LINE="$0 $*"
 CODENAME="Ant"
@@ -35,14 +37,13 @@ AC_CHECK_LIB([rt],[clock_gettime])
 AC_CHECK_LIB([z], [gzopen])
 AC_CHECK_LIB([pcap], [pcap_open_live])
 AC_CHECK_LIB([ssl], [SSL_free])
-AC_CHECK_LIB([lua5.2], [luaL_newstate])
 dnl AC_CHECK_LIB([sqlite3],[sqlite3_open])
 
 # Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS([OS.h arpa/inet.h fcntl.h inttypes.h limits.h locale.h netdb.h netinet/in.h sgtty.h stddef.h stdint.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h syslog.h termios.h unistd.h openssl/md5.h lua5.2/lua.h,sqlite3])
+AC_CHECK_HEADERS([OS.h arpa/inet.h fcntl.h inttypes.h limits.h locale.h netdb.h netinet/in.h sgtty.h stddef.h stdint.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h syslog.h termios.h unistd.h openssl/md5.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
@@ -95,62 +96,18 @@ AC_ARG_ENABLE(debug,
 dnl test "${vscp_debug}" != "yes" && vscp_debug="no"
 
 dnl
-dnl LUA
-dnl
-
-AC_ARG_ENABLE(lua,
-[  --disable-lua            LUA build (default enabled)],
-[vscp_lua=no],[vscp_lua=yes])
-dnl test "${vscp_lua}" != "yes" && vscp_lua="no"
-
-dnl
-dnl SQLite3
-dnl
-
-dnl AC_ARG_ENABLE(sqlite3,
-dnl [  --disable-sqlite2          SQLite3 build (default enabled)],
-dnl [vscp_sqlite3=no],[vscp_sqlite3=yes])
-dnl test "${vscp_sqlite3}" != "yes" && vscp_sqlite3="no"
-
-
-
-dnl
-dnl  Unicode mode
-dnl
-
-dnl no unicode build is default
-vscp_unicode=yes
-
-AC_ARG_ENABLE(unicode,
-[  --enable-unicode        UNICODE build (default Unicode build)],
-[vscp_unicode=yes])
-dnl test "${vscp_unicode}" != "yes" && vscp_unicode="no"
-
-
-
-dnl
 dnl  wxWindows module
 dnl
 
 AM_OPTIONS_WXCONFIG
-reqwx=2.8.0
+reqwx=3.0.0
 
 if test "${vscp_debug}" = yes ; then
-    if test "${vscp_unicode}" = yes ; then
-        echo 'checking for debug unicode wx-libs ...'
-        AM_PATH_WXCONFIG($reqwx, [wxWin=1], [wxWin=0], --unicode=yes --debug=yes)
-    else
-        echo 'checking for debug wx-libs ...'
-        AM_PATH_WXCONFIG($reqwx, [wxWin=1], [wxWin=0], --unicode=no --debug=yes)
-    fi
+    echo 'checking for debug unicode wx-libs ...'
+    AM_PATH_WXCONFIG($reqwx, [wxWin=1], [wxWin=0], --unicode=yes --debug=yes)
 else
-    if test "${vscp_unicode}" = yes ; then
-        echo 'checking for unicode wx-libs ...'
-        AM_PATH_WXCONFIG($reqwx, [wxWin=1], [wxWin=0], --unicode=yes --debug=no)
-    else
-        echo 'checking for wx-libs ...'
-        AM_PATH_WXCONFIG($reqwx, [wxWin=1], [wxWin=0], --unicode=no --debug=no)
-    fi
+    echo 'checking for unicode wx-libs ...'
+    AM_PATH_WXCONFIG($reqwx, [wxWin=1], [wxWin=0], --unicode=yes --debug=no)
 fi
 if test "$wxWin" != 1; then
     AC_MSG_ERROR([
@@ -184,26 +141,6 @@ EXTRALIBS="${EXTRALIBS} ${LIBS}"
 
 CPPFLAGS="$CPPFLAGS -D MG_ENABLE_SSL"
 CFLAGS="$CFLAGS -D MG_ENABLE_SSL"
-
-
-if test "${vscp_lua}" = yes ; then
-   CPPFLAGS="$CPPFLAGS -D VSCP_ENABLE_LUA -I/usr/include/lua5.2"  
-   CFLAGS="$CFLAGS -D VSCP_ENABLE_LUA -I/usr/include/lua5.2"
-   EXTRALIBS="$EXTRALIBS -llua5.2"
-else
-   CPPFLAGS="$CPPFLAGS -D VSCP_DISABLE_LUA"
-   CFLAGS="$CFLAGS -D VSCP_DISABLE_LUA"
-   EXTRALIBS="$EXTRALIBS"
-fi
-
-if test "${vscp_sqlite3}" = yes ; then
-   CPPFLAGS="$CPPFLAGS -D VSCP_ENABLE_SQLITE3"
-   CFLAGS="$CFLAGS -D VSCP_ENABLE_SQLITE3"
-dnl   EXTRALIBS="$EXTRALIBS -lsqlite3"
-fi
-
-
-
 
 dnl 
 dnl Construct Makefiles
@@ -262,28 +199,11 @@ else
    printf "build flavour         : release "
 fi
 
-if test "${vscp_unicode}" = "yes" 
-then
-   printf "UNICODE "
-else
-   printf "ANSI "
-fi
-
-if test "${vscp_lua}" = "yes"
-then
-   printf "LUA "
-else
-   printf "non-LUA "
-fi
-
-
 printf " 
 You can tune the compiler flags in vscp-config.
 To build VSCP and friends, type \'make\' followed by \'make install\'
 
  use --enable-debug to build a debug version; release is default.
- use --disable-lua to build without LUA support. LUA support is default.
- use --disable-unicode to build an ANSI version. Unicode is default.
 
  \"make\" -- builds VSCP & Friends.
  \"make install\" -- builds VSCP & Friends and install system.

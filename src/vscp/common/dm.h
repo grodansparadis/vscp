@@ -1140,55 +1140,6 @@ private:
 };
 
 
-////////////////////////////////////////////////////////////////////////////////
-// actionThread_LUA
-//
-
-class actionThread_LUA : public wxThread {
-    
-public:
-
-    /// Constructor
-    actionThread_LUA( wxString& strScript,
-                          wxThreadKind kind = wxTHREAD_DETACHED );
-
-    /// Destructor
-    virtual ~actionThread_LUA();
-
-    /*!
-        Thread code entry point
-     */
-    virtual void *Entry();
-
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-     */
-    virtual void OnExit();
-
-    /*!
-        Termination control
-     */
-    bool m_bQuit;
-    
-    /*!
-     * Script
-     */
-    wxString m_wxstrScript;
-    
-    /// JavaScript executing id
-    uint32_t m_id;
-    
-    // Time when script was started
-    wxDateTime m_start;
-    
-    /// Feed event
-    vscpEventEx m_feedEvent;
-
-};
-
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // actionThread_JavaScript
