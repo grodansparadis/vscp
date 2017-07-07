@@ -133,7 +133,12 @@ public:
     uint8_t getLSB( void ) { return m_id[ 15 ]; };
 
     /*!
-    Get Nickname GUID position
+        Get Nickname GUID position
+    */
+    uint16_t getNicknameID( void ) { return (m_id[14] << 8) + m_id[15]; };
+    
+    /*!
+        Get Byte Nickname GUID position
     */
     uint8_t getNickname( void ) { return m_id[ 15 ]; };
     
