@@ -146,13 +146,11 @@ public:
         Fill array with GUID MSB first (STANDARD way)
     */
     void writeGUID( uint8_t *pArray );
-    
 
     /*!
         Fill array with GUID LSB first
     */
-    void writeGUID_reverse( uint8_t *pArray );
-    
+    void writeGUID_reverse( uint8_t *pArray );  
     
     /*!
         Check if same as supplied GUID

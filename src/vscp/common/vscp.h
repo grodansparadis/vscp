@@ -127,7 +127,7 @@ typedef struct {
                                     // ~71 minutes before roll over
     
     // CRC should be calculated from here to end + datablock
-    uint8_t head;                   // Bit 15   GUID is IP v.6 address.
+    uint16_t head;                  // Bit 15   GUID is IP v.6 address.
                                     // Bit 8-14 = Reserved
                                     // bit 7,6,5 priority => Priority 0-7 where 0 is highest.
                                     // bit 4 = hard coded, true for a hard coded device.

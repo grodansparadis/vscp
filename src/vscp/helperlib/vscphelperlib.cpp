@@ -108,7 +108,9 @@ extern "C" void vscphlp_closeSession(long handle)
 #endif
 {
     VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-    if (NULL != pvscpif) pvscpif->doCmdClose();
+    if (NULL != pvscpif) {
+        pvscpif->doCmdClose();
+    }
 
     theApp.removeDriverObject(handle);
 }

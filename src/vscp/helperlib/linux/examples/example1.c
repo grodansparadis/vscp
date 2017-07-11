@@ -4,6 +4,8 @@
 #include "stdio.h"
 #include "vscphelperlib.h"
 
+//#define HOST "demo.vscp.org:9598"
+#define HOST "127.0.0.1:9598"
 
 int main(int argc, char* argv[])
 {
@@ -11,14 +13,16 @@ int main(int argc, char* argv[])
     unsigned long rv;
     unsigned char v1,v2,v3;
     
-    printf("\n\n\n\n\n\n\n\n\n\n");
-    
     // New session
+    printf("Starting a new session to [" HOST "] ...");
     handle = vscphlp_newSession();
-    vscphlp_setAfterCommandSleep( handle, 200 );
+    if (handle) printf("OK\n");
 
+    //vscphlp_setAfterCommandSleep( handle, 200 );
+
+    printf("Open channel...\n");
     if ( VSCP_ERROR_SUCCESS == vscphlp_open( handle, 
-                 				"demo.vscp.org:9598",
+                 				HOST,
                  				"admin",
     	             			"secret" ) ) {
 		
@@ -60,7 +64,8 @@ int main(int argc, char* argv[])
 	
     } 
     else {
-        printf("\a * * * * * *  Failed to open connection!  * * * * * * *\n"); 
+        printf("\a * * * * * *  Failed to open connection!  * * * * * * *\n");
+	vscphlp_closeSession( handle ); 
         return -1;
     }
 

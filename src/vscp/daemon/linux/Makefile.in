@@ -77,6 +77,7 @@ VSCPD_SPECIALS = vscphelper.o \
 	randpassword.o \
 	frozen.o  \
 	v7.o  \
+	duktape.o \
 	mongoose.o \
 	sqlite3.o \
 	sqlite3math.o\
@@ -150,6 +151,9 @@ mongoose.o: ../../../common/mongoose.o ../../../common/mongoose.h
 
 v7.o: ../../../common/v7.o ../../../common/v7.h
 	$(CC) $(CFLAGS) $(V7_CFLAGS) -c ../../../common/v7.c -o $@
+
+duktape.o: ../../../common/duktape.o ../../../common/duktape.h
+	$(CC) $(CFLAGS) -c ../../../common/duktape.c -o $@
 
 frozen.o: ../../../common/frozen.o ../../../common/frozen.h
 	$(CC) $(CFLAGS) -c ../../../common/frozen.c -o $@

@@ -1,26 +1,36 @@
 // libvscphelper.cpp : Defines the initialization routines for the DLL.
 //
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public License
-// as published by the Free Software Foundation; either version
-// 2 of the License, or (at your option) any later version.
-// 
-// This file is part of the VSCP (http://www.vscp.org) 
+// VSCP (Very Simple Control Protocol)
+// http://www.vscp.org
 //
-// Copyright (C) 2000-2017
-// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
-// 
-// This file is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public License
-// along with this file see the file COPYING.  If not, write to
-// the Free Software Foundation, 59 Temple Place - Suite 330,
-// Boston, MA 02111-1307, USA.
+// The MIT License (MIT)
 //
+// Copyright (c) 2000-2017 Ake Hedman, 
+// Grodans Paradis AB <info@grodansparadis.com>
 //
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
+//  This file is part of VSCP - Very Simple Control Protocol
+//  http://www.vscp.org
+//
+// 
+
 
 #ifdef __GNUG__
 //#pragma implementation
@@ -52,17 +62,15 @@ void _fini() __attribute__((destructor));
 
 void _init()
 {
-    wxLogDebug(_("initializing"));
-	// The following works on 3.0 but not on 2.8
-	//wxApp::SetInstance(new wxApp());
-	//new wxInitializer();
-	wxInitialize();
+    // The following works on 3.0 but not on 2.8
+    //wxApp::SetInstance(new wxApp());
+    //new wxInitializer();
+    wxInitialize();
 }
 
 void _fini()
 {
-    wxLogDebug(_("finishing"));	
-	wxUninitialize();
+    wxUninitialize();
 }
 
 
@@ -72,8 +80,6 @@ void _fini()
 
 CVSCPLApp::CVSCPLApp()
 {
-	wxLogDebug(_("application constructor"));
-	
     m_instanceCounter = 0;
     pthread_mutex_init(&m_objMutex, NULL);
 
@@ -83,7 +89,7 @@ CVSCPLApp::CVSCPLApp()
     }
 
     UNLOCK_MUTEX(m_objMutex);
-	wxLogDebug(_("constructed"));
+
 }
 
 CVSCPLApp::~CVSCPLApp()
@@ -105,6 +111,7 @@ CVSCPLApp::~CVSCPLApp()
 
     UNLOCK_MUTEX(m_objMutex);
     pthread_mutex_destroy(&m_objMutex);
+
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -184,10 +191,8 @@ void CVSCPLApp::removeDriverObject(long h)
 
 BOOL CVSCPLApp::InitInstance()
 {
-	printf("InitInstance");
     m_instanceCounter++;
-	wxInitialize();
-	printf("InitInstance done");
+    wxInitialize();
     return TRUE;
 }
 

@@ -2452,14 +2452,20 @@ bool vscp_getDateStringFromEvent( const vscpEvent *pEvent, wxString& dt )
 {
     // Check pointer
     if ( NULL == pEvent ) return false;
-       
-    dt =  wxString::Format( _("%04d-%02d-%02dT%02d:%02d:%02dZ"),
+    
+    dt.Empty();
+    
+    // Return empty string if all date/time values is zero
+    if ( pEvent->year || pEvent->month || pEvent->day || pEvent->hour || pEvent->minute || pEvent->second ) {   
+        dt =  wxString::Format( _("%04d-%02d-%02dT%02d:%02d:%02dZ"),
                                                 (int)pEvent->year,
                                                 (int)pEvent->month,
                                                 (int)pEvent->day,
                                                 (int)pEvent->hour,
                                                 (int)pEvent->minute,
                                                 (int)pEvent->second );
+    }
+    
     return true;
 }
 
@@ -3422,7 +3428,7 @@ bool vscp_writeVscpEventToString( const vscpEvent *pEvent, wxString& str)
     vscp_getDateStringFromEvent( pEvent, dt );
     
     //head,class,type,obid,datetime,timestamp
-    str.Printf( _("%hu,%hu,%hu,%lu,%s,%lu"), 
+    str.Printf( _("%hu,%hu,%hu,%lu,%s,%lu,"), 
                             (unsigned short)pEvent->head,
                             (unsigned short)pEvent->vscp_class,
                             (unsigned short)pEvent->vscp_type,

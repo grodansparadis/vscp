@@ -94,6 +94,7 @@ WX_DECLARE_LIST(vscpEvent, EVENT_TX_QUEUE);
 class VscpRemoteTcpIf;
 
 class clientTcpIpWorkerThread : public wxThread {
+    
 public:
 
     /// Constructor
@@ -1618,7 +1619,7 @@ public:
 
     /*! 
         Array that gets filled with input lines as
-        they are receied 
+        they are received 
      */
     wxArrayString m_inputStrArray;
 
