@@ -472,11 +472,11 @@ public:
 
     /*!
         Get a VSCP event from a line of data from the server
-        @param strLine String with server event data line
         @param pEvent Pointer to VSCP event.
+        @param strLine String with server event data line        
         @return true on success.
      */
-    bool getEventFromLine(const wxString& strLine, vscpEvent *pEvent);
+    bool getEventFromLine( vscpEvent *pEvent, const wxString& strLine );
 
 
 

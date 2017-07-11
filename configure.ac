@@ -72,6 +72,11 @@ AC_FUNC_STRTOD
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([alarm bzero dup2 floor gethostbyname gethostname gethrtime gettimeofday inet_ntoa memchr memmove memset mkfifo pow select setlocale socket sqrt strcasecmp strchr strcspn strdup strerror strncasecmp strpbrk strrchr strspn strstr strtol strtoul])
 
+dnl compile 32-bit/64-bit
+AC_CHECK_SIZEOF([long])
+AS_IF([test "$ac_cv_sizeof_long" -eq 8],
+    [AC_DEFINE([OSBIT], 64, [Define to the size of a long in bits.])],
+    [AC_DEFINE([OSBIT], 32, [Define to the size of a long in bits.])]) 
 
 AC_SUBST(WXLIBS)
 AC_SUBST(EXTRALIBS)

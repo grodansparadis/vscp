@@ -3458,16 +3458,15 @@ bool vscp_writeVscpEventToString( const vscpEvent *pEvent, wxString& str)
 
 bool vscp_writeVscpEventExToString( const vscpEventEx *pEventEx, wxString& str)
 {
-    vscpEvent Event;
-    Event.pdata = NULL;
+    vscpEvent event;
+    event.pdata = NULL;
 
     // Check pointer
     if (NULL == pEventEx) return false;
 
-    Event.pdata = NULL;
-    vscp_convertVSCPfromEx(&Event, pEventEx);
-    vscp_writeVscpEventToString(&Event, str);
-    if ( NULL != Event.pdata ) delete Event.pdata;
+    vscp_convertVSCPfromEx(&event, pEventEx);
+    vscp_writeVscpEventToString(&event, str);
+    if ( NULL != event.pdata ) delete event.pdata;
 
     return true;
 }
@@ -3525,6 +3524,27 @@ bool vscp_setVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
     } 
     else {
         return false;
+    }
+    
+    // Get datetime
+    if (tkz.HasMoreTokens()) {
+        str = tkz.GetNextToken();
+        str.Trim();
+        if ( str.Length() ) {
+            // Parse and set time
+            wxDateTime dt;
+            dt.ParseISOCombined( str );
+            pEvent->year = dt.GetYear();
+            pEvent->month = dt.GetMonth() + 1;
+            pEvent->day = dt.GetDay();
+            pEvent->hour = dt.GetHour();
+            pEvent->minute = dt.GetMinute();
+            pEvent->second = dt.GetSecond();
+        }
+        else {
+            // Set to now
+            vscp_setEventDateTimeBlockToNow( pEvent );
+        }
     }
 
     // Get Timestamp
@@ -5735,7 +5755,7 @@ bool vscp_getEventFromUdpFrame( vscpEvent *pEvent,
          ( 0 == pEvent->minute ) &&
          ( 0 == pEvent->second ) ) {
         
-        pEvent->year = wxDateTime::UNow().GetYear() - wxDateTime::UNow().GetCentury();
+        pEvent->year = wxDateTime::UNow().GetYear();
         pEvent->month = wxDateTime::UNow().GetMonth() + 1;
         pEvent->day = wxDateTime::UNow().GetDay();
         pEvent->hour = wxDateTime::UNow().GetHour();
