@@ -1,5 +1,0 @@
-this is the same, only for cygnus windows compiler, works fairly
-well except that i cant appear to use cout and friends in the 
-dll without a hideous run time problem.
-
-C.
