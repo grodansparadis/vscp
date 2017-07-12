@@ -54,7 +54,6 @@
 #include <fstream>
 
 #include <mongoose.h>
-#include <v7.h>
 
 #ifdef WIN32
 

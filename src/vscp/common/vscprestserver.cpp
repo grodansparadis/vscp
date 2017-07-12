@@ -104,7 +104,7 @@
 #include "web_js.h"
 #include "web_template.h"
 
-#include <v7.h>
+//#include <v7.h>
 #include <mongoose.h>
 //#include <frozen.h>   // Not needed anymore
 
@@ -115,7 +115,7 @@
 #include <tables.h>
 #include <configfile.h>
 #include <crc.h>
-#include <xml2json.hpp>
+//#include <xml2json.hpp>
 #include <randpassword.h>
 #include <version.h>
 #include <variablecodes.h>
@@ -3684,7 +3684,8 @@ void convert( const char *input, const char *output  )
     ostringstream oss;
     oss << is.rdbuf();
 
-    string json_str = xml2json( oss.str().data() );
+    // TODO
+    string json_str; // = xml2json( oss.str().data() );
 
     ofstream myfile;
     myfile.open( output );

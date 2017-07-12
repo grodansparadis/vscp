@@ -40,7 +40,7 @@
 #include <openssl/opensslv.h>
 #include <openssl/crypto.h>
 
-#include <slre.h>
+//#include <slre.h>
 #include <mongoose.h>
 
 #include <wx/listimpl.cpp>
