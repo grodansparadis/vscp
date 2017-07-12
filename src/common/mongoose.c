@@ -979,12 +979,6 @@ void MD5_Final(unsigned char digest[16], MD5_CTX *ctx) {
 }
 #endif /* DISABLE_MD5 */
 
-
-
-#endif /* EXCLUDE_COMMON */
-
-
-// AKHE
 char *cs_md5(char buf[33], ...) {
   unsigned char hash[16];
   const unsigned char *p;
@@ -1006,8 +1000,7 @@ char *cs_md5(char buf[33], ...) {
   return buf;
 }
 
-
-
+#endif /* EXCLUDE_COMMON */
 #ifdef MG_MODULE_LINES
 #line 1 "common/mbuf.c"
 #endif

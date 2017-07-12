@@ -29,7 +29,6 @@
 #include <wx/dynlib.h>
 #include <wx/file.h>
 #include <wx/url.h>
-#include <v7.h>
 #include <dllist.h>
 #include <tables.h>
 #include <vscp.h>

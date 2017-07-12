@@ -56,7 +56,7 @@
 #include <userlist.h>
 #include <controlobject.h>
 #include <vscpremotetcpif.h>
-#include <v7callbacks.h>
+//#include <v7callbacks.h>
 #include <dm.h>
 
 
@@ -6933,6 +6933,7 @@ actionThread_JavaScript::~actionThread_JavaScript()
 
 void *actionThread_JavaScript::Entry()
 {
+    /*
     struct v7 *v7;                  // JavaScript engine
     v7_val_t v7_result;             // Execute result
     enum v7_err err;                // Error code
@@ -7038,7 +7039,7 @@ void *actionThread_JavaScript::Entry()
     v7_destroy( v7 );
     
     m_stop = wxDateTime::Now();     // Mark stop time
-    
+    */
     return NULL;
 }
 

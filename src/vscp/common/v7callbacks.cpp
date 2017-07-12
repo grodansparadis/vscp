@@ -46,7 +46,7 @@
 #include <string.h>
 #include <float.h>
 
-#include <v7.h>
+//#include <v7.h>
 
 #include <wx/jsonreader.h>
 #include <wx/jsonval.h>
@@ -73,6 +73,7 @@ extern CControlObject *gpobj;
 //                  HELPERS
 ///////////////////////////////////////////////////
 
+/*
 static bool get_js_Event( struct v7 *v7, v7_val_t *pvarObjEvent, vscpEventEx *pex )
 {
     // Must be object
@@ -1187,4 +1188,4 @@ enum v7_err js_get_MeasurementSubZone( struct v7 *v7, v7_val_t *res )
 }
 
 
-
+*/
