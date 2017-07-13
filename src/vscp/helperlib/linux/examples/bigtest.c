@@ -9,7 +9,7 @@
 
 // If TEST_RECEIVE_LOOP is uncommented the rcvloop commands
 // will be tested. Must send five events externally to test
-//#define TEST_RECEIVE_LOOP 
+#define TEST_RECEIVE_LOOP 
 
 // Uncomment to test variable handling
 #define TEST_VARIABLE_HANDLING 
@@ -430,7 +430,7 @@ int main(int argc, char* argv[])
     while ( cntEvents < 5 ) {
         pEvent = malloc( sizeof( vscpEvent ) );
         pEvent->pdata = NULL;   // A must for a successful delete
-        if ( VSCP_ERROR_SUCCESS == vscphlp_blockingReceiveEvent( handle2, pEvent ) ) {
+        if ( VSCP_ERROR_SUCCESS == vscphlp_blockingReceiveEvent( handle2, pEvent,1000 ) ) {
             printf( "Command success: vscphlp_blockingReceiveEvent on channel 2\n" );
             printf(" Event: class=%d Type=%d sizeData=%d\n", 
                         pEvent->vscp_class,
@@ -445,6 +445,9 @@ int main(int argc, char* argv[])
             }
             cntEvents++;
         }
+	else  
+	{
+	}
         vscphlp_deleteVSCPevent( pEvent );
         pEvent = NULL;
     }

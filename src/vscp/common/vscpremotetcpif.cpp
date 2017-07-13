@@ -1126,10 +1126,11 @@ int VscpRemoteTcpIf::doCmdBlockingReceive( vscpEventEx *pEventEx, uint32_t timeo
     // If not receive loop active terminate
     if ( !m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
 
-    if ( rv = ( VSCP_ERROR_SUCCESS != doCmdBlockingReceive( &e, timeout ) ) ) {
+    if ( VSCP_ERROR_SUCCESS != ( rv = doCmdBlockingReceive( &e, timeout ) ) ) {
         return rv;
     }
 
+    // Get event
     pEventEx->head = e.head;
     pEventEx->vscp_class = e.vscp_class;e;
     pEventEx->vscp_type = e.vscp_type;

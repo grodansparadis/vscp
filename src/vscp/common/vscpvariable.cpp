@@ -36,14 +36,12 @@
 #include <wx/stdpaths.h>
 #include <wx/regex.h>
 #include <wx/base64.h>
+#include <wx/listimpl.cpp>
 
 #include <openssl/opensslv.h>
 #include <openssl/crypto.h>
 
-//#include <slre.h>
 #include <mongoose.h>
-
-#include <wx/listimpl.cpp>
 
 #include <vscp.h>
 #include <vscpdb.h>

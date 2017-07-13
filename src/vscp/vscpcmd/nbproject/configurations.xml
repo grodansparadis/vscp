@@ -3,19 +3,31 @@
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <logicalFolder name="src" displayName="src" projectFiles="true" root="../..">
       <logicalFolder name="common" displayName="common" projectFiles="true">
+        <itemPath>../../common/aes.c</itemPath>
+        <itemPath>../../common/aes.h</itemPath>
         <itemPath>../../common/crc.c</itemPath>
         <itemPath>../../common/crc.h</itemPath>
         <itemPath>../../common/crc8.c</itemPath>
+        <itemPath>../../common/crc8.h</itemPath>
+        <itemPath>../../common/fastpbkdf2.c</itemPath>
+        <itemPath>../../common/fastpbkdf2.h</itemPath>
         <itemPath>../../common/mongoose.c</itemPath>
+        <itemPath>../../common/mongoose.h</itemPath>
       </logicalFolder>
       <logicalFolder name="vscp" displayName="vscp" projectFiles="true">
         <logicalFolder name="common" displayName="common" projectFiles="true">
           <itemPath>../common/canal.h</itemPath>
+          <itemPath>../common/canal_macro.h</itemPath>
           <itemPath>../common/guid.cpp</itemPath>
+          <itemPath>../common/guid.h</itemPath>
+          <itemPath>../common/mdf.h</itemPath>
+          <itemPath>../common/vscp.h</itemPath>
           <itemPath>../common/vscp_class.h</itemPath>
           <itemPath>../common/vscp_type.h</itemPath>
           <itemPath>../common/vscphelper.cpp</itemPath>
+          <itemPath>../common/vscphelper.h</itemPath>
           <itemPath>../common/vscpremotetcpif.cpp</itemPath>
+          <itemPath>../common/vscpremotetcpif.h</itemPath>
         </logicalFolder>
       </logicalFolder>
     </logicalFolder>
@@ -44,6 +56,7 @@
       </toolsSet>
       <flagsDictionary>
         <element flagsID="0" commonFlags="-O2"/>
+        <element flagsID="1" commonFlags="-std=c99 -g -O2"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -57,7 +70,6 @@
             <incDir>
               <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
               <pElem>/usr/local/include/wx-3.1</pElem>
-              <pElem>/usr/include/lua5.2</pElem>
               <pElem>../common</pElem>
               <pElem>../../common</pElem>
               <pElem>.</pElem>
@@ -65,7 +77,6 @@
             <preprocessorList>
               <Elem>MG_ENABLE_SSL</Elem>
               <Elem>MG_ENABLE_THREADS</Elem>
-              <Elem>VSCP_ENABLE_LUA</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__WXGTK__</Elem>
@@ -75,14 +86,12 @@
             <incDir>
               <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
               <pElem>/usr/local/include/wx-3.1</pElem>
-              <pElem>/usr/include/lua5.2</pElem>
               <pElem>../common</pElem>
               <pElem>../../common</pElem>
             </incDir>
             <preprocessorList>
               <Elem>MG_ENABLE_SSL</Elem>
               <Elem>MG_ENABLE_THREADS</Elem>
-              <Elem>VSCP_ENABLE_LUA</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__WXGTK__</Elem>
@@ -94,11 +103,25 @@
           <preBuildCommand></preBuildCommand>
         </preBuild>
       </makefileType>
-      <item path="../../common/crc.c" ex="false" tool="0" flavor2="0">
+      <item path="../../common/aes.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="1">
+        </cTool>
       </item>
-      <item path="../../common/crc8.c" ex="false" tool="0" flavor2="0">
+      <item path="../../common/crc.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="1">
+        </cTool>
       </item>
-      <item path="../../common/mongoose.c" ex="false" tool="0" flavor2="0">
+      <item path="../../common/crc8.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="1">
+        </cTool>
+      </item>
+      <item path="../../common/fastpbkdf2.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="1">
+        </cTool>
+      </item>
+      <item path="../../common/mongoose.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="1">
+        </cTool>
       </item>
       <item path="../common/guid.cpp" ex="false" tool="1" flavor2="0">
         <ccTool flags="0">

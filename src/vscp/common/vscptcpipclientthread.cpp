@@ -20,6 +20,10 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
+// https://wiki.openssl.org/index.php/Simple_TLS_Server
+// https://wiki.openssl.org/index.php/SSL/TLS_Client
+// https://stackoverflow.com/questions/3919420/tutorial-on-using-openssl-with-pthreads
+//
 
 #ifdef WIN32
 #include <winsock2.h>

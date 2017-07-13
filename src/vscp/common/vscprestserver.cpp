@@ -104,9 +104,7 @@
 #include "web_js.h"
 #include "web_template.h"
 
-//#include <v7.h>
 #include <mongoose.h>
-//#include <frozen.h>   // Not needed anymore
 
 #include <canal_macro.h>
 #include <vscp.h>

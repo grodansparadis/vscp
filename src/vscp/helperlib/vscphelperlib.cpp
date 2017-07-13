@@ -419,10 +419,12 @@ extern "C" int vscphlp_receiveEventEx( long handle,
 //
 #ifdef WIN32
 extern "C" DllExport int WINAPI EXPORT vscphlp_blockingReceiveEvent( long handle,
-                                                            vscpEvent *pEvent )
+                                                                        vscpEvent *pEvent,
+                                                                        unsigned long timeout )
 #else
 extern "C" int vscphlp_blockingReceiveEvent( long handle,
-                                                vscpEvent *pEvent )
+                                                vscpEvent *pEvent,
+                                                unsigned long timeout )
 #endif
 {
     VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
@@ -431,7 +433,7 @@ extern "C" int vscphlp_blockingReceiveEvent( long handle,
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
-    return pvscpif->doCmdBlockingReceive( pEvent );
+    return pvscpif->doCmdBlockingReceive( pEvent, timeout );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -440,10 +442,12 @@ extern "C" int vscphlp_blockingReceiveEvent( long handle,
 
 #ifdef WIN32
 extern "C" DllExport int WINAPI EXPORT vscphlp_blockingReceiveEventEx( long handle,
-                                                            vscpEventEx *pEvent )
+                                                                        vscpEventEx *pEvent,
+                                                                        unsigned long timeout )
 #else
 extern "C" int vscphlp_blockingReceiveEventEx( long handle,
-                                            vscpEventEx *pEvent )
+                                                    vscpEventEx *pEvent,
+                                                    unsigned long timeout)
 #endif
 {
     VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
@@ -452,7 +456,7 @@ extern "C" int vscphlp_blockingReceiveEventEx( long handle,
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
-    return pvscpif->doCmdBlockingReceive( pEvent );
+    return pvscpif->doCmdBlockingReceive( pEvent, timeout );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -507,7 +507,7 @@ int main(int argc, char* argv[])
     while ( cntEvents < 5 ) {
         pEvent = malloc( sizeof( vscpEvent ) );
         pEvent->pdata = NULL;   // A must for a successful delete
-        if ( VSCP_ERROR_SUCCESS == vscphlp_blockingReceiveEvent( handle2, pEvent ) ) {
+        if ( VSCP_ERROR_SUCCESS == vscphlp_blockingReceiveEvent( handle2, pEvent, 1000 ) ) {
             if (verbose_success) {
                 printf( "Command success: vscphlp_blockingReceiveEvent on channel 2\n" );
                 printf(" Event: class=%d Type=%d sizeData=%d\n", 
