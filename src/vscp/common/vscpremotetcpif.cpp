@@ -1440,6 +1440,7 @@ int VscpRemoteTcpIf::doCmdFilter( const vscpEventFilter *pFilter )
                     pFilter->filter_GUID[ 2 ],
                     pFilter->filter_GUID[ 1 ],
                     pFilter->filter_GUID[ 0 ] );
+    //wxLogDebug( strCmd );
 
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
@@ -1466,6 +1467,7 @@ int VscpRemoteTcpIf::doCmdFilter( const vscpEventFilter *pFilter )
                     pFilter->mask_GUID[ 2 ],
                     pFilter->mask_GUID[ 1 ],
                     pFilter->mask_GUID[ 0 ] );
+    //wxLogDebug( strCmd );
     
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;

@@ -63,14 +63,14 @@ void _fini() __attribute__((destructor));
 void _init()
 {
     // The following works on 3.0 but not on 2.8
-    //wxApp::SetInstance(new wxApp());
-    //new wxInitializer();
-    wxInitialize();
+    wxApp::SetInstance(new wxApp());
+    new wxInitializer();
+    //wxInitialize();
 }
 
 void _fini()
 {
-    wxUninitialize();
+    //wxUninitialize();
 }
 
 
@@ -81,7 +81,7 @@ void _fini()
 CVSCPLApp::CVSCPLApp()
 {
     m_instanceCounter = 0;
-    pthread_mutex_init(&m_objMutex, NULL);
+    pthread_mutex_init( &m_objMutex, NULL );
 
     // Init. the driver array
     for (int i = 0; i < VSCP_INTERFACE_MAX_OPEN; i++) {
@@ -110,7 +110,7 @@ CVSCPLApp::~CVSCPLApp()
     }
 
     UNLOCK_MUTEX(m_objMutex);
-    pthread_mutex_destroy(&m_objMutex);
+    pthread_mutex_destroy( &m_objMutex );
 
 }
 
