@@ -71,6 +71,7 @@ all: libvscphelper.so test lib
 
 install: all
 	$(INSTALL_PROGRAM) libvscphelper.so $(libdir)
+	$(INSTALL_PROGRAM) ../vscphelperlib.h $(includedir)
 	ar rcs libvscphelper.a libvscphelper.o
 
 uninstall: 
