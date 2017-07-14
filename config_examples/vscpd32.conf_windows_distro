@@ -24,7 +24,7 @@
         />
 
         <!-- Set the detail of logging you want -->
-        <loglevel>debug</loglevel>
+        <loglevel>normal</loglevel>
 
         <!-- Set GUID for daemon                                            -->
         <!-- Read more about GUID's in Specification section 4              -->

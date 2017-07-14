@@ -12,8 +12,6 @@
         <group>
             <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/vscp.h</file>
             <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.cpp</file>
-            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_type.h</file>
-            <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_class.h</file>
             <file>file:/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.h</file>
         </group>
     </open-files>

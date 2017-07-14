@@ -63,14 +63,14 @@ void _fini() __attribute__((destructor));
 void _init()
 {
     // The following works on 3.0 but not on 2.8
-    wxApp::SetInstance(new wxApp());
-    new wxInitializer();
-    //wxInitialize();
+    wxApp::SetInstance(new wxApp());    // 2
+    new wxInitializer();                // 2
+    //wxInitialize();   // 1
 }
 
 void _fini()
 {
-    //wxUninitialize();
+    //wxUninitialize(); // 1
 }
 
 
