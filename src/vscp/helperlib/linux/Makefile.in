@@ -28,7 +28,11 @@ libdir = ${exec_prefix}/lib
 datadir = ${prefix}/share
 includedir = ${prefix}/include
 DLLPREFIX = lib
-
+# get version from the version file
+MAJOR_VERSION = `sed '35!d' ../../common/version.h  | cut -b 33-`
+MINOR_VERSION = `sed '36!d' ../../common/version.h  | cut -b 33-`
+RELEASE_VERSION = `sed '37!d' ../../common/version.h  | cut -b 33-`
+LIB_PLUS_VER = "libvscphelper.so.$(MAJOR_VERSION).$(MINOR_VERSION).$(RELEASE_VERSION)"
 
 ### Variables: ###
 
@@ -70,7 +74,11 @@ ALWAYS_BUILD = ../../common/vscpremotetcpif.o\
 all: libvscphelper.so test lib
 
 install: all
-	$(INSTALL_PROGRAM) libvscphelper.so $(libdir)
+	cp libvscphelper.so $(LIB_PLUS_VER)
+	$(INSTALL_PROGRAM) $(LIB_PLUS_VER) $(libdir)
+	ln -s $(libdir)/$(LIB_PLUS_VER) $(libdir)/libvscphelper.so
+	ln -s $(libdir)/$(LIB_PLUS_VER) $(libdir)/libvscphelper.so.$(MAJOR_VERSION)
+	ln -s $(libdir)/$(LIB_PLUS_VER) $(libdir)/libvscphelper.so.$(MAJOR_VERSION).$(MINOR_VERSION)
 	$(INSTALL_PROGRAM) ../vscphelperlib.h $(includedir)
 	ar rcs libvscphelper.a libvscphelper.o
 
