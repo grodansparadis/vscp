@@ -694,6 +694,43 @@ int vscphlp_getISOTimeString( char *buf, size_t buf_len, time_t *t );
 int vscphlp_getDateStringFromEvent( char *buf, size_t buf_len, vscpEvent *pEvent );
 int vscphlp_getDateStringFromEventEx( char *buf, size_t buf_len, vscpEventEx *pEventEx );
 
+int vscphlp_setEventToNow( vscpEvent *pEvent  );
+int vscphlp_setEventExToNow( vscpEventEx *pEventEx );
+
+//-------------------------------------------------------------------------
+//                            UDP / Multicast / Encryption
+//-------------------------------------------------------------------------
+
+int vscphlp_getEncryptionCodeFromToken( const char *pToken, int *pEncryptionCode );
+int vscphlp_getEncryptionTokenFromCode( int nEncryptionCode, char *pEncryptionToken, size_t len );
+
+int vscphlp_encryptVscpUdpFrame( unsigned char *output, 
+                                unsigned char *input, 
+                                size_t len,
+                                const unsigned char *key,
+                                const unsigned char *iv,
+                                unsigned char nAlgorithm );
+
+int vscphlp_decryptVscpUdpFrame( unsigned char *output, 
+                                    unsigned char *input, 
+                                    size_t len,
+                                    const unsigned char *key,
+                                    const unsigned char *iv,
+                                    unsigned char nAlgorithm );
+
+size_t vscphlp_getUDpFrameSizeFromEvent( vscpEvent *pEvent );
+size_t vscphlp_getUDpFrameSizeFromEventEx( vscpEvent *pEventEx );
+
+int vscphlp_writeEventToUdpFrame( unsigned char *frame, 
+                                        size_t len, 
+                                        unsigned char pkttype, 
+                                        const vscpEvent *pEvent );
+
+int vscphlp_writeEventExToUdpFrame( unsigned char *frame, 
+                                        size_t len, 
+                                        unsigned char pkttype, 
+                                        const vscpEventEx *pEventEx );
+
 #endif
 
 #ifdef __cplusplus

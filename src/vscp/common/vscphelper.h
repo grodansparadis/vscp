@@ -1189,8 +1189,8 @@ extern "C" {
      * @return True on success, false on failure.
      */
     bool vscp_writeEventToUdpFrame( uint8_t *frame, 
-                                        size_t len, uint8_t 
-                                        pkttype, 
+                                        size_t len, 
+                                        uint8_t pkttype, 
                                         const vscpEvent *pEvent );
     
     /*!
