@@ -56,7 +56,9 @@
 #include <userlist.h>
 #include <controlobject.h>
 #include <vscpremotetcpif.h>
-//#include <v7callbacks.h>
+#include <duktape.h>
+#include <duktape_callbacks.h>
+#include <duk_module_node.h>
 #include <dm.h>
 
 
@@ -6933,37 +6935,190 @@ actionThread_JavaScript::~actionThread_JavaScript()
 
 void *actionThread_JavaScript::Entry()
 {
-    /*
-    struct v7 *v7;                  // JavaScript engine
-    v7_val_t v7_result;             // Execute result
-    enum v7_err err;                // Error code
-    
     m_start = wxDateTime::Now();    // Mark start time
     
-    // Create the engine
-    v7 = v7_create();
+    // Create new JavaScript context
+    duk_context *ctx = duk_create_heap_default();
+    
+    // Check if OK
+    if ( !ctx ) { 
+        // Failure
+        return NULL; 
+    }
+    
+    // Helpers   
+    /*duk_push_c_function( ctx, js_print, 1 );
+    duk_put_global_string(ctx, "print");
+    
+    duk_push_c_function( ctx, js_atob, 1 );
+    duk_put_global_string(ctx, "atob");
+    
+    duk_push_c_function( ctx, js_btoa, 1 );
+    duk_put_global_string(ctx, "btoa");*/
+    
+    // External module support 
+    duk_push_object( ctx );
+    duk_push_c_function( ctx, js_resolve_module, DUK_VARARGS );
+    duk_put_prop_string( ctx, -2, "resolve" );
+    duk_push_c_function( ctx, js_load_module, DUK_VARARGS );
+    duk_put_prop_string( ctx, -2, "load");
+    duk_module_node_init( ctx );
     
     // Add VSCP methods
-    v7_set_method( v7, v7_get_global( v7 ), "vscp_log", &js_vscp_log );
-    v7_set_method( v7, v7_get_global( v7 ), "vscp_sleep", &js_vscp_sleep );
-    v7_set_method( v7, v7_get_global( v7 ), "vscp_readVariable", &js_vscp_readVariable );
-    v7_set_method( v7, v7_get_global( v7 ), "vscp_writeVariable", &js_vscp_writeVariable );
-    v7_set_method( v7, v7_get_global( v7 ), "vscp_deleteVariable", &js_vscp_deleteVariable );
-    v7_set_method( v7, v7_get_global( v7 ), "vscp_sendEvent", &js_vscp_sendEvent );
-    v7_set_method( v7, v7_get_global( v7 ), "vscp_receiveEvent", &js_vscp_getEvent );
-    v7_set_method( v7, v7_get_global( v7 ), "vscp_countEvent", &js_vscp_getCountEvent );
-    v7_set_method( v7, v7_get_global( v7 ), "vscp_setFilter", &js_vscp_setFilter );
-    v7_set_method( v7, v7_get_global( v7 ), "vscp_isMeasurement", &js_is_Measurement );    
-    v7_set_method( v7, v7_get_global( v7 ), "vscp_sendMeasurement", &js_send_Measurement );
-    v7_set_method( v7, v7_get_global( v7 ), "vscp_getMeasurementValue", &js_get_MeasurementValue );
-    v7_set_method( v7, v7_get_global( v7 ), "vscp_getMeasurementUnit", &js_get_MeasurementUnit );
-    v7_set_method( v7, v7_get_global( v7 ), "vscp_getMeasurementSensorIndex", &js_get_MeasurementSensorIndex );
-    v7_set_method( v7, v7_get_global( v7 ), "vscp_getMeasurementZone", &js_get_MeasurementZone );
-    v7_set_method( v7, v7_get_global( v7 ), "vscp_getMeasurementSubZone", &js_get_MeasurementSubZone );
+    duk_push_c_function( ctx, js_vscp_log, DUK_VARARGS );
+    duk_put_global_string(ctx, "vscp_log");
     
-    // Make object of the feed event 
+    duk_push_c_function( ctx, js_vscp_sleep, 1 );
+    duk_put_global_string(ctx, "vscp_sleep");
+    
+    duk_push_c_function( ctx, js_vscp_readVariable, 1 );
+    duk_put_global_string(ctx, "vscp_readVariable");
+    
+    duk_push_c_function( ctx, js_vscp_writeVariable, 1 );
+    duk_put_global_string(ctx, "vscp_writeVariable");
+    
+    duk_push_c_function( ctx, js_vscp_deleteVariable, 1 );
+    duk_put_global_string(ctx, "vscp_deleteVariable");
+    
+    duk_push_c_function( ctx, js_vscp_sendEvent, 1 );
+    duk_put_global_string(ctx, "vscp_sendEvent");
+    
+    duk_push_c_function( ctx, js_vscp_getEvent, 1 );
+    duk_put_global_string(ctx, "vscp_receiveEvent");
+    
+    duk_push_c_function( ctx, js_vscp_getCountEvent, 1 );
+    duk_put_global_string(ctx, "vscp_countEvent");
+    
+    duk_push_c_function( ctx, js_vscp_setFilter, 1 );
+    duk_put_global_string(ctx, "vscp_setFilter");
+    
+    duk_push_c_function( ctx, js_is_Measurement, 1 );    
+    duk_put_global_string(ctx, "vscp_isMeasurement");
+    
+    duk_push_c_function( ctx, js_send_Measurement,1  );
+    duk_put_global_string(ctx, "vscp_sendMeasurement");
+    
+    duk_push_c_function( ctx, js_get_MeasurementValue, 1 );
+    duk_put_global_string(ctx, "vscp_getMeasurementValue"); 
+    
+    duk_push_c_function( ctx, js_get_MeasurementUnit, 1 );
+    duk_put_global_string(ctx, "vscp_getMeasurementUnit");
+    
+    duk_push_c_function( ctx, js_get_MeasurementSensorIndex, 1 );
+    duk_put_global_string(ctx, "vscp_getMeasurementSensorIndex");
+    
+    duk_push_c_function( ctx, js_get_MeasurementZone, 1 );
+    duk_put_global_string(ctx, "vscp_getMeasurementZone");
+    
+    duk_push_c_function( ctx, js_get_MeasurementSubZone, 1 );
+    duk_put_global_string(ctx, "vscp_getMeasurementSubZone");
+    
+    // Save the DM feed event for easy access
     wxString strEvent;
     vscp_convertEventExToJSON( &m_feedEvent, strEvent );
+    duk_push_string( ctx, (const char *)strEvent.mbc_str() );
+    duk_json_decode(ctx, -1);
+    duk_put_global_string(ctx, "vscp_feedevent");
+    
+    // Save client object as a global pointer
+    duk_push_pointer(ctx, (void *)m_pClientItem );
+    duk_put_global_string(ctx, "vscp_controlobject");
+    
+    // Create VSCP client
+    m_pClientItem = new CClientItem();
+    vscp_clearVSCPFilter( &m_pClientItem->m_filterVSCP );
+    
+    // Save the client object as a global pointer
+    duk_push_pointer(ctx, (void *)m_pClientItem );
+    duk_put_global_string(ctx, "vscp_clientitem");
+    
+    /* reading [global object].vscp_clientItem */
+    duk_push_global_object(ctx);                /* -> stack: [ global ] */
+    duk_push_string(ctx, "vscp_clientitem");    /* -> stack: [ global "vscp_clientItem" ] */
+    duk_get_prop(ctx, -2);                      /* -> stack: [ global vscp_clientItem ] */
+    CClientItem *pItem = (CClientItem *)duk_get_pointer(ctx,-1);
+    wxString user = pItem->m_UserName;
+    
+    duk_bool_t rc;
+
+    // Create global object
+    duk_idx_t obj_idx = duk_push_object(ctx);
+    duk_push_uint(ctx, 123);                    // -> stack: [ obj 123 ] 
+    duk_put_prop_string(ctx, -2, "param1");     // -> stack: [ obj ] 
+    duk_push_uint(ctx, 456);                    // -> stack: [ obj 456 ] 
+    duk_put_prop_string(ctx, -2, "param2");     // -> stack: [ obj ] 
+    duk_put_global_string(ctx, "ttt");          // The object
+    //del_prop_string(ctx, -2, "param3");
+    //return 0;  // no return value (same as 'return undefined' in Ecmascript)
+       
+    /* reading [global object].Math.PI */
+    duk_push_global_object(ctx);        /* -> [ global ] */
+    duk_push_string(ctx, "ttt");        /* -> [ global "ttt" ] */
+    duk_get_prop(ctx, -2);              /* -> [ global ttt ] */
+    duk_push_string(ctx, "param1");     /* -> [ global "param1" ] */
+    duk_get_prop(ctx, -2);              /* -> [ global ttt param1 ] */
+    wxString str = wxString::Format("ttt.param1 is %lf\n", (double) duk_get_number(ctx, -1));
+    duk_pop_n(ctx, 3);
+    
+    /* reading [global object].json_test.param3 */
+    /*uk_idx_t */obj_idx = duk_push_object( ctx );
+    duk_push_string(ctx, "{\"param2\":42, \"param3\":\"This is the value for param3\"}");
+    duk_json_decode(ctx, -1);
+    duk_put_global_string(ctx, "json_test");          // The object
+    
+    /* reading [global object].Math.PI */
+    duk_push_global_object(ctx);        /* -> [ global ] */
+    duk_push_string(ctx, "json_test");  /* -> [ global "json_test" ] */
+    duk_get_prop(ctx, -2);              /* -> [ global json_test ] */
+    duk_push_string(ctx, "param3");     /* -> [ global json_test "param3" ] */
+    duk_get_prop(ctx, -2);              /* -> [ global json_test param3 ] */
+    wxString str2 = wxString::Format("json_test.param3 is %s\n", duk_get_string(ctx, -1));
+    duk_pop_n(ctx, 3);
+    
+    // This is an active client
+    m_pClientItem->m_bOpen = false;
+    m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_JAVASCRIPT;
+    m_pClientItem->m_strDeviceName = _("Internal daemon JavaScript client. ");
+    wxDateTime now = wxDateTime::Now();
+    m_pClientItem->m_strDeviceName += now.FormatISODate();
+    m_pClientItem->m_strDeviceName += _(" ");
+    m_pClientItem->m_strDeviceName += now.FormatISOTime();
+
+    // Add the client to the Client List
+    gpobj->m_wxClientMutex.Lock();
+    gpobj->addClient( m_pClientItem );
+    gpobj->m_wxClientMutex.Unlock();
+    
+    // Open the channel
+    m_pClientItem->m_bOpen = true;
+    
+    // Execute the JavaScript
+    duk_push_string( ctx, (const char *)m_wxstrScript.mbc_str() );
+    if ( 0 != duk_peval( ctx ) ) {
+        wxString strError = wxString::Format("JavaScript failed to execute: %s\n", duk_safe_to_string(ctx, -1) );
+        gpobj->logMsg( strError, DAEMON_LOGMSG_NONE, DAEMON_LOGTYPE_DM );
+    }
+    
+    // If the script wants to log results it can do so 
+    // by itself with the log function
+ 
+    duk_pop(ctx);  // pop eval. result 
+    
+    // Close the channel
+    m_pClientItem->m_bOpen = false;
+    
+    // Remove client and session item
+    gpobj->m_wxClientMutex.Lock();
+    gpobj->removeClient( m_pClientItem );
+    m_pClientItem = NULL;
+    gpobj->m_wxClientMutex.Unlock();
+
+    // Destroy the JavaScript context
+    duk_destroy_heap( ctx );
+    
+    m_stop = wxDateTime::Now();     // Mark stop time
+
+    /*
     
     v7_val_t v7_feedEvent;
     if ( V7_OK == v7_parse_json( v7, (const char *)strEvent.mbc_str(), &v7_feedEvent ) ) {

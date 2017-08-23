@@ -127,7 +127,7 @@
 *  (``sami.vaarala@iki.fi``) and I'll fix the omission.
 */
 
-#line 1 "duk_replacements.c"
+#line 1 "duk_replacements.c" 
 /*
  *  Replacements for missing platform functions.
  *

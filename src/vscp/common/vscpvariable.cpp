@@ -488,7 +488,7 @@ bool CVSCPVariable::getAsJSON( wxString &strVariable )
 {
     // name,type,user,rights,persistence,last,bnumerical,bbase64,value,note
     // value is numerical for a numerical variable else string
-    strVariable.Printf( VARIABLE_JSON_TEMPLATE,
+    strVariable.Printf( VARIABLE_JSON_TEMPLATE, 
                             m_name,
                             (unsigned short int)m_type,
                             (unsigned long int)m_userid,
@@ -497,7 +497,7 @@ bool CVSCPVariable::getAsJSON( wxString &strVariable )
                             (const char *)m_lastChanged.FormatISOCombined().mbc_str(),
                             isNumerical() ? "true" : "false",
                             isValueBase64Encoded( m_type ) ? "true" : "false",
-                            isNumerical() ? m_strValue : "'" + m_strValue + "'",
+                            isNumerical() ? m_strValue : "\"" + m_strValue + "\"",
                             m_note );
     return true;
 }

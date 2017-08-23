@@ -98,16 +98,16 @@ class wxFFileOutputStream;
 // value is numerical for a numerical variable else string.
 
 #define VARIABLE_JSON_TEMPLATE "{\n"\
-    "\"name\": '%s',\n"\
+    "\"name\": \"%s\",\n"\
     "\"type\": %hu,\n"\
     "\"user\": %lu,\n"\
     "\"accessrights\": %lu,\n"\
     "\"persistence\": %s,\n"\
-    "\"lastchange\": '%s',\n"\
+    "\"lastchange\": \"%s\",\n"\
     "\"bnumeric\": %s,\n"\
     "\"bbase64\": %s,\n"\
-    "\"value\": %s,\n"\
-    "\"note\": '%s'\n"\
+    "\"value\": \"%s\",\n"\
+    "\"note\": \"%s\"\n"\
 "}"
 
 

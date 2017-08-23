@@ -56,6 +56,7 @@ VSCPD_OBJECTS =  vscpd.o \
 	../../common/tables.o \
 	../../common/vscpautomation.o \
 	../../common/knownnodes.o \
+	../../common/duktape_callbacks.o \
         ../../../common/jsonreader.o \
         ../../../common/jsonwriter.o \
         ../../../common/jsonval.o \
@@ -75,6 +76,7 @@ VSCPD_SPECIALS = vscphelper.o \
 	randpassword.o \
 	frozen.o  \
 	duktape.o \
+	duk_module_node.o \
 	mongoose.o \
 	sqlite3.o \
 	sqlite3math.o\
@@ -146,11 +148,11 @@ randpassword.o: ../../../common/randpassword.o ../../../common/randpassword.h
 mongoose.o: ../../../common/mongoose.o ../../../common/mongoose.h
 	$(CC) $(CFLAGS) $(MONGOOSE_CFLAGS) -c ../../../common/mongoose.c -o $@  
 
-v7.o: ../../../common/v7.o ../../../common/v7.h
-	$(CC) $(CFLAGS) $(V7_CFLAGS) -c ../../../common/v7.c -o $@
-
 duktape.o: ../../../common/duktape.o ../../../common/duktape.h
 	$(CC) $(CFLAGS) -c ../../../common/duktape.c -o $@
+
+duk_module_node.o: ../../../common/duk_module_node.o ../../../common/duk_module_node.h
+	$(CC) $(CFLAGS) -c ../../../common/duk_module_node.c -o $@
 
 frozen.o: ../../../common/frozen.o ../../../common/frozen.h
 	$(CC) $(CFLAGS) -c ../../../common/frozen.c -o $@

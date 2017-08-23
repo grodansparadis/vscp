@@ -1,4 +1,4 @@
-// v7.h
+// duktape_callbacks.h
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -21,17 +21,44 @@
 // Boston, MA 02111-1307, USA.
 //
 
+#define JAVASCRIPT_OK       1
+#define JAVASCRIPT_ERROR    0
 
 // JavaScripts executes as the "javascript" user.
+
+// For loadable modules node style
+duk_ret_t js_resolve_module( duk_context *ctx );
+duk_ret_t js_load_module( duk_context *ctx );
+
+/*!
+ *  print data on console if available
+ * 
+ * JavaScript Parameter 0..n: String to log.
+ * JavaScript Return: Nothing.
+ * 
+ */
+duk_ret_t js_vscp_print( duk_context *ctx );
+
+/*!
+ * Encode string to BASE64 encoded string
+ */
+duk_ret_t js_atob( duk_context *ctx );
+
+/*!
+ * Decode BASE64 encoded string
+ */
+duk_ret_t js_btoa( duk_context *ctx );
 
 /*!
  *  Log data
  * 
- * JavaScript Parameter 0: String to log.
+ * JavaScript Parameter 0: Stringto log.
+ * JavaScript Parameter 1: level (int)
+ * JavaScript Parameter 2: type (int)
  * JavaScript Return: Nothing.
  * 
  */
-enum v7_err js_vscp_log( struct v7 *v7, v7_val_t *res );
+duk_ret_t js_vscp_log( duk_context *ctx );
 
 /*!
  *  Sleep for some milliseconds
@@ -40,7 +67,7 @@ enum v7_err js_vscp_log( struct v7 *v7, v7_val_t *res );
  * JavaScript Return: True on success.
  * 
  */
-enum v7_err js_vscp_sleep( struct v7 *v7, v7_val_t *res ) ;
+duk_ret_t js_vscp_sleep( duk_context *ctx );
 
 
 /*!
@@ -56,7 +83,7 @@ enum v7_err js_vscp_sleep( struct v7 *v7, v7_val_t *res ) ;
  *  @param res Pointer to JSON object or NULL if variable was not found.
  *  @return v7 error code.
  */
-enum v7_err js_vscp_readVariable( struct v7 *v7, v7_val_t *res );
+duk_ret_t js_vscp_readVariable( duk_context *ctx );
 
 /*!
  *  Write a VSCP variable and create it if it does not exist.
@@ -69,7 +96,7 @@ enum v7_err js_vscp_readVariable( struct v7 *v7, v7_val_t *res );
  *  @param res Pointer to JSON object or NULL if variable was not found.
  *  @return v7 error code.
  */
-enum v7_err js_vscp_writeVariable( struct v7 *v7, v7_val_t *res );
+duk_ret_t js_vscp_writeVariable( duk_context *ctx );
 
 /*!
  *  Delete VSCP variable
@@ -82,7 +109,7 @@ enum v7_err js_vscp_writeVariable( struct v7 *v7, v7_val_t *res );
  *  @param res Pointer to JSON object or NULL if variable was not found.
  *  @return v7 error code.
  */
-enum v7_err js_vscp_deleteVariable( struct v7 *v7, v7_val_t *res );
+duk_ret_t js_vscp_deleteVariable( duk_context *ctx );
 
 
 /*!
@@ -92,7 +119,7 @@ enum v7_err js_vscp_deleteVariable( struct v7 *v7, v7_val_t *res );
  *  JavaScript Parameter 1: Event as JSON object
  *  JavaScript: Return: True if variable got updated/added.
  */
-enum v7_err js_vscp_sendEvent( struct v7 *v7, v7_val_t *res );
+duk_ret_t js_vscp_sendEvent( duk_context *ctx );
 
 /*!
  * Fetch on VSCP event from the local client queue
@@ -100,7 +127,7 @@ enum v7_err js_vscp_sendEvent( struct v7 *v7, v7_val_t *res );
  *  JavaScript Parameter 0: ClientItem
  *  JavaScript: Return: Event as JSON object or NULL if no event available
  */
-enum v7_err js_vscp_getEvent( struct v7 *v7, v7_val_t *res );
+duk_ret_t js_vscp_getEvent( duk_context *ctx );
 
 /*!
  * Return number of events in the local client queue
@@ -108,7 +135,7 @@ enum v7_err js_vscp_getEvent( struct v7 *v7, v7_val_t *res );
  *  JavaScript Parameter 0: ClientItem
  *  JavaScript: Return: Number of events in the client queue
  */
-enum v7_err js_vscp_getCountEvent( struct v7 *v7, v7_val_t *res ); 
+duk_ret_t js_vscp_getCountEvent( duk_context *ctx ); 
 
 /*!
  * Set VSCP filter for the local client queue
@@ -117,7 +144,7 @@ enum v7_err js_vscp_getCountEvent( struct v7 *v7, v7_val_t *res );
  *  JavaScript Parameter 1: Filter + Mask in JSON format.
  *  JavaScript: Return: True for success, False for failure
  */
-enum v7_err js_vscp_setFilter( struct v7 *v7, v7_val_t *res );
+duk_ret_t js_vscp_setFilter( duk_context *ctx );
 
 
 /*!
@@ -126,7 +153,7 @@ enum v7_err js_vscp_setFilter( struct v7 *v7, v7_val_t *res );
  *  JavaScript Parameter 0: Event to check in JSON format.
  *  JavaScript: Return: True if event is a measurement, False if not.
  */
-enum v7_err js_is_Measurement( struct v7 *v7, v7_val_t *res );
+duk_ret_t js_is_Measurement( duk_context *ctx );
 
 /*!
  * Send measurement event
@@ -134,7 +161,7 @@ enum v7_err js_is_Measurement( struct v7 *v7, v7_val_t *res );
  *  JavaScript Parameter 0: Event to check in JSON format.
  *  JavaScript: Return: True if event is a measurement, False if not.
  */
-enum v7_err js_send_Measurement( struct v7 *v7, v7_val_t *res );
+duk_ret_t js_send_Measurement( duk_context *ctx );
 
 
 /*!
@@ -142,28 +169,28 @@ enum v7_err js_send_Measurement( struct v7 *v7, v7_val_t *res );
  *  JavaScript Parameter 0: Event to check in JSON format.
  *  JavaScript: Return: Value as double.
  */
-enum v7_err js_get_MeasurementValue( struct v7 *v7, v7_val_t *res ); 
+duk_ret_t js_get_MeasurementValue( duk_context *ctx ); 
 
 /*!
  * Get unit from measurement event
  */
-enum v7_err js_get_MeasurementUnit( struct v7 *v7, v7_val_t *res );
+duk_ret_t js_get_MeasurementUnit( duk_context *ctx );
 
 
 /*!
  * Get sensor index from measurement event
  */
-enum v7_err js_get_MeasurementSensorIndex( struct v7 *v7, v7_val_t *res ); 
+duk_ret_t js_get_MeasurementSensorIndex( duk_context *ctx );
 
 
 /*!
  * Get zone from measurement event
  */
-enum v7_err js_get_MeasurementZone( struct v7 *v7, v7_val_t *res );
+duk_ret_t js_get_MeasurementZone( duk_context *ctx );
 
 
 /*!
  * Get sub zone from measurement event
  */
 
-enum v7_err js_get_MeasurementSubZone( struct v7 *v7, v7_val_t *res );
+duk_ret_t js_get_MeasurementSubZone( duk_context *ctx );
