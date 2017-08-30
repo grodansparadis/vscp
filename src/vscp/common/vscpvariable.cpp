@@ -828,7 +828,7 @@ void CVSCPVariable::getValue(long *pValue)
 
 void CVSCPVariable::setValue(double val)
 {
-    m_strValue.Printf(_("%f"), val );
+    m_strValue.Printf(_("%lf"), val );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -951,29 +951,21 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
         case VSCP_DAEMON_VARIABLE_CODE_INTEGER:
             {
                 long lval;
-                if ( strValue.ToLong( &lval ) ) {
-                    m_strValue = wxString::Format(_("%d"), (int)lval );
-                }
-                else {
-                    m_strValue = _("0");
-                }
+                strValue.ToLong( &lval );     // Ignore possible error, get what we get
+                m_strValue = wxString::Format(_("%d"), (int)lval );
             }
             break;
             
         case VSCP_DAEMON_VARIABLE_CODE_LONG:
             long lval;
-            if ( strValue.ToLong( &lval ) ) {
-                m_strValue = wxString::Format(_("%ld"), lval );
-            }
-            else {
-                m_strValue = _("0");
-            }
+            strValue.ToLong( &lval );       // Ignore possible error, get what we get
+            m_strValue = wxString::Format(_("%ld"), lval );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_DOUBLE:
             double dval;
             if ( strValue.ToDouble( &dval ) ) {
-                m_strValue = wxString::Format(_("%f"), dval );
+                m_strValue = wxString::Format(_("%lf"), dval );
             }
             else {
                 m_strValue = _("0");
@@ -5651,7 +5643,7 @@ bool CVariableStorage::add( CVSCPVariable& var )
 
 bool CVariableStorage::add( const wxString& name, 
                                     const wxString& value, 
-                                    const uint8_t type,
+                                    const uint16_t type,
                                     const uint32_t userid,
                                     const bool bPersistent,
                                     const uint32_t accessRights,

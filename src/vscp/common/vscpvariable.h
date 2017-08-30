@@ -106,7 +106,7 @@ class wxFFileOutputStream;
     "\"lastchange\": \"%s\",\n"\
     "\"bnumeric\": %s,\n"\
     "\"bbase64\": %s,\n"\
-    "\"value\": \"%s\",\n"\
+    "\"value\": %s,\n"\
     "\"note\": \"%s\"\n"\
 "}"
 
@@ -612,13 +612,13 @@ public:
         @param type Type of variable. Defaults to string.
         @param userid Id for user that owns the variable.
         @param bPersistent True if the variable should be saved to
-        persistent storage.
+                persistent storage.
         @param accessRights Access rights for the variable
         @return true on success, false on failure.
      */
     bool add( const wxString& name,
                     const wxString& value,
-                    const uint8_t type = VSCP_DAEMON_VARIABLE_CODE_STRING,
+                    const uint16_t type = VSCP_DAEMON_VARIABLE_CODE_STRING,
                     const uint32_t userid = USER_ID_ADMIN,
                     const bool bPersistent = false,
                     const uint32_t accessRights = PERMISSON_OWNER_ALL,

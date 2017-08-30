@@ -209,6 +209,7 @@ CControlObject::CControlObject()
     // Debug flags
     //m_debugFlags1 = VSCP_DEBUG1_ALL;
     m_debugFlags1 = 0;
+    //m_debugFlags1 |= VSCP_DEBUG1_DM;
     //m_debugFlags1 |= VSCP_DEBUG1_AUTOMATION;
     //m_debugFlags1 |= VSCP_DEBUG1_VARIABLE;
     //m_debugFlags1 |= VSCP_DEBUG1_MULTICAST;
@@ -2902,15 +2903,22 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
             }
                     
             // Get the path to the DM file
-            attribut = child->GetAttribute(wxT("pathxml"), wxT(""));
+            attribut = child->GetAttribute( _("pathxml"), _("") );
             if ( attribut.Length() ) {
                 m_dm.m_staticXMLPath = attribut;
             }
                     
             // Get the path to the DM db file
-            attribut = child->GetAttribute(wxT("pathdb"), wxT(""));
+            attribut = child->GetAttribute( _("pathdb"), _("") );
             if ( attribut.Length() ) {
                 m_dm.m_path_db_vscp_dm.Assign( attribut );
+            }
+            
+            // Get the DM loglevel
+            attribut = child->GetAttribute( _("loglevel"), _("") );
+            attribute.MakeLower();
+            if ( wxNOT_FOUND != attribute.Find( _("debug") ) ) {
+                m_debugFlags1 |= VSCP_DEBUG1_DM;
             }
                     
         }

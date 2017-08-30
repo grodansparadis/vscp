@@ -40,16 +40,6 @@ duk_ret_t js_load_module( duk_context *ctx );
 duk_ret_t js_vscp_print( duk_context *ctx );
 
 /*!
- * Encode string to BASE64 encoded string
- */
-duk_ret_t js_atob( duk_context *ctx );
-
-/*!
- * Decode BASE64 encoded string
- */
-duk_ret_t js_btoa( duk_context *ctx );
-
-/*!
  *  Log data
  * 
  * JavaScript Parameter 0: Stringto log.
