@@ -76,12 +76,16 @@ extern CControlObject *gpobj;
 ///////////////////////////////////////////////////
 
 
- bool get_js_Event( duk_context *ctx, int *pvarObjEvent, vscpEventEx *pex )
+///////////////////////////////////////////////////////////////////////////////
+// get_js_Event
+//
+// Make event from JSON data object on stack
+//
+
+ bool get_js_Event( duk_context *ctx, vscpEventEx *pex )
 {
- /*   
-    // Must be object
-    if ( !v7_is_object( *pvarObjEvent ) ) {
-        // Not good
+    //  Should be a JSON variable object
+    if ( !duk_is_object(ctx, -1) ) {
         return false;
     }
     
@@ -91,74 +95,110 @@ extern CControlObject *gpobj;
         return false;
     }
       
-    // Head
-    pex->head = VSCP_PRIORITY_NORMAL;
-    v7_val_t v7_head = v7_get( v7, *pvarObjEvent, "head", 4 );
-    if ( !v7_is_undefined( v7_head ) && v7_is_number( v7_head ) ) {
-        pex->head = v7_get_int( v7, v7_head );
+    // Get Head
+    pex->head = 0;
+    duk_push_string(ctx, "head");
+    duk_get_prop(ctx, -2);
+    if ( duk_is_number( ctx, -1 ) ) {
+        pex->head  = (uint16_t)duk_get_int_default( ctx, -1, VSCP_PRIORITY_NORMAL );
     }
+    duk_pop(ctx);
     
-    // Timestamp
+    // Get timestamp
     pex->timestamp = 0;
-    v7_val_t v7_timestamp = v7_get( v7, *pvarObjEvent, "timestamp", 9 );
-    if ( !v7_is_undefined( v7_timestamp ) && v7_is_number( v7_timestamp ) ) {
-        pex->timestamp = v7_get_int( v7, v7_timestamp );
+    duk_push_string(ctx, "timestamp");
+    duk_get_prop(ctx, -2);
+    if ( duk_is_number( ctx, -1 ) ) {
+        pex->timestamp  = (uint32_t)duk_get_number_default( ctx, -1, 0 );
     }
+    duk_pop(ctx);
     
-    // obid
+    // Get obid
     pex->obid = 0;
-    v7_val_t v7_obid = v7_get( v7, *pvarObjEvent, "obid", 4 );
-    if ( !v7_is_undefined( v7_obid ) && v7_is_number( v7_obid ) ) {
-        pex->obid = v7_get_int( v7, v7_obid );
+    duk_push_string(ctx, "obid");
+    duk_get_prop(ctx, -2);
+    if ( duk_is_number( ctx, -1 ) ) {
+        pex->obid  = (uint32_t)duk_get_number_default( ctx, -1, 0 );
     }
+    duk_pop(ctx);
     
-    // class
-    pex->vscp_class = 0;
-    v7_val_t v7_class = v7_get( v7, *pvarObjEvent, "class", 5 );
-    if ( !v7_is_undefined( v7_class ) && v7_is_number( v7_class ) ) {
-        pex->vscp_class = v7_get_int( v7, v7_class );
+    // Get VSCP class
+    pex->vscp_class  = 0;
+    duk_push_string(ctx, "class");
+    duk_get_prop(ctx, -2);
+    if ( duk_is_number( ctx, -1 ) ) {
+        pex->vscp_class  = (uint16_t)duk_get_int_default( ctx, -1, 0 );
     }
-    else {
-        // Must be defined
-        return false;;
-    }
+    duk_pop(ctx);
     
-    // type
-    pex->vscp_type = 0;
-    v7_val_t v7_type = v7_get( v7, *pvarObjEvent, "type", 4 );
-    if ( !v7_is_undefined( v7_type ) && v7_is_number( v7_type ) ) {
-        pex->vscp_type = v7_get_int( v7, v7_type );
+    // Get VSCP type
+    pex->vscp_type  = 0;
+    duk_push_string(ctx, "type");
+    duk_get_prop(ctx, -2);
+    if ( duk_is_number( ctx, -1 ) ) {
+        pex->vscp_type  = (uint16_t)duk_get_int_default( ctx, -1, 0 );
     }
-    else {
-        // Must be defined
-        return false;;
-    }
+    duk_pop(ctx);
     
     //GUID
     memset( pex->GUID, 0, 16 ); 
-    v7_val_t v7_guid = v7_get( v7, *pvarObjEvent, "guid", 4 );
-    if ( !v7_is_undefined( v7_guid ) && !v7_is_number( v7_guid ) ) {
-        wxString strGUID = v7_get_cstring( v7, &v7_guid );
-        vscp_getGuidFromStringEx( pex, strGUID );
+    duk_push_string(ctx, "guid");
+    duk_get_prop(ctx, -2);
+    if ( duk_is_string( ctx, -1 ) ) {
+        const char *pGUID  = duk_get_string_default( ctx, 
+                                -1, 
+                                "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" );
+        vscp_getGuidFromStringEx( pex, pGUID );
     }
+    duk_pop(ctx);
     
-    // Data
-    pex->sizeData = 0;
-    v7_val_t v7_dataArray = v7_get( v7, *pvarObjEvent, "data", 4 );
-    if ( v7_is_undefined( v7_dataArray ) || !v7_is_array( v7, v7_dataArray ) ) {
-        return false;
-    }
     
-    pex->sizeData = v7_array_length( v7, v7_dataArray );
-    if ( pex->sizeData ) {
-        for ( int i=0; i<pex->sizeData; i++ ) {
-            v7_val_t v7_item = v7_array_get( v7, v7_dataArray, i );
-            if ( !v7_is_undefined( v7_item ) && v7_is_number( v7_item ) && ( i < 512 ) ) {
-                pex->data[ i ] = v7_get_int( v7, v7_item );
-            }
+    // Get time(block)
+    wxDateTime dt;
+    vscp_setEventExDateTimeBlockToNow( pex );
+    duk_push_string(ctx, "time");
+    duk_get_prop(ctx, -2); 
+    if ( duk_is_string( ctx, -1 ) ) {
+        const char *pTime  = duk_get_string_default( ctx, -1, "" );
+        if ( dt.ParseISOCombined( pTime ) ) {
+            pex->year = dt.GetYear();
+            pex->month = dt.GetMonth() + 1;
+            pex->day = dt.GetDay();
+            pex->hour = dt.GetHour();
+            pex->minute = dt.GetMinute();
+            pex->second = dt.GetSecond();
+        }
+        else {
+            pex->year = wxDateTime::UNow().GetYear();
+            pex->month = wxDateTime::UNow().GetMonth() + 1;
+            pex->day = wxDateTime::UNow().GetDay();
+            pex->hour = wxDateTime::UNow().GetHour();
+            pex->minute = wxDateTime::UNow().GetMinute();
+            pex->second = wxDateTime::UNow().GetSecond();
         }
     }
- */   
+    duk_pop(ctx);
+    
+    // Get data
+    pex->sizeData = 0;
+    memset( pex->data, 0, VSCP_MAX_DATA );
+    duk_push_string(ctx, "data");
+    duk_get_prop(ctx, -2);   
+    
+    if ( duk_is_array( ctx, -1 ) ) {
+        int lengthArray = duk_get_length( ctx, -1 );
+        // Make sure size is valid
+        if ( lengthArray > VSCP_MAX_DATA ) lengthArray = VSCP_MAX_DATA;
+        pex->sizeData = lengthArray;
+        for ( int i = 0; i < lengthArray; i++ ) {
+            if ( duk_get_prop_index(ctx, -1, i) ) {
+                pex->data[ i ] = (uint8_t)duk_get_int_default( ctx, -1, 0 );
+            }
+            duk_pop( ctx );
+        }
+    }
+    duk_pop(ctx);
+            
     return true;
 }
 
@@ -240,7 +280,7 @@ duk_ret_t js_vscp_print( duk_context *ctx )
     duk_push_string(ctx, " ");
     duk_insert(ctx, 0);
     duk_join(ctx, duk_get_top(ctx) - 1);
-    printf("%s\n", duk_safe_to_string(ctx, -1));
+    wxPrintf( "%s\n", duk_safe_to_string(ctx, -1) );
     return JAVASCRIPT_OK;
 }
 
@@ -329,13 +369,7 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
         duk_push_null(ctx); // Return failure
         return JAVASCRIPT_OK;
     }
-   
-    // Get the clientitem pointer
-    duk_push_global_object(ctx);                /* -> stack: [ global ] */
-    duk_push_string(ctx, "vscp_clientitem");    /* -> stack: [ global "vscp_clientItem" ] */
-    duk_get_prop(ctx, -2);                      /* -> stack: [ global vscp_clientItem ] */
-    CClientItem *pItem = (CClientItem *)duk_get_pointer_default(ctx,-1,0);
-    
+       
     duk_pop_n(ctx, 3); // Clear stack
     
     if ( !gpobj->m_VSCP_Variables.find( varName, variable ) ) {
@@ -388,7 +422,7 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
     
         // Variable does not exist - should be created
         
-        // Get type
+        // Get the type
         duk_push_string(ctx, "type");
         duk_get_prop(ctx, -2);
         
@@ -528,236 +562,15 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
         int nArgs = duk_get_top(ctx);               
         duk_pop_n(ctx, 2); // Clear stack        
         
-                // Update variable storage
+        // Update variable storage
         if ( !gpobj->m_VSCP_Variables.update( variable ) ) {
-            duk_push_null(ctx);  // Return failure
+            duk_push_boolean(ctx,0);    // return code false
             return JAVASCRIPT_OK;
         }
         
-        /*if ( !gpobj->m_VSCP_Variables.find( varName, variable ) ) {
-            duk_push_null(ctx);  // Return failure
-            return JAVASCRIPT_OK;
-        }*/
     }
     
-   
-    // Get the clientitem pointer
-    /*duk_push_global_object(ctx);                
-    duk_push_string(ctx, "vscp_clientitem");    
-    duk_get_prop(ctx, -2);                      
-    CClientItem *pItem = (CClientItem *)duk_get_pointer_default(ctx,-1,0);
-    
-    duk_pop_n(ctx, 3); // Clear stack
-   
-            
-    if ( !gpobj->m_VSCP_Variables.find( varName, variable ) ) {
-        
-        // Found - update
-        
-        // Set the variable value - if there
-        duk_push_string(ctx, "value");
-        
-        duk_get_prop(ctx, -2);              // -> [ global json_test param3 ] 
-        wxString str2 = wxString::Format("json_test.param3 is %s\n", duk_get_string(ctx, -1));
-        
-        
-        v7_val_t v7_varValue = v7_get( v7, varObj, "value", 5 );
-        if ( v7_is_boolean( v7_varValue ) ) {
-            
-            // Boolean form
-            bool bValue = v7_get_bool( v7, v7_varValue );
-            bValue ? variable.setTrue() : variable.setFalse();
-            
-        }
-        else if ( v7_is_number( v7_varValue ) ) {
-            
-            // Numeric form
-            if ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE == variable.getType() ) {
-                double value = v7_get_double( v7, v7_varValue );
-                variable.setValue( value );
-            }
-            else {
-                long value = v7_get_int( v7, v7_varValue );
-                variable.setValue( value );
-            }
-            
-        }
-        else {
-            
-            // String form
-            const char *pValue = v7_get_cstring( v7, &v7_varValue );
-            if ( NULL != pValue ) {
-                variable.setValue( pValue );
-            }
-            
-        }
-        
-        // If note is present set note
-        v7_val_t v7_varNote = v7_get( v7, varObj, "note", 4 );
-        if ( !v7_is_undefined( v7_varNote ) ) {
-            const char *pVarNote = v7_get_cstring( v7, &v7_varNote );
-        }
-        
-        // Save it
-        if ( !gpobj->m_VSCP_Variables.add( variable ) ) {
-            // Not good
-            *res = v7_mk_boolean( v7, 0 );  // Return error
-            return 1;
-        }*/
-    
-    /*
-    v7_val_t valClientItem = v7_arg(v7, 0);
-    CClientItem *pClientItem = (CClientItem *)v7_get_ptr( v7, valClientItem );
-    
-    v7_val_t varObj = v7_arg(v7, 1);
-    
-    // Must be object
-    if ( !v7_is_object( varObj ) ) {
-        // Not good
-        *res = v7_mk_boolean( v7, 0 );  // Return error
-        return 1;
-    }
-    
-    // Get the variable name
-    v7_val_t v7_varName = v7_get( v7, varObj, "name", 4 );
-    const char *pVarName = v7_get_cstring( v7, &v7_varName );
-     
-    if ( gpobj->m_VSCP_Variables.find( pVarName, variable ) ) {
-       
-        // Found - update
-        
-        // Set the variable value
-        
-        v7_val_t v7_varValue = v7_get( v7, varObj, "value", 5 );
-        if ( v7_is_boolean( v7_varValue ) ) {
-            
-            // Boolean form
-            bool bValue = v7_get_bool( v7, v7_varValue );
-            bValue ? variable.setTrue() : variable.setFalse();
-            
-        }
-        else if ( v7_is_number( v7_varValue ) ) {
-            
-            // Numeric form
-            if ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE == variable.getType() ) {
-                double value = v7_get_double( v7, v7_varValue );
-                variable.setValue( value );
-            }
-            else {
-                long value = v7_get_int( v7, v7_varValue );
-                variable.setValue( value );
-            }
-            
-        }
-        else {
-            
-            // String form
-            const char *pValue = v7_get_cstring( v7, &v7_varValue );
-            if ( NULL != pValue ) {
-                variable.setValue( pValue );
-            }
-            
-        }
-        
-        // If note is present set note
-        v7_val_t v7_varNote = v7_get( v7, varObj, "note", 4 );
-        if ( !v7_is_undefined( v7_varNote ) ) {
-            const char *pVarNote = v7_get_cstring( v7, &v7_varNote );
-        }
-        
-        // Save it
-        if ( !gpobj->m_VSCP_Variables.add( variable ) ) {
-            // Not good
-            *res = v7_mk_boolean( v7, 0 );  // Return error
-            return 1;
-        }
-        
-    }
-    else {
-        
-        // Not found - create a new variable
-        
-        variable.setName( pVarName );                           // Set name
-        
-        variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );   // Default type
-        
-        v7_val_t v7_varType = v7_get( v7, varObj, "type", 4 );
-        if ( !v7_is_undefined( v7_varType ) ) {
-            int type = v7_get_int( v7, v7_varType );
-            variable.setType( type );
-        }
-                
-        // Persistence
-        variable.setPersistent( false );    // Default is non-persistent
-        v7_val_t v7_varPersitence = v7_get( v7, varObj, "persistence", 11 );
-        if ( !v7_is_undefined( v7_varPersitence ) ) {
-            variable.setPersistent( v7_get_bool( v7, v7_varPersitence ) ? true : false );
-        }
-        
-        // User
-        variable.setUserID( USER_ID_ADMIN );    // Default is Admin user
-        v7_val_t v7_varUser = v7_get( v7, varObj, "user", 4 );
-        if ( !v7_is_undefined( v7_varUser ) && v7_is_number( v7_varUser ) ) {
-            variable.setUserID( v7_get_int( v7, v7_varUser ) );
-        }
-        
-        // Access-Rights
-        variable.setAccessRights( PERMISSON_OWNER_ALL );    // Owner have all rights
-        v7_val_t v7_varAccessRights = v7_get( v7, varObj, "accessrights", 12 );
-        if ( !v7_is_undefined( v7_varAccessRights ) && v7_is_number( v7_varAccessRights ) ) {
-            variable.setUserID( v7_get_int( v7, v7_varAccessRights ) );
-        }
-        
-        // Set the variable value
-        
-        v7_val_t v7_varValue = v7_get( v7, varObj, "value", 5 );
-        if ( v7_is_boolean( v7_varValue ) ) {
-            
-            // Boolean form
-            bool bValue = v7_get_bool( v7, v7_varValue );
-            bValue ? variable.setTrue() : variable.setFalse();
-            
-        }
-        else if ( v7_is_number( v7_varValue ) ) {
-            
-            // Numeric form
-            if ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE == variable.getType() ) {
-                double value = v7_get_double( v7, v7_varValue );
-                variable.setValue( value );
-            }
-            else {
-                long value = v7_get_int( v7, v7_varValue );
-                variable.setValue( value );
-            }
-            
-        }
-        else {
-            
-            // String form
-            const char *pValue = v7_get_cstring( v7, &v7_varValue );
-            if ( NULL != pValue ) {
-                variable.setValue( pValue );
-            }
-            
-        }
-        
-        // If note is present set note
-        v7_val_t v7_varNote = v7_get( v7, varObj, "note", 4 );
-        if ( !v7_is_undefined( v7_varNote ) ) {
-            const char *pVarNote = v7_get_cstring( v7, &v7_varNote );
-        }
-        
-        // Save it
-        if ( !gpobj->m_VSCP_Variables.add( variable ) ) {
-            // Not good
-            *res = v7_mk_boolean( v7, 0 );  // Return error
-            return 1;
-        }
-        
-    }
-
-    *res = v7_mk_boolean( v7, 1 );  // Return success
-    */
+    duk_push_boolean(ctx,1);    // return code success
     return JAVASCRIPT_OK;
 }
 
@@ -767,32 +580,24 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
 
  duk_ret_t js_vscp_deleteVariable( duk_context *ctx ) 
 {
+    wxString varName;
     CVSCPVariable variable;
     bool bResult;
-    /*
-    v7_val_t valClientItem = v7_arg(v7, 0);
-    CClientItem *pClientItem = (CClientItem *)v7_get_ptr( v7, valClientItem );
     
-    v7_val_t v7_varName = v7_arg(v7, 1);
-    
-    // Must be string
-    if ( !v7_is_string( v7_varName ) ) {
-        // Not good
-        *res = v7_mk_boolean( v7, 0 );  // Return error
-        return 1;
+    // Get variable name
+    varName = duk_get_string_default(ctx, -1, "");
+    duk_pop_n(ctx, 1);
+    if ( 0 == varName.Length() ) {
+        duk_push_boolean(ctx,0);    // return code false
+        return JAVASCRIPT_OK;
     }
     
-    // Get the variable name
-    const char *pVarName = v7_get_cstring( v7, &v7_varName );
-     
-    wxString strName = pVarName;
-    if ( gpobj->m_VSCP_Variables.remove( strName ) ) {
-        *res = v7_mk_boolean( v7, 1 );  // Return success
+    if ( !gpobj->m_VSCP_Variables.remove( varName ) ) {
+        duk_push_boolean(ctx,0);    // return code false
+        return JAVASCRIPT_OK;
     }
-    else {
-        *res = v7_mk_boolean( v7, 0 );  // Return success
-    }
-    */
+    
+    duk_push_boolean(ctx,1);    // return code success
     return JAVASCRIPT_OK;
 }
 
@@ -811,52 +616,48 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
 //    "data": [1,2,3,4,5,6,7],
 //    "note": "This is some text"
 // }
-
+//
+ 
 duk_ret_t js_vscp_sendEvent( duk_context *ctx ) 
 {
     vscpEventEx ex;
-    /*
-    // Get client item object
-    v7_val_t valClientItem = v7_arg(v7, 0);
-    CClientItem *pClientItem = (CClientItem *)v7_get_ptr( v7, valClientItem );
     
-    // Get event
-    v7_val_t varObjEvent = v7_arg(v7, 1);
-    
-    // Must be object
-    if ( !v7_is_object( varObjEvent ) ) {
-        // Not good
-        *res = v7_mk_boolean( v7, 0 );  // Return error
-        return 1;
+    //  Should be a JSON variable object
+    if ( !duk_is_object(ctx, -1) ) {
+        duk_push_boolean(ctx,0);    // return code false
+        return JAVASCRIPT_OK;
     }
       
-    if ( !get_js_Event( v7, &varObjEvent, &ex ) ) {
+    if ( !get_js_Event( ctx, &ex ) ) {
         // Not good
-        *res = v7_mk_boolean( v7, 0 );  
-        return 1;
+        duk_push_boolean(ctx,0);    // return code false
+        return JAVASCRIPT_OK;
     }
     
     // Send the event
     vscpEvent *pEvent = new vscpEvent;
     if ( NULL == pEvent ) {
-        *res = v7_mk_boolean( v7, 0 );  // Return error
-        return 1;
+        duk_push_boolean(ctx,0);    // return code false
+        return JAVASCRIPT_OK;
     }
     
     vscp_convertVSCPfromEx( pEvent, &ex );
     
+    duk_push_global_object(ctx);                /* -> stack: [ global ] */
+    duk_push_string(ctx, "vscp_clientitem");    /* -> stack: [ global "vscp_clientItem" ] */
+    duk_get_prop(ctx, -2);                      /* -> stack: [ global vscp_clientItem ] */
+    CClientItem *pClientItem = (CClientItem *)duk_get_pointer(ctx,-1);
+    
     if ( !gpobj->sendEvent( pClientItem, pEvent ) ) {
         // Failed to send event
         vscp_deleteVSCPevent( pEvent );
-        *res = v7_mk_boolean( v7, 0 );  // Return error
-        return 1;
+        duk_push_boolean(ctx,0);    // return code false
+        return JAVASCRIPT_OK;
     }
     
     vscp_deleteVSCPevent( pEvent );
-    
-    
-    *res = v7_mk_boolean( v7, 1 );  // Return success
-    */
+        
+    duk_push_boolean(ctx,1);    // return code success
     return JAVASCRIPT_OK;
 }
 
