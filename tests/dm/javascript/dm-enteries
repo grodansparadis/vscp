@@ -190,13 +190,67 @@ Create string variable
 Send event
 
 
-var event = { time:"20161102T190032", \
-                head:0, \
-                timestamp:0, \
-                obid:0, \
-                class: 10, \
-                type: 6, \
-                guid: "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00", \
-                data: [1,2,3,4,5,6,7] };
+      // Send CLASS1.CONTROL, Type=5, TurnOn, Zone=11, Subzone=3
+      var event = { time:"2016-11-02T19:00:32", 
+                head:0, 
+                timestamp:0, 
+                obid:0, 
+                class: 30, 
+                type: 5, 
+                guid: "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00", 
+                data: [0,11,3] };
 
- vscp_sendEvent(event);               
+      if ( vscp_sendEvent(event) ) {
+          vscp_log("TurnOn event sent successfully!");
+      }
+      else {
+          vscp_log("Faild to send TurnOn event!");
+      }              
+
+
+      ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Receive event  ( set on test every second (5) )
+
+Note!!! Just work if there are heavy traffic as the interface need to get some events
+
+      vscp_sleep( 900 );
+      var event = vscp_receiveEvent( vscp_clientItem );
+      if ( null != vscpEventObj ) {
+          print("Event received.");
+          print("---------------");
+          print("Class = ",vscp_clientItem.class);
+          print("Type = ",vscp_clientItem.type);
+      }
+
+
+      ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Receive event  ( set on server startup (23) )
+
+var vscpEventObj;       // JSON object containing VSCP event
+var bQuit = false;
+ 
+// Keep on until done
+while ( !bQuit ) {
+ 
+    // Fetch event from client queue
+    vscpEventObj= vscp_receiveEvent();
+ 
+    if ( null != vscpEventObj ) {
+ 
+        vscp_log("VSCP event received: class = " + vscpEventObj.class.toString() + " type = " + vscpEventObj.type.toString() + "\n");
+ 
+        // Event CLASS1.INFORMATION, Type=Stop, 8 terminates the loop
+        if ( 30 == vscpEventObj.class ) {
+            if ( 8 == vscpEventObj.type ) {
+                bQuit = true;
+            }
+        }
+    }
+    else {
+        vscp_sleep( 500 );
+    }
+}
+ 
+vscp_log("Done!\n");

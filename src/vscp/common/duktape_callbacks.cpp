@@ -633,6 +633,7 @@ duk_ret_t js_vscp_sendEvent( duk_context *ctx )
         duk_push_boolean(ctx,0);    // return code false
         return JAVASCRIPT_OK;
     }
+    duk_pop_n(ctx, 1);
     
     // Send the event
     vscpEvent *pEvent = new vscpEvent;
@@ -647,6 +648,11 @@ duk_ret_t js_vscp_sendEvent( duk_context *ctx )
     duk_push_string(ctx, "vscp_clientitem");    /* -> stack: [ global "vscp_clientItem" ] */
     duk_get_prop(ctx, -2);                      /* -> stack: [ global vscp_clientItem ] */
     CClientItem *pClientItem = (CClientItem *)duk_get_pointer(ctx,-1);
+    if ( NULL == pClientItem ) {
+        duk_push_boolean(ctx,0);    // return code false
+        return JAVASCRIPT_OK;
+    }
+    duk_pop_n(ctx, 2);
     
     if ( !gpobj->sendEvent( pClientItem, pEvent ) ) {
         // Failed to send event
@@ -667,9 +673,15 @@ duk_ret_t js_vscp_sendEvent( duk_context *ctx )
 
  duk_ret_t js_vscp_getEvent( duk_context *ctx ) 
 {    
-    /*
-    v7_val_t valClientItem = v7_arg(v7, 0);
-    CClientItem *pClientItem = (CClientItem *)v7_get_ptr( v7, valClientItem );
+    duk_push_global_object(ctx);                /* -> stack: [ global ] */
+    duk_push_string(ctx, "vscp_clientitem");    /* -> stack: [ global "vscp_clientItem" ] */
+    duk_get_prop(ctx, -2);                      /* -> stack: [ global vscp_clientItem ] */
+    CClientItem *pClientItem = (CClientItem *)duk_get_pointer(ctx,-1);
+    if ( NULL == pClientItem ) {
+        duk_push_boolean(ctx,0);    // return code false
+        return JAVASCRIPT_OK;
+    }
+    duk_pop_n(ctx, 2);
     
 try_again:
     
@@ -684,8 +696,8 @@ try_again:
         if ( NULL == nodeClient )  {
             
             // Exception
-            *res = v7_mk_null();
-            return 1;        
+            duk_push_null(ctx);    // return code failure
+            return JAVASCRIPT_OK;        
             
         }
         
@@ -701,14 +713,11 @@ try_again:
                 
                 wxString strResult;
                 vscp_convertEventToJSON( pEvent, strResult );
-                
-                if ( V7_OK != v7_parse_json( v7, (const char *)strResult.mbc_str(), res ) ) {
-                    *res = v7_mk_null();
-                    return 1;        
-                }       
-                
+                duk_push_string( ctx, (const char *)strResult.mbc_str() );
+                duk_json_decode( ctx, -1 );
+                                
                 // All OK return event
-                return 1;
+                return JAVASCRIPT_OK;
    
             }
             else {
@@ -725,15 +734,17 @@ try_again:
         } // Valid pEvent pointer
         else {
             // NULL event
-            *res = v7_mk_null();
-            return 1;
+            duk_push_null(ctx);    // return code failure
+            return JAVASCRIPT_OK;
         }
                 
     } // events available
     
+ 
+    int nArgs = duk_get_top(ctx); 
+     
     // Fail
-    *res = v7_mk_null();
-    */
+    duk_push_null(ctx);    // return code failure
     return JAVASCRIPT_OK;    
 }
 
