@@ -756,9 +756,16 @@ try_again:
  duk_ret_t js_vscp_getCountEvent( duk_context *ctx ) 
 {
     int count = 0;
-    /*
-    v7_val_t valClientItem = v7_arg(v7, 0);
-    CClientItem *pClientItem = (CClientItem *)v7_get_ptr( v7, valClientItem );
+    
+    duk_push_global_object(ctx);                /* -> stack: [ global ] */
+    duk_push_string(ctx, "vscp_clientitem");    /* -> stack: [ global "vscp_clientItem" ] */
+    duk_get_prop(ctx, -2);                      /* -> stack: [ global vscp_clientItem ] */
+    CClientItem *pClientItem = (CClientItem *)duk_get_pointer(ctx,-1);
+    if ( NULL == pClientItem ) {
+        duk_push_boolean(ctx,0);    // return code false
+        return JAVASCRIPT_OK;
+    }
+    duk_pop_n(ctx, 2);
     
     if ( pClientItem->m_bOpen ) {
         count = pClientItem->m_clientInputQueue.GetCount();
@@ -767,8 +774,7 @@ try_again:
         count = 0;
     }
     
-    *res = v7_mk_number( v7, count );  // Return success
-    */
+    duk_push_number(ctx,count);    // return count
     return JAVASCRIPT_OK;
 }
 
@@ -790,83 +796,100 @@ try_again:
  duk_ret_t js_vscp_setFilter( duk_context *ctx ) 
 {
     vscpEventFilter filter;
-    /*
-    v7_val_t valClientItem = v7_arg(v7, 0);
-    CClientItem *pClientItem = (CClientItem *)v7_get_ptr( v7, valClientItem );
     
-    // Get filter
-    v7_val_t varObjFilter = v7_arg(v7, 1);
-    
-    // Must be an object
-    if ( !v7_is_object( varObjFilter ) ) {
-        // Not good
-        *res = v7_mk_boolean( v7, 0 );  // Return error
-        return 1;
+    duk_push_global_object(ctx);                /* -> stack: [ global ] */
+    duk_push_string(ctx, "vscp_clientitem");    /* -> stack: [ global "vscp_clientItem" ] */
+    duk_get_prop(ctx, -2);                      /* -> stack: [ global vscp_clientItem ] */
+    CClientItem *pClientItem = (CClientItem *)duk_get_pointer(ctx,-1);
+    if ( NULL == pClientItem ) {
+        duk_push_boolean(ctx,0);    // return code false
+        return JAVASCRIPT_OK;
     }
-    
+    duk_pop_n(ctx, 2);
+        
+    //  Should be a JSON variable object
+    if ( !duk_is_object(ctx, -1) ) {
+        duk_push_boolean(ctx,0);    // return code failure
+        return JAVASCRIPT_OK;
+    }
+          
     // Mask priority
-    filter.mask_priority = 0;   // Default is don't care
-    v7_val_t v7_mask_priority = v7_get( v7, varObjFilter, "mask_priority", 13 );
-    if ( !v7_is_undefined( v7_mask_priority ) && v7_is_number( v7_mask_priority ) ) {
-        filter.mask_priority = v7_get_int( v7, v7_mask_priority );
+    duk_push_string(ctx, "mask_priority");
+    duk_get_prop(ctx, -2);
+    if ( duk_is_number( ctx, -1 ) ) {
+        filter.mask_priority  = (uint8_t)duk_get_int_default( ctx, -1, 0 );
     }
-    
+    duk_pop(ctx);
+       
     // Mask class
-    filter.mask_class = 0;   // Default is don't care
-    v7_val_t v7_mask_class = v7_get( v7, varObjFilter, "mask_class", 10 );
-    if ( !v7_is_undefined( v7_mask_class ) && v7_is_number( v7_mask_class ) ) {
-        filter.mask_class = v7_get_int( v7, v7_mask_class );
+    duk_push_string(ctx, "mask_class");
+    duk_get_prop(ctx, -2);
+    if ( duk_is_number( ctx, -1 ) ) {
+        filter.mask_class  = (uint16_t)duk_get_int_default( ctx, -1, 0 );
     }
+    duk_pop(ctx);
     
     // Mask type
-    filter.mask_type = 0;   // Default is don't care
-    v7_val_t v7_mask_type = v7_get( v7, varObjFilter, "mask_type", 9 );
-    if ( !v7_is_undefined( v7_mask_type ) && v7_is_number( v7_mask_type ) ) {
-        filter.mask_type = v7_get_int( v7, v7_mask_type );
+    duk_push_string(ctx, "mask_type");
+    duk_get_prop(ctx, -2);
+    if ( duk_is_number( ctx, -1 ) ) {
+        filter.mask_type  = (uint16_t)duk_get_int_default( ctx, -1, 0 );
     }
+    duk_pop(ctx);
     
     // mask GUID
-    memset( filter.mask_GUID, 0, 16 ); // Default is don't care
-    v7_val_t v7_mask_guid = v7_get( v7, varObjFilter, "mask_guid", 9 );
-    if ( !v7_is_undefined( v7_mask_guid ) && !v7_is_number( v7_mask_guid ) ) {
-        wxString strGUID = v7_get_cstring( v7, &v7_mask_guid );
-        vscp_getGuidFromStringToArray( filter.mask_GUID, strGUID );
+    memset( filter.mask_GUID, 0, 16 ); // Default is don't care 
+    duk_push_string(ctx, "mask_guid");
+    duk_get_prop(ctx, -2);
+    if ( duk_is_string( ctx, -1 ) ) {
+        const char *pGUID  = duk_get_string_default( ctx, 
+                                -1, 
+                                "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" );
+        vscp_getGuidFromStringToArray( filter.mask_GUID, pGUID );
     }
+    duk_pop(ctx);
+    
     
     // Filter priority
-    filter.mask_priority = 0;
-    v7_val_t v7_filter_priority = v7_get( v7, varObjFilter, "filter_priority", 15 );
-    if ( !v7_is_undefined( v7_filter_priority ) && v7_is_number( v7_filter_priority ) ) {
-        filter.mask_priority = v7_get_int( v7, v7_filter_priority );
+    duk_push_string(ctx, "filter_priority");
+    duk_get_prop(ctx, -2);
+    if ( duk_is_number( ctx, -1 ) ) {
+        filter.filter_priority  = (uint8_t)duk_get_int_default( ctx, -1, 0 );
     }
+    duk_pop(ctx);
     
     // Filter class
-    filter.filter_class = 0;   // Default is don't care
-    v7_val_t v7_filter_class = v7_get( v7, varObjFilter, "filter_class", 12 );
-    if ( !v7_is_undefined( v7_filter_class ) && v7_is_number( v7_filter_class ) ) {
-        filter.filter_class = v7_get_int( v7, v7_filter_class );
+    duk_push_string(ctx, "filter_class");
+    duk_get_prop(ctx, -2);
+    if ( duk_is_number( ctx, -1 ) ) {
+        filter.filter_class  = (uint16_t)duk_get_int_default( ctx, -1, 0 );
     }
+    duk_pop(ctx);
     
     // Filter type
-    filter.filter_type = 0;   // Default is don't care
-    v7_val_t v7_filter_type = v7_get( v7, varObjFilter, "filter_type", 11 );
-    if ( !v7_is_undefined( v7_filter_type ) && v7_is_number( v7_filter_type ) ) {
-        filter.filter_type = v7_get_int( v7, v7_filter_type );
+    duk_push_string(ctx, "filter_type");
+    duk_get_prop(ctx, -2);
+    if ( duk_is_number( ctx, -1 ) ) {
+        filter.filter_type  = (uint16_t)duk_get_int_default( ctx, -1, 0 );
     }
+    duk_pop(ctx);
     
     // filter GUID
-    memset( filter.filter_GUID, 0, 16 ); // Default is don't care
-    v7_val_t v7_filter_guid = v7_get( v7, varObjFilter, "filter_guid", 11 );
-    if ( !v7_is_undefined( v7_filter_guid ) && !v7_is_number( v7_filter_guid ) ) {
-        wxString strGUID = v7_get_cstring( v7, &v7_filter_guid );
-        vscp_getGuidFromStringToArray( filter.filter_GUID, strGUID );
+    memset( filter.filter_GUID, 0, 16 ); 
+    duk_push_string(ctx, "filter_guid");
+    duk_get_prop(ctx, -2);
+    if ( duk_is_string( ctx, -1 ) ) {
+        const char *pGUID  = duk_get_string_default( ctx, 
+                                -1, 
+                                "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" );
+        vscp_getGuidFromStringToArray( filter.filter_GUID, pGUID );
     }
+    duk_pop(ctx);
     
     // Set the filter
     vscp_copyVSCPFilter( &pClientItem->m_filterVSCP, &filter);        
     
-    *res = v7_mk_boolean( v7, 1 );  // Return success
-    */
+    duk_push_boolean(ctx,1);    // return code success
     return JAVASCRIPT_OK;
 }
 
@@ -901,84 +924,101 @@ try_again:
     int zone = 0;
     int subzone = 0;
     
-    /*
-    v7_val_t valClientItem = v7_arg(v7, 0);
-    CClientItem *pClientItem = (CClientItem *)v7_get_ptr( v7, valClientItem );
+    duk_push_global_object(ctx);                /* -> stack: [ global ] */
+    duk_push_string(ctx, "vscp_clientitem");    /* -> stack: [ global "vscp_clientItem" ] */
+    duk_get_prop(ctx, -2);                      /* -> stack: [ global vscp_clientItem ] */
+    CClientItem *pClientItem = (CClientItem *)duk_get_pointer(ctx,-1);
+    if ( NULL == pClientItem ) {
+        duk_push_boolean(ctx,0);    // return code false
+        return JAVASCRIPT_OK;
+    }
+    duk_pop_n(ctx, 2);
     
-    // Get measurement JSON object
-    v7_val_t varObjMeasurement = v7_arg(v7, 1);
-    
-    // Must be an object
-    if ( !v7_is_object( varObjMeasurement ) ) {
-        // Not good
-        *res = v7_mk_boolean( v7, 0 );  // Return error
-        return 1;
+    //  Should be a JSON variable object
+    if ( !duk_is_object(ctx, -1) ) {
+        duk_push_boolean(ctx,0);    // return code false
+        return JAVASCRIPT_OK;
     }
     
-    // Value
-    v7_val_t v7_value = v7_get( v7, varObjMeasurement, "value", 5 );
-    if ( !v7_is_undefined( v7_value ) && v7_is_number( v7_value ) ) {
-        value = v7_get_double( v7, v7_value ); 
+    // Get measurement Level
+    duk_push_string(ctx, "level");
+    duk_get_prop(ctx, -2);
+    if ( duk_is_number( ctx, -1 ) ) {
+        int level  = duk_get_int_default( ctx, -1, 0 );
+        if ( 2 != level ) bLevel2 = false;
     }
-    else {
-        // Must be defined
-        *res = v7_mk_boolean( v7, 0 );  // Failed
-        return 1;
-    }
+    duk_pop(ctx);
     
-    // GUID
+    // Get measurement string flag
+    duk_push_string(ctx, "bstring");
+    duk_get_prop(ctx, -2);
+    if ( duk_is_boolean( ctx, -1 ) ) {
+        bString  = duk_get_boolean_default( ctx, -1, true );
+    }
+    duk_pop(ctx);
+    
+    // Get measurement Value
+    duk_push_string(ctx, "value");
+    duk_get_prop(ctx, -2);
+    if ( duk_is_number( ctx, -1 ) ) {
+        value  = duk_get_int_default( ctx, -1, 0 );
+    }
+    duk_pop(ctx);
+    
+    // Get measurement GUID
     uint8_t guid[16];
-    memset( guid, 0, 16 ); // Default is don't care
-    v7_val_t v7_guid = v7_get( v7, varObjMeasurement, "guid", 4 );
-    if ( !v7_is_undefined( v7_guid ) && !v7_is_number( v7_guid ) ) {
-        wxString strGUID = v7_get_cstring( v7, &v7_guid );
-        vscp_getGuidFromStringToArray( guid, strGUID );
+    memset( guid, 0, 16 ); 
+    duk_push_string(ctx, "guid");
+    duk_get_prop(ctx, -2);
+    if ( duk_is_string( ctx, -1 ) ) {
+        const char *pGUID  = duk_get_string_default( ctx, 
+                                -1, 
+                                "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" );
+        vscp_getGuidFromStringToArray( guid, pGUID );
     }
+    duk_pop(ctx);
+
     
-    // VSCP type
-    v7_val_t v7_type = v7_get( v7, varObjMeasurement, "vscptype", 8 );
-    if ( !v7_is_undefined( v7_type ) && v7_is_number( v7_type ) ) {
-        type = v7_get_double( v7, v7_type ); 
+    // Get measurement VSCP type
+    duk_push_string(ctx, "type");
+    duk_get_prop(ctx, -2);
+    if ( duk_is_number( ctx, -1 ) ) {
+        type  = duk_get_int_default( ctx, -1, 0 );
     }
-    else {
-        // Must be defined
-        *res = v7_mk_boolean( v7, 0 );  // Failed
-        return 1;
-    }
+    duk_pop(ctx);
     
-    // Level
-    v7_val_t v7_level = v7_get( v7, varObjMeasurement, "level", 5 );
-    if ( !v7_is_undefined( v7_level ) && v7_is_number( v7_level ) ) {
-        if ( 2 != v7_get_int( v7, v7_level ) ) {
-            bLevel2 = false;
-        }
+
+    // Get measurement VSCP unit
+    duk_push_string(ctx, "unit");
+    duk_get_prop(ctx, -2);
+    if ( duk_is_number( ctx, -1 ) ) {
+        unit  = duk_get_int_default( ctx, -1, 0 );
     }
+    duk_pop(ctx);
     
-    // String
-    v7_val_t v7_string = v7_get( v7, varObjMeasurement, "string", 6 );
-    if ( !v7_is_undefined( v7_string ) && v7_is_boolean( v7_string ) ) {
-        if ( v7_get_bool( v7, v7_string ) ) {
-            bString = true;
-        }
+    // Get measurement sensorindex
+    duk_push_string(ctx, "sensorindex");
+    duk_get_prop(ctx, -2);
+    if ( duk_is_number( ctx, -1 ) ) {
+        sensoridx  = duk_get_int_default( ctx, -1, 0 );
     }
-        
-    // unit
-    v7_val_t v7_unit = v7_get( v7, varObjMeasurement, "unit", 4 );
-    if ( !v7_is_undefined( v7_unit ) && v7_is_number( v7_unit ) ) {
-        unit = v7_get_int( v7, v7_unit ); 
-    }
+    duk_pop(ctx);
     
-    // zone
-    v7_val_t v7_zone = v7_get( v7, varObjMeasurement, "zone", 4 );
-    if ( !v7_is_undefined( v7_zone ) && v7_is_number( v7_zone ) ) {
-        zone = v7_get_int( v7, v7_zone ); 
+    // Get measurement zone
+    duk_push_string(ctx, "zone");
+    duk_get_prop(ctx, -2);
+    if ( duk_is_number( ctx, -1 ) ) {
+        zone  = duk_get_int_default( ctx, -1, 0 );
     }
+    duk_pop(ctx);
     
-    // subzone
-    v7_val_t v7_subzone = v7_get( v7, varObjMeasurement, "subzone", 7 );
-    if ( !v7_is_undefined( v7_subzone ) && v7_is_number( v7_subzone ) ) {
-        subzone = v7_get_int( v7, v7_subzone ); 
+    // Get measurement subzone
+    duk_push_string(ctx, "subzone");
+    duk_get_prop(ctx, -2);
+    if ( duk_is_number( ctx, -1 ) ) {
+        subzone  = duk_get_int_default( ctx, -1, 0 );
     }
+    duk_pop(ctx);
     
     if ( bLevel2 ) {
         
@@ -986,8 +1026,8 @@ try_again:
             
             pEvent = new vscpEvent;
             if ( NULL == pEvent ) {
-                *res = v7_mk_boolean( v7, 0 );  // Failed
-                return 1;
+                duk_push_boolean(ctx,0);    // return code failure
+                return JAVASCRIPT_OK;
             }
             pEvent->pdata = NULL;
         
@@ -1002,8 +1042,8 @@ try_again:
                                                             zone,
                                                             subzone ) ) {
                 // Failed
-                *res = v7_mk_boolean( v7, 0 );  // Failed
-                return 1;
+                duk_push_boolean(ctx,0);    // return code failure
+                return JAVASCRIPT_OK;
             }
             
         }
@@ -1011,8 +1051,8 @@ try_again:
             
             pEvent = new vscpEvent;
             if ( NULL == pEvent ) {
-                *res = v7_mk_boolean( v7, 0 );  // Failed
-                return 1;
+                duk_push_boolean(ctx,0);    // return code failure
+                return JAVASCRIPT_OK;;
             }
             pEvent->pdata = NULL;
         
@@ -1027,8 +1067,8 @@ try_again:
                                                             zone,
                                                             subzone ) ) {
                 // Failed
-                *res = v7_mk_boolean( v7, 0 );  // Failed
-                return 1;
+                duk_push_boolean(ctx,0);    // return code failure
+                return JAVASCRIPT_OK;
             }
             
         }
@@ -1042,8 +1082,8 @@ try_again:
             
             pEvent = new vscpEvent;
             if ( NULL == pEvent ) {
-                *res = v7_mk_boolean( v7, 0 );  // Failed
-                return 1;
+                duk_push_boolean(ctx,0);    // return code failure
+                return JAVASCRIPT_OK;
             }
                 
             memcpy( pEvent->GUID, guid, 16 );
@@ -1058,8 +1098,8 @@ try_again:
                                                         unit,
                                                         sensoridx ) ) {
                 vscp_deleteVSCPevent( pEvent );
-                *res = v7_mk_boolean( v7, 0 );  // Failed
-                return 1;
+                duk_push_boolean(ctx,0);    // return code failure
+                return JAVASCRIPT_OK;
             }
             
             //
@@ -1069,8 +1109,8 @@ try_again:
             
             pEvent = new vscpEvent;
             if ( NULL == pEvent ) {
-                *res = v7_mk_boolean( v7, 0 );  // Failed
-                return 1;
+                duk_push_boolean(ctx,0);    // return code failure
+                return JAVASCRIPT_OK;
             }
 
             memcpy( pEvent->GUID, guid, 16 );
@@ -1085,8 +1125,8 @@ try_again:
                                                     unit,
                                                     sensoridx ) ) {
                 vscp_deleteVSCPevent( pEvent );
-                *res = v7_mk_boolean( v7, 0 );  // Failed
-                return 1;
+                duk_push_boolean(ctx,0);    // return code failure
+                return JAVASCRIPT_OK;
             }
         
         }
@@ -1097,14 +1137,13 @@ try_again:
     if ( !gpobj->sendEvent( pClientItem, pEvent ) ) {
         // Failed to send event
         vscp_deleteVSCPevent( pEvent );
-        *res = v7_mk_boolean( v7, 0 );  // Return error
-        return 1;
+        duk_push_boolean(ctx,0);    // return code failure
+        return JAVASCRIPT_OK;
     }
     
     vscp_deleteVSCPevent( pEvent );
    
-    *res = v7_mk_boolean( v7, 1 );  // Success
-    */
+    duk_push_boolean(ctx,0);    // return code success
     return JAVASCRIPT_OK;
 }
 
@@ -1116,20 +1155,23 @@ try_again:
  duk_ret_t js_is_Measurement( duk_context *ctx ) 
 {
     vscpEventEx ex;
-    /*
-    // Get event
-    v7_val_t varObjEvent = v7_arg(v7, 0);
     
-    if ( !get_js_Event( v7, &varObjEvent, &ex ) ) {
+    //  Should be a JSON variable object
+    if ( !duk_is_object(ctx, -1) ) {
+        duk_push_boolean(ctx,0);    // return code false
+        return JAVASCRIPT_OK;
+    }
+        
+    if ( !get_js_Event( ctx, &ex ) ) {
         // Not good
-        *res = v7_mk_boolean( v7, 0 );  
-        return  1;
+        duk_push_boolean(ctx,0);    // return code false
+        return JAVASCRIPT_OK;
     }
     
     vscpEvent *pEvent = new vscpEvent;
     if ( NULL == pEvent ) {
-        *res = v7_mk_boolean( v7, 0 );  // Return error
-        return 1;
+        duk_push_boolean(ctx,0);    // return code false
+        return JAVASCRIPT_OK;
     }
     
     pEvent->pdata = NULL;
@@ -1138,8 +1180,7 @@ try_again:
     bool bMeasurement = vscp_isVSCPMeasurement( pEvent );
     vscp_deleteVSCPevent( pEvent );
     
-    *res = v7_mk_boolean( v7, bMeasurement ? 1 : 0 );  // Return result
-    */
+    duk_push_boolean(ctx,bMeasurement ? 1 : 0);    // return code false
     return JAVASCRIPT_OK;
 }
 
@@ -1152,26 +1193,22 @@ try_again:
 {
     double value;
     vscpEventEx ex;
-    /*
-    // Get measurement JSON object
-    v7_val_t varObjEvent = v7_arg(v7, 0);
     
-    // Must be an object
-    if ( !v7_is_object( varObjEvent ) ) {
-        // Not good
-        *res = v7_mk_null();  // Return error
-        return 1;
+    //  Should be a JSON variable object
+    if ( !duk_is_object(ctx, -1) ) {
+        duk_push_null(ctx);    // return code false
+        return JAVASCRIPT_OK;
     }
     
-    if ( !get_js_Event( v7, &varObjEvent, &ex ) ) {
-        *res = v7_mk_null();  // Return error
-        return 1;
+    if ( !get_js_Event( ctx, &ex ) ) {
+        duk_push_null(ctx);    // return code false
+        return JAVASCRIPT_OK;
     }
     
     vscpEvent *pEvent = new vscpEvent;
     if ( NULL == pEvent ) {
-        *res = v7_mk_null();  // Return error
-        return 1;
+        duk_push_null(ctx);    // return code false
+        return JAVASCRIPT_OK;
     }
     
     pEvent->pdata = NULL;
@@ -1180,8 +1217,7 @@ try_again:
     vscp_getVSCPMeasurementAsDouble( pEvent, &value );
     vscp_deleteVSCPevent( pEvent );
            
-    *res = v7_mk_number( v7, value );  // Success
-    */
+    duk_push_number(ctx, value);
     return JAVASCRIPT_OK;
 }
 
@@ -1192,26 +1228,22 @@ try_again:
  duk_ret_t js_get_MeasurementUnit( duk_context *ctx ) 
 {
     vscpEventEx ex;
-    /*
-    // Get measurement JSON object
-    v7_val_t varObjEvent = v7_arg(v7, 0);
     
-    // Must be an object
-    if ( !v7_is_object( varObjEvent ) ) {
-        // Not good
-        *res = v7_mk_null();  // Return error
-        return 1;
+    //  Should be a JSON variable object
+    if ( !duk_is_object(ctx, -1) ) {
+        duk_push_null(ctx);    // return code false
+        return JAVASCRIPT_OK;
     }
     
-    if ( !get_js_Event( v7, &varObjEvent, &ex ) ) {
-        *res = v7_mk_null();  // Return error
-        return 1;
+    if ( !get_js_Event( ctx, &ex ) ) {
+        duk_push_null(ctx);    // return code false
+        return JAVASCRIPT_OK;
     }
            
     vscpEvent *pEvent = new vscpEvent;
     if ( NULL == pEvent ) {
-        *res = v7_mk_null();  // Return error
-        return 1;
+        duk_push_null(ctx);    // return code false
+        return JAVASCRIPT_OK;
     }
     
     pEvent->pdata = NULL;
@@ -1220,8 +1252,7 @@ try_again:
     int unit = vscp_getVSCPMeasurementUnit( pEvent );
     vscp_deleteVSCPevent( pEvent );
            
-    *res = v7_mk_number( v7, unit );  // Success
-    */
+    duk_push_number(ctx, unit);
     return JAVASCRIPT_OK;
 }
 
@@ -1233,26 +1264,22 @@ try_again:
  duk_ret_t js_get_MeasurementSensorIndex( duk_context *ctx ) 
 {
     vscpEventEx ex;
-    /*
-    // Get measurement JSON object
-    v7_val_t varObjEvent = v7_arg(v7, 0);
     
-    // Must be an object
-    if ( !v7_is_object( varObjEvent ) ) {
-        // Not good
-        *res = v7_mk_null();  // Return error
-        return 1;
+    //  Should be a JSON variable object
+    if ( !duk_is_object(ctx, -1) ) {
+        duk_push_null(ctx);    // return code false
+        return JAVASCRIPT_OK;
     }
     
-    if ( !get_js_Event( v7, &varObjEvent, &ex ) ) {
-        *res = v7_mk_null();  // Return error
-        return 1;
+    if ( !get_js_Event( ctx, &ex ) ) {
+        duk_push_null(ctx);    // return code false
+        return JAVASCRIPT_OK;
     }
            
     vscpEvent *pEvent = new vscpEvent;
     if ( NULL == pEvent ) {
-        *res = v7_mk_null();  // Return error
-        return 1;
+        duk_push_null(ctx);    // return code false
+        return JAVASCRIPT_OK;
     }
     
     pEvent->pdata = NULL;
@@ -1261,8 +1288,7 @@ try_again:
     int sensorindex = vscp_getVSCPMeasurementSensorIndex( pEvent );
     vscp_deleteVSCPevent( pEvent );
            
-    *res = v7_mk_number( v7, sensorindex );  // Success
-    */
+    duk_push_number(ctx, sensorindex);
     return JAVASCRIPT_OK;
 }
 
@@ -1274,26 +1300,22 @@ try_again:
  duk_ret_t js_get_MeasurementZone( duk_context *ctx ) 
 {
     vscpEventEx ex;
-    /*
-    // Get measurement JSON object
-    v7_val_t varObjEvent = v7_arg(v7, 0);
     
-    // Must be an object
-    if ( !v7_is_object( varObjEvent ) ) {
-        // Not good
-        *res = v7_mk_null();  // Return error
-        return 1;
+    //  Should be a JSON variable object
+    if ( !duk_is_object(ctx, -1) ) {
+        duk_push_null(ctx);    // return code false
+        return JAVASCRIPT_OK;
     }
     
-    if ( !get_js_Event( v7, &varObjEvent, &ex ) ) {
-        *res = v7_mk_null();  // Return error
-        return 1;
+    if ( !get_js_Event( ctx, &ex ) ) {
+        duk_push_null(ctx);    // return code false
+        return JAVASCRIPT_OK;
     }
            
     vscpEvent *pEvent = new vscpEvent;
     if ( NULL == pEvent ) {
-        *res = v7_mk_null();  // Return error
-        return 1;
+        duk_push_null(ctx);    // return code false
+        return JAVASCRIPT_OK;
     }
     
     pEvent->pdata = NULL;
@@ -1302,8 +1324,7 @@ try_again:
     int zone = vscp_getVSCPMeasurementZone( pEvent );
     vscp_deleteVSCPevent( pEvent );
            
-    *res = v7_mk_number( v7, zone );  // Success
-    */
+    duk_push_number(ctx, zone);
     return JAVASCRIPT_OK;
 }
 
@@ -1315,26 +1336,21 @@ try_again:
  duk_ret_t js_get_MeasurementSubZone( duk_context *ctx ) 
 {
     vscpEventEx ex;
-    /*
-    // Get measurement JSON object
-    v7_val_t varObjEvent = v7_arg(v7, 0);
-    
-    // Must be an object
-    if ( !v7_is_object( varObjEvent ) ) {
-        // Not good
-        *res = v7_mk_null();  // Return error
-        return 1;
+    //  Should be a JSON variable object
+    if ( !duk_is_object(ctx, -1) ) {
+        duk_push_null(ctx);    // return code false
+        return JAVASCRIPT_OK;
     }
     
-    if ( !get_js_Event( v7, &varObjEvent, &ex ) ) {
-        *res = v7_mk_null();  // Return error
-        return 1;
+    if ( !get_js_Event( ctx, &ex ) ) {
+        duk_push_null(ctx);    // return code false
+        return JAVASCRIPT_OK;
     }
            
     vscpEvent *pEvent = new vscpEvent;
     if ( NULL == pEvent ) {
-        *res = v7_mk_null();  // Return error
-        return 1;
+        duk_push_null(ctx);    // return code false
+        return JAVASCRIPT_OK;
     }
     
     pEvent->pdata = NULL;
@@ -1343,8 +1359,7 @@ try_again:
     int subzone = vscp_getVSCPMeasurementSubZone( pEvent );
     vscp_deleteVSCPevent( pEvent );
            
-    *res = v7_mk_number( v7, subzone );  // Success
-    */
+    duk_push_number(ctx, subzone);
     return JAVASCRIPT_OK;
 }
 

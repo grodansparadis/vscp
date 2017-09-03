@@ -254,3 +254,45 @@ while ( !bQuit ) {
 }
  
 vscp_log("Done!\n");
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Get event count in queue  ( set on server startup (23) )
+
+for ( i=0; i &lt; 50; i++ ) {
+    var count = vscp_countEvent();
+    vscp_log("Number of VSCP events in client queue is " + count.toString() + " i = " + i.toString() + "\n"  );
+    vscp_sleep( 1000 );
+}
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Set filter  ( set on server startup (23) )
+
+// Allow only CLASS1.MEASUREMENT events, from all, 
+// with all priorities
+var filterTxt = '{\
+    "mask_priority": 0,\
+    "mask_class": 65535,\
+    "mask_type": 0,\
+    "mask_guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",\
+    "filter_priority": 0,\
+    "filter_class": 10,\
+    "filter_type": 0,\
+    "filter_guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"\
+}';
+ 
+// Make the JSON object
+var filterObj = JSON.parse( filterTxt );
+ 
+// Set the filter
+if ( vscp_setFilter( filterObj ) ) {
+  vscp_log("Filter set successfully!\n");
+}
+else {
+  vscp_log("Faild to set filter!\n");
+}
+
