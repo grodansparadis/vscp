@@ -57,6 +57,7 @@ VSCPD_OBJECTS =  vscpd.o \
 	../../common/vscpautomation.o \
 	../../common/knownnodes.o \
 	../../common/duktape_callbacks.o \
+	../../common/vscp_javascript.o \
         ../../../common/jsonreader.o \
         ../../../common/jsonwriter.o \
         ../../../common/jsonval.o \

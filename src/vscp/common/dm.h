@@ -1140,58 +1140,7 @@ private:
 
 
 
-////////////////////////////////////////////////////////////////////////////////
-// actionThread_JavaScript
-//
 
-class actionThread_JavaScript : public wxThread {
-    
-public:
-
-    /// Constructor
-    actionThread_JavaScript( wxString& strScript,
-                                wxThreadKind kind = wxTHREAD_DETACHED );
-
-    /// Destructor
-    virtual ~actionThread_JavaScript();
-
-    /*!
-        Thread code entry point
-     */
-    virtual void *Entry();
-
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-     */
-    virtual void OnExit();
-
-    /*!
-        Termination control
-     */
-    bool m_bQuit;
-    
-    /*!
-     * Script
-     */
-    wxString m_wxstrScript;
-    
-    /// JavaScript executing id
-    uint64_t m_id;
-    
-    /// Time when script was started
-    wxDateTime m_start;
-    
-    /// Time when script was stopped
-    wxDateTime m_stop;
-    
-    /// Client item for script
-    CClientItem *m_pClientItem;
-    
-    /// Feed event
-    vscpEventEx m_feedEvent;
-    
-};
 
 ////////////////////////////////////////////////////////////////////////////////
 // actionThread_Table

@@ -296,3 +296,50 @@ else {
   vscp_log("Faild to set filter!\n");
 }
 
+
+
+
+
+
+
+===============================================================================================
+
+/*
+      var obj1 = JSON.parse('{ \
+          "name": "newtestvariable", \
+          "type": 5, \
+          "user": "admin", \
+          "accessrights": 777, \
+          "persistence": false }');
+      obj1.note = Duktape.enc('base64',"This is a note that now will be BASE64 encoded");
+      obj1.value = 123.4567;
+      obj1.value = obj1.value * 99;
+      obj1.accessrights = 99
+      vscp_log("* * * JSON variable name = " + obj1.name + "\n" );   
+      vscp_writeVariable(obj1);                                     // Write the new value
+      var obj2 = vscp_readVariable(obj1.name);                      // Read back the remote variable
+      vscp_log("* * * JSON Variable value = " + obj2.value  ); 
+      vscp_log("* * * JSON Variable type = " + obj2.type );
+      vscp_log("* * * JSON Variable user = " + obj2.user );
+      vscp_log("* * * JSON Variable accessrights = " + obj2.accessrights );
+      vscp_log("* * * JSON Variable persistence = " + obj2.persistence );
+      vscp_log("* * * JSON Variable lastchange = " + obj2.lastchange );
+      vscp_log("* * * JSON Variable bnumeric = " + obj2.bnumeric );
+      vscp_log("* * * JSON Variable bbase64 = " + obj2.bbase64 );
+      var decnote = Object( Duktape.dec('base64', obj2.note ) );  // decode to utf8 array
+      var strnote = new TextDecoder().decode(decnote);            // Make string of the array
+      vscp_log("* * * JSON Variable note = " + obj2.note + " =  " + strnote );
+
+      vscp_deleteVariable( obj2.name );
+      */
+      /*var jj = JSON.parse('{"p": 567.99}');
+      jj.test = "This is a test"
+      vscp_log("JSON value = " + jj.p + " " + jj.test + "\n" );
+      var obj = vscp_readVariable("test1");              // Read the remote variable 'test1'
+      obj.value++;                                       // Increase its value 
+      vscp_log("Variable value = " + obj.value + "\n" ); // Log
+      //obj.value = "This is a test"  
+      vscp_writeVariable(obj);                           // Write the new value
+      */
+
+===============================================================================================      
