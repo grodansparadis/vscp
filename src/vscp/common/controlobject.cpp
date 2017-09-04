@@ -765,6 +765,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 {
     wxString str;
     
+/*     
     vscpEventEx e;
     vscpEventEx *pEventEx = &e;
     wxLogDebug( wxString::Format(_("%p crc=%p obid=%p year=%p month=%p day=%p"), (void*)pEventEx, (void *)&(pEventEx->crc), (void*)&(pEventEx->obid), (void*)&(pEventEx->year), (void*)&(pEventEx->month), (void*)&(pEventEx->day) ));   
@@ -773,7 +774,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     wxLogDebug( wxString::Format(_("sizeof unsigned long %zu"), sizeof(unsigned long) ) );
     wxLogDebug( wxString::Format(_("sizeof unsigned uint32_t %zu"), sizeof(uint32_t) ) );
     wxLogDebug( wxString::Format(_("sizeof unsigned int %zu"), sizeof(int) ) );
-    
+*/    
     /*
     vscp_isPasswordValid( _("E2D453EF99FB3FCD19E67876554A8C27;A4A86F7D7E119BA3F0CD06881E371B989B33B6D606A863B633EF529D64544F8E"), 
             _("secrett") );
@@ -855,11 +856,13 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     }
     
     ////////////////////////////////////////////////////////////////////////////
-    //                  ead XML configuration GENERAL section
+    //                  Read XML configuration GENERAL section
     ////////////////////////////////////////////////////////////////////////////
 
+    /*
     str = _("Using configuration file: ") + strcfgfile + _("\n");
     fprintf( stderr, str.mbc_str() );
+    */ 
 
     // Read XML configuration
     if ( !readXMLConfigurationGeneral( strcfgfile ) ) {
@@ -2578,7 +2581,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
     wxString attribute;
     wxXmlDocument doc;
 
-    wxString wxlogmsg = wxString::Format(_("Reading XML configuration from [%s]\n"),
+    wxString wxlogmsg = wxString::Format(_("Reading full XML configuration from [%s]\n"),
                                             (const char *)strcfgfile.c_str() );
     logMsg( wxlogmsg  );
 

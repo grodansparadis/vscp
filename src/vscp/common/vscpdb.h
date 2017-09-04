@@ -760,7 +760,7 @@
         "`rxfilter`         TEXT,"\
         "`rxmask`           TEXT,"\
         "`encryption`       TEXT DEFAULT 'none',"\
-        "`bSendAck`         INTEGER DEFAULT 0",\
+        "`bSendAck`         INTEGER DEFAULT 0,"\
         "`bAllowUnsecure`   INTEGER DEFAULT 1"\
         ");";\
         

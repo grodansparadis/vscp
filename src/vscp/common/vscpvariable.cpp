@@ -1738,7 +1738,7 @@ bool CVariableStorage::init( void )
     
     wxstr.Printf( _("Path=%s\n"),
                             (const char *)m_dbFilename.GetFullPath().mbc_str()  );
-            fprintf( stderr, wxstr.mbc_str() );
+    fprintf( stderr, wxstr.mbc_str() );
         
     // Check filename
     if ( m_dbFilename.IsOk() && m_dbFilename.FileExists() ) {
@@ -1765,8 +1765,7 @@ bool CVariableStorage::init( void )
             wxstr.Printf( _("Path=%s\n"), (const char *)m_dbFilename.GetFullPath().mbc_str() );
             fprintf( stderr, wxstr.mbc_str() );
             
-            gpobj->logMsg( wxString::Format( _("VSCP Daemon external variable database open  Err=%s\n"), 
-                                                    sqlite3_errmsg( m_db_vscp_external_variable ) ) );
+            gpobj->logMsg( wxstr );
             
             if ( SQLITE_OK == sqlite3_open( (const char *)m_dbFilename.GetFullPath().mbc_str(),
                                             &m_db_vscp_external_variable ) ) {            
