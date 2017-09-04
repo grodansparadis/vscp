@@ -1738,7 +1738,8 @@ bool CVariableStorage::init( void )
     
     wxstr.Printf( _("Path=%s\n"),
                             (const char *)m_dbFilename.GetFullPath().mbc_str()  );
-    fprintf( stderr, wxstr.mbc_str() );
+    //fprintf( stderr, wxstr.mbc_str() );
+    gpobj->logMsg( "[Variable database init] " + wxstr, DAEMON_LOGMSG_DEBUG );
         
     // Check filename
     if ( m_dbFilename.IsOk() && m_dbFilename.FileExists() ) {
@@ -1747,12 +1748,12 @@ bool CVariableStorage::init( void )
                                             &m_db_vscp_external_variable ) ) {
 
             // Failed to open/create the database file
-            fprintf( stderr, "VSCP Daemon external variable database could not be opened. - Will not be used.\n" );
+            fprintf( stderr, "[Variable database init] VSCP Daemon external variable database could not be opened. - Will not be used.\n" );
             wxstr.Printf( _("Path=%s error=%s\n"),
                             (const char *)m_dbFilename.GetFullPath().mbc_str(),
                             sqlite3_errmsg( m_db_vscp_external_variable ) );
-            fprintf( stderr, wxstr.mbc_str() );
-
+            //fprintf( stderr, wxstr.mbc_str() );
+            gpobj->logMsg(wxstr );
         }
 
     }
@@ -1761,10 +1762,9 @@ bool CVariableStorage::init( void )
             
             // We need to create the database from scratch. This may not work if
             // the database is in a read only location.
-            fprintf( stderr, "VSCP Daemon external variable database does not exist - will be created.\n" );
+            fprintf( stderr, "[Variable database init] VSCP Daemon external variable database does not exist - will be created.\n" );
             wxstr.Printf( _("Path=%s\n"), (const char *)m_dbFilename.GetFullPath().mbc_str() );
-            fprintf( stderr, wxstr.mbc_str() );
-            
+            //fprintf( stderr, wxstr.mbc_str() );            
             gpobj->logMsg( wxstr );
             
             if ( SQLITE_OK == sqlite3_open( (const char *)m_dbFilename.GetFullPath().mbc_str(),
@@ -1776,16 +1776,17 @@ bool CVariableStorage::init( void )
             else {
                 
                 // Failed to create the variable database
-                gpobj->logMsg( wxString::Format( _("VSCP Daemon external variable database open  Err=%s\n"), sqlite3_errmsg( m_db_vscp_external_variable ) ) );
+                gpobj->logMsg( wxString::Format( _("[Variable database init] VSCP Daemon external variable database open  Err=%s\n"), sqlite3_errmsg( m_db_vscp_external_variable ) ) );
             
                 
             }
             
         }
         else {
-            fprintf( stderr, "VSCP Daemon external variable database path invalid - will not be used.\n" );
+            fprintf( stderr, "[Variable database init] VSCP Daemon external variable database path invalid - will not be used.\n" );
             wxstr.Printf(_("Path=%s\n"), m_dbFilename.GetFullPath().mbc_str() );
-            fprintf( stderr, wxstr.mbc_str() );
+            //fprintf( stderr, wxstr.mbc_str() );
+            gpobj->logMsg(wxstr);
         }
 
     }
@@ -1798,10 +1799,11 @@ bool CVariableStorage::init( void )
     }
     else {
         // Failed to open/create the database file
-        fprintf( stderr, "VSCP Daemon internal variable database could not be opened - Will not be used.\n" );
+        fprintf( stderr, "[Variable database init] VSCP Daemon internal variable database could not be opened - Will not be used.\n" );
         wxstr.Printf( _("Error=%s\n"),
                             sqlite3_errmsg( m_db_vscp_internal_variable ) );
-        fprintf( stderr, wxstr.mbc_str() );
+        //fprintf( stderr, wxstr.mbc_str() );
+        gpobj->logMsg(wxstr);
         if ( NULL != m_db_vscp_internal_variable ) sqlite3_close( m_db_vscp_internal_variable );
         m_db_vscp_internal_variable = NULL;
     }
@@ -1892,9 +1894,7 @@ bool CVariableStorage::init( void )
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("wxWidgets version string."), true );
     addStockVariable( variable  );
-    
-    
-    
+        
 #ifndef VSCP_DISABLE_LUA
     
     variable.init();
@@ -5417,7 +5417,7 @@ bool CVariableStorage::getVarlistFromRegExp( wxArrayString& nameArray,
     wxRegEx wxregex( regexlocal );
     if ( !wxregex.IsValid() ) {
         nameArray.Empty();
-        gpobj->logMsg( wxString::Format( _("Invalid regular expression [%s]"), 
+        gpobj->logMsg( wxString::Format( _("[getVarlistFromRegExp] Invalid regular expression [%s]"), 
                             (const char *)regexlocal.mbc_str() ) );
         return false;
     }
@@ -5576,7 +5576,7 @@ bool CVariableStorage::add( CVSCPVariable& var )
     
     // Must have a valid name
     if ( var.getName().IsEmpty() ) {
-        gpobj->logMsg( wxString::Format( _("Add variable: Variable name can't be empty.\n") ) );
+        gpobj->logMsg( wxString::Format( _("[Add variable] Variable name can't be empty.\n") ) );
         return false;
     }
     
@@ -5603,7 +5603,7 @@ bool CVariableStorage::add( CVSCPVariable& var )
 
         if (SQLITE_OK != sqlite3_exec( ( var.isPersistent() ? m_db_vscp_external_variable : m_db_vscp_internal_variable ), 
                                             sql, NULL, NULL, &zErrMsg)) {            
-            gpobj->logMsg( wxString::Format( _("Add variable: Unable to update variable in db. [%s] Err=%s\n"), sql, zErrMsg ) );
+            gpobj->logMsg( wxString::Format( _("[Add variable] Unable to update variable in db. [%s] Err=%s\n"), sql, zErrMsg ) );
             sqlite3_free(sql);
             return false;
         }
@@ -5625,7 +5625,7 @@ bool CVariableStorage::add( CVSCPVariable& var )
         if ( SQLITE_OK != sqlite3_exec( ( var.isPersistent() ? m_db_vscp_external_variable : m_db_vscp_internal_variable ), 
                                             sql, NULL, NULL, &zErrMsg ) ) {
             fprintf(stderr, "Error: %s\n", sqlite3_errmsg( m_db_vscp_external_variable ) );
-            gpobj->logMsg( wxString::Format( _("Add variable: Unable to add variable in db. [%s] Err=%s\n"), sql, zErrMsg ) );
+            gpobj->logMsg( wxString::Format( _("[Add variable] Unable to add variable in db. [%s] Err=%s\n"), sql, zErrMsg ) );
             sqlite3_free( sql );            
             return false;
         }
@@ -5710,7 +5710,7 @@ bool CVariableStorage::update( CVSCPVariable& var )
 
     if (SQLITE_OK != sqlite3_exec( ( var.isPersistent() ? m_db_vscp_external_variable : m_db_vscp_internal_variable ), 
                                             sql, NULL, NULL, &zErrMsg)) {            
-        gpobj->logMsg( wxString::Format( _("Add variable: Unable to update variable in db. [%s] Err=%s\n"), sql, zErrMsg ) );
+        gpobj->logMsg( wxString::Format( _("[Add variable] Unable to update variable in db. [%s] Err=%s\n"), sql, zErrMsg ) );
         sqlite3_free(sql);
         return false;
     }
@@ -5748,7 +5748,7 @@ bool CVariableStorage::remove( wxString& name )
                                     variable.getID() );
         if ( SQLITE_OK != sqlite3_exec( m_db_vscp_external_variable, sql, NULL, NULL, &zErrMsg ) ) {
             sqlite3_free( sql );
-            gpobj->logMsg( wxString::Format( _("Delete variable: Unable to delete variable in db. [%s] Err=%s\n"), sql, zErrMsg ) );
+            gpobj->logMsg( wxString::Format( _("[Delete variable] Unable to delete variable in db. [%s] Err=%s\n"), sql, zErrMsg ) );
             return false;
         }
         
@@ -5759,7 +5759,7 @@ bool CVariableStorage::remove( wxString& name )
                                     variable.getID() );
         if ( SQLITE_OK != sqlite3_exec( m_db_vscp_internal_variable, sql, NULL, NULL, &zErrMsg ) ) {
             sqlite3_free( sql );
-            gpobj->logMsg( wxString::Format( _("Delete variable: Unable to delete variable in db. [%s] Err=%s\n"), sql, zErrMsg ) );
+            gpobj->logMsg( wxString::Format( _("[Delete variable] Unable to delete variable in db. [%s] Err=%s\n"), sql, zErrMsg ) );
             return false;
         }
         
@@ -5850,13 +5850,13 @@ bool CVariableStorage::loadFromXML( const wxString& path  )
     if ( path.IsEmpty() ) {
         
 if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_VARIABLE ) {         
-        gpobj->logMsg( wxString::Format( _("Loading variable XML file from %s.\n"),
+        gpobj->logMsg( wxString::Format( _("[loadFromXML] Loading variable XML file from %s.\n"),
                                         (const char *)m_xmlPath.mbc_str() ), 
                                         DAEMON_LOGMSG_DEBUG );
 }
         
         if ( !doc.Load( m_xmlPath ) ) {
-            gpobj->logMsg(_("Failed to load variable XML file from standard XML path.\n") );
+            gpobj->logMsg(_("[loadFromXML] Failed to load variable XML file from standard XML path.\n") );
             return false;
         }
         
@@ -5864,13 +5864,13 @@ if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_VARIABLE ) {
     else {
         
 if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_VARIABLE ) {     
-        gpobj->logMsg( wxString::Format( _("Loading variable XML file from %s.\n"),
+        gpobj->logMsg( wxString::Format( _("[loadFromXML] Loading variable XML file from %s.\n"),
                                         (const char *)path.mbc_str() ),
                                         DAEMON_LOGMSG_DEBUG );
 }
         
         if (!doc.Load( path ) ) {
-            gpobj->logMsg( wxString::Format( _("Failed to load variable XML file from %s.\n"),
+            gpobj->logMsg( wxString::Format( _("[loadFromXML] Failed to load variable XML file from %s.\n"),
                                         (const char *)path.mbc_str() ) );
             return false;
         }
@@ -5977,13 +5977,13 @@ if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_VARIABLE ) {
             // Add the variable
             if ( add( variable ) ) {
 if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_VARIABLE ) {                
-                gpobj->logMsg( wxString::Format( _("Loading XML file: Added variable %s.\n"),
+                gpobj->logMsg( wxString::Format( _("[Loading XML file] Added variable %s.\n"),
                                         (const char *)variable.getName().mbc_str() ),
                                         DAEMON_LOGMSG_DEBUG ); 
 }
             }
             else { 
-                gpobj->logMsg( wxString::Format( _("Loading XML file: Failed to add variable %s.\n"),
+                gpobj->logMsg( wxString::Format( _("[Loading XML file] Failed to add variable %s.\n"),
                                         (const char *)variable.getName().mbc_str() ) );
             }
 

@@ -5,6 +5,7 @@
                    displayName="common"
                    projectFiles="true"
                    root="../common">
+      <itemPath>../../common/aes.c</itemPath>
       <itemPath>../../common/aes.h</itemPath>
       <itemPath>../common/canal.h</itemPath>
       <itemPath>../common/canal_macro.h</itemPath>
@@ -12,6 +13,7 @@
       <itemPath>../../common/crc.h</itemPath>
       <itemPath>../../common/crc8.c</itemPath>
       <itemPath>../../common/crc8.h</itemPath>
+      <itemPath>../../common/fastpbkdf2.h</itemPath>
       <itemPath>../common/guid.cpp</itemPath>
       <itemPath>../common/guid.h</itemPath>
       <itemPath>../../common/md5.cpp</itemPath>
@@ -60,7 +62,6 @@
           <executablePath></executablePath>
           <cTool>
             <incDir>
-              <pElem>/usr/include/lua5.2</pElem>
               <pElem>../common</pElem>
               <pElem>../../common</pElem>
               <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
@@ -69,7 +70,6 @@
             </incDir>
             <preprocessorList>
               <Elem>MG_ENABLE_SSL</Elem>
-              <Elem>VSCP_ENABLE_LUA</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__WXGTK__</Elem>
@@ -81,11 +81,9 @@
               <pElem>../../common</pElem>
               <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
               <pElem>/usr/local/include/wx-3.1</pElem>
-              <pElem>/usr/include/lua5.2</pElem>
             </incDir>
             <preprocessorList>
               <Elem>MG_ENABLE_SSL</Elem>
-              <Elem>VSCP_ENABLE_LUA</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__WXGTK__</Elem>
@@ -97,6 +95,10 @@
           <preBuildCommand></preBuildCommand>
         </preBuild>
       </makefileType>
+      <item path="../../common/aes.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="1">
+        </cTool>
+      </item>
       <item path="../../common/crc.c" ex="false" tool="0" flavor2="2">
         <cTool flags="1">
         </cTool>
@@ -117,6 +119,16 @@
         <ccTool flags="0">
         </ccTool>
       </item>
+      <folder path="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/include/lua5.2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VSCP_ENABLE_LUA</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
       <folder path="common">
         <ccTool>
           <incDir>
