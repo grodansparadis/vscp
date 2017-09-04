@@ -12,9 +12,9 @@ top_wxbuilddir = @top_wxbuilddir@
 CC = @CC@
 CXX = @CXX@
 MONGOOSE_CFLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL -DMG_ENABLE_HTTP_CGI -DMG_ENABLE_HTTP_SSI -DMG_ENABLE_HTTP_SSI_EXEC -DMG_ENABLE_HTTP_WEBDAV -DMG_ENABLE_GETADDRINFO -DMG_ENABLE_HTTP_URL_REWRITES
-CFLAGS = -std=c99 @CFLAGS@ -D MG_ENABLE_THREADS  -DCBC -I../../common -I../../../common
+CFLAGS = -std=c99 @CFLAGS@ -D MG_ENABLE_THREADS  -DCBC -I../../common -I../../../common -I../../../common/lua/src
 CXXFLAGS = @CXXFLAGS@
-CPPFLAGS = @CPPFLAGS@ -fno-var-tracking-assignments -D MG_ENABLE_THREADS  -I../../common -I../../../common 
+CPPFLAGS = @CPPFLAGS@ -fno-var-tracking-assignments -D MG_ENABLE_THREADS  -I../../common -I../../../common -I../../../common/lua/src
 CPPFLAGS += $(MONGOOSE_CFLAGS) $(V7_CFLAGS)
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
@@ -55,12 +55,13 @@ VSCPD_OBJECTS =  vscpd.o \
 	../../common/vscpmulticastclientthread.o \
 	../../common/tables.o \
 	../../common/vscpautomation.o \
-	../../common/knownnodes.o \
+	../../common/knownnodes.o \	
 	../../common/duktape_callbacks.o \
 	../../common/vscp_javascript.o \
         ../../../common/jsonreader.o \
         ../../../common/jsonwriter.o \
         ../../../common/jsonval.o \
+	../../../common/vscpweb.o \
 
 # The following files are built in the local folder to
 # prevent a mix between dll linkage and exe linkage
@@ -82,7 +83,8 @@ VSCPD_SPECIALS = vscphelper.o \
 	sqlite3.o \
 	sqlite3math.o\
 	aes.o\
-	fastpbkdf2.o	
+	fastpbkdf2.o\
+	vscpweb.o
 
 # Add object files that always should be built here
 ALWAYS_BUILD = 
@@ -165,7 +167,10 @@ sqlite3math.o: ../../../common/sqlite3math.o
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c  ../../../common/sqlite3math.c -o $@
 
 fastpbkdf2.o: ../../../common/fastpbkdf2.o ../../../common/fastpbkdf2.h
-	$(CC) $(CFLAGS) -c ../../../common/fastpbkdf2.c -o $@	
+	$(CC) $(CFLAGS) -c ../../../common/fastpbkdf2.c -o $@
+
+vscpweb.o: ../../../common/vscpweb.o ../../../common/vscpweb.h
+	$(CC) $(CFLAGS) -c ../../../common/vscpweb.c -o $@	
 
 vscpd: $(VSCPD_OBJECTS) $(VSCPD_SPECIALS)
 	$(CXX) -o $@ $(VSCPD_OBJECTS) $(VSCPD_SPECIALS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)

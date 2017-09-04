@@ -114,7 +114,7 @@ vscpweb_static_assert(sizeof(void *) >= sizeof(int), "data type size check");
 #ifndef VSCPWEB_HEADER_INCLUDED
 // Include the header file here, so the vscpweb interface is defined for the
 // entire implementation, including the following forward definitions. 
-#include "civetweb.h"
+#include <vscpweb.h>
 #endif
 
 
@@ -154,6 +154,7 @@ vscpweb_static_assert(sizeof(void *) >= sizeof(int), "data type size check");
 #include <errno.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <dlfcn.h>
 #endif  // !_WIN32_WCE 
 
 
@@ -642,9 +643,6 @@ typedef unsigned short int in_port_t;
 #include <dirent.h>
 #define vsnprintf_impl vsnprintf
 
-#if !defined(NO_SSL_DL) && !defined(NO_SSL)
-#include <dlfcn.h>
-#endif
 #include <pthread.h>
 #if defined(__MACH__)
 #define SSL_LIB "libssl.dylib"
@@ -1085,9 +1083,9 @@ static struct vscpweb_memory_stat *get_memory_stat(struct vscpweb_context *ctx);
 
 static void *
 vscpweb_malloc_ex( size_t size,
-             struct vscpweb_context *ctx,
-             const char *file,
-             unsigned line )
+                    struct vscpweb_context *ctx,
+                    const char *file,
+                    unsigned line )
 {
     void *data = malloc(size + 2 * sizeof(uintptr_t));
     void *memory = 0;
@@ -1112,9 +1110,9 @@ vscpweb_malloc_ex( size_t size,
 	((uintptr_t *)data)[0] = size;
 	((uintptr_t *)data)[1] = (uintptr_t)mstat;
 	memory = (void *)(((char *)data) + 2 * sizeof(uintptr_t));
-    }
+    } 
 
-#if defined(MEMORY_DEBUGGING)
+#if defined(MEMORY_DEBUGGING) 
     sprintf(mallocStr,
 	        "MEM: %p %5lu alloc   %7lu %4lu --- %s:%u\n",
 	        memory,
@@ -1128,7 +1126,8 @@ vscpweb_malloc_ex( size_t size,
 #else
     DEBUG_TRACE("%s", mallocStr);
 #endif
-
+#endif
+    
     return memory;
 }
 
@@ -1231,6 +1230,7 @@ vscpweb_realloc_ex(void *memory,
 #else
 		DEBUG_TRACE("%s", mallocStr);
 #endif
+                
 #endif
 		vscpweb_atomic_add(&mstat->totalMemUsed, (int64_t)newsize);
 #if defined(MEMORY_DEBUGGING)
@@ -1285,36 +1285,6 @@ vscpweb_realloc_ex(void *memory,
 #define vscpweb_malloc_ctx(a, c) vscpweb_malloc_ex(a, c, __FILE__, __LINE__)
 #define vscpweb_calloc_ctx(a, b, c) vscpweb_calloc_ex(a, b, c, __FILE__, __LINE__)
 #define vscpweb_realloc_ctx(a, b, c) vscpweb_realloc_ex(a, b, c, __FILE__, __LINE__)
-
-
-static __inline void *
-vscpweb_malloc(size_t a)
-{
-    return malloc(a);
-}
-
-static __inline void *
-vscpweb_calloc(size_t a, size_t b)
-{
-    return calloc(a, b);
-}
-
-static __inline void *
-vscpweb_realloc(void *a, size_t b)
-{
-    return realloc(a, b);
-}
-
-static __inline void
-vscpweb_free(void *a)
-{
-    free(a);
-}
-
-#define vscpweb_malloc_ctx(a, c) vscpweb_malloc(a)
-#define vscpweb_calloc_ctx(a, b, c) vscpweb_calloc(a, b)
-#define vscpweb_realloc_ctx(a, b, c) vscpweb_realloc(a, b)
-#define vscpweb_free_ctx(a, c) vscpweb_free(a)
 
 
 static void vscpweb_vsnprintf( const struct vscpweb_connection *conn,
@@ -1410,42 +1380,42 @@ static unsigned long
 vscpweb_current_thread_id(void)
 {
 #ifdef _WIN32
-	return GetCurrentThreadId();
+    return GetCurrentThreadId();
 #else
 
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunreachable-code"
-/* For every compiler, either "sizeof(pthread_t) > sizeof(unsigned long)"
- * or not, so one of the two conditions will be unreachable by construction.
- * Unfortunately the C standard does not define a way to check this at
- * compile time, since the #if preprocessor conditions can not use the sizeof
- * operator as an argument. */
+// For every compiler, either "sizeof(pthread_t) > sizeof(unsigned long)"
+// or not, so one of the two conditions will be unreachable by construction.
+// Unfortunately the C standard does not define a way to check this at
+// compile time, since the #if preprocessor conditions can not use the sizeof
+// operator as an argument. 
 #endif
 
-	if (sizeof(pthread_t) > sizeof(unsigned long)) {
-		/* This is the problematic case for CRYPTO_set_id_callback:
-		 * The OS pthread_t can not be cast to unsigned long. */
-		struct vscpweb_workerTLS *tls =
-		    (struct vscpweb_workerTLS *)pthread_getspecific(sTlsKey);
-		if (tls == NULL) {
-			/* SSL called from an unknown thread: Create some thread index.
-			 */
-			tls = (struct vscpweb_workerTLS *)vscpweb_malloc(sizeof(struct vscpweb_workerTLS));
-			tls->is_master = -2; /* -2 means "3rd party thread" */
-			tls->thread_idx = (unsigned)vscpweb_atomic_inc(&thread_idx_max);
-			pthread_setspecific(sTlsKey, tls);
-		}
-		return tls->thread_idx;
-	} else {
-		/* pthread_t may be any data type, so a simple cast to unsigned long
-		 * can rise a warning/error, depending on the platform.
-		 * Here memcpy is used as an anything-to-anything cast. */
-		unsigned long ret = 0;
-		pthread_t t = pthread_self();
-		memcpy(&ret, &t, sizeof(pthread_t));
-		return ret;
-	}
+    if ( sizeof( pthread_t ) > sizeof(unsigned long) ) {
+        // This is the problematic case for CRYPTO_set_id_callback:
+        // The OS pthread_t can not be cast to unsigned long. 
+	struct vscpweb_workerTLS *tls =
+            (struct vscpweb_workerTLS *)pthread_getspecific(sTlsKey);
+            if (tls == NULL) {
+                // SSL called from an unknown thread: Create some thread index.			
+		tls = (struct vscpweb_workerTLS *)vscpweb_malloc(sizeof(struct vscpweb_workerTLS));
+		tls->is_master = -2; /* -2 means "3rd party thread" */
+		tls->thread_idx = (unsigned)vscpweb_atomic_inc(&thread_idx_max);
+		pthread_setspecific(sTlsKey, tls);
+            }
+            return tls->thread_idx;
+    } 
+    else {
+	// pthread_t may be any data type, so a simple cast to unsigned long
+	// can rise a warning/error, depending on the platform.
+	// Here memcpy is used as an anything-to-anything cast. 
+	unsigned long ret = 0;
+	pthread_t t = pthread_self();
+	memcpy(&ret, &t, sizeof(pthread_t));
+	return ret;
+    }
 
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -1459,20 +1429,20 @@ FUNCTION_MAY_BE_UNUSED
 static uint64_t
 vscpweb_get_current_time_ns(void)
 {
-	struct timespec tsnow;
-	clock_gettime(CLOCK_REALTIME, &tsnow);
-	return (((uint64_t)tsnow.tv_sec) * 1000000000) + (uint64_t)tsnow.tv_nsec;
+    struct timespec tsnow;
+    clock_gettime(CLOCK_REALTIME, &tsnow);
+    return (((uint64_t)tsnow.tv_sec) * 1000000000) + (uint64_t)tsnow.tv_nsec;
 }
 
 
 #if defined(__GNUC__)
-/* Show no warning in case system functions are not used. */
+// Show no warning in case system functions are not used. 
 #if GCC_VERSION >= 40500
 #pragma GCC diagnostic pop
-#endif /* GCC_VERSION >= 40500 */
-#endif /* defined(__GNUC__) */
+#endif // GCC_VERSION >= 40500 
+#endif // defined(__GNUC__) 
 #if defined(__clang__)
-/* Show no warning in case system functions are not used. */
+// Show no warning in case system functions are not used. 
 #pragma clang diagnostic pop
 #endif
 
@@ -1487,51 +1457,54 @@ static void DEBUG_TRACE_FUNC(const char *func,
 static void
 DEBUG_TRACE_FUNC(const char *func, unsigned line, const char *fmt, ...)
 {
-	va_list args;
-	uint64_t nsnow;
-	static uint64_t nslast;
-	struct timespec tsnow;
+    va_list args;
+    uint64_t nsnow;
+    static uint64_t nslast;
+    struct timespec tsnow;
 
-	/* Get some operating system independent thread id */
-	unsigned long thread_id = vscpweb_current_thread_id();
+    // Get some operating system independent thread id 
+    unsigned long thread_id = vscpweb_current_thread_id();
 
-	clock_gettime(CLOCK_REALTIME, &tsnow);
-	nsnow = ((uint64_t)tsnow.tv_sec) * ((uint64_t)1000000000)
+    clock_gettime(CLOCK_REALTIME, &tsnow);
+    nsnow = ((uint64_t)tsnow.tv_sec) * ((uint64_t)1000000000)
 	        + ((uint64_t)tsnow.tv_nsec);
 
-	if (!nslast) {
-		nslast = nsnow;
-	}
+    if (!nslast) {
+        nslast = nsnow;
+    }
 
-	flockfile(stdout);
-	printf("*** %lu.%09lu %12" INT64_FMT " %lu %s:%u: ",
+    flockfile(stdout);
+    printf("*** %lu.%09lu %12" INT64_FMT " %lu %s:%u: ",
 	       (unsigned long)tsnow.tv_sec,
 	       (unsigned long)tsnow.tv_nsec,
 	       nsnow - nslast,
 	       thread_id,
 	       func,
 	       line);
-	va_start(args, fmt);
-	vprintf(fmt, args);
-	va_end(args);
-	putchar('\n');
-	fflush(stdout);
-	funlockfile(stdout);
-	nslast = nsnow;
+    va_start(args, fmt);
+    vprintf(fmt, args);
+    va_end(args);
+    putchar('\n');
+    fflush(stdout);
+    funlockfile(stdout);
+    nslast = nsnow;
 }
 
 #define DEBUG_TRACE(fmt, ...)                                                  \
 	DEBUG_TRACE_FUNC(__func__, __LINE__, fmt, __VA_ARGS__)
 
 #else
+
 #define DEBUG_TRACE(fmt, ...)                                                  \
 	do {                                                                   \
 	} while (0)
 #endif /* DEBUG */
 #endif /* DEBUG_TRACE */
 
+// -----------------------------------------------------------------------------
 
 #define MD5_STATIC static
+
 /*
  * This an amalgamation of md5.c and md5.h into a single file
  * with all static declaration to reduce linker conflicts
@@ -2024,8 +1997,6 @@ typedef int socklen_t;
 #define MGSQLEN (20)
 #endif
 
-
-if defined(NO_SSL_DL)
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/crypto.h>
@@ -2036,394 +2007,9 @@ if defined(NO_SSL_DL)
 #include <openssl/dh.h>
 #include <openssl/bn.h>
 #include <openssl/opensslv.h>
-#else
-
-/* SSL loaded dynamically from DLL.
- * I put the prototypes here to be independent from OpenSSL source
- * installation. */
-
-typedef struct ssl_st SSL;
-typedef struct ssl_method_st SSL_METHOD;
-typedef struct ssl_ctx_st SSL_CTX;
-typedef struct x509_store_ctx_st X509_STORE_CTX;
-typedef struct x509_name X509_NAME;
-typedef struct asn1_integer ASN1_INTEGER;
-typedef struct bignum BIGNUM;
-typedef struct ossl_init_settings_st OPENSSL_INIT_SETTINGS;
-typedef struct evp_md EVP_MD;
-typedef struct x509 X509;
 
 
-#define SSL_CTRL_OPTIONS (32)
-#define SSL_CTRL_CLEAR_OPTIONS (77)
-#define SSL_CTRL_SET_ECDH_AUTO (94)
 
-#define OPENSSL_INIT_NO_LOAD_SSL_STRINGS 0x00100000L
-#define OPENSSL_INIT_LOAD_SSL_STRINGS 0x00200000L
-#define OPENSSL_INIT_LOAD_CRYPTO_STRINGS 0x00000002L
-
-#define SSL_VERIFY_NONE (0)
-#define SSL_VERIFY_PEER (1)
-#define SSL_VERIFY_FAIL_IF_NO_PEER_CERT (2)
-#define SSL_VERIFY_CLIENT_ONCE (4)
-#define SSL_OP_ALL ((long)(0x80000BFFUL))
-#define SSL_OP_NO_SSLv2 (0x01000000L)
-#define SSL_OP_NO_SSLv3 (0x02000000L)
-#define SSL_OP_NO_TLSv1 (0x04000000L)
-#define SSL_OP_NO_TLSv1_2 (0x08000000L)
-#define SSL_OP_NO_TLSv1_1 (0x10000000L)
-#define SSL_OP_SINGLE_DH_USE (0x00100000L)
-#define SSL_OP_CIPHER_SERVER_PREFERENCE (0x00400000L)
-#define SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION (0x00010000L)
-#define SSL_OP_NO_COMPRESSION (0x00020000L)
-
-#define SSL_CB_HANDSHAKE_START (0x10)
-#define SSL_CB_HANDSHAKE_DONE (0x20)
-
-#define SSL_ERROR_NONE (0)
-#define SSL_ERROR_SSL (1)
-#define SSL_ERROR_WANT_READ (2)
-#define SSL_ERROR_WANT_WRITE (3)
-#define SSL_ERROR_WANT_X509_LOOKUP (4)
-#define SSL_ERROR_SYSCALL (5) /* see errno */
-#define SSL_ERROR_ZERO_RETURN (6)
-#define SSL_ERROR_WANT_CONNECT (7)
-#define SSL_ERROR_WANT_ACCEPT (8)
-
-
-struct ssl_func {
-	const char *name;  /* SSL function name */
-	void (*ptr)(void); /* Function pointer */
-};
-
-
-#ifdef OPENSSL_API_1_1
-
-#define SSL_free (*(void (*)(SSL *))ssl_sw[0].ptr)
-#define SSL_accept (*(int (*)(SSL *))ssl_sw[1].ptr)
-#define SSL_connect (*(int (*)(SSL *))ssl_sw[2].ptr)
-#define SSL_read (*(int (*)(SSL *, void *, int))ssl_sw[3].ptr)
-#define SSL_write (*(int (*)(SSL *, const void *, int))ssl_sw[4].ptr)
-#define SSL_get_error (*(int (*)(SSL *, int))ssl_sw[5].ptr)
-#define SSL_set_fd (*(int (*)(SSL *, SOCKET))ssl_sw[6].ptr)
-#define SSL_new (*(SSL * (*)(SSL_CTX *))ssl_sw[7].ptr)
-#define SSL_CTX_new (*(SSL_CTX * (*)(SSL_METHOD *))ssl_sw[8].ptr)
-#define TLS_server_method (*(SSL_METHOD * (*)(void))ssl_sw[9].ptr)
-#define OPENSSL_init_ssl                                                       \
-	(*(int (*)(uint64_t opts,                                                  \
-	           const OPENSSL_INIT_SETTINGS *settings))ssl_sw[10].ptr)
-#define SSL_CTX_use_PrivateKey_file                                            \
-	(*(int (*)(SSL_CTX *, const char *, int))ssl_sw[11].ptr)
-#define SSL_CTX_use_certificate_file                                           \
-	(*(int (*)(SSL_CTX *, const char *, int))ssl_sw[12].ptr)
-#define SSL_CTX_set_default_passwd_cb                                          \
-	(*(void (*)(SSL_CTX *, vscpweb_callback_t))ssl_sw[13].ptr)
-#define SSL_CTX_free (*(void (*)(SSL_CTX *))ssl_sw[14].ptr)
-#define SSL_CTX_use_certificate_chain_file                                     \
-	(*(int (*)(SSL_CTX *, const char *))ssl_sw[15].ptr)
-#define TLS_client_method (*(SSL_METHOD * (*)(void))ssl_sw[16].ptr)
-#define SSL_pending (*(int (*)(SSL *))ssl_sw[17].ptr)
-#define SSL_CTX_set_verify                                                     \
-	(*(void (*)(SSL_CTX *,                                                     \
-	            int,                                                           \
-	            int (*verify_callback)(int, X509_STORE_CTX *)))ssl_sw[18].ptr)
-#define SSL_shutdown (*(int (*)(SSL *))ssl_sw[19].ptr)
-#define SSL_CTX_load_verify_locations                                          \
-	(*(int (*)(SSL_CTX *, const char *, const char *))ssl_sw[20].ptr)
-#define SSL_CTX_set_default_verify_paths (*(int (*)(SSL_CTX *))ssl_sw[21].ptr)
-#define SSL_CTX_set_verify_depth (*(void (*)(SSL_CTX *, int))ssl_sw[22].ptr)
-#define SSL_get_peer_certificate (*(X509 * (*)(SSL *))ssl_sw[23].ptr)
-#define SSL_get_version (*(const char *(*)(SSL *))ssl_sw[24].ptr)
-#define SSL_get_current_cipher (*(SSL_CIPHER * (*)(SSL *))ssl_sw[25].ptr)
-#define SSL_CIPHER_get_name                                                    \
-	(*(const char *(*)(const SSL_CIPHER *))ssl_sw[26].ptr)
-#define SSL_CTX_check_private_key (*(int (*)(SSL_CTX *))ssl_sw[27].ptr)
-#define SSL_CTX_set_session_id_context                                         \
-	(*(int (*)(SSL_CTX *, const unsigned char *, unsigned int))ssl_sw[28].ptr)
-#define SSL_CTX_ctrl (*(long (*)(SSL_CTX *, int, long, void *))ssl_sw[29].ptr)
-#define SSL_CTX_set_cipher_list                                                \
-	(*(int (*)(SSL_CTX *, const char *))ssl_sw[30].ptr)
-#define SSL_CTX_set_options                                                    \
-	(*(unsigned long (*)(SSL_CTX *, unsigned long))ssl_sw[31].ptr)
-#define SSL_CTX_set_info_callback                                              \
-	(*(void (*)(SSL_CTX * ctx,                                                 \
-	            void (*callback)(SSL * s, int, int)))ssl_sw[32].ptr)
-#define SSL_get_ex_data (*(char *(*)(SSL *, int))ssl_sw[33].ptr)
-#define SSL_set_ex_data (*(void (*)(SSL *, int, char *))ssl_sw[34].ptr)
-
-#define SSL_CTX_clear_options(ctx, op)                                         \
-	SSL_CTX_ctrl((ctx), SSL_CTRL_CLEAR_OPTIONS, (op), NULL)
-#define SSL_CTX_set_ecdh_auto(ctx, onoff)                                      \
-	SSL_CTX_ctrl(ctx, SSL_CTRL_SET_ECDH_AUTO, onoff, NULL)
-
-#define X509_get_notBefore(x) ((x)->cert_info->validity->notBefore)
-#define X509_get_notAfter(x) ((x)->cert_info->validity->notAfter)
-
-#define SSL_set_app_data(s, arg) (SSL_set_ex_data(s, 0, (char *)arg))
-#define SSL_get_app_data(s) (SSL_get_ex_data(s, 0))
-
-#define ERR_get_error (*(unsigned long (*)(void))crypto_sw[0].ptr)
-#define ERR_error_string (*(char *(*)(unsigned long, char *))crypto_sw[1].ptr)
-#define ERR_remove_state (*(void (*)(unsigned long))crypto_sw[2].ptr)
-#define CONF_modules_unload (*(void (*)(int))crypto_sw[3].ptr)
-#define X509_free (*(void (*)(X509 *))crypto_sw[4].ptr)
-#define X509_get_subject_name (*(X509_NAME * (*)(X509 *))crypto_sw[5].ptr)
-#define X509_get_issuer_name (*(X509_NAME * (*)(X509 *))crypto_sw[6].ptr)
-#define X509_NAME_oneline                                                      \
-	(*(char *(*)(X509_NAME *, char *, int))crypto_sw[7].ptr)
-#define X509_get_serialNumber (*(ASN1_INTEGER * (*)(X509 *))crypto_sw[8].ptr)
-#define EVP_get_digestbyname                                                   \
-	(*(const EVP_MD *(*)(const char *))crypto_sw[9].ptr)
-#define EVP_Digest                                                             \
-	(*(int (*)(                                                                \
-	    const void *, size_t, void *, unsigned int *, const EVP_MD *, void *)) \
-	      crypto_sw[10].ptr)
-#define i2d_X509 (*(int (*)(X509 *, unsigned char **))crypto_sw[11].ptr)
-#define BN_bn2hex (*(char *(*)(const BIGNUM *a))crypto_sw[12].ptr)
-#define ASN1_INTEGER_to_BN                                                     \
-	(*(BIGNUM * (*)(const ASN1_INTEGER *ai, BIGNUM *bn))crypto_sw[13].ptr)
-#define BN_free (*(void (*)(const BIGNUM *a))crypto_sw[14].ptr)
-#define CRYPTO_free (*(void (*)(void *addr))crypto_sw[15].ptr)
-
-#define OPENSSL_free(a) CRYPTO_free(a)
-
-
-/* set_ssl_option() function updates this array.
- * It loads SSL library dynamically and changes NULLs to the actual addresses
- * of respective functions. The macros above (like SSL_connect()) are really
- * just calling these functions indirectly via the pointer. */
-static struct ssl_func ssl_sw[] = {{"SSL_free", NULL},
-                                   {"SSL_accept", NULL},
-                                   {"SSL_connect", NULL},
-                                   {"SSL_read", NULL},
-                                   {"SSL_write", NULL},
-                                   {"SSL_get_error", NULL},
-                                   {"SSL_set_fd", NULL},
-                                   {"SSL_new", NULL},
-                                   {"SSL_CTX_new", NULL},
-                                   {"TLS_server_method", NULL},
-                                   {"OPENSSL_init_ssl", NULL},
-                                   {"SSL_CTX_use_PrivateKey_file", NULL},
-                                   {"SSL_CTX_use_certificate_file", NULL},
-                                   {"SSL_CTX_set_default_passwd_cb", NULL},
-                                   {"SSL_CTX_free", NULL},
-                                   {"SSL_CTX_use_certificate_chain_file", NULL},
-                                   {"TLS_client_method", NULL},
-                                   {"SSL_pending", NULL},
-                                   {"SSL_CTX_set_verify", NULL},
-                                   {"SSL_shutdown", NULL},
-                                   {"SSL_CTX_load_verify_locations", NULL},
-                                   {"SSL_CTX_set_default_verify_paths", NULL},
-                                   {"SSL_CTX_set_verify_depth", NULL},
-                                   {"SSL_get_peer_certificate", NULL},
-                                   {"SSL_get_version", NULL},
-                                   {"SSL_get_current_cipher", NULL},
-                                   {"SSL_CIPHER_get_name", NULL},
-                                   {"SSL_CTX_check_private_key", NULL},
-                                   {"SSL_CTX_set_session_id_context", NULL},
-                                   {"SSL_CTX_ctrl", NULL},
-                                   {"SSL_CTX_set_cipher_list", NULL},
-                                   {"SSL_CTX_set_options", NULL},
-                                   {"SSL_CTX_set_info_callback", NULL},
-                                   {"SSL_get_ex_data", NULL},
-                                   {"SSL_set_ex_data", NULL},
-                                   {NULL, NULL}};
-
-
-/* Similar array as ssl_sw. These functions could be located in different
- * lib. */
-static struct ssl_func crypto_sw[] = {{"ERR_get_error", NULL},
-                                      {"ERR_error_string", NULL},
-                                      {"ERR_remove_state", NULL},
-                                      {"CONF_modules_unload", NULL},
-                                      {"X509_free", NULL},
-                                      {"X509_get_subject_name", NULL},
-                                      {"X509_get_issuer_name", NULL},
-                                      {"X509_NAME_oneline", NULL},
-                                      {"X509_get_serialNumber", NULL},
-                                      {"EVP_get_digestbyname", NULL},
-                                      {"EVP_Digest", NULL},
-                                      {"i2d_X509", NULL},
-                                      {"BN_bn2hex", NULL},
-                                      {"ASN1_INTEGER_to_BN", NULL},
-                                      {"BN_free", NULL},
-                                      {"CRYPTO_free", NULL},
-                                      {NULL, NULL}};
-#else
-
-#define SSL_free (*(void (*)(SSL *))ssl_sw[0].ptr)
-#define SSL_accept (*(int (*)(SSL *))ssl_sw[1].ptr)
-#define SSL_connect (*(int (*)(SSL *))ssl_sw[2].ptr)
-#define SSL_read (*(int (*)(SSL *, void *, int))ssl_sw[3].ptr)
-#define SSL_write (*(int (*)(SSL *, const void *, int))ssl_sw[4].ptr)
-#define SSL_get_error (*(int (*)(SSL *, int))ssl_sw[5].ptr)
-#define SSL_set_fd (*(int (*)(SSL *, SOCKET))ssl_sw[6].ptr)
-#define SSL_new (*(SSL * (*)(SSL_CTX *))ssl_sw[7].ptr)
-#define SSL_CTX_new (*(SSL_CTX * (*)(SSL_METHOD *))ssl_sw[8].ptr)
-#define SSLv23_server_method (*(SSL_METHOD * (*)(void))ssl_sw[9].ptr)
-#define SSL_library_init (*(int (*)(void))ssl_sw[10].ptr)
-#define SSL_CTX_use_PrivateKey_file                                            \
-	(*(int (*)(SSL_CTX *, const char *, int))ssl_sw[11].ptr)
-#define SSL_CTX_use_certificate_file                                           \
-	(*(int (*)(SSL_CTX *, const char *, int))ssl_sw[12].ptr)
-#define SSL_CTX_set_default_passwd_cb                                          \
-	(*(void (*)(SSL_CTX *, vscpweb_callback_t))ssl_sw[13].ptr)
-#define SSL_CTX_free (*(void (*)(SSL_CTX *))ssl_sw[14].ptr)
-#define SSL_load_error_strings (*(void (*)(void))ssl_sw[15].ptr)
-#define SSL_CTX_use_certificate_chain_file                                     \
-	(*(int (*)(SSL_CTX *, const char *))ssl_sw[16].ptr)
-#define SSLv23_client_method (*(SSL_METHOD * (*)(void))ssl_sw[17].ptr)
-#define SSL_pending (*(int (*)(SSL *))ssl_sw[18].ptr)
-#define SSL_CTX_set_verify                                                     \
-	(*(void (*)(SSL_CTX *,                                                     \
-	            int,                                                           \
-	            int (*verify_callback)(int, X509_STORE_CTX *)))ssl_sw[19].ptr)
-#define SSL_shutdown (*(int (*)(SSL *))ssl_sw[20].ptr)
-#define SSL_CTX_load_verify_locations                                          \
-	(*(int (*)(SSL_CTX *, const char *, const char *))ssl_sw[21].ptr)
-#define SSL_CTX_set_default_verify_paths (*(int (*)(SSL_CTX *))ssl_sw[22].ptr)
-#define SSL_CTX_set_verify_depth (*(void (*)(SSL_CTX *, int))ssl_sw[23].ptr)
-#define SSL_get_peer_certificate (*(X509 * (*)(SSL *))ssl_sw[24].ptr)
-#define SSL_get_version (*(const char *(*)(SSL *))ssl_sw[25].ptr)
-#define SSL_get_current_cipher (*(SSL_CIPHER * (*)(SSL *))ssl_sw[26].ptr)
-#define SSL_CIPHER_get_name                                                    \
-	(*(const char *(*)(const SSL_CIPHER *))ssl_sw[27].ptr)
-#define SSL_CTX_check_private_key (*(int (*)(SSL_CTX *))ssl_sw[28].ptr)
-#define SSL_CTX_set_session_id_context                                         \
-	(*(int (*)(SSL_CTX *, const unsigned char *, unsigned int))ssl_sw[29].ptr)
-#define SSL_CTX_ctrl (*(long (*)(SSL_CTX *, int, long, void *))ssl_sw[30].ptr)
-#define SSL_CTX_set_cipher_list                                                \
-	(*(int (*)(SSL_CTX *, const char *))ssl_sw[31].ptr)
-#define SSL_CTX_set_info_callback                                              \
-	(*(void (*)(SSL_CTX * ctx,                                                 \
-	            void (*callback)(SSL * s, int, int)))ssl_sw[32].ptr)
-#define SSL_get_ex_data (*(char *(*)(SSL *, int))ssl_sw[33].ptr)
-#define SSL_set_ex_data (*(void (*)(SSL *, int, char *))ssl_sw[34].ptr)
-
-#define SSL_CTX_set_options(ctx, op)                                           \
-	SSL_CTX_ctrl((ctx), SSL_CTRL_OPTIONS, (op), NULL)
-#define SSL_CTX_clear_options(ctx, op)                                         \
-	SSL_CTX_ctrl((ctx), SSL_CTRL_CLEAR_OPTIONS, (op), NULL)
-#define SSL_CTX_set_ecdh_auto(ctx, onoff)                                      \
-	SSL_CTX_ctrl(ctx, SSL_CTRL_SET_ECDH_AUTO, onoff, NULL)
-
-
-#define X509_get_notBefore(x) ((x)->cert_info->validity->notBefore)
-#define X509_get_notAfter(x) ((x)->cert_info->validity->notAfter)
-
-#define SSL_set_app_data(s, arg) (SSL_set_ex_data(s, 0, (char *)arg))
-#define SSL_get_app_data(s) (SSL_get_ex_data(s, 0))
-
-#define CRYPTO_num_locks (*(int (*)(void))crypto_sw[0].ptr)
-#define CRYPTO_set_locking_callback                                            \
-	(*(void (*)(void (*)(int, int, const char *, int)))crypto_sw[1].ptr)
-#define CRYPTO_set_id_callback                                                 \
-	(*(void (*)(unsigned long (*)(void)))crypto_sw[2].ptr)
-#define ERR_get_error (*(unsigned long (*)(void))crypto_sw[3].ptr)
-#define ERR_error_string (*(char *(*)(unsigned long, char *))crypto_sw[4].ptr)
-#define ERR_remove_state (*(void (*)(unsigned long))crypto_sw[5].ptr)
-#define ERR_free_strings (*(void (*)(void))crypto_sw[6].ptr)
-#define ENGINE_cleanup (*(void (*)(void))crypto_sw[7].ptr)
-#define CONF_modules_unload (*(void (*)(int))crypto_sw[8].ptr)
-#define CRYPTO_cleanup_all_ex_data (*(void (*)(void))crypto_sw[9].ptr)
-#define EVP_cleanup (*(void (*)(void))crypto_sw[10].ptr)
-#define X509_free (*(void (*)(X509 *))crypto_sw[11].ptr)
-#define X509_get_subject_name (*(X509_NAME * (*)(X509 *))crypto_sw[12].ptr)
-#define X509_get_issuer_name (*(X509_NAME * (*)(X509 *))crypto_sw[13].ptr)
-#define X509_NAME_oneline                                                      \
-	(*(char *(*)(X509_NAME *, char *, int))crypto_sw[14].ptr)
-#define X509_get_serialNumber (*(ASN1_INTEGER * (*)(X509 *))crypto_sw[15].ptr)
-#define i2c_ASN1_INTEGER                                                       \
-	(*(int (*)(ASN1_INTEGER *, unsigned char **))crypto_sw[16].ptr)
-#define EVP_get_digestbyname                                                   \
-	(*(const EVP_MD *(*)(const char *))crypto_sw[17].ptr)
-#define EVP_Digest                                                             \
-	(*(int (*)(                                                                \
-	    const void *, size_t, void *, unsigned int *, const EVP_MD *, void *)) \
-	      crypto_sw[18].ptr)
-#define i2d_X509 (*(int (*)(X509 *, unsigned char **))crypto_sw[19].ptr)
-#define BN_bn2hex (*(char *(*)(const BIGNUM *a))crypto_sw[20].ptr)
-#define ASN1_INTEGER_to_BN                                                     \
-	(*(BIGNUM * (*)(const ASN1_INTEGER *ai, BIGNUM *bn))crypto_sw[21].ptr)
-#define BN_free (*(void (*)(const BIGNUM *a))crypto_sw[22].ptr)
-#define CRYPTO_free (*(void (*)(void *addr))crypto_sw[23].ptr)
-
-#define OPENSSL_free(a) CRYPTO_free(a)
-
-/* set_ssl_option() function updates this array.
- * It loads SSL library dynamically and changes NULLs to the actual addresses
- * of respective functions. The macros above (like SSL_connect()) are really
- * just calling these functions indirectly via the pointer. */
-static struct ssl_func ssl_sw[] = {{"SSL_free", NULL},
-                                   {"SSL_accept", NULL},
-                                   {"SSL_connect", NULL},
-                                   {"SSL_read", NULL},
-                                   {"SSL_write", NULL},
-                                   {"SSL_get_error", NULL},
-                                   {"SSL_set_fd", NULL},
-                                   {"SSL_new", NULL},
-                                   {"SSL_CTX_new", NULL},
-                                   {"SSLv23_server_method", NULL},
-                                   {"SSL_library_init", NULL},
-                                   {"SSL_CTX_use_PrivateKey_file", NULL},
-                                   {"SSL_CTX_use_certificate_file", NULL},
-                                   {"SSL_CTX_set_default_passwd_cb", NULL},
-                                   {"SSL_CTX_free", NULL},
-                                   {"SSL_load_error_strings", NULL},
-                                   {"SSL_CTX_use_certificate_chain_file", NULL},
-                                   {"SSLv23_client_method", NULL},
-                                   {"SSL_pending", NULL},
-                                   {"SSL_CTX_set_verify", NULL},
-                                   {"SSL_shutdown", NULL},
-                                   {"SSL_CTX_load_verify_locations", NULL},
-                                   {"SSL_CTX_set_default_verify_paths", NULL},
-                                   {"SSL_CTX_set_verify_depth", NULL},
-                                   {"SSL_get_peer_certificate", NULL},
-                                   {"SSL_get_version", NULL},
-                                   {"SSL_get_current_cipher", NULL},
-                                   {"SSL_CIPHER_get_name", NULL},
-                                   {"SSL_CTX_check_private_key", NULL},
-                                   {"SSL_CTX_set_session_id_context", NULL},
-                                   {"SSL_CTX_ctrl", NULL},
-                                   {"SSL_CTX_set_cipher_list", NULL},
-                                   {"SSL_CTX_set_info_callback", NULL},
-                                   {"SSL_get_ex_data", NULL},
-                                   {"SSL_set_ex_data", NULL},
-                                   {NULL, NULL}};
-
-
-/* Similar array as ssl_sw. These functions could be located in different
- * lib. */
-static struct ssl_func crypto_sw[] = {{"CRYPTO_num_locks", NULL},
-                                      {"CRYPTO_set_locking_callback", NULL},
-                                      {"CRYPTO_set_id_callback", NULL},
-                                      {"ERR_get_error", NULL},
-                                      {"ERR_error_string", NULL},
-                                      {"ERR_remove_state", NULL},
-                                      {"ERR_free_strings", NULL},
-                                      {"ENGINE_cleanup", NULL},
-                                      {"CONF_modules_unload", NULL},
-                                      {"CRYPTO_cleanup_all_ex_data", NULL},
-                                      {"EVP_cleanup", NULL},
-                                      {"X509_free", NULL},
-                                      {"X509_get_subject_name", NULL},
-                                      {"X509_get_issuer_name", NULL},
-                                      {"X509_NAME_oneline", NULL},
-                                      {"X509_get_serialNumber", NULL},
-                                      {"i2c_ASN1_INTEGER", NULL},
-                                      {"EVP_get_digestbyname", NULL},
-                                      {"EVP_Digest", NULL},
-                                      {"i2d_X509", NULL},
-                                      {"BN_bn2hex", NULL},
-                                      {"ASN1_INTEGER_to_BN", NULL},
-                                      {"BN_free", NULL},
-                                      {"CRYPTO_free", NULL},
-                                      {NULL, NULL}};
-#endif /* OPENSSL_API_1_1 */
-#endif /* NO_SSL_DL */
-
-
-#if !defined(NO_CACHING)
 static const char *month_names[] = {"Jan",
                                     "Feb",
                                     "Mar",
@@ -2436,7 +2022,6 @@ static const char *month_names[] = {"Jan",
                                     "Oct",
                                     "Nov",
                                     "Dec"};
-#endif /* !NO_CACHING */
 
 /* Unified socket address. For IPv6 support, add IPv6 address structure in
  * the
@@ -2484,14 +2069,14 @@ struct vscpweb_file {
 };
 
 #define STRUCT_FILE_INITIALIZER                                                \
-	{                                                                          \
-		{                                                                      \
-			(uint64_t)0, (time_t)0, 0, 0, 0                                    \
-		}                                                                      \
-		,                                                                      \
-		{                                                                      \
-			(FILE *) NULL, (const char *)NULL                                  \
-		}                                                                      \
+	{                                                                      \
+            {                                                                  \
+		(uint64_t)0, (time_t)0, 0, 0, 0                                \
+            }                                                                  \
+            ,                                                                  \
+            {                                                                  \
+		(FILE *) NULL, (const char *)NULL                              \
+            }                                                                  \
 	}
 
 /* Describes listening socket, or socket which was accept()-ed by the master
@@ -2506,7 +2091,7 @@ struct socket {
 	unsigned char in_use;    /* Is valid */
 };
 
-/* NOTE(lsm): this enum shoulds be in sync with the config_options below. */
+// NOTE(lsm): this enum should be in sync with the config_options below.
 enum {
 	CGI_EXTENSIONS,
 	CGI_ENVIRONMENT,
@@ -2549,15 +2134,9 @@ enum {
 
 	DECODE_URL,
 
-	LUA_PRELOAD_FILE,
-	LUA_SCRIPT_EXTENSIONS,
-	LUA_SERVER_PAGE_EXTENSIONS,
-
 	DUKTAPE_SCRIPT_EXTENSIONS,
         
 	WEBSOCKET_ROOT,
-
-	LUA_WEBSOCKET_EXTENSIONS,
 
 	ACCESS_CONTROL_ALLOW_ORIGIN,
 	ACCESS_CONTROL_ALLOW_METHODS,
@@ -2573,8 +2152,6 @@ enum {
 #if defined(_WIN32)
 	CASE_SENSITIVE_FILES,
 #endif
-	LUA_BACKGROUND_SCRIPT,
-	LUA_BACKGROUND_SCRIPT_PARAMS,
 	ADDITIONAL_HEADER,
 	MAX_REQUEST_SIZE,
 
@@ -2599,7 +2176,7 @@ static struct vscpweb_option config_options[] = {
     {"global_auth_file", CONFIG_TYPE_FILE, NULL},
     {"index_files",
      CONFIG_TYPE_STRING_LIST,
-     "index.xhtml,index.html,index.htm,index.lp,index.lsp,index.lua,index."
+     "index.xhtml,index.html,index.htm,index."
      "cgi,"
      "index.shtml,index.php"},
     {"enable_keep_alive", CONFIG_TYPE_BOOLEAN, "no"},
@@ -2632,18 +2209,11 @@ static struct vscpweb_option config_options[] = {
 
     {"decode_url", CONFIG_TYPE_BOOLEAN, "yes"},
 
-
-    {"lua_preload_file", CONFIG_TYPE_FILE, NULL},
-    {"lua_script_pattern", CONFIG_TYPE_EXT_PATTERN, "**.lua$"},
-    {"lua_server_page_pattern", CONFIG_TYPE_EXT_PATTERN, "**.lp$|**.lsp$"},
-
     /* The support for duktape is still in alpha version state.
      * The name of this config option might change. */
     {"duktape_script_pattern", CONFIG_TYPE_EXT_PATTERN, "**.ssjs$"},
 
     {"websocket_root", CONFIG_TYPE_DIRECTORY, NULL},
-
-    {"lua_websocket_pattern", CONFIG_TYPE_EXT_PATTERN, "**.lua$"},
 
     {"access_control_allow_origin", CONFIG_TYPE_STRING, "*"},
     {"access_control_allow_methods", CONFIG_TYPE_STRING, "*"},
@@ -2658,12 +2228,11 @@ static struct vscpweb_option config_options[] = {
 #if defined(_WIN32)
     {"case_sensitive", CONFIG_TYPE_BOOLEAN, "no"},
 #endif
-    {"lua_background_script", CONFIG_TYPE_FILE, NULL},
-    {"lua_background_script_params", CONFIG_TYPE_STRING_LIST, NULL},
     {"additional_header", CONFIG_TYPE_STRING_MULTILINE, NULL},
     {"max_request_size", CONFIG_TYPE_NUMBER, "16384"},
 
-    {NULL, CONFIG_TYPE_UNKNOWN, NULL}};
+    {NULL, CONFIG_TYPE_UNKNOWN, NULL}
+};
 
 
 /* Check if the config_options and the corresponding enum have compatible
@@ -2755,12 +2324,7 @@ struct vscpweb_context {
 	/* linked list of uri handlers */
 	struct vscpweb_handler_info *handlers;
 
-	/* linked list of shared lua websockets */
-	struct vscpweb_shared_lua_websocket_list *shared_lua_websockets;
-
 	struct ttimers *timers;
-
-	void *lua_background_state;
 
 	int active_connections;
 	int max_connections;
@@ -2776,12 +2340,12 @@ struct vscpweb_context {
 static struct vscpweb_memory_stat vscpweb_common_memory = {0, 0, 0};
 
 static struct vscpweb_memory_stat *
-get_memory_stat(struct vscpweb_context *ctx)
+get_memory_stat( struct vscpweb_context *ctx )
 {
-	if (ctx) {
-		return &(ctx->ctx_memory);
-	}
-	return &vscpweb_common_memory;
+    if (ctx) {
+        return &(ctx->ctx_memory);
+    }
+    return &vscpweb_common_memory;
 }
 
 
@@ -2836,7 +2400,6 @@ struct vscpweb_connection {
 	int64_t last_throttle_bytes; /* Bytes sent this second */
 	pthread_mutex_t mutex;       /* Used by vscpweb_(un)lock_connection to ensure
 	                              * atomic transmissions for websockets */
-	void *lua_websocket_state; /* Lua_State for a websocket connection */
 
 	int thread_index; /* Thread index within ctx */
 };
@@ -2851,7 +2414,7 @@ struct de {
 
 
 
-static int is_websocket_protocol(const struct vscpweb_connection *conn);
+static int is_websocket_protocol( const struct vscpweb_connection *conn );
 
 
 #if !defined(NO_THREAD_NAME)
@@ -3127,7 +2690,7 @@ vscpweb_set_thread_name(const char *threadName)
 const struct vscpweb_option *
 vscpweb_get_valid_options(void)
 {
-	return config_options;
+    return config_options;
 }
 
 
@@ -5279,7 +4842,7 @@ vscpweb_join_thread(pthread_t threadid)
 
 FUNCTION_MAY_BE_UNUSED
 static HANDLE
-dlopen(const char *dll_name, int flags)
+dlopen(const char *dll_name, int flags)---
 {
 	wchar_t wbuf[PATH_MAX];
 	(void)flags;
@@ -6929,12 +6492,6 @@ extention_matches_script(
 		return 1;
 	}
 
-	if (match_prefix(conn->ctx->config[LUA_SCRIPT_EXTENSIONS],
-	                 strlen(conn->ctx->config[LUA_SCRIPT_EXTENSIONS]),
-	                 filename) > 0) {
-		return 1;
-	}
-
 	if (match_prefix(conn->ctx->config[DUKTAPE_SCRIPT_EXTENSIONS],
 	                 strlen(conn->ctx->config[DUKTAPE_SCRIPT_EXTENSIONS]),
 	                 filename) > 0) {
@@ -8364,32 +7921,8 @@ connect_socket(struct vscpweb_context *ctx /* may be NULL */,
 		return 0;
 	}
 
-#if !defined(NO_SSL_DL)
-#ifdef OPENSSL_API_1_1
-	if (use_ssl && (TLS_client_method == NULL)) {
-		vscpweb_snprintf(NULL,
-		            NULL, /* No truncation check for ebuf */
-		            ebuf,
-		            ebuf_len,
-		            "%s",
-		            "SSL is not initialized");
-		return 0;
-	}
-#else
-	if (use_ssl && (SSLv23_client_method == NULL)) {
-		vscpweb_snprintf(NULL,
-		            NULL, /* No truncation check for ebuf */
-		            ebuf,
-		            ebuf_len,
-		            "%s",
-		            "SSL is not initialized");
-		return 0;
-	}
 
-#endif /* OPENSSL_API_1_1 */
-#else
 	(void)use_ssl;
-#endif /* NO_SSL_DL */
 
 	(void)use_ssl;
 
@@ -11415,7 +10948,7 @@ timer_getcurrenttime(void)
 
 
 TIMER_API int
-timer_add(struct mg_context *ctx,
+timer_add(struct vscpweb_context *ctx,
           double next_time,
           double period,
           int is_relative,
@@ -11483,13 +11016,13 @@ timer_add(struct mg_context *ctx,
 static void
 timer_thread_run(void *thread_func_param)
 {
-	struct mg_context *ctx = (struct mg_context *)thread_func_param;
+	struct vscpweb_context *ctx = (struct vscpweb_context *)thread_func_param;
 	double d;
 	unsigned u;
 	int re_schedule;
 	struct ttimer t;
 
-	mg_set_thread_name("timer");
+        vscpweb_set_thread_name("timer");
 
 	if (ctx->callbacks.init_thread) {
 		/* Timer thread */
@@ -11553,36 +11086,36 @@ timer_thread(void *thread_func_param)
 
 
 TIMER_API int
-timers_init(struct mg_context *ctx)
+timers_init(struct vscpweb_context *ctx)
 {
 	ctx->timers =
-	    (struct ttimers *)mg_calloc_ctx(sizeof(struct ttimers), 1, ctx);
+	    (struct ttimers *)vscpweb_calloc_ctx(sizeof(struct ttimers), 1, ctx);
 	(void)pthread_mutex_init(&ctx->timers->mutex, NULL);
 
 	(void)timer_getcurrenttime();
 
 	/* Start timer thread */
-	mg_start_thread_with_id(timer_thread, ctx, &ctx->timers->threadid);
+	vscpweb_start_thread_with_id(timer_thread, ctx, &ctx->timers->threadid);
 
 	return 0;
 }
 
 
 TIMER_API void
-timers_exit(struct mg_context *ctx)
+timers_exit(struct vscpweb_context *ctx)
 {
 	if (ctx->timers) {
 		pthread_mutex_lock(&ctx->timers->mutex);
 		ctx->timers->timer_count = 0;
 
-		mg_join_thread(ctx->timers->threadid);
+		vscpweb_join_thread(ctx->timers->threadid);
 
 		/* TODO: Do we really need to unlock the mutex, before
 		 * destroying it, if it's destroyed by the thread currently
 		 * owning the mutex? */
 		pthread_mutex_unlock(&ctx->timers->mutex);
 		(void)pthread_mutex_destroy(&ctx->timers->mutex);
-		mg_free(ctx->timers);
+		vscpweb_free(ctx->timers);
 	}
 }
 
@@ -11590,2364 +11123,6 @@ timers_exit(struct mg_context *ctx)
 // ----------------------------------------------------------- End of timer.inl 
 
 
-/* This file is part of the CivetWeb web server.
- * See https://github.com/civetweb/civetweb/
- */
-
-#include "vscpweb_lua.h"
-#include "vscpweb_private_lua.h"
-
-#ifdef _WIN32
-static void *
-mmap(void *addr, int64_t len, int prot, int flags, int fd, int offset)
-{
-	/* TODO (low): This is an incomplete implementation of mmap for windows.
-	 * Currently it is sufficient, but there are a lot of unused parameters.
-	 * Better use a function "mg_map" which only has the required parameters,
-	 * and implement it using mmap in Linux and CreateFileMapping in Windows.
-	 * Noone should expect a full mmap for Windows here.
-	 */
-	HANDLE fh = (HANDLE)_get_osfhandle(fd);
-	HANDLE mh = CreateFileMapping(fh, 0, PAGE_READONLY, 0, 0, 0);
-	void *p = MapViewOfFile(mh, FILE_MAP_READ, 0, 0, (size_t)len);
-	CloseHandle(mh);
-
-	/* unused parameters */
-	(void)addr;
-	(void)prot;
-	(void)flags;
-	(void)offset;
-
-	return p;
-}
-
-static void
-munmap(void *addr, int64_t length)
-{
-	/* unused parameters */
-	(void)length;
-
-	UnmapViewOfFile(addr);
-}
-
-#define MAP_FAILED (NULL)
-#define MAP_PRIVATE (0)
-#define PROT_READ (0)
-#else
-#include <sys/mman.h>
-#endif
-
-static const char *LUASOCKET = "luasocket";
-static const char lua_regkey_ctx = 1;
-static const char lua_regkey_connlist = 2;
-static const char lua_regkey_lsp_include_history = 3;
-static const char *LUABACKGROUNDPARAMS = "mg";
-
-#ifndef LSP_INCLUDE_MAX_DEPTH
-#define LSP_INCLUDE_MAX_DEPTH (32)
-#endif
-
-
-/* Forward declarations */
-static void handle_request(struct mg_connection *);
-static int handle_lsp_request(struct mg_connection *,
-                              const char *,
-                              struct mg_file *,
-                              struct lua_State *);
-
-static void
-reg_lstring(struct lua_State *L,
-            const char *name,
-            const void *buffer,
-            size_t buflen)
-{
-	if (name != NULL && buffer != NULL) {
-		lua_pushstring(L, name);
-		lua_pushlstring(L, (const char *)buffer, buflen);
-		lua_rawset(L, -3);
-	}
-}
-
-static void
-reg_llstring(struct lua_State *L,
-             const void *buffer1,
-             size_t buflen1,
-             const void *buffer2,
-             size_t buflen2)
-{
-	if (buffer1 != NULL && buffer2 != NULL) {
-		lua_pushlstring(L, (const char *)buffer1, buflen1);
-		lua_pushlstring(L, (const char *)buffer2, buflen2);
-		lua_rawset(L, -3);
-	}
-}
-
-#define reg_string(L, name, val)                                               \
-	reg_lstring(L, name, val, val ? strlen(val) : 0)
-
-static void
-reg_int(struct lua_State *L, const char *name, int val)
-{
-	if (name != NULL) {
-		lua_pushstring(L, name);
-		lua_pushinteger(L, val);
-		lua_rawset(L, -3);
-	}
-}
-
-static void
-reg_boolean(struct lua_State *L, const char *name, int val)
-{
-	if (name != NULL) {
-		lua_pushstring(L, name);
-		lua_pushboolean(L, val != 0);
-		lua_rawset(L, -3);
-	}
-}
-
-static void
-reg_conn_function(struct lua_State *L,
-                  const char *name,
-                  lua_CFunction func,
-                  struct mg_connection *conn)
-{
-	if (name != NULL && func != NULL && conn != NULL) {
-		lua_pushstring(L, name);
-		lua_pushlightuserdata(L, conn);
-		lua_pushcclosure(L, func, 1);
-		lua_rawset(L, -3);
-	}
-}
-
-static void
-reg_function(struct lua_State *L, const char *name, lua_CFunction func)
-{
-	if (name != NULL && func != NULL) {
-		lua_pushstring(L, name);
-		lua_pushcclosure(L, func, 0);
-		lua_rawset(L, -3);
-	}
-}
-
-static void
-lua_cry(struct mg_connection *conn,
-        int err,
-        lua_State *L,
-        const char *lua_title,
-        const char *lua_operation)
-{
-	switch (err) {
-	case LUA_OK:
-	case LUA_YIELD:
-		break;
-	case LUA_ERRRUN:
-		mg_cry(conn,
-		       "%s: %s failed: runtime error: %s",
-		       lua_title,
-		       lua_operation,
-		       lua_tostring(L, -1));
-		break;
-	case LUA_ERRSYNTAX:
-		mg_cry(conn,
-		       "%s: %s failed: syntax error: %s",
-		       lua_title,
-		       lua_operation,
-		       lua_tostring(L, -1));
-		break;
-	case LUA_ERRMEM:
-		mg_cry(conn, "%s: %s failed: out of memory", lua_title, lua_operation);
-		break;
-	case LUA_ERRGCMM:
-		mg_cry(conn,
-		       "%s: %s failed: error during garbage collection",
-		       lua_title,
-		       lua_operation);
-		break;
-	case LUA_ERRERR:
-		mg_cry(conn,
-		       "%s: %s failed: error in error handling: %s",
-		       lua_title,
-		       lua_operation,
-		       lua_tostring(L, -1));
-		break;
-	default:
-		mg_cry(conn, "%s: %s failed: error %i", lua_title, lua_operation, err);
-		break;
-	}
-}
-
-static int
-lsp_sock_close(lua_State *L)
-{
-	int num_args = lua_gettop(L);
-	size_t s;
-	SOCKET *psock;
-
-	if ((num_args == 1) && lua_istable(L, -1)) {
-		lua_getfield(L, -1, "sock");
-		psock = (SOCKET *)lua_tolstring(L, -1, &s);
-		if (s != sizeof(SOCKET)) {
-			return luaL_error(L, "invalid internal state in :close() call");
-		}
-		/* Do not closesocket(*psock); here, close it in __gc */
-		(void)psock;
-	} else {
-		return luaL_error(L, "invalid :close() call");
-	}
-	return 0;
-}
-
-static int
-lsp_sock_recv(lua_State *L)
-{
-	int num_args = lua_gettop(L);
-	char buf[2000];
-	int n;
-	size_t s;
-	SOCKET *psock;
-
-	if ((num_args == 1) && lua_istable(L, -1)) {
-		lua_getfield(L, -1, "sock");
-		psock = (SOCKET *)lua_tolstring(L, -1, &s);
-		if (s != sizeof(SOCKET)) {
-			return luaL_error(L, "invalid internal state in :recv() call");
-		}
-		n = recv(*psock, buf, sizeof(buf), 0);
-		if (n <= 0) {
-			lua_pushnil(L);
-		} else {
-			lua_pushlstring(L, buf, n);
-		}
-	} else {
-		return luaL_error(L, "invalid :recv() call");
-	}
-	return 1;
-}
-
-static int
-lsp_sock_send(lua_State *L)
-{
-	int num_args = lua_gettop(L);
-	const char *buf;
-	size_t len, sent = 0;
-	int n = 0;
-	size_t s;
-	SOCKET *psock;
-
-	if ((num_args == 2) && lua_istable(L, -2) && lua_isstring(L, -1)) {
-		buf = lua_tolstring(L, -1, &len);
-		lua_getfield(L, -2, "sock");
-		psock = (SOCKET *)lua_tolstring(L, -1, &s);
-		if (s != sizeof(SOCKET)) {
-			return luaL_error(L, "invalid internal state in :close() call");
-		}
-
-		while (sent < len) {
-			if ((n = send(*psock, buf + sent, (int)(len - sent), 0)) <= 0) {
-				break;
-			}
-			sent += n;
-		}
-		lua_pushnumber(L, n);
-	} else {
-		return luaL_error(L, "invalid :close() call");
-	}
-	return 1;
-}
-
-static int
-lsp_sock_gc(lua_State *L)
-{
-	int num_args = lua_gettop(L);
-	size_t s;
-	SOCKET *psock;
-
-	if ((num_args == 1) && lua_istable(L, -1)) {
-		lua_getfield(L, -1, "sock");
-		psock = (SOCKET *)lua_tolstring(L, -1, &s);
-		if (s != sizeof(SOCKET)) {
-			return luaL_error(
-			    L,
-			    "invalid internal state in __gc for object created by connect");
-		}
-		closesocket(*psock);
-	} else {
-		return luaL_error(L, "__gc for object created by connect failed");
-	}
-	return 0;
-}
-
-/* Methods and meta-methods supported by the object returned by connect.
- * For meta-methods, see http://lua-users.org/wiki/MetatableEvents */
-static const struct luaL_Reg luasocket_methods[] = {{"close", lsp_sock_close},
-                                                    {"send", lsp_sock_send},
-                                                    {"recv", lsp_sock_recv},
-                                                    {"__gc", lsp_sock_gc},
-                                                    {NULL, NULL}};
-
-static int
-lsp_connect(lua_State *L)
-{
-	int num_args = lua_gettop(L);
-	char ebuf[100];
-	SOCKET sock;
-	union usa sa;
-	int ok;
-
-	if ((num_args == 3) && lua_isstring(L, -3) && lua_isnumber(L, -2)
-	    && lua_isnumber(L, -1)) {
-		ok = connect_socket(NULL,
-		                    lua_tostring(L, -3),
-		                    (int)lua_tonumber(L, -2),
-		                    (int)lua_tonumber(L, -1),
-		                    ebuf,
-		                    sizeof(ebuf),
-		                    &sock,
-		                    &sa);
-		if (!ok) {
-			return luaL_error(L, ebuf);
-		} else {
-			lua_newtable(L);
-			reg_lstring(L, "sock", (const char *)&sock, sizeof(SOCKET));
-			reg_string(L, "host", lua_tostring(L, -4));
-			luaL_getmetatable(L, LUASOCKET);
-			lua_setmetatable(L, -2);
-		}
-	} else {
-		return luaL_error(
-		    L, "connect(host,port,is_ssl): invalid parameter given.");
-	}
-	return 1;
-}
-
-static int
-lsp_error(lua_State *L)
-{
-	lua_getglobal(L, "mg");
-	lua_getfield(L, -1, "onerror");
-	lua_pushvalue(L, -3);
-	lua_pcall(L, 1, 0, 0);
-	return 0;
-}
-
-/* Silently stop processing chunks. */
-static void
-lsp_abort(lua_State *L)
-{
-	int top = lua_gettop(L);
-	lua_getglobal(L, "mg");
-	lua_pushnil(L);
-	lua_setfield(L, -2, "onerror");
-	lua_settop(L, top);
-	lua_pushstring(L, "aborting");
-	lua_error(L);
-}
-
-struct lsp_var_reader_data {
-	const char *begin;
-	unsigned len;
-	unsigned state;
-};
-
-
-static const char *
-lsp_var_reader(lua_State *L, void *ud, size_t *sz)
-{
-	struct lsp_var_reader_data *reader = (struct lsp_var_reader_data *)ud;
-	const char *ret;
-	(void)(L); /* unused */
-
-	switch (reader->state) {
-	case 0:
-		ret = "mg.write(";
-		*sz = strlen(ret);
-		break;
-	case 1:
-		ret = reader->begin;
-		*sz = reader->len;
-		break;
-	case 2:
-		ret = ")";
-		*sz = strlen(ret);
-		break;
-	default:
-		ret = 0;
-		*sz = 0;
-	}
-
-	reader->state++;
-	return ret;
-}
-
-
-static int
-run_lsp(struct mg_connection *conn,
-        const char *path,
-        const char *p,
-        int64_t len,
-        lua_State *L)
-{
-	int i, j, pos = 0, lines = 1, lualines = 0, is_var, lua_ok;
-	char chunkname[MG_BUF_LEN];
-	struct lsp_var_reader_data data;
-
-	for (i = 0; i < len; i++) {
-		if (p[i] == '\n')
-			lines++;
-		if (((i + 1) < len) && (p[i] == '<') && (p[i + 1] == '?')) {
-
-			/* <?= ?> means a variable is enclosed and its value should be
-			 * printed */
-			is_var = (((i + 2) < len) && (p[i + 2] == '='));
-
-			if (is_var)
-				j = i + 2;
-			else
-				j = i + 1;
-
-			while (j < len) {
-				if (p[j] == '\n')
-					lualines++;
-				if (((j + 1) < len) && (p[j] == '?') && (p[j + 1] == '>')) {
-					mg_write(conn, p + pos, i - pos);
-
-					mg_snprintf(conn,
-					            NULL, /* name only used for debugging */
-					            chunkname,
-					            sizeof(chunkname),
-					            "@%s+%i",
-					            path,
-					            lines);
-					lua_pushlightuserdata(L, conn);
-					lua_pushcclosure(L, lsp_error, 1);
-
-					if (is_var) {
-						data.begin = p + (i + 3);
-						data.len = j - (i + 3);
-						data.state = 0;
-						lua_ok = mg_lua_load(
-						    L, lsp_var_reader, &data, chunkname, NULL);
-					} else {
-						lua_ok = luaL_loadbuffer(L,
-						                         p + (i + 2),
-						                         j - (i + 2),
-						                         chunkname);
-					}
-
-					if (lua_ok) {
-						/* Syntax error or OOM. Error message is pushed on
-						 * stack. */
-						lua_pcall(L, 1, 0, 0);
-					} else {
-						/* Success loading chunk. Call it. */
-						lua_pcall(L, 0, 0, 1);
-					}
-
-					pos = j + 2;
-					i = pos - 1;
-					break;
-				}
-				j++;
-			}
-
-			if (lualines > 0) {
-				lines += lualines;
-				lualines = 0;
-			}
-		}
-	}
-
-	if (i > pos) {
-		mg_write(conn, p + pos, i - pos);
-	}
-
-	return 0;
-}
-
-
-/* mg.write: Send data to the client */
-static int
-lsp_write(lua_State *L)
-{
-	struct mg_connection *conn =
-	    (struct mg_connection *)lua_touserdata(L, lua_upvalueindex(1));
-	int num_args = lua_gettop(L);
-	const char *str;
-	size_t size;
-	int i;
-	int rv = 1;
-
-	for (i = 1; i <= num_args; i++) {
-		if (lua_isstring(L, i)) {
-			str = lua_tolstring(L, i, &size);
-			if (mg_write(conn, str, size) != (int)size) {
-				rv = 0;
-			}
-		}
-	}
-	lua_pushboolean(L, rv);
-
-	return 1;
-}
-
-
-/* mg.read: Read data from the client (e.g., from a POST request) */
-static int
-lsp_read(lua_State *L)
-{
-	struct mg_connection *conn =
-	    (struct mg_connection *)lua_touserdata(L, lua_upvalueindex(1));
-	char buf[1024];
-	int len = mg_read(conn, buf, sizeof(buf));
-
-	if (len <= 0)
-		return 0;
-	lua_pushlstring(L, buf, len);
-
-	return 1;
-}
-
-
-/* mg.keep_alive: Allow Lua pages to use the http keep-alive mechanism */
-static int
-lsp_keep_alive(lua_State *L)
-{
-	struct mg_connection *conn =
-	    (struct mg_connection *)lua_touserdata(L, lua_upvalueindex(1));
-	int num_args = lua_gettop(L);
-
-	/* This function may be called with one parameter (boolean) to set the
-	keep_alive state.
-	Or without a parameter to just query the current keep_alive state. */
-	if ((num_args == 1) && lua_isboolean(L, 1)) {
-		conn->must_close = !lua_toboolean(L, 1);
-	} else if (num_args != 0) {
-		/* Syntax error */
-		return luaL_error(L, "invalid keep_alive() call");
-	}
-
-	/* Return the current "keep_alive" state. This may be false, even it
-	 * keep_alive(true) has been called. */
-	lua_pushboolean(L, should_keep_alive(conn));
-	return 1;
-}
-
-
-/* Stack of includes */
-struct lsp_include_history {
-	int depth;
-	const char *script[LSP_INCLUDE_MAX_DEPTH + 1];
-};
-
-
-/* mg.include: Include another .lp file */
-static int
-lsp_include(lua_State *L)
-{
-	struct mg_connection *conn =
-	    (struct mg_connection *)lua_touserdata(L, lua_upvalueindex(1));
-	int num_args = lua_gettop(L);
-	struct mg_file file = STRUCT_FILE_INITIALIZER;
-	const char *file_name = (num_args >= 1) ? lua_tostring(L, 1) : NULL;
-	const char *path_type = (num_args >= 2) ? lua_tostring(L, 2) : NULL;
-	struct lsp_include_history *include_history;
-
-	if ((file_name) && (num_args <= 2)) {
-
-		lua_pushlightuserdata(L, (void *)&lua_regkey_lsp_include_history);
-		lua_gettable(L, LUA_REGISTRYINDEX);
-		include_history = (struct lsp_include_history *)lua_touserdata(L, -1);
-
-		if (include_history->depth >= ((int)(LSP_INCLUDE_MAX_DEPTH))) {
-			mg_cry(conn,
-			       "lsp max include depth of %i reached while including %s",
-			       (int)(LSP_INCLUDE_MAX_DEPTH),
-			       file_name);
-		} else {
-			char file_name_path[512];
-			char *p;
-			size_t len;
-			int truncated = 0;
-
-			file_name_path[511] = 0;
-
-			if (path_type && (*path_type == 'v')) {
-				/* "virtual" = relative to document root. */
-				(void)mg_snprintf(conn,
-				                  &truncated,
-				                  file_name_path,
-				                  sizeof(file_name_path),
-				                  "%s/%s",
-				                  conn->ctx->config[DOCUMENT_ROOT],
-				                  file_name);
-
-			} else if ((path_type && (*path_type == 'a'))
-			           || (path_type == NULL)) {
-				/* "absolute" = file name is relative to the
-				 * webserver working directory
-				 * or it is absolute system path. */
-				/* path_type==NULL is the legacy use case with 1 argument */
-				(void)mg_snprintf(conn,
-				                  &truncated,
-				                  file_name_path,
-				                  sizeof(file_name_path),
-				                  "%s",
-				                  file_name);
-
-			} else if (path_type && (*path_type == 'r' || *path_type == 'f')) {
-				/* "relative" = file name is relative to the
-				 * currect document */
-				(void)mg_snprintf(
-				    conn,
-				    &truncated,
-				    file_name_path,
-				    sizeof(file_name_path),
-				    "%s",
-				    include_history->script[include_history->depth]);
-
-				if (!truncated) {
-					if ((p = strrchr(file_name_path, '/')) != NULL) {
-						p[1] = '\0';
-					}
-					len = strlen(file_name_path);
-					(void)mg_snprintf(conn,
-					                  &truncated,
-					                  file_name_path + len,
-					                  sizeof(file_name_path) - len,
-					                  "%s",
-					                  file_name);
-				}
-
-			} else {
-				return luaL_error(
-				    L,
-				    "invalid path_type in include(file_name, path_type) call");
-			}
-
-			if (handle_lsp_request(conn, file_name_path, &file, L)) {
-				/* handle_lsp_request returned an error code, meaning an error
-				* occured in the included page and mg.onerror returned non-zero.
-				* Stop processing.
-				*/
-
-				lsp_abort(L);
-			}
-		}
-
-	} else {
-		/* Syntax error */
-		return luaL_error(L, "invalid include() call");
-	}
-	return 0;
-}
-
-
-/* mg.cry: Log an error. Default value for mg.onerror. */
-static int
-lsp_cry(lua_State *L)
-{
-	struct mg_connection *conn =
-	    (struct mg_connection *)lua_touserdata(L, lua_upvalueindex(1));
-	int num_args = lua_gettop(L);
-	const char *text = (num_args == 1) ? lua_tostring(L, 1) : NULL;
-
-	if (text) {
-		mg_cry(conn, "%s", lua_tostring(L, -1));
-	} else {
-		/* Syntax error */
-		return luaL_error(L, "invalid cry() call");
-	}
-	return 0;
-}
-
-
-/* mg.redirect: Redirect the request (internally). */
-static int
-lsp_redirect(lua_State *L)
-{
-	struct mg_connection *conn =
-	    (struct mg_connection *)lua_touserdata(L, lua_upvalueindex(1));
-	int num_args = lua_gettop(L);
-	const char *target = (num_args == 1) ? lua_tostring(L, 1) : NULL;
-
-	if (target) {
-		conn->request_info.local_uri = target;
-		handle_request(conn);
-		lsp_abort(L);
-	} else {
-		/* Syntax error */
-		return luaL_error(L, "invalid redirect() call");
-	}
-	return 0;
-}
-
-
-/* mg.send_file */
-static int
-lsp_send_file(lua_State *L)
-{
-	struct mg_connection *conn =
-	    (struct mg_connection *)lua_touserdata(L, lua_upvalueindex(1));
-	int num_args = lua_gettop(L);
-	const char *filename = (num_args == 1) ? lua_tostring(L, 1) : NULL;
-
-	if (filename) {
-		mg_send_file(conn, filename);
-	} else {
-		/* Syntax error */
-		return luaL_error(L, "invalid send_file() call");
-	}
-	return 0;
-}
-
-
-/* mg.get_time */
-static int
-lsp_get_time(lua_State *L)
-{
-	int num_args = lua_gettop(L);
-	int monotonic = (num_args > 0) ? lua_toboolean(L, 1) : 0;
-	struct timespec ts;
-	double d;
-
-	clock_gettime(monotonic ? CLOCK_MONOTONIC : CLOCK_REALTIME, &ts);
-	d = (double)ts.tv_sec + ((double)ts.tv_nsec * 1.0E-9);
-	lua_pushnumber(L, d);
-	return 1;
-}
-
-
-/* mg.get_var */
-static int
-lsp_get_var(lua_State *L)
-{
-	int num_args = lua_gettop(L);
-	const char *data, *var_name;
-	size_t data_len, occurrence;
-	int ret;
-	struct mg_context *ctx;
-
-	lua_pushlightuserdata(L, (void *)&lua_regkey_ctx);
-	lua_gettable(L, LUA_REGISTRYINDEX);
-	ctx = (struct mg_context *)lua_touserdata(L, -1);
-
-	if (num_args >= 2 && num_args <= 3) {
-		char *dst;
-		data = lua_tolstring(L, 1, &data_len);
-		var_name = lua_tostring(L, 2);
-		occurrence = (num_args > 2) ? (long)lua_tonumber(L, 3) : 0;
-
-		/* Allocate dynamically, so there is no internal limit for get_var */
-		dst = (char *)mg_malloc_ctx(data_len + 1, ctx);
-		if (!dst) {
-			return luaL_error(L, "out of memory in get_var() call");
-		}
-
-		ret = mg_get_var2(data, data_len, var_name, dst, data_len, occurrence);
-		if (ret >= 0) {
-			/* Variable found: return value to Lua */
-			lua_pushstring(L, dst);
-		} else {
-			/* Variable not found (TODO (mid): may be string too long) */
-			lua_pushnil(L);
-		}
-		mg_free(dst);
-	} else {
-		/* Syntax error */
-		return luaL_error(L, "invalid get_var() call");
-	}
-	return 1;
-}
-
-
-/* mg.get_mime_type */
-static int
-lsp_get_mime_type(lua_State *L)
-{
-	int num_args = lua_gettop(L);
-	struct vec mime_type = {0, 0};
-	struct mg_context *ctx;
-	const char *text;
-
-	lua_pushlightuserdata(L, (void *)&lua_regkey_ctx);
-	lua_gettable(L, LUA_REGISTRYINDEX);
-	ctx = (struct mg_context *)lua_touserdata(L, -1);
-
-	if (num_args == 1) {
-		text = lua_tostring(L, 1);
-		if (text) {
-			if (ctx) {
-				get_mime_type(ctx, text, &mime_type);
-				lua_pushlstring(L, mime_type.ptr, mime_type.len);
-			} else {
-				text = mg_get_builtin_mime_type(text);
-				lua_pushstring(L, text);
-			}
-		} else {
-			/* Syntax error */
-			return luaL_error(L, "invalid argument for get_mime_type() call");
-		}
-	} else {
-		/* Syntax error */
-		return luaL_error(L, "invalid get_mime_type() call");
-	}
-	return 1;
-}
-
-
-/* mg.get_cookie */
-static int
-lsp_get_cookie(lua_State *L)
-{
-	int num_args = lua_gettop(L);
-	const char *cookie;
-	const char *var_name;
-	int ret;
-	struct mg_context *ctx;
-
-	lua_pushlightuserdata(L, (void *)&lua_regkey_ctx);
-	lua_gettable(L, LUA_REGISTRYINDEX);
-	ctx = (struct mg_context *)lua_touserdata(L, -1);
-
-	if (num_args == 2) {
-		/* Correct number of arguments */
-		size_t data_len;
-		char *dst;
-
-		cookie = lua_tolstring(L, 1, &data_len);
-		var_name = lua_tostring(L, 2);
-
-		if (cookie == NULL || var_name == NULL) {
-			/* Syntax error */
-			return luaL_error(L, "invalid get_cookie() call");
-		}
-
-		dst = (char *)mg_malloc_ctx(data_len + 1, ctx);
-		if (!dst) {
-			return luaL_error(L, "out of memory in get_cookie() call");
-		}
-
-		ret = mg_get_cookie(cookie, var_name, dst, data_len);
-
-		if (ret >= 0) {
-			lua_pushlstring(L, dst, ret);
-		} else {
-			lua_pushnil(L);
-		}
-		mg_free(dst);
-
-	} else {
-		/* Syntax error */
-		return luaL_error(L, "invalid get_cookie() call");
-	}
-	return 1;
-}
-
-
-/* mg.md5 */
-static int
-lsp_md5(lua_State *L)
-{
-	int num_args = lua_gettop(L);
-	const char *text;
-	md5_byte_t hash[16];
-	md5_state_t ctx;
-	size_t text_len;
-	char buf[40];
-
-	if (num_args == 1) {
-		text = lua_tolstring(L, 1, &text_len);
-		if (text) {
-			md5_init(&ctx);
-			md5_append(&ctx, (const md5_byte_t *)text, text_len);
-			md5_finish(&ctx, hash);
-			bin2str(buf, hash, sizeof(hash));
-			lua_pushstring(L, buf);
-		} else {
-			lua_pushnil(L);
-		}
-	} else {
-		/* Syntax error */
-		return luaL_error(L, "invalid md5() call");
-	}
-	return 1;
-}
-
-
-/* mg.url_encode */
-static int
-lsp_url_encode(lua_State *L)
-{
-	int num_args = lua_gettop(L);
-	const char *text;
-	size_t text_len;
-	char *dst;
-	int dst_len;
-	struct mg_context *ctx;
-
-	lua_pushlightuserdata(L, (void *)&lua_regkey_ctx);
-	lua_gettable(L, LUA_REGISTRYINDEX);
-	ctx = (struct mg_context *)lua_touserdata(L, -1);
-
-	if (num_args == 1) {
-		text = lua_tolstring(L, 1, &text_len);
-		if (text) {
-			dst_len = 3 * (int)text_len + 1;
-			dst = ((text_len < 0x2AAAAAAA) ? (char *)mg_malloc_ctx(dst_len, ctx)
-			                               : (char *)NULL);
-			if (dst) {
-				mg_url_encode(text, dst, dst_len);
-				lua_pushstring(L, dst);
-				mg_free(dst);
-			} else {
-				return luaL_error(L, "out of memory in url_decode() call");
-			}
-		} else {
-			lua_pushnil(L);
-		}
-	} else {
-		/* Syntax error */
-		return luaL_error(L, "invalid url_encode() call");
-	}
-	return 1;
-}
-
-
-/* mg.url_decode */
-static int
-lsp_url_decode(lua_State *L)
-{
-	int num_args = lua_gettop(L);
-	const char *text;
-	size_t text_len;
-	int is_form;
-	char *dst;
-	int dst_len;
-	struct mg_context *ctx;
-
-	lua_pushlightuserdata(L, (void *)&lua_regkey_ctx);
-	lua_gettable(L, LUA_REGISTRYINDEX);
-	ctx = (struct mg_context *)lua_touserdata(L, -1);
-
-	if (num_args == 1 || (num_args == 2 && lua_isboolean(L, 2))) {
-		text = lua_tolstring(L, 1, &text_len);
-		is_form = (num_args == 2) ? lua_isboolean(L, 2) : 0;
-		if (text) {
-			dst_len = (int)text_len + 1;
-			dst = ((text_len < 0x7FFFFFFF) ? (char *)mg_malloc_ctx(dst_len, ctx)
-			                               : (char *)NULL);
-			if (dst) {
-				mg_url_decode(text, (int)text_len, dst, dst_len, is_form);
-				lua_pushstring(L, dst);
-				mg_free(dst);
-			} else {
-				return luaL_error(L, "out of memory in url_decode() call");
-			}
-		} else {
-			lua_pushnil(L);
-		}
-	} else {
-		/* Syntax error */
-		return luaL_error(L, "invalid url_decode() call");
-	}
-	return 1;
-}
-
-
-/* mg.base64_encode */
-static int
-lsp_base64_encode(lua_State *L)
-{
-	int num_args = lua_gettop(L);
-	const char *text;
-	size_t text_len;
-	char *dst;
-	struct mg_context *ctx;
-
-	lua_pushlightuserdata(L, (void *)&lua_regkey_ctx);
-	lua_gettable(L, LUA_REGISTRYINDEX);
-	ctx = (struct mg_context *)lua_touserdata(L, -1);
-
-	if (num_args == 1) {
-		text = lua_tolstring(L, 1, &text_len);
-		if (text) {
-			dst = (char *)mg_malloc_ctx(text_len * 8 / 6 + 4, ctx);
-			if (dst) {
-				base64_encode((const unsigned char *)text, (int)text_len, dst);
-				lua_pushstring(L, dst);
-				mg_free(dst);
-			} else {
-				return luaL_error(L, "out of memory in base64_encode() call");
-			}
-		} else {
-			lua_pushnil(L);
-		}
-	} else {
-		/* Syntax error */
-		return luaL_error(L, "invalid base64_encode() call");
-	}
-	return 1;
-}
-
-
-/* mg.base64_encode */
-static int
-lsp_base64_decode(lua_State *L)
-{
-	int num_args = lua_gettop(L);
-	const char *text;
-	size_t text_len, dst_len;
-	int ret;
-	char *dst;
-	struct mg_context *ctx;
-
-	lua_pushlightuserdata(L, (void *)&lua_regkey_ctx);
-	lua_gettable(L, LUA_REGISTRYINDEX);
-	ctx = (struct mg_context *)lua_touserdata(L, -1);
-
-	if (num_args == 1) {
-		text = lua_tolstring(L, 1, &text_len);
-		if (text) {
-			dst = (char *)mg_malloc_ctx(text_len, ctx);
-			if (dst) {
-				ret = base64_decode((const unsigned char *)text,
-				                    (int)text_len,
-				                    dst,
-				                    &dst_len);
-				if (ret != -1) {
-					mg_free(dst);
-					return luaL_error(
-					    L, "illegal character in lsp_base64_decode() call");
-				} else {
-					lua_pushlstring(L, dst, dst_len);
-					mg_free(dst);
-				}
-			} else {
-				return luaL_error(L,
-				                  "out of memory in lsp_base64_decode() call");
-			}
-		} else {
-			lua_pushnil(L);
-		}
-	} else {
-		/* Syntax error */
-		return luaL_error(L, "invalid lsp_base64_decode() call");
-	}
-	return 1;
-}
-
-
-/* mg.get_response_code_text */
-static int
-lsp_get_response_code_text(lua_State *L)
-{
-	int num_args = lua_gettop(L);
-	int type1;
-	double code;
-	const char *text;
-
-	if (num_args == 1) {
-		type1 = lua_type(L, 1);
-		if (type1 == LUA_TNUMBER) {
-			/* If the first argument is a number,
-			   convert it to the corresponding text. */
-			code = lua_tonumber(L, 1);
-			text = mg_get_response_code_text(NULL, (int)code);
-			if (text)
-				lua_pushstring(L, text);
-			return text ? 1 : 0;
-		}
-	}
-
-	/* Syntax error */
-	return luaL_error(L, "invalid get_response_code_text() call");
-}
-
-
-/* mg.random - might be better than math.random on some systems */
-static int
-lsp_random(lua_State *L)
-{
-	int num_args = lua_gettop(L);
-	if (num_args == 0) {
-		/* The civetweb internal random number generator will generate
-		         * a 64 bit random number. */
-		uint64_t r = get_random();
-		/* Lua "number" is a IEEE 754 double precission float:
- * https://en.wikipedia.org/wiki/Double-precision_floating-point_format
-		 * Thus, mask with 2^53-1 to get an integer with the maximum
- * precission available. */
-		r &= ((((uint64_t)1) << 53) - 1);
-		lua_pushnumber(L, (double)r);
-		return 1;
-	}
-
-	/* Syntax error */
-	return luaL_error(L, "invalid random() call");
-}
-
-
-/* mg.get_info */
-static int
-lsp_get_info(lua_State *L)
-{
-	int num_args = lua_gettop(L);
-	int type1, type2;
-	const char *arg1;
-	double arg2;
-	int len;
-	char *buf;
-
-	if (num_args == 1) {
-		type1 = lua_type(L, 1);
-		if (type1 == LUA_TSTRING) {
-			arg1 = lua_tostring(L, 1);
-			/* Get info according to argument */
-			if (!mg_strcasecmp(arg1, "system")) {
-				/* Get system info */
-				len = mg_get_system_info(NULL, 0);
-				if (len > 0) {
-					buf = mg_malloc(len + 64);
-					if (!buf) {
-						return luaL_error(L, "OOM in get_info() call");
-					}
-					len = mg_get_system_info(buf, len + 63);
-					lua_pushlstring(L, buf, len);
-					mg_free(buf);
-				} else {
-					lua_pushstring(L, "");
-				}
-				return 1;
-			}
-			if (!mg_strcasecmp(arg1, "context")) {
-				/* Get context */
-				struct mg_context *ctx;
-				lua_pushlightuserdata(L, (void *)&lua_regkey_ctx);
-				lua_gettable(L, LUA_REGISTRYINDEX);
-				ctx = (struct mg_context *)lua_touserdata(L, -1);
-
-				/* Get context info for server context */
-				len = mg_get_context_info(ctx, NULL, 0);
-				if (len > 0) {
-					buf = mg_malloc(len + 64);
-					if (!buf) {
-						return luaL_error(L, "OOM in get_info() call");
-					}
-					len = mg_get_context_info(ctx, buf, len + 63);
-					lua_pushlstring(L, buf, len);
-					mg_free(buf);
-				} else {
-					lua_pushstring(L, "");
-				}
-				return 1;
-			}
-			if (!mg_strcasecmp(arg1, "common")) {
-				/* Get context info for NULL context */
-				len = mg_get_context_info(NULL, NULL, 0);
-				if (len > 0) {
-					buf = mg_malloc(len + 64);
-					if (!buf) {
-						return luaL_error(L, "OOM in get_info() call");
-					}
-					len = mg_get_context_info(NULL, buf, len + 63);
-					lua_pushlstring(L, buf, len);
-					mg_free(buf);
-				} else {
-					lua_pushstring(L, "");
-				}
-				return 1;
-			}
-			return 0;
-		}
-	}
-
-	if (num_args == 2) {
-		type1 = lua_type(L, 1);
-		type2 = lua_type(L, 2);
-		if ((type1 == LUA_TSTRING) && (type2 == LUA_TNUMBER)) {
-			arg1 = lua_tostring(L, 1);
-			arg2 = lua_tonumber(L, 2);
-
-			/* Get info according to argument */
-			if (!mg_strcasecmp(arg1, "connection")) {
-
-				/* Get context */
-				struct mg_context *ctx;
-				lua_pushlightuserdata(L, (void *)&lua_regkey_ctx);
-				lua_gettable(L, LUA_REGISTRYINDEX);
-				ctx = (struct mg_context *)lua_touserdata(L, -1);
-
-				/* Get connection info for connection idx */
-				int idx = (int)(arg2 + 0.5);
-
-				/* Lua uses 1 based index, C uses 0 based index */
-				idx--;
-
-#ifdef MG_EXPERIMENTAL_INTERFACES
-				len = mg_get_connection_info(ctx, idx, NULL, 0);
-				if (len > 0) {
-					buf = mg_malloc(len + 64);
-					if (!buf) {
-						return luaL_error(L, "OOM in get_info() call");
-					}
-					len = mg_get_connection_info(ctx, idx, buf, len + 63);
-					lua_pushlstring(L, buf, len);
-					mg_free(buf);
-				} else {
-					lua_pushstring(L, "");
-				}
-#else
-				(void)ctx;
-				(void)idx;
-				lua_pushstring(L, "");
-#endif
-
-				return 1;
-			}
-			return 0;
-		}
-	}
-
-	/* Syntax error */
-	return luaL_error(L, "invalid get_info() call");
-}
-
-
-/* mg.get_option */
-static int
-lsp_get_option(lua_State *L)
-{
-	int num_args = lua_gettop(L);
-	int type1;
-	const char *arg1;
-	const char *data;
-
-	/* Get context */
-	struct mg_context *ctx;
-	lua_pushlightuserdata(L, (void *)&lua_regkey_ctx);
-	lua_gettable(L, LUA_REGISTRYINDEX);
-	ctx = (struct mg_context *)lua_touserdata(L, -1);
-
-	if (num_args == 0) {
-		const struct mg_option *opts = mg_get_valid_options();
-
-		if (!opts) {
-			return 0;
-		}
-
-		lua_newtable(L);
-		while (opts->name) {
-			data = mg_get_option(ctx, opts->name);
-			if (data) {
-				reg_string(L, opts->name, data);
-			}
-			opts++;
-		}
-
-		return 1;
-	}
-
-	if (num_args == 1) {
-		type1 = lua_type(L, 1);
-		if (type1 == LUA_TSTRING) {
-			arg1 = lua_tostring(L, 1);
-			/* Get option according to argument */
-			data = mg_get_option(ctx, arg1);
-			if (data) {
-				lua_pushstring(L, data);
-				return 1;
-			}
-			return 0;
-		}
-	}
-
-	/* Syntax error */
-	return luaL_error(L, "invalid get_option() call");
-}
-
-
-/* UUID library and function pointer */
-union {
-	void *p;
-	void (*f)(unsigned char uuid[16]);
-} pf_uuid_generate;
-
-
-/* mg.uuid */
-static int
-lsp_uuid(lua_State *L)
-{
-	union {
-		unsigned char uuid_array[16];
-		struct uuid_struct_type {
-			uint32_t data1;
-			uint16_t data2;
-			uint16_t data3;
-			uint8_t data4[8];
-		} uuid_struct;
-	} uuid;
-
-	char uuid_str[40];
-	int num_args = lua_gettop(L);
-
-	memset(&uuid, 0, sizeof(uuid));
-	memset(uuid_str, 0, sizeof(uuid_str));
-
-	if (num_args == 0) {
-
-		pf_uuid_generate.f(uuid.uuid_array);
-
-		sprintf(uuid_str,
-		        "{%08lX-%04X-%04X-%02X%02X-"
-		        "%02X%02X%02X%02X%02X%02X}",
-		        (unsigned long)uuid.uuid_struct.data1,
-		        (unsigned)uuid.uuid_struct.data2,
-		        (unsigned)uuid.uuid_struct.data3,
-		        (unsigned)uuid.uuid_struct.data4[0],
-		        (unsigned)uuid.uuid_struct.data4[1],
-		        (unsigned)uuid.uuid_struct.data4[2],
-		        (unsigned)uuid.uuid_struct.data4[3],
-		        (unsigned)uuid.uuid_struct.data4[4],
-		        (unsigned)uuid.uuid_struct.data4[5],
-		        (unsigned)uuid.uuid_struct.data4[6],
-		        (unsigned)uuid.uuid_struct.data4[7]);
-
-		lua_pushstring(L, uuid_str);
-		return 1;
-	}
-
-	/* Syntax error */
-	return luaL_error(L, "invalid random() call");
-}
-
-
-#ifdef USE_WEBSOCKET
-struct lua_websock_data {
-	lua_State *state;
-	char *script;
-	unsigned references;
-	struct mg_connection *conn[MAX_WORKER_THREADS];
-	pthread_mutex_t ws_mutex;
-};
-#endif
-
-
-/* mg.write for websockets */
-static int
-lwebsock_write(lua_State *L)
-{
-#ifdef USE_WEBSOCKET
-	int num_args = lua_gettop(L);
-	struct lua_websock_data *ws;
-	const char *str;
-	size_t size;
-	int opcode = -1;
-	unsigned i;
-	struct mg_connection *client = NULL;
-
-	lua_pushlightuserdata(L, (void *)&lua_regkey_connlist);
-	lua_gettable(L, LUA_REGISTRYINDEX);
-	ws = (struct lua_websock_data *)lua_touserdata(L, -1);
-
-	(void)pthread_mutex_lock(&(ws->ws_mutex));
-
-	if (num_args == 1) {
-		/* just one text: send it to all client */
-		if (lua_isstring(L, 1)) {
-			opcode = WEBSOCKET_OPCODE_TEXT;
-		}
-	} else if (num_args == 2) {
-		if (lua_isnumber(L, 1)) {
-			/* opcode number and message text */
-			opcode = (int)lua_tointeger(L, 1);
-		} else if (lua_isstring(L, 1)) {
-			/* opcode string and message text */
-			str = lua_tostring(L, 1);
-			if (!mg_strncasecmp(str, "text", 4))
-				opcode = WEBSOCKET_OPCODE_TEXT;
-			else if (!mg_strncasecmp(str, "bin", 3))
-				opcode = WEBSOCKET_OPCODE_BINARY;
-			else if (!mg_strncasecmp(str, "close", 5))
-				opcode = WEBSOCKET_OPCODE_CONNECTION_CLOSE;
-			else if (!mg_strncasecmp(str, "ping", 4))
-				opcode = WEBSOCKET_OPCODE_PING;
-			else if (!mg_strncasecmp(str, "pong", 4))
-				opcode = WEBSOCKET_OPCODE_PONG;
-			else if (!mg_strncasecmp(str, "cont", 4))
-				opcode = WEBSOCKET_OPCODE_CONTINUATION;
-		} else if (lua_isuserdata(L, 1)) {
-			/* client id and message text */
-			client = (struct mg_connection *)lua_touserdata(L, 1);
-			opcode = WEBSOCKET_OPCODE_TEXT;
-		}
-	} else if (num_args == 3) {
-		if (lua_isuserdata(L, 1)) {
-			client = (struct mg_connection *)lua_touserdata(L, 1);
-			if (lua_isnumber(L, 2)) {
-				/* client id, opcode number and message text */
-				opcode = (int)lua_tointeger(L, 2);
-			} else if (lua_isstring(L, 2)) {
-				/* client id, opcode string and message text */
-				str = lua_tostring(L, 2);
-				if (!mg_strncasecmp(str, "text", 4))
-					opcode = WEBSOCKET_OPCODE_TEXT;
-				else if (!mg_strncasecmp(str, "bin", 3))
-					opcode = WEBSOCKET_OPCODE_BINARY;
-				else if (!mg_strncasecmp(str, "close", 5))
-					opcode = WEBSOCKET_OPCODE_CONNECTION_CLOSE;
-				else if (!mg_strncasecmp(str, "ping", 4))
-					opcode = WEBSOCKET_OPCODE_PING;
-				else if (!mg_strncasecmp(str, "pong", 4))
-					opcode = WEBSOCKET_OPCODE_PONG;
-				else if (!mg_strncasecmp(str, "cont", 4))
-					opcode = WEBSOCKET_OPCODE_CONTINUATION;
-			}
-		}
-	}
-
-	if (opcode >= 0 && opcode < 16 && lua_isstring(L, num_args)) {
-		str = lua_tolstring(L, num_args, &size);
-		if (client) {
-			for (i = 0; i < ws->references; i++) {
-				if (client == ws->conn[i]) {
-					mg_lock_connection(ws->conn[i]);
-					mg_websocket_write(ws->conn[i], opcode, str, size);
-					mg_unlock_connection(ws->conn[i]);
-				}
-			}
-		} else {
-			for (i = 0; i < ws->references; i++) {
-				mg_lock_connection(ws->conn[i]);
-				mg_websocket_write(ws->conn[i], opcode, str, size);
-				mg_unlock_connection(ws->conn[i]);
-			}
-		}
-	} else {
-		(void)pthread_mutex_unlock(&(ws->ws_mutex));
-		return luaL_error(L, "invalid websocket write() call");
-	}
-
-	(void)pthread_mutex_unlock(&(ws->ws_mutex));
-
-#else
-	(void)(L);           /* unused */
-#endif
-	return 0;
-}
-
-
-struct laction_arg {
-	lua_State *state;
-	const char *script;
-	pthread_mutex_t *pmutex;
-	char txt[1];
-};
-
-
-static int
-lua_action(struct laction_arg *arg)
-{
-	int err, ok;
-	struct mg_context *ctx;
-
-	(void)pthread_mutex_lock(arg->pmutex);
-
-	lua_pushlightuserdata(arg->state, (void *)&lua_regkey_ctx);
-	lua_gettable(arg->state, LUA_REGISTRYINDEX);
-	ctx = (struct mg_context *)lua_touserdata(arg->state, -1);
-
-	err = luaL_loadstring(arg->state, arg->txt);
-	if (err != 0) {
-		lua_cry(fc(ctx), err, arg->state, arg->script, "timer");
-		(void)pthread_mutex_unlock(arg->pmutex);
-		mg_free(arg);
-		return 0;
-	}
-	err = lua_pcall(arg->state, 0, 1, 0);
-	if (err != 0) {
-		lua_cry(fc(ctx), err, arg->state, arg->script, "timer");
-		(void)pthread_mutex_unlock(arg->pmutex);
-		mg_free(arg);
-		return 0;
-	}
-
-	ok = lua_type(arg->state, -1);
-	if (lua_isboolean(arg->state, -1)) {
-		ok = lua_toboolean(arg->state, -1);
-	} else {
-		ok = 0;
-	}
-	lua_pop(arg->state, 1);
-
-	(void)pthread_mutex_unlock(arg->pmutex);
-
-	if (!ok) {
-		mg_free(arg);
-	}
-	return ok;
-}
-
-
-static int
-lua_action_free(struct laction_arg *arg)
-{
-	if (lua_action(arg)) {
-		mg_free(arg);
-	}
-	return 0;
-}
-
-
-static int
-lwebsocket_set_timer(lua_State *L, int is_periodic)
-{
-#if defined(USE_TIMERS) && defined(USE_WEBSOCKET)
-	int num_args = lua_gettop(L);
-	struct lua_websock_data *ws;
-	int type1, type2, ok = 0;
-	double timediff;
-	struct mg_context *ctx;
-	struct laction_arg *arg;
-	const char *txt;
-	size_t txt_len;
-
-	lua_pushlightuserdata(L, (void *)&lua_regkey_ctx);
-	lua_gettable(L, LUA_REGISTRYINDEX);
-	ctx = (struct mg_context *)lua_touserdata(L, -1);
-
-	lua_pushlightuserdata(L, (void *)&lua_regkey_connlist);
-	lua_gettable(L, LUA_REGISTRYINDEX);
-	ws = (struct lua_websock_data *)lua_touserdata(L, -1);
-
-	if (num_args < 2) {
-		return luaL_error(L,
-		                  "not enough arguments for set_timer/interval() call");
-	}
-
-	type1 = lua_type(L, 1);
-	type2 = lua_type(L, 2);
-
-	if (type1 == LUA_TSTRING && type2 == LUA_TNUMBER && num_args == 2) {
-		timediff = (double)lua_tonumber(L, 2);
-		txt = lua_tostring(L, 1);
-		txt_len = strlen(txt);
-		arg = (struct laction_arg *)mg_malloc_ctx(sizeof(struct laction_arg)
-		                                              + txt_len + 10,
-		                                          ctx);
-		arg->state = L;
-		arg->script = ws->script;
-		arg->pmutex = &(ws->ws_mutex);
-		memcpy(arg->txt, "return(", 7);
-		memcpy(arg->txt + 7, txt, txt_len);
-		arg->txt[txt_len + 7] = ')';
-		arg->txt[txt_len + 8] = 0;
-		ok =
-		    (0
-		     == timer_add(ctx,
-		                  timediff,
-		                  is_periodic,
-		                  1,
-		                  (taction)(is_periodic ? lua_action : lua_action_free),
-		                  (void *)arg));
-	} else if (type1 == LUA_TFUNCTION && type2 == LUA_TNUMBER) {
-		/* TODO (mid): not implemented yet */
-		return luaL_error(L, "invalid arguments for set_timer/interval() call");
-	} else {
-		return luaL_error(L, "invalid arguments for set_timer/interval() call");
-	}
-
-	lua_pushboolean(L, ok);
-	return 1;
-
-#else
-	(void)(L);           /* unused */
-	(void)(is_periodic); /* unused */
-	return 0;
-#endif
-}
-
-
-/* mg.set_timeout for websockets */
-static int
-lwebsocket_set_timeout(lua_State *L)
-{
-	return lwebsocket_set_timer(L, 0);
-}
-
-
-/* mg.set_interval for websockets */
-static int
-lwebsocket_set_interval(lua_State *L)
-{
-	return lwebsocket_set_timer(L, 1);
-}
-
-enum {
-	LUA_ENV_TYPE_LUA_SERVER_PAGE = 0,
-	LUA_ENV_TYPE_PLAIN_LUA_PAGE = 1,
-	LUA_ENV_TYPE_LUA_WEBSOCKET = 2,
-};
-
-
-static void
-prepare_lua_request_info(struct mg_connection *conn, lua_State *L)
-{
-	const char *s;
-	int i;
-
-	/* Export mg.request_info */
-	lua_pushstring(L, "request_info");
-	lua_newtable(L);
-	reg_string(L, "request_method", conn->request_info.request_method);
-	reg_string(L, "request_uri", conn->request_info.request_uri);
-	reg_string(L, "uri", conn->request_info.local_uri);
-	reg_string(L, "http_version", conn->request_info.http_version);
-	reg_string(L, "query_string", conn->request_info.query_string);
-#if defined(MG_LEGACY_INTERFACE)
-	reg_int(L, "remote_ip", conn->request_info.remote_ip); /* remote_ip is
-	                                                          deprecated, use
-	                                                          remote_addr
-	                                                          instead */
-#endif
-	reg_string(L, "remote_addr", conn->request_info.remote_addr);
-	/* TODO (high): ip version */
-	reg_int(L, "remote_port", conn->request_info.remote_port);
-	reg_int(L, "num_headers", conn->request_info.num_headers);
-	reg_int(L, "server_port", ntohs(conn->client.lsa.sin.sin_port));
-
-	if (conn->path_info != NULL) {
-		reg_string(L, "path_info", conn->path_info);
-	}
-
-	if (conn->request_info.content_length >= 0) {
-		/* reg_int64: content_length */
-		lua_pushstring(L, "content_length");
-		lua_pushnumber(
-		    L,
-		    (lua_Number)conn->request_info
-		        .content_length); /* lua_Number may be used as 52 bit integer */
-		lua_rawset(L, -3);
-	}
-	if ((s = mg_get_header(conn, "Content-Type")) != NULL) {
-		reg_string(L, "content_type", s);
-	}
-
-	if (conn->request_info.remote_user != NULL) {
-		reg_string(L, "remote_user", conn->request_info.remote_user);
-		reg_string(L, "auth_type", "Digest");
-	}
-
-	reg_boolean(L, "https", conn->ssl != NULL);
-
-	if (conn->status_code > 0) {
-		/* Lua error handler should show the status code */
-		reg_int(L, "status", conn->status_code);
-	}
-
-	lua_pushstring(L, "http_headers");
-	lua_newtable(L);
-	for (i = 0; i < conn->request_info.num_headers; i++) {
-		reg_string(L,
-		           conn->request_info.http_headers[i].name,
-		           conn->request_info.http_headers[i].value);
-	}
-	lua_rawset(L, -3);
-
-	lua_rawset(L, -3);
-}
-
-
-static void
-civetweb_open_lua_libs(lua_State *L)
-{
-	{
-		extern void luaL_openlibs(lua_State *);
-		luaL_openlibs(L);
-	}
-
-#ifdef USE_LUA_SQLITE3
-	{
-		extern int luaopen_lsqlite3(lua_State *);
-		luaopen_lsqlite3(L);
-	}
-#endif
-#ifdef USE_LUA_LUAXML
-	{
-		extern int luaopen_LuaXML_lib(lua_State *);
-		luaopen_LuaXML_lib(L);
-	}
-#endif
-#ifdef USE_LUA_FILE_SYSTEM
-	{
-		extern int luaopen_lfs(lua_State *);
-		luaopen_lfs(L);
-	}
-#endif
-#ifdef USE_LUA_BINARY
-	{
-		/* TODO (low): Test if this could be used as a replacement for bit32.
-		 * Check again with Lua 5.3 later. */
-		extern int luaopen_binary(lua_State *);
-
-		luaL_requiref(L, "binary", luaopen_binary, 1);
-		lua_pop(L, 1);
-	}
-#endif
-}
-
-
-static void
-prepare_lua_environment(struct mg_context *ctx,
-                        struct mg_connection *conn,
-                        struct lua_websock_data *ws_conn_list,
-                        lua_State *L,
-                        const char *script_name,
-                        int lua_env_type)
-{
-	civetweb_open_lua_libs(L);
-
-#if LUA_VERSION_NUM == 502
-	/* Keep the "connect" method for compatibility,
-	 * but do not backport it to Lua 5.1.
-	 * TODO: Redesign the interface.
-	 */
-	luaL_newmetatable(L, LUASOCKET);
-	lua_pushliteral(L, "__index");
-	luaL_newlib(L, luasocket_methods);
-	lua_rawset(L, -3);
-	lua_pop(L, 1);
-	lua_register(L, "connect", lsp_connect);
-#endif
-
-	/* Store context in the registry */
-	if (ctx != NULL) {
-		lua_pushlightuserdata(L, (void *)&lua_regkey_ctx);
-		lua_pushlightuserdata(L, (void *)ctx);
-		lua_settable(L, LUA_REGISTRYINDEX);
-	}
-	if (ws_conn_list != NULL) {
-		lua_pushlightuserdata(L, (void *)&lua_regkey_connlist);
-		lua_pushlightuserdata(L, (void *)ws_conn_list);
-		lua_settable(L, LUA_REGISTRYINDEX);
-	}
-
-	/* Lua server pages store the depth of mg.include, in order
-	 * to detect recursions and prevent stack overflows. */
-	if (lua_env_type == LUA_ENV_TYPE_LUA_SERVER_PAGE) {
-		struct lsp_include_history *h;
-		lua_pushlightuserdata(L, (void *)&lua_regkey_lsp_include_history);
-		h = (struct lsp_include_history *)
-		    lua_newuserdata(L, sizeof(struct lsp_include_history));
-		lua_settable(L, LUA_REGISTRYINDEX);
-		memset(h, 0, sizeof(struct lsp_include_history));
-	}
-
-	/* Register mg module */
-	lua_newtable(L);
-
-	switch (lua_env_type) {
-	case LUA_ENV_TYPE_LUA_SERVER_PAGE:
-		reg_string(L, "lua_type", "page");
-		break;
-	case LUA_ENV_TYPE_PLAIN_LUA_PAGE:
-		reg_string(L, "lua_type", "script");
-		break;
-	case LUA_ENV_TYPE_LUA_WEBSOCKET:
-		reg_string(L, "lua_type", "websocket");
-		break;
-	}
-
-	if (lua_env_type == LUA_ENV_TYPE_LUA_SERVER_PAGE
-	    || lua_env_type == LUA_ENV_TYPE_PLAIN_LUA_PAGE) {
-		reg_conn_function(L, "cry", lsp_cry, conn);
-		reg_conn_function(L, "read", lsp_read, conn);
-		reg_conn_function(L, "write", lsp_write, conn);
-		reg_conn_function(L, "keep_alive", lsp_keep_alive, conn);
-		reg_conn_function(L, "send_file", lsp_send_file, conn);
-	}
-
-	if (lua_env_type == LUA_ENV_TYPE_LUA_SERVER_PAGE) {
-		reg_conn_function(L, "include", lsp_include, conn);
-		reg_conn_function(L, "redirect", lsp_redirect, conn);
-	}
-
-	if (lua_env_type == LUA_ENV_TYPE_LUA_WEBSOCKET) {
-		reg_function(L, "write", lwebsock_write);
-		reg_function(L, "set_timeout", lwebsocket_set_timeout);
-		reg_function(L, "set_interval", lwebsocket_set_interval);
-		/* reg_conn_function(L, "send_file", lsp_send_file, conn); */
-	}
-
-	reg_function(L, "time", lsp_get_time);
-	reg_function(L, "get_var", lsp_get_var);
-	reg_function(L, "get_mime_type", lsp_get_mime_type);
-	reg_function(L, "get_cookie", lsp_get_cookie);
-	reg_function(L, "md5", lsp_md5);
-	reg_function(L, "url_encode", lsp_url_encode);
-	reg_function(L, "url_decode", lsp_url_decode);
-	reg_function(L, "base64_encode", lsp_base64_encode);
-	reg_function(L, "base64_decode", lsp_base64_decode);
-	reg_function(L, "get_response_code_text", lsp_get_response_code_text);
-	reg_function(L, "random", lsp_random);
-	reg_function(L, "get_info", lsp_get_info);
-	reg_function(L, "get_option", lsp_get_option);
-
-	if (pf_uuid_generate.f) {
-		reg_function(L, "uuid", lsp_uuid);
-	}
-
-	reg_string(L, "version", CIVETWEB_VERSION);
-
-	reg_string(L, "script_name", script_name);
-
-	if (ctx != NULL) {
-		reg_string(L, "document_root", ctx->config[DOCUMENT_ROOT]);
-		reg_string(L, "auth_domain", ctx->config[AUTHENTICATION_DOMAIN]);
-		if (ctx->config[WEBSOCKET_ROOT]) {
-			reg_string(L, "websocket_root", ctx->config[WEBSOCKET_ROOT]);
-		} else {
-			reg_string(L, "websocket_root", ctx->config[DOCUMENT_ROOT]);
-		}
-
-		if (ctx->systemName != NULL) {
-			reg_string(L, "system", ctx->systemName);
-		}
-	}
-
-	/* Export connection specific info */
-	if (conn != NULL) {
-		prepare_lua_request_info(conn, L);
-	}
-
-	lua_setglobal(L, "mg");
-
-	/* Register default mg.onerror function */
-	IGNORE_UNUSED_RESULT(
-	    luaL_dostring(L,
-	                  "mg.onerror = function(e) mg.write('\\nLua error:\\n', "
-	                  "debug.traceback(e, 1)) end"));
-
-	if (ctx != NULL) {
-		/* Preload */
-		if (ctx->config[LUA_PRELOAD_FILE] != NULL) {
-			IGNORE_UNUSED_RESULT(luaL_dofile(L, ctx->config[LUA_PRELOAD_FILE]));
-		}
-
-		if (ctx->callbacks.init_lua != NULL) {
-			ctx->callbacks.init_lua(conn, L);
-		}
-	}
-}
-
-
-static int
-lua_error_handler(lua_State *L)
-{
-	const char *error_msg = lua_isstring(L, -1) ? lua_tostring(L, -1) : "?\n";
-
-	lua_getglobal(L, "mg");
-	if (!lua_isnil(L, -1)) {
-		lua_getfield(L, -1, "write"); /* call mg.write() */
-		lua_pushstring(L, error_msg);
-		lua_pushliteral(L, "\n");
-		lua_call(L, 2, 0);
-		IGNORE_UNUSED_RESULT(
-		    luaL_dostring(L, "mg.write(debug.traceback(), '\\n')"));
-	} else {
-		printf("Lua error: [%s]\n", error_msg);
-		IGNORE_UNUSED_RESULT(
-		    luaL_dostring(L, "print(debug.traceback(), '\\n')"));
-	}
-	/* TODO(lsm, low): leave the stack balanced */
-
-	return 0;
-}
-
-
-static void *
-lua_allocator(void *ud, void *ptr, size_t osize, size_t nsize)
-{
-	(void)osize; /* not used */
-
-	if (nsize == 0) {
-		mg_free(ptr);
-		return NULL;
-	}
-	return mg_realloc_ctx(ptr, nsize, (struct mg_context *)ud);
-}
-
-
-static void
-mg_exec_lua_script(struct mg_connection *conn,
-                   const char *path,
-                   const void **exports)
-{
-	int i;
-	lua_State *L;
-
-	/* Assume the script does not support keep_alive. The script may change this
-	 * by calling mg.keep_alive(true). */
-	conn->must_close = 1;
-
-	/* Execute a plain Lua script. */
-	if (path != NULL
-	    && (L = lua_newstate(lua_allocator, (void *)(conn->ctx))) != NULL) {
-		prepare_lua_environment(
-		    conn->ctx, conn, NULL, L, path, LUA_ENV_TYPE_PLAIN_LUA_PAGE);
-		lua_pushcclosure(L, &lua_error_handler, 0);
-
-		if (exports != NULL) {
-
-			lua_pushglobaltable(L);
-			for (i = 0; exports[i] != NULL && exports[i + 1] != NULL; i += 2) {
-				lua_CFunction func;
-				lua_pushstring(L, (const char *)(exports[i]));
-				*(const void **)(&func) = exports[i + 1];
-				lua_pushcclosure(L, func, 0);
-				lua_rawset(L, -3);
-			}
-
-		}
-
-		if (luaL_loadfile(L, path) != 0) {
-			lua_error_handler(L);
-		}
-		lua_pcall(L, 0, 0, -2);
-		lua_close(L);
-	}
-}
-
-
-static int
-handle_lsp_request(struct mg_connection *conn,
-                   const char *path,
-                   struct mg_file *filep,
-                   struct lua_State *ls)
-{
-	void *p = NULL;
-	lua_State *L = NULL;
-	struct lsp_include_history *include_history;
-	int error = 1;
-
-	/* Assume the script does not support keep_alive. The script may change this
-	 * by calling mg.keep_alive(true). */
-	conn->must_close = 1;
-
-	/* mg_fopen opens the file and sets the size accordingly */
-	if (!mg_fopen(conn, path, MG_FOPEN_MODE_READ, filep)) {
-
-		/* File not found or not accessible */
-		if (ls == NULL) {
-			mg_send_http_error(conn,
-			                   500,
-			                   "Error: Cannot open script file %s",
-			                   path);
-		} else {
-			luaL_error(ls, "Cannot include [%s]: not found", path);
-		}
-
-		goto cleanup_handle_lsp_request;
-	}
-
-	/* Map file in memory (size is known). */
-	if (filep->access.membuf == NULL
-	    && (p = mmap(NULL,
-	                 (size_t)filep->stat.size,
-	                 PROT_READ,
-	                 MAP_PRIVATE,
-	                 fileno(filep->access.fp),
-	                 0)) == MAP_FAILED) {
-
-		/* mmap failed */
-		if (ls == NULL) {
-			mg_send_http_error(
-			    conn,
-			    500,
-			    "Error: Cannot open script\nFile %s can not be mapped",
-			    path);
-		} else {
-			luaL_error(ls,
-			           "mmap(%s, %zu, %d): %s",
-			           path,
-			           (size_t)filep->stat.size,
-			           fileno(filep->access.fp),
-			           strerror(errno));
-		}
-
-		goto cleanup_handle_lsp_request;
-	}
-
-	if (ls != NULL) {
-		L = ls;
-	} else {
-		L = lua_newstate(lua_allocator, (void *)(conn->ctx));
-		if (L == NULL) {
-			mg_send_http_error(
-			    conn,
-			    500,
-			    "%s",
-			    "Error: Cannot execute script\nlua_newstate failed");
-
-			goto cleanup_handle_lsp_request;
-		}
-		prepare_lua_environment(
-		    conn->ctx, conn, NULL, L, path, LUA_ENV_TYPE_LUA_SERVER_PAGE);
-	}
-
-	/* Get LSP include history table */
-	lua_pushlightuserdata(L, (void *)&lua_regkey_lsp_include_history);
-	lua_gettable(L, LUA_REGISTRYINDEX);
-	include_history = (struct lsp_include_history *)lua_touserdata(L, -1);
-
-	/* Store script name and increment depth */
-	include_history->depth++;
-	include_history->script[include_history->depth] = path;
-
-	/* Lua state is ready to use */
-	/* We're not sending HTTP headers here, Lua page must do it. */
-	error = run_lsp(conn,
-	                path,
-	                (filep->access.membuf == NULL)
-	                    ? (const char *)p
-	                    : (const char *)filep->access.membuf,
-	                filep->stat.size,
-	                L);
-
-cleanup_handle_lsp_request:
-
-	if (L != NULL && ls == NULL)
-		lua_close(L);
-	if (p != NULL)
-		munmap(p, filep->stat.size);
-	(void)mg_fclose(&filep->access);
-
-	return error;
-}
-
-
-struct mg_shared_lua_websocket_list {
-	struct lua_websock_data ws;
-	struct mg_shared_lua_websocket_list *next;
-};
-
-
-static void *
-lua_websocket_new(const char *script, struct mg_connection *conn)
-{
-	struct mg_shared_lua_websocket_list **shared_websock_list =
-	    &(conn->ctx->shared_lua_websockets);
-	struct lua_websock_data *ws;
-	int err, ok = 0;
-
-	assert(conn->lua_websocket_state == NULL);
-
-	/* lock list (mg_context global) */
-	mg_lock_context(conn->ctx);
-	while (*shared_websock_list) {
-		/* check if ws already in list */
-		if (0 == strcmp(script, (*shared_websock_list)->ws.script)) {
-			break;
-		}
-		shared_websock_list = &((*shared_websock_list)->next);
-	}
-
-	if (*shared_websock_list == NULL) {
-		/* add ws to list */
-		*shared_websock_list =
-		    (struct mg_shared_lua_websocket_list *)mg_calloc_ctx(
-		        sizeof(struct mg_shared_lua_websocket_list), 1, conn->ctx);
-		if (*shared_websock_list == NULL) {
-			mg_unlock_context(conn->ctx);
-			mg_cry(conn, "Cannot create shared websocket struct, OOM");
-			return NULL;
-		}
-		/* init ws list element */
-		ws = &(*shared_websock_list)->ws;
-		ws->script = mg_strdup(script); /* TODO (low): handle OOM */
-		pthread_mutex_init(&(ws->ws_mutex), &pthread_mutex_attr);
-		(void)pthread_mutex_lock(&(ws->ws_mutex));
-		ws->state = lua_newstate(lua_allocator, (void *)(conn->ctx));
-		ws->conn[0] = conn;
-		ws->references = 1;
-		prepare_lua_environment(
-		    conn->ctx, NULL, ws, ws->state, script, LUA_ENV_TYPE_LUA_WEBSOCKET);
-		err = luaL_loadfile(ws->state, script);
-		if (err != 0) {
-			lua_cry(conn, err, ws->state, script, "load");
-		}
-		err = lua_pcall(ws->state, 0, 0, 0);
-		if (err != 0) {
-			lua_cry(conn, err, ws->state, script, "init");
-		}
-	} else {
-		/* inc ref count */
-		ws = &(*shared_websock_list)->ws;
-		(void)pthread_mutex_lock(&(ws->ws_mutex));
-		(*shared_websock_list)->ws.conn[(ws->references)++] = conn;
-	}
-	mg_unlock_context(conn->ctx);
-
-	/* call add */
-	lua_getglobal(ws->state, "open");
-	lua_newtable(ws->state);
-	prepare_lua_request_info(conn, ws->state);
-	lua_pushstring(ws->state, "client");
-	lua_pushlightuserdata(ws->state, (void *)conn);
-	lua_rawset(ws->state, -3);
-
-	err = lua_pcall(ws->state, 1, 1, 0);
-	if (err != 0) {
-		lua_cry(conn, err, ws->state, script, "open handler");
-	} else {
-		if (lua_isboolean(ws->state, -1)) {
-			ok = lua_toboolean(ws->state, -1);
-		}
-		lua_pop(ws->state, 1);
-	}
-	if (!ok) {
-		/* Remove from ws connection list. */
-		/* TODO (mid): Check if list entry and Lua state needs to be deleted
-		 * (see websocket_close). */
-		(*shared_websock_list)->ws.conn[--(ws->references)] = 0;
-	}
-
-	(void)pthread_mutex_unlock(&(ws->ws_mutex));
-
-	return ok ? (void *)ws : NULL;
-}
-
-
-static int
-lua_websocket_data(struct mg_connection *conn,
-                   int bits,
-                   char *data,
-                   size_t data_len,
-                   void *ws_arg)
-{
-	struct lua_websock_data *ws = (struct lua_websock_data *)(ws_arg);
-	int err, ok = 0;
-
-	assert(ws != NULL);
-	assert(ws->state != NULL);
-
-	(void)pthread_mutex_lock(&(ws->ws_mutex));
-
-	lua_getglobal(ws->state, "data");
-	lua_newtable(ws->state);
-	lua_pushstring(ws->state, "client");
-	lua_pushlightuserdata(ws->state, (void *)conn);
-	lua_rawset(ws->state, -3);
-	lua_pushstring(ws->state, "bits"); /* TODO: dont use "bits" but fields with
-	                                      a meaning according to
-	                                      http://tools.ietf.org/html/rfc6455,
-	                                      section 5.2 */
-	lua_pushnumber(ws->state, bits);
-	lua_rawset(ws->state, -3);
-	lua_pushstring(ws->state, "data");
-	lua_pushlstring(ws->state, data, data_len);
-	lua_rawset(ws->state, -3);
-
-	err = lua_pcall(ws->state, 1, 1, 0);
-	if (err != 0) {
-		lua_cry(conn, err, ws->state, ws->script, "data handler");
-	} else {
-		if (lua_isboolean(ws->state, -1)) {
-			ok = lua_toboolean(ws->state, -1);
-		}
-		lua_pop(ws->state, 1);
-	}
-	(void)pthread_mutex_unlock(&(ws->ws_mutex));
-
-	return ok;
-}
-
-
-static int
-lua_websocket_ready(struct mg_connection *conn, void *ws_arg)
-{
-	struct lua_websock_data *ws = (struct lua_websock_data *)(ws_arg);
-	int err, ok = 0;
-
-	assert(ws != NULL);
-	assert(ws->state != NULL);
-
-	(void)pthread_mutex_lock(&(ws->ws_mutex));
-
-	lua_getglobal(ws->state, "ready");
-	lua_newtable(ws->state);
-	lua_pushstring(ws->state, "client");
-	lua_pushlightuserdata(ws->state, (void *)conn);
-	lua_rawset(ws->state, -3);
-	err = lua_pcall(ws->state, 1, 1, 0);
-	if (err != 0) {
-		lua_cry(conn, err, ws->state, ws->script, "ready handler");
-	} else {
-		if (lua_isboolean(ws->state, -1)) {
-			ok = lua_toboolean(ws->state, -1);
-		}
-		lua_pop(ws->state, 1);
-	}
-
-	(void)pthread_mutex_unlock(&(ws->ws_mutex));
-
-	return ok;
-}
-
-
-static void
-lua_websocket_close(struct mg_connection *conn, void *ws_arg)
-{
-	struct lua_websock_data *ws = (struct lua_websock_data *)(ws_arg);
-	struct mg_shared_lua_websocket_list **shared_websock_list =
-	    &(conn->ctx->shared_lua_websockets);
-	int err = 0;
-	unsigned i;
-
-	assert(ws != NULL);
-	assert(ws->state != NULL);
-
-	(void)pthread_mutex_lock(&(ws->ws_mutex));
-
-	lua_getglobal(ws->state, "close");
-	lua_newtable(ws->state);
-	lua_pushstring(ws->state, "client");
-	lua_pushlightuserdata(ws->state, (void *)conn);
-	lua_rawset(ws->state, -3);
-
-	err = lua_pcall(ws->state, 1, 0, 0);
-	if (err != 0) {
-		lua_cry(conn, err, ws->state, ws->script, "close handler");
-	}
-	for (i = 0; i < ws->references; i++) {
-		if (ws->conn[i] == conn) {
-			ws->references--;
-			ws->conn[i] = ws->conn[ws->references];
-		}
-	}
-	/* TODO: Delete lua_websock_data and remove it from the websocket list.
-	   This must only be done, when all connections are closed, and all
-	   asynchronous operations and timers are completed/expired. */
-	(void)shared_websock_list; /* shared_websock_list unused (see open TODO) */
-
-	(void)pthread_mutex_unlock(&(ws->ws_mutex));
-}
-
-
-static lua_State *
-mg_prepare_lua_context_script(const char *file_name,
-                              struct mg_context *ctx,
-                              char *ebuf,
-                              size_t ebuf_len)
-{
-	struct lua_State *L;
-	int lua_ret;
-	const char *lua_err_txt;
-
-	(void)ctx;
-
-	L = luaL_newstate();
-	if (L == NULL) {
-		mg_snprintf(NULL,
-		            NULL, /* No truncation check for ebuf */
-		            ebuf,
-		            ebuf_len,
-		            "Error: %s",
-		            "Cannot create Lua state");
-		return 0;
-	}
-	civetweb_open_lua_libs(L);
-
-	lua_ret = luaL_loadfile(L, file_name);
-	if (lua_ret != LUA_OK) {
-		/* Error when loading the file (e.g. file not found,
-		 * out of memory, ...)
-		 */
-		lua_err_txt = lua_tostring(L, -1);
-		mg_snprintf(NULL,
-		            NULL, /* No truncation check for ebuf */
-		            ebuf,
-		            ebuf_len,
-		            "Error loading file %s: %s\n",
-		            file_name,
-		            lua_err_txt);
-		return 0;
-	}
-
-	/* The script file is loaded, now call it */
-	lua_ret = lua_pcall(L,
-	                    /* no arguments */ 0,
-	                    /* zero or one return value */ 1,
-	                    /* errors as strint return value */ 0);
-
-	if (lua_ret != LUA_OK) {
-		/* Error when executing the script */
-		lua_err_txt = lua_tostring(L, -1);
-		mg_snprintf(NULL,
-		            NULL, /* No truncation check for ebuf */
-		            ebuf,
-		            ebuf_len,
-		            "Error running file %s: %s\n",
-		            file_name,
-		            lua_err_txt);
-		return 0;
-	}
-	/*	lua_close(L); must be done somewhere else */
-
-	return L;
-}
-
-
-int
-run_lua(const char *file_name)
-{
-	int func_ret = EXIT_FAILURE;
-	char ebuf[512] = {0};
-	lua_State *L =
-	    mg_prepare_lua_context_script(file_name, NULL, ebuf, sizeof(ebuf));
-	if (L) {
-		/* Script executed */
-		if (lua_type(L, -1) == LUA_TNUMBER) {
-			func_ret = (int)lua_tonumber(L, -1);
-		} else {
-			func_ret = EXIT_SUCCESS;
-		}
-		lua_close(L);
-	} else {
-		fprintf(stderr, "%s\n", ebuf);
-	}
-	return func_ret;
-}
-
-
-static void *lib_handle_uuid = NULL;
-
-static void
-lua_init_optional_libraries(void)
-{
-#if !defined(_WIN32)
-	lib_handle_uuid = dlopen("libuuid.so", RTLD_LAZY);
-	pf_uuid_generate.p =
-	    (lib_handle_uuid ? dlsym(lib_handle_uuid, "uuid_generate") : 0);
-#else
-	pf_uuid_generate.p = 0;
-#endif
-}
-
-
-static void
-lua_exit_optional_libraries(void)
-{
-#if !defined(_WIN32)
-	if (lib_handle_uuid) {
-		dlclose(lib_handle_uuid);
-	}
-#endif
-	pf_uuid_generate.p = 0;
-	lib_handle_uuid = NULL;
-}
-
-
-// ---------------------------------------------------------  End of mod_lua.inl 
 
 /* This file is part of the CivetWeb web server.
  * See https://github.com/civetweb/civetweb/
@@ -13971,47 +11146,47 @@ static const char *civetweb_ctx_id = "\xFF"
 
 
 static void *
-mg_duk_mem_alloc(void *udata, duk_size_t size)
+vscpweb_duk_mem_alloc(void *udata, duk_size_t size)
 {
-	return mg_malloc_ctx(size, (struct mg_context *)udata);
+	return vscpweb_malloc_ctx(size, (struct vscpweb_context *)udata);
 }
 
 
 static void *
-mg_duk_mem_realloc(void *udata, void *ptr, duk_size_t newsize)
+vscpweb_duk_mem_realloc(void *udata, void *ptr, duk_size_t newsize)
 {
-	return mg_realloc_ctx(ptr, newsize, (struct mg_context *)udata);
+	return vscpweb_realloc_ctx(ptr, newsize, (struct vscpweb_context *)udata);
 }
 
 
 static void
-mg_duk_mem_free(void *udata, void *ptr)
+vscpweb_duk_mem_free(void *udata, void *ptr)
 {
 	(void)udata;
-	mg_free(ptr);
+	vscpweb_free(ptr);
 }
 
 
 static void
-mg_duk_fatal_handler(duk_context *duk_ctx, duk_errcode_t code, const char *msg)
+vscpweb_duk_fatal_handler(duk_context *duk_ctx, duk_errcode_t code, const char *msg)
 {
 	/* Script is called "protected" (duk_peval_file), so script errors should
 	 * never yield in a call to this function. Maybe calls prior to executing
 	 * the script could raise a fatal error. */
-	struct mg_connection *conn;
+	struct vscpweb_connection *conn;
 
 	duk_push_global_stash(duk_ctx);
 	duk_get_prop_string(duk_ctx, -1, civetweb_conn_id);
-	conn = (struct mg_connection *)duk_to_pointer(duk_ctx, -1);
+	conn = (struct vscpweb_connection *)duk_to_pointer(duk_ctx, -1);
 
-	mg_cry(conn, "JavaScript fatal (%u): %s", (unsigned)code, msg);
+	vscpweb_cry(conn, "JavaScript fatal (%u): %s", (unsigned)code, msg);
 }
 
 
 static duk_ret_t
 duk_itf_write(duk_context *duk_ctx)
 {
-	struct mg_connection *conn;
+	struct vscpweb_connection *conn;
 	duk_double_t ret;
 	duk_size_t len = 0;
 	const char *val = duk_require_lstring(duk_ctx, -1, &len);
@@ -14019,21 +11194,21 @@ duk_itf_write(duk_context *duk_ctx)
 	/*
 	    duk_push_global_stash(duk_ctx);
 	    duk_get_prop_string(duk_ctx, -1, civetweb_conn_id);
-	    conn = (struct mg_connection *)duk_to_pointer(duk_ctx, -1);
+	    conn = (struct vscpweb_connection *)duk_to_pointer(duk_ctx, -1);
 	*/
 	duk_push_current_function(duk_ctx);
 	duk_get_prop_string(duk_ctx, -1, civetweb_conn_id);
-	conn = (struct mg_connection *)duk_to_pointer(duk_ctx, -1);
+	conn = (struct vscpweb_connection *)duk_to_pointer(duk_ctx, -1);
 
 	if (!conn) {
 		duk_error(duk_ctx,
-		          DUK_ERR_INTERNAL_ERROR,
+		          DUK_ERR_ERROR,
 		          "function not available without connection object");
 		/* probably never reached, but satisfies static code analysis */
-		return DUK_RET_INTERNAL_ERROR;
+		return DUK_ERR_ERROR;
 	}
 
-	ret = mg_write(conn, val, len);
+	ret = vscpweb_write(conn, val, len);
 
 	duk_push_number(duk_ctx, ret);
 	return 1;
@@ -14043,23 +11218,23 @@ duk_itf_write(duk_context *duk_ctx)
 static duk_ret_t
 duk_itf_read(duk_context *duk_ctx)
 {
-	struct mg_connection *conn;
+	struct vscpweb_connection *conn;
 	char buf[1024];
 	int len;
 
 	duk_push_global_stash(duk_ctx);
 	duk_get_prop_string(duk_ctx, -1, civetweb_conn_id);
-	conn = (struct mg_connection *)duk_to_pointer(duk_ctx, -1);
+	conn = (struct vscpweb_connection *)duk_to_pointer(duk_ctx, -1);
 
 	if (!conn) {
 		duk_error(duk_ctx,
-		          DUK_ERR_INTERNAL_ERROR,
+		          DUK_ERR_ERROR,
 		          "function not available without connection object");
 		/* probably never reached, but satisfies static code analysis */
-		return DUK_RET_INTERNAL_ERROR;
+		return DUK_ERR_ERROR;
 	}
 
-	len = mg_read(conn, buf, sizeof(buf));
+	len = vscpweb_read(conn, buf, sizeof(buf));
 
 	duk_push_lstring(duk_ctx, buf, len);
 	return 1;
@@ -14069,24 +11244,24 @@ duk_itf_read(duk_context *duk_ctx)
 static duk_ret_t
 duk_itf_getoption(duk_context *duk_ctx)
 {
-	struct mg_context *cv_ctx;
+	struct vscpweb_context *cv_ctx;
 	const char *ret;
 	duk_size_t len = 0;
 	const char *val = duk_require_lstring(duk_ctx, -1, &len);
 
 	duk_push_current_function(duk_ctx);
 	duk_get_prop_string(duk_ctx, -1, civetweb_ctx_id);
-	cv_ctx = (struct mg_context *)duk_to_pointer(duk_ctx, -1);
+	cv_ctx = (struct vscpweb_context *)duk_to_pointer(duk_ctx, -1);
 
 	if (!cv_ctx) {
 		duk_error(duk_ctx,
-		          DUK_ERR_INTERNAL_ERROR,
+		          DUK_ERR_ERROR,
 		          "function not available without connection object");
 		/* probably never reached, but satisfies static code analysis */
-		return DUK_RET_INTERNAL_ERROR;
+		return DUK_ERR_ERROR;
 	}
 
-	ret = mg_get_option(cv_ctx, val);
+	ret = vscpweb_get_option(cv_ctx, val);
 	if (ret) {
 		duk_push_string(duk_ctx, ret);
 	} else {
@@ -14098,7 +11273,7 @@ duk_itf_getoption(duk_context *duk_ctx)
 
 
 static void
-mg_exec_duktape_script(struct mg_connection *conn, const char *script_name)
+vscpweb_exec_duktape_script(struct vscpweb_connection *conn, const char *script_name)
 {
 	int i;
 	duk_context *duk_ctx = NULL;
@@ -14106,13 +11281,13 @@ mg_exec_duktape_script(struct mg_connection *conn, const char *script_name)
 	conn->must_close = 1;
 
 	/* Create Duktape interpreter state */
-	duk_ctx = duk_create_heap(mg_duk_mem_alloc,
-	                          mg_duk_mem_realloc,
-	                          mg_duk_mem_free,
+	duk_ctx = duk_create_heap(vscpweb_duk_mem_alloc,
+	                          vscpweb_duk_mem_realloc,
+	                          vscpweb_duk_mem_free,
 	                          (void *)conn->ctx,
-	                          mg_duk_fatal_handler);
+	                          (duk_fatal_function)vscpweb_duk_fatal_handler);
 	if (!duk_ctx) {
-		mg_cry(conn, "Failed to create a Duktape heap.");
+		vscpweb_cry(conn, "Failed to create a Duktape heap.");
 		goto exec_duktape_finished;
 	}
 
@@ -14171,7 +11346,7 @@ mg_exec_duktape_script(struct mg_connection *conn, const char *script_name)
 	duk_push_global_object(duk_ctx);
 	duk_push_object(duk_ctx); /* create a new table/object ("conn") */
 
-	duk_push_string(duk_ctx, CIVETWEB_VERSION);
+	duk_push_string(duk_ctx, VSCPWEB_VERSION);
 	duk_put_prop_string(duk_ctx, -2, "version");
 
 	duk_push_string(duk_ctx, script_name);
@@ -14199,13 +11374,15 @@ mg_exec_duktape_script(struct mg_connection *conn, const char *script_name)
 	duk_push_pointer(duk_ctx, (void *)conn);
 	duk_put_prop_string(duk_ctx, -2, civetweb_conn_id);
 
-	if (duk_peval_file(duk_ctx, script_name) != 0) {
-		mg_cry(conn, "%s", duk_safe_to_string(duk_ctx, -1));
+        // TODO AKHE from version 1.1
+	/*if (duk_peval_file(duk_ctx, script_name) != 0) {
+		vscpweb_cry(conn, "%s", duk_safe_to_string(duk_ctx, -1));
 		goto exec_duktape_finished;
-	}
+	}*/
 	duk_pop(duk_ctx); /* ignore result */
 
 exec_duktape_finished:
+                
 	duk_destroy_heap(duk_ctx);
 }
 
@@ -14213,333 +11390,7 @@ exec_duktape_finished:
 // ------------------------------------------------------ End of mod_duktape.inl 
 
 
-#if !defined(NO_SSL_DL)
-#define SHA_API static
-/*
-SHA-1 in C
-By Steve Reid <sreid@sea-to-sky.net>
-100% Public Domain
 
------------------
-Modified 7/98
-By James H. Brown <jbrown@burgoyne.com>
-Still 100% Public Domain
-
-Corrected a problem which generated improper hash values on 16 bit machines
-Routine SHA1Update changed from
-    void SHA1Update(SHA_CTX* context, unsigned char* data, unsigned int
-len)
-to
-    void SHA1Update(SHA_CTX* context, unsigned char* data, unsigned
-long len)
-
-The 'len' parameter was declared an int which works fine on 32 bit machines.
-However, on 16 bit machines an int is too small for the shifts being done
-against
-it.  This caused the hash function to generate incorrect values if len was
-greater than 8191 (8K - 1) due to the 'len << 3' on line 3 of SHA1Update().
-
-Since the file IO in main() reads 16K at a time, any file 8K or larger would
-be guaranteed to generate the wrong hash (e.g. Test Vector #3, a million
-"a"s).
-
-I also changed the declaration of variables i & j in SHA1Update to
-unsigned long from unsigned int for the same reason.
-
-These changes should make no difference to any 32 bit implementations since
-an
-int and a long are the same size in those environments.
-
---
-I also corrected a few compiler warnings generated by Borland C.
-1. Added #include <process.h> for exit() prototype
-2. Removed unused variable 'j' in SHA1Final
-3. Changed exit(0) to return(0) at end of main.
-
-ALL changes I made can be located by searching for comments containing 'JHB'
------------------
-Modified 8/98
-By Steve Reid <sreid@sea-to-sky.net>
-Still 100% public domain
-
-1- Removed #include <process.h> and used return() instead of exit()
-2- Fixed overwriting of finalcount in SHA1Final() (discovered by Chris Hall)
-3- Changed email address from steve@edmweb.com to sreid@sea-to-sky.net
-
------------------
-Modified 4/01
-By Saul Kravitz <Saul.Kravitz@celera.com>
-Still 100% PD
-Modified to run on Compaq Alpha hardware.
-
------------------
-Modified 07/2002
-By Ralph Giles <giles@ghostscript.com>
-Still 100% public domain
-modified for use with stdint types, autoconf
-code cleanup, removed attribution comments
-switched SHA1Final() argument order for consistency
-use SHA1_ prefix for public api
-move public api to sha1.h
-*/
-
-/*
-11/2016 adapted for CivetWeb:
-  include sha1.h in sha1.c,
-  rename to sha1.inl
-  remove unused #ifdef sections
-  make endian independent
-  align buffer to 4 bytes
-  remove unused variable assignments
-*/
-
-/*
-Test Vectors (from FIPS PUB 180-1)
-"abc"
-  A9993E36 4706816A BA3E2571 7850C26C 9CD0D89D
-"abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"
-  84983E44 1C3BD26E BAAE4AA1 F95129E5 E54670F1
-A million repetitions of "a"
-  34AA973C D4C4DAA4 F61EEB2B DBAD2731 6534016F
-*/
-
-#include <string.h>
-#include <stdint.h>
-
-typedef struct {
-	uint32_t state[5];
-	uint32_t count[2];
-	uint8_t buffer[64];
-} SHA_CTX;
-
-#define SHA1_DIGEST_SIZE 20
-
-#define rol(value, bits) (((value) << (bits)) | ((value) >> (32 - (bits))))
-
-/* blk0() and blk() perform the initial expand. */
-/* I got the idea of expanding during the round function from SSLeay */
-
-
-typedef union {
-	uint8_t c[64];
-	uint32_t l[16];
-} CHAR64LONG16;
-
-
-static uint32_t
-blk0(CHAR64LONG16 *block, int i)
-{
-	static const uint32_t n = 1u;
-	if ((*((uint8_t *)(&n))) == 1) {
-		/* little endian / intel byte order */
-		block->l[i] = (rol(block->l[i], 24) & 0xFF00FF00)
-		              | (rol(block->l[i], 8) & 0x00FF00FF);
-	}
-	return block->l[i];
-}
-
-#define blk(block, i)                                                          \
-	(block->l[i & 15] = rol(block->l[(i + 13) & 15] ^ block->l[(i + 8) & 15]   \
-	                            ^ block->l[(i + 2) & 15] ^ block->l[i & 15],   \
-	                        1))
-
-/* (R0+R1), R2, R3, R4 are the different operations used in SHA1 */
-#define R0(v, w, x, y, z, i)                                                   \
-	z += ((w & (x ^ y)) ^ y) + blk0(block, i) + 0x5A827999 + rol(v, 5);        \
-	w = rol(w, 30);
-#define R1(v, w, x, y, z, i)                                                   \
-	z += ((w & (x ^ y)) ^ y) + blk(block, i) + 0x5A827999 + rol(v, 5);         \
-	w = rol(w, 30);
-#define R2(v, w, x, y, z, i)                                                   \
-	z += (w ^ x ^ y) + blk(block, i) + 0x6ED9EBA1 + rol(v, 5);                 \
-	w = rol(w, 30);
-#define R3(v, w, x, y, z, i)                                                   \
-	z += (((w | x) & y) | (w & x)) + blk(block, i) + 0x8F1BBCDC + rol(v, 5);   \
-	w = rol(w, 30);
-#define R4(v, w, x, y, z, i)                                                   \
-	z += (w ^ x ^ y) + blk(block, i) + 0xCA62C1D6 + rol(v, 5);                 \
-	w = rol(w, 30);
-
-
-/* Hash a single 512-bit block. This is the core of the algorithm. */
-static void
-SHA1_Transform(uint32_t state[5], const uint8_t buffer[64])
-{
-	uint32_t a, b, c, d, e;
-
-	/* Must use an aligned, read/write buffer */
-	CHAR64LONG16 block[1];
-	memcpy(block, buffer, sizeof(block));
-
-	/* Copy context->state[] to working vars */
-	a = state[0];
-	b = state[1];
-	c = state[2];
-	d = state[3];
-	e = state[4];
-
-	/* 4 rounds of 20 operations each. Loop unrolled. */
-	R0(a, b, c, d, e, 0);
-	R0(e, a, b, c, d, 1);
-	R0(d, e, a, b, c, 2);
-	R0(c, d, e, a, b, 3);
-	R0(b, c, d, e, a, 4);
-	R0(a, b, c, d, e, 5);
-	R0(e, a, b, c, d, 6);
-	R0(d, e, a, b, c, 7);
-	R0(c, d, e, a, b, 8);
-	R0(b, c, d, e, a, 9);
-	R0(a, b, c, d, e, 10);
-	R0(e, a, b, c, d, 11);
-	R0(d, e, a, b, c, 12);
-	R0(c, d, e, a, b, 13);
-	R0(b, c, d, e, a, 14);
-	R0(a, b, c, d, e, 15);
-	R1(e, a, b, c, d, 16);
-	R1(d, e, a, b, c, 17);
-	R1(c, d, e, a, b, 18);
-	R1(b, c, d, e, a, 19);
-	R2(a, b, c, d, e, 20);
-	R2(e, a, b, c, d, 21);
-	R2(d, e, a, b, c, 22);
-	R2(c, d, e, a, b, 23);
-	R2(b, c, d, e, a, 24);
-	R2(a, b, c, d, e, 25);
-	R2(e, a, b, c, d, 26);
-	R2(d, e, a, b, c, 27);
-	R2(c, d, e, a, b, 28);
-	R2(b, c, d, e, a, 29);
-	R2(a, b, c, d, e, 30);
-	R2(e, a, b, c, d, 31);
-	R2(d, e, a, b, c, 32);
-	R2(c, d, e, a, b, 33);
-	R2(b, c, d, e, a, 34);
-	R2(a, b, c, d, e, 35);
-	R2(e, a, b, c, d, 36);
-	R2(d, e, a, b, c, 37);
-	R2(c, d, e, a, b, 38);
-	R2(b, c, d, e, a, 39);
-	R3(a, b, c, d, e, 40);
-	R3(e, a, b, c, d, 41);
-	R3(d, e, a, b, c, 42);
-	R3(c, d, e, a, b, 43);
-	R3(b, c, d, e, a, 44);
-	R3(a, b, c, d, e, 45);
-	R3(e, a, b, c, d, 46);
-	R3(d, e, a, b, c, 47);
-	R3(c, d, e, a, b, 48);
-	R3(b, c, d, e, a, 49);
-	R3(a, b, c, d, e, 50);
-	R3(e, a, b, c, d, 51);
-	R3(d, e, a, b, c, 52);
-	R3(c, d, e, a, b, 53);
-	R3(b, c, d, e, a, 54);
-	R3(a, b, c, d, e, 55);
-	R3(e, a, b, c, d, 56);
-	R3(d, e, a, b, c, 57);
-	R3(c, d, e, a, b, 58);
-	R3(b, c, d, e, a, 59);
-	R4(a, b, c, d, e, 60);
-	R4(e, a, b, c, d, 61);
-	R4(d, e, a, b, c, 62);
-	R4(c, d, e, a, b, 63);
-	R4(b, c, d, e, a, 64);
-	R4(a, b, c, d, e, 65);
-	R4(e, a, b, c, d, 66);
-	R4(d, e, a, b, c, 67);
-	R4(c, d, e, a, b, 68);
-	R4(b, c, d, e, a, 69);
-	R4(a, b, c, d, e, 70);
-	R4(e, a, b, c, d, 71);
-	R4(d, e, a, b, c, 72);
-	R4(c, d, e, a, b, 73);
-	R4(b, c, d, e, a, 74);
-	R4(a, b, c, d, e, 75);
-	R4(e, a, b, c, d, 76);
-	R4(d, e, a, b, c, 77);
-	R4(c, d, e, a, b, 78);
-	R4(b, c, d, e, a, 79);
-
-	/* Add the working vars back into context.state[] */
-	state[0] += a;
-	state[1] += b;
-	state[2] += c;
-	state[3] += d;
-	state[4] += e;
-}
-
-
-/* SHA1Init - Initialize new context */
-SHA_API void
-SHA1_Init(SHA_CTX *context)
-{
-	/* SHA1 initialization constants */
-	context->state[0] = 0x67452301;
-	context->state[1] = 0xEFCDAB89;
-	context->state[2] = 0x98BADCFE;
-	context->state[3] = 0x10325476;
-	context->state[4] = 0xC3D2E1F0;
-	context->count[0] = context->count[1] = 0;
-}
-
-
-SHA_API void
-SHA1_Update(SHA_CTX *context, const uint8_t *data, const uint32_t len)
-{
-	uint32_t i, j;
-
-	j = context->count[0];
-	if ((context->count[0] += (len << 3)) < j) {
-		context->count[1]++;
-	}
-	context->count[1] += (len >> 29);
-	j = (j >> 3) & 63;
-	if ((j + len) > 63) {
-		i = 64 - j;
-		memcpy(&context->buffer[j], data, i);
-		SHA1_Transform(context->state, context->buffer);
-		for (; i + 63 < len; i += 64) {
-			SHA1_Transform(context->state, &data[i]);
-		}
-		j = 0;
-	} else {
-		i = 0;
-	}
-	memcpy(&context->buffer[j], &data[i], len - i);
-}
-
-
-/* Add padding and return the message digest. */
-SHA_API void
-SHA1_Final(unsigned char *digest, SHA_CTX *context)
-{
-	uint32_t i;
-	uint8_t finalcount[8];
-
-	for (i = 0; i < 8; i++) {
-		finalcount[i] =
-		    (uint8_t)((context->count[(i >= 4 ? 0 : 1)] >> ((3 - (i & 3)) * 8))
-		              & 255); /* Endian independent */
-	}
-	SHA1_Update(context, (uint8_t *)"\x80", 1);
-	while ((context->count[0] & 504) != 448) {
-		SHA1_Update(context, (uint8_t *)"\x00", 1);
-	}
-	SHA1_Update(context, finalcount, 8); /* Should cause a SHA1_Transform() */
-	for (i = 0; i < SHA1_DIGEST_SIZE; i++) {
-		digest[i] =
-		    (uint8_t)((context->state[i >> 2] >> ((3 - (i & 3)) * 8)) & 255);
-	}
-
-	/* Wipe variables */
-	memset(context, '\0', sizeof(*context));
-}
-
-
-// ------------------------------------------------------------- End of sha1.inl 
-
-
-#endif
 
 static int
 send_websocket_handshake(struct vscpweb_connection *conn, const char *websock_key)
@@ -15070,7 +11921,7 @@ handle_websocket_request(struct vscpweb_connection *conn,
 	/* Step 3: No callback. Check if Lua is responsible. */
 	else {
 		/* Step 3.1: Check if Lua is responsible. */
-		if (conn->ctx->config[LUA_WEBSOCKET_EXTENSIONS]) {
+		/*if (conn->ctx->config[LUA_WEBSOCKET_EXTENSIONS]) {
 			lua_websock =
 			    match_prefix(conn->ctx->config[LUA_WEBSOCKET_EXTENSIONS],
 			                 strlen(
@@ -15079,13 +11930,13 @@ handle_websocket_request(struct vscpweb_connection *conn,
 		}
 
 		if (lua_websock) {
-			/* Step 3.2: Lua is responsible: call it. */
-			conn->lua_websocket_state = lua_websocket_new(path, conn);
-			if (!conn->lua_websocket_state) {
-				/* Lua rejected the new client */
+			// Step 3.2: Lua is responsible: call it. 
+			conn->lua_websocket_state = lua_websocket_new(path, conn); 
+			if (!conn->lua_websocket_state) { 
+				// Lua rejected the new client 
 				return;
 			}
-		}
+		}*/
 	}
 
 	/* Step 4: Check if there is a responsible websocket handler. */
@@ -15110,22 +11961,15 @@ handle_websocket_request(struct vscpweb_connection *conn,
 			ws_ready_handler(conn, cbData);
 		}
 
-	} else if (lua_websock) {
-		if (!lua_websocket_ready(conn, conn->lua_websocket_state)) {
-			/* the ready handler returned false */
-			return;
-		}
-
-	}
+	} 
+     
 
 	/* Step 7: Enter the read loop */
 	if (is_callback_resource) {
 		read_websocket(conn, ws_data_handler, cbData);
 
-	} else if (lua_websock) {
-		read_websocket(conn, lua_websocket_data, conn->lua_websocket_state);
-
-	}
+	} 
+ 
 
 	/* Step 8: Call the close handler */
 	if (ws_close_handler) {
@@ -15269,14 +12113,14 @@ get_remote_ip(const struct vscpweb_connection *conn)
 
 
 static int
-url_encoded_field_found(const struct mg_connection *conn,
+url_encoded_field_found(const struct vscpweb_connection *conn,
                         const char *key,
                         size_t key_len,
                         const char *filename,
                         size_t filename_len,
                         char *path,
                         size_t path_len,
-                        struct mg_form_data_handler *fdh)
+                        struct vscpweb_form_data_handler *fdh)
 {
 	char key_dec[1024];
 	char filename_dec[1024];
@@ -15285,14 +12129,14 @@ url_encoded_field_found(const struct mg_connection *conn,
 	int ret;
 
 	key_dec_len =
-	    mg_url_decode(key, (int)key_len, key_dec, (int)sizeof(key_dec), 1);
+	    vscpweb_url_decode(key, (int)key_len, key_dec, (int)sizeof(key_dec), 1);
 
 	if (((size_t)key_dec_len >= (size_t)sizeof(key_dec)) || (key_dec_len < 0)) {
 		return FORM_FIELD_STORAGE_SKIP;
 	}
 
 	if (filename) {
-		filename_dec_len = mg_url_decode(filename,
+		filename_dec_len = vscpweb_url_decode(filename,
 		                                 (int)filename_len,
 		                                 filename_dec,
 		                                 (int)sizeof(filename_dec),
@@ -15301,7 +12145,7 @@ url_encoded_field_found(const struct mg_connection *conn,
 		if (((size_t)filename_dec_len >= (size_t)sizeof(filename_dec))
 		    || (filename_dec_len < 0)) {
 			/* Log error message and skip this field. */
-			mg_cry(conn, "%s: Cannot decode filename", __func__);
+			vscpweb_cry(conn, "%s: Cannot decode filename", __func__);
 			return FORM_FIELD_STORAGE_SKIP;
 		}
 	} else {
@@ -15313,13 +12157,13 @@ url_encoded_field_found(const struct mg_connection *conn,
 
 	if ((ret & 0xF) == FORM_FIELD_STORAGE_GET) {
 		if (fdh->field_get == NULL) {
-			mg_cry(conn, "%s: Function \"Get\" not available", __func__);
+			vscpweb_cry(conn, "%s: Function \"Get\" not available", __func__);
 			return FORM_FIELD_STORAGE_SKIP;
 		}
 	}
 	if ((ret & 0xF) == FORM_FIELD_STORAGE_STORE) {
 		if (fdh->field_store == NULL) {
-			mg_cry(conn, "%s: Function \"Store\" not available", __func__);
+			vscpweb_cry(conn, "%s: Function \"Store\" not available", __func__);
 			return FORM_FIELD_STORAGE_SKIP;
 		}
 	}
@@ -15329,69 +12173,69 @@ url_encoded_field_found(const struct mg_connection *conn,
 
 
 static int
-url_encoded_field_get(const struct mg_connection *conn,
+url_encoded_field_get(const struct vscpweb_connection *conn,
                       const char *key,
                       size_t key_len,
                       const char *value,
                       size_t value_len,
-                      struct mg_form_data_handler *fdh)
+                      struct vscpweb_form_data_handler *fdh)
 {
 	char key_dec[1024];
 
-	char *value_dec = (char *)mg_malloc_ctx(value_len + 1, conn->ctx);
+	char *value_dec = (char *)vscpweb_malloc_ctx(value_len + 1, conn->ctx);
 	int value_dec_len, ret;
 
 	if (!value_dec) {
 		/* Log error message and stop parsing the form data. */
-		mg_cry(conn,
+		vscpweb_cry(conn,
 		       "%s: Not enough memory (required: %lu)",
 		       __func__,
 		       (unsigned long)(value_len + 1));
 		return FORM_FIELD_STORAGE_ABORT;
 	}
 
-	mg_url_decode(key, (int)key_len, key_dec, (int)sizeof(key_dec), 1);
+	vscpweb_url_decode(key, (int)key_len, key_dec, (int)sizeof(key_dec), 1);
 
 	value_dec_len =
-	    mg_url_decode(value, (int)value_len, value_dec, (int)value_len + 1, 1);
+	    vscpweb_url_decode(value, (int)value_len, value_dec, (int)value_len + 1, 1);
 
 	ret = fdh->field_get(key_dec,
 	                     value_dec,
 	                     (size_t)value_dec_len,
 	                     fdh->user_data);
 
-	mg_free(value_dec);
+	vscpweb_free(value_dec);
 
 	return ret;
 }
 
 
 static int
-unencoded_field_get(const struct mg_connection *conn,
+unencoded_field_get(const struct vscpweb_connection *conn,
                     const char *key,
                     size_t key_len,
                     const char *value,
                     size_t value_len,
-                    struct mg_form_data_handler *fdh)
+                    struct vscpweb_form_data_handler *fdh)
 {
 	char key_dec[1024];
 	(void)conn;
 
-	mg_url_decode(key, (int)key_len, key_dec, (int)sizeof(key_dec), 1);
+	vscpweb_url_decode(key, (int)key_len, key_dec, (int)sizeof(key_dec), 1);
 
 	return fdh->field_get(key_dec, value, value_len, fdh->user_data);
 }
 
 
 static int
-field_stored(const struct mg_connection *conn,
+field_stored(const struct vscpweb_connection *conn,
              const char *path,
              long long file_size,
-             struct mg_form_data_handler *fdh)
+             struct vscpweb_form_data_handler *fdh)
 {
-	/* Equivalent to "upload" callback of "mg_upload". */
+	/* Equivalent to "upload" callback of "vscpweb_upload". */
 
-	(void)conn; /* we do not need mg_cry here, so conn is currently unused */
+	(void)conn; /* we do not need vscpweb_cry here, so conn is currently unused */
 
 	return fdh->field_store(path, file_size, fdh->user_data);
 }
@@ -15420,8 +12264,8 @@ search_boundary(const char *buf,
 
 
 int
-mg_handle_form_request(struct mg_connection *conn,
-                       struct mg_form_data_handler *fdh)
+vscpweb_handle_form_request(struct vscpweb_connection *conn,
+                       struct vscpweb_form_data_handler *fdh)
 {
 	const char *content_type;
 	char path[512];
@@ -15430,7 +12274,7 @@ mg_handle_form_request(struct mg_connection *conn,
 	int buf_fill = 0;
 	int r;
 	int field_count = 0;
-	struct mg_file fstore = STRUCT_FILE_INITIALIZER;
+	struct vscpweb_file fstore = STRUCT_FILE_INITIALIZER;
 	int64_t file_size = 0; /* init here, to a avoid a false positive
 	                         "uninitialized variable used" warning */
 
@@ -15459,7 +12303,7 @@ mg_handle_form_request(struct mg_connection *conn,
 
 		/* GET request: form data is in the query string. */
 		/* The entire data has already been loaded, so there is no nead to
-		 * call mg_read. We just need to split the query string into key-value
+		 * call vscpweb_read. We just need to split the query string into key-value
 		 * pairs. */
 		data = conn->request_info.query_string;
 		if (!data) {
@@ -15517,7 +12361,7 @@ mg_handle_form_request(struct mg_connection *conn,
 			}
 			if (field_storage == FORM_FIELD_STORAGE_STORE) {
 				/* Store the content to a file */
-				if (mg_fopen(conn, path, MG_FOPEN_MODE_WRITE, &fstore) == 0) {
+				if (vscpweb_fopen(conn, path, MG_FOPEN_MODE_WRITE, &fstore) == 0) {
 					fstore.access.fp = NULL;
 				}
 				file_size = 0;
@@ -15525,22 +12369,22 @@ mg_handle_form_request(struct mg_connection *conn,
 					size_t n = (size_t)
 					    fwrite(val, 1, (size_t)vallen, fstore.access.fp);
 					if ((n != (size_t)vallen) || (ferror(fstore.access.fp))) {
-						mg_cry(conn,
+						vscpweb_cry(conn,
 						       "%s: Cannot write file %s",
 						       __func__,
 						       path);
-						(void)mg_fclose(&fstore.access);
+						(void)vscpweb_fclose(&fstore.access);
 						remove_bad_file(conn, path);
 					}
 					file_size += (int64_t)n;
 
 					if (fstore.access.fp) {
-						r = mg_fclose(&fstore.access);
+						r = vscpweb_fclose(&fstore.access);
 						if (r == 0) {
 							/* stored successfully */
 							field_stored(conn, path, file_size, fdh);
 						} else {
-							mg_cry(conn,
+							vscpweb_cry(conn,
 							       "%s: Error saving file %s",
 							       __func__,
 							       path);
@@ -15550,7 +12394,7 @@ mg_handle_form_request(struct mg_connection *conn,
 					}
 
 				} else {
-					mg_cry(conn, "%s: Cannot create file %s", __func__, path);
+					vscpweb_cry(conn, "%s: Cannot create file %s", __func__, path);
 				}
 			}
 
@@ -15580,11 +12424,11 @@ mg_handle_form_request(struct mg_connection *conn,
 		return field_count;
 	}
 
-	content_type = mg_get_header(conn, "Content-Type");
+	content_type = vscpweb_get_header(conn, "Content-Type");
 
 	if (!content_type
-	    || !mg_strcasecmp(content_type, "APPLICATION/X-WWW-FORM-URLENCODED")
-	    || !mg_strcasecmp(content_type, "APPLICATION/WWW-FORM-URLENCODED")) {
+	    || !vscpweb_strcasecmp(content_type, "APPLICATION/X-WWW-FORM-URLENCODED")
+	    || !vscpweb_strcasecmp(content_type, "APPLICATION/WWW-FORM-URLENCODED")) {
 		/* The form data is in the request body data, encoded in key/value
 		 * pairs. */
 		int all_data_read = 0;
@@ -15605,7 +12449,7 @@ mg_handle_form_request(struct mg_connection *conn,
 			if ((size_t)buf_fill < (sizeof(buf) - 1)) {
 
 				size_t to_read = sizeof(buf) - 1 - (size_t)buf_fill;
-				r = mg_read(conn, buf + (size_t)buf_fill, to_read);
+				r = vscpweb_read(conn, buf + (size_t)buf_fill, to_read);
 				if (r < 0) {
 					/* read error */
 					return -1;
@@ -15652,12 +12496,12 @@ mg_handle_form_request(struct mg_connection *conn,
 			}
 
 			if (field_storage == FORM_FIELD_STORAGE_STORE) {
-				if (mg_fopen(conn, path, MG_FOPEN_MODE_WRITE, &fstore) == 0) {
+				if (vscpweb_fopen(conn, path, MG_FOPEN_MODE_WRITE, &fstore) == 0) {
 					fstore.access.fp = NULL;
 				}
 				file_size = 0;
 				if (!fstore.access.fp) {
-					mg_cry(conn, "%s: Cannot create file %s", __func__, path);
+					vscpweb_cry(conn, "%s: Cannot create file %s", __func__, path);
 				}
 			}
 
@@ -15697,11 +12541,11 @@ mg_handle_form_request(struct mg_connection *conn,
 					size_t n = (size_t)
 					    fwrite(val, 1, (size_t)vallen, fstore.access.fp);
 					if ((n != (size_t)vallen) || (ferror(fstore.access.fp))) {
-						mg_cry(conn,
+						vscpweb_cry(conn,
 						       "%s: Cannot write file %s",
 						       __func__,
 						       path);
-						mg_fclose(&fstore.access);
+						vscpweb_fclose(&fstore.access);
 						remove_bad_file(conn, path);
 					}
 					file_size += (int64_t)n;
@@ -15716,7 +12560,7 @@ mg_handle_form_request(struct mg_connection *conn,
 					if ((size_t)buf_fill < (sizeof(buf) - 1)) {
 
 						size_t to_read = sizeof(buf) - 1 - (size_t)buf_fill;
-						r = mg_read(conn, buf + (size_t)buf_fill, to_read);
+						r = vscpweb_read(conn, buf + (size_t)buf_fill, to_read);
 						if (r < 0) {
 							/* read error */
 							return -1;
@@ -15741,12 +12585,12 @@ mg_handle_form_request(struct mg_connection *conn,
 			} while (!end_of_key_value_pair_found);
 
 			if (fstore.access.fp) {
-				r = mg_fclose(&fstore.access);
+				r = vscpweb_fclose(&fstore.access);
 				if (r == 0) {
 					/* stored successfully */
 					field_stored(conn, path, file_size, fdh);
 				} else {
-					mg_cry(conn, "%s: Error saving file %s", __func__, path);
+					vscpweb_cry(conn, "%s: Error saving file %s", __func__, path);
 					remove_bad_file(conn, path);
 				}
 				fstore.access.fp = NULL;
@@ -15761,14 +12605,14 @@ mg_handle_form_request(struct mg_connection *conn,
 		return field_count;
 	}
 
-	if (!mg_strncasecmp(content_type, "MULTIPART/FORM-DATA;", 20)) {
+	if (!vscpweb_strncasecmp(content_type, "MULTIPART/FORM-DATA;", 20)) {
 		/* The form data is in the request body data, encoded as multipart
 		 * content (see https://www.ietf.org/rfc/rfc1867.txt,
 		 * https://www.ietf.org/rfc/rfc2388.txt). */
 		char *boundary;
 		size_t bl;
 		ptrdiff_t used;
-		struct mg_request_info part_header;
+		struct vscpweb_request_info part_header;
 		char *hbuf;
 		const char *content_disp, *hend, *fbeg, *fend, *nbeg, *nend;
 		const char *next;
@@ -15783,7 +12627,7 @@ mg_handle_form_request(struct mg_connection *conn,
 		}
 
 		/* There has to be a BOUNDARY definition in the Content-Type header */
-		if (mg_strncasecmp(content_type + bl, "BOUNDARY=", 9)) {
+		if (vscpweb_strncasecmp(content_type + bl, "BOUNDARY=", 9)) {
 			/* Malformed request */
 			return -1;
 		}
@@ -15791,10 +12635,10 @@ mg_handle_form_request(struct mg_connection *conn,
 		/* Copy boundary string to variable "boundary" */
 		fbeg = content_type + bl + 9;
 		bl = strlen(fbeg);
-		boundary = (char *)mg_malloc(bl + 1);
+		boundary = (char *)vscpweb_malloc(bl + 1);
 		if (!boundary) {
 			/* Out of memory */
-			mg_cry(conn,
+			vscpweb_cry(conn,
 			       "%s: Cannot allocate memory for boundary [%lu]",
 			       __func__,
 			       (unsigned long)bl);
@@ -15809,7 +12653,7 @@ mg_handle_form_request(struct mg_connection *conn,
 			hbuf = strchr(boundary + 1, '"');
 			if ((!hbuf) || (*hbuf != '"')) {
 				/* Malformed request */
-				mg_free(boundary);
+				vscpweb_free(boundary);
 				return -1;
 			}
 			*hbuf = 0;
@@ -15840,13 +12684,13 @@ mg_handle_form_request(struct mg_connection *conn,
 			 * any reasonable request from every browser. If it is not
 			 * fulfilled, it might be a hand-made request, intended to
 			 * interfere with the algorithm. */
-			mg_free(boundary);
+			vscpweb_free(boundary);
 			return -1;
 		}
 		if (bl < 4) {
 			/* Sanity check:  A boundary string of less than 4 bytes makes
 			 * no sense either. */
-			mg_free(boundary);
+			vscpweb_free(boundary);
 			return -1;
 		}
 
@@ -15854,19 +12698,19 @@ mg_handle_form_request(struct mg_connection *conn,
 			size_t towrite, n;
 			int get_block;
 
-			r = mg_read(conn,
+			r = vscpweb_read(conn,
 			            buf + (size_t)buf_fill,
 			            sizeof(buf) - 1 - (size_t)buf_fill);
 			if (r < 0) {
 				/* read error */
-				mg_free(boundary);
+				vscpweb_free(boundary);
 				return -1;
 			}
 			buf_fill += r;
 			buf[buf_fill] = 0;
 			if (buf_fill < 1) {
 				/* No data */
-				mg_free(boundary);
+				vscpweb_free(boundary);
 				return -1;
 			}
 
@@ -15884,12 +12728,12 @@ mg_handle_form_request(struct mg_connection *conn,
 
 			if (buf[0] != '-' || buf[1] != '-') {
 				/* Malformed request */
-				mg_free(boundary);
+				vscpweb_free(boundary);
 				return -1;
 			}
 			if (strncmp(buf + 2, boundary, bl)) {
 				/* Malformed request */
-				mg_free(boundary);
+				vscpweb_free(boundary);
 				return -1;
 			}
 			if (buf[bl + 2] != '\r' || buf[bl + 3] != '\n') {
@@ -15898,7 +12742,7 @@ mg_handle_form_request(struct mg_connection *conn,
 				if (((size_t)buf_fill != (size_t)(bl + 6))
 				    || (strncmp(buf + bl + 2, "--\r\n", 4))) {
 					/* Malformed request */
-					mg_free(boundary);
+					vscpweb_free(boundary);
 					return -1;
 				}
 				/* End of the request */
@@ -15910,7 +12754,7 @@ mg_handle_form_request(struct mg_connection *conn,
 			hend = strstr(hbuf, "\r\n\r\n");
 			if (!hend) {
 				/* Malformed request */
-				mg_free(boundary);
+				vscpweb_free(boundary);
 				return -1;
 			}
 
@@ -15918,7 +12762,7 @@ mg_handle_form_request(struct mg_connection *conn,
 			    parse_http_headers(&hbuf, part_header.http_headers);
 			if ((hend + 2) != hbuf) {
 				/* Malformed request */
-				mg_free(boundary);
+				vscpweb_free(boundary);
 				return -1;
 			}
 
@@ -15932,7 +12776,7 @@ mg_handle_form_request(struct mg_connection *conn,
 			                          "Content-Disposition");
 			if (!content_disp) {
 				/* Malformed request */
-				mg_free(boundary);
+				vscpweb_free(boundary);
 				return -1;
 			}
 
@@ -15956,7 +12800,7 @@ mg_handle_form_request(struct mg_connection *conn,
 				nend = strchr(nbeg, '\"');
 				if (!nend) {
 					/* Malformed request */
-					mg_free(boundary);
+					vscpweb_free(boundary);
 					return -1;
 				}
 			} else {
@@ -15968,7 +12812,7 @@ mg_handle_form_request(struct mg_connection *conn,
 				}
 				if (!nbeg) {
 					/* Malformed request */
-					mg_free(boundary);
+					vscpweb_free(boundary);
 					return -1;
 				}
 				nbeg += 5;
@@ -16003,7 +12847,7 @@ mg_handle_form_request(struct mg_connection *conn,
 				if (!fend) {
 					/* Malformed request (the filename field is optional, but if
 					 * it exists, it needs to be terminated correctly). */
-					mg_free(boundary);
+					vscpweb_free(boundary);
 					return -1;
 				}
 
@@ -16031,7 +12875,7 @@ mg_handle_form_request(struct mg_connection *conn,
 			 * filename do not overlap. */
 			if (!(((ptrdiff_t)fbeg > (ptrdiff_t)nend)
 			      || ((ptrdiff_t)nbeg > (ptrdiff_t)fend))) {
-				mg_free(boundary);
+				vscpweb_free(boundary);
 				return -1;
 			}
 
@@ -16056,13 +12900,13 @@ mg_handle_form_request(struct mg_connection *conn,
 
 			if (field_storage == FORM_FIELD_STORAGE_STORE) {
 				/* Store the content to a file */
-				if (mg_fopen(conn, path, MG_FOPEN_MODE_WRITE, &fstore) == 0) {
+				if (vscpweb_fopen(conn, path, MG_FOPEN_MODE_WRITE, &fstore) == 0) {
 					fstore.access.fp = NULL;
 				}
 				file_size = 0;
 
 				if (!fstore.access.fp) {
-					mg_cry(conn, "%s: Cannot create file %s", __func__, path);
+					vscpweb_cry(conn, "%s: Cannot create file %s", __func__, path);
 				}
 			}
 
@@ -16094,11 +12938,11 @@ mg_handle_form_request(struct mg_connection *conn,
 						/* Store the content of the buffer. */
 						n = (size_t)fwrite(hend, 1, towrite, fstore.access.fp);
 						if ((n != towrite) || (ferror(fstore.access.fp))) {
-							mg_cry(conn,
+							vscpweb_cry(conn,
 							       "%s: Cannot write file %s",
 							       __func__,
 							       path);
-							mg_fclose(&fstore.access);
+							vscpweb_fclose(&fstore.access);
 							remove_bad_file(conn, path);
 						}
 						file_size += (int64_t)n;
@@ -16110,19 +12954,19 @@ mg_handle_form_request(struct mg_connection *conn,
 				hend = buf;
 
 				/* Read new data */
-				r = mg_read(conn,
+				r = vscpweb_read(conn,
 				            buf + (size_t)buf_fill,
 				            sizeof(buf) - 1 - (size_t)buf_fill);
 				if (r < 0) {
 					/* read error */
-					mg_free(boundary);
+					vscpweb_free(boundary);
 					return -1;
 				}
 				buf_fill += r;
 				buf[buf_fill] = 0;
 				if (buf_fill < 1) {
 					/* No data */
-					mg_free(boundary);
+					vscpweb_free(boundary);
 					return -1;
 				}
 
@@ -16148,20 +12992,20 @@ mg_handle_form_request(struct mg_connection *conn,
 				if (fstore.access.fp) {
 					n = (size_t)fwrite(hend, 1, towrite, fstore.access.fp);
 					if ((n != towrite) || (ferror(fstore.access.fp))) {
-						mg_cry(conn,
+						vscpweb_cry(conn,
 						       "%s: Cannot write file %s",
 						       __func__,
 						       path);
-						mg_fclose(&fstore.access);
+						vscpweb_fclose(&fstore.access);
 						remove_bad_file(conn, path);
 					} else {
 						file_size += (int64_t)n;
-						r = mg_fclose(&fstore.access);
+						r = vscpweb_fclose(&fstore.access);
 						if (r == 0) {
 							/* stored successfully */
 							field_stored(conn, path, file_size, fdh);
 						} else {
-							mg_cry(conn,
+							vscpweb_cry(conn,
 							       "%s: Error saving file %s",
 							       __func__,
 							       path);
@@ -16185,7 +13029,7 @@ mg_handle_form_request(struct mg_connection *conn,
 		}
 
 		/* All parts handled */
-		mg_free(boundary);
+		vscpweb_free(boundary);
 		return field_count;
 	}
 
@@ -17089,38 +13933,7 @@ handle_file_based_request(struct vscpweb_connection *conn,
 		return;
 	}
 
-	if (0) {
-
-	} else if (match_prefix(conn->ctx->config[LUA_SERVER_PAGE_EXTENSIONS],
-	                        strlen(
-	                            conn->ctx->config[LUA_SERVER_PAGE_EXTENSIONS]),
-	                        path) > 0) {
-		if (is_in_script_path(conn, path)) {
-			/* Lua server page: an SSI like page containing mostly plain
-			 * html
-			 * code
-			 * plus some tags with server generated contents. */
-			handle_lsp_request(conn, path, file, NULL);
-		} else {
-			/* Script was in an illegal path */
-			vscpweb_send_http_error(conn, 403, "%s", "Forbidden");
-		}
-
-	} else if (match_prefix(conn->ctx->config[LUA_SCRIPT_EXTENSIONS],
-	                        strlen(conn->ctx->config[LUA_SCRIPT_EXTENSIONS]),
-	                        path) > 0) {
-		if (is_in_script_path(conn, path)) {
-			/* Lua in-server module script: a CGI like script used to
-			 * generate
-			 * the
-			 * entire reply. */
-			vscpweb_exec_lua_script(conn, path, NULL);
-		} else {
-			/* Script was in an illegal path */
-			vscpweb_send_http_error(conn, 403, "%s", "Forbidden");
-		}
-
-	} else if (match_prefix(conn->ctx->config[DUKTAPE_SCRIPT_EXTENSIONS],
+	if (match_prefix(conn->ctx->config[DUKTAPE_SCRIPT_EXTENSIONS],
 	                        strlen(
 	                            conn->ctx->config[DUKTAPE_SCRIPT_EXTENSIONS]),
 	                        path) > 0) {
@@ -17132,7 +13945,8 @@ handle_file_based_request(struct vscpweb_connection *conn,
 			vscpweb_send_http_error(conn, 403, "%s", "Forbidden");
 		}
 
-	} else if (match_prefix(conn->ctx->config[CGI_EXTENSIONS],
+	} 
+        else if (match_prefix(conn->ctx->config[CGI_EXTENSIONS],
 	                        strlen(conn->ctx->config[CGI_EXTENSIONS]),
 	                        path) > 0) {
 		if (is_in_script_path(conn, path)) {
@@ -18067,88 +14881,6 @@ ssl_locking_callback(int mode, int mutex_num, const char *file, int line)
 }
 
 
-#if !defined(NO_SSL_DL)
-static void *
-load_dll(char *ebuf, size_t ebuf_len, const char *dll_name, struct ssl_func *sw)
-{
-	union {
-		void *p;
-		void (*fp)(void);
-	} u;
-	void *dll_handle;
-	struct ssl_func *fp;
-	int ok;
-	int truncated = 0;
-
-	if ((dll_handle = dlopen(dll_name, RTLD_LAZY)) == NULL) {
-		vscpweb_snprintf(NULL,
-		            NULL, /* No truncation check for ebuf */
-		            ebuf,
-		            ebuf_len,
-		            "%s: cannot load %s",
-		            __func__,
-		            dll_name);
-		return NULL;
-	}
-
-	ok = 1;
-	for (fp = sw; fp->name != NULL; fp++) {
-#ifdef _WIN32
-		/* GetProcAddress() returns pointer to function */
-		u.fp = (void (*)(void))dlsym(dll_handle, fp->name);
-#else
-		/* dlsym() on UNIX returns void *. ISO C forbids casts of data
-		 * pointers to function pointers. We need to use a union to make a
-		 * cast. */
-		u.p = dlsym(dll_handle, fp->name);
-#endif /* _WIN32 */
-		if (u.fp == NULL) {
-			if (ok) {
-				vscpweb_snprintf(NULL,
-				            &truncated,
-				            ebuf,
-				            ebuf_len,
-				            "%s: %s: cannot find %s",
-				            __func__,
-				            dll_name,
-				            fp->name);
-				ok = 0;
-			} else {
-				size_t cur_len = strlen(ebuf);
-				if (!truncated) {
-					vscpweb_snprintf(NULL,
-					            &truncated,
-					            ebuf + cur_len,
-					            ebuf_len - cur_len - 3,
-					            ", %s",
-					            fp->name);
-					if (truncated) {
-						/* If truncated, add "..." */
-						strcat(ebuf, "...");
-					}
-				}
-			}
-			/* Debug:
-			 * printf("Missing function: %s\n", fp->name); */
-		} else {
-			fp->ptr = u.fp;
-		}
-	}
-
-	if (!ok) {
-		(void)dlclose(dll_handle);
-		return NULL;
-	}
-
-	return dll_handle;
-}
-
-
-static void *ssllib_dll_handle;    /* Store the ssl library handle. */
-static void *cryptolib_dll_handle; /* Store the crypto library handle. */
-
-#endif /* NO_SSL_DL */
-
 
 #if defined(SSL_ALREADY_INITIALIZED)
 static int cryptolib_users = 1; /* Reference counter for crypto library. */
@@ -18165,15 +14897,6 @@ initialize_ssl(char *ebuf, size_t ebuf_len)
 		ebuf[0] = 0;
 	}
 
-#if !defined(NO_SSL_DL)
-	if (!cryptolib_dll_handle) {
-		cryptolib_dll_handle = load_dll(ebuf, ebuf_len, CRYPTO_LIB, crypto_sw);
-		if (!cryptolib_dll_handle) {
-			return 0;
-		}
-	}
-#endif /* NO_SSL_DL */
-
 	if (vscpweb_atomic_inc(&cryptolib_users) > 1) {
 		return 1;
 	}
@@ -18185,15 +14908,6 @@ initialize_ssl(char *ebuf, size_t ebuf_len)
 	if (ebuf_len > 0) {
 		ebuf[0] = 0;
 	}
-
-#if !defined(NO_SSL_DL)
-	if (!cryptolib_dll_handle) {
-		cryptolib_dll_handle = load_dll(ebuf, ebuf_len, CRYPTO_LIB, crypto_sw);
-		if (!cryptolib_dll_handle) {
-			return 0;
-		}
-	}
-#endif /* NO_SSL_DL */
 
 	if (vscpweb_atomic_inc(&cryptolib_users) > 1) {
 		return 1;
@@ -18380,15 +15094,6 @@ set_ssl_option(struct vscpweb_context *ctx)
 		return 0;
 	}
 
-#if !defined(NO_SSL_DL)
-	if (!ssllib_dll_handle) {
-		ssllib_dll_handle = load_dll(ebuf, sizeof(ebuf), SSL_LIB, ssl_sw);
-		if (!ssllib_dll_handle) {
-			vscpweb_cry(fc(ctx), "%s", ebuf);
-			return 0;
-		}
-	}
-#endif /* NO_SSL_DL */
 
 #ifdef OPENSSL_API_1_1
 	/* Initialize SSL library */
@@ -18422,9 +15127,6 @@ set_ssl_option(struct vscpweb_context *ctx)
 	SSL_CTX_set_options(ctx->ssl_ctx,
 	                    SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION);
 	SSL_CTX_set_options(ctx->ssl_ctx, SSL_OP_NO_COMPRESSION);
-#if !defined(NO_SSL_DL)
-	SSL_CTX_set_ecdh_auto(ctx->ssl_ctx, 1);
-#endif /* NO_SSL_DL */
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -18442,7 +15144,7 @@ set_ssl_option(struct vscpweb_context *ctx)
 	 * Alternative would be a version dependent ssl_info_callback and
 	 * a const-cast to call 'char *SSL_get_app_data(SSL *ssl)' there.
 	 */
-	SSL_CTX_set_info_callback(ctx->ssl_ctx, ssl_info_callback);
+	SSL_CTX_set_info_callback(ctx->ssl_ctx, (void *)ssl_info_callback);
 
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -18839,51 +15541,44 @@ close_socket_gracefully(struct vscpweb_connection *conn)
 static void
 close_connection(struct vscpweb_connection *conn)
 {
-	conn->conn_state = 6; /* to close */
+    conn->conn_state = 6; /* to close */
 
-	if (conn->lua_websocket_state) {
-		lua_websocket_close(conn, conn->lua_websocket_state);
-		conn->lua_websocket_state = NULL;
-	}
+    vscpweb_lock_connection(conn);
+    conn->must_close = 1;
 
-	vscpweb_lock_connection(conn);
-	conn->must_close = 1;
-
-	/* call the connection_close callback if assigned */
-	if ((conn->ctx->callbacks.connection_close != NULL)
+    // call the connection_close callback if assigned 
+    if ((conn->ctx->callbacks.connection_close != NULL)
 	    && (conn->ctx->context_type == 1)) {
-		conn->ctx->callbacks.connection_close(conn);
-	}
+        conn->ctx->callbacks.connection_close(conn);
+    }
 
-	/* Reset user data, after close callback is called.
-	 * Do not reuse it. If the user needs a destructor,
-	 * it must be done in the connection_close callback. */
-	vscpweb_set_user_connection_data(conn, NULL);
+    // Reset user data, after close callback is called.
+    // Do not reuse it. If the user needs a destructor,
+    // it must be done in the connection_close callback. 
+    vscpweb_set_user_connection_data(conn, NULL);
 
+    conn->conn_state = 7; // closing 
 
-	conn->conn_state = 7; /* closing */
-
-	if (conn->ssl != NULL) {
-		/* Run SSL_shutdown twice to ensure completly close SSL connection
-		 */
-		SSL_shutdown(conn->ssl);
-		SSL_free(conn->ssl);
-/* Avoid CRYPTO_cleanup_all_ex_data(); See discussion:
- * https://wiki.openssl.org/index.php/Talk:Library_Initialization */
+    if (conn->ssl != NULL) {
+        // Run SSL_shutdown twice to ensure complexly close SSL connection		 
+	SSL_shutdown(conn->ssl);
+	SSL_free(conn->ssl);
+        // Avoid CRYPTO_cleanup_all_ex_data(); See discussion:
+        // https://wiki.openssl.org/index.php/Talk:Library_Initialization 
 #ifndef OPENSSL_API_1_1
-		ERR_remove_state(0);
+	ERR_remove_state(0);
 #endif
-		conn->ssl = NULL;
-	}
-#endif
-	if (conn->client.sock != INVALID_SOCKET) {
-		close_socket_gracefully(conn);
-		conn->client.sock = INVALID_SOCKET;
-	}
+	conn->ssl = NULL;
+    }
 
-	vscpweb_unlock_connection(conn);
-	conn->conn_state = 8; /* closed */
+    if (conn->client.sock != INVALID_SOCKET) {
+        close_socket_gracefully(conn);
+	conn->client.sock = INVALID_SOCKET;
+    }
 
+    vscpweb_unlock_connection(conn);
+    conn->conn_state = 8; // closed 
+}
 
 
 void
@@ -20463,19 +17158,6 @@ master_thread_run(void *thread_func_param)
 		}
 	}
 
-	/* Free Lua state of lua background task */
-	if (ctx->lua_background_state) {
-		lua_State *lstate = (lua_State *)ctx->lua_background_state;
-		lua_getglobal(lstate, LUABACKGROUNDPARAMS);
-		if (lua_istable(lstate, -1)) {
-			reg_boolean(lstate, "shutdown", 1);
-			lua_pop(lstate, 1);
-			vscpweb_sleep(2);
-		}
-		lua_close(lstate);
-		ctx->lua_background_state = 0;
-	}
-
 	DEBUG_TRACE("%s", "exiting");
 
 #if defined(_WIN32) 
@@ -20614,7 +17296,7 @@ vscpweb_stop(struct vscpweb_context *ctx)
 
 #if defined(_WIN32) 
 	(void)WSACleanup();
-#endif /* _WIN32 
+#endif // _WIN32 
 }
 
 
@@ -20622,6 +17304,7 @@ static void
 get_system_name(char **sysName)
 {
 #if defined(_WIN32)
+#if !defined(__SYMBIAN32__)
 #if defined(_WIN32_WCE)
 	*sysName = vscpweb_strdup("WinCE");
 #else
@@ -20657,6 +17340,8 @@ get_system_name(char **sysName)
 
 	*sysName = vscpweb_strdup(name);
 #endif
+#else
+	*sysName = vscpweb_strdup("Symbian");
 #endif
 #else
 	struct utsname name;
@@ -20731,9 +17416,6 @@ vscpweb_start(const struct vscpweb_callbacks *callbacks,
 	ctx->user_data = user_data;
 	ctx->handlers = NULL;
 
-	ctx->shared_lua_websockets = 0;
-
-
 	while (options && (name = *options++) != NULL) {
 		if ((idx = get_option_index(name)) == -1) {
 			vscpweb_cry(fc(ctx), "Invalid option: %s", name);
@@ -20791,37 +17473,6 @@ vscpweb_start(const struct vscpweb_callbacks *callbacks,
 
 	get_system_name(&ctx->systemName);
 
-	/* If a Lua background script has been configured, start it. */
-	if (ctx->config[LUA_BACKGROUND_SCRIPT] != NULL) {
-		char ebuf[256];
-		lua_State *state = (void *)vscpweb_prepare_lua_context_script(
-		    ctx->config[LUA_BACKGROUND_SCRIPT], ctx, ebuf, sizeof(ebuf));
-		if (!state) {
-			vscpweb_cry(fc(ctx), "lua_background_script error: %s", ebuf);
-			free_context(ctx);
-			pthread_setspecific(sTlsKey, NULL);
-			return NULL;
-		}
-		ctx->lua_background_state = (void *)state;
-
-		lua_newtable(state);
-		reg_boolean(state, "shutdown", 0);
-
-		struct vec opt_vec;
-		struct vec eq_vec;
-		const char *sparams = ctx->config[LUA_BACKGROUND_SCRIPT_PARAMS];
-
-		while ((sparams = next_option(sparams, &opt_vec, &eq_vec)) != NULL) {
-			reg_llstring(
-			    state, opt_vec.ptr, opt_vec.len, eq_vec.ptr, eq_vec.len);
-			if (vscpweb_strncasecmp(sparams, opt_vec.ptr, opt_vec.len) == 0)
-				break;
-		}
-		lua_setglobal(state, LUABACKGROUNDPARAMS);
-
-	} else {
-		ctx->lua_background_state = 0;
-	}
 
 	/* NOTE(lsm): order is important here. SSL certificates must
 	 * be initialized before listening ports. UID must be set last. */
@@ -21163,7 +17814,7 @@ vscpweb_get_system_info_impl(char *buffer, int buflen)
 			strcat0(buffer, block);
 		}
 
-		vscpweb_snprintf(NULL,
+		/*vscpweb_snprintf(NULL,
 		            NULL,
 		            block,
 		            sizeof(block),
@@ -21174,7 +17825,7 @@ vscpweb_get_system_info_impl(char *buffer, int buflen)
 		system_info_length += (int)strlen(block);
 		if (system_info_length < buflen) {
 			strcat0(buffer, block);
-		}
+		}*/
 
 		vscpweb_snprintf(NULL,
 		            NULL,
@@ -21920,7 +18571,6 @@ vscpweb_init_library(unsigned features)
 		pthread_mutexattr_init(&pthread_mutex_attr);
 		pthread_mutexattr_settype(&pthread_mutex_attr, PTHREAD_MUTEX_RECURSIVE);
 #endif
-		lua_init_optional_libraries();
 
 	}
 
@@ -21985,8 +18635,6 @@ vscpweb_exit_library(void)
 #endif
 
 		(void)pthread_key_delete(sTlsKey);
-
-		lua_exit_optional_libraries();
 
 		vscpweb_global_unlock();
 		(void)pthread_mutex_destroy(&global_lock_mutex);
