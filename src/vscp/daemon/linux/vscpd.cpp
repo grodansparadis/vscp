@@ -112,6 +112,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
+    // Create the control object
     gpobj = new CControlObject();
     
 #ifdef WIN32
