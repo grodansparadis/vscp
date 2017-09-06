@@ -7332,33 +7332,34 @@ interpret_uri( struct vscpweb_connection *conn,     // in/out: request (must be 
 
     // Step 7: URI rewriting 
     rewrite = conn->ctx->config[URL_REWRITE_PATTERN];
-    while ((rewrite = next_option(rewrite, &a, &b)) != NULL) {
-        if ((match_len = match_prefix(a.ptr, a.len, uri)) > 0) {
-            vscpweb_snprintf(conn,
-                             &truncated,
-                             filename,
-                             filename_buf_len - 1,
-                             "%.*s%s",
-                             (int) b.len,
-                             b.ptr,
-                             uri + match_len);
+    while ( ( rewrite = next_option(rewrite, &a, &b)) != NULL ) {
+        if ( ( match_len = match_prefix(a.ptr, a.len, uri)) > 0 ) {
+            vscpweb_snprintf( conn,
+                                &truncated,
+                                filename,
+                                filename_buf_len - 1,
+                                "%.*s%s",
+                                (int) b.len,
+                                b.ptr,
+                                uri + match_len );
             break;
         }
     }
 
-    if (truncated) {
+    if ( truncated ) {
         goto interpret_cleanup;
     }
 
     // Step 8: Check if the file exists at the server 
     // Local file path and name, corresponding to requested URI
     // is now stored in "filename" variable. 
-    if (vscpweb_stat(conn, filename, filestat)) {
+    if ( vscpweb_stat(conn, filename, filestat ) ) {
+        
         // 8.1: File exists. 
         *is_found = 1;
 
         // 8.2: Check if it is a script type. 
-        if (extention_matches_script(conn, filename)) {
+        if ( extention_matches_script( conn, filename ) ) {
             // The request addresses a CGI resource, Lua script or
             // server-side javascript.
             // The URI corresponds to the script itself (like
@@ -7370,12 +7371,12 @@ interpret_uri( struct vscpweb_connection *conn,     // in/out: request (must be 
             // Requests that read or write from/to a resource, like GET and
             // POST requests, should call the script and return the
             // generated response. 
-            is_script_resource = (!*is_put_or_delete_request);
+            *is_script_resource = (!*is_put_or_delete_request);
         }
 
         // 8.3: If the request target is a directory, there could be
         // a substitute file (index.html, index.cgi, ...). 
-        if (filestat->is_directory) {
+        if ( filestat->is_directory ) {
             // Use a local copy here, since substitute_index_file will
             // change the content of the file status */
             struct vscpweb_file_stat tmp_filestat;
@@ -7596,10 +7597,11 @@ get_month_index(const char *s)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// parse_date_string
 //
-
-/* Parse UTC date-time string, and return the corresponding time_t value. */
+//
+// Parse UTC date-time string, and return the corresponding time_t value. 
+//
 
 static time_t
 parse_date_string(const char *datetime)
@@ -7609,36 +7611,38 @@ parse_date_string(const char *datetime)
     time_t result = (time_t) 0;
     struct tm tm;
 
-    if ((sscanf(datetime,
-                "%d/%3s/%d %d:%d:%d",
-                &day,
-                month_str,
-                &year,
-                &hour,
-                &minute,
-                &second) == 6) || (sscanf(datetime,
-                                          "%d %3s %d %d:%d:%d",
-                                          &day,
-                                          month_str,
-                                          &year,
-                                          &hour,
-                                          &minute,
-                                          &second) == 6)
-        || (sscanf(datetime,
-                   "%*3s, %d %3s %d %d:%d:%d",
-                   &day,
-                   month_str,
-                   &year,
-                   &hour,
-                   &minute,
-                   &second) == 6) || (sscanf(datetime,
-                                             "%d-%3s-%d %d:%d:%d",
-                                             &day,
-                                             month_str,
-                                             &year,
-                                             &hour,
-                                             &minute,
-                                             &second) == 6)) {
+    if ( ( sscanf( datetime,
+                    "%d/%3s/%d %d:%d:%d",
+                    &day,
+                    month_str,
+                    &year,
+                    &hour,
+                    &minute,
+                    &second ) == 6 ) || 
+            ( sscanf( datetime,
+                        "%d %3s %d %d:%d:%d",
+                        &day,
+                        month_str,
+                        &year,
+                        &hour,
+                        &minute,
+                        &second ) == 6 ) || 
+            ( sscanf( datetime,
+                        "%*3s, %d %3s %d %d:%d:%d",
+                        &day,
+                        month_str,
+                        &year,
+                        &hour,
+                        &minute,
+                        &second ) == 6 ) || 
+            ( sscanf( datetime,
+                        "%d-%3s-%d %d:%d:%d",
+                        &day,
+                        month_str,
+                        &year,
+                        &hour,
+                        &minute,
+                        &second ) == 6 ) ) {
         month = get_month_index(month_str);
         if ((month >= 0) && (year >= 1970)) {
             memset(&tm, 0, sizeof (tm));
@@ -7657,11 +7661,10 @@ parse_date_string(const char *datetime)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// remove_double_dots_and_double_slashes
 //
-
-/* Protect against directory disclosure attack by removing '..',
- * excessive '/' and '\' characters */
+// Protect against directory disclosure attack by removing '..',
+// excessive '/' and '\' characters */
 
 static void
 remove_double_dots_and_double_slashes(char *s)
@@ -7698,9 +7701,9 @@ static const struct
     size_t ext_len;
     const char *mime_type;
 } builtin_mime_types[] = {
-    /* IANA registered MIME types
-     * (http://www.iana.org/assignments/media-types)
-     * application types */
+    // IANA registered MIME types
+    // (http://www.iana.org/assignments/media-types)
+    // application types 
     {".doc", 4, "application/msword"},
     {".eps", 4, "application/postscript"},
     {".exe", 4, "application/octet-stream"},
@@ -7713,7 +7716,7 @@ static const struct
     {".xsl", 4, "application/xml"},
     {".xslt", 5, "application/xml"},
 
-    /* fonts */
+    // fonts 
     {".ttf", 4, "application/font-sfnt"},
     {".cff", 4, "application/font-sfnt"},
     {".otf", 4, "application/font-sfnt"},
@@ -7722,12 +7725,12 @@ static const struct
     {".pfr", 4, "application/font-tdpfr"},
     {".woff", 5, "application/font-woff"},
 
-    /* audio */
+    // audio 
     {".mp3", 4, "audio/mpeg"},
     {".oga", 4, "audio/ogg"},
     {".ogg", 4, "audio/ogg"},
 
-    /* image */
+    // image 
     {".gif", 4, "image/gif"},
     {".ief", 4, "image/ief"},
     {".jpeg", 5, "image/jpeg"},
@@ -7739,10 +7742,10 @@ static const struct
     {".tif", 4, "image/tiff"},
     {".tiff", 5, "image/tiff"},
 
-    /* model */
+    // model 
     {".wrl", 4, "model/vrml"},
 
-    /* text */
+    // text 
     {".css", 4, "text/css"},
     {".csv", 4, "text/csv"},
     {".htm", 4, "text/html"},
@@ -7753,7 +7756,7 @@ static const struct
     {".txt", 4, "text/plain"},
     {".xml", 4, "text/xml"},
 
-    /* video */
+    // video 
     {".mov", 4, "video/quicktime"},
     {".mp4", 4, "video/mp4"},
     {".mpeg", 5, "video/mpeg"},
@@ -7761,9 +7764,9 @@ static const struct
     {".ogv", 4, "video/ogg"},
     {".qt", 3, "video/quicktime"},
 
-    /* not registered types
-     * (http://reference.sitepoint.com/html/mime-types-full,
-     * http://www.hansenb.pdx.edu/DMKB/dict/tutorials/mime_typ.php, ..) */
+    // not registered types
+    // (http://reference.sitepoint.com/html/mime-types-full,
+    // http://www.hansenb.pdx.edu/DMKB/dict/tutorials/mime_typ.php, ..) 
     {".arj", 4, "application/x-arj-compressed"},
     {".gz", 3, "application/x-gunzip"},
     {".rar", 4, "application/x-arj-compressed"},
@@ -7776,7 +7779,7 @@ static const struct
     {".zip", 4, "application/x-zip-compressed"},
     {".aac",
         4,
-        "audio/aac"}, /* http://en.wikipedia.org/wiki/Advanced_Audio_Coding */
+        "audio/aac"}, // http://en.wikipedia.org/wiki/Advanced_Audio_Coding 
     {".aif", 4, "audio/x-aif"},
     {".m3u", 4, "audio/x-mpegurl"},
     {".mid", 4, "audio/x-midi"},
@@ -7788,7 +7791,7 @@ static const struct
     {".pct", 4, "image/x-pct"},
     {".pict", 5, "image/pict"},
     {".rgb", 4, "image/x-rgb"},
-    {".webm", 5, "video/webm"}, /* http://en.wikipedia.org/wiki/WebM */
+    {".webm", 5, "video/webm"}, // http://en.wikipedia.org/wiki/WebM 
     {".asf", 4, "video/x-ms-asf"},
     {".avi", 4, "video/x-msvideo"},
     {".m4v", 4, "video/x-m4v"},
@@ -7796,11 +7799,11 @@ static const struct
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_get_builtin_mime_type
 //
 
 const char *
-vscpweb_get_builtin_mime_type(const char *path)
+vscpweb_get_builtin_mime_type( const char *path )
 {
     const char *ext;
     size_t i, path_len;
@@ -7808,25 +7811,28 @@ vscpweb_get_builtin_mime_type(const char *path)
     path_len = strlen(path);
 
     for (i = 0; builtin_mime_types[i].extension != NULL; i++) {
+        
         ext = path + (path_len - builtin_mime_types[i].ext_len);
+        
         if ((path_len > builtin_mime_types[i].ext_len)
             && (vscpweb_strcasecmp(ext, builtin_mime_types[i].extension) == 0)) {
             return builtin_mime_types[i].mime_type;
         }
+        
     }
 
     return "text/plain";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// get_mime_type
+//
+// Look at the "path" extension and figure what mime type it has.
+// Store mime type in the vector. 
 //
 
-/* Look at the "path" extension and figure what mime type it has.
- * Store mime type in the vector. */
-
 static void
-get_mime_type(struct vscpweb_context *ctx, const char *path, struct vec *vec)
+get_mime_type( struct vscpweb_context *ctx, const char *path, struct vec *vec )
 {
     struct vec ext_vec, mime_vec;
     const char *list, *ext;
@@ -7834,23 +7840,27 @@ get_mime_type(struct vscpweb_context *ctx, const char *path, struct vec *vec)
 
     path_len = strlen(path);
 
-    if ((ctx == NULL) || (vec == NULL)) {
+    if ( (ctx == NULL) || (vec == NULL) ) {
+        
         if (vec != NULL) {
             memset(vec, '\0', sizeof (struct vec));
         }
+        
         return;
     }
 
-    /* Scan user-defined mime types first, in case user wants to
-     * override default mime types. */
+    // Scan user-defined mime types first, in case user wants to
+    // override default mime types. 
     list = ctx->config[EXTRA_MIME_TYPES];
     while ((list = next_option(list, &ext_vec, &mime_vec)) != NULL) {
-        /* ext now points to the path suffix */
+        
+        // ext now points to the path suffix */
         ext = path + path_len - ext_vec.len;
         if (vscpweb_strncasecmp(ext, ext_vec.ptr, ext_vec.len) == 0) {
             *vec = mime_vec;
             return;
         }
+        
     }
 
     vec->ptr = vscpweb_get_builtin_mime_type(path);
@@ -7858,11 +7868,11 @@ get_mime_type(struct vscpweb_context *ctx, const char *path, struct vec *vec)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// bin2str
 //
-
-/* Stringify binary data. Output buffer must be twice as big as input,
- * because each byte takes 2 bytes in string representation */
+// Stringify binary data. Output buffer must be twice as big as input,
+// because each byte takes 2 bytes in string representation */
+//
 
 static void
 bin2str(char *to, const unsigned char *p, size_t len)
@@ -7873,18 +7883,18 @@ bin2str(char *to, const unsigned char *p, size_t len)
         *to++ = hex[p[0] >> 4];
         *to++ = hex[p[0] & 0x0f];
     }
+    
     *to = '\0';
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_md5
+//
+// Return stringified MD5 hash for list of strings. Buffer must be 33 bytes.
 //
 
-/* Return stringified MD5 hash for list of strings. Buffer must be 33 bytes.
- */
-
 char *
-vscpweb_md5(char buf[33], ...)
+vscpweb_md5( char buf[33], ... )
 {
     md5_byte_t hash[16];
     const char *p;
@@ -7905,10 +7915,10 @@ vscpweb_md5(char buf[33], ...)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// check_password
 //
-
-/* Check the user's password, return 1 if OK */
+// Check the user's password, return 1 if OK 
+//
 
 static int
 check_password(const char *method,
@@ -7922,41 +7932,41 @@ check_password(const char *method,
 {
     char ha2[32 + 1], expected_response[32 + 1];
 
-    /* Some of the parameters may be NULL */
+    // Some of the parameters may be NULL 
     if ((method == NULL) || (nonce == NULL) || (nc == NULL) || (cnonce == NULL)
         || (qop == NULL) || (response == NULL)) {
         return 0;
     }
 
-    /* NOTE(lsm): due to a bug in MSIE, we do not compare the URI */
+    // NOTE(lsm): due to a bug in MSIE, we do not compare the URI 
     if (strlen(response) != 32) {
         return 0;
     }
 
     vscpweb_md5(ha2, method, ":", uri, NULL);
-    vscpweb_md5(expected_response,
-                ha1,
-                ":",
-                nonce,
-                ":",
-                nc,
-                ":",
-                cnonce,
-                ":",
-                qop,
-                ":",
-                ha2,
-                NULL);
+    vscpweb_md5( expected_response,
+                    ha1,
+                    ":",
+                    nonce,
+                    ":",
+                    nc,
+                    ":",
+                    cnonce,
+                    ":",
+                    qop,
+                    ":",
+                    ha2,
+                    NULL );
 
     return vscpweb_strcasecmp(response, expected_response) == 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// open_auth_file
 //
-
-/* Use the global passwords file, if specified by auth_gpass option,
- * or search for .htpasswd in the requested directory. */
+// Use the global passwords file, if specified by auth_gpass option,
+// or search for .htpasswd in the requested directory. 
+//
 
 static void
 open_auth_file(struct vscpweb_connection *conn,
@@ -7969,59 +7979,61 @@ open_auth_file(struct vscpweb_connection *conn,
         int truncated;
 
         if (gpass != NULL) {
-            /* Use global passwords file */
+            // Use global passwords file 
             if (!vscpweb_fopen(conn, gpass, MG_FOPEN_MODE_READ, filep)) {
 #ifdef DEBUG
-                /* Use vscpweb_cry here, since gpass has been configured. */
+                // Use vscpweb_cry here, since gpass has been configured. 
                 vscpweb_cry(conn, "fopen(%s): %s", gpass, strerror(ERRNO));
 #endif
             }
-            /* Important: using local struct vscpweb_file to test path for
-             * is_directory flag. If filep is used, vscpweb_stat() makes it
-             * appear as if auth file was opened.
-             * TODO(mid): Check if this is still required after rewriting
-             * vscpweb_stat */
+            // Important: using local struct vscpweb_file to test path for
+            // is_directory flag. If filep is used, vscpweb_stat() makes it
+            // appear as if auth file was opened.
+            // TODO(mid): Check if this is still required after rewriting
+            // vscpweb_stat 
         }
-        else if (vscpweb_stat(conn, path, &filep->stat)
-         && filep->stat.is_directory) {
-            vscpweb_snprintf(conn,
-                             &truncated,
-                             name,
-                             sizeof (name),
-                             "%s/%s",
-                             path,
-                             PASSWORDS_FILE_NAME);
+        else if ( vscpweb_stat(conn, path, &filep->stat) && 
+                    filep->stat.is_directory) {
+            vscpweb_snprintf( conn,
+                                &truncated,
+                                name,
+                                sizeof (name),
+                                 "%s/%s",
+                                path,
+                                PASSWORDS_FILE_NAME );
 
-            if (truncated || !vscpweb_fopen(conn, name, MG_FOPEN_MODE_READ, filep)) {
+            if ( truncated || 
+                    !vscpweb_fopen( conn, name, MG_FOPEN_MODE_READ, filep ) ) {
 #ifdef DEBUG
-                /* Don't use vscpweb_cry here, but only a trace, since this is
-                 * a typical case. It will occur for every directory
-                 * without a password file. */
-                DEBUG_TRACE("fopen(%s): %s", name, strerror(ERRNO));
+                // Don't use vscpweb_cry here, but only a trace, since this is
+                // a typical case. It will occur for every directory
+                // without a password file. */
+                DEBUG_TRACE("fopen(%s): %s", name, strerror(ERRNO) );
 #endif
             }
         }
         else {
-            /* Try to find .htpasswd in requested directory. */
+            // Try to find .htpasswd in requested directory. 
             for (p = path, e = p + strlen(p) - 1; e > p; e--) {
                 if (e[0] == '/') {
                     break;
                 }
             }
-            vscpweb_snprintf(conn,
-                             &truncated,
-                             name,
-                             sizeof (name),
-                             "%.*s/%s",
-                             (int) (e - p),
-                             p,
-                             PASSWORDS_FILE_NAME);
+            vscpweb_snprintf( conn,
+                                &truncated,
+                                name,
+                                sizeof (name),
+                                "%.*s/%s",
+                                (int) (e - p),
+                                 p,
+                                PASSWORDS_FILE_NAME );
 
-            if (truncated || !vscpweb_fopen(conn, name, MG_FOPEN_MODE_READ, filep)) {
+            if ( truncated || 
+                    !vscpweb_fopen( conn, name, MG_FOPEN_MODE_READ, filep ) ) {
 #ifdef DEBUG
-                /* Don't use vscpweb_cry here, but only a trace, since this is
-                 * a typical case. It will occur for every directory
-                 * without a password file. */
+                // Don't use vscpweb_cry here, but only a trace, since this is
+                // a typical case. It will occur for every directory
+                // without a password file. 
                 DEBUG_TRACE("fopen(%s): %s", name, strerror(ERRNO));
 #endif
             }
@@ -8029,51 +8041,57 @@ open_auth_file(struct vscpweb_connection *conn,
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// 
-//
 
-/* Parsed Authorization header */
+//
+// Parsed Authorization header 
+//
 
 struct ah
 {
     char *user, *uri, *cnonce, *response, *qop, *nc, *nonce;
 };
 
-/* Return 1 on success. Always initializes the ah structure. */
+////////////////////////////////////////////////////////////////////////////////
+// parse_auth_header
+//
+// Return 1 on success. Always initializes the ah structure. 
+//
+
 static int
-parse_auth_header(struct vscpweb_connection *conn,
-                  char *buf,
-                  size_t buf_size,
-                  struct ah *ah)
+parse_auth_header( struct vscpweb_connection *conn,
+                    char *buf,
+                    size_t buf_size,
+                    struct ah *ah )
 {
     char *name, *value, *s;
     const char *auth_header;
     uint64_t nonce;
 
-    if (!ah || !conn) {
+    if ( !ah || !conn ) {
         return 0;
     }
 
     (void) memset(ah, 0, sizeof (*ah));
-    if (((auth_header = vscpweb_get_header(conn, "Authorization")) == NULL)
-        || vscpweb_strncasecmp(auth_header, "Digest ", 7) != 0) {
+    if ( ( NULL == (auth_header = vscpweb_get_header(conn, "Authorization") ) ) || 
+        vscpweb_strncasecmp(auth_header, "Digest ", 7) != 0 ) {
         return 0;
     }
 
-    /* Make modifiable copy of the auth header */
+    // Make modifiable copy of the auth header 
     (void) vscpweb_strlcpy(buf, auth_header + 7, buf_size);
     s = buf;
 
-    /* Parse authorization header */
+    // Parse authorization header 
     for (;;) {
-        /* Gobble initial spaces */
+        
+        // Gobble initial spaces 
         while (isspace(*(unsigned char *) s)) {
             s++;
         }
+        
         name = skip_quoted(&s, "=", " ", 0);
-        /* Value is either quote-delimited, or ends at first comma or space.
-         */
+        // Value is either quote-delimited, or ends at first comma or space.
+        //
         if (s[0] == '\"') {
             s++;
             value = skip_quoted(&s, "\"", " ", '\\');
@@ -8082,9 +8100,10 @@ parse_auth_header(struct vscpweb_connection *conn,
             }
         }
         else {
-            value = skip_quoted(&s, ", ", " ", 0); /* IE uses commas, FF uses
-			                                        * spaces */
+            value = skip_quoted(&s, ", ", " ", 0); // IE uses commas, FF uses
+			                           // spaces 
         }
+        
         if (*name == '\0') {
             break;
         }
@@ -8113,42 +8132,44 @@ parse_auth_header(struct vscpweb_connection *conn,
     }
 
 #ifndef NO_NONCE_CHECK
-    /* Read the nonce from the response. */
+    // Read the nonce from the response. 
     if (ah->nonce == NULL) {
         return 0;
     }
+    
     s = NULL;
     nonce = strtoull(ah->nonce, &s, 10);
     if ((s == NULL) || (*s != 0)) {
         return 0;
     }
 
-    /* Convert the nonce from the client to a number. */
+    // Convert the nonce from the client to a number. 
     nonce ^= conn->ctx->auth_nonce_mask;
 
-    /* The converted number corresponds to the time the nounce has been
-     * created. This should not be earlier than the server start. */
-    /* Server side nonce check is valuable in all situations but one:
-     * if the server restarts frequently, but the client should not see
-     * that, so the server should accept nonces from previous starts. */
-    /* However, the reasonable default is to not accept a nonce from a
-     * previous start, so if anyone changed the access rights between
-     * two restarts, a new login is required. */
+    // The converted number corresponds to the time the nounce has been
+    // created. This should not be earlier than the server start. 
+    // Server side nonce check is valuable in all situations but one:
+    // if the server restarts frequently, but the client should not see
+    // that, so the server should accept nonces from previous starts. 
+    // However, the reasonable default is to not accept a nonce from a
+    // previous start, so if anyone changed the access rights between
+    // two restarts, a new login is required. 
     if (nonce < (uint64_t) conn->ctx->start_time) {
-        /* nonce is from a previous start of the server and no longer valid
-         * (replay attack?) */
+        // nonce is from a previous start of the server and no longer valid
+        // (replay attack?) 
         return 0;
     }
-    /* Check if the nonce is too high, so it has not (yet) been used by the
-     * server. */
-    if (nonce >= ((uint64_t) conn->ctx->start_time + conn->ctx->nonce_count)) {
+    
+    // Check if the nonce is too high, so it has not (yet) been used by the
+    // server. 
+    if ( nonce >= ((uint64_t) conn->ctx->start_time + conn->ctx->nonce_count ) ) {
         return 0;
     }
 #else
     (void) nonce;
 #endif
 
-    /* CGI needs it as REMOTE_USER */
+    // CGI needs it as REMOTE_USER 
     if (ah->user != NULL) {
         conn->request_info.remote_user = vscpweb_strdup(ah->user);
     }
@@ -8160,7 +8181,7 @@ parse_auth_header(struct vscpweb_connection *conn,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_fgets
 //
 
 static const char *
@@ -8174,18 +8195,20 @@ vscpweb_fgets(char *buf, size_t size, struct vscpweb_file *filep, char **p)
         return NULL;
     }
 
-    if ((filep->access.membuf != NULL) && (*p != NULL)) {
+    if ( ( filep->access.membuf != NULL) && (*p != NULL ) ) {
+        
         memend = (const char *) &filep->access.membuf[filep->stat.size];
-        /* Search for \n from p till the end of stream */
+        
+        // Search for \n from p till the end of stream 
         eof = (char *) memchr(*p, '\n', (size_t) (memend - *p));
         if (eof != NULL) {
-            eof += 1; /* Include \n */
+            eof += 1; // Include \n 
         }
         else {
-            eof = memend; /* Copy remaining data */
+            eof = memend; // Copy remaining data 
         }
-        len =
-                ((size_t) (eof - *p) > (size - 1)) ? (size - 1) : (size_t) (eof - *p);
+        
+        len = ((size_t) (eof - *p) > (size - 1)) ? (size - 1) : (size_t) (eof - *p);
         memcpy(buf, *p, len);
         buf[len] = '\0';
         *p += len;
@@ -8200,12 +8223,12 @@ vscpweb_fgets(char *buf, size_t size, struct vscpweb_file *filep, char **p)
 }
 
 
-/* Define the initial recursion depth for procesesing htpasswd files that
- * include other htpasswd
- * (or even the same) files.  It is not difficult to provide a file or files
- * s.t. they force civetweb
- * to infinitely recurse and then crash.
- */
+// Define the initial recursion depth for procesesing htpasswd files that
+// include other htpasswd
+// (or even the same) files.  It is not difficult to provide a file or files
+// s.t. they force civetweb
+// to infinitely recurse and then crash.
+//
 #define INITIAL_DEPTH 9
 #if INITIAL_DEPTH <= 0
 #error Bad INITIAL_DEPTH for recursion, set to at least 1
@@ -8223,13 +8246,13 @@ struct read_auth_file_struct
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// read_auth_file
 //
 
 static int
-read_auth_file(struct vscpweb_file *filep,
-               struct read_auth_file_struct *workdata,
-               int depth)
+read_auth_file( struct vscpweb_file *filep,
+                    struct read_auth_file_struct *workdata,
+                    int depth)
 {
     char *p;
     int is_authorized = 0;
@@ -8240,9 +8263,10 @@ read_auth_file(struct vscpweb_file *filep,
         return 0;
     }
 
-    /* Loop over passwords file */
+    // Loop over passwords file 
     p = (char *) filep->access.membuf;
     while (vscpweb_fgets(workdata->buf, sizeof (workdata->buf), filep, &p) != NULL) {
+        
         l = strlen(workdata->buf);
         while (l > 0) {
             if (isspace(workdata->buf[l - 1])
@@ -8250,9 +8274,11 @@ read_auth_file(struct vscpweb_file *filep,
                 l--;
                 workdata->buf[l] = 0;
             }
-            else
+            else {
                 break;
+            }
         }
+        
         if (l < 1) {
             continue;
         }
@@ -8260,40 +8286,43 @@ read_auth_file(struct vscpweb_file *filep,
         workdata->f_user = workdata->buf;
 
         if (workdata->f_user[0] == ':') {
-            /* user names may not contain a ':' and may not be empty,
-             * so lines starting with ':' may be used for a special purpose
-             */
+            // user names may not contain a ':' and may not be empty,
+            // so lines starting with ':' may be used for a special purpose
+            //
             if (workdata->f_user[1] == '#') {
-                /* :# is a comment */
+                // :# is a comment 
                 continue;
             }
             else if (!strncmp(workdata->f_user + 1, "include=", 8)) {
+                
                 if (vscpweb_fopen(workdata->conn,
                                   workdata->f_user + 9,
                                   MG_FOPEN_MODE_READ,
                                   &fp)) {
                     is_authorized = read_auth_file(&fp, workdata, depth - 1);
                     (void) vscpweb_fclose(
-                                          &fp.access); /* ignore error on read only file */
+                                          &fp.access); // ignore error on read only file 
 
-                    /* No need to continue processing files once we have a
-                     * match, since nothing will reset it back
-                     * to 0.
-                     */
-                    if (is_authorized) {
+                    // No need to continue processing files once we have a
+                    // match, since nothing will reset it back
+                    // to 0.
+                    //
+                    if ( is_authorized ) {
                         return is_authorized;
                     }
                 }
                 else {
-                    vscpweb_cry(workdata->conn,
-                                "%s: cannot open authorization file: %s",
-                                __func__,
-                                workdata->buf);
+                    vscpweb_cry( workdata->conn,
+                                    "%s: cannot open authorization file: %s",
+                                    __func__,
+                                    workdata->buf );
                 }
+                
                 continue;
             }
-            /* everything is invalid for the moment (might change in the
-             * future) */
+            
+            // everything is invalid for the moment (might change in the
+            // future) 
             vscpweb_cry(workdata->conn,
                         "%s: syntax error in authorization file: %s",
                         __func__,
@@ -8303,12 +8332,13 @@ read_auth_file(struct vscpweb_file *filep,
 
         workdata->f_domain = strchr(workdata->f_user, ':');
         if (workdata->f_domain == NULL) {
-            vscpweb_cry(workdata->conn,
-                        "%s: syntax error in authorization file: %s",
-                        __func__,
-                        workdata->buf);
+            vscpweb_cry( workdata->conn,
+                            "%s: syntax error in authorization file: %s",
+                            __func__,
+                            workdata->buf );
             continue;
         }
+        
         *(char *) (workdata->f_domain) = 0;
         (workdata->f_domain)++;
 
@@ -8320,32 +8350,37 @@ read_auth_file(struct vscpweb_file *filep,
                         workdata->buf);
             continue;
         }
+        
         *(char *) (workdata->f_ha1) = 0;
         (workdata->f_ha1)++;
 
-        if (!strcmp(workdata->ah.user, workdata->f_user)
-            && !strcmp(workdata->domain, workdata->f_domain)) {
-            return check_password(workdata->conn->request_info.request_method,
-                                  workdata->f_ha1,
-                                  workdata->ah.uri,
-                                  workdata->ah.nonce,
-                                  workdata->ah.nc,
-                                  workdata->ah.cnonce,
-                                  workdata->ah.qop,
-                                  workdata->ah.response);
+        if ( !strcmp(workdata->ah.user, workdata->f_user ) && 
+                !strcmp(workdata->domain, workdata->f_domain ) ) {
+            return check_password( workdata->conn->request_info.request_method,
+                                    workdata->f_ha1,
+                                    workdata->ah.uri,
+                                    workdata->ah.nonce,
+                                    workdata->ah.nc,
+                                    workdata->ah.cnonce,
+                                    workdata->ah.qop,
+                                    workdata->ah.response);
         }
+        
     }
 
     return is_authorized;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// authorize
+//
+// Authorize against the opened passwords file. Return 1 if authorized.
 //
 
-/* Authorize against the opened passwords file. Return 1 if authorized. */
 static int
-authorize(struct vscpweb_connection *conn, struct vscpweb_file *filep, const char *realm)
+authorize( struct vscpweb_connection *conn, 
+            struct vscpweb_file *filep, 
+            const char *realm )
 {
     struct read_auth_file_struct workdata;
     char buf[MG_BUF_LEN];
@@ -8372,14 +8407,15 @@ authorize(struct vscpweb_connection *conn, struct vscpweb_file *filep, const cha
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_check_digest_access_authentication
+//
+// Public function to check http digest authentication header 
 //
 
-/* Public function to check http digest authentication header */
 int
-vscpweb_check_digest_access_authentication(struct vscpweb_connection *conn,
-                                           const char *realm,
-                                           const char *filename)
+vscpweb_check_digest_access_authentication( struct vscpweb_connection *conn,
+                                                const char *realm,
+                                                const char *filename )
 {
     struct vscpweb_file file = STRUCT_FILE_INITIALIZER;
     int auth;
@@ -8399,12 +8435,14 @@ vscpweb_check_digest_access_authentication(struct vscpweb_connection *conn,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// check_authorization
+//
+// Return 1 if request is authorised, 0 otherwise. 
 //
 
-/* Return 1 if request is authorised, 0 otherwise. */
 static int
-check_authorization(struct vscpweb_connection *conn, const char *path)
+check_authorization( struct vscpweb_connection *conn, 
+                        const char *path )
 {
     char fname[PATH_MAX];
     struct vec uri_vec, filename_vec;
@@ -8412,52 +8450,54 @@ check_authorization(struct vscpweb_connection *conn, const char *path)
     struct vscpweb_file file = STRUCT_FILE_INITIALIZER;
     int authorized = 1, truncated;
 
-    if (!conn || !conn->ctx) {
+    if ( !conn || !conn->ctx ) {
         return 0;
     }
 
     list = conn->ctx->config[PROTECT_URI];
     while ((list = next_option(list, &uri_vec, &filename_vec)) != NULL) {
         if (!memcmp(conn->request_info.local_uri, uri_vec.ptr, uri_vec.len)) {
-            vscpweb_snprintf(conn,
-                             &truncated,
-                             fname,
-                             sizeof (fname),
-                             "%.*s",
-                             (int) filename_vec.len,
-                             filename_vec.ptr);
+            vscpweb_snprintf( conn,
+                                &truncated,
+                                fname,
+                                sizeof (fname),
+                                "%.*s",
+                                (int) filename_vec.len,
+                                filename_vec.ptr);
 
-            if (truncated
-                || !vscpweb_fopen(conn, fname, MG_FOPEN_MODE_READ, &file)) {
-                vscpweb_cry(conn,
-                            "%s: cannot open %s: %s",
-                            __func__,
-                            fname,
-                            strerror(errno));
+            if ( truncated || 
+                !vscpweb_fopen(conn, fname, MG_FOPEN_MODE_READ, &file ) ) {
+                vscpweb_cry( conn,
+                                "%s: cannot open %s: %s",
+                                __func__,
+                                fname,
+                                strerror(errno) );
             }
             break;
         }
+        
     }
 
-    if (!is_file_opened(&file.access)) {
+    if ( !is_file_opened(&file.access) ) {
         open_auth_file(conn, path, &file);
     }
 
-    if (is_file_opened(&file.access)) {
+    if ( is_file_opened(&file.access) ) {
         authorized = authorize(conn, &file, NULL);
-        (void) vscpweb_fclose(&file.access); /* ignore error on read only file */
+        (void) vscpweb_fclose(&file.access); // ignore error on read only file 
     }
 
     return authorized;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// send_authorization_request
+//
+// Internal function. Assumes conn is valid */
 //
 
-/* Internal function. Assumes conn is valid */
 static void
-send_authorization_request(struct vscpweb_connection *conn, const char *realm)
+send_authorization_request( struct vscpweb_connection *conn, const char *realm )
 {
     char date[64];
     time_t curtime = time(NULL);
@@ -8481,44 +8521,45 @@ send_authorization_request(struct vscpweb_connection *conn, const char *realm)
     vscpweb_printf(conn, "HTTP/1.1 401 Unauthorized\r\n");
     send_no_cache_header(conn);
     send_additional_header(conn);
-    vscpweb_printf(conn,
-                   "Date: %s\r\n"
-                   "Connection: %s\r\n"
-                   "Content-Length: 0\r\n"
-                   "WWW-Authenticate: Digest qop=\"auth\", realm=\"%s\", "
-                   "nonce=\"%" UINT64_FMT "\"\r\n\r\n",
-                   date,
-                   suggest_connection_header(conn),
-                   realm,
-                   nonce);
+    vscpweb_printf( conn,
+                        "Date: %s\r\n"
+                        "Connection: %s\r\n"
+                        "Content-Length: 0\r\n"
+                        "WWW-Authenticate: Digest qop=\"auth\", realm=\"%s\", "
+                        "nonce=\"%" UINT64_FMT "\"\r\n\r\n",
+                        date,
+                        suggest_connection_header(conn),
+                        realm,
+                        nonce );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_send_digest_access_authentication_request
+//
+// Interface function. Parameters are provided by the user, so do
+// at least some basic checks.
 //
 
-/* Interface function. Parameters are provided by the user, so do
- * at least some basic checks.
- */
 int
-vscpweb_send_digest_access_authentication_request(struct vscpweb_connection *conn,
-                                                  const char *realm)
+vscpweb_send_digest_access_authentication_request( struct vscpweb_connection *conn,
+                                                    const char *realm)
 {
-    if (conn && conn->ctx) {
+    if ( conn && conn->ctx ) {
         send_authorization_request(conn, realm);
         return 0;
     }
+    
     return -1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// is_authorized_for_put
 //
 
 static int
-is_authorized_for_put(struct vscpweb_connection *conn)
+is_authorized_for_put( struct vscpweb_connection *conn )
 {
-    if (conn) {
+    if ( conn ) {
         struct vscpweb_file file = STRUCT_FILE_INITIALIZER;
         const char *passfile = conn->ctx->config[PUT_DELETE_PASSWORDS_FILE];
         int ret = 0;
@@ -8526,7 +8567,7 @@ is_authorized_for_put(struct vscpweb_connection *conn)
         if (passfile != NULL
             && vscpweb_fopen(conn, passfile, MG_FOPEN_MODE_READ, &file)) {
             ret = authorize(conn, &file, NULL);
-            (void) vscpweb_fclose(&file.access); /* ignore error on read only file */
+            (void) vscpweb_fclose(&file.access); // ignore error on read only file 
         }
 
         return ret;
@@ -8535,14 +8576,14 @@ is_authorized_for_put(struct vscpweb_connection *conn)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_modify_passwords_file
 //
 
 int
-vscpweb_modify_passwords_file(const char *fname,
-                              const char *domain,
-                              const char *user,
-                              const char *pass)
+vscpweb_modify_passwords_file( const char *fname,
+                                const char *domain,
+                                const char *user,
+                                const char *pass)
 {
     int found, i;
     char line[512], u[512] = "", d[512] = "", ha1[33], tmp[PATH_MAX + 8];
@@ -8551,19 +8592,19 @@ vscpweb_modify_passwords_file(const char *fname,
     found = 0;
     fp = fp2 = NULL;
 
-    /* Regard empty password as no password - remove user record. */
+    // Regard empty password as no password - remove user record. 
     if ((pass != NULL) && (pass[0] == '\0')) {
         pass = NULL;
     }
 
-    /* Other arguments must not be empty */
+    // Other arguments must not be empty 
     if ((fname == NULL) || (domain == NULL) || (user == NULL)) {
         return 0;
     }
 
-    /* Using the given file format, user name and domain must not contain
-     * ':'
-     */
+    // Using the given file format, user name and domain must not contain
+    // ':'
+    //
     if (strchr(user, ':') != NULL) {
         return 0;
     }
@@ -8571,41 +8612,44 @@ vscpweb_modify_passwords_file(const char *fname,
         return 0;
     }
 
-    /* Do not allow control characters like newline in user name and domain.
-     * Do not allow excessively long names either. */
+    // Do not allow control characters like newline in user name and domain.
+    // Do not allow excessively long names either. 
     for (i = 0; ((i < 255) && (user[i] != 0)); i++) {
         if (iscntrl(user[i])) {
             return 0;
         }
     }
+    
     if (user[i]) {
         return 0;
     }
+    
     for (i = 0; ((i < 255) && (domain[i] != 0)); i++) {
         if (iscntrl(domain[i])) {
             return 0;
         }
     }
+    
     if (domain[i]) {
         return 0;
     }
 
-    /* The maximum length of the path to the password file is limited */
+    // The maximum length of the path to the password file is limited 
     if ((strlen(fname) + 4) >= PATH_MAX) {
         return 0;
     }
 
-    /* Create a temporary file name. Length has been checked before. */
+    // Create a temporary file name. Length has been checked before. 
     strcpy(tmp, fname);
     strcat(tmp, ".tmp");
 
-    /* Create the file if does not exist */
-    /* Use of fopen here is OK, since fname is only ASCII */
+    // Create the file if does not exist 
+    // Use of fopen here is OK, since fname is only ASCII 
     if ((fp = fopen(fname, "a+")) != NULL) {
         (void) fclose(fp);
     }
 
-    /* Open the given file and temporary file */
+    // Open the given file and temporary file 
     if ((fp = fopen(fname, "r")) == NULL) {
         return 0;
     }
@@ -8614,11 +8658,13 @@ vscpweb_modify_passwords_file(const char *fname,
         return 0;
     }
 
-    /* Copy the stuff to temporary file */
+    // Copy the stuff to temporary file 
     while (fgets(line, sizeof (line), fp) != NULL) {
+        
         if (sscanf(line, "%255[^:]:%255[^:]:%*s", u, d) != 2) {
             continue;
         }
+        
         u[255] = 0;
         d[255] = 0;
 
@@ -8634,17 +8680,17 @@ vscpweb_modify_passwords_file(const char *fname,
         }
     }
 
-    /* If new user, just add it */
+    // If new user, just add it 
     if (!found && (pass != NULL)) {
         vscpweb_md5(ha1, user, ":", domain, ":", pass, NULL);
         fprintf(fp2, "%s:%s:%s\n", user, domain, ha1);
     }
 
-    /* Close files */
+    // Close files 
     fclose(fp);
     fclose(fp2);
 
-    /* Put the temp file in place of real file */
+    // Put the temp file in place of real file 
     IGNORE_UNUSED_RESULT(remove(fname));
     IGNORE_UNUSED_RESULT(rename(tmp, fname));
 
@@ -8652,7 +8698,7 @@ vscpweb_modify_passwords_file(const char *fname,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// is_valid_port
 //
 
 static int
@@ -8662,11 +8708,11 @@ is_valid_port(unsigned long port)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_inet_pton
 //
 
 static int
-vscpweb_inet_pton(int af, const char *src, void *dst, size_t dstlen)
+vscpweb_inet_pton( int af, const char *src, void *dst, size_t dstlen )
 {
     struct addrinfo hints, *res, *ressave;
     int func_ret = 0;
@@ -8677,43 +8723,46 @@ vscpweb_inet_pton(int af, const char *src, void *dst, size_t dstlen)
 
     gai_ret = getaddrinfo(src, NULL, &hints, &res);
     if (gai_ret != 0) {
-        /* gai_strerror could be used to convert gai_ret to a string */
-        /* POSIX return values: see
-         * http://pubs.opengroup.org/onlinepubs/9699919799/functions/freeaddrinfo.html
-         */
-        /* Windows return values: see
-         * https://msdn.microsoft.com/en-us/library/windows/desktop/ms738520%28v=vs.85%29.aspx
-         */
+        // gai_strerror could be used to convert gai_ret to a string 
+        // POSIX return values: see
+        // http://pubs.opengroup.org/onlinepubs/9699919799/functions/freeaddrinfo.html
+        //
+        // Windows return values: see
+        // https://msdn.microsoft.com/en-us/library/windows/desktop/ms738520%28v=vs.85%29.aspx
+        //
         return 0;
     }
 
     ressave = res;
 
     while (res) {
+        
         if (dstlen >= (size_t) res->ai_addrlen) {
             memcpy(dst, res->ai_addr, res->ai_addrlen);
             func_ret = 1;
         }
+        
         res = res->ai_next;
     }
 
     freeaddrinfo(ressave);
+    
     return func_ret;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// connect_socket
 //
 
 static int
-connect_socket(struct vscpweb_context *ctx /* may be NULL */,
-               const char *host,
-               int port,
-               int use_ssl,
-               char *ebuf,
-               size_t ebuf_len,
-               SOCKET *sock /* output: socket, must not be NULL */,
-               union usa *sa /* output: socket address, must not be NULL  */
+connect_socket( struct vscpweb_context *ctx, // may be NULL *
+                    const char *host,
+                    int port,
+                    int use_ssl,
+                    char *ebuf,
+                    size_t ebuf_len,
+                    SOCKET *sock,    // output: socket, must not be NULL 
+                    union usa *sa   // output: socket address, must not be NULL  
                )
 {
     int ip_ver = 0;
@@ -8725,22 +8774,22 @@ connect_socket(struct vscpweb_context *ctx /* may be NULL */,
     }
 
     if (host == NULL) {
-        vscpweb_snprintf(NULL,
-                         NULL, /* No truncation check for ebuf */
-                         ebuf,
-                         ebuf_len,
-                         "%s",
-                         "NULL host");
+        vscpweb_snprintf( NULL,
+                            NULL, // No truncation check for ebuf 
+                            ebuf,
+                            ebuf_len,
+                            "%s",
+                            "NULL host");
         return 0;
     }
 
     if ((port <= 0) || !is_valid_port((unsigned) port)) {
-        vscpweb_snprintf(NULL,
-                         NULL, /* No truncation check for ebuf */
-                         ebuf,
-                         ebuf_len,
-                         "%s",
-                         "invalid port");
+        vscpweb_snprintf( NULL,
+                            NULL, // No truncation check for ebuf 
+                            ebuf,
+                            ebuf_len,
+                            "%s",
+                            "invalid port");
         return 0;
     }
 
@@ -8750,22 +8799,22 @@ connect_socket(struct vscpweb_context *ctx /* may be NULL */,
     (void) use_ssl;
 
 
-    if (vscpweb_inet_pton(AF_INET, host, &sa->sin, sizeof (sa->sin))) {
+    if ( vscpweb_inet_pton(AF_INET, host, &sa->sin, sizeof(sa->sin) ) ) {
         sa->sin.sin_family = AF_INET;
         sa->sin.sin_port = htons((uint16_t) port);
         ip_ver = 4;
     }
-    else if (vscpweb_inet_pton(AF_INET6, host, &sa->sin6, sizeof (sa->sin6))) {
+    else if (vscpweb_inet_pton(AF_INET6, host, &sa->sin6, sizeof(sa->sin6))) {
         sa->sin6.sin6_family = AF_INET6;
         sa->sin6.sin6_port = htons((uint16_t) port);
         ip_ver = 6;
     }
-    else if (host[0] == '[') {
-        /* While getaddrinfo on Windows will work with [::1],
-         * getaddrinfo on Linux only works with ::1 (without []). */
+    else if ( host[0] == '[' ) {
+        // While getaddrinfo on Windows will work with [::1],
+        // getaddrinfo on Linux only works with ::1 (without []). 
         size_t l = strlen(host + 1);
         char *h = (l > 1) ? vscpweb_strdup(host + 1) : NULL;
-        if (h) {
+        if ( h ) {
             h[l - 1] = 0;
             if (vscpweb_inet_pton(AF_INET6, h, &sa->sin6, sizeof (sa->sin6))) {
                 sa->sin6.sin6_family = AF_INET6;
@@ -8778,12 +8827,12 @@ connect_socket(struct vscpweb_context *ctx /* may be NULL */,
     }
 
     if (ip_ver == 0) {
-        vscpweb_snprintf(NULL,
-                         NULL, /* No truncation check for ebuf */
-                         ebuf,
-                         ebuf_len,
-                         "%s",
-                         "host not found");
+        vscpweb_snprintf( NULL,
+                            NULL, // No truncation check for ebuf 
+                            ebuf,
+                            ebuf_len,
+                            "%s",
+                            "host not found");
         return 0;
     }
 
@@ -8795,42 +8844,44 @@ connect_socket(struct vscpweb_context *ctx /* may be NULL */,
     }
 
     if (*sock == INVALID_SOCKET) {
-        vscpweb_snprintf(NULL,
-                         NULL, /* No truncation check for ebuf */
-                         ebuf,
-                         ebuf_len,
-                         "socket(): %s",
-                         strerror(ERRNO));
+        vscpweb_snprintf( NULL,
+                            NULL, // No truncation check for ebuf 
+                            ebuf,
+                            ebuf_len,
+                            "socket(): %s",
+                            strerror(ERRNO) );
         return 0;
     }
 
     set_close_on_exec(*sock, fc(ctx));
 
-    if ((ip_ver == 4)
-        && (connect(*sock, (struct sockaddr *) &sa->sin, sizeof (sa->sin))
-        == 0)) {
-        /* connected with IPv4 */
+    if ( (4 == ip_ver ) &&
+            ( 0 == connect( *sock, 
+                                (struct sockaddr *) &sa->sin, 
+                                sizeof(sa->sin) ) ) ) {
+        // connected with IPv4 
         set_blocking_mode(*sock, 0);
         return 1;
     }
 
-    if ((ip_ver == 6)
-        && (connect(*sock, (struct sockaddr *) &sa->sin6, sizeof (sa->sin6))
-        == 0)) {
-        /* connected with IPv6 */
+    if ( ( 6 == ip_ver ) &&
+        ( 0 == connect( *sock, 
+                            (struct sockaddr *)&sa->sin6, 
+                            sizeof(sa->sin6) ) ) ) {
+        // connected with IPv6 
         set_blocking_mode(*sock, 0);
         return 1;
     }
 
-    /* Not connected */
-    vscpweb_snprintf(NULL,
-                     NULL, /* No truncation check for ebuf */
-                     ebuf,
-                     ebuf_len,
-                     "connect(%s:%d): %s",
-                     host,
-                     port,
-                     strerror(ERRNO));
+    // Not connected 
+    vscpweb_snprintf( NULL,
+                        NULL, // No truncation check for ebuf 
+                        ebuf,
+                        ebuf_len,
+                        "connect(%s:%d): %s",
+                        host,
+                        port,
+                        strerror(ERRNO));
     closesocket(*sock);
     *sock = INVALID_SOCKET;
 
@@ -8838,7 +8889,7 @@ connect_socket(struct vscpweb_context *ctx /* may be NULL */,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_url_encode
 //
 
 int
@@ -8850,6 +8901,7 @@ vscpweb_url_encode(const char *src, char *dst, size_t dst_len)
     const char *end = dst + dst_len - 1;
 
     for (; ((*src != '\0') && (pos < end)); src++, pos++) {
+        
         if (isalnum(*(const unsigned char *) src)
             || (strchr(dont_escape, *(const unsigned char *) src) != NULL)) {
             *pos = *src;
@@ -8863,6 +8915,7 @@ vscpweb_url_encode(const char *src, char *dst, size_t dst_len)
         else {
             break;
         }
+        
     }
 
     *pos = '\0';
@@ -8870,10 +8923,10 @@ vscpweb_url_encode(const char *src, char *dst, size_t dst_len)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// print_dir_entry
 //
-
-/* Return 0 on success, non-zero if an error occurs. */
+// Return 0 on success, non-zero if an error occurs.
+//
 
 static int
 print_dir_entry(struct de *de)
@@ -8883,95 +8936,96 @@ print_dir_entry(struct de *de)
     char size[64], mod[64];
     struct tm *tm;
 
-    hrefsize = PATH_MAX * 3; /* worst case */
+    hrefsize = PATH_MAX * 3; // worst case 
     href = (char *) vscpweb_malloc(hrefsize);
     if (href == NULL) {
         return -1;
     }
     if (de->file.is_directory) {
-        vscpweb_snprintf(de->conn,
-                         NULL, /* Buffer is big enough */
-                         size,
-                         sizeof (size),
-                         "%s",
-                         "[DIRECTORY]");
+        vscpweb_snprintf( de->conn,
+                            NULL, // Buffer is big enough 
+                            size,
+                            sizeof (size),
+                            "%s",
+                            "[DIRECTORY]" );
     }
     else {
-        /* We use (signed) cast below because MSVC 6 compiler cannot
-         * convert unsigned __int64 to double. Sigh. */
-        if (de->file.size < 1024) {
-            vscpweb_snprintf(de->conn,
-                             NULL, /* Buffer is big enough */
-                             size,
-                             sizeof (size),
-                             "%d",
-                             (int) de->file.size);
+        // We use (signed) cast below because MSVC 6 compiler cannot
+        // convert unsigned __int64 to double. Sigh. 
+        if ( de->file.size < 1024 ) {
+            vscpweb_snprintf( de->conn,
+                                NULL, // Buffer is big enough 
+                                size,
+                                sizeof (size),
+                                "%d",
+                                (int)de->file.size );
         }
-        else if (de->file.size < 0x100000) {
-            vscpweb_snprintf(de->conn,
-                             NULL, /* Buffer is big enough */
-                             size,
-                             sizeof (size),
-                             "%.1fk",
-                             (double) de->file.size / 1024.0);
+        else if ( de->file.size < 0x100000 ) {
+            vscpweb_snprintf( de->conn,
+                                NULL, // Buffer is big enough 
+                                size,
+                                sizeof (size),
+                                "%.1fk",
+                                (double)de->file.size / 1024.0 );
         }
         else if (de->file.size < 0x40000000) {
             vscpweb_snprintf(de->conn,
-                             NULL, /* Buffer is big enough */
+                             NULL,      // Buffer is big enough 
                              size,
                              sizeof (size),
                              "%.1fM",
                              (double) de->file.size / 1048576);
         }
         else {
-            vscpweb_snprintf(de->conn,
-                             NULL, /* Buffer is big enough */
-                             size,
-                             sizeof (size),
-                             "%.1fG",
-                             (double) de->file.size / 1073741824);
+            vscpweb_snprintf( de->conn,
+                                NULL,   // Buffer is big enough 
+                                size,
+                                sizeof (size),
+                                "%.1fG",
+                                (double) de->file.size / 1073741824);
         }
     }
 
-    /* Note: vscpweb_snprintf will not cause a buffer overflow above.
-     * So, string truncation checks are not required here. */
+    // Note: vscpweb_snprintf will not cause a buffer overflow above.
+    // So, string truncation checks are not required here. 
 
     tm = localtime(&de->file.last_modified);
-    if (tm != NULL) {
+    if ( tm != NULL ) {
         strftime(mod, sizeof (mod), "%d-%b-%Y %H:%M", tm);
     }
     else {
         vscpweb_strlcpy(mod, "01-Jan-1970 00:00", sizeof (mod));
         mod[sizeof (mod) - 1] = '\0';
     }
+    
     vscpweb_url_encode(de->file_name, href, hrefsize);
-    vscpweb_printf(de->conn,
-                   "<tr><td><a href=\"%s%s%s\">%s%s</a></td>"
-                   "<td>&nbsp;%s</td><td>&nbsp;&nbsp;%s</td></tr>\n",
-                   de->conn->request_info.local_uri,
-                   href,
-                   de->file.is_directory ? "/" : "",
-                   de->file_name,
-                   de->file.is_directory ? "/" : "",
-                   mod,
-                   size);
+    vscpweb_printf( de->conn,
+                        "<tr><td><a href=\"%s%s%s\">%s%s</a></td>"
+                            "<td>&nbsp;%s</td><td>&nbsp;&nbsp;%s</td></tr>\n",
+                        de->conn->request_info.local_uri,
+                        href,
+                        de->file.is_directory ? "/" : "",
+                        de->file_name,
+                        de->file.is_directory ? "/" : "",
+                        mod,
+                        size );
     vscpweb_free(href);
     return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// compare_dir_entries
 //
-
-/* This function is called from send_directory() and used for
- * sorting directory entries by size, or name, or modification time.
- * On windows, __cdecl specification is needed in case if project is built
- * with __stdcall convention. qsort always requires __cdels callback. */
+// This function is called from send_directory() and used for
+// sorting directory entries by size, or name, or modification time.
+// On windows, __cdecl specification is needed in case if project is built
+// with __stdcall convention. qsort always requires __cdels callback. 
+//
 
 static int WINCDECL
 compare_dir_entries(const void *p1, const void *p2)
 {
-    if (p1 && p2) {
+    if ( p1 && p2 ) {
         const struct de *a = (const struct de *) p1, *b = (const struct de *) p2;
         const char *query_string = a->conn->request_info.query_string;
         int cmp_result = 0;
@@ -8981,10 +9035,10 @@ compare_dir_entries(const void *p1, const void *p2)
         }
 
         if (a->file.is_directory && !b->file.is_directory) {
-            return -1; /* Always put directories on top */
+            return -1; // Always put directories on top 
         }
         else if (!a->file.is_directory && b->file.is_directory) {
-            return 1; /* Always put directories on top */
+            return 1; // Always put directories on top 
         }
         else if (*query_string == 'n') {
             cmp_result = strcmp(a->file_name, b->file_name);
@@ -9004,11 +9058,12 @@ compare_dir_entries(const void *p1, const void *p2)
 
         return (query_string[1] == 'd') ? -cmp_result : cmp_result;
     }
+    
     return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// must_hide_file
 //
 
 static int
@@ -9017,22 +9072,24 @@ must_hide_file(struct vscpweb_connection *conn, const char *path)
     if (conn && conn->ctx) {
         const char *pw_pattern = "**" PASSWORDS_FILE_NAME "$";
         const char *pattern = conn->ctx->config[HIDE_FILES];
-        return (match_prefix(pw_pattern, strlen(pw_pattern), path) > 0)
-                || ((pattern != NULL)
-                && (match_prefix(pattern, strlen(pattern), path) > 0));
+        return ( match_prefix(pw_pattern, strlen(pw_pattern), path) > 0) || 
+                ( ( pattern != NULL ) && 
+                ( match_prefix(pattern, strlen(pattern), path ) > 0 ) );
     }
+    
     return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// scan_directory
 //
 
 static int
-scan_directory(struct vscpweb_connection *conn,
-               const char *dir,
-               void *data,
-               int (*cb)(struct de *, void *))
+scan_directory( struct vscpweb_connection *conn,
+                    const char *dir,
+                    void *data,
+                    int (*cb)(struct de *, 
+                                void * ) )
 {
     char path[PATH_MAX];
     struct dirent *dp;
@@ -9047,48 +9104,57 @@ scan_directory(struct vscpweb_connection *conn,
         de.conn = conn;
 
         while ((dp = vscpweb_readdir(dirp)) != NULL) {
-            /* Do not show current dir and hidden files */
+            // Do not show current dir and hidden files 
             if (!strcmp(dp->d_name, ".") || !strcmp(dp->d_name, "..")
                 || must_hide_file(conn, dp->d_name)) {
                 continue;
             }
 
-            vscpweb_snprintf(
-                             conn, &truncated, path, sizeof (path), "%s/%s", dir, dp->d_name);
+            vscpweb_snprintf( conn, 
+                                &truncated, 
+                                path, 
+                                sizeof (path), 
+                                "%s/%s", 
+                                dir, 
+                                dp->d_name );
 
-            /* If we don't memset stat structure to zero, mtime will have
-             * garbage and strftime() will segfault later on in
-             * print_dir_entry(). memset is required only if vscpweb_stat()
-             * fails. For more details, see
-             * http://code.google.com/p/mongoose/issues/detail?id=79 */
+            // If we don't memset stat structure to zero, mtime will have
+            // garbage and strftime() will segfault later on in
+            // print_dir_entry(). memset is required only if vscpweb_stat()
+            // fails. For more details, see
+            // http://code.google.com/p/mongoose/issues/detail?id=79 
             memset(&de.file, 0, sizeof (de.file));
 
-            if (truncated) {
-                /* If the path is not complete, skip processing. */
+            if ( truncated ) {
+                // If the path is not complete, skip processing. 
                 continue;
             }
 
-            if (!vscpweb_stat(conn, path, &de.file)) {
-                vscpweb_cry(conn,
-                            "%s: vscpweb_stat(%s) failed: %s",
-                            __func__,
-                            path,
-                            strerror(ERRNO));
+            if ( !vscpweb_stat( conn, path, &de.file ) ) {
+                vscpweb_cry( conn,
+                                "%s: vscpweb_stat(%s) failed: %s",
+                                __func__,
+                                path,
+                                strerror( ERRNO ) );
             }
+            
             de.file_name = dp->d_name;
             cb(&de, data);
+            
         }
+        
         (void) vscpweb_closedir(dirp);
     }
+    
     return 1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// remove_directory
 //
 
 static int
-remove_directory(struct vscpweb_connection *conn, const char *dir)
+remove_directory( struct vscpweb_connection *conn, const char *dir )
 {
     char path[PATH_MAX];
     struct dirent *dp;
@@ -9097,59 +9163,66 @@ remove_directory(struct vscpweb_connection *conn, const char *dir)
     int truncated;
     int ok = 1;
 
-    if ((dirp = vscpweb_opendir(conn, dir)) == NULL) {
+    if ( NULL == ( dirp = vscpweb_opendir(conn, dir) ) ) {
         return 0;
     }
     else {
         de.conn = conn;
 
         while ((dp = vscpweb_readdir(dirp)) != NULL) {
-            /* Do not show current dir (but show hidden files as they will
-             * also be removed) */
-            if (!strcmp(dp->d_name, ".") || !strcmp(dp->d_name, "..")) {
+            // Do not show current dir (but show hidden files as they will
+            // also be removed) 
+            if ( !strcmp(dp->d_name, ".") || 
+                    !strcmp(dp->d_name, "..") ) {
                 continue;
             }
 
-            vscpweb_snprintf(
-                             conn, &truncated, path, sizeof (path), "%s/%s", dir, dp->d_name);
+            vscpweb_snprintf( conn, 
+                                &truncated, 
+                                path, 
+                                sizeof( path ), 
+                                "%s/%s", 
+                                dir, 
+                                dp->d_name );
 
-            /* If we don't memset stat structure to zero, mtime will have
-             * garbage and strftime() will segfault later on in
-             * print_dir_entry(). memset is required only if vscpweb_stat()
-             * fails. For more details, see
-             * http://code.google.com/p/mongoose/issues/detail?id=79 */
-            memset(&de.file, 0, sizeof (de.file));
+            // If we don't memset stat structure to zero, mtime will have
+            // garbage and strftime() will segfault later on in
+            // print_dir_entry(). memset is required only if vscpweb_stat()
+            // fails. For more details, see
+            // http://code.google.com/p/mongoose/issues/detail?id=79 
+            memset( &de.file, 0, sizeof( de.file ) );
 
-            if (truncated) {
-                /* Do not delete anything shorter */
+            if ( truncated ) {
+                // Do not delete anything shorter 
                 ok = 0;
                 continue;
             }
 
-            if (!vscpweb_stat(conn, path, &de.file)) {
-                vscpweb_cry(conn,
-                            "%s: vscpweb_stat(%s) failed: %s",
-                            __func__,
-                            path,
-                            strerror(ERRNO));
+            if ( !vscpweb_stat(conn, path, &de.file ) ) {
+                vscpweb_cry( conn,
+                                "%s: vscpweb_stat(%s) failed: %s",
+                                __func__,
+                                path,
+                                strerror(ERRNO) );
                 ok = 0;
             }
 
-            if (de.file.is_directory) {
-                if (remove_directory(conn, path) == 0) {
+            if ( de.file.is_directory ) {
+                if ( 0 == remove_directory( conn, path ) ) {
                     ok = 0;
                 }
             }
             else {
-                /* This will fail file is the file is in memory */
-                if (vscpweb_remove(conn, path) == 0) {
+                // This will fail file is the file is in memory 
+                if ( 0 == vscpweb_remove( conn, path ) ) {
                     ok = 0;
                 }
             }
         }
-        (void) vscpweb_closedir(dirp);
+        
+        (void)vscpweb_closedir( dirp );
 
-        IGNORE_UNUSED_RESULT(rmdir(dir));
+        IGNORE_UNUSED_RESULT( rmdir(dir) );
     }
 
     return ok;
@@ -9163,10 +9236,10 @@ struct dir_scan_data
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// realloc2
 //
-
-/* Behaves like realloc(), but frees original pointer on failure */
+// Behaves like realloc(), but frees original pointer on failure 
+//
 
 static void *
 realloc2(void *ptr, size_t size)
@@ -9175,26 +9248,28 @@ realloc2(void *ptr, size_t size)
     if (new_ptr == NULL) {
         vscpweb_free(ptr);
     }
+    
     return new_ptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// dir_scan_callback
 //
 
 static int
-dir_scan_callback(struct de *de, void *data)
+dir_scan_callback( struct de *de, void *data )
 {
     struct dir_scan_data *dsd = (struct dir_scan_data *) data;
 
-    if ((dsd->entries == NULL) || (dsd->num_entries >= dsd->arr_size)) {
+    if ( ( dsd->entries == NULL) || 
+            (dsd->num_entries >= dsd->arr_size) ) {
         dsd->arr_size *= 2;
-        dsd->entries =
-                (struct de *) realloc2(dsd->entries,
-                                       dsd->arr_size * sizeof (dsd->entries[0]));
+        dsd->entries = (struct de *)realloc2( dsd->entries,
+                                                dsd->arr_size * sizeof( dsd->entries[0] ) );
     }
-    if (dsd->entries == NULL) {
-        /* TODO(lsm, low): propagate an error to the caller */
+    
+    if ( NULL == dsd->entries ) {
+        // TODO(lsm, low): propagate an error to the caller 
         dsd->num_entries = 0;
     }
     else {
@@ -9208,11 +9283,11 @@ dir_scan_callback(struct de *de, void *data)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// handle_directory_request
 //
 
 static void
-handle_directory_request(struct vscpweb_connection *conn, const char *dir)
+handle_directory_request( struct vscpweb_connection *conn, const char *dir )
 {
     unsigned int i;
     int sort_direction;
@@ -9220,23 +9295,23 @@ handle_directory_request(struct vscpweb_connection *conn, const char *dir)
     char date[64];
     time_t curtime = time(NULL);
 
-    if (!scan_directory(conn, dir, &data, dir_scan_callback)) {
-        vscpweb_send_http_error(conn,
-                                500,
-                                "Error: Cannot open directory\nopendir(%s): %s",
-                                dir,
-                                strerror(ERRNO));
+    if ( !scan_directory(conn, dir, &data, dir_scan_callback) ) {
+        vscpweb_send_http_error( conn,
+                                    500,
+                                    "Error: Cannot open directory\nopendir(%s): %s",
+                                    dir,
+                                    strerror(ERRNO) );
         return;
     }
 
     gmt_time_string(date, sizeof (date), &curtime);
 
-    if (!conn) {
+    if ( !conn ) {
         return;
     }
 
-    sort_direction = ((conn->request_info.query_string != NULL)
-            && (conn->request_info.query_string[1] == 'd'))
+    sort_direction = ( ( conn->request_info.query_string != NULL ) && 
+                       ( conn->request_info.query_string[1] == 'd') )
             ? 'a'
             : 'd';
 
@@ -9244,45 +9319,48 @@ handle_directory_request(struct vscpweb_connection *conn, const char *dir)
     vscpweb_printf(conn, "HTTP/1.1 200 OK\r\n");
     send_static_cache_header(conn);
     send_additional_header(conn);
-    vscpweb_printf(conn,
-                   "Date: %s\r\n"
-                   "Connection: close\r\n"
-                   "Content-Type: text/html; charset=utf-8\r\n\r\n",
-                   date);
-    vscpweb_printf(conn,
-                   "<html><head><title>Index of %s</title>"
-                   "<style>th {text-align: left;}</style></head>"
-                   "<body><h1>Index of %s</h1><pre><table cellpadding=\"0\">"
-                   "<tr><th><a href=\"?n%c\">Name</a></th>"
-                   "<th><a href=\"?d%c\">Modified</a></th>"
-                   "<th><a href=\"?s%c\">Size</a></th></tr>"
-                   "<tr><td colspan=\"3\"><hr></td></tr>",
-                   conn->request_info.local_uri,
-                   conn->request_info.local_uri,
-                   sort_direction,
-                   sort_direction,
-                   sort_direction);
+    vscpweb_printf( conn,
+                        "Date: %s\r\n"
+                        "Connection: close\r\n"
+                        "Content-Type: text/html; charset=utf-8\r\n\r\n",
+                        date );
+    vscpweb_printf( conn,
+                        "<html><head><title>Index of %s</title>"
+                        "<style>th {text-align: left;}</style></head>"
+                        "<body><h1>Index of %s</h1><pre><table cellpadding=\"0\">"
+                        "<tr><th><a href=\"?n%c\">Name</a></th>"
+                        "<th><a href=\"?d%c\">Modified</a></th>"
+                        "<th><a href=\"?s%c\">Size</a></th></tr>"
+                        "<tr><td colspan=\"3\"><hr></td></tr>",
+                        conn->request_info.local_uri,
+                        conn->request_info.local_uri,
+                        sort_direction,
+                        sort_direction,
+                        sort_direction );
 
-    /* Print first entry - link to a parent directory */
-    vscpweb_printf(conn,
-                   "<tr><td><a href=\"%s%s\">%s</a></td>"
-                   "<td>&nbsp;%s</td><td>&nbsp;&nbsp;%s</td></tr>\n",
-                   conn->request_info.local_uri,
-                   "..",
-                   "Parent directory",
-                   "-",
-                   "-");
+    // Print first entry - link to a parent directory 
+    vscpweb_printf( conn,
+                        "<tr><td><a href=\"%s%s\">%s</a></td>"
+                        "<td>&nbsp;%s</td><td>&nbsp;&nbsp;%s</td></tr>\n",
+                        conn->request_info.local_uri,
+                        "..",
+                        "Parent directory",
+                        "-",
+                        "-" );
 
-    /* Sort and print directory entries */
-    if (data.entries != NULL) {
-        qsort(data.entries,
-              (size_t) data.num_entries,
-              sizeof (data.entries[0]),
-              compare_dir_entries);
-        for (i = 0; i < data.num_entries; i++) {
+    // Sort and print directory entries 
+    if ( data.entries != NULL ) {
+        
+        qsort( data.entries,
+                (size_t)data.num_entries,
+                sizeof( data.entries[0] ),
+                compare_dir_entries );
+        
+        for ( i=0; i < data.num_entries; i++ ) {
             print_dir_entry(&data.entries[i]);
             vscpweb_free(data.entries[i].file_name);
         }
+        
         vscpweb_free(data.entries);
     }
 
@@ -9291,16 +9369,16 @@ handle_directory_request(struct vscpweb_connection *conn, const char *dir)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// send_file_data
+//
+// Send len bytes from the opened file to the client. 
 //
 
-/* Send len bytes from the opened file to the client. */
-
 static void
-send_file_data(struct vscpweb_connection *conn,
-               struct vscpweb_file *filep,
-               int64_t offset,
-               int64_t len)
+send_file_data( struct vscpweb_connection *conn,
+                    struct vscpweb_file *filep,
+                    int64_t offset,
+                    int64_t len )
 {
     char buf[MG_BUF_LEN];
     int to_read, num_read, num_written;
@@ -9310,105 +9388,110 @@ send_file_data(struct vscpweb_connection *conn,
         return;
     }
 
-    /* Sanity check the offset */
+    // Sanity check the offset 
     size = (filep->stat.size > INT64_MAX) ? INT64_MAX
             : (int64_t) (filep->stat.size);
     offset = (offset < 0) ? 0 : ((offset > size) ? size : offset);
 
-    if ((len > 0) && (filep->access.membuf != NULL) && (size > 0)) {
-        /* file stored in memory */
+    if ( (len > 0) && (filep->access.membuf != NULL) && (size > 0) ) {
+        
+        // file stored in memory 
         if (len > size - offset) {
             len = size - offset;
         }
+        
         vscpweb_write(conn, filep->access.membuf + offset, (size_t) len);
     }
     else if (len > 0 && filep->access.fp != NULL) {
-        /* file stored on disk */
+        // file stored on disk 
 #if defined(__linux__)
-        /* sendfile is only available for Linux */
-        if ((conn->ssl == 0) && (conn->throttle == 0)
-            && (!vscpweb_strcasecmp(conn->ctx->config[ALLOW_SENDFILE_CALL],
-                                    "yes"))) {
+        // sendfile is only available for Linux 
+        if ( ( 0 == conn->ssl ) && ( 0 == conn->throttle ) && 
+             ( !vscpweb_strcasecmp( conn->ctx->config[ALLOW_SENDFILE_CALL],
+                                                        "yes" ) ) ) {
             off_t sf_offs = (off_t) offset;
             ssize_t sf_sent;
             int sf_file = fileno(filep->access.fp);
             int loop_cnt = 0;
 
             do {
-                /* 2147479552 (0x7FFFF000) is a limit found by experiment on
-                 * 64 bit Linux (2^31 minus one memory page of 4k?). */
+                // 2147479552 (0x7FFFF000) is a limit found by experiment on
+                // 64 bit Linux (2^31 minus one memory page of 4k?). */
                 size_t sf_tosend =
                         (size_t) ((len < 0x7FFFF000) ? len : 0x7FFFF000);
                 sf_sent =
                         sendfile(conn->client.sock, sf_file, &sf_offs, sf_tosend);
+                
                 if (sf_sent > 0) {
                     len -= sf_sent;
                     offset += sf_sent;
                 }
-                else if (loop_cnt == 0) {
-                    /* This file can not be sent using sendfile.
-                     * This might be the case for pseudo-files in the
-                     * /sys/ and /proc/ file system.
-                     * Use the regular user mode copy code instead. */
+                else if ( 0 == loop_cnt ) {
+                    // This file can not be sent using sendfile.
+                    // This might be the case for pseudo-files in the
+                    // /sys/ and /proc/ file system.
+                    // Use the regular user mode copy code instead. 
                     break;
                 }
-                else if (sf_sent == 0) {
-                    /* No error, but 0 bytes sent. May be EOF? */
+                else if ( 0 == sf_sent ) {
+                    // No error, but 0 bytes sent. May be EOF? 
                     return;
                 }
+                
                 loop_cnt++;
 
             }
-            while ((len > 0) && (sf_sent >= 0));
+            while ( (len > 0) && (sf_sent >= 0) );
 
-            if (sf_sent > 0) {
-                return; /* OK */
+            if ( sf_sent > 0 ) {
+                return;     // OK 
             }
 
-            /* sf_sent<0 means error, thus fall back to the classic way */
-            /* This is always the case, if sf_file is not a "normal" file,
-             * e.g., for sending data from the output of a CGI process. */
+            // sf_sent<0 means error, thus fall back to the classic way 
+            // This is always the case, if sf_file is not a "normal" file,
+            // e.g., for sending data from the output of a CGI process. 
             offset = (int64_t) sf_offs;
         }
 #endif
-        if ((offset > 0) && (fseeko(filep->access.fp, offset, SEEK_SET) != 0)) {
-            vscpweb_cry(conn, "%s: fseeko() failed: %s", __func__, strerror(ERRNO));
-            vscpweb_send_http_error(
-                                    conn,
-                                    500,
-                                    "%s",
-                                    "Error: Unable to access file at requested position.");
+        if ( (offset > 0) && ( fseeko(filep->access.fp, offset, SEEK_SET) != 0 ) ) {
+            vscpweb_cry( conn, "%s: fseeko() failed: %s", __func__, strerror(ERRNO) );
+            vscpweb_send_http_error( conn,
+                                        500,
+                                        "%s",
+                                        "Error: Unable to access file at requested position.");
         }
         else {
             while (len > 0) {
-                /* Calculate how much to read from the file in the buffer */
+                
+                // Calculate how much to read from the file in the buffer 
                 to_read = sizeof (buf);
                 if ((int64_t) to_read > len) {
                     to_read = (int) len;
                 }
 
-                /* Read from file, exit the loop on error */
+                // Read from file, exit the loop on error 
                 if ((num_read =
                     (int) fread(buf, 1, (size_t) to_read, filep->access.fp))
                     <= 0) {
                     break;
                 }
 
-                /* Send read bytes to the client, exit the loop on error */
+                // Send read bytes to the client, exit the loop on error 
                 if ((num_written = vscpweb_write(conn, buf, (size_t) num_read))
                     != num_read) {
                     break;
                 }
 
-                /* Both read and were successful, adjust counters */
+                // Both read and were successful, adjust counters 
                 len -= num_written;
             }
+            
         }
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// parse_range_header
 //
 
 static int
@@ -9418,57 +9501,60 @@ parse_range_header(const char *header, int64_t *a, int64_t *b)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// construct_etag
 //
 
 static void
-construct_etag(char *buf, size_t buf_len, const struct vscpweb_file_stat *filestat)
+construct_etag( char *buf, 
+                    size_t buf_len, 
+                    const struct vscpweb_file_stat *filestat )
 {
-    if ((filestat != NULL) && (buf != NULL)) {
-        vscpweb_snprintf(NULL,
-                         NULL, /* All calls to construct_etag use 64 byte buffer */
-                         buf,
-                         buf_len,
-                         "\"%lx.%" INT64_FMT "\"",
-                         (unsigned long) filestat->last_modified,
-                         filestat->size);
+    if ( ( filestat != NULL) && (buf != NULL) ) {
+        vscpweb_snprintf( NULL,
+                            NULL, // All calls to construct_etag use 64 byte buffer 
+                            buf,
+                            buf_len,
+                            "\"%lx.%" INT64_FMT "\"",
+                            (unsigned long) filestat->last_modified,
+                            filestat->size );
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// fclose_on_exec
 //
 
 static void
-fclose_on_exec(struct vscpweb_file_access *filep, struct vscpweb_connection *conn)
+fclose_on_exec( struct vscpweb_file_access *filep, 
+                    struct vscpweb_connection *conn )
 {
-    if (filep != NULL && filep->fp != NULL) {
+    if ( ( filep != NULL ) && ( filep->fp != NULL ) )  {
 #ifdef _WIN32
-        (void) conn; /* Unused. */
+        (void) conn; // Unused. 
 #else
-        if (fcntl(fileno(filep->fp), F_SETFD, FD_CLOEXEC) != 0) {
-            vscpweb_cry(conn,
-                        "%s: fcntl(F_SETFD FD_CLOEXEC) failed: %s",
-                        __func__,
-                        strerror(ERRNO));
+        if ( fcntl(fileno(filep->fp), F_SETFD, FD_CLOEXEC) != 0 ) {
+            vscpweb_cry( conn,
+                            "%s: fcntl(F_SETFD FD_CLOEXEC) failed: %s",
+                            __func__,
+                            strerror(ERRNO));
         }
 #endif
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// handle_static_file_request
 //
 
 static void
-handle_static_file_request(struct vscpweb_connection *conn,
-                           const char *path,
-                           struct vscpweb_file *filep,
-                           const char *mime_type,
-                           const char *additional_headers)
+handle_static_file_request( struct vscpweb_connection *conn,
+                                const char *path,
+                                struct vscpweb_file *filep,
+                                const char *mime_type,
+                                const char *additional_headers)
 {
     char date[64], lm[64], etag[64];
-    char range[128]; /* large enough, so there will be no overflow */
+    char range[128]; // large enough, so there will be no overflow 
     const char *msg = "OK", *hdr;
     time_t curtime = time(NULL);
     int64_t cl, r1, r2;
@@ -9479,103 +9565,110 @@ handle_static_file_request(struct vscpweb_connection *conn,
     const char *cors1, *cors2, *cors3;
     int allow_on_the_fly_compression;
 
-    if ((conn == NULL) || (conn->ctx == NULL) || (filep == NULL)) {
+    if ( (conn == NULL) || (conn->ctx == NULL) || (filep == NULL) ) {
         return;
     }
 
-    if (mime_type == NULL) {
+    if ( mime_type == NULL ) {
         get_mime_type(conn->ctx, path, &mime_vec);
     }
     else {
         mime_vec.ptr = mime_type;
         mime_vec.len = strlen(mime_type);
     }
-    if (filep->stat.size > INT64_MAX) {
-        vscpweb_send_http_error(conn,
-                                500,
-                                "Error: File size is too large to send\n%" INT64_FMT,
-                                filep->stat.size);
+    if ( filep->stat.size > INT64_MAX ) {
+        vscpweb_send_http_error( conn,
+                                    500,
+                                    "Error: File size is too large to send\n%" INT64_FMT,
+                                    filep->stat.size );
         return;
     }
+    
     cl = (int64_t) filep->stat.size;
     conn->status_code = 200;
     range[0] = '\0';
 
-    /* if this file is in fact a pre-gzipped file, rewrite its filename
-     * it's important to rewrite the filename after resolving
-     * the mime type from it, to preserve the actual file's type */
+    // if this file is in fact a pre-gzipped file, rewrite its filename
+    // it's important to rewrite the filename after resolving
+    // the mime type from it, to preserve the actual file's type 
     allow_on_the_fly_compression = conn->accept_gzip;
 
     if (filep->stat.is_gzipped) {
-        vscpweb_snprintf(conn, &truncated, gz_path, sizeof (gz_path), "%s.gz", path);
+        
+        vscpweb_snprintf( conn, 
+                            &truncated, 
+                            gz_path, 
+                            sizeof(gz_path), 
+                            "%s.gz", 
+                            path );
 
-        if (truncated) {
-            vscpweb_send_http_error(conn,
-                                    500,
-                                    "Error: Path of zipped file too long (%s)",
-                                    path);
+        if ( truncated ) {
+            vscpweb_send_http_error( conn,
+                                        500,
+                                        "Error: Path of zipped file too long (%s)",
+                                        path );
             return;
         }
 
         path = gz_path;
         encoding = "Content-Encoding: gzip\r\n";
 
-        /* File is already compressed. No "on the fly" compression. */
+        // File is already compressed. No "on the fly" compression. 
         allow_on_the_fly_compression = 0;
     }
 
-    if (!vscpweb_fopen(conn, path, MG_FOPEN_MODE_READ, filep)) {
-        vscpweb_send_http_error(conn,
-                                500,
-                                "Error: Cannot open file\nfopen(%s): %s",
-                                path,
-                                strerror(ERRNO));
+    if ( !vscpweb_fopen(conn, path, MG_FOPEN_MODE_READ, filep ) ) {
+        vscpweb_send_http_error( conn,
+                                    500,
+                                    "Error: Cannot open file\nfopen(%s): %s",
+                                    path,
+                                    strerror(ERRNO) );
         return;
     }
 
-    fclose_on_exec(&filep->access, conn);
+    fclose_on_exec( &filep->access, conn );
 
-    /* If Range: header specified, act accordingly */
+    // If Range: header specified, act accordingly 
     r1 = r2 = 0;
-    hdr = vscpweb_get_header(conn, "Range");
-    if ((hdr != NULL) && ((n = parse_range_header(hdr, &r1, &r2)) > 0)
-        && (r1 >= 0) && (r2 >= 0)) {
-        /* actually, range requests don't play well with a pre-gzipped
-         * file (since the range is specified in the uncompressed space) */
-        if (filep->stat.is_gzipped) {
-            vscpweb_send_http_error(
-                                    conn,
-                                    416, /* 416 = Range Not Satisfiable */
-                                    "%s",
-                                    "Error: Range requests in gzipped files are not supported");
-            (void) vscpweb_fclose(
-                                  &filep->access); /* ignore error on read only file */
+    hdr = vscpweb_get_header( conn, "Range" );
+    if ( (hdr != NULL ) && 
+         ( (n = parse_range_header( hdr, &r1, &r2 ) ) > 0 ) && 
+         ( r1 >= 0 ) && 
+         ( r2 >= 0 ) ) {
+        // actually, range requests don't play well with a pre-gzipped
+        // file (since the range is specified in the uncompressed space) 
+        if ( filep->stat.is_gzipped ) {
+            vscpweb_send_http_error( conn,
+                                        416, // 416 = Range Not Satisfiable 
+                                        "%s",
+                                        "Error: Range requests in gzipped files are not supported" );
+            (void) vscpweb_fclose( &filep->access ); // ignore error on read only file 
             return;
         }
         conn->status_code = 206;
         cl = (n == 2) ? (((r2 > cl) ? cl : r2) - r1 + 1) : (cl - r1);
-        vscpweb_snprintf(conn,
-                         NULL, /* range buffer is big enough */
-                         range,
-                         sizeof (range),
-                         "Content-Range: bytes "
-                         "%" INT64_FMT "-%" INT64_FMT "/%" INT64_FMT "\r\n",
-                         r1,
-                         r1 + cl - 1,
-                         filep->stat.size);
+        vscpweb_snprintf( conn,
+                            NULL, // range buffer is big enough 
+                            range,
+                            sizeof(range),
+                            "Content-Range: bytes "
+                             "%" INT64_FMT "-%" INT64_FMT "/%" INT64_FMT "\r\n",
+                            r1,
+                            r1 + cl - 1,
+                            filep->stat.size );
         msg = "Partial Content";
 
-        /* Do not compress ranges. */
+        // Do not compress ranges. 
         allow_on_the_fly_compression = 0;
     }
 
     hdr = vscpweb_get_header(conn, "Origin");
     if (hdr) {
-        /* Cross-origin resource sharing (CORS), see
-         * http://www.html5rocks.com/en/tutorials/cors/,
-         * http://www.html5rocks.com/static/images/cors_server_flowchart.png
-         * -
-         * preflight is not supported for files. */
+        // Cross-origin resource sharing (CORS), see
+        // http://www.html5rocks.com/en/tutorials/cors/,
+        // http://www.html5rocks.com/static/images/cors_server_flowchart.png
+        // -
+        // preflight is not supported for files. 
         cors1 = "Access-Control-Allow-Origin: ";
         cors2 = conn->ctx->config[ACCESS_CONTROL_ALLOW_ORIGIN];
         cors3 = "\r\n";
@@ -9584,166 +9677,173 @@ handle_static_file_request(struct vscpweb_connection *conn,
         cors1 = cors2 = cors3 = "";
     }
 
-    /* Prepare Etag, Date, Last-Modified headers. Must be in UTC,
-     * according to
-     * http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3 */
+    // Prepare Etag, Date, Last-Modified headers. Must be in UTC,
+    // according to
+    // http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3 
     gmt_time_string(date, sizeof (date), &curtime);
     gmt_time_string(lm, sizeof (lm), &filep->stat.last_modified);
     construct_etag(etag, sizeof (etag), &filep->stat);
 
-    /* On the fly compression allowed */
+    // On the fly compression allowed 
     if (allow_on_the_fly_compression) {
         ;
-        /* TODO: add interface to compression module */
-        /* e.g., def from https://zlib.net/zlib_how.html */
-        /* Check license (zlib has a permissive license, but */
-        /* is still not MIT) and use dynamic binding like */
-        /* done with OpenSSL */
-        /* See #199 (https://github.com/civetweb/civetweb/issues/199) */
+        // TODO: add interface to compression module 
+        // e.g., def from https://zlib.net/zlib_how.html 
+        // Check license (zlib has a permissive license, but 
+        // is still not MIT) and use dynamic binding like 
+        // done with OpenSSL 
+        // See #199 (https://github.com/civetweb/civetweb/issues/199) 
     }
 
-    /* Send header */
-    (void) vscpweb_printf(conn,
-                          "HTTP/1.1 %d %s\r\n"
-                          "%s%s%s"
-                          "Date: %s\r\n",
-                          conn->status_code,
-                          msg,
-                          cors1,
-                          cors2,
-                          cors3,
-                          date);
-    send_static_cache_header(conn);
-    send_additional_header(conn);
+    // Send header 
+    (void) vscpweb_printf( conn,
+                            "HTTP/1.1 %d %s\r\n"
+                            "%s%s%s"
+                            "Date: %s\r\n",
+                            conn->status_code,
+                            msg,
+                            cors1,
+                            cors2,
+                            cors3,
+                            date );
+    send_static_cache_header( conn );
+    send_additional_header( conn );
 
-    (void) vscpweb_printf(conn,
-                          "Last-Modified: %s\r\n"
-                          "Etag: %s\r\n"
-                          "Content-Type: %.*s\r\n"
-                          "Content-Length: %" INT64_FMT "\r\n"
-                          "Connection: %s\r\n"
-                          "Accept-Ranges: bytes\r\n"
-                          "%s%s",
-                          lm,
-                          etag,
-                          (int) mime_vec.len,
-                          mime_vec.ptr,
-                          cl,
-                          suggest_connection_header(conn),
-                          range,
-                          encoding);
+    (void) vscpweb_printf( conn,
+                            "Last-Modified: %s\r\n"
+                            "Etag: %s\r\n"
+                            "Content-Type: %.*s\r\n"
+                            "Content-Length: %" INT64_FMT "\r\n"
+                            "Connection: %s\r\n"
+                            "Accept-Ranges: bytes\r\n"
+                            "%s%s",
+                            lm,
+                            etag,
+                            (int)mime_vec.len,
+                            mime_vec.ptr,
+                            cl,
+                            suggest_connection_header( conn ),
+                            range,
+                            encoding );
 
-    /* The previous code must not add any header starting with X- to make
-     * sure no one of the additional_headers is included twice */
+    // The previous code must not add any header starting with X- to make
+    // sure no one of the additional_headers is included twice 
 
-    if (additional_headers != NULL) {
-        (void) vscpweb_printf(conn,
-                              "%.*s\r\n\r\n",
-                              (int) strlen(additional_headers),
-                              additional_headers);
+    if ( additional_headers != NULL ) {
+        (void)vscpweb_printf( conn,
+                                "%.*s\r\n\r\n",
+                                (int)strlen(additional_headers),
+                                additional_headers);
     }
     else {
         (void) vscpweb_printf(conn, "\r\n");
     }
 
-    if (strcmp(conn->request_info.request_method, "HEAD") != 0) {
+    if ( strcmp(conn->request_info.request_method, "HEAD") != 0 ) {
         send_file_data(conn, filep, r1, cl);
     }
-    (void) vscpweb_fclose(&filep->access); /* ignore error on read only file */
+    
+    (void) vscpweb_fclose(&filep->access); // ignore error on read only file 
+    
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// handle_not_modified_static_file_request
 //
 
 static void
-handle_not_modified_static_file_request(struct vscpweb_connection *conn,
-                                        struct vscpweb_file *filep)
+handle_not_modified_static_file_request( struct vscpweb_connection *conn,
+                                        struct vscpweb_file *filep )
 {
     char date[64], lm[64], etag[64];
     time_t curtime = time(NULL);
 
-    if ((conn == NULL) || (filep == NULL)) {
+    if ( (conn == NULL) || (filep == NULL) ) {
         return;
     }
+    
     conn->status_code = 304;
     gmt_time_string(date, sizeof (date), &curtime);
     gmt_time_string(lm, sizeof (lm), &filep->stat.last_modified);
     construct_etag(etag, sizeof (etag), &filep->stat);
 
-    (void) vscpweb_printf(conn,
-                          "HTTP/1.1 %d %s\r\n"
-                          "Date: %s\r\n",
-                          conn->status_code,
-                          vscpweb_get_response_code_text(conn, conn->status_code),
-                          date);
-    send_static_cache_header(conn);
-    send_additional_header(conn);
-    (void) vscpweb_printf(conn,
-                          "Last-Modified: %s\r\n"
-                          "Etag: %s\r\n"
-                          "Connection: %s\r\n"
-                          "\r\n",
-                          lm,
-                          etag,
-                          suggest_connection_header(conn));
+    (void) vscpweb_printf( conn,
+                            "HTTP/1.1 %d %s\r\n"
+                            "Date: %s\r\n",
+                            conn->status_code,
+                            vscpweb_get_response_code_text( conn, 
+                                                                conn->status_code ),
+                            date );
+    send_static_cache_header( conn );
+    send_additional_header( conn );
+    (void) vscpweb_printf( conn,
+                            "Last-Modified: %s\r\n"
+                            "Etag: %s\r\n"
+                            "Connection: %s\r\n"
+                            "\r\n",
+                            lm,
+                            etag,
+                            suggest_connection_header( conn ) );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_send_file
 //
 
 void
-vscpweb_send_file(struct vscpweb_connection *conn, const char *path)
+vscpweb_send_file( struct vscpweb_connection *conn, const char *path )
 {
     vscpweb_send_mime_file(conn, path, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_send_mime_file
 //
 
 void
-vscpweb_send_mime_file(struct vscpweb_connection *conn,
-                       const char *path,
-                       const char *mime_type)
+vscpweb_send_mime_file( struct vscpweb_connection *conn,
+                            const char *path,
+                            const char *mime_type )
 {
-    vscpweb_send_mime_file2(conn, path, mime_type, NULL);
+    vscpweb_send_mime_file2( conn, path, mime_type, NULL );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_send_mime_file2
 //
 
 void
-vscpweb_send_mime_file2(struct vscpweb_connection *conn,
-                        const char *path,
-                        const char *mime_type,
-                        const char *additional_headers)
+vscpweb_send_mime_file2( struct vscpweb_connection *conn,
+                            const char *path,
+                            const char *mime_type,
+                            const char *additional_headers )
 {
     struct vscpweb_file file = STRUCT_FILE_INITIALIZER;
 
     if (!conn) {
-        /* No conn */
+        // No conn 
         return;
     }
 
-    if (vscpweb_stat(conn, path, &file.stat)) {
-        if (file.stat.is_directory) {
-            if (!vscpweb_strcasecmp(conn->ctx->config[ENABLE_DIRECTORY_LISTING],
-                                    "yes")) {
-                handle_directory_request(conn, path);
+    if ( vscpweb_stat( conn, path, &file.stat ) ) {
+        if ( file.stat.is_directory ) {
+            if ( !vscpweb_strcasecmp( conn->ctx->config[ENABLE_DIRECTORY_LISTING],
+                                        "yes") ) {
+                handle_directory_request( conn, path );
             }
             else {
-                vscpweb_send_http_error(conn,
-                                        403,
-                                        "%s",
-                                        "Error: Directory listing denied");
+                vscpweb_send_http_error( conn,
+                                            403,
+                                            "%s",
+                                            "Error: Directory listing denied" );
             }
         }
         else {
-            handle_static_file_request(
-                                       conn, path, &file, mime_type, additional_headers);
+            handle_static_file_request( conn, 
+                                            path, 
+                                            &file, 
+                                            mime_type, 
+                                            additional_headers );
         }
     }
     else {
@@ -9752,17 +9852,17 @@ vscpweb_send_mime_file2(struct vscpweb_connection *conn,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// put_dir
+//
+// For a given PUT path, create all intermediate subdirectories.
+// Return  0  if the path itself is a directory.
+// Return  1  if the path leads to a file.
+// Return -1  for if the path is too long.
+// Return -2  if path can not be created.
 //
 
-/* For a given PUT path, create all intermediate subdirectories.
- * Return  0  if the path itself is a directory.
- * Return  1  if the path leads to a file.
- * Return -1  for if the path is too long.
- * Return -2  if path can not be created.
- */
 static int
-put_dir(struct vscpweb_connection *conn, const char *path)
+put_dir( struct vscpweb_connection *conn, const char *path )
 {
     char buf[PATH_MAX];
     const char *s, *p;
@@ -9770,96 +9870,99 @@ put_dir(struct vscpweb_connection *conn, const char *path)
     size_t len;
     int res = 1;
 
-    for (s = p = path + 2; (p = strchr(s, '/')) != NULL; s = ++p) {
+    for ( s = p = path + 2; ( p = strchr(s, '/')) != NULL; s = ++p ) {
         len = (size_t) (p - path);
         if (len >= sizeof (buf)) {
-            /* path too long */
+            // path too long 
             res = -1;
             break;
         }
         memcpy(buf, path, len);
         buf[len] = '\0';
 
-        /* Try to create intermediate directory */
+        // Try to create intermediate directory 
         DEBUG_TRACE("mkdir(%s)", buf);
         if (!vscpweb_stat(conn, buf, &file.stat) && vscpweb_mkdir(conn, buf, 0755) != 0) {
-            /* path does not exixt and can not be created */
+            // path does not exist and can not be created 
             res = -2;
             break;
         }
 
-        /* Is path itself a directory? */
+        // Is path itself a directory? 
         if (p[1] == '\0') {
             res = 0;
         }
+        
     }
 
     return res;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// remove_bad_file
 //
 
 static void
-remove_bad_file(const struct vscpweb_connection *conn, const char *path)
+remove_bad_file( const struct vscpweb_connection *conn, const char *path )
 {
     int r = vscpweb_remove(conn, path);
+    
     if (r != 0) {
         vscpweb_cry(conn, "%s: Cannot remove invalid file %s", __func__, path);
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_store_body
 //
 
 long long
-vscpweb_store_body(struct vscpweb_connection *conn, const char *path)
+vscpweb_store_body( struct vscpweb_connection *conn, const char *path )
 {
     char buf[MG_BUF_LEN];
     long long len = 0;
     int ret, n;
     struct vscpweb_file fi;
 
-    if (conn->consumed_content != 0) {
+    if ( conn->consumed_content != 0 ) {
         vscpweb_cry(conn, "%s: Contents already consumed", __func__);
         return -11;
     }
 
-    ret = put_dir(conn, path);
+    ret = put_dir( conn, path );
     if (ret < 0) {
-        /* -1 for path too long,
-         * -2 for path can not be created. */
+        // -1 for path too long,
+        // -2 for path can not be created. 
         return ret;
     }
     if (ret != 1) {
-        /* Return 0 means, path itself is a directory. */
+        // Return 0 means, path itself is a directory. 
         return 0;
     }
 
-    if (vscpweb_fopen(conn, path, MG_FOPEN_MODE_WRITE, &fi) == 0) {
+    if ( 0 == vscpweb_fopen( conn, path, MG_FOPEN_MODE_WRITE, &fi ) ) {
         return -12;
     }
 
-    ret = vscpweb_read(conn, buf, sizeof (buf));
+    ret = vscpweb_read( conn, buf, sizeof( buf ) );
     while (ret > 0) {
+        
         n = (int) fwrite(buf, 1, (size_t) ret, fi.access.fp);
         if (n != ret) {
-            (void) vscpweb_fclose(
-                                  &fi.access); /* File is bad and will be removed anyway. */
+            (void) vscpweb_fclose( &fi.access ); // File is bad and will be removed anyway. 
             remove_bad_file(conn, path);
             return -13;
         }
+        
         len += ret;
         ret = vscpweb_read(conn, buf, sizeof (buf));
     }
 
-    /* File is open for writing. If fclose fails, there was probably an
-     * error flushing the buffer to disk, so the file on disk might be
-     * broken. Delete it and return an error to the caller. */
-    if (vscpweb_fclose(&fi.access) != 0) {
-        remove_bad_file(conn, path);
+    // File is open for writing. If fclose fails, there was probably an
+    // error flushing the buffer to disk, so the file on disk might be
+    // broken. Delete it and return an error to the caller. 
+    if ( vscpweb_fclose(&fi.access) != 0 ) {
+        remove_bad_file( conn, path );
         return -14;
     }
 
@@ -9867,67 +9970,66 @@ vscpweb_store_body(struct vscpweb_connection *conn, const char *path)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// skip_to_end_of_word_and_terminate
+//
+// Parse a buffer:
+// Forward the string pointer till the end of a word, then
+// terminate it and forward till the begin of the next word.
 //
 
-/* Parse a buffer:
- * Forward the string pointer till the end of a word, then
- * terminate it and forward till the begin of the next word.
- */
-
 static int
-skip_to_end_of_word_and_terminate(char **ppw, int eol)
+skip_to_end_of_word_and_terminate( char **ppw, int eol )
 {
-    /* Forward until a space is found - use isgraph here */
-    /* See http://www.cplusplus.com/reference/cctype/ */
+    // Forward until a space is found - use isgraph here 
+    // See http://www.cplusplus.com/reference/cctype/ 
     while (isgraph(**ppw)) {
         (*ppw)++;
     }
 
-    /* Check end of word */
+    // Check end of word 
     if (eol) {
-        /* must be a end of line */
-        if ((**ppw != '\r') && (**ppw != '\n')) {
+        // must be a end of line 
+        if ( (**ppw != '\r') && (**ppw != '\n') ) {
             return -1;
         }
     }
     else {
-        /* must be a end of a word, but not a line */
+        // must be a end of a word, but not a line 
         if (**ppw != ' ') {
             return -1;
         }
     }
 
-    /* Terminate and forward to the next word */
+    // Terminate and forward to the next word 
     do {
         **ppw = 0;
         (*ppw)++;
     }
     while ((**ppw) && isspace(**ppw));
 
-    /* Check after term */
+    // Check after term 
     if (!eol) {
-        /* if it's not the end of line, there must be a next word */
+        // if it's not the end of line, there must be a next word 
         if (!isgraph(**ppw)) {
             return -1;
         }
     }
 
-    /* ok */
+    // ok 
     return 1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// parse_http_headers
+//
+// Parse HTTP headers from the given buffer, advance buf pointer
+// to the point where parsing stopped.
+// All parameters must be valid pointers (not NULL).
+// Return <0 on error. 
 //
 
-/* Parse HTTP headers from the given buffer, advance buf pointer
- * to the point where parsing stopped.
- * All parameters must be valid pointers (not NULL).
- * Return <0 on error. */
-
 static int
-parse_http_headers(char **buf, struct vscpweb_header hdr[MG_MAX_HEADERS])
+parse_http_headers( char **buf, struct vscpweb_header hdr[MG_MAX_HEADERS] )
 {
     int i;
     int num_headers = 0;
@@ -9938,16 +10040,16 @@ parse_http_headers(char **buf, struct vscpweb_header hdr[MG_MAX_HEADERS])
             dp++;
         }
         if (dp == *buf) {
-            /* End of headers reached. */
+            // End of headers reached. 
             break;
         }
         if (*dp != ':') {
-            /* This is not a valid field. */
+            // This is not a valid field. 
             return -1;
         }
 
-        /* End of header key (*dp == ':') */
-        /* Truncate here and set the key name */
+        // End of header key (*dp == ':') 
+        // Truncate here and set the key name 
         *dp = 0;
         hdr[i].name = *buf;
         do {
@@ -9955,7 +10057,7 @@ parse_http_headers(char **buf, struct vscpweb_header hdr[MG_MAX_HEADERS])
         }
         while (*dp == ' ');
 
-        /* The rest of the line is the value */
+        // The rest of the line is the value 
         hdr[i].value = dp;
         *buf = dp + strcspn(dp, "\r\n");
         if (((*buf)[0] != '\r') || ((*buf)[1] != '\n')) {
@@ -9974,10 +10076,12 @@ parse_http_headers(char **buf, struct vscpweb_header hdr[MG_MAX_HEADERS])
         }
 
         if ((*buf)[0] == '\r') {
-            /* This is the end of the header */
+            // This is the end of the header 
             break;
         }
+        
     }
+    
     return num_headers;
 }
 
@@ -9992,9 +10096,9 @@ struct vscpweb_http_method_info
 };
 
 
-/* https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods */
+// https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods 
 static struct vscpweb_http_method_info http_methods[] = {
-    /* HTTP (RFC 2616) */
+    // HTTP (RFC 2616) 
     {"GET", 0, 1, 1, 1, 1},
     {"POST", 1, 1, 0, 0, 0},
     {"PUT", 1, 0, 0, 1, 0},
@@ -10002,177 +10106,184 @@ static struct vscpweb_http_method_info http_methods[] = {
     {"HEAD", 0, 0, 1, 1, 1},
     {"OPTIONS", 0, 0, 1, 1, 0},
     {"CONNECT", 1, 1, 0, 0, 0},
-    /* TRACE method (RFC 2616) is not supported for security reasons */
+    // TRACE method (RFC 2616) is not supported for security reasons 
 
-    /* PATCH method (RFC 5789) */
+    // PATCH method (RFC 5789) */
     {"PATCH", 1, 0, 0, 0, 0},
-    /* PATCH method only allowed for CGI/Lua/LSP and callbacks. */
+    // PATCH method only allowed for CGI/Lua/LSP and callbacks. 
 
-    /* WEBDAV (RFC 2518) */
+    // WEBDAV (RFC 2518) 
     {"PROPFIND", 0, 1, 1, 1, 0},
-    /* http://www.webdav.org/specs/rfc4918.html, 9.1:
-     * Some PROPFIND results MAY be cached, with care,
-     * as there is no cache validation mechanism for
-     * most properties. This method is both safe and
-     * idempotent (see Section 9.1 of [RFC2616]). */
+    // http://www.webdav.org/specs/rfc4918.html, 9.1:
+    // Some PROPFIND results MAY be cached, with care,
+    // as there is no cache validation mechanism for
+    // most properties. This method is both safe and
+    // idempotent (see Section 9.1 of [RFC2616]). 
     {"MKCOL", 0, 0, 0, 1, 0},
-    /* http://www.webdav.org/specs/rfc4918.html, 9.1:
-     * When MKCOL is invoked without a request body,
-     * the newly created collection SHOULD have no
-     * members. A MKCOL request message may contain
-     * a message body. The precise behavior of a MKCOL
-     * request when the body is present is undefined,
-     * ... ==> We do not support MKCOL with body data.
-     * This method is idempotent, but not safe (see
-     * Section 9.1 of [RFC2616]). Responses to this
-     * method MUST NOT be cached. */
+    // http://www.webdav.org/specs/rfc4918.html, 9.1:
+    // When MKCOL is invoked without a request body,
+    // the newly created collection SHOULD have no
+    // members. A MKCOL request message may contain
+    // a message body. The precise behavior of a MKCOL
+    // request when the body is present is undefined,
+    // ... ==> We do not support MKCOL with body data.
+    // This method is idempotent, but not safe (see
+    // Section 9.1 of [RFC2616]). Responses to this
+    // method MUST NOT be cached. 
 
-    /* Unsupported WEBDAV Methods: */
-    /* PROPPATCH, COPY, MOVE, LOCK, UNLOCK (RFC 2518) */
-    /* + 11 methods from RFC 3253 */
-    /* ORDERPATCH (RFC 3648) */
-    /* ACL (RFC 3744) */
-    /* SEARCH (RFC 5323) */
-    /* + MicroSoft extensions
-     * https://msdn.microsoft.com/en-us/library/aa142917.aspx */
+    // Unsupported WEBDAV Methods: 
+    // PROPPATCH, COPY, MOVE, LOCK, UNLOCK (RFC 2518) 
+    // + 11 methods from RFC 3253 
+    // ORDERPATCH (RFC 3648) 
+    // ACL (RFC 3744) 
+    // SEARCH (RFC 5323) 
+    // + MicroSoft extensions
+    // https://msdn.microsoft.com/en-us/library/aa142917.aspx 
 
-    /* REPORT method (RFC 3253) */
+    // REPORT method (RFC 3253) 
     {"REPORT", 1, 1, 1, 1, 1},
-    /* REPORT method only allowed for CGI/Lua/LSP and callbacks. */
-    /* It was defined for WEBDAV in RFC 3253, Sec. 3.6
-     * (https://tools.ietf.org/html/rfc3253#section-3.6), but seems
-     * to be useful for REST in case a "GET request with body" is
-     * required. */
+    // REPORT method only allowed for CGI/Lua/LSP and callbacks. 
+    // It was defined for WEBDAV in RFC 3253, Sec. 3.6
+    // (https://tools.ietf.org/html/rfc3253#section-3.6), but seems
+    // to be useful for REST in case a "GET request with body" is
+    // required. 
 
-    {NULL, 0, 0, 0, 0, 0}
-    /* end of list */
+    {NULL, 0, 0, 0, 0, 0} // end of list 
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// get_http_method_info
 //
 
 static const struct vscpweb_http_method_info *
-get_http_method_info(const char *method)
+get_http_method_info( const char *method )
 {
-    /* Check if the method is known to the server. The list of all known
-     * HTTP methods can be found here at
-     * http://www.iana.org/assignments/http-methods/http-methods.xhtml
-     */
+    // Check if the method is known to the server. The list of all known
+    // HTTP methods can be found here at
+    // http://www.iana.org/assignments/http-methods/http-methods.xhtml
+    
     const struct vscpweb_http_method_info *m = http_methods;
 
     while (m->name) {
+        
         if (!strcmp(m->name, method)) {
             return m;
         }
+        
         m++;
     }
+    
     return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// is_valid_http_method
 //
 
 static int
-is_valid_http_method(const char *method)
+is_valid_http_method( const char *method )
 {
-    return (get_http_method_info(method) != NULL);
+    return ( get_http_method_info(method) != NULL );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// parse_http_request
+//
+// Parse HTTP request, fill in vscpweb_request_info structure.
+// This function modifies the buffer by NUL-terminating
+// HTTP request components, header names and header values.
+// Parameters:
+//   buf (in/out): pointer to the HTTP header to parse and split
+//   len (in): length of HTTP header buffer
+//   re (out): parsed header as vscpweb_request_info
+// buf and ri must be valid pointers (not NULL), len>0.
+// Returns <0 on error. 
 //
 
-/* Parse HTTP request, fill in vscpweb_request_info structure.
- * This function modifies the buffer by NUL-terminating
- * HTTP request components, header names and header values.
- * Parameters:
- *   buf (in/out): pointer to the HTTP header to parse and split
- *   len (in): length of HTTP header buffer
- *   re (out): parsed header as vscpweb_request_info
- * buf and ri must be valid pointers (not NULL), len>0.
- * Returns <0 on error. */
 static int
-parse_http_request(char *buf, int len, struct vscpweb_request_info *ri)
+parse_http_request( char *buf, int len, struct vscpweb_request_info *ri )
 {
     int request_length;
     int init_skip = 0;
 
-    /* Reset attributes. DO NOT TOUCH is_ssl, remote_ip, remote_addr,
-     * remote_port */
-    ri->remote_user = ri->request_method = ri->request_uri = ri->http_version =
-            NULL;
+    // Reset attributes. DO NOT TOUCH is_ssl, remote_ip, remote_addr,
+    // remote_port 
+    ri->remote_user = ri->request_method 
+                    = ri->request_uri 
+                    = ri->http_version 
+                    = NULL;
     ri->num_headers = 0;
 
-    /* RFC says that all initial whitespaces should be ingored */
-    /* This included all leading \r and \n (isspace) */
-    /* See table: http://www.cplusplus.com/reference/cctype/ */
-    while ((len > 0) && isspace(*(unsigned char *) buf)) {
+    // RFC says that all initial whitespaces should be ingored 
+    // This included all leading \r and \n (isspace) 
+    // See table: http://www.cplusplus.com/reference/cctype/ 
+    while ( (len > 0) && isspace(*(unsigned char *) buf ) ) {
         buf++;
         len--;
         init_skip++;
     }
 
-    if (len == 0) {
-        /* Incomplete request */
+    if ( 0 == len ) {
+        // Incomplete request 
         return 0;
     }
 
-    /* Control characters are not allowed, including zero */
-    if (iscntrl(*(unsigned char *) buf)) {
+    // Control characters are not allowed, including zero 
+    if ( iscntrl( *(unsigned char *)buf ) ) {
         return -1;
     }
 
-    /* Find end of HTTP header */
-    request_length = get_http_header_len(buf, len);
-    if (request_length <= 0) {
+    // Find end of HTTP header 
+    request_length = get_http_header_len( buf, len );
+    if ( request_length <= 0 ) {
         return request_length;
     }
+    
     buf[request_length - 1] = '\0';
 
-    if ((*buf == 0) || (*buf == '\r') || (*buf == '\n')) {
+    if ( (*buf == 0) || (*buf == '\r') || (*buf == '\n') ) {
         return -1;
     }
 
-    /* The first word has to be the HTTP method */
+    // The first word has to be the HTTP method 
     ri->request_method = buf;
 
-    if (skip_to_end_of_word_and_terminate(&buf, 0) <= 0) {
+    if ( skip_to_end_of_word_and_terminate(&buf, 0) <= 0 ) {
         return -1;
     }
 
-    /* Check for a valid http method */
-    if (!is_valid_http_method(ri->request_method)) {
+    // Check for a valid http method 
+    if ( !is_valid_http_method( ri->request_method ) ) {
         return -1;
     }
 
-    /* The second word is the URI */
+    // The second word is the URI 
     ri->request_uri = buf;
 
-    if (skip_to_end_of_word_and_terminate(&buf, 0) <= 0) {
+    if ( skip_to_end_of_word_and_terminate(&buf, 0) <= 0 ) {
         return -1;
     }
 
-    /* Next would be the HTTP version */
+    // Next would be the HTTP version 
     ri->http_version = buf;
 
-    if (skip_to_end_of_word_and_terminate(&buf, 1) <= 0) {
+    if ( skip_to_end_of_word_and_terminate(&buf, 1) <= 0 ) {
         return -1;
     }
 
-    /* Check for a valid HTTP version key */
-    if (strncmp(ri->http_version, "HTTP/", 5) != 0) {
-        /* Invalid request */
+    // Check for a valid HTTP version key 
+    if ( strncmp(ri->http_version, "HTTP/", 5) != 0 ) {
+        // Invalid request 
         return -1;
     }
+    
     ri->http_version += 5;
 
 
-    /* Parse all HTTP headers */
-    ri->num_headers = parse_http_headers(&buf, ri->http_headers);
-    if (ri->num_headers < 0) {
-        /* Error while parsing headers */
+    // Parse all HTTP headers 
+    ri->num_headers = parse_http_headers( &buf, ri->http_headers );
+    if ( ri->num_headers < 0 ) {
+        // Error while parsing headers 
         return -1;
     }
 
@@ -10180,54 +10291,55 @@ parse_http_request(char *buf, int len, struct vscpweb_request_info *ri)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// parse_http_response
 //
 
 static int
-parse_http_response(char *buf, int len, struct vscpweb_response_info *ri)
+parse_http_response( char *buf, int len, struct vscpweb_response_info *ri )
 {
     int response_length;
     int init_skip = 0;
     char *tmp, *tmp2;
     long l;
 
-    /* Initialize elements. */
+    // Initialize elements. 
     ri->http_version = ri->status_text = NULL;
     ri->num_headers = ri->status_code = 0;
 
-    /* RFC says that all initial whitespaces should be ingored */
-    /* This included all leading \r and \n (isspace) */
-    /* See table: http://www.cplusplus.com/reference/cctype/ */
-    while ((len > 0) && isspace(*(unsigned char *) buf)) {
+    // RFC says that all initial whitespaces should be ingored 
+    // This included all leading \r and \n (isspace) 
+    // See table: http://www.cplusplus.com/reference/cctype/ 
+    while ( (len > 0) && isspace(*(unsigned char *)buf) ) {
         buf++;
         len--;
         init_skip++;
     }
 
-    if (len == 0) {
-        /* Incomplete request */
+    if (0 == len) {
+        // Incomplete request 
         return 0;
     }
 
-    /* Control characters are not allowed, including zero */
-    if (iscntrl(*(unsigned char *) buf)) {
+    // Control characters are not allowed, including zero 
+    if (iscntrl( *(unsigned char *)buf) ) {
         return -1;
     }
 
-    /* Find end of HTTP header */
+    // Find end of HTTP header 
     response_length = get_http_header_len(buf, len);
-    if (response_length <= 0) {
+    if ( response_length <= 0 ) {
         return response_length;
     }
+    
     buf[response_length - 1] = '\0';
 
 
-    /* TODO: Define vscpweb_response_info and implement parsing */
+    // TODO: Define vscpweb_response_info and implement parsing 
     (void) buf;
     (void) len;
     (void) ri;
 
-    /* RFC says that all initial whitespaces should be ingored */
+    // RFC says that all initial whitespaces should be ingored 
     while ((*buf != '\0') && isspace(*(unsigned char *) buf)) {
         buf++;
     }
@@ -10235,49 +10347,54 @@ parse_http_response(char *buf, int len, struct vscpweb_response_info *ri)
         return -1;
     }
 
-    /* The first word is the HTTP version */
-    /* Check for a valid HTTP version key */
-    if (strncmp(buf, "HTTP/", 5) != 0) {
-        /* Invalid request */
+    // The first word is the HTTP version 
+    // Check for a valid HTTP version key 
+    if ( strncmp(buf, "HTTP/", 5) != 0 ) {
+        // Invalid request 
         return -1;
     }
+    
     buf += 5;
-    if (!isgraph(buf[0])) {
-        /* Invalid request */
+    if ( !isgraph(buf[0] ) ) {
+        // Invalid request 
         return -1;
     }
+    
     ri->http_version = buf;
 
-    if (skip_to_end_of_word_and_terminate(&buf, 0) <= 0) {
+    if ( skip_to_end_of_word_and_terminate(&buf, 0) <= 0 ) {
         return -1;
     }
 
-    /* The second word is the status as a number */
+    // The second word is the status as a number 
     tmp = buf;
 
-    if (skip_to_end_of_word_and_terminate(&buf, 0) <= 0) {
+    if ( skip_to_end_of_word_and_terminate(&buf, 0) <= 0 ) {
         return -1;
     }
 
     l = strtol(tmp, &tmp2, 10);
-    if ((l < 100) || (l >= 1000) || ((tmp2 - tmp) != 3) || (*tmp2 != 0)) {
-        /* Everything else but a 3 digit code is invalid */
+    if ( (l < 100) || (l >= 1000) || ((tmp2 - tmp) != 3) || (*tmp2 != 0) ) {
+        // Everything else but a 3 digit code is invalid 
         return -1;
     }
+    
     ri->status_code = (int) l;
 
-    /* The rest of the line is the status text */
+    // The rest of the line is the status text 
     ri->status_text = buf;
 
-    /* Find end of status text */
-    /* isgraph or isspace = isprint */
+    // Find end of status text 
+    // isgraph or isspace = isprint 
     while (isprint(*buf)) {
         buf++;
     }
+    
     if ((*buf != '\r') && (*buf != '\n')) {
         return -1;
     }
-    /* Terminate string and forward buf to next line */
+    
+    // Terminate string and forward buf to next line 
     do {
         *buf = 0;
         buf++;
@@ -10285,10 +10402,10 @@ parse_http_response(char *buf, int len, struct vscpweb_response_info *ri)
     while ((*buf) && isspace(*buf));
 
 
-    /* Parse all HTTP headers */
-    ri->num_headers = parse_http_headers(&buf, ri->http_headers);
+    // Parse all HTTP headers 
+    ri->num_headers = parse_http_headers( &buf, ri->http_headers );
     if (ri->num_headers < 0) {
-        /* Error while parsing headers */
+        // Error while parsing headers 
         return -1;
     }
 
@@ -10296,21 +10413,21 @@ parse_http_response(char *buf, int len, struct vscpweb_response_info *ri)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// read_message
+//
+// Keep reading the input (either opened file descriptor fd, or socket sock,
+// or SSL descriptor ssl) into buffer buf, until \r\n\r\n appears in the
+// buffer (which marks the end of HTTP request). Buffer buf may already
+// have some data. The length of the data is stored in nread.
+// Upon every read operation, increase nread by the number of bytes read. 
 //
 
-/* Keep reading the input (either opened file descriptor fd, or socket sock,
- * or SSL descriptor ssl) into buffer buf, until \r\n\r\n appears in the
- * buffer (which marks the end of HTTP request). Buffer buf may already
- * have some data. The length of the data is stored in nread.
- * Upon every read operation, increase nread by the number of bytes read. */
-
 static int
-read_message(FILE *fp,
-             struct vscpweb_connection *conn,
-             char *buf,
-             int bufsiz,
-             int *nread)
+read_message( FILE *fp,
+                struct vscpweb_connection *conn,
+                char *buf,
+                int bufsiz,
+                int *nread )
 {
     int request_len, n = 0;
     struct timespec last_action_time;
@@ -10323,12 +10440,13 @@ read_message(FILE *fp,
     memset(&last_action_time, 0, sizeof (last_action_time));
 
     if (conn->ctx->config[REQUEST_TIMEOUT]) {
-        /* value of request_timeout is in seconds, config in milliseconds */
+        // value of request_timeout is in seconds, config in milliseconds 
         request_timeout = atof(conn->ctx->config[REQUEST_TIMEOUT]) / 1000.0;
     }
     else {
         request_timeout = -1.0;
     }
+    
     if (conn->handled_requests > 0) {
         if (conn->ctx->config[KEEP_ALIVE_TIMEOUT]) {
             request_timeout =
@@ -10338,39 +10456,42 @@ read_message(FILE *fp,
 
     request_len = get_http_header_len(buf, *nread);
 
-    /* first time reading from this connection */
+    // first time reading from this connection 
     clock_gettime(CLOCK_MONOTONIC, &last_action_time);
 
     while (request_len == 0) {
-        /* Full request not yet received */
+        // Full request not yet received 
         if (conn->ctx->stop_flag != 0) {
-            /* Server is to be stopped. */
+            // Server is to be stopped. 
             return -1;
         }
 
         if (*nread >= bufsiz) {
-            /* Request too long */
+            // Request too long 
             return -2;
         }
 
-        n = pull_inner(
-                       fp, conn, buf + *nread, bufsiz - *nread, request_timeout);
+        n = pull_inner( fp, 
+                            conn, 
+                            buf + *nread, 
+                            bufsiz - *nread, 
+                            request_timeout );
         if (n == -2) {
-            /* Receive error */
+            // Receive error 
             return -1;
         }
         if (n > 0) {
             *nread += n;
-            request_len = get_http_header_len(buf, *nread);
+            request_len = get_http_header_len( buf, *nread );
         }
         else {
             request_len = 0;
         }
 
-        if ((request_len == 0) && (request_timeout >= 0)) {
-            if (vscpweb_difftimespec(&last_action_time, &(conn->req_time))
-                > request_timeout) {
-                /* Timeout */
+        if ( (request_len == 0) && (request_timeout >= 0) ) {
+            if ( vscpweb_difftimespec(&last_action_time, &(conn->req_time) )
+                    > request_timeout ) {
+                // Timeout 
                 return -1;
             }
             clock_gettime(CLOCK_MONOTONIC, &last_action_time);
@@ -10381,14 +10502,14 @@ read_message(FILE *fp,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// is_not_modified
+//
+// Return True if we should reply 304 Not Modified. 
 //
 
-/* Return True if we should reply 304 Not Modified. */
-
 static int
-is_not_modified(const struct vscpweb_connection *conn,
-                const struct vscpweb_file_stat *filestat)
+is_not_modified( const struct vscpweb_connection *conn,
+                    const struct vscpweb_file_stat *filestat )
 {
     char etag[64];
     const char *ims = vscpweb_get_header(conn, "If-Modified-Since");
@@ -10403,11 +10524,14 @@ is_not_modified(const struct vscpweb_connection *conn,
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// forward_body_data
 //
 
 static int
-forward_body_data(struct vscpweb_connection *conn, FILE *fp, SOCKET sock, SSL *ssl)
+forward_body_data( struct vscpweb_connection *conn, 
+                    FILE *fp, 
+                    SOCKET sock, 
+                    SSL *ssl )
 {
     const char *expect, *body;
     char buf[MG_BUF_LEN];
@@ -10415,221 +10539,234 @@ forward_body_data(struct vscpweb_connection *conn, FILE *fp, SOCKET sock, SSL *s
     int64_t buffered_len;
     double timeout = -1.0;
 
-    if (!conn) {
+    if ( !conn ) {
         return 0;
     }
-    if (conn->ctx->config[REQUEST_TIMEOUT]) {
+    if ( conn->ctx->config[REQUEST_TIMEOUT] ) {
         timeout = atoi(conn->ctx->config[REQUEST_TIMEOUT]) / 1000.0;
     }
 
     expect = vscpweb_get_header(conn, "Expect");
-    /* assert(fp != NULL); */
+    // assert(fp != NULL); 
     if (!fp) {
         vscpweb_send_http_error(conn, 500, "%s", "Error: NULL File");
         return 0;
     }
 
     if ((conn->content_len == -1) && (!conn->is_chunked)) {
-        /* Content length is not specified by the client. */
-        vscpweb_send_http_error(conn,
-                                411,
-                                "%s",
-                                "Error: Client did not specify content length");
+        // Content length is not specified by the client. 
+        vscpweb_send_http_error( conn,
+                                    411,
+                                    "%s",
+                                    "Error: Client did not specify content length" );
     }
-    else if ((expect != NULL)
-         && (vscpweb_strcasecmp(expect, "100-continue") != 0)) {
-        /* Client sent an "Expect: xyz" header and xyz is not 100-continue.
-         */
-        vscpweb_send_http_error(conn,
-                                417,
-                                "Error: Can not fulfill expectation %s",
-                                expect);
+    else if ( ( expect != NULL ) && 
+              ( vscpweb_strcasecmp( expect, "100-continue") != 0 ) ) {
+        // Client sent an "Expect: xyz" header and xyz is not 100-continue.
+        vscpweb_send_http_error( conn,
+                                    417,
+                                    "Error: Can not fulfill expectation %s",
+                                    expect );
     }
     else {
-        if (expect != NULL) {
-            (void) vscpweb_printf(conn, "%s", "HTTP/1.1 100 Continue\r\n\r\n");
+        if ( expect != NULL ) {
+            (void)vscpweb_printf(conn, "%s", "HTTP/1.1 100 Continue\r\n\r\n");
             conn->status_code = 100;
         }
         else {
             conn->status_code = 200;
         }
 
-        buffered_len = (int64_t) (conn->data_len) - (int64_t) conn->request_len
-                - conn->consumed_content;
+        buffered_len = (int64_t)(conn->data_len) - (int64_t)conn->request_len
+                            - conn->consumed_content;
 
-        /* assert(buffered_len >= 0); */
-        /* assert(conn->consumed_content == 0); */
+        // assert(buffered_len >= 0); 
+        // assert(conn->consumed_content == 0); 
 
-        if ((buffered_len < 0) || (conn->consumed_content != 0)) {
+        if ( (buffered_len < 0) || (conn->consumed_content != 0) ) {
             vscpweb_send_http_error(conn, 500, "%s", "Error: Size mismatch");
             return 0;
         }
 
-        if (buffered_len > 0) {
-            if ((int64_t) buffered_len > conn->content_len) {
-                buffered_len = (int) conn->content_len;
+        if ( buffered_len > 0 ) {
+            
+            if ( (int64_t) buffered_len > conn->content_len ) {
+                buffered_len = (int)conn->content_len;
             }
+            
             body = conn->buf + conn->request_len + conn->consumed_content;
             push_all(conn->ctx, fp, sock, ssl, body, (int64_t) buffered_len);
             conn->consumed_content += buffered_len;
+            
         }
 
         nread = 0;
         while (conn->consumed_content < conn->content_len) {
-            to_read = sizeof (buf);
+            
+            to_read = sizeof (buf);            
             if ((int64_t) to_read > conn->content_len - conn->consumed_content) {
                 to_read = (int) (conn->content_len - conn->consumed_content);
             }
+            
             nread = pull_inner(NULL, conn, buf, to_read, timeout);
-            if (nread == -2) {
-                /* error */
+            if ( nread == -2 ) {
+                // error 
                 break;
             }
-            if (nread > 0) {
-                if (push_all(conn->ctx, fp, sock, ssl, buf, nread) != nread) {
+            
+            if ( nread > 0 ) {
+                if ( push_all(conn->ctx, fp, sock, ssl, buf, nread) != nread) {
                     break;
                 }
             }
+            
             conn->consumed_content += nread;
+            
         }
 
-        if (conn->consumed_content == conn->content_len) {
+        if ( conn->consumed_content == conn->content_len ) {
             success = (nread >= 0);
         }
 
-        /* Each error code path in this function must send an error */
+        // Each error code path in this function must send an error 
         if (!success) {
-            /* NOTE: Maybe some data has already been sent. */
-            /* TODO (low): If some data has been sent, a correct error
-             * reply can no longer be sent, so just close the connection */
-            vscpweb_send_http_error(conn, 500, "%s", "");
+            // NOTE: Maybe some data has already been sent. 
+            // TODO (low): If some data has been sent, a correct error
+            // reply can no longer be sent, so just close the connection 
+            vscpweb_send_http_error( conn, 500, "%s", "" );
         }
+        
     }
 
     return success;
 }
 
-/* This structure helps to create an environment for the spawned CGI
- * program.
- * Environment is an array of "VARIABLE=VALUE\0" ASCIIZ strings,
- * last element must be NULL.
- * However, on Windows there is a requirement that all these
- * VARIABLE=VALUE\0
- * strings must reside in a contiguous buffer. The end of the buffer is
- * marked by two '\0' characters.
- * We satisfy both worlds: we create an envp array (which is vars), all
- * entries are actually pointers inside buf. */
+// This structure helps to create an environment for the spawned CGI
+// program.
+// Environment is an array of "VARIABLE=VALUE\0" ASCIIZ strings,
+// last element must be NULL.
+// However, on Windows there is a requirement that all these
+// VARIABLE=VALUE\0
+// strings must reside in a contiguous buffer. The end of the buffer is
+// marked by two '\0' characters.
+// We satisfy both worlds: we create an envp array (which is vars), all
+// entries are actually pointers inside buf. 
 
 struct cgi_environment
 {
     struct vscpweb_connection *conn;
-    /* Data block */
-    char *buf; /* Environment buffer */
-    size_t buflen; /* Space available in buf */
-    size_t bufused; /* Space taken in buf */
-    /* Index block */
-    char **var; /* char **envp */
-    size_t varlen; /* Number of variables available in var */
-    size_t varused; /* Number of variables stored in var */
+    // Data block 
+    char *buf;      // Environment buffer 
+    size_t buflen;  // Space available in buf 
+    size_t bufused; // Space taken in buf 
+    // Index block 
+    char **var;     // char **envp 
+    size_t varlen;  // Number of variables available in var 
+    size_t varused; // Number of variables stored in var 
 };
 
 
-static void addenv(struct cgi_environment *env,
-                   PRINTF_FORMAT_STRING(const char *fmt),
-                   ...) PRINTF_ARGS(2, 3);
+static void addenv( struct cgi_environment *env,
+                    PRINTF_FORMAT_STRING(const char *fmt),
+                    ...) PRINTF_ARGS(2, 3);
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// addenv
+//
+// Append VARIABLE=VALUE\0 string to the buffer, and add a respective
+// pointer into the vars array. Assumes env != NULL and fmt != NULL. 
 //
 
-/* Append VARIABLE=VALUE\0 string to the buffer, and add a respective
- * pointer into the vars array. Assumes env != NULL and fmt != NULL. */
-
 static void
-addenv(struct cgi_environment *env, const char *fmt, ...)
+addenv( struct cgi_environment *env, const char *fmt, ... )
 {
     size_t n, space;
     int truncated = 0;
     char *added;
     va_list ap;
 
-    /* Calculate how much space is left in the buffer */
+    // Calculate how much space is left in the buffer 
     space = (env->buflen - env->bufused);
 
-    /* Calculate an estimate for the required space */
+    // Calculate an estimate for the required space 
     n = strlen(fmt) + 2 + 128;
 
     do {
         if (space <= n) {
-            /* Allocate new buffer */
+            
+            // Allocate new buffer 
             n = env->buflen + CGI_ENVIRONMENT_SIZE;
             added = (char *) vscpweb_realloc_ctx(env->buf, n, env->conn->ctx);
-            if (!added) {
-                /* Out of memory */
-                vscpweb_cry(env->conn,
-                            "%s: Cannot allocate memory for CGI variable [%s]",
-                            __func__,
-                            fmt);
+            
+            if ( !added ) {
+                
+                // Out of memory 
+                vscpweb_cry( env->conn,
+                                "%s: Cannot allocate memory for CGI variable [%s]",
+                                __func__,
+                                fmt );
                 return;
+                
             }
+            
             env->buf = added;
             env->buflen = n;
             space = (env->buflen - env->bufused);
+            
         }
 
-        /* Make a pointer to the free space int the buffer */
+        // Make a pointer to the free space int the buffer 
         added = env->buf + env->bufused;
 
-        /* Copy VARIABLE=VALUE\0 string into the free space */
+        // Copy VARIABLE=VALUE\0 string into the free space 
         va_start(ap, fmt);
         vscpweb_vsnprintf(env->conn, &truncated, added, (size_t) space, fmt, ap);
         va_end(ap);
 
-        /* Do not add truncated strings to the environment */
+        // Do not add truncated strings to the environment 
         if (truncated) {
-            /* Reallocate the buffer */
+            // Reallocate the buffer 
             space = 0;
             n = 1;
         }
-    }
-    while (truncated);
+    } while ( truncated );
 
-    /* Calculate number of bytes added to the environment */
+    // Calculate number of bytes added to the environment 
     n = strlen(added) + 1;
     env->bufused += n;
 
-    /* Now update the variable index */
+    // Now update the variable index 
     space = (env->varlen - env->varused);
     if (space < 2) {
-        vscpweb_cry(env->conn,
-                    "%s: Cannot register CGI variable [%s]",
-                    __func__,
-                    fmt);
+        vscpweb_cry( env->conn,
+                        "%s: Cannot register CGI variable [%s]",
+                        __func__,
+                        fmt );
         return;
     }
 
-    /* Append a pointer to the added string into the envp array */
+    // Append a pointer to the added string into the envp array 
     env->var[env->varused] = added;
     env->varused++;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// prepare_cgi_environment
+//
+// Return 0 on success, non-zero if an error occurs. 
 //
 
-/* Return 0 on success, non-zero if an error occurs. */
-
 static int
-prepare_cgi_environment(struct vscpweb_connection *conn,
-                        const char *prog,
-                        struct cgi_environment *env)
+prepare_cgi_environment( struct vscpweb_connection *conn,
+                            const char *prog,
+                            struct cgi_environment *env )
 {
     const char *s;
     struct vec var_vec;
     char *p, src_addr[IP_ADDR_STR_LEN], http_var_name[128];
     int i, truncated, uri_len;
 
-    if ((conn == NULL) || (prog == NULL) || (env == NULL)) {
+    if ( (conn == NULL) || (prog == NULL) || (env == NULL) ) {
         return -1;
     }
 
@@ -10637,173 +10774,179 @@ prepare_cgi_environment(struct vscpweb_connection *conn,
     env->buflen = CGI_ENVIRONMENT_SIZE;
     env->bufused = 0;
     env->buf = (char *) vscpweb_malloc_ctx(env->buflen, conn->ctx);
-    if (env->buf == NULL) {
-        vscpweb_cry(conn,
-                    "%s: Not enough memory for environmental buffer",
-                    __func__);
+    if ( NULL == env->buf ) {
+        vscpweb_cry( conn,
+                        "%s: Not enough memory for environmental buffer",
+                        __func__ );
         return -1;
     }
+    
     env->varlen = MAX_CGI_ENVIR_VARS;
     env->varused = 0;
     env->var = (char **) vscpweb_malloc_ctx(env->buflen * sizeof (char *), conn->ctx);
-    if (env->var == NULL) {
-        vscpweb_cry(conn,
-                    "%s: Not enough memory for environmental variables",
-                    __func__);
-        vscpweb_free(env->buf);
+    if ( NULL == env->var ) {
+        vscpweb_cry( conn,
+                        "%s: Not enough memory for environmental variables",
+                        __func__ );
+        vscpweb_free( env->buf );
         return -1;
     }
 
-    addenv(env, "SERVER_NAME=%s", conn->ctx->config[AUTHENTICATION_DOMAIN]);
-    addenv(env, "SERVER_ROOT=%s", conn->ctx->config[DOCUMENT_ROOT]);
-    addenv(env, "DOCUMENT_ROOT=%s", conn->ctx->config[DOCUMENT_ROOT]);
-    addenv(env, "SERVER_SOFTWARE=%s/%s", "Civetweb", vscpweb_version());
+    addenv( env, "SERVER_NAME=%s", conn->ctx->config[AUTHENTICATION_DOMAIN] );
+    addenv( env, "SERVER_ROOT=%s", conn->ctx->config[DOCUMENT_ROOT] );
+    addenv( env, "DOCUMENT_ROOT=%s", conn->ctx->config[DOCUMENT_ROOT] );
+    addenv( env, "SERVER_SOFTWARE=%s/%s", "Civetweb", vscpweb_version() );
 
-    /* Prepare the environment block */
-    addenv(env, "%s", "GATEWAY_INTERFACE=CGI/1.1");
-    addenv(env, "%s", "SERVER_PROTOCOL=HTTP/1.1");
-    addenv(env, "%s", "REDIRECT_STATUS=200"); /* For PHP */
+    // Prepare the environment block 
+    addenv( env, "%s", "GATEWAY_INTERFACE=CGI/1.1");
+    addenv( env, "%s", "SERVER_PROTOCOL=HTTP/1.1");
+    addenv( env, "%s", "REDIRECT_STATUS=200"); // For PHP 
 
-    if (conn->client.lsa.sa.sa_family == AF_INET6) {
-        addenv(env, "SERVER_PORT=%d", ntohs(conn->client.lsa.sin6.sin6_port));
+    if ( conn->client.lsa.sa.sa_family == AF_INET6 ) {
+        addenv( env, "SERVER_PORT=%d", ntohs( conn->client.lsa.sin6.sin6_port ) );
     }
     else {
-        addenv(env, "SERVER_PORT=%d", ntohs(conn->client.lsa.sin.sin_port));
+        addenv( env, "SERVER_PORT=%d", ntohs( conn->client.lsa.sin.sin_port ) );
     }
 
-    sockaddr_to_string(src_addr, sizeof (src_addr), &conn->client.rsa);
-    addenv(env, "REMOTE_ADDR=%s", src_addr);
+    sockaddr_to_string( src_addr, sizeof( src_addr ), &conn->client.rsa );
+    addenv( env, "REMOTE_ADDR=%s", src_addr );
 
-    addenv(env, "REQUEST_METHOD=%s", conn->request_info.request_method);
-    addenv(env, "REMOTE_PORT=%d", conn->request_info.remote_port);
+    addenv( env, "REQUEST_METHOD=%s", conn->request_info.request_method );
+    addenv( env, "REMOTE_PORT=%d", conn->request_info.remote_port );
 
-    addenv(env, "REQUEST_URI=%s", conn->request_info.request_uri);
-    addenv(env, "LOCAL_URI=%s", conn->request_info.local_uri);
+    addenv( env, "REQUEST_URI=%s", conn->request_info.request_uri );
+    addenv( env, "LOCAL_URI=%s", conn->request_info.local_uri );
 
-    /* SCRIPT_NAME */
-    uri_len = (int) strlen(conn->request_info.local_uri);
-    if (conn->path_info == NULL) {
-        if (conn->request_info.local_uri[uri_len - 1] != '/') {
-            /* URI: /path_to_script/script.cgi */
-            addenv(env, "SCRIPT_NAME=%s", conn->request_info.local_uri);
+    // SCRIPT_NAME 
+    uri_len = (int)strlen( conn->request_info.local_uri );
+    if ( NULL == conn->path_info ) {
+        if ( conn->request_info.local_uri[uri_len - 1] != '/' ) {
+            // URI: /path_to_script/script.cgi 
+            addenv( env, "SCRIPT_NAME=%s", conn->request_info.local_uri );
         }
         else {
-            /* URI: /path_to_script/ ... using index.cgi */
+            // URI: /path_to_script/ ... using index.cgi 
             const char *index_file = strrchr(prog, '/');
-            if (index_file) {
-                addenv(env,
-                       "SCRIPT_NAME=%s%s",
-                       conn->request_info.local_uri,
-                       index_file + 1);
+            if ( index_file ) {
+                addenv( env,
+                            "SCRIPT_NAME=%s%s",
+                            conn->request_info.local_uri,
+                            index_file + 1 );
             }
         }
     }
     else {
-        /* URI: /path_to_script/script.cgi/path_info */
-        addenv(env,
-               "SCRIPT_NAME=%.*s",
-               uri_len - (int) strlen(conn->path_info),
-               conn->request_info.local_uri);
+        // URI: /path_to_script/script.cgi/path_info 
+        addenv( env,
+                    "SCRIPT_NAME=%.*s",
+                    uri_len - (int) strlen(conn->path_info),
+                    conn->request_info.local_uri );
     }
 
-    addenv(env, "SCRIPT_FILENAME=%s", prog);
-    if (conn->path_info == NULL) {
-        addenv(env, "PATH_TRANSLATED=%s", conn->ctx->config[DOCUMENT_ROOT]);
+    addenv( env, "SCRIPT_FILENAME=%s", prog );
+    if ( NULL == conn->path_info ) {
+        addenv( env, "PATH_TRANSLATED=%s", conn->ctx->config[DOCUMENT_ROOT] );
     }
     else {
-        addenv(env,
-               "PATH_TRANSLATED=%s%s",
-               conn->ctx->config[DOCUMENT_ROOT],
-               conn->path_info);
+        addenv( env,
+                    "PATH_TRANSLATED=%s%s",
+                    conn->ctx->config[DOCUMENT_ROOT],
+                    conn->path_info );
     }
 
-    addenv(env, "HTTPS=%s", (conn->ssl == NULL) ? "off" : "on");
+    addenv( env, "HTTPS=%s", (conn->ssl == NULL) ? "off" : "on" );
 
-    if ((s = vscpweb_get_header(conn, "Content-Type")) != NULL) {
-        addenv(env, "CONTENT_TYPE=%s", s);
+    if ( ( s = vscpweb_get_header(conn, "Content-Type")) != NULL ) {
+        addenv( env, "CONTENT_TYPE=%s", s );
     }
-    if (conn->request_info.query_string != NULL) {
+    
+    if ( conn->request_info.query_string != NULL ) {
         addenv(env, "QUERY_STRING=%s", conn->request_info.query_string);
     }
-    if ((s = vscpweb_get_header(conn, "Content-Length")) != NULL) {
+    
+    if ( ( s = vscpweb_get_header(conn, "Content-Length")) != NULL) {
         addenv(env, "CONTENT_LENGTH=%s", s);
     }
-    if ((s = getenv("PATH")) != NULL) {
+    
+    if ( ( s = getenv("PATH")) != NULL ) {
         addenv(env, "PATH=%s", s);
     }
-    if (conn->path_info != NULL) {
+    
+    if ( conn->path_info != NULL ) {
         addenv(env, "PATH_INFO=%s", conn->path_info);
     }
 
-    if (conn->status_code > 0) {
-        /* CGI error handler should show the status code */
-        addenv(env, "STATUS=%d", conn->status_code);
+    if ( conn->status_code > 0 ) {
+        // CGI error handler should show the status code 
+        addenv( env, "STATUS=%d", conn->status_code );
     }
 
 #if defined(_WIN32)
-    if ((s = getenv("COMSPEC")) != NULL) {
+    if ( ( s = getenv("COMSPEC")) != NULL ) {
         addenv(env, "COMSPEC=%s", s);
     }
-    if ((s = getenv("SYSTEMROOT")) != NULL) {
+    if ( ( s = getenv("SYSTEMROOT")) != NULL ) {
         addenv(env, "SYSTEMROOT=%s", s);
     }
-    if ((s = getenv("SystemDrive")) != NULL) {
+    if ( ( s = getenv("SystemDrive")) != NULL ) {
         addenv(env, "SystemDrive=%s", s);
     }
-    if ((s = getenv("ProgramFiles")) != NULL) {
+    if ( ( s = getenv("ProgramFiles")) != NULL ) {
         addenv(env, "ProgramFiles=%s", s);
     }
-    if ((s = getenv("ProgramFiles(x86)")) != NULL) {
+    if ( ( s = getenv("ProgramFiles(x86)")) != NULL ) {
         addenv(env, "ProgramFiles(x86)=%s", s);
     }
 #else
-    if ((s = getenv("LD_LIBRARY_PATH")) != NULL) {
+    if ( ( s = getenv("LD_LIBRARY_PATH")) != NULL ) {
         addenv(env, "LD_LIBRARY_PATH=%s", s);
     }
 #endif /* _WIN32 */
 
-    if ((s = getenv("PERLLIB")) != NULL) {
+    if ( ( s = getenv("PERLLIB")) != NULL ) {
         addenv(env, "PERLLIB=%s", s);
     }
 
-    if (conn->request_info.remote_user != NULL) {
+    if ( conn->request_info.remote_user != NULL ) {
         addenv(env, "REMOTE_USER=%s", conn->request_info.remote_user);
         addenv(env, "%s", "AUTH_TYPE=Digest");
     }
 
-    /* Add all headers as HTTP_* variables */
-    for (i = 0; i < conn->request_info.num_headers; i++) {
+    // Add all headers as HTTP_* variables 
+    for ( i = 0; i < conn->request_info.num_headers; i++ ) {
 
-        (void) vscpweb_snprintf(conn,
-                                &truncated,
-                                http_var_name,
-                                sizeof (http_var_name),
-                                "HTTP_%s",
-                                conn->request_info.http_headers[i].name);
+        (void)vscpweb_snprintf( conn,
+                                    &truncated,
+                                    http_var_name,
+                                    sizeof( http_var_name ),
+                                    "HTTP_%s",
+                                    conn->request_info.http_headers[i].name );
 
-        if (truncated) {
-            vscpweb_cry(conn,
-                        "%s: HTTP header variable too long [%s]",
-                        __func__,
-                        conn->request_info.http_headers[i].name);
+        if ( truncated ) {
+            vscpweb_cry( conn,
+                            "%s: HTTP header variable too long [%s]",
+                            __func__,
+                            conn->request_info.http_headers[i].name );
             continue;
         }
 
-        /* Convert variable name into uppercase, and change - to _ */
-        for (p = http_var_name; *p != '\0'; p++) {
+        // Convert variable name into uppercase, and change - to _ 
+        for ( p = http_var_name; *p != '\0'; p++ ) {
             if (*p == '-') {
                 *p = '_';
             }
+            
             *p = (char) toupper(*(unsigned char *) p);
         }
 
-        addenv(env,
-               "%s=%s",
-               http_var_name,
-               conn->request_info.http_headers[i].value);
+        addenv( env,
+                    "%s=%s",
+                    http_var_name,
+                    conn->request_info.http_headers[i].value );
     }
 
-    /* Add user-specified variables */
+    // Add user-specified variables 
     s = conn->ctx->config[CGI_ENVIRONMENT];
     while ((s = next_option(s, &var_vec, NULL)) != NULL) {
         addenv(env, "%.*s", (int) var_vec.len, var_vec.ptr);
@@ -10816,11 +10959,11 @@ prepare_cgi_environment(struct vscpweb_connection *conn,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// handle_cgi_request
 //
 
 static void
-handle_cgi_request(struct vscpweb_connection *conn, const char *prog)
+handle_cgi_request( struct vscpweb_connection *conn, const char *prog )
 {
     char *buf;
     size_t buflen;
@@ -10847,18 +10990,18 @@ handle_cgi_request(struct vscpweb_connection *conn, const char *prog)
         goto done;
     }
 
-    /* CGI must be executed in its own directory. 'dir' must point to the
-     * directory containing executable program, 'p' must point to the
-     * executable program name relative to 'dir'. */
-    (void) vscpweb_snprintf(conn, &truncated, dir, sizeof (dir), "%s", prog);
+    // CGI must be executed in its own directory. 'dir' must point to the
+    // directory containing executable program, 'p' must point to the
+    // executable program name relative to 'dir'. 
+    (void)vscpweb_snprintf( conn, &truncated, dir, sizeof (dir), "%s", prog );
 
-    if (truncated) {
+    if ( truncated ) {
         vscpweb_cry(conn, "Error: CGI program \"%s\": Path too long", prog);
         vscpweb_send_http_error(conn, 500, "Error: %s", "CGI path too long");
         goto done;
     }
 
-    if ((p = strrchr(dir, '/')) != NULL) {
+    if ( (p = strrchr(dir, '/') ) != NULL ) {
         *p++ = '\0';
     }
     else {
@@ -10866,89 +11009,88 @@ handle_cgi_request(struct vscpweb_connection *conn, const char *prog)
         p = (char *) prog;
     }
 
-    if ((pipe(fdin) != 0) || (pipe(fdout) != 0) || (pipe(fderr) != 0)) {
+    if ( (pipe(fdin) != 0) || (pipe(fdout) != 0) || (pipe(fderr) != 0) ) {
         status = strerror(ERRNO);
-        vscpweb_cry(conn,
-                    "Error: CGI program \"%s\": Can not create CGI pipes: %s",
-                    prog,
-                    status);
-        vscpweb_send_http_error(conn,
-                                500,
-                                "Error: Cannot create CGI pipe: %s",
-                                status);
+        vscpweb_cry( conn,
+                        "Error: CGI program \"%s\": Can not create CGI pipes: %s",
+                        prog,
+                        status );
+        vscpweb_send_http_error( conn,
+                                    500,
+                                    "Error: Cannot create CGI pipe: %s",
+                                    status );
         goto done;
     }
 
     pid = spawn_process(conn, p, blk.buf, blk.var, fdin, fdout, fderr, dir);
 
-    if (pid == (pid_t) - 1) {
+    if ( pid == (pid_t) - 1 ) {
         status = strerror(ERRNO);
-        vscpweb_cry(conn,
-                    "Error: CGI program \"%s\": Can not spawn CGI process: %s",
-                    prog,
-                    status);
-        vscpweb_send_http_error(conn,
-                                500,
-                                "Error: Cannot spawn CGI process [%s]: %s",
-                                prog,
-                                status);
+        vscpweb_cry( conn,
+                        "Error: CGI program \"%s\": Can not spawn CGI process: %s",
+                        prog,
+                        status );
+        vscpweb_send_http_error( conn,
+                                    500,
+                                    "Error: Cannot spawn CGI process [%s]: %s",
+                                    prog,
+                                    status );
         goto done;
     }
 
-    /* Make sure child closes all pipe descriptors. It must dup them to 0,1
-     */
-    set_close_on_exec((SOCKET) fdin[0], conn); /* stdin read */
-    set_close_on_exec((SOCKET) fdout[1], conn); /* stdout write */
-    set_close_on_exec((SOCKET) fderr[1], conn); /* stderr write */
-    set_close_on_exec((SOCKET) fdin[1], conn); /* stdin write */
-    set_close_on_exec((SOCKET) fdout[0], conn); /* stdout read */
-    set_close_on_exec((SOCKET) fderr[0], conn); /* stderr read */
+    // Make sure child closes all pipe descriptors. It must dup them to 0,1
+    set_close_on_exec((SOCKET) fdin[0], conn);  // stdin read 
+    set_close_on_exec((SOCKET) fdout[1], conn); // stdout write 
+    set_close_on_exec((SOCKET) fderr[1], conn); // stderr write 
+    set_close_on_exec((SOCKET) fdin[1], conn);  // stdin write 
+    set_close_on_exec((SOCKET) fdout[0], conn); // stdout read 
+    set_close_on_exec((SOCKET) fderr[0], conn); // stderr read 
 
-    /* Parent closes only one side of the pipes.
-     * If we don't mark them as closed, close() attempt before
-     * return from this function throws an exception on Windows.
-     * Windows does not like when closed descriptor is closed again. */
+    // Parent closes only one side of the pipes.
+    // If we don't mark them as closed, close() attempt before
+    // return from this function throws an exception on Windows.
+    // Windows does not like when closed descriptor is closed again. 
     (void) close(fdin[0]);
     (void) close(fdout[1]);
     (void) close(fderr[1]);
     fdin[0] = fdout[1] = fderr[1] = -1;
 
-    if ((in = fdopen(fdin[1], "wb")) == NULL) {
+    if ( NULL == ( in = fdopen(fdin[1], "wb") ) ) {
         status = strerror(ERRNO);
-        vscpweb_cry(conn,
-                    "Error: CGI program \"%s\": Can not open stdin: %s",
-                    prog,
-                    status);
-        vscpweb_send_http_error(conn,
-                                500,
-                                "Error: CGI can not open fdin\nfopen: %s",
-                                status);
+        vscpweb_cry( conn,
+                        "Error: CGI program \"%s\": Can not open stdin: %s",
+                        prog,
+                        status );
+        vscpweb_send_http_error( conn,
+                                    500,
+                                    "Error: CGI can not open fdin\nfopen: %s",
+                                    status );
         goto done;
     }
 
-    if ((out = fdopen(fdout[0], "rb")) == NULL) {
+    if ( NULL == ( out = fdopen(fdout[0], "rb") ) ) {
         status = strerror(ERRNO);
-        vscpweb_cry(conn,
-                    "Error: CGI program \"%s\": Can not open stdout: %s",
-                    prog,
-                    status);
-        vscpweb_send_http_error(conn,
-                                500,
-                                "Error: CGI can not open fdout\nfopen: %s",
-                                status);
+        vscpweb_cry( conn,
+                        "Error: CGI program \"%s\": Can not open stdout: %s",
+                        prog,
+                        status );
+        vscpweb_send_http_error( conn,
+                                    500,
+                                    "Error: CGI can not open fdout\nfopen: %s",
+                                    status );
         goto done;
     }
 
-    if ((err = fdopen(fderr[0], "rb")) == NULL) {
+    if ( NULL == ( err = fdopen(fderr[0], "rb") ) ) {
         status = strerror(ERRNO);
-        vscpweb_cry(conn,
-                    "Error: CGI program \"%s\": Can not open stderr: %s",
-                    prog,
-                    status);
-        vscpweb_send_http_error(conn,
-                                500,
-                                "Error: CGI can not open fdout\nfopen: %s",
-                                status);
+        vscpweb_cry( conn,
+                        "Error: CGI program \"%s\": Can not open stderr: %s",
+                        prog,
+                        status );
+        vscpweb_send_http_error( conn,
+                                    500,
+                                    "Error: CGI can not open fdout\nfopen: %s",
+                                    status );
         goto done;
     }
 
@@ -10957,92 +11099,95 @@ handle_cgi_request(struct vscpweb_connection *conn, const char *prog)
     setbuf(err, NULL);
     fout.access.fp = out;
 
-    if ((conn->request_info.content_length != 0) || (conn->is_chunked)) {
-        /* This is a POST/PUT request, or another request with body data. */
-        if (!forward_body_data(conn, in, INVALID_SOCKET, NULL)) {
-            /* Error sending the body data */
-            vscpweb_cry(conn,
-                        "Error: CGI program \"%s\": Forward body data failed",
-                        prog);
+    if ( ( conn->request_info.content_length != 0) || (conn->is_chunked) ) {
+        
+        // This is a POST/PUT request, or another request with body data. 
+        if ( !forward_body_data( conn, in, INVALID_SOCKET, NULL) ) {
+            // Error sending the body data 
+            vscpweb_cry( conn,
+                            "Error: CGI program \"%s\": Forward body data failed",
+                            prog );
             goto done;
         }
     }
 
-    /* Close so child gets an EOF. */
+    // Close so child gets an EOF. 
     fclose(in);
     in = NULL;
     fdin[1] = -1;
 
-    /* Now read CGI reply into a buffer. We need to set correct
-     * status code, thus we need to see all HTTP headers first.
-     * Do not send anything back to client, until we buffer in all
-     * HTTP headers. */
+    // Now read CGI reply into a buffer. We need to set correct
+    // status code, thus we need to see all HTTP headers first.
+    // Do not send anything back to client, until we buffer in all
+    // HTTP headers. 
     data_len = 0;
-    buf = (char *) vscpweb_malloc_ctx(buflen, conn->ctx);
+    buf = (char *) vscpweb_malloc_ctx( buflen, conn->ctx );
     if (buf == NULL) {
-        vscpweb_send_http_error(conn,
-                                500,
-                                "Error: Not enough memory for CGI buffer (%u bytes)",
-                                (unsigned int) buflen);
-        vscpweb_cry(conn,
-                    "Error: CGI program \"%s\": Not enough memory for buffer (%u "
-                    "bytes)",
-                    prog,
-                    (unsigned int) buflen);
+        vscpweb_send_http_error( conn,
+                                    500,
+                                    "Error: Not enough memory for CGI buffer (%u bytes)",
+                                    (unsigned int) buflen );
+        vscpweb_cry( conn,
+                        "Error: CGI program \"%s\": Not enough memory for buffer (%u "
+                        "bytes)",
+                        prog,
+                        (unsigned int) buflen );
         goto done;
     }
     headers_len = read_message(out, conn, buf, (int) buflen, &data_len);
     if (headers_len <= 0) {
 
-        /* Could not parse the CGI response. Check if some error message on
-         * stderr. */
+        // Could not parse the CGI response. Check if some error message on
+        // stderr. 
         i = pull_all(err, conn, buf, (int) buflen);
         if (i > 0) {
-            vscpweb_cry(conn,
-                        "Error: CGI program \"%s\" sent error "
-                        "message: [%.*s]",
-                        prog,
-                        i,
-                        buf);
-            vscpweb_send_http_error(conn,
-                                    500,
-                                    "Error: CGI program \"%s\" sent error "
-                                    "message: [%.*s]",
-                                    prog,
-                                    i,
-                                    buf);
+            vscpweb_cry( conn,
+                            "Error: CGI program \"%s\" sent error "
+                            "message: [%.*s]",
+                            prog,
+                            i,
+                            buf );
+            vscpweb_send_http_error( conn,
+                                        500,
+                                        "Error: CGI program \"%s\" sent error "
+                                        "message: [%.*s]",
+                                        prog,
+                                        i,
+                                        buf );
         }
         else {
-            vscpweb_cry(conn,
-                        "Error: CGI program sent malformed or too big "
-                        "(>%u bytes) HTTP headers: [%.*s]",
-                        (unsigned) buflen,
-                        data_len,
-                        buf);
+            vscpweb_cry( conn,
+                            "Error: CGI program sent malformed or too big "
+                            "(>%u bytes) HTTP headers: [%.*s]",
+                            (unsigned) buflen,
+                            data_len,
+                            buf );
 
-            vscpweb_send_http_error(conn,
-                                    500,
-                                    "Error: CGI program sent malformed or too big "
-                                    "(>%u bytes) HTTP headers: [%.*s]",
-                                    (unsigned) buflen,
-                                    data_len,
-                                    buf);
+            vscpweb_send_http_error( conn,
+                                        500,
+                                        "Error: CGI program sent malformed or too big "
+                                        "(>%u bytes) HTTP headers: [%.*s]",
+                                        (unsigned) buflen,
+                                        data_len,
+                                        buf );
         }
 
         goto done;
+        
     }
+    
     pbuf = buf;
     buf[headers_len - 1] = '\0';
     ri.num_headers = parse_http_headers(&pbuf, ri.http_headers);
 
-    /* Make up and send the status line */
+    // Make up and send the status line 
     status_text = "OK";
-    if ((status = get_header(ri.http_headers, ri.num_headers, "Status"))
-        != NULL) {
+    if ( ( status = get_header(ri.http_headers, ri.num_headers, "Status") )
+            != NULL) {
         conn->status_code = atoi(status);
         status_text = status;
-        while (isdigit(*(const unsigned char *) status_text)
-               || *status_text == ' ') {
+        while (isdigit(*(const unsigned char *) status_text) || 
+                *status_text == ' ') {
             status_text++;
         }
     }
@@ -11060,7 +11205,7 @@ handle_cgi_request(struct vscpweb_connection *conn, const char *prog)
     }
     (void) vscpweb_printf(conn, "HTTP/1.1 %d %s\r\n", conn->status_code, status_text);
 
-    /* Send headers */
+    // Send headers 
     for (i = 0; i < ri.num_headers; i++) {
         vscpweb_printf(conn,
                        "%s: %s\r\n",
@@ -11069,13 +11214,14 @@ handle_cgi_request(struct vscpweb_connection *conn, const char *prog)
     }
     vscpweb_write(conn, "\r\n", 2);
 
-    /* Send chunk of data that may have been read after the headers */
+    // Send chunk of data that may have been read after the headers 
     vscpweb_write(conn, buf + headers_len, (size_t) (data_len - headers_len));
 
-    /* Read the rest of CGI output and send to the client */
+    // Read the rest of CGI output and send to the client 
     send_file_data(conn, &fout, 0, INT64_MAX);
 
 done:
+        
     vscpweb_free(blk.var);
     vscpweb_free(blk.buf);
 
@@ -11085,7 +11231,7 @@ done:
         {
             int st;
             while (waitpid(pid, &st, 0) != -1)
-                ; /* clean zombies */
+                ; // clean zombies 
         }
 #endif
     }
@@ -11123,11 +11269,11 @@ done:
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// mkcol
 //
 
 static void
-mkcol(struct vscpweb_connection *conn, const char *path)
+mkcol( struct vscpweb_connection *conn, const char *path)
 {
     int rc, body_len;
     struct de de;
@@ -11138,77 +11284,94 @@ mkcol(struct vscpweb_connection *conn, const char *path)
         return;
     }
 
-    /* TODO (mid): Check the vscpweb_send_http_error situations in this function
-     */
+    // TODO (mid): Check the vscpweb_send_http_error situations in this function
 
     memset(&de.file, 0, sizeof (de.file));
-    if (!vscpweb_stat(conn, path, &de.file)) {
-        vscpweb_cry(conn,
-                    "%s: vscpweb_stat(%s) failed: %s",
-                    __func__,
-                    path,
-                    strerror(ERRNO));
+    if ( !vscpweb_stat(conn, path, &de.file) ) {
+        vscpweb_cry( conn,
+                        "%s: vscpweb_stat(%s) failed: %s",
+                        __func__,
+                        path,
+                        strerror(ERRNO));
     }
 
-    if (de.file.last_modified) {
-        /* TODO (mid): This check does not seem to make any sense ! */
-        /* TODO (mid): Add a webdav unit test first, before changing
-         * anything here. */
-        vscpweb_send_http_error(
-                                conn, 405, "Error: mkcol(%s): %s", path, strerror(ERRNO));
+    if ( de.file.last_modified ) {
+        // TODO (mid): This check does not seem to make any sense ! 
+        // TODO (mid): Add a webdav unit test first, before changing
+        // anything here. 
+        vscpweb_send_http_error( conn, 
+                                    405, 
+                                    "Error: mkcol(%s): %s", 
+                                    path, 
+                                    strerror(ERRNO) );
         return;
     }
 
     body_len = conn->data_len - conn->request_len;
     if (body_len > 0) {
-        vscpweb_send_http_error(
-                                conn, 415, "Error: mkcol(%s): %s", path, strerror(ERRNO));
+        vscpweb_send_http_error( conn, 
+                                    415, 
+                                    "Error: mkcol(%s): %s", 
+                                    path, 
+                                    strerror(ERRNO) );
         return;
     }
 
-    rc = vscpweb_mkdir(conn, path, 0755);
+    rc = vscpweb_mkdir( conn, path, 0755 );
 
     if (rc == 0) {
         conn->status_code = 201;
-        gmt_time_string(date, sizeof (date), &curtime);
-        vscpweb_printf(conn,
-                       "HTTP/1.1 %d Created\r\n"
-                       "Date: %s\r\n",
-                       conn->status_code,
-                       date);
+        gmt_time_string( date, sizeof (date), &curtime );
+        vscpweb_printf( conn,
+                            "HTTP/1.1 %d Created\r\n"
+                            "Date: %s\r\n",
+                            conn->status_code,
+                            date );
         send_static_cache_header(conn);
         send_additional_header(conn);
-        vscpweb_printf(conn,
-                       "Content-Length: 0\r\n"
-                       "Connection: %s\r\n\r\n",
-                       suggest_connection_header(conn));
+        vscpweb_printf( conn,
+                            "Content-Length: 0\r\n"
+                            "Connection: %s\r\n\r\n",
+                            suggest_connection_header(conn) );
     }
     else if (rc == -1) {
         if (errno == EEXIST) {
-            vscpweb_send_http_error(
-                                    conn, 405, "Error: mkcol(%s): %s", path, strerror(ERRNO));
+            vscpweb_send_http_error( conn, 
+                                        405, 
+                                        "Error: mkcol(%s): %s", 
+                                        path, 
+                                        strerror(ERRNO) );
         }
         else if (errno == EACCES) {
-            vscpweb_send_http_error(
-                                    conn, 403, "Error: mkcol(%s): %s", path, strerror(ERRNO));
+            vscpweb_send_http_error( conn, 
+                                        403, 
+                                        "Error: mkcol(%s): %s", 
+                                        path, 
+                                        strerror(ERRNO) );
         }
         else if (errno == ENOENT) {
-            vscpweb_send_http_error(
-                                    conn, 409, "Error: mkcol(%s): %s", path, strerror(ERRNO));
+            vscpweb_send_http_error( conn, 
+                                        409, 
+                                        "Error: mkcol(%s): %s", 
+                                        path, 
+                                        strerror(ERRNO) );
         }
         else {
-            vscpweb_send_http_error(
-                                    conn, 500, "fopen(%s): %s", path, strerror(ERRNO));
+            vscpweb_send_http_error( conn, 
+                                        500, 
+                                        "fopen(%s): %s", 
+                                        path, 
+                                        strerror(ERRNO) );
         }
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// put_file
 //
 
 static void
-put_file(struct vscpweb_connection *conn, const char *path)
+put_file( struct vscpweb_connection *conn, const char *path )
 {
     struct vscpweb_file file = STRUCT_FILE_INITIALIZER;
     const char *range;
@@ -11222,227 +11385,234 @@ put_file(struct vscpweb_connection *conn, const char *path)
     }
 
     if (vscpweb_stat(conn, path, &file.stat)) {
-        /* File already exists */
+        
+        // File already exists 
         conn->status_code = 200;
 
         if (file.stat.is_directory) {
-            /* This is an already existing directory,
-             * so there is nothing to do for the server. */
+            
+            // This is an already existing directory,
+            // so there is nothing to do for the server. 
             rc = 0;
 
         }
         else {
-            /* File exists and is not a directory. */
-            /* Can it be replaced? */
+            
+            // File exists and is not a directory. 
+            // Can it be replaced? 
 
-            if (file.access.membuf != NULL) {
-                /* This is an "in-memory" file, that can not be replaced */
-                vscpweb_send_http_error(conn,
-                                        405,
-                                        "Error: Put not possible\nReplacing %s "
-                                        "is not supported",
-                                        path);
+            if ( file.access.membuf != NULL ) {
+                
+                // This is an "in-memory" file, that can not be replaced 
+                vscpweb_send_http_error( conn,
+                                            405,
+                                            "Error: Put not possible\nReplacing %s "
+                                            "is not supported",
+                                            path );
                 return;
             }
 
-            /* Check if the server may write this file */
-            if (access(path, W_OK) == 0) {
-                /* Access granted */
+            // Check if the server may write this file 
+            if ( 0 == access(path, W_OK) ) {
+                // Access granted 
                 conn->status_code = 200;
                 rc = 1;
             }
             else {
-                vscpweb_send_http_error(
-                                        conn,
-                                        403,
-                                        "Error: Put not possible\nReplacing %s is not allowed",
-                                        path);
+                vscpweb_send_http_error( conn,
+                                            403,
+                                            "Error: Put not possible\nReplacing %s is not allowed",
+                                            path );
                 return;
             }
+            
         }
+        
     }
     else {
-        /* File should be created */
+        // File should be created 
         conn->status_code = 201;
         rc = put_dir(conn, path);
     }
 
     if (rc == 0) {
-        /* put_dir returns 0 if path is a directory */
+        // put_dir returns 0 if path is a directory 
         gmt_time_string(date, sizeof (date), &curtime);
-        vscpweb_printf(conn,
-                       "HTTP/1.1 %d %s\r\n",
-                       conn->status_code,
-                       vscpweb_get_response_code_text(NULL, conn->status_code));
-        send_no_cache_header(conn);
-        send_additional_header(conn);
-        vscpweb_printf(conn,
-                       "Date: %s\r\n"
-                       "Content-Length: 0\r\n"
-                       "Connection: %s\r\n\r\n",
-                       date,
-                       suggest_connection_header(conn));
+        vscpweb_printf( conn,
+                            "HTTP/1.1 %d %s\r\n",
+                            conn->status_code,
+                            vscpweb_get_response_code_text( NULL, conn->status_code ) );
+        send_no_cache_header( conn );
+        send_additional_header( conn );
+        vscpweb_printf( conn,
+                            "Date: %s\r\n"
+                            "Content-Length: 0\r\n"
+                            "Connection: %s\r\n\r\n",
+                            date,
+                            suggest_connection_header(conn) );
 
-        /* Request to create a directory has been fulfilled successfully.
-         * No need to put a file. */
+        // Request to create a directory has been fulfilled successfully.
+        // No need to put a file. 
+        return;
+        
+    }
+
+    if ( -1 == rc ) {
+        // put_dir returns -1 if the path is too long 
+        vscpweb_send_http_error( conn,
+                                    414,
+                                    "Error: Path too long\nput_dir(%s): %s",
+                                    path,
+                                    strerror(ERRNO) );
         return;
     }
 
-    if (rc == -1) {
-        /* put_dir returns -1 if the path is too long */
-        vscpweb_send_http_error(conn,
-                                414,
-                                "Error: Path too long\nput_dir(%s): %s",
-                                path,
-                                strerror(ERRNO));
+    if ( -2 == rc ) {
+        // put_dir returns -2 if the directory can not be created 
+        vscpweb_send_http_error( conn,
+                                    500,
+                                    "Error: Can not create directory\nput_dir(%s): %s",
+                                    path,
+                                    strerror(ERRNO) );
         return;
     }
 
-    if (rc == -2) {
-        /* put_dir returns -2 if the directory can not be created */
-        vscpweb_send_http_error(conn,
-                                500,
-                                "Error: Can not create directory\nput_dir(%s): %s",
-                                path,
-                                strerror(ERRNO));
+    // A file should be created or overwritten. 
+    // Currently vscpweb does not need read+write access. 
+    if ( !vscpweb_fopen(conn, path, MG_FOPEN_MODE_WRITE, &file ) || 
+            file.access.fp == NULL ) {
+        
+        (void)vscpweb_fclose( &file.access );
+        vscpweb_send_http_error( conn,
+                                    500,
+                                    "Error: Can not create file\nfopen(%s): %s",
+                                    path,
+                                    strerror(ERRNO) );
         return;
+        
     }
 
-    /* A file should be created or overwritten. */
-    /* Currently vscpweb does not nead read+write access. */
-    if (!vscpweb_fopen(conn, path, MG_FOPEN_MODE_WRITE, &file)
-        || file.access.fp == NULL) {
-        (void) vscpweb_fclose(&file.access);
-        vscpweb_send_http_error(conn,
-                                500,
-                                "Error: Can not create file\nfopen(%s): %s",
-                                path,
-                                strerror(ERRNO));
-        return;
-    }
-
-    fclose_on_exec(&file.access, conn);
+    fclose_on_exec( &file.access, conn );
     range = vscpweb_get_header(conn, "Content-Range");
     r1 = r2 = 0;
-    if ((range != NULL) && parse_range_header(range, &r1, &r2) > 0) {
+    if ( (range != NULL) && parse_range_header(range, &r1, &r2) > 0 ) {
         conn->status_code = 206; /* Partial content */
         fseeko(file.access.fp, r1, SEEK_SET);
     }
 
-    if (!forward_body_data(conn, file.access.fp, INVALID_SOCKET, NULL)) {
-        /* forward_body_data failed.
-         * The error code has already been sent to the client,
-         * and conn->status_code is already set. */
-        (void) vscpweb_fclose(&file.access);
+    if ( !forward_body_data(conn, file.access.fp, INVALID_SOCKET, NULL) ) {
+        // forward_body_data failed.
+        // The error code has already been sent to the client,
+        // and conn->status_code is already set. 
+        (void)vscpweb_fclose( &file.access );
         return;
     }
 
-    if (vscpweb_fclose(&file.access) != 0) {
-        /* fclose failed. This might have different reasons, but a likely
-         * one is "no space on disk", http 507. */
+    if ( vscpweb_fclose(&file.access) != 0 ) {
+        // fclose failed. This might have different reasons, but a likely
+        // one is "no space on disk", http 507. 
         conn->status_code = 507;
     }
 
     gmt_time_string(date, sizeof (date), &curtime);
-    vscpweb_printf(conn,
-                   "HTTP/1.1 %d %s\r\n",
-                   conn->status_code,
-                   vscpweb_get_response_code_text(NULL, conn->status_code));
-    send_no_cache_header(conn);
-    send_additional_header(conn);
-    vscpweb_printf(conn,
-                   "Date: %s\r\n"
-                   "Content-Length: 0\r\n"
-                   "Connection: %s\r\n\r\n",
-                   date,
-                   suggest_connection_header(conn));
+    vscpweb_printf( conn,
+                        "HTTP/1.1 %d %s\r\n",
+                        conn->status_code,
+                        vscpweb_get_response_code_text( NULL, conn->status_code ) );
+    send_no_cache_header( conn );
+    send_additional_header( conn );
+    vscpweb_printf( conn,
+                        "Date: %s\r\n"
+                        "Content-Length: 0\r\n"
+                        "Connection: %s\r\n\r\n",
+                        date,
+                        suggest_connection_header( conn ) );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// delete_file
 //
 
 static void
-delete_file(struct vscpweb_connection *conn, const char *path)
+delete_file( struct vscpweb_connection *conn, const char *path )
 {
     struct de de;
-    memset(&de.file, 0, sizeof (de.file));
-    if (!vscpweb_stat(conn, path, &de.file)) {
-        /* vscpweb_stat returns 0 if the file does not exist */
-        vscpweb_send_http_error(conn,
-                                404,
-                                "Error: Cannot delete file\nFile %s not found",
-                                path);
+    memset(&de.file, 0, sizeof( de.file ) );
+    if ( !vscpweb_stat( conn, path, &de.file ) ) {
+        // vscpweb_stat returns 0 if the file does not exist 
+        vscpweb_send_http_error( conn,
+                                    404,
+                                    "Error: Cannot delete file\nFile %s not found",
+                                    path );
         return;
     }
 
-#if 0 /* Ignore if a file in memory is inside a folder */
-    if (de.access.membuf != NULL) {
-        /* the file is cached in memory */
-        vscpweb_send_http_error(
-                                conn,
-                                405,
-                                "Error: Delete not possible\nDeleting %s is not supported",
-                                path);
+#if 0   // Ignore if a file in memory is inside a folder 
+    if ( de.access.membuf != NULL ) {
+        // the file is cached in memory 
+        vscpweb_send_http_error( conn,
+                                    405,
+                                    "Error: Delete not possible\nDeleting %s is not supported",
+                                    path );
         return;
     }
 #endif
 
-    if (de.file.is_directory) {
-        if (remove_directory(conn, path)) {
-            /* Delete is successful: Return 204 without content. */
-            vscpweb_send_http_error(conn, 204, "%s", "");
+    if ( de.file.is_directory ) {
+        
+        if ( remove_directory( conn, path ) ) {
+            // Delete is successful: Return 204 without content. 
+            vscpweb_send_http_error( conn, 204, "%s", "" );
         }
         else {
-            /* Delete is not successful: Return 500 (Server error). */
-            vscpweb_send_http_error(conn, 500, "Error: Could not delete %s", path);
+            // Delete is not successful: Return 500 (Server error). 
+            vscpweb_send_http_error( conn, 500, "Error: Could not delete %s", path );
         }
+        
+        return;
+        
+    }
+
+    // This is an existing file (not a directory).
+    // Check if write permission is granted. */
+    if ( access(path, W_OK) != 0 ) {
+        
+        // File is read only */
+        vscpweb_send_http_error( conn,
+                                    403,
+                                    "Error: Delete not possible\nDeleting %s is not allowed",
+                                    path );
         return;
     }
 
-    /* This is an existing file (not a directory).
-     * Check if write permission is granted. */
-    if (access(path, W_OK) != 0) {
-        /* File is read only */
-        vscpweb_send_http_error(
-                                conn,
-                                403,
-                                "Error: Delete not possible\nDeleting %s is not allowed",
-                                path);
-        return;
-    }
-
-    /* Try to delete it. */
+    // Try to delete it. 
     if (vscpweb_remove(conn, path) == 0) {
-        /* Delete was successful: Return 204 without content. */
+        // Delete was successful: Return 204 without content. 
         vscpweb_send_http_error(conn, 204, "%s", "");
     }
     else {
-        /* Delete not successful (file locked). */
-        vscpweb_send_http_error(conn,
-                                423,
-                                "Error: Cannot delete file\nremove(%s): %s",
-                                path,
-                                strerror(ERRNO));
+        // Delete not successful (file locked). 
+        vscpweb_send_http_error( conn,
+                                    423,
+                                    "Error: Cannot delete file\nremove(%s): %s",
+                                    path,
+                                    strerror(ERRNO) );
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// 
-//
 
 static void
 send_ssi_file(struct vscpweb_connection *, const char *, struct vscpweb_file *, int);
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// do_ssi_include
 //
 
 static void
-do_ssi_include(struct vscpweb_connection *conn,
-               const char *ssi,
-               char *tag,
-               int include_level)
+do_ssi_include( struct vscpweb_connection *conn,
+                    const char *ssi,
+                    char *tag,
+                    int include_level )
 {
     char file_name[MG_BUF_LEN], path[512], *p;
     struct vscpweb_file file = STRUCT_FILE_INITIALIZER;
@@ -11453,46 +11623,48 @@ do_ssi_include(struct vscpweb_connection *conn,
         return;
     }
 
-    /* sscanf() is safe here, since send_ssi_file() also uses buffer
-     * of size MG_BUF_LEN to get the tag. So strlen(tag) is
-     * always < MG_BUF_LEN. */
-    if (sscanf(tag, " virtual=\"%511[^\"]\"", file_name) == 1) {
-        /* File name is relative to the webserver root */
+    // sscanf() is safe here, since send_ssi_file() also uses buffer
+    // of size MG_BUF_LEN to get the tag. So strlen(tag) is
+    // always < MG_BUF_LEN. 
+    if ( 1 == sscanf(tag, " virtual=\"%511[^\"]\"", file_name ) ) {
+        // File name is relative to the webserver root 
         file_name[511] = 0;
-        (void) vscpweb_snprintf(conn,
-                                &truncated,
-                                path,
-                                sizeof (path),
-                                "%s/%s",
-                                conn->ctx->config[DOCUMENT_ROOT],
-                                file_name);
+        (void)vscpweb_snprintf( conn,
+                                    &truncated,
+                                    path,
+                                    sizeof( path ),
+                                    "%s/%s",
+                                    conn->ctx->config[DOCUMENT_ROOT],
+                                    file_name );
 
     }
-    else if (sscanf(tag, " abspath=\"%511[^\"]\"", file_name) == 1) {
-        /* File name is relative to the webserver working directory
-         * or it is absolute system path */
+    else if ( 1 == sscanf( tag, " abspath=\"%511[^\"]\"", file_name ) ) {
+        
+        // File name is relative to the webserver working directory
+        // or it is absolute system path 
         file_name[511] = 0;
-        (void)
-                vscpweb_snprintf(conn, &truncated, path, sizeof (path), "%s", file_name);
+        (void)vscpweb_snprintf(conn, &truncated, path, sizeof (path), "%s", file_name);
 
     }
-    else if ((sscanf(tag, " file=\"%511[^\"]\"", file_name) == 1)
-         || (sscanf(tag, " \"%511[^\"]\"", file_name) == 1)) {
-        /* File name is relative to the currect document */
+    else if ( ( 1 == sscanf(tag, " file=\"%511[^\"]\"", file_name ) ) || 
+             ( 1 == sscanf(tag, " \"%511[^\"]\"", file_name) ) ) {
+        // File name is relative to the currect document 
         file_name[511] = 0;
-        (void) vscpweb_snprintf(conn, &truncated, path, sizeof (path), "%s", ssi);
+        (void)vscpweb_snprintf(conn, &truncated, path, sizeof (path), "%s", ssi);
 
-        if (!truncated) {
+        if ( !truncated ) {
+            
             if ((p = strrchr(path, '/')) != NULL) {
                 p[1] = '\0';
             }
+            
             len = strlen(path);
-            (void) vscpweb_snprintf(conn,
-                                    &truncated,
-                                    path + len,
-                                    sizeof (path) - len,
-                                    "%s",
-                                    file_name);
+            (void)vscpweb_snprintf( conn,
+                                        &truncated,
+                                        path + len,
+                                        sizeof(path) - len,
+                                        "%s",
+                                        file_name );
         }
 
     }
@@ -11506,35 +11678,35 @@ do_ssi_include(struct vscpweb_connection *conn,
         return;
     }
 
-    if (!vscpweb_fopen(conn, path, MG_FOPEN_MODE_READ, &file)) {
-        vscpweb_cry(conn,
-                    "Cannot open SSI #include: [%s]: fopen(%s): %s",
-                    tag,
-                    path,
-                    strerror(ERRNO));
+    if ( !vscpweb_fopen(conn, path, MG_FOPEN_MODE_READ, &file ) ) {
+        vscpweb_cry( conn,
+                        "Cannot open SSI #include: [%s]: fopen(%s): %s",
+                        tag,
+                        path,
+                        strerror(ERRNO) );
     }
     else {
-        fclose_on_exec(&file.access, conn);
-        if (match_prefix(conn->ctx->config[SSI_EXTENSIONS],
+        fclose_on_exec( &file.access, conn );
+        if ( match_prefix(conn->ctx->config[SSI_EXTENSIONS],
                          strlen(conn->ctx->config[SSI_EXTENSIONS]),
-                         path) > 0) {
-            send_ssi_file(conn, path, &file, include_level + 1);
+                         path) > 0 ) {
+            send_ssi_file( conn, path, &file, include_level + 1 );
         }
         else {
-            send_file_data(conn, &file, 0, INT64_MAX);
+            send_file_data( conn, &file, 0, INT64_MAX );
         }
-        (void) vscpweb_fclose(&file.access); /* Ignore errors for readonly files */
+        (void)vscpweb_fclose(&file.access); // Ignore errors for readonly files 
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// do_ssi_exec
 //
 
 #if !defined(NO_POPEN)
 
 static void
-do_ssi_exec(struct vscpweb_connection *conn, char *tag)
+do_ssi_exec( struct vscpweb_connection *conn, char *tag )
 {
     char cmd[1024] = "";
     struct vscpweb_file file = STRUCT_FILE_INITIALIZER;
@@ -11556,11 +11728,11 @@ do_ssi_exec(struct vscpweb_connection *conn, char *tag)
 #endif /* !NO_POPEN */
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_fgetc
 //
 
 static int
-vscpweb_fgetc(struct vscpweb_file *filep, int offset)
+vscpweb_fgetc( struct vscpweb_file *filep, int offset )
 {
     if (filep == NULL) {
         return EOF;
@@ -11578,14 +11750,14 @@ vscpweb_fgetc(struct vscpweb_file *filep, int offset)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// send_ssi_file
 //
 
 static void
-send_ssi_file(struct vscpweb_connection *conn,
-              const char *path,
-              struct vscpweb_file *filep,
-              int include_level)
+send_ssi_file( struct vscpweb_connection *conn,
+                const char *path,
+                struct vscpweb_file *filep,
+                int include_level )
 {
     char buf[MG_BUF_LEN];
     int ch, offset, len, in_tag, in_ssi_tag;
@@ -11597,18 +11769,20 @@ send_ssi_file(struct vscpweb_connection *conn,
 
     in_tag = in_ssi_tag = len = offset = 0;
 
-    /* Read file, byte by byte, and look for SSI include tags */
-    while ((ch = vscpweb_fgetc(filep, offset++)) != EOF) {
+    // Read file, byte by byte, and look for SSI include tags 
+    while ( (ch = vscpweb_fgetc(filep, offset++)) != EOF ) {
 
-        if (in_tag) {
-            /* We are in a tag, either SSI tag or html tag */
+        if ( in_tag ) {
+            
+            // We are in a tag, either SSI tag or html tag 
 
             if (ch == '>') {
-                /* Tag is closing */
+                // Tag is closing 
                 buf[len++] = '>';
 
                 if (in_ssi_tag) {
-                    /* Handle SSI tag */
+                    
+                    // Handle SSI tag 
                     buf[len] = 0;
 
                     if (!memcmp(buf + 5, "include", 7)) {
@@ -11631,8 +11805,8 @@ send_ssi_file(struct vscpweb_connection *conn,
 
                 }
                 else {
-                    /* Not an SSI tag */
-                    /* Flush buffer */
+                    // Not an SSI tag 
+                    // Flush buffer 
                     (void) vscpweb_write(conn, buf, (size_t) len);
                     len = 0;
                     in_tag = 0;
@@ -11640,16 +11814,17 @@ send_ssi_file(struct vscpweb_connection *conn,
 
             }
             else {
-                /* Tag is still open */
+                
+                // Tag is still open 
                 buf[len++] = (char) (ch & 0xff);
 
                 if ((len == 5) && !memcmp(buf, "<!--#", 5)) {
-                    /* All SSI tags start with <!--# */
+                    // All SSI tags start with <!--# 
                     in_ssi_tag = 1;
                 }
 
                 if ((len + 2) > (int) sizeof (buf)) {
-                    /* Tag to long for buffer */
+                    // Tag to long for buffer 
                     vscpweb_cry(conn, "%s: tag is too large", path);
                     return;
                 }
@@ -11657,45 +11832,52 @@ send_ssi_file(struct vscpweb_connection *conn,
 
         }
         else {
-            /* We are not in a tag yet. */
+            
+            // We are not in a tag yet. 
 
             if (ch == '<') {
-                /* Tag is opening */
+                // Tag is opening 
                 in_tag = 1;
-                /* Flush current buffer */
-                (void) vscpweb_write(conn, buf, (size_t) len);
-                /* Store the < */
+                
+                // Flush current buffer 
+                (void)vscpweb_write(conn, buf, (size_t) len);
+                
+                // Store the < 
                 len = 1;
                 buf[0] = '<';
 
             }
             else {
-                /* No Tag */
-                /* Add data to buffer */
+                
+                // No Tag 
+                // Add data to buffer 
                 buf[len++] = (char) (ch & 0xff);
-                /* Flush if buffer is full */
+                
+                // Flush if buffer is full 
                 if (len == (int) sizeof (buf)) {
                     vscpweb_write(conn, buf, (size_t) len);
                     len = 0;
                 }
+                
             }
         }
     }
 
-    /* Send the rest of buffered data */
+    // Send the rest of buffered data 
     if (len > 0) {
         vscpweb_write(conn, buf, (size_t) len);
     }
+    
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// handle_ssi_file_request
 //
 
 static void
 handle_ssi_file_request(struct vscpweb_connection *conn,
-                        const char *path,
-                        struct vscpweb_file *filep)
+                            const char *path,
+                            struct vscpweb_file *filep)
 {
     char date[64];
     time_t curtime = time(NULL);
@@ -11706,7 +11888,7 @@ handle_ssi_file_request(struct vscpweb_connection *conn,
     }
 
     if (vscpweb_get_header(conn, "Origin")) {
-        /* Cross-origin resource sharing (CORS). */
+        // Cross-origin resource sharing (CORS). 
         cors1 = "Access-Control-Allow-Origin: ";
         cors2 = conn->ctx->config[ACCESS_CONTROL_ALLOW_ORIGIN];
         cors3 = "\r\n";
@@ -11716,13 +11898,13 @@ handle_ssi_file_request(struct vscpweb_connection *conn,
     }
 
     if (!vscpweb_fopen(conn, path, MG_FOPEN_MODE_READ, filep)) {
-        /* File exists (precondition for calling this function),
-         * but can not be opened by the server. */
-        vscpweb_send_http_error(conn,
-                                500,
-                                "Error: Cannot read file\nfopen(%s): %s",
-                                path,
-                                strerror(ERRNO));
+        // File exists (precondition for calling this function),
+        // but can not be opened by the server. 
+        vscpweb_send_http_error( conn,
+                                    500,
+                                    "Error: Cannot read file\nfopen(%s): %s",
+                                    path,
+                                    strerror(ERRNO) );
     }
     else {
         conn->must_close = 1;
@@ -11731,28 +11913,28 @@ handle_ssi_file_request(struct vscpweb_connection *conn,
         vscpweb_printf(conn, "HTTP/1.1 200 OK\r\n");
         send_no_cache_header(conn);
         send_additional_header(conn);
-        vscpweb_printf(conn,
-                       "%s%s%s"
-                       "Date: %s\r\n"
-                       "Content-Type: text/html\r\n"
-                       "Connection: %s\r\n\r\n",
-                       cors1,
-                       cors2,
-                       cors3,
-                       date,
-                       suggest_connection_header(conn));
-        send_ssi_file(conn, path, filep, 0);
-        (void) vscpweb_fclose(&filep->access); /* Ignore errors for readonly files */
+        vscpweb_printf( conn,
+                            "%s%s%s"
+                            "Date: %s\r\n"
+                            "Content-Type: text/html\r\n"
+                            "Connection: %s\r\n\r\n",
+                            cors1,
+                            cors2,
+                            cors3,
+                            date,
+                            suggest_connection_header(conn) );
+        send_ssi_file( conn, path, filep, 0 );
+        (void)vscpweb_fclose( &filep->access ); // Ignore errors for readonly files 
     }
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// send_options
 //
 
 static void
-send_options(struct vscpweb_connection *conn)
+send_options( struct vscpweb_connection *conn )
 {
     char date[64];
     time_t curtime = time(NULL);
@@ -11765,64 +11947,64 @@ send_options(struct vscpweb_connection *conn)
     conn->must_close = 1;
     gmt_time_string(date, sizeof (date), &curtime);
 
-    /* We do not set a "Cache-Control" header here, but leave the default.
-     * Since browsers do not send an OPTIONS request, we can not test the
-     * effect anyway. */
-    vscpweb_printf(conn,
-                   "HTTP/1.1 200 OK\r\n"
-                   "Date: %s\r\n"
-                   "Connection: %s\r\n"
-                   "Allow: GET, POST, HEAD, CONNECT, PUT, DELETE, OPTIONS, "
-                   "PROPFIND, MKCOL\r\n"
-                   "DAV: 1\r\n",
-                   date,
-                   suggest_connection_header(conn));
-    send_additional_header(conn);
-    vscpweb_printf(conn, "\r\n");
+    // We do not set a "Cache-Control" header here, but leave the default.
+    // Since browsers do not send an OPTIONS request, we can not test the
+    // effect anyway. 
+    vscpweb_printf( conn,
+                        "HTTP/1.1 200 OK\r\n"
+                        "Date: %s\r\n"
+                        "Connection: %s\r\n"
+                        "Allow: GET, POST, HEAD, CONNECT, PUT, DELETE, OPTIONS, "
+                        "PROPFIND, MKCOL\r\n"
+                        "DAV: 1\r\n",
+                        date,
+                        suggest_connection_header(conn) );
+    send_additional_header( conn );
+    vscpweb_printf( conn, "\r\n" );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// print_props
+//
+// Writes PROPFIND properties for a collection element */
 //
 
-/* Writes PROPFIND properties for a collection element */
-
 static void
-print_props(struct vscpweb_connection *conn,
-            const char *uri,
-            struct vscpweb_file_stat *filep)
+print_props( struct vscpweb_connection *conn,
+                const char *uri,
+                struct vscpweb_file_stat *filep )
 {
     char mtime[64];
 
-    if ((conn == NULL) || (uri == NULL) || (filep == NULL)) {
+    if ( (conn == NULL) || (uri == NULL) || (filep == NULL) ) {
         return;
     }
 
-    gmt_time_string(mtime, sizeof (mtime), &filep->last_modified);
-    vscpweb_printf(conn,
-                   "<d:response>"
-                   "<d:href>%s</d:href>"
-                   "<d:propstat>"
-                   "<d:prop>"
-                   "<d:resourcetype>%s</d:resourcetype>"
-                   "<d:getcontentlength>%" INT64_FMT "</d:getcontentlength>"
-                   "<d:getlastmodified>%s</d:getlastmodified>"
-                   "</d:prop>"
-                   "<d:status>HTTP/1.1 200 OK</d:status>"
-                   "</d:propstat>"
-                   "</d:response>\n",
-                   uri,
-                   filep->is_directory ? "<d:collection/>" : "",
-                   filep->size,
-                   mtime);
+    gmt_time_string( mtime, sizeof (mtime), &filep->last_modified );
+    vscpweb_printf( conn,
+                        "<d:response>"
+                        "<d:href>%s</d:href>"
+                        "<d:propstat>"
+                        "<d:prop>"
+                        "<d:resourcetype>%s</d:resourcetype>"
+                        "<d:getcontentlength>%" INT64_FMT "</d:getcontentlength>"
+                        "<d:getlastmodified>%s</d:getlastmodified>"
+                        "</d:prop>"
+                        "<d:status>HTTP/1.1 200 OK</d:status>"
+                        "</d:propstat>"
+                        "</d:response>\n",
+                        uri,
+                        filep->is_directory ? "<d:collection/>" : "",
+                        filep->size,
+                        mtime );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// print_dav_dir_entry
 //
 
 static int
-print_dav_dir_entry(struct de *de, void *data)
+print_dav_dir_entry( struct de *de, void *data )
 {
     char href[PATH_MAX];
     int truncated;
@@ -11831,15 +12013,15 @@ print_dav_dir_entry(struct de *de, void *data)
     if (!de || !conn) {
         return -1;
     }
-    vscpweb_snprintf(conn,
-                     &truncated,
-                     href,
-                     sizeof (href),
-                     "%s%s",
-                     conn->request_info.local_uri,
-                     de->file_name);
+    vscpweb_snprintf( conn,
+                        &truncated,
+                        href,
+                        sizeof (href),
+                        "%s%s",
+                        conn->request_info.local_uri,
+                        de->file_name );
 
-    if (!truncated) {
+    if ( !truncated ) {
         size_t href_encoded_size;
         char *href_encoded;
 
@@ -11857,13 +12039,13 @@ print_dav_dir_entry(struct de *de, void *data)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// handle_propfind
 //
 
 static void
-handle_propfind(struct vscpweb_connection *conn,
-                const char *path,
-                struct vscpweb_file_stat *filep)
+handle_propfind( struct vscpweb_connection *conn,
+                    const char *path,
+                    struct vscpweb_file_stat *filep )
 {
     const char *depth = vscpweb_get_header(conn, "Depth");
     char date[64];
@@ -11877,29 +12059,28 @@ handle_propfind(struct vscpweb_connection *conn,
 
     conn->must_close = 1;
     conn->status_code = 207;
-    vscpweb_printf(conn,
-                   "HTTP/1.1 207 Multi-Status\r\n"
-                   "Date: %s\r\n",
-                   date);
+    vscpweb_printf( conn,
+                        "HTTP/1.1 207 Multi-Status\r\n"
+                        "Date: %s\r\n",
+                        date );
     send_static_cache_header(conn);
     send_additional_header(conn);
-    vscpweb_printf(conn,
-                   "Connection: %s\r\n"
-                   "Content-Type: text/xml; charset=utf-8\r\n\r\n",
-                   suggest_connection_header(conn));
+    vscpweb_printf( conn,
+                        "Connection: %s\r\n"
+                        "Content-Type: text/xml; charset=utf-8\r\n\r\n",
+                        suggest_connection_header( conn ) );
 
-    vscpweb_printf(conn,
-                   "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
-                   "<d:multistatus xmlns:d='DAV:'>\n");
+    vscpweb_printf( conn,
+                        "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+                        "<d:multistatus xmlns:d='DAV:'>\n" );
 
-    /* Print properties for the requested resource itself */
+    // Print properties for the requested resource itself 
     print_props(conn, conn->request_info.local_uri, filep);
 
-    /* If it is a directory, print directory entries too if Depth is not 0
-     */
-    if (filep && filep->is_directory
-        && !vscpweb_strcasecmp(conn->ctx->config[ENABLE_DIRECTORY_LISTING], "yes")
-        && ((depth == NULL) || (strcmp(depth, "0") != 0))) {
+    // If it is a directory, print directory entries too if Depth is not 0
+    if ( filep && filep->is_directory &&
+            !vscpweb_strcasecmp(conn->ctx->config[ENABLE_DIRECTORY_LISTING], "yes") &&
+            ( (depth == NULL) || ( strcmp(depth, "0") != 0) ) ) {
         scan_directory(conn, path, conn, &print_dav_dir_entry);
     }
 
@@ -11907,11 +12088,11 @@ handle_propfind(struct vscpweb_connection *conn,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_lock_connection
 //
 
 void
-vscpweb_lock_connection(struct vscpweb_connection *conn)
+vscpweb_lock_connection( struct vscpweb_connection *conn )
 {
     if (conn) {
         (void) pthread_mutex_lock(&conn->mutex);
@@ -11919,7 +12100,7 @@ vscpweb_lock_connection(struct vscpweb_connection *conn)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_unlock_connection
 //
 
 void
@@ -11931,7 +12112,7 @@ vscpweb_unlock_connection(struct vscpweb_connection *conn)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_lock_context
 //
 
 void
@@ -11943,7 +12124,7 @@ vscpweb_lock_context(struct vscpweb_context *ctx)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_unlock_context
 //
 
 void
@@ -11956,10 +12137,10 @@ vscpweb_unlock_context(struct vscpweb_context *ctx)
 
 
 #define TIMER_API static
-/* This file is part of the CivetWeb web server.
- * See https://github.com/civetweb/civetweb/
- * (C) 2014-2017 by the CivetWeb authors, MIT license.
- */
+// This file is part of the CivetWeb web server.
+// See https://github.com/civetweb/civetweb/
+// (C) 2014-2017 by the CivetWeb authors, MIT license.
+//
 
 #if !defined(MAX_TIMERS)
 #define MAX_TIMERS MAX_WORKER_THREADS
@@ -11977,26 +12158,26 @@ struct ttimer
 
 struct ttimers
 {
-    pthread_t threadid; /* Timer thread ID */
-    pthread_mutex_t mutex; /* Protects timer lists */
-    struct ttimer timers[MAX_TIMERS]; /* List of timers */
-    unsigned timer_count; /* Current size of timer list */
+    pthread_t threadid;                 //  Timer thread ID 
+    pthread_mutex_t mutex;              // Protects timer lists 
+    struct ttimer timers[MAX_TIMERS];   // List of timers 
+    unsigned timer_count;               // Current size of timer list 
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// timer_getcurrenttime
 //
 
 TIMER_API double
-timer_getcurrenttime(void)
+timer_getcurrenttime( void )
 {
 #if defined(_WIN32)
-    /* GetTickCount returns milliseconds since system start as
-     * unsigned 32 bit value. It will wrap around every 49.7 days.
-     * We need to use a 64 bit counter (will wrap in 500 mio. years),
-     * by adding the 32 bit difference since the last call to a
-     * 64 bit counter. This algorithm will only work, if this
-     * function is called at least once every 7 weeks. */
+    // GetTickCount returns milliseconds since system start as
+    // unsigned 32 bit value. It will wrap around every 49.7 days.
+    // We need to use a 64 bit counter (will wrap in 500 mio. years),
+    // by adding the 32 bit difference since the last call to a
+    // 64 bit counter. This algorithm will only work, if this
+    // function is called at least once every 7 weeks. 
     static DWORD last_tick;
     static uint64_t now_tick64;
 
@@ -12014,16 +12195,16 @@ timer_getcurrenttime(void)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// timer_add
 //
 
 TIMER_API int
-timer_add(struct vscpweb_context *ctx,
-          double next_time,
-          double period,
-          int is_relative,
-          taction action,
-          void *arg)
+timer_add( struct vscpweb_context *ctx,
+            double next_time,
+            double period,
+            int is_relative,
+            taction action,
+            void *arg )
 {
     unsigned u, v;
     int error = 0;
@@ -12035,60 +12216,63 @@ timer_add(struct vscpweb_context *ctx,
 
     now = timer_getcurrenttime();
 
-    /* HCP24: if is_relative = 0 and next_time < now
-     *        action will be called so fast as possible
-     *        if additional period > 0
-     *        action will be called so fast as possible
-     *        n times until (next_time + (n * period)) > now
-     *        then the period is working
-     * Solution:
-     *        if next_time < now then we set next_time = now.
-     *        The first callback will be so fast as possible (now)
-     *        but the next callback on period
-     */
-    if (is_relative) {
+    // HCP24: if is_relative = 0 and next_time < now
+    //        action will be called so fast as possible
+    //        if additional period > 0
+    //        action will be called so fast as possible
+    //        n times until (next_time + (n * period)) > now
+    //        then the period is working
+    // Solution:
+    //        if next_time < now then we set next_time = now.
+    //        The first callback will be so fast as possible (now)
+    //        but the next callback on period
+    //
+    if ( is_relative ) {
         next_time += now;
     }
 
-    /* You can not set timers into the past */
+    // You can not set timers into the past 
     if (next_time < now) {
         next_time = now;
     }
 
-    pthread_mutex_lock(&ctx->timers->mutex);
-    if (ctx->timers->timer_count == MAX_TIMERS) {
+    pthread_mutex_lock( &ctx->timers->mutex );
+    if ( MAX_TIMERS == ctx->timers->timer_count ) {
         error = 1;
     }
     else {
-        /* Insert new timer into a sorted list. */
-        /* The linear list is still most efficient for short lists (small
-         * number of timers) - if there are many timers, different
-         * algorithms will work better. */
+        // Insert new timer into a sorted list. 
+        // The linear list is still most efficient for short lists (small
+        // number of timers) - if there are many timers, different
+        // algorithms will work better. 
         for (u = 0; u < ctx->timers->timer_count; u++) {
             if (ctx->timers->timers[u].time > next_time) {
-                /* HCP24: moving all timers > next_time */
+                // HCP24: moving all timers > next_time 
                 for (v = ctx->timers->timer_count; v > u; v--) {
                     ctx->timers->timers[v] = ctx->timers->timers[v - 1];
                 }
                 break;
             }
         }
+        
         ctx->timers->timers[u].time = next_time;
         ctx->timers->timers[u].period = period;
         ctx->timers->timers[u].action = action;
         ctx->timers->timers[u].arg = arg;
         ctx->timers->timer_count++;
+        
     }
+    
     pthread_mutex_unlock(&ctx->timers->mutex);
     return error;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// timer_thread_run
 //
 
 static void
-timer_thread_run(void *thread_func_param)
+timer_thread_run( void *thread_func_param )
 {
     struct vscpweb_context *ctx = (struct vscpweb_context *) thread_func_param;
     double d;
@@ -12099,7 +12283,7 @@ timer_thread_run(void *thread_func_param)
     vscpweb_set_thread_name("timer");
 
     if (ctx->callbacks.init_thread) {
-        /* Timer thread */
+        // Timer thread 
         ctx->callbacks.init_thread(ctx, 2);
     }
 
@@ -12125,10 +12309,10 @@ timer_thread_run(void *thread_func_param)
             pthread_mutex_unlock(&ctx->timers->mutex);
         }
 
-        /* 10 ms seems reasonable.
-         * A faster loop (smaller sleep value) increases CPU load,
-         * a slower loop (higher sleep value) decreases timer accuracy.
-         */
+        // 10 ms seems reasonable.
+        // A faster loop (smaller sleep value) increases CPU load,
+        // a slower loop (higher sleep value) decreases timer accuracy.
+        //
 #ifdef _WIN32
         Sleep(10);
 #else
@@ -12144,12 +12328,13 @@ timer_thread_run(void *thread_func_param)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// timer_thread
 //
 
 #ifdef _WIN32
 
-static unsigned __stdcall timer_thread(void *thread_func_param)
+static unsigned __stdcall 
+timer_thread( void *thread_func_param )
 {
     timer_thread_run(thread_func_param);
     return 0;
@@ -12162,33 +12347,35 @@ timer_thread(void *thread_func_param)
     timer_thread_run(thread_func_param);
     return NULL;
 }
-#endif /* _WIN32 */
+#endif // _WIN32 
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// timers_init
 //
 
 TIMER_API int
-timers_init(struct vscpweb_context *ctx)
+timers_init( struct vscpweb_context *ctx )
 {
     ctx->timers =
-            (struct ttimers *) vscpweb_calloc_ctx(sizeof (struct ttimers), 1, ctx);
-    (void) pthread_mutex_init(&ctx->timers->mutex, NULL);
+            (struct ttimers *)vscpweb_calloc_ctx( sizeof( struct ttimers ), 
+                                                            1, 
+                                                            ctx );
+    (void)pthread_mutex_init( &ctx->timers->mutex, NULL );
 
-    (void) timer_getcurrenttime();
+    (void)timer_getcurrenttime();
 
-    /* Start timer thread */
-    vscpweb_start_thread_with_id(timer_thread, ctx, &ctx->timers->threadid);
+    // Start timer thread 
+    vscpweb_start_thread_with_id( timer_thread, ctx, &ctx->timers->threadid );
 
     return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// timers_exit
 //
 
 TIMER_API void
-timers_exit(struct vscpweb_context *ctx)
+timers_exit( struct vscpweb_context *ctx )
 {
     if (ctx->timers) {
         pthread_mutex_lock(&ctx->timers->mutex);
@@ -12196,9 +12383,9 @@ timers_exit(struct vscpweb_context *ctx)
 
         vscpweb_join_thread(ctx->timers->threadid);
 
-        /* TODO: Do we really need to unlock the mutex, before
-         * destroying it, if it's destroyed by the thread currently
-         * owning the mutex? */
+        // TODO: Do we really need to unlock the mutex, before
+        // destroying it, if it's destroyed by the thread currently
+        // owning the mutex? 
         pthread_mutex_unlock(&ctx->timers->mutex);
         (void) pthread_mutex_destroy(&ctx->timers->mutex);
         vscpweb_free(ctx->timers);
@@ -12210,28 +12397,28 @@ timers_exit(struct vscpweb_context *ctx)
 
 
 
-/* This file is part of the CivetWeb web server.
- * See https://github.com/civetweb/civetweb/
- * (C) 2015-2017 by the CivetWeb authors, MIT license.
- */
+// This file is part of the CivetWeb web server.
+// See https://github.com/civetweb/civetweb/
+// (C) 2015-2017 by the CivetWeb authors, MIT license.
+//
 
 #include <duktape.h>
 
-/* TODO: the mg context should be added to duktape as well */
-/* Alternative: redefine a new, clean API from scratch (instead of using mg),
- * or at least do not add problematic functions. */
-/* For evaluation purposes, currently only "send" is supported.
- * All other ~50 functions will be added later. */
+// TODO: the mg context should be added to duktape as well 
+// Alternative: redefine a new, clean API from scratch (instead of using mg),
+// or at least do not add problematic functions. 
+// For evaluation purposes, currently only "send" is supported.
+// All other ~50 functions will be added later. 
 
-/* Note: This is only experimental support, so the API may still change. */
+// Note: This is only experimental support, so the API may still change. 
 
 static const char *civetweb_conn_id = "\xFF"
-        "civetweb_conn";
+        "vscpweb_conn";
 static const char *civetweb_ctx_id = "\xFF"
-        "civetweb_ctx";
+        "vscpweb_ctx";
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_duk_mem_alloc
 //
 
 static void *
@@ -12241,62 +12428,64 @@ vscpweb_duk_mem_alloc(void *udata, duk_size_t size)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_duk_mem_realloc
 //
 
 static void *
-vscpweb_duk_mem_realloc(void *udata, void *ptr, duk_size_t newsize)
+vscpweb_duk_mem_realloc( void *udata, void *ptr, duk_size_t newsize )
 {
     return vscpweb_realloc_ctx(ptr, newsize, (struct vscpweb_context *) udata);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_duk_mem_free
 //
 
 static void
-vscpweb_duk_mem_free(void *udata, void *ptr)
+vscpweb_duk_mem_free( void *udata, void *ptr )
 {
     (void) udata;
     vscpweb_free(ptr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_duk_fatal_handler
 //
 
 static void
-vscpweb_duk_fatal_handler(duk_context *duk_ctx, duk_errcode_t code, const char *msg)
+vscpweb_duk_fatal_handler( duk_context *duk_ctx, 
+                            duk_errcode_t code, 
+                            const char *msg )
 {
-    /* Script is called "protected" (duk_peval_file), so script errors should
-     * never yield in a call to this function. Maybe calls prior to executing
-     * the script could raise a fatal error. */
+    // Script is called "protected" (duk_peval_file), so script errors should
+    // never yield in a call to this function. Maybe calls prior to executing
+    // the script could raise a fatal error. 
     struct vscpweb_connection *conn;
 
     duk_push_global_stash(duk_ctx);
     duk_get_prop_string(duk_ctx, -1, civetweb_conn_id);
-    conn = (struct vscpweb_connection *) duk_to_pointer(duk_ctx, -1);
+    conn = (struct vscpweb_connection *) duk_to_pointer(duk_ctx, -1 );
 
     vscpweb_cry(conn, "JavaScript fatal (%u): %s", (unsigned) code, msg);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// duk_itf_write
 //
 
 static duk_ret_t
-duk_itf_write(duk_context *duk_ctx)
+duk_itf_write( duk_context *duk_ctx )
 {
     struct vscpweb_connection *conn;
     duk_double_t ret;
     duk_size_t len = 0;
     const char *val = duk_require_lstring(duk_ctx, -1, &len);
 
-    /*
-        duk_push_global_stash(duk_ctx);
-        duk_get_prop_string(duk_ctx, -1, civetweb_conn_id);
-        conn = (struct vscpweb_connection *)duk_to_pointer(duk_ctx, -1);
-     */
+    
+    //    duk_push_global_stash(duk_ctx);
+    //    duk_get_prop_string(duk_ctx, -1, civetweb_conn_id);
+    //    conn = (struct vscpweb_connection *)duk_to_pointer(duk_ctx, -1);
+     
     duk_push_current_function(duk_ctx);
     duk_get_prop_string(duk_ctx, -1, civetweb_conn_id);
     conn = (struct vscpweb_connection *) duk_to_pointer(duk_ctx, -1);
@@ -12305,7 +12494,7 @@ duk_itf_write(duk_context *duk_ctx)
         duk_error(duk_ctx,
                   DUK_ERR_ERROR,
                   "function not available without connection object");
-        /* probably never reached, but satisfies static code analysis */
+        // probably never reached, but satisfies static code analysis 
         return DUK_ERR_ERROR;
     }
 
@@ -12316,11 +12505,11 @@ duk_itf_write(duk_context *duk_ctx)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// duk_itf_read
 //
 
 static duk_ret_t
-duk_itf_read(duk_context *duk_ctx)
+duk_itf_read( duk_context *duk_ctx )
 {
     struct vscpweb_connection *conn;
     char buf[1024];
@@ -12330,11 +12519,11 @@ duk_itf_read(duk_context *duk_ctx)
     duk_get_prop_string(duk_ctx, -1, civetweb_conn_id);
     conn = (struct vscpweb_connection *) duk_to_pointer(duk_ctx, -1);
 
-    if (!conn) {
+    if ( !conn ) {
         duk_error(duk_ctx,
                   DUK_ERR_ERROR,
                   "function not available without connection object");
-        /* probably never reached, but satisfies static code analysis */
+        // probably never reached, but satisfies static code analysis 
         return DUK_ERR_ERROR;
     }
 
@@ -12345,11 +12534,11 @@ duk_itf_read(duk_context *duk_ctx)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// duk_itf_getoption
 //
 
 static duk_ret_t
-duk_itf_getoption(duk_context *duk_ctx)
+duk_itf_getoption( duk_context *duk_ctx )
 {
     struct vscpweb_context *cv_ctx;
     const char *ret;
@@ -12360,16 +12549,16 @@ duk_itf_getoption(duk_context *duk_ctx)
     duk_get_prop_string(duk_ctx, -1, civetweb_ctx_id);
     cv_ctx = (struct vscpweb_context *) duk_to_pointer(duk_ctx, -1);
 
-    if (!cv_ctx) {
+    if ( !cv_ctx ) {
         duk_error(duk_ctx,
                   DUK_ERR_ERROR,
                   "function not available without connection object");
-        /* probably never reached, but satisfies static code analysis */
+        // probably never reached, but satisfies static code analysis 
         return DUK_ERR_ERROR;
     }
 
     ret = vscpweb_get_option(cv_ctx, val);
-    if (ret) {
+    if ( ret ) {
         duk_push_string(duk_ctx, ret);
     }
     else {
@@ -12380,49 +12569,50 @@ duk_itf_getoption(duk_context *duk_ctx)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_exec_duktape_script
 //
 
 static void
-vscpweb_exec_duktape_script(struct vscpweb_connection *conn, const char *script_name)
+vscpweb_exec_duktape_script( struct vscpweb_connection *conn, 
+                                const char *script_name )
 {
     int i;
     duk_context *duk_ctx = NULL;
 
     conn->must_close = 1;
 
-    /* Create Duktape interpreter state */
-    duk_ctx = duk_create_heap(vscpweb_duk_mem_alloc,
-                              vscpweb_duk_mem_realloc,
-                              vscpweb_duk_mem_free,
-                              (void *) conn->ctx,
-                              (duk_fatal_function) vscpweb_duk_fatal_handler);
-    if (!duk_ctx) {
+    // Create Duktape interpreter state 
+    duk_ctx = duk_create_heap( vscpweb_duk_mem_alloc,
+                                vscpweb_duk_mem_realloc,
+                                vscpweb_duk_mem_free,
+                                (void *)conn->ctx,
+                                (duk_fatal_function)vscpweb_duk_fatal_handler );
+    if ( !duk_ctx ) {
         vscpweb_cry(conn, "Failed to create a Duktape heap.");
         goto exec_duktape_finished;
     }
 
-    /* Add "conn" object */
-    duk_push_global_object(duk_ctx);
-    duk_push_object(duk_ctx); /* create a new table/object ("conn") */
+    // Add "conn" object 
+    duk_push_global_object( duk_ctx );
+    duk_push_object(duk_ctx); // create a new table/object ("conn") 
 
     duk_push_c_function(duk_ctx, duk_itf_write, 1 /* 1 = nargs */);
     duk_push_pointer(duk_ctx, (void *) conn);
     duk_put_prop_string(duk_ctx, -2, civetweb_conn_id);
-    duk_put_prop_string(duk_ctx, -2, "write"); /* add function conn.write */
+    duk_put_prop_string(duk_ctx, -2, "write"); // add function conn.write 
 
     duk_push_c_function(duk_ctx, duk_itf_read, 0 /* 0 = nargs */);
     duk_push_pointer(duk_ctx, (void *) conn);
     duk_put_prop_string(duk_ctx, -2, civetweb_conn_id);
-    duk_put_prop_string(duk_ctx, -2, "read"); /* add function conn.read */
+    duk_put_prop_string(duk_ctx, -2, "read"); // add function conn.read 
 
     duk_push_string(duk_ctx, conn->request_info.request_method);
-    duk_put_prop_string(duk_ctx,
-                        -2,
-                        "request_method"); /* add string conn.r... */
+    duk_put_prop_string( duk_ctx,
+                            -2,
+                            "request_method"); // add string conn.r... 
 
-    duk_push_string(duk_ctx, conn->request_info.request_uri);
-    duk_put_prop_string(duk_ctx, -2, "request_uri");
+    duk_push_string( duk_ctx, conn->request_info.request_uri );
+    duk_put_prop_string( duk_ctx, -2, "request_uri" );
 
     duk_push_string(duk_ctx, conn->request_info.local_uri);
     duk_put_prop_string(duk_ctx, -2, "uri");
@@ -12442,20 +12632,20 @@ vscpweb_exec_duktape_script(struct vscpweb_connection *conn, const char *script_
     duk_push_int(duk_ctx, ntohs(conn->client.lsa.sin.sin_port));
     duk_put_prop_string(duk_ctx, -2, "server_port");
 
-    duk_push_object(duk_ctx); /* subfolder "conn.http_headers" */
+    duk_push_object(duk_ctx); // subfolder "conn.http_headers" 
     for (i = 0; i < conn->request_info.num_headers; i++) {
         duk_push_string(duk_ctx, conn->request_info.http_headers[i].value);
-        duk_put_prop_string(duk_ctx,
-                            -2,
-                            conn->request_info.http_headers[i].name);
+        duk_put_prop_string( duk_ctx,
+                                -2,
+                                conn->request_info.http_headers[i].name );
     }
     duk_put_prop_string(duk_ctx, -2, "http_headers");
 
-    duk_put_prop_string(duk_ctx, -2, "conn"); /* call the table "conn" */
+    duk_put_prop_string(duk_ctx, -2, "conn"); // call the table "conn" 
 
-    /* Add "civetweb" object */
+    // Add "civetweb" object 
     duk_push_global_object(duk_ctx);
-    duk_push_object(duk_ctx); /* create a new table/object ("conn") */
+    duk_push_object(duk_ctx); // create a new table/object ("conn") 
 
     duk_push_string(duk_ctx, VSCPWEB_VERSION);
     duk_put_prop_string(duk_ctx, -2, "version");
@@ -12469,17 +12659,17 @@ vscpweb_exec_duktape_script(struct vscpweb_connection *conn, const char *script_
         duk_put_prop_string(duk_ctx, -2, civetweb_ctx_id);
         duk_put_prop_string(duk_ctx,
                             -2,
-                            "getoption"); /* add function conn.write */
+                            "getoption"); // add function conn.write 
 
-        if (conn->ctx->systemName != NULL) {
+        if ( conn->ctx->systemName != NULL ) {
             duk_push_string(duk_ctx, conn->ctx->systemName);
             duk_put_prop_string(duk_ctx, -2, "system");
         }
     }
 
-    duk_put_prop_string(duk_ctx,
-                        -2,
-                        "civetweb"); /* call the table "civetweb" */
+    duk_put_prop_string( duk_ctx,
+                            -2,
+                            "vscpweb"); // call the table "vscpweb" 
 
     duk_push_global_stash(duk_ctx);
     duk_push_pointer(duk_ctx, (void *) conn);
@@ -12490,7 +12680,7 @@ vscpweb_exec_duktape_script(struct vscpweb_connection *conn, const char *script_
             vscpweb_cry(conn, "%s", duk_safe_to_string(duk_ctx, -1));
             goto exec_duktape_finished;
     }*/
-    duk_pop(duk_ctx); /* ignore result */
+    duk_pop(duk_ctx); // ignore result 
 
 exec_duktape_finished:
 
@@ -12503,80 +12693,79 @@ exec_duktape_finished:
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// send_websocket_handshake
 //
 
 static int
-send_websocket_handshake(struct vscpweb_connection *conn, const char *websock_key)
+send_websocket_handshake( struct vscpweb_connection *conn, const char *websock_key )
 {
     static const char *magic = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
     char buf[100], sha[20], b64_sha[sizeof (sha) * 2];
     SHA_CTX sha_ctx;
     int truncated;
 
-    /* Calculate Sec-WebSocket-Accept reply from Sec-WebSocket-Key. */
-    vscpweb_snprintf(conn, &truncated, buf, sizeof (buf), "%s%s", websock_key, magic);
-    if (truncated) {
+    // Calculate Sec-WebSocket-Accept reply from Sec-WebSocket-Key. 
+    vscpweb_snprintf( conn, &truncated, buf, sizeof (buf), "%s%s", websock_key, magic );
+    if ( truncated ) {
         conn->must_close = 1;
         return 0;
     }
 
-    SHA1_Init(&sha_ctx);
-    SHA1_Update(&sha_ctx, (unsigned char *) buf, (uint32_t) strlen(buf));
-    SHA1_Final((unsigned char *) sha, &sha_ctx);
-    base64_encode((unsigned char *) sha, sizeof (sha), b64_sha);
-    vscpweb_printf(conn,
-                   "HTTP/1.1 101 Switching Protocols\r\n"
-                   "Upgrade: websocket\r\n"
-                   "Connection: Upgrade\r\n"
-                   "Sec-WebSocket-Accept: %s\r\n",
-                   b64_sha);
-    if (conn->request_info.acceptedWebSocketSubprotocol) {
-        vscpweb_printf(conn,
-                       "Sec-WebSocket-Protocol: %s\r\n\r\n",
-                       conn->request_info.acceptedWebSocketSubprotocol);
+    SHA1_Init( &sha_ctx );
+    SHA1_Update( &sha_ctx, (unsigned char *)buf, (uint32_t)strlen( buf ) );
+    SHA1_Final( (unsigned char *)sha, &sha_ctx );
+    base64_encode( (unsigned char *)sha, sizeof(sha), b64_sha );
+    vscpweb_printf( conn,
+                        "HTTP/1.1 101 Switching Protocols\r\n"
+                        "Upgrade: websocket\r\n"
+                        "Connection: Upgrade\r\n"
+                        "Sec-WebSocket-Accept: %s\r\n",
+                        b64_sha );
+    if ( conn->request_info.acceptedWebSocketSubprotocol ) {
+        vscpweb_printf( conn,
+                            "Sec-WebSocket-Protocol: %s\r\n\r\n",
+                            conn->request_info.acceptedWebSocketSubprotocol );
     }
     else {
-        vscpweb_printf(conn, "%s", "\r\n");
+        vscpweb_printf( conn, "%s", "\r\n" );
     }
 
     return 1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// read_websocket
 //
 
 static void
-read_websocket(struct vscpweb_connection *conn,
-               vscpweb_websocket_data_handler ws_data_handler,
-               void *callback_data)
+read_websocket( struct vscpweb_connection *conn,
+                    vscpweb_websocket_data_handler ws_data_handler,
+                    void *callback_data )
 {
-    /* Pointer to the beginning of the portion of the incoming websocket
-     * message queue.
-     * The original websocket upgrade request is never removed, so the queue
-     * begins after it. */
+    // Pointer to the beginning of the portion of the incoming websocket
+    // message queue.
+    // The original websocket upgrade request is never removed, so the queue
+    // begins after it. 
     unsigned char *buf = (unsigned char *) conn->buf + conn->request_len;
     int n, error, exit_by_callback;
 
-    /* body_len is the length of the entire queue in bytes
-     * len is the length of the current message
-     * data_len is the length of the current message's data payload
-     * header_len is the length of the current message's header */
+    // body_len is the length of the entire queue in bytes
+    // len is the length of the current message
+    // data_len is the length of the current message's data payload
+    // header_len is the length of the current message's header 
     size_t i, len, mask_len = 0, header_len, body_len;
     uint64_t data_len = 0;
 
-    /* "The masking key is a 32-bit value chosen at random by the client."
-     * http://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol-17#section-5
-     */
+    // "The masking key is a 32-bit value chosen at random by the client."
+    // http://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol-17#section-5
     unsigned char mask[4];
 
-    /* data points to the place where the message is stored when passed to
-     * the
-     * websocket_data callback.  This is either mem on the stack, or a
-     * dynamically allocated buffer if it is too large. */
+    // data points to the place where the message is stored when passed to
+    // the
+    // websocket_data callback.  This is either mem on the stack, or a
+    // dynamically allocated buffer if it is too large. 
     unsigned char mem[4096];
-    unsigned char mop; /* mask flag and opcode */
+    unsigned char mop;  // mask flag and opcode 
     double timeout = -1.0;
 
     if (conn->ctx->config[WEBSOCKET_TIMEOUT]) {
@@ -12588,34 +12777,34 @@ read_websocket(struct vscpweb_connection *conn,
 
     vscpweb_set_thread_name("wsock");
 
-    /* Loop continuously, reading messages from the socket, invoking the
-     * callback, and waiting repeatedly until an error occurs. */
-    while (!conn->ctx->stop_flag) {
+    // Loop continuously, reading messages from the socket, invoking the
+    // callback, and waiting repeatedly until an error occurs. 
+    while ( !conn->ctx->stop_flag ) {
         header_len = 0;
         assert(conn->data_len >= conn->request_len);
         if ((body_len = (size_t) (conn->data_len - conn->request_len)) >= 2) {
             len = buf[1] & 127;
             mask_len = (buf[1] & 128) ? 4 : 0;
-            if ((len < 126) && (body_len >= mask_len)) {
-                /* inline 7-bit length field */
+            if ( (len < 126) && (body_len >= mask_len) ) {
+                // inline 7-bit length field 
                 data_len = len;
                 header_len = 2 + mask_len;
             }
             else if ((len == 126) && (body_len >= (4 + mask_len))) {
-                /* 16-bit length field */
+                // 16-bit length field 
                 header_len = 4 + mask_len;
                 data_len = ((((size_t) buf[2]) << 8) + buf[3]);
             }
             else if (body_len >= (10 + mask_len)) {
-                /* 64-bit length field */
+                // 64-bit length field 
                 uint32_t l1, l2;
-                memcpy(&l1, &buf[2], 4); /* Use memcpy for alignment */
+                memcpy(&l1, &buf[2], 4); // Use memcpy for alignment 
                 memcpy(&l2, &buf[6], 4);
                 header_len = 10 + mask_len;
                 data_len = (((uint64_t) ntohl(l1)) << 32) + ntohl(l2);
 
                 if (data_len > (uint64_t) 0x7FFF0000ul) {
-                    /* no can do */
+                    // no can do 
                     vscpweb_cry(conn, "websocket out of memory; closing connection");
                     break;
                 }
@@ -12623,21 +12812,21 @@ read_websocket(struct vscpweb_connection *conn,
         }
 
         if ((header_len > 0) && (body_len >= header_len)) {
-            /* Allocate space to hold websocket payload */
+            // Allocate space to hold websocket payload 
             unsigned char *data = mem;
 
             if ((size_t) data_len > (size_t)sizeof (mem)) {
                 data =
                         (unsigned char *) vscpweb_malloc_ctx((size_t) data_len, conn->ctx);
                 if (data == NULL) {
-                    /* Allocation failed, exit the loop and then close the
-                     * connection */
+                    // Allocation failed, exit the loop and then close the
+                    // connection 
                     vscpweb_cry(conn, "websocket out of memory; closing connection");
                     break;
                 }
             }
 
-            /* Copy the mask before we shift the queue and destroy it */
+            // Copy the mask before we shift the queue and destroy it 
             if (mask_len > 0) {
                 memcpy(mask, buf + header_len - mask_len, sizeof (mask));
             }
@@ -12645,12 +12834,12 @@ read_websocket(struct vscpweb_connection *conn,
                 memset(mask, 0, sizeof (mask));
             }
 
-            /* Read frame payload from the first message in the queue into
-             * data and advance the queue by moving the memory in place. */
+            // Read frame payload from the first message in the queue into
+            // data and advance the queue by moving the memory in place. 
             assert(body_len >= header_len);
             if (data_len + (uint64_t) header_len > (uint64_t) body_len) {
-                mop = buf[0]; /* current mask and opcode */
-                /* Overflow case */
+                mop = buf[0];   // current mask and opcode 
+                // Overflow case 
                 len = body_len - header_len;
                 memcpy(data, buf + header_len, len);
                 error = 0;
@@ -12668,11 +12857,11 @@ read_websocket(struct vscpweb_connection *conn,
                         len += (size_t) n;
                     }
                     else {
-                        /* Timeout: should retry */
-                        /* TODO: retry condition */
+                        // Timeout: should retry 
+                        // TODO: retry condition 
                     }
                 }
-                if (error) {
+                if ( error ) {
                     vscpweb_cry(conn, "Websocket pull failed; closing connection");
                     if (data != mem) {
                         vscpweb_free(data);
@@ -12685,42 +12874,42 @@ read_websocket(struct vscpweb_connection *conn,
             }
             else {
 
-                mop = buf[0]; /* current mask and opcode, overwritten by
-				               * memmove() */
+                mop = buf[0];   // current mask and opcode, overwritten by
+                                // memmove() 
 
-                /* Length of the message being read at the front of the
-                 * queue. Cast to 31 bit is OK, since we limited
-                 * data_len before. */
+                // Length of the message being read at the front of the
+                // queue. Cast to 31 bit is OK, since we limited
+                // data_len before. 
                 len = (size_t) data_len + header_len;
 
-                /* Copy the data payload into the data pointer for the
-                 * callback. Cast to 31 bit is OK, since we
-                 * limited data_len */
+                // Copy the data payload into the data pointer for the
+                // callback. Cast to 31 bit is OK, since we
+                // limited data_len 
                 memcpy(data, buf + header_len, (size_t) data_len);
 
-                /* Move the queue forward len bytes */
+                // Move the queue forward len bytes 
                 memmove(buf, buf + len, body_len - len);
 
-                /* Mark the queue as advanced */
+                // Mark the queue as advanced 
                 conn->data_len -= (int) len;
             }
 
-            /* Apply mask if necessary */
+            // Apply mask if necessary 
             if (mask_len > 0) {
                 for (i = 0; i < (size_t) data_len; i++) {
                     data[i] ^= mask[i & 3];
                 }
             }
 
-            /* Exit the loop if callback signals to exit (server side),
-             * or "connection close" opcode received (client side). */
+            // Exit the loop if callback signals to exit (server side),
+            // or "connection close" opcode received (client side). 
             exit_by_callback = 0;
-            if ((ws_data_handler != NULL)
-                && !ws_data_handler(conn,
-                                    mop,
-                                    (char *) data,
-                                    (size_t) data_len,
-                                    callback_data)) {
+            if ( ( ws_data_handler != NULL ) && 
+                    !ws_data_handler( conn,
+                                        mop,
+                                        (char *)data,
+                                        (size_t)data_len,
+                                        callback_data ) ) {
                 exit_by_callback = 1;
             }
 
@@ -12728,49 +12917,53 @@ read_websocket(struct vscpweb_connection *conn,
                 vscpweb_free(data);
             }
 
-            if (exit_by_callback
-                || ((mop & 0xf) == WEBSOCKET_OPCODE_CONNECTION_CLOSE)) {
-                /* Opcode == 8, connection close */
+            if ( exit_by_callback || 
+                    ( (mop & 0xf) == WEBSOCKET_OPCODE_CONNECTION_CLOSE ) ) {
+                // Opcode == 8, connection close 
                 break;
             }
 
-            /* Not breaking the loop, process next websocket frame. */
+            // Not breaking the loop, process next websocket frame. 
         }
         else {
-            /* Read from the socket into the next available location in the
-             * message queue. */
-            n = pull_inner(NULL,
-                           conn,
-                           conn->buf + conn->data_len,
-                           conn->buf_size - conn->data_len,
-                           timeout);
+            // Read from the socket into the next available location in the
+            // message queue. 
+            n = pull_inner( NULL,
+                                conn,
+                                conn->buf + conn->data_len,
+                                conn->buf_size - conn->data_len,
+                                timeout );
             if (n <= -2) {
-                /* Error, no bytes read */
+                // Error, no bytes read 
                 break;
             }
-            if (n > 0) {
+            
+            if ( n > 0 ) {
                 conn->data_len += n;
             }
             else {
-                /* Timeout: should retry */
-                /* TODO: get timeout def */
+                // Timeout: should retry 
+                // TODO: get timeout def 
             }
+            
         }
+        
     }
 
     vscpweb_set_thread_name("worker");
+    
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_websocket_write_exec
 //
 
 static int
-vscpweb_websocket_write_exec(struct vscpweb_connection *conn,
-                             int opcode,
-                             const char *data,
-                             size_t dataLen,
-                             uint32_t masking_key)
+vscpweb_websocket_write_exec( struct vscpweb_connection *conn,
+                                int opcode,
+                                const char *data,
+                                size_t dataLen,
+                                uint32_t masking_key )
 {
     unsigned char header[14];
     size_t headerLen = 1;
@@ -12778,7 +12971,7 @@ vscpweb_websocket_write_exec(struct vscpweb_connection *conn,
     int retval = -1;
 
 #if defined(__GNUC__) || defined(__MINGW32__)
-    /* Disable spurious conversion warning for GCC */
+    // Disable spurious conversion warning for GCC 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wconversion"
 #endif
@@ -12789,21 +12982,21 @@ vscpweb_websocket_write_exec(struct vscpweb_connection *conn,
 #pragma GCC diagnostic pop
 #endif
 
-    /* Frame format: http://tools.ietf.org/html/rfc6455#section-5.2 */
+    // Frame format: http://tools.ietf.org/html/rfc6455#section-5.2 
     if (dataLen < 126) {
-        /* inline 7-bit length field */
+        // inline 7-bit length field 
         header[1] = (unsigned char) dataLen;
         headerLen = 2;
     }
     else if (dataLen <= 0xFFFF) {
-        /* 16-bit length field */
+        // 16-bit length field 
         uint16_t len = htons((uint16_t) dataLen);
         header[1] = 126;
         memcpy(header + 2, &len, 2);
         headerLen = 4;
     }
     else {
-        /* 64-bit length field */
+        // 64-bit length field 
         uint32_t len1 = htonl((uint32_t) ((uint64_t) dataLen >> 32));
         uint32_t len2 = htonl((uint32_t) (dataLen & 0xFFFFFFFFu));
         header[1] = 127;
@@ -12813,24 +13006,24 @@ vscpweb_websocket_write_exec(struct vscpweb_connection *conn,
     }
 
     if (masking_key) {
-        /* add mask */
+        // add mask 
         header[1] |= 0x80;
         memcpy(header + headerLen, &masking_key, 4);
         headerLen += 4;
     }
 
 
-    /* Note that POSIX/Winsock's send() is threadsafe
-     * http://stackoverflow.com/questions/1981372/are-parallel-calls-to-send-recv-on-the-same-socket-valid
-     * but mongoose's vscpweb_printf/vscpweb_write is not (because of the loop in
-     * push(), although that is only a problem if the packet is large or
-     * outgoing buffer is full). */
+    // Note that POSIX/Winsock's send() is threadsafe
+    // http://stackoverflow.com/questions/1981372/are-parallel-calls-to-send-recv-on-the-same-socket-valid
+    // but mongoose's vscpweb_printf/vscpweb_write is not (because of the loop in
+    // push(), although that is only a problem if the packet is large or
+    // outgoing buffer is full). 
 
-    /* TODO: Check if this lock should be moved to user land.
-     * Currently the server sets this lock for websockets, but
-     * not for any other connection. It must be set for every
-     * conn read/written by more than one thread, no matter if
-     * it is a websocket or regular connection. */
+    // TODO: Check if this lock should be moved to user land.
+    // Currently the server sets this lock for websockets, but
+    // not for any other connection. It must be set for every
+    // conn read/written by more than one thread, no matter if
+    // it is a websocket or regular connection. 
     (void) vscpweb_lock_connection(conn);
 
     retval = vscpweb_write(conn, header, headerLen);
@@ -12838,37 +13031,37 @@ vscpweb_websocket_write_exec(struct vscpweb_connection *conn,
         retval = vscpweb_write(conn, data, dataLen);
     }
 
-    /* TODO: Remove this unlock as well, when lock is moved. */
+    // TODO: Remove this unlock as well, when lock is moved. 
     vscpweb_unlock_connection(conn);
 
     return retval;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_websocket_write
 //
 
 int
-vscpweb_websocket_write(struct vscpweb_connection *conn,
-                        int opcode,
-                        const char *data,
-                        size_t dataLen)
+vscpweb_websocket_write( struct vscpweb_connection *conn,
+                            int opcode,
+                            const char *data,
+                            size_t dataLen )
 {
-    return vscpweb_websocket_write_exec(conn, opcode, data, dataLen, 0);
+    return vscpweb_websocket_write_exec(conn, opcode, data, dataLen, 0 );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// mask_data
 //
 
 static void
-mask_data(const char *in, size_t in_len, uint32_t masking_key, char *out)
+mask_data( const char *in, size_t in_len, uint32_t masking_key, char *out )
 {
     size_t i = 0;
 
     i = 0;
     if ((in_len > 3) && ((ptrdiff_t) in % 4) == 0) {
-        /* Convert in 32 bit words, if data is 4 byte aligned */
+        // Convert in 32 bit words, if data is 4 byte aligned 
         while (i < (in_len - 3)) {
             *(uint32_t *) (void *) (out + i) =
                     *(uint32_t *) (void *) (in + i) ^ masking_key;
@@ -12876,7 +13069,7 @@ mask_data(const char *in, size_t in_len, uint32_t masking_key, char *out)
         }
     }
     if (i != in_len) {
-        /* convert 1-3 remaining bytes if ((dataLen % 4) != 0)*/
+        // convert 1-3 remaining bytes if ((dataLen % 4) != 0)
         while (i < in_len) {
             *(uint8_t *) (void *) (out + i) =
                     *(uint8_t *) (void *) (in + i)
@@ -12887,14 +13080,14 @@ mask_data(const char *in, size_t in_len, uint32_t masking_key, char *out)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_websocket_client_write
 //
 
 int
-vscpweb_websocket_client_write(struct vscpweb_connection *conn,
-                               int opcode,
-                               const char *data,
-                               size_t dataLen)
+vscpweb_websocket_client_write( struct vscpweb_connection *conn,
+                                    int opcode,
+                                    const char *data,
+                                    size_t dataLen )
 {
     int retval = -1;
     char *masked_data =
@@ -12902,99 +13095,104 @@ vscpweb_websocket_client_write(struct vscpweb_connection *conn,
     uint32_t masking_key = (uint32_t) get_random();
 
     if (masked_data == NULL) {
-        /* Return -1 in an error case */
-        vscpweb_cry(conn,
-                    "Cannot allocate buffer for masked websocket response: "
-                    "Out of memory");
+        // Return -1 in an error case 
+        vscpweb_cry( conn,
+                        "Cannot allocate buffer for masked websocket response: "
+                        "Out of memory");
         return -1;
     }
 
     mask_data(data, dataLen, masking_key, masked_data);
 
-    retval = vscpweb_websocket_write_exec(
-                                          conn, opcode, masked_data, dataLen, masking_key);
+    retval = vscpweb_websocket_write_exec( conn, 
+                                            opcode, 
+                                            masked_data, 
+                                            dataLen, 
+                                            masking_key );
     vscpweb_free(masked_data);
 
     return retval;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// handle_websocket_request
 //
 
 static void
-handle_websocket_request(struct vscpweb_connection *conn,
-                         const char *path,
-                         int is_callback_resource,
-                         struct vscpweb_websocket_subprotocols *subprotocols,
-                         vscpweb_websocket_connect_handler ws_connect_handler,
-                         vscpweb_websocket_ready_handler ws_ready_handler,
-                         vscpweb_websocket_data_handler ws_data_handler,
-                         vscpweb_websocket_close_handler ws_close_handler,
-                         void *cbData)
+handle_websocket_request( struct vscpweb_connection *conn,
+                            const char *path,
+                            int is_callback_resource,
+                            struct vscpweb_websocket_subprotocols *subprotocols,
+                            vscpweb_websocket_connect_handler ws_connect_handler,
+                            vscpweb_websocket_ready_handler ws_ready_handler,
+                            vscpweb_websocket_data_handler ws_data_handler,
+                            vscpweb_websocket_close_handler ws_close_handler,
+                            void *cbData )
 {
     const char *websock_key = vscpweb_get_header(conn, "Sec-WebSocket-Key");
     const char *version = vscpweb_get_header(conn, "Sec-WebSocket-Version");
     int lua_websock = 0;
 
-    /* Step 1: Check websocket protocol version. */
-    /* Step 1.1: Check Sec-WebSocket-Key. */
+    // Step 1: Check websocket protocol version. 
+    // Step 1.1: Check Sec-WebSocket-Key. 
     if (!websock_key) {
-        /* The RFC standard version (https://tools.ietf.org/html/rfc6455)
-         * requires a Sec-WebSocket-Key header.
-         */
-        /* It could be the hixie draft version
-         * (http://tools.ietf.org/html/draft-hixie-thewebsocketprotocol-76).
-         */
+        // The RFC standard version (https://tools.ietf.org/html/rfc6455)
+        // requires a Sec-WebSocket-Key header.
+        //
+        // It could be the hixie draft version
+        // (http://tools.ietf.org/html/draft-hixie-thewebsocketprotocol-76).
+        //
         const char *key1 = vscpweb_get_header(conn, "Sec-WebSocket-Key1");
         const char *key2 = vscpweb_get_header(conn, "Sec-WebSocket-Key2");
         char key3[8];
 
         if ((key1 != NULL) && (key2 != NULL)) {
-            /* This version uses 8 byte body data in a GET request */
+            // This version uses 8 byte body data in a GET request 
             conn->content_len = 8;
             if (8 == vscpweb_read(conn, key3, 8)) {
-                /* This is the hixie version */
-                vscpweb_send_http_error(conn,
-                                        426,
-                                        "%s",
-                                        "Protocol upgrade to RFC 6455 required");
+                // This is the hixie version 
+                vscpweb_send_http_error( conn,
+                                            426,
+                                            "%s",
+                                            "Protocol upgrade to RFC 6455 required");
                 return;
             }
         }
-        /* This is an unknown version */
+        
+        // This is an unknown version 
         vscpweb_send_http_error(conn, 400, "%s", "Malformed websocket request");
         return;
     }
 
-    /* Step 1.2: Check websocket protocol version. */
-    /* The RFC version (https://tools.ietf.org/html/rfc6455) is 13. */
-    if ((version == NULL) || (strcmp(version, "13") != 0)) {
-        /* Reject wrong versions */
+    // Step 1.2: Check websocket protocol version. 
+    // The RFC version (https://tools.ietf.org/html/rfc6455) is 13. 
+    if ( (version == NULL) || (strcmp(version, "13") != 0) ) {
+        // Reject wrong versions 
         vscpweb_send_http_error(conn, 426, "%s", "Protocol upgrade required");
         return;
     }
 
-    /* Step 1.3: Could check for "Host", but we do not really nead this
-     * value for anything, so just ignore it. */
+    // Step 1.3: Could check for "Host", but we do not really nead this
+    // value for anything, so just ignore it. */
 
-    /* Step 2: If a callback is responsible, call it. */
+    // Step 2: If a callback is responsible, call it. 
     if (is_callback_resource) {
-        /* Step 2.1 check and select subprotocol */
+        // Step 2.1 check and select subprotocol 
         const char *protocols[64]; // max 64 headers
-        int nbSubprotocolHeader = get_req_headers(&conn->request_info,
-                                                  "Sec-WebSocket-Protocol",
-                                                  protocols,
-                                                  64);
-        if ((nbSubprotocolHeader > 0) && subprotocols) {
+        int nbSubprotocolHeader = get_req_headers( &conn->request_info,
+                                                    "Sec-WebSocket-Protocol",
+                                                    protocols,
+                                                    64 );
+        if ( (nbSubprotocolHeader > 0) && subprotocols ) {
             int cnt = 0;
             int idx;
             unsigned long len;
-            const char *sep, *curSubProtocol,
-                    *acceptedWebSocketSubprotocol = NULL;
+            const char *sep; 
+            const char *curSubProtocol;
+            const char *acceptedWebSocketSubprotocol = NULL;
 
 
-            /* look for matching subprotocol */
+            // look for matching subprotocol 
             do {
                 const char *protocol = protocols[cnt];
 
@@ -13018,92 +13216,72 @@ handle_websocket_request(struct vscpweb_connection *conn,
                             break;
                         }
                     }
-                }
-                while (sep && !acceptedWebSocketSubprotocol);
-            }
-            while (++cnt < nbSubprotocolHeader
-                   && !acceptedWebSocketSubprotocol);
+                    
+                } while (sep && !acceptedWebSocketSubprotocol);
+                
+            } while ( ( ++cnt < nbSubprotocolHeader ) && 
+                        !acceptedWebSocketSubprotocol);
 
             conn->request_info.acceptedWebSocketSubprotocol =
-                    acceptedWebSocketSubprotocol;
+                                            acceptedWebSocketSubprotocol;
         }
         else if (nbSubprotocolHeader > 0) {
-            /* keep legacy behavior */
+            
+            // keep legacy behavior 
             const char *protocol = protocols[0];
 
-            /* The protocol is a comma separated list of names. */
-            /* The server must only return one value from this list. */
-            /* First check if it is a list or just a single value. */
+            // The protocol is a comma separated list of names. 
+            // The server must only return one value from this list. 
+            // First check if it is a list or just a single value. 
             const char *sep = strrchr(protocol, ',');
             if (sep == NULL) {
-                /* Just a single protocol -> accept it. */
+                // Just a single protocol -> accept it. 
                 conn->request_info.acceptedWebSocketSubprotocol = protocol;
             }
             else {
-                /* Multiple protocols -> accept the last one. */
-                /* This is just a quick fix if the client offers multiple
-                 * protocols. The handler should have a list of accepted
-                 * protocols on his own
-                 * and use it to select one protocol among those the client
-                 * has
-                 * offered.
-                 */
+                // Multiple protocols -> accept the last one. */
+                // This is just a quick fix if the client offers multiple
+                // protocols. The handler should have a list of accepted
+                // protocols on his own
+                // and use it to select one protocol among those the client
+                // has
+                // offered.                
                 while (isspace(*++sep)) {
-                    ; /* ignore leading whitespaces */
+                    ; // ignore leading whitespaces 
                 }
                 conn->request_info.acceptedWebSocketSubprotocol = sep;
             }
         }
 
-        if ((ws_connect_handler != NULL)
-            && (ws_connect_handler(conn, cbData) != 0)) {
-            /* C callback has returned non-zero, do not proceed with
-             * handshake.
-             */
-            /* Note that C callbacks are no longer called when Lua is
-             * responsible, so C can no longer filter callbacks for Lua. */
+        if ( ( ws_connect_handler != NULL ) && 
+             ( ws_connect_handler(conn, cbData) != 0 ) ) {
+            // C callback has returned non-zero, do not proceed with
+            // handshake.
+            //
+            // Note that C callbacks are no longer called when Lua is
+            // responsible, so C can no longer filter callbacks for Lua. 
             return;
         }
-    }
+        
+    }    
 
-        /* Step 3: No callback. Check if Lua is responsible. */
-    else {
-        /* Step 3.1: Check if Lua is responsible. */
-        /*if (conn->ctx->config[LUA_WEBSOCKET_EXTENSIONS]) {
-                lua_websock =
-                    match_prefix(conn->ctx->config[LUA_WEBSOCKET_EXTENSIONS],
-                                 strlen(
-                                     conn->ctx->config[LUA_WEBSOCKET_EXTENSIONS]),
-                                 path);
-        }
-
-        if (lua_websock) {
-                // Step 3.2: Lua is responsible: call it. 
-                conn->lua_websocket_state = lua_websocket_new(path, conn); 
-                if (!conn->lua_websocket_state) { 
-                        // Lua rejected the new client 
-                        return;
-                }
-        }*/
-    }
-
-    /* Step 4: Check if there is a responsible websocket handler. */
+    // Step 4: Check if there is a responsible websocket handler. 
     if (!is_callback_resource && !lua_websock) {
-        /* There is no callback, and Lua is not responsible either. */
-        /* Reply with a 404 Not Found. We are still at a standard
-         * HTTP request here, before the websocket handshake, so
-         * we can still send standard HTTP error replies. */
+        // There is no callback, and Lua is not responsible either. 
+        // Reply with a 404 Not Found. We are still at a standard
+        // HTTP request here, before the websocket handshake, so
+        // we can still send standard HTTP error replies. 
         vscpweb_send_http_error(conn, 404, "%s", "Not found");
         return;
     }
 
-    /* Step 5: The websocket connection has been accepted */
+    // Step 5: The websocket connection has been accepted 
     if (!send_websocket_handshake(conn, websock_key)) {
         vscpweb_send_http_error(conn, 500, "%s", "Websocket handshake failed");
         return;
     }
 
-    /* Step 6: Call the ready handler */
+    // Step 6: Call the ready handler 
     if (is_callback_resource) {
         if (ws_ready_handler != NULL) {
             ws_ready_handler(conn, cbData);
@@ -13112,21 +13290,21 @@ handle_websocket_request(struct vscpweb_connection *conn,
     }
 
 
-    /* Step 7: Enter the read loop */
+    // Step 7: Enter the read loop 
     if (is_callback_resource) {
         read_websocket(conn, ws_data_handler, cbData);
-
     }
 
 
-    /* Step 8: Call the close handler */
+    // Step 8: Call the close handler 
     if (ws_close_handler) {
         ws_close_handler(conn, cbData);
     }
+    
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// is_websocket_protocol
 //
 
 static int
@@ -13134,66 +13312,72 @@ is_websocket_protocol(const struct vscpweb_connection *conn)
 {
     const char *upgrade, *connection;
 
-    /* A websocket protocoll has the following HTTP headers:
-     *
-     * Connection: Upgrade
-     * Upgrade: Websocket
-     */
+    // A websocket protocoll has the following HTTP headers:
+    //
+    // Connection: Upgrade
+    // Upgrade: Websocket
+    //
 
     upgrade = vscpweb_get_header(conn, "Upgrade");
-    if (upgrade == NULL) {
-        return 0; /* fail early, don't waste time checking other header
-		           * fields
-		             */
+    if ( NULL == upgrade ) {
+        return 0;   // fail early, don't waste time checking other header
+		    // fields
     }
-    if (!vscpweb_strcasestr(upgrade, "websocket")) {
+    if ( !vscpweb_strcasestr(upgrade, "websocket") ) {
         return 0;
     }
 
     connection = vscpweb_get_header(conn, "Connection");
-    if (connection == NULL) {
+    if ( NULL == connection ) {
         return 0;
     }
+    
     if (!vscpweb_strcasestr(connection, "upgrade")) {
         return 0;
     }
 
-    /* The headers "Host", "Sec-WebSocket-Key", "Sec-WebSocket-Protocol" and
-     * "Sec-WebSocket-Version" are also required.
-     * Don't check them here, since even an unsupported websocket protocol
-     * request still IS a websocket request (in contrast to a standard HTTP
-     * request). It will fail later in handle_websocket_request.
-     */
+    // The headers "Host", "Sec-WebSocket-Key", "Sec-WebSocket-Protocol" and
+    // "Sec-WebSocket-Version" are also required.
+    // Don't check them here, since even an unsupported websocket protocol
+    // request still IS a websocket request (in contrast to a standard HTTP
+    // request). It will fail later in handle_websocket_request.
 
     return 1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// isbyte
 //
 
 static int
-isbyte(int n)
+isbyte( int n )
 {
     return (n >= 0) && (n <= 255);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// parse_net
 //
 
 static int
-parse_net(const char *spec, uint32_t *net, uint32_t *mask)
+parse_net( const char *spec, uint32_t *net, uint32_t *mask )
 {
     int n, a, b, c, d, slash = 32, len = 0;
 
-    if (((sscanf(spec, "%d.%d.%d.%d/%d%n", &a, &b, &c, &d, &slash, &n) == 5)
-        || (sscanf(spec, "%d.%d.%d.%d%n", &a, &b, &c, &d, &n) == 4))
-        && isbyte(a) && isbyte(b) && isbyte(c) && isbyte(d) && (slash >= 0)
-        && (slash < 33)) {
+    if ( ( ( 5 == sscanf(spec, "%d.%d.%d.%d/%d%n", &a, &b, &c, &d, &slash, &n ) ) || 
+           ( 4 == sscanf(spec, "%d.%d.%d.%d%n", &a, &b, &c, &d, &n ) ) ) && 
+            isbyte(a) && 
+            isbyte(b) && 
+            isbyte(c) && 
+            isbyte(d) && 
+            (slash >= 0 ) && 
+            (slash < 33) ) {
+        
         len = n;
-        *net = ((uint32_t) a << 24) | ((uint32_t) b << 16) | ((uint32_t) c << 8)
-                | (uint32_t) d;
+        *net = ((uint32_t) a << 24) | 
+                ((uint32_t) b << 16) | 
+                ((uint32_t) c << 8) | 
+                (uint32_t) d;
         *mask = slash ? (0xffffffffU << (32 - slash)) : 0;
     }
 
@@ -13201,11 +13385,11 @@ parse_net(const char *spec, uint32_t *net, uint32_t *mask)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// set_throttle
 //
 
 static int
-set_throttle(const char *spec, uint32_t remote_ip, const char *uri)
+set_throttle( const char *spec, uint32_t remote_ip, const char *uri )
 {
     int throttle = 0;
     struct vec vec, val;
@@ -13214,15 +13398,18 @@ set_throttle(const char *spec, uint32_t remote_ip, const char *uri)
     double v;
 
     while ((spec = next_option(spec, &vec, &val)) != NULL) {
+        
         mult = ',';
         if ((val.ptr == NULL) || (sscanf(val.ptr, "%lf%c", &v, &mult) < 1)
             || (v < 0) || ((lowercase(&mult) != 'k')
             && (lowercase(&mult) != 'm') && (mult != ','))) {
             continue;
         }
+        
         v *= (lowercase(&mult) == 'k')
                 ? 1024
                 : ((lowercase(&mult) == 'm') ? 1048576 : 1);
+        
         if (vec.len == 1 && vec.ptr[0] == '*') {
             throttle = (int) v;
         }
@@ -13234,61 +13421,63 @@ set_throttle(const char *spec, uint32_t remote_ip, const char *uri)
         else if (match_prefix(vec.ptr, vec.len, uri) > 0) {
             throttle = (int) v;
         }
+        
     }
 
     return throttle;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// get_remote_ip
 //
 
 static uint32_t
-get_remote_ip(const struct vscpweb_connection *conn)
+get_remote_ip( const struct vscpweb_connection *conn )
 {
-    if (!conn) {
+    if ( !conn ) {
         return 0;
     }
-    return ntohl(*(const uint32_t *) &conn->client.rsa.sin.sin_addr);
+    
+    return ntohl( *(const uint32_t *) &conn->client.rsa.sin.sin_addr );
 }
 
 
-/* The vscpweb_upload function is superseeded by vscpweb_handle_form_request. */
+// The vscpweb_upload function is superseeded by vscpweb_handle_form_request. 
 
-/* Copyright (c) 2016-2017 the Civetweb developers
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// Copyright (c) 2016-2017 the Civetweb developers
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// url_encoded_field_found
 //
 
 static int
-url_encoded_field_found(const struct vscpweb_connection *conn,
-                        const char *key,
-                        size_t key_len,
-                        const char *filename,
-                        size_t filename_len,
-                        char *path,
-                        size_t path_len,
-                        struct vscpweb_form_data_handler *fdh)
+url_encoded_field_found( const struct vscpweb_connection *conn,
+                            const char *key,
+                            size_t key_len,
+                            const char *filename,
+                            size_t filename_len,
+                            char *path,
+                            size_t path_len,
+                            struct vscpweb_form_data_handler *fdh )
 {
     char key_dec[1024];
     char filename_dec[1024];
@@ -13299,30 +13488,30 @@ url_encoded_field_found(const struct vscpweb_connection *conn,
     key_dec_len =
             vscpweb_url_decode(key, (int) key_len, key_dec, (int) sizeof (key_dec), 1);
 
-    if (((size_t) key_dec_len >= (size_t)sizeof (key_dec)) || (key_dec_len < 0)) {
+    if ( ((size_t) key_dec_len >= (size_t)sizeof (key_dec)) || (key_dec_len < 0)) {
         return FORM_FIELD_STORAGE_SKIP;
     }
 
-    if (filename) {
-        filename_dec_len = vscpweb_url_decode(filename,
-                                              (int) filename_len,
-                                              filename_dec,
-                                              (int) sizeof (filename_dec),
-                                              1);
+    if ( filename ) {
+        filename_dec_len = vscpweb_url_decode( filename,
+                                                (int) filename_len,
+                                                filename_dec,
+                                                (int) sizeof (filename_dec),
+                                                1 );
 
-        if (((size_t) filename_dec_len >= (size_t)sizeof (filename_dec))
-            || (filename_dec_len < 0)) {
-            /* Log error message and skip this field. */
+        if ( ( (size_t) filename_dec_len >= (size_t)sizeof (filename_dec)) || 
+               ( filename_dec_len < 0 ) ) {
+            // Log error message and skip this field. 
             vscpweb_cry(conn, "%s: Cannot decode filename", __func__);
             return FORM_FIELD_STORAGE_SKIP;
         }
+        
     }
     else {
         filename_dec[0] = 0;
     }
 
-    ret =
-            fdh->field_found(key_dec, filename_dec, path, path_len, fdh->user_data);
+    ret =  fdh->field_found(key_dec, filename_dec, path, path_len, fdh->user_data);
 
     if ((ret & 0xF) == FORM_FIELD_STORAGE_GET) {
         if (fdh->field_get == NULL) {
@@ -13341,16 +13530,16 @@ url_encoded_field_found(const struct vscpweb_connection *conn,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// url_encoded_field_get
 //
 
 static int
-url_encoded_field_get(const struct vscpweb_connection *conn,
-                      const char *key,
-                      size_t key_len,
-                      const char *value,
-                      size_t value_len,
-                      struct vscpweb_form_data_handler *fdh)
+url_encoded_field_get( const struct vscpweb_connection *conn,
+                        const char *key,
+                        size_t key_len,
+                        const char *value,
+                        size_t value_len,
+                        struct vscpweb_form_data_handler *fdh )
 {
     char key_dec[1024];
 
@@ -13358,78 +13547,88 @@ url_encoded_field_get(const struct vscpweb_connection *conn,
     int value_dec_len, ret;
 
     if (!value_dec) {
-        /* Log error message and stop parsing the form data. */
-        vscpweb_cry(conn,
-                    "%s: Not enough memory (required: %lu)",
-                    __func__,
-                    (unsigned long) (value_len + 1));
+        // Log error message and stop parsing the form data. 
+        vscpweb_cry( conn,
+                        "%s: Not enough memory (required: %lu)",
+                        __func__,
+                        (unsigned long) (value_len + 1) );
         return FORM_FIELD_STORAGE_ABORT;
     }
 
     vscpweb_url_decode(key, (int) key_len, key_dec, (int) sizeof (key_dec), 1);
 
-    value_dec_len =
-            vscpweb_url_decode(value, (int) value_len, value_dec, (int) value_len + 1, 1);
+    value_dec_len = vscpweb_url_decode( value, 
+                                            (int)value_len, 
+                                            value_dec, 
+                                            (int)value_len + 1, 
+                                            1 );
 
-    ret = fdh->field_get(key_dec,
-                         value_dec,
-                         (size_t) value_dec_len,
-                         fdh->user_data);
+    ret = fdh->field_get( key_dec,
+                            value_dec,
+                            (size_t) value_dec_len,
+                            fdh->user_data );
 
-    vscpweb_free(value_dec);
+    vscpweb_free( value_dec );
 
     return ret;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// unencoded_field_get
 //
 
 static int
-unencoded_field_get(const struct vscpweb_connection *conn,
-                    const char *key,
-                    size_t key_len,
-                    const char *value,
-                    size_t value_len,
-                    struct vscpweb_form_data_handler *fdh)
+unencoded_field_get( const struct vscpweb_connection *conn,
+                        const char *key,
+                        size_t key_len,
+                        const char *value,
+                        size_t value_len,
+                        struct vscpweb_form_data_handler *fdh )
 {
     char key_dec[1024];
-    (void) conn;
+    (void)conn;
 
-    vscpweb_url_decode(key, (int) key_len, key_dec, (int) sizeof (key_dec), 1);
+    vscpweb_url_decode( key, 
+                            (int)key_len, 
+                            key_dec, 
+                            (int)sizeof (key_dec), 
+                            1 );
 
-    return fdh->field_get(key_dec, value, value_len, fdh->user_data);
+    return fdh->field_get( key_dec, 
+                                value, 
+                                value_len, 
+                                fdh->user_data );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// field_stored
 //
 
 static int
-field_stored(const struct vscpweb_connection *conn,
-             const char *path,
-             long long file_size,
-             struct vscpweb_form_data_handler *fdh)
+field_stored( const struct vscpweb_connection *conn,
+                const char *path,
+                long long file_size,
+                struct vscpweb_form_data_handler *fdh )
 {
-    /* Equivalent to "upload" callback of "vscpweb_upload". */
+    // Equivalent to "upload" callback of "vscpweb_upload". 
 
-    (void) conn; /* we do not need vscpweb_cry here, so conn is currently unused */
+    (void) conn; // we do not need vscpweb_cry here, so conn is currently unused 
 
     return fdh->field_store(path, file_size, fdh->user_data);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// search_boundary
 //
 
 static const char *
-search_boundary(const char *buf,
-                size_t buf_len,
-                const char *boundary,
-                size_t boundary_len)
+search_boundary( const char *buf,
+                    size_t buf_len,
+                    const char *boundary,
+                    size_t boundary_len )
 {
-    /* We must do a binary search here, not a string search, since the buffer
-     * may contain '\x00' bytes, if binary data is transferred. */
+    // We must do a binary search here, not a string search, since the buffer
+    // may contain '\x00' bytes, if binary data is transferred. 
     int clen = (int) buf_len - (int) boundary_len - 4;
     int i;
 
@@ -13444,58 +13643,59 @@ search_boundary(const char *buf,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_handle_form_request
 //
 
 int
-vscpweb_handle_form_request(struct vscpweb_connection *conn,
-                            struct vscpweb_form_data_handler *fdh)
+vscpweb_handle_form_request( struct vscpweb_connection *conn,
+                                struct vscpweb_form_data_handler *fdh )
 {
     const char *content_type;
     char path[512];
-    char buf[1024]; /* Must not be smaller than ~900 - see sanity check */
+    char buf[1024]; // Must not be smaller than ~900 - see sanity check 
     int field_storage;
     int buf_fill = 0;
     int r;
     int field_count = 0;
     struct vscpweb_file fstore = STRUCT_FILE_INITIALIZER;
-    int64_t file_size = 0; /* init here, to a avoid a false positive
-	                         "uninitialized variable used" warning */
+    int64_t file_size = 0; // init here, to a avoid a false positive
+	                   //   "uninitialized variable used" warning 
 
     int has_body_data =
             (conn->request_info.content_length > 0) || (conn->is_chunked);
 
-    /* There are three ways to encode data from a HTML form:
-     * 1) method: GET (default)
-     *    The form data is in the HTTP query string.
-     * 2) method: POST, enctype: "application/x-www-form-urlencoded"
-     *    The form data is in the request body.
-     *    The body is url encoded (the default encoding for POST).
-     * 3) method: POST, enctype: "multipart/form-data".
-     *    The form data is in the request body of a multipart message.
-     *    This is the typical way to handle file upload from a form.
-     */
+    // There are three ways to encode data from a HTML form:
+    // 1) method: GET (default)
+    //    The form data is in the HTTP query string.
+    // 2) method: POST, enctype: "application/x-www-form-urlencoded"
+    //    The form data is in the request body.
+    //    The body is url encoded (the default encoding for POST).
+    // 3) method: POST, enctype: "multipart/form-data".
+    //    The form data is in the request body of a multipart message.
+    //    This is the typical way to handle file upload from a form.
+    //
 
-    if (!has_body_data) {
+    if ( !has_body_data ) {
+        
         const char *data;
 
         if (strcmp(conn->request_info.request_method, "GET")) {
-            /* No body data, but not a GET request.
-             * This is not a valid form request. */
+            // No body data, but not a GET request.
+            // This is not a valid form request. 
             return -1;
         }
 
-        /* GET request: form data is in the query string. */
-        /* The entire data has already been loaded, so there is no nead to
-         * call vscpweb_read. We just need to split the query string into key-value
-         * pairs. */
+        // GET request: form data is in the query string. */
+        // The entire data has already been loaded, so there is no nead to
+        // call vscpweb_read. We just need to split the query string into key-value
+        // pairs. 
         data = conn->request_info.query_string;
         if (!data) {
-            /* No query string. */
+            // No query string. 
             return -1;
         }
 
-        /* Split data in a=1&b=xy&c=3&c=4 ... */
+        // Split data in a=1&b=xy&c=3&c=4 ... 
         while (*data) {
             const char *val = strchr(data, '=');
             const char *next;
@@ -13506,27 +13706,27 @@ vscpweb_handle_form_request(struct vscpweb_connection *conn,
             }
             keylen = val - data;
 
-            /* In every "field_found" callback we ask what to do with the
-             * data ("field_storage"). This could be:
-             * FORM_FIELD_STORAGE_SKIP (0) ... ignore the value of this field
-             * FORM_FIELD_STORAGE_GET (1) ... read the data and call the get
-             *                              callback function
-             * FORM_FIELD_STORAGE_STORE (2) ... store the data in a file
-             * FORM_FIELD_STORAGE_READ (3) ... let the user read the data
-             *                               (for parsing long data on the fly)
-             *                               (currently not implemented)
-             * FORM_FIELD_STORAGE_ABORT (flag) ... stop parsing
-             */
+            // In every "field_found" callback we ask what to do with the
+            // data ("field_storage"). This could be:
+            // FORM_FIELD_STORAGE_SKIP (0) ... ignore the value of this field
+            // FORM_FIELD_STORAGE_GET (1) ... read the data and call the get
+            //                              callback function
+            // FORM_FIELD_STORAGE_STORE (2) ... store the data in a file
+            // FORM_FIELD_STORAGE_READ (3) ... let the user read the data
+            //                               (for parsing long data on the fly)
+            //                               (currently not implemented)
+            // FORM_FIELD_STORAGE_ABORT (flag) ... stop parsing
+            //
             memset(path, 0, sizeof (path));
             field_count++;
-            field_storage = url_encoded_field_found(conn,
-                                                    data,
-                                                    (size_t) keylen,
-                                                    NULL,
-                                                    0,
-                                                    path,
-                                                    sizeof (path) - 1,
-                                                    fdh);
+            field_storage = url_encoded_field_found( conn,
+                                                        data,
+                                                        (size_t)keylen,
+                                                        NULL,
+                                                        0,
+                                                        path,
+                                                        sizeof(path) - 1,
+                                                        fdh );
 
             val++;
             next = strchr(val, '&');
@@ -13540,15 +13740,18 @@ vscpweb_handle_form_request(struct vscpweb_connection *conn,
             }
 
             if (field_storage == FORM_FIELD_STORAGE_GET) {
-                /* Call callback */
+                // Call callback 
                 url_encoded_field_get(
                                       conn, data, (size_t) keylen, val, (size_t) vallen, fdh);
             }
+            
             if (field_storage == FORM_FIELD_STORAGE_STORE) {
-                /* Store the content to a file */
+                
+                // Store the content to a file 
                 if (vscpweb_fopen(conn, path, MG_FOPEN_MODE_WRITE, &fstore) == 0) {
                     fstore.access.fp = NULL;
                 }
+                
                 file_size = 0;
                 if (fstore.access.fp != NULL) {
                     size_t n = (size_t)
@@ -13566,7 +13769,7 @@ vscpweb_handle_form_request(struct vscpweb_connection *conn,
                     if (fstore.access.fp) {
                         r = vscpweb_fclose(&fstore.access);
                         if (r == 0) {
-                            /* stored successfully */
+                            // stored successfully 
                             field_stored(conn, path, file_size, fdh);
                         }
                         else {
@@ -13585,26 +13788,26 @@ vscpweb_handle_form_request(struct vscpweb_connection *conn,
                 }
             }
 
-            /* if (field_storage == FORM_FIELD_STORAGE_READ) { */
-            /* The idea of "field_storage=read" is to let the API user read
-             * data chunk by chunk and to some data processing on the fly.
-             * This should avoid the need to store data in the server:
-             * It should neither be stored in memory, like
-             * "field_storage=get" does, nor in a file like
-             * "field_storage=store".
-             * However, for a "GET" request this does not make any much
-             * sense, since the data is already stored in memory, as it is
-             * part of the query string.
-             */
-            /* } */
+            /* if (field_storage == FORM_FIELD_STORAGE_READ) { 
+            // The idea of "field_storage=read" is to let the API user read
+            // data chunk by chunk and to some data processing on the fly.
+            // This should avoid the need to store data in the server:
+            // It should neither be stored in memory, like
+            // "field_storage=get" does, nor in a file like
+            // "field_storage=store".
+            // However, for a "GET" request this does not make any much
+            // sense, since the data is already stored in memory, as it is
+            // part of the query string.
+            //
+            } */
 
-            if ((field_storage & FORM_FIELD_STORAGE_ABORT)
-                == FORM_FIELD_STORAGE_ABORT) {
-                /* Stop parsing the request */
+            if ( FORM_FIELD_STORAGE_ABORT == 
+                    ( field_storage & FORM_FIELD_STORAGE_ABORT ) ) {
+                // Stop parsing the request 
                 break;
             }
 
-            /* Proceed to next entry */
+            // Proceed to next entry 
             data = next;
         }
 
@@ -13613,18 +13816,20 @@ vscpweb_handle_form_request(struct vscpweb_connection *conn,
 
     content_type = vscpweb_get_header(conn, "Content-Type");
 
-    if (!content_type
-        || !vscpweb_strcasecmp(content_type, "APPLICATION/X-WWW-FORM-URLENCODED")
-        || !vscpweb_strcasecmp(content_type, "APPLICATION/WWW-FORM-URLENCODED")) {
-        /* The form data is in the request body data, encoded in key/value
-         * pairs. */
+    if ( !content_type || 
+         !vscpweb_strcasecmp( content_type, 
+                                "APPLICATION/X-WWW-FORM-URLENCODED" ) || 
+         !vscpweb_strcasecmp( content_type, 
+                                "APPLICATION/WWW-FORM-URLENCODED" ) ) {
+        // The form data is in the request body data, encoded in key/value
+        // pairs. 
         int all_data_read = 0;
 
-        /* Read body data and split it in keys and values.
-         * The encoding is like in the "GET" case above: a=1&b&c=3&c=4.
-         * Here we use "POST", and read the data from the request body.
-         * The data read on the fly, so it is not required to buffer the
-         * entire request in memory before processing it. */
+        // Read body data and split it in keys and values.
+        // The encoding is like in the "GET" case above: a=1&b&c=3&c=4.
+        // Here we use "POST", and read the data from the request body.
+        // The data read on the fly, so it is not required to buffer the
+        // entire request in memory before processing it. 
         for (;;) {
             const char *val;
             const char *next;
@@ -13633,7 +13838,7 @@ vscpweb_handle_form_request(struct vscpweb_connection *conn,
             int end_of_key_value_pair_found = 0;
             int get_block;
 
-            if ((size_t) buf_fill < (sizeof (buf) - 1)) {
+            if ( (size_t)buf_fill < (sizeof( buf ) - 1)) {
 
                 size_t to_read = sizeof (buf) - 1 - (size_t) buf_fill;
                 r = vscpweb_read(conn, buf + (size_t) buf_fill, to_read);
@@ -13641,12 +13846,13 @@ vscpweb_handle_form_request(struct vscpweb_connection *conn,
                     /* read error */
                     return -1;
                 }
+                
                 if (r != (int) to_read) {
-                    /* TODO: Create a function to get "all_data_read" from
-                     * the conn object. All data is read if the Content-Length
-                     * has been reached, or if chunked encoding is used and
-                     * the end marker has been read, or if the connection has
-                     * been closed. */
+                    // TODO: Create a function to get "all_data_read" from
+                    // the conn object. All data is read if the Content-Length
+                    // has been reached, or if chunked encoding is used and
+                    // the end marker has been read, or if the connection has
+                    // been closed. 
                     all_data_read = 1;
                 }
                 buf_fill += r;
@@ -13664,36 +13870,36 @@ vscpweb_handle_form_request(struct vscpweb_connection *conn,
             keylen = val - buf;
             val++;
 
-            /* Call callback */
+            // Call callback 
             memset(path, 0, sizeof (path));
             field_count++;
-            field_storage = url_encoded_field_found(conn,
-                                                    buf,
-                                                    (size_t) keylen,
-                                                    NULL,
-                                                    0,
-                                                    path,
-                                                    sizeof (path) - 1,
-                                                    fdh);
+            field_storage = url_encoded_field_found( conn,
+                                                        buf,
+                                                        (size_t)keylen,
+                                                        NULL,
+                                                        0,
+                                                        path,
+                                                        sizeof( path ) - 1,
+                                                        fdh );
 
-            if ((field_storage & FORM_FIELD_STORAGE_ABORT)
-                == FORM_FIELD_STORAGE_ABORT) {
-                /* Stop parsing the request */
+            if ( FORM_FIELD_STORAGE_ABORT == 
+                    ( field_storage & FORM_FIELD_STORAGE_ABORT ) ) {
+                // Stop parsing the request 
                 break;
             }
 
-            if (field_storage == FORM_FIELD_STORAGE_STORE) {
-                if (vscpweb_fopen(conn, path, MG_FOPEN_MODE_WRITE, &fstore) == 0) {
+            if ( FORM_FIELD_STORAGE_STORE == field_storage ) {
+                if ( 0 == vscpweb_fopen(conn, path, MG_FOPEN_MODE_WRITE, &fstore ) ) {
                     fstore.access.fp = NULL;
                 }
                 file_size = 0;
-                if (!fstore.access.fp) {
-                    vscpweb_cry(conn, "%s: Cannot create file %s", __func__, path);
+                if ( !fstore.access.fp ) {
+                    vscpweb_cry( conn, "%s: Cannot create file %s", __func__, path );
                 }
             }
 
             get_block = 0;
-            /* Loop to read values larger than sizeof(buf)-keylen-2 */
+            // Loop to read values larger than sizeof(buf)-keylen-2 
             do {
                 next = strchr(val, '&');
                 if (next) {
@@ -13709,96 +13915,106 @@ vscpweb_handle_form_request(struct vscpweb_connection *conn,
                 if (field_storage == FORM_FIELD_STORAGE_GET) {
 #if 0
                     if (!end_of_key_value_pair_found && !all_data_read) {
-                        /* This callback will deliver partial contents */
+                        // This callback will deliver partial contents 
                     }
 #else
-                    (void) all_data_read; /* avoid warning */
+                    (void) all_data_read; // avoid warning 
 #endif
 
                     /* Call callback */
-                    url_encoded_field_get(conn,
-                                          ((get_block > 0) ? NULL : buf),
-                                          ((get_block > 0) ? 0
-                                          : (size_t) keylen),
-                                          val,
-                                          (size_t) vallen,
-                                          fdh);
+                    url_encoded_field_get( conn,
+                                            ((get_block > 0) ? NULL : buf),
+                                            ((get_block > 0) ? 0 : (size_t) keylen),
+                                            val,
+                                            (size_t) vallen,
+                                            fdh);
                     get_block++;
                 }
-                if (fstore.access.fp) {
-                    size_t n = (size_t)
-                            fwrite(val, 1, (size_t) vallen, fstore.access.fp);
-                    if ((n != (size_t) vallen) || (ferror(fstore.access.fp))) {
-                        vscpweb_cry(conn,
-                                    "%s: Cannot write file %s",
-                                    __func__,
-                                    path);
+                
+                if ( fstore.access.fp ) {
+                    size_t n = (size_t)fwrite( val, 
+                                                1, 
+                                                (size_t)vallen, 
+                                                fstore.access.fp );
+                    if ( ( n != (size_t) vallen ) || 
+                         ( ferror( fstore.access.fp) ) ) {
+                        vscpweb_cry( conn,
+                                        "%s: Cannot write file %s",
+                                        __func__,
+                                        path );
                         vscpweb_fclose(&fstore.access);
                         remove_bad_file(conn, path);
                     }
                     file_size += (int64_t) n;
                 }
 
-                if (!end_of_key_value_pair_found) {
+                if ( !end_of_key_value_pair_found ) {
                     used = next - buf;
-                    memmove(buf,
-                            buf + (size_t) used,
-                            sizeof (buf) - (size_t) used);
-                    buf_fill -= (int) used;
-                    if ((size_t) buf_fill < (sizeof (buf) - 1)) {
+                    memmove( buf,
+                                buf + (size_t) used,
+                                sizeof (buf) - (size_t) used );
+                    buf_fill -= (int)used;
+                    if ( (size_t)buf_fill < ( sizeof( buf ) - 1 ) ) {
 
                         size_t to_read = sizeof (buf) - 1 - (size_t) buf_fill;
                         r = vscpweb_read(conn, buf + (size_t) buf_fill, to_read);
+                        
                         if (r < 0) {
-                            /* read error */
+                            // read error 
                             return -1;
                         }
+                        
                         if (r != (int) to_read) {
-                            /* TODO: Create a function to get "all_data_read"
-                             * from the conn object. All data is read if the
-                             * Content-Length has been reached, or if chunked
-                             * encoding is used and the end marker has been
-                             * read, or if the connection has been closed. */
+                            // TODO: Create a function to get "all_data_read"
+                            // from the conn object. All data is read if the
+                            // Content-Length has been reached, or if chunked
+                            // encoding is used and the end marker has been
+                            // read, or if the connection has been closed. 
                             all_data_read = 1;
                         }
+                        
                         buf_fill += r;
                         buf[buf_fill] = 0;
                         if (buf_fill < 1) {
                             break;
                         }
+                        
                         val = buf;
+                        
                     }
+                    
                 }
 
-            }
-            while (!end_of_key_value_pair_found);
+            } while ( !end_of_key_value_pair_found );
 
-            if (fstore.access.fp) {
+            if ( fstore.access.fp ) {
                 r = vscpweb_fclose(&fstore.access);
-                if (r == 0) {
-                    /* stored successfully */
+                if ( 0 == r ) {
+                    // stored successfully 
                     field_stored(conn, path, file_size, fdh);
                 }
                 else {
                     vscpweb_cry(conn, "%s: Error saving file %s", __func__, path);
                     remove_bad_file(conn, path);
                 }
+                
                 fstore.access.fp = NULL;
             }
 
-            /* Proceed to next entry */
+            // Proceed to next entry 
             used = next - buf;
             memmove(buf, buf + (size_t) used, sizeof (buf) - (size_t) used);
             buf_fill -= (int) used;
+            
         }
 
         return field_count;
     }
 
     if (!vscpweb_strncasecmp(content_type, "MULTIPART/FORM-DATA;", 20)) {
-        /* The form data is in the request body data, encoded as multipart
-         * content (see https://www.ietf.org/rfc/rfc1867.txt,
-         * https://www.ietf.org/rfc/rfc2388.txt). */
+        // The form data is in the request body data, encoded as multipart
+        // content (see https://www.ietf.org/rfc/rfc1867.txt,
+        // https://www.ietf.org/rfc/rfc2388.txt). 
         char *boundary;
         size_t bl;
         ptrdiff_t used;
@@ -13810,39 +14026,40 @@ vscpweb_handle_form_request(struct vscpweb_connection *conn,
 
         memset(&part_header, 0, sizeof (part_header));
 
-        /* Skip all spaces between MULTIPART/FORM-DATA; and BOUNDARY= */
+        // Skip all spaces between MULTIPART/FORM-DATA; and BOUNDARY= 
         bl = 20;
         while (content_type[bl] == ' ') {
             bl++;
         }
 
-        /* There has to be a BOUNDARY definition in the Content-Type header */
+        // There has to be a BOUNDARY definition in the Content-Type header 
         if (vscpweb_strncasecmp(content_type + bl, "BOUNDARY=", 9)) {
-            /* Malformed request */
+            // Malformed request 
             return -1;
         }
 
-        /* Copy boundary string to variable "boundary" */
+        // Copy boundary string to variable "boundary" 
         fbeg = content_type + bl + 9;
         bl = strlen(fbeg);
         boundary = (char *) vscpweb_malloc(bl + 1);
-        if (!boundary) {
-            /* Out of memory */
-            vscpweb_cry(conn,
-                        "%s: Cannot allocate memory for boundary [%lu]",
-                        __func__,
-                        (unsigned long) bl);
+        if ( !boundary ) {
+            // Out of memory 
+            vscpweb_cry( conn,
+                            "%s: Cannot allocate memory for boundary [%lu]",
+                            __func__,
+                            (unsigned long) bl );
             return -1;
         }
+        
         memcpy(boundary, fbeg, bl);
         boundary[bl] = 0;
 
-        /* RFC 2046 permits the boundary string to be quoted. */
-        /* If the boundary is quoted, trim the quotes */
+        // RFC 2046 permits the boundary string to be quoted. 
+        // If the boundary is quoted, trim the quotes 
         if (boundary[0] == '"') {
             hbuf = strchr(boundary + 1, '"');
             if ((!hbuf) || (*hbuf != '"')) {
-                /* Malformed request */
+                // Malformed request 
                 vscpweb_free(boundary);
                 return -1;
             }
@@ -13851,35 +14068,35 @@ vscpweb_handle_form_request(struct vscpweb_connection *conn,
             bl = strlen(boundary);
         }
 
-        /* Do some sanity checks for boundary lengths */
+        // Do some sanity checks for boundary lengths 
         if (bl > 70) {
-            /* From RFC 2046:
-             * Boundary delimiters must not appear within the
-             * encapsulated material, and must be no longer
-             * than 70 characters, not counting the two
-             * leading hyphens.
-             */
+            // From RFC 2046:
+            // Boundary delimiters must not appear within the
+            // encapsulated material, and must be no longer
+            // than 70 characters, not counting the two
+            // leading hyphens.
 
-            /* The initial sanity check
-             * (bl + 800 > sizeof(buf))
-             * is no longer required, since sizeof(buf) == 1024
-             *
-             * Original comment:
-             */
-            /* Sanity check:  The algorithm can not work if bl >= sizeof(buf),
-             * and it will not work effectively, if the buf is only a few byte
-             * larger than bl, or if buf can not hold the multipart header
-             * plus the boundary.
-             * Check some reasonable number here, that should be fulfilled by
-             * any reasonable request from every browser. If it is not
-             * fulfilled, it might be a hand-made request, intended to
-             * interfere with the algorithm. */
-            vscpweb_free(boundary);
+            // The initial sanity check
+            // (bl + 800 > sizeof(buf))
+            // is no longer required, since sizeof(buf) == 1024
+            //
+            // Original comment:
+            //
+            // Sanity check:  The algorithm can not work if bl >= sizeof(buf),
+            // and it will not work effectively, if the buf is only a few byte
+            // larger than bl, or if buf can not hold the multipart header
+            // plus the boundary.
+            // Check some reasonable number here, that should be fulfilled by
+            // any reasonable request from every browser. If it is not
+            // fulfilled, it might be a hand-made request, intended to
+            // interfere with the algorithm. 
+            vscpweb_free( boundary );
             return -1;
         }
+        
         if (bl < 4) {
-            /* Sanity check:  A boundary string of less than 4 bytes makes
-             * no sense either. */
+            // Sanity check:  A boundary string of less than 4 bytes makes
+            // no sense either. 
             vscpweb_free(boundary);
             return -1;
         }
@@ -13892,58 +14109,64 @@ vscpweb_handle_form_request(struct vscpweb_connection *conn,
                              buf + (size_t) buf_fill,
                              sizeof (buf) - 1 - (size_t) buf_fill);
             if (r < 0) {
-                /* read error */
+                // read error 
                 vscpweb_free(boundary);
                 return -1;
             }
+            
             buf_fill += r;
             buf[buf_fill] = 0;
             if (buf_fill < 1) {
-                /* No data */
+                // No data 
                 vscpweb_free(boundary);
                 return -1;
             }
 
-            if (part_no == 0) {
+            if ( 0 == part_no ) {
+                
                 int d = 0;
                 while ((buf[d] != '-') && (d < buf_fill)) {
                     d++;
                 }
+                
                 if ((d > 0) && (buf[d] == '-')) {
                     memmove(buf, buf + d, (unsigned) buf_fill - (unsigned) d);
                     buf_fill -= d;
                     buf[buf_fill] = 0;
                 }
+                
             }
 
             if (buf[0] != '-' || buf[1] != '-') {
-                /* Malformed request */
+                // Malformed request 
                 vscpweb_free(boundary);
                 return -1;
             }
+            
             if (strncmp(buf + 2, boundary, bl)) {
-                /* Malformed request */
+                // Malformed request 
                 vscpweb_free(boundary);
                 return -1;
             }
+            
             if (buf[bl + 2] != '\r' || buf[bl + 3] != '\n') {
-                /* Every part must end with \r\n, if there is another part.
-                 * The end of the request has an extra -- */
-                if (((size_t) buf_fill != (size_t) (bl + 6))
-                    || (strncmp(buf + bl + 2, "--\r\n", 4))) {
-                    /* Malformed request */
+                // Every part must end with \r\n, if there is another part.
+                // The end of the request has an extra -- 
+                if ( ( (size_t)buf_fill != (size_t) (bl + 6)) || 
+                     ( strncmp( buf + bl + 2, "--\r\n", 4 ) ) ) {
+                    // Malformed request 
                     vscpweb_free(boundary);
                     return -1;
                 }
-                /* End of the request */
+                // End of the request 
                 break;
             }
 
-            /* Next, we need to get the part header: Read until \r\n\r\n */
+            // Next, we need to get the part header: Read until \r\n\r\n 
             hbuf = buf + bl + 4;
             hend = strstr(hbuf, "\r\n\r\n");
-            if (!hend) {
-                /* Malformed request */
+            if ( !hend ) {
+                // Malformed request 
                 vscpweb_free(boundary);
                 return -1;
             }
@@ -13951,105 +14174,107 @@ vscpweb_handle_form_request(struct vscpweb_connection *conn,
             part_header.num_headers =
                     parse_http_headers(&hbuf, part_header.http_headers);
             if ((hend + 2) != hbuf) {
-                /* Malformed request */
+                // Malformed request 
                 vscpweb_free(boundary);
                 return -1;
             }
 
-            /* Skip \r\n\r\n */
+            // Skip \r\n\r\n 
             hend += 4;
 
-            /* According to the RFC, every part has to have a header field like:
-             * Content-Disposition: form-data; name="..." */
-            content_disp = get_header(part_header.http_headers,
-                                      part_header.num_headers,
-                                      "Content-Disposition");
+            // According to the RFC, every part has to have a header field like:
+            // Content-Disposition: form-data; name="..." 
+            content_disp = get_header( part_header.http_headers,
+                                        part_header.num_headers,
+                                        "Content-Disposition" );
             if (!content_disp) {
-                /* Malformed request */
-                vscpweb_free(boundary);
+                // Malformed request 
+                vscpweb_free( boundary );
                 return -1;
             }
 
-            /* Get the mandatory name="..." part of the Content-Disposition
-             * header. */
+            // Get the mandatory name="..." part of the Content-Disposition
+            // header. 
             nbeg = strstr(content_disp, "name=\"");
             while ((nbeg != NULL) && (strcspn(nbeg - 1, ":,; \t") != 0)) {
-                /* It could be somethingname= instead of name= */
+                // It could be somethingname= instead of name= 
                 nbeg = strstr(nbeg + 1, "name=\"");
             }
 
-            /* This line is not required, but otherwise some compilers
-             * generate spurious warnings. */
+            // This line is not required, but otherwise some compilers
+            // generate spurious warnings. 
             nend = nbeg;
-            /* And others complain, the result is unused. */
+            
+            // And others complain, the result is unused. 
             (void) nend;
 
-            /* If name=" is found, search for the closing " */
+            // If name=" is found, search for the closing " 
             if (nbeg) {
                 nbeg += 6;
                 nend = strchr(nbeg, '\"');
                 if (!nend) {
-                    /* Malformed request */
+                    // Malformed request 
                     vscpweb_free(boundary);
                     return -1;
                 }
             }
             else {
-                /* name= without quotes is also allowed */
+                // name= without quotes is also allowed 
                 nbeg = strstr(content_disp, "name=");
                 while ((nbeg != NULL) && (strcspn(nbeg - 1, ":,; \t") != 0)) {
-                    /* It could be somethingname= instead of name= */
+                    // It could be somethingname= instead of name= 
                     nbeg = strstr(nbeg + 1, "name=");
                 }
                 if (!nbeg) {
-                    /* Malformed request */
+                    // Malformed request 
                     vscpweb_free(boundary);
                     return -1;
                 }
                 nbeg += 5;
 
-                /* RFC 2616 Sec. 2.2 defines a list of allowed
-                 * separators, but many of them make no sense
-                 * here, e.g. various brackets or slashes.
-                 * If they are used, probably someone is
-                 * trying to attack with curious hand made
-                 * requests. Only ; , space and tab seem to be
-                 * reasonable here. Ignore everything else. */
+                // RFC 2616 Sec. 2.2 defines a list of allowed
+                // separators, but many of them make no sense
+                // here, e.g. various brackets or slashes.
+                // If they are used, probably someone is
+                // trying to attack with curious hand made
+                // requests. Only ; , space and tab seem to be
+                // reasonable here. Ignore everything else. 
                 nend = nbeg + strcspn(nbeg, ",; \t");
             }
 
-            /* Get the optional filename="..." part of the Content-Disposition
-             * header. */
+            // Get the optional filename="..." part of the Content-Disposition
+            // header. 
             fbeg = strstr(content_disp, "filename=\"");
             while ((fbeg != NULL) && (strcspn(fbeg - 1, ":,; \t") != 0)) {
-                /* It could be somethingfilename= instead of filename= */
+                // It could be somethingfilename= instead of filename= 
                 fbeg = strstr(fbeg + 1, "filename=\"");
             }
 
-            /* This line is not required, but otherwise some compilers
-             * generate spurious warnings. */
+            // This line is not required, but otherwise some compilers
+            // generate spurious warnings. 
             fend = fbeg;
 
-            /* If filename=" is found, search for the closing " */
+            // If filename=" is found, search for the closing " 
             if (fbeg) {
                 fbeg += 10;
                 fend = strchr(fbeg, '\"');
 
                 if (!fend) {
-                    /* Malformed request (the filename field is optional, but if
-                     * it exists, it needs to be terminated correctly). */
+                    // Malformed request (the filename field is optional, but if
+                    // it exists, it needs to be terminated correctly). 
                     vscpweb_free(boundary);
                     return -1;
                 }
 
-                /* TODO: check Content-Type */
-                /* Content-Type: application/octet-stream */
+                // TODO: check Content-Type 
+                // Content-Type: application/octet-stream 
             }
+            
             if (!fbeg) {
-                /* Try the same without quotes */
+                // Try the same without quotes 
                 fbeg = strstr(content_disp, "filename=");
                 while ((fbeg != NULL) && (strcspn(fbeg - 1, ":,; \t") != 0)) {
-                    /* It could be somethingfilename= instead of filename= */
+                    // It could be somethingfilename= instead of filename= 
                     fbeg = strstr(fbeg + 1, "filename=");
                 }
                 if (fbeg) {
@@ -14057,125 +14282,128 @@ vscpweb_handle_form_request(struct vscpweb_connection *conn,
                     fend = fbeg + strcspn(fbeg, ",; \t");
                 }
             }
+            
             if (!fbeg) {
                 fend = NULL;
             }
 
-            /* In theory, it could be possible that someone crafts
-             * a request like name=filename=xyz. Check if name and
-             * filename do not overlap. */
-            if (!(((ptrdiff_t) fbeg > (ptrdiff_t) nend)
-                || ((ptrdiff_t) nbeg > (ptrdiff_t) fend))) {
-                vscpweb_free(boundary);
+            // In theory, it could be possible that someone crafts
+            // a request like name=filename=xyz. Check if name and
+            // filename do not overlap. 
+            if ( !( ( (ptrdiff_t) fbeg > (ptrdiff_t)nend ) || 
+                   ( ( ptrdiff_t) nbeg > (ptrdiff_t)fend ) ) ) {
+                vscpweb_free( boundary );
                 return -1;
             }
 
-            /* Call callback for new field */
+            // Call callback for new field 
             memset(path, 0, sizeof (path));
             field_count++;
-            field_storage = url_encoded_field_found(conn,
-                                                    nbeg,
-                                                    (size_t) (nend - nbeg),
-                                                    fbeg,
-                                                    (size_t) (fend - fbeg),
-                                                    path,
-                                                    sizeof (path) - 1,
-                                                    fdh);
+            field_storage = url_encoded_field_found( conn,
+                                                        nbeg,
+                                                        (size_t)(nend - nbeg),
+                                                        fbeg,
+                                                        (size_t)(fend - fbeg),
+                                                        path,
+                                                        sizeof(path) - 1,
+                                                        fdh );
 
-            /* If the boundary is already in the buffer, get the address,
-             * otherwise next will be NULL. */
-            next = search_boundary(hbuf,
-                                   (size_t) ((buf - hbuf) + buf_fill),
-                                   boundary,
-                                   bl);
+            // If the boundary is already in the buffer, get the address,
+            // otherwise next will be NULL. 
+            next = search_boundary( hbuf,
+                                        (size_t)((buf - hbuf) + buf_fill),
+                                        boundary,
+                                        bl );
 
-            if (field_storage == FORM_FIELD_STORAGE_STORE) {
-                /* Store the content to a file */
+            if ( field_storage == FORM_FIELD_STORAGE_STORE ) {
+                // Store the content to a file 
                 if (vscpweb_fopen(conn, path, MG_FOPEN_MODE_WRITE, &fstore) == 0) {
                     fstore.access.fp = NULL;
                 }
                 file_size = 0;
 
-                if (!fstore.access.fp) {
+                if ( !fstore.access.fp ) {
                     vscpweb_cry(conn, "%s: Cannot create file %s", __func__, path);
                 }
             }
 
             get_block = 0;
             while (!next) {
-                /* Set "towrite" to the number of bytes available
-                 * in the buffer */
+                // Set "towrite" to the number of bytes available
+                // in the buffer 
                 towrite = (size_t) (buf - hend + buf_fill);
-                /* Subtract the boundary length, to deal with
-                 * cases the boundary is only partially stored
-                 * in the buffer. */
+                // Subtract the boundary length, to deal with
+                // cases the boundary is only partially stored
+                // in the buffer. 
                 towrite -= bl + 4;
 
                 if (field_storage == FORM_FIELD_STORAGE_GET) {
-                    unencoded_field_get(conn,
-                                        ((get_block > 0) ? NULL : nbeg),
-                                        ((get_block > 0)
-                                        ? 0
-                                        : (size_t) (nend - nbeg)),
-                                        hend,
-                                        towrite,
-                                        fdh);
+                    unencoded_field_get( conn,
+                                            ((get_block > 0) ? NULL : nbeg),
+                                            ((get_block > 0) ? 0 : (size_t)(nend - nbeg) ),
+                                            hend,
+                                            towrite,
+                                            fdh );
                     get_block++;
                 }
 
-                if (field_storage == FORM_FIELD_STORAGE_STORE) {
+                if ( field_storage == FORM_FIELD_STORAGE_STORE ) {
+                    
                     if (fstore.access.fp) {
 
-                        /* Store the content of the buffer. */
+                        // Store the content of the buffer. 
                         n = (size_t) fwrite(hend, 1, towrite, fstore.access.fp);
                         if ((n != towrite) || (ferror(fstore.access.fp))) {
-                            vscpweb_cry(conn,
-                                        "%s: Cannot write file %s",
-                                        __func__,
-                                        path);
-                            vscpweb_fclose(&fstore.access);
+                            vscpweb_cry( conn,
+                                            "%s: Cannot write file %s",
+                                            __func__,
+                                            path );
+                            vscpweb_fclose( &fstore.access );
                             remove_bad_file(conn, path);
                         }
+                        
                         file_size += (int64_t) n;
+                        
                     }
+                    
                 }
 
                 memmove(buf, hend + towrite, bl + 4);
                 buf_fill = (int) (bl + 4);
                 hend = buf;
 
-                /* Read new data */
-                r = vscpweb_read(conn,
-                                 buf + (size_t) buf_fill,
-                                 sizeof (buf) - 1 - (size_t) buf_fill);
+                // Read new data 
+                r = vscpweb_read( conn,
+                                    buf + (size_t) buf_fill,
+                                    sizeof(buf) - 1 - (size_t)buf_fill);
                 if (r < 0) {
-                    /* read error */
-                    vscpweb_free(boundary);
+                    // read error 
+                    vscpweb_free( boundary );
                     return -1;
                 }
+                
                 buf_fill += r;
                 buf[buf_fill] = 0;
                 if (buf_fill < 1) {
-                    /* No data */
+                    // No data 
                     vscpweb_free(boundary);
                     return -1;
                 }
 
-                /* Find boundary */
+                // Find boundary 
                 next = search_boundary(buf, (size_t) buf_fill, boundary, bl);
             }
 
             towrite = (size_t) (next - hend);
 
             if (field_storage == FORM_FIELD_STORAGE_GET) {
-                /* Call callback */
-                unencoded_field_get(conn,
-                                    ((get_block > 0) ? NULL : nbeg),
-                                    ((get_block > 0) ? 0
-                                    : (size_t) (nend - nbeg)),
-                                    hend,
-                                    towrite,
-                                    fdh);
+                // Call callback 
+                unencoded_field_get( conn,
+                                        ((get_block > 0) ? NULL : nbeg),
+                                        ((get_block > 0) ? 0 : (size_t) (nend - nbeg)),
+                                        hend,
+                                        towrite,
+                                        fdh );
             }
 
             if (field_storage == FORM_FIELD_STORAGE_STORE) {
@@ -14183,10 +14411,10 @@ vscpweb_handle_form_request(struct vscpweb_connection *conn,
                 if (fstore.access.fp) {
                     n = (size_t) fwrite(hend, 1, towrite, fstore.access.fp);
                     if ((n != towrite) || (ferror(fstore.access.fp))) {
-                        vscpweb_cry(conn,
-                                    "%s: Cannot write file %s",
-                                    __func__,
-                                    path);
+                        vscpweb_cry( conn,
+                                        "%s: Cannot write file %s",
+                                        __func__,
+                                        path );
                         vscpweb_fclose(&fstore.access);
                         remove_bad_file(conn, path);
                     }
@@ -14194,39 +14422,41 @@ vscpweb_handle_form_request(struct vscpweb_connection *conn,
                         file_size += (int64_t) n;
                         r = vscpweb_fclose(&fstore.access);
                         if (r == 0) {
-                            /* stored successfully */
+                            // stored successfully 
                             field_stored(conn, path, file_size, fdh);
                         }
                         else {
-                            vscpweb_cry(conn,
-                                        "%s: Error saving file %s",
-                                        __func__,
-                                        path);
+                            vscpweb_cry( conn,
+                                            "%s: Error saving file %s",
+                                            __func__,
+                                            path );
                             remove_bad_file(conn, path);
                         }
                     }
+                    
                     fstore.access.fp = NULL;
+                    
                 }
             }
 
-            if ((field_storage & FORM_FIELD_STORAGE_ABORT)
+            if ( (field_storage & FORM_FIELD_STORAGE_ABORT)
                 == FORM_FIELD_STORAGE_ABORT) {
-                /* Stop parsing the request */
+                // Stop parsing the request 
                 break;
             }
 
-            /* Remove from the buffer */
+            // Remove from the buffer 
             used = next - buf + 2;
             memmove(buf, buf + (size_t) used, sizeof (buf) - (size_t) used);
             buf_fill -= (int) used;
         }
 
-        /* All parts handled */
+        // All parts handled 
         vscpweb_free(boundary);
         return field_count;
     }
 
-    /* Unknown Content-Type */
+    // Unknown Content-Type 
     return -1;
 }
 
@@ -14235,11 +14465,11 @@ vscpweb_handle_form_request(struct vscpweb_connection *conn,
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// get_first_ssl_listener_index
 //
 
 static int
-get_first_ssl_listener_index(const struct vscpweb_context *ctx)
+get_first_ssl_listener_index( const struct vscpweb_context *ctx )
 {
     unsigned int i;
     int idx = -1;
@@ -14252,7 +14482,7 @@ get_first_ssl_listener_index(const struct vscpweb_context *ctx)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// redirect_to_https_port
 //
 
 static void
@@ -14275,121 +14505,124 @@ redirect_to_https_port(struct vscpweb_connection *conn, int ssl_index)
         }
     }
     else {
-        /* Cannot get host from the Host: header.
-         * Fallback to our IP address. */
+        // Cannot get host from the Host: header.
+        // Fallback to our IP address. 
         if (conn) {
             sockaddr_to_string(host, hostlen, &conn->client.lsa);
         }
     }
 
-    /* Send host, port, uri and (if it exists) ?query_string */
+    // Send host, port, uri and (if it exists) ?query_string 
     if (conn) {
-        vscpweb_printf(conn,
-                       "HTTP/1.1 302 Found\r\nLocation: https://%s:%d%s%s%s\r\n\r\n",
-                       host,
-                       (conn->ctx->listening_sockets[ssl_index].lsa.sa.sa_family
-                       == AF_INET6)
-                       ? (int) ntohs(conn->ctx->listening_sockets[ssl_index]
-                                     .lsa.sin6.sin6_port)
-                       :
-
-                       (int) ntohs(conn->ctx->listening_sockets[ssl_index]
-                                   .lsa.sin.sin_port),
-                       conn->request_info.local_uri,
-                       (conn->request_info.query_string == NULL) ? "" : "?",
-                       (conn->request_info.query_string == NULL)
-                       ? ""
-                       : conn->request_info.query_string);
+        vscpweb_printf( conn,
+                            "HTTP/1.1 302 Found\r\nLocation: https://%s:%d%s%s%s\r\n\r\n",
+                            host,
+                            (AF_INET6 == conn->ctx->listening_sockets[ssl_index].lsa.sa.sa_family )
+                                ? (int)ntohs( conn->ctx->listening_sockets[ssl_index].lsa.sin6.sin6_port ) : 
+                                  (int) ntohs(conn->ctx->listening_sockets[ssl_index].lsa.sin.sin_port),
+                            conn->request_info.local_uri,
+                            (conn->request_info.query_string == NULL) ? "" : "?",
+                            (conn->request_info.query_string == NULL) ? "" : conn->request_info.query_string);
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_set_handler_type
 //
 
 static void
-vscpweb_set_handler_type(struct vscpweb_context *ctx,
-                         const char *uri,
-                         int handler_type,
-                         int is_delete_request,
-                         vscpweb_request_handler handler,
-                         struct vscpweb_websocket_subprotocols *subprotocols,
-                         vscpweb_websocket_connect_handler connect_handler,
-                         vscpweb_websocket_ready_handler ready_handler,
-                         vscpweb_websocket_data_handler data_handler,
-                         vscpweb_websocket_close_handler close_handler,
-                         vscpweb_authorization_handler auth_handler,
-                         void *cbdata)
+vscpweb_set_handler_type( struct vscpweb_context *ctx,
+                            const char *uri,
+                            int handler_type,
+                            int is_delete_request,
+                            vscpweb_request_handler handler,
+                            struct vscpweb_websocket_subprotocols *subprotocols,
+                            vscpweb_websocket_connect_handler connect_handler,
+                            vscpweb_websocket_ready_handler ready_handler,
+                            vscpweb_websocket_data_handler data_handler,
+                            vscpweb_websocket_close_handler close_handler,
+                            vscpweb_authorization_handler auth_handler,
+                            void *cbdata )
 {
     struct vscpweb_handler_info *tmp_rh, **lastref;
     size_t urilen = strlen(uri);
 
-    if (handler_type == WEBSOCKET_HANDLER) {
-        /* assert(handler == NULL); */
-        /* assert(is_delete_request || connect_handler!=NULL ||
-         *        ready_handler!=NULL || data_handler!=NULL ||
-         *        close_handler!=NULL);
-         */
-        /* assert(auth_handler == NULL); */
-        if (handler != NULL) {
+    if ( WEBSOCKET_HANDLER == handler_type ) {
+        // assert(handler == NULL); 
+        // assert(is_delete_request || connect_handler!=NULL ||
+        //        ready_handler!=NULL || data_handler!=NULL ||
+        //        close_handler!=NULL);
+        //
+        // assert(auth_handler == NULL); 
+        if ( handler != NULL ) {
             return;
         }
-        if (!is_delete_request && (connect_handler == NULL)
-            && (ready_handler == NULL) && (data_handler == NULL)
-            && (close_handler == NULL)) {
+        
+        if ( !is_delete_request && (connect_handler == NULL) &&
+                ( ready_handler == NULL ) && 
+                ( data_handler == NULL ) &&
+                ( close_handler == NULL ) ) {
             return;
         }
+        
         if (auth_handler != NULL) {
             return;
         }
     }
-    else if (handler_type == REQUEST_HANDLER) {
-        /* assert(connect_handler==NULL && ready_handler==NULL &&
-         *        data_handler==NULL && close_handler==NULL); */
-        /* assert(is_delete_request || (handler!=NULL));
-         */
-        /* assert(auth_handler == NULL); */
-        if ((connect_handler != NULL) || (ready_handler != NULL)
-            || (data_handler != NULL) || (close_handler != NULL)) {
+    else if ( REQUEST_HANDLER == handler_type ) {
+        // assert(connect_handler==NULL && ready_handler==NULL &&
+        //        data_handler==NULL && close_handler==NULL); */
+        // assert(is_delete_request || (handler!=NULL));
+        //
+        // assert(auth_handler == NULL); */
+        if ( ( connect_handler != NULL ) || 
+                ( ready_handler != NULL ) || 
+                ( data_handler != NULL ) || 
+                ( close_handler != NULL ) ) {
             return;
         }
+        
         if (!is_delete_request && (handler == NULL)) {
             return;
         }
+        
         if (auth_handler != NULL) {
             return;
         }
     }
-    else { /* AUTH_HANDLER */
-        /* assert(handler == NULL); */
-        /* assert(connect_handler==NULL && ready_handler==NULL &&
-         *        data_handler==NULL && close_handler==NULL); */
-        /* assert(auth_handler != NULL); */
+    else { // AUTH_HANDLER 
+        // assert(handler == NULL); 
+        // assert(connect_handler==NULL && ready_handler==NULL &&
+        //        data_handler==NULL && close_handler==NULL); 
+        // assert(auth_handler != NULL); 
         if (handler != NULL) {
             return;
         }
+        
         if ((connect_handler != NULL) || (ready_handler != NULL)
             || (data_handler != NULL) || (close_handler != NULL)) {
             return;
         }
+        
         if (!is_delete_request && (auth_handler == NULL)) {
             return;
         }
+        
     }
 
-    if (!ctx) {
+    if ( !ctx ) {
         return;
     }
 
     vscpweb_lock_context(ctx);
 
-    /* first try to find an existing handler */
+    // first try to find an existing handler 
     lastref = &(ctx->handlers);
     for (tmp_rh = ctx->handlers; tmp_rh != NULL; tmp_rh = tmp_rh->next) {
         if (tmp_rh->handler_type == handler_type) {
             if ((urilen == tmp_rh->uri_len) && !strcmp(tmp_rh->uri, uri)) {
                 if (!is_delete_request) {
-                    /* update existing handler */
+                    // update existing handler 
                     if (handler_type == REQUEST_HANDLER) {
                         tmp_rh->handler = handler;
                     }
@@ -14400,47 +14633,51 @@ vscpweb_set_handler_type(struct vscpweb_context *ctx,
                         tmp_rh->data_handler = data_handler;
                         tmp_rh->close_handler = close_handler;
                     }
-                    else { /* AUTH_HANDLER */
+                    else { // AUTH_HANDLER 
                         tmp_rh->auth_handler = auth_handler;
                     }
                     tmp_rh->cbdata = cbdata;
                 }
                 else {
-                    /* remove existing handler */
+                    // remove existing handler 
                     *lastref = tmp_rh->next;
                     vscpweb_free(tmp_rh->uri);
                     vscpweb_free(tmp_rh);
                 }
+                
                 vscpweb_unlock_context(ctx);
                 return;
+                
             }
         }
+        
         lastref = &(tmp_rh->next);
     }
 
-    if (is_delete_request) {
-        /* no handler to set, this was a remove request to a non-existing
-         * handler */
+    if ( is_delete_request ) {
+        // no handler to set, this was a remove request to a non-existing
+        // handler 
         vscpweb_unlock_context(ctx);
         return;
     }
 
-    tmp_rh =
-            (struct vscpweb_handler_info *) vscpweb_calloc_ctx(sizeof (struct vscpweb_handler_info),
-                                                               1,
-                                                               ctx);
-    if (tmp_rh == NULL) {
-        vscpweb_unlock_context(ctx);
+    tmp_rh = ( struct vscpweb_handler_info *)vscpweb_calloc_ctx( sizeof( struct vscpweb_handler_info ),
+                                                                    1,
+                                                                    ctx );
+    if ( NULL == tmp_rh ) {
+        vscpweb_unlock_context( ctx );
         vscpweb_cry(fc(ctx), "%s", "Cannot create new request handler struct, OOM");
         return;
     }
-    tmp_rh->uri = vscpweb_strdup(uri);
-    if (!tmp_rh->uri) {
-        vscpweb_unlock_context(ctx);
-        vscpweb_free(tmp_rh);
-        vscpweb_cry(fc(ctx), "%s", "Cannot create new request handler struct, OOM");
+    
+    tmp_rh->uri = vscpweb_strdup( uri );
+    if ( !tmp_rh->uri ) {
+        vscpweb_unlock_context( ctx );
+        vscpweb_free( tmp_rh );
+        vscpweb_cry(fc( ctx ), "%s", "Cannot create new request handler struct, OOM");
         return;
     }
+    
     tmp_rh->uri_len = urilen;
     if (handler_type == REQUEST_HANDLER) {
         tmp_rh->handler = handler;
@@ -14452,9 +14689,10 @@ vscpweb_set_handler_type(struct vscpweb_context *ctx,
         tmp_rh->data_handler = data_handler;
         tmp_rh->close_handler = close_handler;
     }
-    else { /* AUTH_HANDLER */
+    else { // AUTH_HANDLER 
         tmp_rh->auth_handler = auth_handler;
     }
+
     tmp_rh->cbdata = cbdata;
     tmp_rh->handler_type = handler_type;
     tmp_rh->next = NULL;
@@ -14464,139 +14702,138 @@ vscpweb_set_handler_type(struct vscpweb_context *ctx,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// vscpweb_set_request_handler
 //
 
 void
-vscpweb_set_request_handler(struct vscpweb_context *ctx,
+vscpweb_set_request_handler( struct vscpweb_context *ctx,
+                                const char *uri,
+                                vscpweb_request_handler handler,
+                                void *cbdata )
+{
+    vscpweb_set_handler_type( ctx,
+                                uri,
+                                REQUEST_HANDLER,
+                                handler == NULL,
+                                handler,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                cbdata );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// vscpweb_set_websocket_handler
+//
+
+void
+vscpweb_set_websocket_handler( struct vscpweb_context *ctx,
+                                const char *uri,
+                                vscpweb_websocket_connect_handler connect_handler,
+                                vscpweb_websocket_ready_handler ready_handler,
+                                vscpweb_websocket_data_handler data_handler,
+                                vscpweb_websocket_close_handler close_handler,
+                                void *cbdata )
+{
+    vscpweb_set_websocket_handler_with_subprotocols( ctx,
+                                                        uri,
+                                                        NULL,
+                                                        connect_handler,
+                                                        ready_handler,
+                                                        data_handler,
+                                                        close_handler,
+                                                        cbdata );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// vscpweb_set_websocket_handler_with_subprotocols
+//
+
+void
+vscpweb_set_websocket_handler_with_subprotocols( struct vscpweb_context *ctx,
+                                                    const char *uri,
+                                                    struct vscpweb_websocket_subprotocols *subprotocols,
+                                                    vscpweb_websocket_connect_handler connect_handler,
+                                                    vscpweb_websocket_ready_handler ready_handler,
+                                                    vscpweb_websocket_data_handler data_handler,
+                                                    vscpweb_websocket_close_handler close_handler,
+                                                    void *cbdata )
+{
+    int is_delete_request = (connect_handler == NULL) && 
+                            ( NULL == ready_handler ) &&
+                            ( NULL == data_handler ) &&
+                            ( NULL == close_handler );
+    vscpweb_set_handler_type( ctx,
+                                uri,
+                                WEBSOCKET_HANDLER,
+                                is_delete_request,
+                                NULL,
+                                subprotocols,
+                                connect_handler,
+                                ready_handler,
+                                data_handler,
+                                close_handler,
+                                NULL,
+                                cbdata );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// vscpweb_set_auth_handler
+//
+
+void
+vscpweb_set_auth_handler( struct vscpweb_context *ctx,
                             const char *uri,
                             vscpweb_request_handler handler,
-                            void *cbdata)
+                            void *cbdata )
 {
-    vscpweb_set_handler_type(ctx,
-                             uri,
-                             REQUEST_HANDLER,
-                             handler == NULL,
-                             handler,
-                             NULL,
-                             NULL,
-                             NULL,
-                             NULL,
-                             NULL,
-                             NULL,
-                             cbdata);
+    vscpweb_set_handler_type( ctx,
+                                uri,
+                                AUTH_HANDLER,
+                                handler == NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                handler,
+                                cbdata );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
-//
-
-void
-vscpweb_set_websocket_handler(struct vscpweb_context *ctx,
-                              const char *uri,
-                              vscpweb_websocket_connect_handler connect_handler,
-                              vscpweb_websocket_ready_handler ready_handler,
-                              vscpweb_websocket_data_handler data_handler,
-                              vscpweb_websocket_close_handler close_handler,
-                              void *cbdata)
-{
-    vscpweb_set_websocket_handler_with_subprotocols(ctx,
-                                                    uri,
-                                                    NULL,
-                                                    connect_handler,
-                                                    ready_handler,
-                                                    data_handler,
-                                                    close_handler,
-                                                    cbdata);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// 
-//
-
-void
-vscpweb_set_websocket_handler_with_subprotocols(
-                                                struct vscpweb_context *ctx,
-                                                const char *uri,
-                                                struct vscpweb_websocket_subprotocols *subprotocols,
-                                                vscpweb_websocket_connect_handler connect_handler,
-                                                vscpweb_websocket_ready_handler ready_handler,
-                                                vscpweb_websocket_data_handler data_handler,
-                                                vscpweb_websocket_close_handler close_handler,
-                                                void *cbdata)
-{
-    int is_delete_request = (connect_handler == NULL) && (ready_handler == NULL)
-            && (data_handler == NULL)
-            && (close_handler == NULL);
-    vscpweb_set_handler_type(ctx,
-                             uri,
-                             WEBSOCKET_HANDLER,
-                             is_delete_request,
-                             NULL,
-                             subprotocols,
-                             connect_handler,
-                             ready_handler,
-                             data_handler,
-                             close_handler,
-                             NULL,
-                             cbdata);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// 
-//
-
-void
-vscpweb_set_auth_handler(struct vscpweb_context *ctx,
-                         const char *uri,
-                         vscpweb_request_handler handler,
-                         void *cbdata)
-{
-    vscpweb_set_handler_type(ctx,
-                             uri,
-                             AUTH_HANDLER,
-                             handler == NULL,
-                             NULL,
-                             NULL,
-                             NULL,
-                             NULL,
-                             NULL,
-                             NULL,
-                             handler,
-                             cbdata);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// 
+// get_request_handler
 //
 
 static int
-get_request_handler(struct vscpweb_connection *conn,
-                    int handler_type,
-                    vscpweb_request_handler *handler,
-                    struct vscpweb_websocket_subprotocols **subprotocols,
-                    vscpweb_websocket_connect_handler *connect_handler,
-                    vscpweb_websocket_ready_handler *ready_handler,
-                    vscpweb_websocket_data_handler *data_handler,
-                    vscpweb_websocket_close_handler *close_handler,
-                    vscpweb_authorization_handler *auth_handler,
-                    void **cbdata)
+get_request_handler( struct vscpweb_connection *conn,
+                        int handler_type,
+                        vscpweb_request_handler *handler,
+                        struct vscpweb_websocket_subprotocols **subprotocols,
+                        vscpweb_websocket_connect_handler *connect_handler,
+                        vscpweb_websocket_ready_handler *ready_handler,
+                        vscpweb_websocket_data_handler *data_handler,
+                        vscpweb_websocket_close_handler *close_handler,
+                        vscpweb_authorization_handler *auth_handler,
+                        void **cbdata )
 {
     const struct vscpweb_request_info *request_info = vscpweb_get_request_info(conn);
-    if (request_info) {
+    if ( request_info ) {
         const char *uri = request_info->local_uri;
         size_t urilen = strlen(uri);
         struct vscpweb_handler_info *tmp_rh;
 
-        if (!conn || !conn->ctx) {
+        if ( !conn || !conn->ctx ) {
             return 0;
         }
 
         vscpweb_lock_context(conn->ctx);
 
-        /* first try for an exact match */
-        for (tmp_rh = conn->ctx->handlers; tmp_rh != NULL;
-                tmp_rh = tmp_rh->next) {
+        // first try for an exact match 
+        for (tmp_rh = conn->ctx->handlers; tmp_rh != NULL; tmp_rh = tmp_rh->next) {
             if (tmp_rh->handler_type == handler_type) {
                 if ((urilen == tmp_rh->uri_len) && !strcmp(tmp_rh->uri, uri)) {
                     if (handler_type == WEBSOCKET_HANDLER) {
@@ -14609,7 +14846,7 @@ get_request_handler(struct vscpweb_connection *conn,
                     else if (handler_type == REQUEST_HANDLER) {
                         *handler = tmp_rh->handler;
                     }
-                    else { /* AUTH_HANDLER */
+                    else { // AUTH_HANDLER 
                         *auth_handler = tmp_rh->auth_handler;
                     }
                     *cbdata = tmp_rh->cbdata;
@@ -14619,7 +14856,7 @@ get_request_handler(struct vscpweb_connection *conn,
             }
         }
 
-        /* next try for a partial match, we will accept uri/something */
+        // next try for a partial match, we will accept uri/something 
         for (tmp_rh = conn->ctx->handlers; tmp_rh != NULL;
                 tmp_rh = tmp_rh->next) {
             if (tmp_rh->handler_type == handler_type) {
@@ -14635,7 +14872,7 @@ get_request_handler(struct vscpweb_connection *conn,
                     else if (handler_type == REQUEST_HANDLER) {
                         *handler = tmp_rh->handler;
                     }
-                    else { /* AUTH_HANDLER */
+                    else { // AUTH_HANDLER 
                         *auth_handler = tmp_rh->auth_handler;
                     }
                     *cbdata = tmp_rh->cbdata;
@@ -14645,7 +14882,7 @@ get_request_handler(struct vscpweb_connection *conn,
             }
         }
 
-        /* finally try for pattern match */
+        // finally try for pattern match 
         for (tmp_rh = conn->ctx->handlers; tmp_rh != NULL;
                 tmp_rh = tmp_rh->next) {
             if (tmp_rh->handler_type == handler_type) {
@@ -14660,7 +14897,7 @@ get_request_handler(struct vscpweb_connection *conn,
                     else if (handler_type == REQUEST_HANDLER) {
                         *handler = tmp_rh->handler;
                     }
-                    else { /* AUTH_HANDLER */
+                    else { // AUTH_HANDLER 
                         *auth_handler = tmp_rh->auth_handler;
                     }
                     *cbdata = tmp_rh->cbdata;
@@ -14672,39 +14909,39 @@ get_request_handler(struct vscpweb_connection *conn,
 
         vscpweb_unlock_context(conn->ctx);
     }
-    return 0; /* none found */
+    
+    return 0; // none found 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// is_in_script_path
+//
+// Check if the script file is in a path, allowed for script files.
+// This can be used if uploading files is possible not only for the server
+// admin, and the upload mechanism does not check the file extension.
 //
 
-/* Check if the script file is in a path, allowed for script files.
- * This can be used if uploading files is possible not only for the server
- * admin, and the upload mechanism does not check the file extension.
- */
-
 static int
-is_in_script_path(const struct vscpweb_connection *conn, const char *path)
+is_in_script_path( const struct vscpweb_connection *conn, const char *path )
 {
-    /* TODO (Feature): Add config value for allowed script path.
-     * Default: All allowed. */
+    // TODO (Feature): Add config value for allowed script path.
+    // Default: All allowed. 
     (void) conn;
     (void) path;
     return 1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// handle_request
+//
+// This is the heart of the vscpweb's logic.
+// This function is called when the request is read, parsed and validated,
+// and vscpweb must decide what action to take: serve a file, or
+// a directory, or call embedded function, etcetera. 
 //
 
-/* This is the heart of the Civetweb's logic.
- * This function is called when the request is read, parsed and validated,
- * and Civetweb must decide what action to take: serve a file, or
- * a directory, or call embedded function, etcetera. */
-
 static void
-handle_request(struct vscpweb_connection *conn)
+handle_request( struct vscpweb_connection *conn )
 {
     struct vscpweb_request_info *ri = &conn->request_info;
     char path[PATH_MAX];
@@ -14728,102 +14965,103 @@ handle_request(struct vscpweb_connection *conn)
 
     path[0] = 0;
 
-    /* 1. get the request url */
-    /* 1.1. split into url and query string */
+    // 1. get the request url 
+    // 1.1. split into url and query string 
     if ((conn->request_info.query_string = strchr(ri->request_uri, '?'))
         != NULL) {
         *((char *) conn->request_info.query_string++) = '\0';
     }
 
-    /* 1.2. do a https redirect, if required. Do not decode URIs yet. */
+    // 1.2. do a https redirect, if required. Do not decode URIs yet. 
     if (!conn->client.is_ssl && conn->client.ssl_redir) {
         ssl_index = get_first_ssl_listener_index(conn->ctx);
         if (ssl_index >= 0) {
             redirect_to_https_port(conn, ssl_index);
         }
         else {
-            /* A http to https forward port has been specified,
-             * but no https port to forward to. */
-            vscpweb_send_http_error(conn,
-                                    503,
-                                    "%s",
-                                    "Error: SSL forward not configured properly");
+            // A http to https forward port has been specified,
+            // but no https port to forward to. 
+            vscpweb_send_http_error( conn,
+                                        503,
+                                        "%s",
+                                        "Error: SSL forward not configured properly");
             vscpweb_cry(conn, "Can not redirect to SSL, no SSL port available");
         }
         return;
     }
+    
     uri_len = (int) strlen(ri->local_uri);
 
-    /* 1.3. decode url (if config says so) */
+    // 1.3. decode url (if config says so) 
     if (should_decode_url(conn)) {
         vscpweb_url_decode(
                            ri->local_uri, uri_len, (char *) ri->local_uri, uri_len + 1, 0);
     }
 
-    /* 1.4. clean URIs, so a path like allowed_dir/../forbidden_file is
-     * not possible */
+    // 1.4. clean URIs, so a path like allowed_dir/../forbidden_file is
+    // not possible 
     remove_double_dots_and_double_slashes((char *) ri->local_uri);
 
-    /* step 1. completed, the url is known now */
+    // step 1. completed, the url is known now 
     uri_len = (int) strlen(ri->local_uri);
     DEBUG_TRACE("URL: %s", ri->local_uri);
 
-    /* 2. if this ip has limited speed, set it for this connection */
+    // 2. if this ip has limited speed, set it for this connection 
     conn->throttle = set_throttle(conn->ctx->config[THROTTLE],
                                   get_remote_ip(conn),
                                   ri->local_uri);
 
-    /* 3. call a "handle everything" callback, if registered */
+    // 3. call a "handle everything" callback, if registered 
     if (conn->ctx->callbacks.begin_request != NULL) {
-        /* Note that since V1.7 the "begin_request" function is called
-         * before an authorization check. If an authorization check is
-         * required, use a request_handler instead. */
+        // Note that since V1.7 the "begin_request" function is called
+        // before an authorization check. If an authorization check is
+        // required, use a request_handler instead. 
         i = conn->ctx->callbacks.begin_request(conn);
         if (i > 0) {
-            /* callback already processed the request. Store the
-               return value as a status code for the access log. */
+            // callback already processed the request. Store the
+            // return value as a status code for the access log. 
             conn->status_code = i;
             discard_unread_request_data(conn);
             return;
         }
         else if (i == 0) {
-            /* civetweb should process the request */
+            // vscpweb should process the request 
         }
         else {
-            /* unspecified - may change with the next version */
+            // unspecified - may change with the next version 
             return;
         }
     }
 
-    /* request not yet handled by a handler or redirect, so the request
-     * is processed here */
+    // request not yet handled by a handler or redirect, so the request
+    // is processed here 
 
-    /* 4. Check for CORS preflight requests and handle them (if configured).
-     * https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
-     */
-    if (!strcmp(ri->request_method, "OPTIONS")) {
-        /* Send a response to CORS preflights only if
-         * access_control_allow_methods is not NULL and not an empty string.
-         * In this case, scripts can still handle CORS. */
+    // 4. Check for CORS preflight requests and handle them (if configured).
+    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
+    //
+    if ( !strcmp(ri->request_method, "OPTIONS") ) {
+        // Send a response to CORS preflights only if
+        // access_control_allow_methods is not NULL and not an empty string.
+        // In this case, scripts can still handle CORS. 
         const char *cors_meth_cfg =
                 conn->ctx->config[ACCESS_CONTROL_ALLOW_METHODS];
         const char *cors_orig_cfg =
                 conn->ctx->config[ACCESS_CONTROL_ALLOW_ORIGIN];
         const char *cors_origin =
                 get_header(ri->http_headers, ri->num_headers, "Origin");
-        const char *cors_acrm = get_header(ri->http_headers,
-                                           ri->num_headers,
-                                           "Access-Control-Request-Method");
+        const char *cors_acrm = get_header( ri->http_headers,
+                                                ri->num_headers,
+                                                "Access-Control-Request-Method");
 
-        /* Todo: check if cors_origin is in cors_orig_cfg.
-         * Or, let the client check this. */
+        // Todo: check if cors_origin is in cors_orig_cfg.
+        // Or, let the client check this. 
 
-        if ((cors_meth_cfg != NULL) && (*cors_meth_cfg != 0)
-            && (cors_orig_cfg != NULL) && (*cors_orig_cfg != 0)
-            && (cors_origin != NULL) && (cors_acrm != NULL)) {
-            /* This is a valid CORS preflight, and the server is configured
-             * to
-             * handle it automatically. */
+        if ( ( cors_meth_cfg != NULL) && (*cors_meth_cfg != 0 ) &&
+             ( cors_orig_cfg != NULL) && (*cors_orig_cfg != 0 ) &&
+             ( cors_origin != NULL) && (cors_acrm != NULL) ) {
+            // This is a valid CORS preflight, and the server is configured
+            // to
+            // handle it automatically. 
             const char *cors_acrh =
                     get_header(ri->http_headers,
                                ri->num_headers,
@@ -14843,16 +15081,16 @@ handle_request(struct vscpweb_connection *conn)
                            suggest_connection_header(conn));
 
             if (cors_acrh != NULL) {
-                /* CORS request is asking for additional headers */
+                // CORS request is asking for additional headers 
                 const char *cors_hdr_cfg =
                         conn->ctx->config[ACCESS_CONTROL_ALLOW_HEADERS];
 
                 if ((cors_hdr_cfg != NULL) && (*cors_hdr_cfg != 0)) {
-                    /* Allow only if access_control_allow_headers is
-                     * not NULL and not an empty string. If this
-                     * configuration is set to *, allow everything.
-                     * Otherwise this configuration must be a list
-                     * of allowed HTTP header names. */
+                    // Allow only if access_control_allow_headers is
+                    // not NULL and not an empty string. If this
+                    // configuration is set to *, allow everything.
+                    // Otherwise this configuration must be a list
+                    // of allowed HTTP header names. */
                     vscpweb_printf(conn,
                                    "Access-Control-Allow-Headers: %s\r\n",
                                    ((cors_hdr_cfg[0] == '*') ? cors_acrh
@@ -14866,183 +15104,185 @@ handle_request(struct vscpweb_connection *conn)
         }
     }
 
-    /* 5. interpret the url to find out how the request must be handled
-     */
-    /* 5.1. first test, if the request targets the regular http(s)://
-     * protocol namespace or the websocket ws(s):// protocol namespace.
-     */
+    // 5. interpret the url to find out how the request must be handled
+    //
+    // 5.1. first test, if the request targets the regular http(s)://
+    // protocol namespace or the websocket ws(s):// protocol namespace.
+    //
     is_websocket_request = is_websocket_protocol(conn);
     handler_type = is_websocket_request ? WEBSOCKET_HANDLER : REQUEST_HANDLER;
 
-    /* 5.2. check if the request will be handled by a callback */
-    if (get_request_handler(conn,
-                            handler_type,
-                            &callback_handler,
-                            &subprotocols,
-                            &ws_connect_handler,
-                            &ws_ready_handler,
-                            &ws_data_handler,
-                            &ws_close_handler,
-                            NULL,
-                            &callback_data)) {
-        /* 5.2.1. A callback will handle this request. All requests
-         * handled
-         * by a callback have to be considered as requests to a script
-         * resource. */
+    // 5.2. check if the request will be handled by a callback 
+    if (get_request_handler( conn,
+                                handler_type,
+                                &callback_handler,
+                                &subprotocols,
+                                &ws_connect_handler,
+                                &ws_ready_handler,
+                                &ws_data_handler,
+                                &ws_close_handler,
+                                NULL,
+                                &callback_data ) ) {
+        // 5.2.1. A callback will handle this request. All requests
+        // handled
+        // by a callback have to be considered as requests to a script
+        // resource. 
         is_callback_resource = 1;
         is_script_resource = 1;
         is_put_or_delete_request = is_put_or_delete_method(conn);
     }
     else {
+        
 no_callback_resource:
-        /* 5.2.2. No callback is responsible for this request. The URI
-         * addresses a file based resource (static content or Lua/cgi
-         * scripts in the file system). */
+        
+        // 5.2.2. No callback is responsible for this request. The URI
+        // addresses a file based resource (static content or Lua/cgi
+        // scripts in the file system). 
         is_callback_resource = 0;
-        interpret_uri(conn,
-                      path,
-                      sizeof (path),
-                      &file.stat,
-                      &is_found,
-                      &is_script_resource,
-                      &is_websocket_request,
-                      &is_put_or_delete_request);
+        interpret_uri( conn,
+                        path,
+                        sizeof (path),
+                        &file.stat,
+                        &is_found,
+                        &is_script_resource,
+                        &is_websocket_request,
+                        &is_put_or_delete_request);
     }
 
-    /* 6. authorization check */
-    /* 6.1. a custom authorization handler is installed */
-    if (get_request_handler(conn,
-                            AUTH_HANDLER,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            &auth_handler,
-                            &auth_callback_data)) {
-        if (!auth_handler(conn, auth_callback_data)) {
+    // 6. authorization check 
+    // 6.1. a custom authorization handler is installed 
+    if (get_request_handler( conn,
+                                AUTH_HANDLER,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                &auth_handler,
+                                &auth_callback_data ) ) {
+        if ( !auth_handler(conn, auth_callback_data) ) {
             return;
         }
     }
-    else if (is_put_or_delete_request && !is_script_resource
-         && !is_callback_resource) {
-        /* 6.2. this request is a PUT/DELETE to a real file */
-        /* 6.2.1. thus, the server must have real files */
+    else if ( is_put_or_delete_request && 
+              !is_script_resource && 
+              !is_callback_resource ) {
+        // 6.2. this request is a PUT/DELETE to a real file 
+        // 6.2.1. thus, the server must have real files 
         if (conn->ctx->config[DOCUMENT_ROOT] == NULL) {
-            /* This server does not have any real files, thus the
-             * PUT/DELETE methods are not valid. */
-            vscpweb_send_http_error(conn,
-                                    405,
-                                    "%s method not allowed",
-                                    conn->request_info.request_method);
+            // This server does not have any real files, thus the
+            // PUT/DELETE methods are not valid. 
+            vscpweb_send_http_error( conn,
+                                        405,
+                                        "%s method not allowed",
+                                        conn->request_info.request_method );
             return;
         }
 
-        /* 6.2.2. Check if put authorization for static files is
-         * available.
-         */
-        if (!is_authorized_for_put(conn)) {
+        // 6.2.2. Check if put authorization for static files is
+        // available.
+        //
+        if ( !is_authorized_for_put(conn) ) {
             send_authorization_request(conn, NULL);
             return;
         }
 
     }
     else {
-        /* 6.3. This is either a OPTIONS, GET, HEAD or POST request,
-         * or it is a PUT or DELETE request to a resource that does not
-         * correspond to a file. Check authorization. */
-        if (!check_authorization(conn, path)) {
+        // 6.3. This is either a OPTIONS, GET, HEAD or POST request,
+        // or it is a PUT or DELETE request to a resource that does not
+        // correspond to a file. Check authorization. 
+        if ( !check_authorization( conn, path ) ) {
             send_authorization_request(conn, NULL);
             return;
         }
     }
 
-    /* request is authorized or does not need authorization */
+    // request is authorized or does not need authorization 
 
-    /* 7. check if there are request handlers for this uri */
+    // 7. check if there are request handlers for this uri 
     if (is_callback_resource) {
         if (!is_websocket_request) {
             i = callback_handler(conn, callback_data);
             if (i > 0) {
-                /* Do nothing, callback has served the request. Store
-                 * then return value as status code for the log and discard
-                 * all data from the client not used by the callback. */
+                // Do nothing, callback has served the request. Store
+                // then return value as status code for the log and discard
+                // all data from the client not used by the callback. 
                 conn->status_code = i;
                 discard_unread_request_data(conn);
             }
             else {
-                /* The handler did NOT handle the request. */
-                /* Some proper reactions would be:
-                 * a) close the connections without sending anything
-                 * b) send a 404 not found
-                 * c) try if there is a file matching the URI
-                 * It would be possible to do a, b or c in the callback
-                 * implementation, and return 1 - we cannot do anything
-                 * here, that is not possible in the callback.
-                 *
-                 * TODO: What would be the best reaction here?
-                 * (Note: The reaction may change, if there is a better
-                 *idea.)
-                 */
+                // The handler did NOT handle the request. */
+                // Some proper reactions would be:
+                // a) close the connections without sending anything
+                // b) send a 404 not found
+                // c) try if there is a file matching the URI
+                // It would be possible to do a, b or c in the callback
+                // implementation, and return 1 - we cannot do anything
+                // here, that is not possible in the callback.
+                //
+                // TODO: What would be the best reaction here?
+                // (Note: The reaction may change, if there is a better
+                //idea.)
 
-                /* For the moment, use option c: We look for a proper file,
-                 * but since a file request is not always a script resource,
-                 * the authorization check might be different. */
-                interpret_uri(conn,
-                              path,
-                              sizeof (path),
-                              &file.stat,
-                              &is_found,
-                              &is_script_resource,
-                              &is_websocket_request,
-                              &is_put_or_delete_request);
+                // For the moment, use option c: We look for a proper file,
+                // but since a file request is not always a script resource,
+                // the authorization check might be different. 
+                interpret_uri( conn,
+                                path,
+                                sizeof(path),
+                                &file.stat,
+                                &is_found,
+                                &is_script_resource,
+                                &is_websocket_request,
+                                &is_put_or_delete_request);
                 callback_handler = NULL;
 
-                /* Here we are at a dead end:
-                 * According to URI matching, a callback should be
-                 * responsible for handling the request,
-                 * we called it, but the callback declared itself
-                 * not responsible.
-                 * We use a goto here, to get out of this dead end,
-                 * and continue with the default handling.
-                 * A goto here is simpler and better to understand
-                 * than some curious loop. */
+                // Here we are at a dead end:
+                // According to URI matching, a callback should be
+                // responsible for handling the request,
+                // we called it, but the callback declared itself
+                // not responsible.
+                // We use a goto here, to get out of this dead end,
+                // and continue with the default handling.
+                // A goto here is simpler and better to understand
+                // than some curious loop. 
                 goto no_callback_resource;
             }
         }
         else {
-            handle_websocket_request(conn,
-                                     path,
-                                     is_callback_resource,
-                                     subprotocols,
-                                     ws_connect_handler,
-                                     ws_ready_handler,
-                                     ws_data_handler,
-                                     ws_close_handler,
-                                     callback_data);
+            handle_websocket_request( conn,
+                                        path,
+                                        is_callback_resource,
+                                        subprotocols,
+                                        ws_connect_handler,
+                                        ws_ready_handler,
+                                        ws_data_handler,
+                                        ws_close_handler,
+                                        callback_data );
         }
         return;
     }
 
-    /* 8. handle websocket requests */
+    // 8. handle websocket requests 
     if (is_websocket_request) {
         if (is_script_resource) {
 
             if (is_in_script_path(conn, path)) {
-                /* Websocket Lua script */
-                handle_websocket_request(conn,
-                                         path,
-                                         0 /* Lua Script */,
-                                         NULL,
-                                         NULL,
-                                         NULL,
-                                         NULL,
-                                         NULL,
-                                         &conn->ctx->callbacks);
+                // Websocket Lua script 
+                handle_websocket_request( conn,
+                                            path,
+                                            0, // Lua Script 
+                                            NULL,
+                                            NULL,
+                                            NULL,
+                                            NULL,
+                                            NULL,
+                                            &conn->ctx->callbacks );
             }
             else {
-                /* Script was in an illegal path */
+                // Script was in an illegal path 
                 vscpweb_send_http_error(conn, 403, "%s", "Forbidden");
             }
         }
@@ -15052,114 +15292,112 @@ no_callback_resource:
         return;
     }
     else
-
-
-        /* 9b. This request is either for a static file or resource handled
-         * by a script file. Thus, a DOCUMENT_ROOT must exist. */
-        if (conn->ctx->config[DOCUMENT_ROOT] == NULL) {
+        // 9b. This request is either for a static file or resource handled
+        // by a script file. Thus, a DOCUMENT_ROOT must exist. 
+        if ( NULL == conn->ctx->config[DOCUMENT_ROOT] ) {
         vscpweb_send_http_error(conn, 404, "%s", "Not Found");
         return;
     }
 
-    /* 10. Request is handled by a script */
-    if (is_script_resource) {
+    // 10. Request is handled by a script 
+    if ( is_script_resource ) {
         handle_file_based_request(conn, path, &file);
         return;
     }
 
-    /* 11. Handle put/delete/mkcol requests */
+    // 11. Handle put/delete/mkcol requests 
     if (is_put_or_delete_request) {
-        /* 11.1. PUT method */
+        // 11.1. PUT method 
         if (!strcmp(ri->request_method, "PUT")) {
             put_file(conn, path);
             return;
         }
-        /* 11.2. DELETE method */
+        // 11.2. DELETE method 
         if (!strcmp(ri->request_method, "DELETE")) {
             delete_file(conn, path);
             return;
         }
-        /* 11.3. MKCOL method */
+        // 11.3. MKCOL method 
         if (!strcmp(ri->request_method, "MKCOL")) {
             mkcol(conn, path);
             return;
         }
-        /* 11.4. PATCH method
-         * This method is not supported for static resources,
-         * only for scripts (Lua, CGI) and callbacks. */
-        vscpweb_send_http_error(conn,
-                                405,
-                                "%s method not allowed",
-                                conn->request_info.request_method);
+        // 11.4. PATCH method
+        // This method is not supported for static resources,
+        // only for scripts (Lua, CGI) and callbacks. 
+        vscpweb_send_http_error( conn,
+                                    405,
+                                    "%s method not allowed",
+                                    conn->request_info.request_method );
         return;
     }
 
-    /* 11. File does not exist, or it was configured that it should be
-     * hidden */
-    if (!is_found || (must_hide_file(conn, path))) {
+    // 11. File does not exist, or it was configured that it should be
+    // hidden 
+    if ( !is_found || (must_hide_file( conn, path ) ) ) {
         vscpweb_send_http_error(conn, 404, "%s", "Not found");
         return;
     }
 
-    /* 12. Directory uris should end with a slash */
-    if (file.stat.is_directory && (uri_len > 0)
-        && (ri->local_uri[uri_len - 1] != '/')) {
+    // 12. Directory uris should end with a slash 
+    if ( file.stat.is_directory && (uri_len > 0 ) &&
+         ( ri->local_uri[uri_len - 1] != '/') ) {
         gmt_time_string(date, sizeof (date), &curtime);
-        vscpweb_printf(conn,
-                       "HTTP/1.1 301 Moved Permanently\r\n"
-                       "Location: %s/\r\n"
-                       "Date: %s\r\n"
-                       /* "Cache-Control: private\r\n" (= default) */
-                       "Content-Length: 0\r\n"
-                       "Connection: %s\r\n",
-                       ri->request_uri,
-                       date,
-                       suggest_connection_header(conn));
-        send_additional_header(conn);
+        vscpweb_printf( conn,
+                            "HTTP/1.1 301 Moved Permanently\r\n"
+                            "Location: %s/\r\n"
+                            "Date: %s\r\n"
+                            /* "Cache-Control: private\r\n" (= default) */
+                            "Content-Length: 0\r\n"
+                            "Connection: %s\r\n",
+                            ri->request_uri,
+                            date,
+                            suggest_connection_header(conn) );
+        send_additional_header( conn );
         vscpweb_printf(conn, "\r\n");
         return;
     }
 
-    /* 13. Handle other methods than GET/HEAD */
-    /* 13.1. Handle PROPFIND */
+    // 13. Handle other methods than GET/HEAD 
+    // 13.1. Handle PROPFIND 
     if (!strcmp(ri->request_method, "PROPFIND")) {
         handle_propfind(conn, path, &file.stat);
         return;
     }
-    /* 13.2. Handle OPTIONS for files */
+    // 13.2. Handle OPTIONS for files 
     if (!strcmp(ri->request_method, "OPTIONS")) {
-        /* This standard handler is only used for real files.
-         * Scripts should support the OPTIONS method themselves, to allow a
-         * maximum flexibility.
-         * Lua and CGI scripts may fully support CORS this way (including
-         * preflights). */
+        // This standard handler is only used for real files.
+        // Scripts should support the OPTIONS method themselves, to allow a
+        // maximum flexibility.
+        // Lua and CGI scripts may fully support CORS this way (including
+        // preflights). 
         send_options(conn);
         return;
     }
-    /* 13.3. everything but GET and HEAD (e.g. POST) */
-    if ((0 != strcmp(ri->request_method, "GET"))
-        && (0 != strcmp(ri->request_method, "HEAD"))) {
-        vscpweb_send_http_error(conn,
-                                405,
-                                "%s method not allowed",
-                                conn->request_info.request_method);
+    // 13.3. everything but GET and HEAD (e.g. POST) 
+    if ( ( 0 != strcmp(ri->request_method, "GET") ) &&
+         ( 0 != strcmp(ri->request_method, "HEAD"))) {
+        vscpweb_send_http_error( conn,
+                                    405,
+                                    "%s method not allowed",
+                                 conn->request_info.request_method );
         return;
     }
 
-    /* 14. directories */
+    // 14. directories 
     if (file.stat.is_directory) {
-        /* Substitute files have already been handled above. */
-        /* Here we can either generate and send a directory listing,
-         * or send an "access denied" error. */
-        if (!vscpweb_strcasecmp(conn->ctx->config[ENABLE_DIRECTORY_LISTING],
-                                "yes")) {
+        // Substitute files have already been handled above. 
+        // Here we can either generate and send a directory listing,
+        // or send an "access denied" error. 
+        if ( !vscpweb_strcasecmp( conn->ctx->config[ENABLE_DIRECTORY_LISTING],
+                                    "yes") ) {
             handle_directory_request(conn, path);
         }
         else {
-            vscpweb_send_http_error(conn,
-                                    403,
-                                    "%s",
-                                    "Error: Directory listing denied");
+            vscpweb_send_http_error( conn,
+                                        403,
+                                        "%s",
+                                        "Error: Directory listing denied");
         }
         return;
     }
@@ -15167,21 +15405,21 @@ no_callback_resource:
     handle_file_based_request(conn, path, &file);
 
 #if 0
-    /* Perform redirect and auth checks before calling begin_request()
-     * handler.
-     * Otherwise, begin_request() would need to perform auth checks and
-     * redirects. */
+    // Perform redirect and auth checks before calling begin_request()
+    // handler.
+    // Otherwise, begin_request() would need to perform auth checks and
+    // redirects. */
 #endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// handle_file_based_request
 //
 
 static void
-handle_file_based_request(struct vscpweb_connection *conn,
-                          const char *path,
-                          struct vscpweb_file *file)
+handle_file_based_request( struct vscpweb_connection *conn,
+                            const char *path,
+                            struct vscpweb_file *file)
 {
     if (!conn || !conn->ctx) {
         return;
@@ -15192,42 +15430,42 @@ handle_file_based_request(struct vscpweb_connection *conn,
                             conn->ctx->config[DUKTAPE_SCRIPT_EXTENSIONS]),
                      path) > 0) {
         if (is_in_script_path(conn, path)) {
-            /* Call duktape to generate the page */
+            // Call duktape to generate the page 
             vscpweb_exec_duktape_script(conn, path);
         }
         else {
-            /* Script was in an illegal path */
+            // Script was in an illegal path 
             vscpweb_send_http_error(conn, 403, "%s", "Forbidden");
         }
 
     }
-    else if (match_prefix(conn->ctx->config[CGI_EXTENSIONS],
-                          strlen(conn->ctx->config[CGI_EXTENSIONS]),
-                          path) > 0) {
-        if (is_in_script_path(conn, path)) {
-            /* CGI scripts may support all HTTP methods */
+    else if ( match_prefix( conn->ctx->config[CGI_EXTENSIONS],
+                                strlen(conn->ctx->config[CGI_EXTENSIONS]),
+                                path ) > 0 ) {
+        if ( is_in_script_path( conn, path ) ) {
+            // CGI scripts may support all HTTP methods 
             handle_cgi_request(conn, path);
         }
         else {
-            /* Script was in an illegal path */
+            // Script was in an illegal path 
             vscpweb_send_http_error(conn, 403, "%s", "Forbidden");
         }
 
     }
-    else if (match_prefix(conn->ctx->config[SSI_EXTENSIONS],
-                      strlen(conn->ctx->config[SSI_EXTENSIONS]),
-                      path) > 0) {
-        if (is_in_script_path(conn, path)) {
+    else if ( match_prefix( conn->ctx->config[SSI_EXTENSIONS],
+                                strlen(conn->ctx->config[SSI_EXTENSIONS]),
+                                path ) > 0 ) {
+        if ( is_in_script_path(conn, path) ) {
             handle_ssi_file_request(conn, path, file);
         }
         else {
-            /* Script was in an illegal path */
+            // Script was in an illegal path 
             vscpweb_send_http_error(conn, 403, "%s", "Forbidden");
         }
     }
-    else if ((!conn->in_error_handler)
-         && is_not_modified(conn, &file->stat)) {
-        /* Send 304 "Not Modified" - this must not send any body data */
+    else if ( (!conn->in_error_handler) &&
+                is_not_modified(conn, &file->stat) ) {
+        // Send 304 "Not Modified" - this must not send any body data 
         handle_not_modified_static_file_request(conn, file);
     }
     else {
@@ -15236,11 +15474,11 @@ handle_file_based_request(struct vscpweb_connection *conn,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// close_all_listening_sockets
 //
 
 static void
-close_all_listening_sockets(struct vscpweb_context *ctx)
+close_all_listening_sockets( struct vscpweb_context *ctx )
 {
     unsigned int i;
     if (!ctx) {
@@ -15258,96 +15496,95 @@ close_all_listening_sockets(struct vscpweb_context *ctx)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// parse_port_string
+//
+// Valid listening port specification is: [ip_address:]port[s]
+// Examples for IPv4: 80, 443s, 127.0.0.1:3128, 192.0.2.3:8080s
+// Examples for IPv6: [::]:80, [::1]:80,
+//   [2001:0db8:7654:3210:FEDC:BA98:7654:3210]:443s
+//   see https://tools.ietf.org/html/rfc3513#section-2.2
+// In order to bind to both, IPv4 and IPv6, you can either add
+// both ports using 8080,[::]:8080, or the short form +8080.
+// Both forms differ in detail: 8080,[::]:8080 create two sockets,
+// one only accepting IPv4 the other only IPv6. +8080 creates
+// one socket accepting IPv4 and IPv6. Depending on the IPv6
+// environment, they might work differently, or might not work
+// at all - it must be tested what options work best in the
+// relevant network environment.
 //
 
-/* Valid listening port specification is: [ip_address:]port[s]
- * Examples for IPv4: 80, 443s, 127.0.0.1:3128, 192.0.2.3:8080s
- * Examples for IPv6: [::]:80, [::1]:80,
- *   [2001:0db8:7654:3210:FEDC:BA98:7654:3210]:443s
- *   see https://tools.ietf.org/html/rfc3513#section-2.2
- * In order to bind to both, IPv4 and IPv6, you can either add
- * both ports using 8080,[::]:8080, or the short form +8080.
- * Both forms differ in detail: 8080,[::]:8080 create two sockets,
- * one only accepting IPv4 the other only IPv6. +8080 creates
- * one socket accepting IPv4 and IPv6. Depending on the IPv6
- * environment, they might work differently, or might not work
- * at all - it must be tested what options work best in the
- * relevant network environment.
- */
-
 static int
-parse_port_string(const struct vec *vec, struct socket *so, int *ip_version)
+parse_port_string( const struct vec *vec, struct socket *so, int *ip_version )
 {
     unsigned int a, b, c, d, port;
     int ch, len;
     const char *cb;
     char buf[100] = {0};
 
-    /* MacOS needs that. If we do not zero it, subsequent bind() will fail.
-     * Also, all-zeroes in the socket address means binding to all addresses
-     * for both IPv4 and IPv6 (INADDR_ANY and IN6ADDR_ANY_INIT). */
+    // MacOS needs that. If we do not zero it, subsequent bind() will fail.
+    // Also, all-zeroes in the socket address means binding to all addresses
+    // for both IPv4 and IPv6 (INADDR_ANY and IN6ADDR_ANY_INIT). 
     memset(so, 0, sizeof (*so));
     so->lsa.sin.sin_family = AF_INET;
     *ip_version = 0;
 
-    /* Initialize port and len as invalid. */
+    // Initialize port and len as invalid. 
     port = 0;
     len = 0;
 
-    /* Test for different ways to format this string */
-    if (sscanf(vec->ptr, "%u.%u.%u.%u:%u%n", &a, &b, &c, &d, &port, &len)
-        == 5) {
-        /* Bind to a specific IPv4 address, e.g. 192.168.1.5:8080 */
-        so->lsa.sin.sin_addr.s_addr =
-                htonl((a << 24) | (b << 16) | (c << 8) | d);
+    // Test for different ways to format this string 
+    if ( 5 == sscanf(vec->ptr, "%u.%u.%u.%u:%u%n", &a, &b, &c, &d, &port, &len) ) {
+
+        // Bind to a specific IPv4 address, e.g. 192.168.1.5:8080 
+        so->lsa.sin.sin_addr.s_addr = htonl((a << 24) | (b << 16) | (c << 8) | d);
         so->lsa.sin.sin_port = htons((uint16_t) port);
         *ip_version = 4;
 
     }
-    else if (sscanf(vec->ptr, "[%49[^]]]:%u%n", buf, &port, &len) == 2
-         && vscpweb_inet_pton(
-                              AF_INET6, buf, &so->lsa.sin6, sizeof (so->lsa.sin6))) {
-        /* IPv6 address, examples: see above */
-        /* so->lsa.sin6.sin6_family = AF_INET6; already set by vscpweb_inet_pton
-         */
+    else if ( ( 2 == sscanf(vec->ptr, "[%49[^]]]:%u%n", buf, &port, &len ) ) &&
+                vscpweb_inet_pton( AF_INET6, buf, &so->lsa.sin6, sizeof(so->lsa.sin6) ) ) {
+        
+        // IPv6 address, examples: see above 
+        // so->lsa.sin6.sin6_family = AF_INET6; already set by vscpweb_inet_pton
         so->lsa.sin6.sin6_port = htons((uint16_t) port);
         *ip_version = 6;
 
     }
-    else if ((vec->ptr[0] == '+')
-         && (sscanf(vec->ptr + 1, "%u%n", &port, &len) == 1)) {
+    else if ( (vec->ptr[0] == '+') &&
+                ( 1 == sscanf(vec->ptr + 1, "%u%n", &port, &len ) ) ) {
 
-        /* Port is specified with a +, bind to IPv6 and IPv4, INADDR_ANY */
-        /* Add 1 to len for the + character we skipped before */
+        // Port is specified with a +, bind to IPv6 and IPv4, INADDR_ANY 
+        // Add 1 to len for the + character we skipped before 
         len++;
 
-        /* Set socket family to IPv6, do not use IPV6_V6ONLY */
+        // Set socket family to IPv6, do not use IPV6_V6ONLY 
         so->lsa.sin6.sin6_family = AF_INET6;
         so->lsa.sin6.sin6_port = htons((uint16_t) port);
         *ip_version = 4 + 6;
 
     }
     else if (sscanf(vec->ptr, "%u%n", &port, &len) == 1) {
-        /* If only port is specified, bind to IPv4, INADDR_ANY */
+        // If only port is specified, bind to IPv4, INADDR_ANY 
         so->lsa.sin.sin_port = htons((uint16_t) port);
         *ip_version = 4;
 
     }
     else if ((cb = strchr(vec->ptr, ':')) != NULL) {
-        /* Could be a hostname */
-        /* Will only work for RFC 952 compliant hostnames,
-         * starting with a letter, containing only letters,
-         * digits and hyphen ('-'). Newer specs may allow
-         * more, but this is not guaranteed here, since it
-         * may interfere with rules for port option lists. */
+        // Could be a hostname 
+        // Will only work for RFC 952 compliant hostnames,
+        // starting with a letter, containing only letters,
+        // digits and hyphen ('-'). Newer specs may allow
+        // more, but this is not guaranteed here, since it
+        // may interfere with rules for port option lists. 
 
-        *(char *) cb = 0; /* Use a const cast here and modify the string.
-		                  * We are going to restore the string later. */
+        *(char *) cb = 0; // Use a const cast here and modify the string.
+		          // We are going to restore the string later. 
 
-        if (vscpweb_inet_pton(
-                              AF_INET, vec->ptr, &so->lsa.sin, sizeof (so->lsa.sin))) {
-            if (sscanf(cb + 1, "%u%n", &port, &len) == 1) {
+        if ( vscpweb_inet_pton( AF_INET, 
+                                    vec->ptr, 
+                                    &so->lsa.sin, 
+                                    sizeof (so->lsa.sin) ) ) {
+            if ( 1 == sscanf(cb + 1, "%u%n", &port, &len) ) {
                 *ip_version = 4;
                 so->lsa.sin.sin_family = AF_INET;
                 so->lsa.sin.sin_port = htons((uint16_t) port);
@@ -15363,7 +15600,7 @@ parse_port_string(const struct vec *vec, struct socket *so, int *ip_version)
                            vec->ptr,
                            &so->lsa.sin6,
                            sizeof (so->lsa.sin6))) {
-            if (sscanf(cb + 1, "%u%n", &port, &len) == 1) {
+            if ( 1 == sscanf(cb + 1, "%u%n", &port, &len) ) {
                 *ip_version = 6;
                 so->lsa.sin6.sin6_family = AF_INET6;
                 so->lsa.sin.sin_port = htons((uint16_t) port);
@@ -15376,40 +15613,40 @@ parse_port_string(const struct vec *vec, struct socket *so, int *ip_version)
 
         }
 
-        *(char *) cb = ':'; /* restore the string */
+        *(char *) cb = ':'; // restore the string 
 
     }
     else {
-        /* Parsing failure. */
+        // Parsing failure. 
     }
 
-    /* sscanf and the option splitting code ensure the following condition
-     */
-    if ((len < 0) && ((unsigned) len > (unsigned) vec->len)) {
+    // sscanf and the option splitting code ensure the following condition
+    if ( (len < 0) && ((unsigned) len > (unsigned) vec->len)) {
         *ip_version = 0;
         return 0;
     }
+    
     ch = vec->ptr[len]; /* Next character after the port number */
     so->is_ssl = (ch == 's');
     so->ssl_redir = (ch == 'r');
 
-    /* Make sure the port is valid and vector ends with 's', 'r' or ',' */
-    if (is_valid_port(port)
-        && ((ch == '\0') || (ch == 's') || (ch == 'r') || (ch == ','))) {
+    // Make sure the port is valid and vector ends with 's', 'r' or ',' 
+    if ( is_valid_port(port) &&
+            ( (ch == '\0') || (ch == 's') || (ch == 'r') || (ch == ',') ) ) {
         return 1;
     }
 
-    /* Reset ip_version to 0 of there is an error */
+    // Reset ip_version to 0 of there is an error 
     *ip_version = 0;
     return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// set_ports_option
 //
 
 static int
-set_ports_option(struct vscpweb_context *ctx)
+set_ports_option( struct vscpweb_context *ctx )
 {
     const char *list;
     int on = 1;
@@ -15465,54 +15702,54 @@ set_ports_option(struct vscpweb_context *ctx)
         }
 
 #ifdef _WIN32
-        /* Windows SO_REUSEADDR lets many procs binds to a
-         * socket, SO_EXCLUSIVEADDRUSE makes the bind fail
-         * if someone already has the socket -- DTL */
-        /* NOTE: If SO_EXCLUSIVEADDRUSE is used,
-         * Windows might need a few seconds before
-         * the same port can be used again in the
-         * same process, so a short Sleep may be
-         * required between vscpweb_stop and vscpweb_start.
-         */
-        if (setsockopt(so.sock,
-                       SOL_SOCKET,
-                       SO_EXCLUSIVEADDRUSE,
-                       (SOCK_OPT_TYPE) & on,
-                       sizeof (on)) != 0) {
+        // Windows SO_REUSEADDR lets many procs binds to a
+        // socket, SO_EXCLUSIVEADDRUSE makes the bind fail
+        // if someone already has the socket -- DTL */
+        // NOTE: If SO_EXCLUSIVEADDRUSE is used,
+        // Windows might need a few seconds before
+        // the same port can be used again in the
+        // same process, so a short Sleep may be
+        // required between vscpweb_stop and vscpweb_start.
+        //
+        if ( setsockopt( so.sock,
+                            SOL_SOCKET,
+                            SO_EXCLUSIVEADDRUSE,
+                            (SOCK_OPT_TYPE) & on,
+                            sizeof(on) ) != 0) {
 
-            /* Set reuse option, but don't abort on errors. */
+            // Set reuse option, but don't abort on errors. 
             vscpweb_cry(fc(ctx),
                         "cannot set socket option SO_EXCLUSIVEADDRUSE (entry %i)",
                         portsTotal);
         }
 #else
-        if (setsockopt(so.sock,
-                       SOL_SOCKET,
-                       SO_REUSEADDR,
-                       (SOCK_OPT_TYPE) & on,
-                       sizeof (on)) != 0) {
+        if ( setsockopt( so.sock,
+                            SOL_SOCKET,
+                            SO_REUSEADDR,
+                            (SOCK_OPT_TYPE) & on,
+                            sizeof( on ) ) != 0 ) {
 
-            /* Set reuse option, but don't abort on errors. */
-            vscpweb_cry(fc(ctx),
-                        "cannot set socket option SO_REUSEADDR (entry %i)",
-                        portsTotal);
+            // Set reuse option, but don't abort on errors. 
+            vscpweb_cry( fc(ctx),
+                            "cannot set socket option SO_REUSEADDR (entry %i)",
+                            portsTotal );
         }
 #endif
 
-        if (ip_version > 4) {
+        if ( ip_version > 4 ) {
 
-            if (ip_version == 6) {
-                if (so.lsa.sa.sa_family == AF_INET6
-                    && setsockopt(so.sock,
-                                  IPPROTO_IPV6,
-                                  IPV6_V6ONLY,
-                                  (void *) &off,
-                                  sizeof (off)) != 0) {
+            if ( 6 == ip_version ) {
+                if ( ( AF_INET6 == so.lsa.sa.sa_family ) &&
+                     ( setsockopt( so.sock,
+                                    IPPROTO_IPV6,
+                                    IPV6_V6ONLY,
+                                    (void *) &off,
+                                    sizeof (off) ) != 0 ) ) {
 
-                    /* Set IPv6 only option, but don't abort on errors. */
-                    vscpweb_cry(fc(ctx),
-                                "cannot set socket option IPV6_V6ONLY (entry %i)",
-                                portsTotal);
+                    // Set IPv6 only option, but don't abort on errors. 
+                    vscpweb_cry( fc(ctx),
+                                    "cannot set socket option IPV6_V6ONLY (entry %i)",
+                                    portsTotal );
                 }
             }
 
@@ -15522,12 +15759,12 @@ set_ports_option(struct vscpweb_context *ctx)
 
             len = sizeof (so.lsa.sin);
             if (bind(so.sock, &so.lsa.sa, len) != 0) {
-                vscpweb_cry(fc(ctx),
-                            "cannot bind to %.*s: %d (%s)",
-                            (int) vec.len,
-                            vec.ptr,
-                            (int) ERRNO,
-                            strerror(errno));
+                vscpweb_cry( fc(ctx),
+                                "cannot bind to %.*s: %d (%s)",
+                                (int) vec.len,
+                                vec.ptr,
+                                (int) ERRNO,
+                                strerror(errno) );
                 closesocket(so.sock);
                 so.sock = INVALID_SOCKET;
                 continue;
@@ -15537,55 +15774,55 @@ set_ports_option(struct vscpweb_context *ctx)
 
             len = sizeof (so.lsa.sin6);
             if (bind(so.sock, &so.lsa.sa, len) != 0) {
-                vscpweb_cry(fc(ctx),
-                            "cannot bind to IPv6 %.*s: %d (%s)",
-                            (int) vec.len,
-                            vec.ptr,
-                            (int) ERRNO,
-                            strerror(errno));
+                vscpweb_cry( fc(ctx),
+                                "cannot bind to IPv6 %.*s: %d (%s)",
+                                (int) vec.len,
+                                vec.ptr,
+                                (int) ERRNO,
+                                strerror(errno) );
                 closesocket(so.sock);
                 so.sock = INVALID_SOCKET;
                 continue;
             }
         }
         else {
-            vscpweb_cry(fc(ctx),
-                        "cannot bind: address family not supported (entry %i)",
-                        portsTotal);
-            closesocket(so.sock);
+            vscpweb_cry( fc(ctx),
+                            "cannot bind: address family not supported (entry %i)",
+                            portsTotal );
+            closesocket( so.sock );
             so.sock = INVALID_SOCKET;
             continue;
         }
 
         if (listen(so.sock, SOMAXCONN) != 0) {
 
-            vscpweb_cry(fc(ctx),
-                        "cannot listen to %.*s: %d (%s)",
-                        (int) vec.len,
-                        vec.ptr,
-                        (int) ERRNO,
-                        strerror(errno));
+            vscpweb_cry( fc(ctx),
+                            "cannot listen to %.*s: %d (%s)",
+                            (int) vec.len,
+                            vec.ptr,
+                            (int) ERRNO,
+                            strerror(errno) );
             closesocket(so.sock);
             so.sock = INVALID_SOCKET;
             continue;
         }
 
-        if ((getsockname(so.sock, &(usa.sa), &len) != 0)
-            || (usa.sa.sa_family != so.lsa.sa.sa_family)) {
+        if ( (getsockname(so.sock, &(usa.sa), &len) != 0) ||
+             (usa.sa.sa_family != so.lsa.sa.sa_family) ) {
 
             int err = (int) ERRNO;
-            vscpweb_cry(fc(ctx),
-                        "call to getsockname failed %.*s: %d (%s)",
-                        (int) vec.len,
-                        vec.ptr,
-                        err,
-                        strerror(errno));
+            vscpweb_cry( fc(ctx),
+                            "call to getsockname failed %.*s: %d (%s)",
+                            (int) vec.len,
+                            vec.ptr,
+                            err,
+                            strerror(errno) );
             closesocket(so.sock);
             so.sock = INVALID_SOCKET;
             continue;
         }
 
-        /* Update lsa port in case of random free ports */
+        // Update lsa port in case of random free ports 
         if (so.lsa.sa.sa_family == AF_INET6) {
             so.lsa.sin6.sin6_port = usa.sin6.sin6_port;
         }
@@ -15635,7 +15872,7 @@ set_ports_option(struct vscpweb_context *ctx)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// header_val
 //
 
 static const char *
@@ -15652,7 +15889,7 @@ header_val(const struct vscpweb_connection *conn, const char *header)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// log_access
 //
 
 static void
@@ -15684,8 +15921,8 @@ log_access(const struct vscpweb_connection *conn)
         fi.access.fp = NULL;
     }
 
-    /* Log is written to a file and/or a callback. If both are not set,
-     * executing the rest of the function is pointless. */
+    // Log is written to a file and/or a callback. If both are not set,
+    // executing the rest of the function is pointless. 
     if ((fi.access.fp == NULL) && (conn->ctx->callbacks.log_access == NULL)) {
         return;
     }
@@ -15705,41 +15942,46 @@ log_access(const struct vscpweb_connection *conn)
     referer = header_val(conn, "Referer");
     user_agent = header_val(conn, "User-Agent");
 
-    vscpweb_snprintf(conn,
-                     NULL, /* Ignore truncation in access log */
-                     buf,
-                     sizeof (buf),
-                     "%s - %s [%s] \"%s %s%s%s HTTP/%s\" %d %" INT64_FMT " %s %s",
-                     src_addr,
-                     (ri->remote_user == NULL) ? "-" : ri->remote_user,
-                     date,
-                     ri->request_method ? ri->request_method : "-",
-                     ri->request_uri ? ri->request_uri : "-",
-                     ri->query_string ? "?" : "",
-                     ri->query_string ? ri->query_string : "",
-                     ri->http_version,
-                     conn->status_code,
-                     conn->num_bytes_sent,
-                     referer,
-                     user_agent);
+    vscpweb_snprintf( conn,
+                        NULL, // Ignore truncation in access log 
+                        buf,
+                        sizeof (buf),
+                        "%s - %s [%s] \"%s %s%s%s HTTP/%s\" %d %" INT64_FMT " %s %s",
+                        src_addr,
+                        (ri->remote_user == NULL) ? "-" : ri->remote_user,
+                        date,
+                        ri->request_method ? ri->request_method : "-",
+                        ri->request_uri ? ri->request_uri : "-",
+                        ri->query_string ? "?" : "",
+                        ri->query_string ? ri->query_string : "",
+                        ri->http_version,
+                        conn->status_code,
+                        conn->num_bytes_sent,
+                        referer,
+                        user_agent );
 
-    if (conn->ctx->callbacks.log_access) {
+    if ( conn->ctx->callbacks.log_access ) {
         conn->ctx->callbacks.log_access(conn, buf);
     }
 
-    if (fi.access.fp) {
+    if ( fi.access.fp ) {
+        
         int ok = 1;
+        
         flockfile(fi.access.fp);
         if (fprintf(fi.access.fp, "%s\n", buf) < 1) {
             ok = 0;
         }
+        
         if (fflush(fi.access.fp) != 0) {
             ok = 0;
         }
+        
         funlockfile(fi.access.fp);
         if (vscpweb_fclose(&fi.access) != 0) {
             ok = 0;
         }
+        
         if (!ok) {
             vscpweb_cry(conn,
                         "Error writing log file %s",
@@ -15749,12 +15991,12 @@ log_access(const struct vscpweb_connection *conn)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// check_acl
+//
+// Verify given socket address against the ACL.
+// Return -1 if ACL is malformed, 0 if address is disallowed, 1 if allowed.
 //
 
-/* Verify given socket address against the ACL.
- * Return -1 if ACL is malformed, 0 if address is disallowed, 1 if allowed.
- */
 static int
 check_acl(struct vscpweb_context *ctx, uint32_t remote_ip)
 {
@@ -15765,7 +16007,7 @@ check_acl(struct vscpweb_context *ctx, uint32_t remote_ip)
     if (ctx) {
         const char *list = ctx->config[ACCESS_CONTROL_LIST];
 
-        /* If any ACL is set, deny by default */
+        // If any ACL is set, deny by default 
         allowed = (list == NULL) ? '+' : '-';
 
         while ((list = next_option(list, &vec, NULL)) != NULL) {
@@ -15789,7 +16031,7 @@ check_acl(struct vscpweb_context *ctx, uint32_t remote_ip)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// set_uid_option
 //
 #if !defined(_WIN32)
 
@@ -15840,7 +16082,7 @@ set_uid_option(struct vscpweb_context *ctx)
 #endif /* !_WIN32 */
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// tls_dtor
 //
 
 static void
@@ -15862,8 +16104,11 @@ tls_dtor(void *key)
 ////////////////////////////////////////////////////////////////////////////////
 // ssl_use_pem_file
 //
+
 static int
-ssl_use_pem_file(struct vscpweb_context *ctx, const char *pem, const char *chain);
+ssl_use_pem_file( struct vscpweb_context *ctx, 
+                    const char *pem, 
+                    const char *chain );
 static const char *ssl_error(void);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -15884,13 +16129,13 @@ refresh_trust(struct vscpweb_connection *conn)
     int should_verify_peer;
 
     if ((pem = conn->ctx->config[SSL_CERTIFICATE]) == NULL) {
-        /* If peem is NULL and conn->ctx->callbacks.init_ssl is not,
-         * refresh_trust still can not work. */
+        // If peem is NULL and conn->ctx->callbacks.init_ssl is not,
+        // refresh_trust still can not work. 
         return 0;
     }
     chain = conn->ctx->config[SSL_CERTIFICATE_CHAIN];
     if (chain == NULL) {
-        /* pem is not NULL here */
+        // pem is not NULL here 
         chain = pem;
     }
     if (*chain == 0) {
@@ -15941,7 +16186,7 @@ refresh_trust(struct vscpweb_connection *conn)
             *p_reload_lock = 0;
         }
     }
-    /* lock while cert is reloading */
+    // lock while cert is reloading 
     while (*p_reload_lock) {
         sleep(1);
     }
@@ -15992,54 +16237,54 @@ sslize(struct vscpweb_connection *conn,
     ret = SSL_set_fd(conn->ssl, conn->client.sock);
     if (ret != 1) {
         err = SSL_get_error(conn->ssl, ret);
-        (void) err; /* TODO: set some error message */
+        (void) err; // TODO: set some error message 
         SSL_free(conn->ssl);
         conn->ssl = NULL;
-        /* Avoid CRYPTO_cleanup_all_ex_data(); See discussion:
-         * https://wiki.openssl.org/index.php/Talk:Library_Initialization */
+        // Avoid CRYPTO_cleanup_all_ex_data(); See discussion:
+        // https://wiki.openssl.org/index.php/Talk:Library_Initialization 
 #ifndef OPENSSL_API_1_1
         ERR_remove_state(0);
 #endif
         return 0;
     }
 
-    /* SSL functions may fail and require to be called again:
-     * see https://www.openssl.org/docs/manmaster/ssl/SSL_get_error.html
-     * Here "func" could be SSL_connect or SSL_accept. */
+    // SSL functions may fail and require to be called again:
+    // see https://www.openssl.org/docs/manmaster/ssl/SSL_get_error.html
+    // Here "func" could be SSL_connect or SSL_accept. 
     for (i = 16; i <= 1024; i *= 2) {
         ret = func(conn->ssl);
         if (ret != 1) {
             err = SSL_get_error(conn->ssl, ret);
-            if ((err == SSL_ERROR_WANT_CONNECT)
-                || (err == SSL_ERROR_WANT_ACCEPT)
-                || (err == SSL_ERROR_WANT_READ)
-                || (err == SSL_ERROR_WANT_WRITE)) {
-                /* Need to retry the function call "later".
-                 * See https://linux.die.net/man/3/ssl_get_error
-                 * This is typical for non-blocking sockets. */
+            if ( ( err == SSL_ERROR_WANT_CONNECT ) ||
+                 ( err == SSL_ERROR_WANT_ACCEPT ) ||
+                 ( err == SSL_ERROR_WANT_READ ) ||
+                 ( err == SSL_ERROR_WANT_WRITE ) ) {
+                // Need to retry the function call "later".
+                // See https://linux.die.net/man/3/ssl_get_error
+                // This is typical for non-blocking sockets. 
                 if (*stop_server) {
-                    /* Don't wait if the server is going to be stopped. */
+                    // Don't wait if the server is going to be stopped. 
                     break;
                 }
                 vscpweb_sleep(i);
 
             }
             else if (err == SSL_ERROR_SYSCALL) {
-                /* This is an IO error. Look at errno. */
+                // This is an IO error. Look at errno. 
                 err = errno;
-                /* TODO: set some error message */
+                // TODO: set some error message 
                 (void) err;
                 break;
             }
             else {
-                /* This is an SSL specific error */
-                /* TODO: set some error message */
+                // This is an SSL specific error 
+                // TODO: set some error message 
                 break;
             }
 
         }
         else {
-            /* success */
+            // success 
             break;
         }
     }
@@ -16047,8 +16292,8 @@ sslize(struct vscpweb_connection *conn,
     if (ret != 1) {
         SSL_free(conn->ssl);
         conn->ssl = NULL;
-        /* Avoid CRYPTO_cleanup_all_ex_data(); See discussion:
-         * https://wiki.openssl.org/index.php/Talk:Library_Initialization */
+        // Avoid CRYPTO_cleanup_all_ex_data(); See discussion:
+        // https://wiki.openssl.org/index.php/Talk:Library_Initialization 
 #ifndef OPENSSL_API_1_1
         ERR_remove_state(0);
 #endif
@@ -16061,8 +16306,8 @@ sslize(struct vscpweb_connection *conn,
 ////////////////////////////////////////////////////////////////////////////////
 // ssl_error
 //
-
-/* Return OpenSSL error message (from CRYPTO lib) */
+// Return OpenSSL error message (from CRYPTO lib) 
+//
 
 static const char *
 ssl_error(void)
@@ -16120,30 +16365,30 @@ ssl_get_client_cert_info(struct vscpweb_connection *conn)
         unsigned char *tmp_buf;
         unsigned char *tmp_p;
 
-        /* Handle to algorithm used for fingerprint */
+        // Handle to algorithm used for fingerprint 
         const EVP_MD *digest = EVP_get_digestbyname("sha1");
 
-        /* Get Subject and issuer */
+        // Get Subject and issuer 
         X509_NAME *subj = X509_get_subject_name(cert);
         X509_NAME *iss = X509_get_issuer_name(cert);
 
-        /* Get serial number */
+        // Get serial number 
         ASN1_INTEGER *serial = X509_get_serialNumber(cert);
 
-        /* Translate serial number to a hex string */
+        // Translate serial number to a hex string 
         BIGNUM *serial_bn = ASN1_INTEGER_to_BN(serial, NULL);
         str_serial = BN_bn2hex(serial_bn);
         BN_free(serial_bn);
 
-        /* Translate subject and issuer to a string */
+        // Translate subject and issuer to a string 
         (void) X509_NAME_oneline(subj, str_subject, (int) sizeof (str_subject));
         (void) X509_NAME_oneline(iss, str_issuer, (int) sizeof (str_issuer));
 
-        /* Calculate SHA1 fingerprint and store as a hex string */
+        // Calculate SHA1 fingerprint and store as a hex string 
         ulen = 0;
 
-        /* ASN1_digest is deprecated. Do the calculation manually,
-         * using EVP_Digest. */
+        // ASN1_digest is deprecated. Do the calculation manually,
+        // using EVP_Digest. 
         ilen = i2d_X509(cert, NULL);
         tmp_buf =
                 (ilen > 0)
@@ -16179,11 +16424,11 @@ ssl_get_client_cert_info(struct vscpweb_connection *conn)
                         "certificate");
         }
 
-        /* Strings returned from bn_bn2hex must be freed using OPENSSL_free,
-         * see https://linux.die.net/man/3/bn_bn2hex */
+        // Strings returned from bn_bn2hex must be freed using OPENSSL_free,
+        // see https://linux.die.net/man/3/bn_bn2hex 
         OPENSSL_free(str_serial);
 
-        /* Free certificate memory */
+        // Free certificate memory 
         X509_free(cert);
     }
 }
@@ -16202,7 +16447,7 @@ ssl_locking_callback(int mode, int mutex_num, const char *file, int line)
     (void) file;
 
     if (mode & 1) {
-        /* 1 is CRYPTO_LOCK */
+        // 1 is CRYPTO_LOCK 
         (void) pthread_mutex_lock(&ssl_mutexes[mutex_num]);
     }
     else {
@@ -16213,9 +16458,9 @@ ssl_locking_callback(int mode, int mutex_num, const char *file, int line)
 
 
 #if defined(SSL_ALREADY_INITIALIZED)
-static int cryptolib_users = 1; /* Reference counter for crypto library. */
+static int cryptolib_users = 1; // Reference counter for crypto library. 
 #else
-static int cryptolib_users = 0; /* Reference counter for crypto library. */
+static int cryptolib_users = 0; // Reference counter for crypto library. 
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -16234,7 +16479,7 @@ initialize_ssl(char *ebuf, size_t ebuf_len)
         return 1;
     }
 
-#else /* not OPENSSL_API_1_1 */
+#else // not OPENSSL_API_1_1 
     int i;
     size_t size;
 
@@ -16246,9 +16491,9 @@ initialize_ssl(char *ebuf, size_t ebuf_len)
         return 1;
     }
 
-    /* Initialize locking callbacks, needed for thread safety.
-     * http://www.openssl.org/support/faq.html#PROG1
-     */
+    // Initialize locking callbacks, needed for thread safety.
+    // http://www.openssl.org/support/faq.html#PROG1
+    //
     i = CRYPTO_num_locks();
     if (i < 0) {
         i = 0;
@@ -16260,7 +16505,7 @@ initialize_ssl(char *ebuf, size_t ebuf_len)
     }
     else if ((ssl_mutexes = (pthread_mutex_t *) vscpweb_malloc(size)) == NULL) {
         vscpweb_snprintf(NULL,
-                         NULL, /* No truncation check for ebuf */
+                         NULL, // No truncation check for ebuf 
                          ebuf,
                          ebuf_len,
                          "%s: cannot allocate mutexes: %s",
@@ -16276,7 +16521,7 @@ initialize_ssl(char *ebuf, size_t ebuf_len)
 
     CRYPTO_set_locking_callback(&ssl_locking_callback);
     CRYPTO_set_id_callback(&vscpweb_current_thread_id);
-#endif /* OPENSSL_API_1_1 */
+#endif // OPENSSL_API_1_1 
 
     return 1;
 }
@@ -16297,7 +16542,7 @@ ssl_use_pem_file(struct vscpweb_context *ctx, const char *pem, const char *chain
         return 0;
     }
 
-    /* could use SSL_CTX_set_default_passwd_cb_userdata */
+    // could use SSL_CTX_set_default_passwd_cb_userdata 
     if (SSL_CTX_use_PrivateKey_file(ctx->ssl_ctx, pem, 1) == 0) {
         vscpweb_cry(fc(ctx),
                     "%s: cannot open private key file %s: %s",
@@ -16315,21 +16560,21 @@ ssl_use_pem_file(struct vscpweb_context *ctx, const char *pem, const char *chain
         return 0;
     }
 
-    /* In contrast to OpenSSL, wolfSSL does not support certificate
-     * chain files that contain private keys and certificates in
-     * SSL_CTX_use_certificate_chain_file.
-     * The vscpweb-Server used pem-Files that contained both information.
-     * In order to make wolfSSL work, it is split in two files.
-     * One file that contains key and certificate used by the server and
-     * an optional chain file for the ssl stack.
-     */
+    // In contrast to OpenSSL, wolfSSL does not support certificate
+    // chain files that contain private keys and certificates in
+    // SSL_CTX_use_certificate_chain_file.
+    // The vscpweb-Server used pem-Files that contained both information.
+    // In order to make wolfSSL work, it is split in two files.
+    // One file that contains key and certificate used by the server and
+    // an optional chain file for the ssl stack.
+    //
     if (chain) {
-        if (SSL_CTX_use_certificate_chain_file(ctx->ssl_ctx, chain) == 0) {
-            vscpweb_cry(fc(ctx),
-                        "%s: cannot use certificate chain file %s: %s",
-                        __func__,
-                        pem,
-                        ssl_error());
+        if ( 0 == SSL_CTX_use_certificate_chain_file(ctx->ssl_ctx, chain) ) {
+            vscpweb_cry( fc(ctx),
+                            "%s: cannot use certificate chain file %s: %s",
+                            __func__,
+                            pem,
+                            ssl_error() );
             return 0;
         }
     }
@@ -16379,7 +16624,7 @@ ssl_get_protocol(int version_id)
         ret |= SSL_OP_NO_TLSv1_1;
     return ret;
 }
-#endif /* OPENSSL_API_1_1 */
+#endif // OPENSSL_API_1_1 
 
 ////////////////////////////////////////////////////////////////////////////////
 // ssl_info_callback
@@ -16398,8 +16643,8 @@ ssl_info_callback(SSL *ssl, int what, int ret)
         SSL_get_app_data(ssl);
     }
     if (what & SSL_CB_HANDSHAKE_DONE) {
-        /* TODO: check for openSSL 1.1 */
-        //#define SSL3_FLAGS_NO_RENEGOTIATE_CIPHERS 0x0001
+        // TODO: check for openSSL 1.1 
+        // #define SSL3_FLAGS_NO_RENEGOTIATE_CIPHERS 0x0001
         // ssl->s3->flags |= SSL3_FLAGS_NO_RENEGOTIATE_CIPHERS;
     }
 }
@@ -16429,8 +16674,8 @@ set_ssl_option(struct vscpweb_context *ctx)
     int protocol_ver;
     char ebuf[128];
 
-    /* If PEM file is not specified and the init_ssl callback
-     * is not specified, skip SSL initialization. */
+    // If PEM file is not specified and the init_ssl callback
+    // is not specified, skip SSL initialization. 
     if (!ctx) {
         return 0;
     }
@@ -16453,7 +16698,7 @@ set_ssl_option(struct vscpweb_context *ctx)
 
 
 #ifdef OPENSSL_API_1_1
-    /* Initialize SSL library */
+    // Initialize SSL library 
     OPENSSL_init_ssl(0, NULL);
     OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS
                      | OPENSSL_INIT_LOAD_CRYPTO_STRINGS,
@@ -16464,7 +16709,7 @@ set_ssl_option(struct vscpweb_context *ctx)
         return 0;
     }
 #else
-    /* Initialize SSL library */
+    // Initialize SSL library 
     SSL_library_init();
     SSL_load_error_strings();
 
@@ -16472,7 +16717,7 @@ set_ssl_option(struct vscpweb_context *ctx)
         vscpweb_cry(fc(ctx), "SSL_CTX_new (server) error: %s", ssl_error());
         return 0;
     }
-#endif /* OPENSSL_API_1_1 */
+#endif // OPENSSL_API_1_1 
 
     SSL_CTX_clear_options(ctx->ssl_ctx,
                           SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1
@@ -16489,33 +16734,33 @@ set_ssl_option(struct vscpweb_context *ctx)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wincompatible-pointer-types"
 #endif
-    /* Depending on the OpenSSL version, the callback may be
-     * 'void (*)(SSL *, int, int)' or 'void (*)(const SSL *, int, int)'
-     * yielding in an "incompatible-pointer-type" warning for the other
-     * version. It seems to be "unclear" what is correct:
-     * https://bugs.launchpad.net/ubuntu/+source/openssl/+bug/1147526
-     * https://www.openssl.org/docs/man1.0.2/ssl/ssl.html
-     * https://www.openssl.org/docs/man1.1.0/ssl/ssl.html
-     * https://github.com/openssl/openssl/blob/1d97c8435171a7af575f73c526d79e1ef0ee5960/ssl/ssl.h#L1173
-     * Disable this warning here.
-     * Alternative would be a version dependent ssl_info_callback and
-     * a const-cast to call 'char *SSL_get_app_data(SSL *ssl)' there.
-     */
+    // Depending on the OpenSSL version, the callback may be
+    // 'void (*)(SSL *, int, int)' or 'void (*)(const SSL *, int, int)'
+    // yielding in an "incompatible-pointer-type" warning for the other
+    // version. It seems to be "unclear" what is correct:
+    // https://bugs.launchpad.net/ubuntu/+source/openssl/+bug/1147526
+    // https://www.openssl.org/docs/man1.0.2/ssl/ssl.html
+    // https://www.openssl.org/docs/man1.1.0/ssl/ssl.html
+    // https://github.com/openssl/openssl/blob/1d97c8435171a7af575f73c526d79e1ef0ee5960/ssl/ssl.h#L1173
+    // Disable this warning here.
+    // Alternative would be a version dependent ssl_info_callback and
+    // a const-cast to call 'char *SSL_get_app_data(SSL *ssl)' there.
+    //
     SSL_CTX_set_info_callback(ctx->ssl_ctx, (void *) ssl_info_callback);
 
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
-    /* If a callback has been specified, call it. */
+    // If a callback has been specified, call it. 
     callback_ret =
             (ctx->callbacks.init_ssl == NULL)
             ? 0
             : (ctx->callbacks.init_ssl(ctx->ssl_ctx, ctx->user_data));
 
-    /* If callback returns 0, civetweb sets up the SSL certificate.
-     * If it returns 1, civetweb assumes the calback already did this.
-     * If it returns -1, initializing ssl fails. */
+    // If callback returns 0, civetweb sets up the SSL certificate.
+    // If it returns 1, civetweb assumes the callback already did this.
+    // If it returns -1, initializing ssl fails. 
     if (callback_ret < 0) {
         vscpweb_cry(fc(ctx), "SSL callback returned error: %i", callback_ret);
         return 0;
@@ -16527,7 +16772,7 @@ set_ssl_option(struct vscpweb_context *ctx)
         return 1;
     }
 
-    /* Use some UID as session context ID. */
+    // Use some UID as session context ID. 
     md5_init(&md5state);
     md5_append(&md5state, (const md5_byte_t *) &now_rt, sizeof (now_rt));
     clock_gettime(CLOCK_MONOTONIC, &now_mt);
@@ -16548,19 +16793,19 @@ set_ssl_option(struct vscpweb_context *ctx)
         }
     }
 
-    /* Should we support client certificates? */
-    /* Default is "no". */
+    // Should we support client certificates? 
+    // Default is "no". 
     should_verify_peer = 0;
     peer_certificate_optional = 0;
     if (ctx->config[SSL_DO_VERIFY_PEER] != NULL) {
         if (vscpweb_strcasecmp(ctx->config[SSL_DO_VERIFY_PEER], "yes") == 0) {
-            /* Yes, they are mandatory */
+            // Yes, they are mandatory 
             should_verify_peer = 1;
             peer_certificate_optional = 0;
         }
         else if (vscpweb_strcasecmp(ctx->config[SSL_DO_VERIFY_PEER], "optional")
          == 0) {
-            /* Yes, they are optional */
+            // Yes, they are optional 
             should_verify_peer = 1;
             peer_certificate_optional = 1;
         }
@@ -16630,20 +16875,20 @@ uninitialize_ssl(void)
 
     if (vscpweb_atomic_dec(&cryptolib_users) == 0) {
 
-        /* Shutdown according to
-         * https://wiki.openssl.org/index.php/Library_Initialization#Cleanup
-         * http://stackoverflow.com/questions/29845527/how-to-properly-uninitialize-openssl
-         */
+        // Shutdown according to
+        // https://wiki.openssl.org/index.php/Library_Initialization#Cleanup
+        // http://stackoverflow.com/questions/29845527/how-to-properly-uninitialize-openssl
+        //
         CONF_modules_unload(1);
 #else
     int i;
 
     if (vscpweb_atomic_dec(&cryptolib_users) == 0) {
 
-        /* Shutdown according to
-         * https://wiki.openssl.org/index.php/Library_Initialization#Cleanup
-         * http://stackoverflow.com/questions/29845527/how-to-properly-uninitialize-openssl
-         */
+        // Shutdown according to
+        // https://wiki.openssl.org/index.php/Library_Initialization#Cleanup
+        // http://stackoverflow.com/questions/29845527/how-to-properly-uninitialize-openssl
+        //
         CRYPTO_set_locking_callback(NULL);
         CRYPTO_set_id_callback(NULL);
         ENGINE_cleanup();
@@ -16658,7 +16903,7 @@ uninitialize_ssl(void)
         }
         vscpweb_free(ssl_mutexes);
         ssl_mutexes = NULL;
-#endif /* OPENSSL_API_1_1 */
+#endif // OPENSSL_API_1_1 
     }
 }
 
