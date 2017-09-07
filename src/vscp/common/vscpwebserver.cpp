@@ -5319,7 +5319,7 @@ VSCPWebServerThread::websrv_tablelist( struct mg_connection *nc,
 // -----------------------------------------------------------------------------
 
 
-
+#define USE_WEBSOCKET
 //#define USE_IPV6
 
 #define DOCUMENT_ROOT "."
@@ -5608,10 +5608,12 @@ FileUploadForm(struct vscpweb_connection *conn, void *cbdata)
 	return 1;
 }
 
+#include <vscpmd5.h>
+
 struct tfile_checksum {
-	char name[128];
-	unsigned long long length;
-	md5_state_t chksum;
+    char name[128];
+    unsigned long long length;
+    md5_state_t chksum;
 };
 
 #define MAX_FILES (10)
@@ -5640,7 +5642,7 @@ field_disp_read_on_the_fly(const char *key,
 		strncpy(context->file[context->index - 1].name, filename, 128);
 		context->file[context->index - 1].name[127] = 0;
 		context->file[context->index - 1].length = 0;
-		md5_init(&(context->file[context->index - 1].chksum));
+		vscpmd5_init(&(context->file[context->index - 1].chksum));
 		return FORM_FIELD_STORAGE_GET;
 	}
 	return FORM_FIELD_STORAGE_ABORT;
@@ -5657,7 +5659,7 @@ field_get_checksum(const char *key,
 	(void)key;
 
 	context->file[context->index - 1].length += valuelen;
-	md5_append(&(context->file[context->index - 1].chksum),
+	vscpmd5_append(&(context->file[context->index - 1].chksum),
 	           (const md5_byte_t *)value,
 	           valuelen);
 
@@ -5693,7 +5695,7 @@ CheckSumHandler(struct vscpweb_connection *conn, void *cbdata)
 	vscpweb_printf(conn, "File checksums:");
 	ret = vscpweb_handle_form_request(conn, &fdh);
 	for (i = 0; i < chksums.index; i++) {
-		md5_finish(&(chksums.file[i].chksum), digest);
+		vscpmd5_finish(&(chksums.file[i].chksum), digest);
 		/* Visual Studio 2010+ support llu */
 		vscpweb_printf(conn,
 		          "\r\n%s %llu ",
@@ -5714,18 +5716,18 @@ CookieHandler(struct vscpweb_connection *conn, void *cbdata)
 {
 	/* Handler may access the request info using vscpweb_get_request_info */
 	const struct vscpweb_request_info *req_info = vscpweb_get_request_info(conn);
-	const char *cookie = mg_get_header(conn, "Cookie");
+	const char *cookie = vscpweb_get_header(conn, "Cookie");
 	char first_str[64], count_str[64];
 	int count;
 
-	(void)mg_get_cookie(cookie, "first", first_str, sizeof(first_str));
-	(void)mg_get_cookie(cookie, "count", count_str, sizeof(count_str));
+	(void)vscpweb_get_cookie(cookie, "first", first_str, sizeof(first_str));
+	(void)vscpweb_get_cookie(cookie, "count", count_str, sizeof(count_str));
 
-	mg_printf(conn, "HTTP/1.1 200 OK\r\nConnection: close\r\n");
+	vscpweb_printf(conn, "HTTP/1.1 200 OK\r\nConnection: close\r\n");
 	if (first_str[0] == 0) {
 		time_t t = time(0);
 		struct tm *ptm = localtime(&t);
-		mg_printf(conn,
+		vscpweb_printf(conn,
 		          "Set-Cookie: first=%04i-%02i-%02iT%02i:%02i:%02i\r\n",
 		          ptm->tm_year + 1900,
 		          ptm->tm_mon + 1,
@@ -5735,47 +5737,47 @@ CookieHandler(struct vscpweb_connection *conn, void *cbdata)
 		          ptm->tm_sec);
 	}
 	count = (count_str[0] == 0) ? 0 : atoi(count_str);
-	mg_printf(conn, "Set-Cookie: count=%i\r\n", count + 1);
-	mg_printf(conn, "Content-Type: text/html\r\n\r\n");
+	vscpweb_printf(conn, "Set-Cookie: count=%i\r\n", count + 1);
+	vscpweb_printf(conn, "Content-Type: text/html\r\n\r\n");
 
-	mg_printf(conn, "<html><body>");
-	mg_printf(conn, "<h2>This is the CookieHandler.</h2>");
-	mg_printf(conn, "<p>The actual uri is %s</p>", req_info->local_uri);
+	vscpweb_printf(conn, "<html><body>");
+	vscpweb_printf(conn, "<h2>This is the CookieHandler.</h2>");
+	vscpweb_printf(conn, "<p>The actual uri is %s</p>", req_info->local_uri);
 
 	if (first_str[0] == 0) {
-		mg_printf(conn, "<p>This is the first time, you opened this page</p>");
+		vscpweb_printf(conn, "<p>This is the first time, you opened this page</p>");
 	} else {
-		mg_printf(conn, "<p>You opened this page %i times before.</p>", count);
-		mg_printf(conn, "<p>You first opened this page on %s.</p>", first_str);
+		vscpweb_printf(conn, "<p>You opened this page %i times before.</p>", count);
+		vscpweb_printf(conn, "<p>You first opened this page on %s.</p>", first_str);
 	}
 
-	mg_printf(conn, "</body></html>\n");
+	vscpweb_printf(conn, "</body></html>\n");
 	return 1;
 }
 
 
 int
-PostResponser(struct mg_connection *conn, void *cbdata)
+PostResponser(struct vscpweb_connection *conn, void *cbdata)
 {
 	long long r_total = 0;
 	int r, s;
 
 	char buf[2048];
 
-	const struct mg_request_info *ri = mg_get_request_info(conn);
+	const struct vscpweb_request_info *ri = vscpweb_get_request_info(conn);
 
 	if (strcmp(ri->request_method, "POST")) {
 		char buf[1024];
-		int ret = mg_get_request_link(conn, buf, sizeof(buf));
+		int ret = vscpweb_get_request_link(conn, buf, sizeof(buf));
 
-		mg_printf(conn,
+		vscpweb_printf(conn,
 		          "HTTP/1.1 405 Method Not Allowed\r\nConnection: close\r\n");
-		mg_printf(conn, "Content-Type: text/plain\r\n\r\n");
-		mg_printf(conn,
+		vscpweb_printf(conn, "Content-Type: text/plain\r\n\r\n");
+		vscpweb_printf(conn,
 		          "%s method not allowed in the POST handler\n",
 		          ri->request_method);
 		if (ret >= 0) {
-			mg_printf(conn,
+			vscpweb_printf(conn,
 			          "use a web tool to send a POST request to %s\n",
 			          buf);
 		}
@@ -5786,47 +5788,47 @@ PostResponser(struct mg_connection *conn, void *cbdata)
 		/* We know the content length in advance */
 	} else {
 		/* We must read until we find the end (chunked encoding
-		 * or connection close), indicated my mg_read returning 0 */
+		 * or connection close), indicated my vscpweb_read returning 0 */
 	}
 
-	mg_printf(conn,
+	vscpweb_printf(conn,
 	          "HTTP/1.1 200 OK\r\nConnection: "
 	          "close\r\nTransfer-Encoding: chunked\r\n");
-	mg_printf(conn, "Content-Type: text/plain\r\n\r\n");
+	vscpweb_printf(conn, "Content-Type: text/plain\r\n\r\n");
 
-	r = mg_read(conn, buf, sizeof(buf));
+	r = vscpweb_read(conn, buf, sizeof(buf));
 	while (r > 0) {
 		r_total += r;
-		s = mg_send_chunk(conn, buf, r);
+		s = vscpweb_send_chunk(conn, buf, r);
 		if (r != s) {
 			/* Send error */
 			break;
 		}
-		r = mg_read(conn, buf, sizeof(buf));
+		r = vscpweb_read(conn, buf, sizeof(buf));
 	}
-	mg_printf(conn, "0\r\n");
+	vscpweb_printf(conn, "0\r\n");
 
 	return 1;
 }
 
 
 int
-WebSocketStartHandler(struct mg_connection *conn, void *cbdata)
+WebSocketStartHandler(struct vscpweb_connection *conn, void *cbdata)
 {
-	mg_printf(conn,
+	vscpweb_printf(conn,
 	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
 	          "close\r\n\r\n");
 
-	mg_printf(conn, "<!DOCTYPE html>\n");
-	mg_printf(conn, "<html>\n<head>\n");
-	mg_printf(conn, "<meta charset=\"UTF-8\">\n");
-	mg_printf(conn, "<title>Embedded websocket example</title>\n");
+	vscpweb_printf(conn, "<!DOCTYPE html>\n");
+	vscpweb_printf(conn, "<html>\n<head>\n");
+	vscpweb_printf(conn, "<meta charset=\"UTF-8\">\n");
+	vscpweb_printf(conn, "<title>Embedded websocket example</title>\n");
 
 #ifdef USE_WEBSOCKET
-	/* mg_printf(conn, "<script type=\"text/javascript\"><![CDATA[\n"); ...
+	/* vscpweb_printf(conn, "<script type=\"text/javascript\"><![CDATA[\n"); ...
 	 * xhtml style */
-	mg_printf(conn, "<script>\n");
-	mg_printf(
+	vscpweb_printf(conn, "<script>\n");
+	vscpweb_printf(
 	    conn,
 	    "function load() {\n"
 	    "  var wsproto = (location.protocol === 'https:') ? 'wss:' : 'ws:';\n"
@@ -5842,17 +5844,17 @@ WebSocketStartHandler(struct mg_connection *conn, void *cbdata)
 	    "    connection.close();\n"
 	    "  }\n"
 	    "}\n");
-	/* mg_printf(conn, "]]></script>\n"); ... xhtml style */
-	mg_printf(conn, "</script>\n");
-	mg_printf(conn, "</head>\n<body onload=\"load()\">\n");
-	mg_printf(
+	/* vscpweb_printf(conn, "]]></script>\n"); ... xhtml style */
+	vscpweb_printf(conn, "</script>\n");
+	vscpweb_printf(conn, "</head>\n<body onload=\"load()\">\n");
+	vscpweb_printf(
 	    conn,
 	    "<div id='websock_text_field'>No websocket connection yet</div>\n");
 #else
-	mg_printf(conn, "</head>\n<body>\n");
-	mg_printf(conn, "Example not compiled with USE_WEBSOCKET\n");
+	vscpweb_printf(conn, "</head>\n<body>\n");
+	vscpweb_printf(conn, "Example not compiled with USE_WEBSOCKET\n");
 #endif
-	mg_printf(conn, "</body>\n</html>\n");
+	vscpweb_printf(conn, "</body>\n</html>\n");
 
 	return 1;
 }
@@ -5868,40 +5870,40 @@ WebSocketStartHandler(struct mg_connection *conn, void *cbdata)
 #define MAX_WS_CLIENTS (5)
 
 struct t_ws_client {
-	struct mg_connection *conn;
+	struct vscpweb_connection *conn;
 	int state;
 } static ws_clients[MAX_WS_CLIENTS];
 
 
 #define ASSERT(x)                                                              \
-	{                                                                          \
-		if (!(x)) {                                                            \
-			fprintf(stderr,                                                    \
-			        "Assertion failed in line %u\n",                           \
-			        (unsigned)__LINE__);                                       \
-		}                                                                      \
+	{                                                                      \
+		if (!(x)) {                                                    \
+			fprintf(stderr,                                        \
+			        "Assertion failed in line %u\n",               \
+			        (unsigned)__LINE__);                           \
+		}                                                              \
 	}
 
 
 int
-WebSocketConnectHandler(const struct mg_connection *conn, void *cbdata)
+WebSocketConnectHandler(const struct vscpweb_connection *conn, void *cbdata)
 {
-	struct mg_context *ctx = mg_get_context(conn);
+	struct vscpweb_context *ctx = vscpweb_get_context(conn);
 	int reject = 1;
 	int i;
 
-	mg_lock_context(ctx);
+	vscpweb_lock_context(ctx);
 	for (i = 0; i < MAX_WS_CLIENTS; i++) {
 		if (ws_clients[i].conn == NULL) {
-			ws_clients[i].conn = (struct mg_connection *)conn;
+			ws_clients[i].conn = (struct vscpweb_connection *)conn;
 			ws_clients[i].state = 1;
-			mg_set_user_connection_data(ws_clients[i].conn,
+			vscpweb_set_user_connection_data(ws_clients[i].conn,
 			                            (void *)(ws_clients + i));
 			reject = 0;
 			break;
 		}
 	}
-	mg_unlock_context(ctx);
+	vscpweb_unlock_context(ctx);
 
 	fprintf(stdout,
 	        "Websocket client %s\r\n\r\n",
@@ -5911,12 +5913,12 @@ WebSocketConnectHandler(const struct mg_connection *conn, void *cbdata)
 
 
 void
-WebSocketReadyHandler(struct mg_connection *conn, void *cbdata)
+WebSocketReadyHandler(struct vscpweb_connection *conn, void *cbdata)
 {
 	const char *text = "Hello from the websocket ready handler";
-	struct t_ws_client *client = mg_get_user_connection_data(conn);
+	struct t_ws_client *client = (struct t_ws_client *)vscpweb_get_user_connection_data(conn);
 
-	mg_websocket_write(conn, WEBSOCKET_OPCODE_TEXT, text, strlen(text));
+	vscpweb_websocket_write(conn, WEBSOCKET_OPCODE_TEXT, text, strlen(text));
 	fprintf(stdout, "Greeting message sent to websocket client\r\n\r\n");
 	ASSERT(client->conn == conn);
 	ASSERT(client->state == 1);
@@ -5926,13 +5928,13 @@ WebSocketReadyHandler(struct mg_connection *conn, void *cbdata)
 
 
 int
-WebsocketDataHandler(struct mg_connection *conn,
+WebsocketDataHandler(struct vscpweb_connection *conn,
                      int bits,
                      char *data,
                      size_t len,
                      void *cbdata)
 {
-	struct t_ws_client *client = mg_get_user_connection_data(conn);
+	struct t_ws_client *client = (struct t_ws_client *)vscpweb_get_user_connection_data(conn);
 	ASSERT(client->conn == conn);
 	ASSERT(client->state >= 1);
 
@@ -5969,17 +5971,17 @@ WebsocketDataHandler(struct mg_connection *conn,
 
 
 void
-WebSocketCloseHandler(const struct mg_connection *conn, void *cbdata)
+WebSocketCloseHandler(const struct vscpweb_connection *conn, void *cbdata)
 {
-	struct mg_context *ctx = mg_get_context(conn);
-	struct t_ws_client *client = mg_get_user_connection_data(conn);
+	struct vscpweb_context *ctx = vscpweb_get_context(conn);
+	struct t_ws_client *client = (struct t_ws_client *)vscpweb_get_user_connection_data(conn);
 	ASSERT(client->conn == conn);
 	ASSERT(client->state >= 1);
 
-	mg_lock_context(ctx);
+	vscpweb_lock_context(ctx);
 	client->state = 0;
 	client->conn = NULL;
-	mg_unlock_context(ctx);
+	vscpweb_unlock_context(ctx);
 
 	fprintf(stdout,
 	        "Client droped from the set of webserver connections\r\n\r\n");
@@ -5987,7 +5989,7 @@ WebSocketCloseHandler(const struct mg_connection *conn, void *cbdata)
 
 
 void
-InformWebsockets(struct mg_context *ctx)
+InformWebsockets(struct vscpweb_context *ctx)
 {
 	static unsigned long cnt = 0;
 	char text[32];
@@ -5995,16 +5997,16 @@ InformWebsockets(struct mg_context *ctx)
 
 	sprintf(text, "%lu", ++cnt);
 
-	mg_lock_context(ctx);
+	vscpweb_lock_context(ctx);
 	for (i = 0; i < MAX_WS_CLIENTS; i++) {
 		if (ws_clients[i].state == 2) {
-			mg_websocket_write(ws_clients[i].conn,
+			vscpweb_websocket_write(ws_clients[i].conn,
 			                   WEBSOCKET_OPCODE_TEXT,
 			                   text,
 			                   strlen(text));
 		}
 	}
-	mg_unlock_context(ctx);
+	vscpweb_unlock_context(ctx);
 }
 #endif
 
@@ -6094,7 +6096,7 @@ init_ssl(void *ssl_context, void *user_data)
 
 
 int
-log_message(const struct mg_connection *conn, const char *message)
+log_message(const struct vscpweb_connection *conn, const char *message)
 {
 	puts(message);
 	return 1;

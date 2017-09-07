@@ -325,11 +325,11 @@ md5_process( md5_state_t *pms, const md5_byte_t *data /*[64]*/ )
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// vscp_md5_init
+// vscpmd5_init
 //
 
 void
-vscp_md5_init(md5_state_t *pms)
+vscpmd5_init(md5_state_t *pms)
 {
     pms->count[0] = pms->count[1] = 0;
     pms->abcd[0] = 0x67452301;
@@ -339,11 +339,11 @@ vscp_md5_init(md5_state_t *pms)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// vscp_md5_append
+// vscpmd5_append
 //
 
 void
-vscp_md5_append(md5_state_t *pms, const md5_byte_t *data, size_t nbytes)
+vscpmd5_append(md5_state_t *pms, const md5_byte_t *data, size_t nbytes)
 {
     const md5_byte_t *p = data;
     size_t left = nbytes;
@@ -391,11 +391,11 @@ vscp_md5_append(md5_state_t *pms, const md5_byte_t *data, size_t nbytes)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// vscp_md5_finish
+// vscpmd5_finish
 //
 
 void
-vscp_md5_finish(md5_state_t *pms, md5_byte_t digest[16])
+vscpmd5_finish(md5_state_t *pms, md5_byte_t digest[16])
 {
     static const md5_byte_t pad[64] = {0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -412,10 +412,10 @@ vscp_md5_finish(md5_state_t *pms, md5_byte_t digest[16])
     }
     
     // Pad to 56 bytes mod 64. 
-    md5_append(pms, pad, ((55 - (pms->count[0] >> 3)) & 63) + 1);
+    vscpmd5_append(pms, pad, ((55 - (pms->count[0] >> 3)) & 63) + 1);
     
     // Append the length. 
-    md5_append(pms, data, 8);
+    vscpmd5_append(pms, data, 8);
     for (i = 0; i < 16; ++i) {
         digest[i] = (md5_byte_t) (pms->abcd[i >> 2] >> ((i & 3) << 3));
     }
