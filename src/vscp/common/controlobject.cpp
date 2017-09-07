@@ -139,6 +139,7 @@
 #include <vscpeventhelper.h>
 #include <vscpwebserver.h>
 #include <webserver_websocket.h>
+#include <vscpweb.h>
 #include <vscpd_caps.h>
 #include <controlobject.h>
 
@@ -347,6 +348,11 @@ CControlObject::CControlObject()
     // Directory listings on by default
     strcpy( m_EnableDirectoryListings, "yes" );
 
+    // Init. web server subsystem - All features
+    if ( 0 == vscpweb_init( 0xffff ) ) {
+        fprintf(stderr,"Failed to initialize webserver subsystem.\n" );
+    }
+    
 #ifdef WIN32
 
     // Initialize winsock layer
@@ -428,6 +434,9 @@ CControlObject::~CControlObject()
 
     m_clientOutputQueue.Clear();
     //m_mutexClientOutputQueue.Unlock();
+    
+    // Exit weserver interface
+    vscpweb_exit();
     
     //gpobj->m_mutexUDPInfo.Lock();
     udpRemoteClientList::iterator iterUDP;

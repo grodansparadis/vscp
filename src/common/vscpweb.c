@@ -1203,7 +1203,7 @@ static void vscpweb_snprintf(const struct vscpweb_connection *conn,
 
 
 // vscpweb_init_library counter 
-static int vscpweb_init_library_called = 0;
+static int vscpweb_init_called = 0;
 
 static int vscpweb_ssl_initialized = 0;
 
@@ -3403,7 +3403,7 @@ fc(struct vscpweb_context *ctx)
 const char *
 vscpweb_version(void)
 {
-    return VSCPWEB_VERSION;
+    return VSCPD_DISPLAY_VERSION; // + VSCPWEB_VERSION;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -12647,7 +12647,7 @@ vscpweb_exec_duktape_script( struct vscpweb_connection *conn,
     duk_push_global_object(duk_ctx);
     duk_push_object(duk_ctx); // create a new table/object ("conn") 
 
-    duk_push_string(duk_ctx, VSCPWEB_VERSION);
+    duk_push_string(duk_ctx, VSCPD_DISPLAY_VERSION);
     duk_put_prop_string(duk_ctx, -2, "version");
 
     duk_push_string(duk_ctx, script_name);
@@ -19044,10 +19044,10 @@ vscpweb_start(const struct vscpweb_callbacks *callbacks,
     ctx->auth_nonce_mask =
             (uint64_t) get_random() ^ (uint64_t) (ptrdiff_t) (options);
 
-    if (vscpweb_init_library_called == 0) {
+    if (vscpweb_init_called == 0) {
         // Legacy INIT, if vscpweb_start is called without vscpweb_init_library.
         // Note: This may cause a memory leak 
-        vscpweb_init_library(0);
+        vscpweb_init(0);
     }
 
     tls.is_master = -1;
@@ -19291,25 +19291,26 @@ vscpweb_check_feature(unsigned feature)
             // Set bits for available features according to API documentation.
             // This bit mask is created at compile time, according to the active
             // preprocessor defines. It is a single const value at runtime. 
+    
+            // https://github.com/civetweb/civetweb/blob/master/docs/api/mg_init_library.md
 
-            | 0x0001u
+            | 0x0001u   // Serve files
 
-            | 0x0002u
+            | 0x0002u   // SSL support
 
-            | 0x0004u
+            | 0x0004u   // Support for CGI.
 
-            | 0x0008u
+            | 0x0008u   // Support IPv6.
 
-            | 0x0010u
+            | 0x0010u   // Support for web sockets.
 
-            | 0x0020u
+            | 0x0020u   // Support for Lua
 
-            | 0x0040u
+            | 0x0040u   // Support for server side JavaScript.
 
-            | 0x0080u
+            | 0x0080u   // Support for caching.
 
             | 0x0100u
-
 
             // Set some extra bits not defined in the API documentation.
             // These bits may change without further notice. 
@@ -20247,22 +20248,20 @@ vscpweb_get_connection_info( const struct vscpweb_context *ctx,
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
-// vscpweb_init_library
+// vscpweb_init
 //
 // Initialize this library. This function does not need to be thread safe.
 //
 
 unsigned
-vscpweb_init_library(unsigned features)
+vscpweb_init( unsigned features )
 {
-#if !defined(NO_SSL)
     char ebuf[128];
-#endif
 
     unsigned features_to_init = vscpweb_check_feature( features & 0xFFu );
     unsigned features_inited = features_to_init;
 
-    if (vscpweb_init_library_called <= 0) {
+    if (vscpweb_init_called <= 0) {
         // Not initialized yet 
         if ( 0 != pthread_mutex_init( &global_lock_mutex, NULL ) ) {
             return 0;
@@ -20271,8 +20270,8 @@ vscpweb_init_library(unsigned features)
 
     vscpweb_global_lock();
 
-    if ( vscpweb_init_library_called <= 0 ) {
-        if ( 0 != pthread_key_create(&sTlsKey, tls_dtor ) ) {
+    if ( vscpweb_init_called <= 0 ) {
+        if ( 0 != pthread_key_create( &sTlsKey, tls_dtor ) ) {
             // Fatal error - abort start. However, this situation should
             // never occur in practice. 
             return 0;
@@ -20305,15 +20304,15 @@ vscpweb_init_library(unsigned features)
     }
 
     // Start WinSock for Windows 
-    if ( vscpweb_init_library_called <= 0 ) {
+    if ( vscpweb_init_called <= 0 ) {
 #if defined(_WIN32) 
         WSADATA data;
         WSAStartup(MAKEWORD(2, 2), &data);
 #endif // _WIN32  
-        vscpweb_init_library_called = 1;
+        vscpweb_init_called = 1;
     }
     else {
-        vscpweb_init_library_called++;
+        vscpweb_init_called++;
     }
 
     vscpweb_global_unlock();
@@ -20322,22 +20321,22 @@ vscpweb_init_library(unsigned features)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// vscpweb_exit_library
+// vscpweb_exit
 //
 // Un-initialize this library. 
 //
 
 unsigned
-vscpweb_exit_library(void)
+vscpweb_exit( void )
 {
-    if ( vscpweb_init_library_called <= 0 ) {
+    if ( vscpweb_init_called <= 0 ) {
         return 0;
     }
 
     vscpweb_global_lock();
 
-    vscpweb_init_library_called--;
-    if ( 0 == vscpweb_init_library_called ) {
+    vscpweb_init_called--;
+    if ( 0 == vscpweb_init_called ) {
 #if defined(_WIN32) 
         (void)WSACleanup();
 #endif // _WIN32  

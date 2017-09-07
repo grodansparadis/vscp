@@ -32,10 +32,10 @@
 */
 
 // I M P O T A N T ! ! ! Lines below must be located at line 35/36/37/40/42/43    I M P O T A N T ! ! !
-#define VSCPD_MAJOR_VERSION     12
-#define VSCPD_MINOR_VERSION     29
-#define VSCPD_RELEASE_VERSION   1
-#define VSCPD_BUILD_VERSION     2
+#define VSCPD_MAJOR_VERSION     (12)
+#define VSCPD_MINOR_VERSION     (29)
+#define VSCPD_RELEASE_VERSION   (1)
+#define VSCPD_BUILD_VERSION     (2)
 
 #define VSCPD_DISPLAY_VERSION "12.29.1.2 Magnesium"
 
