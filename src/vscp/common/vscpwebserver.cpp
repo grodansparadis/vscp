@@ -5318,7 +5318,8 @@ VSCPWebServerThread::websrv_tablelist( struct mg_connection *nc,
 //                              N E W  T I M E S
 // -----------------------------------------------------------------------------
 
-
+//#define NO_SSL
+#define USE_SSL_DH
 #define USE_WEBSOCKET
 //#define USE_IPV6
 
@@ -6100,4 +6101,154 @@ log_message(const struct vscpweb_connection *conn, const char *message)
 {
 	puts(message);
 	return 1;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// init_webserver
+//
+
+int init_webserver( void ) 
+{   
+    	const char *options[] = {
+	    "document_root",
+	    DOCUMENT_ROOT,
+	    "listening_ports",
+	    PORT,
+	    "request_timeout_ms",
+	    "10000",
+	    "error_log_file",
+	    "error.log",
+#ifdef USE_WEBSOCKET
+	    "websocket_timeout_ms",
+	    "3600000",
+#endif
+#ifndef NO_SSL
+	    "ssl_certificate",
+	    "/tmp/resources/cert/server.pem",
+	    "ssl_protocol_version",
+	    "3",
+	    "ssl_cipher_list",
+#ifdef USE_SSL_DH
+	    "ECDHE-RSA-AES256-GCM-SHA384:DES-CBC3-SHA:AES128-SHA:AES128-GCM-SHA256",
+#else
+	    "DES-CBC3-SHA:AES128-SHA:AES128-GCM-SHA256",
+#endif
+#endif
+	    "enable_auth_domain_check",
+	    "no",
+	    0};
+	struct vscpweb_callbacks callbacks;
+	struct vscpweb_context *ctx;
+	struct vscpweb_server_ports ports[32];
+	int port_cnt, n;
+	int err = 0;
+
+// Check if we have been built with all required features. 
+#ifdef USE_IPV6
+	if (!vscpweb_check_feature(8)) {
+		fprintf(stderr,
+		        "Error: Embedded example built with IPv6 support, "
+		        "but civetweb library build without.\n");
+		err = 1;
+	}
+#endif
+#ifdef USE_WEBSOCKET
+	if (!vscpweb_check_feature(16)) {
+		fprintf(stderr,
+		        "Error: Embedded example built with websocket support, "
+		        "but civetweb library build without.\n");
+		err = 1;
+	}
+#endif
+#ifndef NO_SSL
+	if (!vscpweb_check_feature(2)) {
+		fprintf(stderr,
+		        "Error: Embedded example built with SSL support, "
+		        "but civetweb library build without.\n");
+		err = 1;
+	}
+#endif
+	if (err) {
+		fprintf(stderr, "Cannot start CivetWeb - inconsistent build.\n");
+		return EXIT_FAILURE;
+	}
+
+	/* Start CivetWeb web server */
+	memset(&callbacks, 0, sizeof(callbacks));
+#ifndef NO_SSL
+	callbacks.init_ssl = init_ssl;
+#endif
+	callbacks.log_message = log_message;
+	ctx = vscpweb_start(&callbacks, 0, options);
+
+	/* Check return value: */
+	if (ctx == NULL) {
+		fprintf(stderr, "Cannot start CivetWeb - vscpweb_start failed.\n");
+		return EXIT_FAILURE;
+	}
+
+	/* Add handler EXAMPLE_URI, to explain the example */
+	vscpweb_set_request_handler(ctx, EXAMPLE_URI, ExampleHandler, 0);
+	vscpweb_set_request_handler(ctx, EXIT_URI, ExitHandler, 0);
+
+	/* Add handler for /A* and special handler for /A/B */
+	vscpweb_set_request_handler(ctx, "/A", AHandler, 0);
+	vscpweb_set_request_handler(ctx, "/A/B", ABHandler, 0);
+
+	/* Add handler for /B, /B/A, /B/B but not for /B* */
+	vscpweb_set_request_handler(ctx, "/B$", BXHandler, (void *)0);
+	vscpweb_set_request_handler(ctx, "/B/A$", BXHandler, (void *)1);
+	vscpweb_set_request_handler(ctx, "/B/B$", BXHandler, (void *)2);
+
+	/* Add handler for all files with .foo extention */
+	vscpweb_set_request_handler(ctx, "**.foo$", FooHandler, 0);
+
+	/* Add handler for /close extention */
+	vscpweb_set_request_handler(ctx, "/close", CloseHandler, 0);
+
+	/* Add handler for /form  (serve a file outside the document root) */
+	vscpweb_set_request_handler(ctx,
+	                       "/form",
+	                       FileHandler,
+	                       (void *)"../../test/form.html");
+
+	/* Add handler for form data */
+	vscpweb_set_request_handler(ctx,
+	                       "/handle_form.embedded_c.example.callback",
+	                       FormHandler,
+	                       (void *)0);
+
+	/* Add a file upload handler for parsing files on the fly */
+	vscpweb_set_request_handler(ctx,
+	                       "/on_the_fly_form",
+	                       FileUploadForm,
+	                       (void *)"/on_the_fly_form.md5.callback");
+	vscpweb_set_request_handler(ctx,
+	                       "/on_the_fly_form.md5.callback",
+	                       CheckSumHandler,
+	                       (void *)0);
+
+	/* Add handler for /cookie example */
+	vscpweb_set_request_handler(ctx, "/cookie", CookieHandler, 0);
+
+	/* Add handler for /postresponse example */
+	vscpweb_set_request_handler(ctx, "/postresponse", PostResponser, 0);
+
+	/* Add HTTP site to open a websocket connection */
+	vscpweb_set_request_handler(ctx, "/websocket", WebSocketStartHandler, 0);
+
+#ifdef USE_WEBSOCKET
+	/* WS site for the websocket connection */
+	vscpweb_set_websocket_handler(ctx,
+	                         "/websocket",
+	                         WebSocketConnectHandler,
+	                         WebSocketReadyHandler,
+	                         WebsocketDataHandler,
+	                         WebSocketCloseHandler,
+	                         0);
+#endif
+        
+        
+    
 }

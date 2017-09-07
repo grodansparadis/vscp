@@ -1255,7 +1255,9 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     startMulticastWorkerThreads();
 
     // Start web sockets    
-    startWebServerThread();
+    //startWebServerThread();
+    
+    init_webserver(); // ***
 
     // Load drivers    
     startDeviceWorkerThreads();

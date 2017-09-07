@@ -957,7 +957,7 @@ vscpweb_malloc_ex(size_t size,
     }
 
 #if defined(MEMORY_DEBUGGING) 
-    sprintf(mallocStr,
+    sprintf( mallocStr,
             "MEM: %p %5lu alloc   %7lu %4lu --- %s:%u\n",
             memory,
             (unsigned long) size,
@@ -15967,7 +15967,7 @@ initialize_ssl(char *ebuf, size_t ebuf_len)
         ebuf[0] = 0;
     }
 
-    if (vscpweb_atomic_inc(&cryptolib_users) > 1) {
+    if ( vscpweb_atomic_inc(&cryptolib_users) > 1 ) {
         return 1;
     }
 
@@ -15979,7 +15979,7 @@ initialize_ssl(char *ebuf, size_t ebuf_len)
         ebuf[0] = 0;
     }
 
-    if (vscpweb_atomic_inc(&cryptolib_users) > 1) {
+    if ( vscpweb_atomic_inc(&cryptolib_users) > 1 ) {
         return 1;
     }
 
@@ -18510,8 +18510,8 @@ get_system_name(char **sysName)
 
 struct vscpweb_context *
 vscpweb_start(const struct vscpweb_callbacks *callbacks,
-              void *user_data,
-              const char **options)
+                void *user_data,
+                const char **options)
 {
     struct vscpweb_context *ctx;
     const char *name, *value, *default_value;
@@ -18629,9 +18629,9 @@ vscpweb_start(const struct vscpweb_callbacks *callbacks,
 
     // NOTE(lsm): order is important here. SSL certificates must
     // be initialized before listening ports. UID must be set last. 
-    if (!set_gpass_option(ctx) ||
-        !set_ssl_option(ctx) ||
-        !set_ports_option(ctx) ||
+    if (!set_gpass_option( ctx ) ||
+        !set_ssl_option( ctx ) ||
+        !set_ports_option( ctx ) ||
 #if !defined(_WIN32)
             !set_uid_option(ctx) ||
 #endif

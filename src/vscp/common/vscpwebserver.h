@@ -31,6 +31,11 @@
 #include "userlist.h"
 #include "controlobject.h"
 
+/*!
+ * Init the webserver sub system
+ */
+int init_webserver( void );
+
 
 /*!
     This class implement the VSCP Webserver thread
