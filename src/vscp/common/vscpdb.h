@@ -28,9 +28,31 @@
 #define VSCPDB__INCLUDED_
 
 //*****************************************************************************
-//                              CONFIGURATION
+//                               CONFIG
 //*****************************************************************************
 
+#define VSCPDB_CONFIGEX_CREATE "CREATE TABLE 'config' ("\
+	"`vscpd_idx_config`               INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
+	"`vscpd_name`                     TEXT NOT NULL,"\
+        "`vscpd_value`                    TEXT DEFAULT ''"\
+        ");";
+
+#define VSCPDB_CONFIGEX_CREATE_INDEX "CREATE INDEX `idxname` ON config ('vscpd_name');"
+
+#define VSCPDB_CONFIGEX_FIND_ALL "SELECT * FROM config;"
+#define VSCPDB_CONFIGEX_FIND_ITEM "SELECT * FROM config WHERE name='%q';"
+#define VSCPDB_CONFIGEX_UPDATE_ITEM "UPDATE 'config' SET 'vscpd_value' ='%s' WHERE vscpd_name='%q';"
+#define VSCPDB_CONFIGEX_INSERT "INSERT INTO 'config' (vscpd_name,vscpd_value) VALUES ('%q','%q');"
+
+#define VSCPDB_ORDINAL_CONFIGEX_ID                                       0
+#define VSCPDB_ORDINAL_CONFIGEX_NAME                                     1
+#define VSCPDB_ORDINAL_CONFIGEX_VALUE                                    2
+
+//*****************************************************************************
+//                               SETTINGS
+//*****************************************************************************
+
+/*
 #define VSCPDB_CONFIG_CREATE "CREATE TABLE 'settings' ("\
 	"`vscpd_idx_settings`                               INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`vscpd_dbversion`                                  INTEGER NOT NULL DEFAULT 1,"\
@@ -98,10 +120,180 @@
 	"`vscpd_db_data_path`                               TEXT DEFAULT '/srv/vscp/vscp_data.sqlite3',"\
         "`vscpd_db_vscpconf_path`                           TEXT DEFAULT '/srv/vscp/vscpd.sqlite3' "\
         ");";
+*/
+// Configuration defaults
 
-#define VSCPDB_CONFIG_SET_DEFAULTS  "TODO"        
-        
+#define VSCPDB_CONFIG_NAME_DBVERSION                    "dbversion"
+#define VSCPDB_CONFIG_DEFAULT_DBVERSION                 "1"
 
+#define VSCPDB_CONFIG_NAME_CLIENTBUFFERSIZE             "client_buffer_size"
+#define VSCPDB_CONFIG_DEFAULT_CLIENTBUFFERSIZE          "8191"
+
+#define VSCPDB_CONFIG_NAME_GUID                         "guid"
+#define VSCPDB_CONFIG_DEFAULT_GUID                      "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+
+#define VSCPDB_CONFIG_NAME_SERVERNAME                   "servername"
+#define VSCPDB_CONFIG_DEFAULT_SERVERNAME                "THE-VSCP-DAEMON"
+
+#define VSCPDB_CONFIG_NAME_PATH_LOGDB                   "path_log"
+#define VSCPDB_CONFIG_DEFAULT_PATH_LOGDB                "/srv/vscp/logs/vscpd_log.sqlite3"
+
+#define VSCPDB_CONFIG_NAME_TCPIP_ADDR                   "tcpipinterface_address"
+#define VSCPDB_CONFIG_DEFAULT_TCPIP_ADDR                "tcp://9598"   
+
+#define VSCPDB_CONFIG_NAME_ANNOUNCE_ADDR                "announceinterface_address"
+#define VSCPDB_CONFIG_DEFAULT_ANNOUNCE_ADDR             "udp://9598"  
+
+#define VSCPDB_CONFIG_NAME_ANNOUNCE_TTL                 "announceinterface_ttl"
+#define VSCPDB_CONFIG_DEFAULT_ANNOUNCE_TTL              "1"  
+
+#define VSCPDB_CONFIG_NAME_UDP_ENABLE                   "udp_enable"
+#define VSCPDB_CONFIG_DEFAULT_UDP_ENABLE                "1"
+
+#define VSCPDB_CONFIG_NAME_UDP_ADDR                     "udp_address"
+#define VSCPDB_CONFIG_DEFAULT_UDP_ADDR                  "udp://33333"
+
+#define VSCPDB_CONFIG_NAME_UDP_USER                     "udp_user"
+#define VSCPDB_CONFIG_DEFAULT_UDP_USER                  ""
+    
+#define VSCPDB_CONFIG_NAME_UDP_PASSWORD                 "udp_password"
+#define VSCPDB_CONFIG_DEFAULT_UDP_PASSWORD              ""
+
+#define VSCPDB_CONFIG_NAME_UDP_UNSECURE_ENABLE          "udp_unsecure_enable"
+#define VSCPDB_CONFIG_DEFAULT_UDP_UNSECURE_ENABLE       "1"
+
+#define VSCPDB_CONFIG_NAME_UDP_FILTER                   "udp_filter"
+#define VSCPDB_CONFIG_DEFAULT_UDP_FILTER                ""
+
+#define VSCPDB_CONFIG_NAME_UDP_MASK                     "udp_mask"
+#define VSCPDB_CONFIG_DEFAULT_UDP_MASK                  ""
+
+#define VSCPDB_CONFIG_NAME_UDP_GUID                     "udp_guid"
+#define VSCPDB_CONFIG_DEFAULT_UDP_GUID                  "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+
+#define VSCPDB_CONFIG_NAME_UDP_ACK_ENABLE               "udp_ack_enable"
+#define VSCPDB_CONFIG_DEFAULT_UDP_ACK_ENABLE            "0"
+
+#define VSCPDB_CONFIG_NAME_MULTICAST_ENABLE             "muticast_enable"
+#define VSCPDB_CONFIG_DEFAULT_MULTICAST_ENABLE           "0"
+
+#define VSCPDB_CONFIG_NAME_DM_PATH_DB                   "dm_path_db"
+#define VSCPDB_CONFIG_DEFAULT_DM_PATH_DB                "/srv/vscp/dm.sqlite3"
+
+#define VSCPDB_CONFIG_NAME_DM_PATH_XML                  "dm_path_xml"
+#define VSCPDB_CONFIG_DEFAULT_DM_PATH_XML               "/srv/vscp/dm.xml"
+
+#define VSCPDB_CONFIG_NAME_VARIABLES_PATH_DB            "variables_path_db"
+#define VSCPDB_CONFIG_DEFAULT_VARIABLES_PATH_DB         "/srv/vscp/variable.sqlite3"
+
+#define VSCPDB_CONFIG_NAME_VARIABLES_PATH_XML           "variables_path_xml"
+#define VSCPDB_CONFIG_DEFAULT_VARIABLES_PATH_XML        "/srv/vscp/variable.xml"
+
+#define VSCPDB_CONFIG_NAME_PATH_DB_DATA                 "path_db_data"
+#define VSCPDB_CONFIG_DEFAULT_PATH_DB_DATA              "/srv/vscp/vscp_data.sqlite3"
+
+#define VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_ENABLE    "web_authentication_enable"
+#define VSCPDB_CONFIG_DEFAULT_WEB_AUTHENTICATION_ENABLE "1"
+
+#define VSCPDB_CONFIG_NAME_WEB_PATH_ROOT                "web_path_root"
+#define VSCPDB_CONFIG_DEFAULT_WEB_PATH_ROOT             "/srv/vscp/web"
+
+#define VSCPDB_CONFIG_NAME_WEB_ADDR                     "web_addr"
+#define VSCPDB_CONFIG_DEFAULT_WEB_ADDR                  "tcp://8080"
+
+#define VSCPDB_CONFIG_NAME_WEB_PATH_CERT                "web_path_cert"
+#define VSCPDB_CONFIG_DEFAULT_WEB_PATH_CERT             "/srv/vscp/certs"
+
+#define VSCPDB_CONFIG_NAME_WEB_AUTHDOMAIN               "web_authdomain"
+#define VSCPDB_CONFIG_DEFAULT_WEB_AUTHDOMAIN            "mydomain.com"
+
+#define VSCPDB_CONFIG_NAME_WEB_CGI_INTERPRETER          "web_cgi_interpreter"
+#define VSCPDB_CONFIG_DEFAULT_WEB_CGI_INTERPRETER       ""
+
+#define VSCPDB_CONFIG_NAME_WEB_CGI_PATTERN              "web_cgi_pattern"
+#define VSCPDB_CONFIG_DEFAULT_WEB_CGI_PATTERN           ""
+
+#define VSCPDB_CONFIG_NAME_WEB_DIR_LISTING              "web_dir_listing"
+#define VSCPDB_CONFIG_DEFAULT_WEB_DIR_LISTING           "0"
+
+#define VSCPDB_CONFIG_NAME_WEB_HIDE_FILE_PATTERN        "web_hide_file_pattern"
+#define VSCPDB_CONFIG_DEFAULT_WEB_HIDE_FILE_PATTERN     ""
+
+#define VSCPDB_CONFIG_NAME_WEB_INDEX_FILES              "web_index_files"
+#define VSCPDB_CONFIG_DEFAULT_WEB_INDEX_FILES           ""
+
+#define VSCPDB_CONFIG_NAME_WEB_MIME_EXTRA               "web_mime_extra"
+#define VSCPDB_CONFIG_DEFAULT_WEB_MIME_EXTRA            ""
+
+#define VSCPDB_CONFIG_NAME_WEB_URL_REWRITE              "web_url_rewrite"
+#define VSCPDB_CONFIG_DEFAULT_WEB_URL_REWRITE           ""
+
+#define VSCPDB_CONFIG_NAME_WEB_SSI_PATTERN              "web_ssi_pattern"
+#define VSCPDB_CONFIG_DEFAULT_WEB_SSI_PATTERN           ""
+
+#define VSCPDB_CONFIG_NAME_WEB_DIR_AUTHFILE             "web_dir_authfile"
+#define VSCPDB_CONFIG_DEFAULT_WEB_DIR_AUTHFILE          ""
+
+#define VSCPDB_CONFIG_NAME_WEB_GLOBAL_AUTHFILE          "web_global_authfile"
+#define VSCPDB_CONFIG_DEFAULT_WEB_GLOBAL_AUTHFILE       ""
+
+#define VSCPDB_CONFIG_NAME_WEB_IP_ACL                   "web_ip_acl"
+#define VSCPDB_CONFIG_DEFAULT_WEB_IP_ACL                ""
+
+#define VSCPDB_CONFIG_NAME_WEB_ROOT_DAV                 "web_root_dav"
+#define VSCPDB_CONFIG_DEFAULT_WEB_ROOT_DAV              ""
+
+#define VSCPDB_CONFIG_NAME_WEBSOCKET_AUTH_ENABLE        "websocket_auth_enable"
+#define VSCPDB_CONFIG_DEFAULT_WEBSOCKET_AUTH_ENABLE     "1"
+
+#define VSCPDB_CONFIG_NAME_AUTOMATION_ENABLE            "automation_enable"
+#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_ENABLE         "1"
+
+#define VSCPDB_CONFIG_NAME_AUTOMATION_ZONE              "automation_zone"
+#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_ZONE           "11"
+
+#define VSCPDB_CONFIG_NAME_AUTOMATION_SUBZONE           "automation_subzone"
+#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUBZONE        "22"
+
+#define VSCPDB_CONFIG_NAME_AUTOMATION_LONGITUDE         "automation_longitude"
+#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_LONGITUDE      "61.7441833"
+
+#define VSCPDB_CONFIG_NAME_AUTOMATION_LATITUDE          "automation_latitude"
+#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_LATITUDE       "15.1604167"
+
+#define VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_ENABLE    "automation_sunrise_enable"
+#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNRISE_ENABLE "1"
+
+#define VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_ENABLE    "automation_sunset_enable"
+#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNSET_ENABLE "1"
+
+#define VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_TWILIGHT_ENABLE    "automation_sunset_twilight_enable"
+#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNSET_TWILIGHT_ENABLE "1"
+
+#define VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_TWILIGHT_ENABLE    "automation_sunrise_twilight_enable"
+#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNRISE_TWILIGHT_ENABLE "1"
+
+#define VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_ENABLE       "automation_segment_ctrl_enable"
+#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_SEGMENT_CTRL_ENABLE    "1"
+
+#define VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_INTERVAL     "automation_segment_ctrl_interval"
+#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_SEGMENT_CTRL_INTERVAL  "60"
+
+#define VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_ENABLE          "automation_heartbeat_enable"
+#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_HEARTBEAT_ENABLE       "1"
+
+#define VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_INTERVAL        "automation_heartbeat_interval"
+#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_HEARTBEAT_INTERVAL     "60"
+
+#define VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_ENABLE       "automation_capabilities_enable"
+#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_CAPABILITIES_ENABLE    "1"
+
+#define VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_INTERVAL     "automation_apabilities_interval"
+#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_CAPABILITIES_INTERVAL  "60"
+
+
+
+/*      
 #define VSCPDB_CONFIG_UPDATE_ITEM "UPDATE 'settings' SET %s='%s' WHERE vscpd_idx_settings='%d';"
 
 
@@ -170,7 +362,7 @@
 #define VSCPDB_ORDINAL_CONFIG_AUTOMATION_CAPABILITIES_INTERVAL              62
 #define VSCPDB_ORDINAL_CONFIG_DB_VSCPDATA_PATH                              63
 #define VSCPDB_ORDINAL_CONFIG_DB_VSCPCONF_PATH                              64
-
+*/
 
 
 
@@ -193,8 +385,7 @@
 
 #define VSCPDB_LOG_COUNT "SELECT COUNT(*) AS nrows FROM log;"
 
-#define VSCPDB_LOG_CREATE_INDEX "CREATE INDEX `idxdate` "\
-                "ON log ('date'):"
+#define VSCPDB_LOG_CREATE_INDEX "CREATE INDEX `idxdate` ON log ('date');"
 
 #define VSCPDB_ORDINAL_LOG_ID                       0   // 
 #define VSCPDB_ORDINAL_LOG_TYPE                     1   // 

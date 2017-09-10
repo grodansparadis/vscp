@@ -429,6 +429,14 @@ public:
      bool dbReadConfiguration( void );
           
      /*!
+      * Write configuration datapait to configuration database.
+      * 
+      * @return true on success
+      */
+     bool addConfigurationValueToDatabase( const char *pName, 
+                                             const char *pValue );
+     
+     /*!
       * Create configuration table
       * @return true on success
       */
@@ -438,8 +446,8 @@ public:
      /*
       * Update field in settings table
       */
-     bool updateConfigurationRecordItem( const wxString& strUpdateField, 
-                                            const wxString& strUpdateValue );
+     bool updateConfigurationRecordItem( const wxString& strName, 
+                                            const wxString& strValue );
      
      /*!
       * Read in UDP nodes from the database
@@ -978,7 +986,7 @@ private:
      */
     VSCPUDPClientThread m_pudpClientThread;
     wxMutex m_mutexudpClientThread;
-
+    
 
 };
 

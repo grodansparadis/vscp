@@ -2392,12 +2392,20 @@ vscpweb_fclose(struct vscpweb_file_access *fileacc)
     return ret;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// vscpweb_strlcpy
+///////////////////////////////////////////////////////////////////////////////
+// vscpweb_lowercase
 //
 
-static void
-vscpweb_strlcpy(register char *dst, register const char *src, size_t n)
+static int vscpweb_lowercase(const char *s) 
+{
+    return tolower(* (const unsigned char *) s);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_strlcpy
+//
+
+void vscpweb_strlcpy( register char *dst, register const char *src, size_t n )
 {
     for (; *src != '\0' && n > 1; n--) {
         *dst++ = *src++;
@@ -2407,58 +2415,10 @@ vscpweb_strlcpy(register char *dst, register const char *src, size_t n)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// lowercase
-//
-
-static int
-lowercase(const char *s)
-{
-    return tolower( *(const unsigned char *) s );
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// vscpweb_strncasecmp
-//
-
-int
-vscpweb_strncasecmp(const char *s1, const char *s2, size_t len)
-{
-    int diff = 0;
-
-    if ( len > 0 ) {
-        
-        do {
-            diff = lowercase(s1++) - lowercase(s2++);
-        }
-        while ( diff == 0 && s1[-1] != '\0' && --len > 0 );
-    }
-
-    return diff;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// vscpweb_strcasecmp
-//
-
-int
-vscpweb_strcasecmp( const char *s1, const char *s2 )
-{
-    int diff;
-
-    do {
-        diff = lowercase(s1++) - lowercase(s2++);
-    }
-    while ( diff == 0 && s1[-1] != '\0' );
-
-    return diff;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // vscpweb_strndup
 //
 
-static char *
-vscpweb_strndup(const char *ptr, size_t len)
+char *vscpweb_strndup(const char *ptr, size_t len)
 {
     char *p;
 
@@ -2473,18 +2433,17 @@ vscpweb_strndup(const char *ptr, size_t len)
 // vscpweb_strdup
 //
 
-static char *
-vscpweb_strdup( const char *str )
+char *vscpweb_strdup( const char *str )
 {
     return vscpweb_strndup( str, strlen(str) );
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
-// vscpweb_strcasestr
+// vscp_strcasestr
 //
 
-static const char *
-vscpweb_strcasestr(const char *big_str, const char *small_str)
+const char *vscpweb_strcasestr( const char *big_str, const char *small_str )
 {
     size_t i, big_len = strlen(big_str), small_len = strlen( small_str );
 
@@ -2502,6 +2461,40 @@ vscpweb_strcasestr(const char *big_str, const char *small_str)
 
     return NULL;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vscpweb_strcasecmp
+//
+
+int vscpweb_strcasecmp(const char *s1, const char *s2) 
+{
+    int diff;
+
+    do {
+        diff = vscpweb_lowercase(s1++) - vscpweb_lowercase(s2++);
+    } while ( ( 0 == diff ) && ( s1[-1] != '\0' ) );
+
+    return diff;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscpweb_strncasecmp
+//
+
+int vscpweb_strncasecmp(const char *s1, const char *s2, size_t len) 
+{
+    int diff = 0;
+
+    if ( len > 0 ) {
+        do {
+            diff = vscpweb_lowercase(s1++) - vscpweb_lowercase(s2++);
+        } while (diff == 0 && s1[-1] != '\0' && --len > 0);
+    }
+
+    return diff;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // vscpweb_vsnprintf
@@ -3397,7 +3390,7 @@ match_prefix(const char *pattern, size_t pattern_len, const char *str)
             return (res == -1) ? -1 : j + res + len;
             
         }
-        else if (lowercase(&pattern[i]) != lowercase(&str[j])) {
+        else if (vscpweb_lowercase(&pattern[i]) != vscpweb_lowercase(&str[j])) {
             return -1;
         }
         
@@ -12893,14 +12886,14 @@ set_throttle( const char *spec, uint32_t remote_ip, const char *uri )
         
         mult = ',';
         if ((val.ptr == NULL) || (sscanf(val.ptr, "%lf%c", &v, &mult) < 1)
-            || (v < 0) || ((lowercase(&mult) != 'k')
-            && (lowercase(&mult) != 'm') && (mult != ','))) {
+            || (v < 0) || ((vscpweb_lowercase(&mult) != 'k')
+            && (vscpweb_lowercase(&mult) != 'm') && (mult != ','))) {
             continue;
         }
         
-        v *= (lowercase(&mult) == 'k')
+        v *= (vscpweb_lowercase(&mult) == 'k')
                 ? 1024
-                : ((lowercase(&mult) == 'm') ? 1048576 : 1);
+                : ((vscpweb_lowercase(&mult) == 'm') ? 1048576 : 1);
         
         if (vec.len == 1 && vec.ptr[0] == '*') {
             throttle = (int) v;

@@ -137,12 +137,16 @@ using namespace std;
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
+// Uncomment to start webserver testmode instead of
+// VSCP system
+#define WEBSERVER_TESTMODE
 
 ///////////////////////////////////////////////////
 //                 GLOBALS
 ///////////////////////////////////////////////////
 
 extern CControlObject *gpobj;
+
 
 
 ///////////////////////////////////////////////////
@@ -5318,20 +5322,97 @@ VSCPWebServerThread::websrv_tablelist( struct mg_connection *nc,
 //                              N E W  T I M E S
 // -----------------------------------------------------------------------------
 
-//#define NO_SSL
-#define USE_SSL_DH
-#define USE_WEBSOCKET
-//#define USE_IPV6
 
-#define DOCUMENT_ROOT "."
+// Standard mode
+#if !defined( WEBSERVER_TESTMODE )
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// init_webserver
+//
+
+int init_webserver( void ) 
+
+{   
+    const char *options[] = 
+    {
+        "document_root", DOCUMENT_ROOT,
+            
+	"listening_ports", PORT,
+            
+	"request_timeout_ms", "10000",
+            
+        "error_log_file", "error.log",
+
+	"websocket_timeout_ms", "3600000",
+
+	"ssl_certificate", "/tmp/resources/cert/server.pem",
+            
+	"ssl_protocol_version", "3",
+            
+	"ssl_cipher_list", "DES-CBC3-SHA:AES128-SHA:AES128-GCM-SHA256",
+
+	"enable_auth_domain_check", "no",
+            
+	0 /* EOL */
+};
+        
+    struct vscpweb_callbacks callbacks;
+    struct vscpweb_context *ctx;
+    struct vscpweb_server_ports ports[32];
+    int port_cnt, n;
+    int err = 0;
+    
+    // Start CivetWeb web server 
+    memset( &callbacks, 0, sizeof( callbacks ) );
+    
+    callbacks.init_ssl = init_ssl;
+
+    callbacks.log_message = log_message;
+    ctx = vscpweb_start( &callbacks, 0, options );
+
+    // Check return value: 
+    if ( NULL == ctx ) {
+        fprintf( stderr, "Cannot start CivetWeb - vscpweb_start failed.\n" );
+	return EXIT_FAILURE;
+}
+
+/* Add handler EXAMPLE_URI, to explain the example */
+vscpweb_set_request_handler(ctx, EXAMPLE_URI, ExampleHandler, 0);
+vscpweb_set_request_handler(ctx, EXIT_URI, ExitHandler, 0);
+
+
+#else // WEBSERVER_TESTMODE
+
+
+// -----------------------------------------------------------------------------
+//                          CIVETWEB test setup
+// -----------------------------------------------------------------------------
+
+//#define NO_SSL
+//#define USE_SSL_DH
+#define USE_WEBSOCKET
+#define USE_IPV6
+
+#define DOCUMENT_ROOT "/srv/vscp/web"
+// ip.v4 and ip.v6 at the same time
+// https://github.com/civetweb/civetweb/issues/205
+// https://stackoverflow.com/questions/1618240/how-to-support-both-ipv4-and-ipv6-connections
 #ifdef USE_IPV6
 #define PORT "[::]:8888r,[::]:8843s,8884"
 #else
-#define PORT "8888r,8843s,8884"
+#define PORT "8888r,8843s,8884,9999"
 #endif
 #define EXAMPLE_URI "/example"
 #define EXIT_URI "/exit"
 int exitNow = 0;
+
+
+////////////////////////////////////////////////////////////////////////////////
+// ExampleHandler
+//
 
 int
 ExampleHandler(struct vscpweb_connection *conn, void *cbdata)
@@ -5390,6 +5471,9 @@ ExampleHandler(struct vscpweb_connection *conn, void *cbdata)
 	return 1;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// 
+//
 
 int
 ExitHandler(struct vscpweb_connection *conn, void *cbdata)
@@ -5403,6 +5487,9 @@ ExitHandler(struct vscpweb_connection *conn, void *cbdata)
 	return 1;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// 
+//
 
 int
 AHandler(struct vscpweb_connection *conn, void *cbdata)
@@ -5416,6 +5503,9 @@ AHandler(struct vscpweb_connection *conn, void *cbdata)
 	return 1;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// 
+//
 
 int
 ABHandler(struct vscpweb_connection *conn, void *cbdata)
@@ -5429,6 +5519,9 @@ ABHandler(struct vscpweb_connection *conn, void *cbdata)
 	return 1;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// 
+//
 
 int
 BXHandler(struct vscpweb_connection *conn, void *cbdata)
@@ -5446,6 +5539,9 @@ BXHandler(struct vscpweb_connection *conn, void *cbdata)
 	return 1;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// 
+//
 
 int
 FooHandler(struct vscpweb_connection *conn, void *cbdata)
@@ -5467,6 +5563,9 @@ FooHandler(struct vscpweb_connection *conn, void *cbdata)
 	return 1;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// 
+//
 
 int
 CloseHandler(struct vscpweb_connection *conn, void *cbdata)
@@ -5498,6 +5597,9 @@ CloseHandler(struct vscpweb_connection *conn, void *cbdata)
 	return 1;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// 
+//
 
 int
 FileHandler(struct vscpweb_connection *conn, void *cbdata)
@@ -5509,6 +5611,9 @@ FileHandler(struct vscpweb_connection *conn, void *cbdata)
 	return 1;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// 
+//
 
 int
 field_found(const char *key,
@@ -5532,6 +5637,9 @@ field_found(const char *key,
 	return FORM_FIELD_STORAGE_GET;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// 
+//
 
 int
 field_get(const char *key, const char *value, size_t valuelen, void *user_data)
@@ -5546,6 +5654,9 @@ field_get(const char *key, const char *value, size_t valuelen, void *user_data)
 	return 0;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// 
+//
 
 int
 field_stored(const char *path, long long file_size, void *user_data)
@@ -5560,6 +5671,9 @@ field_stored(const char *path, long long file_size, void *user_data)
 	return 0;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// 
+//
 
 int
 FormHandler(struct vscpweb_connection *conn, void *cbdata)
@@ -5586,6 +5700,9 @@ FormHandler(struct vscpweb_connection *conn, void *cbdata)
 	return 1;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// 
+//
 
 int
 FileUploadForm(struct vscpweb_connection *conn, void *cbdata)
@@ -5624,6 +5741,9 @@ struct tfiles_checksums {
 	struct tfile_checksum file[MAX_FILES];
 };
 
+////////////////////////////////////////////////////////////////////////////////
+// 
+//
 
 int
 field_disp_read_on_the_fly(const char *key,
@@ -5649,6 +5769,9 @@ field_disp_read_on_the_fly(const char *key,
 	return FORM_FIELD_STORAGE_ABORT;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// 
+//
 
 int
 field_get_checksum(const char *key,
@@ -5667,6 +5790,9 @@ field_get_checksum(const char *key,
 	return 0;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// 
+//
 
 int
 CheckSumHandler(struct vscpweb_connection *conn, void *cbdata)
@@ -5711,6 +5837,9 @@ CheckSumHandler(struct vscpweb_connection *conn, void *cbdata)
 	return 1;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// 
+//
 
 int
 CookieHandler(struct vscpweb_connection *conn, void *cbdata)
@@ -5756,6 +5885,9 @@ CookieHandler(struct vscpweb_connection *conn, void *cbdata)
 	return 1;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// 
+//
 
 int
 PostResponser(struct vscpweb_connection *conn, void *cbdata)
@@ -5812,6 +5944,9 @@ PostResponser(struct vscpweb_connection *conn, void *cbdata)
 	return 1;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// 
+//
 
 int
 WebSocketStartHandler(struct vscpweb_connection *conn, void *cbdata)
@@ -5860,6 +5995,9 @@ WebSocketStartHandler(struct vscpweb_connection *conn, void *cbdata)
 	return 1;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// 
+//
 
 #ifdef USE_WEBSOCKET
 
@@ -5885,6 +6023,9 @@ struct t_ws_client {
 		}                                                              \
 	}
 
+////////////////////////////////////////////////////////////////////////////////
+// 
+//
 
 int
 WebSocketConnectHandler(const struct vscpweb_connection *conn, void *cbdata)
@@ -5912,6 +6053,9 @@ WebSocketConnectHandler(const struct vscpweb_connection *conn, void *cbdata)
 	return reject;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// 
+//
 
 void
 WebSocketReadyHandler(struct vscpweb_connection *conn, void *cbdata)
@@ -5927,6 +6071,9 @@ WebSocketReadyHandler(struct vscpweb_connection *conn, void *cbdata)
 	client->state = 2;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// 
+//
 
 int
 WebsocketDataHandler(struct vscpweb_connection *conn,
@@ -5970,6 +6117,9 @@ WebsocketDataHandler(struct vscpweb_connection *conn,
 	return 1;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// 
+//
 
 void
 WebSocketCloseHandler(const struct vscpweb_connection *conn, void *cbdata)
@@ -5988,6 +6138,9 @@ WebSocketCloseHandler(const struct vscpweb_connection *conn, void *cbdata)
 	        "Client droped from the set of webserver connections\r\n\r\n");
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// 
+//
 
 void
 InformWebsockets(struct vscpweb_context *ctx)
@@ -6011,7 +6164,7 @@ InformWebsockets(struct vscpweb_context *ctx)
 }
 #endif
 
-
+// https://security.stackexchange.com/questions/41205/diffie-hellman-and-its-tls-ssl-usage
 #ifdef USE_SSL_DH
 #include "openssl/ssl.h"
 #include "openssl/dh.h"
@@ -6099,8 +6252,8 @@ init_ssl(void *ssl_context, void *user_data)
 int
 log_message(const struct vscpweb_connection *conn, const char *message)
 {
-	puts(message);
-	return 1;
+    puts(message);
+    return 1;
 }
 
 
@@ -6125,7 +6278,7 @@ int init_webserver( void )
 #endif
 #ifndef NO_SSL
 	    "ssl_certificate",
-	    "/tmp/resources/cert/server.pem",
+	    "/srv/vscp/certs/server.pem",
 	    "ssl_protocol_version",
 	    "3",
 	    "ssl_cipher_list",
@@ -6252,3 +6405,6 @@ int init_webserver( void )
         
     
 }
+
+
+#endif // WEBSERVER_TESTMODE

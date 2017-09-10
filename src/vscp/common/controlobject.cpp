@@ -1026,7 +1026,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
                 
                 // Database is open. Read configuration data from it
                 if ( !dbReadConfiguration() ) {
-                    fprintf( stderr, "Failed to rea configuration from configuration database.\n" );
+                    fprintf( stderr, "Failed to read configuration from configuration database.\n" );
                 }
             
             }
@@ -1255,7 +1255,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     startMulticastWorkerThreads();
 
     // Start web sockets    
-    //startWebServerThread();
+    startWebServerThread();
     
     init_webserver(); // ***
 
@@ -2533,7 +2533,8 @@ bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
                     m_runAsUser = subchild->GetNodeContent();
                     m_runAsUser.Trim();
                     m_runAsUser.Trim(false);
-                    
+                    // Also assign to web user
+                    m_runAsUserWeb = m_runAsUser;
                 }
                 else if (subchild->GetName() == wxT("logsyslog")) {
 
@@ -3740,6 +3741,43 @@ xml_table_error:
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// addConfigurationValueToDatabase
+//
+
+bool CControlObject::addConfigurationValueToDatabase( const char *pName, 
+                                                        const char *pValue )
+{
+    char *pErrMsg = 0;
+    char *psql;
+    
+    fprintf( stderr, "Add %s = %s to configuration database\n", pName, pValue );
+    
+    // Check if database is open
+    if ( NULL == m_db_vscp_daemon ) return false;
+    
+    m_db_vscp_configMutex.Lock();
+    
+    // Create settings db
+    psql = sqlite3_mprintf( VSCPDB_CONFIGEX_INSERT, pName, pValue );
+    
+    if ( SQLITE_OK != sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
+        
+        sqlite3_free( psql );
+        m_db_vscp_configMutex.Unlock();
+        
+        fprintf( stderr, 
+                    "Inserting new entry into configuration database failed with message %s", 
+                    pErrMsg );
+        return false;
+    }
+        
+    sqlite3_free( psql );
+    m_db_vscp_configMutex.Unlock();
+    return true;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 // doCreateConfiguration
 //
 // Create configuration table.
@@ -3750,6 +3788,7 @@ xml_table_error:
 
 bool CControlObject::doCreateConfigurationTable( void )
 {
+/*    
     char *pErrMsg = 0;
     const char *psql = VSCPDB_CONFIG_CREATE;
     
@@ -3779,6 +3818,97 @@ bool CControlObject::doCreateConfigurationTable( void )
     }
     
     m_db_vscp_configMutex.Unlock();
+*/
+    
+    char *pErrMsg = 0;
+    const char *psql;
+    
+    fprintf( stderr, "Creating settings database..\n" ); 
+    
+    // Check if database is open
+    if ( NULL == m_db_vscp_daemon ) return false;
+    
+    m_db_vscp_configMutex.Lock();
+    
+    // Create settings db
+    psql = VSCPDB_CONFIGEX_CREATE;
+    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
+        fprintf( stderr, 
+                    "Creation of the VSCP settings database failed with message %s", 
+                    pErrMsg );
+        return false;
+    }
+    
+    // Create name index
+    psql = VSCPDB_CONFIGEX_CREATE_INDEX;
+    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) { 
+        m_db_vscp_configMutex.Unlock();
+        fprintf( stderr, 
+                    "Creation of the VSCP settings index failed with message %s", 
+                    pErrMsg );
+        return false;
+    }
+    
+    fprintf( stderr, "Writing default configuration database content..\n" );
+
+    // Add default settings (set as defaults in SQL create expression))
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_DBVERSION, VSCPDB_CONFIG_DEFAULT_DBVERSION );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_CLIENTBUFFERSIZE, VSCPDB_CONFIG_DEFAULT_CLIENTBUFFERSIZE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_GUID, VSCPDB_CONFIG_DEFAULT_GUID );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_SERVERNAME, VSCPDB_CONFIG_DEFAULT_SERVERNAME );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_PATH_LOGDB, VSCPDB_CONFIG_DEFAULT_PATH_LOGDB );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_TCPIP_ADDR, VSCPDB_CONFIG_DEFAULT_TCPIP_ADDR );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_ANNOUNCE_ADDR, VSCPDB_CONFIG_DEFAULT_ANNOUNCE_ADDR );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_ANNOUNCE_TTL, VSCPDB_CONFIG_DEFAULT_ANNOUNCE_TTL );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_UDP_ENABLE, VSCPDB_CONFIG_DEFAULT_UDP_ENABLE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_UDP_ADDR, VSCPDB_CONFIG_DEFAULT_UDP_ADDR );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_UDP_USER, VSCPDB_CONFIG_DEFAULT_UDP_USER );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_UDP_PASSWORD, VSCPDB_CONFIG_DEFAULT_UDP_PASSWORD );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_UDP_UNSECURE_ENABLE, VSCPDB_CONFIG_DEFAULT_UDP_UNSECURE_ENABLE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_UDP_FILTER, VSCPDB_CONFIG_DEFAULT_UDP_FILTER );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_UDP_MASK, VSCPDB_CONFIG_DEFAULT_UDP_MASK );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_UDP_GUID, VSCPDB_CONFIG_DEFAULT_UDP_GUID );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_UDP_ACK_ENABLE, VSCPDB_CONFIG_DEFAULT_UDP_ACK_ENABLE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_MULTICAST_ENABLE, VSCPDB_CONFIG_DEFAULT_MULTICAST_ENABLE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_DM_PATH_DB, VSCPDB_CONFIG_DEFAULT_DM_PATH_DB );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_DM_PATH_XML, VSCPDB_CONFIG_DEFAULT_DM_PATH_XML );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_VARIABLES_PATH_DB, VSCPDB_CONFIG_DEFAULT_VARIABLES_PATH_DB );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_VARIABLES_PATH_XML, VSCPDB_CONFIG_DEFAULT_VARIABLES_PATH_XML );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_PATH_DB_DATA, VSCPDB_CONFIG_DEFAULT_PATH_DB_DATA );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_ENABLE, VSCPDB_CONFIG_DEFAULT_WEB_AUTHENTICATION_ENABLE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_PATH_ROOT, VSCPDB_CONFIG_DEFAULT_WEB_PATH_ROOT );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_ADDR, VSCPDB_CONFIG_DEFAULT_WEB_ADDR );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_PATH_CERT, VSCPDB_CONFIG_DEFAULT_WEB_PATH_CERT );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_AUTHDOMAIN, VSCPDB_CONFIG_DEFAULT_WEB_AUTHDOMAIN );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_CGI_INTERPRETER, VSCPDB_CONFIG_DEFAULT_WEB_CGI_INTERPRETER );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_CGI_PATTERN, VSCPDB_CONFIG_DEFAULT_WEB_CGI_PATTERN );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_DIR_LISTING, VSCPDB_CONFIG_DEFAULT_WEB_DIR_LISTING );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_HIDE_FILE_PATTERN, VSCPDB_CONFIG_DEFAULT_WEB_HIDE_FILE_PATTERN );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_INDEX_FILES, VSCPDB_CONFIG_DEFAULT_WEB_INDEX_FILES );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_MIME_EXTRA, VSCPDB_CONFIG_DEFAULT_WEB_MIME_EXTRA );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_URL_REWRITE, VSCPDB_CONFIG_DEFAULT_WEB_URL_REWRITE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_SSI_PATTERN, VSCPDB_CONFIG_DEFAULT_WEB_SSI_PATTERN );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_DIR_AUTHFILE, VSCPDB_CONFIG_DEFAULT_WEB_DIR_AUTHFILE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_GLOBAL_AUTHFILE, VSCPDB_CONFIG_DEFAULT_WEB_GLOBAL_AUTHFILE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_IP_ACL, VSCPDB_CONFIG_DEFAULT_WEB_IP_ACL );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_ROOT_DAV, VSCPDB_CONFIG_DEFAULT_WEB_ROOT_DAV );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEBSOCKET_AUTH_ENABLE, VSCPDB_CONFIG_DEFAULT_WEBSOCKET_AUTH_ENABLE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_AUTOMATION_ENABLE, VSCPDB_CONFIG_DEFAULT_AUTOMATION_ENABLE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_AUTOMATION_ZONE, VSCPDB_CONFIG_DEFAULT_AUTOMATION_ZONE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_AUTOMATION_SUBZONE, VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUBZONE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_AUTOMATION_LONGITUDE, VSCPDB_CONFIG_DEFAULT_AUTOMATION_LONGITUDE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_AUTOMATION_LATITUDE, VSCPDB_CONFIG_DEFAULT_AUTOMATION_LATITUDE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_ENABLE, VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNRISE_ENABLE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_ENABLE, VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNSET_ENABLE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_TWILIGHT_ENABLE, VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNSET_TWILIGHT_ENABLE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_TWILIGHT_ENABLE, VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNRISE_TWILIGHT_ENABLE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_ENABLE, VSCPDB_CONFIG_DEFAULT_AUTOMATION_SEGMENT_CTRL_ENABLE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_INTERVAL, VSCPDB_CONFIG_DEFAULT_AUTOMATION_SEGMENT_CTRL_INTERVAL );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_ENABLE, VSCPDB_CONFIG_DEFAULT_AUTOMATION_HEARTBEAT_ENABLE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_ENABLE, VSCPDB_CONFIG_DEFAULT_AUTOMATION_CAPABILITIES_ENABLE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_INTERVAL, VSCPDB_CONFIG_DEFAULT_AUTOMATION_CAPABILITIES_INTERVAL );
+    
+    m_db_vscp_configMutex.Unlock();
     
     return true;
 }
@@ -3796,9 +3926,10 @@ bool CControlObject::doCreateConfigurationTable( void )
 bool CControlObject::dbReadConfiguration( void )
 {
     char *pErrMsg = 0;
-    const char *psql = "SELECT * from SETTINGS";
+    const char *psql = VSCPDB_CONFIGEX_FIND_ALL;
     sqlite3_stmt *ppStmt;
-
+    int dbVersion = 0;
+    
     // Check if database is open
     if ( NULL == m_db_vscp_daemon ) {
         fprintf( stderr, 
@@ -3816,435 +3947,403 @@ bool CControlObject::dbReadConfiguration( void )
         return false;
     }
     
-    if ( SQLITE_ROW  == sqlite3_step( ppStmt ) ) {
+    while ( SQLITE_ROW  == sqlite3_step( ppStmt ) ) {
         
-        const unsigned char * p;
+        const unsigned char *pName  = NULL;
+        const unsigned char *pValue = NULL;
         
-        // Get the version of this db file
-        int dbVersion = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_CONFIG_DBVERSION );
-        
-        // Debug level
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_LOGLEVEL ) ) {
-            
-            /*m_logLevel = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_CONFIG_LOGLEVEL );
-            
-            if ( m_logLevel > DAEMON_LOGMSG_DEBUG ) {
-                m_logLevel = DAEMON_LOGMSG_DEBUG;
-            }*/
-            
-        }
-
-        // Run as user
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_RUNASUSER ) ) {
-            //m_runAsUser = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-            //        VSCPDB_ORDINAL_CONFIG_RUNASUSER ) );
+        if ( NULL == ( pName = sqlite3_column_text( ppStmt, 
+                        VSCPDB_ORDINAL_CONFIGEX_NAME ) ) ) {
+            fprintf( stderr, 
+                        "dbReadConfiguration: Failed to read 'name' from settings record." );
+            continue;
         }
         
+        if ( NULL == ( pValue = sqlite3_column_text( ppStmt, 
+                        VSCPDB_ORDINAL_CONFIGEX_VALUE ) ) ) {
+            fprintf( stderr, 
+                        "dbReadConfiguration: Failed to read 'value' from settings record." );
+            continue;
+        }
+        
+        // database version
+        if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_DBVERSION ) ) {  
+            dbVersion = atoi( (const char * )pValue );       
+        }
+        // client buffer size
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_CLIENTBUFFERSIZE ) ) {
+            m_maxItemsInClientReceiveQueue = atol( (const char * )pValue );            
+        }  
         // Server GUID
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_GUID ) ) {
-            m_guid.getFromString( (const char *)sqlite3_column_text( ppStmt, 
-                    VSCPDB_ORDINAL_CONFIG_GUID ) );
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_GUID ) ) {
+            m_guid.getFromString( (const char * )pValue );
         }
-        
         // Server name
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_SERVER_NAME ) ) {
-            //m_strServerName = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-            //        VSCPDB_ORDINAL_CONFIG_SERVER_NAME ) );
-        }
-         
-        // Syslog enable
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_SYSLOG_ENABLE ) ) {
-            //m_bLogToSysLog = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_CONFIG_SYSLOG_ENABLE ) ? true : false;
-        }
-        
-        // TCP/IP port
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_TCPIPINTERFACE_ADDRESS ) ) {
-            m_strTcpInterfaceAddress = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                        VSCPDB_ORDINAL_CONFIG_TCPIPINTERFACE_ADDRESS ) );
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_SERVERNAME ) ) {
+            m_strServerName = wxString::FromUTF8( (const char * )pValue );
+        }          
+        // Path to log db
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_PATH_LOGDB ) ) {
+            m_path_db_vscp_log.Assign( wxString::FromUTF8( (const char * )pValue ) );
+        }              
+        // TCP/IP interface address
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_TCPIP_ADDR ) ) {
+            m_strTcpInterfaceAddress = wxString::FromUTF8( (const char *)pValue );
             m_strTcpInterfaceAddress.Trim(true);
             m_strTcpInterfaceAddress.Trim(false);
-        }
-        
-        // Port for Multicast interface
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_ANNOUNCEINTERFACE_ADDRESS ) ) {
-            m_strMulticastAnnounceAddress = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                        VSCPDB_ORDINAL_CONFIG_ANNOUNCEINTERFACE_ADDRESS ) );
-        }
-        
-        // TTL for Multicast i/f
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_ANNOUNCEINTERFACE_TTL ) ) {
-            m_ttlMultiCastAnnounce = sqlite3_column_int( ppStmt, 
-                                        VSCPDB_ORDINAL_CONFIG_ANNOUNCEINTERFACE_TTL );
-        }
-        
-        gpobj->m_mutexUDPInfo.Lock();
-        
+        }        
+        // Announce multicast interface address
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_ANNOUNCE_ADDR )  ) {
+            m_strMulticastAnnounceAddress = wxString::FromUTF8( (const char *)pValue );
+        }        
+        // TTL for the multicast i/f
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_ANNOUNCE_TTL )  ) {
+            m_ttlMultiCastAnnounce = atoi( (const char *)pValue );
+        }        
         // Enable UDP interface
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDP_ENABLE ) ) {
-            m_udpInfo.m_bEnable = sqlite3_column_int( ppStmt, 
-                                        VSCPDB_ORDINAL_CONFIG_UDP_ENABLE ) ? true : false;
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_UDP_ENABLE )  ) {
+            gpobj->m_mutexUDPInfo.Lock();
+            m_udpInfo.m_bEnable = atoi( (const char *)pValue ) ? true : false;
+            gpobj->m_mutexUDPInfo.Unlock();
         }
-        
         // UDP interface address/port
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDP_ADDRESS ) ) {
-            m_udpInfo.m_interface = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                        VSCPDB_ORDINAL_CONFIG_UDP_ADDRESS ) );
-        }
-        
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_UDP_ADDR )  ) {
+            gpobj->m_mutexUDPInfo.Lock();
+            m_udpInfo.m_interface = wxString::FromUTF8( (const char *)pValue );
+            gpobj->m_mutexUDPInfo.Unlock();
+        }      
         // UDP User
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDP_USER ) ) {
-            m_udpInfo.m_user = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                        VSCPDB_ORDINAL_CONFIG_UDP_USER ) );
-        }
-        
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_UDP_USER )  ) {
+            gpobj->m_mutexUDPInfo.Lock();
+            m_udpInfo.m_user = wxString::FromUTF8( (const char *)pValue );
+            gpobj->m_mutexUDPInfo.Unlock();
+        }        
         // UDP User Password
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDP_PASSWORD ) ) {
-            m_udpInfo.m_password = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                        VSCPDB_ORDINAL_CONFIG_UDP_PASSWORD ) );
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_UDP_PASSWORD )  ) {
+            gpobj->m_mutexUDPInfo.Lock();
+            m_udpInfo.m_password = wxString::FromUTF8( (const char *)pValue );
+            gpobj->m_mutexUDPInfo.Unlock();
         }
-        
+        // UDP un-secure enable
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_UDP_UNSECURE_ENABLE )  ) {
+            gpobj->m_mutexUDPInfo.Lock();
+            m_udpInfo.m_bAllowUnsecure = atoi( (const char *)pValue ) ? true : false;
+            gpobj->m_mutexUDPInfo.Unlock();
+        }
         // UDP Filter
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDP_FILTER ) ) {
-            wxString str = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                        VSCPDB_ORDINAL_CONFIG_UDP_FILTER ) );
-            vscp_readFilterFromString( &m_udpInfo.m_filter, str );
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_UDP_FILTER )  ) {
+            gpobj->m_mutexUDPInfo.Lock();
+            vscp_readFilterFromString( &m_udpInfo.m_filter, wxString::FromUTF8( (const char *)pValue ) );
+            gpobj->m_mutexUDPInfo.Unlock();
         }
-        
-        // USP Mask
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDP_MASK ) ) {
-            wxString str = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                        VSCPDB_ORDINAL_CONFIG_UDP_MASK ) );
-            vscp_readMaskFromString( &m_udpInfo.m_filter, str );
+        // UDP Mask
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_UDP_MASK )  ) {
+            gpobj->m_mutexUDPInfo.Lock();
+            vscp_readMaskFromString( &m_udpInfo.m_filter, wxString::FromUTF8( (const char *)pValue ) );
+            gpobj->m_mutexUDPInfo.Unlock();
         }
-        
         // UDP GUID
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDP_GUID ) ) {
-            wxString str = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                        VSCPDB_ORDINAL_CONFIG_UDP_GUID ) );
-            m_udpInfo.m_guid.getFromString( str );
-        }
-        
-        // Enable un-secure
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDP_UNSECURE_ENABLE ) ) {
-            m_udpInfo.m_bAllowUnsecure = sqlite3_column_int( ppStmt, 
-                                        VSCPDB_ORDINAL_CONFIG_UDP_UNSECURE_ENABLE ) ? true : false;
-        }
-        
-        // Enable ack
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_UDP_ACK_ENABLE ) ) {
-            m_udpInfo.m_bAck = sqlite3_column_int( ppStmt, 
-                                        VSCPDB_ORDINAL_CONFIG_UDP_ACK_ENABLE ) ? true : false;
-        }
-        
-        gpobj->m_mutexUDPInfo.Unlock();
-        
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_UDP_GUID )  ) {
+            gpobj->m_mutexUDPInfo.Lock();
+            m_udpInfo.m_guid.getFromString( (const char *)pValue );
+            gpobj->m_mutexUDPInfo.Unlock();
+        } 
+        // UDP Enable ACK
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_UDP_ACK_ENABLE )  ) {
+            gpobj->m_mutexUDPInfo.Lock();
+            m_udpInfo.m_bAck = atoi( (const char *)pValue ) ? true : false;
+            gpobj->m_mutexUDPInfo.Unlock();
+        }      
         // Enable Multicast interface
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_MULTICASTINTERFACE_ENABLE ) ) {
-            m_multicastInfo.m_bEnable = sqlite3_column_int( ppStmt, 
-                                        VSCPDB_ORDINAL_CONFIG_MULTICASTINTERFACE_ENABLE ) ? true : false;
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_MULTICAST_ENABLE )  ) {
+            m_multicastInfo.m_bEnable = atoi( (const char *)pValue ) ? true : false;
         }
-
         // Path to DM database file
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_DM_DB_PATH ) ) {
-            m_dm.m_path_db_vscp_dm.Assign( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                        VSCPDB_ORDINAL_CONFIG_DM_DB_PATH ) ) );
-        }
-        
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_DM_PATH_DB )  ) {
+            m_dm.m_path_db_vscp_dm.Assign( wxString::FromUTF8( (const char *)pValue ) );
+        }        
         // Path to DM XML file
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_DM_XML_PATH ) ) {
-            m_dm.m_staticXMLPath = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                        VSCPDB_ORDINAL_CONFIG_DM_XML_PATH ) );
-        }
-        
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_DM_PATH_XML )  ) {
+            m_dm.m_staticXMLPath = wxString::FromUTF8( (const char *)pValue );
+        } 
         // Path to variable database
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_VARIABLES_DB_PATH ) ) {
-            m_VSCP_Variables.m_dbFilename.Assign( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                        VSCPDB_ORDINAL_CONFIG_VARIABLES_DB_PATH ) ) );
-        }
-        
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_VARIABLES_PATH_DB )  ) {
+            m_VSCP_Variables.m_dbFilename.Assign( wxString::FromUTF8( (const char *)pValue ) );
+        } 
         // Path to variable XML
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_VARIABLES_XML_PATH ) ) {
-            m_VSCP_Variables.m_xmlPath = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                        VSCPDB_ORDINAL_CONFIG_VARIABLES_XML_PATH ) );
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_VARIABLES_PATH_XML )  ) {
+            m_VSCP_Variables.m_xmlPath = wxString::FromUTF8( (const char *)pValue );
         }
-        
-        // Client buffer size
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_VSCPD_DEFAULTCLIENTBUFFERSIZE ) ) {
-            m_maxItemsInClientReceiveQueue = sqlite3_column_int( ppStmt, 
-                                        VSCPDB_ORDINAL_CONFIG_VSCPD_DEFAULTCLIENTBUFFERSIZE );
+        // VSCP data database path
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_PATH_DB_DATA )  ) {
+            m_path_db_vscp_data.Assign( wxString::FromUTF8( (const char *)pValue ) );
         }
- 
         // Disable web server security
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_WEBSERVER_DISABLEAUTHENTICATION ) ) {
-            m_bDisableSecurityWebServer = sqlite3_column_int( ppStmt,  
-                                        VSCPDB_ORDINAL_CONFIG_WEBSERVER_DISABLEAUTHENTICATION ) ? true : false;
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_ENABLE )  ) {
+            m_bDisableSecurityWebServer = atoi( (const char *)pValue ) ? true : false;
         }
-        
         // Web server root path
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_WEBSERVER_ROOTPATH ) ) {
-            p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_WEBSERVER_ROOTPATH );
-            if ( NULL != p ) {
-                strncpy( m_pathWebRoot, 
-                            (const char *)p, 
-                            MIN( strlen( (const char *)p ), MAX_PATH_SIZE ) );
-            }
-        }
-        
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_PATH_ROOT )  ) {
+            strncpy( m_pathWebRoot, 
+                            (const char *)pValue, 
+                            MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
+        }        
         // Port for web server
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_WEBSERVER_PORT ) ) {
-            m_strWebServerInterfaceAddress = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt,  
-                                            VSCPDB_ORDINAL_CONFIG_WEBSERVER_PORT ) );
+        else if ( !vscpweb_strcasecmp( (const char * )pName, VSCPDB_CONFIG_NAME_WEB_ADDR )  ) {
+            m_strWebServerInterfaceAddress = wxString::FromUTF8( (const char *)pValue );
         }
-        
         // Path to cert file
-        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_WEBSERVER_PATHCERT );
-        if ( NULL != p ) {
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_PATH_CERT )  ) {
             strncpy( m_pathCert, 
-                        (const char *)p, 
-                        MIN( strlen( (const char *)p ), MAX_PATH_SIZE ) );
+                        (const char *)pValue, 
+                        MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
         }
-        
         // Authdomain
-        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_WEBSERVER_AUTHDOMAIN );
-        if ( NULL != p ) {
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_AUTHDOMAIN )  ) {
             strncpy( m_authDomain, 
-                        (const char *)p, 
-                        MIN( strlen( (const char *)p ), MAX_PATH_SIZE ) );
-        }
-        
+                        (const char *)pValue, 
+                        MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
+        } 
         // CGI interpreter
-        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_WEBSERVER_CGIINTERPRETER );
-        if ( NULL != p ) {
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_CGI_INTERPRETER )  ) {
             strncpy( m_cgiInterpreter, 
-                        (const char *)p, 
-                        MIN( strlen( (const char *)p ), MAX_PATH_SIZE ) );
-        }
-       
+                        (const char *)pValue, 
+                        MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
+        }        
         // CGI pattern
-        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_WEBSERVER_CGIPATTERN );
-        if ( NULL != p ) {
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_CGI_PATTERN )  ) {
             strncpy( m_cgiPattern, 
-                        (const char *)p, 
-                        MIN( strlen( (const char *)p ), MAX_PATH_SIZE ) );
-        }
-        
+                        (const char *)pValue, 
+                        MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
+        }        
         // Enable directory listings
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_WEBSERVER_ENABLEDIRECTORYLISTINGS ) ) {
-            if ( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_CONFIG_WEBSERVER_ENABLEDIRECTORYLISTINGS ) ) {
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_DIR_LISTING )  ) {
+            if ( atoi( (const char *)pValue ) ) {
                 strcpy( m_EnableDirectoryListings, "yes" );
             }
             else {
                 strcpy( m_EnableDirectoryListings, "no" );
             }
         }
-   
         // Hide file patterns
-        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_WEBSERVER_HIDEFILEPATTERNS );
-        if ( NULL != p ) {
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_HIDE_FILE_PATTERN )  ) {
             strncpy( m_hideFilePatterns, 
-                        (const char *)p, 
-                        MIN( strlen( (const char *)p ), MAX_PATH_SIZE ) );
+                        (const char *)pValue, 
+                        MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
         }
-        
         // Index files
-        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_WEBSERVER_INDEXFILES );
-        if ( NULL != p ) {
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_INDEX_FILES )  ) {
             strncpy( m_indexFiles, 
-                        (const char *)p, 
-                        MIN( strlen( (const char *)p ), MAX_PATH_SIZE ) );
+                        (const char *)pValue, 
+                        MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
         }
-
         // Extra mime types
-        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_WEBSERVER_EXTRAMIMETYPES );
-        if ( NULL != p ) {
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_MIME_EXTRA )  ) {
             strncpy( m_extraMimeTypes, 
-                        (const char *)p, 
-                        MIN( strlen( (const char *)p ), MAX_PATH_SIZE ) );
-        }
-        
+                        (const char *)pValue, 
+                        MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
+        }        
         // URL rewrites
-        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_WEBSERVER_URLREWRITES );
-        if ( NULL != p ) {
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_URL_REWRITE )  ) {
             strncpy( m_urlRewrites, 
-                        (const char *)p, 
-                        MIN( strlen( (const char *)p ), MAX_PATH_SIZE ) );
-        }
-        
+                        (const char *)pValue, 
+                        MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
+        }        
         // SSI patterns
-        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_WEBSERVER_SSIPATTERN );
-        if ( NULL != p ) {
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_SSI_PATTERN )  ) {
             strncpy( m_ssi_pattern, 
-                        (const char *)p, 
-                        MIN( strlen( (const char *)p ), MAX_PATH_SIZE ) );
-        }
-        
-        // Webserver user
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_WEBSERVER_RUNASUSER ) ) {
-            m_runAsUserWeb = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                        VSCPDB_ORDINAL_CONFIG_WEBSERVER_RUNASUSER ) );
-        }
-        
+                        (const char *)pValue, 
+                        MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
+        }        
         // Per directory auth. file
-        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_WEBSERVER_PERDIRECTORYAUTHFILE );
-        if ( NULL != p ) {
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_DIR_AUTHFILE )  ) {
             strncpy( m_per_directory_auth_file, 
-                        (const char *)p, 
-                        MIN( strlen( (const char *)p ), MAX_PATH_SIZE ) );
-        }
-        
+                        (const char *)pValue, 
+                        MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
+        }     
         // Global auth. file
-        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_WEBSERVER_GLOBALAUTHFILE );
-        if ( NULL != p ) {
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_GLOBAL_AUTHFILE )  ) {
             strncpy( m_global_auth_file, 
-                        (const char *)p, 
-                        MIN( strlen( (const char *)p ), MAX_PATH_SIZE ) );
+                        (const char *)pValue, 
+                        MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
         }
-
         // IP ACL
-        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_WEBSERVER__IPACL );
-        if ( NULL != p ) {
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_IP_ACL )  ) {
             strncpy( m_ip_acl, 
-                        (const char *)p, 
-                        MIN( strlen( (const char *)p ), MAX_PATH_SIZE ) );
-        }
-        
+                        (const char *)pValue, 
+                        MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
+        }        
         // DAV path
-        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_WEBSERVER_DAVDOCUMENTROOT );
-        if ( NULL != p ) {
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_ROOT_DAV )  ) {
             strncpy( m_dav_document_root, 
-                        (const char *)p, 
-                        MIN( strlen( (const char *)p ), MAX_PATH_SIZE ) );
-        }
-        
+                        (const char *)pValue, 
+                        MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
+        }        
         // Enable web socket authentication
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_WEBSOCKET_ENABLEAUTH ) ) {
-            m_bAuthWebsockets = sqlite3_column_int( ppStmt, 
-                    VSCPDB_ORDINAL_CONFIG_WEBSOCKET_ENABLEAUTH ) ? true : false;
-        }
-                
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEBSOCKET_AUTH_ENABLE ) ) {
+            m_bAuthWebsockets = atoi( (const char *)pValue ) ? true : false;
+        }  
+        // Enable automation
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_AUTOMATION_ENABLE ) ) {
+         
+            if ( atoi( (const char *)pValue ) ) {
+                m_automation.enableAutomation();
+            }
+            else {
+                m_automation.enableAutomation();
+            }
+                    
+        }        
         // Automation zone
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_ZONE ) ) {
-            m_automation.setZone( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_ZONE ) );
-        }
-        
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_AUTOMATION_ZONE ) ) {
+            m_automation.setZone( atoi( (const char *)pValue ) );
+        } 
         // Automation sub zone
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUBZONE ) ) {
-            m_automation.setZone( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUBZONE ) );
-        }
-        
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_AUTOMATION_SUBZONE ) ) {
+            m_automation.setSubzone( atoi( (const char *)pValue ) );
+        }        
         // Automation longitude
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_LONGITUDE ) ) {
-            m_automation.setLongitude( sqlite3_column_double( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_LONGITUDE ) );
-        }
-        
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_AUTOMATION_LONGITUDE ) ) {
+            m_automation.setLongitude( atof( (const char *)pValue ) );
+        }        
         // Automation latitude
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_LATITUDE ) ) {
-            m_automation.setLongitude( sqlite3_column_double( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_LATITUDE ) );
-        }
-        
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_AUTOMATION_LATITUDE ) ) {
+            m_automation.setLatitude( atof( (const char *)pValue ) );
+        }      
         // Automation enable sun rise event
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISE_ENABLE ) ) {
-            if ( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISE_ENABLE ) ) {
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_ENABLE ) ) {
+            if ( atoi( (const char *)pValue ) ) {
                 m_automation.enableSunRiseEvent();
             }
             else {
                 m_automation.disableSunRiseEvent();
             }
-        }
-        
+        }      
         // Automation enable sun set event
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSET_ENABLE ) ) {
-            if ( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSET_ENABLE ) ) {
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_ENABLE ) ) {
+            if ( atoi( (const char *)pValue ) ) {
                 m_automation.enableSunSetEvent();
             }
             else {
                 m_automation.disableSunSetEvent();
             }
-        }
-        
+        }        
         // Automation enable sunset twilight event
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSETTWILIGHT_ENABLE ) ) {
-            if ( sqlite3_column_int( ppStmt, 
-                                VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNSETTWILIGHT_ENABLE ) ) {
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_TWILIGHT_ENABLE ) ) {
+            if ( atoi( (const char *)pValue ) ) {
                 m_automation.enableSunSetTwilightEvent();
             }
             else {
                 m_automation.disableSunSetTwilightEvent();
             }
-        }
-        
+        }        
         // Automation enable sunrise twilight event
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISETWILIGHT_ENABLE ) ) {
-            if ( sqlite3_column_int( ppStmt, 
-                                VSCPDB_ORDINAL_CONFIG_AUTOMATION_SUNRISETWILIGHT_ENABLE ) ) {
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_TWILIGHT_ENABLE ) ) {
+            if ( atoi( (const char *)pValue ) ) {
                 m_automation.enableSunRiseTwilightEvent();
             }
             else {
                 m_automation.disableSunRiseTwilightEvent();
             }
-        }
-        
+        }        
         // Automation segment controller event enable
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_ENABLE ) ) {
-            if ( sqlite3_column_int( ppStmt, 
-                                VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_ENABLE ) ) {
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_ENABLE ) ) {
+            if ( atoi( (const char *)pValue ) ) {
                 m_automation.enableSegmentControllerHeartbeat();
             }
             else {
                 m_automation.disableSegmentControllerHeartbeat();
             }
-        }
-        
+        }        
         // Automation, segment controller heartbeat interval
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_INTERVAL ) ) {
-            m_automation.setSegmentControllerHeartbeatInterval( sqlite3_column_int( ppStmt, 
-                                VSCPDB_ORDINAL_CONFIG_AUTOMATION_SEGMENTCONTROLLEREVENT_INTERVAL ) );
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_INTERVAL ) ) {
+            m_automation.setSegmentControllerHeartbeatInterval( atol( (const char *)pValue ) );
         }
         
         // Automation heartbeat event enable
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_ENABLE ) ) {
-            if ( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_ENABLE ) ) {
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_ENABLE ) ) {
+            if ( atoi( (const char *)pValue ) ) {
                 m_automation.enableHeartbeatEvent();
             }
             else {
                 m_automation.disableHeartbeatEvent();
             }
         }
-        
         // Automation heartbeat interval
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_INTERVAL ) ) {
-            m_automation.setHeartbeatEventInterval( sqlite3_column_int( ppStmt, 
-                                VSCPDB_ORDINAL_CONFIG_AUTOMATION_HEARTBEATEVENT_INTERVAL ) );
-        }
-        
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_INTERVAL ) ) {
+            m_automation.setHeartbeatEventInterval( atol( (const char *)pValue ) );
+        }        
         // Automation capabilities event enable
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_CAPABILITIES_ENABLE ) ) {
-            if ( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_CAPABILITIES_ENABLE ) ) {
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_ENABLE ) ) {
+            if ( atoi( (const char *)pValue ) ) {
                 m_automation.enableCapabilitiesEvent();
             }
             else {
                 m_automation.disableCapabilitiesEvent();
             }
-        }
-        
+        }        
         // Automation capabilities interval
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_AUTOMATION_CAPABILITIES_INTERVAL ) ) {
-            m_automation.setCapabilitiesEventInterval( sqlite3_column_int( ppStmt, 
-                                VSCPDB_ORDINAL_CONFIG_AUTOMATION_CAPABILITIES_INTERVAL ) );
+        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_INTERVAL ) ) {
+            m_automation.setCapabilitiesEventInterval( atol( (const char *)pValue ) );
+        }        
+        else {
+            // Unkown configuration value
         }
-        
-        // VSCP data database path
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_DB_VSCPDATA_PATH ) ) {    
-            m_path_db_vscp_data.Assign( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                    VSCPDB_ORDINAL_CONFIG_DB_VSCPDATA_PATH ) ) );
-        }
-        
-        // VSCP log database path
-        if ( NULL != sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_DB_LOG_PATH ) ) {
-            m_path_db_vscp_log.Assign( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, 
-                                VSCPDB_ORDINAL_CONFIG_DB_LOG_PATH ) ) );
-        }
-        
     }
     
     sqlite3_finalize( ppStmt );
@@ -4256,8 +4355,8 @@ bool CControlObject::dbReadConfiguration( void )
 // updateConfigurationRecordItem
 //
 
-bool CControlObject::updateConfigurationRecordItem( const wxString& strUpdateField, 
-                                                        const wxString& strUpdateValue )
+bool CControlObject::updateConfigurationRecordItem( const wxString& strName, 
+                                                        const wxString& strValue )
 {
     char *pErrMsg;
             
@@ -4269,9 +4368,9 @@ bool CControlObject::updateConfigurationRecordItem( const wxString& strUpdateFie
     
     m_db_vscp_configMutex.Lock();  
     
-    char *sql = sqlite3_mprintf( VSCPDB_CONFIG_UPDATE_ITEM, 
-                                    (const char *)strUpdateField.mbc_str(),
-                                    (const char *)strUpdateValue.mbc_str(),
+    char *sql = sqlite3_mprintf( VSCPDB_CONFIGEX_UPDATE_ITEM, 
+                                    (const char *)strName.mbc_str(),
+                                    (const char *)strValue.mbc_str(),
                                     m_nConfiguration );
     if ( SQLITE_OK != sqlite3_exec( m_db_vscp_daemon, 
                                             sql, NULL, NULL, &pErrMsg)) { 
@@ -4352,7 +4451,7 @@ bool CControlObject::readUdpNodes( void )
         }
         
         //  Filter
-        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_UDPNODE_FILTER );
+        p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_UDPNODE_FILTER ); 
         if ( NULL != p ) {
             wxString wxstr = wxString::FromUTF8Unchecked( (const char *)p );
             if ( !vscp_readFilterFromString( &pudpClient->m_filter, wxstr ) ) {

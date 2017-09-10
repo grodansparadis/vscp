@@ -52,6 +52,20 @@
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+    
+// Helpers
+
+void vscpweb_strlcpy( register char *dst, register const char *src, size_t n );
+    
+    
+char *vscpweb_strndup(const char *ptr, size_t len);
+    
+    
+char *vscpweb_strdup( const char *str );
+
+    
+//const char *vscpweb_strcasestr( const char *big_str, const char *small_str );    
+    
 
 ///////////////////////////////////////////////////////////////////////////////
 // vscpweb_init
@@ -76,18 +90,19 @@ VSCPWEB_API unsigned vscpweb_init( unsigned features );
 // vscpweb_exit
 //
 // Un-initialize this library.
+//
 // Return value:
 //   0: error
 //
 
-VSCPWEB_API unsigned vscpweb_exit( void );
+VSCPWEB_API unsigned vscpweb_exit( void ); 
 
 struct vscpweb_context;    // Handle for the HTTP service itself 
 struct vscpweb_connection; // Handle for the individual connection 
 
 
 // Maximum number of headers 
-#define MG_MAX_HEADERS (64)
+#define MG_MAX_HEADERS (255)
 
 struct vscpweb_header {
     const char *name;  // HTTP header name 
@@ -102,26 +117,37 @@ struct vscpweb_header {
 
 struct vscpweb_request_info {
     const char *request_method; // "GET", "POST", etc 
+    
     const char *request_uri;    // URL-decoded URI (absolute or relative,
 	                        // as in the request) 
+    
     const char *local_uri;      // URL-decoded URI (relative). Can be NULL
 	                        // if the request_uri does not address a
 	                        // resource at the server host. 
+    
     const char *http_version;   // E.g. "1.0", "1.1" 
+    
     const char *query_string;   // URL part after '?', not including '?', or
 	                        // NULL 
+    
     const char *remote_user;    // Authenticated user, or NULL if no auth
 	                        // used 
+    
     char remote_addr[48];       // Client's IP address as a string. 
 
     long long content_length;   // Length (in bytes) of the request body,
 	                        // can be -1 if no length was given. 
-    int remote_port;            // Client's port 
+    
+    int remote_port;            // Client's port
+    
     int is_ssl;                 // 1 if SSL-ed, 0 if not 
-    void *user_data;            // User data pointer passed to vscpweb_start() 
+    
+    void *user_data;            // User data pointer passed to vscpweb_start()
+    
     void *conn_data;            // Connection-specific user data 
 
     int num_headers;            // Number of HTTP headers 
+    
     struct vscpweb_header
         http_headers[MG_MAX_HEADERS];   // Allocate maximum headers 
 
@@ -139,16 +165,21 @@ struct vscpweb_request_info {
 //
 
 struct vscpweb_response_info {
+    
     int status_code;                // E.g. 200 
+    
     const char *status_text;        // E.g. "OK" 
+    
     const char *http_version;       // E.g. "1.0", "1.1" 
 
     long long content_length;       // Length (in bytes) of the request body,
                                     // can be -1 if no length was given. 
 
     int num_headers;                // Number of HTTP headers 
+    
     struct vscpweb_header
-    http_headers[MG_MAX_HEADERS];   // Allocate maximum headers 
+        http_headers[MG_MAX_HEADERS]; // Allocate maximum headers 
+    
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -168,46 +199,55 @@ struct client_cert {
 ///////////////////////////////////////////////////////////////////////////////
 // vscpweb_callbacks
 //
-// This structure needs to be passed to vscpweb_start(), to let civetweb know
+// This structure needs to be passed to vscpweb_start(), to let vscpweb know
 //   which callbacks to invoke. For a detailed description, see
 //   https://github.com/civetweb/civetweb/blob/master/docs/UserManual.md 
 //
 
 struct vscpweb_callbacks {
-        // Called when civetweb has received new HTTP request.
+    
+        // Called when vscpweb has received new HTTP request.
         //   If the callback returns one, it must process the request
         //   by sending valid HTTP headers and a body. vscpweb will not do
         //   any further processing. Otherwise it must return zero.
         //   Note that since V1.7 the "begin_request" function is called
         //   before an authorization check. If an authorization check is
         //   required, use a request_handler instead.
+        //
         //   Return value:
-        //     0: civetweb will process the request itself. In this case,
+        //     0: vscpweb will process the request itself. In this case,
         //        the callback must not send any data to the client.
         //     1-999: callback already processed the request. vscpweb will
         //            not send any data after the callback returned. The
         //            return code is stored as a HTTP status code for the
         //            access log. 
+    
         int (*begin_request)(struct vscpweb_connection *);
 
-	// Called when civetweb has finished processing request. 
-	void (*end_request)(const struct vscpweb_connection *, int reply_status_code);
+	// Called when vscpweb has finished processing request. 
+	void (*end_request)(const struct vscpweb_connection *, 
+                                int reply_status_code);
 
-	// Called when civetweb is about to log a message. If callback returns
-	//   non-zero, civetweb does not log anything. 
-	int (*log_message)(const struct vscpweb_connection *, const char *message);
+	// Called when vscpweb is about to log a message. If callback returns
+	//   non-zero, vscpweb does not log anything. 
+	int (*log_message)(const struct vscpweb_connection *, 
+                                const char *message);
 
-	// Called when civetweb is about to log access. If callback returns
-	//   non-zero, civetweb does not log anything. 
-	int (*log_access)(const struct vscpweb_connection *, const char *message);
+	// Called when vscpweb is about to log access. If callback returns
+	//   non-zero, vscpweb does not log anything. 
+	int (*log_access)(const struct vscpweb_connection *, 
+                                const char *message);
 
-	// Called when civetweb initializes SSL library.
+	// Called when vscpweb initializes SSL library.
+        //
 	//   Parameters:
 	//     user_data: parameter user_data passed when starting the server.
+        //
 	//   Return value:
-	//     0: civetweb will set up the SSL certificate.
-	//     1: civetweb assumes the callback already set up the certificate.
+	//     0: vscpweb will set up the SSL certificate.
+	//     1: vscpweb assumes the callback already set up the certificate.
 	//    -1: initializing ssl fails. 
+        
 	int (*init_ssl)(void *ssl_context, void *user_data);
 
 	// Called when vscpweb is closing a connection.  The per-context mutex is
@@ -230,6 +270,7 @@ struct vscpweb_callbacks {
 
 	// Called when vscpweb tries to open a file. Used to intercept file open
 	//   calls, and serve file data from memory instead.
+        //
 	//   Parameters:
 	//      path:     Full path to the file to open.
 	//      data_len: Placeholder for the file size, if file is served from
@@ -238,44 +279,57 @@ struct vscpweb_callbacks {
 	//     NULL: do not serve file from memory, proceed with normal file open.
 	//     non-NULL: pointer to the file contents in memory. data_len must be
 	//       initialized with the size of the memory block. 
-	const char *(*open_file)(const struct vscpweb_connection *,
-	                         const char *path,
-	                         size_t *data_len);
+        //
+	
+        const char *(*open_file)(const struct vscpweb_connection *,
+                                    const char *path,
+                                    size_t *data_len);
 
 	// Called when civetweb is about to serve Lua server page, if
 	//   Lua support is enabled.
+        //
 	//   Parameters:
 	//     lua_context: "lua_State *" pointer. 
-	void (*init_lua)(const struct vscpweb_connection *, void *lua_context);
+        
+	void (*init_lua)(const struct vscpweb_connection *, 
+                                void *lua_context);
 
-	// Called when civetweb is about to send HTTP error to the client.
+	// Called when vscpweb is about to send HTTP error to the client.
 	//   Implementing this callback allows to create custom error pages.
+        //
 	//   Parameters:
 	//     status: HTTP error status code.
+        //
 	//   Return value:
-	//     1: run civetweb error handler.
+	//     1: run vscpweb error handler.
 	//     0: callback already handled the error. 
+        
 	int (*http_error)(struct vscpweb_connection *, int status);
 
-	// Called after civetweb context has been created, before requests
+	// Called after vscpweb context has been created, before requests
 	//   are processed.
+        //
 	//   Parameters:
 	//     ctx: context handle 
+        
 	void (*init_context)(const struct vscpweb_context *ctx);
 
 	// Called when a new worker thread is initialized.
+        //
 	//   Parameters:
 	//     ctx: context handle
 	//     thread_type:
 	//       0 indicates the master thread
 	//       1 indicates a worker thread handling client connections
 	//       2 indicates an internal helper thread (timer thread)
-	//       
+	//  
+        
 	void (*init_thread)(const struct vscpweb_context *ctx, int thread_type);
 
-	// Called when civetweb context is deleted.
+	// Called when vscpweb context is deleted.
 	//   Parameters:
 	//     ctx: context handle 
+        
 	void (*exit_context)(const struct vscpweb_context *ctx);
 
 	// Called when initializing a new connection object.
@@ -283,10 +337,12 @@ struct vscpweb_callbacks {
 	// (vscpweb_request_info->conn_data, vscpweb_get_user_connection_data).
 	// When the callback is called, it is not yet known if a
 	// valid HTTP(S) request will be made.
+        //
 	// Parameters:
 	//   conn: not yet fully initialized connection object
 	//   conn_data: output parameter, set to initialize the
 	//              connection specific user data
+        //
 	// Return value:
 	//   must be 0
 	//   Otherwise, the result is undefined
@@ -834,6 +890,7 @@ VSCPWEB_API void vscpweb_send_http_error( struct vscpweb_connection *conn,
 // Send HTTP digest access authentication request.
 // Browsers will send a user name and password in their next request, showing
 // an authentication dialog if the password is not stored.
+//
 // Parameters:
 //   conn: Current connection handle.
 //   realm: Authentication realm. If NULL is supplied, the sever domain
@@ -891,6 +948,7 @@ VSCPWEB_API void vscpweb_send_mime_file2( struct vscpweb_connection *conn,
                                             const char *path,
                                             const char *mime_type,
                                             const char *additional_headers );
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // vscpweb_store_body
@@ -1249,7 +1307,7 @@ VSCPWEB_API char *vscpweb_md5(char buf[33], ...);
 //
 // Print error message to the opened error log stream.
 //   This utilizes the provided logging configuration.
-//     conn: connection (not used for sending data, but to get perameters)
+//     conn: connection (not used for sending data, but to get parameters)
 //     fmt: format string without the line return
 //     ...: variable argument list
 //   Example:
@@ -1264,7 +1322,7 @@ VSCPWEB_API void vscpweb_cry( const struct vscpweb_connection *conn,
 // vscpweb_strcasecmp
 //
 // utility methods to compare two buffers, case insensitive. 
-//
+// Return zero if equal.
 
 VSCPWEB_API int vscpweb_strcasecmp( const char *s1, const char *s2 );
 VSCPWEB_API int vscpweb_strncasecmp( const char *s1, const char *s2, size_t len );

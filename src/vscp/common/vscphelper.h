@@ -118,7 +118,11 @@ extern "C" {
         @return 0 if strings are the same
     */
     int vscp_strncasecmp(const char *s1, const char *s2, size_t len);
-
+    
+    
+    
+    
+    
 
     /*!
         Stringify binary data. 	
