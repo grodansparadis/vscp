@@ -54,16 +54,9 @@ extern "C" {
 #endif /* __cplusplus */
     
 // Helpers
-
-void vscpweb_strlcpy( register char *dst, register const char *src, size_t n );
-    
-    
-char *vscpweb_strndup(const char *ptr, size_t len);
-    
-    
-char *vscpweb_strdup( const char *str );
-
-    
+void vscpweb_strlcpy( register char *dst, register const char *src, size_t n );    
+char *vscpweb_strndup(const char *ptr, size_t len);    
+char *vscpweb_strdup( const char *str );    
 //const char *vscpweb_strcasestr( const char *big_str, const char *small_str );    
     
 

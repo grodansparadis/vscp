@@ -55,13 +55,14 @@ VSCPD_OBJECTS =  vscpd.o \
 	../../common/vscpmulticastclientthread.o \
 	../../common/tables.o \
 	../../common/vscpautomation.o \
-	../../common/knownnodes.o \	
+	../../common/knownnodes.o \
 	../../common/duktape_callbacks.o \
 	../../common/vscp_javascript.o \
         ../../../common/jsonreader.o \
         ../../../common/jsonwriter.o \
         ../../../common/jsonval.o \
 	../../../common/vscpweb.o \
+	../../../common/lua/lfs.o \
 	../../../common/lua/lsqlite3.o \
 	../../../common/lua/LuaXML_lib.o \
 	../../../common/lua_all.o \	
@@ -114,7 +115,7 @@ clean:
 
 distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile
-	
+
 vscphelper.o: ../../common/vscphelper.o ../../common/vscphelper.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscphelper.cpp -o $@
 
@@ -135,13 +136,13 @@ register.o: ../../common/register.o ../../common/register.h
 
 configfile.o: ../../../common/configfile.o ../../../common/configfile.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../common/configfile.cpp -o $@	
-		
+
 dllist.o: ../../../common/dllist.o ../../../common/dllist.h
 	$(CC) $(CFLAGS) -c ../../../common/dllist.c  -o $@	
 
 aes.o: ../../../common/aes.o ../../../common/aes.h 
 	$(CC) $(CFLAGS) -c ../../../common/aes.c -o $@
-	
+
 crc.o: ../../../common/crc.o ../../../common/crc.h 
 	$(CC) $(CFLAGS) -c ../../../common/crc.c -o $@
 
@@ -162,7 +163,7 @@ duk_module_node.o: ../../../common/duk_module_node.o ../../../common/duk_module_
 
 frozen.o: ../../../common/frozen.o ../../../common/frozen.h
 	$(CC) $(CFLAGS) -c ../../../common/frozen.c -o $@
-	
+
 sqlite3.o: ../../../common/sqlite3.o
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c  ../../../common/sqlite3.c -o $@
 
@@ -171,7 +172,7 @@ sqlite3math.o: ../../../common/sqlite3math.o
 
 fastpbkdf2.o: ../../../common/fastpbkdf2.o ../../../common/fastpbkdf2.h
 	$(CC) $(CFLAGS) -c ../../../common/fastpbkdf2.c -o $@
-	
+
 vscpmd5.o: ../../../common/vscpmd5.o ../../../common/vscpmd5.h
 	$(CC) $(CFLAGS) -c ../../../common/vscpmd5.c -o $@	
 
@@ -180,10 +181,10 @@ vscpweb.o: ../../../common/vscpweb.o ../../../common/vscpweb.h
 
 lsqlite3.o: ../../../common/lua/lsqlite3.o 
 	$(CC) $(CFLAGS) -I../../../common/lua -c ../../../common/lua/lsqlite3.c -o $@
-	
+
 LuaXML_lib.o: ../../../common/lua/LuaXML_lib.o 
 	$(CC) (CFLAGS) -I../../../common/lua -c ../../../common/lua/LuaXML_lib.c -o $@	
-	
+
 lua_all.o: ../../../common/lua_all.o 
 	$(CC) $(CFLAGS) -I../../../common/lua -c ../../../common/lua_all.c -o $@	
 

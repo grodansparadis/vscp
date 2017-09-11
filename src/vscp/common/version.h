@@ -35,9 +35,9 @@
 #define VSCPD_MAJOR_VERSION     (12)
 #define VSCPD_MINOR_VERSION     (29)
 #define VSCPD_RELEASE_VERSION   (1)
-#define VSCPD_BUILD_VERSION     (2)
+#define VSCPD_BUILD_VERSION     (3)
 
-#define VSCPD_DISPLAY_VERSION "12.29.1.2 Magnesium"
+#define VSCPD_DISPLAY_VERSION "12.29.1.3 Magnesium"
 
 #define VSCPD_COPYRIGHT "Copyright (C) 2000-2017, Grodans Paradis AB, http://www.paradiseofthefrog.com"
 #define VSCPD_COPYRIGHT_HTML "Copyright (C) 2000-2017, <a href=\"mailto:info@paradiseofthefrog.com\">Paradise of the Frog</a>, <a href=\"http://www.paradiseofthefrog.com\">http://www.paradiseofthefrog.com</a>"
