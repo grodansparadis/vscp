@@ -65,7 +65,7 @@ VSCPD_OBJECTS =  vscpd.o \
 	../../../common/lua/lfs.o \
 	../../../common/lua/lsqlite3.o \
 	../../../common/lua/LuaXML_lib.o \
-	../../../common/lua_all.o \	
+	../../../common/lua_all.o
 
 # The following files are built in the local folder to
 # prevent a mix between dll linkage and exe linkage
