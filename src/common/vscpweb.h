@@ -199,7 +199,8 @@ struct client_cert {
 
 struct vscpweb_callbacks {
     
-        // Called when vscpweb has received new HTTP request.
+        //   Called when vscpweb has received new HTTP request.
+        //
         //   If the callback returns one, it must process the request
         //   by sending valid HTTP headers and a body. vscpweb will not do
         //   any further processing. Otherwise it must return zero.

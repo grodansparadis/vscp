@@ -183,10 +183,10 @@ lsqlite3.o: ../../../common/lua/lsqlite3.o
 	$(CC) $(CFLAGS) -I../../../common/lua -c ../../../common/lua/lsqlite3.c -o $@
 
 LuaXML_lib.o: ../../../common/lua/LuaXML_lib.o 
-	$(CC) (CFLAGS) -I../../../common/lua -c ../../../common/lua/LuaXML_lib.c -o $@	
+	$(CC) (CFLAGS) -I../../../common/lua -c ../../../common/lua/LuaXML_lib.c -o $@
 
 lua_all.o: ../../../common/lua_all.o 
-	$(CC) $(CFLAGS) -I../../../common/lua -c ../../../common/lua_all.c -o $@	
+	$(CC) $(CFLAGS) -I../../../common/lua -c ../../../common/lua_all.c -o $@
 
 vscpd: $(VSCPD_OBJECTS) $(VSCPD_SPECIALS)
 	$(CXX) -o $@ $(VSCPD_OBJECTS) $(VSCPD_SPECIALS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
