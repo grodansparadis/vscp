@@ -20,6 +20,9 @@
 ** $Id: lfs.c,v 1.61 2009/07/04 02:10:16 mascarenhas Exp $
 */
 
+// fileno and symlink
+#define _POSIX_C_SOURCE   200112L   
+
 #if LUA_VERSION_NUM == 501
 #define lua_pushinteger lua_pushnumber
 #endif
@@ -37,6 +40,10 @@
 #ifndef LFS_DO_NOT_USE_LARGE_FILE
 #define _LARGEFILE64_SOURCE
 #endif
+
+#include "lua.h"
+#include "lauxlib.h"
+#include "lualib.h"
 
 #include <errno.h>
 #include <stdio.h>
@@ -63,10 +70,6 @@
 #include <sys/types.h>
 #include <utime.h>
 #endif
-
-#include "lua.h"
-#include "lauxlib.h"
-#include "lualib.h"
 
 #include "vscpweb.h"
 

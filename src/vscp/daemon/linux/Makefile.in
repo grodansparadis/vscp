@@ -63,6 +63,7 @@ VSCPD_OBJECTS =  vscpd.o \
         ../../../common/jsonval.o \
 	../../../common/vscpweb.o \
 	../../../common/lua/lsqlite3.o \
+	../../../common/lua/LuaXML_lib.o \
 	../../../common/lua_all.o \	
 
 # The following files are built in the local folder to
@@ -178,7 +179,10 @@ vscpweb.o: ../../../common/vscpweb.o ../../../common/vscpweb.h
 	$(CC) $(CFLAGS) -c ../../../common/vscpweb.c -o $@
 
 lsqlite3.o: ../../../common/lua/lsqlite3.o 
-	$(CC) -D_POSIX_SOURCE $(CFLAGS) -I../../../common/lua -c ../../../common/lua/lsqlite3.c -o $@	
+	$(CC) $(CFLAGS) -I../../../common/lua -c ../../../common/lua/lsqlite3.c -o $@
+	
+LuaXML_lib.o: ../../../common/lua/LuaXML_lib.o 
+	$(CC) (CFLAGS) -I../../../common/lua -c ../../../common/lua/LuaXML_lib.c -o $@	
 	
 lua_all.o: ../../../common/lua_all.o 
 	$(CC) $(CFLAGS) -I../../../common/lua -c ../../../common/lua_all.c -o $@	
