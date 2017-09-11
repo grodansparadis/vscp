@@ -274,4 +274,6 @@ tests/multicast/mcsender
 tests/multicast/sender
 tests/udp/receive_vscp_udp_frame
 tests/udp/send_vscp_udp_frame
+src/vscp/helperlib/linux/libvscphelper-dev_12.29.0-1_amd64.deb
+src/vscp/helperlib/linux/libvscphelper.so.12.29.0
 

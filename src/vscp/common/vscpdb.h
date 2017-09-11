@@ -31,96 +31,24 @@
 //                               CONFIG
 //*****************************************************************************
 
-#define VSCPDB_CONFIGEX_CREATE "CREATE TABLE 'config' ("\
+#define VSCPDB_CONFIG_CREATE "CREATE TABLE 'config' ("\
 	"`vscpd_idx_config`               INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`vscpd_name`                     TEXT NOT NULL,"\
         "`vscpd_value`                    TEXT DEFAULT ''"\
         ");";
 
-#define VSCPDB_CONFIGEX_CREATE_INDEX "CREATE INDEX `idxname` ON config ('vscpd_name');"
+#define VSCPDB_CONFIG_CREATE_INDEX "CREATE INDEX `idxname` ON config ('vscpd_name');"
 
-#define VSCPDB_CONFIGEX_FIND_ALL "SELECT * FROM config;"
-#define VSCPDB_CONFIGEX_FIND_ITEM "SELECT * FROM config WHERE name='%q';"
-#define VSCPDB_CONFIGEX_UPDATE_ITEM "UPDATE 'config' SET 'vscpd_value' ='%s' WHERE vscpd_name='%q';"
-#define VSCPDB_CONFIGEX_INSERT "INSERT INTO 'config' (vscpd_name,vscpd_value) VALUES ('%q','%q');"
+#define VSCPDB_CONFIG_FIND_ALL "SELECT * FROM config;"
+#define VSCPDB_CONFIG_FIND_ITEM "SELECT * FROM config WHERE name='%q';"
+#define VSCPDB_CONFIG_UPDATE_ITEM "UPDATE 'config' SET 'vscpd_value' ='%s' WHERE vscpd_name='%q';"
+#define VSCPDB_CONFIG_INSERT "INSERT INTO 'config' (vscpd_name,vscpd_value) VALUES ('%q','%q');"
 
-#define VSCPDB_ORDINAL_CONFIGEX_ID                                       0
-#define VSCPDB_ORDINAL_CONFIGEX_NAME                                     1
-#define VSCPDB_ORDINAL_CONFIGEX_VALUE                                    2
+#define VSCPDB_ORDINAL_CONFIG_ID                                       0
+#define VSCPDB_ORDINAL_CONFIG_NAME                                     1
+#define VSCPDB_ORDINAL_CONFIG_VALUE                                    2
 
-//*****************************************************************************
-//                               SETTINGS
-//*****************************************************************************
 
-/*
-#define VSCPDB_CONFIG_CREATE "CREATE TABLE 'settings' ("\
-	"`vscpd_idx_settings`                               INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-	"`vscpd_dbversion`                                  INTEGER NOT NULL DEFAULT 1,"\
-	"`vscpd_loglevel`                                   INTEGER DEFAULT 2,"\
-        "'vscpd_clientbuffersize'                           INTEGER DEFAULT 8191,"\
-	"`vscpd_runasuser`                                  TEXT DEFAULT '',"\
-	"`vscpd_guid`                                       TEXT DEFAULT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00',"\
-	"`vscpd_servername`                                 TEXT DEFAULT 'THE-VSCP-DAEMON',"\
-	"`vscpd_syslog_enable`                              INTEGER DEFAULT 1,"\
-        "`vscpd_db_log_path`                                TEXT DEFAULT '/srv/vscp/logs/vscpd_log.sqlite3',"\
-	"`vscpd_tcpipinterface_address`                     TEXT DEFAULT 'tcp://9598',"\
-	"`vscpd_announceinterface_address`                  TEXT DEFAULT 'udp://9598',"\
-	"`vscpd_announceinterface_ttl`                      INTEGER DEFAULT 1,"\
-	"`vscpd_udp_enable`                                 INTEGER DEFAULT 1,"\
-	"`vscpd_udp_address`                                TEXT DEFAULT 'udp://33333',"\
-        "`vscpd_udp_user`                                   TEXT DEFAULT '',"\
-        "`vscpd_udp_password`                               TEXT DEFAULT '',"\
-        "`vscpd_udp_unsecure_enable`                        INTEGER DEFAULT 1,"\
-        "`vscpd_udp_filter`                                 TEXT DEFAULT '',"\
-        "`vscpd_udp_mask`                                   TEXT DEFAULT '',"\
-        "`vscpd_udp_guid`                                   TEXT DEFAULT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00',"\
-        "`vscpd_udp_ack_enable`                             INTEGER DEFAULT 0,"\
-        "`vscpd_multicastinterface_enable`                  INTEGER DEFAULT 0,"\
-	"`vscpd_dm_db_path`                                 TEXT DEFAULT '/srv/vscp/dm.sqlite3',"\
-        "`vscpd_dm_xml_path`                                TEXT DEFAULT '/srv/vscp/dm.xml',"\
-	"`vscpd_variables_db_path`                          TEXT DEFAULT '/srv/vscp/variable.sqlite3',"\
-        "`vscpd_variables_xml_Path`                         TEXT DEFAULT '/srv/vscp/variable.xml',"\
-	"`vscpd_defaultclientbuffersize`                    INTEGER DEFAULT 1024,"\
-	"`vscpd_webserver_authentication_enable`            INTEGER DEFAULT 1,"\
-	"`vscpd_webserver_rootpath`                         TEXT DEFAULT '/srv/vscp/web',"\
-	"`vscpd_webserver_address`                          TEXT DEFAULT 'tcp://8080',"\
-	"`vscpd_webserver_pathcert`                         TEXT DEFAULT '',"\
-	"`vscpd_webserver_authdomain`                       TEXT DEFAULT 'mydomain.com',"\
-	"`vscpd_webserver_cgiinterpreter`                   TEXT DEFAULT '',"\
-	"`vscpd_webserver_cgipattern`                       TEXT DEFAULT '',"\
-	"`vscpd_webserver_enabledirectorylistings`          INTEGER DEFAULT 0,"\
-	"`vscpd_webserver_hidefilepatterns`                 TEXT DEFAULT '',"\
-	"`vscpd_webserver_indexfiles`                       TEXT DEFAULT '',"\
-	"`vscpd_webserver_extramimetypes`                   TEXT DEFAULT '',"\
-	"`vscpd_webserver_urlrewrites`                      TEXT DEFAULT '',"\
-	"`vscpd_webserver_ssipattern`                       TEXT DEFAULT '',"\
-	"`vscpd_webserver_runasuser`                        TEXT DEFAULT '',"\
-	"`vscpd_webserver_perdirectoryauthfile`             TEXT DEFAULT '',"\
-	"`vscpd_webserver_globalauthfile`                   TEXT DEFAULT '',"\
-	"`vscpd_webserver_ipacl`                            TEXT DEFAULT '',"\
-	"`vscpd_webserver_davdocumentroot`                  TEXT DEFAULT '',"\
-	"`vscpd_websocket_enableauth`                       INTEGER DEFAULT 1,"\
-	"`vscpd_mqttbroker_enable`                          INTEGER DEFAULT 0,"\
-	"`vscpd_mqttbroker_address`                         TEXT DEFAULT '1883',"\
-	"`vscpd_automation_enable`                          INTEGER DEFAULT 1,"\
-	"`vscpd_automation_zone`                            INTEGER DEFAULT 1,"\
-	"`vscpd_automation_subzone`                         INTEGER DEFAULT 2,"\
-	"`vscpd_automation_longitude`                       REAL DEFAULT 1,"\
-	"`vscpd_automation_latitude`                        REAL DEFAULT 1,"\
-	"`vscpd_automation_sunrise_enable`                  INTEGER DEFAULT 1,"\
-	"`vscpd_automation_sunset_enable`                   INTEGER DEFAULT 1,"\
-	"`vscpd_automation_sunsettwilight_enable`           INTEGER DEFAULT 1,"\
-	"`vscpd_automation_sunrisetwilight_enable`          INTEGER DEFAULT 1,"\
-	"`vscpd_automation_segmentcontrollerevent_enable`   INTEGER DEFAULT 1,"\
-	"`vscpd_automation_segmentcontrollerevent_interval` INTEGER DEFAULT 60,"\
-	"`vscpd_automation_heartbeatevent_enable`           INTEGER DEFAULT 1,"\
-	"`vscpd_automation_heartbeatevent_interval`         INTEGER DEFAULT 60,"\
-        "`vscpd_automation_capabilities_enable`             INTEGER DEFAULT 1,"\
-	"`vscpd_automation_capabilities_interval`           INTEGER DEFAULT 60,"\
-	"`vscpd_db_data_path`                               TEXT DEFAULT '/srv/vscp/vscp_data.sqlite3',"\
-        "`vscpd_db_vscpconf_path`                           TEXT DEFAULT '/srv/vscp/vscpd.sqlite3' "\
-        ");";
-*/
 // Configuration defaults
 
 #define VSCPDB_CONFIG_NAME_DBVERSION                    "dbversion"
@@ -293,7 +221,76 @@
 
 
 
-/*      
+
+/*
+#define VSCPDB_CONFIG_CREATE "CREATE TABLE 'settings' ("\
+	"`vscpd_idx_settings`                               INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
+	"`vscpd_dbversion`                                  INTEGER NOT NULL DEFAULT 1,"\
+	"`vscpd_loglevel`                                   INTEGER DEFAULT 2,"\
+        "'vscpd_clientbuffersize'                           INTEGER DEFAULT 8191,"\
+	"`vscpd_runasuser`                                  TEXT DEFAULT '',"\
+	"`vscpd_guid`                                       TEXT DEFAULT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00',"\
+	"`vscpd_servername`                                 TEXT DEFAULT 'THE-VSCP-DAEMON',"\
+	"`vscpd_syslog_enable`                              INTEGER DEFAULT 1,"\
+        "`vscpd_db_log_path`                                TEXT DEFAULT '/srv/vscp/logs/vscpd_log.sqlite3',"\
+	"`vscpd_tcpipinterface_address`                     TEXT DEFAULT 'tcp://9598',"\
+	"`vscpd_announceinterface_address`                  TEXT DEFAULT 'udp://9598',"\
+	"`vscpd_announceinterface_ttl`                      INTEGER DEFAULT 1,"\
+	"`vscpd_udp_enable`                                 INTEGER DEFAULT 1,"\
+	"`vscpd_udp_address`                                TEXT DEFAULT 'udp://33333',"\
+        "`vscpd_udp_user`                                   TEXT DEFAULT '',"\
+        "`vscpd_udp_password`                               TEXT DEFAULT '',"\
+        "`vscpd_udp_unsecure_enable`                        INTEGER DEFAULT 1,"\
+        "`vscpd_udp_filter`                                 TEXT DEFAULT '',"\
+        "`vscpd_udp_mask`                                   TEXT DEFAULT '',"\
+        "`vscpd_udp_guid`                                   TEXT DEFAULT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00',"\
+        "`vscpd_udp_ack_enable`                             INTEGER DEFAULT 0,"\
+        "`vscpd_multicastinterface_enable`                  INTEGER DEFAULT 0,"\
+	"`vscpd_dm_db_path`                                 TEXT DEFAULT '/srv/vscp/dm.sqlite3',"\
+        "`vscpd_dm_xml_path`                                TEXT DEFAULT '/srv/vscp/dm.xml',"\
+	"`vscpd_variables_db_path`                          TEXT DEFAULT '/srv/vscp/variable.sqlite3',"\
+        "`vscpd_variables_xml_Path`                         TEXT DEFAULT '/srv/vscp/variable.xml',"\
+	"`vscpd_defaultclientbuffersize`                    INTEGER DEFAULT 1024,"\
+	"`vscpd_webserver_authentication_enable`            INTEGER DEFAULT 1,"\
+	"`vscpd_webserver_rootpath`                         TEXT DEFAULT '/srv/vscp/web',"\
+	"`vscpd_webserver_address`                          TEXT DEFAULT 'tcp://8080',"\
+	"`vscpd_webserver_pathcert`                         TEXT DEFAULT '',"\
+	"`vscpd_webserver_authdomain`                       TEXT DEFAULT 'mydomain.com',"\
+	"`vscpd_webserver_cgiinterpreter`                   TEXT DEFAULT '',"\
+	"`vscpd_webserver_cgipattern`                       TEXT DEFAULT '',"\
+	"`vscpd_webserver_enabledirectorylistings`          INTEGER DEFAULT 0,"\
+	"`vscpd_webserver_hidefilepatterns`                 TEXT DEFAULT '',"\
+	"`vscpd_webserver_indexfiles`                       TEXT DEFAULT '',"\
+	"`vscpd_webserver_extramimetypes`                   TEXT DEFAULT '',"\
+	"`vscpd_webserver_urlrewrites`                      TEXT DEFAULT '',"\
+	"`vscpd_webserver_ssipattern`                       TEXT DEFAULT '',"\
+	"`vscpd_webserver_runasuser`                        TEXT DEFAULT '',"\
+	"`vscpd_webserver_perdirectoryauthfile`             TEXT DEFAULT '',"\
+	"`vscpd_webserver_globalauthfile`                   TEXT DEFAULT '',"\
+	"`vscpd_webserver_ipacl`                            TEXT DEFAULT '',"\
+	"`vscpd_webserver_davdocumentroot`                  TEXT DEFAULT '',"\
+	"`vscpd_websocket_enableauth`                       INTEGER DEFAULT 1,"\
+	"`vscpd_mqttbroker_enable`                          INTEGER DEFAULT 0,"\
+	"`vscpd_mqttbroker_address`                         TEXT DEFAULT '1883',"\
+	"`vscpd_automation_enable`                          INTEGER DEFAULT 1,"\
+	"`vscpd_automation_zone`                            INTEGER DEFAULT 1,"\
+	"`vscpd_automation_subzone`                         INTEGER DEFAULT 2,"\
+	"`vscpd_automation_longitude`                       REAL DEFAULT 1,"\
+	"`vscpd_automation_latitude`                        REAL DEFAULT 1,"\
+	"`vscpd_automation_sunrise_enable`                  INTEGER DEFAULT 1,"\
+	"`vscpd_automation_sunset_enable`                   INTEGER DEFAULT 1,"\
+	"`vscpd_automation_sunsettwilight_enable`           INTEGER DEFAULT 1,"\
+	"`vscpd_automation_sunrisetwilight_enable`          INTEGER DEFAULT 1,"\
+	"`vscpd_automation_segmentcontrollerevent_enable`   INTEGER DEFAULT 1,"\
+	"`vscpd_automation_segmentcontrollerevent_interval` INTEGER DEFAULT 60,"\
+	"`vscpd_automation_heartbeatevent_enable`           INTEGER DEFAULT 1,"\
+	"`vscpd_automation_heartbeatevent_interval`         INTEGER DEFAULT 60,"\
+        "`vscpd_automation_capabilities_enable`             INTEGER DEFAULT 1,"\
+	"`vscpd_automation_capabilities_interval`           INTEGER DEFAULT 60,"\
+	"`vscpd_db_data_path`                               TEXT DEFAULT '/srv/vscp/vscp_data.sqlite3',"\
+        "`vscpd_db_vscpconf_path`                           TEXT DEFAULT '/srv/vscp/vscpd.sqlite3' "\
+        ");";
+   
 #define VSCPDB_CONFIG_UPDATE_ITEM "UPDATE 'settings' SET %s='%s' WHERE vscpd_idx_settings='%d';"
 
 

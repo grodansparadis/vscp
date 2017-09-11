@@ -1531,6 +1531,13 @@ VSCPWEB_API int vscpweb_get_connection_info( const struct vscpweb_context *ctx,
                                                 char *buffer,
                                                 int buflen );
 
+#define vscpweb_lua_load lua_load
+
+/*!
+ * run_lua
+ */
+int run_lua( const char *file_name );
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

@@ -5392,7 +5392,7 @@ vscpweb_set_request_handler(ctx, EXIT_URI, ExitHandler, 0);
 // -----------------------------------------------------------------------------
 
 //#define NO_SSL
-//#define USE_SSL_DH
+#define USE_SSL_DH
 #define USE_WEBSOCKET
 #define USE_IPV6
 
@@ -5407,7 +5407,7 @@ vscpweb_set_request_handler(ctx, EXIT_URI, ExitHandler, 0);
 #endif
 #define EXAMPLE_URI "/example"
 #define EXIT_URI "/exit"
-int exitNow = 0;
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5472,7 +5472,7 @@ ExampleHandler(struct vscpweb_connection *conn, void *cbdata)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// ExitHandler
 //
 
 int
@@ -5483,12 +5483,11 @@ ExitHandler(struct vscpweb_connection *conn, void *cbdata)
 	          "text/plain\r\nConnection: close\r\n\r\n");
 	vscpweb_printf(conn, "Server will shut down.\n");
 	vscpweb_printf(conn, "Bye!\n");
-	exitNow = 1;
 	return 1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// AHandler
 //
 
 int
@@ -5504,7 +5503,7 @@ AHandler(struct vscpweb_connection *conn, void *cbdata)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// ABHandler
 //
 
 int
@@ -5520,7 +5519,7 @@ ABHandler(struct vscpweb_connection *conn, void *cbdata)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// BXHandler
 //
 
 int
@@ -5540,7 +5539,7 @@ BXHandler(struct vscpweb_connection *conn, void *cbdata)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// FooHandler
 //
 
 int
@@ -5564,7 +5563,7 @@ FooHandler(struct vscpweb_connection *conn, void *cbdata)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// CloseHandler
 //
 
 int
@@ -5598,7 +5597,7 @@ CloseHandler(struct vscpweb_connection *conn, void *cbdata)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// FileHandler
 //
 
 int
@@ -5612,7 +5611,7 @@ FileHandler(struct vscpweb_connection *conn, void *cbdata)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// field_found
 //
 
 int
@@ -5638,7 +5637,7 @@ field_found(const char *key,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// field_get
 //
 
 int
@@ -5655,7 +5654,7 @@ field_get(const char *key, const char *value, size_t valuelen, void *user_data)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// field_stored
 //
 
 int
@@ -5672,7 +5671,7 @@ field_stored(const char *path, long long file_size, void *user_data)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// FormHandler
 //
 
 int
@@ -5701,7 +5700,7 @@ FormHandler(struct vscpweb_connection *conn, void *cbdata)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// FileUploadForm
 //
 
 int

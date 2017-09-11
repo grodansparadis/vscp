@@ -62,6 +62,7 @@ VSCPD_OBJECTS =  vscpd.o \
         ../../../common/jsonwriter.o \
         ../../../common/jsonval.o \
 	../../../common/vscpweb.o \
+	../../../common/lua_all.o \	
 
 # The following files are built in the local folder to
 # prevent a mix between dll linkage and exe linkage
@@ -174,6 +175,9 @@ vscpmd5.o: ../../../common/vscpmd5.o ../../../common/vscpmd5.h
 
 vscpweb.o: ../../../common/vscpweb.o ../../../common/vscpweb.h
 	$(CC) $(CFLAGS) -c ../../../common/vscpweb.c -o $@	
+	
+lua_all.o: ../../../common/lua_all.o 
+	$(CC) $(CFLAGS) -I../../../common/lua -c ../../../common/lua_all.c -o $@	
 
 vscpd: $(VSCPD_OBJECTS) $(VSCPD_SPECIALS)
 	$(CXX) -o $@ $(VSCPD_OBJECTS) $(VSCPD_SPECIALS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)

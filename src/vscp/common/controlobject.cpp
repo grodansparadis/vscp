@@ -3758,7 +3758,7 @@ bool CControlObject::addConfigurationValueToDatabase( const char *pName,
     m_db_vscp_configMutex.Lock();
     
     // Create settings db
-    psql = sqlite3_mprintf( VSCPDB_CONFIGEX_INSERT, pName, pValue );
+    psql = sqlite3_mprintf( VSCPDB_CONFIG_INSERT, pName, pValue );
     
     if ( SQLITE_OK != sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
         
@@ -3831,7 +3831,7 @@ bool CControlObject::doCreateConfigurationTable( void )
     m_db_vscp_configMutex.Lock();
     
     // Create settings db
-    psql = VSCPDB_CONFIGEX_CREATE;
+    psql = VSCPDB_CONFIG_CREATE;
     if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
         fprintf( stderr, 
                     "Creation of the VSCP settings database failed with message %s", 
@@ -3840,7 +3840,7 @@ bool CControlObject::doCreateConfigurationTable( void )
     }
     
     // Create name index
-    psql = VSCPDB_CONFIGEX_CREATE_INDEX;
+    psql = VSCPDB_CONFIG_CREATE_INDEX;
     if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) { 
         m_db_vscp_configMutex.Unlock();
         fprintf( stderr, 
@@ -3923,10 +3923,10 @@ bool CControlObject::doCreateConfigurationTable( void )
 // is not activated yet.
 //
 
-bool CControlObject::dbReadConfiguration( void )
+bool CControlObject::dbReadConfiguration( void ) 
 {
     char *pErrMsg = 0;
-    const char *psql = VSCPDB_CONFIGEX_FIND_ALL;
+    const char *psql = VSCPDB_CONFIG_FIND_ALL;
     sqlite3_stmt *ppStmt;
     int dbVersion = 0;
     
@@ -3953,14 +3953,14 @@ bool CControlObject::dbReadConfiguration( void )
         const unsigned char *pValue = NULL;
         
         if ( NULL == ( pName = sqlite3_column_text( ppStmt, 
-                        VSCPDB_ORDINAL_CONFIGEX_NAME ) ) ) {
+                        VSCPDB_ORDINAL_CONFIG_NAME ) ) ) {
             fprintf( stderr, 
                         "dbReadConfiguration: Failed to read 'name' from settings record." );
             continue;
         }
         
         if ( NULL == ( pValue = sqlite3_column_text( ppStmt, 
-                        VSCPDB_ORDINAL_CONFIGEX_VALUE ) ) ) {
+                        VSCPDB_ORDINAL_CONFIG_VALUE ) ) ) {
             fprintf( stderr, 
                         "dbReadConfiguration: Failed to read 'value' from settings record." );
             continue;
@@ -4368,7 +4368,7 @@ bool CControlObject::updateConfigurationRecordItem( const wxString& strName,
     
     m_db_vscp_configMutex.Lock();  
     
-    char *sql = sqlite3_mprintf( VSCPDB_CONFIGEX_UPDATE_ITEM, 
+    char *sql = sqlite3_mprintf( VSCPDB_CONFIG_UPDATE_ITEM, 
                                     (const char *)strName.mbc_str(),
                                     (const char *)strValue.mbc_str(),
                                     m_nConfiguration );
