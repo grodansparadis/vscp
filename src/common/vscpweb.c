@@ -13920,12 +13920,12 @@ vscpweb_open_lua_libs( lua_State *L )
         luaL_openlibs(L);
     }
 
-#ifdef USE_LUA_SQLITE3
+
     {
         extern int luaopen_lsqlite3(lua_State *);
         luaopen_lsqlite3(L);
     }
-#endif
+
 #ifdef USE_LUA_LUAXML
     {
         extern int luaopen_LuaXML_lib(lua_State *);
