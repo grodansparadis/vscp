@@ -33,9 +33,9 @@ WXGTK_LIBS = @WXGTK_LIBS@
 #CPPFLAGS = @CPPFLAGS@ -D MG_ENABLE_THREADS -I../common -I../../common
 #CFLAGS = -std=c99 @CFLAGS@
 MONGOOSE_CFLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL -DMG_ENABLE_HTTP_CGI -DMG_ENABLE_HTTP_SSI -DMG_ENABLE_HTTP_SSI_EXEC -DMG_ENABLE_HTTP_WEBDAV -DMG_ENABLE_GETADDRINFO -DMG_ENABLE_HTTP_URL_REWRITES
-CFLAGS = -std=c99 @CFLAGS@ @WXBASE_CFLAGS@ -DCBC -I../../common -I../../../common -I../../../common/lua -I../../../common/lua/src
+CFLAGS = -std=c99 @CFLAGS@ @WXBASE_CFLAGS@ -DCBC -I../common -I../../common -I../../common/lua -I../../common/lua/src
 CXXFLAGS = @CXXFLAGS@ @WXBASE_CXXFLAGS@
-CPPFLAGS = @CPPFLAGS@ @WXBASE_CPPFLAGS@ -fno-var-tracking-assignments -I../../common -I../../../common -I../../../common/lua -I../../../common/lua/src
+CPPFLAGS = @CPPFLAGS@ @WXBASE_CPPFLAGS@ -fno-var-tracking-assignments -I../common -I../../common -I../../common/lua -I../../common/lua/src
 CPPFLAGS += $(MONGOOSE_CFLAGS)
 
 
@@ -107,7 +107,7 @@ distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile
 
 vscpcmd: $(VSCPCMD_OBJECTS)
-	$(CXX) -o $@ $(CANCMD_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+	$(CXX) -o $@ $(VSCPCMD_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(EXTRALIBS)
 	
 $(ALWAYS_BUILD):  .FORCE
 
