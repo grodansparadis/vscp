@@ -73,18 +73,30 @@
           <executablePath></executablePath>
           <cTool>
             <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
-              <pElem>/usr/local/include/wx-3.1</pElem>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+              <pElem>/usr/local/include/wx-3.0</pElem>
               <pElem>../common</pElem>
               <pElem>../../common</pElem>
+              <pElem>../../common/lua</pElem>
+              <pElem>../../common/lua/src</pElem>
             </incDir>
             <preprocessorList>
+              <Elem>CBC</Elem>
+              <Elem>MG_ENABLE_GETADDRINFO</Elem>
+              <Elem>MG_ENABLE_HTTP_CGI</Elem>
+              <Elem>MG_ENABLE_HTTP_SSI</Elem>
+              <Elem>MG_ENABLE_HTTP_SSI_EXEC</Elem>
+              <Elem>MG_ENABLE_HTTP_URL_REWRITES</Elem>
+              <Elem>MG_ENABLE_HTTP_WEBDAV</Elem>
+              <Elem>MG_ENABLE_IPV6</Elem>
               <Elem>MG_ENABLE_SSL</Elem>
+              <Elem>MG_ENABLE_THREADS</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>_POSIX_SOURCE</Elem>
               <Elem>_SVID_SOURCE</Elem>
               <Elem>__WXGTK__</Elem>
+              <Elem>wxUSE_GUI=0</Elem>
             </preprocessorList>
           </cTool>
         </makeTool>
