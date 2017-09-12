@@ -636,6 +636,16 @@ WX_CPPFLAGS
 WX_CONFIG_PATH
 PROJ_SUBDIRS_GUI
 PROJ_SUBDIRS
+STATIC
+WXGTK_LIBS
+WXGTK_CFLAGS
+WXGTK_CXXFLAGS
+WXGTK_CPPFLAGS
+WXBASE_STATIC_LIBS
+WXBASE_LIBS
+WXBASE_CFLAGS
+WXBASE_CXXFLAGS
+WXBASE_CPPFLAGS
 EXTRALIBS
 WXLIBS
 POW_LIB
@@ -707,6 +717,7 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 enable_debug
+enable_static
 with_wxdir
 with_wx_config
 with_wx_prefix
@@ -1336,6 +1347,7 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-debug          debug mode (default disabled)
+  --enable-static         static build of wxWidgets (default shared)
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -4122,51 +4134,6 @@ fi
 
 
 # Checks for libraries.
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for initscr in -lcurses" >&5
-$as_echo_n "checking for initscr in -lcurses... " >&6; }
-if ${ac_cv_lib_curses_initscr+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lcurses  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char initscr ();
-int
-main ()
-{
-return initscr ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_curses_initscr=yes
-else
-  ac_cv_lib_curses_initscr=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_curses_initscr" >&5
-$as_echo "$ac_cv_lib_curses_initscr" >&6; }
-if test "x$ac_cv_lib_curses_initscr" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBCURSES 1
-_ACEOF
-
-  LIBS="-lcurses $LIBS"
-
-fi
-
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlsym in -ldl" >&5
 $as_echo_n "checking for dlsym in -ldl... " >&6; }
 if ${ac_cv_lib_dl_dlsym+:} false; then :
@@ -4434,51 +4401,6 @@ if test "x$ac_cv_lib_z_gzopen" = xyes; then :
 _ACEOF
 
   LIBS="-lz $LIBS"
-
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for pcap_open_live in -lpcap" >&5
-$as_echo_n "checking for pcap_open_live in -lpcap... " >&6; }
-if ${ac_cv_lib_pcap_pcap_open_live+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lpcap  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char pcap_open_live ();
-int
-main ()
-{
-return pcap_open_live ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_pcap_pcap_open_live=yes
-else
-  ac_cv_lib_pcap_pcap_open_live=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_pcap_pcap_open_live" >&5
-$as_echo "$ac_cv_lib_pcap_pcap_open_live" >&6; }
-if test "x$ac_cv_lib_pcap_pcap_open_live" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBPCAP 1
-_ACEOF
-
-  LIBS="-lpcap $LIBS"
 
 fi
 
@@ -6290,10 +6212,35 @@ fi
 
 
 
-PROJ_SUBDIRS="src/vscp/drivers/level1/can4vscp/linux src/vscp/drivers/level2/wire1/linux src/vscp/drivers/level1/logger/linux src/vscp/drivers/level1/can232/linux src/vscp/drivers/level1/xap/linux src/vscp/drivers/level1/socketcan/linux src/vscp/drivers/level2/logger/linux src/vscp/drivers/level2/lmsensors/linux src/vscp/drivers/level2/socketcan/linux src/vscp/drivers/level2/mqtt/linux src/vscp/drivers/level2/tcpdrv/linux src/vscp/drivers/level2/rawethernet/linux src/vscp/linuxvscpl1 src/vscp/helperlib/linux src/vscp/daemon/linux src/vscp/mkpasswd src/vscp/uvscpd src/vscp/vscpcmd src/vscp/drivers/level2/sim/linux"
+
+
+
+
+
+
+
+
+
+
+PROJ_SUBDIRS="src/vscp/drivers/level1/can4vscp/linux\
+ src/vscp/drivers/level2/wire1/linux\
+ src/vscp/drivers/level1/logger/linux\
+ src/vscp/drivers/level1/can232/linux\
+ src/vscp/drivers/level1/xap/linux\
+ src/vscp/drivers/level1/socketcan/linux\
+ src/vscp/drivers/level2/logger/linux\
+ src/vscp/drivers/level2/lmsensors/linux\
+ src/vscp/drivers/level2/socketcan/linux\
+ src/vscp/drivers/level2/mqtt/linux\
+ src/vscp/drivers/level2/tcpdrv/linux\
+ src/vscp/drivers/level2/rawethernet/linux\
+ src/vscp/linuxvscpl1\
+ src/vscp/helperlib/linux\
+ src/vscp/daemon/linux\
+ src/vscp/mkpasswd src/vscp/uvscpd\
+ src/vscp/vscpcmd src/vscp/drivers/level2/sim/linux"
 
 PROJ_SUBDIRS_GUI="src/vscp/vscpworks"
-
 
 
 
@@ -6302,6 +6249,15 @@ if test "${enable_debug+set}" = set; then :
   enableval=$enable_debug; vscp_debug=yes
 else
   vscp_debug=no
+fi
+
+
+
+# Check whether --enable-static was given.
+if test "${enable_static+set}" = set; then :
+  enableval=$enable_static; vscp_static=yes
+else
+  vscp_static=no
 fi
 
 
@@ -6821,11 +6777,6 @@ if test "$wxWin" != 1; then
 fi
 
 
-CPPFLAGS="$CPPFLAGS $WX_CPPFLAGS"
-CXXFLAGS="$CXXFLAGS $WX_CXXFLAGS_ONLY"
-CFLAGS="$CFLAGS $WX_CFLAGS_ONLY"
-LIBS="$LIBS $WX_LIBS"
-
 WX_BASENAME=`$WX_CONFIG_WITH_ARGS --basename`
 vscp_gui=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for wx_gtk2* wxWidgets libs" >&5
@@ -6839,8 +6790,33 @@ fi
 
 EXTRALIBS="${EXTRALIBS} ${LIBS}"
 
-CPPFLAGS="$CPPFLAGS -D MG_ENABLE_SSL"
-CFLAGS="$CFLAGS -D MG_ENABLE_SSL"
+if test "${vscp_debug}" = yes ; then
+WXBASE_CPPFLAGS=`$WX_CONFIG_WITH_ARGS -debug --cppflags base`
+WXBASE_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --debug --cxxflags base`
+WXBASE_CFLAGS=`$WX_CONFIG_WITH_ARGS --debug --cflags base`
+WXBASE_LIBS=`$WX_CONFIG_WITH_ARGS --debug --libs base xml net`
+WXBASE_STATIC_LIBS=`$WX_CONFIG_WITH_ARGS --debug --static  --libs base xml net`
+WXGTK_CPPFLAGS=`$WX_CONFIG_WITH_ARGS -debug --cppflags`
+WXGTK_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --debug --cxxflags`
+WXGTK_CFLAGS=`$WX_CONFIG_WITH_ARGS --debug --cflags`
+WXGTK_LIBS=`$WX_CONFIG_WITH_ARGS --debug --libs`
+else
+WXBASE_CPPFLAGS=`$WX_CONFIG_WITH_ARGS --cppflags base`
+WXBASE_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --cxxflags base`
+WXBASE_CFLAGS=`$WX_CONFIG_WITH_ARGS --cflags base`
+WXBASE_LIBS=`$WX_CONFIG_WITH_ARGS --libs base xml net`
+WXBASE_STATIC_LIBS=`$WX_CONFIG_WITH_ARGS --static  --libs base xml net`
+WXGTK_CPPFLAGS=`$WX_CONFIG_WITH_ARGS --cppflags`
+WXGTK_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --cxxflags`
+WXGTK_CFLAGS=`$WX_CONFIG_WITH_ARGS --cflags`
+WXGTK_LIBS=`$WX_CONFIG_WITH_ARGS --libs`
+fi
+
+if test "${vscp_static}" = yes ; then
+STATIC="yes"
+else
+STATIC="no"
+fi
 
 
 ac_config_files="$ac_config_files Makefile m4/Makefile src/vscp/vscpcmd/Makefile src/vscp/vscpworks/Makefile src/vscp/daemon/linux/Makefile src/vscp/uvscpd/Makefile src/vscp/mkpasswd/Makefile src/vscp/drivers/level1/logger/linux/Makefile src/vscp/drivers/level1/can232/linux/Makefile src/vscp/drivers/level1/xap/linux/Makefile src/vscp/drivers/level1/socketcan/linux/Makefile src/vscp/drivers/level1/can4vscp/linux/Makefile src/vscp/drivers/level2/logger/linux/Makefile src/vscp/drivers/level2/lmsensors/linux/Makefile src/vscp/drivers/level2/mqtt/linux/Makefile src/vscp/drivers/level2/socketcan/linux/Makefile src/vscp/drivers/level2/tcpdrv/linux/Makefile src/vscp/drivers/level2/rawethernet/linux/Makefile src/vscp/drivers/level2/wire1/linux/Makefile src/vscp/drivers/level2/sim/linux/Makefile src/vscp/linuxvscpl1/Makefile src/vscp/helperlib/linux/Makefile"
@@ -8176,6 +8152,7 @@ You can tune the compiler flags in vscp-config.
 To build VSCP and friends, type \'make\' followed by \'make install\'
 
  use --enable-debug to build a debug version; release is default.
+ use --enable-static to include a static version of wxWidgets.
 
  \"make\" -- builds VSCP & Friends.
  \"make install\" -- builds VSCP & Friends and install system.

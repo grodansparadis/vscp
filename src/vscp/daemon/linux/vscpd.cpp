@@ -78,7 +78,6 @@ void _sighandler( int sig )
     gpobj->logMsg(_("vscpd: signal received, forced to stop."));
 }
 
-
 /////////////////////////////////////////////////////////////////////////////
 // VSCPApp
 

@@ -28,16 +28,15 @@ AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 
 # Checks for libraries.
-AC_CHECK_LIB([curses], [initscr])
+dnl AC_CHECK_LIB([curses], [initscr])
 AC_CHECK_LIB([dl], [dlsym])
 AC_CHECK_LIB([pthread], [pthread_create])
 AC_CHECK_LIB([crypto], [MD5_Init])
 AC_CHECK_LIB([m],[sin])
 AC_CHECK_LIB([rt],[clock_gettime])
 AC_CHECK_LIB([z], [gzopen])
-AC_CHECK_LIB([pcap], [pcap_open_live])
+dnl AC_CHECK_LIB([pcap], [pcap_open_live])
 AC_CHECK_LIB([ssl], [SSL_free])
-dnl AC_CHECK_LIB([sqlite3],[sqlite3_open])
 
 # Checks for header files.
 AC_HEADER_DIRENT
@@ -80,12 +79,38 @@ AS_IF([test "$ac_cv_sizeof_long" -eq 8],
 
 AC_SUBST(WXLIBS)
 AC_SUBST(EXTRALIBS)
+AC_SUBST(WXBASE_CPPFLAGS)
+AC_SUBST(WXBASE_CXXFLAGS)
+AC_SUBST(WXBASE_CFLAGS)
+AC_SUBST(WXBASE_LIBS)
+AC_SUBST(WXBASE_STATIC_LIBS)
+AC_SUBST(WXGTK_CPPFLAGS)
+AC_SUBST(WXGTK_CXXFLAGS)
+AC_SUBST(WXGTK_CFLAGS)
+AC_SUBST(WXGTK_LIBS)
+AC_SUBST(STATIC)
 
 dnl
 dnl Project Sub directories
 dnl
 
-PROJ_SUBDIRS="src/vscp/drivers/level1/can4vscp/linux src/vscp/drivers/level2/wire1/linux src/vscp/drivers/level1/logger/linux src/vscp/drivers/level1/can232/linux src/vscp/drivers/level1/xap/linux src/vscp/drivers/level1/socketcan/linux src/vscp/drivers/level2/logger/linux src/vscp/drivers/level2/lmsensors/linux src/vscp/drivers/level2/socketcan/linux src/vscp/drivers/level2/mqtt/linux src/vscp/drivers/level2/tcpdrv/linux src/vscp/drivers/level2/rawethernet/linux src/vscp/linuxvscpl1 src/vscp/helperlib/linux src/vscp/daemon/linux src/vscp/mkpasswd src/vscp/uvscpd src/vscp/vscpcmd src/vscp/drivers/level2/sim/linux"  
+PROJ_SUBDIRS="src/vscp/drivers/level1/can4vscp/linux\
+ src/vscp/drivers/level2/wire1/linux\
+ src/vscp/drivers/level1/logger/linux\
+ src/vscp/drivers/level1/can232/linux\
+ src/vscp/drivers/level1/xap/linux\
+ src/vscp/drivers/level1/socketcan/linux\
+ src/vscp/drivers/level2/logger/linux\
+ src/vscp/drivers/level2/lmsensors/linux\
+ src/vscp/drivers/level2/socketcan/linux\
+ src/vscp/drivers/level2/mqtt/linux\
+ src/vscp/drivers/level2/tcpdrv/linux\
+ src/vscp/drivers/level2/rawethernet/linux\
+ src/vscp/linuxvscpl1\
+ src/vscp/helperlib/linux\
+ src/vscp/daemon/linux\
+ src/vscp/mkpasswd src/vscp/uvscpd\
+ src/vscp/vscpcmd src/vscp/drivers/level2/sim/linux"  
 AC_SUBST(PROJ_SUBDIRS)
 PROJ_SUBDIRS_GUI="src/vscp/vscpworks"
 AC_SUBST(PROJ_SUBDIRS_GUI)
@@ -94,11 +119,19 @@ dnl
 dnl  Debugging mode
 dnl
 
-
 AC_ARG_ENABLE(debug,
 [  --enable-debug          debug mode (default disabled)],
 [vscp_debug=yes],[vscp_debug=no])
 dnl test "${vscp_debug}" != "yes" && vscp_debug="no"
+
+dnl
+dnl  Static build if wxWidgets
+dnl
+
+AC_ARG_ENABLE(static,
+[  --enable-static         static build of wxWidgets (default shared)],
+[vscp_static=yes],[vscp_static=no])
+dnl test "${vscp_static}" != "yes" && vscp_static="no"
 
 dnl
 dnl  wxWindows module
@@ -126,11 +159,10 @@ if test "$wxWin" != 1; then
     ])
 fi
 
-
-CPPFLAGS="$CPPFLAGS $WX_CPPFLAGS"
-CXXFLAGS="$CXXFLAGS $WX_CXXFLAGS_ONLY"
-CFLAGS="$CFLAGS $WX_CFLAGS_ONLY"
-LIBS="$LIBS $WX_LIBS"
+dnl CPPFLAGS="$CPPFLAGS $WX_CPPFLAGS"
+dnl CXXFLAGS="$CXXFLAGS $WX_CXXFLAGS_ONLY"
+dnl CFLAGS="$CFLAGS $WX_CFLAGS_ONLY"
+dnl LIBS="$LIBS $WX_LIBS"
 
 WX_BASENAME=`$WX_CONFIG_WITH_ARGS --basename`
 vscp_gui=no
@@ -144,8 +176,33 @@ fi
 
 EXTRALIBS="${EXTRALIBS} ${LIBS}" 
 
-CPPFLAGS="$CPPFLAGS -D MG_ENABLE_SSL"
-CFLAGS="$CFLAGS -D MG_ENABLE_SSL"
+if test "${vscp_debug}" = yes ; then
+WXBASE_CPPFLAGS=`$WX_CONFIG_WITH_ARGS -debug --cppflags base`
+WXBASE_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --debug --cxxflags base`
+WXBASE_CFLAGS=`$WX_CONFIG_WITH_ARGS --debug --cflags base`
+WXBASE_LIBS=`$WX_CONFIG_WITH_ARGS --debug --libs base xml net` 
+WXBASE_STATIC_LIBS=`$WX_CONFIG_WITH_ARGS --debug --static  --libs base xml net`
+WXGTK_CPPFLAGS=`$WX_CONFIG_WITH_ARGS -debug --cppflags`
+WXGTK_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --debug --cxxflags`
+WXGTK_CFLAGS=`$WX_CONFIG_WITH_ARGS --debug --cflags`
+WXGTK_LIBS=`$WX_CONFIG_WITH_ARGS --debug --libs`
+else
+WXBASE_CPPFLAGS=`$WX_CONFIG_WITH_ARGS --cppflags base`
+WXBASE_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --cxxflags base`
+WXBASE_CFLAGS=`$WX_CONFIG_WITH_ARGS --cflags base`
+WXBASE_LIBS=`$WX_CONFIG_WITH_ARGS --libs base xml net`
+WXBASE_STATIC_LIBS=`$WX_CONFIG_WITH_ARGS --static  --libs base xml net`
+WXGTK_CPPFLAGS=`$WX_CONFIG_WITH_ARGS --cppflags`
+WXGTK_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --cxxflags`
+WXGTK_CFLAGS=`$WX_CONFIG_WITH_ARGS --cflags`
+WXGTK_LIBS=`$WX_CONFIG_WITH_ARGS --libs`
+fi 
+
+if test "${vscp_static}" = yes ; then
+STATIC="yes"
+else
+STATIC="no"
+fi
 
 dnl 
 dnl Construct Makefiles
@@ -209,6 +266,7 @@ You can tune the compiler flags in vscp-config.
 To build VSCP and friends, type \'make\' followed by \'make install\'
 
  use --enable-debug to build a debug version; release is default.
+ use --enable-static to include a static version of wxWidgets.
 
  \"make\" -- builds VSCP & Friends.
  \"make install\" -- builds VSCP & Friends and install system.

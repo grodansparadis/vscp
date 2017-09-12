@@ -666,12 +666,12 @@ void CControlObject::logMsg(const wxString& msgin, const uint8_t level, const ui
         switch (level) {
 
         case DAEMON_LOGMSG_NORMAL:
-            syslog(LOG_INFO, "%s", (const char *) wxdebugmsg.ToAscii());
+            syslog(LOG_INFO, "%s", (const char *)wxdebugmsg.mbc_str() );
             break;
 
         case DAEMON_LOGMSG_DEBUG:
         default:    
-            syslog(LOG_DEBUG, "%s", (const char *) wxdebugmsg.ToAscii());
+            syslog(LOG_DEBUG, "%s", (const char *) wxdebugmsg.mbc_str() );
             break;
 
         };
@@ -3930,8 +3930,8 @@ bool CControlObject::dbReadConfiguration( void )
     sqlite3_stmt *ppStmt;
     int dbVersion = 0;
     
-    // Check if database is open
-    if ( NULL == m_db_vscp_daemon ) {
+    // Check if database is open     
+    if ( NULL == m_db_vscp_daemon ) { 
         fprintf( stderr, 
                     "dbReadConfiguration: Failed to read VSCP settings database - Database is not open." );
         return false;

@@ -138,6 +138,22 @@ using namespace std;
 #endif
 
 
+//#define NO_SSL
+//#define USE_SSL_DH
+#define USE_WEBSOCKET
+#define USE_IPV6
+
+#define DOCUMENT_ROOT "/srv/vscp/web"
+// ip.v4 and ip.v6 at the same time
+// https://github.com/civetweb/civetweb/issues/205
+// https://stackoverflow.com/questions/1618240/how-to-support-both-ipv4-and-ipv6-connections
+#ifdef USE_IPV6
+#define PORT "[::]:8888r,[::]:8843s,8884" 
+#else
+#define PORT "8888r,8843s,8884,9999"
+#endif
+#define EXAMPLE_URI "/example"
+#define EXIT_URI "/exit"
 
 
 ///////////////////////////////////////////////////
@@ -185,7 +201,6 @@ static char* vscp_stristr( char* str1, const char* str2 )
     char* r = *p2 == 0 ? str1 : 0 ;
 
     while( *p1 != 0 && *p2 != 0 ) {
-        
         if( tolower( *p1 ) == tolower( *p2 ) ) {
             if( r == 0 ) {
                 r = p1 ;
@@ -217,7 +232,7 @@ static char* vscp_stristr( char* str1, const char* str2 )
 static time_t vscp_get_mtime( const char *path )
 {
     struct stat statbuf;
-    if ( -1 == stat( path, &statbuf ) ) {
+    if (stat(path, &statbuf) == -1) {
         perror(path);
         exit(1);
     }
@@ -234,7 +249,7 @@ static char *vscp_trimWhiteSpace(char *str)
     char *end;
 
     // Trim leading space
-    while( isspace(*str) ) str++;
+    while(isspace(*str)) str++;
 
     if( 0 == *str ) {  // All spaces?
         return str;
@@ -5326,84 +5341,11 @@ VSCPWebServerThread::websrv_tablelist( struct mg_connection *nc,
 
 
 
-///////////////////////////////////////////////////////////////////////////////
-// init_webserver
-//
-
-int init_webserver( void ) 
-
-{   
-    const char *options[] = 
-    {
-        "document_root", DOCUMENT_ROOT,
-            
-	"listening_ports", PORT,
-            
-	"request_timeout_ms", "10000",
-            
-        "error_log_file", "error.log",
-
-	"websocket_timeout_ms", "3600000",
-
-	"ssl_certificate", "/tmp/resources/cert/server.pem",
-            
-	"ssl_protocol_version", "3",
-            
-	"ssl_cipher_list", "DES-CBC3-SHA:AES128-SHA:AES128-GCM-SHA256",
-
-	"enable_auth_domain_check", "no",
-            
-	0 /* EOL */
-};
-        
-    struct vscpweb_callbacks callbacks;
-    struct vscpweb_context *ctx;
-    struct vscpweb_server_ports ports[32];
-    int port_cnt, n;
-    int err = 0;
-    
-    // Start CivetWeb web server 
-    memset( &callbacks, 0, sizeof( callbacks ) );
-    
-    callbacks.init_ssl = init_ssl;
-
-    callbacks.log_message = log_message;
-    ctx = vscpweb_start( &callbacks, 0, options );
-
-    // Check return value: 
-    if ( NULL == ctx ) {
-        fprintf( stderr, "Cannot start CivetWeb - vscpweb_start failed.\n" );
-	return EXIT_FAILURE;
-}
-
-/* Add handler EXAMPLE_URI, to explain the example */
-vscpweb_set_request_handler(ctx, EXAMPLE_URI, ExampleHandler, 0);
-vscpweb_set_request_handler(ctx, EXIT_URI, ExitHandler, 0);
-
-
-
-
-
 // -----------------------------------------------------------------------------
 //                          CIVETWEB test setup
 // -----------------------------------------------------------------------------
 
-//#define NO_SSL
-#define USE_SSL_DH
-#define USE_WEBSOCKET
-#define USE_IPV6
 
-#define DOCUMENT_ROOT "/srv/vscp/web"
-// ip.v4 and ip.v6 at the same time
-// https://github.com/civetweb/civetweb/issues/205
-// https://stackoverflow.com/questions/1618240/how-to-support-both-ipv4-and-ipv6-connections
-#ifdef USE_IPV6
-#define PORT "[::]:8888r,[::]:8843s,8884"
-#else
-#define PORT "8888r,8843s,8884,9999"
-#endif
-#define EXAMPLE_URI "/example"
-#define EXIT_URI "/exit"
 
 
 
@@ -5738,7 +5680,7 @@ struct tfiles_checksums {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// field_disp_read_on_the_fly
 //
 
 int
@@ -5766,7 +5708,7 @@ field_disp_read_on_the_fly(const char *key,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// field_get_checksum
 //
 
 int
@@ -5787,7 +5729,7 @@ field_get_checksum(const char *key,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// CheckSumHandler
 //
 
 int
@@ -5834,7 +5776,7 @@ CheckSumHandler(struct vscpweb_connection *conn, void *cbdata)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// CookieHandler
 //
 
 int
@@ -5882,7 +5824,7 @@ CookieHandler(struct vscpweb_connection *conn, void *cbdata)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// PostResponser
 //
 
 int
@@ -5941,7 +5883,7 @@ PostResponser(struct vscpweb_connection *conn, void *cbdata)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// WebSocketStartHandler
 //
 
 int
@@ -5992,7 +5934,7 @@ WebSocketStartHandler(struct vscpweb_connection *conn, void *cbdata)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// t_ws_client
 //
 
 #ifdef USE_WEBSOCKET
@@ -6020,7 +5962,7 @@ struct t_ws_client {
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// WebSocketConnectHandler
 //
 
 int
@@ -6050,7 +5992,7 @@ WebSocketConnectHandler(const struct vscpweb_connection *conn, void *cbdata)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// WebSocketReadyHandler
 //
 
 void
@@ -6068,7 +6010,7 @@ WebSocketReadyHandler(struct vscpweb_connection *conn, void *cbdata)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// WebsocketDataHandler
 //
 
 int
@@ -6114,7 +6056,7 @@ WebsocketDataHandler(struct vscpweb_connection *conn,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// WebSocketCloseHandler
 //
 
 void
@@ -6135,7 +6077,7 @@ WebSocketCloseHandler(const struct vscpweb_connection *conn, void *cbdata)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 
+// InformWebsockets
 //
 
 void
