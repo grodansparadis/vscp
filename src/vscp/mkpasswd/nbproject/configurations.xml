@@ -13,6 +13,7 @@
       <itemPath>../../common/crc.h</itemPath>
       <itemPath>../../common/crc8.c</itemPath>
       <itemPath>../../common/crc8.h</itemPath>
+      <itemPath>../../common/fastpbkdf2.c</itemPath>
       <itemPath>../../common/fastpbkdf2.h</itemPath>
       <itemPath>../common/guid.cpp</itemPath>
       <itemPath>../common/guid.h</itemPath>
@@ -50,7 +51,7 @@
       </toolsSet>
       <flagsDictionary>
         <element flagsID="0" commonFlags="-O2"/>
-        <element flagsID="1" commonFlags="-g -O2"/>
+        <element flagsID="1" commonFlags="-std=c99 -g -O2"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -62,31 +63,50 @@
           <executablePath></executablePath>
           <cTool>
             <incDir>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+              <pElem>/usr/local/include/wx-3.0</pElem>
               <pElem>../common</pElem>
               <pElem>../../common</pElem>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
-              <pElem>/usr/local/include/wx-3.1</pElem>
               <pElem>.</pElem>
             </incDir>
             <preprocessorList>
+              <Elem>CBC</Elem>
+              <Elem>MG_ENABLE_GETADDRINFO</Elem>
+              <Elem>MG_ENABLE_HTTP_CGI</Elem>
+              <Elem>MG_ENABLE_HTTP_SSI</Elem>
+              <Elem>MG_ENABLE_HTTP_SSI_EXEC</Elem>
+              <Elem>MG_ENABLE_HTTP_URL_REWRITES</Elem>
+              <Elem>MG_ENABLE_HTTP_WEBDAV</Elem>
+              <Elem>MG_ENABLE_IPV6</Elem>
               <Elem>MG_ENABLE_SSL</Elem>
+              <Elem>MG_ENABLE_THREADS</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__WXGTK__</Elem>
+              <Elem>wxUSE_GUI=0</Elem>
             </preprocessorList>
           </cTool>
           <ccTool>
             <incDir>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+              <pElem>/usr/local/include/wx-3.0</pElem>
               <pElem>../common</pElem>
               <pElem>../../common</pElem>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
-              <pElem>/usr/local/include/wx-3.1</pElem>
             </incDir>
             <preprocessorList>
+              <Elem>MG_ENABLE_GETADDRINFO</Elem>
+              <Elem>MG_ENABLE_HTTP_CGI</Elem>
+              <Elem>MG_ENABLE_HTTP_SSI</Elem>
+              <Elem>MG_ENABLE_HTTP_SSI_EXEC</Elem>
+              <Elem>MG_ENABLE_HTTP_URL_REWRITES</Elem>
+              <Elem>MG_ENABLE_HTTP_WEBDAV</Elem>
+              <Elem>MG_ENABLE_IPV6</Elem>
               <Elem>MG_ENABLE_SSL</Elem>
+              <Elem>MG_ENABLE_THREADS</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__WXGTK__</Elem>
+              <Elem>wxUSE_GUI=0</Elem>
             </preprocessorList>
           </ccTool>
         </makeTool>
@@ -95,15 +115,19 @@
           <preBuildCommand></preBuildCommand>
         </preBuild>
       </makefileType>
-      <item path="../../common/aes.c" ex="false" tool="0" flavor2="0">
+      <item path="../../common/aes.c" ex="false" tool="0" flavor2="3">
         <cTool flags="1">
         </cTool>
       </item>
-      <item path="../../common/crc.c" ex="false" tool="0" flavor2="2">
+      <item path="../../common/crc.c" ex="false" tool="0" flavor2="3">
         <cTool flags="1">
         </cTool>
       </item>
-      <item path="../../common/crc8.c" ex="false" tool="0" flavor2="0">
+      <item path="../../common/crc8.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="1">
+        </cTool>
+      </item>
+      <item path="../../common/fastpbkdf2.c" ex="false" tool="0" flavor2="3">
         <cTool flags="1">
         </cTool>
       </item>
@@ -111,7 +135,7 @@
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="../common/guid.cpp" ex="false" tool="1" flavor2="0">
+      <item path="../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
@@ -119,16 +143,6 @@
         <ccTool flags="0">
         </ccTool>
       </item>
-      <folder path="0">
-        <ccTool>
-          <incDir>
-            <pElem>/usr/include/lua5.2</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VSCP_ENABLE_LUA</Elem>
-          </preprocessorList>
-        </ccTool>
-      </folder>
       <folder path="common">
         <ccTool>
           <incDir>
