@@ -83,18 +83,8 @@
             </preprocessorList>
           </cTool>
           <ccTool>
-            <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
-              <pElem>/usr/local/include/wx-3.1</pElem>
-              <pElem>../common</pElem>
-              <pElem>../../common</pElem>
-            </incDir>
             <preprocessorList>
-              <Elem>MG_ENABLE_SSL</Elem>
               <Elem>MG_ENABLE_THREADS</Elem>
-              <Elem>WXUSINGDLL</Elem>
-              <Elem>_FILE_OFFSET_BITS=64</Elem>
-              <Elem>__WXGTK__</Elem>
             </preprocessorList>
           </ccTool>
         </makeTool>
@@ -123,23 +113,41 @@
         <cTool flags="1">
         </cTool>
       </item>
-      <item path="../common/guid.cpp" ex="false" tool="1" flavor2="0">
+      <item path="../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="../common/vscphelper.cpp" ex="false" tool="1" flavor2="0">
+      <item path="../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="../common/vscpremotetcpif.cpp" ex="false" tool="1" flavor2="0">
+      <item path="../common/vscpremotetcpif.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
+      <folder path="0">
+        <ccTool>
+          <incDir>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
       <folder path="src">
         <ccTool>
           <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
+            <pElem>/usr/local/include/wx-3.1</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>MG_ENABLE_SSL</Elem>
+            <Elem>WXUSINGDLL</Elem>
+            <Elem>_FILE_OFFSET_BITS=64</Elem>
+            <Elem>__WXGTK__</Elem>
+          </preprocessorList>
         </ccTool>
       </folder>
       <item path="vscpcmd.cpp" ex="false" tool="1" flavor2="0">

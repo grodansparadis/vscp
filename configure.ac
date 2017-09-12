@@ -1,7 +1,7 @@
 dnl Autoconf settings for VSCP
 dnl $Id: configure.in,v 1.5 2005/10/03 16:30:06 akhe Exp $
 
-AC_INIT( [vscp], [1.12.26], [akhe@grodansparadis.com])
+AC_INIT( [vscp], [12.29.1], [akhe@grodansparadis.com])
 AC_CONFIG_SRCDIR([src/vscp/common/canalsuperwrapper.cpp])
 #AM_INIT_AUTOMAKE
 
@@ -255,10 +255,16 @@ echo   "VSCP GUI Build        : ${vscp_gui}"
 
 if test "${vscp_debug}" = "yes" 
 then
-
-   printf "build flavour         : debug "
+   echo "build flavour         : debug "
 else
-   printf "build flavour         : release "
+   echo "build flavour         : release "
+fi
+
+if test "${vscp_static}" = "yes"
+then
+   echo "linking for wxWidgets : static "
+else
+   echo "linking for wxWidgets : shared "
 fi
 
 printf " 
