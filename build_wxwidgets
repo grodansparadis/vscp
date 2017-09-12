@@ -1,0 +1,21 @@
+#!/bin/sh
+
+# Copy this file to the wxWidgets root and run it there. It will create gtk release/debug builds and a base release debug all 
+# in seperate folders. 
+# Before compiling use
+# > PATH=/path/to/static-rel/:$PATH
+# where "/path/to/static-rel" is the pah to the build you wnt to use.
+#
+# PATH=/usr/local/src/wxWidgets3.0.0/shared-rel-debug-gtk:$PATH
+
+#GTK Shared debug
+# PATH=/usr/local/src/wxWidgets3.0.3/shared-debug-gtk:$PATH
+mkdir shared-debug-gtk; cd shared-debug-gtk; ../configure --prefix=$(pwd) --enable-debug ; make; cd ..
+
+#GTK Static debug
+# PATH=/usr/local/src/wxWidgets3.0.3/static-debug-gtk:$PATH
+mkdir static-debug-gtk; cd static-debug-gtk; ../configure --prefix=$(pwd) --enable-debug --disable-shared ; make:; cd ..
+
+#Base Static release
+# PATH=/usr/local/src/wxWidgets3.0.3/shared-release-base:$PATH
+mkdir static-release-base; cd static-release-base; ../configure --prefix=$(pwd) --disable-gui --disable-shared ; make; cd ..

@@ -137,9 +137,8 @@ using namespace std;
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-// Uncomment to start webserver testmode instead of
-// VSCP system
-#define WEBSERVER_TESTMODE
+
+
 
 ///////////////////////////////////////////////////
 //                 GLOBALS
@@ -186,6 +185,7 @@ static char* vscp_stristr( char* str1, const char* str2 )
     char* r = *p2 == 0 ? str1 : 0 ;
 
     while( *p1 != 0 && *p2 != 0 ) {
+        
         if( tolower( *p1 ) == tolower( *p2 ) ) {
             if( r == 0 ) {
                 r = p1 ;
@@ -217,7 +217,7 @@ static char* vscp_stristr( char* str1, const char* str2 )
 static time_t vscp_get_mtime( const char *path )
 {
     struct stat statbuf;
-    if (stat(path, &statbuf) == -1) {
+    if ( -1 == stat( path, &statbuf ) ) {
         perror(path);
         exit(1);
     }
@@ -234,7 +234,7 @@ static char *vscp_trimWhiteSpace(char *str)
     char *end;
 
     // Trim leading space
-    while(isspace(*str)) str++;
+    while( isspace(*str) ) str++;
 
     if( 0 == *str ) {  // All spaces?
         return str;
@@ -5323,9 +5323,6 @@ VSCPWebServerThread::websrv_tablelist( struct mg_connection *nc,
 // -----------------------------------------------------------------------------
 
 
-// Standard mode
-#if !defined( WEBSERVER_TESTMODE )
-
 
 
 
@@ -5384,7 +5381,7 @@ vscpweb_set_request_handler(ctx, EXAMPLE_URI, ExampleHandler, 0);
 vscpweb_set_request_handler(ctx, EXIT_URI, ExitHandler, 0);
 
 
-#else // WEBSERVER_TESTMODE
+
 
 
 // -----------------------------------------------------------------------------
@@ -6406,4 +6403,3 @@ int init_webserver( void )
 }
 
 
-#endif // WEBSERVER_TESTMODE
