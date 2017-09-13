@@ -187,7 +187,7 @@ WXGTK_CPPFLAGS=`$WX_CONFIG_WITH_ARGS -debug --cppflags`
 WXGTK_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --debug --cxxflags`
 WXGTK_CFLAGS=`$WX_CONFIG_WITH_ARGS --debug --cflags`
 WXGTK_LIBS=`$WX_CONFIG_WITH_ARGS --debug --libs`
-WXGTK_STATICLIBS=`$WX_CONFIG_WITH_ARGS --debug --static --libs`
+WXGTK_STATIC_LIBS=`$WX_CONFIG_WITH_ARGS --debug --static --libs`
 else
 WXBASE_CPPFLAGS=`$WX_CONFIG_WITH_ARGS --cppflags base`
 WXBASE_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --cxxflags base`
@@ -198,7 +198,7 @@ WXGTK_CPPFLAGS=`$WX_CONFIG_WITH_ARGS --cppflags`
 WXGTK_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --cxxflags`
 WXGTK_CFLAGS=`$WX_CONFIG_WITH_ARGS --cflags`
 WXGTK_LIBS=`$WX_CONFIG_WITH_ARGS --libs`
-WXGTK_STATICLIBS=`$WX_CONFIG_WITH_ARGS --static --libs`
+WXGTK_STATIC_LIBS=`$WX_CONFIG_WITH_ARGS --static --libs`
 fi 
 
 if test "${vscp_static}" = yes ; then

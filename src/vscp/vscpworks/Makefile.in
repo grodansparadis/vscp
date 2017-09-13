@@ -147,7 +147,7 @@ distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile
 
 vscpworks: $(VSCPWORKS_OBJECTS)
-	$(CXX) -o $@ $(VSCPWORKS_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+	$(CXX) -o $@ $(VSCPWORKS_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(EXTRALIBS)
 	
 $(ALWAYS_BUILD):  .FORCE
 
