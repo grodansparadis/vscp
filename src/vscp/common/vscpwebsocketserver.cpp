@@ -1880,16 +1880,16 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *nc,
                     NULL );*/
         
         unsigned char hash[16];
-        MD5_CTX ctx;
+        cs_md5_ctx ctx;
 
-        MD5_Init( &ctx );
-        MD5_Update( &ctx, (const unsigned char *)( (const char *)strUser.mbc_str() ), strUser.Length() );
-        MD5_Update( &ctx, (const unsigned char *)":", 1 );
-        MD5_Update( &ctx, (const unsigned char *)( (const char *)pUser->getPasswordDomain().mbc_str() ), 
+        cs_md5_init( &ctx );
+        cs_md5_update( &ctx, (const unsigned char *)( (const char *)strUser.mbc_str() ), strUser.Length() );
+        cs_md5_update( &ctx, (const unsigned char *)":", 1 );
+        cs_md5_update( &ctx, (const unsigned char *)( (const char *)pUser->getPasswordDomain().mbc_str() ), 
                                                  pUser->getPasswordDomain().Length() );
-        MD5_Update( &ctx, (const unsigned char *)":", 1 );
-        MD5_Update( &ctx, (const unsigned char *)pSession->m_sid, 32 );
-        MD5_Final( hash, &ctx );
+        cs_md5_update( &ctx, (const unsigned char *)":", 1 );
+        cs_md5_update( &ctx, (const unsigned char *)pSession->m_sid, 32 );
+        cs_md5_final( hash, &ctx );
         cs_to_hex( expected_response, hash, sizeof( hash ) );
 
         rv = ( vscp_strcasecmp( response, expected_response ) == 0 ) ? true : false;

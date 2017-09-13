@@ -183,17 +183,17 @@ WSADATA wsaData;                            // WSA functions
 
 ////////////////////////////////////////////////////////////////////////////////
 // vscp_md5
-//
+//  TPTO - rewrite
 
 void vscp_md5( char *digest, const unsigned char *buf, size_t len ) 
 {
     unsigned char hash[16];
   
-    MD5_CTX ctx;
+    cs_md5_ctx ctx;
 
-    MD5_Init( &ctx );
-    MD5_Update( &ctx, buf, len );
-    MD5_Final( hash, &ctx );
+    cs_md5_init( &ctx );
+    cs_md5_update( &ctx, buf, len );
+    cs_md5_final( hash, &ctx );
     cs_to_hex( digest, hash, sizeof( hash ) );
 }
 
@@ -4111,7 +4111,7 @@ bool CControlObject::dbReadConfiguration( void )
                         VSCPDB_CONFIG_NAME_WEB_PATH_ROOT )  ) {
             strncpy( m_pathWebRoot, 
                             (const char *)pValue, 
-                            MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
+                            MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }        
         // Port for web server
         else if ( !vscpweb_strcasecmp( (const char * )pName, VSCPDB_CONFIG_NAME_WEB_ADDR )  ) {
@@ -4122,28 +4122,28 @@ bool CControlObject::dbReadConfiguration( void )
                         VSCPDB_CONFIG_NAME_WEB_PATH_CERT )  ) {
             strncpy( m_pathCert, 
                         (const char *)pValue, 
-                        MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
+                        MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }
         // Authdomain
         else if ( !vscpweb_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_AUTHDOMAIN )  ) {
             strncpy( m_authDomain, 
                         (const char *)pValue, 
-                        MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
+                        MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         } 
         // CGI interpreter
         else if ( !vscpweb_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_CGI_INTERPRETER )  ) {
             strncpy( m_cgiInterpreter, 
                         (const char *)pValue, 
-                        MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
+                        MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }        
         // CGI pattern
         else if ( !vscpweb_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_CGI_PATTERN )  ) {
             strncpy( m_cgiPattern, 
                         (const char *)pValue, 
-                        MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
+                        MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }        
         // Enable directory listings
         else if ( !vscpweb_strcasecmp( (const char * )pName, 
@@ -4160,63 +4160,63 @@ bool CControlObject::dbReadConfiguration( void )
                         VSCPDB_CONFIG_NAME_WEB_HIDE_FILE_PATTERN )  ) {
             strncpy( m_hideFilePatterns, 
                         (const char *)pValue, 
-                        MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
+                        MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }
         // Index files
         else if ( !vscpweb_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_INDEX_FILES )  ) {
             strncpy( m_indexFiles, 
                         (const char *)pValue, 
-                        MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
+                        MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }
         // Extra mime types
         else if ( !vscpweb_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_MIME_EXTRA )  ) {
             strncpy( m_extraMimeTypes, 
                         (const char *)pValue, 
-                        MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
+                        MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }        
         // URL rewrites
         else if ( !vscpweb_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_URL_REWRITE )  ) {
             strncpy( m_urlRewrites, 
                         (const char *)pValue, 
-                        MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
+                        MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }        
         // SSI patterns
         else if ( !vscpweb_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_SSI_PATTERN )  ) {
             strncpy( m_ssi_pattern, 
                         (const char *)pValue, 
-                        MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
+                        MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }        
         // Per directory auth. file
         else if ( !vscpweb_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_DIR_AUTHFILE )  ) {
             strncpy( m_per_directory_auth_file, 
                         (const char *)pValue, 
-                        MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
+                        MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }     
         // Global auth. file
         else if ( !vscpweb_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_GLOBAL_AUTHFILE )  ) {
             strncpy( m_global_auth_file, 
                         (const char *)pValue, 
-                        MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
+                        MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }
         // IP ACL
         else if ( !vscpweb_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_IP_ACL )  ) {
             strncpy( m_ip_acl, 
                         (const char *)pValue, 
-                        MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
+                        MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }        
         // DAV path
         else if ( !vscpweb_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_ROOT_DAV )  ) {
             strncpy( m_dav_document_root, 
                         (const char *)pValue, 
-                        MIN( strlen( (const char *)pValue ), MAX_PATH_SIZE ) );
+                        MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }        
         // Enable web socket authentication
         else if ( !vscpweb_strcasecmp( (const char * )pName, 

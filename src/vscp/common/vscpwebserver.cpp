@@ -359,28 +359,28 @@ static void vscp_mkmd5resp( const char *method, size_t method_len, const char *u
 {
     char ha2[33];
     unsigned char hash[16]; 
-    MD5_CTX ctx;
+    cs_md5_ctx ctx;
 
-    MD5_Init( &ctx );
-    MD5_Update( &ctx, (const unsigned char *)method, method_len );
-    MD5_Update( &ctx, (const unsigned char *)":", 1 );
-    MD5_Update( &ctx, (const unsigned char *)uri, uri_len );
-    MD5_Final( hash, &ctx );
+    cs_md5_init( &ctx );
+    cs_md5_update( &ctx, (const unsigned char *)method, method_len );
+    cs_md5_update( &ctx, (const unsigned char *)":", 1 );
+    cs_md5_update( &ctx, (const unsigned char *)uri, uri_len );
+    cs_md5_final( hash, &ctx );
     cs_to_hex( ha2, hash, sizeof( hash ) );
     
-    MD5_Init( &ctx );
-    MD5_Update( &ctx, (const unsigned char *)ha1, ha1_len ); 
-    MD5_Update( &ctx, (const unsigned char *)":", 1 );
-    MD5_Update( &ctx, (const unsigned char *)nonce, nonce_len );
-    MD5_Update( &ctx, (const unsigned char *)":", 1 );
-    MD5_Update( &ctx, (const unsigned char *)nc, nc_len ); 
-    MD5_Update( &ctx, (const unsigned char *)":", 1 ); 
-    MD5_Update( &ctx, (const unsigned char *)cnonce, cnonce_len );
-    MD5_Update( &ctx, (const unsigned char *)":", 1 ); 
-    MD5_Update( &ctx, (const unsigned char *)qop, qop_len );
-    MD5_Update( &ctx, (const unsigned char *)":", 1 ); 
-    MD5_Update( &ctx, (const unsigned char *)ha2, 32 );
-    MD5_Final( hash, &ctx );
+    cs_md5_init( &ctx );
+    cs_md5_update( &ctx, (const unsigned char *)ha1, ha1_len ); 
+    cs_md5_update( &ctx, (const unsigned char *)":", 1 );
+    cs_md5_update( &ctx, (const unsigned char *)nonce, nonce_len );
+    cs_md5_update( &ctx, (const unsigned char *)":", 1 );
+    cs_md5_update( &ctx, (const unsigned char *)nc, nc_len ); 
+    cs_md5_update( &ctx, (const unsigned char *)":", 1 ); 
+    cs_md5_update( &ctx, (const unsigned char *)cnonce, cnonce_len );
+    cs_md5_update( &ctx, (const unsigned char *)":", 1 ); 
+    cs_md5_update( &ctx, (const unsigned char *)qop, qop_len );
+    cs_md5_update( &ctx, (const unsigned char *)":", 1 ); 
+    cs_md5_update( &ctx, (const unsigned char *)ha2, 32 );
+    cs_md5_final( hash, &ctx );
     cs_to_hex( ha2, hash, sizeof( hash ) );
 }
 
@@ -686,7 +686,7 @@ void VSCPWebServerThread::websrv_event_handler( struct mg_connection *nc,
                     }
                     else {
 
-                        char path[ MAX_PATH_SIZE ];
+                        char path[ MG_MAX_PATH ];
                         strcpy( path, "/tmp/test.vscp" );
                         char etag[50], current_time[50], last_modified[50], range[50];
                         time_t t = time(NULL);
@@ -1239,11 +1239,11 @@ VSCPWebServerThread::websrv_add_session_cookie( struct mg_connection *nc,
                 1337,
                 user );
 
-    MD5_CTX ctx;
-    MD5_Init( &ctx );
-    MD5_Update( &ctx, (const unsigned char *)buf, strlen( buf ) );
+    cs_md5_ctx ctx;
+    cs_md5_init( &ctx );
+    cs_md5_update( &ctx, (const unsigned char *)buf, strlen( buf ) );
     unsigned char bindigest[16];
-    MD5_Final( bindigest, &ctx );
+    cs_md5_final( bindigest, &ctx );
     char digest[33];
     memset( digest, 0, sizeof( digest ) );
     cs_to_hex( ret->m_sid, bindigest, 16 );
@@ -1378,29 +1378,29 @@ VSCPWebServerThread::websrv_check_password( const char *method,
     }
 #endif
 
-    MD5_CTX ctx;
+    cs_md5_ctx ctx;
     unsigned char hash[16];
 
-    MD5_Init( &ctx );
-    MD5_Update( &ctx, (const unsigned char *)method, strlen( method ) );
-    MD5_Update( &ctx, (const unsigned char *)":", 1 );
-    MD5_Update( &ctx, (const unsigned char *)uri, strlen( uri ) );
-    MD5_Final( hash, &ctx );
+    cs_md5_init( &ctx );
+    cs_md5_update( &ctx, (const unsigned char *)method, strlen( method ) );
+    cs_md5_update( &ctx, (const unsigned char *)":", 1 );
+    cs_md5_update( &ctx, (const unsigned char *)uri, strlen( uri ) );
+    cs_md5_final( hash, &ctx );
     cs_to_hex( ha2, hash, sizeof( hash ) );
     
-    MD5_Init( &ctx );
-    MD5_Update( &ctx, (const unsigned char *)ha1, 32 );
-    MD5_Update( &ctx, (const unsigned char *)":", 1 );
-    MD5_Update( &ctx, (const unsigned char *)nonce, strlen( nonce ) );
-    MD5_Update( &ctx, (const unsigned char *)":", 1 );
-    MD5_Update( &ctx, (const unsigned char *)nc, strlen( nc ) );
-    MD5_Update( &ctx, (const unsigned char *)":", 1 );
-    MD5_Update( &ctx, (const unsigned char *)cnonce, strlen( cnonce ) );
-    MD5_Update( &ctx, (const unsigned char *)":", 1 );
-    MD5_Update( &ctx, (const unsigned char *)qop, strlen( qop ) );
-    MD5_Update( &ctx, (const unsigned char *)":", 1 );
-    MD5_Update( &ctx, (const unsigned char *)ha2, 32 );
-    MD5_Final( hash, &ctx );
+    cs_md5_init( &ctx );
+    cs_md5_update( &ctx, (const unsigned char *)ha1, 32 );
+    cs_md5_update( &ctx, (const unsigned char *)":", 1 );
+    cs_md5_update( &ctx, (const unsigned char *)nonce, strlen( nonce ) );
+    cs_md5_update( &ctx, (const unsigned char *)":", 1 );
+    cs_md5_update( &ctx, (const unsigned char *)nc, strlen( nc ) );
+    cs_md5_update( &ctx, (const unsigned char *)":", 1 );
+    cs_md5_update( &ctx, (const unsigned char *)cnonce, strlen( cnonce ) );
+    cs_md5_update( &ctx, (const unsigned char *)":", 1 );
+    cs_md5_update( &ctx, (const unsigned char *)qop, strlen( qop ) );
+    cs_md5_update( &ctx, (const unsigned char *)":", 1 );
+    cs_md5_update( &ctx, (const unsigned char *)ha2, 32 );
+    cs_md5_final( hash, &ctx );
     cs_to_hex( expected_response, hash, sizeof( hash ) );
 
     return ( vscp_strcasecmp( response, expected_response ) == 0 ) ? TRUE : FALSE;

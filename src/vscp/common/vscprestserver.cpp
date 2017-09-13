@@ -268,11 +268,11 @@ VSCPWebServerThread::websrv_new_rest_session( struct mg_connection *nc,
                 (unsigned int)rand(),
                 1337 );
 
-    MD5_CTX ctx;
-    MD5_Init( &ctx );
-    MD5_Update( &ctx, (const unsigned char *)buf, strlen( buf ) );
+    cs_md5_ctx ctx;
+    cs_md5_init( &ctx );
+    cs_md5_update( &ctx, (const unsigned char *)buf, strlen( buf ) );
     unsigned char bindigest[16];
-    MD5_Final( bindigest, &ctx );
+    cs_md5_final( bindigest, &ctx );
     char digest[33];
     memset( digest, 0, sizeof( digest ) );
     cs_to_hex( ret->sid, bindigest, 16 );
