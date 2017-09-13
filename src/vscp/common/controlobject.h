@@ -734,43 +734,43 @@ public:
     //struct mg_mgr *m_pwebserver;     // Was mg_server
 
     // Path to web root
-    char m_pathWebRoot[ MAX_PATH_SIZE ];
+    char m_pathWebRoot[ MG_MAX_PATH ];
 
     // Domain for webserver and other net services
-    char m_authDomain[ MAX_PATH_SIZE ];
+    char m_authDomain[ MG_MAX_PATH ];
 
     // Path to SSL certificate
-    char m_pathCert[ MAX_PATH_SIZE ];
+    char m_pathCert[ MG_MAX_PATH ];
 
     /// Extra mime types
-    char m_extraMimeTypes[ MAX_PATH_SIZE ];
+    char m_extraMimeTypes[ MG_MAX_PATH ];
 
     /// Extra mime types on the form "extension1=type1,extension2=type2,..."
-    char m_ssi_pattern[ MAX_PATH_SIZE ];
+    char m_ssi_pattern[ MG_MAX_PATH ];
 
     // IP ACL. By default, NULL, meaning all IPs are allowed to connect
-    char m_ip_acl[ MAX_PATH_SIZE ];
+    char m_ip_acl[ MG_MAX_PATH ];
 
     // CGI interpreter to use
-    char m_cgiInterpreter[ MAX_PATH_SIZE ];
+    char m_cgiInterpreter[ MG_MAX_PATH ];
 
     // CGI Pattern
-    char m_cgiPattern[ MAX_PATH_SIZE ];
+    char m_cgiPattern[ MG_MAX_PATH ];
 
     // Enable directory listing "yes"/"no"
     char m_EnableDirectoryListings[ 5 ];
 
     // Hide file pattern
-    char m_hideFilePatterns[ MAX_PATH_SIZE ];
+    char m_hideFilePatterns[ MG_MAX_PATH ];
 
     // DAV document root. If NULL, DAV requests are going to fail.
-    char m_dav_document_root[ MAX_PATH_SIZE ];
+    char m_dav_document_root[ MG_MAX_PATH ];
 
     // Index files
-    char m_indexFiles[ MAX_PATH_SIZE ];
+    char m_indexFiles[ MG_MAX_PATH ];
 
     // URL rewrites
-    char m_urlRewrites[ MAX_PATH_SIZE ];
+    char m_urlRewrites[ MG_MAX_PATH ];
 
     // Leave as NULL to disable authentication.
     // To enable directory protection with authentication, set this to ".htpasswd"
@@ -779,7 +779,7 @@ public:
     // Use `mongoose` web server binary, or `htdigest` Apache utility to
     // create/manipulate passwords file.
     // Make sure `auth_domain` is set to a valid domain name.
-    char m_per_directory_auth_file[ MAX_PATH_SIZE ];
+    char m_per_directory_auth_file[ MG_MAX_PATH ];
 
     // Leave as NULL to disable authentication.
     // Normally, only selected directories in the document root are protected.
@@ -787,7 +787,7 @@ public:
     // regardless of the URI, set this option to the path to the passwords file.
     // Format of that file is the same as ".htpasswd" file. Make sure that file
     // is located outside document root to prevent people fetching it.
-    char m_global_auth_file[ MAX_PATH_SIZE ];
+    char m_global_auth_file[ MG_MAX_PATH ];
 
     // webserver port as port "8080" or address + port "127.0.0.1:8080"
     // If only port will bind to all interfaces,
