@@ -1,10 +1,10 @@
 /* XPM */
-static char *NEW_xpm[] = {
+static char *new_xpm[] = {
 /* columns rows colors chars-per-pixel */
 "16 15 3 1",
+"  c None",
 ". c Black",
-"X c #FFFFFF",
-"  c #C0C0C0",
+"X c Gray100",
 /* pixels */
 "                ",
 "   ........     ",
