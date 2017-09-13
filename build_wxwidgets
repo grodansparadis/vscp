@@ -10,15 +10,15 @@
 
 #GTK Shared debug
 # PATH=/usr/local/src/wxWidgets3.0.3/shared-debug-gtk:$PATH
-mkdir shared-debug-gtk; cd shared-debug-gtk; ../configure --prefix=$(pwd) --enable-debug --with-regex ; make; cd ..
+mkdir shared-debug-gtk; cd shared-debug-gtk; ../configure CPPFLAGS='-O0C' CXXFLAGS='-O0' CFLAGS='-O0' --prefix=$(pwd) --enable-debug --with-regex --enable-debug_info --enable-debug_gdb ; make; cd ..
 
 #GTK Static debug
 # PATH=/usr/local/src/wxWidgets3.0.3/static-debug-gtk:$PATH
-mkdir static-debug-gtk; cd static-debug-gtk; ../configure --prefix=$(pwd) --enable-debug --disable-shared ; make:; cd ..
+mkdir static-debug-gtk; cd static-debug-gtk; ../configure CPPFLAGS='-O0' CXXFLAGS='-O0' CFLAGS='-O0' --prefix=$(pwd) --enable-debug --disable-shared --enable-debug_info --enable-debug_gdb ; make:; cd ..
 
 #Base Static release
 # PATH=/usr/local/src/wxWidgets3.0.3/shared-release-base:$PATH
-mkdir static-release-base; cd static-release-base; ../configure --prefix=$(pwd) --disable-gui --disable-shared ; make; cd ..
+mkdir static-release-base; cd static-release-base; ../configure CPPFLAGS='-fPIC' CXXFLAGS='-fPIC' CFLAGS='-fPIC' --prefix=$(pwd) --disable-gui --disable-shared --disable-debug_flag; make; cd ..
 
 
 # /usr/local/lib/libwx_baseu_net-3.0.a /usr/local/lib/libwx_baseu_xml-3.0.a /usr/local/lib/libwx_baseu-3.0.a -lexpat -lwxregexu-3.0 -lwxtiff-3.0 -lwxjpeg-3.0 -lz -ldl -lm
