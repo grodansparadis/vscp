@@ -68,6 +68,126 @@
           <executablePath>vscpcmd</executablePath>
           <cTool>
             <incDir>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
+              <pElem>/usr/local/include/wx-3.1</pElem>
+              <pElem>../common</pElem>
+              <pElem>../../common</pElem>
+              <pElem>../../common/lua</pElem>
+              <pElem>../../common/lua/src</pElem>
+              <pElem>.</pElem>
+            </incDir>
+            <preprocessorList>
+              <Elem>CBC</Elem>
+              <Elem>MG_ENABLE_GETADDRINFO</Elem>
+              <Elem>MG_ENABLE_HTTP_CGI</Elem>
+              <Elem>MG_ENABLE_HTTP_SSI</Elem>
+              <Elem>MG_ENABLE_HTTP_SSI_EXEC</Elem>
+              <Elem>MG_ENABLE_HTTP_URL_REWRITES</Elem>
+              <Elem>MG_ENABLE_HTTP_WEBDAV</Elem>
+              <Elem>MG_ENABLE_IPV6</Elem>
+              <Elem>MG_ENABLE_SSL</Elem>
+              <Elem>MG_ENABLE_THREADS</Elem>
+              <Elem>WXUSINGDLL</Elem>
+              <Elem>_FILE_OFFSET_BITS=64</Elem>
+              <Elem>__WXGTK__</Elem>
+              <Elem>wxUSE_GUI=0</Elem>
+            </preprocessorList>
+          </cTool>
+          <ccTool>
+            <incDir>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
+              <pElem>/usr/local/include/wx-3.1</pElem>
+              <pElem>../common</pElem>
+              <pElem>../../common</pElem>
+              <pElem>../../common/lua</pElem>
+              <pElem>../../common/lua/src</pElem>
+            </incDir>
+            <preprocessorList>
+              <Elem>MG_ENABLE_GETADDRINFO</Elem>
+              <Elem>MG_ENABLE_HTTP_CGI</Elem>
+              <Elem>MG_ENABLE_HTTP_SSI</Elem>
+              <Elem>MG_ENABLE_HTTP_SSI_EXEC</Elem>
+              <Elem>MG_ENABLE_HTTP_URL_REWRITES</Elem>
+              <Elem>MG_ENABLE_HTTP_WEBDAV</Elem>
+              <Elem>MG_ENABLE_IPV6</Elem>
+              <Elem>MG_ENABLE_SSL</Elem>
+              <Elem>MG_ENABLE_THREADS</Elem>
+              <Elem>WXUSINGDLL</Elem>
+              <Elem>_FILE_OFFSET_BITS=64</Elem>
+              <Elem>__WXGTK__</Elem>
+              <Elem>wxUSE_GUI=0</Elem>
+            </preprocessorList>
+          </ccTool>
+        </makeTool>
+        <preBuild>
+          <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
+          <preBuildCommand></preBuildCommand>
+        </preBuild>
+      </makefileType>
+      <item path="../../common/aes.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="1">
+        </cTool>
+      </item>
+      <item path="../../common/crc.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="1">
+        </cTool>
+      </item>
+      <item path="../../common/crc8.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="1">
+        </cTool>
+      </item>
+      <item path="../../common/fastpbkdf2.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="1">
+        </cTool>
+      </item>
+      <item path="../../common/mongoose.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="1">
+        </cTool>
+      </item>
+      <item path="../common/guid.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
+      <item path="../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
+      <item path="../common/vscpremotetcpif.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
+      <folder path="src">
+        <ccTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
+      <item path="vscpcmd.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
+    </conf>
+    <conf name="Static" type="0">
+      <toolsSet>
+        <compilerSet>GNU|GNU</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <flagsDictionary>
+        <element flagsID="0" commonFlags="-O2"/>
+        <element flagsID="1" commonFlags="-std=c99 -g -O2"/>
+      </flagsDictionary>
+      <codeAssistance>
+      </codeAssistance>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>${MAKE}</buildCommand>
+          <cleanCommand>${MAKE} clean</cleanCommand>
+          <executablePath></executablePath>
+          <cTool>
+            <incDir>
               <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
               <pElem>/usr/local/include/wx-3.0</pElem>
               <pElem>../common</pElem>
@@ -121,7 +241,8 @@
         </makeTool>
         <preBuild>
           <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
-          <preBuildCommand></preBuildCommand>
+          <preBuildCommand>export PATH=/usr/local/src/wxWidgets3.0.3/vscp_static-debug-gtk:$PATH
+</preBuildCommand>
         </preBuild>
       </makefileType>
       <item path="../../common/aes.c" ex="false" tool="0" flavor2="3">
