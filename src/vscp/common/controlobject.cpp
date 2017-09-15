@@ -3967,186 +3967,186 @@ bool CControlObject::dbReadConfiguration( void )
         }
         
         // database version
-        if ( !vscpweb_strcasecmp( (const char * )pName, 
+        if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_DBVERSION ) ) {  
             dbVersion = atoi( (const char * )pValue );       
         }
         // client buffer size
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_CLIENTBUFFERSIZE ) ) {
             m_maxItemsInClientReceiveQueue = atol( (const char * )pValue );            
         }  
         // Server GUID
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_GUID ) ) {
             m_guid.getFromString( (const char * )pValue );
         }
         // Server name
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_SERVERNAME ) ) {
             m_strServerName = wxString::FromUTF8( (const char * )pValue );
         }          
         // Path to log db
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_PATH_LOGDB ) ) {
             m_path_db_vscp_log.Assign( wxString::FromUTF8( (const char * )pValue ) );
         }              
         // TCP/IP interface address
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_TCPIP_ADDR ) ) {
             m_strTcpInterfaceAddress = wxString::FromUTF8( (const char *)pValue );
             m_strTcpInterfaceAddress.Trim(true);
             m_strTcpInterfaceAddress.Trim(false);
         }        
         // Announce multicast interface address
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_ANNOUNCE_ADDR )  ) {
             m_strMulticastAnnounceAddress = wxString::FromUTF8( (const char *)pValue );
         }        
         // TTL for the multicast i/f
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_ANNOUNCE_TTL )  ) {
             m_ttlMultiCastAnnounce = atoi( (const char *)pValue );
         }        
         // Enable UDP interface
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_UDP_ENABLE )  ) {
             gpobj->m_mutexUDPInfo.Lock();
             m_udpInfo.m_bEnable = atoi( (const char *)pValue ) ? true : false;
             gpobj->m_mutexUDPInfo.Unlock();
         }
         // UDP interface address/port
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_UDP_ADDR )  ) {
             gpobj->m_mutexUDPInfo.Lock();
             m_udpInfo.m_interface = wxString::FromUTF8( (const char *)pValue );
             gpobj->m_mutexUDPInfo.Unlock();
         }      
         // UDP User
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_UDP_USER )  ) {
             gpobj->m_mutexUDPInfo.Lock();
             m_udpInfo.m_user = wxString::FromUTF8( (const char *)pValue );
             gpobj->m_mutexUDPInfo.Unlock();
         }        
         // UDP User Password
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_UDP_PASSWORD )  ) {
             gpobj->m_mutexUDPInfo.Lock();
             m_udpInfo.m_password = wxString::FromUTF8( (const char *)pValue );
             gpobj->m_mutexUDPInfo.Unlock();
         }
         // UDP un-secure enable
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_UDP_UNSECURE_ENABLE )  ) {
             gpobj->m_mutexUDPInfo.Lock();
             m_udpInfo.m_bAllowUnsecure = atoi( (const char *)pValue ) ? true : false;
             gpobj->m_mutexUDPInfo.Unlock();
         }
         // UDP Filter
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_UDP_FILTER )  ) {
             gpobj->m_mutexUDPInfo.Lock();
             vscp_readFilterFromString( &m_udpInfo.m_filter, wxString::FromUTF8( (const char *)pValue ) );
             gpobj->m_mutexUDPInfo.Unlock();
         }
         // UDP Mask
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_UDP_MASK )  ) {
             gpobj->m_mutexUDPInfo.Lock();
             vscp_readMaskFromString( &m_udpInfo.m_filter, wxString::FromUTF8( (const char *)pValue ) );
             gpobj->m_mutexUDPInfo.Unlock();
         }
         // UDP GUID
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_UDP_GUID )  ) {
             gpobj->m_mutexUDPInfo.Lock();
             m_udpInfo.m_guid.getFromString( (const char *)pValue );
             gpobj->m_mutexUDPInfo.Unlock();
         } 
         // UDP Enable ACK
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_UDP_ACK_ENABLE )  ) {
             gpobj->m_mutexUDPInfo.Lock();
             m_udpInfo.m_bAck = atoi( (const char *)pValue ) ? true : false;
             gpobj->m_mutexUDPInfo.Unlock();
         }      
         // Enable Multicast interface
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_MULTICAST_ENABLE )  ) {
             m_multicastInfo.m_bEnable = atoi( (const char *)pValue ) ? true : false;
         }
         // Path to DM database file
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_DM_PATH_DB )  ) {
             m_dm.m_path_db_vscp_dm.Assign( wxString::FromUTF8( (const char *)pValue ) );
         }        
         // Path to DM XML file
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_DM_PATH_XML )  ) {
             m_dm.m_staticXMLPath = wxString::FromUTF8( (const char *)pValue );
         } 
         // Path to variable database
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_VARIABLES_PATH_DB )  ) {
             m_VSCP_Variables.m_dbFilename.Assign( wxString::FromUTF8( (const char *)pValue ) );
         } 
         // Path to variable XML
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_VARIABLES_PATH_XML )  ) {
             m_VSCP_Variables.m_xmlPath = wxString::FromUTF8( (const char *)pValue );
         }
         // VSCP data database path
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_PATH_DB_DATA )  ) {
             m_path_db_vscp_data.Assign( wxString::FromUTF8( (const char *)pValue ) );
         }
         // Disable web server security
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_ENABLE )  ) {
             m_bDisableSecurityWebServer = atoi( (const char *)pValue ) ? true : false;
         }
         // Web server root path
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_PATH_ROOT )  ) {
             strncpy( m_pathWebRoot, 
                             (const char *)pValue, 
                             MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }        
         // Port for web server
-        else if ( !vscpweb_strcasecmp( (const char * )pName, VSCPDB_CONFIG_NAME_WEB_ADDR )  ) {
+        else if ( !vscp_strcasecmp( (const char * )pName, VSCPDB_CONFIG_NAME_WEB_ADDR )  ) {
             m_strWebServerInterfaceAddress = wxString::FromUTF8( (const char *)pValue );
         }
         // Path to cert file
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_PATH_CERT )  ) {
             strncpy( m_pathCert, 
                         (const char *)pValue, 
                         MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }
         // Authdomain
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_AUTHDOMAIN )  ) {
             strncpy( m_authDomain, 
                         (const char *)pValue, 
                         MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         } 
         // CGI interpreter
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_CGI_INTERPRETER )  ) {
             strncpy( m_cgiInterpreter, 
                         (const char *)pValue, 
                         MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }        
         // CGI pattern
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_CGI_PATTERN )  ) {
             strncpy( m_cgiPattern, 
                         (const char *)pValue, 
                         MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }        
         // Enable directory listings
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_DIR_LISTING )  ) {
             if ( atoi( (const char *)pValue ) ) {
                 strcpy( m_EnableDirectoryListings, "yes" );
@@ -4156,75 +4156,75 @@ bool CControlObject::dbReadConfiguration( void )
             }
         }
         // Hide file patterns
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_HIDE_FILE_PATTERN )  ) {
             strncpy( m_hideFilePatterns, 
                         (const char *)pValue, 
                         MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }
         // Index files
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_INDEX_FILES )  ) {
             strncpy( m_indexFiles, 
                         (const char *)pValue, 
                         MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }
         // Extra mime types
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_MIME_EXTRA )  ) {
             strncpy( m_extraMimeTypes, 
                         (const char *)pValue, 
                         MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }        
         // URL rewrites
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_URL_REWRITE )  ) {
             strncpy( m_urlRewrites, 
                         (const char *)pValue, 
                         MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }        
         // SSI patterns
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_SSI_PATTERN )  ) {
             strncpy( m_ssi_pattern, 
                         (const char *)pValue, 
                         MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }        
         // Per directory auth. file
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_DIR_AUTHFILE )  ) {
             strncpy( m_per_directory_auth_file, 
                         (const char *)pValue, 
                         MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }     
         // Global auth. file
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_GLOBAL_AUTHFILE )  ) {
             strncpy( m_global_auth_file, 
                         (const char *)pValue, 
                         MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }
         // IP ACL
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_IP_ACL )  ) {
             strncpy( m_ip_acl, 
                         (const char *)pValue, 
                         MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }        
         // DAV path
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_ROOT_DAV )  ) {
             strncpy( m_dav_document_root, 
                         (const char *)pValue, 
                         MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }        
         // Enable web socket authentication
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEBSOCKET_AUTH_ENABLE ) ) {
             m_bAuthWebsockets = atoi( (const char *)pValue ) ? true : false;
         }  
         // Enable automation
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_AUTOMATION_ENABLE ) ) {
          
             if ( atoi( (const char *)pValue ) ) {
@@ -4236,27 +4236,27 @@ bool CControlObject::dbReadConfiguration( void )
                     
         }        
         // Automation zone
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_AUTOMATION_ZONE ) ) {
             m_automation.setZone( atoi( (const char *)pValue ) );
         } 
         // Automation sub zone
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_AUTOMATION_SUBZONE ) ) {
             m_automation.setSubzone( atoi( (const char *)pValue ) );
         }        
         // Automation longitude
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_AUTOMATION_LONGITUDE ) ) {
             m_automation.setLongitude( atof( (const char *)pValue ) );
         }        
         // Automation latitude
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_AUTOMATION_LATITUDE ) ) {
             m_automation.setLatitude( atof( (const char *)pValue ) );
         }      
         // Automation enable sun rise event
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_ENABLE ) ) {
             if ( atoi( (const char *)pValue ) ) {
                 m_automation.enableSunRiseEvent();
@@ -4266,7 +4266,7 @@ bool CControlObject::dbReadConfiguration( void )
             }
         }      
         // Automation enable sun set event
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_ENABLE ) ) {
             if ( atoi( (const char *)pValue ) ) {
                 m_automation.enableSunSetEvent();
@@ -4276,7 +4276,7 @@ bool CControlObject::dbReadConfiguration( void )
             }
         }        
         // Automation enable sunset twilight event
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_TWILIGHT_ENABLE ) ) {
             if ( atoi( (const char *)pValue ) ) {
                 m_automation.enableSunSetTwilightEvent();
@@ -4286,7 +4286,7 @@ bool CControlObject::dbReadConfiguration( void )
             }
         }        
         // Automation enable sunrise twilight event
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_TWILIGHT_ENABLE ) ) {
             if ( atoi( (const char *)pValue ) ) {
                 m_automation.enableSunRiseTwilightEvent();
@@ -4296,7 +4296,7 @@ bool CControlObject::dbReadConfiguration( void )
             }
         }        
         // Automation segment controller event enable
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_ENABLE ) ) {
             if ( atoi( (const char *)pValue ) ) {
                 m_automation.enableSegmentControllerHeartbeat();
@@ -4306,13 +4306,13 @@ bool CControlObject::dbReadConfiguration( void )
             }
         }        
         // Automation, segment controller heartbeat interval
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_INTERVAL ) ) {
             m_automation.setSegmentControllerHeartbeatInterval( atol( (const char *)pValue ) );
         }
         
         // Automation heartbeat event enable
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_ENABLE ) ) {
             if ( atoi( (const char *)pValue ) ) {
                 m_automation.enableHeartbeatEvent();
@@ -4322,12 +4322,12 @@ bool CControlObject::dbReadConfiguration( void )
             }
         }
         // Automation heartbeat interval
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_INTERVAL ) ) {
             m_automation.setHeartbeatEventInterval( atol( (const char *)pValue ) );
         }        
         // Automation capabilities event enable
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_ENABLE ) ) {
             if ( atoi( (const char *)pValue ) ) {
                 m_automation.enableCapabilitiesEvent();
@@ -4337,7 +4337,7 @@ bool CControlObject::dbReadConfiguration( void )
             }
         }        
         // Automation capabilities interval
-        else if ( !vscpweb_strcasecmp( (const char * )pName, 
+        else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_INTERVAL ) ) {
             m_automation.setCapabilitiesEventInterval( atol( (const char *)pValue ) );
         }        

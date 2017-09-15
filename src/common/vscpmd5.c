@@ -51,8 +51,9 @@
   1999-05-03 lpd Original version.
  */
 
-#include "vscpmd5.h"
 #include <string.h>
+#include <stdarg.h>
+#include "vscpmd5.h"
 
 #undef BYTE_ORDER /* 1 = big-endian, -1 = little-endian, 0 = unknown */
 #ifdef ARCH_IS_BIG_ENDIAN
@@ -421,3 +422,48 @@ vscpmd5_finish(md5_state_t *pms, md5_byte_t digest[16])
     }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// vscpmd5_bin2str
+//
+// Stringify binary data. Output buffer must be twice as big as input,
+// because each byte takes 2 bytes in string representation 
+//
+
+static void vscpmd5_bin2str(char *to, const unsigned char *p, size_t len  ) 
+{
+    static const char *hex = "0123456789abcdef";
+
+    for (; len--; p++) {
+        *to++ = hex[p[0] >> 4];
+        *to++ = hex[p[0] & 0x0f];
+    }
+
+    *to = '\0';
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// vscpweb_md5
+//
+// Return stringified MD5 hash for list of strings. Buffer must be 33 bytes.
+//
+
+char *
+vscpmd5_get_string( char buf[33], ... )
+{
+    md5_byte_t hash[16];
+    const char *p;
+    va_list ap;
+    md5_state_t ctx;
+
+    vscpmd5_init(&ctx);
+
+    va_start(ap, buf);
+    while ((p = va_arg(ap, const char *)) != NULL) {
+        vscpmd5_append(&ctx, (const md5_byte_t *) p, strlen(p));
+    }
+    va_end(ap);
+
+    vscpmd5_finish(&ctx, hash);
+    vscpmd5_bin2str(buf, hash, sizeof (hash));
+    return buf;
+}

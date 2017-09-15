@@ -70,6 +70,12 @@
 #include <mdf.h>
 #include <vscphelper.h>
 
+#include <pwd.h>
+#include <unistd.h>
+#include <grp.h>
+#include <dirent.h>
+#define vsnprintf_impl vsnprintf
+
 
 #define Swap8Bytes(val) \
     ( (((val) >> 56) & 0x00000000000000FF) | (((val) >> 40) & 0x000000000000FF00) | \
@@ -131,7 +137,7 @@ int vscp_bigEndian( void )
 
 int vscp_lowercase(const char *s) 
 {
-    return tolower(* (const unsigned char *) s);
+    return tolower( *(const unsigned char *) s );
 }
 
 
@@ -167,10 +173,81 @@ int vscp_strncasecmp(const char *s1, const char *s2, size_t len)
     return diff;
 }
 
+// ------- civet
+
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_strlcpy
+//
+
+void vscp_strlcpy( register char *dst, register const char *src, size_t n )
+{
+    for (; *src != '\0' && n > 1; n--) {
+        *dst++ = *src++;
+    }
+    
+    *dst = '\0';
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_strndup
+//
+
+char *vscp_strndup( const char *ptr, size_t len )
+{
+    char *p;
+
+    if ( (p = (char *)malloc(len + 1)) != NULL ) {
+        vscp_strlcpy(p, ptr, len + 1);
+    }
+
+    return p;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_strdup
+//
+
+char *vscp_strdup( const char *str )
+{
+    return vscp_strndup( str, strlen(str) );
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_strcasestr
+//
+
+const char *vscp_strcasestr( const char *big_str, const char *small_str )
+{
+    size_t i, big_len = strlen(big_str), small_len = strlen( small_str );
+
+    if ( big_len >= small_len ) {
+        
+        for (i = 0; i <= (big_len - small_len); i++) {
+        
+            if ( 0 == vscp_strncasecmp(big_str + i, small_str, small_len ) ) {
+                return big_str + i;
+            }
+            
+        }
+        
+    }
+
+    return NULL;
+}
+
+
+
+// ------- civet
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_bin2str
+//
+// Stringify binary data. Output buffer must be twice as big as input,
+// because each byte takes 2 bytes in string representation 
 //
 
 void vscp_bin2str(char *to, const unsigned char *p, size_t len  ) 
@@ -184,6 +261,7 @@ void vscp_bin2str(char *to, const unsigned char *p, size_t len  )
 
     *to = '\0';
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_getTimeString

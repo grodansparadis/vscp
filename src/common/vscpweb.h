@@ -54,7 +54,7 @@ extern "C" {
 #endif /* __cplusplus */
     
 // Helpers
-void vscpweb_strlcpy( register char *dst, register const char *src, size_t n );    
+//void vscpweb_strlcpy( register char *dst, register const char *src, size_t n );    
 char *vscpweb_strndup(const char *ptr, size_t len);    
 char *vscpweb_strdup( const char *str );    
 //const char *vscpweb_strcasestr( const char *big_str, const char *small_str );    
@@ -1318,8 +1318,8 @@ VSCPWEB_API void vscpweb_cry( const struct vscpweb_connection *conn,
 // utility methods to compare two buffers, case insensitive. 
 // Return zero if equal.
 
-VSCPWEB_API int vscpweb_strcasecmp( const char *s1, const char *s2 );
-VSCPWEB_API int vscpweb_strncasecmp( const char *s1, const char *s2, size_t len );
+//VSCPWEB_API int vscpweb_strcasecmp( const char *s1, const char *s2 );
+//VSCPWEB_API int vscpweb_strncasecmp( const char *s1, const char *s2, size_t len );
 
 ///////////////////////////////////////////////////////////////////////////////
 // vscpweb_connect_websocket_client

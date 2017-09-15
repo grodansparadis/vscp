@@ -119,11 +119,14 @@ extern "C" {
     */
     int vscp_strncasecmp(const char *s1, const char *s2, size_t len);
     
+    void vscp_strlcpy( register char *dst, register const char *src, size_t n );
     
+    char *vscp_strdup( const char *str );
     
+    char *vscp_strndup( const char *ptr, size_t len );
     
+    const char *vscp_strcasestr( const char *big_str, const char *small_str );
     
-
     /*!
         Stringify binary data. 	
         @param to Pointer output buffer that holds the result. 
@@ -131,7 +134,7 @@ extern "C" {
         because each byte takes 2 bytes in string representation
         @param p Pointer to digest.
         @param len Digest len
-    /
+    */
     void vscp_bin2str( char *to, const unsigned char *p, size_t len ); 
 
     /*!

@@ -117,12 +117,19 @@ vscpweb_static_assert(sizeof(void *) >= sizeof(int), "data type size check");
 #include <vscpweb.h>
 #endif
 
+// From vscphelper
+int vscp_lowercase(const char *s);
+void vscp_strlcpy( register char *dst, register const char *src, size_t n );       
+const char *vscp_strcasestr( const char *big_str, const char *small_str );
+int vscp_strcasecmp(const char *s1, const char *s2);
+int vscp_strncasecmp(const char *s1, const char *s2, size_t len);
+void vscp_bin2str( char *to, const unsigned char *p, size_t len );
+
 #include <vscpbase64.h>
 
 #ifndef IGNORE_UNUSED_RESULT
 #define IGNORE_UNUSED_RESULT(a) ((void)((a) && 1))
 #endif
-
 
 #if defined(__GNUC__) || defined(__MINGW32__)
 
@@ -198,13 +205,13 @@ vscpweb_static_assert(sizeof(void *) >= sizeof(int), "data type size check");
 #include <assert.h>
 
 ////////////////////////////////////////////////////////////////////////////////
-// _civet_clock_gettime
+// _vscp_clock_gettime
 //
 // clock_gettime is not implemented on OSX prior to 10.12 
 //
 
 static int
-_civet_clock_gettime(int clk_id, struct timespec *t) 
+_vscp_clock_gettime(int clk_id, struct timespec *t) 
 {
     memset(t, 0, sizeof (*t));
     
@@ -256,7 +263,7 @@ _civet_clock_gettime(int clk_id, struct timespec *t)
 #ifdef __CLOCK_AVAILABILITY
 
 ////////////////////////////////////////////////////////////////////////////////
-// _civet_safe_clock_gettime
+// _vscp_safe_clock_gettime
 //
 // If we compiled with Mac OSX 10.12 or later, then clock_gettime will be
 // declared but it may be NULL at runtime. So we need to check before using
@@ -264,18 +271,18 @@ _civet_clock_gettime(int clk_id, struct timespec *t)
 //
 
 static int
-_civet_safe_clock_gettime(int clk_id, struct timespec *t)
+_vscp_safe_clock_gettime(int clk_id, struct timespec *t)
 {
     if (clock_gettime) {
         return clock_gettime(clk_id, t);
     }
     
-    return _civet_clock_gettime(clk_id, t);
+    return _vscp_clock_gettime(clk_id, t);
 }
 
-#define clock_gettime _civet_safe_clock_gettime
+#define clock_gettime _vscp_safe_clock_gettime
 #else
-#define clock_gettime _civet_clock_gettime
+#define clock_gettime _vscp_clock_gettime
 #endif
 
 #endif  // __CLOCK_AVAILABILITY   ( __MACH__ )
@@ -861,7 +868,7 @@ static int
 vscpweb_atomic_dec(volatile int *addr)
 {
     int ret;
-#if defined(_WIN32)  && !defined(NO_ATOMICS)
+#if defined( _WIN32 )  && !defined( NO_ATOMICS )
     // Depending on the SDK, this function uses either
     // (volatile unsigned int *) or (volatile LONG *),
     // so whatever you use, the other SDK is likely to raise a warning. 
@@ -927,10 +934,10 @@ static struct vscpweb_memory_stat *get_memory_stat( struct vscpweb_context *ctx 
 //
 
 static void *
-vscpweb_malloc_ex(size_t size,
-                    struct vscpweb_context *ctx,
-                    const char *file,
-                    unsigned line)
+vscpweb_malloc_ex( size_t size,
+                        struct vscpweb_context *ctx,
+                        const char *file,
+                        unsigned line )
 {
     void *data = malloc(size + 2 * sizeof (uintptr_t));
     void *memory = 0;
@@ -943,8 +950,8 @@ vscpweb_malloc_ex(size_t size,
     (void)line;
 #endif
 
-    if (data) {
-        int64_t mmem = vscpweb_atomic_add(&mstat->totalMemUsed, (int64_t) size);
+    if ( data ) {
+        int64_t mmem = vscpweb_atomic_add(&mstat->totalMemUsed, (int64_t)size );
         if (mmem > mstat->maxMemUsed) {
             // could use atomic compare exchange, but this
             // seems overkill for statistics data 
@@ -982,11 +989,11 @@ vscpweb_malloc_ex(size_t size,
 //
 
 static void *
-vscpweb_calloc_ex(size_t count,
-                    size_t size,
-                    struct vscpweb_context *ctx,
-                    const char *file,
-                    unsigned line)
+vscpweb_calloc_ex( size_t count,
+                        size_t size,
+                        struct vscpweb_context *ctx,
+                        const char *file,
+                        unsigned line )
 {
     void *data = vscpweb_malloc_ex(size * count, ctx, file, line);
 
@@ -1003,7 +1010,7 @@ vscpweb_calloc_ex(size_t count,
 //
 
 static void
-vscpweb_free_ex(void *memory, const char *file, unsigned line)
+vscpweb_free_ex( void *memory, const char *file, unsigned line )
 {
     void *data = (void *) (((char *) memory) - 2 * sizeof (uintptr_t));
 
@@ -1157,20 +1164,44 @@ vscpweb_realloc_ex(void *memory,
 #define vscpweb_calloc_ctx(a, b, c) vscpweb_calloc_ex(a, b, c, __FILE__, __LINE__)
 #define vscpweb_realloc_ctx(a, b, c) vscpweb_realloc_ex(a, b, c, __FILE__, __LINE__)
 
+static void vscpweb_vsnprintf( const struct vscpweb_connection *conn,
+                                    int *truncated,
+                                    char *buf,
+                                    size_t buflen,
+                                    const char *fmt,
+                                    va_list ap );
 
-static void vscpweb_vsnprintf(const struct vscpweb_connection *conn,
-                                int *truncated,
-                                char *buf,
-                                size_t buflen,
-                                const char *fmt,
-                                va_list ap);
+static void vscpweb_snprintf( const struct vscpweb_connection *conn,
+                            int *truncated,
+                            char *buf,
+                            size_t buflen,
+                            PRINTF_FORMAT_STRING(const char *fmt),
+                            ...) PRINTF_ARGS(5, 6);
+                         
+////////////////////////////////////////////////////////////////////////////////
+// vscpweb_strndup
+//
 
-static void vscpweb_snprintf(const struct vscpweb_connection *conn,
-                                int *truncated,
-                                char *buf,
-                                size_t buflen,
-                                PRINTF_FORMAT_STRING(const char *fmt),
-                                ...) PRINTF_ARGS(5, 6);
+char *vscpweb_strndup( const char *ptr, size_t len )
+{
+    char *p;
+
+    if ( (p = (char *) vscpweb_malloc(len + 1)) != NULL ) {
+        vscp_strlcpy(p, ptr, len + 1);
+    }
+
+    return p;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_strdup
+//
+
+char *vscpweb_strdup( const char *str )
+{
+    return vscpweb_strndup( str, strlen(str) );
+}
 
 // This following lines are just meant as a reminder to use the mg-functions
 // for memory management 
@@ -1796,9 +1827,9 @@ struct vscpweb_connection
 
     struct vscpweb_context *ctx;
 
-    int conn_state;      // 0 = undef, numerical value may change in different
-	                 // versions. For the current definition, see
-	                 // vscpweb_get_connection_info_impl 
+    int conn_state;             // 0 = undef, numerical value may change in different
+                                // versions. For the current definition, see
+                                // vscpweb_get_connection_info_impl 
 
     SSL *ssl;                   // SSL descriptor 
     SSL_CTX *client_ssl_ctx;    // SSL context for client connections 
@@ -1857,9 +1888,9 @@ static int is_websocket_protocol(const struct vscpweb_connection *conn);
 
 #if !defined(NO_THREAD_NAME)
 #if defined(_WIN32) && defined(_MSC_VER)
+
 // Set the thread name for debugging purposes in Visual Studio
 // http://msdn.microsoft.com/en-us/library/xcb2z8hs.aspx
-//
 #pragma pack(push, 8)
 
 typedef struct tagTHREADNAME_INFO
@@ -1914,7 +1945,7 @@ event_create(void)
     }
     
     if (sizeof (int) == sizeof (void *)) {
-        ret = (void *) evhdl;
+        ret = (void *)evhdl;
     }
     else {
         
@@ -1942,7 +1973,7 @@ event_wait(void *eventhdl)
     int evhdl, s;
 
     if (sizeof (int) == sizeof (void *)) {
-        evhdl = (int) eventhdl;
+        evhdl = (int)eventhdl;
     }
     else {
         if (!eventhdl) {
@@ -1973,7 +2004,7 @@ event_signal(void *eventhdl)
     int evhdl, s;
 
     if ( sizeof(int) == sizeof(void *) ) {
-        evhdl = (int) eventhdl;
+        evhdl = (int)eventhdl;
     }
     else {
         
@@ -2004,7 +2035,7 @@ event_destroy( void *eventhdl )
     int evhdl;
 
     if ( sizeof(int) == sizeof(void *) ) {
-        evhdl = (int) eventhdl;
+        evhdl = (int)eventhdl;
         close(evhdl);
     }
     else {
@@ -2202,20 +2233,20 @@ vscpweb_get_valid_options(void)
 //
 
 static int
-open_file_in_memory(const struct vscpweb_connection *conn,
+open_file_in_memory( const struct vscpweb_connection *conn,
                         const char *path,
                         struct vscpweb_file *filep,
-                        int mode)
+                        int mode )
 {
 
     size_t size = 0;
     const char *buf = NULL;
     
-    if (!conn) {
+    if ( !conn ) {
         return 0;
     }
 
-    if ((mode != MG_FOPEN_MODE_NONE) && (mode != MG_FOPEN_MODE_READ)) {
+    if ( ( mode != MG_FOPEN_MODE_NONE) && (mode != MG_FOPEN_MODE_READ ) ) {
         return 0;
     }
 
@@ -2225,7 +2256,7 @@ open_file_in_memory(const struct vscpweb_connection *conn,
         
         if (buf != NULL) {
             
-            if (filep == NULL) {
+            if ( NULL == filep ) {
                 // This is a file in memory, but we cannot store the
                 // properties
                 // now.
@@ -2273,17 +2304,17 @@ is_file_in_memory(const struct vscpweb_connection *conn, const char *path)
 static int
 is_file_opened(const struct vscpweb_file_access *fileacc)
 {
-    if (!fileacc) {
+    if ( !fileacc ) {
         return 0;
     }
     
-    return (fileacc->membuf != NULL) || (fileacc->fp != NULL);
+    return ( fileacc->membuf != NULL) || (fileacc->fp != NULL );
 }
 
 
-static int vscpweb_stat(const struct vscpweb_connection *conn,
-                        const char *path,
-                        struct vscpweb_file_stat *filep);
+static int vscpweb_stat( const struct vscpweb_connection *conn,
+                            const char *path,
+                            struct vscpweb_file_stat *filep );
 
 ////////////////////////////////////////////////////////////////////////////////
 // vscpweb_fopen
@@ -2297,14 +2328,14 @@ static int vscpweb_stat(const struct vscpweb_connection *conn,
 //
 
 static int
-vscpweb_fopen(const struct vscpweb_connection *conn,
-              const char *path,
-              int mode,
-              struct vscpweb_file *filep)
+vscpweb_fopen( const struct vscpweb_connection *conn,
+                const char *path,
+                int mode,
+                struct vscpweb_file *filep )
 {
     int found;
 
-    if (!filep) {
+    if ( !filep ) {
         return 0;
     }
      
@@ -2346,7 +2377,7 @@ vscpweb_fopen(const struct vscpweb_connection *conn,
         }
 #else
         // Linux et al already use unicode. No need to convert. 
-        switch (mode) {
+        switch ( mode ) {
             
             case MG_FOPEN_MODE_READ:
                 filep->access.fp = fopen(path, "r");
@@ -2397,12 +2428,12 @@ vscpweb_fclose(struct vscpweb_file_access *fileacc)
 {
     int ret = -1;
     
-    if (fileacc != NULL) {
+    if ( fileacc != NULL ) {
         
-        if (fileacc->fp != NULL) {
+        if ( fileacc->fp != NULL ) {
             ret = fclose(fileacc->fp);
         }
-        else if (fileacc->membuf != NULL) {
+        else if ( fileacc->membuf != NULL ) {
             ret = 0;
         }
         
@@ -2414,110 +2445,6 @@ vscpweb_fclose(struct vscpweb_file_access *fileacc)
     return ret;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// vscpweb_lowercase
-//
-
-static int vscpweb_lowercase(const char *s) 
-{
-    return tolower(* (const unsigned char *) s);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// vscp_strlcpy
-//
-
-void vscpweb_strlcpy( register char *dst, register const char *src, size_t n )
-{
-    for (; *src != '\0' && n > 1; n--) {
-        *dst++ = *src++;
-    }
-    
-    *dst = '\0';
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// vscpweb_strndup
-//
-
-char *vscpweb_strndup(const char *ptr, size_t len)
-{
-    char *p;
-
-    if ( (p = (char *) vscpweb_malloc(len + 1)) != NULL ) {
-        vscpweb_strlcpy(p, ptr, len + 1);
-    }
-
-    return p;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// vscpweb_strdup
-//
-
-char *vscpweb_strdup( const char *str )
-{
-    return vscpweb_strndup( str, strlen(str) );
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// vscp_strcasestr
-//
-
-const char *vscpweb_strcasestr( const char *big_str, const char *small_str )
-{
-    size_t i, big_len = strlen(big_str), small_len = strlen( small_str );
-
-    if ( big_len >= small_len ) {
-        
-        for (i = 0; i <= (big_len - small_len); i++) {
-        
-            if ( 0 == vscpweb_strncasecmp(big_str + i, small_str, small_len ) ) {
-                return big_str + i;
-            }
-            
-        }
-        
-    }
-
-    return NULL;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// vscpweb_strcasecmp
-//
-
-int vscpweb_strcasecmp(const char *s1, const char *s2) 
-{
-    int diff;
-
-    do {
-        diff = vscpweb_lowercase(s1++) - vscpweb_lowercase(s2++);
-    } while ( ( 0 == diff ) && ( s1[-1] != '\0' ) );
-
-    return diff;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// vscpweb_strncasecmp
-//
-
-int vscpweb_strncasecmp(const char *s1, const char *s2, size_t len) 
-{
-    int diff = 0;
-
-    if ( len > 0 ) {
-        do {
-            diff = vscpweb_lowercase(s1++) - vscpweb_lowercase(s2++);
-        } while (diff == 0 && s1[-1] != '\0' && --len > 0);
-    }
-
-    return diff;
-}
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // vscpweb_vsnprintf
 //
@@ -2526,12 +2453,12 @@ int vscpweb_strncasecmp(const char *s1, const char *s2, size_t len)
 //
 
 static void
-vscpweb_vsnprintf(const struct vscpweb_connection *conn,
+vscpweb_vsnprintf( const struct vscpweb_connection *conn,
                     int *truncated,
                     char *buf,
                     size_t buflen,
                     const char *fmt,
-                    va_list ap)
+                    va_list ap )
 {
     int n, ok;
 
@@ -2552,7 +2479,7 @@ vscpweb_vsnprintf(const struct vscpweb_connection *conn,
     // indirectly by vscpweb_snprintf 
 #endif
 
-    n = (int) vsnprintf_impl(buf, buflen, fmt, ap);
+    n = (int)vsnprintf_impl( buf, buflen, fmt, ap );
     ok = (n >= 0) && ((size_t) n < buflen);
 
 #ifdef __clang__
@@ -2572,10 +2499,10 @@ vscpweb_vsnprintf(const struct vscpweb_connection *conn,
             *truncated = 1;
         }
         
-        vscpweb_cry(conn,
+        /*vscpweb_cry(conn,
                     "truncating vsnprintf buffer: [%.*s]",
                     (int) ((buflen > 200) ? 200 : (buflen - 1)),
-                    buf);
+                    buf);*/
         n = (int) buflen - 1;
     }
     
@@ -2587,12 +2514,12 @@ vscpweb_vsnprintf(const struct vscpweb_connection *conn,
 //
 
 static void
-vscpweb_snprintf(const struct vscpweb_connection *conn,
+vscpweb_snprintf( const struct vscpweb_connection *conn,
                     int *truncated,
                     char *buf,
                     size_t buflen,
                     const char *fmt,
-                    ...)
+                    ... )
 {
     va_list ap;
 
@@ -2794,7 +2721,7 @@ gmt_time_string(char *buf, size_t buf_len, time_t *t)
         strftime(buf, buf_len, "%a, %d %b %Y %H:%M:%S GMT", tm);
     }
     else {
-        vscpweb_strlcpy(buf, "Thu, 01 Jan 1970 00:00:00 GMT", buf_len);
+        vscp_strlcpy(buf, "Thu, 01 Jan 1970 00:00:00 GMT", buf_len);
         buf[buf_len - 1] = '\0';
     }
 }
@@ -3175,7 +3102,7 @@ get_header(const struct vscpweb_header *hdr, int num_hdr, const char *name)
 {
     int i;
     for (i = 0; i < num_hdr; i++) {
-        if (!vscpweb_strcasecmp(name, hdr[i].name)) {
+        if (!vscp_strcasecmp(name, hdr[i].name)) {
             return hdr[i].value;
         }
     }
@@ -3203,7 +3130,7 @@ get_req_headers(const struct vscpweb_request_info *ri,
         
         for (i = 0; i < ri->num_headers && cnt < output_max_size; i++) {
             
-            if (!vscpweb_strcasecmp(name, ri->http_headers[i].name)) {
+            if (!vscp_strcasecmp(name, ri->http_headers[i].name)) {
                 output[cnt++] = ri->http_headers[i].value;
             }
             
@@ -3350,7 +3277,7 @@ header_has_option(const char *header, const char *option)
 
     while ((header = next_option(header, &opt_vec, &eq_vec)) != NULL) {
         
-        if ( 0 == vscpweb_strncasecmp(option, opt_vec.ptr, opt_vec.len) ) {
+        if ( 0 == vscp_strncasecmp(option, opt_vec.ptr, opt_vec.len) ) {
             return 1;
         }
         
@@ -3412,7 +3339,7 @@ match_prefix(const char *pattern, size_t pattern_len, const char *str)
             return (res == -1) ? -1 : j + res + len;
             
         }
-        else if (vscpweb_lowercase(&pattern[i]) != vscpweb_lowercase(&str[j])) {
+        else if ( vscp_lowercase( &pattern[i] ) != vscp_lowercase( &str[j] ) ) {
             return -1;
         }
         
@@ -3442,7 +3369,7 @@ should_keep_alive(const struct vscpweb_connection *conn)
         return 0;
     }
 
-    if (vscpweb_strcasecmp(conn->ctx->config[ENABLE_KEEP_ALIVE], "yes") != 0) {
+    if (vscp_strcasecmp(conn->ctx->config[ENABLE_KEEP_ALIVE], "yes") != 0) {
         // Close, if keep alive is not enabled 
         return 0;
     }
@@ -3481,7 +3408,7 @@ should_decode_url(const struct vscpweb_connection *conn)
         return 0;
     }
 
-    return (vscpweb_strcasecmp(conn->ctx->config[DECODE_URL], "yes") == 0);
+    return (vscp_strcasecmp(conn->ctx->config[DECODE_URL], "yes") == 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -4351,7 +4278,7 @@ path_to_unicode(const struct vscpweb_connection *conn,
     DWORD long_len, err;
     int (*fcompare)(const wchar_t *, const wchar_t *) = vscpweb_wcscasecmp;
 
-    vscpweb_strlcpy(buf, path, sizeof (buf));
+    vscp_strlcpy(buf, path, sizeof (buf));
     change_slashes_to_backslashes(buf);
 
     // Convert to Unicode and back. If doubly-converted string does not
@@ -4382,7 +4309,7 @@ path_to_unicode(const struct vscpweb_connection *conn,
     // file name check can be activated by an additional configuration. 
     if ( conn ) {
         if ( conn->ctx->config[CASE_SENSITIVE_FILES]
-            && !vscpweb_strcasecmp(conn->ctx->config[CASE_SENSITIVE_FILES], "yes") ) {
+            && !vscp_strcasecmp(conn->ctx->config[CASE_SENSITIVE_FILES], "yes") ) {
             // Use case sensitive compare function 
             fcompare = wcscmp;
         }
@@ -6328,8 +6255,9 @@ alloc_vprintf( char **out_buf,
         
         // Buffer allocation successful. Store the string there. 
         va_copy(ap_copy, ap);
-        IGNORE_UNUSED_RESULT(
-                             vsnprintf_impl(*out_buf, (size_t) (len) + 1, fmt, ap_copy));
+        IGNORE_UNUSED_RESULT( vsnprintf_impl( *out_buf, 
+                                                (size_t)(len) + 1, fmt, 
+                                                ap_copy) );
         va_end(ap_copy);
 
     }
@@ -6337,8 +6265,10 @@ alloc_vprintf( char **out_buf,
         // The pre-allocated buffer is large enough.
         // Use it to store the string and return the address. 
         va_copy(ap_copy, ap);
-        IGNORE_UNUSED_RESULT(
-                             vsnprintf_impl(prealloc_buf, prealloc_size, fmt, ap_copy));
+        IGNORE_UNUSED_RESULT( vsnprintf_impl( prealloc_buf, 
+                                                prealloc_size, 
+                                                fmt, 
+                                                ap_copy ) );
         va_end(ap_copy);
         *out_buf = prealloc_buf;
     }
@@ -6469,7 +6399,7 @@ vscpweb_get_var2( const char *data,
         for (p = data; p + name_len < e; p++) {
             
             if (((p == data) || (p[-1] == '&')) && (p[name_len] == '=') && 
-                !vscpweb_strncasecmp(name, p, name_len) && 0 == occurrence--) {
+                !vscp_strncasecmp(name, p, name_len) && 0 == occurrence--) {
                 
                 // Point p to variable value 
                 p += name_len + 1;
@@ -6527,7 +6457,7 @@ vscpweb_get_cookie( const char *cookie_header,
 
     name_len = (int) strlen(var_name);
     end = s + strlen(s);
-    for (; (s = vscpweb_strcasestr(s, var_name)) != NULL; s += name_len) {
+    for (; (s = vscp_strcasestr(s, var_name)) != NULL; s += name_len) {
         if (s[name_len] == '=') {
             // HCP24: now check is it a substring or a full cookie name 
             if ((s == cookie_header) || (s[-1] == ' ')) {
@@ -6544,7 +6474,7 @@ vscpweb_get_cookie( const char *cookie_header,
                 }
                 if ((size_t) (p - s) < dst_size) {
                     len = (int) (p - s);
-                    vscpweb_strlcpy(dst, s, (size_t) len + 1);
+                    vscp_strlcpy(dst, s, (size_t) len + 1);
                 }
                 else {
                     len = -3;
@@ -6648,7 +6578,7 @@ substitute_index_file( struct vscpweb_connection *conn,
         }
 
         // Prepare full path to the index file 
-        vscpweb_strlcpy(path + n + 1, filename_vec.ptr, filename_vec.len + 1);
+        vscp_strlcpy(path + n + 1, filename_vec.ptr, filename_vec.len + 1);
 
         // Does it exist? 
         if (vscpweb_stat(conn, path, filestat)) {
@@ -6892,13 +6822,13 @@ interpret_uri( struct vscpweb_connection *conn,     // in/out: request (must be 
                     // this index file is a script 
 
                     char *tmp_str2 = vscpweb_strdup(filename + sep_pos + 1);
-                    vscpweb_snprintf(conn,
-                                     &truncated,
-                                     filename,
-                                     filename_buf_len,
-                                     "%s//%s",
-                                     tmp_str,
-                                     tmp_str2);
+                    vscpweb_snprintf( conn,
+                                        &truncated,
+                                        filename,
+                                        filename_buf_len,
+                                        "%s//%s",
+                                        tmp_str,
+                                        tmp_str2 );
                     vscpweb_free(tmp_str2);
 
                     if (truncated) {
@@ -7226,7 +7156,7 @@ vscpweb_get_builtin_mime_type( const char *path )
         ext = path + (path_len - builtin_mime_types[i].ext_len);
         
         if ((path_len > builtin_mime_types[i].ext_len)
-            && (vscpweb_strcasecmp(ext, builtin_mime_types[i].extension) == 0)) {
+            && (vscp_strcasecmp(ext, builtin_mime_types[i].extension) == 0)) {
             return builtin_mime_types[i].mime_type;
         }
         
@@ -7267,7 +7197,7 @@ get_mime_type( struct vscpweb_context *ctx, const char *path, struct vec *vec )
         
         // ext now points to the path suffix */
         ext = path + path_len - ext_vec.len;
-        if (vscpweb_strncasecmp(ext, ext_vec.ptr, ext_vec.len) == 0) {
+        if (vscp_strncasecmp(ext, ext_vec.ptr, ext_vec.len) == 0) {
             *vec = mime_vec;
             return;
         }
@@ -7278,52 +7208,9 @@ get_mime_type( struct vscpweb_context *ctx, const char *path, struct vec *vec )
     vec->len = strlen(vec->ptr);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// bin2str
-//
-// Stringify binary data. Output buffer must be twice as big as input,
-// because each byte takes 2 bytes in string representation */
-//
 
-static void
-bin2str(char *to, const unsigned char *p, size_t len)
-{
-    static const char *hex = "0123456789abcdef";
 
-    for (; len--; p++) {
-        *to++ = hex[p[0] >> 4];
-        *to++ = hex[p[0] & 0x0f];
-    }
-    
-    *to = '\0';
-}
 
-////////////////////////////////////////////////////////////////////////////////
-// vscpweb_md5
-//
-// Return stringified MD5 hash for list of strings. Buffer must be 33 bytes.
-//
-
-char *
-vscpweb_md5( char buf[33], ... )
-{
-    md5_byte_t hash[16];
-    const char *p;
-    va_list ap;
-    md5_state_t ctx;
-
-    vscpmd5_init(&ctx);
-
-    va_start(ap, buf);
-    while ((p = va_arg(ap, const char *)) != NULL) {
-        vscpmd5_append(&ctx, (const md5_byte_t *) p, strlen(p));
-    }
-    va_end(ap);
-
-    vscpmd5_finish(&ctx, hash);
-    bin2str(buf, hash, sizeof (hash));
-    return buf;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // check_password
@@ -7354,8 +7241,8 @@ check_password(const char *method,
         return 0;
     }
 
-    vscpweb_md5(ha2, method, ":", uri, NULL);
-    vscpweb_md5( expected_response,
+    vscpmd5_get_string(ha2, method, ":", uri, NULL);
+    vscpmd5_get_string( expected_response,
                     ha1,
                     ":",
                     nonce,
@@ -7369,7 +7256,7 @@ check_password(const char *method,
                     ha2,
                     NULL );
 
-    return vscpweb_strcasecmp(response, expected_response) == 0;
+    return vscp_strcasecmp(response, expected_response) == 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -7484,12 +7371,12 @@ parse_auth_header( struct vscpweb_connection *conn,
 
     (void) memset(ah, 0, sizeof (*ah));
     if ( ( NULL == (auth_header = vscpweb_get_header(conn, "Authorization") ) ) || 
-        vscpweb_strncasecmp(auth_header, "Digest ", 7) != 0 ) {
+        vscp_strncasecmp(auth_header, "Digest ", 7) != 0 ) {
         return 0;
     }
 
     // Make modifiable copy of the auth header 
-    (void) vscpweb_strlcpy(buf, auth_header + 7, buf_size);
+    (void) vscp_strlcpy(buf, auth_header + 7, buf_size);
     s = buf;
 
     // Parse authorization header 
@@ -8082,7 +7969,7 @@ vscpweb_modify_passwords_file( const char *fname,
         if (!strcmp(u, user) && !strcmp(d, domain)) {
             found++;
             if (pass != NULL) {
-                vscpweb_md5(ha1, user, ":", domain, ":", pass, NULL);
+                vscpmd5_get_string(ha1, user, ":", domain, ":", pass, NULL);
                 fprintf(fp2, "%s:%s:%s\n", user, domain, ha1);
             }
         }
@@ -8093,7 +7980,7 @@ vscpweb_modify_passwords_file( const char *fname,
 
     // If new user, just add it 
     if (!found && (pass != NULL)) {
-        vscpweb_md5(ha1, user, ":", domain, ":", pass, NULL);
+        vscpmd5_get_string(ha1, user, ":", domain, ":", pass, NULL);
         fprintf(fp2, "%s:%s:%s\n", user, domain, ha1);
     }
 
@@ -8405,7 +8292,7 @@ print_dir_entry(struct de *de)
         strftime(mod, sizeof (mod), "%d-%b-%Y %H:%M", tm);
     }
     else {
-        vscpweb_strlcpy(mod, "01-Jan-1970 00:00", sizeof (mod));
+        vscp_strlcpy(mod, "01-Jan-1970 00:00", sizeof (mod));
         mod[sizeof (mod) - 1] = '\0';
     }
     
@@ -8818,7 +8705,7 @@ send_file_data( struct vscpweb_connection *conn,
 #if defined(__linux__)
         // sendfile is only available for Linux 
         if ( ( 0 == conn->ssl ) && ( 0 == conn->throttle ) && 
-             ( !vscpweb_strcasecmp( conn->ctx->config[ALLOW_SENDFILE_CALL],
+             ( !vscp_strcasecmp( conn->ctx->config[ALLOW_SENDFILE_CALL],
                                                         "yes" ) ) ) {
             off_t sf_offs = (off_t) offset;
             ssize_t sf_sent;
@@ -9238,7 +9125,7 @@ vscpweb_send_mime_file2( struct vscpweb_connection *conn,
 
     if ( vscpweb_stat( conn, path, &file.stat ) ) {
         if ( file.stat.is_directory ) {
-            if ( !vscpweb_strcasecmp( conn->ctx->config[ENABLE_DIRECTORY_LISTING],
+            if ( !vscp_strcasecmp( conn->ctx->config[ENABLE_DIRECTORY_LISTING],
                                         "yes") ) {
                 handle_directory_request( conn, path );
             }
@@ -9927,7 +9814,7 @@ is_not_modified( const struct vscpweb_connection *conn,
     const char *inm = vscpweb_get_header(conn, "If-None-Match");
     construct_etag(etag, sizeof (etag), filestat);
 
-    return ((inm != NULL) && !vscpweb_strcasecmp(etag, inm))
+    return ((inm != NULL) && !vscp_strcasecmp(etag, inm))
             || ((ims != NULL)
             && (filestat->last_modified <= parse_date_string(ims)));
 }
@@ -9972,7 +9859,7 @@ forward_body_data( struct vscpweb_connection *conn,
                                     "Error: Client did not specify content length" );
     }
     else if ( ( expect != NULL ) && 
-              ( vscpweb_strcasecmp( expect, "100-continue") != 0 ) ) {
+              ( vscp_strcasecmp( expect, "100-continue") != 0 ) ) {
         // Client sent an "Expect: xyz" header and xyz is not 100-continue.
         vscpweb_send_http_error( conn,
                                     417,
@@ -11490,7 +11377,7 @@ handle_propfind( struct vscpweb_connection *conn,
 
     // If it is a directory, print directory entries too if Depth is not 0
     if ( filep && filep->is_directory &&
-            !vscpweb_strcasecmp(conn->ctx->config[ENABLE_DIRECTORY_LISTING], "yes") &&
+            !vscp_strcasecmp(conn->ctx->config[ENABLE_DIRECTORY_LISTING], "yes") &&
             ( (depth == NULL) || ( strcmp(depth, "0") != 0) ) ) {
         scan_directory(conn, path, conn, &print_dav_dir_entry);
     }
@@ -12896,7 +12783,7 @@ lsp_md5( lua_State *L )
             vscpmd5_init(&ctx);
             vscpmd5_append(&ctx, (const md5_byte_t *) text, text_len);
             vscpmd5_finish(&ctx, hash);
-            bin2str(buf, hash, sizeof (hash));
+            vscp_bin2str(buf, hash, sizeof (hash) );
             lua_pushstring(L, buf);
         }
         else {
@@ -13190,7 +13077,7 @@ lsp_get_info(lua_State *L)
             arg1 = lua_tostring(L, 1);
             
             // Get info according to argument 
-            if (!vscpweb_strcasecmp(arg1, "system")) {
+            if (!vscp_strcasecmp(arg1, "system")) {
                 
                 // Get system info 
                 len = vscpweb_get_system_info(NULL, 0);
@@ -13208,7 +13095,7 @@ lsp_get_info(lua_State *L)
                 }
                 return 1;
             }
-            if ( !vscpweb_strcasecmp(arg1, "context") ) {
+            if ( !vscp_strcasecmp(arg1, "context") ) {
                 
                 // Get context 
                 struct vscpweb_context *ctx;
@@ -13233,7 +13120,7 @@ lsp_get_info(lua_State *L)
                 
                 return 1;
             }
-            if ( !vscpweb_strcasecmp(arg1, "common") ) {
+            if ( !vscp_strcasecmp(arg1, "common") ) {
                 
                 // Get context info for NULL context 
                 len = vscpweb_get_context_info(NULL, NULL, 0);
@@ -13264,7 +13151,7 @@ lsp_get_info(lua_State *L)
             arg2 = lua_tonumber(L, 2);
 
             // Get info according to argument 
-            if (!vscpweb_strcasecmp(arg1, "connection")) {
+            if (!vscp_strcasecmp(arg1, "connection")) {
 
                 /* Get context */
                 struct vscpweb_context *ctx;
@@ -13475,22 +13362,22 @@ lwebsock_write( lua_State *L )
         else if (lua_isstring(L, 1)) {
             // opcode string and message text 
             str = lua_tostring(L, 1);
-            if  ( !vscpweb_strncasecmp(str, "text", 4 ) ) {
+            if  ( !vscp_strncasecmp(str, "text", 4 ) ) {
                 opcode = WEBSOCKET_OPCODE_TEXT;
             }
-            else if ( !vscpweb_strncasecmp(str, "bin", 3) ) {
+            else if ( !vscp_strncasecmp(str, "bin", 3) ) {
                 opcode = WEBSOCKET_OPCODE_BINARY;
             }
-            else if ( !vscpweb_strncasecmp(str, "close", 5) ) {
+            else if ( !vscp_strncasecmp(str, "close", 5) ) {
                 opcode = WEBSOCKET_OPCODE_CONNECTION_CLOSE;
             }
-            else if ( !vscpweb_strncasecmp(str, "ping", 4) ) {
+            else if ( !vscp_strncasecmp(str, "ping", 4) ) {
                 opcode = WEBSOCKET_OPCODE_PING;
             }
-            else if ( !vscpweb_strncasecmp(str, "pong", 4) ) {
+            else if ( !vscp_strncasecmp(str, "pong", 4) ) {
                 opcode = WEBSOCKET_OPCODE_PONG;
             }
-            else if ( !vscpweb_strncasecmp(str, "cont", 4) ) {
+            else if ( !vscp_strncasecmp(str, "cont", 4) ) {
                 opcode = WEBSOCKET_OPCODE_CONTINUATION;
             }
         }
@@ -13513,22 +13400,22 @@ lwebsock_write( lua_State *L )
             else if (lua_isstring(L, 2)) {
                 // client id, opcode string and message text 
                 str = lua_tostring(L, 2);
-                if ( !vscpweb_strncasecmp(str, "text", 4) ) {
+                if ( !vscp_strncasecmp(str, "text", 4) ) {
                     opcode = WEBSOCKET_OPCODE_TEXT;
                 }
-                else if ( !vscpweb_strncasecmp(str, "bin", 3) ) {
+                else if ( !vscp_strncasecmp(str, "bin", 3) ) {
                     opcode = WEBSOCKET_OPCODE_BINARY;
                 }
-                else if ( !vscpweb_strncasecmp(str, "close", 5) ) {
+                else if ( !vscp_strncasecmp(str, "close", 5) ) {
                     opcode = WEBSOCKET_OPCODE_CONNECTION_CLOSE;
                 }
-                else if ( !vscpweb_strncasecmp(str, "ping", 4) ) {
+                else if ( !vscp_strncasecmp(str, "ping", 4) ) {
                     opcode = WEBSOCKET_OPCODE_PING;
                 }
-                else if ( !vscpweb_strncasecmp(str, "pong", 4) ) {
+                else if ( !vscp_strncasecmp(str, "pong", 4) ) {
                     opcode = WEBSOCKET_OPCODE_PONG;
                 }
-                else if ( !vscpweb_strncasecmp(str, "cont", 4) ) {
+                else if ( !vscp_strncasecmp(str, "cont", 4) ) {
                     opcode = WEBSOCKET_OPCODE_CONTINUATION;
                 }
             }
@@ -15544,7 +15431,7 @@ is_websocket_protocol(const struct vscpweb_connection *conn)
         return 0;   // fail early, don't waste time checking other header
 		    // fields
     }
-    if ( !vscpweb_strcasestr(upgrade, "websocket") ) {
+    if ( !vscp_strcasestr(upgrade, "websocket") ) {
         return 0;
     }
 
@@ -15553,7 +15440,7 @@ is_websocket_protocol(const struct vscpweb_connection *conn)
         return 0;
     }
     
-    if (!vscpweb_strcasestr(connection, "upgrade")) {
+    if (!vscp_strcasestr(connection, "upgrade")) {
         return 0;
     }
 
@@ -15622,14 +15509,14 @@ set_throttle( const char *spec, uint32_t remote_ip, const char *uri )
         
         mult = ',';
         if ((val.ptr == NULL) || (sscanf(val.ptr, "%lf%c", &v, &mult) < 1)
-            || (v < 0) || ((vscpweb_lowercase(&mult) != 'k')
-            && (vscpweb_lowercase(&mult) != 'm') && (mult != ','))) {
+            || (v < 0) || ((vscp_lowercase(&mult) != 'k')
+            && (vscp_lowercase(&mult) != 'm') && (mult != ','))) {
             continue;
         }
         
-        v *= (vscpweb_lowercase(&mult) == 'k')
+        v *= (vscp_lowercase(&mult) == 'k')
                 ? 1024
-                : ((vscpweb_lowercase(&mult) == 'm') ? 1048576 : 1);
+                : ((vscp_lowercase(&mult) == 'm') ? 1048576 : 1);
         
         if (vec.len == 1 && vec.ptr[0] == '*') {
             throttle = (int) v;
@@ -16038,9 +15925,9 @@ vscpweb_handle_form_request( struct vscpweb_connection *conn,
     content_type = vscpweb_get_header(conn, "Content-Type");
 
     if ( !content_type || 
-         !vscpweb_strcasecmp( content_type, 
+         !vscp_strcasecmp( content_type, 
                                 "APPLICATION/X-WWW-FORM-URLENCODED" ) || 
-         !vscpweb_strcasecmp( content_type, 
+         !vscp_strcasecmp( content_type, 
                                 "APPLICATION/WWW-FORM-URLENCODED" ) ) {
         // The form data is in the request body data, encoded in key/value
         // pairs. 
@@ -16232,7 +16119,7 @@ vscpweb_handle_form_request( struct vscpweb_connection *conn,
         return field_count;
     }
 
-    if (!vscpweb_strncasecmp(content_type, "MULTIPART/FORM-DATA;", 20)) {
+    if (!vscp_strncasecmp(content_type, "MULTIPART/FORM-DATA;", 20)) {
         // The form data is in the request body data, encoded as multipart
         // content (see https://www.ietf.org/rfc/rfc1867.txt,
         // https://www.ietf.org/rfc/rfc2388.txt). 
@@ -16254,7 +16141,7 @@ vscpweb_handle_form_request( struct vscpweb_connection *conn,
         }
 
         // There has to be a BOUNDARY definition in the Content-Type header 
-        if (vscpweb_strncasecmp(content_type + bl, "BOUNDARY=", 9)) {
+        if (vscp_strncasecmp(content_type + bl, "BOUNDARY=", 9)) {
             // Malformed request 
             return -1;
         }
@@ -16718,7 +16605,7 @@ redirect_to_https_port(struct vscpweb_connection *conn, int ssl_index)
     if (host_header != NULL) {
         char *pos;
 
-        vscpweb_strlcpy(host, host_header, hostlen);
+        vscp_strlcpy(host, host_header, hostlen);
         host[hostlen - 1] = '\0';
         pos = strchr(host, ':');
         if (pos != NULL) {
@@ -17610,7 +17497,7 @@ no_callback_resource:
         // Substitute files have already been handled above. 
         // Here we can either generate and send a directory listing,
         // or send an "access denied" error. 
-        if ( !vscpweb_strcasecmp( conn->ctx->config[ENABLE_DIRECTORY_LISTING],
+        if ( !vscp_strcasecmp( conn->ctx->config[ENABLE_DIRECTORY_LISTING],
                                     "yes") ) {
             handle_directory_request(conn, path);
         }
@@ -18183,7 +18070,7 @@ log_access(const struct vscpweb_connection *conn)
         strftime(date, sizeof (date), "%d/%b/%Y:%H:%M:%S %z", tm);
     }
     else {
-        vscpweb_strlcpy(date, "01/Jan/1970:00:00:00 +0000", sizeof (date));
+        vscp_strlcpy(date, "01/Jan/1970:00:00:00 +0000", sizeof (date));
         date[sizeof (date) - 1] = '\0';
     }
 
@@ -18403,11 +18290,11 @@ refresh_trust(struct vscpweb_connection *conn)
 
         should_verify_peer = 0;
         if (conn->ctx->config[SSL_DO_VERIFY_PEER] != NULL) {
-            if (vscpweb_strcasecmp(conn->ctx->config[SSL_DO_VERIFY_PEER], "yes")
+            if (vscp_strcasecmp(conn->ctx->config[SSL_DO_VERIFY_PEER], "yes")
                 == 0) {
                 should_verify_peer = 1;
             }
-            else if (vscpweb_strcasecmp(conn->ctx->config[SSL_DO_VERIFY_PEER],
+            else if (vscp_strcasecmp(conn->ctx->config[SSL_DO_VERIFY_PEER],
                             "optional") == 0) {
                 should_verify_peer = 1;
             }
@@ -18470,7 +18357,7 @@ sslize(struct vscpweb_connection *conn,
 
     short_trust =
             (conn->ctx->config[SSL_SHORT_TRUST] != NULL)
-            && (vscpweb_strcasecmp(conn->ctx->config[SSL_SHORT_TRUST], "yes") == 0);
+            && (vscp_strcasecmp(conn->ctx->config[SSL_SHORT_TRUST], "yes") == 0);
 
     if (short_trust) {
         int trust_ret = refresh_trust(conn);
@@ -19049,12 +18936,12 @@ set_ssl_option(struct vscpweb_context *ctx)
     should_verify_peer = 0;
     peer_certificate_optional = 0;
     if (ctx->config[SSL_DO_VERIFY_PEER] != NULL) {
-        if (vscpweb_strcasecmp(ctx->config[SSL_DO_VERIFY_PEER], "yes") == 0) {
+        if (vscp_strcasecmp(ctx->config[SSL_DO_VERIFY_PEER], "yes") == 0) {
             // Yes, they are mandatory 
             should_verify_peer = 1;
             peer_certificate_optional = 0;
         }
-        else if (vscpweb_strcasecmp(ctx->config[SSL_DO_VERIFY_PEER], "optional")
+        else if (vscp_strcasecmp(ctx->config[SSL_DO_VERIFY_PEER], "optional")
          == 0) {
             // Yes, they are optional 
             should_verify_peer = 1;
@@ -19064,7 +18951,7 @@ set_ssl_option(struct vscpweb_context *ctx)
 
     use_default_verify_paths =
             (ctx->config[SSL_DEFAULT_VERIFY_PATHS] != NULL)
-            && (vscpweb_strcasecmp(ctx->config[SSL_DEFAULT_VERIFY_PATHS], "yes") == 0);
+            && (vscp_strcasecmp(ctx->config[SSL_DEFAULT_VERIFY_PATHS], "yes") == 0);
 
     if (should_verify_peer) {
         ca_path = ctx->config[SSL_CA_PATH];
@@ -19808,7 +19695,7 @@ get_uri_type(const char *uri)
     // as a proxy server. 
     for ( i = 0; abs_uri_protocols[i].proto != NULL; i++ ) {
         
-        if ( 0 == vscpweb_strncasecmp( uri,
+        if ( 0 == vscp_strncasecmp( uri,
                                     abs_uri_protocols[i].proto,
                                     abs_uri_protocols[i].proto_len ) ) {
 
@@ -19872,7 +19759,7 @@ get_rel_url_at_current_server( const char *uri,
 
     // DNS is case insensitive, so use case insensitive string compare here
     for (i = 0; abs_uri_protocols[i].proto != NULL; i++) {
-        if ( 0 == vscpweb_strncasecmp( uri,
+        if ( 0 == vscp_strncasecmp( uri,
                                     abs_uri_protocols[i].proto,
                                     abs_uri_protocols[i].proto_len ) ) {
 
@@ -20102,7 +19989,7 @@ get_request(struct vscpweb_connection *conn, char *ebuf, size_t ebuf_len, int *e
     else if ( ( cl = get_header( conn->request_info.http_headers,
                                     conn->request_info.num_headers,
                                     "Transfer-Encoding" ) ) != NULL &&
-                                    !vscpweb_strcasecmp(cl, "chunked") ) {
+                                    !vscp_strcasecmp(cl, "chunked") ) {
         conn->is_chunked = 1;
         conn->content_len = -1; // unknown content length 
     }
@@ -20175,7 +20062,7 @@ get_response( struct vscpweb_connection *conn,
     else if ( ( cl = get_header( conn->response_info.http_headers,
                                     conn->response_info.num_headers,
                                     "Transfer-Encoding")) != NULL &&
-                                    !vscpweb_strcasecmp(cl, "chunked")) {
+                                    !vscp_strcasecmp(cl, "chunked")) {
         conn->is_chunked = 1;
         conn->content_len = -1; // unknown content length 
     }
@@ -21429,7 +21316,7 @@ vscpweb_start(const struct vscpweb_callbacks *callbacks,
 
 	while ((sparams = next_option(sparams, &opt_vec, &eq_vec)) != NULL) {
             reg_llstring( state, opt_vec.ptr, opt_vec.len, eq_vec.ptr, eq_vec.len);
-            if ( 0 == vscpweb_strncasecmp(sparams, opt_vec.ptr, opt_vec.len ) ) {
+            if ( 0 == vscp_strncasecmp(sparams, opt_vec.ptr, opt_vec.len ) ) {
 		break;
             }
 	}
