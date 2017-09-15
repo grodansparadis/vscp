@@ -63,7 +63,7 @@ DESTDIR =
 WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-MKPASSWD_OBJECTS =  mkpasswd.o\
+MKPASSWD_OBJECTS =  vscp-mkpasswd.o\
 	../common/vscphelper.o\
 	../common/guid.o\
 	../../common/md5.o\
@@ -83,11 +83,11 @@ ALWAYS_BUILD = ../common/vscphelper.o\
 
 ### Targets: ###
 
-all: mkpasswd
+all: vscp-mkpasswd
 
 install: all
-	$(STRIP)  mkpasswd
-	$(INSTALL_PROGRAM) mkpasswd $(bindir)
+	$(STRIP)  vscp-mkpasswd
+	$(INSTALL_PROGRAM) vscp-mkpasswd $(bindir)
 
 uninstall:
 
@@ -97,12 +97,12 @@ clean:
 	rm -rf ./.deps ./.pch
 	rm -f ./*.o
 	rm -f ../common/*.o
-	rm -f mkpasswd
+	rm -f vscp-mkpasswd
 
 distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile
 
-mkpasswd: $(MKPASSWD_OBJECTS)
+vscp-mkpasswd: $(MKPASSWD_OBJECTS)
 	$(CXX) -o $@ $(MKPASSWD_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
 $(ALWAYS_BUILD):  .FORCE

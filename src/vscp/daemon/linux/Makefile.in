@@ -114,7 +114,8 @@ VSCPD_SPECIALS = vscphelper.o \
 	sqlite3math.o\
 	aes.o\
 	fastpbkdf2.o\
-	vscpmd5.o
+	vscpmd5.o\
+	base64.o
 
 # Add object files that always should be built here
 ALWAYS_BUILD = 
@@ -172,6 +173,9 @@ aes.o: ../../../common/aes.o ../../../common/aes.h
 
 crc.o: ../../../common/crc.o ../../../common/crc.h 
 	$(CC) $(CFLAGS) -c ../../../common/crc.c -o $@
+	
+base64.o: ../../../common/base64.o ../../../common/base64.h 
+	$(CC) $(CFLAGS) -c ../../../common/base64.c -o $@	
 
 crc8.o: ../../../common/crc8.o ../../../common/crc8.h
 	$(CC) $(CFLAGS) -c ../../../common/crc8.c -o $@

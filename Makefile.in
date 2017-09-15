@@ -62,9 +62,13 @@ endif
 	@echo "   around be foolish - stay hungry! There is always a choice."
 config:
 	mkdir -p /srv/vscp/actions
-	mkdir -p /srv/vscp/drivers
+	mkdir -p /srv/vscp/scripts
+	mkdir -p /srv/vscp/ux
 	mkdir -p /srv/vscp/web
 	mkdir -p /srv/vscp/certs
+	mkdir -p /srv/vscp/drivers
+	mkdir -p /srv/vscp/level1
+	mkdir -p /srv/vscp/level2	
 	mkdir -p /srv/vscp/web/css
 	mkdir -p /srv/vscp/web/images
 	mkdir -p /srv/vscp/web/lib
