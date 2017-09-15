@@ -117,7 +117,7 @@ vscpweb_static_assert(sizeof(void *) >= sizeof(int), "data type size check");
 #include <vscpweb.h>
 #endif
 
-#include <base64.h>
+#include <vscpbase64.h>
 
 #ifndef IGNORE_UNUSED_RESULT
 #define IGNORE_UNUSED_RESULT(a) ((void)((a) && 1))

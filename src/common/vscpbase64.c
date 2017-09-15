@@ -1,4 +1,4 @@
-/* File: base64.c
+/* File: vscpbase64.c
  * 
  * Copyright (c) 2004-2013 Sergey Lyubka
  * Copyright (c) 2013-2017 the Civetweb developers
@@ -25,7 +25,7 @@
 
 #include "stdio.h"
 #include "string.h"
-#include "base64.h"
+#include "vscpbase64.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
