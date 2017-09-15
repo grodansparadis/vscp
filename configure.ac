@@ -110,7 +110,7 @@ PROJ_SUBDIRS="src/vscp/drivers/level1/can4vscp/linux\
  src/vscp/linuxvscpl1\
  src/vscp/helperlib/linux\
  src/vscp/daemon/linux\
- src/vscp/mkpasswd src/vscp/uvscpd\
+ src/vscp/vscp-mkpasswd src/vscp/uvscpd\
  src/vscp/vscpcmd src/vscp/drivers/level2/sim/linux"  
 AC_SUBST(PROJ_SUBDIRS)
 PROJ_SUBDIRS_GUI="src/vscp/vscpworks"
@@ -217,7 +217,7 @@ AC_CONFIG_FILES([Makefile
          src/vscp/vscpworks/Makefile
          src/vscp/daemon/linux/Makefile
          src/vscp/uvscpd/Makefile
-         src/vscp/mkpasswd/Makefile
+         src/vscp/vscp-mkpasswd/Makefile
          src/vscp/drivers/level1/logger/linux/Makefile
          src/vscp/drivers/level1/can232/linux/Makefile
          src/vscp/drivers/level1/xap/linux/Makefile

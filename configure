@@ -6239,7 +6239,7 @@ PROJ_SUBDIRS="src/vscp/drivers/level1/can4vscp/linux\
  src/vscp/linuxvscpl1\
  src/vscp/helperlib/linux\
  src/vscp/daemon/linux\
- src/vscp/mkpasswd src/vscp/uvscpd\
+ src/vscp/vscp-mkpasswd src/vscp/uvscpd\
  src/vscp/vscpcmd src/vscp/drivers/level2/sim/linux"
 
 PROJ_SUBDIRS_GUI="src/vscp/vscpworks"
@@ -6823,7 +6823,7 @@ STATIC="no"
 fi
 
 
-ac_config_files="$ac_config_files Makefile m4/Makefile src/vscp/vscpcmd/Makefile src/vscp/vscpworks/Makefile src/vscp/daemon/linux/Makefile src/vscp/uvscpd/Makefile src/vscp/mkpasswd/Makefile src/vscp/drivers/level1/logger/linux/Makefile src/vscp/drivers/level1/can232/linux/Makefile src/vscp/drivers/level1/xap/linux/Makefile src/vscp/drivers/level1/socketcan/linux/Makefile src/vscp/drivers/level1/can4vscp/linux/Makefile src/vscp/drivers/level2/logger/linux/Makefile src/vscp/drivers/level2/lmsensors/linux/Makefile src/vscp/drivers/level2/mqtt/linux/Makefile src/vscp/drivers/level2/socketcan/linux/Makefile src/vscp/drivers/level2/tcpdrv/linux/Makefile src/vscp/drivers/level2/rawethernet/linux/Makefile src/vscp/drivers/level2/wire1/linux/Makefile src/vscp/drivers/level2/sim/linux/Makefile src/vscp/linuxvscpl1/Makefile src/vscp/helperlib/linux/Makefile"
+ac_config_files="$ac_config_files Makefile m4/Makefile src/vscp/vscpcmd/Makefile src/vscp/vscpworks/Makefile src/vscp/daemon/linux/Makefile src/vscp/uvscpd/Makefile src/vscp/vscp-mkpasswd/Makefile src/vscp/drivers/level1/logger/linux/Makefile src/vscp/drivers/level1/can232/linux/Makefile src/vscp/drivers/level1/xap/linux/Makefile src/vscp/drivers/level1/socketcan/linux/Makefile src/vscp/drivers/level1/can4vscp/linux/Makefile src/vscp/drivers/level2/logger/linux/Makefile src/vscp/drivers/level2/lmsensors/linux/Makefile src/vscp/drivers/level2/mqtt/linux/Makefile src/vscp/drivers/level2/socketcan/linux/Makefile src/vscp/drivers/level2/tcpdrv/linux/Makefile src/vscp/drivers/level2/rawethernet/linux/Makefile src/vscp/drivers/level2/wire1/linux/Makefile src/vscp/drivers/level2/sim/linux/Makefile src/vscp/linuxvscpl1/Makefile src/vscp/helperlib/linux/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -7524,7 +7524,7 @@ do
     "src/vscp/vscpworks/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/vscpworks/Makefile" ;;
     "src/vscp/daemon/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/daemon/linux/Makefile" ;;
     "src/vscp/uvscpd/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/uvscpd/Makefile" ;;
-    "src/vscp/mkpasswd/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/mkpasswd/Makefile" ;;
+    "src/vscp/vscp-mkpasswd/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/vscp-mkpasswd/Makefile" ;;
     "src/vscp/drivers/level1/logger/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level1/logger/linux/Makefile" ;;
     "src/vscp/drivers/level1/can232/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level1/can232/linux/Makefile" ;;
     "src/vscp/drivers/level1/xap/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level1/xap/linux/Makefile" ;;
