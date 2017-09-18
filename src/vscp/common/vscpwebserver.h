@@ -36,6 +36,10 @@
  */
 int init_webserver( void );
 
+/*!
+ * Init the webserver sub system
+ */
+int stop_webserver( void );
 
 /*!
     This class implement the VSCP Webserver thread

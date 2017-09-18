@@ -120,8 +120,8 @@
 #define VSCPDB_CONFIG_NAME_PATH_DB_DATA                 "path_db_data"
 #define VSCPDB_CONFIG_DEFAULT_PATH_DB_DATA              "/srv/vscp/vscp_data.sqlite3"
 
-#define VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_ENABLE    "web_authentication_enable"
-#define VSCPDB_CONFIG_DEFAULT_WEB_AUTHENTICATION_ENABLE "1"
+#define VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_DISABLE       "web_authentication_disable"
+#define VSCPDB_CONFIG_DEFAULT_WEB_AUTHENTICATION_DISABLE    "0"
 
 #define VSCPDB_CONFIG_NAME_WEB_PATH_ROOT                "web_path_root"
 #define VSCPDB_CONFIG_DEFAULT_WEB_PATH_ROOT             "/srv/vscp/web"

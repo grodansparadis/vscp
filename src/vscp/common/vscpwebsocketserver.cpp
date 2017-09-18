@@ -267,11 +267,11 @@ VSCPWebServerThread::websock_command( struct mg_connection *nc,
 
 	wxString strUser = tkz.GetNextToken();
         wxString strKey = tkz.GetNextToken();
-        if ( pCtrlObject->getWebServer()->websock_authentication( nc,
+        if ( 1/*pCtrlObject->getWebServer()->websock_authentication( nc,
                                                                     hm,
                                                                     pSession,
                                                                     strUser,
-                                                                    strKey ) ) {
+                                                                    strKey )*/ ) {
             // Get user
             CUserItem *pUser = gpobj->m_userList.getUser( strUser );
             if ( NULL == pUser ) goto autherror;
@@ -1790,7 +1790,7 @@ VSCPWebServerThread::websrv_websocket_message( struct mg_connection *nc,
                 }
 
                 vscp_event.obid = pSession->m_pClientItem->m_clientID;
-                if ( pObject->getWebServer()->websock_sendevent( nc, pSession, &vscp_event ) ) {
+                if ( 1/*pObject->getWebServer()->websock_sendevent( nc, pSession, &vscp_event )*/ ) {
                     mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, "+;EVENT" );
                 }
                 else {

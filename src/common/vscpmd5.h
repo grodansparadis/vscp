@@ -74,8 +74,11 @@ extern "C"
     /* Finish the message and return the digest. */
     void vscpmd5_finish(md5_state_t *pms, md5_byte_t digest[16]);
     
-    /* Get stringified hash */
-    char *vscpmd5_get_string( char buf[33], ... );
+    /* Get digest from string with len */
+    char *vscpmd5_getDigestFromString( char digest[33], const unsigned char *buf, size_t len );
+    
+    /* Get digest fron strings */
+    char *vscpmd5_getDigestFromMultiStrings( char digest[33], ... );
 
 #ifdef __cplusplus
 } /* end extern "C" */

@@ -128,6 +128,7 @@
 #include <tables.h>
 #include <configfile.h>
 #include <crc.h>
+#include <vscpmd5.h>
 #include <randpassword.h>
 #include <version.h>
 #include <vscpdb.h>
@@ -188,13 +189,13 @@ WSADATA wsaData;                            // WSA functions
 void vscp_md5( char *digest, const unsigned char *buf, size_t len ) 
 {
     unsigned char hash[16];
+    
+    md5_state_s pms;
   
-    cs_md5_ctx ctx;
-
-    cs_md5_init( &ctx );
-    cs_md5_update( &ctx, buf, len );
-    cs_md5_final( hash, &ctx );
-    cs_to_hex( digest, hash, sizeof( hash ) );
+    vscpmd5_init( &pms );
+    vscpmd5_append( &pms, buf, len );
+    vscpmd5_finish( &pms, hash );
+    vscp_bin2str( digest, hash, sizeof( hash ) );
 }
 
 
@@ -228,7 +229,7 @@ CControlObject::CControlObject()
     
     // Default admin user credentials
     m_admin_user = _("admin");
-    m_admin_password = _("secret");
+    m_admin_password = _("450ADCE88F2FDBB20F3318B65E53CA4A;06D3311CC2195E80BE4F8EB12931BFEB5C630F6B154B2D644ABE29CEBDBFB545");
     m_admin_allowfrom = _("*");
     m_vscptoken = _("Carpe diem quam minimum credula postero");
     vscp_convertHexStr2ByteArray( m_systemKey, 
@@ -316,7 +317,6 @@ CControlObject::CControlObject()
     m_pclientMsgWorkerThread = NULL;
     m_pVSCPClientThread = NULL;
     m_pdaemonVSCPThread = NULL;
-    m_pwebServerThread = NULL;
 
     // Websocket interface
     m_bAuthWebsockets = true;   // Authentication is needed
@@ -349,7 +349,7 @@ CControlObject::CControlObject()
     strcpy( m_EnableDirectoryListings, "yes" );
 
     // Init. web server subsystem - All features
-    if ( 0 == vscpweb_init( 0xffff ) ) {
+    if ( 0 == web_init( 0xffff ) ) {
         fprintf(stderr,"Failed to initialize webserver subsystem.\n" );
     }
     
@@ -436,7 +436,7 @@ CControlObject::~CControlObject()
     //m_mutexClientOutputQueue.Unlock();
     
     // Exit weserver interface
-    vscpweb_exit();
+    web_exit();
     
     //gpobj->m_mutexUDPInfo.Lock();
     udpRemoteClientList::iterator iterUDP;
@@ -1254,10 +1254,8 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     // Start Multicast interface
     startMulticastWorkerThreads();
 
-    // Start web sockets    
-    startWebServerThread();
-    
-    init_webserver(); // ***
+    // Start webserver and websockets        
+    init_webserver(); 
 
     // Load drivers    
     startDeviceWorkerThreads();
@@ -1432,8 +1430,8 @@ bool CControlObject::cleanup( void )
     stopMulticastWorkerThreads();
     
     logMsg(_("Stopping Web Server worker thread..."),DAEMON_LOGMSG_DEBUG);
-    stopWebServerThread();
-    
+    // TODO stop web server
+   
    
     logMsg(_("Closing databases."),DAEMON_LOGMSG_DEBUG);
     
@@ -1704,60 +1702,6 @@ bool CControlObject::stopMulticastWorkerThreads( void )
     return true;
 }
 
-
-
-/////////////////////////////////////////////////////////////////////////////
-// startWebServerThread
-//
-
-bool CControlObject::startWebServerThread( void )
-{
-    /////////////////////////////////////////////////////////////////////////////
-    // Run the WebServer server thread
-    /////////////////////////////////////////////////////////////////////////////
-    
-    logMsg(_("Starting webserver/websockets interface...\n") );
-
-    m_pwebServerThread = new VSCPWebServerThread;
-
-    if ( NULL != m_pwebServerThread ) {
-        m_pwebServerThread->m_pCtrlObject = this;
-        wxThreadError err;
-        if ( wxTHREAD_NO_ERROR == (err = m_pwebServerThread->Create() ) ) {
-            //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
-            if ( wxTHREAD_NO_ERROR != ( err = m_pwebServerThread->Run() ) ) {
-                logMsg( _("Unable to run WeServer thread.") );
-            }
-        }
-        else {
-            logMsg( _("Unable to create WebServer thread.") );
-        }
-    }
-    else {
-        logMsg( _("Unable to allocate memory for WebServer thread.") );
-    }
-
-    return true;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-// stopWebServerThread
-//
-
-bool CControlObject::stopWebServerThread( void )
-{
-    if ( NULL != m_pwebServerThread ) {
-        m_mutexwebServerThread.Lock();
-        m_pwebServerThread->m_bQuit = true;
-        m_pwebServerThread->Wait();
-        delete m_pwebServerThread;
-        m_pwebServerThread = NULL;
-        m_mutexwebServerThread.Unlock();
-    }
-    
-    return true;
-}
 
 /////////////////////////////////////////////////////////////////////////////
 // startDaemonWorkerThread
@@ -2470,7 +2414,7 @@ bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
                     
                     m_admin_user = subchild->GetAttribute( wxT("user"), wxT("admin") );
                     m_admin_password = subchild->GetAttribute( wxT("password"), 
-                            _("E2D453EF99FB3FCD19E67876554A8C27;A4A86F7D7E119BA3F0CD06881E371B989B33B6D606A863B633EF529D64544F8E") );
+                            _("450ADCE88F2FDBB20F3318B65E53CA4A;06D3311CC2195E80BE4F8EB12931BFEB5C630F6B154B2D644ABE29CEBDBFB545") );
                     m_admin_allowfrom = subchild->GetAttribute( wxT("allowfrom"), wxT("*") ); 
                     m_vscptoken = subchild->GetAttribute( wxT("vscptoken"), 
                                                             wxT("Carpe diem quam minimum credula postero") );
@@ -3875,7 +3819,7 @@ bool CControlObject::doCreateConfigurationTable( void )
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_VARIABLES_PATH_DB, VSCPDB_CONFIG_DEFAULT_VARIABLES_PATH_DB );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_VARIABLES_PATH_XML, VSCPDB_CONFIG_DEFAULT_VARIABLES_PATH_XML );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_PATH_DB_DATA, VSCPDB_CONFIG_DEFAULT_PATH_DB_DATA );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_ENABLE, VSCPDB_CONFIG_DEFAULT_WEB_AUTHENTICATION_ENABLE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_DISABLE, VSCPDB_CONFIG_DEFAULT_WEB_AUTHENTICATION_DISABLE );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_PATH_ROOT, VSCPDB_CONFIG_DEFAULT_WEB_PATH_ROOT );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_ADDR, VSCPDB_CONFIG_DEFAULT_WEB_ADDR );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_PATH_CERT, VSCPDB_CONFIG_DEFAULT_WEB_PATH_CERT );
@@ -4103,7 +4047,7 @@ bool CControlObject::dbReadConfiguration( void )
         }
         // Disable web server security
         else if ( !vscp_strcasecmp( (const char * )pName, 
-                        VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_ENABLE )  ) {
+                        VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_DISABLE )  ) {
             m_bDisableSecurityWebServer = atoi( (const char *)pValue ) ? true : false;
         }
         // Web server root path

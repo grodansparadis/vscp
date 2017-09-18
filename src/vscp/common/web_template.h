@@ -29,6 +29,9 @@
 
 #define WEB_COMMON_MENU "<ul id=\"nav\">      "\
                            " <li>"\
+                           "    <a href=\"/vscp/\">Home</a>"\
+                           " </li>"\
+                           " <li>"\
                            "    <a href=\"#\">Configuration</a>"\
                            "    <ul>"\
                            "        <li>"\
@@ -111,9 +114,6 @@
                            "         <li>"\
                            "             <a href=\"http://www.vscp.org\" target=\"moon\">VSCP Site</a>"\
                            "         </li>"\
-                           "         <li>"\
-                           "             <a href=\"https://www.youtube.com/watch?v=7CeNIDWtlo0\" target=\"moon\">Stay foolish...</a>"\
-                           "         </li>"\
                            "     </ul>"\
                            " </li>"\
                            "</ul>"
@@ -121,7 +121,7 @@
 // Common head up to <body>
 // Contains three string insert points for printf
 // 1. Page title
-#define WEB_COMMON_HEAD "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head><meta content=\"text/html; charset=ISO-8859-1\" http-equiv=\"content-type\"><title>%s</title>"
+#define WEB_COMMON_HEAD "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head><meta content=\"text/html; charset=utf8\" http-equiv=\"content-type\"><title>%s</title>"
 
 #define WEB_COMMON_HEAD_END_BODY_START "</head><body>"
 

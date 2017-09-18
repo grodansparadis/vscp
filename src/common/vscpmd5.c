@@ -442,28 +442,46 @@ static void vscpmd5_bin2str(char *to, const unsigned char *p, size_t len  )
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// vscpweb_md5
+// vscpmd5_getDigestFromString
+// 
+
+char *vscpmd5_getDigestFromString( char digest[33], const unsigned char *buf, size_t len ) 
+{
+    unsigned char hash[16];
+    
+    md5_state_t pms;
+  
+    vscpmd5_init( &pms );
+    vscpmd5_append( &pms, buf, len );
+    vscpmd5_finish( &pms, hash );
+    vscpmd5_bin2str( digest, hash, sizeof( hash ) );
+    return digest;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// vscpmd5_getDigestFromMultiStrings
 //
 // Return stringified MD5 hash for list of strings. Buffer must be 33 bytes.
 //
 
 char *
-vscpmd5_get_string( char buf[33], ... )
+vscpmd5_getDigestFromMultiStrings( char digest[33], ... )
 {
     md5_byte_t hash[16];
     const char *p;
     va_list ap;
-    md5_state_t ctx;
+    md5_state_t pms;
 
-    vscpmd5_init(&ctx);
+    vscpmd5_init( &pms );
 
-    va_start(ap, buf);
-    while ((p = va_arg(ap, const char *)) != NULL) {
-        vscpmd5_append(&ctx, (const md5_byte_t *) p, strlen(p));
+    va_start(ap, digest); 
+    while ((p = va_arg( ap, const char *)) != NULL ) {
+        vscpmd5_append( &pms, (const md5_byte_t *) p, strlen(p) );
     }
     va_end(ap);
 
-    vscpmd5_finish(&ctx, hash);
-    vscpmd5_bin2str(buf, hash, sizeof (hash));
-    return buf;
+    vscpmd5_finish( &pms, hash );
+    vscpmd5_bin2str( digest, hash, sizeof (hash) );
+    return digest;
 }
+

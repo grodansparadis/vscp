@@ -697,7 +697,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *nc,
         keypairs[_("FORMAT")].ToLong( &format );
     }
     else {
-        webserv_util_sendheader( nc, 400, "text/plain" );
+        //webserv_util_sendheader( nc, 400, "text/plain" );
         mg_send_http_chunk( nc, REST_PLAIN_ERROR_UNSUPPORTED_FORMAT,
                                     strlen( REST_PLAIN_ERROR_UNSUPPORTED_FORMAT ) );
         mg_send_http_chunk( nc, "", 0 );   // Terminator

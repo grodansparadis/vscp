@@ -30,8 +30,6 @@
 #endif // _MSC_VER > 1000
 #endif
 
-// NS_ENABLE_SSL        // Enable webserver SSL functionality
-
 #include "wx/wx.h"
 #include <wx/thread.h>
 #include <wx/filename.h>
@@ -57,7 +55,6 @@
 #include <vscp.h>
 
 // Forward declarations
-class VSCPWebServerThread;
 class VSCPClientThread;
 class CVSCPAutomation;
 
@@ -286,17 +283,6 @@ public:
     */
     bool stopMulticastWorkerThreads( void );
 
-    /*!
-        Starting WebServer worker thread
-        @return true on success
-     */
-    bool startWebServerThread( void );
-
-    /*!
-        Stop the WebServer worker thread
-        @return true on success
-     */
-    bool stopWebServerThread( void );
 
     /*!
         Starting Client worker thread
@@ -408,11 +394,6 @@ public:
      */
     bool removeIdFromClientMap( uint32_t clid );
 
-    /*!
-        Get the webserver thread
-        @return Pointer to the webserver thread
-    */
-    VSCPWebServerThread *getWebServer( void ) { return m_pwebServerThread; };
 
     /*!
         Get the VSCP TCP/IP thread thread
@@ -722,6 +703,8 @@ public:
     //            websocket/webserver interface
     //*****************************************************
 
+    struct web_context *webctx;
+    
     // Enable webserver
     bool m_bWebServer;
     
@@ -974,12 +957,6 @@ private:
      */
     VSCPUDPClientThread *m_pVSCPClientUDPThread;
     wxMutex m_mutexVSCPClientnUDPThread;
-
-    /*!
-        Webserver
-    */
-    VSCPWebServerThread *m_pwebServerThread;
-    wxMutex m_mutexwebServerThread;
 
     /*!
         UDP Worker threads

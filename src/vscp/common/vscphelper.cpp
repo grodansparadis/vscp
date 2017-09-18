@@ -6143,7 +6143,8 @@ bool vscp_makePasswordHash( wxString &result,
     
     memcpy( p, (const char *)password.mbc_str(), strlen( (const char *)password.mbc_str() ) );
     
-    fastpbkdf2_hmac_sha256( p, strlen( (const char *)password.mbc_str() ),
+    fastpbkdf2_hmac_sha256( p, 
+                            strlen( (const char *)password.mbc_str() ),
                             salt, 16,
                             70000,
                             buf, 32 );
