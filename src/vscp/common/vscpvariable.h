@@ -129,7 +129,7 @@ class wxFFileOutputStream;
  */
 
 struct varQuery {
-    uint8_t table;          // Table type    
+    uint8_t tableType;      // Table type: type  1 = Stock, 2=internal, 3=external
     uint32_t stockId;       // ID for next stock variable to return
     sqlite3_stmt *ppStmt;   // Handle for SQL query. NULL if stock
 };
@@ -387,9 +387,9 @@ public:
     /*!
      * setUser
      */
-    bool setUserId( uint32_t userid );
-    bool setUserIdFromUserName( wxString& strUser );
-    bool setUserIdFromClient( uint32_t userid );
+    bool setOwnerId( uint32_t ownerid );
+    bool setOwnerIdFromUserName( wxString& strUser );
+    bool setOwnerdFromClient( uint32_t ownerid );
 
     /*!
         Change last change date time to now
@@ -437,6 +437,7 @@ public:
     // note
     void setNote( const wxString& strNote, bool bBase64=false );
     wxString& getNote( void ) { return m_note; };
+    bool getNote( wxString& strNote, bool bBase64 = false );
     
     // Persistence
     bool isPersistent( void ) { return m_bPersistent; };
@@ -452,9 +453,9 @@ public:
     bool isOwnerWritable( void ) { return ( m_accessRights | 0x80 ) ? true : false; };
     void makeOwnerWritable( bool b ) { m_accessRights |= 0x80; };
     
-    // user id
-    void setUserID( uint32_t uid ) { m_userid = uid; };
-    uint32_t getUserID( void ) { return m_userid; };
+    // owner id
+    void setOwnerID( uint32_t uid ) { m_userid = uid; };
+    uint32_t getOwnerID( void ) { return m_userid; };
     
     // stock variable
     void setStockVariable( bool bStock = true ) { m_bStock = bStock; };
@@ -534,7 +535,7 @@ public:
      * set to NULL in which case only availability of the variable is returned.
      * @return >0 if variable is found, zero if not. 
      */
-    uint32_t find(const wxString& name, CVSCPVariable& variable );
+    uint32_t find( const wxString& name, CVSCPVariable& variable );
     
     
     /*!
@@ -565,6 +566,15 @@ public:
         @return true on success.
      */
     bool writeStockVariable( CVSCPVariable& var );
+    
+    /*!
+       Set variable value from Database record.
+       @param ppStmt sqlite3 ref to record
+       @param variable Variable that will get record data.
+       @return true on success.
+     */
+    bool setVariableFromDbRecord( sqlite3_stmt *ppStmt, 
+                                    CVSCPVariable& variable );
     
     /*!
      * Find a non-persistent variable
@@ -669,7 +679,8 @@ public:
         @param strcfgfile path to variable file where data should be written.
         @return Returns true on success false on failure.
      */
-    bool save(wxString& path, uint8_t whatToSave = VARIABLE_INTERNAL | VARIABLE_EXTERNAL );
+    bool save( wxString& path, 
+                uint8_t whatToSave = VARIABLE_INTERNAL | VARIABLE_EXTERNAL );
     
     /*!
         Write one variable out to XML persistent storage
@@ -699,13 +710,27 @@ public:
      * @param nameArray String array that will receive sorted array with variables
      *                  names that meet regular expression.
      * @param search Regular expression to use for names of variables.
-     * @param type If not zero variable type to list.
+     * @param type If not zero selects variable type to list.
+     * @param bClear If true the string array will be cleared before it is filled.
      * @return Returns true on success
      */
     bool getVarlistFromRegExp( wxArrayString& nameArray,
                                 const wxString& regex = _("(.*)"),
-                                const int type = 0 );
+                                const int type = 0,
+                                bool bClear = true );
     
+    /*!
+     * Prepare list enumeration. Must be called before any of the other
+     * list methods.
+     * @param pq Context for list enumeration..
+     * @param search Regular expression to use for names of variables.
+     * @param type If not zero selects variable type to list.
+     * @return Returns true on success
+     */
+    
+    bool listEnumerationFromRegExp( varQuery *pq, 
+                                        const wxString& regex = _("(.*)"),
+                                        const int type = 0 );
     /*!
      * Get next list item
      * @oaram ppStmt List handle.

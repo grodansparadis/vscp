@@ -27,6 +27,10 @@
 #ifndef VSCP_BASE64
 #define VSCP_BASE64
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*!
  * vscp_base64_encode
  * 
@@ -54,6 +58,11 @@ vscp_base64_encode( const unsigned char *src, int src_len, char *dst );
  */
 int
 vscp_base64_decode( const unsigned char *src, int src_len, char *dst, size_t *dst_len );
+
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

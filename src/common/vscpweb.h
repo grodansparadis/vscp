@@ -53,12 +53,12 @@
 extern "C" {
 #endif /* __cplusplus */
     
-// Helpers
-//void web_strlcpy( register char *dst, register const char *src, size_t n );    
+// Helpers   
 char *web_strndup(const char *ptr, size_t len);    
-char *web_strdup( const char *str );    
-//const char *web_strcasestr( const char *big_str, const char *small_str );    
-    
+char *web_strdup( const char *str );        
+
+#define WEB_OK      1
+#define WEB_ERROR   0
 
 ///////////////////////////////////////////////////////////////////////////////
 // web_init

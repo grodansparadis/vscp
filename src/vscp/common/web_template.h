@@ -209,7 +209,7 @@
 #define WEB_VARLIST_BODY_START "<br><div id=\"content\"><div id=\"header\"><h1 id=\"header\">VSCP - Variables</h1></div><table><tbody>"
 
 // Table head
-#define WEB_VARLIST_TR_HEAD "<tr><th>Pos</th><th>Type</th><th>Variable</th></tr>"
+#define WEB_VARLIST_TR_HEAD "<tr><th>Pos</th><th>Type</th><th>Variable</th><th></th></tr>"
 
 
 

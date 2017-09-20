@@ -2222,7 +2222,7 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
                                 "name=%s type=%d user=%lu access-right=%03X persistent=%s last-change='%s' value='%s' note='%s'\r\n",
                                 (const char *)variable.getName().mbc_str(),
                                 variable.getType(),
-                                variable.getUserID(),
+                                variable.getOwnerID(),
                                 variable.getAccessRights(),                                
                                 variable.isPersistent() ? "true" : "false",
                                 (const char *)variable.getLastChange().FormatISOCombined().mbc_str(),
@@ -2239,7 +2239,7 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
                 "success-code,error-code,message,description,name,type,user,access-right,persistent,last-change,value,note\r\n1,1,Success,Success.,%s,%d,%lu,%03X,%s,%s,'%s','%s'\r\n",
                 (const char *)strVariableName.mbc_str(),
                 variable.getType(),
-                variable.getUserID(),
+                variable.getOwnerID(),
                 variable.getAccessRights(),    
                 variable.isPersistent() ? "true" : "false",
                 (const char *)variable.getLastChange().FormatISOCombined().mbc_str(),    
@@ -2259,7 +2259,7 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
                         (const char *)variable.getName().mbc_str(),
                         variable.getType(),
                         variable.getVariableTypeAsString( variable.getType() ),
-                        variable.getUserID(),
+                        variable.getOwnerID(),
                         variable.getAccessRights(),                                                
                         variable.isPersistent() ? "true" : "false",
                         (const char *)variable.getLastChange().FormatISOCombined().mbc_str() );
@@ -2322,7 +2322,7 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
                 
                 p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varuser", 7 );
                 p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
-                p += json_emit_long( p, &buf[sizeof(buf)] - p, variable.getUserID() );
+                p += json_emit_long( p, &buf[sizeof(buf)] - p, variable.getOwnerID() );
                 p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
                 
                 p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varaccessright", 14 );
@@ -2403,7 +2403,7 @@ VSCPWebServerThread::webserv_rest_doListVariable( struct mg_connection *nc,
         wxArrayString variable_array;
         if ( !pObject->m_VSCP_Variables.getVarlistFromRegExp( variable_array, strRegEx ) ) {
             webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_FOUND );
-            return;
+            return; 
         }
        
         if ( REST_FORMAT_PLAIN == format ) {
@@ -2425,7 +2425,7 @@ VSCPWebServerThread::webserv_rest_doListVariable( struct mg_connection *nc,
                                     "name=%s type=%d user=%lu access-right=%03X last-change='%s' persistent=%s\r\n",
                                     (const char *)variable.getName().mbc_str(),
                                     variable.getType(),
-                                    variable.getUserID(),
+                                    variable.getOwnerID(),
                                     variable.getAccessRights(),
                                     (const char *)variable.getLastChange().FormatISOCombined().mbc_str(),
                                     variable.isPersistent() ? "true" : "false" );
@@ -2435,7 +2435,7 @@ VSCPWebServerThread::webserv_rest_doListVariable( struct mg_connection *nc,
                                     "name=%s type=%d user=%lu access-right=%03X last-change='%s' persistent=%s value=%s note=%s\r\n",
                                     (const char *)variable.getName().mbc_str(),
                                     variable.getType(),
-                                    variable.getUserID(),
+                                    variable.getOwnerID(),
                                     variable.getAccessRights(),
                                     (const char *)variable.getLastChange().FormatISOCombined().mbc_str(),
                                     variable.isPersistent() ? "true" : "false",
@@ -2516,7 +2516,7 @@ VSCPWebServerThread::webserv_rest_doListVariable( struct mg_connection *nc,
                         (const char *)variable.getName().mbc_str(),
                         variable.getType(),
                         variable.getVariableTypeAsString( variable.getType() ),
-                        variable.getUserID(),
+                        variable.getOwnerID(),
                         variable.getAccessRights(),                                                
                         variable.isPersistent() ? "true" : "false",
                         (const char *)variable.getLastChange().FormatISOCombined().mbc_str() );
@@ -2637,7 +2637,7 @@ VSCPWebServerThread::webserv_rest_doListVariable( struct mg_connection *nc,
                     // Variable user id
                     p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, "varuser", 7 );
                     p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ":", 1 );
-                    p += json_emit_long( p, &buf[ lenBuf ] - p, variable.getUserID() );
+                    p += json_emit_long( p, &buf[ lenBuf ] - p, variable.getOwnerID() );
                     p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ",", 1 );
                 
                     // Variable access right

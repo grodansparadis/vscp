@@ -13,7 +13,7 @@
         name="SIM1_NUMBEROFNODES"
         persistent="true"
     	user="0"
-        access-rights="644"
+        access-rights="0x644"
         value="1"	
         note = "Number of simulated nodes this driver should act as. Each of them should
         have an entry below with the index of the driver ordinal as the last character
@@ -24,7 +24,7 @@
         name="SIM1_BLEVEL20"
         persistent="true"
         user="0"
-        access-rights="644"
+        access-rights="0x644"
         value="false"
         note="This is not a Level II node." />
 
@@ -32,7 +32,7 @@
         name="SIM1_ZONE0"
         persistent="true"
         user="0"
-        access-rights="644"
+        access-rights="0x644"
         value="1"
         note="Zone for module." />
 
@@ -40,7 +40,7 @@
        name="SIM1_SUBZONE0"
         persistent="true"
         user="0"
-        access-rights="644"
+        access-rights="0x644"
        value="2"
        note="Zone for module." />
 
@@ -48,7 +48,7 @@
         name="SIM1_GUID0"
         persistent="true"
         user="0"
-        access-rights="644"
+        access-rights="0x644"
         value="FF:FF:FF:FF:FF:FF:FF:F7:03:11:22:33:44:55:66:77"
         note="GUID for the node." />
 
@@ -56,7 +56,7 @@
         name="SIM1_PATH0"
         persistent="true"
         user="0"
-        access-rights="644"
+        access-rights="0x644"
         value="/srv/vscp/simtempdata.txt"
         note="Path to simulation data. Leave blank to use internal values." />
 
@@ -64,7 +64,7 @@
         name="SIM1_INTERVAL0"
         persistent="true"
         user="0"
-        access-rights="644"
+        access-rights="0x644"
         value="2"
         note="Interval between measurement events." />
 
@@ -72,7 +72,7 @@
         name="SIM1_MEASUREMENTCLASS0"
         persistent="true"
         user="0"
-        access-rights="644"
+        access-rights="0x644"
         value="10"
         note="CLASS1_MEASUREMENT" />
 
@@ -80,7 +80,7 @@
         name="SIM1_MEASUREMENTTYPE0"
         persistent="true"
         user="0"
-        access-rights="644"
+        access-rights="0x644"
         value="6"
         note="Measurement type is temperature." />
 
@@ -88,7 +88,7 @@
         name="SIM1_UNIT0"
         persistent="true"
         user="0"
-        access-rights="644"
+        access-rights="0x644"
         value="1"
         note="Degrees Celsius (0=Kelvin, 1=Fahrenheit)." />
 
@@ -96,7 +96,7 @@
         name="SIM1_CODING0"
         persistent="true"
         user="0"
-        access-rights="644"
+        access-rights="0x644"
         value="0"
         note="Coding as normalized integer. (0=normalized integer, 1=float, 2=string)" />
 
@@ -104,7 +104,7 @@
         name="SIM1_INDEX0"
         persistent="true"
         user="0"
-        access-rights="644"
+        access-rights="0x644"
         value="2"
         note="Sensor index (0-7)." />
 
@@ -112,7 +112,7 @@
         name="SIM1_DECISIONMATRIX0"
         persistent="true"
         user="0"
-        access-rights="644"
+        access-rights="0x644"
         value="0,0x80,0xff,30,0xff,5,1,40,
                0,0x80,0xff,30,0xff,6,2,40,
                0,0x80,0xff,30,0xff,5,1,50,

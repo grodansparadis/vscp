@@ -4812,6 +4812,7 @@ void VSCPClientThread::handleVariable_List( struct mg_connection *conn,
         type = vscp_readStringValue( str );
     }
 
+    // Get all variable names
     wxArrayString arrayVars;
     gpobj->m_VSCP_Variables.getVarlistFromRegExp( arrayVars, strSearch );
     

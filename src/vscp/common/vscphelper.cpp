@@ -46,7 +46,7 @@
 #include <wx/wfstream.h>
 #include <wx/xml/xml.h>
 #include <wx/tokenzr.h>
-#include <wx/base64.h>
+//#include <wx/base64.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -64,6 +64,7 @@
 #include <crc.h> 
 #include <aes.h>
 #include <fastpbkdf2.h>
+#include <vscpbase64.h>
 
 #include <vscp.h>
 #include <guid.h>
@@ -344,6 +345,27 @@ void vscp_toXMLEscape( char *temp_str )
     temp_str[ str_len ] = '\0';
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// vscp_base64_wxdecode
+//
+
+bool vscp_base64_wxdecode( wxString& str ) 
+{
+    if ( 0 == str.Length() ) return true;   // Nothing to do if empty
+    
+    char *pbuf = new char[ 2*str.Length() ];
+    if ( NULL == pbuf ) return false;
+    memset( pbuf, 0, 2*str.Length() );
+    size_t dest_len;
+    vscp_base64_decode( (const unsigned char *)( (const char *)str.mbc_str() ), 
+                            str.length(), 
+                            pbuf, 
+                            &dest_len );
+    str = wxString::FromUTF8( pbuf );
+    delete pbuf;
+    
+    return true;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // decodeBase64IfNeeded
@@ -360,25 +382,13 @@ bool vscp_decodeBase64IfNeeded( wxString &wxstr, wxString &strResult )
     
     if ( wxstr.StartsWith(_("BASE64:"), &wxstr ) ) {
         
-        // Yes should be decoded
-        size_t len = wxBase64Decode( NULL, 0, wxstr );
-        if ( 0 == len ) {
-            return false;
-        }
-        
-        uint8_t *pbuf = new uint8_t[ len ];
-        if ( NULL == pbuf ) {
-            return false;
-        }
-        
-        len = wxBase64Decode( pbuf, len, wxstr );
-        wxstr = wxString::FromUTF8( (const char *) pbuf, len );
-        delete [] pbuf;      
+        vscp_base64_wxdecode( wxstr );     
         
     } 
     
     return true;
 }
+
 
 
 // ***************************************************************************

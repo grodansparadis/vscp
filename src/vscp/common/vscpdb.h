@@ -111,10 +111,10 @@
 #define VSCPDB_CONFIG_NAME_DM_PATH_XML                  "dm_path_xml"
 #define VSCPDB_CONFIG_DEFAULT_DM_PATH_XML               "/srv/vscp/dm.xml"
 
-#define VSCPDB_CONFIG_NAME_VARIABLES_PATH_DB            "variables_path_db"
+#define VSCPDB_CONFIG_NAME_VARIABLES_PATH_DB            "variable_path_db"
 #define VSCPDB_CONFIG_DEFAULT_VARIABLES_PATH_DB         "/srv/vscp/variable.sqlite3"
 
-#define VSCPDB_CONFIG_NAME_VARIABLES_PATH_XML           "variables_path_xml"
+#define VSCPDB_CONFIG_NAME_VARIABLES_PATH_XML           "variable_path_xml"
 #define VSCPDB_CONFIG_DEFAULT_VARIABLES_PATH_XML        "/srv/vscp/variable.xml"
 
 #define VSCPDB_CONFIG_NAME_PATH_DB_DATA                 "path_db_data"

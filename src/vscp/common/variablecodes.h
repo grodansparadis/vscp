@@ -62,4 +62,11 @@
 #define VSCP_DAEMON_VARIABLE_CODE_USER                      502 // User item, comma separated
 #define VSCP_DAEMON_VARIABLE_CODE_FILTER                    503 // Filter item, comma separated
 
+
+// When adding new type
+// ====================
+// add to variables
+// Add to webserver admin i/f  variable: edit/list
+
+
 #endif

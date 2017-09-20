@@ -37,11 +37,14 @@
 #include <wx/regex.h>
 #include <wx/base64.h>
 #include <wx/listimpl.cpp>
+#include <wx/versioninfo.h>
 
 #include <openssl/opensslv.h>
 #include <openssl/crypto.h>
 
 #include <mongoose.h>
+
+#include <lua.h>
 
 #include <vscp.h>
 #include <vscpdb.h>
@@ -52,6 +55,7 @@
 #include <guid.h>
 #include <variablecodes.h>
 #include <vscpvariable.h>
+#include <vscpbase64.h>
 
 // The global control object
 extern CControlObject *gpobj;
@@ -461,20 +465,6 @@ wxString CVSCPVariable::getAsString( bool bShort )
         wxstr += m_strValue;
         wxstr += _(";");
         wxstr += m_note;
-        /*
-        if ( isValueBase64Encoded( m_type ) ) {
-            wxstr += _(";");
-            wxstr += wxBase64Encode( m_strValue, m_strValue.Length() );
-            wxstr += _(";");
-            wxstr += wxBase64Encode( m_note, m_note.Length() );
-        }
-        else {
-            wxstr += _(";");
-            wxstr += m_strValue;
-            wxstr += _(";");
-            wxstr += wxBase64Encode( m_note, m_note.Length() );
-        }
-        */ 
     }
     
     return wxstr;
@@ -553,10 +543,10 @@ bool CVSCPVariable::setRighs( uint32_t rights )
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// setUserId
+// setOwnerId
 //
 
-bool CVSCPVariable::setUserId( uint32_t userid )
+bool CVSCPVariable::setOwnerId( uint32_t userid )
 {
     // Check for admin user
     if ( 0 == userid ) {
@@ -574,10 +564,10 @@ bool CVSCPVariable::setUserId( uint32_t userid )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// setUserIdFromUserName
+// setOwnerIdFromUserName
 //
 
-bool CVSCPVariable::setUserIdFromUserName( wxString& strUser )
+bool CVSCPVariable::setOwnerIdFromUserName( wxString& strUser )
 {
     long userid;
     
@@ -598,14 +588,15 @@ bool CVSCPVariable::setUserIdFromUserName( wxString& strUser )
 // writeValueToString
 //
 
-void CVSCPVariable::writeValueToString( wxString& strValueOut, bool bBase64 )
+void CVSCPVariable::writeValueToString( wxString& strValueOut, bool bBase64 ) 
 {
     wxString str;
     switch ( m_type ) { 
 
         case VSCP_DAEMON_VARIABLE_CODE_STRING:
             if ( bBase64 ) {
-                strValueOut = wxBase64Encode( m_strValue.ToUTF8(), strlen( m_strValue.ToUTF8() ) );
+                strValueOut = m_strValue;
+                vscp_base64_wxdecode( strValueOut );
             }
             else {
                 strValueOut = m_strValue;
@@ -631,7 +622,7 @@ void CVSCPVariable::writeValueToString( wxString& strValueOut, bool bBase64 )
   
         case VSCP_DAEMON_VARIABLE_CODE_BLOB:
             if ( bBase64 ) {
-                strValueOut = wxBase64Encode( m_strValue.ToUTF8(), strlen( m_strValue.ToUTF8() ) );
+                vscp_base64_wxdecode( strValueOut );
             }
             else {
                 strValueOut = m_strValue;
@@ -644,7 +635,7 @@ void CVSCPVariable::writeValueToString( wxString& strValueOut, bool bBase64 )
             
         case VSCP_DAEMON_VARIABLE_CODE_HTML:
             if ( bBase64 ) {
-                strValueOut = wxBase64Encode( m_strValue.ToUTF8(), strlen( m_strValue.ToUTF8() ) );
+                vscp_base64_wxdecode( strValueOut );
             }
             else {
                 strValueOut = m_strValue;
@@ -653,7 +644,7 @@ void CVSCPVariable::writeValueToString( wxString& strValueOut, bool bBase64 )
 
         case VSCP_DAEMON_VARIABLE_CODE_JAVASCRIPT:
             if ( bBase64 ) {
-                strValueOut = wxBase64Encode( m_strValue.ToUTF8(), strlen( m_strValue.ToUTF8() ) );
+                vscp_base64_wxdecode( strValueOut );
             }
             else {
                 strValueOut = m_strValue;
@@ -662,7 +653,7 @@ void CVSCPVariable::writeValueToString( wxString& strValueOut, bool bBase64 )
             
         case VSCP_DAEMON_VARIABLE_CODE_JSON:
             if ( bBase64 ) {
-                strValueOut = wxBase64Encode( m_strValue.ToUTF8(), strlen( m_strValue.ToUTF8() ) );
+                vscp_base64_wxdecode( strValueOut );
             }
             else {
                 strValueOut = m_strValue;
@@ -671,7 +662,7 @@ void CVSCPVariable::writeValueToString( wxString& strValueOut, bool bBase64 )
             
         case VSCP_DAEMON_VARIABLE_CODE_XML:
             if ( bBase64 ) {
-                strValueOut = wxBase64Encode( m_strValue.ToUTF8(), strlen( m_strValue.ToUTF8() ) );
+                vscp_base64_wxdecode( strValueOut );
             }
             else {
                 strValueOut = m_strValue;
@@ -680,7 +671,7 @@ void CVSCPVariable::writeValueToString( wxString& strValueOut, bool bBase64 )
             
         case VSCP_DAEMON_VARIABLE_CODE_SQL:
             if ( bBase64 ) {
-                strValueOut = wxBase64Encode( m_strValue.ToUTF8(), strlen( m_strValue.ToUTF8() ) );
+                vscp_base64_wxdecode( strValueOut );
             }
             else {
                 strValueOut = m_strValue;
@@ -689,7 +680,7 @@ void CVSCPVariable::writeValueToString( wxString& strValueOut, bool bBase64 )
             
         case VSCP_DAEMON_VARIABLE_CODE_LUA:
             if ( bBase64 ) {
-                strValueOut = wxBase64Encode( m_strValue.ToUTF8(), strlen( m_strValue.ToUTF8() ) );
+                vscp_base64_wxdecode( strValueOut );
             }
             else {
                 strValueOut = m_strValue;
@@ -698,7 +689,7 @@ void CVSCPVariable::writeValueToString( wxString& strValueOut, bool bBase64 )
             
         case VSCP_DAEMON_VARIABLE_CODE_LUA_RESULT:
             if ( bBase64 ) {
-                strValueOut = wxBase64Encode( m_strValue.ToUTF8(), strlen( m_strValue.ToUTF8() ) );
+                vscp_base64_wxdecode( strValueOut );
             }
             else {
                 strValueOut = m_strValue;
@@ -707,7 +698,7 @@ void CVSCPVariable::writeValueToString( wxString& strValueOut, bool bBase64 )
             
         case VSCP_DAEMON_VARIABLE_CODE_UX_TYPE1:
             if ( bBase64 ) {
-                strValueOut = wxBase64Encode( m_strValue.ToUTF8(), strlen( m_strValue.ToUTF8() ) );
+                vscp_base64_wxdecode( strValueOut );
             }
             else {
                 strValueOut = m_strValue;
@@ -716,7 +707,7 @@ void CVSCPVariable::writeValueToString( wxString& strValueOut, bool bBase64 )
             
         case VSCP_DAEMON_VARIABLE_CODE_DM_ROW:
             if ( bBase64 ) {
-                strValueOut = wxBase64Encode( m_strValue.ToUTF8(), strlen( m_strValue.ToUTF8() ) );
+                vscp_base64_wxdecode( strValueOut );
             }
             else {
                 strValueOut = m_strValue;
@@ -725,7 +716,7 @@ void CVSCPVariable::writeValueToString( wxString& strValueOut, bool bBase64 )
             
         case VSCP_DAEMON_VARIABLE_CODE_DRIVER:
             if ( bBase64 ) {
-                strValueOut = wxBase64Encode( m_strValue.ToUTF8(), strlen( m_strValue.ToUTF8() ) );
+                vscp_base64_wxdecode( strValueOut );
             }
             else {
                 strValueOut = m_strValue;
@@ -734,7 +725,7 @@ void CVSCPVariable::writeValueToString( wxString& strValueOut, bool bBase64 )
             
         case VSCP_DAEMON_VARIABLE_CODE_USER:
             if ( bBase64 ) {
-                strValueOut = wxBase64Encode( m_strValue.ToUTF8(), strlen( m_strValue.ToUTF8() ) );
+                vscp_base64_wxdecode( strValueOut );
             }
             else {
                 strValueOut = m_strValue;
@@ -743,7 +734,7 @@ void CVSCPVariable::writeValueToString( wxString& strValueOut, bool bBase64 )
             
         case VSCP_DAEMON_VARIABLE_CODE_FILTER:
             if ( bBase64 ) {
-                strValueOut = wxBase64Encode( m_strValue.ToUTF8(), strlen( m_strValue.ToUTF8() ) );
+                vscp_base64_wxdecode( strValueOut );
             }
             else {
                 strValueOut = m_strValue;
@@ -917,7 +908,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
         case VSCP_DAEMON_VARIABLE_CODE_STRING:
             // Should we do a BASE64 conversion
             if ( bBase64 ) {
-                m_strValue = wxT("");
+                m_strValue = _("");
                 char *pbuf = new char[ wxBase64EncodedSize( strlen( strValue.mbc_str() ) ) + 1 ];
                 if ( NULL == pbuf ) return false;
                 size_t len = wxBase64Encode( pbuf, 
@@ -1007,7 +998,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
         case VSCP_DAEMON_VARIABLE_CODE_BLOB:
             // Should we do a BASE64 conversion
             if ( bBase64 ) {
-                m_strValue = wxT("");
+                m_strValue = _("");
                 char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];
                 if ( NULL == pbuf ) return false;
                 size_t len = wxBase64Encode( pbuf, 
@@ -1037,7 +1028,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
         case VSCP_DAEMON_VARIABLE_CODE_JSON:
             // Should we do a BASE64 conversion
             if ( bBase64 ) {
-                m_strValue = wxT("");
+                m_strValue = _("");
                 char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];
                 if ( NULL == pbuf ) return false;
                 size_t len = wxBase64Encode( pbuf, 
@@ -1059,7 +1050,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
         case VSCP_DAEMON_VARIABLE_CODE_XML:
             // Should we do a BASE64 conversion
             if ( bBase64 ) {
-                m_strValue = wxT("");
+                m_strValue = _("");
                 char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];
                 if ( NULL == pbuf ) return false;
                 size_t len = wxBase64Encode( pbuf, 
@@ -1081,7 +1072,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
         case VSCP_DAEMON_VARIABLE_CODE_SQL:
             // Should we do a BASE64 conversion
             if ( bBase64 ) {
-                m_strValue = wxT("");
+                m_strValue = _("");
                 char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];
                 if ( NULL == pbuf ) return false;
                 size_t len = wxBase64Encode( pbuf, 
@@ -1103,7 +1094,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
         case VSCP_DAEMON_VARIABLE_CODE_LUA:
             // Should we do a BASE64 conversion
             if ( bBase64 ) {
-                m_strValue = wxT("");
+                m_strValue = _("");
                 char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];
                 if ( NULL == pbuf ) return false;
                 size_t len = wxBase64Encode( pbuf, 
@@ -1125,7 +1116,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
         case VSCP_DAEMON_VARIABLE_CODE_LUA_RESULT:
             // Should we do a BASE64 conversion
             if ( bBase64 ) {
-                m_strValue = wxT("");
+                m_strValue = _("");
                 char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];
                 if ( NULL == pbuf ) return false;
                 size_t len = wxBase64Encode( pbuf, 
@@ -1147,7 +1138,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
         case VSCP_DAEMON_VARIABLE_CODE_UX_TYPE1:
             // Should we do a BASE64 conversion
             if ( bBase64 ) {
-                m_strValue = wxT("");
+                m_strValue = _("");
                 char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];
                 if ( NULL == pbuf ) return false;
                 size_t len = wxBase64Encode( pbuf, 
@@ -1169,7 +1160,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
         case VSCP_DAEMON_VARIABLE_CODE_DM_ROW:
             // Should we do a BASE64 conversion
             if ( bBase64 ) {
-                m_strValue = wxT("");
+                m_strValue = _("");
                 char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];
                 if ( NULL == pbuf ) return false;
                 size_t len = wxBase64Encode( pbuf, 
@@ -1191,7 +1182,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
         case VSCP_DAEMON_VARIABLE_CODE_DRIVER:
             // Should we do a BASE64 conversion
             if ( bBase64 ) {
-                m_strValue = wxT("");
+                m_strValue = _("");
                 char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];
                 if ( NULL == pbuf ) return false;
                 size_t len = wxBase64Encode( pbuf, 
@@ -1213,7 +1204,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
         case VSCP_DAEMON_VARIABLE_CODE_USER:
             // Should we do a BASE64 conversion
             if ( bBase64 ) {
-                m_strValue = wxT("");
+                m_strValue = _("");
                 char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];
                 if ( NULL == pbuf ) return false;
                 size_t len = wxBase64Encode( pbuf, 
@@ -1235,7 +1226,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
         case VSCP_DAEMON_VARIABLE_CODE_FILTER:
             // Should we do a BASE64 conversion
             if ( bBase64 ) {
-                m_strValue = wxT("");
+                m_strValue = _("");
                 char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];
                 if ( NULL == pbuf ) return false;
                 size_t len = wxBase64Encode( pbuf, 
@@ -1266,6 +1257,18 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
     return true;
 }
  
+
+///////////////////////////////////////////////////////////////////////////////
+// getNote
+//
+//
+
+bool CVSCPVariable::getNote( wxString& strNote, bool bBase64 )
+{
+    strNote = m_note;
+    return vscp_base64_wxdecode( strNote );
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // getVariableFromString
@@ -1339,18 +1342,18 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable,
         str.Trim();
         if ( str.Length() ) {
             if ( str.ToULong( &userid ) ) {
-                setUserId( userid );
+                setOwnerId( userid );
             }
             else {
                 wxString str = strUser;
-                if ( !setUserIdFromUserName( str ) ) {
+                if ( !setOwnerIdFromUserName( str ) ) {
                     return false;
                 }
             }
         }
         else {
             wxString str = strUser;
-            if ( !setUserIdFromUserName( str ) ) {
+            if ( !setOwnerIdFromUserName( str ) ) {
                 return false;
             }
         }
@@ -1628,7 +1631,7 @@ void CVSCPVariable::setTrue( void )
         m_strValue = _("1.0");
     }
     else if ( VSCP_DAEMON_VARIABLE_CODE_STRING == getType() ) {
-        m_strValue = wxT("true"); 
+        m_strValue = _("true"); 
     }
   
 }
@@ -1656,7 +1659,7 @@ void CVSCPVariable::setFalse( void )
         m_strValue = _("0");
     }
     else if ( VSCP_DAEMON_VARIABLE_CODE_STRING == getType() ) {
-        m_strValue = wxT("false"); 
+        m_strValue = _("false"); 
     }
   
 }
@@ -1817,7 +1820,7 @@ bool CVariableStorage::init( void )
     variable.setID( ID_NON_PERSISTENT );
     variable.setStockVariable( true );
     variable.setPersistent( false );
-    variable.setUserId( USER_ID_ADMIN );
+    variable.setOwnerId( USER_ID_ADMIN );
     variable.setLastChangedToNow(); 
     variable.setNote(_(""));
     
@@ -1838,12 +1841,12 @@ bool CVariableStorage::init( void )
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("VSCP minor version number."), true );
     addStockVariable( variable  );
-   
+
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
-    variable.setName( _("vscp.version.sub") );
+    variable.setName( _("vscp.version.release") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
-    variable.setNote( _("VSCP sub version number."), true );
+    variable.setNote( _("VSCP release version number."), true );
     addStockVariable( variable  );
     
     variable.init();
@@ -1862,158 +1865,183 @@ bool CVariableStorage::init( void )
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
-    variable.setName( _("vscp.version.wxwidgets.major") );
+    variable.setName( _("vscp.copyright") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("VSCP copyright."), true );
+    addStockVariable( variable  );
+    
+    
+    // *************************************************************************
+    //                               wxWidgets
+    // *************************************************************************
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ );    
+    variable.setName( _("vscp.wxwidgets.version.major") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("wxWidgets major version number."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
-    variable.setName( _("vscp.version.wxwidgets.minor") );
+    variable.setName( _("vscp.wxwidgets.version.minor") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("wxWidgets minor version number."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
-    variable.setName( _("vscp.version.wxwidgets.release") );
+    variable.setName( _("vscp.wxwidgets.version.release") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("wxWidgets release version number."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
-    variable.setName( _("vscp.version.wxwidgets.sub") );
+    variable.setName( _("vscp.wxwidgets.version.sub") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("wxWidgets sub version number."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
-    variable.setName( _("vscp.version.wxwidgets.str") );
+    variable.setName( _("vscp.wxwidgets.version.str") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("wxWidgets version string."), true );
     addStockVariable( variable  );
-        
-#ifndef VSCP_DISABLE_LUA
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
-    variable.setName( _("vscp.version.lua.major") );
-    variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
-    variable.setNote( _("LUA major version number."), true );
-    addStockVariable( variable  );
-    
-    variable.init();
-    variable.setAccessRights( PERMISSON_ALL_READ );    
-    variable.setName( _("vscp.version.lua.minor") );
-    variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
-    variable.setNote( _("LUA minor version number."), true );
-    addStockVariable( variable  );
-    
-    variable.init();
-    variable.setAccessRights( PERMISSON_ALL_READ );    
-    variable.setName( _("vscp.version.lua.release") );
-    variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
-    variable.setNote( _("LUA release version number."), true );
-    addStockVariable( variable  );
-    
-    variable.init();
-    variable.setAccessRights( PERMISSON_ALL_READ );    
-    variable.setName( _("vscp.version.lua.str") );
+    variable.setName( _("vscp.wxwidgets.copyright") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("LUA version string."), true );
+    variable.setNote( _("wxWidgets copyright."), true );
     addStockVariable( variable  );
-   
-#endif    
+    
+    
+    // *************************************************************************
+    //                               Mongoose
+    // *************************************************************************
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
-    variable.setName( _("vscp.version.sqlite.major") );
+    variable.setName( _("vscp.mongoose.version.str") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("Mongoose version."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ );    
+    variable.setName( _("vscp.mongoose.copyright") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("Mongoose copyright."), true );
+    addStockVariable( variable  );
+
+
+    // *************************************************************************
+    //                                SQLite
+    // *************************************************************************
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ );    
+    variable.setName( _("vscp.sqlite.version.major") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("SQLite3 major version number."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
-    variable.setName( _("vscp.version.sqlite.minor") );
+    variable.setName( _("vscp.sqlite.version.minor") );
     variable.setNote( _("SQLite3 minor version number."), true );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
-    variable.setName( _("vscp.version.sqlite.release") );
+    variable.setName( _("vscp.sqlite.version.release") );
     variable.setNote( _("SQLite3 release version number."), true );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
-    variable.setName( _("vscp.version.sqlite.build") );
+    variable.setName( _("vscp.sqlite.version.build") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("SQLite3 build version number."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
-    variable.setName( _("vscp.version.sqlite.str") );
+    variable.setName( _("vscp.sqlite.version.str") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("SQLite3 version string."), true );
     addStockVariable( variable  );
-      
+    
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
-    variable.setName( _("vscp.version.openssl.str") );
+    variable.setName( _("vscp.sqlite.copyright") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("SQLite3 copyright."), true );
+    addStockVariable( variable  );
+    
+    
+    // *************************************************************************
+    //                               OPENSSL
+    // *************************************************************************
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ );    
+    variable.setName( _("vscp.openssl.version.str") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Open SSL version string."), true );
     addStockVariable( variable  );
     
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ );    
+    variable.setName( _("vscp.openssl.copyright") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("Open SSL copyright string."), true );
+    addStockVariable( variable  );
     
-
     
     // *************************************************************************
-    //                              Copyright
+    //                                 LUA
     // *************************************************************************
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
-    variable.setName( _("vscp.copyright.vscp") );
-    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("VSCP copyright."), true );
+    variable.setName( _("vscp.lua.version.major") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
+    variable.setNote( _("LUA major version number."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
-    variable.setName( _("vscp.copyright.wxwidgets") );
+    variable.setName( _("vscp.lua.version.minor") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
+    variable.setNote( _("LUA minor version number."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ );    
+    variable.setName( _("vscp.lua.version.release") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
+    variable.setNote( _("LUA release version number."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ );    
+    variable.setName( _("vscp.lua.version.str") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("wxWidgets copyright."), true );
+    variable.setNote( _("LUA version string."), true );
     addStockVariable( variable  );
       
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
-    variable.setName( _("vscp.copyright.mongoose") );
-    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Mongoose copyright."), true );
-    addStockVariable( variable  );
-
-#ifndef VSCP_DISABLE_LUA
-    
-    variable.init();
-    variable.setAccessRights( PERMISSON_ALL_READ );    
-    variable.setName( _("vscp.copyright.lua") );
+    variable.setName( _("vscp.lua.copyright") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("LUA copyright."), true );
     addStockVariable( variable  );
-    
-#endif
-    
-    variable.init();
-    variable.setAccessRights( PERMISSON_ALL_READ );    
-    variable.setName( _("vscp.copyright.sqlite") );
-    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("SQLite3 copyright."), true );
-    addStockVariable( variable  );
+      
 
     
     // *************************************************************************
@@ -2064,7 +2092,7 @@ bool CVariableStorage::init( void )
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
-    variable.setName( _("vscp.os.islittleendian") );
+    variable.setName( _("vscp.os.endiness.islittleendian") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
     variable.setNote( _("True if Operating system endiness is little endian."), true );
     addStockVariable( variable  );
@@ -2195,17 +2223,18 @@ bool CVariableStorage::init( void )
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ  | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.mqtt.broker.enable") );
+    variable.setName( _("vscp.mqtt.server.enable") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
-    variable.setNote( _("Enable flag for VSCP daemon MQTT interface."), true );
+    variable.setNote( _("Enable flag for VSCP server MQTT interface."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ  | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.mqtt.broker.address") );
+    variable.setName( _("vscp.mqtt.server.address") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Address for VSCP daemon simple UDP interface."), true );
+    variable.setNote( _("Address for VSCP server MQTT interface."), true );
     addStockVariable( variable  );
+    
     
     // *************************************************************************
     //                               CoAP
@@ -2642,11 +2671,11 @@ bool CVariableStorage::init( void )
     variable.setValue( _("ORDER BY date DESC LIMIT 500"), true );
     addStockVariable( variable );
     
-    /*variable.setAccessRights( PERMISSON_ALL_READ );
+    variable.setAccessRights( PERMISSON_ALL_READ );
     variable.setName( _("vscp.log.database.search") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Log database search result."), true );
-    addStockVariable( variable  );*/
+    addStockVariable( variable  );
    
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
@@ -2737,8 +2766,43 @@ bool CVariableStorage::init( void )
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
+    variable.setName( _("vscp.driver.add") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
+    variable.setNote( _("Add a driver."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ );    
+    variable.setName( _("vscp.driver.delete") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
+    variable.setNote( _("Delete a driver."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ );    
+    variable.setName( _("vscp.driver.start") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
+    variable.setNote( _("Start a driver."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ );    
+    variable.setName( _("vscp.driver.pause") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
+    variable.setNote( _("Pause a driver."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ );    
+    variable.setName( _("vscp.driver.stop") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
+    variable.setNote( _("Stop a driver."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.driver") );
-    variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("All driver info."), true );
     addStockVariable( variable  );
     
@@ -2784,7 +2848,7 @@ bool CVariableStorage::init( void )
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );
-    variable.setUserID( 0 );
+    variable.setOwnerID( 0 );
     variable.setName( _("vscp.user.count") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
     variable.setNote( _("Number of defined users."), true );
@@ -2792,7 +2856,7 @@ bool CVariableStorage::init( void )
     
     variable.init();
     variable.setAccessRights( PERMISSON_OWNER_ALL );
-    variable.setUserID( 0 );
+    variable.setOwnerID( 0 );
     variable.setName( _("vscp.user") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("All defined users."), true );
@@ -2800,7 +2864,7 @@ bool CVariableStorage::init( void )
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );
-    variable.setUserID( 0 );
+    variable.setOwnerID( 0 );
     variable.setName( _("vscp.user.names") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("All defined users names."), true );
@@ -2808,7 +2872,7 @@ bool CVariableStorage::init( void )
     
     variable.init();
     variable.setAccessRights( PERMISSON_OWNER_WRITE );
-    variable.setUserID( 0 );
+    variable.setOwnerID( 0 );
     variable.setStockVariable();
     variable.setName( _("vscp.user.add") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
@@ -2817,7 +2881,7 @@ bool CVariableStorage::init( void )
     
     variable.init();
     variable.setAccessRights( PERMISSON_OWNER_WRITE );
-    variable.setUserID( 0 );
+    variable.setOwnerID( 0 );
     variable.setStockVariable();
     variable.setName( _("vscp.user.delete") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
@@ -2860,7 +2924,7 @@ uint32_t CVariableStorage::exist(const wxString& name )
 // find
 //
 
-uint32_t CVariableStorage::find(const wxString& name, CVSCPVariable& variable )
+uint32_t CVariableStorage::find( const wxString& name, CVSCPVariable& variable )
 {
     uint32_t id = 0;
     wxString lc_name = name.Lower();
@@ -2908,19 +2972,13 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
     // Make sure it starts with ".vscp"
     if ( "vscp" != strToken ) return false;  
     
-    // Get the stock variable - NOTE!!! all will not be found here so all
-    // variables will be let thru. But variable with id=0 are uninitialized.
+    // Get persistent variable
     id = findNonPersistentVariable( name, var );
-    if ( 0 == id ) {
-        // Probably write only variable
-        var.setName( lcname );
-        var.setID( ID_NON_PERSISTENT ); 
-        var.setStockVariable( true );
-        var.setPersistent( false );
-        var.setUserId( USER_ID_ADMIN );
-        var.setLastChangedToNow();
-        var.setNote(_(""));
-    }
+    if ( 0 == id ) return 0;
+    
+    // *************************************************************************
+    //                            VSCP version info.
+    // *************************************************************************
     
     if ( lcname.StartsWith( _("vscp.version.major") ) ) {
         var.setValue( wxString::Format( _("%d"), VSCPD_MAJOR_VERSION ) );
@@ -2929,6 +2987,11 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
     
     if ( lcname.StartsWith( _("vscp.version.minor") ) ) {
         var.setValue( wxString::Format( _("%d"), VSCPD_MINOR_VERSION ) );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.version.release") ) ) {
+        var.setValue( wxString::Format( _("%d"), VSCPD_RELEASE_VERSION ) );
         return var.getID();
     }
     
@@ -2942,62 +3005,74 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
         return var.getID();
     }
     
-    if ( lcname.StartsWith( _("vscp.version.wxwidgets.str") ) ) {
-        var.setValue( wxString::Format( _("%s"), wxVERSION_STRING ), true );
-        return var.getID();
-    }
-    
-    if ( lcname.StartsWith( _("vscp.version.wxwidgets.major") ) ) {
-        var.setValue( wxString::Format( _("%d"), wxMAJOR_VERSION ) );
-        return var.getID();
-    }
-    
-    if ( lcname.StartsWith( _("vscp.version.wxwidgets.minor") ) ) {
-        var.setValue( wxString::Format( _("%d"), wxMINOR_VERSION ) );
-        return var.getID();
-    }
-    
-    if ( lcname.StartsWith( _("vscp.version.wxwidgets.release") ) ) {
-        var.setValue( wxString::Format( _("%d"), wxRELEASE_NUMBER ) );
-        return var.getID();
-    }
-    
-    if ( lcname.StartsWith( _("vscp.version.wxwidgets.sub") ) ) {
-        var.setValue( wxString::Format( _("%d"), wxSUBRELEASE_NUMBER ) );
-        return var.getID();
-    }
-    
-    if ( lcname.StartsWith( _("vscp.copyright.vscp") ) ) {
+    if ( lcname.StartsWith( _("vscp.copyright") ) ) {
         var.setValue( wxString::Format( _("%s"), VSCPD_COPYRIGHT ), true );
         return var.getID();
     }
 
-// *****************************************************************************
-//                               wxWidgets
-// *****************************************************************************
+    // *************************************************************************
+    //                               wxWidgets
+    // *************************************************************************
 
-    if ( lcname.StartsWith( _("vscp.copyright.wxwidgets") ) ) {
+    
+    
+    if ( lcname.StartsWith( _("vscp.wxwidgets.version.major") ) ) {
+        var.setValue( wxString::Format( _("%d"), wxMAJOR_VERSION ) );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.wxwidgets.version.minor") ) ) {
+        var.setValue( wxString::Format( _("%d"), wxMINOR_VERSION ) );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.wxwidgets.version.release") ) ) {
+        var.setValue( wxString::Format( _("%d"), wxRELEASE_NUMBER ) );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.wxwidgets.version.sub") ) ) {
+        var.setValue( wxString::Format( _("%d"), wxSUBRELEASE_NUMBER ) );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.wxwidgets.version.str") ) ) {
+        var.setValue( wxString::Format( _("%s"), wxVERSION_STRING ), true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.wxwidgets.copyright") ) ) {
+        wxVersionInfo verinfo;
         var.setValue( wxString::Format( _("%s"),
-                    "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al" ), true );
+                    (const char *)verinfo.GetCopyright().mbc_str() ), 
+                    true );
+        return var.getID();
+    }    
+    
+
+    // *************************************************************************
+    //                               Mongoose
+    // *************************************************************************
+
+    if ( lcname.StartsWith( _("vscp.mongoose.version.str") ) ) {
+        var.setValue( wxString::Format( _("%s"),
+                        MG_VERSION ), true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.mongoose.copyright") ) ) {
+        var.setValue( wxString::Format( _("%s"),
+                    "Copyright (c) 2013-2015 Cesanta Software Limited" ), true );
         return var.getID();
     }
 
-// *****************************************************************************
-//                               Mongoose
-// *****************************************************************************
-
-    if ( lcname.StartsWith( _("vscp.copyright.mongoose") ) ) {
-        var.setValue( wxString::Format( _("%s"),
-                    "Copyright (c) 2013-2016 Cesanta Software Limited" ), true );
-        return var.getID();
-    }
-
+    
 
     // *************************************************************************
     //                                SQLite
     // *************************************************************************
 
-    if ( lcname.StartsWith( _("vscp.version.sqlite.major") ) ) {
+    if ( lcname.StartsWith( _("vscp.sqlite.version.major") ) ) {
         int major, minor, sub, build;
         sscanf( SQLITE_VERSION,
             "%d.%d.%d.%d",
@@ -3006,7 +3081,7 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
         return var.getID();
     }
     
-    if ( lcname.StartsWith( _("vscp.version.sqlite.minor") ) ) {
+    if ( lcname.StartsWith( _("vscp.sqlite.version.minor") ) ) {
         int major, minor, sub, build;
         sscanf( SQLITE_VERSION,
             "%d.%d.%d.%d",
@@ -3015,7 +3090,7 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
         return var.getID();
     }
     
-    if ( lcname.StartsWith( _("vscp.version.sqlite.release") ) ) {
+    if ( lcname.StartsWith( _("vscp.sqlite.version.release") ) ) {
         int major, minor, sub, build;
         sscanf( SQLITE_VERSION,
             "%d.%d.%d.%d",
@@ -3024,7 +3099,7 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
         return var.getID();
     }
     
-    if ( lcname.StartsWith( _("vscp.version.sqlite.build") ) ) {
+    if ( lcname.StartsWith( _("vscp.sqlite.version.build") ) ) {
         int major, minor, sub, build;
         sscanf( SQLITE_VERSION,
             "%d.%d.%d.%d",
@@ -3033,17 +3108,23 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
         return var.getID();
     }
     
-    if ( lcname.StartsWith( _("vscp.version.sqlite.str") ) ) {
+    if ( lcname.StartsWith( _("vscp.sqlite.version.str") ) ) {
         var.setValue( _(SQLITE_VERSION), true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.sqlite.copyright") ) ) {
+        var.setValue( wxString::Format( _("%s"),
+                    "SQLite Is Public Domain" ), true );
         return var.getID();
     }
 
     // *************************************************************************
-    //                                OPENSSL
+    //                               OPENSSL
     // *************************************************************************
     
 
-    if ( lcname.StartsWith( _("vscp.version.openssl.str") ) ) {
+    if ( lcname.StartsWith( _("vscp.openssl.version.str") ) ) {
 #ifdef WIN32        
         var.setValue( _(OPENSSL_VERSION_TEXT) );
 #else       
@@ -3055,6 +3136,51 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
 #endif        
         
     }
+    
+    if ( lcname.StartsWith( _("vscp.openssl.copyright") ) ) {
+        wxstr.Printf( _("%s"), 
+                "Copyright (c) 1998-2006 The OpenSSL Project.  "
+                "All rights reserved." );
+        var.setValue( wxstr, true );
+        return var.getID();
+    }
+    
+    
+    // *************************************************************************
+    //                                 LUA
+    // *************************************************************************
+    
+    
+    
+    if ( lcname.StartsWith( _("vscp.lua.version.major") ) ) {
+        var.setValue( LUA_VERSION_MAJOR );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.lua.version.minor") ) ) {
+        var.setValue( LUA_VERSION_MINOR );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.lua.version.release") ) ) {
+        var.setValue( LUA_VERSION_RELEASE );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.lua.version.str") ) ) {
+        var.setValue( wxString::Format( _("%s"),
+                    LUA_RELEASE ), true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.lua.copyright") ) ) {
+        var.setValue( wxString::Format( _("%s"),
+                        LUA_COPYRIGHT ), true );
+        return var.getID();
+    }
+    
+    
+    
     
     // *************************************************************************
     //                               System
@@ -3099,7 +3225,7 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
         var.setValue( wxGetFullHostName(), true );
         return var.getID();
     }
-    
+        
     if ( lcname.StartsWith( _("vscp.host.ip") ) ) {
         cguid guid;
  
@@ -3123,12 +3249,12 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
         }
 
         var.setValue( wxString::Format( _("%02X:%02X:%02X:%02X:%02X:%02X"),
-                            guid.getAt( 13 ),
-                            guid.getAt( 12 ),
-                            guid.getAt( 11 ),
-                            guid.getAt( 10 ),
-                            guid.getAt( 9 ),
-                            guid.getAt( 8 ) ), true );
+                                            guid.getAt( 13 ),
+                                            guid.getAt( 12 ),
+                                            guid.getAt( 11 ),
+                                            guid.getAt( 10 ),
+                                            guid.getAt( 9 ),
+                                            guid.getAt( 8 ) ), true );
         return var.getID();
     }
     
@@ -3196,7 +3322,17 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
     // *************************************************************************
     
     if ( lcname.StartsWith( _("vscp.discovery.enable") ) ) {
-        var.setValue( true );
+        var.setValue( true );   // TODO
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.discovery.count") ) ) {
+        var.setValue( 1 );      // TODO
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.discovery") ) ) {
+        var.setValue( _("Functionality has not been implemented yet"), true ); // TODO
         return var.getID();
     }
     
@@ -3227,16 +3363,48 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
         var.setValue( gpobj->m_udpInfo.m_interface , true );
         return var.getID();
     }
+    
+    // *************************************************************************
+    //                                 COAP
+    // *************************************************************************
+    
+    
+    if ( lcname.StartsWith( _("vscp.coap.server.enable") ) ) {
+        var.setValue( false );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.coap.server.address") ) ) {
+        var.setValue( wxString::Format( _("%s"),
+                    "COAP is not part of VSCP anymore." ), true );
+        return var.getID();
+    }
+    
+    
+        
+    // *************************************************************************
+    //                                MQTT
+    // *************************************************************************
        
+    
+    if ( lcname.StartsWith( _("vscp.mqtt.server.enable") ) ) {
+        var.setValue( false );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.mqtt.server.address") ) ) {
+        var.setValue( wxString::Format( _("%s"),
+                    "MQTT is not part of VSCP anymore." ), true );
+        return var.getID();
+    }
+    
     
     // *************************************************************************
     //                              AUTOMATION
     // *************************************************************************
     
     if ( lcname.StartsWith( _("vscp.automation.calc.last") ) ) {
-        wxstr = gpobj->m_automation.getLastCalculation().FormatISODate();
-        wxstr += _( "T" );
-        wxstr += gpobj->m_automation.getLastCalculation().FormatISOTime();
+        wxstr = gpobj->m_automation.getLastCalculation().FormatISOCombined();
         var.setValue( wxstr );
         return var.getID();
     }
@@ -3267,9 +3435,7 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
     }
     
     if ( lcname.StartsWith( _("vscp.automation.heartbeat.last") ) ) {
-        wxstr = gpobj->m_automation.getHeartbeatSent().FormatISODate();
-        wxstr += _( "T" );
-        wxstr += gpobj->m_automation.getHeartbeatSent().FormatISOTime();
+        wxstr = gpobj->m_automation.getHeartbeatSent().FormatISOCombined();
         var.setValue( wxstr );
         return var.getID();
     }
@@ -3280,16 +3446,14 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
         return var.getID();
     }
     
-    if ( lcname.StartsWith( _("vscp.automation.segctrl.heartbeat.period") ) ) {
+    if ( lcname.StartsWith( _("vscp.automation.segctrl-heartbeat.period") ) ) {
         var.setValue( wxString::Format( _("%ld"), 
                 gpobj->m_automation.getIntervalSegmentControllerHeartbeat() ) );
         return var.getID();
     }
     
-    if ( lcname.StartsWith( _("vscp.automation.segctrl.heartbeat.last") ) ) {
-        wxstr = gpobj->m_automation.getSegmentControllerHeartbeatSent().FormatISODate();
-        wxstr += _( "T" );
-        wxstr += gpobj->m_automation.getSegmentControllerHeartbeatSent().FormatISOTime();
+    if ( lcname.StartsWith( _("vscp.automation.segctrl-heartbeat.last") ) ) {
+        wxstr = gpobj->m_automation.getSegmentControllerHeartbeatSent().FormatISOCombined();
         var.setValue( wxstr );
         return var.getID();
     }
@@ -3302,7 +3466,7 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
         var.setValue( wxstr, true );
         return var.getID();
     }
-    
+        
     if ( lcname.StartsWith( _("vscp.automation.declination") ) ) {
         double declination = gpobj->m_automation.getDeclination();
         wxstr.Printf(_("%f"), declination );
@@ -3317,18 +3481,19 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
         return var.getID();
     }
     
+    
+    
     if ( lcname.StartsWith( _("vscp.automation.twilightsunriseevent.enable") ) ) {
         var.setValue( gpobj->m_automation.isSendSunriseTwilightEvent() ? true : false );
         return var.getID();
     }
     
     if ( lcname.StartsWith( _("vscp.automation.twilightsunriseevent.last") ) ) {
-        wxstr = gpobj->m_automation.getSegmentControllerHeartbeatSent().FormatISODate();
-        wxstr += _( "T" );
-        wxstr += gpobj->m_automation.getSegmentControllerHeartbeatSent().FormatISOTime();
+        wxstr = gpobj->m_automation.getSegmentControllerHeartbeatSent().FormatISOCombined();
         var.setValue( wxstr );
         return var.getID();
     }
+    
     
     
     if ( lcname.StartsWith( _("vscp.automation.sunriseevent.enable") ) ) {
@@ -3337,9 +3502,7 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
     }
     
     if ( lcname.StartsWith( _("vscp.automation.sunriseevent.last") ) ) {
-        wxstr = gpobj->m_automation.getSunriseEventSent().FormatISODate();
-        wxstr += _( "T" );
-        wxstr += gpobj->m_automation.getSunriseEventSent().FormatISOTime();
+        wxstr = gpobj->m_automation.getSunriseEventSent().FormatISOCombined();
         var.setValue( wxstr );
         return var.getID();
     }
@@ -3352,13 +3515,10 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
     }
     
     if ( lcname.StartsWith( _("vscp.automation.sunsetevent.last") ) ) {
-        wxstr = gpobj->m_automation.getSunsetEventSent().FormatISODate();
-        wxstr += _( "T" );
-        wxstr += gpobj->m_automation.getSunsetEventSent().FormatISOTime();
+        wxstr = gpobj->m_automation.getSunsetEventSent().FormatISOCombined();
         var.setValue( wxstr );
         return var.getID();
     }
-    
     
     
     if ( lcname.StartsWith( _("vscp.automation.twilightsunsetevent.enable") ) ) {
@@ -3367,31 +3527,36 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
     }
     
     if ( lcname.StartsWith( _("vscp.automation.twilightsunsetevent.last") ) ) {
-        wxstr = gpobj->m_automation.getSunsetTwilightEventSent().FormatISODate();
-        wxstr += _( "T" );
-        wxstr += gpobj->m_automation.getSunsetTwilightEventSent().FormatISOTime();
+        wxstr = gpobj->m_automation.getSunsetTwilightEventSent().FormatISOCombined();
         var.setValue( wxstr );
         return var.getID();
     }
+    
     
     if ( lcname.StartsWith( _("vscp.automation.calculatednoonevent.enable") ) ) {
         var.setValue( gpobj->m_automation.isSendCalculatedNoonEvent() ? true : false );
         return var.getID();
     }
     
+    if ( lcname.StartsWith( _("vscp.automation.calculatednoonevent.last") ) ) {
+        wxstr = gpobj->m_automation.getCalculatedNoonEventSent().FormatISOCombined();
+        var.setValue( wxstr );
+        return var.getID();
+    }
+    
+    
+    if ( lcname.StartsWith( _("vscp.automation.twilightsunsetevent.enable") ) ) {
+        var.setValue( gpobj->m_automation.isSendSunsetTwilightEvent() ? true : false );
+        return var.getID();
+    }
+    
     if ( lcname.StartsWith( _("vscp.automation.twilightsunsetevent.last") ) ) {
-        wxstr = gpobj->m_automation.getCalculatedNoonEventSent().FormatISODate();
-        wxstr += _( "T" );
-        wxstr += gpobj->m_automation.getCalculatedNoonEventSent().FormatISOTime();
+        wxstr = gpobj->m_automation.getSunsetTwilightEventSent().FormatISOCombined();
         var.setValue( wxstr );
         return var.getID();
     }
     
  
-    if ( lcname.StartsWith( _("vscp.host.name") ) ) {
-        var.setValue( gpobj->m_strServerName, true );
-        return var.getID();
-    }
     
     // *************************************************************************
     //                            Websocket-Server
@@ -3401,17 +3566,7 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
         var.setValue( gpobj->m_bAuthWebsockets ? true : false );
         return var.getID();
     }
- 
-    
-    // *************************************************************************
-    //                            Websocket-Server
-    // *************************************************************************
 
-    if ( lcname.StartsWith( _("vscp.websocket.auth.enable") ) ) {
-        var.setValue( gpobj->m_bAuthWebsockets ? true : false );
-        return var.getID();
-    }
-    
 
     // *************************************************************************
     //                                WEB-Server
@@ -3419,7 +3574,14 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
 
 
     if ( lcname.StartsWith( _("vscp.websrv.address") ) ) {
+        // String
         var.setValue( gpobj->m_strWebServerInterfaceAddress, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.authdomain") ) ) {
+        // String
+        var.setValue( gpobj->m_authDomain, true );
         return var.getID();
     }
     
@@ -3442,7 +3604,6 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
         var.setValue( wxString::FromUTF8( gpobj->m_extraMimeTypes ), true );
         return var.getID();
     }
-
 
     if ( lcname.StartsWith( _("vscp.websrv.ssipatterns") ) ) {
         var.setValue( wxString::FromUTF8( gpobj->m_ssi_pattern ), true );
@@ -3540,6 +3701,12 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
         var.setValue( gpobj->m_bLogToSysLog ? true : false );
         return var.getID();
     }
+    
+    // Enable database log
+    if ( lcname.StartsWith( _("vscp.log.database.enable") ) ) {
+        var.setValue( false );  // TODO
+        return var.getID();
+    }
        
     // Read Log database path
     if ( lcname.StartsWith(  _("vscp.log.database.path") ) ) {
@@ -3593,7 +3760,42 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
     if ( lcname.StartsWith( _("vscp.log.database.sql") ) ) {
         return var.getID();
     }
+    
+    if ( lcname.StartsWith(  _("vscp.log.general.enable") ) ) {
+        // Boolean
+        var.setValue( false ); // TODO
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith(  _("vscp.log.general.path") ) ) {
+        // String
+        var.setValue( "" ); // TODO
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith(  _("vscp.log.access.enable") ) ) {
+        // Boolean
+        var.setValue( false ); // TODO
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith(  _("vscp.log.access.path") ) ) {
+        // String
+        var.setValue( "" ); // TODO
+        return var.getID();
+    }
 
+    if ( lcname.StartsWith(  _("vscp.log.security.enable") ) ) {
+        // Boolean
+        var.setValue( false ); // TODO
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith(  _("vscp.log.security.path") ) ) {
+        // String
+        var.setValue( "" ); // TODO
+        return var.getID();
+    }
     
     // *************************************************************************
     //                             Databases
@@ -3832,7 +4034,8 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
                 var.setValue( (long)pElement->m_id );
             }
-            else if ( ( wxstr.StartsWith( _("error") ) ) || ( wxstr.StartsWith( _("error.string") ) ) ) {
+            else if ( ( wxstr.StartsWith( _("error") ) ) || 
+                      ( wxstr.StartsWith( _("error.string") ) ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );           
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
                 var.setValue( (long)pElement->m_id );
@@ -3850,18 +4053,83 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
     // *************************************************************************
     //                              Drivers
     // *************************************************************************
-    // TODO
+    
+    if ( lcname.StartsWith( _("vscp.driver" ) ) ) {
+    
+        if ( lcname.StartsWith( _("vscp.driver.level1.count") ) ) {
+            // Integer
+            var.setValue( 0 ); // TODO
+            return var.getID();
+        }
+        else if ( lcname.StartsWith( _("vscp.driver.level2.count") ) ) {
+            // Integer
+            var.setValue( 0 ); // TODO
+            return var.getID();
+        }
+        else if ( lcname.StartsWith( _("vscp.driver.count") ) ) {
+            // Integer
+            var.setValue( 0 ); // TODO
+            return var.getID();
+        }
+        else if ( lcname.StartsWith( _("vscp.driver.add") ) ) {
+            // Boolean
+            var.setValue( false ); // TODO
+            return var.getID();
+        }
+        else if ( lcname.StartsWith( _("vscp.driver.delete") ) ) {
+            // Boolean
+            var.setValue( false ); // TODO
+            return var.getID();
+        }
+        else if ( lcname.StartsWith( _("vscp.driver.start") ) ) {
+            // Boolean
+            var.setValue( false ); // TODO
+            return var.getID();
+        }
+        else if ( lcname.StartsWith( _("vscp.driver.pause") ) ) {
+            // Boolean
+            var.setValue( false ); // TODO
+            return var.getID();
+        }
+        else if ( lcname.StartsWith( _("vscp.driver.stop") ) ) {
+            // Boolean
+            var.setValue( false ); // TODO
+            return var.getID();
+        }
+        // "vscp.driver"
+        else {
+            // String
+            var.setValue( _("") ); // TODO
+            return var.getID();
+        }
+    
+    }
     
     // *************************************************************************
     //                             Interfaces
     // *************************************************************************
-    // TODO  
+    
+    if ( lcname.StartsWith( _("vscp.interface" ) ) ) {
+        
+        if ( lcname.StartsWith( _("vscp.interface.count") ) ) {
+            // Integer
+            var.setValue( 0 ); // TODO
+            return var.getID();
+        }
+        // "vscp.interface"
+        else {
+            // String
+            var.setValue( _("") ); // TODO
+            return var.getID();
+        }
+        
+    } 
     
     // *************************************************************************
     //                                Users
     // *************************************************************************
     if ( lcname.StartsWith( _("vscp.user.count") ) ) {
-        var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+        // long
         var.setValue( (long)gpobj->m_userList.getUserCount() );
         return var.getID();
     }
@@ -3987,8 +4255,24 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
     // *************************************************************************
     //                                Tables
     // ************************************************************************* 
-    // TODO 
     
+    if ( lcname.StartsWith( _("vscp.table"), &strrest ) ) {
+
+        if ( lcname.StartsWith( _("vscp.table.count") ) ) {
+            // Integer
+            var.setValue( 0 ); // TODO
+            return var.getID();
+        }
+        // "vscp.table[....]"
+        else {
+            // String
+            var.setValue( _("") ); // TODO
+            return var.getID();
+        }
+        
+    }
+    
+
     
     // ----------------------------- Not Found ---------------------------------
     
@@ -4025,43 +4309,43 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
         return false;   // None writable
     }
     
-    if ( lcname.StartsWith( _("vscp.version.wxwidgets.str") ) ) {
-        return false;   // None writable
-    }
-    
-    if ( lcname.StartsWith( _("vscp.version.wxwidgets.major") ) ) {
-        return false;   // None writable
-    }
-    
-    if ( lcname.StartsWith( _("vscp.version.wxwidgets.minor") ) ) {
-        return false;   // None writable
-    }
-    
-    if ( lcname.StartsWith( _("vscp.version.wxwidgets.release") ) ) {
-        return false;   // None writable
-    }
-    
-    if ( lcname.StartsWith( _("vscp.version.wxwidgets.sub") ) ) {
-        return false;   // None writable
-    }
-    
     if ( lcname.StartsWith( _("vscp.copyright.vscp") ) ) {
         return false;   // None writable
     }
-
-// *****************************************************************************
-//                               wxWidgets
-// *****************************************************************************
-
-    if ( lcname.StartsWith( _("vscp.copyright.wxwidgets") ) ) {
+    
+    // *************************************************************************
+    //                               wxWidgets
+    // *************************************************************************
+    
+    if ( lcname.StartsWith( _("vscp.wxwidgets.version.str") ) ) {
+        return false;   // None writable
+    }
+    
+    if ( lcname.StartsWith( _("vscp.wxwidgets.version.major") ) ) {
+        return false;   // None writable
+    }
+    
+    if ( lcname.StartsWith( _("vscp.wxwidgets.version.minor") ) ) {
+        return false;   // None writable
+    }
+    
+    if ( lcname.StartsWith( _("vscp.wxwidgets.version.release") ) ) {
+        return false;   // None writable
+    }
+    
+    if ( lcname.StartsWith( _("vscp.wxwidgets.version.sub") ) ) {
+        return false;   // None writable
+    }
+    
+    if ( lcname.StartsWith( _("vscp.wxwidgets.copyright") ) ) {
         return false;   // None writable
     }
 
-// *****************************************************************************
-//                               Mongoose
-// *****************************************************************************
+    // *************************************************************************
+    //                               Mongoose
+    // *************************************************************************
 
-    if ( lcname.StartsWith( _("vscp.copyright.mongoose") ) ) {
+    if ( lcname.StartsWith( _("vscp.mongoose.copyright") ) ) {
         return false;   // None writable
     }
 
@@ -4069,51 +4353,49 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 //                                 LUA
 // *****************************************************************************
 
-#ifndef VSCP_DISABLE_LUA
 
-    if ( lcname.StartsWith( _("vscp.copyright.lua") ) ) {
+    if ( lcname.StartsWith( _("vscp.lua.copyright") ) ) {
         return false;   // None writable
     }
     
-    if ( lcname.StartsWith( _("vscp.version.lua.major") ) ) {
+    if ( lcname.StartsWith( _("vscp.lua.version.major") ) ) {
         return false;   // None writable
     }
     
-    if ( lcname.StartsWith( _("vscp.version.lua.minor") ) ) {
+    if ( lcname.StartsWith( _("vscp.lua.version.minor") ) ) {
         return false;   // None writable
     }
     
-    if ( lcname.StartsWith( _("vscp.version.lua.release") ) ) {
+    if ( lcname.StartsWith( _("vscp.lua.version.release") ) ) {
         return false;   // None writable
     }
     
-    if ( lcname.StartsWith( _("vscp.version.lua.str") ) ) {
+    if ( lcname.StartsWith( _("vscp.lua.version.str") ) ) {
         return false;   // None writable
     }
 
-#endif
 
 // *****************************************************************************
 //                                SQLite
 // *****************************************************************************
 
-    if ( lcname.StartsWith( _("vscp.version.sqlite.major") ) ) {
+    if ( lcname.StartsWith( _("vscp.sqlite.version.major") ) ) {
         return false;   // None writable
     }
     
-    if ( lcname.StartsWith( _("vscp.version.sqlite.minor") ) ) {
+    if ( lcname.StartsWith( _("vscp.sqlite.version.minor") ) ) {
         return false;   // None writable
     }
     
-    if ( lcname.StartsWith( _("vscp.version.sqlite.release") ) ) {
+    if ( lcname.StartsWith( _("vscp.sqlite.version.release") ) ) {
         return false;   // None writable
     }
     
-    if ( lcname.StartsWith( _("vscp.version.sqlite.build") ) ) {
+    if ( lcname.StartsWith( _("vscp.sqlite.version.build") ) ) {
         return false;   // None writable
     }
     
-    if ( lcname.StartsWith( _("vscp.version.sqlite.str") ) ) {
+    if ( lcname.StartsWith( _("vscp.sqlite.version.str") ) ) {
         return false;   // None writable
     }
 
@@ -4122,7 +4404,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 // *****************************************************************************
     
 #ifndef WIN32
-    if ( lcname.StartsWith( _("vscp.version.openssl.str") ) ) {
+    if ( lcname.StartsWith( _("vscp.openssl.version.str") ) ) {
         return false;   // None writable
     }
 #endif
@@ -5308,6 +5590,58 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// setVariableFromDbRecord
+//
+
+bool CVariableStorage::setVariableFromDbRecord( sqlite3_stmt *ppStmt,
+                                                    CVSCPVariable& variable )
+{
+    // Check pointer
+    if ( NULL == ppStmt ) return false;
+    
+    // ID
+    variable.setID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_ID ) );
+    
+    // Last changed
+    variable.m_lastChanged.ParseISOCombined( 
+            (const char *)sqlite3_column_text( ppStmt, 
+                                                VSCPDB_ORDINAL_VARIABLE_LASTCHANGE ) );
+    
+    // Name
+    variable.setName( wxString::FromUTF8( 
+            (const char *)sqlite3_column_text( ppStmt, 
+                                                VSCPDB_ORDINAL_VARIABLE_NAME ) ) );
+    
+    // Variable type
+    variable.setType( sqlite3_column_int( ppStmt, 
+                                            VSCPDB_ORDINAL_VARIABLE_TYPE ) );
+    
+    // Value
+    variable.setValue( wxString::FromUTF8( 
+            (const char *)sqlite3_column_text( ppStmt, 
+                                            VSCPDB_ORDINAL_VARIABLE_VALUE ) ) );
+    
+    // Persistence
+    variable.setPersistent( sqlite3_column_int( ppStmt, 
+                                VSCPDB_ORDINAL_VARIABLE_PERSISTENT ) ? true : false );
+    
+    // Owner
+    variable.setOwnerID( sqlite3_column_int( ppStmt, 
+                                                VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER ) );
+    
+    // Access rights
+    variable.setAccessRights( sqlite3_column_int( ppStmt, 
+                                                    VSCPDB_ORDINAL_VARIABLE_PERMISSION ) );
+    
+    // Note
+    variable.setNote( wxString::FromUTF8( 
+            (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NOTE ) ) );
+    
+    return true;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 // findNonPersistentVariable
 //
 
@@ -5337,6 +5671,8 @@ uint32_t CVariableStorage::findNonPersistentVariable( const wxString& name,
     
     // Get the data for the variable
     if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
+        setVariableFromDbRecord( ppStmt, variable );
+        /*
         variable.setID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_ID ) );
         variable.m_lastChanged.ParseISOCombined( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_LASTCHANGE ) );
         variable.setName( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NAME ) ) );
@@ -5346,6 +5682,7 @@ uint32_t CVariableStorage::findNonPersistentVariable( const wxString& name,
         variable.setUserID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER ) ); 
         variable.setAccessRights( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_PERMISSION ) );
         variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NOTE ) ) );
+        */
     }
     
     sqlite3_finalize( ppStmt );
@@ -5382,6 +5719,8 @@ uint32_t CVariableStorage::findPersistentVariable(const wxString& name, CVSCPVar
     
     // Get the result
     if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
+        setVariableFromDbRecord( ppStmt, variable );
+        /*
         variable.setID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_ID ) );
         variable.m_lastChanged.ParseISOCombined( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_LASTCHANGE ) );
         variable.setName( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NAME ) ) );
@@ -5391,6 +5730,7 @@ uint32_t CVariableStorage::findPersistentVariable(const wxString& name, CVSCPVar
         variable.setUserID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER ) );
         variable.setAccessRights( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_PERMISSION ) );
         variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NOTE ) ) );
+        */
     }
     
     sqlite3_finalize( ppStmt );
@@ -5404,22 +5744,27 @@ uint32_t CVariableStorage::findPersistentVariable(const wxString& name, CVSCPVar
 
 bool CVariableStorage::getVarlistFromRegExp( wxArrayString& nameArray, 
                                                 const wxString& regex,
-                                                const int type )
+                                                const int type,
+                                                bool bClear )
 {
     wxString varname;
     sqlite3_stmt *ppStmt;
     wxString regexlocal = regex.Upper();
         
-    nameArray.Clear();
+    // Clear array if set
+    if ( bClear ) nameArray.Clear();
     
     regexlocal.Trim();
     if ( 0 == regexlocal.Length() ) regexlocal = _("(.*)");  // List all if empty
     wxRegEx wxregex( regexlocal );
     if ( !wxregex.IsValid() ) {
+        
         nameArray.Empty();
-        gpobj->logMsg( wxString::Format( _("[getVarlistFromRegExp] Invalid regular expression [%s]"), 
+        gpobj->logMsg( wxString::Format( _("[getVarlistFromRegExp] Invalid "
+                                           "regular expression [%s]"), 
                             (const char *)regexlocal.mbc_str() ) );
         return false;
+        
     }
         
     if ( SQLITE_OK != sqlite3_prepare_v2( m_db_vscp_internal_variable,
@@ -5432,7 +5777,8 @@ bool CVariableStorage::getVarlistFromRegExp( wxArrayString& nameArray,
     
     while ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
         
-        const unsigned char *p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NAME );
+        const unsigned char *p = sqlite3_column_text( ppStmt, 
+                                                VSCPDB_ORDINAL_VARIABLE_NAME );
         varname = wxString::FromUTF8Unchecked( (const char *)p );
         if ( wxregex.Matches( varname ) ) {
             nameArray.Add( varname );
@@ -5452,7 +5798,9 @@ bool CVariableStorage::getVarlistFromRegExp( wxArrayString& nameArray,
     
     while ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
         
-        varname = wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NAME ) );
+        varname = wxString::FromUTF8( 
+                (const char *)sqlite3_column_text( ppStmt, 
+                                               VSCPDB_ORDINAL_VARIABLE_NAME ) );
         if ( wxregex.Matches( varname ) ) {
             nameArray.Add( varname );
         }
@@ -5466,6 +5814,62 @@ bool CVariableStorage::getVarlistFromRegExp( wxArrayString& nameArray,
     return true;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// listEnumerationFromRegExp
+//
+
+bool CVariableStorage::listEnumerationFromRegExp( varQuery *pq, 
+                                                    const wxString& regex,
+                                                    const int type )
+{
+    wxString varname;
+    wxString regexlocal = regex.Upper();
+    
+    // Must be a valid pointer
+    if ( NULL == pq ) return false;
+        
+    regexlocal.Trim();
+    if ( 0 == regexlocal.Length() ) regexlocal = _("(.*)");  // List all if empty
+    wxRegEx wxregex( regexlocal );
+    if ( !wxregex.IsValid() ) {
+        
+        gpobj->logMsg( wxString::Format( _("[getVarlistFromRegExp] Invalid "
+                                           "regular expression [%s]"), 
+                            (const char *)regexlocal.mbc_str() ) );
+        return false;
+        
+    }
+    
+    if ( ( VARIABLE_INTERNAL | pq->tableType ) || ( VARIABLE_STOCK | pq->tableType )  ) {
+        
+        if ( SQLITE_OK != sqlite3_prepare_v2( m_db_vscp_internal_variable,
+                                                VSCPDB_VARIABLE_FIND_ALL,
+                                                -1,
+                                                &pq->ppStmt,
+                                                NULL ) ) {
+            return false;
+        }
+        
+    }
+    else if ( VARIABLE_EXTERNAL | pq->tableType ) {
+        
+        if ( SQLITE_OK != sqlite3_prepare_v2( m_db_vscp_external_variable,
+                                                VSCPDB_VARIABLE_FIND_ALL,
+                                                -1,
+                                                &pq->ppStmt,
+                                                NULL ) ) {
+            return false;
+        }
+        
+    }   
+    else {
+        return false;
+    }
+    
+    return true;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // listItem
 //
@@ -5474,34 +5878,28 @@ bool CVariableStorage::listItem( varQuery *pq, CVSCPVariable& variable )
 {
     // Must be a valid pointer
     if ( NULL == pq ) return false;
+
+ try_again:   
     
-    //if ( VARIABLE_STOCK == pq->table  ) {
-    //    if ( pq->stockId >= m_StockVariable.Count() ) return false;
-    //    return getStockVariable( m_StockVariable[ pq->stockId ], variable );
-    //}
-    if ( VARIABLE_INTERNAL == pq->table  ) {
+    if ( ( VARIABLE_INTERNAL | pq->tableType ) || ( VARIABLE_STOCK | pq->tableType )  ) {
+        
         if ( SQLITE_ROW != sqlite3_step( pq->ppStmt ) ) return false; 
-        variable.setID( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_ID ) );
-        variable.m_lastChanged.ParseISOCombined( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_LASTCHANGE ) );
-        variable.setName( wxString::FromUTF8( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_NAME ) ) );
-        variable.setType( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_TYPE ) );
-        variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_VALUE ) ) );
-        variable.setPersistent( false );
-        variable.setUserID( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER ) ); 
-        variable.setAccessRights( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_PERMISSION ) );
-        variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_NOTE ) ) );
+                
+        setVariableFromDbRecord( pq->ppStmt, variable );
+        
+        // If stock variable is requested and it is not try again
+        if ( ( VARIABLE_STOCK == pq->tableType ) &&
+               ( !variable.isStockVariable() ) ) {
+            goto try_again;
+        }
+        
     }
-    else if ( VARIABLE_EXTERNAL == pq->table  ) {
+    else if ( VARIABLE_EXTERNAL | pq->tableType  ) {
+        
         if ( SQLITE_ROW != sqlite3_step( pq->ppStmt ) ) return false;
-        variable.setID( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_ID ) );
-        variable.m_lastChanged.ParseISOCombined( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_LASTCHANGE ) );
-        variable.setName( wxString::FromUTF8( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_NAME ) ) );
-        variable.setType( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_TYPE ) );
-        variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_VALUE ) ) );
-        variable.setPersistent( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_PERSISTENT ) ? true : false );
-        variable.setUserID( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER ) );
-        variable.setAccessRights( sqlite3_column_int( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_PERMISSION ) );
-        variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( pq->ppStmt, VSCPDB_ORDINAL_VARIABLE_NOTE ) ) );
+        
+        setVariableFromDbRecord( pq->ppStmt, variable );
+        
     }
     else {
         return false;
@@ -5519,13 +5917,13 @@ void CVariableStorage::listFinalize( varQuery *pq )
     // Must be a valid pointer
     if ( NULL == pq ) return;
     
-    if ( VARIABLE_STOCK == pq->table  ) {
+    if ( VARIABLE_STOCK == pq->tableType  ) {
         // Nothing to do
     }
-    else if ( VARIABLE_INTERNAL == pq->table  ) {
+    else if ( VARIABLE_INTERNAL == pq->tableType  ) {
         if (NULL != pq->ppStmt ) sqlite3_finalize( pq->ppStmt );
     }
-    else if ( VARIABLE_EXTERNAL == pq->table  ) {
+    else if ( VARIABLE_EXTERNAL == pq->tableType  ) {
         if (NULL != pq->ppStmt ) sqlite3_finalize( pq->ppStmt );
     }
 
@@ -5596,7 +5994,7 @@ bool CVariableStorage::add( CVSCPVariable& var )
                 var.getType(),
                 (const char *) var.getValue().mbc_str(),
                 var.isPersistent() ? 1 : 0,
-                var.getUserID(),
+                var.getOwnerID(),
                 var.getAccessRights(),
                 (const char *) var.getNote().mbc_str(),
                 id );
@@ -5618,7 +6016,7 @@ bool CVariableStorage::add( CVSCPVariable& var )
                 var.getType(),
                 (const char *) var.getValue().mbc_str(),
                 var.isPersistent() ? 1 : 0,
-                var.getUserID(),
+                var.getOwnerID(),
                 var.getAccessRights(),
                 (const char *) var.getNote().mbc_str() );  
 
@@ -5654,7 +6052,7 @@ bool CVariableStorage::add( const wxString& name,
     variable.setType( type );
     variable.setValueFromString( type, value );
     variable.setPersistent( bPersistent );
-    variable.setUserID( userid );
+    variable.setOwnerID( userid );
     variable.setAccessRights( accessRights );
     variable.setNote( note );
 
@@ -5703,7 +6101,7 @@ bool CVariableStorage::update( CVSCPVariable& var )
                 var.getType(),
                 (const char *) var.getValue().mbc_str(),
                 var.isPersistent() ? 1 : 0,
-                var.getUserID(),
+                var.getOwnerID(),
                 var.getAccessRights(),
                 (const char *) var.getNote().mbc_str(),
                 id );
@@ -5848,44 +6246,44 @@ bool CVariableStorage::loadFromXML( const wxString& path  )
     
     // If a null path is supplied use the configured path
     if ( path.IsEmpty() ) {
-        
-if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_VARIABLE ) {         
-        gpobj->logMsg( wxString::Format( _("[loadFromXML] Loading variable XML file from %s.\n"),
-                                        (const char *)m_xmlPath.mbc_str() ), 
-                                        DAEMON_LOGMSG_DEBUG );
-}
-        
-        if ( !doc.Load( m_xmlPath ) ) {
-            gpobj->logMsg(_("[loadFromXML] Failed to load variable XML file from standard XML path.\n") );
+
+        if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_VARIABLE ) {
+            gpobj->logMsg(wxString::Format(_("[loadFromXML] Loading variable XML file from %s.\n"),
+                    (const char *) m_xmlPath.mbc_str()),
+                    DAEMON_LOGMSG_DEBUG);
+        }
+
+        if (!doc.Load(m_xmlPath)) {
+            gpobj->logMsg(_("[loadFromXML] Failed to load variable XML file from standard XML path.\n"));
             return false;
         }
-        
-    }
+
+    } 
     else {
-        
-if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_VARIABLE ) {     
-        gpobj->logMsg( wxString::Format( _("[loadFromXML] Loading variable XML file from %s.\n"),
-                                        (const char *)path.mbc_str() ),
-                                        DAEMON_LOGMSG_DEBUG );
-}
-        
-        if (!doc.Load( path ) ) {
-            gpobj->logMsg( wxString::Format( _("[loadFromXML] Failed to load variable XML file from %s.\n"),
-                                        (const char *)path.mbc_str() ) );
+
+        if (gpobj->m_debugFlags1 & VSCP_DEBUG1_VARIABLE) {
+            gpobj->logMsg(wxString::Format(_("[loadFromXML] Loading variable XML file from %s.\n"),
+                    (const char *) path.mbc_str()),
+                    DAEMON_LOGMSG_DEBUG);
+        }
+
+        if (!doc.Load(path)) {
+            gpobj->logMsg(wxString::Format(_("[loadFromXML] Failed to load variable XML file from %s.\n"),
+                    (const char *) path.mbc_str()));
             return false;
         }
     }
-        
+
     // start processing the XML file
-    if ( !( doc.GetRoot()->GetName() != wxT("variables") ||
-            doc.GetRoot()->GetName() != wxT("persistent") ) ) {
+    if (!(doc.GetRoot()->GetName() != _("variables") ||
+            doc.GetRoot()->GetName() != _("persistent"))) {
         return false;
     }
 
     wxXmlNode *child = doc.GetRoot()->GetChildren();
     while (child) {
         
-        if ( child->GetName() == wxT("variable") ) {
+        if ( child->GetName() == _("variable") ) {
 
             CVSCPVariable variable;
 
@@ -5893,11 +6291,11 @@ if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_VARIABLE ) {
             variable.setLastChangedToNow();
                        
             // Get variable type - String is default           
-            variable.setType( variable.getVariableTypeFromString( child->GetAttribute( wxT("type"), 
-                                                                    wxT("string") ) ) );
+            variable.setType( variable.getVariableTypeFromString( child->GetAttribute( _("type"), 
+                                                                    _("string") ) ) );
             
             // Persistence
-            wxstr = child->GetAttribute( wxT("persistent"), wxT("false") );
+            wxstr = child->GetAttribute( _("persistent"), _("false") );
             wxstr.MakeUpper();
             if ( wxNOT_FOUND != wxstr.Find( _("TRUE") ) ) {
                 variable.setPersistent( true ); 
@@ -5907,17 +6305,17 @@ if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_VARIABLE ) {
             } 
                     
             // userid
-            if ( child->GetAttribute( wxT("user"), wxT("0") ).ToULong( &lval ) ) {
-                variable.setUserID( lval );
+            if ( child->GetAttribute( _("user"), _("0") ).ToULong( &lval ) ) {
+                variable.setOwnerID( lval );
             }
             
             // access-rights 0x744 = 1860
-            wxstr = child->GetAttribute( wxT("access-rights"), wxT("0x744") );
+            wxstr = child->GetAttribute( _("access-rights"), _("0x744") );
             lval = vscp_readStringValue( wxstr );
             variable.setAccessRights( lval );
             
             // name
-            wxstr = child->GetAttribute( wxT("name"), wxT("") );
+            wxstr = child->GetAttribute( _("name"), _("") );
             wxstr.MakeUpper();
             wxstr.Trim();
             wxstr.Trim( false );
@@ -5926,37 +6324,37 @@ if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_VARIABLE ) {
             }
             
             // value
-            wxstr = child->GetAttribute( wxT("value"), wxT("") );
+            wxstr = child->GetAttribute( _("value"), _("") );
             variable.setValueFromString( variable.getType(),
                                             wxstr,
                                             CVSCPVariable::isValueBase64Encoded( variable.getType() ) );
             
             // note
-            wxstr = child->GetAttribute( wxT("note"), wxT("") );
+            wxstr = child->GetAttribute( _("note"), _("") );
             variable.setNote( wxstr, true );
                     
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
 
-                if (subchild->GetName() == wxT("name")) {
+                if (subchild->GetName() == _("name")) {
                     wxString strName = subchild->GetNodeContent();
                     strName.Trim();
                     strName.Trim(false);
                     variable.setName( strName );
                 }
-                else if (subchild->GetName() == wxT("value")) {
+                else if (subchild->GetName() == _("value")) {
                     variable.setValueFromString( variable.getType(),
                                                     subchild->GetNodeContent(),
                                                     CVSCPVariable::isValueBase64Encoded( variable.getType() ) );
                 }
-                else if (subchild->GetName() == wxT("value-base64")) {
+                else if (subchild->GetName() == _("value-base64")) {
                     variable.setValue( subchild->GetNodeContent() );
                     
                 }
-                else if (subchild->GetName() == wxT("note")) {
+                else if (subchild->GetName() == _("note")) {
                     variable.setNote( subchild->GetNodeContent(), true );
                 }
-                else if (subchild->GetName() == wxT("note-base64")) {
+                else if (subchild->GetName() == _("note-base64")) {
                     
                     wxstr = subchild->GetNodeContent();
                     size_t len = wxBase64Decode( NULL, 0, wxstr );
@@ -6066,7 +6464,7 @@ bool CVariableStorage::save( wxString& path, uint8_t whatToSave )
             variable.setType( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_TYPE ) );
             variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_VALUE ) ) );
             variable.setPersistent( false );
-            variable.setUserID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER ) ); 
+            variable.setOwnerID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER ) ); 
             variable.setAccessRights( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_PERMISSION ) );
             variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NOTE ) ) );
             
@@ -6101,7 +6499,7 @@ bool CVariableStorage::save( wxString& path, uint8_t whatToSave )
             variable.setType( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_TYPE ) );
             variable.setValue( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_VALUE ) ) );
             variable.setPersistent( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_PERSISTENT ) ? true : false );
-            variable.setUserID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER ) );
+            variable.setOwnerID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER ) );
             variable.setAccessRights( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_PERMISSION ) );
             variable.setNote( wxString::FromUTF8( (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_NOTE ) ) );
             
@@ -6152,7 +6550,7 @@ bool CVariableStorage::writeVariableToXmlFile( wxFFileOutputStream *pFileStream,
     }
     pFileStream->Write(str.mb_str(), strlen(str.mb_str()));
 
-    str.Printf(_(" user=\"%d\" "), variable.getUserID());
+    str.Printf(_(" user=\"%d\" "), variable.getOwnerID());
     pFileStream->Write(str.mb_str(), strlen(str.mb_str()));
 
     str.Printf(_(" access-rights=\"%d\" "), variable.getAccessRights());

@@ -137,6 +137,9 @@ extern "C" {
     */
     void vscp_bin2str( char *to, const unsigned char *p, size_t len ); 
 
+    
+    bool vscp_base64_wxdecode( wxString& str );
+    
     /*!
         Get GMT time 
         http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3

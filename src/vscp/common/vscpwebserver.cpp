@@ -724,8 +724,7 @@ vscp_mainpage( struct web_connection *conn, void *cbdata )
                   "Content-Type: text/html; charset=utf-8\r\n"
                   "Connection: close\r\n\r\n");
 
-    web_printf( conn, 
-            wxString::Format( _(WEB_COMMON_HEAD), _("VSCP - Control") ).mbc_str() );
+    web_printf( conn, WEB_COMMON_HEAD, "VSCP - Control" );
     web_printf( conn, WEB_STYLE_START );
     web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
     web_printf( conn, WEB_STYLE_END );
@@ -891,14 +890,13 @@ static int vscp_listFile( struct web_connection *conn,
                         wxFileName& logfile,
                         wxString& textHeader )
 {
-    web_printf(conn,
+    web_printf( conn,
 	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
 	          "close\r\n\r\n");
 
     /*bool bFirstRow = false;
-    wxString buildPage;
-    wxString strHeader = wxString::Format(_("VSCP - %s"), textHeader.wx_str() );
-    buildPage = wxString::Format(_(WEB_COMMON_HEAD), strHeader.wx_str() );
+    wxString strHeader = wxString::Format(_("VSCP - %s"), textHeader.mbc_str() );
+    web_printf( conn,WEB_COMMON_HEAD, strHeader.mbc_str() );
     web_printf( conn, WEB_STYLE_START);
     web_printf( conn, WEB_COMMON_CSS);     // CSS style Code
     web_printf( conn, WEB_STYLE_END);
@@ -908,9 +906,9 @@ static int vscp_listFile( struct web_connection *conn,
     // Navigation menu
     web_printf( conn, WEB_COMMON_MENU);
 
-    buildPage += wxString::Format( _("<b>%s</b><br><br>"), textHeader.wx_str() );
+    web_printf( conn, "<b>%s</b><br><br>", textHeader.mbc_str() );
     web_printf( conn, "<b>Path</b>=<i>");
-    buildPage += logfile.GetFullPath();
+    web_printf( conn, logfile.GetFullPath() );
     web_printf( conn, "</i><br>");
     web_printf( conn, "-----------------------------------------------------------------------------------------<br>");
 
@@ -918,7 +916,7 @@ static int vscp_listFile( struct web_connection *conn,
     double pos;
     if ( fileLength.ToDouble() > 100000 ) {
         pos = fileLength.ToDouble() - 100000;
-        buildPage += wxString::Format(_("<br><span style=\"color: red;\">File has been truncated due to size. Filesize is %dMB last %dKB shown.</span><br><br>"),
+        web_printf( conn, "<br><span style=\"color: red;\">File has been truncated due to size. Filesize is %dMB last %dKB shown.</span><br><br>"),
             (int)fileLength.ToDouble()/(1024*1024), 10 );
         bFirstRow = true;
     }
@@ -956,8 +954,6 @@ static int vscp_listFile( struct web_connection *conn,
     // Serve data
     web_printf( conn, "&nbsp;&nbsp;&nbsp;<strong>The End</strong>");
     web_printf( conn, WEB_COMMON_END);
-    mg_send_http_chunk( nc, buildPage.ToAscii(), buildPage.Length() );
-    mg_send_http_chunk( nc, "", 0); // Tell the client we're finished
     */
     
     return 1;
@@ -978,8 +974,7 @@ static int vscp_interface( struct web_connection *conn, void *cbdata )
                   "Content-Type: text/html; charset=utf-8\r\n"
                   "Connection: close\r\n\r\n");
     
-    web_printf( conn, 
-            wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Control") ).mbc_str() );
+    web_printf( conn, WEB_COMMON_HEAD, "VSCP - Control" );
     web_printf( conn, WEB_STYLE_START );
     web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
     web_printf( conn, WEB_STYLE_END );
@@ -1009,12 +1004,12 @@ static int vscp_interface( struct web_connection *conn, void *cbdata )
 
         // Client id
         web_printf( conn, WEB_IFLIST_TD_CENTERED);
-        web_printf( conn, wxString::Format(_("%d"), pItem->m_clientID ).mbc_str() );
+        web_printf( conn, "%d", pItem->m_clientID );
         web_printf( conn, "</td>");
 
         // Interface type
-        web_printf( conn, WEB_IFLIST_TD_CENTERED);
-        web_printf( conn, wxString::Format(_("%d"), pItem->m_type).mbc_str() );
+        web_printf( conn, WEB_IFLIST_TD_CENTERED );
+        web_printf( conn, "%d", pItem->m_type );
         web_printf( conn, "</td>");
 
         // GUID
@@ -1052,29 +1047,29 @@ static int vscp_interface( struct web_connection *conn, void *cbdata )
 
     web_printf( conn, "<br><b>Interface Types</b><br>" );
     web_printf( conn, 
-        wxString::Format( _("%d - Unknown (you should not see this).<br>"), 
-                            (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_NONE ) );
+                    "%d - Unknown (you should not see this).<br>", 
+                    (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_NONE );
     web_printf( conn,  
-        wxString::Format( _("%d - Internal daemon client.<br>"), 
-                            (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL ) );
+                    "%d - Internal daemon client.<br>", 
+                    (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL );
     web_printf( conn,  
-        wxString::Format( _("%d - Level I (CANAL) Driver.<br>"), 
-                            (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1 ).mbc_str() );
+                    "%d - Level I (CANAL) Driver.<br>", 
+                    (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1 );
     web_printf( conn,  
-        wxString::Format( _("%d - Level II Driver.<br>"), 
-                            (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL2 ).mbc_str() );
+                    "%d - Level II Driver.<br>", 
+                    (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL2 );
     web_printf( conn,  
-        wxString::Format( _("%d - TCP/IP Client.<br>"), 
-                            (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_TCPIP ).mbc_str() );
+                    "%d - TCP/IP Client.<br>", 
+                    (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_TCPIP );
     web_printf( conn,  
-        wxString::Format( _("%d - UDP Client.<br>"), 
-                            (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP ).mbc_str() );
+                    "%d - UDP Client.<br>", 
+                    (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP );
     web_printf( conn,  
-        wxString::Format( _("%d - Web Server Client.<br>"), 
-                            (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEB ).mbc_str() );
+                    "%d - Web Server Client.<br>", 
+                    (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEB );
     web_printf( conn,  
-        wxString::Format( _("%d - WebSocket Client.<br>"), 
-                            (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET ).mbc_str() );
+                    "%d - WebSocket Client.<br>", 
+                    (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET );
 
     web_printf( conn, WEB_COMMON_END );     // Common end code
 
@@ -1189,8 +1184,8 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
                   "Connection: close\r\n\r\n");
 
     web_printf( conn, 
-                    wxString::Format( _(WEB_COMMON_HEAD),
-                                      _("VSCP - Decision Matrix") ).mbc_str() );
+                    WEB_COMMON_HEAD,
+                    "VSCP - Decision Matrix" );
     web_printf( conn, WEB_STYLE_START );
     web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
     web_printf( conn, WEB_STYLE_END );
@@ -1202,15 +1197,16 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
 
     {
         wxString wxstrlight = ( ( bLight ) ? _("true") : _("false") );
-        web_printf( conn,  wxString::Format( _(WEB_COMMON_LIST_NAVIGATION),
-                _("/vscp/dm"),
-                (unsigned long)nFrom+1,
-                ( (unsigned long)(nFrom + nCount) < gpobj->m_dm.getMemoryElementCount() ) ?
-                    nFrom + nCount : gpobj->m_dm.getMemoryElementCount(),
-                (unsigned long)gpobj->m_dm.getMemoryElementCount(),
-                (unsigned long)nCount,
-                (unsigned long)nFrom,
-                (const char *)wxstrlight.mbc_str() ).mbc_str() );
+        web_printf( conn,  
+                    WEB_COMMON_LIST_NAVIGATION,
+                    "/vscp/dm",
+                    (unsigned long)nFrom + 1,
+                    ( (unsigned long)(nFrom + nCount) < gpobj->m_dm.getMemoryElementCount() ) ?
+                        nFrom + nCount : gpobj->m_dm.getMemoryElementCount(),
+                    (unsigned long)gpobj->m_dm.getMemoryElementCount(),
+                    (unsigned long)nCount,
+                    (unsigned long)nFrom,
+                    (const char *)wxstrlight.mbc_str() );
 
         web_printf( conn, "<br>");
     }
@@ -1240,18 +1236,21 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
             wxString url_dmedit =
                     wxString::Format(_("/vscp/dmedit?id=%ld&from=%ld&count=%ld"),
                                         (long)(nFrom+i), (long)nFrom, (long)nCount );
-            web_printf( conn, wxString::Format(_(WEB_COMMON_TR_CLICKABLE_ROW),
-                                                url_dmedit.wx_str() ).mbc_str() );
+            web_printf( conn, 
+                            WEB_COMMON_TR_CLICKABLE_ROW,
+                            (const char *)url_dmedit.mbc_str() );
         }
 
         // Client id
         web_printf( conn, WEB_IFLIST_TD_CENTERED);
         web_printf( conn,  
-                wxString::Format(_("<form name=\"input\" action=\"/vscp/dmdelete?id=%ld\" "
-                                   "method=\"get\"> %ld <input type=\"submit\" "
-                                   "value=\"x\"><input type=\"hidden\" "
-                                   "name=\"id\"value=\"%ld\"></form>"),
-                                        (long)nFrom+i, (long)nFrom+i+1, (long)nFrom+i ).mbc_str());
+                        "<form name=\"input\" action=\"/vscp/dmdelete?id=%ld\" "
+                        "method=\"get\"> %ld <input type=\"submit\" "
+                        "value=\"x\"><input type=\"hidden\" "
+                        "name=\"id\"value=\"%ld\"></form>",
+                        (long)nFrom + i, 
+                        (long)nFrom + i + 1, 
+                        (long)nFrom + i );
         web_printf( conn, "</td>");
 
         // DM entry
@@ -1307,20 +1306,23 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
                 // * Filter
 
                 web_printf( conn, "<b>Filter_priority: </b>");
-                web_printf( conn,  wxString::Format(_("%d "),
-                                        pElement->m_vscpfilter.filter_priority).mbc_str() );
+                web_printf( conn, 
+                                "%d ",
+                                pElement->m_vscpfilter.filter_priority );
 
                 web_printf( conn, "<b>Filter_class: </b>");
-                web_printf( conn,  wxString::Format(_("%d "),
-                                        pElement->m_vscpfilter.filter_class).mbc_str() );
+                web_printf( conn,  
+                                "%d ",
+                                pElement->m_vscpfilter.filter_class );
                 web_printf( conn, " [");
                 web_printf( conn,  
                         vscpinfo.getClassDescription( pElement->m_vscpfilter.filter_class ).mbc_str() );
                 web_printf( conn, "] ");
 
                 web_printf( conn, " <b>Filter_type: </b>");
-                web_printf( conn,  wxString::Format(_("%d "), 
-                                        pElement->m_vscpfilter.filter_type ).mbc_str() );
+                web_printf( conn,  
+                                    "%d ", 
+                                    pElement->m_vscpfilter.filter_type );
                 web_printf( conn, " [");
                 web_printf( conn,  vscpinfo.getTypeDescription (pElement->m_vscpfilter.filter_class,
                                                             pElement->m_vscpfilter.filter_type ).mbc_str() );
@@ -1333,13 +1335,19 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
                 web_printf( conn, "<br>" );
 
                 web_printf( conn, "<b>Mask_priority: </b>");
-                web_printf( conn, wxString::Format(_("%d "), pElement->m_vscpfilter.mask_priority ).mbc_str() );
+                web_printf( conn, 
+                                "%d ", 
+                                pElement->m_vscpfilter.mask_priority );
 
                 web_printf( conn, "<b>Mask_class: </b>");
-                web_printf( conn, wxString::Format(_("%d "), pElement->m_vscpfilter.mask_class ).mbc_str() );
+                web_printf( conn, 
+                                "%d ", 
+                                pElement->m_vscpfilter.mask_class );
 
                 web_printf( conn, "<b>Mask_type: </b>");
-                web_printf( conn, wxString::Format(_("%d "), pElement->m_vscpfilter.mask_type ).mbc_str() );
+                web_printf( conn, 
+                                "%d ", 
+                                pElement->m_vscpfilter.mask_type );
 
                 web_printf( conn, "<b>Mask_GUID: </b>");
                 vscp_writeGuidArrayToString(pElement->m_vscpfilter.mask_GUID, strGUID);
@@ -1348,13 +1356,19 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
                 web_printf( conn, "<br>");
 
                 web_printf( conn, "<b>Index: </b>");
-                web_printf( conn, wxString::Format(_("%d "), pElement->m_index ).mbc_str() );
+                web_printf( conn, 
+                                "%d ", 
+                                pElement->m_index );
 
                 web_printf( conn, "<b>Zone: </b>");
-                web_printf( conn, wxString::Format(_("%d "), pElement->m_zone ).mbc_str() );
+                web_printf( conn, 
+                                "%d ", 
+                                pElement->m_zone );
 
                 web_printf( conn, "<b>Subzone: </b>");
-                web_printf( conn, wxString::Format(_("%d "), pElement->m_subzone ).mbc_str() );
+                web_printf( conn, 
+                                "%d ", 
+                                pElement->m_subzone );
 
                 if ( pElement->m_bCheckMeasurementIndex ) {
                     web_printf( conn, "&nbsp;&nbsp;&nbsp;(Sensor index is used for index compare)");
@@ -1383,7 +1397,9 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
             } // mini
 
             web_printf( conn, "<b>Action:</b> ");
-            web_printf( conn, wxString::Format(_("%d "), pElement->m_actionCode).mbc_str() );
+            web_printf( conn, 
+                            "%d ", 
+                            pElement->m_actionCode );
 
             web_printf( conn, " <b>Action parameters:</b> ");
             web_printf( conn, pElement->m_actionparam.mbc_str() );
@@ -1392,10 +1408,14 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
             if (!bLight) {
 
                 web_printf( conn, "<b>Trigger Count:</b> ");
-                web_printf( conn, wxString::Format(_("%d "), pElement->m_triggCounter).mbc_str() );
+                web_printf( conn, 
+                                "%d ", 
+                                pElement->m_triggCounter );
 
                 web_printf( conn, "<b>Error Count:</b> ");
-                web_printf( conn, wxString::Format(_("%d "), pElement->m_errorCounter).mbc_str() );
+                web_printf( conn, 
+                                "%d ", 
+                                pElement->m_errorCounter );
                 web_printf( conn, "<br>");
 
                 web_printf( conn, "<b>Last Error String:</b> ");
@@ -1419,15 +1439,16 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
 
     {
         wxString wxstrlight = ((bLight) ? _("true") : _("false"));
-        web_printf( conn, wxString::Format( _(WEB_COMMON_LIST_NAVIGATION),
-                _("/vscp/dm"),
-                (unsigned long)nFrom+1,
-                ( (unsigned long)(nFrom + nCount) < gpobj->m_dm.getMemoryElementCount() ) ?
+        web_printf( conn, 
+                        WEB_COMMON_LIST_NAVIGATION,
+                        "/vscp/dm",
+                        (unsigned long)nFrom + 1,
+                        ( (unsigned long)(nFrom + nCount) < gpobj->m_dm.getMemoryElementCount() ) ?
                             nFrom + nCount : gpobj->m_dm.getMemoryElementCount(),
-                (unsigned long)gpobj->m_dm.getMemoryElementCount(),
-                (unsigned long)nCount,
-                (unsigned long)nFrom,
-                wxstrlight.wx_str() ).mbc_str() );
+                        (unsigned long)gpobj->m_dm.getMemoryElementCount(),
+                        (unsigned long)nCount,
+                        (unsigned long)nFrom,
+                        (const char *)wxstrlight.mbc_str() );
     }
 
     web_printf( conn, WEB_COMMON_END);     // Common end code
@@ -1456,50 +1477,59 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         
     // id
     long id = -1;
-    if ( web_get_var( reqinfo->query_string, 
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string, 
                             strlen( reqinfo->query_string ), 
                             "id", 
                             buf,
                             sizeof( buf ) ) > 0 ) {
-        id = atoi(buf);
+            id = atoi(buf);
+        }
     }
 
     // From
     long nFrom = 0;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "from", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        nFrom = atoi( buf );
+            nFrom = atoi( buf );
+        }
     }
 
     // Count
     uint16_t nCount = 50;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "count", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        nCount = atoi( buf );
+            nCount = atoi( buf );
+        }
     }
 
     // Flag for new DM row
     bool bNew = false;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "new", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        if ( NULL != strstr( "true", buf ) ) bNew = true;
+            if ( NULL != strstr( "true", buf ) ) bNew = true;
+        }
     }
 
     web_printf(conn,
 	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
 	          "close\r\n\r\n");
 
-    web_printf( conn, wxString::Format( _(WEB_COMMON_HEAD), 
-                                        _("VSCP - Decision Matrix Edit") ) );
+    web_printf( conn, 
+                    WEB_COMMON_HEAD, 
+                    "VSCP - Decision Matrix Edit" );
     web_printf( conn, WEB_STYLE_START);
     web_printf( conn, WEB_COMMON_CSS);     // CSS style Code
     web_printf( conn, WEB_STYLE_END);
@@ -1591,42 +1621,42 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         if ( !bNew ) str = (0 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
         web_printf( conn,
                         "<option value=\"0\" %s>0 - Highest</option>",
-                        str.wx_str() );
+                        (const char *)str.mbc_str() );
 
         if ( !bNew ) str = ( 1 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
         web_printf( conn,
                         "<option value=\"1\" %s>1 - Very High</option>",
-                        str.wx_str() );
+                        (const char *)str.mbc_str() );
 
         if ( !bNew ) str = (2 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
         web_printf( conn,
                         "<option value=\"2\" %s>2 - High</option>",
-                        str.wx_str() );
+                        (const char *)str.mbc_str() );
 
         if ( !bNew ) str = (3 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
         web_printf( conn,
                         "<option value=\"3\" %s>3 - Normal</option>",
-                        str.wx_str() );
+                        (const char *)str.mbc_str() );
 
         if ( !bNew ) str = (4 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
         web_printf( conn,
                         "<option value=\"4\" %s>4 - Low</option>",
-                        str.wx_str() );
+                        (const char *)str.mbc_str() );
 
         if ( !bNew ) str = (5 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
         web_printf( conn,
                         "<option value=\"5\" %s>5 - Lower</option>",
-                        str.wx_str() );
+                        (const char *)str.mbc_str() );
 
         if ( !bNew ) str = (6 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
         web_printf( conn,
                         "<option value=\"6\" %s>6 - Very Low</option>",
-                        str.wx_str() );
+                        (const char *)str.mbc_str() );
 
         if ( !bNew ) str = (7 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
         web_printf( conn,
                     "<option value=\"7\" %s>7 - Lowest</option>",
-                    str.wx_str() );
+                    (const char *)str.mbc_str() );
 
         web_printf( conn, "</select>");
         // Priority mask
@@ -1708,7 +1738,7 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
             web_printf( conn, "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00");
         }
         else {
-            web_printf( conn, "%s", str.wx_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
         web_printf( conn, "</textarea></td>");
 
@@ -1722,7 +1752,7 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
             web_printf( conn, "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00");
         }
         else {
-            web_printf( conn, "%s", str.wx_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
         web_printf( conn, "</textarea></td>");
 
@@ -2203,357 +2233,434 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
 
     // id
     long id = -1;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "id", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        id = atoi( buf );
+            id = atoi( buf );
+        }
     }
 
     // From
     long nFrom = 0;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "from", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        nFrom = atoi( buf );
+            nFrom = atoi( buf );
+        }
     }
 
     // Count
     uint16_t nCount = 50;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "count", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        nCount = atoi( buf );
+            nCount = atoi( buf );
+        }
     }
 
     // Flag for new DM row
     bool bNew = false;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "new", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        if ( NULL != strstr( "true", buf ) ) bNew = true;
+            if ( NULL != strstr( "true", buf ) ) bNew = true;
+        }
     }
 
     wxString strGroupID;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "groupid", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        strGroupID = wxString::FromAscii(buf);
+            strGroupID = wxString::FromAscii(buf);
+        }
     }
 
     int filter_priority = -1;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "filter_priority", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        filter_priority = vscp_readStringValue( wxString::FromAscii( buf ) );
+            filter_priority = vscp_readStringValue( wxString::FromAscii( buf ) );
+        }
     }
 
     int mask_priority = 0;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "mask_priority", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        mask_priority = vscp_readStringValue( wxString::FromAscii( buf ) );
+            mask_priority = vscp_readStringValue( wxString::FromAscii( buf ) );
+        }
     }
 
     uint16_t filter_vscpclass = -1;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "filter_vscpclass", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        wxString wrkstr = wxString::FromAscii( buf );
-        filter_vscpclass = vscp_readStringValue( wrkstr );
+            wxString wrkstr = wxString::FromAscii( buf );
+            filter_vscpclass = vscp_readStringValue( wrkstr );
+        }
     }
 
     uint16_t mask_vscpclass = 0;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "mask_vscpclass", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        mask_vscpclass = vscp_readStringValue( wxString::FromAscii( buf ) );
+            mask_vscpclass = vscp_readStringValue( wxString::FromAscii( buf ) );
+        }
     }
 
     uint16_t filter_vscptype = 0;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "filter_vscptype", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        filter_vscptype = vscp_readStringValue( wxString::FromAscii( buf ) );
+            filter_vscptype = vscp_readStringValue( wxString::FromAscii( buf ) );
+        }
     }
 
     uint16_t mask_vscptype = 0;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "mask_vscptype", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        mask_vscptype = vscp_readStringValue( wxString::FromAscii( buf ) );
+            mask_vscptype = vscp_readStringValue( wxString::FromAscii( buf ) );
+        }
     }
 
     wxString strFilterGuid;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "filter_vscpguid", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        strFilterGuid = wxString::FromAscii( buf );
-        strFilterGuid = strFilterGuid.Trim();
-        strFilterGuid = strFilterGuid.Trim(false);
+            strFilterGuid = wxString::FromAscii( buf );
+            strFilterGuid = strFilterGuid.Trim();
+            strFilterGuid = strFilterGuid.Trim(false);
+        }
     }
 
     wxString strMaskGuid;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "mask_vscpguid", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        strMaskGuid = wxString::FromAscii( buf );
-        strMaskGuid = strMaskGuid.Trim();
-        strMaskGuid = strMaskGuid.Trim(false);
+            strMaskGuid = wxString::FromAscii( buf );
+            strMaskGuid = strMaskGuid.Trim();
+            strMaskGuid = strMaskGuid.Trim(false);
+        }
     }
 
     uint8_t index = 0;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "vscpindex", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        index = vscp_readStringValue( wxString::FromAscii( buf ) );
+            index = vscp_readStringValue( wxString::FromAscii( buf ) );
+        }
     }
 
     bool bUseMeasurementIndex = false;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "check_measurementindex", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        if ( NULL != strstr( "true", buf ) ) bUseMeasurementIndex = true;
+            if ( NULL != strstr( "true", buf ) ) bUseMeasurementIndex = true;
+        }
     }
 
     uint8_t zone = 0;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "vscpzone", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        zone = vscp_readStringValue( wxString::FromAscii( buf ) );
+            zone = vscp_readStringValue( wxString::FromAscii( buf ) );
+        }
     }
 
     uint8_t subzone = 0;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "vscpsubzone", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        subzone = vscp_readStringValue( wxString::FromAscii( buf ) );
+            subzone = vscp_readStringValue( wxString::FromAscii( buf ) );
+        }
     }
 
     bool bEnableRow = false;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "check_enablerow", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        if ( NULL != strstr( "true", buf ) ) bEnableRow = true;
+            if ( NULL != strstr( "true", buf ) ) bEnableRow = true;
+        }
     }
 
     bool bEndScan = false;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "check_endscan", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        if ( NULL != strstr( "true", buf ) ) bEndScan = true;
+            if ( NULL != strstr( "true", buf ) ) bEndScan = true;
+        }
     }
 
     bool bCheckIndex = false;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "check_index", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        if ( NULL != strstr( "true", buf ) ) bCheckIndex = true;
+            if ( NULL != strstr( "true", buf ) ) bCheckIndex = true;
+        }
     }
 
     bool bCheckZone = false;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "check_zone", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        if ( NULL != strstr( "true", buf ) ) bCheckZone = true;
+            if ( NULL != strstr( "true", buf ) ) bCheckZone = true;
+        }
     }
 
     bool bCheckSubZone = false;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "check_subzone", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        if ( NULL != strstr( "true", buf ) ) bCheckSubZone = true;
+            if ( NULL != strstr( "true", buf ) ) bCheckSubZone = true;
+        }
     }
 
     wxString strAllowedFrom;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "allowedfrom", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        strAllowedFrom = wxString::FromAscii( buf );
-        strAllowedFrom.Trim( true );
-        strAllowedFrom.Trim( false );
-        if ( _("*") == strAllowedFrom ) {
-            strAllowedFrom = _("0000-01-01 00:00:00");
+            strAllowedFrom = wxString::FromAscii( buf );
+            strAllowedFrom.Trim( true );
+            strAllowedFrom.Trim( false );
+            if ( _("*") == strAllowedFrom ) {
+                strAllowedFrom = _("0000-01-01 00:00:00");
+            }
         }
     }
-
+    
     wxString strAllowedTo;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "allowedto",
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        strAllowedTo = wxString::FromAscii( buf );
-        strAllowedTo.Trim( true );
-        strAllowedTo.Trim( false );
-        if ( _("*") == strAllowedTo ) {
-            strAllowedTo = _("9999-12-31 23:59:59");
+            strAllowedTo = wxString::FromAscii( buf );
+            strAllowedTo.Trim( true );
+            strAllowedTo.Trim( false );
+            if ( _("*") == strAllowedTo ) {
+                strAllowedTo = _("9999-12-31 23:59:59");
+            }
         }
     }
-
+    
     wxString strAllowedTime;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "allowedtime", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        strAllowedTime = wxString::FromAscii( buf );
-        strAllowedTime.Trim( true );
-        strAllowedTime.Trim( false );
-        if ( _("*") == strAllowedTime ) {
-            strAllowedTime = _("* *");
+            strAllowedTime = wxString::FromAscii( buf );
+            strAllowedTime.Trim( true );
+            strAllowedTime.Trim( false );
+            if ( _("*") == strAllowedTime ) {
+                strAllowedTime = _("* *");
+            }
         }
     }
-
+    
+    
     bool bCheckMonday = false;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "monday", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        if ( NULL != strstr( "true", buf ) ) bCheckMonday = true;
+            if ( NULL != strstr( "true", buf ) ) bCheckMonday = true;
+        }
     }
 
     bool bCheckTuesday = false;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "tuesday", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        if ( NULL != strstr( "true", buf ) ) bCheckTuesday = true;
+            if ( NULL != strstr( "true", buf ) ) bCheckTuesday = true;
+        }
     }
 
     bool bCheckWednesday = false;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "wednesday", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        if ( NULL != strstr( "true", buf ) ) bCheckWednesday = true;
+            if ( NULL != strstr( "true", buf ) ) bCheckWednesday = true;
+        }
     }
 
     bool bCheckThursday = false;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "thursday", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        if ( NULL != strstr( "true", buf ) ) bCheckThursday = true;
+            if ( NULL != strstr( "true", buf ) ) bCheckThursday = true;
+        }
     }
-
+    
     bool bCheckFriday = false;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "friday", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        if ( NULL != strstr( "true", buf ) ) bCheckFriday = true;
+            if ( NULL != strstr( "true", buf ) ) bCheckFriday = true;
+        }
     }
+    
 
     bool bCheckSaturday = false;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "saturday", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        if ( NULL != strstr( "true", buf ) ) bCheckSaturday = true;
+            if ( NULL != strstr( "true", buf ) ) bCheckSaturday = true;
+        }
     }
+    
 
     bool bCheckSunday = false;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "sunday", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        if ( NULL != strstr( "true", buf ) ) bCheckSunday = true;
+            if ( NULL != strstr( "true", buf ) ) bCheckSunday = true;
+        }
     }
 
     uint32_t action = 0;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "action", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        action = vscp_readStringValue( wxString::FromAscii( buf ) );
+            action = vscp_readStringValue( wxString::FromAscii( buf ) );
+        }
     }
 
     wxString strActionParameter;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "actionparameter", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        vscp_toXMLEscape( buf );
-        strActionParameter = wxString::FromAscii( buf );
+            vscp_toXMLEscape( buf );
+            strActionParameter = wxString::FromAscii( buf );
+        }
     }
 
     wxString strComment;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "comment", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        vscp_toXMLEscape( buf );
-        strComment = wxString::FromAscii( buf );
+            vscp_toXMLEscape( buf );
+            strComment = wxString::FromAscii( buf );
+        }
     }
 
     web_printf(conn,
 	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
 	          "close\r\n\r\n");
 
-    wxString buildPage;
-    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Decision Matrix Post"));
+    web_printf( conn, 
+                    WEB_COMMON_HEAD, 
+                    "VSCP - Decision Matrix Post" );
     web_printf( conn, WEB_STYLE_START);
     web_printf( conn, WEB_COMMON_CSS);     // CSS style Code
     web_printf( conn, WEB_STYLE_END);
     web_printf( conn, WEB_COMMON_JS);      // Common Javascript code
     web_printf( conn, "<meta http-equiv=\"refresh\" content=\"2;url=/vscp/dm");
-    buildPage += wxString::Format(_("?from=%ld&count=%ld"), (long)nFrom, (long)nCount );
+    web_printf( conn, 
+                    "?from=%ld&count=%ld", 
+                    (long)nFrom, 
+                    (long)nCount );
     web_printf( conn, "\">");
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START);
 
@@ -2561,14 +2668,14 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
     wxString navstr = _(WEB_COMMON_MENU);
     int pos;
     while ( wxNOT_FOUND != ( pos = navstr.Find(_("%s")))) {
-        buildPage += navstr.Left( pos );
+        web_printf( conn, navstr.Left( pos ).mbc_str() );
         navstr = navstr.Right(navstr.Length() - pos - 2);
     }
-    buildPage += navstr;
+    web_printf( conn, navstr.mbc_str() );
 
     web_printf( conn, WEB_DMPOST_BODY_START);
 
-    if (bNew) {
+    if ( bNew ) {
         pElement = new dmElement;
     }
 
@@ -2669,19 +2776,27 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
                 // Save decision matrix
                 gpobj->m_dm.saveToXML();
 
-                buildPage += wxString::Format(_("<br><br>DM Entry has been saved. id=%d"), id);
+                web_printf( conn, 
+                                "<br><br>DM Entry has been saved. id=%d", 
+                                id);
             }
             else {
-                buildPage += wxString::Format(_("<br><br>Memory problem id=%d. Unable to save record"), id);
+                web_printf( conn, 
+                                "<br><br>Memory problem id=%d. Unable to save record", 
+                                id);
             }
 
         } 
         else {
-            buildPage += wxString::Format(_("<br><br>Record id=%d is to large. Unable to save record"), id);
+            web_printf( conn, 
+                            "<br><br>Record id=%d is to large. Unable to save record",
+                            id );
         }
     } 
     else {
-        buildPage += wxString::Format(_("<br><br>Record id=%d is wrong. Unable to save record"), id);
+        web_printf( conn, 
+                        "<br><br>Record id=%d is wrong. Unable to save record", 
+                        id );
     }
 
     web_printf( conn, WEB_COMMON_END); // Common end code
@@ -2709,46 +2824,56 @@ static int vscp_dm_delete( struct web_connection *conn, void *cbdata  )
 
     // id
     long id = -1;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "id", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        id = atoi( buf );
+            id = atoi( buf );
+        }
     }
 
     // From
     long nFrom = 0;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "from", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        nFrom = atoi( buf );
+            nFrom = atoi( buf );
+        }
     }
 
     // Count
     uint16_t nCount = 50;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "count", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        nCount = atoi( buf );
+            nCount = atoi( buf );
+        }
     }
 
     web_printf(conn,
 	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
 	          "close\r\n\r\n");
 
-    wxString buildPage;
-    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Decision Matrix Delete"));
+    web_printf( conn, 
+                    WEB_COMMON_HEAD, 
+                    "VSCP - Decision Matrix Delete" );
     web_printf( conn, WEB_STYLE_START);
     web_printf( conn, WEB_COMMON_CSS);     // CSS style Code
     web_printf( conn, WEB_STYLE_END);
     web_printf( conn, WEB_COMMON_JS);      // Common Javascript code
     web_printf( conn, "<meta http-equiv=\"refresh\" content=\"2;url=/vscp/dm");
-    buildPage += wxString::Format(_("?from=%d&count=%d"), nFrom, nCount );
+    web_printf( conn, 
+                    "?from=%d&count=%d", 
+                    nFrom, 
+                    nCount );
     web_printf( conn, "\">");
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START);
 
@@ -2758,12 +2883,16 @@ static int vscp_dm_delete( struct web_connection *conn, void *cbdata  )
     web_printf( conn, WEB_DMEDIT_BODY_START);
 
     if ( gpobj->m_dm.removeMemoryElement( id ) ) {
-        buildPage += wxString::Format(_("<br>Deleted record id = %d"), id);
+        web_printf( conn, 
+                        "<br>Deleted record id = %d", 
+                        id );
         // Save decision matrix
         gpobj->m_dm.saveToXML();
     }
     else {
-        buildPage += wxString::Format(_("<br>Failed to remove record id = %d"), id);
+        web_printf( conn, 
+                        "<br>Failed to remove record id = %d", 
+                        id );
     }
 
     web_printf( conn, WEB_COMMON_END);     // Common end code
@@ -2784,10 +2913,14 @@ static int vscp_variable_list( struct web_connection *conn, void *cbdata  )
 {
     char buf[80];
     VSCPInformation vscpinfo;
-    //unsigned long upperLimit = 50;
-
+    unsigned long upperLimit = 50;
+    
     // Check pointer
     if (NULL == conn) return 0;
+    
+    // get variable names
+    wxArrayString nameArray;
+    gpobj->m_VSCP_Variables.getVarlistFromRegExp( nameArray ); 
 
     const struct web_request_info *reqinfo =  
                 web_get_request_info( conn );
@@ -2795,64 +2928,70 @@ static int vscp_variable_list( struct web_connection *conn, void *cbdata  )
     
     // From
     long nFrom = 0;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "from", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        nFrom = atoi( buf );
+            nFrom = atoi( buf );
+        }
     }
 
 
     // Count
     unsigned long nCount = 50;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "count", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        nCount = atoi( buf );
+            nCount = atoi( buf );
+        }
     }
 
 
     // Navigation button
-    if ( web_get_var( reqinfo->query_string,                             
-                            strlen( reqinfo->query_string ), 
-                            "navbtn", 
-                            buf, 
-                            sizeof( buf ) ) > 0 ) {
+    if (NULL != reqinfo->query_string) {
+        
+        if (web_get_var(reqinfo->query_string,
+                strlen(reqinfo->query_string),
+                "navbtn",
+                buf,
+                sizeof ( buf)) > 0) {
 
-        if (NULL != strstr("previous", buf) ) {
-            nFrom -= nCount;
-            if ( nFrom < 0 )  nFrom = 0;
-        }
-        else if (NULL != strstr("next",buf)) {
-            nFrom += nCount;
-            /* TODO
-            if ( (unsigned long)nFrom > gpobj->m_VSCP_Variables.m_listVariable.GetCount()-1 ) {
-                if ( gpobj->m_VSCP_Variables.m_listVariable.GetCount() % nCount ) {
-                    nFrom = gpobj->m_VSCP_Variables.m_listVariable.GetCount()/nCount;
+            if (NULL != strstr("previous", buf)) {
+                nFrom -= nCount;
+                if (nFrom < 0) nFrom = 0;
+            } 
+            else if (NULL != strstr("next", buf)) {
+                nFrom += nCount;
+                
+                if ( (unsigned long)nFrom > nameArray.Count()-1 ) {
+                    if ( nameArray.Count() % nCount ) {
+                        nFrom = nameArray.Count()/nCount;
+                    }
+                    else {
+                        nFrom = (nameArray.Count()/nCount) - 1;
+                    }
+                }
+            } 
+            else if (NULL != strstr("last", buf)) {
+                 if ( nameArray.Count() % nCount ) {
+                    nFrom = (nameArray.Count()/nCount)*nCount;
                 }
                 else {
-                    nFrom = (gpobj->m_VSCP_Variables.m_listVariable.GetCount()/nCount) - 1;
+                    nFrom = ((nameArray.Count()/nCount) - 1)*nCount;
                 }
-            }*/
-        }
-        else if (NULL != strstr("last",buf)) {
-            /* TODO
-             if ( gpobj->m_VSCP_Variables.m_listVariable.GetCount() % nCount ) {
-                nFrom = (gpobj->m_VSCP_Variables.m_listVariable.GetCount()/nCount)*nCount;
+            } 
+            else if (NULL != strstr("first", buf)) {
+                nFrom = 0;
             }
-            else {
-                nFrom = ((gpobj->m_VSCP_Variables.m_listVariable.GetCount()/nCount) - 1)*nCount;
-            }*/
-        }
-        else if ( NULL != strstr("first",buf) ) {
+        } 
+        else { // No vaid navigation value
             nFrom = 0;
         }
-    }
-    else {  // No vaid navigation value
-        //nFrom = 0;
     }
 
     web_printf(conn,
@@ -2860,175 +2999,284 @@ static int vscp_variable_list( struct web_connection *conn, void *cbdata  )
 	          "close\r\n\r\n");
 
 
-    wxString buildPage;
-    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Variables"));
-    web_printf( conn, WEB_STYLE_START);
-    web_printf( conn, WEB_COMMON_CSS);     // CSS style Code
-    web_printf( conn, WEB_STYLE_END);
-    web_printf( conn, WEB_COMMON_JS);      // Common Javascript code
-    web_printf( conn, WEB_COMMON_HEAD_END_BODY_START);
+    web_printf( conn, WEB_COMMON_HEAD, "VSCP - Variables" );
+    web_printf( conn, WEB_STYLE_START );
+    web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
+    web_printf( conn, WEB_STYLE_END );
+    web_printf( conn, WEB_COMMON_JS );      // Common Javascript code
+    web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
 
     // Navigation menu
-    web_printf( conn, WEB_COMMON_MENU);
-    web_printf( conn, WEB_VARLIST_BODY_START);
+    web_printf( conn, WEB_COMMON_MENU );
+    web_printf( conn, WEB_VARLIST_BODY_START );
 
-    /* TODO
     {
         wxString wxstrurl = _("/vscp/variables");
-        buildPage += wxString::Format( _(WEB_COMMON_LIST_NAVIGATION),
+        web_printf( conn, WEB_COMMON_LIST_NAVIGATION,
                 (const char *)wxstrurl.mbc_str(),
-                (unsigned long)(nFrom+1),
-                ( (unsigned long)(nFrom + nCount) < gpobj->m_VSCP_Variables.m_listVariable.GetCount()) ?
-                    nFrom + nCount : gpobj->m_VSCP_Variables.m_listVariable.GetCount(),
-                (unsigned long)gpobj->m_VSCP_Variables.m_listVariable.GetCount(),
+                (unsigned long)( nFrom + 1 ),
+                ( (unsigned long)(nFrom + nCount) < nameArray.Count() ) ?
+                    nFrom + nCount : nameArray.Count(),
+                (unsigned long)nameArray.Count(),
                 (unsigned long)nCount,
                 (unsigned long)nFrom,
-                _("false" ) );
+                "false" );
         web_printf( conn, "<br>");
     }
-     */
 
     wxString strBuf;
 
     // Display Variables List
 
-    /* TODO
-    if ( 0 == gpobj->m_VSCP_Variables.m_listVariable.GetCount() ) {
+    if ( 0 == nameArray.Count() ) {
         web_printf( conn, "<br>Variables list is empty!<br>");
     }
     else {
         web_printf( conn, WEB_VARLIST_TR_HEAD);
     }
 
-    if (nFrom < 0) nFrom = 0;
+    if ( nFrom < 0 ) nFrom = 0;
 
-    for ( unsigned int i=0;i<nCount;i++) {
+    for ( unsigned int i=0; i<nCount; i++ ) {
 
         // Check if we are done
-        if ( ( nFrom + i ) >= gpobj->m_VSCP_Variables.m_listVariable.GetCount() ) break;
+        if ( ( nFrom + i ) >= nameArray.Count() ) break;
 
-        CVSCPVariable *pVariable =
-                gpobj->m_VSCP_Variables.m_listVariable.Item( i )->GetData();
-        {
+        CVSCPVariable variable;
+        if ( 0 == gpobj->m_VSCP_Variables.find( nameArray[ nFrom + i ], 
+                                                    variable ) ) {
+            web_printf( conn, 
+                        "Internal error: Non existent variable entry. "
+                        "name = %s idx= %ld<br>",
+                        (const char *)variable.getName().mbc_str(),
+                        (long)(nFrom + i) );
+            continue;
+        }
+        
+        if (  1 || !variable.isStockVariable() ) {
+            
             wxString url_dmedit =
-                    wxString::Format(_("/vscp/varedit?id=%ld&from=%ld&count=%ld"),
-                                        (long)(nFrom+i), (long)nFrom, (long)nCount );
+                    wxString::Format( _("/vscp/varedit?id=%ld&from=%ld&count=%ld"),
+                                        (long)(nFrom+i), 
+                                        (long)nFrom, 
+                                        (long)nCount );
             wxString str = wxString::Format(_(WEB_COMMON_TR_CLICKABLE_ROW),
-                                                url_dmedit.wx_str() );
-            buildPage += str;
+                                                url_dmedit.mbc_str() );
+            web_printf( conn, str.mbc_str() );
+            
         }
 
-        // Client id
-        web_printf( conn, WEB_IFLIST_TD_CENTERED);
-        buildPage += wxString::Format(_("<form name=\"input\" action=\"/vscp/vardelete?id=%ld\" method=\"get\"> %ld <input type=\"submit\" value=\"x\"><input type=\"hidden\" name=\"id\"value=\"%ld\"></form>"),
-                        (long)(nFrom+i), (long)(nFrom+i+1), (long)(nFrom+i) );
-        web_printf( conn, "</td>");
+        // variable id
+        web_printf( conn, WEB_IFLIST_TD_CENTERED );
+        web_printf( conn, "<div style=\"font-weight: bold;\">%ld</div>", nFrom + i + 1 );
+        web_printf( conn, "</td>" );
 
-        if (NULL != pVariable) {
-
-            // Variable type
-            web_printf( conn, "<td>");
-            switch (pVariable->getType()) {
+        // Type
+        web_printf(conn, WEB_IFLIST_TD_CENTERED);
+        switch (variable.getType()) {
 
             case VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED:
-                web_printf( conn, "Unassigned");
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Unassigned</div>");
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_STRING:
-                web_printf( conn, "String");
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">String</div>");
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_BOOLEAN:
-                web_printf( conn, "Boolean");
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Boolean</div>");
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_INTEGER:
-                web_printf( conn, "Integer");
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Integer</div>");
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_LONG:
-                web_printf( conn, "Long");
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Long</div>");
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_DOUBLE:
-                web_printf( conn, "Double");
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Double</div>");
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
-                web_printf( conn, "Measurement");
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Measurement</div>");
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
-                web_printf( conn, "Event");
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Event</div>");
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID:
-                web_printf( conn, "GUID");
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">GUID</div>");
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA:
-                web_printf( conn, "Event data");
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Event data</div>");
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS:
-                web_printf( conn, "Event class");
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Event class</div>");
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE:
-                web_printf( conn, "Event type");
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Event type</div>");
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP:
-                web_printf( conn, "Event timestamp");
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Event timestamp</div>");
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
-                web_printf( conn, "Date and time");
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Date and time</div>");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_DATE:
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Date</div>");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_TIME:
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Time</div>");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_BLOB:
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Blob</div>");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_MIME:
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Mime type</div>");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_HTML:
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">HTML</div>");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_JAVASCRIPT:
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">JavaScript</div>");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_JSON:
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">JSON</div>");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_XML:
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">XML</div>");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_SQL:
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">SQL</div>");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_LUA:
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Lua</div>");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_LUA_RESULT:
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Lua result</div>");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_UX_TYPE1:
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">UX type 1</div>");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_DM_ROW:
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">DM row</div>");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_DRIVER:
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Driver</div>");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_USER:
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">User</div>");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_FILTER:
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Filter</div>");
                 break;
 
             default:
-                web_printf( conn, "Unknown type");
+                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Unknown type</div>");
                 break;
 
-            }
-            web_printf( conn, "</td>");
+        }
 
+        web_printf(conn, "</td>");
 
-            // Variable entry
-            web_printf( conn, "<td>");
+        // Variable entry
+        web_printf(conn, "<td>");
 
-            web_printf( conn, "<div id=\"small\">");
+        web_printf(conn, "<div id=\"small\">");
 
-            web_printf( conn, "<h4>");
-            buildPage += pVariable->getName();
-            web_printf( conn, "</h4>");
+        web_printf(conn, "<h4>");
+        web_printf(conn, variable.getName().MakeLower().mbc_str() );
+        web_printf(conn, "</h4>");
 
-            wxString str;
-            pVariable->writeValueToString(str);
-            web_printf( conn, "<b>Value:</b> ");
-            buildPage += str;
+        wxString strValue;
+        variable.writeValueToString( strValue, true );
+        web_printf( conn, "<b>Value:</b> ");
+        web_printf( conn, strValue.mbc_str() );
 
-            web_printf( conn, "<br>");
-            web_printf( conn, "<b>Note:</b> ");
-            buildPage += pVariable->getNote();
+        web_printf( conn, "<br>");
+        web_printf( conn, "<b>Note:</b> ");
+        wxString strNote;
+        variable.getNote(strNote, true);
+        web_printf(conn, strNote.mbc_str());
 
-            web_printf( conn, "<br>");
-            web_printf( conn, "<b>Persistent: </b> ");
-            if ( pVariable->isPersistent() ) {
-                web_printf( conn, "yes");
-            }
-            else {
-                web_printf( conn, "no");
-            }
+        web_printf(conn, "<br>");
+        web_printf(conn, "<b>Persistent: </b> ");
+        if (variable.isPersistent()) {
+            web_printf(conn, "yes");
+        } 
+        else {
+            web_printf(conn, "no");
+        }
+        
+        // User
+        web_printf(conn, "<br>");
+        web_printf(conn, "<b>Owner: </b> ");
+        web_printf(conn, "id=%X = ", variable.getOwnerID() );
+        CUserItem *pUser = gpobj->m_userList.getUserItemFromOrdinal( variable.getOwnerID() );
+        if ( NULL == pUser ) {
+            web_printf(conn, " Unknow user " );
+        }
+        web_printf(conn, 
+                    "%s (%s)",
+                    (const char *)pUser->getUser().mbc_str(),
+                    (const char *)pUser->getFullname().mbc_str() );
+        
+        // Access rights
+        web_printf(conn, "<br>");
+        web_printf(conn, "<b>Access rights: </b> ");
+        web_printf(conn, "%X ", variable.getAccessRights() );
+        
+        // Last change
+        web_printf(conn, "<br>");
+        web_printf(conn, "<b>Last changed: </b> ");
+        web_printf(conn, "%s ", 
+                (const char *)variable.getLastChange().FormatISOCombined().mbc_str() );
 
-            web_printf( conn, "</div>");
+        web_printf(conn, "</div>");
 
+   
+        web_printf( conn, "</td>");
+        
+        // Delete button
+        web_printf( conn, WEB_IFLIST_TD_CENTERED );
+        if ( variable.isStockVariable() ) {
+            web_printf( conn, "---" );
         }
         else {
-            web_printf( conn, "Internal error: Non existent variable entry.");
+            web_printf( conn, 
+                            "<form name=\"input\" action=\"/vscp/vardelete?id=%ld\" "
+                            "method=\"get\"><input type=\"submit\" value=\"x\" >"
+                            "<input type=\"hidden\" name=\"id\"value=\"%ld\" ></form>",
+                            (long)( nFrom + i ), 
+                            (long)( nFrom + i ) );
         }
-
-        web_printf( conn, "</td>");
+        web_printf( conn, "</td>" );
+        
+        
         web_printf( conn, "</tr>");
 
     } // for
@@ -3037,20 +3285,20 @@ static int vscp_variable_list( struct web_connection *conn, void *cbdata  )
 
     {
         wxString wxstrurl = _("/vscp/variables");
-        buildPage += wxString::Format( _(WEB_COMMON_LIST_NAVIGATION),
-                wxstrurl.wx_str(),
-                (unsigned long)(nFrom+1),
-                ( (unsigned long)(nFrom + nCount) < gpobj->m_VSCP_Variables.m_listVariable.GetCount()) ?
-                    nFrom + nCount : gpobj->m_VSCP_Variables.m_listVariable.GetCount(),
-                (unsigned long)gpobj->m_VSCP_Variables.m_listVariable.GetCount(),
-                (unsigned long)nCount,
-                (unsigned long)nFrom,
-                _("false" ) );
+        web_printf( conn, 
+                    WEB_COMMON_LIST_NAVIGATION,
+                    (const char *)wxstrurl.mbc_str(),
+                    (unsigned long)(nFrom+1),
+                    ( (unsigned long)(nFrom + nCount) < nameArray.Count() ) ?
+                        nFrom + nCount : nameArray.Count(),
+                    (unsigned long)nameArray.Count(),
+                    (unsigned long)nCount,
+                    (unsigned long)nFrom,
+                    "false" );
     }
 
     web_printf( conn, WEB_COMMON_END);     // Common end code
 
-    */
 
     return 1;
 }
@@ -3064,7 +3312,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     char buf[80];
     wxString str;
     VSCPInformation vscpinfo;
-    CVSCPVariable *pVariable = NULL;
+    CVSCPVariable variable;
 
     // Check pointer
     if (NULL == conn) return 0;
@@ -3075,61 +3323,70 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
 
     // id
     long id = -1;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "id", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        id = atoi( buf );
+            id = atoi( buf );
+        }
     }
 
     // type
     uint8_t nType = VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "type", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        nType = atoi( buf );
+            nType = atoi( buf );
+        }
     }
 
     // Flag for new variable row
     bool bNew = false;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "new", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        if ( NULL != strstr( "true", buf ) ) bNew = true;
+            if ( NULL != strstr( "true", buf ) ) bNew = true;
+        }
     }
 
     // From
     long nFrom = 0;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "from", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        nFrom = atoi( buf );
+            nFrom = atoi( buf );
+        }
     }
 
 
     // Count
     uint16_t nCount = 50;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "count", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        nCount = atoi( buf );
+            nCount = atoi( buf );
+        }
     }
 
     web_printf(conn,
 	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
 	          "close\r\n\r\n");
 
-    wxString buildPage;
-    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Variable Edit"));
+    web_printf( conn, WEB_COMMON_HEAD, "VSCP - Variable Edit" );
     web_printf( conn, WEB_STYLE_START);
     web_printf( conn, WEB_COMMON_CSS);     // CSS style Code
     web_printf( conn, WEB_STYLE_END);
@@ -3140,461 +3397,643 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     web_printf( conn, WEB_COMMON_MENU);
 
     web_printf( conn, WEB_VAREDIT_BODY_START);
+    
+    // get variable names
+    wxArrayString nameArray;
+    gpobj->m_VSCP_Variables.getVarlistFromRegExp( nameArray ); 
 
-    /* TODO
-    if ( !bNew && ( id < (long)gpobj->m_VSCP_Variables.m_listVariable.GetCount() ) ) {
-        pVariable = gpobj->m_VSCP_Variables.m_listVariable.Item(id)->GetData();
+    if ( !bNew ) {
+                
+        if ( 0 == gpobj->m_VSCP_Variables.find( nameArray[ id ], 
+                                                    variable ) ) {
+            web_printf( conn, 
+                        "Internal error: Non existent variable entry. "
+                        "name = %s idx= %ld<br>",
+                        (const char *)variable.getName().mbc_str(),
+                        (long)id );
+            
+            web_printf( conn, WEB_COMMON_END);     // Common end code
+            return 1;
+        }
+        
     }
-     */
 
-    if (bNew || (NULL != pVariable)) {
+    if ( bNew ) {
+        web_printf( conn,
+                        "<br><span id=\"optiontext\">New record.</span><br>");
+    } 
+    else {
+        web_printf( conn,
+                        "<br><span id=\"optiontext\">Record = %d.</span><br>",
+                        id );
+    }
 
+    web_printf(conn, "<br><form method=\"get\" action=\"");
+    web_printf(conn, "/vscp/varpost");
+    web_printf(conn, "\" name=\"varedit\">");
+
+    // Hidden from
+    web_printf( conn,
+                    "<input name=\"from\" value=\"%d\" type=\"hidden\">",
+                    nFrom );
+
+    // Hidden count
+    web_printf( conn,
+                    "<input name=\"count\" value=\"%d\" type=\"hidden\">",
+                    nCount );
+
+    // Hidden id
+    web_printf( conn,
+                    "<input name=\"id\" value=\"%d\" type=\"hidden\">",
+                    id );
+
+    if ( bNew ) {
+        // Hidden new
+        web_printf(conn,
+                "<input name=\"new\" value=\"true\" type=\"hidden\">");
+    } 
+    else {
+        // Hidden new
+        web_printf( conn,
+                        "<input name=\"new\" value=\"false\" type=\"hidden\">");
+    }
+
+    // Hidden type
+    web_printf( conn, "<input name=\"type\" value=\"");
+    web_printf( conn, "%d", bNew ? nType : variable.getType());
+    web_printf( conn, "\" type=\"hidden\"></input>");
+
+    web_printf( conn, "<h4>Variable:</h4> <span id=\"optiontext\"></span><br>");
+
+    web_printf( conn, "<table class=\"invisable\"><tbody><tr class=\"invisable\">");
+
+    web_printf( conn, "<td class=\"invisable\">Name:</td><td class=\"invisable\">");
+    
+    if ( !bNew ) {
+        web_printf( conn, "<div style=\"font-weight: bold;\" >" );
+        web_printf( conn, (const char *)variable.getName().MakeLower().mbc_str() );
+        web_printf( conn, "</div>" );
+        web_printf( conn, "<input name=\"value_name\" value=\"");
+        web_printf( conn, variable.getName().mbc_str());
+        web_printf( conn, "\" type=\"hidden\">");
+    } 
+    else {
+        web_printf(conn, "<textarea cols=\"50\" rows=\"1\" name=\"value_name\"></textarea>");
+    }
+    
+    web_printf(conn, "</td></tr><tr>");
+    web_printf(conn, "<td class=\"invisable\">Value:</td><td class=\"invisable\">");
+
+    if ( !bNew ) nType = variable.getType();
+
+    if ( VSCP_DAEMON_VARIABLE_CODE_STRING == nType ) {
+
+        web_printf(conn, "<textarea cols=\"50\" rows=\"10\" name=\"value_string\">");
+        
         if ( bNew ) {
-            web_printf( conn, "<br><span id=\"optiontext\">New record.</span><br>");
-        }
+            web_printf(conn, "");
+        } 
         else {
-            buildPage += wxString::Format(_("<br><span id=\"optiontext\">Record = %d.</span><br>"), id);
+            wxString str;
+            variable.writeValueToString( str, true );
+            web_printf( conn, (const char *)str.mbc_str() );
         }
 
-        web_printf( conn, "<br><form method=\"get\" action=\"");
-        web_printf( conn, "/vscp/varpost");
-        web_printf( conn, "\" name=\"varedit\">");
+        web_printf(conn, "</textarea>");
 
-        // Hidden from
-        buildPage += wxString::Format(_("<input name=\"from\" value=\"%d\" type=\"hidden\">"), nFrom );
+    } 
+    else if ( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN == nType ) {
 
-        // Hidden count
-        buildPage += wxString::Format(_("<input name=\"count\" value=\"%d\" type=\"hidden\">"), nCount );
+        bool bValue = false;
+        if (! bNew ) variable.getValue( &bValue );
 
-        // Hidden id
-        buildPage += wxString::Format(_("<input name=\"id\" value=\"%d\" type=\"hidden\">"), id );
+        web_printf(conn, "<input type=\"radio\" name=\"value_boolean\" "
+                         "value=\"true\" ");
+        
+        if ( !bNew )
+            web_printf( conn, "%s", bValue ? "checked >true " : ">true ");
+        else {
+            web_printf(conn, ">true ");
+        }
 
+        web_printf( conn, "<input type=\"radio\" name=\"value_boolean\" "
+                          "value=\"false\" ");
+        
+        if ( !bNew )
+            web_printf( conn, "%s", !bValue ? "checked >false " : ">false ");
+        else {
+            web_printf(conn, ">false ");
+        }
+    } 
+    else if ( VSCP_DAEMON_VARIABLE_CODE_INTEGER == nType ) {
+
+        web_printf(conn, "<textarea cols=\"10\" rows=\"1\" "
+                         "name=\"value_integer\">");
+        
+        if ( bNew ) {
+            web_printf(conn, "");
+        } 
+        else {
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+
+        web_printf(conn, "</textarea>");
+
+    } 
+    else if ( VSCP_DAEMON_VARIABLE_CODE_LONG == nType ) {
+
+        web_printf(conn, "<textarea cols=\"10\" rows=\"1\" name=\"value_long\">");
+        
+        if ( bNew ) {
+            web_printf(conn, "");
+        } 
+        else {
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+
+        web_printf(conn, "</textarea>");
+
+    } 
+    else if ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE == nType ) {
+
+        web_printf(conn, "<textarea cols=\"10\" rows=\"1\" name=\"value_double\">");
+        
+        if ( bNew ) {
+            web_printf(conn, "");
+        } 
+        else {
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+
+        web_printf(conn, "</textarea>");
+
+    } 
+    else if ( VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT == nType ) {
+        
+        web_printf(conn, "<textarea cols=\"50\" rows=\"1\" name=\"value_measurement\">");
+        
+        if ( bNew ) {
+            web_printf(conn, "");
+        } 
+        else {
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+
+        web_printf(conn, "</textarea>");
+    } 
+    else if ( VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT == nType ) {
+        
+        web_printf(conn, "<textarea cols=\"50\" rows=\"1\" name=\"value\">");
+        
+        if ( bNew ) {
+            web_printf(conn, "");
+        } 
+        else {
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+
+        web_printf(conn, "</textarea>");
+       
+
+    } 
+    else if ( VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID == nType ) {
+
+        web_printf(conn, "<textarea cols=\"50\" rows=\"1\" name=\"value_guid\">");
+        
         if (bNew) {
-            // Hidden new
-            web_printf( conn, "<input name=\"new\" value=\"true\" type=\"hidden\">");
-        }
+            web_printf(conn, "");
+        } 
         else {
-            // Hidden new
-            web_printf( conn, "<input name=\"new\" value=\"false\" type=\"hidden\">");
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
         }
 
-        // Hidden type
-        web_printf( conn, "<input name=\"type\" value=\"");
-        buildPage += wxString::Format(_("%d"), ( bNew ? nType : pVariable->getType()) );
-        web_printf( conn, "\" type=\"hidden\"></input>");
+        web_printf(conn, "</textarea>");
 
-        web_printf( conn, "<h4>Variable:</h4> <span id=\"optiontext\"></span><br>");
+    } 
+    else if ( VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA == nType ) {
 
-        web_printf( conn, "<table class=\"invisable\"><tbody><tr class=\"invisable\">");
-
-        web_printf( conn, "<td class=\"invisable\">Name:</td><td class=\"invisable\">");
-        if ( !bNew ) {
-            buildPage += pVariable->getName();
-            web_printf( conn, "<input name=\"value_name\" value=\"");
-            buildPage += pVariable->getName();
-            web_printf( conn, "\" type=\"hidden\">");
-        }
+        web_printf(conn, "<textarea cols=\"50\" rows=\"5\" name=\"value_data\">");
+        
+        if ( bNew ) {
+            web_printf(conn, "");
+        } 
         else {
-            web_printf( conn, "<textarea cols=\"50\" rows=\"1\" name=\"value_name\"></textarea>");
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
         }
-        web_printf( conn, "</td></tr><tr>");
-        web_printf( conn, "<td class=\"invisable\">Value:</td><td class=\"invisable\">");
 
-        if (!bNew ) nType = pVariable->getType();
+        web_printf(conn, "</textarea>");
 
-        if ( nType  == VSCP_DAEMON_VARIABLE_CODE_STRING ) {
+    } 
+    else if ( VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS == nType ) {
 
-            web_printf( conn, "<textarea cols=\"50\" rows=\"5\" name=\"value_string\">");
-            if ( bNew ) {
-                web_printf( conn, "");
-            }
-            else {
-                wxString str;
-                str = pVariable->getValue();
-                buildPage += str;
-            }
-
-            web_printf( conn, "</textarea>");
-
-        }
-        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_BOOLEAN ) {
-
-            bool bValue = false;
-            if ( !bNew ) pVariable->getValue( &bValue );
-
-            web_printf( conn, "<input type=\"radio\" name=\"value_boolean\" value=\"true\" ");
-            if ( !bNew )
-                buildPage += wxString::Format(_("%s"),
-                                bValue ? _("checked >true ") : _(">true ") );
-            else {
-                web_printf( conn, ">true ");
-            }
-
-            web_printf( conn, "<input type=\"radio\" name=\"value_boolean\" value=\"false\" ");
-            if ( !bNew )
-                buildPage += wxString::Format(_("%s"),
-                                        !bValue ? _("checked >false ") : _(">false ") );
-            else {
-                web_printf( conn, ">false ");
-            }
-        }
-        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_INTEGER ) {
-
-            web_printf( conn, "<textarea cols=\"10\" rows=\"1\" name=\"value_integer\">");
-            if ( bNew ) {
-                web_printf( conn, "");
-            }
-            else {
-                int val;
-                pVariable->getValue( &val );
-                buildPage += wxString::Format(_("%d"), val );
-            }
-
-            web_printf( conn, "</textarea>");
-
-        }
-        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_LONG ) {
-
-            web_printf( conn, "<textarea cols=\"10\" rows=\"1\" name=\"value_long\">");
-            if ( bNew ) {
-                web_printf( conn, "");
-            }
-            else {
-                long val;
-                pVariable->getValue( &val );
-                buildPage += wxString::Format(_("%ld"), val );
-            }
-
-            web_printf( conn, "</textarea>");
-
-        }
-        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_DOUBLE ) {
-
-            web_printf( conn, "<textarea cols=\"10\" rows=\"1\" name=\"value_double\">");
-            if ( bNew ) {
-                web_printf( conn, "");
-            }
-            else {
-                double val;
-                pVariable->getValue( &val );
-                buildPage += wxString::Format(_("%f"), val );
-            }
-
-            web_printf( conn, "</textarea>");
-
-        }
-        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT ) {
-            web_printf( conn, "<textarea cols=\"50\" rows=\"1\" name=\"value_measurement\">");
-            if ( bNew ) {
-                web_printf( conn, "");
-            }
-            else {
-                wxString str;
-                pVariable->writeValueToString( str );
-                buildPage += str;
-            }
-
-            web_printf( conn, "</textarea>");
-        }
-        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT ) {
-
-            web_printf( conn, "<table>");
-
-            web_printf( conn, "<tr><td>");
-            web_printf( conn, "VSCP class");
-             web_printf( conn, "</td><td>");
-            web_printf( conn, "<textarea cols=\"10\" rows=\"1\" name=\"value_class\">");
-            if ( bNew ) {
-                web_printf( conn, "");
-            }
-            else {
-                // TODO buildPage += wxString::Format(_("0x%x"), pVariable->m_event.vscp_class );
-            }
-
-            web_printf( conn, "</textarea>");
-            web_printf( conn, "</td></tr>");
-
-            web_printf( conn, "<tr><td>");
-            web_printf( conn, "VSCP type: ");
-            web_printf( conn, "</td><td>");
-            web_printf( conn, "<textarea cols=\"10\" rows=\"1\" name=\"value_type\">");
-            if ( bNew ) {
-                web_printf( conn, "");
-            }
-            else {
-                // TODO buildPage += wxString::Format(_("0x%x"), pVariable->m_event.vscp_type );
-            }
-
-            web_printf( conn, "</textarea>");
-            web_printf( conn, "</td></tr>");
-
-            web_printf( conn, "<tr><td>");
-            web_printf( conn, "GUID: ");
-            web_printf( conn, "</td><td>");
-            web_printf( conn, "<textarea cols=\"50\" rows=\"1\" name=\"value_guid\">");
-            if ( bNew ) {
-                web_printf( conn, "");
-            }
-            else {
-                wxString strGUID;
-                // TODO vscp_writeGuidArrayToString( pVariable->m_event.GUID, strGUID );
-                buildPage += wxString::Format(_("%s"), strGUID.wx_str() );
-            }
-
-            web_printf( conn, "</textarea>");
-            web_printf( conn, "</td></tr>");
-
-            web_printf( conn, "<tr><td>");
-            web_printf( conn, "Timestamp: ");
-            web_printf( conn, "</td><td>");
-            web_printf( conn, "<textarea cols=\"10\" rows=\"1\" name=\"value_timestamp\">");
-            if ( bNew ) {
-                web_printf( conn, "0");
-            }
-            else {
-                // TODO buildPage += wxString::Format(_("0x%x"), pVariable->m_event.timestamp );
-            }
-
-            web_printf( conn, "</textarea>");
-            web_printf( conn, "</td></tr>");
-
-            web_printf( conn, "</textarea>");
-            web_printf( conn, "</td></tr>");
-
-            web_printf( conn, "<tr><td>");
-            web_printf( conn, "OBID: ");
-            web_printf( conn, "</td><td>");
-            web_printf( conn, "<textarea cols=\"10\" rows=\"1\" name=\"value_obid\">");
-            if ( bNew ) {
-                web_printf( conn, "0");
-            }
-            else {
-                // TODO buildPage += wxString::Format(_("0x%X"), pVariable->m_event.obid );
-            }
-
-            web_printf( conn, "</textarea>");
-            web_printf( conn, "</td></tr>");
-
-            web_printf( conn, "</textarea>");
-            web_printf( conn, "</td></tr>");
-
-            web_printf( conn, "</textarea>");
-            web_printf( conn, "</td></tr>");
-
-            web_printf( conn, "<tr><td>");
-            web_printf( conn, "Head: ");
-            web_printf( conn, "</td><td>");
-            web_printf( conn, "<textarea cols=\"10\" rows=\"1\" name=\"value_head\">");
-            if ( bNew ) {
-                web_printf( conn, "0");
-            }
-            else {
-                // TODO buildPage += wxString::Format(_("0x%02x"), pVariable->m_event.head );
-            }
-
-            web_printf( conn, "</textarea>");
-            web_printf( conn, "</td></tr>");
-
-            web_printf( conn, "<tr><td>");
-            web_printf( conn, "CRC: ");
-            web_printf( conn, "</td><td>");
-            web_printf( conn, "<textarea cols=\"10\" rows=\"1\" name=\"value_crc\">");
-            if ( bNew ) {
-                web_printf( conn, "0");
-            }
-            else {
-                // TODO buildPage += wxString::Format(_("0x%08x"), pVariable->m_event.crc );
-            }
-
-            web_printf( conn, "</textarea>");
-            web_printf( conn, "</td></tr>");
-
-            web_printf( conn, "</textarea>");
-            web_printf( conn, "</td></tr>");
-
-            web_printf( conn, "<tr><td>");
-            web_printf( conn, "Data size: ");
-            web_printf( conn, "</td><td>");
-            //web_printf( conn, "<textarea cols=\"10\" rows=\"1\" name=\"value_sizedata\">");
-            if ( bNew ) {
-                web_printf( conn, "0");
-            }
-            else {
-                // TODO buildPage += wxString::Format(_("%d"), pVariable->m_event.sizeData );
-            }
-
-            //web_printf( conn, "</textarea>");
-            web_printf( conn, "</td></tr>");
-
-            web_printf( conn, "<tr><td>");
-            web_printf( conn, "Data: ");
-            web_printf( conn, "</td><td>");
-            web_printf( conn, "<textarea cols=\"50\" rows=\"4\" name=\"value_data\">");
-            if ( bNew ) {
-                web_printf( conn, "0");
-            }
-            else {
-                wxString strData;
-                // TODO vscp_writeVscpDataToString( &pVariable->m_event, strData );
-                buildPage += wxString::Format(_("%s"), strData.wx_str() );
-            }
-
-            web_printf( conn, "</textarea>");
-            web_printf( conn, "</td></tr>");
-
-            web_printf( conn, "</table>");
-
-        }
-        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID ) {
-
-            web_printf( conn, "<textarea cols=\"50\" rows=\"1\" name=\"value_guid\">");
-            if ( bNew ) {
-                web_printf( conn, "");
-            }
-            else {
-                wxString strGUID;
-                pVariable->writeValueToString(strGUID);
-                buildPage += strGUID;
-            }
-
-            web_printf( conn, "</textarea>");
-
-        }
-        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA ) {
-
-            web_printf( conn, "<textarea cols=\"50\" rows=\"5\" name=\"value_data\">");
-            if ( bNew ) {
-                web_printf( conn, "");
-            }
-            else {
-                wxString strData;
-                // TODO vscp_writeVscpDataToString( &pVariable->m_event, strData );
-                buildPage += strData;
-            }
-
-            web_printf( conn, "</textarea>");
-
-        }
-        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS ) {
-
-            web_printf( conn, "<textarea cols=\"10\" rows=\"1\" name=\"value_class\">");
-            if ( bNew ) {
-                web_printf( conn, "");
-            }
-            else {
-                wxString str;
-                pVariable->writeValueToString( str );
-                buildPage += str;
-            }
-
-            web_printf( conn, "</textarea>");
-
-        }
-        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE ) {
-
-            web_printf( conn, "<textarea cols=\"10\" rows=\"1\" name=\"value_type\">");
-            if ( bNew ) {
-                web_printf( conn, "");
-            }
-            else {
-                wxString str;
-                pVariable->writeValueToString( str );
-                buildPage += str;
-            }
-
-            web_printf( conn, "</textarea>");
-
-        }
-        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP ) {
-
-            web_printf( conn, "<textarea cols=\"10\" rows=\"1\" name=\"value_timestamp\">");
-            if ( bNew ) {
-                web_printf( conn, "");
-            }
-            else {
-                wxString str;
-                pVariable->writeValueToString( str );
-                buildPage += str;
-            }
-
-            web_printf( conn, "</textarea>");
-
-        }
-        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_DATETIME ) {
-
-            web_printf( conn, "<textarea cols=\"20\" rows=\"1\" name=\"value_date_time\">");
-            if ( bNew ) {
-                web_printf( conn, "");
-            }
-            else {
-                wxString str;
-                pVariable->writeValueToString( str );
-                buildPage += str;
-            }
-
-            web_printf( conn, "</textarea>");
-
-        }
+        web_printf(conn, "<textarea cols=\"10\" rows=\"1\" name=\"value_class\">");
+        
+        if ( bNew ) {
+            web_printf(conn, "");
+        } 
         else {
-            // Invalid type
-            web_printf( conn, "Invalid type - Something is very wrong!");
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
         }
 
+        web_printf(conn, "</textarea>");
 
-        web_printf( conn, "</tr><tr><td>Persistence: </td><td>");
+    } 
+    else if ( VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE == nType ) {
 
-        web_printf( conn, "<input type=\"radio\" name=\"persistent\" value=\"true\" ");
+        web_printf(conn, "<textarea cols=\"10\" rows=\"1\" name=\"value_type\">");
+        
+        if ( bNew ) {
+            web_printf(conn, "");
+        } 
+        else {
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+
+        web_printf(conn, "</textarea>");
+
+    } 
+    else if ( VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP == nType ) {
+
+        web_printf(conn, "<textarea cols=\"10\" rows=\"1\" name=\"value_timestamp\">");
+        
+        if ( bNew ) {
+            web_printf(conn, "");
+        } 
+        else {
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+
+        web_printf(conn, "</textarea>");
+
+    } 
+    else if ( VSCP_DAEMON_VARIABLE_CODE_DATETIME == nType ) {
+
+        web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"value_date_time\">");
+        
+        if ( bNew ) {
+            web_printf(conn, "");
+        } 
+        else {
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+
+        web_printf(conn, "</textarea>");
+
+    } 
+    else if ( VSCP_DAEMON_VARIABLE_CODE_DATE == nType ) {
+        
+        web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"value\">");
+        
+        if ( bNew ) {
+            web_printf(conn, "");
+        } 
+        else {
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+
+        web_printf(conn, "</textarea>");
+        
+    }
+    else if ( VSCP_DAEMON_VARIABLE_CODE_TIME == nType ) {
+        
+        web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"value\">");
+        
+        if ( bNew ) {
+            web_printf(conn, "");
+        } 
+        else {
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+
+        web_printf(conn, "</textarea>");
+        
+    }
+    else if ( VSCP_DAEMON_VARIABLE_CODE_BLOB == nType ) {
+        
+        web_printf(conn, "<textarea cols=\"20\" rows=\"10\" name=\"value\">");
+        
+        if ( bNew ) {
+            web_printf(conn, "");
+        } 
+        else {
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+
+        web_printf(conn, "</textarea>");
+        
+    }
+    else if ( VSCP_DAEMON_VARIABLE_CODE_MIME == nType ) {
+        web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"value\">");
+        
+        if ( bNew ) {
+            web_printf(conn, "");
+        } 
+        else {
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+
+        web_printf(conn, "</textarea>");
+        
+    }
+    else if ( VSCP_DAEMON_VARIABLE_CODE_HTML == nType ) {
+        web_printf(conn, "<textarea cols=\"10\" rows=\"1\" name=\"value\">");
+        
+        if ( bNew ) {
+            web_printf(conn, "");
+        } 
+        else {
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+
+        web_printf(conn, "</textarea>");
+        
+    }
+    else if ( VSCP_DAEMON_VARIABLE_CODE_JAVASCRIPT == nType ) {
+        web_printf(conn, "<textarea cols=\"20\" rows=\"10\" name=\"value\">");
+        
+        if ( bNew ) {
+            web_printf(conn, "");
+        } 
+        else {
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+
+        web_printf(conn, "</textarea>");
+        
+    }
+    else if ( VSCP_DAEMON_VARIABLE_CODE_JSON == nType ) {
+        web_printf(conn, "<textarea cols=\"20\" rows=\"10\" name=\"value\">");
+        
+        if ( bNew ) {
+            web_printf(conn, "");
+        } 
+        else {
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+
+        web_printf(conn, "</textarea>");
+        
+    }
+    else if ( VSCP_DAEMON_VARIABLE_CODE_XML == nType ) {
+        web_printf(conn, "<textarea cols=\"20\" rows=\"10\" name=\"value\">");
+        
+        if ( bNew ) {
+            web_printf(conn, "");
+        } 
+        else {
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+
+        web_printf(conn, "</textarea>");
+        
+    }
+    else if ( VSCP_DAEMON_VARIABLE_CODE_SQL == nType ) {
+        web_printf(conn, "<textarea cols=\"20\" rows=\"10\" name=\"value\">");
+        
+        if ( bNew ) {
+            web_printf(conn, "");
+        } 
+        else {
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+
+        web_printf(conn, "</textarea>");
+        
+    }
+    else if ( VSCP_DAEMON_VARIABLE_CODE_LUA == nType ) {
+        web_printf(conn, "<textarea cols=\"20\" rows=\"10\" name=\"value\">");
+        
+        if ( bNew ) {
+            web_printf(conn, "");
+        } 
+        else {
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+
+        web_printf(conn, "</textarea>");
+    }
+    else if ( VSCP_DAEMON_VARIABLE_CODE_LUA_RESULT == nType ) {
+        web_printf(conn, "<textarea cols=\"20\" rows=\"10\" name=\"value\">");
+        
+        if ( bNew ) {
+            web_printf(conn, "");
+        } 
+        else {
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+
+        web_printf(conn, "</textarea>");
+    }
+    else if ( VSCP_DAEMON_VARIABLE_CODE_UX_TYPE1 == nType ) {
+        web_printf(conn, "<textarea cols=\"20\" rows=\"10\" name=\"value\">");
+        
+        if ( bNew ) {
+            web_printf(conn, "");
+        } 
+        else {
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+
+        web_printf(conn, "</textarea>");
+    }
+    else if ( VSCP_DAEMON_VARIABLE_CODE_DM_ROW == nType ) {
+        web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"value\">");
+        
+        if ( bNew ) {
+            web_printf(conn, "");
+        } 
+        else {
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+
+        web_printf(conn, "</textarea>");
+    }
+    else if ( VSCP_DAEMON_VARIABLE_CODE_DRIVER == nType ) {
+        web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"value\">");
+        
+        if ( bNew ) {
+            web_printf(conn, "");
+        } 
+        else {
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+
+        web_printf(conn, "</textarea>");
+    }
+    else if ( VSCP_DAEMON_VARIABLE_CODE_USER == nType ) {
+        web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"value\">");
+        
+        if ( bNew ) {
+            web_printf(conn, "");
+        } 
+        else {
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+
+        web_printf(conn, "</textarea>");
+    }
+    else if ( VSCP_DAEMON_VARIABLE_CODE_FILTER == nType ) {
+        web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"value\">");
+        
+        if ( bNew ) {
+            web_printf(conn, "");
+        } 
+        else {
+            wxString str;
+            variable.writeValueToString( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+
+        web_printf(conn, "</textarea>");
+    }    
+    else {
+        // Invalid type
+        web_printf(conn, "Invalid type - Something is very wrong!");
+    }
+
+    // Persistence
+    web_printf(conn, "</tr><tr><td>Persistence: </td><td>");
+
+    if ( bNew ) {
+        
+        web_printf(conn, "<input type=\"radio\" name=\"persistent\" value=\"true\" ");
 
         if ( !bNew ) {
-            buildPage += wxString::Format(_("%s"),
-                pVariable->isPersistent() ? _("checked >Persistent ") : _(">Persistent ") );
-        }
+            web_printf( conn,
+                        "%s",
+                        variable.isPersistent() ?
+                        "checked >Persistent " : ">Persistent ");
+        } 
         else {
-            web_printf( conn, "checked >Persistent ");
+            web_printf (conn, "checked >Persistent ");
         }
-
-         web_printf( conn, "<input type=\"radio\" name=\"persistent\" value=\"false\" ");
+        
+        web_printf( conn, "<input type=\"radio\" name=\"persistent\" value=\"false\" ");
 
         if ( !bNew ) {
-            buildPage += wxString::Format(_("%s"),
-                !pVariable->isPersistent() ? _("checked >Non persistent ") : _(">Non persistent ") );
-        }
+            web_printf( conn,
+                    "%s",
+                    !variable.isPersistent() ?
+                    "checked >Non persistent " : ">Non persistent ");
+        } 
         else {
-            web_printf( conn, ">Non persistent ");
+            web_printf( conn, ">Non persistent " );
         }
-
-        web_printf( conn, "</td></tr>");
-
-
-        web_printf( conn, "</tr><tr><td>Note: </td><td>");
-        web_printf( conn, "<textarea cols=\"50\" rows=\"5\" name=\"note\">");
-        if (bNew) {
-            web_printf( conn, "");
-        }
-        else {
-            buildPage += pVariable->getNote();
-        }
-
-        web_printf( conn, "</textarea>");
-
-        web_printf( conn, "</td></tr></table>");
-
-        web_printf( conn, WEB_VAREDIT_TABLE_END);
-
+        
+        
     }
     else {
-        web_printf( conn, "<br><b>Error: Non existent id</b>");
+        web_printf( conn,
+                        "%s",
+                        variable.isPersistent() ?
+                        "Persistent " : "Non Persistent ");
     }
 
+    web_printf(conn, "</td></tr>");
+
+    // Owner
+    web_printf(conn, "</tr><tr><td>Owner: </td><td>");
+
+    if ( bNew ) {
+        web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"owner\">");
+        web_printf(conn, "</textarea>");
+    }
+    else {
+        web_printf(conn, "<br>");
+        web_printf(conn, "<b>Owner: </b> ");
+        web_printf(conn, "id=%X = ", variable.getOwnerID() );
+        CUserItem *pUser = gpobj->m_userList.getUserItemFromOrdinal( variable.getOwnerID() );
+        if ( NULL == pUser ) {
+            web_printf(conn, " Unknow user " );
+        }
+        web_printf(conn, 
+                    "%s (%s)",
+                    (const char *)pUser->getUser().mbc_str(),
+                    (const char *)pUser->getFullname().mbc_str() );        
+    }
+    
+    web_printf(conn, "</td></tr>");
+    
+    // Note
+    web_printf( conn, "</tr><tr><td>Note: </td><td>");
+    web_printf( conn, "<textarea cols=\"50\" rows=\"5\" name=\"note\">");
+    
+    if ( bNew ) {
+        web_printf(conn, "");
+    } 
+    else {
+        wxString str;
+        variable.getNote( str, true );
+        web_printf(conn, str.mbc_str());
+    }
+
+    web_printf(conn, "</textarea>");
+
+    web_printf(conn, "</td></tr></table>");
+
+    web_printf(conn, WEB_VAREDIT_TABLE_END);
 
     wxString wxstrurl = _("/vscp/varpost");
-    buildPage += wxString::Format( _(WEB_VAREDIT_SUBMIT),
-                                    wxstrurl.wx_str() );
+    web_printf( conn, 
+                    WEB_VAREDIT_SUBMIT,
+                    (const char *)wxstrurl.mbc_str() );
 
     web_printf( conn, "</form>");
     web_printf( conn, WEB_COMMON_END);     // Common end code
 
-    return 1;
+    return WEB_OK;
 }
 
 
@@ -3618,243 +4057,295 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
 
     // id
     long id = -1;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "id", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        id = atoi( buf );
+            id = atoi( buf );
+        }
     }
 
     // From
     long nFrom = 0;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "from", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        nFrom = atoi( buf );
+            nFrom = atoi( buf );
+        }
     }
 
     // Count
     uint16_t nCount = 50;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "count", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        nCount = atoi( buf );
+            nCount = atoi( buf );
+        }
     }
 
     uint8_t nType = VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "type", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        nType = atoi( buf );
+            nType = atoi( buf );
+        }
     }
 
     wxString strName;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "value_name", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        strName = wxString::FromAscii( buf );
+            strName = wxString::FromAscii( buf );
+        }
     }
 
     // Flag for new variable row
     bool bNew = false;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "new", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        if ( NULL != strstr( "true", buf ) ) bNew = true;
+            if ( NULL != strstr( "true", buf ) ) bNew = true;
+        }
     }
 
     // Flag for persistence
     bool bPersistent = true;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "persistent", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        if ( NULL != strstr( "false", buf ) ) bPersistent = false;
+            if ( NULL != strstr( "false", buf ) ) bPersistent = false;
+        }
     }
 
     wxString strNote;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "note", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        strNote = wxString::FromAscii( buf );
+            strNote = wxString::FromAscii( buf );
+        }
     }
 
     wxString strValueString;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "value_string", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        strValueString = wxString::FromAscii( buf );
+            strValueString = wxString::FromAscii( buf );
+        }
     }
 
     bool bValueBoolean = false;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "value_boolean", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        if ( NULL != strstr( "true", buf ) ) bValueBoolean = true;
+            if ( NULL != strstr( "true", buf ) ) bValueBoolean = true;
+        }
     }
 
     int value_integer = 0;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "value_integer", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        str = wxString::FromAscii( buf );
-        value_integer = vscp_readStringValue( str );
+            str = wxString::FromAscii( buf );
+            value_integer = vscp_readStringValue( str );
+        }
     }
 
     long value_long = 0;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "value_long", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        str = wxString::FromAscii( buf );
-        value_long = vscp_readStringValue( str );
+            str = wxString::FromAscii( buf );
+            value_long = vscp_readStringValue( str );
+        }
     }
 
     double value_double = 0;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "value_double", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        value_double = atof( buf );
+            value_double = atof( buf );
+        }
     }
 
     wxString strMeasurement;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "value_measurement", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        strMeasurement = wxString::FromAscii( buf );
+            strMeasurement = wxString::FromAscii( buf );
+        }
     }
 
     uint16_t value_class = 0;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "value_class", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        value_class = vscp_readStringValue( wxString::FromAscii( buf ) );
+            value_class = vscp_readStringValue( wxString::FromAscii( buf ) );
+        }
     }
 
     uint16_t value_type = 0;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "value_type", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        value_type = vscp_readStringValue( wxString::FromAscii( buf ) );
+            value_type = vscp_readStringValue( wxString::FromAscii( buf ) );
+        }
     }
 
     wxString strGUID;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "value_guid", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        strGUID = wxString::FromAscii( buf );
-        strGUID.Trim();
-        if ( 0 == strGUID.Length() ) {
-            strGUID = _("-");
+            strGUID = wxString::FromAscii( buf );
+            strGUID.Trim();
+            if ( 0 == strGUID.Length() ) {
+                strGUID = _("-");
+            }
         }
     }
 
     uint32_t value_timestamp = 0;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "value_timestamp", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        value_timestamp = vscp_readStringValue( wxString::FromAscii( buf ) );
+            value_timestamp = vscp_readStringValue( wxString::FromAscii( buf ) );
+        }
     }
 
     uint32_t value_obid = 0;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "value_obid", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        value_obid = vscp_readStringValue( wxString::FromAscii( buf ) );
+            value_obid = vscp_readStringValue( wxString::FromAscii( buf ) );
+        }
     }
 
     uint8_t value_head = 0;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "value_head", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        value_head = vscp_readStringValue( wxString::FromAscii( buf ) );
+            value_head = vscp_readStringValue( wxString::FromAscii( buf ) );
+        }
     }
 
     uint32_t value_crc = 0;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "value_crc", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        value_crc = vscp_readStringValue( wxString::FromAscii( buf ) );
+            value_crc = vscp_readStringValue( wxString::FromAscii( buf ) );
+        }
     }
 
     uint16_t value_sizedata = 0;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "value_sizedata", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        value_sizedata = vscp_readStringValue( wxString::FromAscii( buf ) );
+            value_sizedata = vscp_readStringValue( wxString::FromAscii( buf ) );
+        }
     }
 
     wxString strData;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "value_data", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        strData = wxString::FromAscii( buf );
+            strData = wxString::FromAscii( buf );
+        }
     }
 
     wxString strDateTime;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "value_date_time", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        strDateTime = wxString::FromAscii( buf );
+            strDateTime = wxString::FromAscii( buf );
+        }
     }
 
     web_printf(conn,
 	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
 	          "close\r\n\r\n");
 
-    wxString buildPage;
-    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Variable Post"));
+    web_printf( conn, 
+                    WEB_COMMON_HEAD, 
+                    "VSCP - Variable Post" );
     web_printf( conn, WEB_STYLE_START);
     web_printf( conn, WEB_COMMON_CSS);     // CSS style Code
     web_printf( conn, WEB_STYLE_END);
     web_printf( conn, WEB_COMMON_JS);      // Common Javascript code
     web_printf( conn, "<meta http-equiv=\"refresh\" content=\"1;url=/vscp/variables");
-    buildPage += wxString::Format(_("?from=%d&count=%d"), nFrom, nCount );
+    web_printf( conn, 
+                    "?from=%d&count=%d", 
+                    nFrom, 
+                    nCount );
     web_printf( conn, "\">");
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START);
 
@@ -3969,20 +4460,20 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
                 // Save variables
                 gpobj->m_VSCP_Variables.save();
 
-                buildPage += wxString::Format(_("<br><br>Variable has been saved. id=%d"), id);
+                web_printf( conn, "<br><br>Variable has been saved. id=%d", id);
 
             }
             else {
-                buildPage += wxString::Format(_("<br><br>Memory problem id=%d. Unable to save record"), id);
+                web_printf( conn, "<br><br>Memory problem id=%d. Unable to save record", id);
             }
 
         }
         else {
-            buildPage += wxString::Format(_("<br><br>Record id=%d is to large. Unable to save record"), id);
+            web_printf( conn, "<br><br>Record id=%d is to large. Unable to save record", id);
         }
     }
     else {
-        buildPage += wxString::Format(_("<br><br>Record id=%d is wrong. Unable to save record"), id);
+        web_printf( conn, "<br><br>Record id=%d is wrong. Unable to save record", id);
     }
     */
 
@@ -4011,12 +4502,14 @@ static int vscp_variable_new( struct web_connection *conn, void *cbdata )
     
     // Count
     uint16_t nCount = 50;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "count", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        nCount = atoi( buf );
+            nCount = atoi( buf );
+        }
     }
 
     web_printf(conn,
@@ -4024,15 +4517,16 @@ static int vscp_variable_new( struct web_connection *conn, void *cbdata )
 	          "close\r\n\r\n");
 
     web_printf( conn, 
-        wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - New variable") ).mbc_str() );
-    web_printf( conn, WEB_STYLE_START);
-    web_printf( conn, WEB_COMMON_CSS);     // CSS style Code
-    web_printf( conn, WEB_STYLE_END);
-    web_printf( conn, WEB_COMMON_JS);      // Common Javascript code
-    web_printf( conn, WEB_COMMON_HEAD_END_BODY_START);
+                    WEB_COMMON_HEAD, 
+                    "VSCP - New variable" );
+    web_printf( conn, WEB_STYLE_START );
+    web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
+    web_printf( conn, WEB_STYLE_END );
+    web_printf( conn, WEB_COMMON_JS );      // Common Javascript code
+    web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
 
     // Navigation menu
-    web_printf( conn, WEB_COMMON_MENU);
+    web_printf( conn, WEB_COMMON_MENU );
 
     web_printf( conn, WEB_VAREDIT_BODY_START);
 
@@ -4053,9 +4547,11 @@ static int vscp_variable_new( struct web_connection *conn, void *cbdata )
      */
 
     web_printf( conn, 
-        wxString::Format( _("<input name=\"from\" value=\"%d\" type=\"hidden\">"), nFrom ).mbc_str() );
+                    "<input name=\"from\" value=\"%d\" type=\"hidden\">", 
+                    nFrom );
     web_printf( conn, 
-        wxString::Format( _("<input name=\"count\" value=\"%d\" type=\"hidden\">"), nCount ).mbc_str() );
+                    "<input name=\"count\" value=\"%d\" type=\"hidden\">", 
+                    nCount );
 
     web_printf( conn, "<input name=\"new\" value=\"true\" type=\"hidden\">");
 
@@ -4078,9 +4574,9 @@ static int vscp_variable_new( struct web_connection *conn, void *cbdata )
     web_printf( conn, "<br></div>");
     web_printf( conn, WEB_VARNEW_SUBMIT);
     //wxString wxstrurl = wxString::Format(_("%s/vscp/varedit?new=true"),
-    //                                            strHost.wx_str() );
-    //buildPage += wxString::Format( _(WEB_VARNEW_SUBMIT),
-    //                                wxstrurl.wx_str() );
+    //                                            strHost.mbc_str() );
+    //web_printf( conn, WEB_VARNEW_SUBMIT,
+    //                  wxstrurl.mbc_str() );
 
     web_printf( conn, "</form>");
 
@@ -4111,32 +4607,38 @@ vscp_variable_delete( struct web_connection *conn, void *cbdata )
 
     // id
     long id = -1;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "id", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        id = atoi( buf );
+            id = atoi( buf );
+        }
     }
 
     // From
     long nFrom = 0;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "from", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        nFrom = atoi( buf );
+            nFrom = atoi( buf );
+        }
     }
 
     // Count
     uint16_t nCount = 50;
-    if ( web_get_var( reqinfo->query_string,                            
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                            
                             strlen( reqinfo->query_string ), 
                             "count", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        nCount = atoi( buf );
+            nCount = atoi( buf );
+        }
     }
 
     web_printf(conn,
@@ -4144,14 +4646,17 @@ vscp_variable_delete( struct web_connection *conn, void *cbdata )
 	          "close\r\n\r\n");
     
     web_printf( conn, 
-        wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Variable Delete") ).mbc_str() );
+                    WEB_COMMON_HEAD, 
+                    "VSCP - Variable Delete" );
     web_printf( conn, WEB_STYLE_START );
     web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
     web_printf( conn, WEB_STYLE_END );
     web_printf( conn, WEB_COMMON_JS );      // Common Javascript code
     web_printf( conn, "<meta http-equiv=\"refresh\" content=\"2;url=/vscp/variables" ) ;
     web_printf( conn, 
-        wxString::Format( _("?from=%d&count=%d"), nFrom, nCount ).mbc_str() );
+                    "?from=%d&count=%d", 
+                    nFrom, 
+                    nCount );
     web_printf( conn, "\">" );
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
 
@@ -4165,12 +4670,12 @@ vscp_variable_delete( struct web_connection *conn, void *cbdata )
     //        gpobj->m_VSCP_Variables.m_listVariable.Item( id );
     //if ( gpobj->m_VSCP_Variables.m_listVariable.DeleteNode( node )  ) {//
     if ( gpobj->m_VSCP_Variables.remove( variable ) )  {
-        buildPage += wxString::Format(_("<br>Deleted record id = %d"), id);
+        web_printf( conn, "<br>Deleted record id = %d", id);
         // Save variables
         gpobj->m_VSCP_Variables.save();
     }
     else {
-        buildPage += wxString::Format(_("<br>Failed to remove record id = %d"), id);
+        web_printf( conn, "<br>Failed to remove record id = %d", id);
     }
 */
     web_printf( conn, WEB_COMMON_END);     // Common end code
@@ -4199,8 +4704,8 @@ vscp_discovery( struct web_connection *conn, void *cbdata  )
 	          "close\r\n\r\n");
     
     web_printf( conn, 
-                        wxString::Format( _(WEB_COMMON_HEAD), 
-                                          _("VSCP - Device discovery") ).mbc_str() );
+                    WEB_COMMON_HEAD, 
+                    "VSCP - Device discovery" );
     web_printf( conn, WEB_STYLE_START);
     web_printf( conn, WEB_COMMON_CSS);     // CSS style Code
     web_printf( conn, WEB_STYLE_END);
@@ -4236,8 +4741,8 @@ vscp_client( struct web_connection *conn, void *cbdata )
 	          "close\r\n\r\n");
     
     web_printf( conn, 
-            wxString::Format( _(WEB_COMMON_HEAD), 
-                              _("VSCP - Session") ).mbc_str() );
+                    WEB_COMMON_HEAD, 
+                    "VSCP - Session" );
     web_printf( conn, WEB_STYLE_START);
     web_printf( conn, WEB_COMMON_CSS);     // CSS style Code
     web_printf( conn, WEB_STYLE_END);
@@ -4272,8 +4777,8 @@ vscp_configure( struct web_connection *conn, void *cbdata )
 	          "close\r\n\r\n");
     
     web_printf( conn, 
-                    wxString::Format( _(WEB_COMMON_HEAD), 
-                                      _("VSCP - Configuration") ).mbc_str() );
+                    WEB_COMMON_HEAD, 
+                    "VSCP - Configuration" );
     web_printf( conn, WEB_STYLE_START);
     web_printf( conn, WEB_COMMON_CSS);     // CSS style Code
     web_printf( conn, WEB_STYLE_END);
@@ -4311,13 +4816,13 @@ vscp_configure( struct web_connection *conn, void *cbdata )
     wxLinuxDistributionInfo info = wxGetLinuxDistributionInfo();
     web_printf( conn, "<span style=\"color: blue;\"><b>Linux distribution Info:</b></span><br>");
     web_printf( conn, "&nbsp;&nbsp;<b>id=:</b> ");
-    buildPage += info.id;
+    web_printf( conn, info.id;
     web_printf( conn, "&nbsp;&nbsp;<span style=\"color: blue;\"><b>release=:</b></span><br>");
-    buildPage += info.Release;
+    web_printf( conn, info.Release;
     web_printf( conn, "&nbsp;&nbsp;<span style=\"color: blue;\"><b>codeName=:</b></span><br>");
-    buildPage += info.Codename;
+    web_printf( conn, info.Codename;
     web_printf( conn, "&nbsp;&nbsp;<span style=\"color: blue;\"><b>description=:</b></span><br>");
-    buildPage += info.Description;
+    web_printf( conn, info.Description;
     web_printf( conn, "<br>");
  */
 #endif
@@ -4336,11 +4841,13 @@ vscp_configure( struct web_connection *conn, void *cbdata )
     web_printf( conn, "<hr>");
 
     web_printf( conn, "<b>wxWidgets version:</b> ");
-    web_printf( conn, wxString::Format(_("%d.%d.%d.%d" " Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al"),
-                        wxMAJOR_VERSION,
-                        wxMINOR_VERSION,
-                        wxRELEASE_NUMBER,
-                        wxSUBRELEASE_NUMBER ).mbc_str() );
+    web_printf( conn, 
+                    "%d.%d.%d.%d" " Copyright (c) 1998-2005 Julian Smart, "
+                    "Robert Roebling et al" ,
+                    wxMAJOR_VERSION,
+                    wxMINOR_VERSION,
+                    wxRELEASE_NUMBER,
+                    wxSUBRELEASE_NUMBER );
     web_printf( conn, "<br>");
 
     web_printf( conn, "<b>Mongoose version:</b> ");
@@ -4352,7 +4859,9 @@ vscp_configure( struct web_connection *conn, void *cbdata )
 
     // Debuglevel
     web_printf( conn, "<b>Debuglevel:</b> ");
-    web_printf( conn, wxString::Format(_("%d "), gpobj->m_logLevel ).mbc_str() );
+    web_printf( conn, 
+                    "%d ", 
+                    gpobj->m_logLevel );
     switch ( gpobj->m_logLevel  ) {
         case DAEMON_LOGMSG_NONE:
             web_printf( conn, "(none)");
@@ -4376,8 +4885,8 @@ vscp_configure( struct web_connection *conn, void *cbdata )
     // Client buffer size
     web_printf( conn, "<b>Client buffer size:</b> ");
     web_printf( conn, 
-            wxString::Format( _("%d"), 
-                                gpobj->m_maxItemsInClientReceiveQueue ).mbc_str() );
+                    "%d", 
+                    gpobj->m_maxItemsInClientReceiveQueue );
 
     web_printf( conn, "<hr>");
 
@@ -4427,9 +4936,9 @@ vscp_configure( struct web_connection *conn, void *cbdata )
     }
 
     web_printf( conn,  "&nbsp;&nbsp;&nbsp;&nbsp;<b>Period for heartbeat</b>: " );
-    web_printf( conn, wxString::Format( _( "%ld" ), 
-                                            gpobj->m_automation.getIntervalHeartbeat() ).mbc_str() + _
-                          ( " seconds<br>" ) ); 
+    web_printf( conn, 
+                    "%ld seconds<br>", 
+                    gpobj->m_automation.getIntervalHeartbeat() ); 
 
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Heartbeat last sent @</b>: " );
     web_printf( conn, gpobj->m_automation.getHeartbeatSent().FormatISODate().mbc_str() + _( " " ) );
@@ -4446,9 +4955,8 @@ vscp_configure( struct web_connection *conn, void *cbdata )
 
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Period for Segment controller heartbeat</b>: " );
     web_printf( conn, 
-        wxString::Format( _( "%ld" ), 
-            gpobj->m_automation.getIntervalSegmentControllerHeartbeat() ).mbc_str() + 
-            _( " seconds<br>" ) );
+                    "%ld seconds<br>", 
+            gpobj->m_automation.getIntervalSegmentControllerHeartbeat() );
 
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Segment controller heartbeat last sent @</b>: " );
     web_printf( conn, 
@@ -4462,31 +4970,31 @@ vscp_configure( struct web_connection *conn, void *cbdata )
 
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Longitude</b>: " );
     web_printf( conn, 
-        wxString::Format( _("%f"), gpobj->m_automation.getLongitude() ).mbc_str() + 
-        _( "<br>" ) );
+                    "%f<br>", 
+                    gpobj->m_automation.getLongitude() );
 
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Latitude</b>: " );
     web_printf( conn, 
-        wxString::Format( _( "%f" ), gpobj->m_automation.getLatitude() ).mbc_str() + 
-        _( "<br>" ) );
+                    "%f<br>", 
+                    gpobj->m_automation.getLatitude()  );
 
     int hours, minutes;
     gpobj->m_automation.convert2HourMinute( gpobj->m_automation.getDayLength(), &hours, &minutes );
     web_printf( conn,  "&nbsp;&nbsp;&nbsp;&nbsp;<b>Length of day</b>: " );
     web_printf( conn, 
-        wxString::Format( _( "%02d:%02d" ), hours, minutes ).mbc_str() + 
-        _( "<br>" ) );
+                    "%02d:%02d<br>", 
+                    hours, 
+                    minutes );
 
     web_printf( conn,  "&nbsp;&nbsp;&nbsp;&nbsp;<b>Declination</b>: " );
     web_printf( conn, 
-        wxString::Format( _( "%f" ), 
-                            gpobj->m_automation.getDeclination() ).mbc_str() + 
-        _( "<br>" ) );
+                    "%f<br>", 
+                    gpobj->m_automation.getDeclination() );
 
     web_printf( conn,  "&nbsp;&nbsp;&nbsp;&nbsp;<b>Sun max altitude</b>: " );
     web_printf( conn, 
-        wxString::Format( _( "%f" ), gpobj->m_automation.getSunMaxAltitude() ).mbc_str() + 
-        _( "<br>" ) );
+                    "%f<br>", 
+                    gpobj->m_automation.getSunMaxAltitude() );
 
     web_printf( conn,  "&nbsp;&nbsp;&nbsp;&nbsp;<b>Last Calculation</b>: " );
     web_printf( conn, 
@@ -4791,15 +5299,15 @@ static int bootload( struct web_connection *conn, void *cbdata  )
 	          "close\r\n\r\n");
     
     web_printf( conn, 
-                        wxString::Format( _(WEB_COMMON_HEAD), 
-                                          _("VSCP - Device discovery") ).mbc_str() );
-    web_printf( conn, WEB_STYLE_START);
-    web_printf( conn, WEB_COMMON_CSS);     // CSS style Code
-    web_printf( conn, WEB_STYLE_END);
-    web_printf( conn, WEB_COMMON_JS);      // Common Javascript code
-    web_printf( conn, "<meta http-equiv=\"refresh\" content=\"5;url=/vscp");
-    web_printf( conn, "\">");
-    web_printf( conn, WEB_COMMON_HEAD_END_BODY_START);
+                    WEB_COMMON_HEAD, 
+                    "VSCP - Device discovery" );
+    web_printf( conn, WEB_STYLE_START );
+    web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
+    web_printf( conn, WEB_STYLE_END );
+    web_printf( conn, WEB_COMMON_JS );      // Common Javascript code
+    web_printf( conn, "<meta http-equiv=\"refresh\" content=\"5;url=/vscp" );
+    web_printf( conn, "\">" );
+    web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
 
     // navigation menu
     web_printf( conn, WEB_COMMON_MENU);
@@ -4831,7 +5339,7 @@ static int table( struct web_connection *conn, void *cbdata )
 	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
 	          "close\r\n\r\n");
 
-    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Table view"));
+    web_printf( conn, WEB_COMMON_HEAD, "VSCP - Table view" );
     web_printf( conn, WEB_STYLE_START);
     web_printf( conn, WEB_COMMON_CSS);     // CSS style Code
     web_printf( conn, WEB_STYLE_END);
@@ -4854,36 +5362,36 @@ static int table( struct web_connection *conn, void *cbdata )
 
         if ( ( NULL == ptblItem ) || !ptblItem->isOpen() ) continue;
 
-        buildPage += wxString::Format(_(WEB_COMMON_TR_CLICKABLE_ROW),
-                                            ( wxString( _("/vscp/tablelist?tblname=") +
-                                            wxString::FromUTF8( ptblItem->m_vscpFileHead.nameTable ) ) ).wx_str()  );
+        web_printf( conn, WEB_COMMON_TR_CLICKABLE_ROW,
+                           "/vscp/tablelist?tblname=" +
+                                            wxString::FromUTF8( ptblItem->m_vscpFileHead.nameTable ) ) ) );
         web_printf( conn, "<td><b>");
-        buildPage += wxString::FromUTF8( ptblItem->m_vscpFileHead.nameTable );
+        web_printf( conn, ptblItem->m_vscpFileHead.nameTable );
         web_printf( conn, "</b><br>");
         web_printf( conn, "<div id=\"small\">");
         web_printf( conn, "<b>Filename:</b> ");
-        buildPage += ptblItem->getFileName();
+        web_printf( conn, ptblItem->getFileName();
         web_printf( conn, " <b>Filesize:</b> ");
         wxFileName ff( ptblItem->getFileName() );
-        buildPage += ff.GetHumanReadableSize();
+        web_printf( conn, ff.GetHumanReadableSize();
         web_printf( conn, "<br><b>First date:</b> ");
         wxDateTime dtStart = wxDateTime( (time_t)ptblItem->getTimeStampStart() );
-        buildPage += dtStart.FormatISODate() + _(" ") + dtStart.FormatISOTime();
+        web_printf( conn, dtStart.FormatISODate() + _(" ") + dtStart.FormatISOTime();
         web_printf( conn, " <b>Last date:</b> ");
         wxDateTime dtEnd = wxDateTime( (time_t)ptblItem->getTimeStampEnd() );
-        buildPage += dtEnd.FormatISODate() + _(" ") + dtEnd.FormatISOTime();
+        web_printf( conn, dtEnd.FormatISODate() + _(" ") + dtEnd.FormatISOTime();
         web_printf( conn, " <b>Number of records: </b> ");
-        buildPage += wxString::Format(_("%d"), ptblItem->getNumberOfRecords() );
+        web_printf( conn,wxString::Format(_("%d"), ptblItem->getNumberOfRecords() );
         web_printf( conn, "<br><b>X-label:</b> ");
-        buildPage += wxString::FromUTF8( ptblItem->m_vscpFileHead.nameXLabel );
+        web_printf( conn, wxString::FromUTF8( ptblItem->m_vscpFileHead.nameXLabel );
         web_printf( conn, " <b>Y-label :</b> ");
-        buildPage += wxString::FromUTF8( ptblItem->m_vscpFileHead.nameYLabel );
+        web_printf( conn, wxString::FromUTF8( ptblItem->m_vscpFileHead.nameYLabel );
         web_printf( conn, " <b>VSCP Class:</b> ");
-        buildPage += wxString::Format(_("%d"), ptblItem->m_vscpFileHead.vscp_class );
+        web_printf( conn, "%d", ptblItem->m_vscpFileHead.vscp_class );
         web_printf( conn, " <b>VSCP Type:</b> ");
-        buildPage += wxString::Format(_("%d"), ptblItem->m_vscpFileHead.vscp_type );
+        web_printf( conn, "%d", ptblItem->m_vscpFileHead.vscp_type );
         web_printf( conn, " <b>Unit :</b> ");
-        buildPage += wxString::Format(_("%d"), ptblItem->m_vscpFileHead.vscp_unit );
+        web_printf( conn, "%d", ptblItem->m_vscpFileHead.vscp_unit );
         struct _vscptableInfo info;
         ptblItem->m_mutexThisTable.Lock();
  */
@@ -4891,13 +5399,13 @@ static int table( struct web_connection *conn, void *cbdata )
         ptblItem->getInfo( &info );
         ptblItem->m_mutexThisTable.Unlock();
         web_printf( conn, "<br><b>Min-value:</b> ");
-        buildPage += wxString::Format(_("%g"), info.minValue );
+        web_printf( conn, "%g", info.minValue );
         web_printf( conn, " <b>Max-value:</b> ");
-        buildPage += wxString::Format(_("%g"), info.maxValue );
+        web_printf( conn, "%g", info.maxValue );
         web_printf( conn, " <b>Mean-value:</b> ");
-        buildPage += wxString::Format(_("%g"), info.meanValue );
+        web_printf( conn, "%g", info.meanValue );
         web_printf( conn, "<br><b>Description:</b> ");
-        buildPage += wxString::FromUTF8( ptblItem->m_vscpFileHead.descriptionTable );
+        web_printf( conn,wxString::FromUTF8( ptblItem->m_vscpFileHead.descriptionTable );
         web_printf( conn, "</div>");
         web_printf( conn, "</td>");
 
@@ -4910,7 +5418,7 @@ static int table( struct web_connection *conn, void *cbdata )
         else {
             web_printf( conn, "<b>Static</b>");
             web_printf( conn, "<br><b>Static size:</b> ");
-            buildPage += wxString::Format(_("%d"), ptblItem->m_vscpFileHead.staticSize );
+            web_printf( conn,"%d", ptblItem->m_vscpFileHead.staticSize );
         }
         web_printf( conn, "</div>");
         web_printf( conn, "</td>");
@@ -4950,32 +5458,38 @@ static int tablelist( struct web_connection *conn, void *cbdata  )
 
     // From
     long nFrom = 0;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "from", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        nFrom = atoi( buf );
+            nFrom = atoi( buf );
+        }
     }
 
     // Count
     uint16_t nCount = 50;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "count", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        nCount = atoi( buf );
+            nCount = atoi( buf );
+        }
     }
 
 
     wxString tblName;
-    if ( web_get_var( reqinfo->query_string,                             
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "tblname", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-        tblName = wxString::FromUTF8( buf );
+            tblName = wxString::FromUTF8( buf );
+        }
     }
 /*
     gpobj->m_mutexTableList.Lock();
@@ -4993,6 +5507,7 @@ static int tablelist( struct web_connection *conn, void *cbdata  )
     gpobj->m_mutexTableList.Unlock();
 
     // Navigation button
+    if ( NULL != reqinfo->query_string ) { 
     if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "navbtn", 
@@ -5029,27 +5544,28 @@ static int tablelist( struct web_connection *conn, void *cbdata  )
     else {  // No vaid navigation value
         nFrom = 0;
     }
+ }
 */
     web_printf(conn,
 	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
 	          "close\r\n\r\n");
  
     web_printf( conn, 
-                        wxString::Format( _(WEB_COMMON_HEAD), 
-                                          _("VSCP - Table List") ).mbc_str() );
-    web_printf( conn, WEB_STYLE_START);
-    web_printf( conn, WEB_COMMON_CSS);     // CSS style Code
-    web_printf( conn, WEB_STYLE_END);
-    web_printf( conn, WEB_COMMON_JS);      // Common Javascript code
-    web_printf( conn, WEB_COMMON_HEAD_END_BODY_START);
+                    WEB_COMMON_HEAD, 
+                    "VSCP - Table List" );
+    web_printf( conn, WEB_STYLE_START );
+    web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
+    web_printf( conn, WEB_STYLE_END );
+    web_printf( conn, WEB_COMMON_JS );      // Common Javascript code
+    web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
 
     // navigation menu
-    web_printf( conn, WEB_COMMON_MENU);
+    web_printf( conn, WEB_COMMON_MENU );
 
-    web_printf( conn, wxString::Format( WEB_TABLEVALUELIST_BODY_START, tblName.wx_str() ).mbc_str() );
+    web_printf( conn, WEB_TABLEVALUELIST_BODY_START, (const char *)tblName.mbc_str() );
 
     {
-        /*web_printf( conn, wxString::Format( _(WEB_TABLEVALUE_LIST_NAVIGATION),
+        /*web_printf( conn, WEB_TABLEVALUE_LIST_NAVIGATION,
                 _("/vscp/tablelist"),
                 nFrom,
                 ((nFrom + nCount) < ptblItem->getNumberOfRecords() ) ?
@@ -5057,7 +5573,7 @@ static int tablelist( struct web_connection *conn, void *cbdata  )
                 ptblItem->getNumberOfRecords(),
                 nCount,
                 nFrom,
-                tblName.wx_str() ).mbc_str() );
+                tblName.mbc_str() ).mbc_str() );
 
         web_printf( conn, "<br>");*/
     }
@@ -5077,18 +5593,18 @@ static int tablelist( struct web_connection *conn, void *cbdata  )
 
                 // record
                 web_printf( conn, "<td>");
-                buildPage += wxString::Format(_("%u"), nFrom + i );
+                web_printf( conn, "%u", nFrom + i );
                 web_printf( conn, "</td>");
 
                 // Date
                 web_printf( conn, "<td>");
                 wxDateTime dt( (time_t)ptableInfo[i].timestamp );
-                buildPage += dt.FormatISODate() + _(" ") + dt.FormatISOTime();
+                web_printf( conn, dt.FormatISODate() + _(" ") + dt.FormatISOTime();
                 web_printf( conn, "</td>");
 
                 // value
                 web_printf( conn, "<td>");
-                buildPage += wxString::Format(_("%g"), ptableInfo[i].measurement );
+                web_printf( conn, "%g", ptableInfo[i].measurement );
                 web_printf( conn, "</td>");
 
                 web_printf( conn, "</tr>");
@@ -6174,10 +6690,15 @@ int init_webserver( void )
     web_set_request_handler( gpobj->webctx, "/vscp/configure", vscp_configure, 0 );
     web_set_request_handler( gpobj->webctx, "/vscp/interfaces", vscp_interface, 0 );
     web_set_request_handler( gpobj->webctx, "/vscp/settings", vscp_settings, 0);
-    web_set_request_handler( gpobj->webctx, "/vscp/variables", vscp_variable, 0);
+    web_set_request_handler( gpobj->webctx, "/vscp/variables", vscp_variable_list, 0);
+    web_set_request_handler( gpobj->webctx, "/vscp/varedit", vscp_variable_edit, 0);
+    web_set_request_handler( gpobj->webctx, "/vscp/varpost", vscp_variable_post, 0);
     web_set_request_handler( gpobj->webctx, "/vscp/varnew", vscp_variable_new, 0);
+    web_set_request_handler( gpobj->webctx, "/vscp/vardelete", vscp_variable_delete, 0);
     web_set_request_handler( gpobj->webctx, "/vscp/dm", vscp_dm_list, 0);
     web_set_request_handler( gpobj->webctx, "/vscp/dmedit", vscp_dm_edit, 0);
+    web_set_request_handler( gpobj->webctx, "/vscp/dmpost", vscp_dm_post, 0);
+    web_set_request_handler( gpobj->webctx, "/vscp/dmdelete", vscp_dm_delete, 0);
     web_set_request_handler( gpobj->webctx, "/vscp/users", vscp_user_list, 0);
     
     // Set authorization handlers

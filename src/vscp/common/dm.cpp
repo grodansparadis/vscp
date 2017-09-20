@@ -4023,7 +4023,7 @@ bool dmElement::doActionStoreMin( vscpEvent *pDMEvent )
         
         variable.setName( varname );
         variable.setType( VSCP_DAEMON_VARIABLE_CODE_DOUBLE );
-        variable.setUserID( USER_ID_ADMIN );    // Admin user owns variable
+        variable.setOwnerID( USER_ID_ADMIN );    // Admin user owns variable
         variable.setPersistent( false );
         variable.setAccessRights( PERMISSON_ALL_RIGHTS );
         variable.setValue( DBL_MAX );
@@ -4136,7 +4136,7 @@ bool dmElement::doActionStoreMax( vscpEvent *pDMEvent )
         
         variable.setName( varname );
         variable.setType( VSCP_DAEMON_VARIABLE_CODE_DOUBLE );
-        variable.setUserID( USER_ID_ADMIN );    // Admin user owns variable
+        variable.setOwnerID( USER_ID_ADMIN );    // Admin user owns variable
         variable.setPersistent( false );
         variable.setAccessRights( PERMISSON_ALL_RIGHTS );
         variable.setValue( DBL_MIN );
