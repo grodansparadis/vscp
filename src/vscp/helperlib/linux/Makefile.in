@@ -81,7 +81,10 @@ VSCPHELPER_OBJECTS =  libvscphelper.o\
 	../../../common/crc8.o\
 	../../../common/aes.o \
 	../../../common/mongoose.o\
-	../../../common/fastpbkdf2.o
+	../../../common/fastpbkdf2.o\
+	../../../common/vscpbase64.o\
+	../../../common/vscpbase64.o
+	
 
 PROJOBJS = ../vscphelperlib.h\
 	../../common/vscpremotetcpif.o\
@@ -91,7 +94,9 @@ PROJOBJS = ../vscphelperlib.h\
 	../../../common/crc8.o\
 	../../../common/aes.o\
 	../../../common/mongoose.o\
-	../../../common/fastpbkdf2.o
+	../../../common/fastpbkdf2.o\
+	../../../common/vscpbase64.o\
+	../../../common/vscpbase64.o
 
 ALWAYS_BUILD = ../../common/vscpremotetcpif.o\
 	../../common/vscphelper.o\
@@ -100,7 +105,9 @@ ALWAYS_BUILD = ../../common/vscpremotetcpif.o\
 	../../../common/crc8.o\
 	../../../common/aes.o\
 	../../../common/mongoose.o\
-	../../../common/fastpbkdf2.o
+	../../../common/fastpbkdf2.o\
+	../../../common/vscpbase64.o\
+	../../../common/vscpbase64.o
 
 ### Targets: ###
 

@@ -888,8 +888,8 @@ bool CUserList::addUser( const wxString& user,
     }
 
     // Check if database is open
-    if ( !( VSCP_ADD_USER_FLAG_LOCAL & bFlags )&& 
-            ( NULL == gpobj->m_db_vscp_daemon ) ) {
+    if ( !( VSCP_ADD_USER_FLAG_LOCAL & bFlags ) && 
+          ( NULL == gpobj->m_db_vscp_daemon ) ) {
         gpobj->logMsg( _("addUser: Failed to read VSCP settings database - database not open.") );
         return false;
     }
