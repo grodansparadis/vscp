@@ -70,7 +70,8 @@ LMSENSOROBJ =  lmsensors.o \
 	../../../../common/vscpremotetcpif.o\
 	../../../../common/vscphelper.o\
 	../../../../common/guid.o\
-	../../../../../common/fastpbkdf2.o
+	../../../../../common/fastpbkdf2.o\
+	../../../../../common/vscpbase64.o
 
 PROJOBJS = lmsensors.o\
 	../../../../../common/crc.o\
@@ -80,7 +81,8 @@ PROJOBJS = lmsensors.o\
 	../../../../common/vscptcpif.o\
 	../../../../common/vscphelper.o\
 	../../../../common/guid.o\
-	../../../../../common/fastpbkdf2.o
+	../../../../../common/fastpbkdf2.o\
+	../../../../../common/vscpbase64.o
 
 
 

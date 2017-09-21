@@ -68,7 +68,8 @@ MQTT_OBJECTS = ../common/mqttobj.o\
 	../../../../../common/crc8.o\
 	../../../../../common/aes.o\
 	../../../../../common/mongoose.o\
-	../../../../../common/fastpbkdf2.o
+	../../../../../common/fastpbkdf2.o\
+	../../../../../common/vscpbase64.o
 
 	
 PROJOBJS =  ../common/mqttobj.o\
@@ -79,7 +80,8 @@ PROJOBJS =  ../common/mqttobj.o\
 	../../../../../common/crc8.o\
 	../../../../../common/aes.o\
 	../../../../../common/mongoose.o\
-	../../../../../common/fastpbkdf2.o
+	../../../../../common/fastpbkdf2.o\
+	../../../../../common/vscpbase64.o
 
 ALWAYS_BUILD = 	../../../../common/vscpremotetcpif.o\
 	../../../../common/vscphelper.o\
@@ -88,7 +90,8 @@ ALWAYS_BUILD = 	../../../../common/vscpremotetcpif.o\
 	../../../../../common/crc8.o\
 	../../../../../common/aes.o\
 	../../../../../common/mongoose.o\
-	../../../../../common/fastpbkdf2.o
+	../../../../../common/fastpbkdf2.o\
+	../../../../../common/vscpbase64.o
 
 ### Targets: ###
 

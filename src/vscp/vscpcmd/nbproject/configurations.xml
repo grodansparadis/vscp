@@ -13,6 +13,8 @@
         <itemPath>../../common/fastpbkdf2.h</itemPath>
         <itemPath>../../common/mongoose.c</itemPath>
         <itemPath>../../common/mongoose.h</itemPath>
+        <itemPath>../../common/vscpbase64.c</itemPath>
+        <itemPath>../../common/vscpbase64.h</itemPath>
       </logicalFolder>
       <logicalFolder name="vscp" displayName="vscp" projectFiles="true">
         <logicalFolder name="common" displayName="common" projectFiles="true">
@@ -262,6 +264,10 @@
         </cTool>
       </item>
       <item path="../../common/mongoose.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="1">
+        </cTool>
+      </item>
+      <item path="../../common/vscpbase64.c" ex="false" tool="0" flavor2="3">
         <cTool flags="1">
         </cTool>
       </item>

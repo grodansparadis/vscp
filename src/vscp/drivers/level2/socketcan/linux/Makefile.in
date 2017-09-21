@@ -70,7 +70,8 @@ SOCKETCAN_OBJECTS = socketcan.o\
 	../../../../../common/crc8.o\
 	../../../../../common/mongoose.o\
 	../../../../../common/aes.o\
-	../../../../../common/fastpbkdf2.o
+	../../../../../common/fastpbkdf2.o\
+	../../../../../common/vscpbase64.o
 
 PROJOBJS =  socketcan.o\
 	../../../../common/vscpremotetcpif.o\
@@ -80,7 +81,8 @@ PROJOBJS =  socketcan.o\
 	../../../../../common/crc8.o\
 	../../../../../common/mongoose.o\
 	../../../../../common/aes.o\
-	../../../../../common/fastpbkdf2.o
+	../../../../../common/fastpbkdf2.o\
+	../../../../../common/vscpbase64.o
 
 ALWAYS_BUILD = ../../../../common/vscpremotetcpif.o\
 	../../../../common/vscphelper.o\
@@ -88,7 +90,8 @@ ALWAYS_BUILD = ../../../../common/vscpremotetcpif.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
 	../../../../../common/aes.o\
-	../../../../../common/fastpbkdf2.o
+	../../../../../common/fastpbkdf2.o\
+	../../../../../common/vscpbase64.o
 
 
 ### Targets: ###

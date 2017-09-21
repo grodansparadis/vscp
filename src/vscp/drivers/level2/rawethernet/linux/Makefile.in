@@ -70,7 +70,8 @@ RAWETH_OBJECTS = dlldrvobj.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
 	../../../../../common/aes.o\
-	fastpbkdf2.o
+	../../../../../common/fastpbkdf2.o\
+	../../../../../common/vscpbase64.o
 
 PROJOBJS =  ../../../../common/vscpremotetcpif.o\
 	../../../../common/vscphelper.o\
@@ -79,7 +80,8 @@ PROJOBJS =  ../../../../common/vscpremotetcpif.o\
 	../../../../../common/crc8.o\
 	../../../../../common/aes.o\
 	../../../../../common/mongoose.o\
-	fastpbkdf2.o
+	../../../../../comon/fastpbkdf2.o\
+	../../../../../common/vscpbase64.o
 
 
 ALWAYS_BUILD = ../../../../common/vscpremotetcpif.o\
@@ -89,7 +91,8 @@ ALWAYS_BUILD = ../../../../common/vscpremotetcpif.o\
 	../../../../../common/crc8.o\
 	../../../../../common/aes.o\
 	../../../../../common/mongoose.o\
-	fastpbkdf2.o
+	../../../../../common/fastpbkdf2.o\
+	../../../../../common/vscpbase64.o
 
 ### Targets: ###
 
