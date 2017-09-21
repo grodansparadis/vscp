@@ -87,6 +87,8 @@
 #define VSCP_USER_RIGHT_PRIORITY0                       0x00000001
 
 #define VSCP_ADD_USER_UNINITIALISED                     -1
+
+// Local users have an id below this value
 #define VSCP_LOCAL_USER_OFFSET                          0x10000
 
 // Add user flags

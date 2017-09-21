@@ -276,7 +276,7 @@ bool CUserItem::setUserRightsFromString( const wxString& strRights )
         do {
             
             wxString str = tkz.GetNextToken();
-            if (str.IsSameAs(_("admin"), false)) {
+            if ( str.IsSameAs( _("admin"), false ) ) {
                 // All rights
                 //memset( m_userRights, 0xff, sizeof( m_userRights ) );
                 // All rights
@@ -284,11 +284,11 @@ bool CUserItem::setUserRightsFromString( const wxString& strRights )
                     setUserRights( i, 0xff );
                 }
             } 
-            else if (str.IsSameAs(_("user"), false)) {
+            else if ( str.IsSameAs(_("user"), false) ) {
                 // A standard user
                 setUserRights( 0, 0x06 );
             } 
-            else if (str.IsSameAs(_("driver"), false)) {
+            else if ( str.IsSameAs(_("driver"), false) ) {
                 // A standard driver
                 setUserRights( 0, 0x0f );
             } 
@@ -423,16 +423,16 @@ wxString CUserItem::getAllowedRemotesAsString( void )
 // isUserInDB
 //
 
-bool CUserItem::isUserInDB(const unsigned long userid )  
+bool CUserItem::isUserInDB( const unsigned long userid )  
 {
     bool rv = false;
-    sqlite3_stmt *ppStmt;
+    sqlite3_stmt *ppStmt; 
     char *pErrMsg = 0;
     char psql[ 512 ];
     
     sprintf( psql,
                 VSCPDB_USER_CHECK_USER_ID, 
-                (unsigned long)userid );
+                (unsigned long)(userid - VSCP_LOCAL_USER_OFFSET) );
     
     // Database must be open
     if ( NULL != gpobj->m_db_vscp_daemon ) {
@@ -870,13 +870,12 @@ bool CUserList::loadUsers( void )
 //
 
 bool CUserList::addSuperUser( const wxString& user,
-                            const wxString& password,
-                            const wxString& allowedRemotes = _(""),
-                            uint32_t bFlags = 0 )
+                                const wxString& password,
+                                const wxString& allowedRemotes,
+                                uint32_t bFlags )
 {
     char buf[ 512 ];
     char *pErrMsg = 0;
-    sqlite3_stmt *ppStmt;
     
     // Cant add user with name that is already defined.
     if ( NULL != m_userhashmap[ user ] ) {
@@ -891,6 +890,32 @@ bool CUserList::addSuperUser( const wxString& user,
     bFlags |= VSCP_ADD_USER_FLAG_ADMIN; // Mark as superuser
     bFlags |= VSCP_ADD_USER_FLAG_LOCAL; // Admin users should not be added to database
     
+    wxString driverhash = user;
+    driverhash += _(":");
+    driverhash += wxString::FromUTF8( gpobj->m_authDomain );
+    driverhash += _(":");
+    driverhash += password;
+    
+    memset( buf, 0, sizeof( buf ) );
+    strncpy( buf, (const char *)driverhash.mbc_str(), driverhash.Length() );
+
+    char digest[33];
+    vscp_md5( digest, (const unsigned char *)buf, strlen( buf ) );
+
+    pItem->setPasswordDomain( wxString::FromUTF8( digest ) );  
+
+    pItem->setUser( user );
+    pItem->fixName();
+    pItem->setPassword( password );
+    pItem->setFullname( _("Admin user") );
+    pItem->setNote( _("Admin user") );
+    pItem->setFilter( NULL );
+    pItem->setUserRightsFromString(_("admin"));
+    pItem->setAllowedRemotesFromString( allowedRemotes );
+    
+    // Add to the map
+    m_userhashmap[ user ] = pItem;
+        
     return true;
 }
 
@@ -911,6 +936,9 @@ bool CUserList::addUser( const wxString& user,
     char buf[ 512 ];
     char *pErrMsg = 0;
     sqlite3_stmt *ppStmt;
+    
+    // Can't be super user
+    bFlags = bFlags |= ~((uint32_t)VSCP_ADD_USER_FLAG_ADMIN );
     
     // Cant add user with name that is already defined.
     if ( NULL != m_userhashmap[ user ] ) {
@@ -974,7 +1002,7 @@ bool CUserList::addUser( const wxString& user,
     // Add to the map
     m_userhashmap[ user ] = pItem;
     
-    // Clear filter
+    // Setf ilter filter
     if (NULL != pFilter) {
         pItem->setFilter( pFilter );
     }
@@ -1086,14 +1114,15 @@ bool CUserList::addUser( const wxString& strUser, bool bUnpackNote )
  {
      char *zErrMsg = 0;
      CUserItem *pUser = getUser( user );
-     if ( NULL == pUser ) return false;
+     if ( NULL == pUser ) return false;          
      
      // Internal users can't be deleted
-     if ( pUser->getUserID() <= 0 ) return false;
+     if ( pUser->getUserID() < VSCP_LOCAL_USER_OFFSET ) return false;
      
      // Check if database is open
     if ( NULL == gpobj->m_db_vscp_daemon ) {
-        gpobj->logMsg( _("deleteUser: Failed to read VSCP settings database - database not open." ) );
+        gpobj->logMsg( _("deleteUser: Failed to read VSCP "
+                        "settings database - database not open." ) );
         return false;
     }
     
@@ -1101,9 +1130,16 @@ bool CUserList::addUser( const wxString& strUser, bool bUnpackNote )
      
     char *sql = sqlite3_mprintf( VSCPDB_USER_DELETE_USERNAME,
                                     (const char *)user.mbc_str() );
-    if ( SQLITE_OK != sqlite3_exec( gpobj->m_db_vscp_daemon, sql, NULL, NULL, &zErrMsg ) ) {
+    if ( SQLITE_OK != sqlite3_exec( gpobj->m_db_vscp_daemon, 
+                                        sql, 
+                                        NULL, 
+                                        NULL, 
+                                        &zErrMsg ) ) {
         sqlite3_free( sql );
-        gpobj->logMsg( wxString::Format( _("Delete user: Unable to delete user in db. [%s] Err=%s\n"), sql, zErrMsg ) );
+        gpobj->logMsg( wxString::Format( _("Delete user: Unable to delete "
+                                            "user in db. [%s] Err=%s\n"), 
+                                            sql, 
+                                            zErrMsg ) );
         gpobj->m_db_vscp_configMutex.Unlock();
         return false;
     }

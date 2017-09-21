@@ -1143,16 +1143,9 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     //==========================================================================
     
     if ( 0 == m_admin_allowfrom.Length() ) m_admin_allowfrom = _("*");
-    m_userList.addUser( m_admin_user,
+    m_userList.addSuperUser( m_admin_user,
                             m_admin_password,
-                            _("Admin user"),            // full name
-                            _("Admin user"),            // note
-                            NULL,
-                            _("admin"),
-                            m_admin_allowfrom,          // Remotes allows to connect     
-                            _("*:*"),                   // All events
-                            VSCP_ADD_USER_FLAG_ADMIN | 
-                            VSCP_ADD_USER_FLAG_LOCAL ); 
+                            m_admin_allowfrom );          // Remotes allows to connect                                                     
     
     
     //==========================================================================
