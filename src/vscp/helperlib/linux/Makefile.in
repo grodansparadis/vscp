@@ -83,7 +83,6 @@ VSCPHELPER_OBJECTS =  libvscphelper.o\
 	../../../common/mongoose.o\
 	../../../common/fastpbkdf2.o\
 	../../../common/vscpbase64.o\
-	../../../common/vscpbase64.o
 	
 
 PROJOBJS = ../vscphelperlib.h\
@@ -96,7 +95,6 @@ PROJOBJS = ../vscphelperlib.h\
 	../../../common/mongoose.o\
 	../../../common/fastpbkdf2.o\
 	../../../common/vscpbase64.o\
-	../../../common/vscpbase64.o
 
 ALWAYS_BUILD = ../../common/vscpremotetcpif.o\
 	../../common/vscphelper.o\
@@ -107,7 +105,6 @@ ALWAYS_BUILD = ../../common/vscpremotetcpif.o\
 	../../../common/mongoose.o\
 	../../../common/fastpbkdf2.o\
 	../../../common/vscpbase64.o\
-	../../../common/vscpbase64.o
 
 ### Targets: ###
 
