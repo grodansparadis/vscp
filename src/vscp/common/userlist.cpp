@@ -864,6 +864,36 @@ bool CUserList::loadUsers( void )
     return true;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// addUser
+//
+
+bool CUserList::addSuperUser( const wxString& user,
+                            const wxString& password,
+                            const wxString& allowedRemotes = _(""),
+                            uint32_t bFlags = 0 )
+{
+    char buf[ 512 ];
+    char *pErrMsg = 0;
+    sqlite3_stmt *ppStmt;
+    
+    // Cant add user with name that is already defined.
+    if ( NULL != m_userhashmap[ user ] ) {
+        return false;
+    }
+    
+    // New user item
+    CUserItem *pItem = new CUserItem; 
+    if (NULL == pItem) return false;
+    
+    pItem->setUserID( 0 );              // Super user is always at id = 0
+    bFlags |= VSCP_ADD_USER_FLAG_ADMIN; // Mark as superuser
+    bFlags |= VSCP_ADD_USER_FLAG_LOCAL; // Admin users should not be added to database
+    
+    return true;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // addUser
 //
@@ -899,20 +929,16 @@ bool CUserList::addUser( const wxString& user,
     if (NULL == pItem) return false;
     pItem->setUserID( 0 );
     
+    // Local user
     if ( VSCP_ADD_USER_FLAG_LOCAL & bFlags ) {
         pItem->setUserID( m_cntLocaluser ); // Never save to DB
         m_cntLocaluser--;
     }
     
     if ( VSCP_ADD_USER_FLAG_ADMIN & bFlags ) {
-        pItem->setUserID( 0 );              // The one and only admin user
-        bFlags |= VSCP_ADD_USER_FLAG_LOCAL; // Admin users should not be added to database
+        return false;   // Can't add super user here
     }    
-  
-    if ( VSCP_ADD_USER_FLAG_ADMIN & bFlags ) {
-        pItem->setUserID( 0 );              // The one and only admin user
-    }
-    
+      
     // Check if user is defined already
     if ( !( VSCP_ADD_USER_FLAG_LOCAL & bFlags ) && 
             pItem->isUserInDB( user ) ) {

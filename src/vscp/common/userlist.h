@@ -87,7 +87,7 @@
 #define VSCP_USER_RIGHT_PRIORITY0                       0x00000001
 
 #define VSCP_ADD_USER_UNINITIALISED                     -1
-#define VSCP_LOCAL_USER_OFFSET                          -1
+#define VSCP_LOCAL_USER_OFFSET                          0x10000
 
 // Add user flags
 #define VSCP_ADD_USER_FLAG_LOCAL                        0x00000001  // Marks local user not in db
@@ -341,6 +341,22 @@ public:
     bool loadUsers( void );
 
     /*!
+     * Add the super (admin) user. This can only be the user setup in the
+     * configuration file..
+     * @param user Username for user.
+     * @param password Password.
+     * @param List of allowed remote locations from which the
+     *          super user is allowed to connect to this system. If empty
+     *          the super user can connect form all remote locations.
+     * @param bSystemUser If true this user is a user that should not be saved to the DB
+       @return true on success. false on failure.
+     */
+    bool addSuperUser( const wxString& user,
+                            const wxString& password,
+                            const wxString& allowedRemotes = _(""),
+                            uint32_t bFlags = 0 );
+    
+    /*!
         Add a user to the in memory list. Must saved to database to make persistent.
         The configuration set username is not a valid username.
         @param user Username for user.
@@ -356,7 +372,7 @@ public:
                     Empty list is no restrictions.			
         @param allowedEvents List with allowed events that a remote user is allowed
                     to send.
-        @param bSystemUser If true this user is a user that should not be save to the DB
+        @param bSystemUser If true this user is a user that should not be saved to the DB
         @return true on success. false on failure.	
     */
     bool addUser( const wxString& user,

@@ -3467,7 +3467,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
 
     web_printf( conn, "<table class=\"invisable\"><tbody><tr class=\"invisable\">");
 
-    web_printf( conn, "<td class=\"invisable\">Name:</td><td class=\"invisable\">");
+    web_printf( conn, "<td class=\"invisable\"  style=\"font-weight: bold;\">Name:</td><td class=\"invisable\">");
     
     if ( !bNew ) {
         web_printf( conn, "<div style=\"font-weight: bold;\" >" );
@@ -3482,7 +3482,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     }
     
     web_printf(conn, "</td></tr><tr>");
-    web_printf(conn, "<td class=\"invisable\">Value:</td><td class=\"invisable\">");
+    web_printf(conn, "<td class=\"invisable\" style=\"font-weight: bold;\">Value:</td><td class=\"invisable\">");
 
     if ( !bNew ) nType = variable.getType();
 
@@ -3944,7 +3944,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     }
 
     // Persistence
-    web_printf(conn, "</tr><tr><td>Persistence: </td><td>");
+    web_printf(conn, "</tr><tr><td style=\"font-weight: bold;\">Persistence: </td><td>");
 
     if ( bNew ) {
         
@@ -3984,15 +3984,13 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     web_printf(conn, "</td></tr>");
 
     // Owner
-    web_printf(conn, "</tr><tr><td>Owner: </td><td>");
+    web_printf(conn, "</tr><tr><td style=\"font-weight: bold;\">Owner: </td><td>");
 
     if ( bNew ) {
         web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"owner\">");
         web_printf(conn, "</textarea>");
     }
     else {
-        web_printf(conn, "<br>");
-        web_printf(conn, "<b>Owner: </b> ");
         web_printf(conn, "id=%X = ", variable.getOwnerID() );
         CUserItem *pUser = gpobj->m_userList.getUserItemFromOrdinal( variable.getOwnerID() );
         if ( NULL == pUser ) {
@@ -4007,7 +4005,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     web_printf(conn, "</td></tr>");
     
     // Note
-    web_printf( conn, "</tr><tr><td>Note: </td><td>");
+    web_printf( conn, "</tr><tr><td style=\"font-weight: bold;\">Note: </td><td>");
     web_printf( conn, "<textarea cols=\"50\" rows=\"5\" name=\"note\">");
     
     if ( bNew ) {

@@ -80,7 +80,7 @@ PROJOBJS =  ../../../../common/vscpremotetcpif.o\
 	../../../../../common/crc8.o\
 	../../../../../common/aes.o\
 	../../../../../common/mongoose.o\
-	../../../../../comon/fastpbkdf2.o\
+	../../../../../common/fastpbkdf2.o\
 	../../../../../common/vscpbase64.o
 
 
