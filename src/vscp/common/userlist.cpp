@@ -954,14 +954,14 @@ bool CUserList::addUser( const wxString& user,
     // New user item
     CUserItem *pItem = new CUserItem; 
     if (NULL == pItem) return false;
-    pItem->setUserID( 0 );
     
     // Local user
     if ( VSCP_ADD_USER_FLAG_LOCAL & bFlags ) {
-        pItem->setUserID( m_cntLocaluser ); 
+    
     }
     
-    m_cntLocaluser++;   // Update local user id counter
+    pItem->setUserID( m_cntLocaluser );
+    m_cntLocaluser++;   // Update local user id counter        
           
     // Check if user is defined already
     if ( !( bFlags & VSCP_ADD_USER_FLAG_LOCAL  ) && 

@@ -727,10 +727,6 @@ public:
                                  int format,
                                  int returncode );
 
-
-
-
-
 // --- Member variables ---
 
     /*!

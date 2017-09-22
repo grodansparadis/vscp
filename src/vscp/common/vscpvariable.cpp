@@ -128,7 +128,7 @@ void CVSCPVariable::fixName( void )
 // makeAccessTightString
 //
 
-void CVSCPVariable::makeAccessTightString( uint32_t accessrights, 
+void CVSCPVariable::makeAccessRightString( uint32_t accessrights, 
                                                 wxString& strAccessRights )
 {
     strAccessRights.Empty();
@@ -4528,7 +4528,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
         var.getValue( &val );
         gpobj->m_maxItemsInClientReceiveQueue = val;
         return gpobj->updateConfigurationRecordItem( _("vscpd.maxqueue"), 
-                                                    wxString::Format( _("%d"), val ) );
+                                             wxString::Format( _("%d"), val ) );
     }
     
     if ( lcname.StartsWith( _("vscp.tcpip.address") ) ) {
@@ -6406,16 +6406,35 @@ bool CVariableStorage::loadFromXML( const wxString& path  )
             }
 
             // Add the variable
-            if ( add( variable ) ) {
-if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_VARIABLE ) {                
-                gpobj->logMsg( wxString::Format( _("[Loading XML file] Added variable %s.\n"),
-                                        (const char *)variable.getName().mbc_str() ),
-                                        DAEMON_LOGMSG_DEBUG ); 
-}
+            if ( exist( variable.getName() ) ) {
+                
+                if ( update( variable ) ) {
+                    if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_VARIABLE ) {                
+                        gpobj->logMsg( wxString::Format( _("[Loading XML file] Updates variable %s.\n"),
+                                            (const char *)variable.getName().mbc_str() ),
+                                            DAEMON_LOGMSG_DEBUG ); 
+                    }
+                }
+                else { 
+                    gpobj->logMsg( wxString::Format( _("[Loading XML file] Failed to update variable %s.\n"),
+                                            (const char *)variable.getName().mbc_str() ) );
+                }
+                
             }
-            else { 
-                gpobj->logMsg( wxString::Format( _("[Loading XML file] Failed to add variable %s.\n"),
-                                        (const char *)variable.getName().mbc_str() ) );
+            else {
+                
+                if ( add( variable ) ) {
+                    if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_VARIABLE ) {                
+                        gpobj->logMsg( wxString::Format( _("[Loading XML file] Added variable %s.\n"),
+                                            (const char *)variable.getName().mbc_str() ),
+                                            DAEMON_LOGMSG_DEBUG ); 
+                    }
+                }
+                else { 
+                    gpobj->logMsg( wxString::Format( _("[Loading XML file] Failed to add variable %s.\n"),
+                                            (const char *)variable.getName().mbc_str() ) );
+                }
+            
             }
 
         }

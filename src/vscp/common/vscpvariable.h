@@ -166,7 +166,7 @@ public:
      * @param strAccessRights String that will get text form of 
      *          access eights.
      */
-    static void makeAccessTightString( uint32_t accessrights, 
+    static void makeAccessRightString( uint32_t accessrights, 
                                         wxString& strAccessRights );
 
     /*!
@@ -190,6 +190,8 @@ public:
      *  @eturn true if type is BASE64 encoded, false otherwise
      */
     static bool isValueBase64Encoded( int type ); 
+    
+    bool isValueBase64Encoded( void ) { isValueBase64Encoded( m_type ); };
     
     /*!
      * Check if the variable is a numerical type
@@ -450,7 +452,7 @@ public:
     void setAccessRights( uint32_t accessRights ) { m_accessRights = accessRights; };
     uint32_t getAccessRights( void ) { return m_accessRights; };
     void getAccessRightStr( wxString& strAccessRights  ) 
-        { makeAccessTightString( m_accessRights, strAccessRights ); };
+        { makeAccessRightString( m_accessRights, strAccessRights ); };
     
     bool isUserWritable( void ) { return ( m_accessRights | 0x02 ) ? true : false; };
     void makeUserWritable( bool b ) { m_accessRights |= 0x02; };
@@ -550,7 +552,7 @@ public:
      * @return id if the variable exists, zero else.
      * 
      */
-    uint32_t exist(const wxString& name );
+    uint32_t exist( const wxString& name );
     
     
     /*!
@@ -667,7 +669,7 @@ public:
     bool remove( CVSCPVariable& variable );
 
     /*!
-        Read persistent variables
+        Read persistent variables from XML file. 
         @param Path to XML file. Defaults to empty in which case
                 the default XML path is used.
         @return Returns true on success false on failure.

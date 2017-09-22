@@ -3387,16 +3387,16 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
 	          "close\r\n\r\n");
 
     web_printf( conn, WEB_COMMON_HEAD, "VSCP - Variable Edit" );
-    web_printf( conn, WEB_STYLE_START);
-    web_printf( conn, WEB_COMMON_CSS);     // CSS style Code
-    web_printf( conn, WEB_STYLE_END);
-    web_printf( conn, WEB_COMMON_JS);      // Common Javascript code
-    web_printf( conn, WEB_COMMON_HEAD_END_BODY_START);
+    web_printf( conn, WEB_STYLE_START );
+    web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
+    web_printf( conn, WEB_STYLE_END );
+    web_printf( conn, WEB_COMMON_JS );      // Common Javascript code
+    web_printf( conn, WEB_COMMON_HEAD_END_BODY_START) ;
 
     // Navigation menu
-    web_printf( conn, WEB_COMMON_MENU);
+    web_printf( conn, WEB_COMMON_MENU );
 
-    web_printf( conn, WEB_VAREDIT_BODY_START);
+    web_printf( conn, WEB_VAREDIT_BODY_START );
     
     // get variable names
     wxArrayString nameArray;
@@ -3413,7 +3413,8 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
                         (long)id );
             
             web_printf( conn, WEB_COMMON_END);     // Common end code
-            return 1;
+            return WEB_OK;
+            
         }
         
     }
@@ -3467,7 +3468,8 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
 
     web_printf( conn, "<table class=\"invisable\"><tbody><tr class=\"invisable\">");
 
-    web_printf( conn, "<td class=\"invisable\"  style=\"font-weight: bold;\">Name:</td><td class=\"invisable\">");
+    web_printf( conn, "<td class=\"invisable\"  style=\"font-weight: "
+                      "bold;\">Name:</td><td class=\"invisable\">");
     
     if ( !bNew ) {
         web_printf( conn, "<div style=\"font-weight: bold;\" >" );
@@ -3490,7 +3492,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
 
     if ( VSCP_DAEMON_VARIABLE_CODE_STRING == nType ) {
 
-        web_printf(conn, "<textarea cols=\"50\" rows=\"10\" name=\"value_string\">");
+        web_printf(conn, "<textarea cols=\"50\" rows=\"10\" name=\"value\">");
         
         if ( bNew ) {
             web_printf(conn, "");
@@ -3512,7 +3514,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         bool bValue = false;
         if (! bNew ) variable.getValue( &bValue );
 
-        web_printf(conn, "<input type=\"radio\" name=\"value_boolean\" "
+        web_printf(conn, "<input type=\"radio\" name=\"value\" "
                          "value=\"true\" ");
         
         if ( !bNew )
@@ -3534,7 +3536,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     else if ( VSCP_DAEMON_VARIABLE_CODE_INTEGER == nType ) {
 
         web_printf(conn, "<textarea cols=\"10\" rows=\"1\" "
-                         "name=\"value_integer\">");
+                         "name=\"value\">");
         
         if ( bNew ) {
             web_printf(conn, "");
@@ -3553,7 +3555,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     } 
     else if ( VSCP_DAEMON_VARIABLE_CODE_LONG == nType ) {
 
-        web_printf(conn, "<textarea cols=\"10\" rows=\"1\" name=\"value_long\">");
+        web_printf(conn, "<textarea cols=\"10\" rows=\"1\" name=\"value\">");
         
         if ( bNew ) {
             web_printf(conn, "");
@@ -3572,7 +3574,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     } 
     else if ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE == nType ) {
 
-        web_printf(conn, "<textarea cols=\"10\" rows=\"1\" name=\"value_double\">");
+        web_printf(conn, "<textarea cols=\"10\" rows=\"1\" name=\"value\">");
         
         if ( bNew ) {
             web_printf(conn, "");
@@ -3591,7 +3593,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     } 
     else if ( VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT == nType ) {
         
-        web_printf(conn, "<textarea cols=\"50\" rows=\"1\" name=\"value_measurement\">");
+        web_printf(conn, "<textarea cols=\"50\" rows=\"1\" name=\"value\">");
         
         if ( bNew ) {
             web_printf(conn, "");
@@ -3629,7 +3631,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     } 
     else if ( VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID == nType ) {
                 
-        web_printf(conn, "<textarea cols=\"50\" rows=\"1\" name=\"value_guid\">");        
+        web_printf(conn, "<textarea cols=\"50\" rows=\"1\" name=\"value\">");        
         
         if (bNew) {
             web_printf(conn, "");
@@ -3648,7 +3650,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     } 
     else if ( VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA == nType ) {
 
-        web_printf(conn, "<textarea cols=\"50\" rows=\"5\" name=\"value_data\">");
+        web_printf(conn, "<textarea cols=\"50\" rows=\"5\" name=\"value\">");
         
         if ( bNew ) {
             web_printf(conn, "");
@@ -3667,7 +3669,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     } 
     else if ( VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS == nType ) {
 
-        web_printf(conn, "<textarea cols=\"10\" rows=\"1\" name=\"value_class\">");
+        web_printf(conn, "<textarea cols=\"10\" rows=\"1\" name=\"value\">");
         
         if ( bNew ) {
             web_printf(conn, "");
@@ -3686,7 +3688,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     } 
     else if ( VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE == nType ) {
 
-        web_printf(conn, "<textarea cols=\"10\" rows=\"1\" name=\"value_type\">");
+        web_printf(conn, "<textarea cols=\"10\" rows=\"1\" name=\"value\">");
         
         if ( bNew ) {
             web_printf(conn, "");
@@ -3705,7 +3707,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     } 
     else if ( VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP == nType ) {
 
-        web_printf(conn, "<textarea cols=\"10\" rows=\"1\" name=\"value_timestamp\">");
+        web_printf(conn, "<textarea cols=\"10\" rows=\"1\" name=\"value\">");
         
         if ( bNew ) {
             web_printf(conn, "");
@@ -3724,7 +3726,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     } 
     else if ( VSCP_DAEMON_VARIABLE_CODE_DATETIME == nType ) {
 
-        web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"value_date_time\">");
+        web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"value\">");
         
         if ( bNew ) {
             web_printf(conn, "");
@@ -4101,7 +4103,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     }
     else {
         wxString str;
-        CVSCPVariable::makeAccessTightString( variable.getAccessRights(), str );
+        CVSCPVariable::makeAccessRightString( variable.getAccessRights(), str );
         web_printf( conn, 
                         "0x%03X %s (owner group other)", 
                         variable.getAccessRights(), 
@@ -4167,16 +4169,28 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
 {
     char buf[32000];
     wxString str;
-    VSCPInformation vscpinfo;
+    //VSCPInformation vscpinfo;
     CVSCPVariable variable;
 
     // Check pointer
-    if (NULL == conn) return 0;
+    if ( NULL == conn ) return 0;
     
     const struct web_request_info *reqinfo =  
                 web_get_request_info( conn );
     if ( NULL == reqinfo ) return 0;
 
+    // bNew
+    bool bNew = false;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
+                            strlen( reqinfo->query_string ), 
+                            "new", 
+                            buf, 
+                            sizeof( buf ) ) > 0 ) {
+            if ( NULL != strstr( "true", buf ) ) bNew = true;
+        }
+    }
+    
     // id
     long id = -1;
     if ( NULL != reqinfo->query_string ) {
@@ -4185,7 +4199,31 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
                             "id", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-            id = atoi( buf );
+            id = atol( buf );
+        }
+    }
+    
+    // Variable name
+    wxString strName;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
+                            strlen( reqinfo->query_string ), 
+                            "value_name", 
+                            buf, 
+                            sizeof( buf ) ) > 0 ) {
+            strName = wxString::FromUTF8( buf );
+        }
+    }
+    
+    // Variable type
+    uint8_t nType = VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
+                            strlen( reqinfo->query_string ), 
+                            "type", 
+                            buf, 
+                            sizeof( buf ) ) > 0 ) {
+            nType = atoi( buf );
         }
     }
 
@@ -4210,41 +4248,6 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
                             buf, 
                             sizeof( buf ) ) > 0 ) {
             nCount = atoi( buf );
-        }
-    }
-
-    uint8_t nType = VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED;
-    if ( NULL != reqinfo->query_string ) {
-        if ( web_get_var( reqinfo->query_string,                             
-                            strlen( reqinfo->query_string ), 
-                            "type", 
-                            buf, 
-                            sizeof( buf ) ) > 0 ) {
-            nType = atoi( buf );
-        }
-    }
-
-    // Name
-    wxString strName;
-    if ( NULL != reqinfo->query_string ) {
-        if ( web_get_var( reqinfo->query_string,                             
-                            strlen( reqinfo->query_string ), 
-                            "value_name", 
-                            buf, 
-                            sizeof( buf ) ) > 0 ) {
-            strName = wxString::FromAscii( buf );
-        }
-    }
-
-    // bNew
-    bool bNew = false;
-    if ( NULL != reqinfo->query_string ) {
-        if ( web_get_var( reqinfo->query_string,                             
-                            strlen( reqinfo->query_string ), 
-                            "new", 
-                            buf, 
-                            sizeof( buf ) ) > 0 ) {
-            if ( NULL != strstr( "true", buf ) ) bNew = true;
         }
     }
 
@@ -4273,185 +4276,14 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
     }
 
     // Value
-    wxString strValueString;
+    wxString strValue;
     if ( NULL != reqinfo->query_string ) {
         if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "value", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-            strValueString = wxString::FromAscii( buf );
-        }
-    }
-
-    bool bValueBoolean = false;
-    if ( NULL != reqinfo->query_string ) {
-        if ( web_get_var( reqinfo->query_string,                             
-                            strlen( reqinfo->query_string ), 
-                            "value_boolean", 
-                            buf, 
-                            sizeof( buf ) ) > 0 ) {
-            if ( NULL != strstr( "true", buf ) ) bValueBoolean = true;
-        }
-    }
-
-    int value_integer = 0;
-    if ( NULL != reqinfo->query_string ) {
-        if ( web_get_var( reqinfo->query_string,                             
-                            strlen( reqinfo->query_string ), 
-                            "value_integer", 
-                            buf, 
-                            sizeof( buf ) ) > 0 ) {
-            str = wxString::FromAscii( buf );
-            value_integer = vscp_readStringValue( str );
-        }
-    }
-
-    long value_long = 0;
-    if ( NULL != reqinfo->query_string ) {
-        if ( web_get_var( reqinfo->query_string,                             
-                            strlen( reqinfo->query_string ), 
-                            "value_long", 
-                            buf, 
-                            sizeof( buf ) ) > 0 ) {
-            str = wxString::FromAscii( buf );
-            value_long = vscp_readStringValue( str );
-        }
-    }
-
-    double value_double = 0;
-    if ( NULL != reqinfo->query_string ) {
-        if ( web_get_var( reqinfo->query_string,                             
-                            strlen( reqinfo->query_string ), 
-                            "value_double", 
-                            buf, 
-                            sizeof( buf ) ) > 0 ) {
-            value_double = atof( buf );
-        }
-    }
-
-    wxString strMeasurement;
-    if ( NULL != reqinfo->query_string ) {
-        if ( web_get_var( reqinfo->query_string,                             
-                            strlen( reqinfo->query_string ), 
-                            "value_measurement", 
-                            buf, 
-                            sizeof( buf ) ) > 0 ) {
-            strMeasurement = wxString::FromAscii( buf );
-        }
-    }
-
-    uint16_t value_class = 0;
-    if ( NULL != reqinfo->query_string ) {
-        if ( web_get_var( reqinfo->query_string,                             
-                            strlen( reqinfo->query_string ), 
-                            "value_class", 
-                            buf, 
-                            sizeof( buf ) ) > 0 ) {
-            value_class = vscp_readStringValue( wxString::FromAscii( buf ) );
-        }
-    }
-
-    uint16_t value_type = 0;
-    if ( NULL != reqinfo->query_string ) {
-        if ( web_get_var( reqinfo->query_string,                             
-                            strlen( reqinfo->query_string ), 
-                            "value_type", 
-                            buf, 
-                            sizeof( buf ) ) > 0 ) {
-            value_type = vscp_readStringValue( wxString::FromAscii( buf ) );
-        }
-    }
-
-    wxString strGUID;
-    if ( NULL != reqinfo->query_string ) {
-        if ( web_get_var( reqinfo->query_string,                             
-                            strlen( reqinfo->query_string ), 
-                            "value_guid", 
-                            buf, 
-                            sizeof( buf ) ) > 0 ) {
-            strGUID = wxString::FromAscii( buf );
-            strGUID.Trim();
-            if ( 0 == strGUID.Length() ) {
-                strGUID = _("-");
-            }
-        }
-    }
-
-    uint32_t value_timestamp = 0;
-    if ( NULL != reqinfo->query_string ) {
-        if ( web_get_var( reqinfo->query_string,                             
-                            strlen( reqinfo->query_string ), 
-                            "value_timestamp", 
-                            buf, 
-                            sizeof( buf ) ) > 0 ) {
-            value_timestamp = vscp_readStringValue( wxString::FromAscii( buf ) );
-        }
-    }
-
-    uint32_t value_obid = 0;
-    if ( NULL != reqinfo->query_string ) {
-        if ( web_get_var( reqinfo->query_string,                             
-                            strlen( reqinfo->query_string ), 
-                            "value_obid", 
-                            buf, 
-                            sizeof( buf ) ) > 0 ) {
-            value_obid = vscp_readStringValue( wxString::FromAscii( buf ) );
-        }
-    }
-
-    uint8_t value_head = 0;
-    if ( NULL != reqinfo->query_string ) {
-        if ( web_get_var( reqinfo->query_string,                             
-                            strlen( reqinfo->query_string ), 
-                            "value_head", 
-                            buf, 
-                            sizeof( buf ) ) > 0 ) {
-            value_head = vscp_readStringValue( wxString::FromAscii( buf ) );
-        }
-    }
-
-    uint32_t value_crc = 0;
-    if ( NULL != reqinfo->query_string ) {
-        if ( web_get_var( reqinfo->query_string,                             
-                            strlen( reqinfo->query_string ), 
-                            "value_crc", 
-                            buf, 
-                            sizeof( buf ) ) > 0 ) {
-            value_crc = vscp_readStringValue( wxString::FromAscii( buf ) );
-        }
-    }
-
-    uint16_t value_sizedata = 0;
-    if ( NULL != reqinfo->query_string ) {
-        if ( web_get_var( reqinfo->query_string,                             
-                            strlen( reqinfo->query_string ), 
-                            "value_sizedata", 
-                            buf, 
-                            sizeof( buf ) ) > 0 ) {
-            value_sizedata = vscp_readStringValue( wxString::FromAscii( buf ) );
-        }
-    }
-
-    wxString strData;
-    if ( NULL != reqinfo->query_string ) {
-        if ( web_get_var( reqinfo->query_string,                             
-                            strlen( reqinfo->query_string ), 
-                            "value_data", 
-                            buf, 
-                            sizeof( buf ) ) > 0 ) {
-            strData = wxString::FromAscii( buf );
-        }
-    }
-
-    wxString strDateTime;
-    if ( NULL != reqinfo->query_string ) {
-        if ( web_get_var( reqinfo->query_string,                             
-                            strlen( reqinfo->query_string ), 
-                            "value_date_time", 
-                            buf, 
-                            sizeof( buf ) ) > 0 ) {
-            strDateTime = wxString::FromAscii( buf );
+            strValue = wxString::FromUTF8( buf );
         }
     }
 
@@ -4462,43 +4294,93 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
     web_printf( conn, 
                     WEB_COMMON_HEAD, 
                     "VSCP - Variable Post" );
-    web_printf( conn, WEB_STYLE_START);
-    web_printf( conn, WEB_COMMON_CSS);     // CSS style Code
-    web_printf( conn, WEB_STYLE_END);
-    web_printf( conn, WEB_COMMON_JS);      // Common Javascript code
+    web_printf( conn, WEB_STYLE_START );
+    web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
+    web_printf( conn, WEB_STYLE_END );
+    web_printf( conn, WEB_COMMON_JS );      // Common Javascript code
     web_printf( conn, "<meta http-equiv=\"refresh\" content=\"1;url=/vscp/variables");
     web_printf( conn, 
                     "?from=%d&count=%d", 
                     nFrom, 
                     nCount );
     web_printf( conn, "\">");
-    web_printf( conn, WEB_COMMON_HEAD_END_BODY_START);
+    web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
 
     // Navigation menu
-    web_printf( conn, WEB_COMMON_MENU);
+    web_printf( conn, WEB_COMMON_MENU );
 
-    web_printf( conn, WEB_VARPOST_BODY_START);
+    web_printf( conn, WEB_VARPOST_BODY_START );
 
-    if (bNew) {
-        //pVariable = new CVSCPVariable;
+    if ( bNew ) {
+        
+        // * * * A new variable * * * 
+        
+        variable.setPersistent( bPersistent );
+        variable.setType( nType );
+        vscp_base64_wxencode( strNote );
+        variable.setNote( strNote );
+        variable.setName( strName );
+        variable.setLastChangedToNow();
+        //variable.setOwnerId( xxx );
+        //variable.setAccessRights( xxx );
+        
+    }
+    else {
+        
+        // * * * An updated variable * * * 
+
+        if ( !gpobj->m_VSCP_Variables.find( strName, variable ) ) {
+            
+            // Variable was not found
+            
+            web_printf( conn, "<br><br>Unknown variable!. Unable to save record", id);
+            web_printf( conn, WEB_COMMON_END); // Common end code
+            return 1;
+            
+        }
+
+        //variable.setPersistent( bPersistent );
+        //variable.setType( nType );
+        vscp_base64_wxencode( strNote );
+        variable.setNote( strNote );
+        variable.setName( strName );
+        variable.setLastChangedToNow();
+        //variable.setOwnerId( xxx );
+        //variable.setAccessRights( xxx );
+        
+    }
+    
+    // Set value
+    
+    // If value should be BASE64 encoded we
+    // do that now. The BLOB type 
+    if ( variable.isValueBase64Encoded() && 
+        ( VSCP_DAEMON_VARIABLE_CODE_BLOB != variable.getType() ) ) {
+        vscp_base64_wxencode( strValue );
+    }
+    
+    variable.setValue( strValue );
+    
+    // If new variable add it
+    if ( bNew ) {
+        gpobj->m_VSCP_Variables.add( variable );
+    }
+    else {
+        // Update variables
+        gpobj->m_VSCP_Variables.update( variable );
     }
 
-    /* TODO
-    if (bNew || (id >= 0)) {
-
-        if (bNew ||
-                ((0 == id) && !bNew) ||
-                (id < (long)gpobj->m_VSCP_Variables.m_listVariable.GetCount()) ) {
-
+    web_printf( conn, 
+        "<br><br>Variable has been saved. id=%d %s", 
+        id,
+        (const char *)variable.getName().mbc_str() );
+    
             //if (!bNew) gpobj->m_VSCP_Variables.m_listVariable.Item(id)->GetData();
-
+/*
             if ( 0 ) {
 
                 // Set the type
-                variable.setPersistent( bPersistent );
-                variable.setType( nType );
-                variable.setNote( strNote );
-                variable.setName( strName );
+                
 
                 switch ( nType ) {
 
@@ -4596,6 +4478,7 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
         else {
             web_printf( conn, "<br><br>Record id=%d is to large. Unable to save record", id);
         }
+
     }
     else {
         web_printf( conn, "<br><br>Record id=%d is wrong. Unable to save record", id);

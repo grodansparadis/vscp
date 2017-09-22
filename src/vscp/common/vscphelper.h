@@ -138,7 +138,23 @@ extern "C" {
     void vscp_bin2str( char *to, const unsigned char *p, size_t len ); 
 
     
+    /*!
+     * BASE64 decode wx string
+     * 
+     * @param str str to encode.
+     * @return true on success, false on failure.
+     * 
+     */
     bool vscp_base64_wxdecode( wxString& str );
+    
+    /*!
+     * BASE64 encode wx string
+     * 
+     * @param str str to encode.
+     * @return true on success, false on failure.
+     * 
+     */
+    bool vscp_base64_wxencode( wxString& str );
     
     /*!
         Get GMT time 
