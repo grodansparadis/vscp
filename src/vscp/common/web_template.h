@@ -251,9 +251,15 @@
 #define WEB_VAREDIT_TABLE_END "</tbody></table>"
 
 //  Variable-Edit submit 
-#define WEB_VAREDIT_SUBMIT "<br><div style=\"text-align:center\"><button \
-                            type=\"submit\" value=\"btnsave\" \
-                            name=\"btnsave\">save</button><br></div>"
+#define WEB_VAREDIT_SUBMIT "<br><div style=\"text-align:center\">\
+                            <button type=\"submit\" value=\"btnsave\" \
+                            onclick=\"DoNav(%s);\" \
+                            name=\"btnsave\">save</button> \
+                            <button type=\"reset\" value=\"Reset\">Reset</button> \
+                            <button type=\"cancel\" \
+                            onclick=\"javascript:window.location='%s';\">\
+                            Cancel</button>\
+                            <br></div>"
 
 // * * * Variable Post * * *
 

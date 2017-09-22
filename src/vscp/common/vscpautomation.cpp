@@ -286,8 +286,8 @@ double CVSCPAutomation::FNsun(double d)
 
 void CVSCPAutomation::convert2HourMinute( double floatTime, int *pHours, int *pMinutes )
 {
-    *pHours = (int)floatTime;
-    *pMinutes = (floatTime - (double)*pHours)*60;
+    *pHours = ((int)floatTime) % 24;
+    *pMinutes = ((int)((floatTime - (double)*pHours)*60 )) % 60;
 };
 
 

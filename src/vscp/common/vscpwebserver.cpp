@@ -3482,7 +3482,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     }
     
     web_printf(conn, "</td></tr><tr>");
-    web_printf(conn, "<td class=\"invisable\" style=\"font-weight: bold;\">Value:</td><td class=\"invisable\">");
+    web_printf(conn, "<td class=\"invisable\" valign=\"middle\" "
+                     "style=\"font-weight: bold;\">Value:</td>"
+                     "<td class=\"invisable\">");
 
     if ( !bNew ) nType = variable.getType();
 
@@ -3500,6 +3502,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
 
         web_printf(conn, "</textarea>");
+        
+        web_printf(conn, "<div id=\"small\">String Format: "
+                "String value.</div>" );
 
     } 
     else if ( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN == nType ) {
@@ -3524,6 +3529,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         else {
             web_printf(conn, ">false ");
         }
+        
     } 
     else if ( VSCP_DAEMON_VARIABLE_CODE_INTEGER == nType ) {
 
@@ -3540,6 +3546,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
 
         web_printf(conn, "</textarea>");
+        
+        web_printf(conn, "<div id=\"small\">Integer value. Format: "
+                "Decimal or hexadecimal (preceed with '0x') signed value.</div>" );
 
     } 
     else if ( VSCP_DAEMON_VARIABLE_CODE_LONG == nType ) {
@@ -3556,6 +3565,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
 
         web_printf(conn, "</textarea>");
+        
+        web_printf(conn, "<div id=\"small\">Long value. Format: "
+                "Decimal or hexadecimal (preceed with '0x') signed value.</div>" );
 
     } 
     else if ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE == nType ) {
@@ -3572,6 +3584,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
 
         web_printf(conn, "</textarea>");
+        
+        web_printf(conn, "<div id=\"small\">Decimal value. Format: "
+                "Decimal signed value.</div>" );
 
     } 
     else if ( VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT == nType ) {
@@ -3588,6 +3603,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
 
         web_printf(conn, "</textarea>");
+        
+        web_printf(conn, "<div id=\"small\">Measurement value. Format: "
+                "value,unit,sensor-index,zone,subzone.</div>" );
     } 
     else if ( VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT == nType ) {
         
@@ -3603,12 +3621,15 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
 
         web_printf(conn, "</textarea>");
+        
+        web_printf(conn, "<div id=\"small\">VSCP Event. Format: "
+                "'head,class;type,obid,datetime,timestamp,GUID,data1,data2'</div>" );
        
 
     } 
     else if ( VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID == nType ) {
-
-        web_printf(conn, "<textarea cols=\"50\" rows=\"1\" name=\"value_guid\">");
+                
+        web_printf(conn, "<textarea cols=\"50\" rows=\"1\" name=\"value_guid\">");        
         
         if (bNew) {
             web_printf(conn, "");
@@ -3620,6 +3641,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
 
         web_printf(conn, "</textarea>");
+        
+        web_printf(conn, "<div id=\"small\">Format: "
+                "'AA:BB:CC:DD:EE:FF:00:11:22:33:44:55:66:77:88:99'</div>" );
 
     } 
     else if ( VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA == nType ) {
@@ -3636,6 +3660,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
 
         web_printf(conn, "</textarea>");
+        
+        web_printf(conn, "<div id=\"small\">VSCP Event data. Format: "
+                "'data1,data2,data3,…' Decimal and hex values allowed.</div>" );
 
     } 
     else if ( VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS == nType ) {
@@ -3652,6 +3679,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
 
         web_printf(conn, "</textarea>");
+        
+        web_printf(conn, "<div id=\"small\">VSCP event class code. Format: "
+                "Decimal or hexadecimal (preceed with '0x') value 0-65535.</div>" );
 
     } 
     else if ( VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE == nType ) {
@@ -3668,6 +3698,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
 
         web_printf(conn, "</textarea>");
+        
+        web_printf(conn, "<div id=\"small\">VSCP event type code. Format: "
+                "Decimal or hexadecimal (preceed with '0x') value 0-65535.</div>" );
 
     } 
     else if ( VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP == nType ) {
@@ -3684,6 +3717,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
 
         web_printf(conn, "</textarea>");
+        
+        web_printf(conn, "<div id=\"small\">Timestamp. Format: "
+                "Binary or hexadecimal long value.</div>" );
 
     } 
     else if ( VSCP_DAEMON_VARIABLE_CODE_DATETIME == nType ) {
@@ -3700,6 +3736,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
 
         web_printf(conn, "</textarea>");
+        
+        web_printf(conn, "<div id=\"small\">DateTime. Format: "
+                "'yyyy-mm-ddTHH:MM:SS' ex. '2014-09-26T13:05:01'.</div>" );
 
     } 
     else if ( VSCP_DAEMON_VARIABLE_CODE_DATE == nType ) {
@@ -3717,6 +3756,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
 
         web_printf(conn, "</textarea>");
         
+        web_printf(conn, "<div id=\"small\">Date. Format: "
+                "'yyyy-mm-dd' ex. '2014-09-26'.</div>" );
+        
     }
     else if ( VSCP_DAEMON_VARIABLE_CODE_TIME == nType ) {
         
@@ -3732,6 +3774,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
 
         web_printf(conn, "</textarea>");
+        
+        web_printf(conn, "<div id=\"small\">Time. Format: "
+                "'HH:MM:SS' ex. '13:05:01'.</div>" );
         
     }
     else if ( VSCP_DAEMON_VARIABLE_CODE_BLOB == nType ) {
@@ -3749,6 +3794,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
 
         web_printf(conn, "</textarea>");
         
+        web_printf(conn, "<div id=\"small\">Blob. Format: "
+                "BASE64 encoded data.</div>" );
+        
     }
     else if ( VSCP_DAEMON_VARIABLE_CODE_MIME == nType ) {
         web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"value\">");
@@ -3763,6 +3811,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
 
         web_printf(conn, "</textarea>");
+        
+        web_printf(conn, "<div id=\"small\">Mime. Format: "
+                "mime-identifier;base64 encoded content'.</div>" );
         
     }
     else if ( VSCP_DAEMON_VARIABLE_CODE_HTML == nType ) {
@@ -3779,6 +3830,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
 
         web_printf(conn, "</textarea>");
         
+        web_printf(conn, "<div id=\"small\">HTML. Format: "
+                "Any text string.</div>" );
+        
     }
     else if ( VSCP_DAEMON_VARIABLE_CODE_JAVASCRIPT == nType ) {
         web_printf(conn, "<textarea cols=\"20\" rows=\"10\" name=\"value\">");
@@ -3793,6 +3847,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
 
         web_printf(conn, "</textarea>");
+        
+        web_printf(conn, "<div id=\"small\">JavaScript. Format: "
+                "Any text string.</div>" );
         
     }
     else if ( VSCP_DAEMON_VARIABLE_CODE_JSON == nType ) {
@@ -3809,6 +3866,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
 
         web_printf(conn, "</textarea>");
         
+        web_printf(conn, "<div id=\"small\">JSON. Format: "
+                "Any text string.</div>" );
+        
     }
     else if ( VSCP_DAEMON_VARIABLE_CODE_XML == nType ) {
         web_printf(conn, "<textarea cols=\"20\" rows=\"10\" name=\"value\">");
@@ -3823,6 +3883,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
 
         web_printf(conn, "</textarea>");
+        
+        web_printf(conn, "<div id=\"small\">XML. Format: "
+                "Any text string.</div>" );
         
     }
     else if ( VSCP_DAEMON_VARIABLE_CODE_SQL == nType ) {
@@ -3839,6 +3902,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
 
         web_printf(conn, "</textarea>");
         
+        web_printf(conn, "<div id=\"small\">SQL. Format: "
+                "Any text string.</div>" );
+        
     }
     else if ( VSCP_DAEMON_VARIABLE_CODE_LUA == nType ) {
         web_printf(conn, "<textarea cols=\"20\" rows=\"10\" name=\"value\">");
@@ -3853,6 +3919,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
 
         web_printf(conn, "</textarea>");
+        
+        web_printf(conn, "<div id=\"small\">Lua. Format: "
+                "Any text string.</div>" );
     }
     else if ( VSCP_DAEMON_VARIABLE_CODE_LUA_RESULT == nType ) {
         web_printf(conn, "<textarea cols=\"20\" rows=\"10\" name=\"value\">");
@@ -3867,6 +3936,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
 
         web_printf(conn, "</textarea>");
+        
+        web_printf(conn, "<div id=\"small\">Lua result. Format: "
+                "Any text string.</div>" );
     }
     else if ( VSCP_DAEMON_VARIABLE_CODE_UX_TYPE1 == nType ) {
         web_printf(conn, "<textarea cols=\"20\" rows=\"10\" name=\"value\">");
@@ -3881,6 +3953,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
 
         web_printf(conn, "</textarea>");
+        
+        web_printf(conn, "<div id=\"small\">UX1. Format: "
+                "Any text string.</div>" );
     }
     else if ( VSCP_DAEMON_VARIABLE_CODE_DM_ROW == nType ) {
         web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"value\">");
@@ -3895,6 +3970,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
 
         web_printf(conn, "</textarea>");
+        
+        web_printf(conn, "<div id=\"small\">DM row. Format: "
+                "'enabled,from,to,weekday,time,mask,filter,index,zone,sub-zone,control-code,action-code,action-param,comment'.</div>" );
     }
     else if ( VSCP_DAEMON_VARIABLE_CODE_DRIVER == nType ) {
         web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"value\">");
@@ -3909,6 +3987,10 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
 
         web_printf(conn, "</textarea>");
+        
+        web_printf(conn, "<div id=\"small\">Driver. Format: "
+                "Driver record string.</div>" );
+        
     }
     else if ( VSCP_DAEMON_VARIABLE_CODE_USER == nType ) {
         web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"value\">");
@@ -3923,6 +4005,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
 
         web_printf(conn, "</textarea>");
+        
+        web_printf(conn, "<div id=\"small\">User record. Format: "
+                "'name;password;fullname;filtermask;rights;remotes;events;note'.</div>" );
     }
     else if ( VSCP_DAEMON_VARIABLE_CODE_FILTER == nType ) {
         web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"value\">");
@@ -3937,6 +4022,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
 
         web_printf(conn, "</textarea>");
+        
+        web_printf(conn, "<div id=\"small\">VSCP Filter. Format: "
+                "'filter-priority, filter-class, filter-type, filter-GUID'.</div>" );
     }    
     else {
         // Invalid type
@@ -3991,7 +4079,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "</textarea>");
     }
     else {
-        web_printf(conn, "id=%X = ", variable.getOwnerID() );
+        web_printf(conn, "id=%X ", variable.getOwnerID() );
         CUserItem *pUser = gpobj->m_userList.getUserItemFromOrdinal( variable.getOwnerID() );
         if ( NULL == pUser ) {
             web_printf(conn, " Unknow user " );
@@ -4012,10 +4100,33 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "</textarea>");
     }
     else {
-        web_printf(conn, "%03X ", variable.getAccessRights() );      
+        wxString str;
+        CVSCPVariable::makeAccessTightString( variable.getAccessRights(), str );
+        web_printf( conn, 
+                        "0x%03X %s (owner group other)", 
+                        variable.getAccessRights(), 
+                        (const char *)str.mbc_str() );      
     }
     
     web_printf(conn, "</td></tr>");
+    
+    // Last change
+    web_printf(conn, "</tr><tr><td style=\"font-weight: bold;\">Last change: </td><td>");
+
+    if ( bNew ) {
+        web_printf( conn, 
+                        "%s", 
+                        (const char *)wxDateTime::Now().FormatISOCombined().mbc_str() );        
+    }
+    else {
+        web_printf( conn, 
+                        "%s", 
+                        (const char *)variable.getLastChange().FormatISOCombined().mbc_str() );
+    }
+
+    web_printf(conn, "</td></tr>");
+    
+    
     
     // Note
     web_printf( conn, "</tr><tr><td style=\"font-weight: bold;\">Note: </td><td>");
@@ -4024,7 +4135,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     if ( bNew ) {
         web_printf(conn, "");
     } 
-    else {
+    else { 
         wxString str;
         variable.getNote( str, true );
         web_printf(conn, str.mbc_str());
@@ -4035,11 +4146,11 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     web_printf(conn, "</td></tr></table>");
 
     web_printf(conn, WEB_VAREDIT_TABLE_END);
-
-    wxString wxstrurl = _("/vscp/varpost");  
+ 
     web_printf( conn, 
-                    WEB_VAREDIT_SUBMIT,
-                    (const char *)wxstrurl.mbc_str() );
+                    WEB_VAREDIT_SUBMIT,  
+                    "/vscp/varpost",
+                    "/vscp" );
 
     web_printf( conn, "</form>");
     web_printf( conn, WEB_COMMON_END);     // Common end code
@@ -4113,6 +4224,7 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
         }
     }
 
+    // Name
     wxString strName;
     if ( NULL != reqinfo->query_string ) {
         if ( web_get_var( reqinfo->query_string,                             
@@ -4124,7 +4236,7 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
         }
     }
 
-    // Flag for new variable row
+    // bNew
     bool bNew = false;
     if ( NULL != reqinfo->query_string ) {
         if ( web_get_var( reqinfo->query_string,                             
@@ -4148,6 +4260,7 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
         }
     }
 
+    // Note
     wxString strNote;
     if ( NULL != reqinfo->query_string ) {
         if ( web_get_var( reqinfo->query_string,                             
@@ -4155,15 +4268,16 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
                             "note", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
-            strNote = wxString::FromAscii( buf );
+            strNote = wxString::FromUTF8( buf );
         }
     }
 
+    // Value
     wxString strValueString;
     if ( NULL != reqinfo->query_string ) {
         if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
-                            "value_string", 
+                            "value", 
                             buf, 
                             sizeof( buf ) ) > 0 ) {
             strValueString = wxString::FromAscii( buf );

@@ -125,6 +125,49 @@ void CVSCPVariable::fixName( void )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// makeAccessTightString
+//
+
+void CVSCPVariable::makeAccessTightString( uint32_t accessrights, 
+                                                wxString& strAccessRights )
+{
+    strAccessRights.Empty();
+    
+    // other
+    strAccessRights = ( accessrights & PERMISSON_OTHER_EXECUTE ) ?
+         'x' + strAccessRights : '-' + strAccessRights ;
+    
+    strAccessRights = ( accessrights & PERMISSON_OTHER_WRITE ) ?
+         'w' + strAccessRights : '-' + strAccessRights ;
+    
+    strAccessRights = ( accessrights & PERMISSON_OTHER_READ ) ?
+         'r' + strAccessRights : '-' + strAccessRights ;
+   
+    
+    // group
+    strAccessRights = ' ' + strAccessRights;
+    strAccessRights = ( accessrights & PERMISSON_GROUP_EXECUTE ) ?
+         'x' + strAccessRights : '-' + strAccessRights ;
+    
+    strAccessRights = ( accessrights & PERMISSON_GROUP_WRITE ) ?
+         'w' + strAccessRights : '-' + strAccessRights ;
+    
+    strAccessRights = ( accessrights & PERMISSON_GROUP_READ ) ?
+         'r' + strAccessRights : '-' + strAccessRights ;
+    
+    // owner
+    strAccessRights = ' ' + strAccessRights;
+    strAccessRights = ( accessrights & PERMISSON_OWNER_EXECUTE ) ?
+         'x' + strAccessRights : '-' + strAccessRights ;
+    
+    strAccessRights = ( accessrights & PERMISSON_OWNER_WRITE ) ?
+         'w' + strAccessRights : '-' + strAccessRights ;
+    
+    strAccessRights = ( accessrights & PERMISSON_OWNER_READ ) ?
+         'r' + strAccessRights : '-' + strAccessRights ;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // getVariableType
 //
 
@@ -528,16 +571,6 @@ bool CVSCPVariable::setName( const wxString& strName )
     m_name = str;
     fixName();
 
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// setRighs
-//
-
-bool CVSCPVariable::setRighs( uint32_t rights )
-{
-    m_accessRights = rights;
     return true;
 }
 
@@ -1368,10 +1401,10 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable,
         str.Trim();
         if ( str.Length() ) {
             uint32_t rights = vscp_readStringValue( str );
-            setRighs( rights );
+            setAccessRights( rights );
         }
         else {
-            setRighs( 0x744 );
+            setAccessRights( 0x744 );
         }
     }
     else {

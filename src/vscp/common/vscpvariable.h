@@ -141,6 +141,7 @@ typedef struct varQuery varQuery;
 // Persistent variables should have names staring with $
 
 class CVSCPVariable {
+    
 public:
 
     /// Constructor
@@ -151,6 +152,22 @@ public:
     
     /// Set default values
     void init( void );
+    
+    /*!
+        Name should not contain special characters so if it does
+        we replace them with 'underscore'
+    */
+    void fixName( void );
+    
+    /*!
+     * Make an access right string from supplied rights.
+     * 
+     * @param  accessrights Standard access rights
+     * @param strAccessRights String that will get text form of 
+     *          access eights.
+     */
+    static void makeAccessTightString( uint32_t accessrights, 
+                                        wxString& strAccessRights );
 
     /*!
         Get variable type as string
@@ -375,14 +392,7 @@ public:
         @param val Date + time in ISO format.
      */
     void setValue( wxDateTime& val );
-    
-    /*!
-     * Set rights
-     * @param Numerical rights value
-     * @return Always return true.
-     */
-    bool setRighs( uint32_t rights );
-    
+        
 
     /*!
      * setUser
@@ -401,13 +411,6 @@ public:
      * @return Last changed date/time
      */
     wxDateTime& getLastChange( void ) { return m_lastChanged; };
-    
-    /*!
-        Name should not contain special characters so if it does
-        we replace them with 'underscore'
-    */
-    void fixName( void );
-    
 
     // Getters/Setters
     
@@ -446,6 +449,8 @@ public:
     // Access rights
     void setAccessRights( uint32_t accessRights ) { m_accessRights = accessRights; };
     uint32_t getAccessRights( void ) { return m_accessRights; };
+    void getAccessRightStr( wxString& strAccessRights  ) 
+        { makeAccessTightString( m_accessRights, strAccessRights ); };
     
     bool isUserWritable( void ) { return ( m_accessRights | 0x02 ) ? true : false; };
     void makeUserWritable( bool b ) { m_accessRights |= 0x02; };
@@ -476,6 +481,7 @@ private:
     bool m_bPersistent; 
     
     // Access right owner(rwx);group(rwx):other(rwx)
+    // Usage for other bits is TODO
     uint32_t m_accessRights;
     
     // User this variable is owned by
