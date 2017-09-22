@@ -32,7 +32,7 @@
                            "    <a href=\"/vscp/\">Home</a>"\
                            " </li>"\
                            " <li>"\
-                           "    <a href=\"#\">Configuration</a>"\
+                           "    <a href=\"#\">System</a>"\
                            "    <ul>"\
                            "        <li>"\
                            "            <a href=\"/vscp/configure\">Configuration File</a>"\
@@ -55,7 +55,10 @@
                            "    <a href=\"#\">Tools</a>"\
                            "    <ul>"\
                            "        <li>"\
-                           "            <a href=\"/vscp/session\">VSCP Client</a>"\
+                           "            <a href=\"/vscp/sendevent\">VSCP Send event</a>"\
+                           "        </li>"\
+                           "        <li>"\
+                           "            <a href=\"/vscp/tests\">VSCP system tests</a>"\
                            "        </li>"\
                            "    </ul>"\
                            " </li>"\
@@ -121,12 +124,18 @@
 // Common head up to <body>
 // Contains three string insert points for printf
 // 1. Page title
-#define WEB_COMMON_HEAD "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head><meta content=\"text/html; charset=utf8\" http-equiv=\"content-type\"><title>%s</title>"
+#define WEB_COMMON_HEAD "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \
+                        \"http://www.w3.org/TR/html4/strict.dtd\"><html><head>\
+                        <meta content=\"text/html; charset=utf8\" http-equiv=\"\
+                        content-type\"><title>%s</title>"
 
 #define WEB_COMMON_HEAD_END_BODY_START "</head><body>"
 
 // End with footer
-#define WEB_COMMON_END "<br><br><br><br><div id=\"footer\"> Copyright &copy; 2000-2017 VSCP & Friends,<a href=\"mailto:info@paradiseofthefrog.com\">Ake Hedman</a><a href=\"http://www.paradiseofthefrog.com\"> Paradise of the Frog.</a></div></div></body></html>"
+#define WEB_COMMON_END "<br><br><br><br><div id=\"footer\"> Copyright &copy; \
+                        2000-2017 VSCP & Friends,<a href=\"mailto:info@paradiseofthefrog.com\">\
+                        Ake Hedman</a><a href=\"http://www.paradiseofthefrog.com\"> \
+                        Paradise of the Frog.</a></div></div></body></html>"
 
 // List navigation - 
 // Action url           - string
@@ -148,12 +157,16 @@
 
 // Clickable/navigational table rows
 // Fill in Navigation url
-#define WEB_COMMON_TR_CLICKABLE_ROW "<tr onmouseover=\"ChangeColor(this, true);\" onmouseout=\"ChangeColor(this, false);\" onclick=\"DoNav('%s')\" >"
+#define WEB_COMMON_TR_CLICKABLE_ROW "<tr onmouseover=\"ChangeColor(this, true);\" \
+                                        onmouseout=\"ChangeColor(this, false);\" \
+                                        onclick=\"DoNav('%s')\" >"
 
 // * * * DM List * * *
 
 // Place after menus
-#define WEB_DMLIST_BODY_START "<br><div id=\"content\"><div id=\"header\"><h1 id=\"header\">VSCP - Decision Matrix</h1></div><table><tbody>"
+#define WEB_DMLIST_BODY_START "<br><div id=\"content\"><div \
+                                id=\"header\"><h1 id=\"header\">\
+                                VSCP - Decision Matrix</h1></div><table><tbody>"
 
 // Place before common end
 #define WEB_DMLIST_TABLE_END "</tbody></table>"
@@ -169,33 +182,44 @@
 
 
 // Place after menus
-#define WEB_DMEDIT_BODY_START "<br><div id=\"content\"><div id=\"header\"><h1 id=\"header\">VSCP - Decision Matrix Edit</h1></div><table><tbody>"
+#define WEB_DMEDIT_BODY_START "<br><div id=\"content\"><div id=\"header\">\
+                                <h1 id=\"header\">VSCP - Decision Matrix Edit</h1>\
+                                </div><table><tbody>"
 
 // Place before common end
 #define WEB_DMEDIT_TABLE_END "</tbody></table>"
 
 // DM-Edit post - 
-#define WEB_DMEDIT_SUBMIT "<br><div style=\"text-align:center\"><button type=\"submit\" value=\"btnsave\" name=\"btnsave\">save</button><br></div>"
+#define WEB_DMEDIT_SUBMIT "<br><div style=\"text-align:center\">\
+                            <button type=\"submit\" value=\"btnsave\" \
+                            name=\"btnsave\">save</button><br></div>"
 
 
 // * * * DM Post * * *
 
-#define WEB_DMPOST_BODY_START "<br><div id=\"content\"><div id=\"header\"><h1 id=\"header\">VSCP - Decision Matrix Edit</h1></div><table><tbody>"
+#define WEB_DMPOST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
+                                <h1 id=\"header\">VSCP - Decision Matrix Edit</h1>\
+                                </div><table><tbody>"
 
 
 
 // * * * Interface List * * *
 
 // Place after menus
-#define WEB_IFLIST_BODY_START "<br><div id=\"content\"><div id=\"header\"><h1 id=\"header\">VSCP - Interfaces</h1></div><table><tbody>"
+#define WEB_IFLIST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
+                                <h1 id=\"header\">VSCP - Interfaces</h1></div>\
+                                <table><tbody>"
 
 // Place before common end
 #define WEB_IFLIST_TABLE_END "</tbody></table>"
 
 // Rows
-#define WEB_IFLIST_TR_HEAD "<tr><th>I/f Id</th><th>Type</th><th>Interface GUID</th><th>Name</th><th>Start time</th></tr>"
+#define WEB_IFLIST_TR_HEAD "<tr><th>I/f Id</th><th>Type</th><th>Interface GUID\
+                            </th><th>Name</th><th>Start time</th></tr>"
 
-#define WEB_IFLIST_TR "<tr onmouseover=\"ChangeColor(this, true);\" onmouseout=\"ChangeColor(this, false);\" onclick=\"DoNav('http://www.vscp.org/')\" >"
+#define WEB_IFLIST_TR "<tr onmouseover=\"ChangeColor(this, true);\" \
+                        onmouseout=\"ChangeColor(this, false);\" \
+                        onclick=\"DoNav('http://www.vscp.org/')\" >"
 
 #define WEB_IFLIST_TD_CENTERED "<td id=\"tdcenter\">"
 
@@ -206,30 +230,41 @@
 // * * * Variables List * * *
 
 // Place after menus
-#define WEB_VARLIST_BODY_START "<br><div id=\"content\"><div id=\"header\"><h1 id=\"header\">VSCP - Variables</h1></div><table><tbody>"
+#define WEB_VARLIST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
+                                <h1 id=\"header\">VSCP - Variables</h1></div>\
+                                <table><tbody>"
 
 // Table head
-#define WEB_VARLIST_TR_HEAD "<tr><th>Pos</th><th>Type</th><th>Variable</th><th></th></tr>"
+#define WEB_VARLIST_TR_HEAD "<tr><th>Pos</th><th>Type</th><th>Variable</th>\
+                                <th></th></tr>"
 
 
 
 // * * * Variables Edit * * *
 
 // Place after menus
-#define WEB_VAREDIT_BODY_START "<br><div id=\"content\"><div id=\"header\"><h1 id=\"header\">VSCP - Variable Edit</h1></div><table><tbody>"
+#define WEB_VAREDIT_BODY_START "<br><div id=\"content\"><div id=\"header\">\
+                                    <h1 id=\"header\">VSCP - Variable Edit</h1>\
+                                    </div><table><tbody>"
 
 // Place before common end
 #define WEB_VAREDIT_TABLE_END "</tbody></table>"
 
 //  Variable-Edit submit 
-#define WEB_VAREDIT_SUBMIT "<br><div style=\"text-align:center\"><button type=\"submit\" value=\"btnsave\" name=\"btnsave\">save</button><br></div>"
+#define WEB_VAREDIT_SUBMIT "<br><div style=\"text-align:center\"><button \
+                            type=\"submit\" value=\"btnsave\" \
+                            name=\"btnsave\">save</button><br></div>"
 
 // * * * Variable Post * * *
 
-#define WEB_VARPOST_BODY_START "<br><div id=\"content\"><div id=\"header\"><h1 id=\"header\">VSCP - Variable Edit</h1></div><table><tbody>"
+#define WEB_VARPOST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
+                                    <h1 id=\"header\">VSCP - Variable Edit\
+                                    </h1></div><table><tbody>"
 
 //  Variable-New step1 submit 
-#define WEB_VARNEW_SUBMIT "<br><div style=\"text-align:center\"><button type=\"submit\" value=\"btnnext\" name=\"btnnext\">next</button><br></div>"
+#define WEB_VARNEW_SUBMIT "<br><div style=\"text-align:center\">\
+                            <button type=\"submit\" value=\"btnnext\" \
+                            name=\"btnnext\">next</button><br></div>"
 
 
 
@@ -237,7 +272,9 @@
 // * * * Table List * * *
 
 // Place after menus
-#define WEB_TABLELIST_BODY_START "<br><div id=\"content\"><div id=\"header\"><h1 id=\"header\">VSCP - Tables</h1></div><table><tbody>"
+#define WEB_TABLELIST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
+                                    <h1 id=\"header\">VSCP - Tables</h1></div>\
+                                    <table><tbody>"
 
 // Place before common end
 #define WEB_TABLELIST_TABLE_END "</tbody></table>"
@@ -245,7 +282,9 @@
 // Rows
 #define WEB_TABLELIST_TR_HEAD "<tr><th>Name</th><th>Type</th></tr>"
 
-#define WEB_TABLELIST_TR "<tr onmouseover=\"ChangeColor(this, true);\" onmouseout=\"ChangeColor(this, false);\" onclick=\"DoNav('http://www.vscp.org/')\" >"
+#define WEB_TABLELIST_TR "<tr onmouseover=\"ChangeColor(this, true);\" \
+                            onmouseout=\"ChangeColor(this, false);\" \
+                            onclick=\"DoNav('http://www.vscp.org/')\" >"
 
 #define WEB_TABLELIST_TD_CENTERED "<td id=\"tdcenter\">"
 
@@ -255,15 +294,20 @@
 // * * * Table value List * * *
 
 // Place after menus
-#define WEB_TABLEVALUELIST_BODY_START _("<br><div id=\"content\"><div id=\"header\"><h1 id=\"header\">List of values - %s</h1></div><table><tbody>")
+#define WEB_TABLEVALUELIST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
+                                        <h1 id=\"header\">List of values - \
+                                        %s</h1></div><table><tbody>"
 
 // Place before common end
 #define WEB_TABLEVALUELIST_TABLE_END "</tbody></table>"
 
 // Rows
-#define WEB_TABLEVALUELIST_TR_HEAD "<tr><th>Record</th><th>Date</th><th>Value</th></tr>"
+#define WEB_TABLEVALUELIST_TR_HEAD "<tr><th>Record</th><th>Date</th><th>\
+                                    Value</th></tr>"
 
-#define WEB_TABLEVALUELIST_TR "<tr onmouseover=\"ChangeColor(this, true);\" onmouseout=\"ChangeColor(this, false);\" onclick=\"DoNav('http://www.vscp.org/')\" >"
+#define WEB_TABLEVALUELIST_TR "<tr onmouseover=\"ChangeColor(this, true);\" \
+                                onmouseout=\"ChangeColor(this, false);\" \
+                                onclick=\"DoNav('http://www.vscp.org/')\" >"
 
 #define WEB_TABLEVALUELIST_TD_CENTERED "<td id=\"tdcenter\">"
 
@@ -275,7 +319,23 @@
 // Last shown record	- integer
 // total records		- integer
 // count to show		- integer
-#define WEB_TABLEVALUE_LIST_NAVIGATION "<br><div style=\"text-align:center\"><form method=\"get\" action=\"%s\" name=\"PageSelect\"><button type=\"submit\" value=\"first\" name=\"navbtn\">&lt;&lt;</button><button type=\"submit\" value=\"previous\" name=\"navbtn\">&lt;</button><button type=\"submit\" value=\"next\" name=\"navbtn\">&gt;</button><button type=\"submit\" value=\"last\" name=\"navbtn\">&gt;&gt;</button><span style=\"font-weight:bold\"> %d - %d</span> of <span style=\"font-weight:bold\">%d</span> Show: <input name=\"count\" value=\"%d\" size=\"3\"><input name=\"from\" value=\"%d\" type=\"hidden\"><input name=\"tblname\" value=\"%s\" type=\"hidden\"><br></form></div> "
+#define WEB_TABLEVALUE_LIST_NAVIGATION "<br><div style=\"text-align:center\">\
+                                        <form method=\"get\" action=\"%s\" \
+                                        name=\"PageSelect\"><button type=\"submit\" \
+                                        value=\"first\" name=\"navbtn\">&lt;&lt;\
+                                        </button><button type=\"submit\" \
+                                        value=\"previous\" name=\"navbtn\">&lt;\
+                                        </button><button type=\"submit\" \
+                                        value=\"next\" name=\"navbtn\">&gt;\
+                                        </button><button type=\"submit\" \
+                                        value=\"last\" name=\"navbtn\">&gt;&gt;\
+                                        </button><span style=\"font-weight:bold\"> \
+                                        %d - %d</span> of <span \
+                                        style=\"font-weight:bold\">%d</span> Show: \
+                                        <input name=\"count\" value=\"%d\" size=\"3\">\
+                                        <input name=\"from\" value=\"%d\" \
+                                        type=\"hidden\"><input name=\"tblname\" \
+                                        value=\"%s\" type=\"hidden\"><br></form></div> "
 
 
 #endif

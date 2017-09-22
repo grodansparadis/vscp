@@ -596,7 +596,7 @@ bool CUserItem::saveToDatabase( void )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// readFromDatabase
+// readBackIndexFromDatabase
 //
 
 bool CUserItem::readBackIndexFromDatabase( void )
@@ -625,8 +625,8 @@ bool CUserItem::readBackIndexFromDatabase( void )
         gpobj->m_db_vscp_configMutex.Unlock();
     }
     
-    // Get index
-    m_userID = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_USER_ID );
+    // Get index (offset to local user)
+    m_userID = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_USER_ID ) + VSCP_LOCAL_USER_OFFSET;
     
     sqlite3_free( sql );       
     gpobj->m_db_vscp_configMutex.Unlock();
@@ -725,9 +725,11 @@ bool CUserItem::isUserAllowedToSendEvent( const uint32_t vscp_class,
 // Constructor
 //
 
-CUserList::CUserList(void)
+CUserList::CUserList( void )
 {
-    m_cntLocaluser = VSCP_LOCAL_USER_OFFSET;
+    // First local user except the super user has id 1
+    m_cntLocaluser = 1;
+    
     //wxLogDebug( _("Read Configuration: VSCPEnable=%s"), 
     //              ( m_bVSCPEnable ? _("true") : _("false") )  );
 }
@@ -736,7 +738,7 @@ CUserList::CUserList(void)
 // Destructor
 //
 
-CUserList::~CUserList(void)
+CUserList::~CUserList( void )
 {
     {
         VSCPGROUPHASH::iterator it;
@@ -796,8 +798,9 @@ bool CUserList::loadUsers( void )
 
            const unsigned char *p;
             
-            // id
-            pItem->setUserID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_USER_ID ) );
+            // id (offset from local users)
+            pItem->setUserID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_USER_ID ) +
+                                VSCP_LOCAL_USER_OFFSET );
                     
             // User
             p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_USER_USERNAME );
@@ -856,7 +859,7 @@ bool CUserList::loadUsers( void )
             gpobj->logMsg( _("Unable to allocate memory for new user.\n") );
         }
     
-        //sqlite3_step( ppStmt );
+        
     }
     
     sqlite3_finalize( ppStmt );    
@@ -887,8 +890,6 @@ bool CUserList::addSuperUser( const wxString& user,
     if (NULL == pItem) return false;
     
     pItem->setUserID( 0 );              // Super user is always at id = 0
-    bFlags |= VSCP_ADD_USER_FLAG_ADMIN; // Mark as superuser
-    bFlags |= VSCP_ADD_USER_FLAG_LOCAL; // Admin users should not be added to database
     
     wxString driverhash = user;
     driverhash += _(":");
@@ -936,17 +937,14 @@ bool CUserList::addUser( const wxString& user,
     char buf[ 512 ];
     char *pErrMsg = 0;
     sqlite3_stmt *ppStmt;
-    
-    // Can't be super user
-    bFlags = bFlags |= ~((uint32_t)VSCP_ADD_USER_FLAG_ADMIN );
-    
+           
     // Cant add user with name that is already defined.
     if ( NULL != m_userhashmap[ user ] ) {
         return false;
     }
 
     // Check if database is open
-    if ( !( VSCP_ADD_USER_FLAG_LOCAL & bFlags ) && 
+    if ( !( bFlags & VSCP_ADD_USER_FLAG_LOCAL ) && 
           ( NULL == gpobj->m_db_vscp_daemon ) ) {
         gpobj->logMsg( _("addUser: Failed to read VSCP settings database - database not open.") );
         return false;
@@ -959,17 +957,14 @@ bool CUserList::addUser( const wxString& user,
     
     // Local user
     if ( VSCP_ADD_USER_FLAG_LOCAL & bFlags ) {
-        pItem->setUserID( m_cntLocaluser ); // Never save to DB
-        m_cntLocaluser--;
+        pItem->setUserID( m_cntLocaluser ); 
     }
     
-    if ( VSCP_ADD_USER_FLAG_ADMIN & bFlags ) {
-        return false;   // Can't add super user here
-    }    
-      
+    m_cntLocaluser++;   // Update local user id counter
+          
     // Check if user is defined already
-    if ( !( VSCP_ADD_USER_FLAG_LOCAL & bFlags ) && 
-            pItem->isUserInDB( user ) ) {
+    if ( !( bFlags & VSCP_ADD_USER_FLAG_LOCAL  ) && 
+                            pItem->isUserInDB( user ) ) {
         delete pItem;
         return false;
     }

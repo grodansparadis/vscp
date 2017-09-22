@@ -4004,6 +4004,19 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     
     web_printf(conn, "</td></tr>");
     
+    // Access rights
+    web_printf(conn, "</tr><tr><td style=\"font-weight: bold;\">Rights: </td><td>");
+
+    if ( bNew ) {
+        web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"rights\">");
+        web_printf(conn, "</textarea>");
+    }
+    else {
+        web_printf(conn, "%03X ", variable.getAccessRights() );      
+    }
+    
+    web_printf(conn, "</td></tr>");
+    
     // Note
     web_printf( conn, "</tr><tr><td style=\"font-weight: bold;\">Note: </td><td>");
     web_printf( conn, "<textarea cols=\"50\" rows=\"5\" name=\"note\">");
@@ -4023,7 +4036,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
 
     web_printf(conn, WEB_VAREDIT_TABLE_END);
 
-    wxString wxstrurl = _("/vscp/varpost");
+    wxString wxstrurl = _("/vscp/varpost");  
     web_printf( conn, 
                     WEB_VAREDIT_SUBMIT,
                     (const char *)wxstrurl.mbc_str() );
