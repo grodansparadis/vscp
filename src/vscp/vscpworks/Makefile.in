@@ -97,7 +97,7 @@ VSCPWORKS_OBJECTS =  vscpworks.o dlgvscpmsg.o \
 	../../common/aes.o \
 	../../common/mongoose.o \
 	../../common/fastpbkdf2.o \
-	../../common/vscpbase64.o\
+	../../common/vscpbase64.o \
 	../common/canalsuperwrapper.o \
 	../common/dllwrapper.o \
 	../common/guid.o \
@@ -116,7 +116,7 @@ ALWAYS_BUILD = ../../common/crc.o \
 	../../common/aes.o \
 	../../common/mongoose.o \
 	../../common/fastpbkdf2.o \
-	../../common/vscpbase64.o
+	../../common/vscpbase64.o \
 	../common/canalsuperwrapper.o \
 	../common/dllwrapper.o \
 	../common/guid.o \
@@ -124,7 +124,8 @@ ALWAYS_BUILD = ../../common/crc.o \
 	../common/vscpeventhelper.o \
 	../common/vscpremotetcpif.o \
 	../common/mdf.o \
-	../common/register.o \
+	../common/register.o
+
 
 ### Targets: ###
 
