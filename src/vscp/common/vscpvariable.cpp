@@ -4222,7 +4222,7 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
             }
             else if ( strToken.StartsWith( _("name") ) ) {
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-                var.setValue( pUserItem->getUser(), true );
+                var.setValue( pUserItem->getUserName(), true );
             }
             else if ( strToken.StartsWith( _("password") ) ) {
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
@@ -5569,7 +5569,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
                 pUserItem->setFromString( var.getValue() );
             }
             else if ( strToken.StartsWith( _("name") )  ) {
-                pUserItem->setUser( var.getValue() );
+                pUserItem->setUserName( var.getValue() );
             }
             else if ( strToken.StartsWith( _("password") )  ) {
                 pUserItem->setPassword( var.getValue() );

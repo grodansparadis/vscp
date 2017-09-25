@@ -51,7 +51,7 @@
 #include <version.h>
 #include <vscp_debug.h>
 #include <vscphelper.h>
-#include <vscpeventhelper.h>
+//#include <vscpeventhelper.h>
 #include <actioncodes.h>
 #include <vscpvariable.h>
 #include <userlist.h>
@@ -1544,8 +1544,8 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             }
             // Check for class string  escape
             else if ( str.StartsWith( wxT("%event.class.str"), &str ) ) {
-                VSCPInformation info;
-                strResult +=  info.getClassDescription( pEvent->vscp_class );
+                //VSCPInformation info;  TODO
+                //strResult +=  info.getClassDescription( pEvent->vscp_class );
             }
             // Check for type escape
             else if ( str.StartsWith( wxT("%event.type"), &str ) ) {
@@ -1553,9 +1553,9 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             }
             // Check for type string escape
             else if ( str.StartsWith( wxT("%event.type.str"), &str ) ) {
-                VSCPInformation info;
-                strResult +=  info.getTypeDescription( pEvent->vscp_class,
-                                                    pEvent->vscp_type );
+                //VSCPInformation info;  TODO
+                //strResult +=  info.getTypeDescription( pEvent->vscp_class,
+                //                                    pEvent->vscp_type );
             }
             // Check for data[n] escape
             else if ( str.StartsWith( wxT("%event.data["), &str ) ) {

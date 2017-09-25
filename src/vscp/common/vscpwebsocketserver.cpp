@@ -351,7 +351,7 @@ autherror:
                                     WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
             wxString strErr =
                         wxString::Format( _("[Websocket] User [%s] not allowed to set a filter.\n"),
-                                                pSession->m_pClientItem->m_pUserItem->getUser().mbc_str() );
+                                                pSession->m_pClientItem->m_pUserItem->getUserName().mbc_str() );
 
             pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
             return; // We still leave channel open
@@ -449,7 +449,7 @@ autherror:
                                     WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
             wxString strErr =
                         wxString::Format( _("[Websocket] User [%s] not allowed to clear the queue.\n"),
-                                                pSession->m_pClientItem->m_pUserItem->getUser().mbc_str() );
+                                                pSession->m_pClientItem->m_pUserItem->getUserName().mbc_str() );
 
             pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
             return; // We still leave channel open
@@ -512,7 +512,7 @@ autherror:
                                     WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
             wxString strErr =
                         wxString::Format( _("[Websocket] User [%s] not allowed to create a variable.\n"),
-                                                pSession->m_pClientItem->m_pUserItem->getUser().mbc_str() );
+                                                pSession->m_pClientItem->m_pUserItem->getUserName().mbc_str() );
 
             pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
             return ;    // We still leave channel open
@@ -695,7 +695,7 @@ autherror:
                                     WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
             wxString strErr =
                         wxString::Format( _("[Websocket] User [%s] not allowed to read a variable.\n"),
-                                                pSession->m_pClientItem->m_pUserItem->getUser().mbc_str() );
+                                                pSession->m_pClientItem->m_pUserItem->getUserName().mbc_str() );
 
             pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
             return;     // We still leave channel open
@@ -752,7 +752,7 @@ autherror:
                                     WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
             wxString strErr =
                         wxString::Format( _("[Websocket] User [%s] not allowed to do write variable.\n"),
-                                                pSession->m_pClientItem->m_pUserItem->getUser().mbc_str() );
+                                                pSession->m_pClientItem->m_pUserItem->getUserName().mbc_str() );
 
             pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
             return;     // We still leave channel open
@@ -853,7 +853,7 @@ autherror:
                                     WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
             wxString strErr =
                         wxString::Format( _("[Websocket] User [%s] not allowed to reset a variable.\n"),
-                                                pSession->m_pClientItem->m_pUserItem->getUser().mbc_str() );
+                                                pSession->m_pClientItem->m_pUserItem->getUserName().mbc_str() );
 
             pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
             return;     // We still leave channel open
@@ -921,7 +921,7 @@ autherror:
                                     WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
             wxString strErr =
                         wxString::Format( _("[Websocket] User [%s] not allowed to delete a variable.\n"),
-                                                pSession->m_pClientItem->m_pUserItem->getUser().mbc_str() );
+                                                pSession->m_pClientItem->m_pUserItem->getUserName().mbc_str() );
 
             pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
             return;     // We still leave channel open
@@ -978,7 +978,7 @@ autherror:
                                     WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
             wxString strErr =
                         wxString::Format( _("[Websocket] User [%s] not allowed to get length of variable.\n"),
-                                                pSession->m_pClientItem->m_pUserItem->getUser().mbc_str() );
+                                                pSession->m_pClientItem->m_pUserItem->getUserName().mbc_str() );
 
             pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
             return;     // We still leave channel open
@@ -1034,7 +1034,7 @@ autherror:
                                     WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
             wxString strErr =
                         wxString::Format( _("[Websocket] User [%s] not allowed to get last change date of variable.\n"),
-                                                pSession->m_pClientItem->m_pUserItem->getUser().mbc_str() );
+                                                pSession->m_pClientItem->m_pUserItem->getUserName().mbc_str() );
 
             pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
             return;     // We still leave channel open
@@ -1093,7 +1093,7 @@ autherror:
                                     WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
             wxString strErr =
                         wxString::Format( _("[Websocket] User [%s] not allowed to list variable(s).\n"),
-                                                pSession->m_pClientItem->m_pUserItem->getUser().mbc_str() );
+                                                pSession->m_pClientItem->m_pUserItem->getUserName().mbc_str() );
 
             pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
             return;     // We still leave channel open
@@ -1783,7 +1783,7 @@ VSCPWebServerThread::websrv_websocket_message( struct mg_connection *nc,
                 if ( !pSession->m_pClientItem->m_pUserItem->isUserAllowedToSendEvent( vscp_event.vscp_class, vscp_event.vscp_type ) ) {
                     wxString strErr =
                         wxString::Format( _("websocket] User [%s] not allowed to send event class=%d type=%d.\n"),
-                                                pSession->m_pClientItem->m_pUserItem->getUser().mbc_str(),
+                                                pSession->m_pClientItem->m_pUserItem->getUserName().mbc_str(),
                                                 vscp_event.vscp_class, vscp_event.vscp_type );
 
                     pObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );

@@ -123,19 +123,19 @@
 
 // Common head up to <body>
 // Contains three string insert points for printf
-// 1. Page title
+// 1. Page title 
 #define WEB_COMMON_HEAD "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \
-                        \"http://www.w3.org/TR/html4/strict.dtd\"><html><head>\
-                        <meta content=\"text/html; charset=utf8\" http-equiv=\"\
-                        content-type\"><title>%s</title>"
+\"http://www.w3.org/TR/html4/strict.dtd\"><html><head>\
+<meta content=\"text/html; charset=utf8\" http-equiv=\"\
+content-type\" /><title>%s</title>"
 
 #define WEB_COMMON_HEAD_END_BODY_START "</head><body>"
 
 // End with footer
 #define WEB_COMMON_END "<br><br><br><br><div id=\"footer\"> Copyright &copy; \
-                        2000-2017 VSCP & Friends,<a href=\"mailto:info@paradiseofthefrog.com\">\
-                        Ake Hedman</a><a href=\"http://www.paradiseofthefrog.com\"> \
-                        Paradise of the Frog.</a></div></div></body></html>"
+2000-2017 VSCP & Friends,<a href=\"mailto:info@paradiseofthefrog.com\">\
+Ake Hedman</a><a href=\"http://www.paradiseofthefrog.com\"> \
+Paradise of the Frog.</a></div></div></body></html>"
 
 // List navigation - 
 // Action url           - string
@@ -262,10 +262,10 @@
                             <br></div>"
 
 // * * * Variable Post * * *
-
 #define WEB_VARPOST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                    <h1 id=\"header\">VSCP - Variable Edit\
-                                    </h1></div><table><tbody>"
+                                    <h1 id=\"header\">VSCP - Variable Post</h1>\
+                                    </div>"
+
 
 //  Variable-New step1 submit 
 #define WEB_VARNEW_SUBMIT "<br><div style=\"text-align:center\">\
@@ -320,11 +320,11 @@
 #define WEB_TABLEVALUELIST_TD_GUID "<td id=\"tdguid\">"
 
 // Tablevalue navigation - 
-// Action url			- string
-// First shown record	- integer
-// Last shown record	- integer
-// total records		- integer
-// count to show		- integer
+// Action url           - string
+// First shown record   - integer
+// Last shown record    - integer
+// total records	        - integer
+// count to show        - integer
 #define WEB_TABLEVALUE_LIST_NAVIGATION "<br><div style=\"text-align:center\">\
                                         <form method=\"get\" action=\"%s\" \
                                         name=\"PageSelect\"><button type=\"submit\" \
@@ -342,6 +342,8 @@
                                         <input name=\"from\" value=\"%d\" \
                                         type=\"hidden\"><input name=\"tblname\" \
                                         value=\"%s\" type=\"hidden\"><br></form></div> "
+
+
 
 
 #endif

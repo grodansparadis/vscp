@@ -362,7 +362,7 @@ bool vscp_base64_wxdecode( wxString& str )
                             str.length(), 
                             pbuf, 
                             &dest_len );
-    str = wxString::FromUTF8( pbuf );
+    str = wxString::FromUTF8( pbuf, dest_len );
     delete [] pbuf;
     
     return true;
@@ -374,12 +374,12 @@ bool vscp_base64_wxdecode( wxString& str )
 
 bool vscp_base64_wxencode( wxString& str ) 
 {
-    char *pbuf = new char[ 2*str.Length() ];
+    char *pbuf = new char[ 2*strlen( (const char *)str.mbc_str() ) ];
     if ( NULL == pbuf ) return false;
     memset( pbuf, 0, sizeof( pbuf ) );
     
     vscp_base64_encode( (const unsigned char *)( (const char *)str.mbc_str() ), 
-                                    str.length(), 
+                                    strlen( (const char *)str.mbc_str() ), 
                                     pbuf );
     
     str = wxString::FromUTF8( pbuf );

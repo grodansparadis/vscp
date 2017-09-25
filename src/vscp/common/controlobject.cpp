@@ -229,12 +229,15 @@ CControlObject::CControlObject()
     
     // Default admin user credentials
     m_admin_user = _("admin");
-    m_admin_password = _("450ADCE88F2FDBB20F3318B65E53CA4A;06D3311CC2195E80BE4F8EB12931BFEB5C630F6B154B2D644ABE29CEBDBFB545");
+    m_admin_password = _("450ADCE88F2FDBB20F3318B65E53CA4A;"
+                         "06D3311CC2195E80BE4F8EB12931BFEB5C"
+                         "630F6B154B2D644ABE29CEBDBFB545");
     m_admin_allowfrom = _("*");
     m_vscptoken = _("Carpe diem quam minimum credula postero");
     vscp_convertHexStr2ByteArray( m_systemKey, 
                                     32, 
-                                    "A4A86F7D7E119BA3F0CD06881E371B989B33B6D606A863B633EF529D64544F8E" );
+                                    "A4A86F7D7E119BA3F0CD06881E371B989B"
+                                    "33B6D606A863B633EF529D64544F8E" );
     
     m_nConfiguration = 1;       // Default configuration record is read.
        
@@ -406,7 +409,14 @@ if ( 0 ) {
     time_t ttt = mktime ( timeinfo );
     ttt = ttt + 1;
 }
-
+    
+/*    
+wxString ssss(_("12345678"));    
+vscp_base64_wxencode( ssss );
+vscp_base64_wxdecode( ssss );
+ssss = _("1234");
+*/
+    
 #ifdef CS_ENABLE_DEBUG
     FILE *logfile;
     cs_log_set_level( LL_VERBOSE_DEBUG );

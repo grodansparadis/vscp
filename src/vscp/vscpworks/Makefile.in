@@ -132,7 +132,7 @@ ALWAYS_BUILD = ../../common/crc.o \
 all: vscpworks
 
 install: all
-	$(STRIP)
+	$(STRIP) vscpworks
 	$(INSTALL_PROGRAM) vscpworks $(bindir)
 
 uninstall: 

@@ -1,7 +1,7 @@
 ﻿/* 
  * Copyright (c) 2004-2013 Sergey Lyubka
  * Copyright (c) 2013-2017 the Civetweb developers
- * Copyright (c) 2017 Ake Hedman, Grodans Paradis AB
+ * Copyright (c) 2017 Ake Hedman, Grodans Paradis AB 
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -4271,10 +4271,10 @@ web_wcscasecmp(const wchar_t *s1, const wchar_t *s2)
 //
 
 static void
-path_to_unicode(const struct web_connection *conn,
-                const char *path,
-                wchar_t *wbuf,
-                size_t wbuf_len)
+path_to_unicode( const struct web_connection *conn,
+                    const char *path,
+                    wchar_t *wbuf,
+                    size_t wbuf_len)
 {
     char buf[PATH_MAX], buf2[PATH_MAX];
     wchar_t wbuf2[MAX_PATH + 1];
@@ -5873,12 +5873,12 @@ web_read_inner(struct web_connection *conn, void *buf, size_t len)
     // If Content-Length is not set for a request with body data
     // (e.g., a PUT or POST request), we do not know in advance
     // how much data should be read.
-    if (conn->consumed_content == 0) {
-        if (conn->is_chunked == 1) {
+    if ( 0 == conn->consumed_content ) {
+        if ( 1 == conn->is_chunked ) {
             conn->content_len = len64;
             conn->is_chunked = 2;
         }
-        else if (conn->content_len == -1) {
+        else if ( -1 == conn->content_len ) {
             // The body data is completed when the connection
             // is closed. 
             conn->content_len = INT64_MAX;
@@ -5931,14 +5931,14 @@ web_read_inner(struct web_connection *conn, void *buf, size_t len)
 //
 
 static char
-web_getc(struct web_connection *conn)
+web_getc( struct web_connection *conn )
 {
     char c;
-    if (conn == NULL) {
+    if ( NULL == conn ) {
         return 0;
     }
     
-    if (web_read_inner(conn, &c, 1) <= 0) {
+    if ( web_read_inner( conn, &c, 1 ) <= 0 ) {
         return (char) 0;
     }
     
@@ -5951,7 +5951,7 @@ web_getc(struct web_connection *conn)
 //
 
 int
-web_read(struct web_connection *conn, void *buf, size_t len)
+web_read( struct web_connection *conn, void *buf, size_t len )
 {
     if (len > INT_MAX) {
         len = INT_MAX;
@@ -6060,7 +6060,7 @@ web_read(struct web_connection *conn, void *buf, size_t len)
 //
 
 int
-web_write(struct web_connection *conn, const void *buf, size_t len)
+web_write( struct web_connection *conn, const void *buf, size_t len )
 {
     time_t now;
     int64_t n, total, allowed;
@@ -6137,9 +6137,9 @@ web_write(struct web_connection *conn, const void *buf, size_t len)
 //
 
 int
-web_send_chunk(struct web_connection *conn,
+web_send_chunk( struct web_connection *conn,
                    const char *chunk,
-                   unsigned int chunk_len)
+                   unsigned int chunk_len )
 {
     char lenbuf[16];
     size_t lenbuf_len;
@@ -6236,7 +6236,7 @@ alloc_vprintf( char **out_buf,
     len = vsnprintf_impl(NULL, 0, fmt, ap_copy);
     va_end(ap_copy);
 
-    if (len < 0) {
+    if ( len < 0 ) {
         
         // C runtime is not standard compliant, vsnprintf() returned -1.
         // Switch to alternative code path that uses incremental
@@ -6330,19 +6330,23 @@ web_url_decode(const char *src,
 {
     int i, j, a, b;
     
-#define HEXTOI(x) (isdigit(x) ? (x - '0') : (x - 'W'))
-
-    for (i = j = 0; (i < src_len) && (j < (dst_len - 1)); i++, j++) {
+#define HEXTOI(x) ( isdigit(x) ? (x - '0') : (x - 'W') )  
+ 
+   for (i = j = 0; 
+           ( i < src_len ) && ( j < (dst_len - 1 ) ); 
+           i++, j++) {
         
-        if ((i < src_len - 2) && (src[i] == '%')
-            && isxdigit(*(const unsigned char *) (src + i + 1))
-            && isxdigit(*(const unsigned char *) (src + i + 2))) {
-            a = tolower(*(const unsigned char *) (src + i + 1));
-            b = tolower(*(const unsigned char *) (src + i + 2));
-            dst[j] = (char) ((HEXTOI(a) << 4) | HEXTOI(b));
-            i += 2;
+        if ( ( i < src_len - 2) && 
+             ( src[i] == '%' ) &&
+             isxdigit( *(const unsigned char *)(src + i + 1 ) ) &&
+             isxdigit( *(const unsigned char *)(src + i + 2 ) ) ) {
+                a = tolower( *(const unsigned char *)(src + i + 1) );
+                b = tolower( *(const unsigned char *)(src + i + 2) );
+                dst[j] = (char)( ( HEXTOI( a ) << 4 ) | HEXTOI( b ) );
+                i += 2;
         }
-        else if (is_form_url_encoded && (src[i] == '+')) {
+        else if ( is_form_url_encoded && 
+                  ( src[i] == '+') ) {
             dst[j] = ' ';
         }
         else {
@@ -6353,7 +6357,7 @@ web_url_decode(const char *src,
     dst[j] = '\0'; // Null-terminate the destination 
 
     return (i >= src_len) ? j : -1;
-}
+}  
 
 ////////////////////////////////////////////////////////////////////////////////
 // web_get_var
@@ -6401,10 +6405,13 @@ web_get_var2( const char *data,
         dst[0] = '\0';
 
         // data is "var1=val1&var2=val2...". Find variable first 
-        for (p = data; p + name_len < e; p++) {
+        for ( p = data; p + name_len < e; p++ ) {
             
-            if (((p == data) || (p[-1] == '&')) && (p[name_len] == '=') && 
-                !vscp_strncasecmp(name, p, name_len) && 0 == occurrence--) {
+            if ( ( ( p == data ) || 
+                   ( p[-1] == '&') ) && 
+                   ( p[name_len] == '=') && 
+                   !vscp_strncasecmp( name, p, name_len ) && 
+                   ( 0 == occurrence-- ) ) {
                 
                 // Point p to variable value 
                 p += name_len + 1;
@@ -15805,25 +15812,27 @@ web_handle_form_request( struct web_connection *conn,
             return -1;
         }
 
-        // GET request: form data is in the query string. */
-        // The entire data has already been loaded, so there is no nead to
+        // GET request: form data is in the query string. 
+        // The entire data has already been loaded, so there is no need to
         // call web_read. We just need to split the query string into key-value
         // pairs. 
         data = conn->request_info.query_string;
-        if (!data) {
+        if ( !data ) {
             // No query string. 
             return -1;
         }
 
         // Split data in a=1&b=xy&c=3&c=4 ... 
-        while (*data) {
+        while ( *data ) {
+            
             const char *val = strchr(data, '=');
             const char *next;
             ptrdiff_t keylen, vallen;
 
-            if (!val) {
+            if ( !val ) {
                 break;
             }
+            
             keylen = val - data;
 
             // In every "field_found" callback we ask what to do with the
@@ -15850,7 +15859,7 @@ web_handle_form_request( struct web_connection *conn,
 
             val++;
             next = strchr(val, '&');
-            if (next) {
+            if ( next ) {
                 vallen = next - val;
                 next++;
             }
@@ -15859,13 +15868,13 @@ web_handle_form_request( struct web_connection *conn,
                 next = val + vallen;
             }
 
-            if (field_storage == FORM_FIELD_STORAGE_GET) {
+            if ( FORM_FIELD_STORAGE_GET == field_storage ) {
                 // Call callback 
                 url_encoded_field_get(
                                       conn, data, (size_t) keylen, val, (size_t) vallen, fdh);
             }
             
-            if (field_storage == FORM_FIELD_STORAGE_STORE) {
+            if ( FORM_FIELD_STORAGE_STORE == field_storage ) {
                 
                 // Store the content to a file 
                 if (web_fopen(conn, path, MG_FOPEN_MODE_WRITE, &fstore) == 0) {
@@ -15929,6 +15938,7 @@ web_handle_form_request( struct web_connection *conn,
 
             // Proceed to next entry 
             data = next;
+            
         }
 
         return field_count;
@@ -15975,23 +15985,25 @@ web_handle_form_request( struct web_connection *conn,
                     // been closed. 
                     all_data_read = 1;
                 }
+                
                 buf_fill += r;
                 buf[buf_fill] = 0;
                 if (buf_fill < 1) {
                     break;
                 }
+                
             }
 
             val = strchr(buf, '=');
 
-            if (!val) {
+            if ( !val ) {
                 break;
             }
             keylen = val - buf;
             val++;
 
             // Call callback 
-            memset(path, 0, sizeof (path));
+            memset( path, 0, sizeof ( path ) );
             field_count++;
             field_storage = url_encoded_field_found( conn,
                                                         buf,
@@ -16009,13 +16021,16 @@ web_handle_form_request( struct web_connection *conn,
             }
 
             if ( FORM_FIELD_STORAGE_STORE == field_storage ) {
+               
                 if ( 0 == web_fopen(conn, path, MG_FOPEN_MODE_WRITE, &fstore ) ) {
                     fstore.access.fp = NULL;
                 }
+                
                 file_size = 0;
                 if ( !fstore.access.fp ) {
                     web_cry( conn, "%s: Cannot create file %s", __func__, path );
                 }
+                
             }
 
             get_block = 0;
@@ -16041,7 +16056,7 @@ web_handle_form_request( struct web_connection *conn,
                     (void) all_data_read; // avoid warning 
 #endif
 
-                    /* Call callback */
+                    // Call callback 
                     url_encoded_field_get( conn,
                                             ((get_block > 0) ? NULL : buf),
                                             ((get_block > 0) ? 0 : (size_t) keylen),
@@ -16052,12 +16067,15 @@ web_handle_form_request( struct web_connection *conn,
                 }
                 
                 if ( fstore.access.fp ) {
+                    
                     size_t n = (size_t)fwrite( val, 
                                                 1, 
                                                 (size_t)vallen, 
                                                 fstore.access.fp );
+                    
                     if ( ( n != (size_t) vallen ) || 
                          ( ferror( fstore.access.fp) ) ) {
+                    
                         web_cry( conn,
                                         "%s: Cannot write file %s",
                                         __func__,
@@ -16065,10 +16083,13 @@ web_handle_form_request( struct web_connection *conn,
                         web_fclose(&fstore.access);
                         remove_bad_file(conn, path);
                     }
+                    
                     file_size += (int64_t) n;
+                    
                 }
 
                 if ( !end_of_key_value_pair_found ) {
+                    
                     used = next - buf;
                     memmove( buf,
                                 buf + (size_t) used,
@@ -16084,7 +16105,7 @@ web_handle_form_request( struct web_connection *conn,
                             return -1;
                         }
                         
-                        if (r != (int) to_read) {
+                        if ( r != (int)to_read ) {
                             // TODO: Create a function to get "all_data_read"
                             // from the conn object. All data is read if the
                             // Content-Length has been reached, or if chunked
@@ -16108,7 +16129,9 @@ web_handle_form_request( struct web_connection *conn,
             } while ( !end_of_key_value_pair_found );
 
             if ( fstore.access.fp ) {
+                
                 r = web_fclose(&fstore.access);
+                
                 if ( 0 == r ) {
                     // stored successfully 
                     field_stored(conn, path, file_size, fdh);
@@ -16131,7 +16154,8 @@ web_handle_form_request( struct web_connection *conn,
         return field_count;
     }
 
-    if (!vscp_strncasecmp(content_type, "MULTIPART/FORM-DATA;", 20)) {
+    if ( !vscp_strncasecmp( content_type, "MULTIPART/FORM-DATA;", 20 ) ) {
+        
         // The form data is in the request body data, encoded as multipart
         // content (see https://www.ietf.org/rfc/rfc1867.txt,
         // https://www.ietf.org/rfc/rfc2388.txt). 
@@ -16153,7 +16177,7 @@ web_handle_form_request( struct web_connection *conn,
         }
 
         // There has to be a BOUNDARY definition in the Content-Type header 
-        if (vscp_strncasecmp(content_type + bl, "BOUNDARY=", 9)) {
+        if ( vscp_strncasecmp( content_type + bl, "BOUNDARY=", 9 ) ) {
             // Malformed request 
             return -1;
         }
@@ -16176,9 +16200,9 @@ web_handle_form_request( struct web_connection *conn,
 
         // RFC 2046 permits the boundary string to be quoted. 
         // If the boundary is quoted, trim the quotes 
-        if (boundary[0] == '"') {
+        if ( '"' == boundary[0] ) {
             hbuf = strchr(boundary + 1, '"');
-            if ((!hbuf) || (*hbuf != '"')) {
+            if ( (!hbuf) || (*hbuf != '"') ) {
                 // Malformed request 
                 web_free(boundary);
                 return -1;
@@ -16189,7 +16213,7 @@ web_handle_form_request( struct web_connection *conn,
         }
 
         // Do some sanity checks for boundary lengths 
-        if (bl > 70) {
+        if ( bl > 70 ) {
             // From RFC 2046:
             // Boundary delimiters must not appear within the
             // encapsulated material, and must be no longer
@@ -16214,21 +16238,22 @@ web_handle_form_request( struct web_connection *conn,
             return -1;
         }
         
-        if (bl < 4) {
+        if ( bl < 4 ) {
             // Sanity check:  A boundary string of less than 4 bytes makes
             // no sense either. 
             web_free(boundary);
             return -1;
         }
 
-        for (part_no = 0;; part_no++) {
+        for ( part_no = 0;; part_no++ ) {
+            
             size_t towrite, n;
             int get_block;
 
             r = web_read(conn,
                              buf + (size_t) buf_fill,
                              sizeof (buf) - 1 - (size_t) buf_fill);
-            if (r < 0) {
+            if ( r < 0 ) {
                 // read error 
                 web_free(boundary);
                 return -1;
@@ -16257,19 +16282,20 @@ web_handle_form_request( struct web_connection *conn,
                 
             }
 
-            if (buf[0] != '-' || buf[1] != '-') {
+            if ( buf[0] != '-' || buf[1] != '-' ) {
                 // Malformed request 
                 web_free(boundary);
                 return -1;
             }
             
-            if (strncmp(buf + 2, boundary, bl)) {
+            if ( strncmp(buf + 2, boundary, bl ) ) {
                 // Malformed request 
                 web_free(boundary);
                 return -1;
             }
             
-            if (buf[bl + 2] != '\r' || buf[bl + 3] != '\n') {
+            if ( buf[bl + 2] != '\r' || buf[bl + 3] != '\n' ) {
+                
                 // Every part must end with \r\n, if there is another part.
                 // The end of the request has an extra -- 
                 if ( ( (size_t)buf_fill != (size_t) (bl + 6)) || 
@@ -16278,8 +16304,10 @@ web_handle_form_request( struct web_connection *conn,
                     web_free(boundary);
                     return -1;
                 }
+                
                 // End of the request 
                 break;
+                
             }
 
             // Next, we need to get the part header: Read until \r\n\r\n 
@@ -16293,7 +16321,7 @@ web_handle_form_request( struct web_connection *conn,
 
             part_header.num_headers =
                     parse_http_headers(&hbuf, part_header.http_headers);
-            if ((hend + 2) != hbuf) {
+            if ( (hend + 2) != hbuf ) {
                 // Malformed request 
                 web_free(boundary);
                 return -1;
@@ -16307,7 +16335,7 @@ web_handle_form_request( struct web_connection *conn,
             content_disp = get_header( part_header.http_headers,
                                         part_header.num_headers,
                                         "Content-Disposition" );
-            if (!content_disp) {
+            if ( !content_disp ) {
                 // Malformed request 
                 web_free( boundary );
                 return -1;
@@ -16316,7 +16344,7 @@ web_handle_form_request( struct web_connection *conn,
             // Get the mandatory name="..." part of the Content-Disposition
             // header. 
             nbeg = strstr(content_disp, "name=\"");
-            while ((nbeg != NULL) && (strcspn(nbeg - 1, ":,; \t") != 0)) {
+            while ( ( nbeg != NULL ) && ( strcspn(nbeg - 1, ":,; \t" ) != 0 ) ) {
                 // It could be somethingname= instead of name= 
                 nbeg = strstr(nbeg + 1, "name=\"");
             }
@@ -16329,27 +16357,30 @@ web_handle_form_request( struct web_connection *conn,
             (void) nend;
 
             // If name=" is found, search for the closing " 
-            if (nbeg) {
+            if ( nbeg ) {
                 nbeg += 6;
                 nend = strchr(nbeg, '\"');
-                if (!nend) {
+                if ( !nend ) {
                     // Malformed request 
                     web_free(boundary);
                     return -1;
                 }
             }
             else {
+                
                 // name= without quotes is also allowed 
-                nbeg = strstr(content_disp, "name=");
-                while ((nbeg != NULL) && (strcspn(nbeg - 1, ":,; \t") != 0)) {
+                nbeg = strstr( content_disp, "name=" );
+                while ( ( nbeg != NULL ) && (strcspn(nbeg - 1, ":,; \t" ) != 0 ) ) {
                     // It could be somethingname= instead of name= 
-                    nbeg = strstr(nbeg + 1, "name=");
+                    nbeg = strstr( nbeg + 1, "name=" );
                 }
-                if (!nbeg) {
+                
+                if ( !nbeg ) {
                     // Malformed request 
                     web_free(boundary);
                     return -1;
                 }
+                
                 nbeg += 5;
 
                 // RFC 2616 Sec. 2.2 defines a list of allowed
@@ -16375,7 +16406,8 @@ web_handle_form_request( struct web_connection *conn,
             fend = fbeg;
 
             // If filename=" is found, search for the closing " 
-            if (fbeg) {
+            if ( fbeg ) {
+                
                 fbeg += 10;
                 fend = strchr(fbeg, '\"');
 
@@ -16390,13 +16422,15 @@ web_handle_form_request( struct web_connection *conn,
                 // Content-Type: application/octet-stream 
             }
             
-            if (!fbeg) {
+            if ( !fbeg ) {
+                
                 // Try the same without quotes 
                 fbeg = strstr(content_disp, "filename=");
                 while ((fbeg != NULL) && (strcspn(fbeg - 1, ":,; \t") != 0)) {
                     // It could be somethingfilename= instead of filename= 
                     fbeg = strstr(fbeg + 1, "filename=");
                 }
+                
                 if (fbeg) {
                     fbeg += 9;
                     fend = fbeg + strcspn(fbeg, ",; \t");
@@ -16436,6 +16470,7 @@ web_handle_form_request( struct web_connection *conn,
                                         bl );
 
             if ( field_storage == FORM_FIELD_STORAGE_STORE ) {
+                
                 // Store the content to a file 
                 if (web_fopen(conn, path, MG_FOPEN_MODE_WRITE, &fstore) == 0) {
                     fstore.access.fp = NULL;
@@ -16445,10 +16480,11 @@ web_handle_form_request( struct web_connection *conn,
                 if ( !fstore.access.fp ) {
                     web_cry(conn, "%s: Cannot create file %s", __func__, path);
                 }
+                
             }
 
             get_block = 0;
-            while (!next) {
+            while ( !next ) {
                 // Set "towrite" to the number of bytes available
                 // in the buffer 
                 towrite = (size_t) (buf - hend + buf_fill);
@@ -16457,7 +16493,7 @@ web_handle_form_request( struct web_connection *conn,
                 // in the buffer. 
                 towrite -= bl + 4;
 
-                if (field_storage == FORM_FIELD_STORAGE_GET) {
+                if ( FORM_FIELD_STORAGE_GET == field_storage ) {
                     unencoded_field_get( conn,
                                             ((get_block > 0) ? NULL : nbeg),
                                             ((get_block > 0) ? 0 : (size_t)(nend - nbeg) ),
@@ -16467,13 +16503,14 @@ web_handle_form_request( struct web_connection *conn,
                     get_block++;
                 }
 
-                if ( field_storage == FORM_FIELD_STORAGE_STORE ) {
+                if ( FORM_FIELD_STORAGE_STORE == field_storage ) {
                     
-                    if (fstore.access.fp) {
+                    if ( fstore.access.fp ) {
 
                         // Store the content of the buffer. 
-                        n = (size_t) fwrite(hend, 1, towrite, fstore.access.fp);
-                        if ((n != towrite) || (ferror(fstore.access.fp))) {
+                        n = (size_t)fwrite( hend, 1, towrite, fstore.access.fp );
+                        if ( ( n != towrite ) || 
+                             ( ferror( fstore.access.fp ) ) ) {
                             web_cry( conn,
                                             "%s: Cannot write file %s",
                                             __func__,
@@ -16511,12 +16548,13 @@ web_handle_form_request( struct web_connection *conn,
                 }
 
                 // Find boundary 
-                next = search_boundary(buf, (size_t) buf_fill, boundary, bl);
+                next = search_boundary( buf, (size_t)buf_fill, boundary, bl );
             }
 
             towrite = (size_t) (next - hend);
 
-            if (field_storage == FORM_FIELD_STORAGE_GET) {
+            if ( FORM_FIELD_STORAGE_GET == field_storage ) {
+                
                 // Call callback 
                 unencoded_field_get( conn,
                                         ((get_block > 0) ? NULL : nbeg),
@@ -16526,11 +16564,12 @@ web_handle_form_request( struct web_connection *conn,
                                         fdh );
             }
 
-            if (field_storage == FORM_FIELD_STORAGE_STORE) {
+            if ( FORM_FIELD_STORAGE_STORE == field_storage ) {
 
-                if (fstore.access.fp) {
-                    n = (size_t) fwrite(hend, 1, towrite, fstore.access.fp);
-                    if ((n != towrite) || (ferror(fstore.access.fp))) {
+                if ( fstore.access.fp ) {
+                    
+                    n = (size_t)fwrite( hend, 1, towrite, fstore.access.fp );
+                    if ( ( n != towrite ) || ( ferror( fstore.access.fp ) ) ) {
                         web_cry( conn,
                                         "%s: Cannot write file %s",
                                         __func__,
@@ -16559,8 +16598,8 @@ web_handle_form_request( struct web_connection *conn,
                 }
             }
 
-            if ( (field_storage & FORM_FIELD_STORAGE_ABORT)
-                == FORM_FIELD_STORAGE_ABORT) {
+            if ( FORM_FIELD_STORAGE_ABORT == 
+                    ( field_storage & FORM_FIELD_STORAGE_ABORT ) ) {
                 // Stop parsing the request 
                 break;
             }
@@ -17087,13 +17126,13 @@ handle_request( struct web_connection *conn )
 
     // 1. get the request url 
     // 1.1. split into url and query string 
-    if ((conn->request_info.query_string = strchr(ri->request_uri, '?'))
-        != NULL) {
-        *((char *) conn->request_info.query_string++) = '\0';
+    if ( NULL != ( conn->request_info.query_string = 
+                        strchr( ri->request_uri, '?' ) ) ) {
+        *( (char *)conn->request_info.query_string++ ) = '\0';
     }
 
     // 1.2. do a https redirect, if required. Do not decode URIs yet. 
-    if (!conn->client.is_ssl && conn->client.ssl_redir) {
+    if ( !conn->client.is_ssl && conn->client.ssl_redir ) {
         ssl_index = get_first_ssl_listener_index(conn->ctx);
         if (ssl_index >= 0) {
             redirect_to_https_port(conn, ssl_index);
@@ -17110,21 +17149,24 @@ handle_request( struct web_connection *conn )
         return;
     }
     
-    uri_len = (int) strlen(ri->local_uri);
+    uri_len = (int) strlen( ri->local_uri );
 
     // 1.3. decode url (if config says so) 
-    if (should_decode_url(conn)) {
-        web_url_decode(
-                           ri->local_uri, uri_len, (char *) ri->local_uri, uri_len + 1, 0);
+    if ( should_decode_url( conn ) ) {
+        web_url_decode( ri->local_uri, 
+                            uri_len, 
+                            (char *)ri->local_uri, 
+                            uri_len + 1, 
+                            0 );
     }
 
     // 1.4. clean URIs, so a path like allowed_dir/../forbidden_file is
     // not possible 
-    remove_double_dots_and_double_slashes((char *) ri->local_uri);
+    remove_double_dots_and_double_slashes( (char *)ri->local_uri );
 
     // step 1. completed, the url is known now 
-    uri_len = (int) strlen(ri->local_uri);
-    DEBUG_TRACE("URL: %s", ri->local_uri);
+    uri_len = (int)strlen( ri->local_uri );
+    DEBUG_TRACE("URL: %s", ri->local_uri );
 
     // 2. if this ip has limited speed, set it for this connection 
     conn->throttle = set_throttle(conn->ctx->config[THROTTLE],
@@ -21199,6 +21241,8 @@ web_start(const struct web_callbacks *callbacks,
     void (*exit_callback)(const struct web_context * ctx) = 0;
 
     struct web_workerTLS tls;
+    
+    DEBUG_TRACE("Starting web-server");
 
 #if defined(_WIN32)
     WSADATA data;

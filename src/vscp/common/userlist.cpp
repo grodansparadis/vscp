@@ -132,7 +132,7 @@ bool CUserItem::setFromString( wxString userSettings )
         strToken.Trim();
         strToken.Trim(false);
         if ( strToken.Length() ) {
-            setUser( strToken );
+            setUserName( strToken );
             fixName();
         }
     }
@@ -233,7 +233,7 @@ bool CUserItem::getAsString( wxString& strUser )
     strUser.Empty();
         
     strUser += wxString::Format( _("%ld;"), getUserID() );
-    strUser += getUser();
+    strUser += getUserName();
     strUser += _(";");
     // Protect password
     wxstr = getPassword();
@@ -806,7 +806,7 @@ bool CUserList::loadUsers( void )
             // User
             p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_USER_USERNAME );
             if ( NULL != p ) {
-                pItem->setUser( wxString::FromUTF8( (const char *)p ) );
+                pItem->setUserName( wxString::FromUTF8( (const char *)p ) );
             }
                         
             // Password
@@ -853,7 +853,7 @@ bool CUserList::loadUsers( void )
                 pItem->setNote( (const char *)p );
             }
             
-            m_userhashmap[ pItem->getUser() ] = pItem;
+            m_userhashmap[ pItem->getUserName() ] = pItem;
             
         }
         else {
@@ -906,7 +906,7 @@ bool CUserList::addSuperUser( const wxString& user,
 
     pItem->setPasswordDomain( wxString::FromUTF8( digest ) );  
 
-    pItem->setUser( user );
+    pItem->setUserName( user );
     pItem->fixName();
     pItem->setPassword( password );
     pItem->setFullname( _("Admin user") );
@@ -985,7 +985,7 @@ bool CUserList::addUser( const wxString& user,
 
     pItem->setPasswordDomain( wxString::FromUTF8( digest ) );  
 
-    pItem->setUser( user );
+    pItem->setUserName( user );
     pItem->fixName();
     pItem->setPassword( password );
     pItem->setFullname( fullname );

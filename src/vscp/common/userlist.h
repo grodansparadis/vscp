@@ -223,8 +223,8 @@ public:
     long getUserID( void ) { return m_userID; };
     void setUserID( const long id ) { m_userID = id; };
     
-    wxString getUser( void ) { return m_user; };
-    void setUser( const wxString& strUser ) { m_user = strUser; };
+    wxString getUserName( void ) { return m_user; };
+    void setUserName( const wxString& strUser ) { m_user = strUser; };
     
     wxString getPassword( void ) { return m_password; };
     void setPassword( const wxString& strPassword ) { m_password = strPassword; };

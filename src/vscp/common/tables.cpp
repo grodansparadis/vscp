@@ -1874,7 +1874,7 @@ bool CUserTableObjList::loadTablesFromDB( void )
             description = wxString::FromUTF8( p );
         }
         
-        if ( !pTable->setTableInfo( pUserItem->getUser(),
+        if ( !pTable->setTableInfo( pUserItem->getUserName(),
                                         rights,
                                         title,
                                         xname, 

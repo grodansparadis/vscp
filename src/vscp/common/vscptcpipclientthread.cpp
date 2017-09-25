@@ -1443,7 +1443,7 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn,
     if ( !pClientItem->m_pUserItem->isUserAllowedToSendEvent( event.vscp_class, event.vscp_type ) ) {
         wxString strErr =
                         wxString::Format( _("[tcp/ip Client] User [%s] not allowed to send event class=%d type=%d.\n"),
-                                                (const char *)pClientItem->m_pUserItem->getUser().mbc_str(),
+                                                (const char *)pClientItem->m_pUserItem->getUserName().mbc_str(),
                                                 event.vscp_class, event.vscp_type );
 
         pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
@@ -2812,7 +2812,7 @@ void VSCPClientThread::handleClientTable_List( struct mg_connection *conn )
                 str += _("ERROR");
             }
             else {
-                str += pUserItem->getUser();
+                str += pUserItem->getUserName();
             }
             str += _("\r\n");
             
