@@ -1890,7 +1890,7 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                     str = str.Right( str.Length() - pos - 1 );
                     
                     // Assign value if variable exist
-                    if ( gpobj->m_VSCP_Variables.find( variableName, variable ) ) {
+                    if ( gpobj->m_variables.find( variableName, variable ) ) {
 
                         wxString wxwrk;
                         variable.writeValueToString( wxwrk );
@@ -1914,7 +1914,7 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                     str = str.Right( str.Length() - pos - 1 );
                     
                     // Assign value if variable exist
-                    if ( gpobj->m_VSCP_Variables.find( variableName, variable ) ) {
+                    if ( gpobj->m_variables.find( variableName, variable ) ) {
 
                         wxString wxwrk;
                         variable.writeValueToString( wxwrk );
@@ -2692,10 +2692,10 @@ bool dmElement::doActionSendEvent( vscpEvent *pDMEvent )
                 if ( 0 != varName.Length() ) {
 
                     CVSCPVariable variable;
-                    if ( gpobj->m_VSCP_Variables.find( varName, variable ) ) {
+                    if ( gpobj->m_variables.find( varName, variable ) ) {
 
                         // Non existent - add and set to false
-                        gpobj->m_VSCP_Variables.add( varName, wxT("true") );
+                        gpobj->m_variables.add( varName, wxT("true") );
 
                     }
                     else {
@@ -2736,7 +2736,7 @@ bool dmElement::doActionSendEventConditional( vscpEvent *pDMEvent )
         wxString varname = tkz.GetNextToken();
 
         CVSCPVariable variable; 
-        if ( gpobj->m_VSCP_Variables.find( varname, variable ) ) {
+        if ( gpobj->m_variables.find( varname, variable ) ) {
             // must be a variable
             wxString wxstrErr = wxT("[Action] Conditional event: No variable defined ");
             wxstrErr += wxstr;
@@ -3077,7 +3077,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
             
         }
 
-        if ( !gpobj->m_VSCP_Variables.add( var ) ) {
+        if ( !gpobj->m_variables.add( var ) ) {
             // must be a variable
             wxString wxstrErr = wxT("[Action] Store Variable: Could not add variable ");
             wxstrErr += params;
@@ -3111,7 +3111,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
             }
         }
         
-        if ( !gpobj->m_VSCP_Variables.find( varName, var ) ) {
+        if ( !gpobj->m_variables.find( varName, var ) ) {
             
             // The variable was not found - it should be added
             var.setName( varName );
@@ -3123,7 +3123,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
         
         
         // Add/create the variable
-        if ( !gpobj->m_VSCP_Variables.add( var ) ) {
+        if ( !gpobj->m_variables.add( var ) ) {
             // must be a variable
             wxString wxstrErr = wxT("[Action] Store Variable: Could not add variable ");
             wxstrErr += params;
@@ -3410,14 +3410,14 @@ bool dmElement::doActionAddVariable( vscpEvent *pDMEvent )
         strval.ToDouble( &floatval );
     }
 
-    if ( gpobj->m_VSCP_Variables.find( strName, variable ) ) {
+    if ( gpobj->m_variables.find( strName, variable ) ) {
 
         CVSCPVariable var;
         var.setName( strName );
         var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
         var.setPersistent( false );
 
-        if ( gpobj->m_VSCP_Variables.add( var ) ) {
+        if ( gpobj->m_variables.add( var ) ) {
             wxString wxstrErr = wxT("[Action] Add to Variable: Could not add new variable ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
@@ -3487,7 +3487,7 @@ bool dmElement::doActionSubtractVariable( vscpEvent *pDMEvent )
         strval.ToDouble( &floatval );
     }
 
-    if ( gpobj->m_VSCP_Variables.find( strName, variable ) ) {
+    if ( gpobj->m_variables.find( strName, variable ) ) {
 
         CVSCPVariable var;
 
@@ -3495,7 +3495,7 @@ bool dmElement::doActionSubtractVariable( vscpEvent *pDMEvent )
         var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
         var.setPersistent( false );
 
-        if ( gpobj->m_VSCP_Variables.add( var ) ) {
+        if ( gpobj->m_variables.add( var ) ) {
             wxString wxstrErr = wxT("[Action] Add to Variable: Could not add new variable ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
@@ -3565,14 +3565,14 @@ bool dmElement::doActionMultiplyVariable( vscpEvent *pDMEvent )
         strval.ToDouble( &floatval );
     }
    
-    if ( gpobj->m_VSCP_Variables.find( strName, variable ) ) {
+    if ( gpobj->m_variables.find( strName, variable ) ) {
 
         CVSCPVariable var;
         var.setName( strName );
         var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
         var.setPersistent( false );
 
-        if ( gpobj->m_VSCP_Variables.add( var ) ) {
+        if ( gpobj->m_variables.add( var ) ) {
             wxString wxstrErr = wxT("[Action] Add to Variable: Could not add new variable ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
@@ -3642,14 +3642,14 @@ bool dmElement::doActionDivideVariable( vscpEvent *pDMEvent )
         strval.ToDouble( &floatval );
     }
 
-    if ( gpobj->m_VSCP_Variables.find( strName, variable )) {
+    if ( gpobj->m_variables.find( strName, variable )) {
 
         CVSCPVariable var;
         var.setName( strName );
         var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
         var.setPersistent( false );
 
-        if ( gpobj->m_VSCP_Variables.add( var ) ) {
+        if ( gpobj->m_variables.add( var ) ) {
             wxString wxstrErr = wxT("[Action] Add to Variable: Could not add new variable ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
@@ -3761,7 +3761,7 @@ bool dmElement::doActionCheckVariable( vscpEvent *pDMEvent, VariableCheckType ty
     if ( tkz.HasMoreTokens() ) {
         
         wxstr.Trim();
-        if ( !gpobj->m_VSCP_Variables.find( wxstr, varCompare ) ) {
+        if ( !gpobj->m_variables.find( wxstr, varCompare ) ) {
             // Variable not found
             wxstr = _("Compare variable was not found. param =") + params;
             gpobj->logMsg( wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -3786,7 +3786,7 @@ bool dmElement::doActionCheckVariable( vscpEvent *pDMEvent, VariableCheckType ty
     if ( tkz.HasMoreTokens() ) {
         
         wxstr.Trim();
-        if ( !gpobj->m_VSCP_Variables.find( wxstr, varFlag ) ) {
+        if ( !gpobj->m_variables.find( wxstr, varFlag ) ) {
             // Variable not found
             wxstr = _("Flag variable was not found. param =") + params;
             gpobj->logMsg( wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -4019,7 +4019,7 @@ bool dmElement::doActionStoreMin( vscpEvent *pDMEvent )
     varname.Trim();
     
     // Find the variable
-    if ( !gpobj->m_VSCP_Variables.find( varname, variable ) ) {
+    if ( !gpobj->m_variables.find( varname, variable ) ) {
         
         variable.setName( varname );
         variable.setType( VSCP_DAEMON_VARIABLE_CODE_DOUBLE );
@@ -4028,7 +4028,7 @@ bool dmElement::doActionStoreMin( vscpEvent *pDMEvent )
         variable.setAccessRights( PERMISSON_ALL_RIGHTS );
         variable.setValue( DBL_MAX );
         
-        if ( !gpobj->m_VSCP_Variables.add( variable ) ) {
+        if ( !gpobj->m_variables.add( variable ) ) {
             wxString wxstr = _("Unable to add min variable. param =") + params;
             gpobj->logMsg( wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             return false;
@@ -4132,7 +4132,7 @@ bool dmElement::doActionStoreMax( vscpEvent *pDMEvent )
     varname.Trim();
     
     // Find the variable
-    if ( !gpobj->m_VSCP_Variables.find( varname, variable ) ) {
+    if ( !gpobj->m_variables.find( varname, variable ) ) {
         
         variable.setName( varname );
         variable.setType( VSCP_DAEMON_VARIABLE_CODE_DOUBLE );
@@ -4141,7 +4141,7 @@ bool dmElement::doActionStoreMax( vscpEvent *pDMEvent )
         variable.setAccessRights( PERMISSON_ALL_RIGHTS );
         variable.setValue( DBL_MIN );
         
-        if ( !gpobj->m_VSCP_Variables.add( variable ) ) {
+        if ( !gpobj->m_variables.add( variable ) ) {
             wxString wxstr = _("Unable to add max variable. param =") + params;
             gpobj->logMsg( wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             return false;
@@ -5043,7 +5043,7 @@ void CDM::serviceTimers( void )
         dmTimer *pTimer = it->second;
 
         if ( pTimer->isActive() &&
-            ( gpobj->m_VSCP_Variables.find( pTimer->getVariableName(), variable ) ) ) {
+            ( gpobj->m_variables.find( pTimer->getVariableName(), variable ) ) ) {
 
                 if ( !pTimer->decTimer() ) {
 
@@ -5105,7 +5105,7 @@ int CDM::addTimer( uint16_t id,
     nameVar.Trim( false );
 
     // Check if variable is defined
-    if ( gpobj->m_VSCP_Variables.exist( nameVar ) ) {
+    if ( gpobj->m_variables.exist( nameVar ) ) {
 
         // Log
         wxString logStr = wxString::Format(_("Variable is not defined %s.\n"),
@@ -5135,7 +5135,7 @@ int CDM::addTimer( uint16_t id,
                                             (const char *)nameVar.c_str() );
         gpobj->logMsg( logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
 
-        if ( gpobj->m_VSCP_Variables.add( nameVar, wxT("false"), 
+        if ( gpobj->m_variables.add( nameVar, wxT("false"), 
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN ) ) {
 
             dmTimer *pTimer = new dmTimer( nameVar,

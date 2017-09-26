@@ -558,7 +558,13 @@ public:
      * See vscp_debug.h for possible flags.
      */
     uint32_t m_debugFlags1;
-   
+    uint32_t m_debugFlags2;
+    uint32_t m_debugFlags3;
+    uint32_t m_debugFlags4;
+    uint32_t m_debugFlags5;
+    uint32_t m_debugFlags6;
+    uint32_t m_debugFlags7;
+    uint32_t m_debugFlags8;
     
     //**************************************************************************
     //                                 Security
@@ -795,7 +801,7 @@ public:
 
 
     /// Hash table for variables
-    CVariableStorage m_VSCP_Variables;
+    CVariableStorage m_variables;
 
     /// Mutex to protect variables
     wxMutex m_variableMutex;

@@ -372,7 +372,7 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
        
     duk_pop_n(ctx, 3); // Clear stack
     
-    if ( !gpobj->m_VSCP_Variables.find( varName, variable ) ) {
+    if ( !gpobj->m_variables.find( varName, variable ) ) {
         duk_push_null(ctx);  // Return failure
         return JAVASCRIPT_OK;
     }
@@ -418,7 +418,7 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
         return JAVASCRIPT_OK;
     }
         
-    if ( !gpobj->m_VSCP_Variables.find( varName, variable ) ) {
+    if ( !gpobj->m_variables.find( varName, variable ) ) {
     
         // Variable does not exist - should be created
         
@@ -524,7 +524,7 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
         
         duk_pop_n(ctx, 1);
         
-        if( !gpobj->m_VSCP_Variables.add( varName, 
+        if( !gpobj->m_variables.add( varName, 
                                             strValue,
                                             type,
                                             userid,
@@ -563,7 +563,7 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
         duk_pop_n(ctx, 2); // Clear stack        
         
         // Update variable storage
-        if ( !gpobj->m_VSCP_Variables.update( variable ) ) {
+        if ( !gpobj->m_variables.update( variable ) ) {
             duk_push_boolean(ctx,0);    // return code false
             return JAVASCRIPT_OK;
         }
@@ -592,7 +592,7 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
         return JAVASCRIPT_OK;
     }
     
-    if ( !gpobj->m_VSCP_Variables.remove( varName ) ) {
+    if ( !gpobj->m_variables.remove( varName ) ) {
         duk_push_boolean(ctx,0);    // return code false
         return JAVASCRIPT_OK;
     }

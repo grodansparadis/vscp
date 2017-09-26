@@ -608,7 +608,7 @@ void *deviceThread::Entry()
             wxString prefix = tkz.GetNextToken();
 
             // Check if username is specified in the configuration file            
-            if ( m_pCtrlObject->m_VSCP_Variables.find(m_pDeviceItem->m_strName + _("_username"), variable ) ) {
+            if ( m_pCtrlObject->m_variables.find(m_pDeviceItem->m_strName + _("_username"), variable ) ) {
                 wxString str;
                 if (VSCP_DAEMON_VARIABLE_CODE_STRING == variable.getType()) {
                     str = variable.getValue();
@@ -617,7 +617,7 @@ void *deviceThread::Entry()
             }
 
             // Check if password is specified in the configuration file            
-            if ( m_pCtrlObject->m_VSCP_Variables.find(m_pDeviceItem->m_strName + _("_password"), variable ) ) {
+            if ( m_pCtrlObject->m_variables.find(m_pDeviceItem->m_strName + _("_password"), variable ) ) {
                 wxString str;
                 if (VSCP_DAEMON_VARIABLE_CODE_STRING == variable.getType()) {
                     str = variable.getValue();
@@ -626,7 +626,7 @@ void *deviceThread::Entry()
             }
 
             // Check if host is specified in the configuration file       
-            if ( m_pCtrlObject->m_VSCP_Variables.find(m_pDeviceItem->m_strName + _("_host"), variable ) ) {
+            if ( m_pCtrlObject->m_variables.find(m_pDeviceItem->m_strName + _("_host"), variable ) ) {
                 wxString str;
                 if (VSCP_DAEMON_VARIABLE_CODE_STRING == variable.getType()) {
                     str = variable.getValue();

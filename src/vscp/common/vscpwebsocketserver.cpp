@@ -535,7 +535,7 @@ autherror:
         // Check if the variable exist
         CVSCPVariable variable;
         bool bVariableExist = false;
-        if ( 0 != pCtrlObject->m_VSCP_Variables.find( name, variable ) ) {
+        if ( 0 != pCtrlObject->m_variables.find( name, variable ) ) {
             bVariableExist = true;
         }
         
@@ -606,7 +606,7 @@ autherror:
         if ( !bVariableExist ) {
             
             // Add the variable
-            if ( !pCtrlObject->m_VSCP_Variables.add( name, 
+            if ( !pCtrlObject->m_variables.add( name, 
                                 value, 
                                 type, 
                                 pSession->m_pClientItem->m_pUserItem->getUserID(), 
@@ -643,7 +643,7 @@ autherror:
             }
             
             // Save the changed variable
-            if ( !pCtrlObject->m_VSCP_Variables.update( variable ) ) {
+            if ( !pCtrlObject->m_variables.update( variable ) ) {
                 mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
                                         "-;CVAR;%d;%s",
                                         WEBSOCK_ERROR_SYNTAX_ERROR,
@@ -702,7 +702,7 @@ autherror:
         }
 
         strTok = tkz.GetNextToken();
-        if ( 0 == pCtrlObject->m_VSCP_Variables.find( strTok, variable ) ) {
+        if ( 0 == pCtrlObject->m_variables.find( strTok, variable ) ) {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
                                     "-;RVAR;%d;%s",
                                     WEBSOCK_ERROR_VARIABLE_UNKNOWN,
@@ -764,7 +764,7 @@ autherror:
 
 
             strVarName = tkz.GetNextToken();
-            if ( 0 == pCtrlObject->m_VSCP_Variables.find( strVarName.Upper(), variable ) ) {
+            if ( 0 == pCtrlObject->m_variables.find( strVarName.Upper(), variable ) ) {
                 mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
                                     "-;WVAR;%d;%s",
                                     WEBSOCK_ERROR_VARIABLE_UNKNOWN,
@@ -788,7 +788,7 @@ autherror:
                 }
                 
                 // Update the variable
-                if ( !pCtrlObject->m_VSCP_Variables.update( variable ) ) {
+                if ( !pCtrlObject->m_variables.update( variable ) ) {
                     mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
                                     "-;WVAR;%d;%s",
                                     WEBSOCK_STR_ERROR_VARIABLE_UPDATE,
@@ -860,7 +860,7 @@ autherror:
         }
 
         strTok = tkz.GetNextToken();
-        if ( 0 == pCtrlObject->m_VSCP_Variables.find(strTok, variable )) {
+        if ( 0 == pCtrlObject->m_variables.find(strTok, variable )) {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
                                     "-;RSTVAR;%d;%s",
                                     WEBSOCK_ERROR_VARIABLE_UNKNOWN,
@@ -928,7 +928,7 @@ autherror:
         }
 
         name = tkz.GetNextToken();
-        if ( 0 == pCtrlObject->m_VSCP_Variables.find( name, variable ) ) {
+        if ( 0 == pCtrlObject->m_variables.find( name, variable ) ) {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
                                     "-;DELVAR;%d;%s",
                                     WEBSOCK_ERROR_VARIABLE_UNKNOWN,
@@ -937,7 +937,7 @@ autherror:
         }
 
         pCtrlObject->m_variableMutex.Lock();
-        pCtrlObject->m_VSCP_Variables.remove( name );
+        pCtrlObject->m_variables.remove( name );
         pCtrlObject->m_variableMutex.Unlock();
 
         wxString strResult = _("+;DELVAR;");
@@ -985,7 +985,7 @@ autherror:
         }
 
         strTok = tkz.GetNextToken();
-        if ( 0 == pCtrlObject->m_VSCP_Variables.find(strTok, variable ) ) {
+        if ( 0 == pCtrlObject->m_variables.find(strTok, variable ) ) {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
                                     "-;LENVAR;%d;%s",
                                     WEBSOCK_ERROR_VARIABLE_UNKNOWN,
@@ -1041,7 +1041,7 @@ autherror:
         }
 
         strTok = tkz.GetNextToken();
-        if ( 0 == pCtrlObject->m_VSCP_Variables.find(strTok, variable ) ) {
+        if ( 0 == pCtrlObject->m_variables.find(strTok, variable ) ) {
             mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT,
                                     "-;LCVAR;%d;%s",
                                     WEBSOCK_ERROR_VARIABLE_UNKNOWN,
@@ -1117,13 +1117,13 @@ autherror:
         
         wxString wxstr;
         wxArrayString arrayVars;
-        m_pCtrlObject->m_VSCP_Variables.getVarlistFromRegExp( arrayVars, strSearch );
+        m_pCtrlObject->m_variables.getVarlistFromRegExp( arrayVars, strSearch );
     
         if ( arrayVars.Count() ) {
             
             // +;LSTVAR;ordinal;name;type;userid;accessrights;persistance;last_change
             for ( int i=0; i<arrayVars.Count(); i++ ) {
-                if ( 0 != m_pCtrlObject->m_VSCP_Variables.find( arrayVars[ i ], variable ) ) {
+                if ( 0 != m_pCtrlObject->m_variables.find( arrayVars[ i ], variable ) ) {
                     
                     wxstr = wxString::Format( _("+;LSTVAR;%d;%zu;"), i, arrayVars.Count() );
                     wxstr += variable.getAsString();

@@ -562,18 +562,24 @@ public:
      * @param name Name of variable
      * @param pVar [OUT] If found supplied variable is filled with data. Can be 
      * set to NULL in which case only availability of the variable is returned.
+     * @param pUser Pointer to user performing operation. NULL
+                    is system of admin user.
      * @return Return id if variable is found, UINT_MAX if variable is internal and dynamic, 
      *      zero if the variable is not found. 
      */
-    uint32_t getStockVariable( const wxString& name, CVSCPVariable& pVar );
+    uint32_t getStockVariable( const wxString& name, 
+                                    CVSCPVariable& pVar, 
+                                    CUserItem *pUser = NULL );
     
     /*!
         Write stock variable.    
         @param name Name of variable.
         @param var Reference to variable to write
+        @param pUser Pointer to user performing operation. NULL
+                    is system of admin user.
         @return true on success.
      */
-    bool writeStockVariable( CVSCPVariable& var );
+    bool putStockVariable( CVSCPVariable& var, CUserItem *pUser = NULL );
     
     /*!
        Set variable value from Database record.

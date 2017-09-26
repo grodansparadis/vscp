@@ -851,7 +851,7 @@ void VSCPClientThread::handleClientMeasurment( struct mg_connection *conn,
 
         wxstr.MakeUpper();
 
-        if ( gpobj->m_VSCP_Variables.find( wxstr, variable  ) ) {
+        if ( gpobj->m_variables.find( wxstr, variable  ) ) {
             mg_send( conn, MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
             return;
         }
@@ -1283,7 +1283,7 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn,
             nameVariable = str.Right( str.Length() - 1 );
             nameVariable.MakeUpper();
 
-            if ( gpobj->m_VSCP_Variables.find( nameVariable, variable  ) ) {
+            if ( gpobj->m_variables.find( nameVariable, variable  ) ) {
                 mg_send( conn, MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
                 return;
             }
@@ -4814,7 +4814,7 @@ void VSCPClientThread::handleVariable_List( struct mg_connection *conn,
 
     // Get all variable names
     wxArrayString arrayVars;
-    gpobj->m_VSCP_Variables.getVarlistFromRegExp( arrayVars, strSearch );
+    gpobj->m_variables.getVarlistFromRegExp( arrayVars, strSearch );
     
     if ( arrayVars.Count() ) {
         
@@ -4823,7 +4823,7 @@ void VSCPClientThread::handleVariable_List( struct mg_connection *conn,
     
         int cnt = 0;
         for ( int i=0; i<arrayVars.Count(); i++ ) {
-            if ( 0 != gpobj->m_VSCP_Variables.find( arrayVars[ i ], variable ) ) {
+            if ( 0 != gpobj->m_variables.find( arrayVars[ i ], variable ) ) {
                 if ( ( 0 == type ) || ( variable.getType() == type ) ) {
                     wxstr = wxString::Format( _("%d;"), cnt );
                     wxstr += variable.getAsString();
@@ -4871,10 +4871,10 @@ void VSCPClientThread::handleVariable_Write( struct mg_connection *conn,
         return;
     }
     
-    if ( gpobj->m_VSCP_Variables.exist( variable.getName() ) ) {
+    if ( gpobj->m_variables.exist( variable.getName() ) ) {
         
         // Update in database
-        if ( !gpobj->m_VSCP_Variables.update( variable ) ) {
+        if ( !gpobj->m_variables.update( variable ) ) {
             mg_send( conn, MSG_VARIABLE_NO_SAVE, strlen ( MSG_VARIABLE_NO_SAVE ) );
             return;
         }
@@ -4884,7 +4884,7 @@ void VSCPClientThread::handleVariable_Write( struct mg_connection *conn,
        
         // If the variable exist change value 
         // if not - add it.
-        if ( !gpobj->m_VSCP_Variables.add( variable ) ) {
+        if ( !gpobj->m_variables.add( variable ) ) {
             mg_send( conn, MSG_VARIABLE_UNABLE_ADD, strlen ( MSG_VARIABLE_UNABLE_ADD ) );
             return;
         }
@@ -4931,13 +4931,13 @@ void VSCPClientThread::handleVariable_WriteValue( struct mg_connection *conn,
     }
 
     CVSCPVariable variable;
-    if ( 0 != gpobj->m_VSCP_Variables.find( name, variable ) ) {
+    if ( 0 != gpobj->m_variables.find( name, variable ) ) {
         
         // Set value and encode as BASE64 when expected
         variable.setValueFromString( variable.getType(), value, false );
         
         // Update in database
-        if ( !gpobj->m_VSCP_Variables.update( variable ) ) {
+        if ( !gpobj->m_variables.update( variable ) ) {
             mg_send( conn, MSG_VARIABLE_NO_SAVE, strlen ( MSG_VARIABLE_NO_SAVE ) );
             return;
         }
@@ -4989,13 +4989,13 @@ void VSCPClientThread::handleVariable_WriteNote( struct mg_connection *conn,
     }
 
     CVSCPVariable variable;
-    if ( 0 != gpobj->m_VSCP_Variables.find( name, variable ) ) {
+    if ( 0 != gpobj->m_variables.find( name, variable ) ) {
         
         // Set value and encode as BASE64 when expected
         variable.setNote( note, true );
         
         // Update in database
-        if ( !gpobj->m_VSCP_Variables.update( variable ) ) {
+        if ( !gpobj->m_variables.update( variable ) ) {
             mg_send( conn, MSG_VARIABLE_NO_SAVE, strlen ( MSG_VARIABLE_NO_SAVE ) );
             return;
         }
@@ -5023,7 +5023,7 @@ void VSCPClientThread::handleVariable_Read( struct mg_connection *conn,
     pClientItem->m_currentCommand.Trim(true);
 
     CVSCPVariable variable;
-    if ( 0 != gpobj->m_VSCP_Variables.find( pClientItem->m_currentCommand,variable ) ) {
+    if ( 0 != gpobj->m_variables.find( pClientItem->m_currentCommand,variable ) ) {
         
         str = variable.getAsString( false );
         str = _("+OK - ") + str + _("\r\n");
@@ -5053,7 +5053,7 @@ void VSCPClientThread::handleVariable_ReadValue( struct mg_connection *conn,
     pClientItem->m_currentCommand.Trim(true);
 
     CVSCPVariable variable;
-    if ( 0 != gpobj->m_VSCP_Variables.find( pClientItem->m_currentCommand, variable ) ) {
+    if ( 0 != gpobj->m_variables.find( pClientItem->m_currentCommand, variable ) ) {
         
         variable.writeValueToString( str );
         str += _("\r\n");
@@ -5082,7 +5082,7 @@ void VSCPClientThread::handleVariable_ReadNote( struct mg_connection *conn,
     pClientItem->m_currentCommand.Trim(true);
 
     CVSCPVariable variable;
-    if ( 0 != gpobj->m_VSCP_Variables.find( pClientItem->m_currentCommand,variable ) ) {
+    if ( 0 != gpobj->m_variables.find( pClientItem->m_currentCommand,variable ) ) {
         
         str = variable.getNote();
         str = _("+OK - ") + str + _("\r\n");
@@ -5111,12 +5111,12 @@ void VSCPClientThread::handleVariable_Reset( struct mg_connection *conn,
 
     CVSCPVariable variable;
     
-    if ( 0 != gpobj->m_VSCP_Variables.find( pClientItem->m_currentCommand, variable ) ) {
+    if ( 0 != gpobj->m_variables.find( pClientItem->m_currentCommand, variable ) ) {
         
         variable.Reset();
         
         // Update in database
-        if ( !gpobj->m_VSCP_Variables.update( variable ) ) {
+        if ( !gpobj->m_variables.update( variable ) ) {
             mg_send( conn, MSG_VARIABLE_NO_SAVE, strlen ( MSG_VARIABLE_NO_SAVE ) );
             return;
         }
@@ -5149,7 +5149,7 @@ void VSCPClientThread::handleVariable_ReadReset( struct mg_connection *conn,
 
     CVSCPVariable variable;
     
-    if ( 0 != gpobj->m_VSCP_Variables.find( pClientItem->m_currentCommand, variable ) ) {
+    if ( 0 != gpobj->m_variables.find( pClientItem->m_currentCommand, variable ) ) {
         
         variable.writeValueToString( str );
         str = _("+OK - ") + str + _("\r\n");
@@ -5158,7 +5158,7 @@ void VSCPClientThread::handleVariable_ReadReset( struct mg_connection *conn,
         variable.Reset();
         
         // Update in database
-        if ( !gpobj->m_VSCP_Variables.update( variable ) ) {
+        if ( !gpobj->m_variables.update( variable ) ) {
             mg_send( conn, MSG_VARIABLE_NO_SAVE, strlen ( MSG_VARIABLE_NO_SAVE ) );
             return;
         }
@@ -5190,7 +5190,7 @@ void VSCPClientThread::handleVariable_Remove( struct mg_connection *conn,
         return;
     }
     
-    if ( !gpobj->m_VSCP_Variables.remove( pClientItem->m_currentCommand ) ) {
+    if ( !gpobj->m_variables.remove( pClientItem->m_currentCommand ) ) {
         mg_send( conn, MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );        
     }
 
@@ -5217,13 +5217,13 @@ void VSCPClientThread::handleVariable_ReadRemove( struct mg_connection *conn,
     }
 
     CVSCPVariable variable;
-    if ( 0 != gpobj->m_VSCP_Variables.find( pClientItem->m_currentCommand, variable ) ) {
+    if ( 0 != gpobj->m_variables.find( pClientItem->m_currentCommand, variable ) ) {
         
         variable.writeValueToString( str );
         str = _("+OK - ") + str + _("\r\n");
         mg_send( conn,  str.mbc_str(), strlen( str.mbc_str() ) );
     
-        gpobj->m_VSCP_Variables.remove( variable );
+        gpobj->m_variables.remove( variable );
         
     }
     else {
@@ -5247,13 +5247,13 @@ void VSCPClientThread::handleVariable_Length( struct mg_connection *conn,
     pClientItem->m_currentCommand.Trim(true);
 
     CVSCPVariable variable;
-    if ( 0 != gpobj->m_VSCP_Variables.find( pClientItem->m_currentCommand, variable ) ) {
+    if ( 0 != gpobj->m_variables.find( pClientItem->m_currentCommand, variable ) ) {
         
         str = wxString::Format( _("%zu"), variable.getLength() );
         str = _("+OK - ") + str + _("\r\n");
         mg_send( conn,  str.mbc_str(), strlen( str.mbc_str() ) );
     
-        gpobj->m_VSCP_Variables.remove( variable );
+        gpobj->m_variables.remove( variable );
         
     }
     else {
@@ -5273,7 +5273,7 @@ void VSCPClientThread::handleVariable_Load( struct mg_connection *conn,
                                                 CControlObject *pCtrlObject )
 {
     wxString path;  // Empty to load from default path
-    gpobj->m_VSCP_Variables.loadFromXML( path );  // TODO add path + type
+    gpobj->m_variables.loadFromXML( path );  // TODO add path + type
 
     mg_send( conn, MSG_OK, strlen( MSG_OK ) );
 }
@@ -5302,7 +5302,7 @@ void VSCPClientThread::handleVariable_Save( struct mg_connection *conn,
         return;
     }
 
-    gpobj->m_VSCP_Variables.save( path );
+    gpobj->m_variables.save( path );
 
     mg_send( conn, MSG_OK, strlen( MSG_OK ) );
 }

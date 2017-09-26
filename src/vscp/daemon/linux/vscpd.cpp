@@ -70,7 +70,7 @@ void help(char *szPrgname);
 
 void _sighandler( int sig )
 {
-    gpobj->m_bQuit = true;
+    gpobj->m_bQuit = true; 
     gbStopDaemon = true;
     gbRestart = false;
     syslog(LOG_CRIT, "vscpd: signal received, forced to stop.: %m");

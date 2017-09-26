@@ -2751,33 +2751,34 @@ web_difftimespec(const struct timespec *ts_now, const struct timespec *ts_before
 void
 web_cry(const struct web_connection *conn, const char *fmt, ...)
 {
-    char buf[WEB_BUF_LEN], src_addr[IP_ADDR_STR_LEN];
+    char buf[ WEB_BUF_LEN ];
+    char src_addr[ IP_ADDR_STR_LEN ];
     va_list ap;
     struct web_file fi;
     time_t timestamp;
 
     va_start(ap, fmt);
-    IGNORE_UNUSED_RESULT(vsnprintf_impl(buf, sizeof (buf), fmt, ap));
+    IGNORE_UNUSED_RESULT( vsnprintf_impl( buf, sizeof( buf ), fmt, ap ) );
     va_end(ap);
-    buf[sizeof (buf) - 1] = 0;
+    buf[ sizeof(buf)-1] = 0;
 
     if ( !conn ) {
-        puts(buf);
+        puts( buf );
         return;
     }
 
     // Do not lock when getting the callback value, here and below.
     // I suppose this is fine, since function cannot disappear in the
-    // same way string option can. */
-    if ((conn->ctx->callbacks.log_message == NULL)
-            || (conn->ctx->callbacks.log_message(conn, buf) == 0)) {
+    // same way string option can. 
+    if ( ( NULL == ( conn->ctx->callbacks.log_message ) ) ||
+            ( 0 == conn->ctx->callbacks.log_message( conn, buf ) ) ) {
 
-        if (conn->ctx->config[ERROR_LOG_FILE] != NULL) {
+        if ( conn->ctx->config[ ERROR_LOG_FILE ] != NULL ) {
             
-            if (web_fopen(conn,
-                              conn->ctx->config[ERROR_LOG_FILE],
-                              MG_FOPEN_MODE_APPEND,
-                              &fi) == 0) {
+            if ( 0 == web_fopen( conn,
+                                    conn->ctx->config[ERROR_LOG_FILE],
+                                    MG_FOPEN_MODE_APPEND,
+                                    &fi ) ) {
                 fi.access.fp = NULL;
             }
             
@@ -2786,36 +2787,37 @@ web_cry(const struct web_connection *conn, const char *fmt, ...)
             fi.access.fp = NULL;
         }
 
-        if (fi.access.fp != NULL) {
+        if ( fi.access.fp != NULL ) {
             
-            flockfile(fi.access.fp);
-            timestamp = time(NULL);
+            flockfile( fi.access.fp );
+            timestamp = time( NULL );
 
-            sockaddr_to_string(src_addr, sizeof (src_addr), &conn->client.rsa);
-            fprintf(fi.access.fp,
-                    "[%010lu] [error] [client %s] ",
-                    (unsigned long) timestamp,
-                    src_addr);
+            sockaddr_to_string( src_addr, sizeof(src_addr), &conn->client.rsa );
+            fprintf( fi.access.fp,
+                        "[%010lu] [error] [client %s] ",
+                        (unsigned long) timestamp,
+                        src_addr );
 
-            if (conn->request_info.request_method != NULL) {
+            if ( conn->request_info.request_method != NULL ) {
                 
-                fprintf(fi.access.fp,
+                fprintf( fi.access.fp,
                             "%s %s: ",
                             conn->request_info.request_method,
-                            conn->request_info.request_uri
-                            ? conn->request_info.request_uri
-                            : "");
+                            conn->request_info.request_uri ?
+                                conn->request_info.request_uri : "" );
                 
             }
 
-            fprintf(fi.access.fp, "%s", buf);
-            fputc('\n', fi.access.fp);
-            fflush(fi.access.fp);
-            funlockfile(fi.access.fp);
-            (void) web_fclose(&fi.access); // Ignore errors. We can't call
-			                       // web_cry here anyway ;-) 
+            fprintf( fi.access.fp, "%s", buf );
+            fputc( '\n', fi.access.fp );
+            fflush( fi.access.fp );
+            funlockfile( fi.access.fp );
+            (void)web_fclose( &fi.access );     // Ignore errors. We can't call
+                                                // web_cry here anyway ;-) 
         }
+        
     }
+    
 }
 
 ////////////////////////////////////////////////////////////////////////////////

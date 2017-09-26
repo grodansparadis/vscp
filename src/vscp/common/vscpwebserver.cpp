@@ -179,274 +179,6 @@ static struct websrv_Session *gp_websrv_sessions;
 // Session structure for REST API
 struct websrv_rest_session *gp_websrv_rest_sessions;
 
-// Used for authorization
-struct read_auth_file_struct
-{
-    struct web_connection *conn;
-    struct web_authorization_header ah;
-    const char *domain;
-    char buf[256 + 256 + 40];
-};
-
-///////////////////////////////////////////////////
-//                  HELPERS
-///////////////////////////////////////////////////
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-// vscp_stristr
-//
-
-static char* vscp_stristr( char* str1, const char* str2 )
-{
-    char* p1 = str1 ;
-    const char* p2 = str2 ;
-    char* r = *p2 == 0 ? str1 : 0 ;
-
-    while( *p1 != 0 && *p2 != 0 ) {
-        if( tolower( *p1 ) == tolower( *p2 ) ) {
-            if( r == 0 ) {
-                r = p1 ;
-            }
-
-            p2++ ;
-        }
-        else {
-            p2 = str2 ;
-            if( tolower( *p1 ) == tolower( *p2 ) ) {
-                r = p1 ;
-                p2++ ;
-            }
-            else {
-                r = 0 ;
-            }
-        }
-
-        p1++ ;
-    }
-
-    return *p2 == 0 ? r : 0 ;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// vscp_get_mtime
-//
-
-static time_t vscp_get_mtime( const char *path )
-{
-    struct stat statbuf;
-    if (stat(path, &statbuf) == -1) {
-        perror(path);
-        exit(1);
-    }
-    return statbuf.st_mtime;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// vscp_trimWhiteSpace
-//
-
-static char *vscp_trimWhiteSpace(char *str)
-{
-    char *end;
-
-    // Trim leading space
-    while(isspace(*str)) str++;
-
-    if( 0 == *str ) {  // All spaces?
-        return str;
-    }
-
-    // Trim trailing space
-    end = str + strlen(str) - 1;
-    while(end > str && isspace(*end)) end--;
-
-    // Write new null terminator
-    *(end+1) = 0;
-
-    return str;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// webserv_util_sendheader
-//
-
-void webserv_util_sendheader( struct mg_connection *nc,
-                                        const int returncode,
-                                        const char *content )
-{
-    char buf[ 2048 ];
-    char date[64];
-    time_t curtime = time(NULL);
-    vscp_getTimeString( date, sizeof(date), &curtime );
-    
-    int n = sprintf( buf, "HTTP/1.1 %d OK\r\n"
-                                "Content-Type: %s\r\n"
-                                "Date: %s\r"
-                                "Connection: close\r\n\r\n",
-                                returncode,
-                                content,
-                                date );
-    mg_send( nc, buf, n );
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// webserv_url_decode
-//
-
-/*int webserv_url_decode( const char *src, int src_len,
-                            char *dst, int dst_len,
-                            int is_form_url_encoded) {
-  int i, j, a, b;
-#define HEXTOI(x) (isdigit(x) ? x - '0' : x - 'W')
-
-    for (i = j = 0; i < src_len && j < dst_len - 1; i++, j++) {
-        if (src[i] == '%') {
-            if (i < src_len - 2 && isxdigit(*(const unsigned char *) (src + i + 1)) &&
-                    isxdigit(*(const unsigned char *) (src + i + 2))) {
-                a = tolower(*(const unsigned char *) (src + i + 1));
-                b = tolower(*(const unsigned char *) (src + i + 2));
-                dst[j] = (char) ((HEXTOI(a) << 4) | HEXTOI(b));
-                i += 2;
-            }
-            else {
-                return -1;
-            }
-        }
-        else if (is_form_url_encoded && src[i] == '+') {
-            dst[j] = ' ';
-        }
-        else {
-            dst[j] = src[i];
-        }
-    }
-
-    dst[j] = '\0'; // Null-terminate the destination 
-
-    return i >= src_len ? j : -1;
-}
-*/
-
-///////////////////////////////////////////////////////////////////////////////
-// vscp_check_nonce
-//
-// Check for authentication timeout.
-// Clients send time stamp encoded in nonce. Make sure it is not too old,
-// to prevent replay attacks.
-// Assumption: nonce is a hexadecimal number of seconds since 1970.
-//
-
-/*static int vscp_check_nonce( const char *nonce )
-{
-    unsigned long now = (unsigned long) time( NULL );
-    unsigned long val = (unsigned long) strtoul( nonce, NULL, 16 );
-    return (  || ( now < val ) || ( ( now - val ) < 3600 ) );
-}*/
-
-
-///////////////////////////////////////////////////////////////////////////////
-// vscp_mkmd5resp
-//
-
-/*static void vscp_mkmd5resp( const char *method, 
-                                size_t method_len, 
-                                const char *uri,
-                                size_t uri_len, 
-                                const char *ha1, 
-                                size_t ha1_len,
-                                const char *nonce, 
-                                size_t nonce_len, 
-                                const char *nc,
-                                size_t nc_len, 
-                                const char *cnonce, 
-                                size_t cnonce_len,
-                                const char *qop, 
-                                size_t qop_len, 
-                                char *resp )
-{
-    char ha2[33];
-    unsigned char hash[16]; 
-    cs_md5_ctx ctx;
-
-    cs_md5_init( &ctx );
-    cs_md5_update( &ctx, (const unsigned char *)method, method_len );
-    cs_md5_update( &ctx, (const unsigned char *)":", 1 );
-    cs_md5_update( &ctx, (const unsigned char *)uri, uri_len );
-    cs_md5_final( hash, &ctx );
-    cs_to_hex( ha2, hash, sizeof( hash ) );
-    
-    cs_md5_init( &ctx );
-    cs_md5_update( &ctx, (const unsigned char *)ha1, ha1_len ); 
-    cs_md5_update( &ctx, (const unsigned char *)":", 1 );
-    cs_md5_update( &ctx, (const unsigned char *)nonce, nonce_len );
-    cs_md5_update( &ctx, (const unsigned char *)":", 1 );
-    cs_md5_update( &ctx, (const unsigned char *)nc, nc_len ); 
-    cs_md5_update( &ctx, (const unsigned char *)":", 1 ); 
-    cs_md5_update( &ctx, (const unsigned char *)cnonce, cnonce_len );
-    cs_md5_update( &ctx, (const unsigned char *)":", 1 ); 
-    cs_md5_update( &ctx, (const unsigned char *)qop, qop_len );
-    cs_md5_update( &ctx, (const unsigned char *)":", 1 ); 
-    cs_md5_update( &ctx, (const unsigned char *)ha2, 32 );
-    cs_md5_final( hash, &ctx );
-    cs_to_hex( ha2, hash, sizeof( hash ) );
-}
-*/
-
-
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// readMimeTypes
-//
-// Read the Mime Types XML file
-//
-
-bool VSCPWebServerThread::readMimeTypes(wxString& path)
-{
-    //unsigned long val;
-    wxXmlDocument doc;
-    if ( !doc.Load( path )) {
-        return false;
-    }
-
-    // start processing the XML file
-    if (doc.GetRoot()->GetName() != wxT("mimetypes")) {
-        return false;
-    }
-
-    wxXmlNode *child = doc.GetRoot()->GetChildren();
-    while (child) {
-
-        if (child->GetName() == wxT("mimetype")) {
-            wxString strEnable = child->GetAttribute(wxT("enable"), wxT("false"));
-            wxString strExt = child->GetAttribute(wxT("extension"), wxT(""));
-            wxString strType = child->GetAttribute(wxT("mime"), wxT(""));
-
-            if ( strEnable.IsSameAs(_("true"),false )) {
-                m_hashMimeTypes[strExt] = strType;
-            }
-        }
-
-        child = child->GetNext();
-
-    }
-
-    return true;
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-//                              WEB SERVER
-///////////////////////////////////////////////////////////////////////////////
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //                     WEBSERVER SESSION HANDLINO
@@ -655,58 +387,17 @@ VSCPWebServerThread::websrv_expire_sessions( struct mg_connection *nc,
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// websrv_check_password
-//
-// http://en.wikipedia.org/wiki/Digest_access_authentication
+// Log a message
 //
 
-/*int
-VSCPWebServerThread::websrv_check_password( const char *method,
-                                                const char *ha1,
-                                                const char *uri,
-                                                const char *nonce,
-                                                const char *nc,
-                                                const char *cnonce,
-                                                const char *qop,
-                                                const char *response )
+static int 
+log_message( const struct web_connection *conn, 
+                            const char *message )
 {
-    char ha2[33], expected_response[33];
-
-#if 0
-    // Check for authentication timeout
-    if ( ( (unsigned long)time(NULL) - (unsigned long)to64( nonce ) ) > 3600 * 2) {
-        return 0;
-    }
-#endif
-
-    cs_md5_ctx ctx;
-    unsigned char hash[16];
-
-    cs_md5_init( &ctx );
-    cs_md5_update( &ctx, (const unsigned char *)method, strlen( method ) );
-    cs_md5_update( &ctx, (const unsigned char *)":", 1 );
-    cs_md5_update( &ctx, (const unsigned char *)uri, strlen( uri ) );
-    cs_md5_final( hash, &ctx );
-    cs_to_hex( ha2, hash, sizeof( hash ) );
-    
-    cs_md5_init( &ctx );
-    cs_md5_update( &ctx, (const unsigned char *)ha1, 32 );
-    cs_md5_update( &ctx, (const unsigned char *)":", 1 );
-    cs_md5_update( &ctx, (const unsigned char *)nonce, strlen( nonce ) );
-    cs_md5_update( &ctx, (const unsigned char *)":", 1 );
-    cs_md5_update( &ctx, (const unsigned char *)nc, strlen( nc ) );
-    cs_md5_update( &ctx, (const unsigned char *)":", 1 );
-    cs_md5_update( &ctx, (const unsigned char *)cnonce, strlen( cnonce ) );
-    cs_md5_update( &ctx, (const unsigned char *)":", 1 );
-    cs_md5_update( &ctx, (const unsigned char *)qop, strlen( qop ) );
-    cs_md5_update( &ctx, (const unsigned char *)":", 1 );
-    cs_md5_update( &ctx, (const unsigned char *)ha2, 32 );
-    cs_md5_final( hash, &ctx );
-    cs_to_hex( expected_response, hash, sizeof( hash ) );
-
-    return ( vscp_strcasecmp( response, expected_response ) == 0 ) ? TRUE : FALSE;
-
-}*/
+    wxString strMessage( message );
+    gpobj->logMsg( strMessage, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_GENERAL );
+    return WEB_OK;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -845,6 +536,36 @@ check_admin_authorization( struct web_connection *conn, void *cbdata )
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
+// todo
+//
+
+static int
+todo( struct web_connection *conn, void *cbdata )
+{
+	web_printf(conn,
+	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+	          "close\r\n\r\n");
+	web_printf(conn, "<html><body>");
+	
+	web_printf( conn, "</body></html>\n");
+        
+        web_printf( conn, WEB_COMMON_HEAD, "VSCP - Admin interface" );
+        web_printf( conn, WEB_STYLE_START );
+        web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
+        web_printf( conn, WEB_STYLE_END );
+        web_printf( conn, WEB_COMMON_JS );      // Common Javascript code
+
+        web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
+        // Insert server url into navigation menu
+        web_printf( conn, WEB_COMMON_MENU );
+
+        web_printf(conn, "<h2>This functionality is on the TODO list.</h2>");
+        
+         web_printf( conn, WEB_COMMON_END );     // Common end code
+         
+	return WEB_OK;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // vscp_settings
@@ -853,18 +574,12 @@ check_admin_authorization( struct web_connection *conn, void *cbdata )
 static int
 vscp_settings( struct web_connection *conn, void *cbdata )
 {
-	web_printf(conn,
-	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-	          "close\r\n\r\n");
-	web_printf(conn, "<html><body>");
-	web_printf(conn, "<h2>Settings</h2>");
-        
 	web_printf( conn,
-                            "<p><b>Admin user</b> = %s</p>", 
-                            (const char *)gpobj->m_admin_user.mbc_str() );	
-	web_printf( conn, "</body></html>\n");
+	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
+                  "Content-Type: text/html; charset=utf-8\r\n"
+                  "Connection: close\r\n\r\n");
         
-        web_printf( conn, WEB_COMMON_HEAD, "VSCP - Control" );
+        web_printf( conn, WEB_COMMON_HEAD, "Settings" );
         web_printf( conn, WEB_STYLE_START );
         web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
         web_printf( conn, WEB_STYLE_END );
@@ -877,7 +592,7 @@ vscp_settings( struct web_connection *conn, void *cbdata )
         web_printf( conn, WEB_IFLIST_BODY_START );
         web_printf( conn, WEB_IFLIST_TR_HEAD );
         
-	return 1;
+	return WEB_OK;
 }
 
 
@@ -956,7 +671,7 @@ static int vscp_listFile( struct web_connection *conn,
     web_printf( conn, WEB_COMMON_END);
     */
     
-    return 1;
+    return WEB_OK;
 }
 
 
@@ -1073,7 +788,7 @@ static int vscp_interface( struct web_connection *conn, void *cbdata )
 
     web_printf( conn, WEB_COMMON_END );     // Common end code
 
-    return 1;
+    return WEB_OK;
 }
 
 
@@ -1453,7 +1168,7 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
 
     web_printf( conn, WEB_COMMON_END);     // Common end code
 
-    return 1;
+    return WEB_OK;
 }
 
 
@@ -2209,7 +1924,7 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
     web_printf( conn, "</form>");
     web_printf( conn, WEB_COMMON_END);     // Common end code
 
-    return 1;
+    return WEB_OK;
 }
 
 
@@ -2800,7 +2515,7 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
 
     web_printf( conn, WEB_COMMON_END); // Common end code
 
-    return 1;
+    return WEB_OK;
 }
 
 
@@ -2895,7 +2610,7 @@ static int vscp_dm_delete( struct web_connection *conn, void *cbdata  )
 
     web_printf( conn, WEB_COMMON_END);     // Common end code
 
-    return 1;
+    return WEB_OK;
 }
 
 //-----------------------------------------------------------------------------
@@ -2918,7 +2633,7 @@ static int vscp_variable_list( struct web_connection *conn, void *cbdata  )
     
     // get variable names
     wxArrayString nameArray;
-    gpobj->m_VSCP_Variables.getVarlistFromRegExp( nameArray ); 
+    gpobj->m_variables.getVarlistFromRegExp( nameArray );
 
     const struct web_request_info *reqinfo =  
                 web_get_request_info( conn );
@@ -3009,7 +2724,7 @@ static int vscp_variable_list( struct web_connection *conn, void *cbdata  )
     web_printf( conn, WEB_VARLIST_BODY_START );
 
     {
-        wxString wxstrurl = _("/vscp/variables");
+        wxString wxstrurl = _("/vscp/varlist");
         web_printf( conn, WEB_COMMON_LIST_NAVIGATION,
                 (const char *)wxstrurl.mbc_str(),
                 (unsigned long)( nFrom + 1 ),
@@ -3041,7 +2756,7 @@ static int vscp_variable_list( struct web_connection *conn, void *cbdata  )
         if ( ( nFrom + i ) >= nameArray.Count() ) break;
 
         CVSCPVariable variable;
-        if ( 0 == gpobj->m_VSCP_Variables.find( nameArray[ nFrom + i ], 
+        if ( 0 == gpobj->m_variables.find( nameArray[ nFrom + i ], 
                                                     variable ) ) {
             web_printf( conn, 
                         "Internal error: Non existent variable entry. "
@@ -3285,7 +3000,7 @@ static int vscp_variable_list( struct web_connection *conn, void *cbdata  )
     web_printf( conn, WEB_DMLIST_TABLE_END);
 
     {
-        wxString wxstrurl = _("/vscp/variables");
+        wxString wxstrurl = _("/vscp/varlist");
         web_printf( conn, 
                     WEB_COMMON_LIST_NAVIGATION,
                     (const char *)wxstrurl.mbc_str(),
@@ -3301,7 +3016,7 @@ static int vscp_variable_list( struct web_connection *conn, void *cbdata  )
     web_printf( conn, WEB_COMMON_END);     // Common end code
 
 
-    return 1;
+    return WEB_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3403,11 +3118,11 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     
     // get variable names
     wxArrayString nameArray;
-    gpobj->m_VSCP_Variables.getVarlistFromRegExp( nameArray ); 
+    gpobj->m_variables.getVarlistFromRegExp( nameArray ); 
 
     if ( !bNew ) {
                 
-        if ( 0 == gpobj->m_VSCP_Variables.find( nameArray[ id ], 
+        if ( 0 == gpobj->m_variables.find( nameArray[ id ], 
                                                     variable ) ) {
             web_printf( conn, 
                         "Internal error: Non existent variable entry. "
@@ -4106,7 +3821,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     web_printf(conn, "</tr><tr><td style=\"font-weight: bold;\">Rights: </td><td>");
 
     if ( bNew ) {
-        web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"rights\">");
+        web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"accessrights\">");
         web_printf(conn, "0x700");
         web_printf(conn, "</textarea>");
     }
@@ -4177,6 +3892,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
 static int vscp_variable_post( struct web_connection *conn, void *cbdata )
 {
     char buf[32000];
+    wxString msg;
     CVSCPVariable variable;
 
     // Check pointer
@@ -4280,12 +3996,39 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
             wxString str;
             str = wxString::FromUTF8( buf );
             if ( isalpha( buf[0] ) ) {
-                
+                CUserItem *pUserItem = gpobj->m_userList.getUser( str );
+                if ( NULL == pUserItem ) {
+                    // User does not exist
+                    msg += 
+                      wxString::Format( _("Uses %s does not exist (set to 'admin')<br>"),
+                                         buf );
+                    owner = 0;
+                }
+                owner = pUserItem->getUserID();
             }
-            else {
+            else {                
                 owner = vscp_readStringValue( str );
+                CUserItem *pUserItem = gpobj->m_userList.getUser( owner );
+                if ( NULL == pUserItem ) {
+                    owner = 0;
+                    msg += 
+                      wxString::Format( _("Uses %s does not exist (set to 'admin')<br>"),
+                                         buf );
+                }
             }
             
+        }
+    }
+        
+    // Access rights
+    uint32_t rights = 0; // admin
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
+                            strlen( reqinfo->query_string ), 
+                            "accessrights", 
+                            buf, 
+                            sizeof( buf ) ) > 0 ) {
+            rights = vscp_readStringValue( wxString( buf ) );
         }
     }
 
@@ -4304,9 +4047,7 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
     // Value    
     wxString strValue;
     if ( NULL != reqinfo->query_string ) {
-        //memset( buf, 0, sizeof( buf ) );
-        //web_printf(conn, reqinfo->query_string );
-        //web_printf(conn, "<br>" );
+
         if ( web_get_var( reqinfo->query_string,                             
                             strlen( reqinfo->query_string ), 
                             "value", 
@@ -4314,8 +4055,8 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
                             sizeof( buf ) ) > 0 ) {
             strValue = wxString::FromUTF8( buf );
         }
-    }
-    
+        
+    }    
 
     web_printf(conn,
 	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
@@ -4328,7 +4069,7 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
     web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
     web_printf( conn, WEB_STYLE_END );
     web_printf( conn, WEB_COMMON_JS );      // Common Javascript code
-    web_printf( conn, "<meta http-equiv=\"refresh\" content=\"2;url=/vscp/variables");
+    web_printf( conn, "<meta http-equiv=\"refresh\" content=\"2;url=/vscp/varlist");
     web_printf( conn, "?from=%ld&count=%ld", 
                         (long)nFrom, 
                         (long)nCount );
@@ -4339,6 +4080,8 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
     web_printf( conn, WEB_COMMON_MENU );
 
     web_printf( conn, WEB_VARPOST_BODY_START );
+    
+    web_printf( conn, msg );
 
     if ( bNew ) {
         
@@ -4358,7 +4101,7 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
         
         // * * * An updated variable * * * 
 
-        if ( !gpobj->m_VSCP_Variables.find( strName, variable ) ) {
+        if ( !gpobj->m_variables.find( strName, variable ) ) {
             
             // Variable was not found
             
@@ -4394,11 +4137,11 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
     
     // If new variable add it
     if ( bNew ) {
-        gpobj->m_VSCP_Variables.add( variable );
+        gpobj->m_variables.add( variable );
     }
     else {
         // Update variables
-        gpobj->m_VSCP_Variables.update( variable );
+        gpobj->m_variables.update( variable );
     }
 
     web_printf( conn, 
@@ -4408,7 +4151,7 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
 
     web_printf( conn, WEB_COMMON_END ); // Common end code
 
-    return 1;
+    return WEB_OK;
 }
 
 
@@ -4423,7 +4166,7 @@ static int vscp_variable_new( struct web_connection *conn, void *cbdata )
     
     // get variable names
     wxArrayString nameArray;
-    gpobj->m_VSCP_Variables.getVarlistFromRegExp( nameArray );
+    gpobj->m_variables.getVarlistFromRegExp( nameArray );
     
     // Check pointer
     if (NULL == conn) return 0;
@@ -4529,7 +4272,7 @@ static int vscp_variable_new( struct web_connection *conn, void *cbdata )
 
     web_printf( conn, WEB_COMMON_END); // Common end code
 
-    return 1;
+    return WEB_OK;
 }
 
 
@@ -4610,7 +4353,7 @@ vscp_variable_delete( struct web_connection *conn, void *cbdata )
     web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
     web_printf( conn, WEB_STYLE_END );
     web_printf( conn, WEB_COMMON_JS );      // Common Javascript code
-    web_printf( conn, "<meta http-equiv=\"refresh\" content=\"2;url=/vscp/variables" ) ;
+    web_printf( conn, "<meta http-equiv=\"refresh\" content=\"2;url=/vscp/varlist" ) ;
     web_printf( conn, 
                     "?from=%d&count=%d", 
                     nFrom, 
@@ -4623,7 +4366,7 @@ vscp_variable_delete( struct web_connection *conn, void *cbdata )
 
     web_printf( conn, WEB_VAREDIT_BODY_START);
     
-    if ( !gpobj->m_VSCP_Variables.find( strName, variable ) ) {
+    if ( !gpobj->m_variables.find( strName, variable ) ) {
             // Variable was not found            
             web_printf( conn, 
                             "<br><br>Unknown variable!. Unable to delete record", 
@@ -4633,7 +4376,7 @@ vscp_variable_delete( struct web_connection *conn, void *cbdata )
     }
 
 
-    if ( gpobj->m_VSCP_Variables.remove( variable ) )  {
+    if ( gpobj->m_variables.remove( variable ) )  {
         web_printf( conn, 
                         "<br>Deleted variable %s", 
                         (const char *)strName.mbc_str() );
@@ -4647,7 +4390,7 @@ vscp_variable_delete( struct web_connection *conn, void *cbdata )
     web_printf( conn, WEB_COMMON_END);     // Common end code
 
 
-    return 1;
+    return WEB_OK;
 }
 
 
@@ -4684,7 +4427,7 @@ vscp_discovery( struct web_connection *conn, void *cbdata  )
     web_printf( conn, WEB_COMMON_MENU);
     web_printf( conn, "<b>Device discovery functionality is not yet implemented!</b>");
 
-    return 1;
+    return WEB_OK;
 }
 
 
@@ -4721,7 +4464,7 @@ vscp_client( struct web_connection *conn, void *cbdata )
     web_printf( conn, WEB_COMMON_MENU);
     web_printf( conn, "<b>Client functionality is not yet implemented!</b>");
 
-    return 1;
+    return WEB_OK;
 }
 
 
@@ -4733,14 +4476,15 @@ static int
 vscp_configure( struct web_connection *conn, void *cbdata )
 {
     wxString str;
-    
+    CVSCPVariable variable;
 
     // Check pointer
     if (NULL == conn) return 0;
 
-    web_printf(conn,
-	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-	          "close\r\n\r\n");
+    web_printf( conn,
+	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
+                  "Content-Type: text/html; charset=utf-8\r\n"
+                  "Connection: close\r\n\r\n");
     
     web_printf( conn, 
                     WEB_COMMON_HEAD, 
@@ -4748,19 +4492,23 @@ vscp_configure( struct web_connection *conn, void *cbdata )
     web_printf( conn, WEB_STYLE_START);
     web_printf( conn, WEB_COMMON_CSS);     // CSS style Code
     web_printf( conn, WEB_STYLE_END);
-    web_printf( conn, WEB_COMMON_JS);      // Common Javascript code
+    web_printf( conn, WEB_COMMON_JS);      // Common JavaScript code
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START);
 
     // navigation menu
     web_printf( conn, WEB_COMMON_MENU);
 
-    web_printf( conn, "<br><br><br>");
+    web_printf( conn, "<br><br><br>"); 
+    web_printf( conn, "<h1 id=\"header\">VSCP - Configuration</h1>" );
+    web_printf( conn, "<br>");
 
-    web_printf( conn, "<b>VSCP Daemon version:</b> ");
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * * 
+    web_printf( conn, "<h4 id=\"header\" >Server</h4> ");
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>VSCP Server version:</b> ");
     web_printf( conn, VSCPD_DISPLAY_VERSION);
     web_printf( conn, "<br>");
 
-    web_printf( conn, "<b>Operating system:</b> ");
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Operating system:</b> ");
     web_printf( conn, wxGetOsDescription().mbc_str() );
     if ( wxIsPlatform64Bit() ) {
         web_printf( conn, " 64-bit ");
@@ -4795,36 +4543,17 @@ vscp_configure( struct web_connection *conn, void *cbdata )
 
     wxMemorySize memsize;
     if ( -1 != ( memsize = wxGetFreeMemory() ) ) {
-        web_printf( conn, "<b>Free memory:</b> ");
+        web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Free memory:</b> ");
         web_printf( conn, memsize.ToString().mbc_str() );
         web_printf( conn, " bytes<br>");
     }
 
-    web_printf( conn, "<b>Hostname:</b> ");
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Hostname:</b> ");
     web_printf( conn, wxGetFullHostName().mbc_str() );
     web_printf( conn, "<br>");
-
-    web_printf( conn, "<hr>");
-
-    web_printf( conn, "<b>wxWidgets version:</b> ");
-    web_printf( conn, 
-                    "%d.%d.%d.%d" " Copyright (c) 1998-2005 Julian Smart, "
-                    "Robert Roebling et al" ,
-                    wxMAJOR_VERSION,
-                    wxMINOR_VERSION,
-                    wxRELEASE_NUMBER,
-                    wxSUBRELEASE_NUMBER );
-    web_printf( conn, "<br>");
-
-    web_printf( conn, "<b>Mongoose version:</b> ");
-    web_printf( conn, wxString::FromUTF8( MG_VERSION 
-                                                " Copyright (c) 2013-2017 Cesanta Software Limited" ).mbc_str() );
-    web_printf( conn, "<br>");
-
-    web_printf( conn, "<hr>");
-
+    
     // Debuglevel
-    web_printf( conn, "<b>Debuglevel:</b> ");
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Debuglevel:</b> ");
     web_printf( conn, 
                     "%d ", 
                     gpobj->m_logLevel );
@@ -4842,22 +4571,113 @@ vscp_configure( struct web_connection *conn, void *cbdata )
             web_printf( conn, "(unkown)");
             break;
     }
+    web_printf( conn, "<br> ");
 
     // Server GUID
-    web_printf( conn, "<b>Server GUID:</b> ");
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Server GUID:</b> ");
     gpobj->m_guid.toString( str );
     web_printf( conn, str.mbc_str() );
+    web_printf( conn, "<br> ");
 
     // Client buffer size
-    web_printf( conn, "<b>Client buffer size:</b> ");
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Client buffer size:</b> ");
     web_printf( conn, 
                     "%d", 
                     gpobj->m_maxItemsInClientReceiveQueue );
+    web_printf( conn, "<br> ");
 
     web_printf( conn, "<hr>");
 
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * * 
+    web_printf( conn, "<h4 id=\"header\" >Versions & copyright</h4> ");
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>wxWidgets version:</b> ");
+    web_printf( conn, 
+                    "%d.%d.%d.%d" " Copyright (c) 1998-2005 Julian Smart, "
+                    "Robert Roebling et al" ,
+                    wxMAJOR_VERSION,
+                    wxMINOR_VERSION,
+                    wxRELEASE_NUMBER,
+                    wxSUBRELEASE_NUMBER );
+    web_printf( conn, "<br>");
+
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Mongoose version:</b> ");
+    web_printf( conn, wxString::FromUTF8( MG_VERSION 
+                                                " Copyright (c) 2013-2017 Cesanta Software Limited" ).mbc_str() );
+    web_printf( conn, "<br>");
+    
+    if ( gpobj->m_variables.find( _("vscp.openssl.version.str"), variable ) ) {
+        str = variable.getValue();
+        vscp_base64_wxdecode( str );
+        web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Openssl version:</b> ");
+        web_printf( conn, (const char *)str.mbc_str() );
+        web_printf( conn, " - " );
+        if ( gpobj->m_variables.find( _("vscp.openssl.copyright"), variable ) ) {
+            str = variable.getValue();
+            vscp_base64_wxdecode( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+        web_printf( conn, "<br>");
+    }
+    
+    if ( gpobj->m_variables.find( _("vscp.duktape.version.str"), variable ) ) {
+        str = variable.getValue();
+        vscp_base64_wxdecode( str );
+        web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Duktape version:</b> ");
+        web_printf( conn, (const char *)str.mbc_str() );
+        web_printf( conn, " - " );
+        if ( gpobj->m_variables.find( _("vscp.duktape.copyright"), variable ) ) {
+            str = variable.getValue();
+            vscp_base64_wxdecode( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+        web_printf( conn, "<br>");
+    }
+    
+    if ( gpobj->m_variables.find( _("vscp.lua.version.str"), variable ) ) {
+        str = variable.getValue();
+        vscp_base64_wxdecode( str );
+        web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Lua version:</b> ");
+        web_printf( conn, (const char *)str.mbc_str() );
+        web_printf( conn, " - " );
+        if ( gpobj->m_variables.find( _("vscp.lua.copyright"), variable ) ) {
+            str = variable.getValue();
+            vscp_base64_wxdecode( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+        web_printf( conn, "<br>");
+    }    
+    
+    if ( gpobj->m_variables.find( _("vscp.sqlite.version.str"), variable ) ) {
+        str = variable.getValue();
+        vscp_base64_wxdecode( str );
+        web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Sqlite3 version:</b> ");
+        web_printf( conn, (const char *)str.mbc_str() );
+        web_printf( conn, " - " );
+        if ( gpobj->m_variables.find( _("vscp.sqlite.copyright"), variable ) ) {
+            str = variable.getValue();
+            vscp_base64_wxdecode( str );
+            web_printf( conn, (const char *)str.mbc_str() );
+        }
+        web_printf( conn, "<br>");
+    }    
+    
+    
+    if ( gpobj->m_variables.find( _("vscp.civetweb.copyright"), variable ) ) {
+        str = variable.getValue();
+        vscp_base64_wxdecode( str );
+        web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civetweb copyright:</b> ");
+        web_printf( conn, (const char *)str.mbc_str() );
+        web_printf( conn, "<br>");
+    }
+    
+    web_printf( conn, "<hr>");
+    
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * * 
+    web_printf( conn, "<h4 id=\"header\" >TCP/IP</h4> ");
+
     // TCP/IP interface
-    web_printf( conn, "<b>TCP/IP interface:</b> ");
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>TCP/IP interface:</b> ");
     web_printf( conn, "enabled on <b>interface:</b> '");
     web_printf( conn, gpobj->m_strTcpInterfaceAddress.mbc_str() );
     web_printf( conn, "'");
@@ -4865,8 +4685,11 @@ vscp_configure( struct web_connection *conn, void *cbdata )
 
     web_printf( conn, "<hr>");
 
-    // UDP interface
-    web_printf( conn, "<b>UDP interface:</b> ");
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * * 
+    web_printf( conn, "<h4 id=\"header\" >UDP</h4> ");
+    
+    // UDP interface    
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>UDP interface:</b> ");
     if ( gpobj->m_udpInfo.m_bEnable ) {
         web_printf( conn, "enabled on <b>interface:</b> '");
         web_printf( conn, gpobj->m_udpInfo.m_interface.mbc_str() );
@@ -4879,9 +4702,10 @@ vscp_configure( struct web_connection *conn, void *cbdata )
 
     web_printf( conn, "<hr>");
 
-
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * * 
+    web_printf( conn, "<h4 id=\"header\" >Automation</h4> ");
     // VSCP Internal automation intelligence
-    web_printf( conn, "<b>VSCP internal event logic:</b> ");
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>VSCP internal event logic:</b> ");
     web_printf( conn, "enabled.");
     web_printf( conn, "<br>");
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Automation:</b> ");
@@ -5082,9 +4906,11 @@ vscp_configure( struct web_connection *conn, void *cbdata )
 
 
     web_printf( conn, "<hr>");
-
-    // Web server interface
-    web_printf( conn, "<b>Web server <b>interface:</b></b> ");
+    
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * * 
+    web_printf( conn, "<h4 id=\"header\" >Web server</h4> ");
+    
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Web server <b>interface:</b></b> ");
 
     web_printf( conn, "enabled on interface '");
     web_printf( conn, gpobj->m_strWebServerInterfaceAddress.mbc_str());
@@ -5156,9 +4982,12 @@ vscp_configure( struct web_connection *conn, void *cbdata )
 
     web_printf( conn, "<hr>");
 
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * * 
+    web_printf( conn, "<h4 id=\"header\" >Websockets</h4> ");
+    
     // Websockets
 
-    web_printf( conn, "<b>VSCP websocket interface:</b> ");
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>VSCP websocket interface:</b> ");
     if ( gpobj->m_bAuthWebsockets ) {
         web_printf( conn, "<b>Authentication</b> enabled.");
     }
@@ -5167,25 +4996,35 @@ vscp_configure( struct web_connection *conn, void *cbdata )
     }
 
     web_printf( conn, "<hr>");
+    
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * * 
+    web_printf( conn, "<h4 id=\"header\" >Decision matrix</h4> ");
 
     // DM
-    web_printf( conn, "<b>Daemon internal decision matrix functionality:</b> ");
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>VSCP server internal decision matrix functionality:</b> ");
     web_printf( conn, "enabled.");
     web_printf( conn, "<br>");
-    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to DM file:</b> ");
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to DM XML file:</b> ");
     web_printf( conn, gpobj->m_dm.m_staticXMLPath.mbc_str() );
     web_printf( conn, "<br>");
 
     web_printf( conn, "<hr>");
+    
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * * 
+    web_printf( conn, "<h4 id=\"header\" >Remote variables</h4> ");
 
     // Variable handling
-    web_printf( conn, "<b>Variable handling :</b> ");
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Variable handling :</b> ");
+    web_printf( conn, "<br>");
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to variables:</b> ");
-    web_printf( conn, gpobj->m_VSCP_Variables.m_xmlPath.mbc_str() );
+    web_printf( conn, gpobj->m_variables.m_xmlPath.mbc_str() );
 
     web_printf( conn, "<hr>");
+    
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * * 
+    web_printf( conn, "<h4 id=\"header\" >Level I drivers</h4> ");
 
-    web_printf( conn, "<b>Level I Drivers:</b> ");
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Level I Drivers:</b> ");
 
     web_printf( conn, "enabled<br>");
 
@@ -5197,8 +5036,8 @@ vscp_configure( struct web_connection *conn, void *cbdata )
 
         pDeviceItem = *iter;
         if  ( ( NULL != pDeviceItem ) &&
-                    ( CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL2 == pDeviceItem->m_driverLevel ) &&
-                    pDeviceItem->m_bEnable ) {
+              ( VSCP_DRIVER_LEVEL1 == pDeviceItem->m_driverLevel ) &&
+              pDeviceItem->m_bEnable ) {
             web_printf( conn, "<b>Name:</b> ");
             web_printf( conn, pDeviceItem->m_strName.mbc_str() );
             web_printf( conn, "<br>");
@@ -5211,30 +5050,30 @@ vscp_configure( struct web_connection *conn, void *cbdata )
         }
     }
 
-    web_printf( conn, "<br>");
-
     web_printf( conn, "<hr>");
+    
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * * 
+    web_printf( conn, "<h4 id=\"header\" >Level II drivers</h4> ");
 
-    web_printf( conn, "<b>Level II Drivers:</b> ");
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Level II Drivers:</b> ");
     web_printf( conn, "enabled<br>");
 
-    //CDeviceItem *pDeviceItem;
-    //VSCPDEVICELIST::iterator iter;
+ 
     for (iter = gpobj->m_deviceList.m_devItemList.begin();
             iter != gpobj->m_deviceList.m_devItemList.end();
             ++iter) {
 
         pDeviceItem = *iter;
         if  ( ( NULL != pDeviceItem ) &&
-                    ( CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1 == pDeviceItem->m_driverLevel ) &&
-                    pDeviceItem->m_bEnable ) {
-            web_printf( conn, "<b>Name:</b> ");
+              ( VSCP_DRIVER_LEVEL2 == pDeviceItem->m_driverLevel ) &&
+              pDeviceItem->m_bEnable ) {
+            web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Name:</b> ");
             web_printf( conn, pDeviceItem->m_strName.mbc_str() );
             web_printf( conn, "<br>");
-            web_printf( conn, "<b>Config:</b> ");
+            web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Config:</b> ");
             web_printf( conn, pDeviceItem->m_strParameter.mbc_str() );
             web_printf( conn, "<br>");
-            web_printf( conn, "<b>Path:</b> ");
+            web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Driver path:</b> ");
             web_printf( conn, pDeviceItem->m_strPath.mbc_str() );
             web_printf( conn, "<br>");
         }
@@ -5242,7 +5081,7 @@ vscp_configure( struct web_connection *conn, void *cbdata )
  
     web_printf( conn, "<br>");
 
-    return 1;
+    return WEB_OK;
 }
 
 
@@ -5253,9 +5092,7 @@ vscp_configure( struct web_connection *conn, void *cbdata )
 
 static int bootload( struct web_connection *conn, void *cbdata  )
 {
-    //char buf[80];
     wxString str;
-    
 
     // Check pointer
     if ( NULL == conn ) return 0;
@@ -5279,7 +5116,7 @@ static int bootload( struct web_connection *conn, void *cbdata  )
     web_printf( conn, WEB_COMMON_MENU);
     web_printf( conn, "<b>Bootload functionality is not yet implemented!</b>");
 
-    return 1;
+    return WEB_OK;
 }
 
 
@@ -5410,7 +5247,6 @@ static int table( struct web_connection *conn, void *cbdata )
 
 static int tablelist( struct web_connection *conn, void *cbdata  )
 {
-
     char buf[512];
     wxString str;
     
@@ -5593,7 +5429,7 @@ static int tablelist( struct web_connection *conn, void *cbdata  )
     // Server data
    
 
-    return 1;
+    return WEB_OK;
 }
 
 
@@ -5611,16 +5447,16 @@ static int tablelist( struct web_connection *conn, void *cbdata  )
 static int
 vscp_variable( struct web_connection *conn, void *cbdata )
 {
-	web_printf(conn,
+    web_printf( conn,
 	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-	          "close\r\n\r\n");
-	web_printf(conn, "<html><body>");
-	web_printf(conn, "<h2>Defined variables</h2>");
-	web_printf(
-	    conn,
-	    "<p>To see a page from the A handler <a href=\"A\">click A</a></p>");	
-	web_printf(conn, "</body></html>\n");
-	return 1;
+	          "close\r\n\r\n" );
+    web_printf( conn, "<html><body>");
+    web_printf( conn, "<h2>Defined variables</h2>" );
+    web_printf( conn,
+	    "<p>To see a page from the A handler <a href=\"A\">click A</a></p>" );	
+    web_printf( conn, "</body></html>\n" );
+	
+    return WEB_OK;
 }
 
 
@@ -5638,16 +5474,17 @@ vscp_variable( struct web_connection *conn, void *cbdata )
 static int
 vscp_user_list(struct web_connection *conn, void *cbdata)
 {
-	web_printf(conn,
+    web_printf( conn,
 	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-	          "close\r\n\r\n");
-	web_printf(conn, "<html><body>");
-	web_printf(conn, "<h2>Defined users</h2>");
-	web_printf(
-	    conn,
-	    "<p>To see a page from the A handler <a href=\"A\">click A</a></p>");	
-	web_printf(conn, "</body></html>\n");
-	return 1;
+	          "close\r\n\r\n" );
+    web_printf( conn, "<html><body>" );
+    web_printf( conn, "<h2>Defined users</h2>" );
+    web_printf( conn,
+                    "<p>To see a page from the A handler "
+                    "<a href=\"A\">click A</a></p>" );	
+    web_printf( conn, "</body></html>\n" );
+        
+    return WEB_OK;
 }
 
 
@@ -5667,59 +5504,58 @@ vscp_user_list(struct web_connection *conn, void *cbdata)
 //
 
 int
-ExampleHandler(struct web_connection *conn, void *cbdata)
+ExampleHandler(struct web_connection *conn, void *cbdata) 
 {
-	web_printf(conn,
-	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-	          "close\r\n\r\n");
-	web_printf(conn, "<html><body>");
-	web_printf(conn, "<h2>This is an example text from a C handler</h2>");
-	web_printf(
-	    conn,
-	    "<p>To see a page from the A handler <a href=\"A\">click A</a></p>");
-	web_printf(conn,
-	          "<p>To see a page from the A handler <a href=\"A/A\">click "
-	          "A/A</a></p>");
-	web_printf(conn,
-	          "<p>To see a page from the A/B handler <a "
-	          "href=\"A/B\">click A/B</a></p>");
-	web_printf(conn,
-	          "<p>To see a page from the B handler (0) <a "
-	          "href=\"B\">click B</a></p>");
-	web_printf(conn,
-	          "<p>To see a page from the B handler (1) <a "
-	          "href=\"B/A\">click B/A</a></p>");
-	web_printf(conn,
-	          "<p>To see a page from the B handler (2) <a "
-	          "href=\"B/B\">click B/B</a></p>");
-	web_printf(conn,
-	          "<p>To see a page from the *.foo handler <a "
-	          "href=\"xy.foo\">click xy.foo</a></p>");
-	web_printf(conn,
-	          "<p>To see a page from the close handler <a "
-	          "href=\"close\">click close</a></p>");
-	web_printf(conn,
-	          "<p>To see a page from the FileHandler handler <a "
-	          "href=\"form\">click form</a> (the starting point of the "
-	          "<b>form</b> test)</p>");
-	web_printf(conn,
-	          "<p>To see a page from the CookieHandler handler <a "
-	          "href=\"cookie\">click cookie</a></p>");
-	web_printf(conn,
-	          "<p>To see a page from the PostResponser handler <a "
-	          "href=\"postresponse\">click post response</a></p>");
-	web_printf(conn,
-	          "<p>To see an example for parsing files on the fly <a "
-	          "href=\"on_the_fly_form\">click form</a> (form for "
-	          "uploading files)</p>");
+    web_printf(conn,
+            "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+            "close\r\n\r\n");
+    web_printf(conn, "<html><body>");
+    web_printf(conn, "<h2>This is an example text from a C handler</h2>");
+    web_printf( conn,
+            "<p>To see a page from the A handler <a href=\"A\">click A</a></p>");
+    web_printf(conn,
+            "<p>To see a page from the A handler <a href=\"A/A\">click "
+            "A/A</a></p>");
+    web_printf(conn,
+            "<p>To see a page from the A/B handler <a "
+            "href=\"A/B\">click A/B</a></p>");
+    web_printf(conn,
+            "<p>To see a page from the B handler (0) <a "
+            "href=\"B\">click B</a></p>");
+    web_printf(conn,
+            "<p>To see a page from the B handler (1) <a "
+            "href=\"B/A\">click B/A</a></p>");
+    web_printf(conn,
+            "<p>To see a page from the B handler (2) <a "
+            "href=\"B/B\">click B/B</a></p>");
+    web_printf(conn,
+            "<p>To see a page from the *.foo handler <a "
+            "href=\"xy.foo\">click xy.foo</a></p>");
+    web_printf(conn,
+            "<p>To see a page from the close handler <a "
+            "href=\"close\">click close</a></p>");
+    web_printf(conn,
+            "<p>To see a page from the FileHandler handler <a "
+            "href=\"form\">click form</a> (the starting point of the "
+            "<b>form</b> test)</p>");
+    web_printf(conn,
+            "<p>To see a page from the CookieHandler handler <a "
+            "href=\"cookie\">click cookie</a></p>");
+    web_printf(conn,
+            "<p>To see a page from the PostResponser handler <a "
+            "href=\"postresponse\">click post response</a></p>");
+    web_printf(conn,
+            "<p>To see an example for parsing files on the fly <a "
+            "href=\"on_the_fly_form\">click form</a> (form for "
+            "uploading files)</p>");
 
-	web_printf(conn,
-	          "<p>To test websocket handler <a href=\"/websocket\">click "
-	          "websocket</a></p>");
+    web_printf(conn,
+            "<p>To test websocket handler <a href=\"/websocket\">click "
+            "websocket</a></p>");
 
-	web_printf(conn, "<p>To exit <a href=\"%s\">click exit</a></p>", EXIT_URI);
-	web_printf(conn, "</body></html>\n");
-	return 1;
+    web_printf(conn, "<p>To exit <a href=\"%s\">click exit</a></p>", EXIT_URI);
+    web_printf(conn, "</body></html>\n");
+    return WEB_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5727,14 +5563,15 @@ ExampleHandler(struct web_connection *conn, void *cbdata)
 //
 
 int
-ExitHandler(struct web_connection *conn, void *cbdata)
+ExitHandler(struct web_connection *conn, void *cbdata) 
 {
-	web_printf(conn,
-	          "HTTP/1.1 200 OK\r\nContent-Type: "
-	          "text/plain\r\nConnection: close\r\n\r\n");
-	web_printf(conn, "Server will shut down.\n");
-	web_printf(conn, "Bye!\n");
-	return 1;
+    web_printf(conn,
+            "HTTP/1.1 200 OK\r\nContent-Type: "
+            "text/plain\r\nConnection: close\r\n\r\n");
+    web_printf(conn, "Server will shut down.\n");
+    web_printf(conn, "Bye!\n");
+
+    return WEB_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5742,15 +5579,16 @@ ExitHandler(struct web_connection *conn, void *cbdata)
 //
 
 int
-AHandler(struct web_connection *conn, void *cbdata)
+AHandler(struct web_connection *conn, void *cbdata) 
 {
-	web_printf(conn,
-	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-	          "close\r\n\r\n");
-	web_printf(conn, "<html><body>");
-	web_printf(conn, "<h2>This is the A handler!!!</h2>");
-	web_printf(conn, "</body></html>\n");
-	return 1;
+    web_printf(conn,
+            "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+            "close\r\n\r\n");
+    web_printf(conn, "<html><body>");
+    web_printf(conn, "<h2>This is the A handler!!!</h2>");
+    web_printf(conn, "</body></html>\n");
+
+    return WEB_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5758,15 +5596,16 @@ AHandler(struct web_connection *conn, void *cbdata)
 //
 
 int
-ABHandler(struct web_connection *conn, void *cbdata)
+ABHandler(struct web_connection *conn, void *cbdata) 
 {
-	web_printf(conn,
-	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-	          "close\r\n\r\n");
-	web_printf(conn, "<html><body>");
-	web_printf(conn, "<h2>This is the AB handler!!!</h2>");
-	web_printf(conn, "</body></html>\n");
-	return 1;
+    web_printf(conn,
+            "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+            "close\r\n\r\n");
+    web_printf(conn, "<html><body>");
+    web_printf(conn, "<h2>This is the AB handler!!!</h2>");
+    web_printf(conn, "</body></html>\n");
+
+    return WEB_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5774,19 +5613,20 @@ ABHandler(struct web_connection *conn, void *cbdata)
 //
 
 int
-BXHandler(struct web_connection *conn, void *cbdata)
+BXHandler(struct web_connection *conn, void *cbdata) 
 {
-	/* Handler may access the request info using web_get_request_info */
-	const struct web_request_info *req_info = web_get_request_info(conn);
+    // Handler may access the request info using web_get_request_info 
+    const struct web_request_info *req_info = web_get_request_info(conn);
 
-	web_printf(conn,
-	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-	          "close\r\n\r\n");
-	web_printf(conn, "<html><body>");
-	web_printf(conn, "<h2>This is the BX handler %p!!!</h2>", cbdata);
-	web_printf(conn, "<p>The actual uri is %s</p>", req_info->local_uri);
-	web_printf(conn, "</body></html>\n");
-	return 1;
+    web_printf(conn,
+            "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+            "close\r\n\r\n");
+    web_printf(conn, "<html><body>");
+    web_printf(conn, "<h2>This is the BX handler %p!!!</h2>", cbdata);
+    web_printf(conn, "<p>The actual uri is %s</p>", req_info->local_uri);
+    web_printf(conn, "</body></html>\n");
+
+    return WEB_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5794,23 +5634,24 @@ BXHandler(struct web_connection *conn, void *cbdata)
 //
 
 int
-FooHandler(struct web_connection *conn, void *cbdata)
+FooHandler(struct web_connection *conn, void *cbdata) 
 {
-	/* Handler may access the request info using web_get_request_info */
-	const struct web_request_info *req_info = web_get_request_info(conn);
+    // Handler may access the request info using web_get_request_info 
+    const struct web_request_info *req_info = web_get_request_info(conn);
 
-	web_printf(conn,
-	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-	          "close\r\n\r\n");
-	web_printf(conn, "<html><body>");
-	web_printf(conn, "<h2>This is the Foo handler!!!</h2>");
-	web_printf(conn,
-	          "<p>The request was:<br><pre>%s %s HTTP/%s</pre></p>",
-	          req_info->request_method,
-	          req_info->local_uri,
-	          req_info->http_version);
-	web_printf(conn, "</body></html>\n");
-	return 1;
+    web_printf(conn,
+            "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+            "close\r\n\r\n");
+    web_printf(conn, "<html><body>");
+    web_printf(conn, "<h2>This is the Foo handler!!!</h2>");
+    web_printf(conn,
+            "<p>The request was:<br><pre>%s %s HTTP/%s</pre></p>",
+            req_info->request_method,
+            req_info->local_uri,
+            req_info->http_version);
+    web_printf(conn, "</body></html>\n");
+
+    return WEB_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5820,31 +5661,32 @@ FooHandler(struct web_connection *conn, void *cbdata)
 int
 CloseHandler(struct web_connection *conn, void *cbdata)
 {
-	/* Handler may access the request info using web_get_request_info */
-	const struct web_request_info *req_info = web_get_request_info(conn);
+    // Handler may access the request info using web_get_request_info 
+    const struct web_request_info *req_info = web_get_request_info(conn);
 
-	web_printf(conn,
-	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-	          "close\r\n\r\n");
-	web_printf(conn, "<html><body>");
-	web_printf(conn,
-	          "<h2>This handler will close the connection in a second</h2>");
+    web_printf(conn,
+            "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+            "close\r\n\r\n");
+    web_printf(conn, "<html><body>");
+    web_printf(conn,
+            "<h2>This handler will close the connection in a second</h2>");
 #ifdef _WIN32
-	Sleep(1000);
+    Sleep(1000);
 #else
-	sleep(1);
+    sleep(1);
 #endif
-	web_printf(conn, "bye");
-	printf("CloseHandler: close connection\n");
-	web_close_connection(conn);
-	printf("CloseHandler: wait 10 sec\n");
+    web_printf(conn, "bye");
+    printf("CloseHandler: close connection\n");
+    web_close_connection(conn);
+    printf("CloseHandler: wait 10 sec\n");
 #ifdef _WIN32
-	Sleep(10000);
+    Sleep(10000);
 #else
-	sleep(10);
+    sleep(10);
 #endif
-	printf("CloseHandler: return from function\n");
-	return 1;
+    printf("CloseHandler: return from function\n");
+    
+    return WEB_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5852,13 +5694,14 @@ CloseHandler(struct web_connection *conn, void *cbdata)
 //
 
 int
-FileHandler(struct web_connection *conn, void *cbdata)
+FileHandler(struct web_connection *conn, void *cbdata) 
 {
-	/* In this handler, we ignore the req_info and send the file "fileName". */
-	const char *fileName = (const char *)cbdata;
+    // In this handler, we ignore the req_info and send the file "fileName". 
+    const char *fileName = (const char *) cbdata;
 
-	web_send_file(conn, fileName);
-	return 1;
+    web_send_file(conn, fileName);
+
+    return WEB_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5866,25 +5709,26 @@ FileHandler(struct web_connection *conn, void *cbdata)
 //
 
 int
-field_found(const char *key,
-            const char *filename,
-            char *path,
-            size_t pathlen,
-            void *user_data)
+field_found( const char *key,
+                const char *filename,
+                char *path,
+                size_t pathlen,
+                void *user_data)
 {
-	struct web_connection *conn = (struct web_connection *)user_data;
+    struct web_connection *conn = (struct web_connection *) user_data;
 
-	web_printf(conn, "\r\n\r\n%s:\r\n", key);
+    web_printf(conn, "\r\n\r\n%s:\r\n", key);
 
-	if (filename && *filename) {
+    if (filename && *filename) {
 #ifdef _WIN32
-		_snprintf(path, pathlen, "D:\\tmp\\%s", filename);
+        _snprintf(path, pathlen, "D:\\tmp\\%s", filename);
 #else
-		snprintf(path, pathlen, "/tmp/%s", filename);
+        snprintf(path, pathlen, "/tmp/%s", filename);
 #endif
-		return FORM_FIELD_STORAGE_STORE;
-	}
-	return FORM_FIELD_STORAGE_GET;
+        return FORM_FIELD_STORAGE_STORE;
+    }
+    
+    return FORM_FIELD_STORAGE_GET;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5892,16 +5736,17 @@ field_found(const char *key,
 //
 
 int
-field_get(const char *key, const char *value, size_t valuelen, void *user_data)
+field_get(const char *key, const char *value, size_t valuelen, void *user_data) 
 {
-	struct web_connection *conn = (struct web_connection *)user_data;
+    struct web_connection *conn = (struct web_connection *) user_data;
 
-	if (key[0]) {
-		web_printf(conn, "%s = ", key);
-	}
-	web_write(conn, value, valuelen);
+    if ( key[0] ) {
+        web_printf(conn, "%s = ", key);
+    }
+    
+    web_write(conn, value, valuelen);
 
-	return 0;
+    return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5909,16 +5754,16 @@ field_get(const char *key, const char *value, size_t valuelen, void *user_data)
 //
 
 int
-field_stored(const char *path, long long file_size, void *user_data)
+field_stored(const char *path, long long file_size, void *user_data) 
 {
-	struct web_connection *conn = (struct web_connection *)user_data;
+    struct web_connection *conn = (struct web_connection *) user_data;
 
-	web_printf(conn,
-	          "stored as %s (%lu bytes)\r\n\r\n",
-	          path,
-	          (unsigned long)file_size);
+    web_printf(conn,
+            "stored as %s (%lu bytes)\r\n\r\n",
+            path,
+            (unsigned long) file_size);
 
-	return 0;
+    return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5926,28 +5771,28 @@ field_stored(const char *path, long long file_size, void *user_data)
 //
 
 int
-FormHandler(struct web_connection *conn, void *cbdata)
+FormHandler(struct web_connection *conn, void *cbdata) 
 {
-	/* Handler may access the request info using web_get_request_info */
-	const struct web_request_info *req_info = web_get_request_info(conn);
-	int ret;
-	struct web_form_data_handler fdh = {field_found, field_get, field_stored, 0};
+    // Handler may access the request info using web_get_request_info 
+    const struct web_request_info *req_info = web_get_request_info(conn);
+    int ret;
+    struct web_form_data_handler fdh = {field_found, field_get, field_stored, 0};
 
-	/* It would be possible to check the request info here before calling
-	 * web_handle_form_request. */
-	(void)req_info;
+    // It would be possible to check the request info here before calling
+    // web_handle_form_request. 
+    (void) req_info;
 
-	web_printf(conn,
-	          "HTTP/1.1 200 OK\r\nContent-Type: "
-	          "text/plain\r\nConnection: close\r\n\r\n");
-	fdh.user_data = (void *)conn;
+    web_printf(conn,
+            "HTTP/1.1 200 OK\r\nContent-Type: "
+            "text/plain\r\nConnection: close\r\n\r\n");
+    fdh.user_data = (void *) conn;
 
-	/* Call the form handler */
-	web_printf(conn, "Form data:");
-	ret = web_handle_form_request(conn, &fdh);
-	web_printf(conn, "\r\n%i fields found", ret);
+    // Call the form handler 
+    web_printf(conn, "Form data:");
+    ret = web_handle_form_request(conn, &fdh);
+    web_printf(conn, "\r\n%i fields found", ret);
 
-	return 1;
+    return WEB_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5955,25 +5800,26 @@ FormHandler(struct web_connection *conn, void *cbdata)
 //
 
 int
-FileUploadForm(struct web_connection *conn, void *cbdata)
+FileUploadForm(struct web_connection *conn, void *cbdata) 
 {
-	web_printf(conn,
-	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-	          "close\r\n\r\n");
+    web_printf(conn,
+            "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+            "close\r\n\r\n");
 
-	web_printf(conn, "<!DOCTYPE html>\n");
-	web_printf(conn, "<html>\n<head>\n");
-	web_printf(conn, "<meta charset=\"UTF-8\">\n");
-	web_printf(conn, "<title>File upload</title>\n");
-	web_printf(conn, "</head>\n<body>\n");
-	web_printf(conn,
-	          "<form action=\"%s\" method=\"POST\" "
-	          "enctype=\"multipart/form-data\">\n",
-	          (const char *)cbdata);
-	web_printf(conn, "<input type=\"file\" name=\"filesin\" multiple>\n");
-	web_printf(conn, "<input type=\"submit\" value=\"Submit\">\n");
-	web_printf(conn, "</form>\n</body>\n</html>\n");
-	return 1;
+    web_printf(conn, "<!DOCTYPE html>\n");
+    web_printf(conn, "<html>\n<head>\n");
+    web_printf(conn, "<meta charset=\"UTF-8\">\n");
+    web_printf(conn, "<title>File upload</title>\n");
+    web_printf(conn, "</head>\n<body>\n");
+    web_printf(conn,
+            "<form action=\"%s\" method=\"POST\" "
+            "enctype=\"multipart/form-data\">\n",
+            (const char *) cbdata);
+    web_printf(conn, "<input type=\"file\" name=\"filesin\" multiple>\n");
+    web_printf(conn, "<input type=\"submit\" value=\"Submit\">\n");
+    web_printf(conn, "</form>\n</body>\n</html>\n");
+
+    return WEB_OK;
 }
 
 struct tfile_checksum {
@@ -5985,8 +5831,8 @@ struct tfile_checksum {
 #define MAX_FILES (10)
 
 struct tfiles_checksums {
-	int index;
-	struct tfile_checksum file[MAX_FILES];
+    int index;
+    struct tfile_checksum file[MAX_FILES];
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5994,27 +5840,27 @@ struct tfiles_checksums {
 //
 
 int
-field_disp_read_on_the_fly(const char *key,
-                           const char *filename,
-                           char *path,
-                           size_t pathlen,
-                           void *user_data)
-{
-	struct tfiles_checksums *context = (struct tfiles_checksums *)user_data;
+field_disp_read_on_the_fly( const char *key,
+                                const char *filename,
+                                char *path,
+                                size_t pathlen,
+                            void *user_data) {
+    struct tfiles_checksums *context = (struct tfiles_checksums *) user_data;
 
-	(void)key;
-	(void)path;
-	(void)pathlen;
+    (void)key;
+    (void)path;
+    (void)pathlen;
 
-	if (context->index < MAX_FILES) {
-		context->index++;
-		strncpy(context->file[context->index - 1].name, filename, 128);
-		context->file[context->index - 1].name[127] = 0;
-		context->file[context->index - 1].length = 0;
-		vscpmd5_init(&(context->file[context->index - 1].chksum));
-		return FORM_FIELD_STORAGE_GET;
-	}
-	return FORM_FIELD_STORAGE_ABORT;
+    if ( context->index < MAX_FILES ) {
+        context->index++;
+        strncpy(context->file[context->index - 1].name, filename, 128);
+        context->file[context->index - 1].name[127] = 0;
+        context->file[context->index - 1].length = 0;
+        vscpmd5_init(&(context->file[context->index - 1].chksum));
+        return FORM_FIELD_STORAGE_GET;
+    }
+    
+    return FORM_FIELD_STORAGE_ABORT;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -6025,17 +5871,17 @@ int
 field_get_checksum(const char *key,
                    const char *value,
                    size_t valuelen,
-                   void *user_data)
+                   void *user_data ) 
 {
-	struct tfiles_checksums *context = (struct tfiles_checksums *)user_data;
-	(void)key;
+    struct tfiles_checksums *context = (struct tfiles_checksums *) user_data;
+    (void) key;
 
-	context->file[context->index - 1].length += valuelen;
-	vscpmd5_append(&(context->file[context->index - 1].chksum),
-	           (const md5_byte_t *)value,
-	           valuelen);
+    context->file[context->index - 1].length += valuelen;
+    vscpmd5_append(&(context->file[context->index - 1].chksum),
+            (const md5_byte_t *) value,
+            valuelen);
 
-	return 0;
+    return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -6043,46 +5889,46 @@ field_get_checksum(const char *key,
 //
 
 int
-CheckSumHandler(struct web_connection *conn, void *cbdata)
+CheckSumHandler( struct web_connection *conn, void *cbdata ) 
 {
-	/* Handler may access the request info using web_get_request_info */
-	const struct web_request_info *req_info = web_get_request_info(conn);
-	int i, j, ret;
-	struct tfiles_checksums chksums;
-	md5_byte_t digest[16];
-	struct web_form_data_handler fdh = {field_disp_read_on_the_fly,
-	                                   field_get_checksum,
-	                                   0,
-	                                   (void *)&chksums};
+    // Handler may access the request info using web_get_request_info 
+    const struct web_request_info *req_info = web_get_request_info(conn);
+    int i, j, ret;
+    struct tfiles_checksums chksums;
+    md5_byte_t digest[16];
+    struct web_form_data_handler fdh = {field_disp_read_on_the_fly,
+        field_get_checksum,
+        0,
+        (void *) &chksums};
 
-	/* It would be possible to check the request info here before calling
-	 * web_handle_form_request. */
-	(void)req_info;
+    /* It would be possible to check the request info here before calling
+     * web_handle_form_request. */
+    (void) req_info;
 
-	memset(&chksums, 0, sizeof(chksums));
+    memset(&chksums, 0, sizeof (chksums));
 
-	web_printf(conn,
-	          "HTTP/1.1 200 OK\r\n"
-	          "Content-Type: text/plain\r\n"
-	          "Connection: close\r\n\r\n");
+    web_printf(conn,
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Type: text/plain\r\n"
+            "Connection: close\r\n\r\n");
 
-	/* Call the form handler */
-	web_printf(conn, "File checksums:");
-	ret = web_handle_form_request(conn, &fdh);
-	for (i = 0; i < chksums.index; i++) {
-		vscpmd5_finish(&(chksums.file[i].chksum), digest);
-		/* Visual Studio 2010+ support llu */
-		web_printf(conn,
-		          "\r\n%s %llu ",
-		          chksums.file[i].name,
-		          chksums.file[i].length);
-		for (j = 0; j < 16; j++) {
-			web_printf(conn, "%02x", (unsigned int)digest[j]);
-		}
-	}
-	web_printf(conn, "\r\n%i files\r\n", ret);
+    /* Call the form handler */
+    web_printf(conn, "File checksums:");
+    ret = web_handle_form_request(conn, &fdh);
+    for (i = 0; i < chksums.index; i++) {
+        vscpmd5_finish(&(chksums.file[i].chksum), digest);
+        /* Visual Studio 2010+ support llu */
+        web_printf(conn,
+                "\r\n%s %llu ",
+                chksums.file[i].name,
+                chksums.file[i].length);
+        for (j = 0; j < 16; j++) {
+            web_printf(conn, "%02x", (unsigned int) digest[j]);
+        }
+    }
+    web_printf(conn, "\r\n%i files\r\n", ret);
 
-	return 1;
+    return WEB_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -6090,47 +5936,48 @@ CheckSumHandler(struct web_connection *conn, void *cbdata)
 //
 
 int
-CookieHandler(struct web_connection *conn, void *cbdata)
+CookieHandler(struct web_connection *conn, void *cbdata) 
 {
-	/* Handler may access the request info using web_get_request_info */
-	const struct web_request_info *req_info = web_get_request_info(conn);
-	const char *cookie = web_get_header(conn, "Cookie");
-	char first_str[64], count_str[64];
-	int count;
+    // Handler may access the request info using web_get_request_info 
+    const struct web_request_info *req_info = web_get_request_info(conn);
+    const char *cookie = web_get_header(conn, "Cookie");
+    char first_str[64], count_str[64];
+    int count;
 
-	(void)web_get_cookie(cookie, "first", first_str, sizeof(first_str));
-	(void)web_get_cookie(cookie, "count", count_str, sizeof(count_str));
+    (void) web_get_cookie(cookie, "first", first_str, sizeof (first_str));
+    (void) web_get_cookie(cookie, "count", count_str, sizeof (count_str));
 
-	web_printf(conn, "HTTP/1.1 200 OK\r\nConnection: close\r\n");
-	if (first_str[0] == 0) {
-		time_t t = time(0);
-		struct tm *ptm = localtime(&t);
-		web_printf(conn,
-		          "Set-Cookie: first=%04i-%02i-%02iT%02i:%02i:%02i\r\n",
-		          ptm->tm_year + 1900,
-		          ptm->tm_mon + 1,
-		          ptm->tm_mday,
-		          ptm->tm_hour,
-		          ptm->tm_min,
-		          ptm->tm_sec);
-	}
-	count = (count_str[0] == 0) ? 0 : atoi(count_str);
-	web_printf(conn, "Set-Cookie: count=%i\r\n", count + 1);
-	web_printf(conn, "Content-Type: text/html\r\n\r\n");
+    web_printf(conn, "HTTP/1.1 200 OK\r\nConnection: close\r\n");
+    if (first_str[0] == 0) {
+        time_t t = time(0);
+        struct tm *ptm = localtime(&t);
+        web_printf(conn,
+                "Set-Cookie: first=%04i-%02i-%02iT%02i:%02i:%02i\r\n",
+                ptm->tm_year + 1900,
+                ptm->tm_mon + 1,
+                ptm->tm_mday,
+                ptm->tm_hour,
+                ptm->tm_min,
+                ptm->tm_sec);
+    }
+    count = (count_str[0] == 0) ? 0 : atoi(count_str);
+    web_printf(conn, "Set-Cookie: count=%i\r\n", count + 1);
+    web_printf(conn, "Content-Type: text/html\r\n\r\n");
 
-	web_printf(conn, "<html><body>");
-	web_printf(conn, "<h2>This is the CookieHandler.</h2>");
-	web_printf(conn, "<p>The actual uri is %s</p>", req_info->local_uri);
+    web_printf(conn, "<html><body>");
+    web_printf(conn, "<h2>This is the CookieHandler.</h2>");
+    web_printf(conn, "<p>The actual uri is %s</p>", req_info->local_uri);
 
-	if (first_str[0] == 0) {
-		web_printf(conn, "<p>This is the first time, you opened this page</p>");
-	} else {
-		web_printf(conn, "<p>You opened this page %i times before.</p>", count);
-		web_printf(conn, "<p>You first opened this page on %s.</p>", first_str);
-	}
+    if (first_str[0] == 0) {
+        web_printf(conn, "<p>This is the first time, you opened this page</p>");
+    } else {
+        web_printf(conn, "<p>You opened this page %i times before.</p>", count);
+        web_printf(conn, "<p>You first opened this page on %s.</p>", first_str);
+    }
 
-	web_printf(conn, "</body></html>\n");
-	return 1;
+    web_printf(conn, "</body></html>\n");
+    
+    return WEB_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -6138,59 +5985,59 @@ CookieHandler(struct web_connection *conn, void *cbdata)
 //
 
 int
-PostResponser(struct web_connection *conn, void *cbdata)
+PostResponser(struct web_connection *conn, void *cbdata) 
 {
-	long long r_total = 0;
-	int r, s;
+    long long r_total = 0;
+    int r, s;
 
-	char buf[2048];
+    char buf[2048];
 
-	const struct web_request_info *ri = web_get_request_info(conn);
+    const struct web_request_info *ri = web_get_request_info(conn);
 
-	if (strcmp(ri->request_method, "POST")) {
-		char buf[1024];
-		int ret = web_get_request_link(conn, buf, sizeof(buf));
+    if (strcmp(ri->request_method, "POST")) {
+        char buf[1024];
+        int ret = web_get_request_link(conn, buf, sizeof (buf));
 
-		web_printf(conn,
-		          "HTTP/1.1 405 Method Not Allowed\r\nConnection: close\r\n");
-		web_printf(conn, "Content-Type: text/plain\r\n\r\n");
-		web_printf(conn,
-		          "%s method not allowed in the POST handler\n",
-		          ri->request_method);
-		if (ret >= 0) {
-			web_printf(conn,
-			          "use a web tool to send a POST request to %s\n",
-			          buf);
-		}
-		return 1;
-	}
+        web_printf(conn,
+                "HTTP/1.1 405 Method Not Allowed\r\nConnection: close\r\n");
+        web_printf(conn, "Content-Type: text/plain\r\n\r\n");
+        web_printf(conn,
+                "%s method not allowed in the POST handler\n",
+                ri->request_method);
+        if (ret >= 0) {
+            web_printf(conn,
+                    "use a web tool to send a POST request to %s\n",
+                    buf);
+        }
+        return 1;
+    }
 
-	if (ri->content_length >= 0) {
-		/* We know the content length in advance */
-	} 
-        else {
-		/* We must read until we find the end (chunked encoding
-		 * or connection close), indicated my web_read returning 0 */
-	}
+    if (ri->content_length >= 0) {
+        /* We know the content length in advance */
+    }
+    else {
+        /* We must read until we find the end (chunked encoding
+         * or connection close), indicated my web_read returning 0 */
+    }
 
-	web_printf(conn,
-	          "HTTP/1.1 200 OK\r\nConnection: "
-	          "close\r\nTransfer-Encoding: chunked\r\n");
-	web_printf(conn, "Content-Type: text/plain\r\n\r\n");
+    web_printf(conn,
+            "HTTP/1.1 200 OK\r\nConnection: "
+            "close\r\nTransfer-Encoding: chunked\r\n");
+    web_printf(conn, "Content-Type: text/plain\r\n\r\n");
 
-	r = web_read(conn, buf, sizeof(buf));
-	while (r > 0) {
-		r_total += r;
-		s = web_send_chunk(conn, buf, r);
-		if (r != s) {
-			/* Send error */
-			break;
-		}
-		r = web_read(conn, buf, sizeof(buf));
-	}
-	web_printf(conn, "0\r\n");
+    r = web_read(conn, buf, sizeof (buf));
+    while (r > 0) {
+        r_total += r;
+        s = web_send_chunk(conn, buf, r);
+        if (r != s) {
+            /* Send error */
+            break;
+        }
+        r = web_read(conn, buf, sizeof (buf));
+    }
+    web_printf(conn, "0\r\n");
 
-	return 1;
+    return WEB_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -6198,45 +6045,45 @@ PostResponser(struct web_connection *conn, void *cbdata)
 //
 
 int
-WebSocketStartHandler(struct web_connection *conn, void *cbdata)
+WebSocketStartHandler(struct web_connection *conn, void *cbdata) 
 {
-	web_printf(conn,
-	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-	          "close\r\n\r\n");
+    web_printf(conn,
+            "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+            "close\r\n\r\n");
 
-	web_printf(conn, "<!DOCTYPE html>\n");
-	web_printf(conn, "<html>\n<head>\n");
-	web_printf(conn, "<meta charset=\"UTF-8\">\n");
-	web_printf(conn, "<title>Embedded websocket example</title>\n");
+    web_printf(conn, "<!DOCTYPE html>\n");
+    web_printf(conn, "<html>\n<head>\n");
+    web_printf(conn, "<meta charset=\"UTF-8\">\n");
+    web_printf(conn, "<title>Embedded websocket example</title>\n");
 
-	/* web_printf(conn, "<script type=\"text/javascript\"><![CDATA[\n"); ...
-	 * xhtml style */
-	web_printf(conn, "<script>\n");
-	web_printf(
-	    conn,
-	    "function load() {\n"
-	    "  var wsproto = (location.protocol === 'https:') ? 'wss:' : 'ws:';\n"
-	    "  connection = new WebSocket(wsproto + '//' + window.location.host + "
-	    "'/websocket');\n"
-	    "  websock_text_field = "
-	    "document.getElementById('websock_text_field');\n"
-	    "  connection.onmessage = function (e) {\n"
-	    "    websock_text_field.innerHTML=e.data;\n"
-	    "  }\n"
-	    "  connection.onerror = function (error) {\n"
-	    "    alert('WebSocket error');\n"
-	    "    connection.close();\n"
-	    "  }\n"
-	    "}\n");
-	/* web_printf(conn, "]]></script>\n"); ... xhtml style */
-	web_printf(conn, "</script>\n");
-	web_printf(conn, "</head>\n<body onload=\"load()\">\n");
-	web_printf(
-	    conn,
-	    "<div id='websock_text_field'>No websocket connection yet</div>\n");
-	web_printf(conn, "</body>\n</html>\n");
+    /* web_printf(conn, "<script type=\"text/javascript\"><![CDATA[\n"); ...
+     * xhtml style */
+    web_printf(conn, "<script>\n");
+    web_printf(
+            conn,
+            "function load() {\n"
+            "  var wsproto = (location.protocol === 'https:') ? 'wss:' : 'ws:';\n"
+            "  connection = new WebSocket(wsproto + '//' + window.location.host + "
+            "'/websocket');\n"
+            "  websock_text_field = "
+            "document.getElementById('websock_text_field');\n"
+            "  connection.onmessage = function (e) {\n"
+            "    websock_text_field.innerHTML=e.data;\n"
+            "  }\n"
+            "  connection.onerror = function (error) {\n"
+            "    alert('WebSocket error');\n"
+            "    connection.close();\n"
+            "  }\n"
+            "}\n");
+    /* web_printf(conn, "]]></script>\n"); ... xhtml style */
+    web_printf(conn, "</script>\n");
+    web_printf(conn, "</head>\n<body onload=\"load()\">\n");
+    web_printf(
+            conn,
+            "<div id='websock_text_field'>No websocket connection yet</div>\n");
+    web_printf(conn, "</body>\n</html>\n");
 
-	return 1;
+    return WEB_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -6272,29 +6119,30 @@ struct t_ws_client {
 //
 
 int
-WebSocketConnectHandler(const struct web_connection *conn, void *cbdata)
+WebSocketConnectHandler(const struct web_connection *conn, void *cbdata) 
 {
-	struct web_context *ctx = web_get_context(conn);
-	int reject = 1;
-	int i;
+    struct web_context *ctx = web_get_context(conn);
+    int reject = 1;
+    int i;
 
-	web_lock_context(ctx);
-	for (i = 0; i < MAX_WS_CLIENTS; i++) {
-		if (ws_clients[i].conn == NULL) {
-			ws_clients[i].conn = (struct web_connection *)conn;
-			ws_clients[i].state = 1;
-			web_set_user_connection_data(ws_clients[i].conn,
-			                            (void *)(ws_clients + i));
-			reject = 0;
-			break;
-		}
-	}
-	web_unlock_context(ctx);
+    web_lock_context(ctx);
+    for (i = 0; i < MAX_WS_CLIENTS; i++) {
+        if (ws_clients[i].conn == NULL) {
+            ws_clients[i].conn = (struct web_connection *) conn;
+            ws_clients[i].state = 1;
+            web_set_user_connection_data(ws_clients[i].conn,
+                    (void *) (ws_clients + i));
+            reject = 0;
+            break;
+        }
+    }
+    web_unlock_context(ctx);
 
-	fprintf(stdout,
-	        "Websocket client %s\r\n\r\n",
-	        (reject ? "rejected" : "accepted"));
-	return reject;
+    fprintf(stdout,
+            "Websocket client %s\r\n\r\n",
+            (reject ? "rejected" : "accepted"));
+    
+    return reject;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -6302,17 +6150,17 @@ WebSocketConnectHandler(const struct web_connection *conn, void *cbdata)
 //
 
 void
-WebSocketReadyHandler(struct web_connection *conn, void *cbdata)
+WebSocketReadyHandler(struct web_connection *conn, void *cbdata) 
 {
-	const char *text = "Hello from the websocket ready handler";
-	struct t_ws_client *client = (struct t_ws_client *)web_get_user_connection_data(conn);
+    const char *text = "Hello from the websocket ready handler";
+    struct t_ws_client *client = (struct t_ws_client *) web_get_user_connection_data(conn);
 
-	web_websocket_write(conn, WEBSOCKET_OPCODE_TEXT, text, strlen(text));
-	fprintf(stdout, "Greeting message sent to websocket client\r\n\r\n");
-	ASSERT(client->conn == conn);
-	ASSERT(client->state == 1);
+    web_websocket_write(conn, WEBSOCKET_OPCODE_TEXT, text, strlen(text));
+    fprintf(stdout, "Greeting message sent to websocket client\r\n\r\n");
+    ASSERT(client->conn == conn);
+    ASSERT(client->state == 1);
 
-	client->state = 2;
+    client->state = 2;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -6320,45 +6168,45 @@ WebSocketReadyHandler(struct web_connection *conn, void *cbdata)
 //
 
 int
-WebsocketDataHandler(struct web_connection *conn,
-                     int bits,
-                     char *data,
-                     size_t len,
-                     void *cbdata)
+WebsocketDataHandler( struct web_connection *conn,
+                        int bits,
+                        char *data,
+                        size_t len,
+                        void *cbdata ) 
 {
-	struct t_ws_client *client = (struct t_ws_client *)web_get_user_connection_data(conn);
-	ASSERT(client->conn == conn);
-	ASSERT(client->state >= 1);
+    struct t_ws_client *client = (struct t_ws_client *) web_get_user_connection_data(conn);
+    ASSERT(client->conn == conn);
+    ASSERT(client->state >= 1);
 
-	fprintf(stdout, "Websocket got %lu bytes of ", (unsigned long)len);
-	switch (((unsigned char)bits) & 0x0F) {
-	case WEBSOCKET_OPCODE_CONTINUATION:
-		fprintf(stdout, "continuation");
-		break;
-	case WEBSOCKET_OPCODE_TEXT:
-		fprintf(stdout, "text");
-		break;
-	case WEBSOCKET_OPCODE_BINARY:
-		fprintf(stdout, "binary");
-		break;
-	case WEBSOCKET_OPCODE_CONNECTION_CLOSE:
-		fprintf(stdout, "close");
-		break;
-	case WEBSOCKET_OPCODE_PING:
-		fprintf(stdout, "ping");
-		break;
-	case WEBSOCKET_OPCODE_PONG:
-		fprintf(stdout, "pong");
-		break;
-	default:
-		fprintf(stdout, "unknown(%1xh)", ((unsigned char)bits) & 0x0F);
-		break;
-	}
-	fprintf(stdout, " data:\r\n");
-	fwrite(data, len, 1, stdout);
-	fprintf(stdout, "\r\n\r\n");
+    fprintf(stdout, "Websocket got %lu bytes of ", (unsigned long) len);
+    switch (((unsigned char) bits) & 0x0F) {
+        case WEBSOCKET_OPCODE_CONTINUATION:
+            fprintf(stdout, "continuation");
+            break;
+        case WEBSOCKET_OPCODE_TEXT:
+            fprintf(stdout, "text");
+            break;
+        case WEBSOCKET_OPCODE_BINARY:
+            fprintf(stdout, "binary");
+            break;
+        case WEBSOCKET_OPCODE_CONNECTION_CLOSE:
+            fprintf(stdout, "close");
+            break;
+        case WEBSOCKET_OPCODE_PING:
+            fprintf(stdout, "ping");
+            break;
+        case WEBSOCKET_OPCODE_PONG:
+            fprintf(stdout, "pong");
+            break;
+        default:
+            fprintf(stdout, "unknown(%1xh)", ((unsigned char) bits) & 0x0F);
+            break;
+    }
+    fprintf(stdout, " data:\r\n");
+    fwrite(data, len, 1, stdout);
+    fprintf(stdout, "\r\n\r\n");
 
-	return 1;
+    return WEB_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -6366,20 +6214,20 @@ WebsocketDataHandler(struct web_connection *conn,
 //
 
 void
-WebSocketCloseHandler(const struct web_connection *conn, void *cbdata)
+WebSocketCloseHandler(const struct web_connection *conn, void *cbdata) 
 {
-	struct web_context *ctx = web_get_context(conn);
-	struct t_ws_client *client = (struct t_ws_client *)web_get_user_connection_data(conn);
-	ASSERT(client->conn == conn);
-	ASSERT(client->state >= 1);
+    struct web_context *ctx = web_get_context(conn);
+    struct t_ws_client *client = (struct t_ws_client *) web_get_user_connection_data(conn);
+    ASSERT(client->conn == conn);
+    ASSERT(client->state >= 1);
 
-	web_lock_context(ctx);
-	client->state = 0;
-	client->conn = NULL;
-	web_unlock_context(ctx);
+    web_lock_context(ctx);
+    client->state = 0;
+    client->conn = NULL;
+    web_unlock_context(ctx);
 
-	fprintf(stdout,
-	        "Client droped from the set of webserver connections\r\n\r\n");
+    fprintf(stdout,
+            "Client droped from the set of webserver connections\r\n\r\n");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -6387,24 +6235,24 @@ WebSocketCloseHandler(const struct web_connection *conn, void *cbdata)
 //
 
 void
-InformWebsockets(struct web_context *ctx)
+InformWebsockets(struct web_context *ctx) 
 {
-	static unsigned long cnt = 0;
-	char text[32];
-	int i;
+    static unsigned long cnt = 0;
+    char text[32];
+    int i;
 
-	sprintf(text, "%lu", ++cnt);
+    sprintf(text, "%lu", ++cnt);
 
-	web_lock_context(ctx);
-	for (i = 0; i < MAX_WS_CLIENTS; i++) {
-		if (ws_clients[i].state == 2) {
-			web_websocket_write(ws_clients[i].conn,
-			                   WEBSOCKET_OPCODE_TEXT,
-			                   text,
-			                   strlen(text));
-		}
-	}
-	web_unlock_context(ctx);
+    web_lock_context(ctx);
+    for (i = 0; i < MAX_WS_CLIENTS; i++) {
+        if ( 2 == ws_clients[i].state ) {
+            web_websocket_write( ws_clients[i].conn,
+                                    WEBSOCKET_OPCODE_TEXT,
+                                    text,
+                                    strlen(text) );
+        }
+    }
+    web_unlock_context(ctx);
 }
 
 #endif  // WEB_EXAMPLES
@@ -6493,12 +6341,7 @@ init_ssl(void *ssl_context, void *user_data)
 
 
 
-int
-log_message( const struct web_connection *conn, const char *message )
-{
-    puts(message);
-    return 1;
-}
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6548,46 +6391,24 @@ int init_webserver( void )
     int port_cnt, n;
     int err = 0;
 
-    // Check if we have been built with all required features. 
-    if ( !web_check_feature( 8 ) ) {
-        fprintf( stderr,
-                    "Error: Embedded example built with IPv6 support, "
-		    "but webserver build without.\n");
-        err = 1;
-    }
-
-    if ( !web_check_feature( 16 ) ) {
-        fprintf( stderr,
-                    "Error: Embedded example built with websocket support, "
-		    "but webserver build without.\n");
-        err = 1;
-    }
-
-    if ( !web_check_feature( 2 ) ) {
-        fprintf( stderr,
-                    "Error: Embedded example built with SSL support, "
-                    "but webserver build without.\n" );
-	err = 1;
-    }
-
-    if ( err ) {
-	fprintf( stderr, "Cannot start webserver - inconsistent build.\n");
-            return EXIT_FAILURE;
-    }
-
-    // Start CivetWeb web server 
+    // Start the web server 
     memset( &callbacks, 0, sizeof( callbacks ) );
     callbacks.init_ssl = init_ssl;
 
+    // Set logging callback
     callbacks.log_message = log_message;
-    gpobj->webctx = web_start(&callbacks, 0, options);
+    gpobj->webctx = web_start( &callbacks, 0, options );
 
     // Check return value: 
     if ( NULL == gpobj->webctx ) {
-        fprintf( stderr, "Cannot start webserver - web_start failed.\n" );
+        gpobj->logMsg( "websrv: Cannot start webserver - web_start failed.\n", 
+                            DAEMON_LOGMSG_NORMAL, 
+                            DAEMON_LOGTYPE_GENERAL );
 	return EXIT_FAILURE;
     }
         
+// The web examples enables some Civitweb test code
+    
 #ifdef WEB_EXAMPLES
 
     // Add handler EXAMPLE_URI, to explain the example 
@@ -6623,13 +6444,13 @@ int init_webserver( void )
 
     // Add a file upload handler for parsing files on the fly 
     web_set_request_handler( gpobj->webctx,
-            "/on_the_fly_form",
-            FileUploadForm,
-            (void *) "/on_the_fly_form.md5.callback");
+                                "/on_the_fly_form",
+                                FileUploadForm,
+                                (void *)"/on_the_fly_form.md5.callback");
     web_set_request_handler( gpobj->webctx,
-            "/on_the_fly_form.md5.callback",
-            CheckSumHandler,
-            (void *) 0);
+                                "/on_the_fly_form.md5.callback",
+                                CheckSumHandler,
+                                (void *) 0 );
 
     /* Add handler for /cookie example */
     web_set_request_handler( gpobj->webctx, "/cookie", CookieHandler, 0);
@@ -6650,25 +6471,26 @@ int init_webserver( void )
                                     0 );
 #endif  // WEB_EXAMPLES     
     
-    // Set page handlers
-    web_set_request_handler( gpobj->webctx, "/vscp", vscp_mainpage, 0);
-    web_set_request_handler( gpobj->webctx, "/vscp/session", vscp_client, 0 );
-    web_set_request_handler( gpobj->webctx, "/vscp/configure", vscp_configure, 0 );
-    web_set_request_handler( gpobj->webctx, "/vscp/interfaces", vscp_interface, 0 );
-    web_set_request_handler( gpobj->webctx, "/vscp/settings", vscp_settings, 0);
-    web_set_request_handler( gpobj->webctx, "/vscp/variables", vscp_variable_list, 0);
-    web_set_request_handler( gpobj->webctx, "/vscp/varedit", vscp_variable_edit, 0);
-    web_set_request_handler( gpobj->webctx, "/vscp/varpost", vscp_variable_post, 0);
-    web_set_request_handler( gpobj->webctx, "/vscp/varnew", vscp_variable_new, 0);
-    web_set_request_handler( gpobj->webctx, "/vscp/vardelete", vscp_variable_delete, 0);
-    web_set_request_handler( gpobj->webctx, "/vscp/dm", vscp_dm_list, 0);
-    web_set_request_handler( gpobj->webctx, "/vscp/dmedit", vscp_dm_edit, 0);
-    web_set_request_handler( gpobj->webctx, "/vscp/dmpost", vscp_dm_post, 0);
-    web_set_request_handler( gpobj->webctx, "/vscp/dmdelete", vscp_dm_delete, 0);
-    web_set_request_handler( gpobj->webctx, "/vscp/users", vscp_user_list, 0);
-    
     // Set authorization handlers
     web_set_auth_handler( gpobj->webctx, "/vscp", check_admin_authorization, NULL );
+    
+    // Set page handlers
+    web_set_request_handler( gpobj->webctx, "/vscp",            vscp_mainpage, 0);
+    web_set_request_handler( gpobj->webctx, "/vscp/session",    vscp_client, 0 );
+    web_set_request_handler( gpobj->webctx, "/vscp/configure",  vscp_configure, 0 );
+    web_set_request_handler( gpobj->webctx, "/vscp/interfaces", vscp_interface, 0 );
+    web_set_request_handler( gpobj->webctx, "/vscp/settings",   vscp_settings, 0 );
+    web_set_request_handler( gpobj->webctx, "/vscp/varlist",  vscp_variable_list, 0 );
+    web_set_request_handler( gpobj->webctx, "/vscp/varedit",    vscp_variable_edit, 0 );
+    web_set_request_handler( gpobj->webctx, "/vscp/varpost",    vscp_variable_post, 0 );
+    web_set_request_handler( gpobj->webctx, "/vscp/varnew",     vscp_variable_new, 0);
+    web_set_request_handler( gpobj->webctx, "/vscp/vardelete",  vscp_variable_delete, 0 );
+    web_set_request_handler( gpobj->webctx, "/vscp/dm",         vscp_dm_list, 0 );
+    web_set_request_handler( gpobj->webctx, "/vscp/dmedit",     vscp_dm_edit, 0 );
+    web_set_request_handler( gpobj->webctx, "/vscp/dmpost",     vscp_dm_post, 0 );
+    web_set_request_handler( gpobj->webctx, "/vscp/dmdelete",   vscp_dm_delete, 0 );
+    web_set_request_handler( gpobj->webctx, "/vscp/users",      vscp_user_list, 0 );    
+    
 }
 
 

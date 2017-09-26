@@ -43,8 +43,8 @@
 #include <openssl/crypto.h>
 
 #include <mongoose.h>
-
 #include <lua.h>
+#include <duktape.h>
 
 #include <vscp.h>
 #include <vscpdb.h>
@@ -2037,6 +2037,56 @@ bool CVariableStorage::init( void )
     
     
     // *************************************************************************
+    //                               Duktape
+    // *************************************************************************
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ );    
+    variable.setName( _("vscp.duktape.version.major") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
+    variable.setNote( _("Duktape major version number."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ );    
+    variable.setName( _("vscp.duktape.version.minor") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
+    variable.setNote( _("Duktape minor version number."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ );    
+    variable.setName( _("vscp.duktape.version.release") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
+    variable.setNote( _("Duktape release version number."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ );    
+    variable.setName( _("vscp.duktape.version.str") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("Version for Duktape library."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ );    
+    variable.setName( _("vscp.duktape.copyright") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
+    variable.setNote( _("Licens for Duktape library."), true );
+    addStockVariable( variable  );
+    
+    // *************************************************************************
+    //                                 Cicitweb
+    // *************************************************************************
+
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ );    
+    variable.setName( _("vscp.civetweb.copyright") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
+    variable.setNote( _("Licens for Civetweb library."), true );
+    addStockVariable( variable  );
+    
+    // *************************************************************************
     //                                 LUA
     // *************************************************************************
     
@@ -2596,16 +2646,9 @@ bool CVariableStorage::init( void )
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.dm.logging.enable") );
-    variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
-    variable.setNote( _("Flag for decision matrix logging (true for activated)."), true );
-    addStockVariable( variable  );
-    
-    variable.init();
-    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.dm.logging.path") );
+    variable.setName( _("vscp.dm.loglevel") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Path to decision matrix logging,"), true );
+    variable.setNote( _("DM log level 'normal' or 'debug'."), true );
     addStockVariable( variable  );
     
     variable.init();
@@ -2642,7 +2685,67 @@ bool CVariableStorage::init( void )
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Full decision matrix (all rows)."), true );
     addStockVariable( variable  );
+        
     
+    // *************************************************************************
+    //                               Debug
+    // *************************************************************************
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.debug.flags1") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+    variable.setNote( _("VSCP debug flags 1."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.debug.flags2") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+    variable.setNote( _("VSCP debug flags 2."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.debug.flags3") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+    variable.setNote( _("VSCP debug flags 3."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.debug.flags4") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+    variable.setNote( _("VSCP debug flags 4."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.debug.flags5") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+    variable.setNote( _("VSCP debug flags 5."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.debug.flags6") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+    variable.setNote( _("VSCP debug flags 6."), true );
+    addStockVariable( variable  );
+    variable.init();
+    
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.debug.flags7") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+    variable.setNote( _("VSCP debug flags 7."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.debug.flags8") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+    variable.setNote( _("VSCP debug flags 8."), true );
+    addStockVariable( variable  );
     
     // *************************************************************************
     //                             Variables
@@ -2985,7 +3088,9 @@ uint32_t CVariableStorage::find( const wxString& name, CVSCPVariable& variable )
 // getStockVariable
 //
 
-uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable& var )
+uint32_t CVariableStorage::getStockVariable( const wxString& name, 
+                                                CVSCPVariable& var,
+                                                CUserItem *pUser )
 {
     wxString wxstr;
     wxString strToken;
@@ -3008,6 +3113,55 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
     // Get persistent variable
     id = findNonPersistentVariable( name, var );
     if ( 0 == id ) return 0;
+    
+    
+    // *************************************************************************
+    //                            Debug flags
+    // *************************************************************************
+    
+    if ( lcname.StartsWith( _("vscp.debug") ) ) {
+            
+        if ( lcname.StartsWith( _("vscp.debug.flags1") ) ) {
+            var.setValue( (long)gpobj->m_debugFlags1 );
+            return var.getID();
+        }
+    
+        if ( lcname.StartsWith( _("vscp.debug.flags2") ) ) {
+            var.setValue( (long)gpobj->m_debugFlags2 );
+            return var.getID();
+        }
+    
+        if ( lcname.StartsWith( _("vscp.debug.flags3") ) ) {
+            var.setValue( (long)gpobj->m_debugFlags3 );
+            return var.getID();
+        }
+    
+        if ( lcname.StartsWith( _("vscp.debug.flags4") ) ) {
+            var.setValue( (long)gpobj->m_debugFlags4 );
+            return var.getID();
+        }
+    
+        if ( lcname.StartsWith( _("vscp.debug.flags5") ) ) {
+            var.setValue( (long)gpobj->m_debugFlags5 );
+            return var.getID();
+        }
+    
+        if ( lcname.StartsWith( _("vscp.debug.flags6") ) ) {
+            var.setValue( (long)gpobj->m_debugFlags6 );
+            return var.getID();
+        }
+    
+        if ( lcname.StartsWith( _("vscp.debug.flags7") ) ) {
+            var.setValue( (long)gpobj->m_debugFlags7 );
+            return var.getID();
+        }
+        
+        if ( lcname.StartsWith( _("vscp.debug.flags8") ) ) {
+            var.setValue( (long)gpobj->m_debugFlags8 );
+            return var.getID();
+        }
+
+    }    
     
     // *************************************************************************
     //                            VSCP version info.
@@ -3213,6 +3367,53 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
     }
     
     
+    
+    
+    
+    // *************************************************************************
+    //                                 Duktape
+    // *************************************************************************
+    
+    if ( lcname.StartsWith( _("vscp.duktape.version.major") ) ) {
+        int dukmajor = DUK_VERSION / 10000;
+        var.setValue( DUK_VERSION / 10000 );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.duktape.version.minor") ) ) {
+        var.setValue( ( DUK_VERSION - ( DUK_VERSION / 10000 ) ) / 100 );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.duktape.version.release") ) ) {
+        var.setValue( DUK_VERSION - ( DUK_VERSION / 100 ) );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.duktape.version.str") ) ) {
+        var.setValue( wxString::Format( _("%s"),
+                    DUK_GIT_DESCRIBE ), true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.duktape.copyright") ) ) {
+        var.setValue( _("Duktape copyrights are held by its authors. (https://github.com/grodansparadis/vscp/blob/master/src/common/duktape.h)"), 
+                        true );
+        return var.getID();
+    }
+    
+    
+    
+    // *************************************************************************
+    //                                Civitweb
+    // *************************************************************************
+    
+    
+    if ( lcname.StartsWith( _("vscp.civetweb.copyright") ) ) {
+        var.setValue( _("Copyright (c) 2004-2013 Sergey Lyubka, Copyright (c) 2013-2017 the Civetweb developers, Copyright (c) 2017 Ake Hedman, Grodans Paradis AB"),
+                        true );
+        return var.getID();
+    }
     
     
     // *************************************************************************
@@ -3707,6 +3908,16 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
         var.setValue( gpobj->m_dm.m_staticXMLPath, true ); 
         return var.getID();
     }
+    
+    if ( lcname.StartsWith( _("vscp.dm.loglevel") ) ) {
+        if (gpobj->m_debugFlags1 | VSCP_DEBUG1_DM ) {
+            var.setValue( "debug", true ); 
+        }
+        else {
+            var.setValue( "normal", true );
+        }
+        return var.getID();
+    }
 
 
     // *************************************************************************
@@ -3715,12 +3926,12 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
 
 
     if ( lcname.StartsWith( _("vscp.variable.db.path") ) ) {
-        var.setValue( gpobj->m_VSCP_Variables.m_dbFilename.GetFullPath(), true );
+        var.setValue( gpobj->m_variables.m_dbFilename.GetFullPath(), true );
         return var.getID();
     }
     
     if ( lcname.StartsWith( _("vscp.variable.xml.path") ) ) {
-        var.setValue( gpobj->m_VSCP_Variables.m_xmlPath, true );
+        var.setValue( gpobj->m_variables.m_xmlPath, true );
         return var.getID();
     }
 
@@ -4315,16 +4526,81 @@ uint32_t CVariableStorage::getStockVariable(const wxString& name, CVSCPVariable&
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// writeStockVariable
+// putStockVariable
 //
 
-bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
+bool CVariableStorage::putStockVariable( CVSCPVariable& var, 
+                                            CUserItem *pUser )
 {
     wxString wxstr;
     wxString lcname = var.getName().Lower();
     
     // Make sure it starts with ".vscp"
     if ( !lcname.StartsWith("vscp.") ) return false;  
+    
+    ///////////////////////////////////////////////////////////////////////////
+    //                               DEBUG
+    ///////////////////////////////////////////////////////////////////////////
+    
+    if ( lcname.StartsWith( _("vscp.debug.flags1") ) ) {
+        long value;
+        var.getValue( &value );
+        gpobj->m_debugFlags1 = (uint32_t)value;
+        return true;   // None writable
+    }
+    
+    if ( lcname.StartsWith( _("vscp.debug.flags2") ) ) {
+        long value;
+        var.getValue( &value );
+        gpobj->m_debugFlags2 = (uint32_t)value;
+        return true;   // None writable
+    }
+    
+    if ( lcname.StartsWith( _("vscp.debug.flags3") ) ) {
+        long value;
+        var.getValue( &value );
+        gpobj->m_debugFlags3 = (uint32_t)value;
+        return true;   // None writable
+    }
+    
+    if ( lcname.StartsWith( _("vscp.debug.flags4") ) ) {
+        long value;
+        var.getValue( &value );
+        gpobj->m_debugFlags4 = (uint32_t)value;
+        return true;   // None writable
+    }
+    
+    if ( lcname.StartsWith( _("vscp.debug.flags5") ) ) {
+        long value;
+        var.getValue( &value );
+        gpobj->m_debugFlags5 = (uint32_t)value;
+        return true;   // None writable
+    }
+    
+    if ( lcname.StartsWith( _("vscp.debug.flags6") ) ) {
+        long value;
+        var.getValue( &value );
+        gpobj->m_debugFlags6 = (uint32_t)value;
+        return true;   // None writable
+    }
+    
+    if ( lcname.StartsWith( _("vscp.debug.flags7") ) ) {
+        long value;
+        var.getValue( &value );
+        gpobj->m_debugFlags7 = (uint32_t)value;
+        return true;   // None writable
+    }
+    
+    if ( lcname.StartsWith( _("vscp.debug.flags8") ) ) {
+        long value;
+        var.getValue( &value );
+        gpobj->m_debugFlags8 = (uint32_t)value;
+        return true;   // None writable
+    }
+    
+    ///////////////////////////////////////////////////////////////////////////
+    //                              VERSIONS
+    ///////////////////////////////////////////////////////////////////////////
     
     if ( lcname.StartsWith( _("vscp.version.major") ) ) {
         return false;   // None writable
@@ -4854,7 +5130,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
     if ( lcname.StartsWith( _("vscp.variable.db.path") ) ) {
         wxString strval;
         strval = var.getValue();
-        var.setValue( gpobj->m_VSCP_Variables.m_dbFilename.GetFullPath() );
+        var.setValue( gpobj->m_variables.m_dbFilename.GetFullPath() );
         return gpobj->updateConfigurationRecordItem( _("vscpd_Variables_DB_Path"), 
                                                     strval );
     }
@@ -4862,7 +5138,7 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
     if ( lcname.StartsWith( _("vscp.variable.xml.path") ) ) {
         wxString strval;
         strval = var.getValue();
-        var.setValue( gpobj->m_VSCP_Variables.m_xmlPath );
+        var.setValue( gpobj->m_variables.m_xmlPath );
         return gpobj->updateConfigurationRecordItem( _("vscpd_Variables_XML_Path"), 
                                                     strval );
     }
@@ -4924,11 +5200,19 @@ bool CVariableStorage::writeStockVariable( CVSCPVariable& var )
         return false;   // None writable
     }
     
-    if ( lcname.StartsWith( _("vscp.dm.count.active") ) ) {
+    else if ( lcname.StartsWith( _("vscp.dm.count.active") ) ) {
         return false;   // None writable      
     }
     
-    if ( wxNOT_FOUND != lcname.Find( _("vscp.dm.") ) ) {
+    else if ( lcname.StartsWith( _("vscp.dm.logging.enable") ) ) {
+        return false;   // None writable      
+    }
+    
+    else if ( lcname.StartsWith( _("vscp.dm.logging.path") ) ) {
+        return false;   // None writable      
+    }
+    
+    else if ( wxNOT_FOUND != lcname.Find( _("vscp.dm.") ) ) {
         
         int pos;
         short row;
@@ -6150,7 +6434,7 @@ bool CVariableStorage::update( CVSCPVariable& var )
     
     // If stock variables update locally
     if ( var.isStockVariable() ) {
-       writeStockVariable( var );
+        putStockVariable( var );
     }
     
     return true;

@@ -113,7 +113,6 @@
 #include <tables.h>
 #include <configfile.h>
 #include <crc.h>
-//#include <xml2json.hpp>
 #include <randpassword.h>
 #include <version.h>
 #include <variablecodes.h>
@@ -149,12 +148,6 @@ extern struct websrv_rest_session *gp_websrv_rest_sessions;
 
 // Prototypes
 
-int webserv_url_decode( const char *src, int src_len,
-                            char *dst, int dst_len,
-                            int is_form_url_encoded );
-void webserv_util_sendheader( struct mg_connection *nc,
-                                        const int returncode,
-                                        const char *content );
 
 
 
@@ -166,7 +159,7 @@ void webserv_util_sendheader( struct mg_connection *nc,
 //            TODO: Replace with new frozen code.
 //-----------------------------------------------------------------------------
 
-
+// TODO remove
 
 
 static int json_emit_long(char *buf, int buf_len, long int value) {
@@ -951,7 +944,7 @@ VSCPWebServerThread::webserv_rest_error( struct mg_connection *nc,
 
     if ( REST_FORMAT_PLAIN == format ) {
 
-        webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_PLAIN );
+        // TODO webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_PLAIN );
         mg_send_http_chunk( nc, rest_errors[errorcode][REST_FORMAT_PLAIN], strlen( rest_errors[errorcode][REST_FORMAT_PLAIN] )  );
         mg_send_http_chunk( nc, "", 0 );   // Terminator
         return;
@@ -959,7 +952,7 @@ VSCPWebServerThread::webserv_rest_error( struct mg_connection *nc,
     }
     else if ( REST_FORMAT_CSV == format ) {
 
-        webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_CSV );
+        // TODO webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_CSV );
         mg_send_http_chunk( nc, rest_errors[errorcode][REST_FORMAT_CSV], strlen( rest_errors[errorcode][REST_FORMAT_CSV] )  );
         mg_send_http_chunk( nc, "", 0 );   // Terminator
         return;
@@ -967,7 +960,7 @@ VSCPWebServerThread::webserv_rest_error( struct mg_connection *nc,
     }
     else if ( REST_FORMAT_XML == format ) {
 
-        webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_XML );
+        // TODO webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_XML );
         mg_send_http_chunk( nc, XML_HEADER, strlen( XML_HEADER ) );
         mg_send_http_chunk( nc, rest_errors[errorcode][REST_FORMAT_XML], strlen( rest_errors[errorcode][REST_FORMAT_XML] ) );
         mg_send_http_chunk( nc, "", 0 );   // Terminator
@@ -976,7 +969,7 @@ VSCPWebServerThread::webserv_rest_error( struct mg_connection *nc,
     }
     else if ( REST_FORMAT_JSON == format ) {
 
-        webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_JSON );
+        // TODO webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_JSON );
         mg_send_http_chunk( nc, rest_errors[errorcode][REST_FORMAT_JSON], strlen( rest_errors[errorcode][REST_FORMAT_JSON] ) );
         mg_send_http_chunk( nc, "", 0 );   // Terminator
         return;
@@ -984,7 +977,7 @@ VSCPWebServerThread::webserv_rest_error( struct mg_connection *nc,
     }
     else if ( REST_FORMAT_JSONP == format ) {
 
-        webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_JSONP );
+        // TODO webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_JSONP );
         mg_send_http_chunk( nc, rest_errors[errorcode][REST_FORMAT_JSONP], strlen( rest_errors[errorcode][REST_FORMAT_JSONP] ) );
         mg_send_http_chunk( nc, "", 0 );   // Terminator
         return;
@@ -992,7 +985,7 @@ VSCPWebServerThread::webserv_rest_error( struct mg_connection *nc,
     }
     else {
 
-        webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_PLAIN );
+        // TODO webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_PLAIN );
         mg_send_http_chunk( nc, REST_PLAIN_ERROR_UNSUPPORTED_FORMAT, strlen( REST_PLAIN_ERROR_UNSUPPORTED_FORMAT ) );
         mg_send_http_chunk( nc, "", 0 );   // Terminator
         return;
@@ -1010,19 +1003,19 @@ VSCPWebServerThread::webserv_rest_sendHeader( struct mg_connection *nc,
                                                 int returncode )
 {
     if ( REST_FORMAT_PLAIN == format ) {
-        webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_PLAIN );
+        // TODO webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_PLAIN );
     }
     else if ( REST_FORMAT_CSV == format ) {
-        webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_CSV );
+        // TODO webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_CSV );
     }
     else if ( REST_FORMAT_XML == format ) {
-        webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_XML );
+        // TODO // TODO webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_XML );
     }
     else if ( REST_FORMAT_JSON == format ) {
-        webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_JSON );
+        // TODO webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_JSON );
     }
     else if ( REST_FORMAT_JSONP == format ) {
-        webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_JSONP );
+        // TODO webserv_util_sendheader( nc, returncode, REST_MIME_TYPE_JSONP );
     }
 
 }
@@ -1047,7 +1040,7 @@ struct websrv_rest_session *pSession,
 
         if ( REST_FORMAT_PLAIN == format ) {
 
-            webserv_util_sendheader( nc, 200, REST_MIME_TYPE_PLAIN );
+            // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_PLAIN );
 
 #ifdef WIN32
             int n = _snprintf( wrkbuf,
@@ -1068,7 +1061,7 @@ struct websrv_rest_session *pSession,
         }
         else if ( REST_FORMAT_CSV == format ) {
 
-            webserv_util_sendheader( nc, 200, REST_MIME_TYPE_CSV );
+            // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_CSV );
 
 #ifdef WIN32
             int n = _snprintf( wrkbuf,
@@ -1087,7 +1080,7 @@ struct websrv_rest_session *pSession,
         }
         else if ( REST_FORMAT_XML == format ) {
 
-            webserv_util_sendheader( nc, 200, REST_MIME_TYPE_XML );
+            // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_XML );
 
 #ifdef WIN32
             int n = _snprintf( wrkbuf,
@@ -1106,7 +1099,7 @@ struct websrv_rest_session *pSession,
         }
         else if ( REST_FORMAT_JSON == format ) {
 
-            webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSON );
+            // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSON );
 
 #ifdef WIN32
             int n = _snprintf( wrkbuf,
@@ -1126,7 +1119,7 @@ struct websrv_rest_session *pSession,
         }
         else if ( REST_FORMAT_JSONP == format ) {
 
-            webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSONP );
+            // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSONP );
 
 #ifdef WIN32
             // typeof handler === 'function' &&
@@ -1145,7 +1138,7 @@ struct websrv_rest_session *pSession,
             return;
         }
         else {
-            webserv_util_sendheader( nc, 400, REST_MIME_TYPE_PLAIN );
+            // TODO webserv_util_sendheader( nc, 400, REST_MIME_TYPE_PLAIN );
             mg_send_http_chunk( nc, REST_PLAIN_ERROR_UNSUPPORTED_FORMAT, strlen( REST_PLAIN_ERROR_UNSUPPORTED_FORMAT ) );
             mg_send_http_chunk( nc, "", 0 ); // Terminator
 
@@ -1184,7 +1177,7 @@ struct websrv_rest_session *pSession,
 
         if ( REST_FORMAT_PLAIN == format ) {
 
-            webserv_util_sendheader( nc, 200, REST_MIME_TYPE_PLAIN );
+            // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_PLAIN );
             mg_send_http_chunk( nc, REST_PLAIN_ERROR_SUCCESS, strlen( REST_PLAIN_ERROR_SUCCESS ) );
             mg_send_http_chunk( nc, "", 0 );  // Terminator
             return;
@@ -1192,7 +1185,7 @@ struct websrv_rest_session *pSession,
         }
         else if ( REST_FORMAT_CSV == format ) {
 
-            webserv_util_sendheader( nc, 200, REST_MIME_TYPE_CSV );
+            // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_CSV );
 #ifdef WIN32
             int n = _snprintf( wrkbuf, sizeof( wrkbuf ), REST_CSV_ERROR_SUCCESS );
 #else
@@ -1204,7 +1197,7 @@ struct websrv_rest_session *pSession,
         }
         else if ( REST_FORMAT_XML == format ) {
 
-            webserv_util_sendheader( nc, 200, REST_MIME_TYPE_XML );
+            // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_XML );
 #ifdef WIN32
             int n = _snprintf( wrkbuf, sizeof( wrkbuf ), REST_XML_ERROR_SUCCESS );
 #else
@@ -1216,7 +1209,7 @@ struct websrv_rest_session *pSession,
         }
         else if ( REST_FORMAT_JSON == format ) {
 
-            webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSON );
+            // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSON );
 #ifdef WIN32
             int n = _snprintf( wrkbuf, sizeof( wrkbuf ), REST_JSON_ERROR_SUCCESS );
 #else
@@ -1228,7 +1221,7 @@ struct websrv_rest_session *pSession,
         }
         else if ( REST_FORMAT_JSONP == format ) {
 
-            webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSONP );
+            // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSONP );
 #ifdef WIN32
             int n = _snprintf( wrkbuf, sizeof( wrkbuf ), REST_JSONP_ERROR_SUCCESS );
 #else
@@ -1239,7 +1232,7 @@ struct websrv_rest_session *pSession,
             return;
         }
         else {
-            webserv_util_sendheader( nc, 400, REST_MIME_TYPE_PLAIN );
+            // TODO webserv_util_sendheader( nc, 400, REST_MIME_TYPE_PLAIN );
             mg_send_http_chunk( nc,
                             REST_PLAIN_ERROR_UNSUPPORTED_FORMAT,
                             strlen( REST_PLAIN_ERROR_UNSUPPORTED_FORMAT ) );
@@ -1272,7 +1265,7 @@ VSCPWebServerThread::webserv_rest_doStatus( struct mg_connection *nc,
         pSession->lastActiveTime = time( NULL );
 
         if ( REST_FORMAT_PLAIN == format ) {
-            webserv_util_sendheader( nc, 200, REST_MIME_TYPE_PLAIN );
+            // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_PLAIN );
             mg_send_http_chunk( nc, REST_PLAIN_ERROR_SUCCESS, strlen( REST_PLAIN_ERROR_SUCCESS ) );
             memset( buf, 0, sizeof( buf ) );
 #ifdef WIN32
@@ -1289,7 +1282,7 @@ VSCPWebServerThread::webserv_rest_doStatus( struct mg_connection *nc,
             return;
         }
         else if ( REST_FORMAT_CSV == format ) {
-            webserv_util_sendheader( nc, 200, REST_MIME_TYPE_CSV );
+            // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_CSV );
 #ifdef WIN32
             int n = _snprintf( wrkbuf,
                                sizeof( wrkbuf ),
@@ -1307,7 +1300,7 @@ VSCPWebServerThread::webserv_rest_doStatus( struct mg_connection *nc,
             return;
         }
         else if ( REST_FORMAT_XML == format ) {
-            webserv_util_sendheader( nc, 200, REST_MIME_TYPE_XML );
+            // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_XML );
 #ifdef WIN32
             int n = _snprintf( wrkbuf,
                                sizeof( wrkbuf ),
@@ -1326,7 +1319,7 @@ VSCPWebServerThread::webserv_rest_doStatus( struct mg_connection *nc,
         }
         else if ( REST_FORMAT_JSON == format ) {
 
-            webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSON );
+            // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSON );
 #ifdef WIN32
             int n = _snprintf( wrkbuf,
                                sizeof( wrkbuf ),
@@ -1345,7 +1338,7 @@ VSCPWebServerThread::webserv_rest_doStatus( struct mg_connection *nc,
         }
         else if ( REST_FORMAT_JSONP == format ) {
 
-            webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSONP );
+            // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSONP );
 #ifdef WIN32
             int n = _snprintf( wrkbuf,
                                sizeof( wrkbuf ),
@@ -1363,7 +1356,7 @@ VSCPWebServerThread::webserv_rest_doStatus( struct mg_connection *nc,
             return;
         }
         else {
-            webserv_util_sendheader( nc, 400, REST_MIME_TYPE_PLAIN );
+            // TODO webserv_util_sendheader( nc, 400, REST_MIME_TYPE_PLAIN );
             mg_send_http_chunk( nc, REST_PLAIN_ERROR_UNSUPPORTED_FORMAT, strlen( REST_PLAIN_ERROR_UNSUPPORTED_FORMAT ) );
             mg_send_http_chunk( nc, "", 0 );  // Terminator
             return;
@@ -1542,7 +1535,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
             if ( REST_FORMAT_PLAIN == format ) {
 
                 // Send header
-                webserv_util_sendheader( nc, 200, REST_MIME_TYPE_PLAIN );
+                // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_PLAIN );
 
                 if ( pSession->pClientItem->m_bOpen && cntAvailable ) {
 
@@ -1616,7 +1609,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
             else if ( REST_FORMAT_CSV == format ) {
 
                 // Send header
-                webserv_util_sendheader( nc, 200, /*REST_MIME_TYPE_CSV*/ REST_MIME_TYPE_PLAIN );
+                // TODO webserv_util_sendheader( nc, 200, /*REST_MIME_TYPE_CSV*/ REST_MIME_TYPE_PLAIN );
 
                 if ( pSession->pClientItem->m_bOpen && cntAvailable ) {
 
@@ -1697,7 +1690,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
                 int errors = 0;
 
                 // Send header
-                webserv_util_sendheader( nc, 200, REST_MIME_TYPE_XML );
+                // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_XML );
 
 
                 if ( pSession->pClientItem->m_bOpen && cntAvailable ) {
@@ -1825,10 +1818,10 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *nc,
 
                 // Send header
                 if ( REST_FORMAT_JSONP == format ) {
-                    webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSONP );
+                    // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSONP );
                 }
                 else {
-                    webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSON );
+                    // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSON );
                 }
 
                 if ( pSession->pClientItem->m_bOpen && cntAvailable ) {
@@ -2154,7 +2147,7 @@ VSCPWebServerThread::webserv_rest_doCreateVariable( struct mg_connection *nc,
     if ( NULL != pSession ) {
 
         // Add the variable
-        if ( !pObject->m_VSCP_Variables.add( strVariable,
+        if ( !pObject->m_variables.add( strVariable,
                                                 strValue,
                                                 type,
                                                 pSession->pUserItem->getUserID(),
@@ -2207,14 +2200,14 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
 
         CVSCPVariable variable;
 
-        if ( 0 == pObject->m_VSCP_Variables.find( strVariableName, variable ) ) {
+        if ( 0 == pObject->m_variables.find( strVariableName, variable ) ) {
             webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_FOUND );
             return;
         }
 
         if ( REST_FORMAT_PLAIN == format ) {
 
-                webserv_util_sendheader( nc, 200, REST_MIME_TYPE_PLAIN );
+                // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_PLAIN );
                 sprintf( wrkbuf, "1 1 Success \r\n");
                 mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
 
@@ -2234,7 +2227,7 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
         }
         else if ( REST_FORMAT_CSV == format ) {
 
-            webserv_util_sendheader( nc, 200, REST_MIME_TYPE_CSV );
+            // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_CSV );
             sprintf( wrkbuf,
                 "success-code,error-code,message,description,name,type,user,access-right,persistent,last-change,value,note\r\n1,1,Success,Success.,%s,%d,%lu,%03X,%s,%s,'%s','%s'\r\n",
                 (const char *)strVariableName.mbc_str(),
@@ -2250,7 +2243,7 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
         }
         else if ( REST_FORMAT_XML == format ) {
 
-            webserv_util_sendheader( nc, 200, REST_MIME_TYPE_XML );
+            // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_XML );
             sprintf( wrkbuf, XML_HEADER"<vscp-rest success = \"true\" code = \"1\" message = \"Success\" description = \"Success.\" >");
             mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
 
@@ -2286,10 +2279,10 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *nc,
             wxString wxstr;
             char *p = buf;
             if ( REST_FORMAT_JSONP == format ) {
-                webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSONP );
+                // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSONP );
             }
             else {
-                webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSON );
+                // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSON );
             }
 
             if ( pSession->pClientItem->m_bOpen  ) {
@@ -2401,14 +2394,14 @@ VSCPWebServerThread::webserv_rest_doListVariable( struct mg_connection *nc,
     if ( NULL != pSession ) {
         
         wxArrayString variable_array;
-        if ( !pObject->m_VSCP_Variables.getVarlistFromRegExp( variable_array, strRegEx ) ) {
+        if ( !pObject->m_variables.getVarlistFromRegExp( variable_array, strRegEx ) ) {
             webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_FOUND );
             return; 
         }
        
         if ( REST_FORMAT_PLAIN == format ) {
 
-                webserv_util_sendheader( nc, 200, REST_MIME_TYPE_PLAIN );
+                // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_PLAIN );
                 sprintf( wrkbuf, "1 1 Success \r\n");
                 mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
                 
@@ -2416,7 +2409,7 @@ VSCPWebServerThread::webserv_rest_doListVariable( struct mg_connection *nc,
                     
                     CVSCPVariable variable;
 
-                    if ( 0 == pObject->m_VSCP_Variables.find( variable_array[ i ], variable ) ) {
+                    if ( 0 == pObject->m_variables.find( variable_array[ i ], variable ) ) {
                         continue;
                     }
 
@@ -2450,7 +2443,7 @@ VSCPWebServerThread::webserv_rest_doListVariable( struct mg_connection *nc,
         }
         else if ( REST_FORMAT_CSV == format ) {
 
-            webserv_util_sendheader( nc, 200, REST_MIME_TYPE_CSV );
+            // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_CSV );
                         
             if ( pSession->pClientItem->m_bOpen && variable_array.GetCount() ) {
 
@@ -2471,7 +2464,7 @@ VSCPWebServerThread::webserv_rest_doListVariable( struct mg_connection *nc,
                     
                         CVSCPVariable variable;
 
-                        if ( 0 == pObject->m_VSCP_Variables.find( variable_array[ i ], variable ) ) {
+                        if ( 0 == pObject->m_variables.find( variable_array[ i ], variable ) ) {
                             continue;
                         }
 
@@ -2497,7 +2490,7 @@ VSCPWebServerThread::webserv_rest_doListVariable( struct mg_connection *nc,
         }
         else if ( REST_FORMAT_XML == format ) {
 
-            webserv_util_sendheader( nc, 200, REST_MIME_TYPE_XML );
+            // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_XML );
             sprintf( wrkbuf, XML_HEADER"<vscp-rest success = \"true\" code = \"1\" message = \"Success\" description = \"Success.\" >");
             mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf) );
             
@@ -2507,7 +2500,7 @@ VSCPWebServerThread::webserv_rest_doListVariable( struct mg_connection *nc,
                 
                 CVSCPVariable variable;
                 
-                if ( 0 == pObject->m_VSCP_Variables.find( variable_array[ i ], variable ) ) {
+                if ( 0 == pObject->m_variables.find( variable_array[ i ], variable ) ) {
                     continue;
                 }
                 
@@ -2548,10 +2541,10 @@ VSCPWebServerThread::webserv_rest_doListVariable( struct mg_connection *nc,
             wxString wxstr;
             
             if ( REST_FORMAT_JSONP == format ) {
-                webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSONP );
+                // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSONP );
             }
             else {
-                webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSON );
+                // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSON );
             }
 
             if ( pSession->pClientItem->m_bOpen  ) {
@@ -2588,7 +2581,7 @@ VSCPWebServerThread::webserv_rest_doListVariable( struct mg_connection *nc,
                     
                     CVSCPVariable variable; 
                     
-                    if ( 0 == pObject->m_VSCP_Variables.find( variable_array[ i ], variable ) ) {
+                    if ( 0 == pObject->m_variables.find( variable_array[ i ], variable ) ) {
                         cntErrors++;
                         continue;
                     }
@@ -2761,7 +2754,7 @@ VSCPWebServerThread::webserv_rest_doWriteVariable( struct mg_connection *nc,
 
         // Get variable name
         CVSCPVariable variable;
-        if ( 0 == pObject->m_VSCP_Variables.find( strVariableName, variable ) ) {
+        if ( 0 == pObject->m_variables.find( strVariableName, variable ) ) {
             webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_FOUND );
             return;
         }
@@ -2772,7 +2765,7 @@ VSCPWebServerThread::webserv_rest_doWriteVariable( struct mg_connection *nc,
             return;
         }
         
-        if ( pObject->m_VSCP_Variables.update( variable ) ) {
+        if ( pObject->m_variables.update( variable ) ) {
             webserv_rest_error( nc, pSession, format, REST_ERROR_CODE_VARIABLE_FAIL_UPDATE );
             return;
         }
@@ -2820,7 +2813,7 @@ VSCPWebServerThread::webserv_rest_doDeleteVariable( struct mg_connection *nc,
     if ( NULL != pSession ) {
 
         // Add the variable
-        if ( !pObject->m_VSCP_Variables.remove( strVariable ) ) {
+        if ( !pObject->m_variables.remove( strVariable ) ) {
             webserv_rest_error( nc,
                                     pSession,
                                     format,
@@ -3074,7 +3067,7 @@ VSCPWebServerThread::websrc_rest_renderTableData( struct mg_connection *nc,
     if ( REST_FORMAT_PLAIN == format ) {
 
         // Send header
-        webserv_util_sendheader( nc, 200, REST_MIME_TYPE_PLAIN );
+        // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_PLAIN );
         sprintf( wrkbuf,
                  "1 1 Success\r\n%ld records will be returned from table %s.\r\n",
                  nfetchedRecords,
@@ -3101,7 +3094,7 @@ VSCPWebServerThread::websrc_rest_renderTableData( struct mg_connection *nc,
     else if ( REST_FORMAT_CSV == format ) {
 
         // Send header
-        webserv_util_sendheader( nc, 200, REST_MIME_TYPE_CSV );
+        // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_CSV );
         sprintf( wrkbuf,
                  "success-code, error-code, message, description, EvenL\r\n1, 1, Success, Success., NULL\r\n" );
         mg_send_http_chunk( nc, wrkbuf, strlen( wrkbuf ) );
@@ -3715,7 +3708,7 @@ void VSCPWebServerThread::webserv_rest_doFetchMDF( struct mg_connection *nc,
         else if ( REST_FORMAT_XML == format ) {
 
             // Send header
-            webserv_util_sendheader( nc, 200, REST_MIME_TYPE_XML );
+            // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_XML );
 
             char buf[ 5000 ], wrkbuf[ 2000 ];
             ssize_t ss;
@@ -3746,10 +3739,10 @@ void VSCPWebServerThread::webserv_rest_doFetchMDF( struct mg_connection *nc,
 
             // Send header
             if ( REST_FORMAT_JSON == format ) {
-                webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSON );
+                // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSON );
             }
             else {
-                webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSONP );
+                // TODO webserv_util_sendheader( nc, 200, REST_MIME_TYPE_JSONP );
             }
 
             if ( REST_FORMAT_JSONP == format ) {

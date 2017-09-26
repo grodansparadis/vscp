@@ -35,10 +35,10 @@
                            "    <a href=\"#\">System</a>"\
                            "    <ul>"\
                            "        <li>"\
-                           "            <a href=\"/vscp/configure\">Configuration File</a>"\
+                           "            <a href=\"/vscp/configure\">Configuration</a>"\
                            "        </li>"\
                            "        <li>"\
-                           "            <a href=\"/vscp/variables\">Variable - List</a>"\
+                           "            <a href=\"/vscp/varlist\">Variable - List</a>"\
                            "        </li>"\
                            "        <li>"\
                            "            <a href=\"/vscp/varnew\">Variable - New</a>"\

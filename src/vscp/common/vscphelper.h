@@ -127,6 +127,10 @@ extern "C" {
     
     const char *vscp_strcasestr( const char *big_str, const char *small_str );
     
+    char* vscp_stristr( char* str1, const char* str2 );
+    
+    char *vscp_trimWhiteSpace( char *str );
+    
     /*!
         Stringify binary data. 	
         @param to Pointer output buffer that holds the result. 

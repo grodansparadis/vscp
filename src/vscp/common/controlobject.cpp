@@ -1239,11 +1239,11 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 
     // Initialize variable storage
     logMsg(_("Initialize variables.\n") );
-    m_VSCP_Variables.init();
+    m_variables.init();
     
     // Load variables if mechanism is enabled
     logMsg(_("Loading persistent variables from XML variable default path.\n") );
-    m_VSCP_Variables.loadFromXML();
+    m_variables.loadFromXML();
 
     // Start daemon internal client worker thread    
     startClientWorkerThread();
@@ -2895,19 +2895,19 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
             attrib = child->GetAttribute(wxT("path"), wxT(""));
             fileName.Assign( attrib );
             if ( fileName.IsOk() ) {
-                m_VSCP_Variables.m_xmlPath = fileName.GetFullPath();
+                m_variables.m_xmlPath = fileName.GetFullPath();
             }
                     
             attrib = child->GetAttribute(wxT("pathxml"), m_rootFolder + _("variable.xml"));
             fileName.Assign( attrib );
             if ( fileName.IsOk() ) {
-                m_VSCP_Variables.m_xmlPath = fileName.GetFullPath();
+                m_variables.m_xmlPath = fileName.GetFullPath();
             }
                     
             attrib = child->GetAttribute(wxT("pathdb"), m_rootFolder + _("variable.sqlite3"));
             fileName.Assign( attrib );
             if ( fileName.IsOk() ) {
-                m_VSCP_Variables.m_dbFilename = fileName;
+                m_variables.m_dbFilename = fileName;
             } 
  
         }
@@ -4036,12 +4036,12 @@ bool CControlObject::dbReadConfiguration( void )
         // Path to variable database
         else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_VARIABLES_PATH_DB )  ) {
-            m_VSCP_Variables.m_dbFilename.Assign( wxString::FromUTF8( (const char *)pValue ) );
+            m_variables.m_dbFilename.Assign( wxString::FromUTF8( (const char *)pValue ) );
         } 
         // Path to variable XML
         else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_VARIABLES_PATH_XML )  ) {
-            m_VSCP_Variables.m_xmlPath = wxString::FromUTF8( (const char *)pValue );
+            m_variables.m_xmlPath = wxString::FromUTF8( (const char *)pValue );
         }
         // VSCP data database path
         else if ( !vscp_strcasecmp( (const char * )pName, 
