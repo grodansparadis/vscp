@@ -85,9 +85,9 @@
 #endif
 
 
-// This code uses static_assert to check some conditions.
-// Unfortunately some compilers still do not support it, so we have a
-// replacement function here. 
+/* This code uses static_assert to check some conditions.
+ * Unfortunately some compilers still do not support it, so we have a
+ * replacement function here. */
 #if defined(_MSC_VER) && (_MSC_VER >= 1600)
 #define web_static_assert static_assert
 #elif defined(__cplusplus) && (__cplusplus >= 201103L)
@@ -95,18 +95,17 @@
 #elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
 #define web_static_assert _Static_assert
 #else
-char static_assert_replacement[1];
-#define web_static_assert(cond, txt)                                            \
-	extern char static_assert_replacement[(cond) ? 1 : -1]
+char static_assert_replacement[1]; 
+#define web_static_assert(cond, txt) 
+//extern char static_assert_replacement[(cond) ? 1 : -1]
 #endif
 
 web_static_assert(sizeof(int) == 4 || sizeof(int) == 8,
                  "int data type size check");
-
 web_static_assert(sizeof(void *) == 4 || sizeof(void *) == 8,
                  "pointer data type size check");
-
 web_static_assert(sizeof(void *) >= sizeof(int), "data type size check");
+
 
 
 // DTL -- including winsock2.h works better if lean and mean 
@@ -1614,6 +1613,7 @@ enum
     LUA_BACKGROUND_SCRIPT_PARAMS,
     ADDITIONAL_HEADER,
     MAX_REQUEST_SIZE,
+    ALLOW_INDEX_SCRIPT_SUB_RES,
     NUM_OPTIONS
 };
 
@@ -1621,85 +1621,86 @@ enum
 // Config option name, config types, default value 
 static struct web_option config_options[] = 
 {
-    {"cgi_pattern", CONFIG_TYPE_EXT_PATTERN, "**.cgi$|**.pl$|**.php$"},
-    {"cgi_environment", CONFIG_TYPE_STRING_LIST, NULL},
-    {"put_delete_auth_file", CONFIG_TYPE_FILE, NULL},
-    {"cgi_interpreter", CONFIG_TYPE_FILE, NULL},
-    {"protect_uri", CONFIG_TYPE_STRING_LIST, NULL},
-    {"authentication_domain", CONFIG_TYPE_STRING, "mydomain.com"},
-    {"enable_auth_domain_check", CONFIG_TYPE_BOOLEAN, "yes"},
-    {"ssi_pattern", CONFIG_TYPE_EXT_PATTERN, "**.shtml$|**.shtm$"},
-    {"throttle", CONFIG_TYPE_STRING_LIST, NULL},
-    {"access_log_file", CONFIG_TYPE_FILE, NULL},
-    {"enable_directory_listing", CONFIG_TYPE_BOOLEAN, "yes"},
-    {"error_log_file", CONFIG_TYPE_FILE, NULL},
-    {"global_auth_file", CONFIG_TYPE_FILE, NULL},
+    {"cgi_pattern", WEB_CONFIG_TYPE_EXT_PATTERN, "**.cgi$|**.pl$|**.php$"},
+    {"cgi_environment", WEB_CONFIG_TYPE_STRING_LIST, NULL},
+    {"put_delete_auth_file", WEB_CONFIG_TYPE_FILE, NULL},
+    {"cgi_interpreter", WEB_CONFIG_TYPE_FILE, NULL},
+    {"protect_uri", WEB_CONFIG_TYPE_STRING_LIST, NULL},
+    {"authentication_domain", WEB_CONFIG_TYPE_STRING, "mydomain.com"},
+    {"enable_auth_domain_check", WEB_CONFIG_TYPE_BOOLEAN, "yes"},
+    {"ssi_pattern", WEB_CONFIG_TYPE_EXT_PATTERN, "**.shtml$|**.shtm$"},
+    {"throttle", WEB_CONFIG_TYPE_STRING_LIST, NULL},
+    {"access_log_file", WEB_CONFIG_TYPE_FILE, NULL},
+    {"enable_directory_listing", WEB_CONFIG_TYPE_BOOLEAN, "yes"},
+    {"error_log_file", WEB_CONFIG_TYPE_FILE, NULL},
+    {"global_auth_file", WEB_CONFIG_TYPE_FILE, NULL},
     {"index_files",
-        CONFIG_TYPE_STRING_LIST,
-        "index.xhtml,index.html,index.htm,index.lp,index.lsp,index.lua,index."
-        "cgi,"
+        WEB_CONFIG_TYPE_STRING_LIST,
+        "index.xhtml,index.html,index.htm,"
+        "index.lp,index.lsp,index.lua,index.cgi,"
         "index.shtml,index.php"},
-    {"enable_keep_alive", CONFIG_TYPE_BOOLEAN, "no"},
-    {"access_control_list", CONFIG_TYPE_STRING_LIST, NULL},
-    {"extra_mime_types", CONFIG_TYPE_STRING_LIST, NULL},
-    {"listening_ports", CONFIG_TYPE_STRING_LIST, "8080"},
-    {"document_root", CONFIG_TYPE_DIRECTORY, NULL},
-    {"ssl_certificate", CONFIG_TYPE_FILE, NULL},
-    {"ssl_certificate_chain", CONFIG_TYPE_FILE, NULL},
-    {"num_threads", CONFIG_TYPE_NUMBER, "50"},
-    {"run_as_user", CONFIG_TYPE_STRING, NULL},
-    {"url_rewrite_patterns", CONFIG_TYPE_STRING_LIST, NULL},
-    {"hide_files_patterns", CONFIG_TYPE_EXT_PATTERN, NULL},
-    {"request_timeout_ms", CONFIG_TYPE_NUMBER, "30000"},
-    {"keep_alive_timeout_ms", CONFIG_TYPE_NUMBER, "500"},
-    {"linger_timeout_ms", CONFIG_TYPE_NUMBER, NULL},
+    {"enable_keep_alive", WEB_CONFIG_TYPE_BOOLEAN, "no"},
+    {"access_control_list", WEB_CONFIG_TYPE_STRING_LIST, NULL},
+    {"extra_mime_types", WEB_CONFIG_TYPE_STRING_LIST, NULL},
+    {"listening_ports", WEB_CONFIG_TYPE_STRING_LIST, "8080"},
+    {"document_root", WEB_CONFIG_TYPE_DIRECTORY, NULL},
+    {"ssl_certificate", WEB_CONFIG_TYPE_FILE, NULL},
+    {"ssl_certificate_chain", WEB_CONFIG_TYPE_FILE, NULL},
+    {"num_threads", WEB_CONFIG_TYPE_NUMBER, "50"},
+    {"run_as_user", WEB_CONFIG_TYPE_STRING, NULL},
+    {"url_rewrite_patterns", WEB_CONFIG_TYPE_STRING_LIST, NULL},
+    {"hide_files_patterns", WEB_CONFIG_TYPE_EXT_PATTERN, NULL},
+    {"request_timeout_ms", WEB_CONFIG_TYPE_NUMBER, "30000"},
+    {"keep_alive_timeout_ms", WEB_CONFIG_TYPE_NUMBER, "500"},
+    {"linger_timeout_ms", WEB_CONFIG_TYPE_NUMBER, NULL},
 
     // TODO(Feature): this is no longer a boolean, but yes/no/optional 
-    {"ssl_verify_peer", CONFIG_TYPE_BOOLEAN, "no"},
+    {"ssl_verify_peer", WEB_CONFIG_TYPE_BOOLEAN, "no"},
 
-    {"ssl_ca_path", CONFIG_TYPE_DIRECTORY, NULL},
-    {"ssl_ca_file", CONFIG_TYPE_FILE, NULL},
-    {"ssl_verify_depth", CONFIG_TYPE_NUMBER, "9"},
-    {"ssl_default_verify_paths", CONFIG_TYPE_BOOLEAN, "yes"},
-    {"ssl_cipher_list", CONFIG_TYPE_STRING, NULL},
-    {"ssl_protocol_version", CONFIG_TYPE_NUMBER, "0"},
-    {"ssl_short_trust", CONFIG_TYPE_BOOLEAN, "no"},
+    {"ssl_ca_path", WEB_CONFIG_TYPE_DIRECTORY, NULL},
+    {"ssl_ca_file", WEB_CONFIG_TYPE_FILE, NULL},
+    {"ssl_verify_depth", WEB_CONFIG_TYPE_NUMBER, "9"},
+    {"ssl_default_verify_paths", WEB_CONFIG_TYPE_BOOLEAN, "yes"},
+    {"ssl_cipher_list", WEB_CONFIG_TYPE_STRING, NULL},
+    {"ssl_protocol_version", WEB_CONFIG_TYPE_NUMBER, "0"},
+    {"ssl_short_trust", WEB_CONFIG_TYPE_BOOLEAN, "no"},
 
-    {"websocket_timeout_ms", CONFIG_TYPE_NUMBER, "30000"},
+    {"websocket_timeout_ms", WEB_CONFIG_TYPE_NUMBER, "30000"},
 
-    {"decode_url", CONFIG_TYPE_BOOLEAN, "yes"},
+    {"decode_url", WEB_CONFIG_TYPE_BOOLEAN, "yes"},
     
-    {"lua_preload_file", CONFIG_TYPE_FILE, NULL},
-    {"lua_script_pattern", CONFIG_TYPE_EXT_PATTERN, "**.lua$"},
-    {"lua_server_page_pattern", CONFIG_TYPE_EXT_PATTERN, "**.lp$|**.lsp$"},
+    {"lua_preload_file", WEB_CONFIG_TYPE_FILE, NULL},
+    {"lua_script_pattern", WEB_CONFIG_TYPE_EXT_PATTERN, "**.lua$"},
+    {"lua_server_page_pattern", WEB_CONFIG_TYPE_EXT_PATTERN, "**.lp$|**.lsp$"},
 
     // The support for duktape is still in alpha version state.
     // The name of this config option might change. 
-    {"duktape_script_pattern", CONFIG_TYPE_EXT_PATTERN, "**.ssjs$"},
+    {"duktape_script_pattern", WEB_CONFIG_TYPE_EXT_PATTERN, "**.ssjs$"},
 
-    {"websocket_root", CONFIG_TYPE_DIRECTORY, NULL},
+    {"websocket_root", WEB_CONFIG_TYPE_DIRECTORY, NULL},
     
-    {"lua_websocket_pattern", CONFIG_TYPE_EXT_PATTERN, "**.lua$"},
+    {"lua_websocket_pattern", WEB_CONFIG_TYPE_EXT_PATTERN, "**.lua$"},
 
-    {"access_control_allow_origin", CONFIG_TYPE_STRING, "*"},
-    {"access_control_allow_methods", CONFIG_TYPE_STRING, "*"},
-    {"access_control_allow_headers", CONFIG_TYPE_STRING, "*"},
-    {"error_pages", CONFIG_TYPE_DIRECTORY, NULL},
-    {"tcp_nodelay", CONFIG_TYPE_NUMBER, "0"},
-    {"static_file_max_age", CONFIG_TYPE_NUMBER, "3600"},
-    {"strict_transport_security_max_age", CONFIG_TYPE_NUMBER, NULL},
+    {"access_control_allow_origin", WEB_CONFIG_TYPE_STRING, "*"},
+    {"access_control_allow_methods", WEB_CONFIG_TYPE_STRING, "*"},
+    {"access_control_allow_headers", WEB_CONFIG_TYPE_STRING, "*"},
+    {"error_pages", WEB_CONFIG_TYPE_DIRECTORY, NULL},
+    {"tcp_nodelay", WEB_CONFIG_TYPE_NUMBER, "0"},
+    {"static_file_max_age", WEB_CONFIG_TYPE_NUMBER, "3600"},
+    {"strict_transport_security_max_age", WEB_CONFIG_TYPE_NUMBER, NULL},
 #if defined(__linux__)
-    {"allow_sendfile_call", CONFIG_TYPE_BOOLEAN, "yes"},
+    {"allow_sendfile_call", WEB_CONFIG_TYPE_BOOLEAN, "yes"}, 
 #endif
 #if defined(_WIN32)
     {"case_sensitive", CONFIG_TYPE_BOOLEAN, "no"},
 #endif
-    {"lua_background_script", CONFIG_TYPE_FILE, NULL},
-    {"lua_background_script_params", CONFIG_TYPE_STRING_LIST, NULL},
-    {"additional_header", CONFIG_TYPE_STRING_MULTILINE, NULL},
-    {"max_request_size", CONFIG_TYPE_NUMBER, "16384"},
+    {"lua_background_script", WEB_CONFIG_TYPE_FILE, NULL},
+    {"lua_background_script_params", WEB_CONFIG_TYPE_STRING_LIST, NULL},
+    {"additional_header", WEB_CONFIG_TYPE_STRING_MULTILINE, NULL},
+    {"max_request_size", WEB_CONFIG_TYPE_NUMBER, "16384"},
+    {"allow_index_script_resource", WEB_CONFIG_TYPE_BOOLEAN, "no"},
 
-    {NULL, CONFIG_TYPE_UNKNOWN, NULL}
+    {NULL, WEB_CONFIG_TYPE_UNKNOWN, NULL}
 };
 
 
@@ -1745,6 +1746,14 @@ struct web_handler_info
     struct web_handler_info *next;
 };
 
+enum {
+	CONTEXT_INVALID,
+	CONTEXT_SERVER,
+	CONTEXT_HTTP_CLIENT,
+	CONTEXT_WS_CLIENT
+};
+
+
 struct web_context
 {
     volatile int stop_flag;             // Should we stop event loop 
@@ -1752,9 +1761,7 @@ struct web_context
     char *config[ NUM_OPTIONS ];        // vscpweb configuration parameters 
     struct web_callbacks callbacks;     // User-defined callback function 
     void *user_data;                    // User-defined data 
-    int context_type;                   // 1 = server context,
-	                                // 2 = ws/wss client context,
-	                                //
+    int context_type;                   // See CONTEXT_* above
 
     struct socket *listening_sockets;
     struct pollfd *listening_socket_fds;
@@ -1819,11 +1826,15 @@ get_memory_stat( struct web_context *ctx )
     return &web_common_memory;
 }
 
+enum {
+	CONNECTION_TYPE_INVALID,
+	CONNECTION_TYPE_REQUEST,
+	CONNECTION_TYPE_RESPONSE
+};
+
 struct web_connection
 {
-    int connection_type;    // 0 none
-	                    // 1 request (we are server, web_request_info valid)
-	                    // 2 response (we are client, response_info valid)
+    int connection_type;    // see CONNECTION_TYPE_* above
 
     struct web_request_info request_info;
     struct web_response_info response_info;
@@ -1857,16 +1868,18 @@ struct web_connection
     int must_close;             // 1 if connection must be closed 
     int accept_gzip;            // 1 if gzip encoding is accepted 
     int in_error_handler;       // 1 if in handler for user defined error
-	                        // pages 
+	                        //  pages 
+    int in_websocket_handling;  // 1 if in read_websocket 
     int handled_requests;       // Number of requests handled by this connection
-	                             
+	                         
     int buf_size;               // Buffer size 
     int request_len;            // Size of the request + headers in a buffer 
     int data_len;               // Total size of data in a buffer 
     int status_code;            // HTTP reply status code, e.g. 200 
     int throttle;               // Throttling, bytes/sec. <= 0 means no
 	                        // throttle 
-    time_t last_throttle_time;  // Last time throttled data was sent 
+
+    time_t last_throttle_time;   /* Last time throttled data was sent */
     int64_t last_throttle_bytes;// Bytes sent this second 
     pthread_mutex_t mutex;      // Used by web_(un)lock_connection to ensure
 	                        // atomic transmissions for websockets 
@@ -2761,6 +2774,8 @@ web_cry(const struct web_connection *conn, const char *fmt, ...)
     IGNORE_UNUSED_RESULT( vsnprintf_impl( buf, sizeof( buf ), fmt, ap ) );
     va_end(ap);
     buf[ sizeof(buf)-1] = 0;
+    
+    DEBUG_TRACE("mg_cry: %s", buf);
 
     if ( !conn ) {
         puts( buf );
@@ -2857,7 +2872,7 @@ web_get_request_info(const struct web_connection *conn)
     }
     
 #if 1 // TODO: deal with legacy 
-    if (conn->connection_type == 2) {
+    if ( CONNECTION_TYPE_RESPONSE == conn->connection_type ) {
         static char txt[16];
         sprintf(txt, "%03i", conn->response_info.status_code);
 
@@ -2873,7 +2888,7 @@ web_get_request_info(const struct web_connection *conn)
     }
     else
 #endif
-        if (conn->connection_type != 1) {
+        if ( conn->connection_type != CONNECTION_TYPE_REQUEST ) {
         return NULL;
     }
     
@@ -2891,7 +2906,7 @@ web_get_response_info(const struct web_connection *conn)
         return NULL;
     }
     
-    if (conn->connection_type != 2) {
+    if ( conn->connection_type != CONNECTION_TYPE_RESPONSE ) {
         return NULL;
     }
     
@@ -2971,9 +2986,8 @@ web_get_request_link(const struct web_connection *conn, char *buf, size_t buflen
 
             int def_port = ri->is_ssl ? 443 : 80;
             int auth_domain_check_enabled =
-                    conn->ctx->config[ENABLE_AUTH_DOMAIN_CHECK]
-                    && (!strcmp(conn->ctx->config[ENABLE_AUTH_DOMAIN_CHECK],
-                                "yes"));
+                    conn->ctx->config[ENABLE_AUTH_DOMAIN_CHECK] &&
+                    (!vscp_strcasecmp(conn->ctx->config[ENABLE_AUTH_DOMAIN_CHECK], "yes"));
             const char *server_domain =
                     conn->ctx->config[AUTHENTICATION_DOMAIN];
 
@@ -3158,13 +3172,13 @@ web_get_header(const struct web_connection *conn, const char *name)
         return NULL;
     }
 
-    if (conn->connection_type == 1) {
+    if ( CONNECTION_TYPE_REQUEST == conn->connection_type ) {
         return get_header(conn->request_info.http_headers,
                           conn->request_info.num_headers,
                           name);
     }
     
-    if (conn->connection_type == 2) {
+    if ( CONNECTION_TYPE_RESPONSE == conn->connection_type ) {
         return get_header(conn->response_info.http_headers,
                           conn->request_info.num_headers,
                           name);
@@ -3178,17 +3192,17 @@ web_get_header(const struct web_connection *conn, const char *name)
 //
 
 static const char *
-get_http_version(const struct web_connection *conn)
+get_http_version( const struct web_connection *conn )
 {
     if ( !conn ) {
         return NULL;
     }
 
-    if (1 == conn->connection_type) {
+    if ( CONNECTION_TYPE_REQUEST == conn->connection_type ) {
         return conn->request_info.http_version;
     }
 
-    if (2 == conn->connection_type) {
+    if ( CONNECTION_TYPE_RESPONSE == conn->connection_type ) {
         return conn->response_info.http_version;
     }
 
@@ -3215,46 +3229,49 @@ reparse:
                 
     if (val == NULL || list == NULL || *list == '\0') {
         // End of the list 
-        list = NULL;
+        return NULL;
+    }
+
+    // Skip over leading LWS 
+    while (*list == ' ' || *list == '\t') {
+	list++;
+    }
+
+    val->ptr = list;
+    if ( ( list = strchr(val->ptr, ',') ) != NULL ) {
+	// Comma found. Store length and shift the list ptr 
+	val->len = ((size_t)(list - val->ptr));
+	list++;
     }
     else {
-        // Skip over leading LWS 
-        while (*list == ' ' || *list == '\t')
-            list++;
-
-        val->ptr = list;
-        if ((list = strchr(val->ptr, ',')) != NULL) {
-            // Comma found. Store length and shift the list ptr 
-            val->len = ((size_t) (list - val->ptr));
-            list++;
-        }
-        else {
-            // This value is the last one 
-            list = val->ptr + strlen(val->ptr);
-            val->len = ((size_t) (list - val->ptr));
-        }
+        // This value is the last one 
+	list = val->ptr + strlen(val->ptr);
+	val->len = ((size_t)(list - val->ptr));
 
         // Adjust length for trailing LWS 
-        end = (int) val->len - 1;
-        while (end >= 0 && ((val->ptr[end] == ' ') || (val->ptr[end] == '\t')))
+	end = (int)val->len - 1;
+	while ( ( end >= 0 ) && 
+                ( ( val->ptr[end] == ' ' ) || 
+                  ( val->ptr[end] == '\t') ) )
             end--;
-        val->len = (size_t) (end + 1);
+	val->len = (size_t)(end + 1);
 
-        if (val->len == 0) {
+        if ( 0 == val->len ) {
             // Ignore any empty entries. 
             goto reparse;
-        }
+	}
 
         if ( eq_val != NULL ) {
             // Value has form "x=y", adjust pointers and lengths
             // so that val points to "x", and eq_val points to "y". 
             eq_val->len = 0;
-            eq_val->ptr = (const char *) memchr(val->ptr, '=', val->len);
-            if (eq_val->ptr != NULL) {
+            eq_val->ptr = (const char *)memchr(val->ptr, '=', val->len);
+            if ( eq_val->ptr != NULL ) {
                 eq_val->ptr++; // Skip over '=' character 
-                eq_val->len = ((size_t) (val->ptr - eq_val->ptr)) + val->len;
-                val->len = ((size_t) (eq_val->ptr - val->ptr)) - 1;
+                eq_val->len = ((size_t)(val->ptr - eq_val->ptr)) + val->len;
+		val->len = ((size_t)(eq_val->ptr - val->ptr)) - 1;
             }
+            
         }
         
     }
@@ -3788,95 +3805,101 @@ web_send_http_error(struct web_connection *conn, int status, const char *fmt, ..
     conn->status_code = status;
     if ( conn->in_error_handler || 
             ( conn->ctx->callbacks.http_error == NULL) || 
-            conn->ctx->callbacks.http_error(conn, status) ) {
+            conn->ctx->callbacks.http_error( conn, status ) ) {
         
         if ( !conn->in_error_handler ) {
             
-            // Send user defined error pages, if defined 
-            error_handler = conn->ctx->config[ERROR_PAGES];
-            error_page_file_ext = conn->ctx->config[INDEX_FILES];
-            page_handler_found = 0;
+            // Check for recursion 
+            if ( conn->in_error_handler ) {
+		DEBUG_TRACE( "Recursion when handling error %u - fall back to default",
+                                status);
+            } 
+            else {
             
-            if (error_handler != NULL) {
+                // Send user defined error pages, if defined 
+                error_handler = conn->ctx->config[ERROR_PAGES];
+                error_page_file_ext = conn->ctx->config[INDEX_FILES];
+                page_handler_found = 0;
             
-                for (scope = 1; (scope <= 3) && !page_handler_found; scope++) {
+                if ( error_handler != NULL ) {
+            
+                    for (scope = 1; (scope <= 3) && !page_handler_found; scope++) {
                     
-                    switch ( scope ) {
+                        switch ( scope ) {
                         
-                        case 1: // Handler for specific error, e.g. 404 error 
-                            web_snprintf( conn,
+                            case 1: // Handler for specific error, e.g. 404 error 
+                                web_snprintf( conn,
                                                 &truncated,
                                                 buf,
                                                 sizeof (buf) - 32,
                                                 "%serror%03u.",
                                                 error_handler,
                                                 status );
-                            break;
+                                break;
                             
-                        case 2: // Handler for error group, e.g., 5xx error
-                                // handler
-                                // for all server errors (500-599) 
-                            web_snprintf( conn,
+                            case 2: // Handler for error group, e.g., 5xx error
+                                    // handler
+                                    // for all server errors (500-599) 
+                                web_snprintf( conn,
                                                 &truncated,
                                                 buf,
                                                 sizeof( buf ) - 32,
                                                 "%serror%01uxx.",
                                                 error_handler,
                                                 status / 100 );
-                            break;
+                                break;
                             
-                        default: // Handler for all errors 
-                            web_snprintf( conn,
+                            default: // Handler for all errors 
+                                web_snprintf( conn,
                                                 &truncated,
                                                 buf,
                                                 sizeof (buf) - 32,
                                                 "%serror.",
                                                 error_handler );
-                            break;
+                                break;
                             
-                    }
-
-                    // String truncation in buf may only occur if
-                    // error_handler
-                    // is too long. This string is from the config, not from
-                    // a
-                    // client. 
-                    (void) truncated;
-
-                    len = (int) strlen(buf);
-
-                    tstr = strchr(error_page_file_ext, '.');
-
-                    while (tstr) {
-                        
-                        for (i = 1;
-                                (i < 32) && (tstr[i] != 0) && (tstr[i] != ',');
-                                i++ ) {
-                            buf[len + i - 1] = tstr[i];
                         }
+
+                        // String truncation in buf may only occur if
+                        // error_handler is too long. This string is
+                        // from the config, not from a client. 
+                        (void)truncated;
+
+                        len = (int) strlen(buf);
+
+                        tstr = strchr(error_page_file_ext, '.');
+
+                        while (tstr) {
                         
-                        buf[len + i - 1] = 0;
+                            for ( i = 1;
+                                    ( i < 32 ) && (tstr[i] != 0) && (tstr[i] != ',');
+                                    i++ ) {
+                                buf[len + i - 1] = tstr[i];
+                            }
                         
-                        if (web_stat(conn, buf, &error_page_file.stat)) {
-                            page_handler_found = 1;
-                            break;
+                            buf[len + i - 1] = 0;
+                        
+                            if ( web_stat( conn, buf, &error_page_file.stat ) ) {
+                                page_handler_found = 1;
+                                break;
+                            }
+                        
+                            tstr = strchr(tstr + i, '.');
+                        
                         }
-                        
-                        tstr = strchr(tstr + i, '.');
-                        
-                    }
                     
-                }
+                    }
                 
-            }
+                }
 
-            if ( page_handler_found ) {
-                conn->in_error_handler = 1;
-                handle_file_based_request(conn, buf, &error_page_file);
-                conn->in_error_handler = 0;
-                return;
-            }
+                if ( page_handler_found ) {
+                    conn->in_error_handler = 1;
+                    handle_file_based_request(conn, buf, &error_page_file);
+                    conn->in_error_handler = 0;
+                    return;
+                }
             
+            }
         }
 
         // No custom error page. Send default error page. 
@@ -4988,10 +5011,17 @@ spawn_cleanup:
 //
 
 static int
-set_blocking_mode(SOCKET sock, int blocking)
+set_blocking_mode(SOCKET sock)
 {
-    unsigned long non_blocking = !blocking;
+    unsigned long non_blocking = 0;
     return ioctlsocket(sock, (long) FIONBIO, &non_blocking);
+}
+
+static int
+set_non_blocking_mode(SOCKET sock)
+{
+    unsigned long non_blocking = 1;
+    return ioctlsocket(sock, (long)FIONBIO, &non_blocking);
 }
 
 #else
@@ -5241,21 +5271,35 @@ spawn_process(struct web_connection *conn,
 //
 
 static int
-set_blocking_mode(SOCKET sock, int blocking)
+set_non_blocking_mode(SOCKET sock)
 {
-    int flags;
+	int flags = fcntl(sock, F_GETFL, 0);
+	if (flags < 0) {
+		return -1;
+	}
 
-    flags = fcntl(sock, F_GETFL, 0);
-    if (blocking) {
-        (void) fcntl(sock, F_SETFL, flags | O_NONBLOCK);
-    }
-    else {
-        (void) fcntl(sock, F_SETFL, flags & (~(int) (O_NONBLOCK)));
-    }
-
-    return 0;
+	if (fcntl(sock, F_SETFL, (flags | O_NONBLOCK)) < 0) {
+		return -1;
+	}
+	return 0;
 }
-#endif // _WIN32 
+
+static int
+set_blocking_mode(SOCKET sock)
+{
+	int flags = fcntl(sock, F_GETFL, 0);
+	if (flags < 0) {
+		return -1;
+	}
+
+	if (fcntl(sock, F_SETFL, flags & (~(int)(O_NONBLOCK))) < 0) {
+		return -1;
+	}
+	return 0;
+}
+
+
+#endif // _WIN32  / else
 // End of initial operating system specific define block. 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5303,39 +5347,41 @@ web_poll( struct pollfd *pfd,
                 int milliseconds,
                 volatile int *stop_server)
 {
-    int ms_now, result;
-
     // Call poll, but only for a maximum time of a few seconds.
     // This will allow to stop the server after some seconds, instead
     // of having to wait for a long socket timeout. 
-    ms_now = SOCKET_TIMEOUT_QUANTUM; // Sleep quantum in ms 
+    int ms_now = SOCKET_TIMEOUT_QUANTUM; // Sleep quantum in ms 
 
     do {
+        int result;
+
         if ( *stop_server ) {
             // Shut down signal 
             return -2;
         }
 
-        if ((milliseconds >= 0) && (milliseconds < ms_now)) {
+        if ( ( milliseconds >= 0 ) && 
+             ( milliseconds < ms_now ) ) {
             ms_now = milliseconds;
         }
 
         result = poll(pfd, n, ms_now);
-        if (result != 0) {
+        if ( result != 0 ) {
             // Poll returned either success (1) or error (-1).
             // Forward both to the caller. 
             return result;
         }
 
         // Poll returned timeout (0). 
-        if (milliseconds > 0) {
+        if ( milliseconds > 0 ) {
             milliseconds -= ms_now;
         }
 
     }
-    while (milliseconds != 0);
+    while ( milliseconds != 0 );
 
-    return result;
+    // timeout: return 0 
+    return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5593,6 +5639,11 @@ pull_inner( FILE *fp,
         // to the client. 
         nread = (int) read(fileno(fp), buf, (size_t) len);
         err = (nread < 0) ? ERRNO : 0;
+        
+        if ( ( 0 == nread ) && ( len > 0 ) ) {
+            // Should get data, but got EOL 
+            return -2;
+	}
 
     }
     else if ( ( conn->ssl != NULL) && 
@@ -6635,6 +6686,7 @@ interpret_uri( struct web_connection *conn,     // in/out: request (must be vali
     int truncated;
     char *tmp_str;
     size_t tmp_str_len, sep_pos;
+    int allow_substitute_script_subresources;
 
     // Step 1: Set all initially unknown outputs to zero 
     memset(filestat, 0, sizeof (*filestat));
@@ -6804,9 +6856,15 @@ interpret_uri( struct web_connection *conn,     // in/out: request (must be vali
         goto interpret_cleanup;
     }
     memcpy(tmp_str, filename, tmp_str_len + 1);
+    
+    // Check config, if index scripts may have sub-resources 
+    allow_substitute_script_subresources =
+	   !vscp_strcasecmp( conn->ctx->config[ALLOW_INDEX_SCRIPT_SUB_RES], "yes" );
+
 
     sep_pos = tmp_str_len;
     while (sep_pos > 0) {
+        
         sep_pos--;
         if (tmp_str[sep_pos] == '/') {
             int is_script = 0, does_exist = 0;
@@ -6828,43 +6886,63 @@ interpret_uri( struct web_connection *conn,     // in/out: request (must be vali
                 *is_found = 1;
                 break;
             }
-            if (substitute_index_file(
-                                      conn, tmp_str, tmp_str_len + PATH_MAX, filestat)) {
-                // some intermediate directory has an index file 
-                if (extention_matches_script(conn, tmp_str)) {
-                    
-                    // this index file is a script 
+            
+            if ( allow_substitute_script_subresources ) {
+                
+                if (substitute_index_file( conn, 
+                                            tmp_str, 
+                                            tmp_str_len + PATH_MAX, 
+                                            filestat ) ) {
 
-                    char *tmp_str2 = web_strdup(filename + sep_pos + 1);
-                    web_snprintf( conn,
+                    // some intermediate directory has an index file 
+                    if ( extention_matches_script( conn, tmp_str ) ) {
+
+                        char *tmp_str2;
+
+                        DEBUG_TRACE("Substitute script %s serving path %s",
+                                        tmp_str,
+                                        filename);
+
+                        // this index file is a script 
+                        tmp_str2 = web_strdup( filename + sep_pos + 1 );
+                        web_snprintf( conn,
                                         &truncated,
                                         filename,
                                         filename_buf_len,
                                         "%s//%s",
                                         tmp_str,
                                         tmp_str2 );
-                    web_free(tmp_str2);
+                       web_free( tmp_str2 );
 
-                    if (truncated) {
-                        web_free(tmp_str);
-                        goto interpret_cleanup;
+                        if ( truncated ) {
+                            web_free( tmp_str );
+                            goto interpret_cleanup;
+                        }
+                            
+                        sep_pos = strlen(tmp_str);
+                        filename[sep_pos] = 0;
+                        conn->path_info = filename + sep_pos + 1;
+                        *is_script_resource = 1;
+                        *is_found = 1;
+                        break;
+
+                    } 
+                    else {
+
+                        DEBUG_TRACE("Substitute file %s serving path %s",
+                                        tmp_str,
+                                        filename );
+
+                        // non-script files will not have sub-resources 
+                        filename[sep_pos] = 0;
+                        conn->path_info = 0;
+                        *is_script_resource = 0;
+                        *is_found = 0;
+                        break;
                     }
-                    sep_pos = strlen(tmp_str);
-                    filename[sep_pos] = 0;
-                    conn->path_info = filename + sep_pos + 1;
-                    *is_script_resource = 1;
-                    *is_found = 1;
-                    break;
-                }
-                else {
-                    // non-script files will not have sub-resources 
-                    filename[sep_pos] = 0;
-                    conn->path_info = 0;
-                    *is_script_resource = 0;
-                    *is_found = 0;
-                    break;
-                }
+                }   
             }
+
 
             tmp_str[sep_pos] = '/';
         }
@@ -8112,9 +8190,6 @@ connect_socket( struct web_context *ctx,// may be NULL *
         return 0;
     }
 
-
-    (void) use_ssl;
-
     (void) use_ssl;
 
 
@@ -8145,7 +8220,7 @@ connect_socket( struct web_context *ctx,// may be NULL *
 
     }
 
-    if (ip_ver == 0) {
+    if ( 0 == ip_ver ) {
         web_snprintf( NULL,
                             NULL, // No truncation check for ebuf 
                             ebuf,
@@ -8155,10 +8230,10 @@ connect_socket( struct web_context *ctx,// may be NULL *
         return 0;
     }
 
-    if (ip_ver == 4) {
+    if ( 4 == ip_ver ) {
         *sock = socket(PF_INET, SOCK_STREAM, 0);
     }
-    else if (ip_ver == 6) {
+    else if ( 6 == ip_ver ) {
         *sock = socket(PF_INET6, SOCK_STREAM, 0);
     }
 
@@ -8179,8 +8254,13 @@ connect_socket( struct web_context *ctx,// may be NULL *
                                 (struct sockaddr *) &sa->sin, 
                                 sizeof(sa->sin) ) ) ) {
         // connected with IPv4 
-        set_blocking_mode(*sock, 0);
-        return 1;
+        if ( 0 == set_non_blocking_mode( *sock ) ) {
+            // Ok 
+            return 1;
+	}
+	
+        // failed 
+	// TODO: specific error message 
     }
 
     if ( ( 6 == ip_ver ) &&
@@ -8188,8 +8268,13 @@ connect_socket( struct web_context *ctx,// may be NULL *
                             (struct sockaddr *)&sa->sin6, 
                             sizeof(sa->sin6) ) ) ) {
         // connected with IPv6 
-        set_blocking_mode(*sock, 0);
-        return 1;
+        if ( 0 == set_non_blocking_mode(*sock) ) {
+            // Ok
+            return 1;
+        }
+        
+	// failed 
+	// TODO: specific error message 
     }
 
     // Not connected 
@@ -9347,13 +9432,13 @@ skip_to_end_of_word_and_terminate( char **ppw, int eol )
 // Return <0 on error. 
 //
 
-static int
-parse_http_headers( char **buf, struct web_header hdr[MG_MAX_HEADERS] )
-{
+static int 
+parse_http_headers( char **buf, struct web_header hdr[WEB_MAX_HEADERS] )
+{ 
     int i;
     int num_headers = 0;
 
-    for (i = 0; i < (int) MG_MAX_HEADERS; i++) {
+    for (i = 0; i < (int)WEB_MAX_HEADERS; i++) {
         char *dp = *buf;
         while ((*dp != ':') && (*dp >= 33) && (*dp <= 126)) {
             dp++;
@@ -10324,7 +10409,8 @@ handle_cgi_request( struct web_connection *conn, const char *prog )
         *p++ = '\0';
     }
     else {
-        dir[0] = '.', dir[1] = '\0';
+        dir[0] = '.';
+	dir[1] = '\0';
         p = (char *) prog;
     }
 
@@ -10341,6 +10427,7 @@ handle_cgi_request( struct web_connection *conn, const char *prog )
         goto done;
     }
 
+    DEBUG_TRACE("CGI: spawn %s %s\n", dir, p);
     pid = spawn_process(conn, p, blk.buf, blk.var, fdin, fdout, fderr, dir);
 
     if ( pid == (pid_t) - 1 ) {
@@ -10420,6 +10507,9 @@ handle_cgi_request( struct web_connection *conn, const char *prog )
 
     if ( ( conn->request_info.content_length != 0) || (conn->is_chunked) ) {
         
+        DEBUG_TRACE( "CGI: send body data (%lli)\n",
+                     (signed long long)conn->request_info.content_length );
+        
         // This is a POST/PUT request, or another request with body data. 
         if ( !forward_body_data( conn, in, INVALID_SOCKET, NULL) ) {
             // Error sending the body data 
@@ -10453,7 +10543,11 @@ handle_cgi_request( struct web_connection *conn, const char *prog )
                         (unsigned int) buflen );
         goto done;
     }
+    
+    DEBUG_TRACE("CGI: %s", "wait for response");
     headers_len = read_message(out, conn, buf, (int) buflen, &data_len);
+    DEBUG_TRACE("CGI: response: %li", (signed long)headers_len);
+
     if (headers_len <= 0) {
 
         // Could not parse the CGI response. Check if some error message on
@@ -10522,6 +10616,9 @@ handle_cgi_request( struct web_connection *conn, const char *prog )
     if (!header_has_option(connection_state, "keep-alive")) {
         conn->must_close = 1;
     }
+    
+    DEBUG_TRACE("CGI: response %u %s", conn->status_code, status_text);
+
     (void) web_printf(conn, "HTTP/1.1 %d %s\r\n", conn->status_code, status_text);
 
     // Send headers 
@@ -10538,6 +10635,8 @@ handle_cgi_request( struct web_connection *conn, const char *prog )
 
     // Read the rest of CGI output and send to the client 
     send_file_data(conn, &fout, 0, INT64_MAX);
+
+    DEBUG_TRACE("CGI: %s", "all data sent");
 
 done:
         
@@ -13372,7 +13471,7 @@ lwebsock_write( lua_State *L )
     if ( 1 == num_args ) {
         // just one text: send it to all client 
         if (lua_isstring(L, 1)) {
-            opcode = WEBSOCKET_OPCODE_TEXT;
+            opcode = WEB_WEBSOCKET_OPCODE_TEXT;
         }
     }
     else if ( 2 == num_args ) {
@@ -13384,33 +13483,33 @@ lwebsock_write( lua_State *L )
             // opcode string and message text 
             str = lua_tostring(L, 1);
             if  ( !vscp_strncasecmp(str, "text", 4 ) ) {
-                opcode = WEBSOCKET_OPCODE_TEXT;
+                opcode = WEB_WEBSOCKET_OPCODE_TEXT;
             }
             else if ( !vscp_strncasecmp(str, "bin", 3) ) {
-                opcode = WEBSOCKET_OPCODE_BINARY;
+                opcode = WEB_WEBSOCKET_OPCODE_BINARY;
             }
             else if ( !vscp_strncasecmp(str, "close", 5) ) {
-                opcode = WEBSOCKET_OPCODE_CONNECTION_CLOSE;
+                opcode = WEB_WEBSOCKET_OPCODE_CONNECTION_CLOSE;
             }
             else if ( !vscp_strncasecmp(str, "ping", 4) ) {
-                opcode = WEBSOCKET_OPCODE_PING;
+                opcode = WEB_WEBSOCKET_OPCODE_PING;
             }
             else if ( !vscp_strncasecmp(str, "pong", 4) ) {
-                opcode = WEBSOCKET_OPCODE_PONG;
+                opcode = WEB_WEBSOCKET_OPCODE_PONG;
             }
             else if ( !vscp_strncasecmp(str, "cont", 4) ) {
-                opcode = WEBSOCKET_OPCODE_CONTINUATION;
+                opcode = WEB_WEBSOCKET_OPCODE_CONTINUATION;
             }
         }
         else if (lua_isuserdata(L, 1)) {
             // client id and message text 
             client = (struct web_connection *) lua_touserdata(L, 1);
-            opcode = WEBSOCKET_OPCODE_TEXT;
+            opcode = WEB_WEBSOCKET_OPCODE_TEXT;
         }
     }
-    else if ( 3 == num_args ) {
+    else if ( 3 == num_args ) { 
         
-        if (lua_isuserdata(L, 1)) {
+        if ( lua_isuserdata(L, 1) ) {
            
             client = (struct web_connection *) lua_touserdata(L, 1);
             
@@ -13422,22 +13521,22 @@ lwebsock_write( lua_State *L )
                 // client id, opcode string and message text 
                 str = lua_tostring(L, 2);
                 if ( !vscp_strncasecmp(str, "text", 4) ) {
-                    opcode = WEBSOCKET_OPCODE_TEXT;
+                    opcode = WEB_WEBSOCKET_OPCODE_TEXT;
                 }
                 else if ( !vscp_strncasecmp(str, "bin", 3) ) {
-                    opcode = WEBSOCKET_OPCODE_BINARY;
+                    opcode = WEB_WEBSOCKET_OPCODE_BINARY;
                 }
                 else if ( !vscp_strncasecmp(str, "close", 5) ) {
-                    opcode = WEBSOCKET_OPCODE_CONNECTION_CLOSE;
+                    opcode = WEB_WEBSOCKET_OPCODE_CONNECTION_CLOSE;
                 }
                 else if ( !vscp_strncasecmp(str, "ping", 4) ) {
-                    opcode = WEBSOCKET_OPCODE_PING;
+                    opcode = WEB_WEBSOCKET_OPCODE_PING;
                 }
                 else if ( !vscp_strncasecmp(str, "pong", 4) ) {
-                    opcode = WEBSOCKET_OPCODE_PONG;
+                    opcode = WEB_WEBSOCKET_OPCODE_PONG;
                 }
                 else if ( !vscp_strncasecmp(str, "cont", 4) ) {
-                    opcode = WEBSOCKET_OPCODE_CONTINUATION;
+                    opcode = WEB_WEBSOCKET_OPCODE_CONTINUATION;
                 }
             }
         }
@@ -14872,12 +14971,14 @@ read_websocket( struct web_connection *conn,
     if ((timeout <= 0.0) && (conn->ctx->config[REQUEST_TIMEOUT])) {
         timeout = atoi(conn->ctx->config[REQUEST_TIMEOUT]) / 1000.0;
     }
-
+    
+    conn->in_websocket_handling = 1;
     web_set_thread_name("wsock");
 
     // Loop continuously, reading messages from the socket, invoking the
     // callback, and waiting repeatedly until an error occurs. 
-    while ( !conn->ctx->stop_flag ) {
+    while ( !conn->ctx->stop_flag && 
+            !conn->must_close ) {
         header_len = 0;
         assert(conn->data_len >= conn->request_len);
         if ((body_len = (size_t) (conn->data_len - conn->request_len)) >= 2) {
@@ -15016,7 +15117,7 @@ read_websocket( struct web_connection *conn,
             }
 
             if ( exit_by_callback || 
-                    ( (mop & 0xf) == WEBSOCKET_OPCODE_CONNECTION_CLOSE ) ) {
+                    ( (mop & 0xf) == WEB_WEBSOCKET_OPCODE_CONNECTION_CLOSE ) ) {
                 // Opcode == 8, connection close 
                 break;
             }
@@ -15049,6 +15150,7 @@ read_websocket( struct web_connection *conn,
     }
 
     web_set_thread_name("worker");
+    conn->in_websocket_handling = 0;
     
 }
 
@@ -15618,7 +15720,7 @@ url_encoded_field_found( const struct web_connection *conn,
             web_url_decode(key, (int) key_len, key_dec, (int) sizeof (key_dec), 1);
 
     if ( ((size_t) key_dec_len >= (size_t)sizeof (key_dec)) || (key_dec_len < 0)) {
-        return FORM_FIELD_STORAGE_SKIP;
+        return WEB_FORM_FIELD_STORAGE_SKIP;
     }
 
     if ( filename ) {
@@ -15632,7 +15734,7 @@ url_encoded_field_found( const struct web_connection *conn,
                ( filename_dec_len < 0 ) ) {
             // Log error message and skip this field. 
             web_cry(conn, "%s: Cannot decode filename", __func__);
-            return FORM_FIELD_STORAGE_SKIP;
+            return WEB_FORM_FIELD_STORAGE_SKIP;
         }
         
     }
@@ -15642,16 +15744,16 @@ url_encoded_field_found( const struct web_connection *conn,
 
     ret =  fdh->field_found(key_dec, filename_dec, path, path_len, fdh->user_data);
 
-    if ((ret & 0xF) == FORM_FIELD_STORAGE_GET) {
+    if ((ret & 0xF) == WEB_FORM_FIELD_STORAGE_GET) {
         if (fdh->field_get == NULL) {
             web_cry(conn, "%s: Function \"Get\" not available", __func__);
-            return FORM_FIELD_STORAGE_SKIP;
+            return WEB_FORM_FIELD_STORAGE_SKIP;
         }
     }
-    if ((ret & 0xF) == FORM_FIELD_STORAGE_STORE) {
+    if ((ret & 0xF) == WEB_FORM_FIELD_STORAGE_STORE) {
         if (fdh->field_store == NULL) {
             web_cry(conn, "%s: Function \"Store\" not available", __func__);
-            return FORM_FIELD_STORAGE_SKIP;
+            return WEB_FORM_FIELD_STORAGE_SKIP;
         }
     }
 
@@ -15681,7 +15783,7 @@ url_encoded_field_get( const struct web_connection *conn,
                         "%s: Not enough memory (required: %lu)",
                         __func__,
                         (unsigned long) (value_len + 1) );
-        return FORM_FIELD_STORAGE_ABORT;
+        return WEB_FORM_FIELD_STORAGE_ABORT;
     }
 
     web_url_decode(key, (int) key_len, key_dec, (int) sizeof (key_dec), 1);
@@ -15870,13 +15972,13 @@ web_handle_form_request( struct web_connection *conn,
                 next = val + vallen;
             }
 
-            if ( FORM_FIELD_STORAGE_GET == field_storage ) {
+            if ( WEB_FORM_FIELD_STORAGE_GET == field_storage ) {
                 // Call callback 
                 url_encoded_field_get(
                                       conn, data, (size_t) keylen, val, (size_t) vallen, fdh);
             }
             
-            if ( FORM_FIELD_STORAGE_STORE == field_storage ) {
+            if ( WEB_FORM_FIELD_STORAGE_STORE == field_storage ) {
                 
                 // Store the content to a file 
                 if (web_fopen(conn, path, MG_FOPEN_MODE_WRITE, &fstore) == 0) {
@@ -15932,8 +16034,8 @@ web_handle_form_request( struct web_connection *conn,
             //
             } */
 
-            if ( FORM_FIELD_STORAGE_ABORT == 
-                    ( field_storage & FORM_FIELD_STORAGE_ABORT ) ) {
+            if ( WEB_FORM_FIELD_STORAGE_ABORT == 
+                    ( field_storage & WEB_FORM_FIELD_STORAGE_ABORT ) ) {
                 // Stop parsing the request 
                 break;
             }
@@ -16016,13 +16118,13 @@ web_handle_form_request( struct web_connection *conn,
                                                         sizeof( path ) - 1,
                                                         fdh );
 
-            if ( FORM_FIELD_STORAGE_ABORT == 
-                    ( field_storage & FORM_FIELD_STORAGE_ABORT ) ) {
+            if ( WEB_FORM_FIELD_STORAGE_ABORT == 
+                    ( field_storage & WEB_FORM_FIELD_STORAGE_ABORT ) ) {
                 // Stop parsing the request 
                 break;
             }
 
-            if ( FORM_FIELD_STORAGE_STORE == field_storage ) {
+            if ( WEB_FORM_FIELD_STORAGE_STORE == field_storage ) {
                
                 if ( 0 == web_fopen(conn, path, MG_FOPEN_MODE_WRITE, &fstore ) ) {
                     fstore.access.fp = NULL;
@@ -16049,7 +16151,7 @@ web_handle_form_request( struct web_connection *conn,
                     next = val + vallen;
                 }
 
-                if (field_storage == FORM_FIELD_STORAGE_GET) {
+                if (field_storage == WEB_FORM_FIELD_STORAGE_GET) {
 #if 0
                     if (!end_of_key_value_pair_found && !all_data_read) {
                         // This callback will deliver partial contents 
@@ -16471,7 +16573,7 @@ web_handle_form_request( struct web_connection *conn,
                                         boundary,
                                         bl );
 
-            if ( field_storage == FORM_FIELD_STORAGE_STORE ) {
+            if ( field_storage == WEB_FORM_FIELD_STORAGE_STORE ) {
                 
                 // Store the content to a file 
                 if (web_fopen(conn, path, MG_FOPEN_MODE_WRITE, &fstore) == 0) {
@@ -16495,7 +16597,7 @@ web_handle_form_request( struct web_connection *conn,
                 // in the buffer. 
                 towrite -= bl + 4;
 
-                if ( FORM_FIELD_STORAGE_GET == field_storage ) {
+                if ( WEB_FORM_FIELD_STORAGE_GET == field_storage ) {
                     unencoded_field_get( conn,
                                             ((get_block > 0) ? NULL : nbeg),
                                             ((get_block > 0) ? 0 : (size_t)(nend - nbeg) ),
@@ -16505,7 +16607,7 @@ web_handle_form_request( struct web_connection *conn,
                     get_block++;
                 }
 
-                if ( FORM_FIELD_STORAGE_STORE == field_storage ) {
+                if ( WEB_FORM_FIELD_STORAGE_STORE == field_storage ) {
                     
                     if ( fstore.access.fp ) {
 
@@ -16555,7 +16657,7 @@ web_handle_form_request( struct web_connection *conn,
 
             towrite = (size_t) (next - hend);
 
-            if ( FORM_FIELD_STORAGE_GET == field_storage ) {
+            if ( WEB_FORM_FIELD_STORAGE_GET == field_storage ) {
                 
                 // Call callback 
                 unencoded_field_get( conn,
@@ -16566,7 +16668,7 @@ web_handle_form_request( struct web_connection *conn,
                                         fdh );
             }
 
-            if ( FORM_FIELD_STORAGE_STORE == field_storage ) {
+            if ( WEB_FORM_FIELD_STORAGE_STORE == field_storage ) {
 
                 if ( fstore.access.fp ) {
                     
@@ -16597,11 +16699,11 @@ web_handle_form_request( struct web_connection *conn,
                     
                     fstore.access.fp = NULL;
                     
-                }
+                } 
             }
 
-            if ( FORM_FIELD_STORAGE_ABORT == 
-                    ( field_storage & FORM_FIELD_STORAGE_ABORT ) ) {
+            if ( WEB_FORM_FIELD_STORAGE_ABORT == 
+                    ( field_storage & WEB_FORM_FIELD_STORAGE_ABORT ) ) {
                 // Stop parsing the request 
                 break;
             }
@@ -18603,9 +18705,9 @@ ssl_get_client_cert_info(struct web_connection *conn)
             *str_finger = 0;
         }
 
-        conn->request_info.client_cert =
-                (struct client_cert *) web_malloc_ctx(sizeof (struct client_cert),
-                                                          conn->ctx);
+        conn->request_info.client_cert = (struct web_client_cert *)
+		    web_malloc_ctx( sizeof( struct web_client_cert ), conn->ctx);
+		
         if (conn->request_info.client_cert) {
             conn->request_info.client_cert->subject = web_strdup(str_subject);
             conn->request_info.client_cert->issuer = web_strdup(str_issuer);
@@ -19142,7 +19244,9 @@ reset_per_request_attributes(struct web_connection *conn)
         return;
     }
     
-    conn->connection_type = 0; // Not yet a valid request/response 
+    conn->connection_type =
+	    CONNECTION_TYPE_INVALID; // Not yet a valid request/response 
+ 
 
     conn->num_bytes_sent = conn->consumed_content = 0;
 
@@ -19269,7 +19373,7 @@ close_socket_gracefully(struct web_connection *conn)
     // http://msdn.microsoft.com/en-us/library/ms739165(v=vs.85).aspx:
     // "Note that enabling a nonzero timeout on a nonblocking socket
     // is not recommended.", so set it to blocking now 
-    set_blocking_mode(conn->client.sock, 1);
+    set_blocking_mode( conn->client.sock );
 
     /// Send FIN to the client 
     shutdown(conn->client.sock, SHUTDOWN_WR);
@@ -19381,12 +19485,15 @@ close_connection(struct web_connection *conn)
     }
 
     web_lock_connection(conn);
+    
+    // Set close flag, so keep-alive loops will stop 
     conn->must_close = 1;
 
     // call the connection_close callback if assigned 
-    if ( ( conn->ctx->callbacks.connection_close != NULL ) &&
-         ( 1 == conn->ctx->context_type ) ) {
-        conn->ctx->callbacks.connection_close( conn );
+    if ( conn->ctx->callbacks.connection_close != NULL ) {
+        if ( CONTEXT_SERVER == conn->ctx->context_type ) {
+            conn->ctx->callbacks.connection_close(conn);
+	}
     }
 
     // Reset user data, after close callback is called.
@@ -19430,7 +19537,17 @@ web_close_connection(struct web_connection *conn)
         return;
     }
 
-    if (conn->ctx->context_type == 2) {
+    if ( CONTEXT_SERVER == conn->ctx->context_type ) {
+        
+	if (conn->in_websocket_handling) {
+            // Set close flag, so the server thread can exit. 
+            conn->must_close = 1;
+            return;
+	}
+    }
+    
+    if ( CONTEXT_WS_CLIENT == conn->ctx->context_type ) {
+
         unsigned int i;
 
         // ws/wss client 
@@ -19438,6 +19555,7 @@ web_close_connection(struct web_connection *conn)
 
         // client context: loops must end 
         conn->ctx->stop_flag = 1;
+        conn->must_close = 1;
 
         // We need to get the client thread out of the select/recv call
         // here. 
@@ -19465,14 +19583,15 @@ web_close_connection(struct web_connection *conn)
         web_free(client_ctx);
         (void) pthread_mutex_destroy(&conn->mutex);
         web_free(conn);
-    }
-    else if ( 0 == conn->ctx->context_type ) { // Client 
-        web_free(conn);
+
+    } 
+    else if ( CONTEXT_HTTP_CLIENT == conn->ctx->context_type ) {
+	web_free(conn);
     }
 
 }
 
-
+// Only for memory statistics 
 static struct web_context common_client_context;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -19494,6 +19613,30 @@ web_connect_client_impl( const struct web_client_options *client_options,
     unsigned max_req_size =
             (unsigned)atoi( config_options[MAX_REQUEST_SIZE].default_value );
 
+    // Size of structures, aligned to 8 bytes 
+    size_t conn_size = ((sizeof(struct web_connection) + 7) >> 3) << 3;
+    size_t ctx_size = ((sizeof(struct web_context) + 7) >> 3) << 3;
+
+    conn = (struct web_connection *)web_calloc_ctx( 1,
+	                                          conn_size + ctx_size
+	                                                 + max_req_size,
+	                                          &common_client_context);
+
+    if ( NULL == conn ) {
+	web_snprintf( NULL,
+                        NULL, // No truncation check for ebuf 
+		        ebuf,
+		        ebuf_len,
+		        "calloc(): %s",
+		        strerror(ERRNO));
+	return NULL;
+    }
+
+    conn->ctx = (struct web_context *)(((char *)conn) + conn_size);
+    conn->buf = (((char *)conn) + conn_size + ctx_size);
+    conn->buf_size = (int)max_req_size;
+    conn->ctx->context_type = CONTEXT_HTTP_CLIENT;
+
     if ( !connect_socket( &common_client_context,
                             client_options->host,
                             client_options->port,
@@ -19502,19 +19645,9 @@ web_connect_client_impl( const struct web_client_options *client_options,
                             ebuf_len,
                             &sock,
                             &sa ) ) {
-        return NULL;
-    }
-    if ( NULL == ( conn = 
-          (struct web_connection *)web_calloc_ctx( 1, 
-                                                  sizeof (*conn) + max_req_size, 
-                                                  &common_client_context ) ) ) {
-        web_snprintf( NULL,
-                            NULL, // No truncation check for ebuf 
-                            ebuf,
-                            ebuf_len,
-                            "calloc(): %s",
-                            strerror( ERRNO ) );
-        closesocket( sock );
+        // ebuf is set by connect_socket,
+        // free all memory and return NULL; 
+	web_free( conn );
         return NULL;
     }
 
@@ -19550,9 +19683,6 @@ web_connect_client_impl( const struct web_client_options *client_options,
             ? (struct sockaddr *) &(conn->client.rsa.sin)
                 : (struct sockaddr *) &(conn->client.rsa.sin6);
 
-    conn->buf_size = (int) max_req_size;
-    conn->buf = (char *) (conn + 1);
-    conn->ctx = &common_client_context;
     conn->client.sock = sock;
     conn->client.lsa = sa;
 
@@ -19615,7 +19745,10 @@ web_connect_client_impl( const struct web_client_options *client_options,
         }
     }
 
-    set_blocking_mode(sock, 0);
+    if ( 0 != set_non_blocking_mode( sock ) ) {
+        // TODO: handle error 
+	;
+    }
 
     return conn;
 }
@@ -19798,7 +19931,7 @@ get_rel_url_at_current_server( const char *uri,
     char *portend;
 
     auth_domain_check_enabled =
-            !strcmp( conn->ctx->config[ENABLE_AUTH_DOMAIN_CHECK], "yes" );
+        !vscp_strcasecmp( conn->ctx->config[ ENABLE_AUTH_DOMAIN_CHECK ], "yes" );
 
     if ( !auth_domain_check_enabled ) {
         return 0;
@@ -20058,7 +20191,7 @@ get_request(struct web_connection *conn, char *ebuf, size_t ebuf_len, int *err)
         conn->content_len = 0; // No content 
     }
 
-    conn->connection_type = 1; // Valid request 
+    conn->connection_type = CONNECTION_TYPE_REQUEST; // Valid request 
     return 1;
 }
 
@@ -20126,7 +20259,7 @@ get_response( struct web_connection *conn,
         conn->content_len = -1; // unknown content length 
     }
 
-    conn->connection_type = 2;  // Valid response 
+    conn->connection_type = CONNECTION_TYPE_RESPONSE; // Valid response 
     return 1;
 }
 
@@ -20383,7 +20516,7 @@ web_connect_websocket_client( const char *host,
     newctx = (struct web_context *) web_malloc(sizeof (struct web_context));
     memcpy(newctx, conn->ctx, sizeof (struct web_context));
     newctx->user_data = user_data;
-    newctx->context_type = 2;       // ws/wss client context type */
+    newctx->context_type = CONTEXT_WS_CLIENT;  // ws/wss client context 
     newctx->cfg_worker_threads = 1; // one worker thread will be created */
     newctx->worker_threadids =
             (pthread_t *) web_calloc_ctx(newctx->cfg_worker_threads,
@@ -20426,7 +20559,7 @@ init_connection(struct web_connection *conn)
 {
     // Is keep alive allowed by the server */
     int keep_alive_enabled =
-            !strcmp(conn->ctx->config[ENABLE_KEEP_ALIVE], "yes");
+        !vscp_strcasecmp( conn->ctx->config[ENABLE_KEEP_ALIVE], "yes" );
 
     if (!keep_alive_enabled) {
         conn->must_close = 1;
@@ -20440,13 +20573,15 @@ init_connection(struct web_connection *conn)
 
     conn->conn_state = 2; // init 
 
-    // call the connection_close callback if assigned 
-    if ( ( conn->ctx->callbacks.init_connection != NULL ) &&
-         ( 1 == conn->ctx->context_type ) ) {
-        void *conn_data = NULL;
-        conn->ctx->callbacks.init_connection(conn, &conn_data);
-        web_set_user_connection_data(conn, conn_data);
+    // call the init_connection callback if assigned 
+    if ( conn->ctx->callbacks.init_connection != NULL ) {
+	if ( CONTEXT_SERVER == conn->ctx->context_type ) {
+            void *conn_data = NULL;
+            conn->ctx->callbacks.init_connection(conn, &conn_data);
+            web_set_user_connection_data(conn, conn_data);
+	}
     }
+    
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -20938,7 +21073,10 @@ accept_new_connection(const struct socket *listener, struct web_context *ctx)
         // set_sock_timeout(so.sock, timeout);
         // call is no longer required. 
 
-        set_blocking_mode(so.sock, 0);
+        // The "non blocking" property should already be
+        // inherited from the parent socket. Set it for
+	// non-compliant socket implementations. */
+	set_non_blocking_mode( so.sock );
 
         so.in_use = 0;
         produce_socket(ctx, &so);
@@ -21481,8 +21619,10 @@ web_start(const struct web_callbacks *callbacks,
     if (ctx->callbacks.init_context) {
         ctx->callbacks.init_context(ctx);
     }
+    
     ctx->callbacks.exit_context = exit_callback;
-    ctx->context_type = 1; // server context 
+    ctx->context_type = CONTEXT_SERVER; // server context 
+
 
     // Start master (listening) thread 
     web_start_thread_with_id(master_thread, ctx, &ctx->masterthreadid);
@@ -21721,7 +21861,7 @@ web_get_system_info_impl(char *buffer, int buflen)
                             block,
                             sizeof (block),
                             "\"features\" : %lu,%s"
-                            "\"feature_list\" : \"Server:%s%s%s%s%s%s%s%s\",%s",
+                            "\"feature_list\" : \"Server:%s%s%s%s%s%s%s%s%s\",%s",
                             (unsigned long) web_check_feature(0xFFFFFFFFu),
                             eol,
                             web_check_feature(1) ? " Files" : "",
@@ -21732,6 +21872,7 @@ web_get_system_info_impl(char *buffer, int buflen)
                             web_check_feature(32) ? " Lua" : "",
                             web_check_feature(64) ? " JavaScript" : "",
                             web_check_feature(128) ? " Cache" : "",
+                            web_check_feature(256) ? " Stats" : "",
                             eol );
         system_info_length += (int) strlen(block);
         if (system_info_length < buflen) {

@@ -87,7 +87,6 @@ void _sighandler( int sig )
 
 VSCPApp::VSCPApp()
 {
-
     ;
 }
 

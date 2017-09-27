@@ -763,8 +763,8 @@ bool CControlObject::searchLogDB( const char * sql, wxString& strResult )
         wxstr += _(",");
         wxstr += sqlite3_column_text( ppStmt, 3 );
         wxstr += _(",");
-        wxString msg = sqlite3_column_text( ppStmt, 4 );
-        wxstr += wxBase64Encode( msg, msg.Length() ); 
+        wxstr += sqlite3_column_text( ppStmt, 4 ); 
+        
         wxstr += _(";");
         strResult += wxstr;
     }

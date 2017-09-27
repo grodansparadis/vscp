@@ -3970,8 +3970,6 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
         
         var.setStockVariable();
         var.setPersistent( false );
-        var.setAccessRights( PERMISSON_OWNER_READ );           
-        var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
         
         CVSCPVariable sqlvar;
         if ( 0 == findNonPersistentVariable( _("vscp.log.database.sql"), sqlvar ) ) {
@@ -3980,13 +3978,7 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
         else {
             
             wxString wxstr = sqlvar.getValue();
-            size_t len = wxBase64Decode( NULL, 0, wxstr );
-            if ( 0 == len ) return false;
-            uint8_t *pbuf = new uint8_t[len];
-            if ( NULL == pbuf ) return false;
-            len = wxBase64Decode( pbuf, len, wxstr );
-            wxstr = wxString::FromUTF8( (const char *)pbuf, len );
-            delete [] pbuf;
+            if ( !vscp_base64_wxdecode( wxstr ) ) return false;
             
             wxString searchStr = "SELECT * from log ";
             searchStr += wxstr;
@@ -4002,6 +3994,7 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
     }
     
     if ( lcname.StartsWith( _("vscp.log.database.sql") ) ) {
+        // SQL
         return var.getID();
     }
     

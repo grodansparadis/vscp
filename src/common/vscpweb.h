@@ -95,7 +95,7 @@ struct web_connection; // Handle for the individual connection
 
 
 // Maximum number of headers 
-#define MG_MAX_HEADERS (255)
+#define WEB_MAX_HEADERS (255)
 
 struct web_header {
     const char *name;  // HTTP header name 
@@ -142,9 +142,9 @@ struct web_request_info {
     int num_headers;            // Number of HTTP headers 
     
     struct web_header
-        http_headers[MG_MAX_HEADERS];   // Allocate maximum headers 
+        http_headers[WEB_MAX_HEADERS];   // Allocate maximum headers 
 
-    struct client_cert *client_cert;    // Client certificate information 
+    struct web_client_cert *client_cert;// Client certificate information 
 
     const char *acceptedWebSocketSubprotocol;   // websocket subprotocol,
                                                 // accepted during handshake 
@@ -171,7 +171,7 @@ struct web_response_info {
     int num_headers;                // Number of HTTP headers 
     
     struct web_header
-        http_headers[MG_MAX_HEADERS]; // Allocate maximum headers 
+        http_headers[WEB_MAX_HEADERS]; // Allocate maximum headers 
     
 };
 
@@ -181,11 +181,13 @@ struct web_response_info {
 // Client certificate information (part of web_request_info) 
 //
 
-struct client_cert {
-    const char *subject;
-    const char *issuer;
-    const char *serial;
-    const char *finger;
+
+// New nomenclature. 
+struct web_client_cert {
+	const char *subject;
+	const char *issuer;
+	const char *serial;
+	const char *finger;
 };
 
 
@@ -622,17 +624,16 @@ struct web_option {
     const char *default_value;
 };
 
-
 enum {
-    CONFIG_TYPE_UNKNOWN = 0x0,
-    CONFIG_TYPE_NUMBER = 0x1,
-    CONFIG_TYPE_STRING = 0x2,
-    CONFIG_TYPE_FILE = 0x3,
-    CONFIG_TYPE_DIRECTORY = 0x4,
-    CONFIG_TYPE_BOOLEAN = 0x5,
-    CONFIG_TYPE_EXT_PATTERN = 0x6,
-    CONFIG_TYPE_STRING_LIST = 0x7,
-    CONFIG_TYPE_STRING_MULTILINE = 0x8
+	WEB_CONFIG_TYPE_UNKNOWN = 0x0,
+	WEB_CONFIG_TYPE_NUMBER = 0x1,
+	WEB_CONFIG_TYPE_STRING = 0x2,
+	WEB_CONFIG_TYPE_FILE = 0x3,
+	WEB_CONFIG_TYPE_DIRECTORY = 0x4,
+	WEB_CONFIG_TYPE_BOOLEAN = 0x5,
+	WEB_CONFIG_TYPE_EXT_PATTERN = 0x6,
+	WEB_CONFIG_TYPE_STRING_LIST = 0x7,
+	WEB_CONFIG_TYPE_STRING_MULTILINE = 0x8
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -806,15 +807,15 @@ VSCPWEB_API void web_unlock_context(struct web_context *ctx);
 
 
 // Opcodes, from http://tools.ietf.org/html/rfc6455 
-enum {
-    WEBSOCKET_OPCODE_CONTINUATION = 0x0,
-    WEBSOCKET_OPCODE_TEXT = 0x1,
-    WEBSOCKET_OPCODE_BINARY = 0x2,
-    WEBSOCKET_OPCODE_CONNECTION_CLOSE = 0x8,
-    WEBSOCKET_OPCODE_PING = 0x9,
-    WEBSOCKET_OPCODE_PONG = 0xa
-};
 
+enum {
+    WEB_WEBSOCKET_OPCODE_CONTINUATION = 0x0,
+    WEB_WEBSOCKET_OPCODE_TEXT = 0x1,
+    WEB_WEBSOCKET_OPCODE_BINARY = 0x2,
+    WEB_WEBSOCKET_OPCODE_CONNECTION_CLOSE = 0x8,
+    WEB_WEBSOCKET_OPCODE_PING = 0x9,
+    WEB_WEBSOCKET_OPCODE_PONG = 0xa
+};
 
 // Macros for enabling compiler-specific checks for printf-like arguments. 
 #undef PRINTF_FORMAT_STRING
@@ -900,7 +901,23 @@ web_send_digest_access_authentication_request( struct web_connection *conn,
 ///////////////////////////////////////////////////////////////////////////////
 // web_check_digest_access_authentication
 //
-// TODO: Test and document 
+// Check if the current request has a valid authentication token set.
+// A file is used to provide a list of valid user names, realms and
+// password hashes. The file can be created and modified using the
+// mg_modify_passwords_file API function.
+// Parameters:
+//   conn: Current connection handle.
+//   realm: Authentication realm. If NULL is supplied, the sever domain
+//          set in the authentication_domain configuration is used.
+//   filename: Path and name of a file storing multiple password hashes.
+// Return:
+//   > 0   Valid authentication
+//   0     Invalid authentication
+//   < 0   Error (all values < 0 should be considered as invalid
+//         authentication, future error codes will have negative
+//         numbers)
+//   -1    Parameter error
+//   -2    File not found
 //
 
 VSCPWEB_API int
@@ -1190,16 +1207,17 @@ struct web_form_data_handler {
 // web_form_data_handler. 
 //
 
+
 enum {
-    // Skip this field (neither get nor store it). Continue with the
-    // next field. 
-    FORM_FIELD_STORAGE_SKIP = 0x0,
-    // Get the field value. 
-    FORM_FIELD_STORAGE_GET = 0x1,
-    // Store the field value into a file. 
-    FORM_FIELD_STORAGE_STORE = 0x2,
-    // Stop parsing this request. Skip the remaining fields. 
-    FORM_FIELD_STORAGE_ABORT = 0x10
+	/* Skip this field (neither get nor store it). Continue with the
+     * next field. */
+	WEB_FORM_FIELD_STORAGE_SKIP = 0x0,
+	/* Get the field value. */
+	WEB_FORM_FIELD_STORAGE_GET = 0x1,
+	/* Store the field value into a file. */
+	WEB_FORM_FIELD_STORAGE_STORE = 0x2,
+	/* Stop parsing this request. Skip the remaining fields. */
+	WEB_FORM_FIELD_STORAGE_ABORT = 0x10
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1396,8 +1414,7 @@ web_connect_client_secure( const struct web_client_options *client_options,
                                 char *error_buffer,
                                 size_t error_buffer_size );
 
-
-enum { TIMEOUT_INFINITE = -1 };
+enum { WEB_TIMEOUT_INFINITE = -1 };
 
 ///////////////////////////////////////////////////////////////////////////////
 // web_get_response

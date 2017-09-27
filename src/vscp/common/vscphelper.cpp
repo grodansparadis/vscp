@@ -309,7 +309,7 @@ char *vscp_trimWhiteSpace( char *str )
 // because each byte takes 2 bytes in string representation 
 //
 
-void vscp_bin2str(char *to, const unsigned char *p, size_t len  ) 
+void vscp_bin2str( char *to, const unsigned char *p, size_t len  ) 
 {
     static const char *hex = "0123456789abcdef";
 
