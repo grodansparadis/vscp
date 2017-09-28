@@ -94,7 +94,7 @@ VSCPApp::VSCPApp()
 // The one and only app. object
 //
 
-int main(int argc, char **argv)
+int main( int argc, char **argv )
 {
     int arg = 0;
     wxString rootFolder;    // Folder where VSCP files will be

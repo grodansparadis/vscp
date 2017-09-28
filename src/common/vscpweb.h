@@ -22,13 +22,20 @@
  * THE SOFTWARE.
  */
 
-// civetweb version 1.10.0
+
 
 #ifndef VSCPWEB_HEADER_INCLUDED
 #define VSCPWEB_HEADER_INCLUDED
 
 #include <vscp.h>
 #include <version.h>
+
+// Synced with Civetwev version
+#define CIVETWEB_VERSION "1.10"
+#define CIVETWEB_VERSION_MAJOR (1)
+#define CIVETWEB_VERSION_MINOR (10)
+#define CIVETWEB_VERSION_PATCH (0)
+#define CIVETWEB_COPYRIGHT "Copyright (c) 2013-2017 the Civetweb developers"
 
 #ifndef VSCPWEB_API
 #if defined(_WIN32)

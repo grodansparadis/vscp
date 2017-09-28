@@ -3107,8 +3107,8 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
     web_printf( conn, WEB_STYLE_END );
     web_printf( conn, WEB_COMMON_JS );      // Common JavaScript code
-    web_printf( conn, "<script>document.getElementById(\"ve1\").onsubmit "
-                      "= function() { alert(\"Hi\"); };</script>" );
+    //web_printf( conn, "<script>document.getElementById(\"ve1\").onsubmit "
+    //                  "= function() { alert(\"Hi\"); };</script>" );
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START ) ;
 
     // Navigation menu
@@ -3873,8 +3873,8 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
 
     web_printf(conn, WEB_VAREDIT_TABLE_END );
  
-    web_printf( conn, 
-                    WEB_VAREDIT_SUBMIT,  
+    web_printf( conn,
+                    WEB_VAREDIT_SUBMIT,
                     "/vscp/varpost",
                     "/vscp" );
 
@@ -3901,6 +3901,18 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
     const struct web_request_info *reqinfo = web_get_request_info( conn );
     if ( NULL == reqinfo ) return 0;
 
+    // submit
+    bool bCancel = false;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,                             
+                            strlen( reqinfo->query_string ), 
+                            "btncancel", 
+                            buf, 
+                            sizeof( buf ) ) > 0 ) {
+            if ( NULL != strstr( "true", buf ) ) bCancel = true;
+        }
+    }
+    
     // bNew
     bool bNew = false;
     if ( NULL != reqinfo->query_string ) {
@@ -4078,16 +4090,15 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
 
     // Navigation menu
     web_printf( conn, WEB_COMMON_MENU );
-
     web_printf( conn, WEB_VARPOST_BODY_START );
-    
+            
     web_printf( conn, msg );
-
+   
     if ( bNew ) {
         
         // * * * A new variable * * * 
         
-        variable.setPersistent( bPersistent );
+        variable.setPersistent( bPersistent ); 
         variable.setType( nType );
         vscp_base64_wxencode( strNote );
         variable.setNote( strNote );
@@ -4135,19 +4146,36 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
     
     variable.setValue( strValue );
     
-    // If new variable add it
-    if ( bNew ) {
-        gpobj->m_variables.add( variable );
+    bool bOK = false;
+    if ( bCancel ) {
+        web_printf( conn, "<h1>Canceled!</h1>" );
     }
     else {
-        // Update variables
-        gpobj->m_variables.update( variable );
+        
+        web_printf( conn, "<h1>Saving!</h1>" );
+        
+        // If new variable add it
+        if ( bNew ) {
+            if ( !( bOK = gpobj->m_variables.add( variable ) ) ) {
+                web_printf( conn, 
+                        "<font color=\"red\">Failed to add variable!</font>" );
+            }
+        }
+        else {
+            // Update variables
+            if ( !( bOK = gpobj->m_variables.update( variable ) ) )  {
+                web_printf( conn, 
+                        "<font color=\"red\">Failed to update variable!</font>" );
+            }
+        }
     }
 
-    web_printf( conn, 
-                    "<br><br>Variable has been saved. id=%d '%s'", 
-                    id,
-                    (const char *)variable.getName().mbc_str() );
+    if ( !bCancel && bOK ) {
+        web_printf( conn, 
+                        "<font color=\"blue\">Variable has been saved. id=%d '%s'</font>", 
+                        id,
+                        (const char *)variable.getName().mbc_str() );
+    }
 
     web_printf( conn, WEB_COMMON_END ); // Common end code
 

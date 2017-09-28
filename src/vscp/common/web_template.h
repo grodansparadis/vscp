@@ -250,27 +250,43 @@ Paradise of the Frog.</a></div></div></body></html>"
 // Place before common end
 #define WEB_VAREDIT_TABLE_END "</tbody></table>"
 
-//  Variable-Edit submit 
-#define WEB_VAREDIT_SUBMIT "<br><div style=\"text-align:center\">\
-                            <button type=\"submit\" value=\"btnsave\" \
-                            onclick=\"DoNav(%s);\" \
-                            name=\"btnsave\">save</button> \
-                            <button type=\"reset\" value=\"Reset\">Reset</button> \
-                            <button type=\"cancel\" \
-                            onclick=\"javascript:window.location='%s';\">\
-                            Cancel</button>\
-                            <br></div>"
 
-// * * * Variable Post * * *
-#define WEB_VARPOST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                    <h1 id=\"header\">VSCP - Variable Post</h1>\
-                                    </div>"
-
+///////////////////////////////////////////////////////////////////////////////
+//                              Variable
+//////////////////////////////////////////////////////////////////////////////
 
 //  Variable-New step1 submit 
 #define WEB_VARNEW_SUBMIT "<br><div style=\"text-align:center\">\
                             <button type=\"submit\" value=\"btnnext\" \
                             name=\"btnnext\">next</button><br></div>"
+
+/*
+ * <form onsubmit="return isValidForm()" />
+ *
+ * If isValidForm() returns false, then your form doesn't submit.
+ *
+ * You should also probably move your event handler from inline.
+ *
+ * document.getElementById('my-form').onsubmit = function() {
+ *   return false;
+ * };
+ */
+
+//  Variable-Edit submit 
+#define WEB_VAREDIT_SUBMIT "<br><div style=\"text-align:center\">\
+                            <button type=\"submit\" \
+                               onclick=\"DoNav(%s);\" name=\"btnsave\">Save</button> \
+                            <button type=\"reset\" value=\"reset\">Reset</button> \
+                            <button type=\"submit\" value=\"true\" name=\"btncancel\" >Cancel</button>\
+                            <br></div>"
+ 
+// onclick=\"javascript:alert('hi');window.location='varlist';\"
+//  <button type=\"cancel\" onclick=\"javascript:window.location='%s';\">Cancel</button>\
+
+// * * * Variable Post * * *
+#define WEB_VARPOST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
+                                    <h1 id=\"header\">VSCP - Variable Post</h1>\
+                                    </div>"
 
 
 
