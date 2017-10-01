@@ -5871,13 +5871,10 @@ bool CDM::loadFromDatabase( void )
         return false;
     }
     
-    gpobj->logMsg( _("DM: Loading decision matrix from database :\n"), 
+    gpobj->logMsg( wxString::Format( _("DM: Loading decision matrix from database : %s\n"), 
+                                        (const char *)m_path_db_vscp_dm.GetFullPath().mbc_str() ),
                         DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
     
-    // debug print configuration path
-    gpobj->logMsg( m_path_db_vscp_dm.GetFullPath() + _("\n"), 
-                        DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
-
     m_mutexDM.Lock();
     
     if ( SQLITE_OK != sqlite3_prepare_v2( m_db_vscp_dm,
@@ -6081,11 +6078,8 @@ bool CDM::loadFromDatabase( void )
 
 bool CDM::loadFromXML( void )
 {
-    gpobj->logMsg( _("DM: Loading decision matrix from :\n"), 
-                        DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
-
-    // debug print configuration path
-    gpobj->logMsg( m_staticXMLPath + _("\n"), 
+    gpobj->logMsg( wxString::Format( _("DM: Loading decision matrix from: %s\n"), 
+                                        (const char *)m_staticXMLPath.mbc_str() ),
                         DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
 
     // File must exist

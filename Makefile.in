@@ -62,7 +62,7 @@ endif
 	@echo "   around be foolish - stay hungry! There is always a choice."
 config:
 	mkdir -p /srv/vscp/logs
-        mkdir -p /srv/vscp/actions
+	mkdir -p /srv/vscp/actions
 	mkdir -p /srv/vscp/scripts
 	mkdir -p /srv/vscp/ux
 	mkdir -p /srv/vscp/web

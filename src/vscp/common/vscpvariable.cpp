@@ -588,7 +588,7 @@ bool CVSCPVariable::setOwnerId( uint32_t userid )
     }
     
     // Check if id is defined
-    if ( !CUserItem::isUserInDB( userid ) ) return false;
+    //if ( !CUserItem::isUserInDB( userid ) ) return false;
     
     // Assign userid    
     m_userid = userid;

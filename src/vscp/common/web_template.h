@@ -86,16 +86,10 @@
                            "    <a href=\"#\">Logs</a>"\
                            "    <ul>"\
                            "        <li>"\
-                           "            <a href=\"/vscp/log/general\">General Log</a>"\
+                           "            <a href=\"/vscp/log\">View Log</a>"\
                            "        </li>"\
                            "        <li>"\
-                           "            <a href=\"/vscp/log/access\">Access Log</a>"\
-                           "        </li>"\
-                           "        <li>"\
-                           "            <a href=\"/vscp/log/security\">Security Log</a>"\
-                           "        </li>"\
-                           "        <li>"\
-                           "            <a href=\"/vscp/log/dm\">Decision Matrix Log</a>"\
+                           "            <a href=\"/vscp/logdelete\">Clear Log</a>"\
                            "        </li>"\
                            "    </ul>"\
                            " </li>"\
@@ -161,6 +155,9 @@ Paradise of the Frog.</a></div></div></body></html>"
                                         onmouseout=\"ChangeColor(this, false);\" \
                                         onclick=\"DoNav('%s')\" >"
 
+#define WEB_COMMON_TR_NON_CLICKABLE_ROW "<tr onmouseover=\"ChangeColor(this, true);\" \
+                                        onmouseout=\"ChangeColor(this, false);\" >"
+
 // * * * DM List * * *
 
 // Place after menus
@@ -183,7 +180,7 @@ Paradise of the Frog.</a></div></div></body></html>"
 
 // Place after menus
 #define WEB_DMEDIT_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                <h1 id=\"header\">VSCP - Decision Matrix Edit</h1>\
+                                <h1 id=\"header\">VSCP Server - Decision Matrix Edit</h1>\
                                 </div><table><tbody>"
 
 // Place before common end
@@ -198,7 +195,7 @@ Paradise of the Frog.</a></div></div></body></html>"
 // * * * DM Post * * *
 
 #define WEB_DMPOST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                <h1 id=\"header\">VSCP - Decision Matrix Edit</h1>\
+                                <h1 id=\"header\">VSCP Server - Decision Matrix Edit</h1>\
                                 </div><table><tbody>"
 
 
@@ -207,8 +204,8 @@ Paradise of the Frog.</a></div></div></body></html>"
 
 // Place after menus
 #define WEB_IFLIST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                <h1 id=\"header\">VSCP - Interfaces</h1></div>\
-                                <table><tbody>"
+                                  <h1 id=\"header\">VSCP Server - Interfaces</h1></div>\
+                                  <table><tbody>"
 
 // Place before common end
 #define WEB_IFLIST_TABLE_END "</tbody></table>"
@@ -218,8 +215,8 @@ Paradise of the Frog.</a></div></div></body></html>"
                             </th><th>Name</th><th>Start time</th></tr>"
 
 #define WEB_IFLIST_TR "<tr onmouseover=\"ChangeColor(this, true);\" \
-                        onmouseout=\"ChangeColor(this, false);\" \
-                        onclick=\"DoNav('http://www.vscp.org/')\" >"
+                            onmouseout=\"ChangeColor(this, false);\" \
+                            onclick=\"DoNav('http://www.vscp.org/')\" >"
 
 #define WEB_IFLIST_TD_CENTERED "<td id=\"tdcenter\">"
 
@@ -231,7 +228,7 @@ Paradise of the Frog.</a></div></div></body></html>"
 
 // Place after menus
 #define WEB_VARLIST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                <h1 id=\"header\">VSCP - Variables</h1></div>\
+                                <h1 id=\"header\">VSCP Server - Variables</h1></div>\
                                 <table><tbody>"
 
 // Table head
@@ -285,17 +282,54 @@ Paradise of the Frog.</a></div></div></body></html>"
 
 // * * * Variable Post * * *
 #define WEB_VARPOST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                    <h1 id=\"header\">VSCP - Variable Post</h1>\
+                                    <h1 id=\"header\">VSCP Server - Variable Post</h1>\
                                     </div>"
 
 
+////////////////////////////////////////////////////////////////////////////////
+//                                 Log
+////////////////////////////////////////////////////////////////////////////////
 
+
+// Place after menus
+#define WEB_LOG_BODY_START "<br><div id=\"content\"><div id=\"header\">\
+                                <h1 id=\"header\">VSCP Server - Log</h1></div>\
+                                <table><tbody>"
+
+// Table head
+#define WEB_LOG_TR_HEAD "<tr> <th>Date</th> <th>Type</th> <th>Level</th> <th>Message</th> </tr>"
+
+//  Log pre step submit 
+#define WEB_LOG_SUBMIT "<br><div style=\"text-align:center\">\
+                            <button type=\"submit\" value=\"btnnext\" \
+                            name=\"btnnext\">next</button><br></div>"
+
+// List navigation - 
+// Action url           - string
+// First shown record   - integer
+// Last shown record    - integer
+// total records        - integer
+// count to show    - integer
+#define WEB_LOG_LIST_NAVIGATION "<br><div style=\"text-align:center\">\
+                        <form method=\"get\" action=\"%s\" name=\"PageSelect\">\
+                        <button type=\"submit\" value=\"first\" name=\"navbtn\">&lt;&lt;</button>\
+                        <button type=\"submit\" value=\"previous\" name=\"navbtn\">&lt;</button>\
+                        <button type=\"submit\" value=\"next\" name=\"navbtn\">&gt;</button>\
+                        <button type=\"submit\" value=\"last\" name=\"navbtn\">&gt;&gt;</button>\
+                        <span style=\"font-weight:bold\"> %lu - %lu</span> of \
+                        <span style=\"font-weight:bold\">%lu</span> Show: \
+                        <input name=\"count\" value=\"%lu\" size=\"3\">\
+                        <input name=\"from\" value=\"%lu\" type=\"hidden\">\
+                        <input name=\"light\" value=\"%s\" type=\"hidden\">\
+                        <input name=\"type\" value=\"%d\" type=\"hidden\">\
+                        <input name=\"level\" value=\"%d\" type=\"hidden\">\
+                        </form><br></div> "
 
 // * * * Table List * * *
 
 // Place after menus
 #define WEB_TABLELIST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                    <h1 id=\"header\">VSCP - Tables</h1></div>\
+                                    <h1 id=\"header\">VSCP Server - Tables</h1></div>\
                                     <table><tbody>"
 
 // Place before common end

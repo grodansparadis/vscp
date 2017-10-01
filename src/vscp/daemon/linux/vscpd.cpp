@@ -101,7 +101,7 @@ int main( int argc, char **argv )
     wxString strcfgfile;    // Points to XML configuration file
 
     // Ignore return value from defunct processes
-    signal( SIGCHLD, SIG_IGN );
+    signal( SIGCHLD, SIG_IGN ); 
     
     crcInit();
 

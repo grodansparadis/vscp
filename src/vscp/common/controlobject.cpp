@@ -645,7 +645,7 @@ void CControlObject::logMsg(const wxString& msgin, const uint8_t level, const ui
             ( m_logLevel >= level) ) {
         
         
-        char *zErrMsg = 0;
+        char *zErrMsg = NULL;
                 
         char *sql = sqlite3_mprintf( VSCPDB_LOG_INSERT,
             nType, 

@@ -44,9 +44,9 @@
 #define VSCPDB_CONFIG_UPDATE_ITEM "UPDATE 'config' SET 'vscpd_value' ='%s' WHERE vscpd_name='%q';"
 #define VSCPDB_CONFIG_INSERT "INSERT INTO 'config' (vscpd_name,vscpd_value) VALUES ('%q','%q');"
 
-#define VSCPDB_ORDINAL_CONFIG_ID                                       0
-#define VSCPDB_ORDINAL_CONFIG_NAME                                     1
-#define VSCPDB_ORDINAL_CONFIG_VALUE                                    2
+#define VSCPDB_ORDINAL_CONFIG_ID                        0
+#define VSCPDB_ORDINAL_CONFIG_NAME                      1
+#define VSCPDB_ORDINAL_CONFIG_VALUE                     2
 
 
 // Configuration defaults
