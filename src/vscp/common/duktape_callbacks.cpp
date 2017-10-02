@@ -57,7 +57,7 @@
 #include <vscphelper.h>
 #include <vscpeventhelper.h>
 #include <actioncodes.h>
-#include <vscpvariable.h>
+#include <remotevariable.h>
 #include <userlist.h>
 #include <controlobject.h>
 #include <vscpremotetcpif.h>
