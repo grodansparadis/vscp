@@ -54,7 +54,7 @@
 #include <vscphelper.h>
 #include <guid.h>
 #include <variablecodes.h>
-#include <vscpvariable.h>
+#include <remotevariable.h>
 #include <vscpbase64.h>
 
 // The global control object

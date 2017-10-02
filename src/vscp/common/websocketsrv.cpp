@@ -103,7 +103,6 @@
 #include "web_js.h"
 #include "web_template.h"
 
-//#include <slre.h>
 #include <mongoose.h>
 #include <vscpweb.h>
 
@@ -114,7 +113,6 @@
 #include <tables.h>
 #include <configfile.h>
 #include <crc.h>
-//#include <md5.h>
 #include <randpassword.h>
 #include <version.h>
 #include <variablecodes.h>
@@ -123,11 +121,9 @@
 #include <devicethread.h>
 #include <dm.h>
 #include <mdf.h>
-#include <vscpeventhelper.h>
 #include <websrv.h>
-#include <webserver_websocket.h>
+#include <websocket.h>
 #include <controlobject.h>
-#include <webserver.h>
 
 using namespace std;
 

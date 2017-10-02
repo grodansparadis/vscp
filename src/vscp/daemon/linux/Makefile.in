@@ -68,19 +68,19 @@ VSCPD_OBJECTS =  vscpd.o \
 	../../common/clientlist.o \
 	../../common/controlobject.o \
 	../../common/vscpeventhelper.o \
-	../../common/vscptcpipclientthread.o \
+	../../common/tcpipsrv.o \
 	../../common/dm.o \
-	../../common/vscpvariable.o \
+	../../common/remotevariable.o \
 	../../common/interfacelist.o \
 	../../common/userlist.o \
 	../../common/devicethread.o \
 	../../common/websrv.o \
 	../../common/restsrv.o \
 	../../common/websocketsrv.o \
-	../../common/vscpudpclientthread.o \
-	../../common/vscpmulticastclientthread.o \
+	../../common/udpsrv.o \
+	../../common/multicastsrv.o \
 	../../common/tables.o \
-	../../common/vscpautomation.o \
+	../../common/automation.o \
 	../../common/knownnodes.o \
 	../../common/duktape_callbacks.o \
 	../../common/vscp_javascript.o \

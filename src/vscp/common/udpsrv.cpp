@@ -40,7 +40,7 @@
 #include <crc.h>
 #include <aes.h>
 #include <vscp.h>
-#include <vscptcpipclientthread.h>
+#include <tcpipsrv.h>
 #include <canal_win32_ipc.h>
 #include <canal_macro.h>
 #include <canal.h>
@@ -49,7 +49,7 @@
 #include <mongoose.h>
 #include <version.h>
 #include <controlobject.h>
-#include <vscpudpclientthread.h>
+#include <udpsrv.h>
 
 // Prototypes
 

@@ -69,7 +69,7 @@
 #include <aes.h>
 #include <guid.h>
 #include <controlobject.h>
-#include "vscpmulticastclientthread.h"
+#include "multicastsrv.h"
 
 // Prototypes
 

@@ -56,7 +56,7 @@
 #include <vscp_type.h>
 
 #include "controlobject.h"
-#include "vscpautomation.h"
+#include "automation.h"
 
 ///////////////////////////////////////////////////
 //                 GLOBALS

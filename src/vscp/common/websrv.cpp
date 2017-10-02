@@ -130,8 +130,7 @@
 #include <vscpdb.h>
 #include <vscpmd5.h>
 #include <vscpweb.h>
-#include <webserver.h>
-#include <webserver_websocket.h>
+#include <websocket.h>
 
 using namespace std;
 
@@ -195,7 +194,7 @@ struct websrv_Session *
 VSCPWebServerThread::websrv_get_session( struct mg_connection *nc,
                                             struct http_message *hm )
 {
-    char buf[512];
+    char buf[512]; 
     struct websrv_Session *ret = NULL;
 
     // Get the session cookie

@@ -137,10 +137,10 @@
 #include <devicelist.h>
 #include <devicethread.h>
 #include <dm.h>
-#include <vscpeventhelper.h>
-#include <vscpwebserver.h>
-#include <webserver_websocket.h>
+//#include <vscpeventhelper.h>
 #include <vscpweb.h>
+#include <websrv.h>
+#include <websocket.h>
 #include <vscpd_caps.h>
 #include <controlobject.h>
 

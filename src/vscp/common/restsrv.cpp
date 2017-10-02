@@ -118,14 +118,13 @@
 #include <variablecodes.h>
 #include <actioncodes.h>
 #include <devicelist.h>
-#include <devicethread.h>
+#include <devicethread.h> 
 #include <dm.h>
 #include <mdf.h>
 #include <vscpeventhelper.h>
 #include <websrv.h>
-#include <webserver_rest.h>
+#include <rest.h>
 #include <controlobject.h>
-#include <webserver.h>
 
 using namespace std;
 

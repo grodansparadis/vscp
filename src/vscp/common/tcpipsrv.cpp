@@ -1,4 +1,4 @@
-// tcpipclientthread.cpp
+// tcpipsrv.cpp
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -47,7 +47,7 @@
 #endif
 
 #include <vscp.h>
-#include "vscptcpipclientthread.h"
+#include "tcpipsrv.h"
 #include <vscphelper.h>
 #include <mongoose.h>
 #include <version.h>

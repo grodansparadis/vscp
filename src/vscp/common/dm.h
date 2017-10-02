@@ -32,7 +32,7 @@
 #include <dllist.h>
 #include <tables.h>
 #include <vscp.h>
-#include <vscpvariable.h>
+#include <remotevariable.h>
 
 class CControlObject;
 class CClientItem;
