@@ -105,6 +105,7 @@
 
 //#include <slre.h>
 #include <mongoose.h>
+#include <vscpweb.h>
 
 #include <canal_macro.h>
 #include <vscp.h>
@@ -162,6 +163,147 @@ void webserv_util_sendheader( struct mg_connection *nc,
 //                 WEBSOCKETS
 ///////////////////////////////////////////////////
 
+
+#define MAX_WS_CLIENTS (512)
+
+// TODO remove
+struct websocket_client {
+	struct web_connection *conn;
+	int state;
+} static websocket_clients[ MAX_WS_CLIENTS ];
+
+
+////////////////////////////////////////////////////////////////////////////////
+// ws1_ConnectHandler
+//
+
+int
+ws1_ConnectHandler( const struct web_connection *conn, void *cbdata ) 
+{
+    struct web_context *ctx = web_get_context(conn);
+    int reject = 1;
+    int i;
+
+    web_lock_context( ctx );
+    for (i = 0; i < MAX_WS_CLIENTS; i++) {
+        if (websocket_clients[i].conn == NULL) {
+            websocket_clients[i].conn = (struct web_connection *)conn;
+            websocket_clients[i].state = 1;
+            web_set_user_connection_data( websocket_clients[i].conn,
+                                            (void *)( websocket_clients + i ) );
+            reject = 0;
+            break;
+        }
+    }
+    web_unlock_context( ctx );
+
+    fprintf( stdout,
+                "Websocket client %s\r\n\r\n",
+                ( reject ? "rejected" : "accepted" ) );
+    
+    return reject;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ws1_CloseHandler
+//
+
+void
+ws1_CloseHandler(const struct web_connection *conn, void *cbdata) 
+{
+    struct web_context *ctx = web_get_context( conn );
+    struct websocket_client *client = 
+        (struct websocket_client *)web_get_user_connection_data( conn );
+    //ASSERT(client->conn == conn);
+    //ASSERT(client->state >= 1);
+
+    web_lock_context( ctx );
+    client->state = 0;
+    client->conn = NULL;
+    web_unlock_context( ctx );
+
+    fprintf( stdout,
+                "Client droped from the set of webserver connections\r\n\r\n");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ws1_ReadyHandler
+//
+
+void
+ws1_ReadyHandler( struct web_connection *conn, void *cbdata ) 
+{
+    const char *text = "Hello from the websocket ready handler";
+    struct websocket_client *client = 
+        (struct websocket_client *)web_get_user_connection_data( conn );
+
+    web_websocket_write( conn, WEB_WEBSOCKET_OPCODE_TEXT, text, strlen( text ) );
+    //ASSERT( client->conn == conn );
+    //ASSERT( client->state == 1 );
+
+    client->state = 2;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ws1_DataHandler
+//
+
+int
+ws1_DataHandler( struct web_connection *conn,
+                        int bits,
+                        char *data,
+                        size_t len,
+                        void *cbdata ) 
+{
+    struct websocket_client *client = 
+        (struct websocket_client *)web_get_user_connection_data( conn );
+    //ASSERT(client->conn == conn);
+    //ASSERT(client->state >= 1);
+
+    fprintf(stdout, "Websocket got %lu bytes of ", (unsigned long) len );
+    switch ( ( (unsigned char)bits ) & 0x0F ) {
+        
+        case WEB_WEBSOCKET_OPCODE_CONTINUATION:
+            fprintf(stdout, "continuation");
+            break;
+            
+        case WEB_WEBSOCKET_OPCODE_TEXT:
+            fprintf(stdout, "text");
+            break;
+            
+        case WEB_WEBSOCKET_OPCODE_BINARY:
+            fprintf(stdout, "binary");
+            break;
+            
+        case WEB_WEBSOCKET_OPCODE_CONNECTION_CLOSE:
+            fprintf(stdout, "close");
+            break;
+            
+        case WEB_WEBSOCKET_OPCODE_PING:
+            fprintf(stdout, "ping");
+            break;
+            
+        case WEB_WEBSOCKET_OPCODE_PONG:
+            fprintf(stdout, "pong");
+            break;
+            
+        default:
+            fprintf(stdout, "unknown(%1xh)", ((unsigned char) bits) & 0x0F);
+            break;
+            
+    }
+    
+    fprintf( stdout, " data:\r\n" );
+    fwrite( data, len, 1, stdout );
+    fprintf( stdout, "\r\n\r\n" );
+
+    return WEB_OK;
+}
+
+
+
+
+
 // Linked list of websocket sessions
 // Protected by the websocketSexxionMutex
 //static struct websock_session *gp_websock_sessions;
@@ -189,6 +331,10 @@ websock_session::~websock_session( void )
 ///////////////////////////////////////////////////////////////////////////////
 //                               WEBSOCKET
 ///////////////////////////////////////////////////////////////////////////////
+
+
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////

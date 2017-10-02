@@ -216,7 +216,7 @@ Paradise of the Frog.</a></div></div></body></html>"
 
 #define WEB_IFLIST_TR "<tr onmouseover=\"ChangeColor(this, true);\" \
                             onmouseout=\"ChangeColor(this, false);\" \
-                            onclick=\"DoNav('http://www.vscp.org/')\" >"
+                            onclick=\"DoNav('/vscp/ifinfo')\" >"
 
 #define WEB_IFLIST_TD_CENTERED "<td id=\"tdcenter\">"
 

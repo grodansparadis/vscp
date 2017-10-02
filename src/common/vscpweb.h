@@ -1409,7 +1409,7 @@ struct web_client_options {
 	int port;
 	const char *client_cert;
 	const char *server_cert;
-	/* TODO: add more data */
+	// TODO: add more data 
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1486,7 +1486,7 @@ VSCPWEB_API unsigned web_check_feature( unsigned feature );
 //     buffer: Store system information as string here.
 //     buflen: Length of buffer (including a byte required for a terminating 0).
 //   Return:
-//     Available size of system information, exluding a terminating 0.
+//     Available size of system information, excluding a terminating 0.
 //     The information is complete, if the return value is smaller than buflen.
 //     The result is a JSON formatted string, the exact content may vary.
 //   Note:
@@ -1507,7 +1507,7 @@ VSCPWEB_API int web_get_system_info( char *buffer, int buflen );
 //     buffer: Store context information here.
 //     buflen: Length of buffer (including a byte required for a terminating 0).
 //   Return:
-//     Available size of system information, exluding a terminating 0.
+//     Available size of system information, excluding a terminating 0.
 //     The information is complete, if the return value is smaller than buflen.
 //     The result is a JSON formatted string, the exact content may vary.
 //     Note:
@@ -1556,7 +1556,13 @@ VSCPWEB_API int web_get_connection_info( const struct web_context *ctx,
 
 struct web_authorization_header
 {
-    char *user, *uri, *cnonce, *response, *qop, *nc, *nonce;
+    char *user, 
+    *uri, 
+    *cnonce, 
+    *response, 
+    *qop, 
+    *nc, 
+    *nonce;
 };
 
 

@@ -1879,7 +1879,7 @@ struct web_connection
     int throttle;               // Throttling, bytes/sec. <= 0 means no
 	                        // throttle 
 
-    time_t last_throttle_time;   /* Last time throttled data was sent */
+    time_t last_throttle_time;  // Last time throttled data was sent 
     int64_t last_throttle_bytes;// Bytes sent this second 
     pthread_mutex_t mutex;      // Used by web_(un)lock_connection to ensure
 	                        // atomic transmissions for websockets 

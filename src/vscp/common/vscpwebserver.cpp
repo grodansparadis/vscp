@@ -395,11 +395,23 @@ static int
 log_message( const struct web_connection *conn, 
                             const char *message )
 {
-    wxString strMessage( message );
+    wxString strMessage( _("websrv: ") + message );
     gpobj->logMsg( strMessage, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_GENERAL );
     return WEB_OK;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Log server access
+//
+
+static int 
+log_access( const struct web_connection *conn, 
+                            const char *message )
+{
+    wxString strMessage( _("websrv: ") + message );
+    gpobj->logMsg( strMessage, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_ACCESS );
+    return WEB_OK;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // vscp_mainPage
@@ -716,7 +728,7 @@ static int vscp_interface( struct web_connection *conn, void *cbdata )
         CClientItem *pItem = *iter;
         pItem->m_guid.toString(strGUID);
 
-        web_printf( conn, WEB_IFLIST_TR);
+        web_printf( conn, WEB_IFLIST_TR );
 
         // Client id
         web_printf( conn, WEB_IFLIST_TD_CENTERED);
@@ -737,7 +749,7 @@ static int vscp_interface( struct web_connection *conn, void *cbdata )
 
         // Interface name
         web_printf( conn, "<td>");
-        web_printf( conn, pItem->m_strDeviceName.Left(pItem->m_strDeviceName.Length()-30).mbc_str() );
+        web_printf( conn, pItem->m_strDeviceName.Left( pItem->m_strDeviceName.Length()-30).mbc_str() );
         web_printf( conn, "</td>");
 
         // Start date
@@ -754,7 +766,7 @@ static int vscp_interface( struct web_connection *conn, void *cbdata )
     web_printf( conn, WEB_IFLIST_TABLE_END);
 
     web_printf( conn, 
-        "<br>All interfaces to the daemon is listed here. "
+            "<br>All interfaces to the daemon is listed here. "
             "This is drivers as well as clients on one of the daemons "
             "interfaces. It is possible to see events coming in on a on a "
             "specific interface and send events on just one of the interfaces. "
@@ -792,6 +804,37 @@ static int vscp_interface( struct web_connection *conn, void *cbdata )
     return WEB_OK;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_interface
+//
+
+static int vscp_interface_info( struct web_connection *conn, void *cbdata )
+{
+    // Check pointer
+    if  (NULL == conn ) return 0;
+
+    web_printf( conn,
+	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
+                  "Content-Type: text/html; charset=utf-8\r\n"
+                  "Connection: close\r\n\r\n");
+    
+    web_printf( conn, WEB_COMMON_HEAD, "VSCP - Control" );
+    web_printf( conn, WEB_STYLE_START );
+    web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
+    web_printf( conn, WEB_STYLE_END );
+    web_printf( conn, WEB_COMMON_JS );      // Common Javascript code
+
+    web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
+    // Insert server url into navigation menu
+    web_printf( conn, WEB_COMMON_MENU );
+    
+    web_printf( conn, "<h4>There is no extra information about this interface.</h4>" );
+    
+    web_printf( conn, WEB_COMMON_END );     // Common end code
+
+    return WEB_OK;
+}
 
 //-----------------------------------------------------------------------------
 //                                  DM
@@ -5670,9 +5713,9 @@ vscp_log_list( struct web_connection *conn, void *cbdata )
     wxString sql = "select * from 'log' ";
     char *zErrMsg = NULL;
     sqlite3_stmt *ppStmt;    
-    unsigned long upperLimit = 50;
     long nFrom = 0;
-    unsigned long nCount = 50;    
+    unsigned long nCount = 50; 
+    unsigned long upperLimit = 50;
     long nTotalCount;
     
     // Check pointer
@@ -6799,12 +6842,12 @@ WebSocketStartHandler(struct web_connection *conn, void *cbdata)
 
 
 
-/* MAX_WS_CLIENTS defines how many clients can connect to a websocket at the
- * same time. The value 5 is very small and used here only for demonstration;
- * it can be easily tested to connect more than MAX_WS_CLIENTS clients.
- * A real server should use a much higher number, or better use a dynamic list
- * of currently connected websocket clients. */
-#define MAX_WS_CLIENTS (5)
+// MAX_WS_CLIENTS defines how many clients can connect to a websocket at the
+// same time. The value 5 is very small and used here only for demonstration;
+// it can be easily tested to connect more than MAX_WS_CLIENTS clients.
+// A real server should use a much higher number, or better use a dynamic list
+// of currently connected websocket clients. 
+#define MAX_WS_CLIENTS (512)
 
 struct t_ws_client {
 	struct web_connection *conn;
@@ -7098,12 +7141,13 @@ int init_webserver( void )
     int port_cnt, n;
     int err = 0;
 
-    // Start the web server 
+    // Setup callbacks
     memset( &callbacks, 0, sizeof( callbacks ) );
     callbacks.init_ssl = init_ssl;
-
-    // Set logging callback
     callbacks.log_message = log_message;
+    callbacks.log_access = log_access;
+
+    // Start server
     gpobj->webctx = web_start( &callbacks, 0, options );
 
     // Check return value: 
@@ -7159,16 +7203,16 @@ int init_webserver( void )
                                 CheckSumHandler,
                                 (void *) 0 );
 
-    /* Add handler for /cookie example */
+    // Add handler for /cookie example 
     web_set_request_handler( gpobj->webctx, "/cookie", CookieHandler, 0);
 
-    /* Add handler for /postresponse example */
+    // Add handler for /postresponse example 
     web_set_request_handler( gpobj->webctx, "/postresponse", PostResponser, 0);
 
-    /* Add HTTP site to open a websocket connection */
+    // Add HTTP site to open a websocket connection 
     web_set_request_handler( gpobj->webctx, "/websocket", WebSocketStartHandler, 0);
 
-    /* WS site for the websocket connection */
+    // WS site for the websocket connection 
     web_set_websocket_handler( gpobj->webctx,
                                     "/websocket",
                                     WebSocketConnectHandler,
@@ -7181,11 +7225,22 @@ int init_webserver( void )
     // Set authorization handlers
     web_set_auth_handler( gpobj->webctx, "/vscp", check_admin_authorization, NULL );
     
+    // WS site for the websocket connection 
+    web_set_websocket_handler( gpobj->webctx,
+                                    "/",
+                                    ws1_ConnectHandler,
+                                    ws1_ReadyHandler,
+                                    ws1_DataHandler,
+                                    ws1_CloseHandler,
+                                    0 );
+    
+    
     // Set page handlers
     web_set_request_handler( gpobj->webctx, "/vscp",            vscp_mainpage, 0);
     web_set_request_handler( gpobj->webctx, "/vscp/session",    vscp_client, 0 );
     web_set_request_handler( gpobj->webctx, "/vscp/configure",  vscp_configure, 0 );
     web_set_request_handler( gpobj->webctx, "/vscp/interfaces", vscp_interface, 0 );
+    web_set_request_handler( gpobj->webctx, "/vscp/ifinfo",     vscp_interface_info, 0 );
     web_set_request_handler( gpobj->webctx, "/vscp/settings",   vscp_settings, 0 );
     web_set_request_handler( gpobj->webctx, "/vscp/varlist",    vscp_variable_list, 0 );
     web_set_request_handler( gpobj->webctx, "/vscp/varedit",    vscp_variable_edit, 0 );
