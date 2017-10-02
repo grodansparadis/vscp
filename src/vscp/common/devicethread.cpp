@@ -51,7 +51,7 @@
 #define DWORD unsigned long
 #endif
 
-#include "daemonvscp.h"
+#include "daemonworker.h"
 #include <canal_win32_ipc.h>
 #include <canal_macro.h>
 #include <vscp.h>

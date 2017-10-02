@@ -49,7 +49,7 @@
 #include <udpsrv.h>
 #include <multicastsrv.h>
 #include <websocket.h>
-#include <daemonvscp.h>
+#include <daemonworker.h>
 #include <dm.h>
 #include <knownnodes.h>
 #include <vscp.h>

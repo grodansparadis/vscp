@@ -64,7 +64,7 @@ WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
 VSCPD_OBJECTS =  vscpd.o \
-	../../common/daemonvscp.o \
+	../../common/daemonworker.o \
 	../../common/clientlist.o \
 	../../common/controlobject.o \
 	../../common/vscpeventhelper.o \

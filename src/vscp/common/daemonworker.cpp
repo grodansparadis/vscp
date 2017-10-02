@@ -57,7 +57,7 @@
 
 #include <vscp_debug.h>
 #include <crc.h>
-#include "daemonvscp.h"
+#include "daemonworker.h"
 #include "canal_win32_ipc.h"
 #include "canal_macro.h"
 #include "vscp.h"
@@ -107,8 +107,11 @@ void *daemonVSCPThread::Entry()
     unsigned char mc_ttl =
         m_pCtrlObject->m_ttlMultiCastAnnounce; // time to live (hop count) 
     wxString ip;
-    if ( !parseInterface( m_pCtrlObject->m_strMulticastAnnounceAddress, ip, &mc_port ) ) {
-        m_pCtrlObject->logMsg( _( "Multicast announce: Announce address has wrong format.\n" ) );
+    if ( !parseInterface( m_pCtrlObject->m_strMulticastAnnounceAddress, 
+                            ip, 
+                            &mc_port ) ) {
+        m_pCtrlObject->logMsg( _("Multicast announce: Announce address "
+                                 "has wrong format.\n" ) );
         return NULL;
     }
                 
@@ -243,12 +246,13 @@ void *daemonVSCPThread::Entry()
             vscpEventEx eventEx;
             if ( m_pCtrlObject->m_automation.doWork( &eventEx ) ) {
 
-if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_AUTOMATION ) {
-                m_pCtrlObject->logMsg( wxString::Format( _( "Automation event sent: Class=%d Type=%d\n" ),
+                if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_AUTOMATION ) {
+                    m_pCtrlObject->logMsg( wxString::Format( _("Automation event sent: "
+                                                               "Class=%d Type=%d\n" ),
                                         eventEx.vscp_class, eventEx.vscp_type ),
                                         DAEMON_LOGMSG_DEBUG,
                                         DAEMON_LOGTYPE_GENERAL );
-}
+                }
 
                 // Yes event should be sent
                 eventEx.obid = pClientItem->m_clientID;

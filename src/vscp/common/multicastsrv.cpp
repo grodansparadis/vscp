@@ -57,7 +57,7 @@
 
 #include <crc.h>
 #include <vscp_debug.h>
-#include "daemonvscp.h"
+#include "daemonworker.h"
 #include "canal_win32_ipc.h"
 #include "canal_macro.h"
 #include "vscp.h"
