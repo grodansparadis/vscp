@@ -125,7 +125,7 @@
 #include <dm.h>
 #include <mdf.h>
 //#include <vscpeventhelper.h>
-#include "vscpwebserver.h"
+#include "websrv.h"
 #include <controlobject.h>
 #include <vscpdb.h>
 #include <vscpmd5.h>
@@ -395,7 +395,7 @@ static int
 log_message( const struct web_connection *conn, 
                             const char *message )
 {
-    wxString strMessage( _("websrv: ") + message );
+    wxString strMessage( _("[websrv] ") + message );
     gpobj->logMsg( strMessage, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_GENERAL );
     return WEB_OK;
 }
@@ -408,7 +408,7 @@ static int
 log_access( const struct web_connection *conn, 
                             const char *message )
 {
-    wxString strMessage( _("websrv: ") + message );
+    wxString strMessage( _("[websrv] ") + message );
     gpobj->logMsg( strMessage, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_ACCESS );
     return WEB_OK;
 }
@@ -5712,9 +5712,9 @@ vscp_log_list( struct web_connection *conn, void *cbdata )
     char buf[80];
     wxString sql = "select * from 'log' ";
     char *zErrMsg = NULL;
-    sqlite3_stmt *ppStmt;    
+    sqlite3_stmt *ppStmt;
     long nFrom = 0;
-    unsigned long nCount = 50; 
+    unsigned long nCount = 50;
     unsigned long upperLimit = 50;
     long nTotalCount;
     
@@ -7227,7 +7227,7 @@ int init_webserver( void )
     
     // WS site for the websocket connection 
     web_set_websocket_handler( gpobj->webctx,
-                                    "/",
+                                    "/ws1",
                                     ws1_ConnectHandler,
                                     ws1_ReadyHandler,
                                     ws1_DataHandler,

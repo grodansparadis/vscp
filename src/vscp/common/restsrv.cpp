@@ -122,7 +122,7 @@
 #include <dm.h>
 #include <mdf.h>
 #include <vscpeventhelper.h>
-#include <vscpwebserver.h>
+#include <websrv.h>
 #include <webserver_rest.h>
 #include <controlobject.h>
 #include <webserver.h>

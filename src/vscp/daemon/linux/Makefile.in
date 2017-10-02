@@ -74,9 +74,9 @@ VSCPD_OBJECTS =  vscpd.o \
 	../../common/interfacelist.o \
 	../../common/userlist.o \
 	../../common/devicethread.o \
-	../../common/vscpwebserver.o \
-	../../common/vscprestserver.o \
-	../../common/vscpwebsocketserver.o \
+	../../common/websrv.o \
+	../../common/restsrv.o \
+	../../common/websocketsrv.o \
 	../../common/vscpudpclientthread.o \
 	../../common/vscpmulticastclientthread.o \
 	../../common/tables.o \

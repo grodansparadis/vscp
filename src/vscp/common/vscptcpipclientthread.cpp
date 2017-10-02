@@ -48,12 +48,7 @@
 
 #include <vscp.h>
 #include "vscptcpipclientthread.h"
-#include <canal_win32_ipc.h>
-#include <canal_macro.h>
-#include <canal.h>
 #include <vscphelper.h>
-#include <dllist.h>
-#include <frozen.h>
 #include <mongoose.h>
 #include <version.h>
 #include <controlobject.h>
@@ -116,19 +111,19 @@ void *VSCPClientThread::Entry()
 
     }
 
-    gpobj->logMsg( _("TCP Client: Thread started.\n"), DAEMON_LOGMSG_DEBUG  );
+    gpobj->logMsg( _("[TCP/IP srv] Thread started.\n"), DAEMON_LOGMSG_DEBUG  );
 
     while ( !TestDestroy() && !m_bQuit ) {
         mg_mgr_poll( &gpobj->m_mgrTcpIpServer, 50 );
         Yield();
     }
     
-    gpobj->logMsg( _("TCP ClientThread: Free.\n"), DAEMON_LOGMSG_DEBUG );
+    gpobj->logMsg( _("[TCP/IP srv] Free.\n"), DAEMON_LOGMSG_DEBUG );
 
     // release the server
     mg_mgr_free( &gpobj->m_mgrTcpIpServer );
 
-    gpobj->logMsg( _("TCP ClientThread: Quit.\n"), DAEMON_LOGMSG_DEBUG );
+    gpobj->logMsg( _("[TCP/IP srv] Quit.\n"), DAEMON_LOGMSG_DEBUG );
 
     return NULL;
 }
@@ -140,7 +135,7 @@ void *VSCPClientThread::Entry()
 
 void VSCPClientThread::OnExit()
 {
-    gpobj->logMsg( _("TCP ClientThread: Exit.\n"), DAEMON_LOGMSG_DEBUG );;
+    gpobj->logMsg( _("[TCP/IP srv] Exit.\n"), DAEMON_LOGMSG_DEBUG );;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -172,17 +167,17 @@ void VSCPClientThread::ev_handler( struct mg_connection *conn,
     switch (ev) {
 
         case MG_EV_CONNECT: // connect() succeeded or failed. int *success_status
-            pCtrlObject->logMsg(_("TCP Client: Connect.\n") );
+            pCtrlObject->logMsg(_("[TCP/IP srv] Connect.\n") );
             break;
 
         case MG_EV_ACCEPT:	// New connection accept()-ed. union socket_address *remote_addr
             {
-                pCtrlObject->logMsg(_("TCP Client: -- Accept.\n") );
+                pCtrlObject->logMsg(_("[TCP/IP srv] -- Accept.\n") );
 
                 // We need to create a clientobject and add this object to the list
                 pClientItem = new CClientItem;
                 if ( NULL == pClientItem ) {
-                    pCtrlObject->logMsg ( _( "[TCP/IP Client] Unable to allocate memory for client.\n" )  );
+                    pCtrlObject->logMsg ( _( "[TCP/IP srv] Unable to allocate memory for client.\n" )  );
                     conn->flags |= MG_F_CLOSE_IMMEDIATELY;	// Close connection
                     return;
                 }
@@ -193,7 +188,7 @@ void VSCPClientThread::ev_handler( struct mg_connection *conn,
                 // This is now an active Client
                 pClientItem->m_bOpen = true;
                 pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_TCPIP;
-                pClientItem->m_strDeviceName = _("Remote TCP/IP Client. [");
+                pClientItem->m_strDeviceName = _("Remote TCP/IP Server. [");
                 pClientItem->m_strDeviceName += gpobj->m_strTcpInterfaceAddress;
                 pClientItem->m_strDeviceName += _("] Started at ");
                 wxDateTime now = wxDateTime::Now();
@@ -219,7 +214,7 @@ void VSCPClientThread::ev_handler( struct mg_connection *conn,
                 str += _(MSG_OK);
                 mg_send( conn, (const char*)str.mbc_str(), str.Length() );
 
-                pCtrlObject->logMsg(_("TCP Client: Ready to serve client.\n"),
+                pCtrlObject->logMsg(_("[TCP/IP srv] Ready to serve client.\n"),
                                         DAEMON_LOGMSG_DEBUG);
             }
             break;
@@ -241,13 +236,13 @@ void VSCPClientThread::ev_handler( struct mg_connection *conn,
         case MG_EV_RECV:
 
             if ( NULL == pClientItem ) {
-                pCtrlObject->logMsg( _( "[TCP/IP Client] Remote client died\n" )  );
+                pCtrlObject->logMsg( _( "[TCP/IP srv] Remote client died\n" )  );
                 conn->flags |= MG_F_CLOSE_IMMEDIATELY; // Close connection
                 return;
             }
 
             if ( sizeof( rbuf ) < conn->recv_mbuf.len ) {
-                pCtrlObject->logMsg( _("[TCP/IP Client] Received io->buf size exceeds limit.\n" )  );
+                pCtrlObject->logMsg( _("[TCP/IP srv] Received io->buf size exceeds limit.\n" )  );
                 conn->flags |= MG_F_CLOSE_IMMEDIATELY; // Close connection
                 return;
             }
@@ -318,7 +313,7 @@ VSCPClientThread::CommandHandler( struct mg_connection *conn,
     }
 
     if ( NULL == pClientItem ) {
-        pCtrlObject->logMsg ( _( "[TCP/IP Client] ClientItem pointer is NULL in command handler.\n" )  );
+        pCtrlObject->logMsg ( _( "[TCP/IP srv] ClientItem pointer is NULL in command handler.\n" )  );
         conn->flags |= MG_F_CLOSE_IMMEDIATELY;  // Close connection
         return;
     }
@@ -379,7 +374,7 @@ REPEAT_COMMAND:
 
     else if ( pClientItem->CommandStartsWith( _("pass") ) ) {                                                        
         if ( !handleClientPassword( conn, pCtrlObject ) ) {
-            pCtrlObject->logMsg ( _( "[TCP/IP Client] Command: Password. Not authorized.\n" ),
+            pCtrlObject->logMsg ( _( "[TCP/IP srv] Command: Password. Not authorized.\n" ),
                                     DAEMON_LOGMSG_NORMAL,
                                     DAEMON_LOGTYPE_SECURITY );
             conn->flags |= MG_F_CLOSE_IMMEDIATELY;  // Close connection
@@ -401,7 +396,7 @@ REPEAT_COMMAND:
 
     else if ( pClientItem->CommandStartsWith( _("quit") ) ) {
         //long test = MG_F_CLOSE_IMMEDIATELY;
-        pCtrlObject->logMsg( _( "[TCP/IP Client] Command: Close.\n" ) );
+        pCtrlObject->logMsg( _( "[TCP/IP srv] Command: Close.\n" ) );
         mg_send( conn, MSG_GOODBY, strlen ( MSG_GOODBY ) );
         //conn->flags = NSF_FINISHED_SENDING_DATA;    // Close connection
         conn->flags = MG_F_SEND_AND_CLOSE;  // Close connection
@@ -1442,7 +1437,7 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn,
     // Check if this user is allowed to send this event
     if ( !pClientItem->m_pUserItem->isUserAllowedToSendEvent( event.vscp_class, event.vscp_type ) ) {
         wxString strErr =
-                        wxString::Format( _("[tcp/ip Client] User [%s] not allowed to send event class=%d type=%d.\n"),
+                        wxString::Format( _("[TCP/IP srv] User [%s] not allowed to send event class=%d type=%d.\n"),
                                                 (const char *)pClientItem->m_pUserItem->getUserName().mbc_str(),
                                                 event.vscp_class, event.vscp_type );
 
@@ -2083,10 +2078,10 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn,
     if ( NULL == pClientItem->m_pUserItem ) {
 
         wxString strErr =
-            wxString::Format(_("[TCP/IP Client] User [%s][%s] not allowed to connect.\n"),
+            wxString::Format(_("[TCP/IP srv] User [%s][%s] not allowed to connect.\n"),
             (const char *)pClientItem->m_UserName.mbc_str(), (const char *)strPassword.mbc_str() );
 
-        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
+        pCtrlObject->logMsg( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
         mg_send( conn,  MSG_PASSWORD_ERROR, strlen ( MSG_PASSWORD_ERROR ) );
         return false;
     }
@@ -2105,7 +2100,7 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn,
     gpobj->m_mutexUserList.Unlock();
 
     if ( !bValidHost ) {
-        wxString strErr = wxString::Format(_("[TCP/IP Client] Host [%s] not allowed to connect.\n"),
+        wxString strErr = wxString::Format(_("[TCP/IP srv] Host [%s] not allowed to connect.\n"),
             (const char *)remoteaddr.c_str() );
 
         pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
@@ -2119,7 +2114,7 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn,
                 sizeof( vscpEventFilter ) );
 
     wxString strErr =
-        wxString::Format( _("[TCP/IP Client] Host [%s] User [%s] allowed to connect.\n"),
+        wxString::Format( _("[TCP/IP srv] Host [%s] User [%s] allowed to connect.\n"),
                             (const char *)remoteaddr.c_str(),
                             (const char *)pClientItem->m_UserName.c_str() );
 

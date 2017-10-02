@@ -61,7 +61,7 @@
 int gbStopDaemon;
 int gnDebugLevel = 0;
 bool gbDontRunAsDaemon = false;
-bool gbRestart = false;   
+bool gbRestart = false;
 
 CControlObject *gpobj;
 
@@ -70,12 +70,12 @@ void help(char *szPrgname);
 
 void _sighandler( int sig )
 {
-    gpobj->m_bQuit = true; 
+    gpobj->m_bQuit = true;
     gbStopDaemon = true;
     gbRestart = false;
-    syslog(LOG_CRIT, "vscpd: signal received, forced to stop.: %m");
-    wxLogError(_("vscpd: signal received, forced to stop."));
-    gpobj->logMsg(_("vscpd: signal received, forced to stop."));
+    syslog(LOG_CRIT, "[vscpd] signal received, forced to stop.: %m");
+    wxLogError(_("[vscpd] signal received, forced to stop."));
+    gpobj->logMsg(_("[vscpd] signal received, forced to stop."));
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -101,24 +101,24 @@ int main( int argc, char **argv )
     wxString strcfgfile;    // Points to XML configuration file
 
     // Ignore return value from defunct processes
-    signal( SIGCHLD, SIG_IGN ); 
-    
+    signal( SIGCHLD, SIG_IGN );
+
     crcInit();
 
     wxInitializer initializer;
     if ( !::wxInitialize() ) {
-        fprintf(stderr, "Failed to initialize the wxWindows library, aborting.\n");
+        fprintf(stderr, "[vscpd] Failed to initialize the wxWindows library, aborting.\n");
         return -1;
     }
 
     // Create the control object
     gpobj = new CControlObject();
-    
+
 #ifdef WIN32
     rootFolder = _("/programdata/vscp");
-#else    
+#else
     rootFolder = _("/srv/vscp/");
-#endif    
+#endif
 
     strcfgfile = wxStandardPaths::Get().GetConfigDir() + _("/vscp/vscpd.conf");
     gbStopDaemon = false;
@@ -139,16 +139,16 @@ int main( int argc, char **argv )
         case 'c':
             strcfgfile = wxString(optarg, wxConvUTF8);
             break;
-            
+
         case 'r':
             rootFolder = wxString(optarg, wxConvUTF8);
             break;
-            
+
         case 'k':
-            vscp_convertHexStr2ByteArray( gpobj->m_systemKey, 
+            vscp_convertHexStr2ByteArray( gpobj->m_systemKey,
                                             32,
                                             (const char *)wxString( optarg, wxConvUTF8 ).mbc_str() );
-            break;    
+            break;
 
         case 'd':
             gnDebugLevel = atoi(optarg);
@@ -164,13 +164,13 @@ int main( int argc, char **argv )
             help(argv[0]);
             exit(-1);
         }
-        
+
     }
 
-    gpobj->logMsg( _("VSCPD: Configfile =") + strcfgfile + _(" \n") );
+    gpobj->logMsg( _("[vscpd] Configfile =") + strcfgfile + _(" \n") );
     if ( !theApp.init( strcfgfile, rootFolder ) ) {
-        fprintf(stderr,"VSCPD: Failed to configure. Terminating.\n");
-        wxLogDebug(_("VSCP: Failed to configure. Terminating.\n"));
+        fprintf(stderr,"[vscpd] Failed to configure. Terminating.\n");
+        wxLogDebug(_("[vscpd] Failed to configure. Terminating.\n"));
         exit( -1 );
     }
 
@@ -188,7 +188,7 @@ int main( int argc, char **argv )
 
 BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
 {
-    
+
     if ( !gbDontRunAsDaemon ) {
 
         pid_t pid, sid;
@@ -235,13 +235,11 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
 
         dup2(0, 1);
         dup2(0, 2);
-        
-    }    
-    
+
+    }
 
     struct sigaction my_action;
 
-        
     // Ignore SIGPIPE
     my_action.sa_handler = SIG_IGN;
     my_action.sa_flags = SA_RESTART;
@@ -269,9 +267,9 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
 
 
     do {
-        
+
         gbRestart = false;
-        
+
         wxLogDebug(_("VSCPD: init."));
         if ( !gpobj->init( strcfgfile, rootFolder ) ) {
             fprintf(stderr, "Can't initialise daemon. Exiting.\n");
@@ -292,14 +290,14 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
             syslog( LOG_CRIT, "Unable to clean up the VSCPD application.");
             return FALSE;
         }
-        
+
         if ( gbRestart ) {
             wxLogDebug(_("VSCPD: Will try to restart."));
         }
         else {
             wxLogDebug(_("VSCPD: Will end things."));
         }
-        
+
     } while ( gbRestart );
 
     // Remove the pid file
@@ -355,7 +353,3 @@ void help(char *szPrgname)
     fprintf(stderr, "that should be used (default: /etc/canalworks.conf).\n");
     fprintf(stderr, "\t-g\tPrint the GNU copyleft info.\n");
 }
-
-
-
-
