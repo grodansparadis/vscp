@@ -1,4 +1,4 @@
-// webserver_websocket.h: 
+// websocket.h: 
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -31,6 +31,8 @@
 //                                WEBSOCKETS
 //******************************************************************************
 
+
+
 #define MAX_VSCPWS_MESSAGE_QUEUE 512
 
 // This is the time it takes for an expired websocket session to be 
@@ -39,28 +41,36 @@
 
 // Authentication states
 enum {
-    WEBSOCK_AUTH_STAGE_START = 0,
-    WEBSOCK_AUTH_STAGE_SERVER_HASH,
-    WEBSOCK_AUTH_STAGE_CLIENT_HASH
+    WEBSOCK_CONN_STATE_NULL = 0,
+    WEBSOCK_CONN_STATE_CONNECTED,
+    WEBSOCK_CONN_STATE_DATA
 };
 
+// Authentication states
 enum {
-    WEBSOCK_ERROR_NO_ERROR = 0,             // Everything is OK.
-    WEBSOCK_ERROR_SYNTAX_ERROR,             // Syntax error.
-    WEBSOCK_ERROR_UNKNOWN_COMMAND,          // Unknown command.
-    WEBSOCK_ERROR_TX_BUFFER_FULL,           // Transmit buffer full.
-    WEBSOCK_ERROR_MEMORY_ALLOCATION,        // Problem allocating memory.
-    WEBSOCK_ERROR_VARIABLE_DEFINED,         // Variable is already defined.
-    WEBSOCK_ERROR_VARIABLE_UNKNOWN,         // Cant find variable
-    WEBSOCK_ERROR_VARIABLE_NO_STOCK,        // Cant add stock variable
-    WEBSOCK_ERROR_NOT_AUTHORISED,           // Not authorised
-    WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT,// Not authorized to send events
-    WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,   // Not allowed to do that
-    WEBSOCK_ERROR_MUST_HAVE_TABLE_NAME,     // Must have a table name
-    WEBSOCK_ERROR_END_DATE_IS_WRONG,        // End date must be later than start date
-    WEBSOCK_ERROR_TABLE_NOT_FOUND,          // Table not found
-    WEBSOCK_ERROR_TABLE_NO_DATA,            // No data in table
-    WEBSOCK_ERROR_TABLE_ERROR_READING       // Error reading table
+    WEBSOCK_AUTH_STATE_START = 0,
+    WEBSOCK_AUTH_STATE_SERVER_HASH,
+    WEBSOCK_AUTH_STATE_CLIENT_HASH
+};
+
+
+enum {
+    WEBSOCK_ERROR_NO_ERROR = 0,                 // Everything is OK.
+    WEBSOCK_ERROR_SYNTAX_ERROR = 1,             // Syntax error.
+    WEBSOCK_ERROR_UNKNOWN_COMMAND = 2,          // Unknown command.
+    WEBSOCK_ERROR_TX_BUFFER_FULL = 3,           // Transmit buffer full.
+    WEBSOCK_ERROR_MEMORY_ALLOCATION = 4,        // Problem allocating memory.
+    WEBSOCK_ERROR_VARIABLE_DEFINED = 5,         // Variable is already defined.
+    WEBSOCK_ERROR_VARIABLE_UNKNOWN = 6,         // Cant find variable
+    WEBSOCK_ERROR_VARIABLE_NO_STOCK = 7,        // Cant add stock variable
+    WEBSOCK_ERROR_NOT_AUTHORISED = 8,           // Not authorised
+    WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT = 9,// Not authorized to send events
+    WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT = 10,  // Not allowed to do that
+    WEBSOCK_ERROR_MUST_HAVE_TABLE_NAME = 11,    // Must have a table name
+    WEBSOCK_ERROR_END_DATE_IS_WRONG = 12,       // End date must be later than start date
+    WEBSOCK_ERROR_TABLE_NOT_FOUND = 13,         // Table not found
+    WEBSOCK_ERROR_TABLE_NO_DATA = 14,           // No data in table
+    WEBSOCK_ERROR_TABLE_ERROR_READING = 15      // Error reading table
 };
 
 #define	WEBSOCK_STR_ERROR_NO_ERROR                      "Everything is OK"
@@ -90,10 +100,19 @@ public:
     websock_session(void);
     ~websock_session(void);
     
+    // Connection object
+    struct web_connection *m_conn;    
+    
+    // Connection state (see enums above)
+    int m_conn_state;  
+    
+    // Authentication states ( see enums above)
+    int m_auth_state;   
+    
     // Unique ID for this session. 
     char m_key[33];     // Sec-WebSocket-Key
 
-    // Generated hash for this session
+    // 16 byte iv (SID) for this session
     char m_sid[33];
 
     // Protocol version
@@ -103,15 +122,15 @@ public:
     // currently using this session.
     unsigned int m_referenceCount;
 
-    // This variable is true when the logon process
+    // This variable is true when the login process
     // is valid and the user is logged in.
     bool bAuthenticated;
 
     // Time when this session was last active.
     time_t lastActiveTime;
     
-    //wxArrayString *pMessageList;  // Messages (not events) to client.
-
+    wxArrayString MessageList;  // Messages (not events) to client.
+    
     // Client structure for websocket
     CClientItem *m_pClientItem;
 

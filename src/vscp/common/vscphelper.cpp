@@ -65,6 +65,7 @@
 #include <aes.h>
 #include <fastpbkdf2.h>
 #include <vscpbase64.h>
+#include <vscpmd5.h>
 
 #include <vscp.h>
 #include <guid.h>
@@ -299,26 +300,6 @@ char *vscp_trimWhiteSpace( char *str )
     *(end+1) = 0;
 
     return str;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// vscp_bin2str
-//
-// Stringify binary data. Output buffer must be twice as big as input,
-// because each byte takes 2 bytes in string representation 
-//
-
-void vscp_bin2str( char *to, const unsigned char *p, size_t len  ) 
-{
-    static const char *hex = "0123456789abcdef";
-
-    for (; len--; p++) {
-        *to++ = hex[p[0] >> 4];
-        *to++ = hex[p[0] & 0x0f];
-    }
-
-    *to = '\0';
 }
 
 
@@ -6140,12 +6121,46 @@ bool vscp_decryptVscpUdpFrame( uint8_t *output,
 ///////////////////////////////////////////////////////////////////////////
 
 
-
 ////////////////////////////////////////////////////////////////////////////////
-// vscp_convertHexStr2ByteArray
+// vscp_md5
+// 
+
+void vscp_md5( char *digest, const unsigned char *buf, size_t len ) 
+{
+    unsigned char hash[16];
+    
+    md5_state_s pms;
+  
+    vscpmd5_init( &pms );
+    vscpmd5_append( &pms, buf, len );
+    vscpmd5_finish( &pms, hash );
+    vscp_byteArray2HexStr( digest, hash, sizeof( hash ) );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_bin2str
+//
+// Stringify binary data. Output buffer must be twice as big as input,
+// because each byte takes 2 bytes in string representation 
 //
 
-size_t vscp_convertHexStr2ByteArray( uint8_t *array, size_t size, const char *hexstr )
+void vscp_byteArray2HexStr( char *to, const unsigned char *p, size_t len  ) 
+{
+    static const char *hex = "0123456789abcdef";
+
+    for (; len--; p++) {
+        *to++ = hex[p[0] >> 4];
+        *to++ = hex[p[0] & 0x0f];
+    }
+
+    *to = '\0';
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_hexStr2ByteArray
+//
+
+size_t vscp_hexStr2ByteArray( uint8_t *array, size_t size, const char *hexstr )
 {
     int slen = strlen( hexstr );
     int i = 0, j = 0;
@@ -6195,10 +6210,10 @@ bool vscp_getHashPasswordComponents( uint8_t *pSalt,
     if ( 2 != tkz.CountTokens() ) return false;
     
     strSalt = tkz.GetNextToken();
-    vscp_convertHexStr2ByteArray( pSalt, 16, strSalt.mbc_str() );
+    vscp_hexStr2ByteArray( pSalt, 16, strSalt.mbc_str() );
             
     strHash = tkz.GetNextToken();
-    vscp_convertHexStr2ByteArray( pHash, 32, strHash.mbc_str() );
+    vscp_hexStr2ByteArray( pHash, 32, strHash.mbc_str() );
     
     return true;
 }

@@ -125,7 +125,7 @@ void vscp_strlcpy( register char *dst, register const char *src, size_t n );
 const char *vscp_strcasestr( const char *big_str, const char *small_str );
 int vscp_strcasecmp(const char *s1, const char *s2);
 int vscp_strncasecmp(const char *s1, const char *s2, size_t len);
-void vscp_bin2str( char *to, const unsigned char *p, size_t len );
+void vscp_byteArray2HexStr( char *to, const unsigned char *p, size_t len );
 
 #include <vscpmd5.h>
 #include <vscpbase64.h>
@@ -2903,7 +2903,7 @@ const struct web_response_info *
 web_get_response_info(const struct web_connection *conn)
 {
     if ( !conn ) {
-        return NULL;
+        return NULL; 
     }
     
     if ( conn->connection_type != CONNECTION_TYPE_RESPONSE ) {
@@ -12903,7 +12903,7 @@ lsp_md5( lua_State *L )
             vscpmd5_init(&ctx);
             vscpmd5_append(&ctx, (const md5_byte_t *) text, text_len);
             vscpmd5_finish(&ctx, hash);
-            vscp_bin2str(buf, hash, sizeof (hash) );
+            vscp_byteArray2HexStr(buf, hash, sizeof (hash) );
             lua_pushstring(L, buf);
         }
         else {

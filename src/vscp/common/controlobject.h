@@ -63,13 +63,6 @@ enum {
     DAEMON_LOGMSG_NONE = 0,
     DAEMON_LOGMSG_NORMAL,
     DAEMON_LOGMSG_DEBUG,
-    //DAEMON_LOGMSG_INFO,       // Deprecated from version 12.4.5
-    //DAEMON_LOGMSG_NOTICE,     // Deprecated from version 12.4.5
-    //DAEMON_LOGMSG_WARNING,    // Deprecated from version 12.4.5
-    //DAEMON_LOGMSG_ERROR,      // Deprecated from version 12.4.5
-    //DAEMON_LOGMSG_CRITICAL,   // Deprecated from version 12.4.5
-    //DAEMON_LOGMSG_ALERT,      // Deprecated from version 12.4.5
-    //DAEMON_LOGMSG_EMERGENCY,  // Deprecated from version 12.4.5
 };
 
 // Log type
@@ -787,10 +780,12 @@ public:
 
     // * * Websockets * *
 
-
     // websocket authentication is needed  (if true)
-    bool m_bAuthWebsockets;
+    //bool m_bAuthWebsockets;
 
+    // Protects the session object
+    wxMutex m_websockSessionMutex;   
+    
     // List of active websocket sessions
     WEBSOCKETSESSIONLIST m_websocketSessions;
          

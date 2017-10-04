@@ -171,9 +171,6 @@
 #define VSCPDB_CONFIG_NAME_WEB_ROOT_DAV                 "web_root_dav"
 #define VSCPDB_CONFIG_DEFAULT_WEB_ROOT_DAV              ""
 
-#define VSCPDB_CONFIG_NAME_WEBSOCKET_AUTH_ENABLE        "websocket_auth_enable"
-#define VSCPDB_CONFIG_DEFAULT_WEBSOCKET_AUTH_ENABLE     "1"
-
 #define VSCPDB_CONFIG_NAME_AUTOMATION_ENABLE            "automation_enable"
 #define VSCPDB_CONFIG_DEFAULT_AUTOMATION_ENABLE         "1"
 

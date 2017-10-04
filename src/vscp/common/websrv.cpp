@@ -214,7 +214,7 @@ VSCPWebServerThread::websrv_get_session( struct mg_connection *nc,
     ret = gp_websrv_sessions;
     while (NULL != ret) {
 
-        if (0 == strcmp( buf, ret->m_sid ) )
+        if (0 == strcmp( buf, ret->m_sid ) ) 
             break;
             ret = ret->m_next;
 
@@ -5088,14 +5088,6 @@ vscp_configure( struct web_connection *conn, void *cbdata )
     
     // Websockets
 
-    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>VSCP websocket interface:</b> ");
-    if ( gpobj->m_bAuthWebsockets ) {
-        web_printf( conn, "<b>Authentication</b> enabled.");
-    }
-    else {
-        web_printf( conn, "<b>Authentication</b> disabled.");
-    }
-
     web_printf( conn, "<hr>");
     
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * * 
@@ -6980,11 +6972,11 @@ WebSocketCloseHandler(const struct web_connection *conn, void *cbdata)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// InformWebsockets
+// informWebsockets
 //
 
 void
-InformWebsockets(struct web_context *ctx) 
+informWebsockets( struct web_context *ctx ) 
 {
     static unsigned long cnt = 0;
     char text[32];

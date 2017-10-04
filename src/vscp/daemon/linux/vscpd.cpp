@@ -145,7 +145,7 @@ int main( int argc, char **argv )
             break;
 
         case 'k':
-            vscp_convertHexStr2ByteArray( gpobj->m_systemKey,
+            vscp_hexStr2ByteArray( gpobj->m_systemKey,
                                             32,
                                             (const char *)wxString( optarg, wxConvUTF8 ).mbc_str() );
             break;

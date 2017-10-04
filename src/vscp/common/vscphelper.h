@@ -96,6 +96,8 @@ extern "C" {
      */
  
     int32_t vscp_readStringValue(const wxString& strval);
+    
+    
 
     /*!
         Convert string to lowercase
@@ -131,15 +133,7 @@ extern "C" {
     
     char *vscp_trimWhiteSpace( char *str );
     
-    /*!
-        Stringify binary data. 	
-        @param to Pointer output buffer that holds the result. 
-        Output buffer must be twice as big as input,
-        because each byte takes 2 bytes in string representation
-        @param p Pointer to digest.
-        @param len Digest len
-    */
-    void vscp_bin2str( char *to, const unsigned char *p, size_t len ); 
+  
 
     
     /*!
@@ -1323,6 +1317,25 @@ extern "C" {
     
     
     /*!
+     * Calculate md5 hex digest for buf
+     * 
+     * @param digest Buffer (33 bytes) that will receive the digest in hex format.
+     * @param buf Data to calculate md5 on.
+     * @param len Len of input data.
+     */
+    void vscp_md5( char *digest, const unsigned char *buf, size_t len );
+    
+       /*!
+        Stringify binary data. 	
+        @param to Pointer output buffer that holds the result. 
+        Output buffer must be twice as big as input,
+        because each byte takes 2 bytes in string representation
+        @param p Pointer to digest.
+        @param len Digest len
+    */
+    void vscp_byteArray2HexStr( char *to, const unsigned char *p, size_t len );
+    
+    /*!
      * Convert a hext string to a byte array
      * 
      * @param array Byte array that will receive result.
@@ -1332,9 +1345,9 @@ extern "C" {
      * 
      */
     
-    size_t vscp_convertHexStr2ByteArray( uint8_t *array, 
-                                            size_t size, 
-                                            const char *hexstr );
+    size_t vscp_hexStr2ByteArray( uint8_t *array, 
+                                    size_t size, 
+                                    const char *hexstr );
     
     
     /*!

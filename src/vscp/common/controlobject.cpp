@@ -182,23 +182,6 @@ WSADATA wsaData;                            // WSA functions
 // Prototypes
 
 
-////////////////////////////////////////////////////////////////////////////////
-// vscp_md5
-//  TPTO - rewrite
-
-void vscp_md5( char *digest, const unsigned char *buf, size_t len ) 
-{
-    unsigned char hash[16];
-    
-    md5_state_s pms;
-  
-    vscpmd5_init( &pms );
-    vscpmd5_append( &pms, buf, len );
-    vscpmd5_finish( &pms, hash );
-    vscp_bin2str( digest, hash, sizeof( hash ) );
-}
-
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -234,7 +217,7 @@ CControlObject::CControlObject()
                          "630F6B154B2D644ABE29CEBDBFB545");
     m_admin_allowfrom = _("*");
     m_vscptoken = _("Carpe diem quam minimum credula postero");
-    vscp_convertHexStr2ByteArray( m_systemKey, 
+    vscp_hexStr2ByteArray( m_systemKey, 
                                     32, 
                                     "A4A86F7D7E119BA3F0CD06881E371B989B"
                                     "33B6D606A863B633EF529D64544F8E" );
@@ -322,7 +305,6 @@ CControlObject::CControlObject()
     m_pdaemonVSCPThread = NULL;
 
     // Websocket interface
-    m_bAuthWebsockets = true;   // Authentication is needed
     memset( m_pathCert, 0, sizeof( m_pathCert ) );
 
     // Webserver interface
@@ -2422,9 +2404,9 @@ bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
                     m_vscptoken = subchild->GetAttribute( wxT("vscptoken"), 
                                                             wxT("Carpe diem quam minimum credula postero") );
                     wxString str = subchild->GetAttribute( wxT("vscpkey"), 
-                                                            wxT("") );
+                                                            wxT("A4A86F7D7E119BA3F0CD06881E371B989B33B6D606A863B633EF529D64544F8E") );
                     if ( str.Length() ) {
-                        vscp_convertHexStr2ByteArray( m_systemKey, 32, str );
+                        vscp_hexStr2ByteArray( m_systemKey, 32, str );
                     }
                     
                 }
@@ -3046,13 +3028,6 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                 // Deprecated (moved outside of webserver)
                 if (subchild->GetName() == wxT("websockets")) {
 
-                    wxString property;
-                    property = subchild->GetAttribute(wxT("auth"), wxT("true"));
-
-                    if (property.IsSameAs(_("false"), false)) {
-                        m_bAuthWebsockets = false;
-                    }
-
                 }
 
                 subchild = subchild->GetNext();
@@ -3063,12 +3038,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
         
         else if (child->GetName() == wxT("websockets")) {
 
-            wxString property;
-            property =child->GetAttribute(wxT("auth"), wxT("true"));
-
-            if (property.IsSameAs(_("false"), false)) {
-                m_bAuthWebsockets = false;
-            }
+          
 
         }
         
@@ -4165,11 +4135,6 @@ bool CControlObject::dbReadConfiguration( void )
                         (const char *)pValue, 
                         MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
         }        
-        // Enable web socket authentication
-        else if ( !vscp_strcasecmp( (const char * )pName, 
-                        VSCPDB_CONFIG_NAME_WEBSOCKET_AUTH_ENABLE ) ) {
-            m_bAuthWebsockets = atoi( (const char *)pValue ) ? true : false;
-        }  
         // Enable automation
         else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_AUTOMATION_ENABLE ) ) {

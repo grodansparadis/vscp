@@ -2515,12 +2515,7 @@ bool CVariableStorage::init( void )
     //                            Websocket-Server
     // *************************************************************************
     
-    variable.init();
-    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.websocket.auth.enable") );
-    variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
-    variable.setNote( _("Flag to enable/disable authentication on VSCP Daemon websocket interface."), true );
-    addStockVariable( variable  );
+
     
     
     // *************************************************************************
@@ -3796,11 +3791,7 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
     //                            Websocket-Server
     // *************************************************************************
 
-    if ( lcname.StartsWith( _("vscp.websocket.auth.enable") ) ) {
-        var.setValue( gpobj->m_bAuthWebsockets ? true : false );
-        return var.getID();
-    }
-
+ 
 
     // *************************************************************************
     //                                WEB-Server
@@ -5085,13 +5076,7 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
 //                            Websocket-Server
 // *****************************************************************************
 
-    if ( lcname.StartsWith( _("vscp.websocket.auth.enable") ) ) {
-        bool val;
-        var.getValue( &val );
-        gpobj->m_bAuthWebsockets = val;
-        return gpobj->updateConfigurationRecordItem( _("vscpd_WebSocket_EnableAuth"), 
-                                                    val ? _("1") : _("0") );
-    }
+
 
 
 // *****************************************************************************

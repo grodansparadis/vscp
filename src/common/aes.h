@@ -65,7 +65,7 @@ void AES_CBC_encrypt_buffer( uint8_t type,
 /*!
  * Encrypt buffer using AES128/AES192/AES256
  * 
- * @param type The algorithm to use AES127/AES192/AES256
+ * @param type The algorithm to use AES128/AES192/AES256
  * @param output Buffer that holds the result.
  * @param input Buffer with data that should be decrypted.
  * @param length Size of the data that should be decrypted.
