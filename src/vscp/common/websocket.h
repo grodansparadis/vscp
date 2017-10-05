@@ -47,11 +47,11 @@ enum {
 };
 
 // Authentication states
-enum {
+/*enum {
     WEBSOCK_AUTH_STATE_START = 0,
     WEBSOCK_AUTH_STATE_SERVER_HASH,
     WEBSOCK_AUTH_STATE_CLIENT_HASH
-};
+};*/
 
 
 enum {
@@ -107,7 +107,7 @@ public:
     int m_conn_state;  
     
     // Authentication states ( see enums above)
-    int m_auth_state;   
+    //int m_auth_state;   
     
     // Unique ID for this session. 
     char m_key[33];     // Sec-WebSocket-Key
@@ -128,6 +128,9 @@ public:
 
     // Time when this session was last active.
     time_t lastActiveTime;
+    
+    // Concatenated message receive
+    wxString m_strConcatenated;
     
     wxArrayString MessageList;  // Messages (not events) to client.
     

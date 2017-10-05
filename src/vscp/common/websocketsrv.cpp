@@ -187,7 +187,6 @@ websock_session::websock_session( void )
 {
     m_conn = NULL;
     m_conn_state = WEBSOCK_CONN_STATE_NULL;
-    m_auth_state = WEBSOCK_AUTH_STATE_START;
     memset( m_key, 0, 33 );
     memset( m_sid, 0, 33 );
     m_version = 0;
@@ -756,6 +755,8 @@ ws1_CloseHandler(const struct web_connection *conn, void *cbdata)
     struct web_context *ctx = web_get_context( conn );
     websock_session *pSession = 
         (websock_session *)web_get_user_connection_data( conn );
+
+    if ( NULL == conn ) return;
     //ASSERT(client->conn == conn);
     //ASSERT(client->state >= 1);
 
@@ -764,8 +765,6 @@ ws1_CloseHandler(const struct web_connection *conn, void *cbdata)
     pSession->m_conn = NULL;
     web_unlock_context( ctx );
 
-    fprintf( stdout,
-                "Client droped from the set of webserver connections\r\n\r\n");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -807,49 +806,47 @@ ws1_DataHandler( struct web_connection *conn,
     wxString strWsPkt;
     websock_session *pSession = 
         (websock_session *)web_get_user_connection_data( conn );
-    //ASSERT(client->conn == conn);
-    //ASSERT(client->state >= 1);
+    
+    // Check pointers
+    if ( pSession->m_conn != conn ) return WEB_ERROR;
+    if ( pSession->m_conn_state < WEBSOCK_CONN_STATE_CONNECTED ) return WEB_ERROR;
 
-    fprintf(stdout, "Websocket got %lu bytes of ", (unsigned long) len );
     switch ( ( (unsigned char)bits ) & 0x0F ) {
         
         case WEB_WEBSOCKET_OPCODE_CONTINUATION:
-            fprintf(stdout, "continuation");
             break;
             
         case WEB_WEBSOCKET_OPCODE_TEXT:
-            strWsPkt = wxString::FromUTF8( data, len );                
-            if ( !ws1_message( conn, pSession, strWsPkt ) ){
-                return WEB_ERROR;
+            if ( 1 & bits ) {
+                strWsPkt = wxString::FromUTF8( data, len );                
+                if ( !ws1_message( conn, pSession, strWsPkt ) ){
+                    return WEB_ERROR;
+                }
+            }
+            else {
+                
             }
             break;
             
         case WEB_WEBSOCKET_OPCODE_BINARY:
-            fprintf(stdout, "binary");
             break;
             
         case WEB_WEBSOCKET_OPCODE_CONNECTION_CLOSE:
-            fprintf(stdout, "close");
             break;
             
         case WEB_WEBSOCKET_OPCODE_PING:
-            fprintf(stdout, "ping");
+            fprintf( stdout, "Ping received" ); 
             break;
             
         case WEB_WEBSOCKET_OPCODE_PONG:
-            fprintf(stdout, "pong");
+            fprintf( stdout, "Pong received" ); 
             break;
             
         default:
-            fprintf(stdout, "unknown(%1xh)", ((unsigned char) bits) & 0x0F);
             break;
             
     }
     
-    fprintf( stdout, " data:\r\n" );
-    fwrite( data, len, 1, stdout );
-    fprintf( stdout, "\r\n\r\n" );
-
     return WEB_OK;
 }
 
