@@ -1,4 +1,4 @@
-// vscpwebsocketserver.cpp
+// websocketserver.cpp
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -48,8 +48,6 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-
-#include <mongoose.h>
 
 #ifdef WIN32
 
@@ -103,7 +101,6 @@
 #include "web_js.h"
 #include "web_template.h"
 
-#include <mongoose.h>
 #include <vscpweb.h>
 
 #include <vscp.h>
@@ -125,8 +122,6 @@
 #include <websrv.h>
 #include <websocket.h>
 #include <controlobject.h>
-
-using namespace std;
 
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
@@ -720,11 +715,11 @@ websock_post_incomingEvents( void )
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// ws1_ConnectHandler
+// ws1_connectHandler
 //
 
 int
-ws1_ConnectHandler( const struct web_connection *conn, void *cbdata ) 
+ws1_connectHandler( const struct web_connection *conn, void *cbdata ) 
 {
     struct web_context *ctx = web_get_context( conn );
     int reject = 1;
@@ -746,19 +741,20 @@ ws1_ConnectHandler( const struct web_connection *conn, void *cbdata )
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ws1_CloseHandler
+// ws1_closeHandler
 //
 
 void
-ws1_CloseHandler(const struct web_connection *conn, void *cbdata) 
+ws1_closeHandler(const struct web_connection *conn, void *cbdata) 
 {
     struct web_context *ctx = web_get_context( conn );
     websock_session *pSession = 
         (websock_session *)web_get_user_connection_data( conn );
 
     if ( NULL == conn ) return;
-    //ASSERT(client->conn == conn);
-    //ASSERT(client->state >= 1);
+    if ( NULL == pSession ) return;
+    if ( pSession->m_conn != conn ) return;
+    if ( pSession->m_conn_state < WEBSOCK_CONN_STATE_CONNECTED ) return;
 
     web_lock_context( ctx );
     pSession->m_conn_state = WEBSOCK_CONN_STATE_NULL;
@@ -768,11 +764,11 @@ ws1_CloseHandler(const struct web_connection *conn, void *cbdata)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ws1_ReadyHandler
+// ws1_readyHandler
 //
 
 void
-ws1_ReadyHandler( struct web_connection *conn, void *cbdata ) 
+ws1_readyHandler( struct web_connection *conn, void *cbdata ) 
 {
     websock_session *pSession = 
         (websock_session *)web_get_user_connection_data( conn );
@@ -780,6 +776,8 @@ ws1_ReadyHandler( struct web_connection *conn, void *cbdata )
     // Check pointers
     if ( NULL == conn ) return;
     if ( NULL == pSession ) return;
+    if ( pSession->m_conn != conn ) return;
+    if ( pSession->m_conn_state < WEBSOCK_CONN_STATE_CONNECTED ) return;
                 
     // Start authentication  
     wxString wxstr = wxString::Format( _("+;AUTH0;%s"),
@@ -793,11 +791,11 @@ ws1_ReadyHandler( struct web_connection *conn, void *cbdata )
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ws1_DataHandler
+// ws1_dataHandler
 //
 
 int
-ws1_DataHandler( struct web_connection *conn,
+ws1_dataHandler( struct web_connection *conn,
                     int bits,
                     char *data,
                     size_t len,
@@ -808,14 +806,29 @@ ws1_DataHandler( struct web_connection *conn,
         (websock_session *)web_get_user_connection_data( conn );
     
     // Check pointers
+    if ( NULL == conn ) return WEB_ERROR;
+    if ( NULL == pSession ) return WEB_ERROR;
     if ( pSession->m_conn != conn ) return WEB_ERROR;
     if ( pSession->m_conn_state < WEBSOCK_CONN_STATE_CONNECTED ) return WEB_ERROR;
 
     switch ( ( (unsigned char)bits ) & 0x0F ) {
         
         case WEB_WEBSOCKET_OPCODE_CONTINUATION:
+            
+            // Save and concatenate mesage
+            pSession->m_strConcatenated += wxString::FromUTF8( data, len );
+            
+            // if last process is
+            if ( 1 & bits ) {
+                if ( !ws1_message( conn, 
+                                    pSession, 
+                                    pSession->m_strConcatenated ) ){
+                    return WEB_ERROR;
+                }
+            }
             break;
             
+        // https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers    
         case WEB_WEBSOCKET_OPCODE_TEXT:
             if ( 1 & bits ) {
                 strWsPkt = wxString::FromUTF8( data, len );                
@@ -824,7 +837,8 @@ ws1_DataHandler( struct web_connection *conn,
                 }
             }
             else {
-                
+                // Store first part 
+                pSession->m_strConcatenated = wxString::FromUTF8( data, len );
             }
             break;
             

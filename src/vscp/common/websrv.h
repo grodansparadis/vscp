@@ -47,14 +47,14 @@ int stop_webserver( void );
 //                           ws1  Websocket handlers
 ////////////////////////////////////////////////////////////////////////////////
 
-int ws1_ConnectHandler( const struct web_connection *conn, void *cbdata );
-void ws1_ReadyHandler(struct web_connection *conn, void *cbdata);
-int ws1_DataHandler( struct web_connection *conn,
+int ws1_connectHandler( const struct web_connection *conn, void *cbdata );
+void ws1_readyHandler(struct web_connection *conn, void *cbdata);
+int ws1_dataHandler( struct web_connection *conn,
                         int bits,
                         char *data,
                         size_t len,
                         void *cbdata );
-void ws1_CloseHandler(const struct web_connection *conn, void *cbdata );
+void ws1_closeHandler(const struct web_connection *conn, void *cbdata );
 
 
 #define WEBSRV_MAX_SESSIONS                     1000    // Max web server active sessions

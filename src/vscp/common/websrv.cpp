@@ -7219,10 +7219,10 @@ int init_webserver( void )
     // WS site for the websocket connection 
     web_set_websocket_handler( gpobj->webctx,
                                     "/ws1",
-                                    ws1_ConnectHandler,
-                                    ws1_ReadyHandler,
-                                    ws1_DataHandler,
-                                    ws1_CloseHandler,
+                                    ws1_connectHandler,
+                                    ws1_readyHandler,
+                                    ws1_dataHandler,
+                                    ws1_closeHandler,
                                     0 );
     
     

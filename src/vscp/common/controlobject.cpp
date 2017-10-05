@@ -3704,39 +3704,7 @@ bool CControlObject::addConfigurationValueToDatabase( const char *pName,
 //
 
 bool CControlObject::doCreateConfigurationTable( void )
-{
-/*    
-    char *pErrMsg = 0;
-    const char *psql = VSCPDB_CONFIG_CREATE;
-    
-    fprintf( stderr, "Creating settings database..\n" );
-    
-    // Check if database is open
-    if ( NULL == m_db_vscp_daemon ) return false;
-    
-    m_db_vscp_configMutex.Lock();
-    
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
-        fprintf( stderr, 
-                    "Creation of the VSCP settings database failed with message %s", 
-                    pErrMsg );
-        return false;
-    }
-    
-    fprintf( stderr, "Writing default database content..\n" );
-
-    // Add default settings (set as defaults in SQL create expression))
-    psql = " INSERT INTO 'settings' (vscpd_dbversion) VALUES ( 1 )";
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
-        fprintf( stderr, 
-                    "Failed to insert default settings data with error %s.\n",
-                    pErrMsg ); 
-        return false;
-    }
-    
-    m_db_vscp_configMutex.Unlock();
-*/
-    
+{ 
     char *pErrMsg = 0;
     const char *psql;
     
