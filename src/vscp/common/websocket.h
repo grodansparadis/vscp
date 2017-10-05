@@ -124,7 +124,7 @@ public:
 
     // This variable is true when the login process
     // is valid and the user is logged in.
-    bool bAuthenticated;
+    //bool bAuthenticated;
 
     // Time when this session was last active.
     time_t lastActiveTime;

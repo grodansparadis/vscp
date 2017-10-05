@@ -186,7 +186,6 @@ websock_session::websock_session( void )
     memset( m_sid, 0, 33 );
     m_version = 0;
     m_referenceCount = 0;
-    bAuthenticated = false;
     lastActiveTime = 0;
     m_pClientItem = NULL;
     bTrigger = false;
@@ -380,11 +379,9 @@ websock_new_session( const struct web_connection *conn )
     }
 
     // create fresh session
-    pSession = (websock_session *)calloc(1, sizeof( websock_session ) );
+    pSession = new websock_session;
     if  (NULL == pSession ) {
-#ifndef WIN32
-        syslog( LOG_ERR, "calloc error: %s\n", strerror(errno)); // TODO  error report Linux
-#endif
+        gpobj->logMsg(_("[Websockets] New session: Unable to create session object."));
         return NULL;
     }
 
@@ -396,17 +393,21 @@ websock_new_session( const struct web_connection *conn )
     vscp_byteArray2HexStr( hexiv, iv, 16 );
     
     memset( pSession->m_sid, 0, sizeof( pSession->m_sid ) );
-    memcpy( pSession->m_sid, hexiv, 32 );
-    
+    memcpy( pSession->m_sid, hexiv, 32 );    
     memset( pSession->m_key, 0, sizeof( pSession->m_key ) ); 
 
     // Init.
-    strcpy( pSession->m_key, ws_key );           // Save key
-    pSession->bAuthenticated = false;            // Not authenticated in yet
+    strcpy( pSession->m_key, ws_key );                  // Save key    
     pSession->m_conn = (struct web_connection *)conn;
     pSession->m_conn_state = WEBSOCK_CONN_STATE_CONNECTED;
-    pSession->m_version = atoi( ws_version );    // Store protocol version
-    pSession->m_pClientItem = new CClientItem(); // Create client
+    pSession->m_version = atoi( ws_version );           // Store protocol version
+    pSession->m_pClientItem = new CClientItem();        // Create client
+    if ( NULL == pSession->m_pClientItem ) {
+        gpobj->logMsg(_("[Websockets] New session: Unable to create client object."));
+        delete pSession;
+        return NULL;
+    }
+    pSession->m_pClientItem->bAuthenticated = false;    // Not authenticated in yet
     vscp_clearVSCPFilter(&pSession->m_pClientItem->m_filterVSCP);    // Clear filter
     pSession->bTrigger = false;
     pSession->triggerTimeout = 0;
@@ -428,7 +429,7 @@ websock_new_session( const struct web_connection *conn )
 
     // Add to linked list
     pSession->m_referenceCount++;
-    pSession->lastActiveTime = time(NULL);
+    
 
     gpobj->m_websockSessionMutex.Lock();
     gpobj->m_websocketSessions.Append( pSession );
@@ -523,14 +524,14 @@ websock_sendevent( struct web_connection *conn,
     if (NULL == conn) return false;
     if (NULL == pSession) return false;
 
-    // Level II events betwen 512-1023 is recognized by the daemon and
+    // Level II events between 512-1023 is recognized by the daemon and
     // sent to the correct interface as Level I events if the interface
     // is addressed by the client.
     if ((pEvent->vscp_class <= 1023) &&
             (pEvent->vscp_class >= 512) &&
             (pEvent->sizeData >= 16)) {
 
-        // This event shold be sent to the correct interface if it is
+        // This event should be sent to the correct interface if it is
         // available on this machine. If not it should be sent to
         // the rest of the network as normal
 
@@ -538,7 +539,7 @@ websock_sendevent( struct web_connection *conn,
         destguid.getFromArray(pEvent->pdata);
         destguid.setAt(0,0);
         destguid.setAt(1,0);
-        //unsigned char destGUID[16];
+        //unsigned char destGUID[16];  TODO ???
         //memcpy(destGUID, pEvent->pdata, 16); // get destination GUID
         //destGUID[0] = 0; // Interface GUID's have LSB bytes nilled
         //destGUID[1] = 0;
@@ -561,7 +562,7 @@ websock_sendevent( struct web_connection *conn,
 
         }
 
-        if (NULL != pDestClientItem) {
+        if ( NULL != pDestClientItem ) {
 
             // If the client queue is full for this client then the
             // client will not receive the message
@@ -643,7 +644,8 @@ websock_sendevent( struct web_connection *conn,
 //
 
 void
-websock_post_incomingEvents( void )
+websock_post_incomingEvents( struct web_connection *conn,
+                                websock_session *pSession )
 {
     struct mg_connection *nc;
     
@@ -757,10 +759,27 @@ ws1_closeHandler(const struct web_connection *conn, void *cbdata)
     if ( pSession->m_conn_state < WEBSOCK_CONN_STATE_CONNECTED ) return;
 
     web_lock_context( ctx );
+    
+    // Record activity
+    pSession->lastActiveTime = time(NULL);
+    
     pSession->m_conn_state = WEBSOCK_CONN_STATE_NULL;
     pSession->m_conn = NULL;
+    gpobj->m_clientList.removeClient( pSession->m_pClientItem );
+    pSession->m_pClientItem = NULL;
+    
+    gpobj->m_websockSessionMutex.Lock();
+    gpobj->m_websocketSessions.DeleteContents( true ); 
+    if ( !gpobj->m_websocketSessions.DeleteObject( pSession )  ) {
+        gpobj->logMsg( _("[Websocket] Failed to delete session object."), 
+                        DAEMON_LOGMSG_NORMAL, 
+                        DAEMON_LOGTYPE_SECURITY );
+    }
+    gpobj->m_websockSessionMutex.Unlock();
+    
+    
+            
     web_unlock_context( ctx );
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -778,6 +797,9 @@ ws1_readyHandler( struct web_connection *conn, void *cbdata )
     if ( NULL == pSession ) return;
     if ( pSession->m_conn != conn ) return;
     if ( pSession->m_conn_state < WEBSOCK_CONN_STATE_CONNECTED ) return;
+    
+    // Record activity
+    pSession->lastActiveTime = time(NULL);
                 
     // Start authentication  
     wxString wxstr = wxString::Format( _("+;AUTH0;%s"),
@@ -810,6 +832,9 @@ ws1_dataHandler( struct web_connection *conn,
     if ( NULL == pSession ) return WEB_ERROR;
     if ( pSession->m_conn != conn ) return WEB_ERROR;
     if ( pSession->m_conn_state < WEBSOCK_CONN_STATE_CONNECTED ) return WEB_ERROR;
+    
+    // Record activity
+    pSession->lastActiveTime = time(NULL);
 
     switch ( ( (unsigned char)bits ) & 0x0F ) {
         
@@ -899,7 +924,8 @@ ws1_message( struct web_connection *conn,
         case 'E':
         {
             // Must be authorised to do this
-            if ( !pSession->bAuthenticated ) {
+            if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
                 
                 wxstr = wxString::Format( _("-;%d;%s"),
                                             (int)WEBSOCK_ERROR_NOT_AUTHORISED,
@@ -1019,7 +1045,8 @@ ws1_command( struct web_connection *conn,
                                 6 );
 
         // Send authentication challenge
-        if ( !pSession->bAuthenticated ) {
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
             // TODO
         }
         
@@ -1032,7 +1059,8 @@ ws1_command( struct web_connection *conn,
     else if ( 0 == strTok.Find( _("CHALLENGE") ) ) {
 
         // Send authentication challenge
-        if ( !pSession->bAuthenticated ) {
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
                         
             // Start authentication  
             wxstr = wxString::Format( _("+;AUTH0;%s"),
@@ -1081,7 +1109,7 @@ autherror:
                                     WEB_WEBSOCKET_OPCODE_TEXT,
                                     (const char *)wxstr.mbc_str(),
                                     wxstr.length() );
-            pSession->bAuthenticated = false;   // Authenticated
+            pSession->m_pClientItem->bAuthenticated  = false;   // Authenticated
         }
     }
     
@@ -1092,7 +1120,8 @@ autherror:
     else if ( 0 == strTok.Find( _("OPEN") ) ) {
 
         // Must be authorised to do this
-        if ( !pSession->bAuthenticated ) {
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
             
             wxstr = wxString::Format( _("-;OPEN;%d;%s"),
                                         (int)WEBSOCK_ERROR_NOT_AUTHORISED,
@@ -1136,7 +1165,8 @@ autherror:
         memset(ifGUID, 0, 16);
 
         // Must be authorized to do this
-        if ( !pSession->bAuthenticated ) {
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
             
             wxstr = wxString::Format( _("-;SF;%d;%s"),
                                         (int)WEBSOCK_ERROR_NOT_AUTHORISED,
@@ -1272,7 +1302,8 @@ autherror:
         CLIENTEVENTLIST::iterator iterVSCP;
 
         // Must be authorised to do this
-        if ( !pSession->bAuthenticated ) {
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
             
             wxstr = wxString::Format( _("-;CLRQ;%d;%s"),
                                         (int)WEBSOCK_ERROR_NOT_AUTHORISED,
@@ -1347,7 +1378,8 @@ autherror:
         uint32_t accessrights = 744;
 
         // Must be authorised to do this
-        if ( !pSession->bAuthenticated ) {
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
             
             wxstr = wxString::Format( _("-;CVAR;%d;%s"),
                                         (int)WEBSOCK_ERROR_NOT_AUTHORISED,
@@ -1568,7 +1600,8 @@ autherror:
         wxString strvalue;
 
         // Must be authorised to do this
-        if ( !pSession->bAuthenticated ) {
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
             
             wxstr = wxString::Format( _("-;RVAR;%d;%s"),
                                         (int)WEBSOCK_ERROR_NOT_AUTHORISED,
@@ -1642,7 +1675,8 @@ autherror:
         uint8_t type;
 
         // Must be authorised to do this
-        if ( !pSession->bAuthenticated ) {
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
             
             wxstr = wxString::Format( _("-;WVAR;%d;%s"),
                                         (int)WEBSOCK_ERROR_NOT_AUTHORISED,
@@ -1784,7 +1818,8 @@ autherror:
         uint8_t type;
 
         // Must be authorised to do this
-        if ( !pSession->bAuthenticated ) {
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
             
             wxstr = wxString::Format( _("-;RSTVAR;%d;%s"),
                                         (int)WEBSOCK_ERROR_NOT_AUTHORISED,
@@ -1868,7 +1903,8 @@ autherror:
         wxString name;
 
         // Must be authorised to do this
-        if ( !pSession->bAuthenticated ) {
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
             
             wxstr = wxString::Format( _("-;DELVAR;%d;%s"),
                                         (int)WEBSOCK_ERROR_NOT_AUTHORISED,
@@ -1946,7 +1982,8 @@ autherror:
         CVSCPVariable variable;
 
         // Must be authorised to do this
-        if ( !pSession->bAuthenticated ) {
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
             
             wxstr = wxString::Format( _("-;LENVAR;%d;%s"),
                                         (int)WEBSOCK_ERROR_NOT_AUTHORISED,
@@ -2022,7 +2059,8 @@ autherror:
         wxString strvalue;
 
         // Must be authorised to do this
-        if ( !pSession->bAuthenticated ) {
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
             
             wxstr = wxString::Format( _("-;LCVAR;%d;%s"),
                                         (int)WEBSOCK_ERROR_NOT_AUTHORISED,
@@ -2103,7 +2141,8 @@ autherror:
         wxString strSearch;
 
         // Must be authorised to do this
-        if ( !pSession->bAuthenticated ) {
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
             
             wxstr = wxString::Format( _("-;LSTVAR;%d;%s"),
                                         (int)WEBSOCK_ERROR_NOT_AUTHORISED,

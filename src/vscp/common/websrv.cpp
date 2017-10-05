@@ -191,7 +191,7 @@ struct websrv_rest_session *gp_websrv_rest_sessions;
 //
 
 struct websrv_Session *
-VSCPWebServerThread::websrv_get_session( struct mg_connection *nc,
+websrv_get_session( struct mg_connection *nc,
                                             struct http_message *hm )
 {
     char buf[512]; 
@@ -235,7 +235,7 @@ VSCPWebServerThread::websrv_get_session( struct mg_connection *nc,
 //
 
 websrv_Session *
-VSCPWebServerThread::websrv_add_session_cookie( struct mg_connection *nc,
+websrv_add_session_cookie( struct mg_connection *nc,
                                                     struct http_message *hm )
 {
     char buf[512];
@@ -315,7 +315,7 @@ VSCPWebServerThread::websrv_add_session_cookie( struct mg_connection *nc,
 //
 
 struct websrv_Session *
-VSCPWebServerThread::websrv_GetCreateSession( struct mg_connection *nc,
+websrv_GetCreateSession( struct mg_connection *nc,
                                                 struct http_message *hm )
 {
     struct mg_str *pheader;
@@ -348,7 +348,7 @@ VSCPWebServerThread::websrv_GetCreateSession( struct mg_connection *nc,
 //
 
 void
-VSCPWebServerThread::websrv_expire_sessions( struct mg_connection *nc,
+websrv_expire_sessions( struct mg_connection *nc,
                                                 struct http_message *hm )
 {
     struct websrv_Session *pos;
@@ -621,7 +621,7 @@ static int vscp_listFile( struct web_connection *conn,
 	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
 	          "close\r\n\r\n");
 
-    /*bool bFirstRow = false;
+    /*bool bFirstRow = false;   TODO
     wxString strHeader = wxString::Format(_("VSCP - %s"), textHeader.mbc_str() );
     web_printf( conn,WEB_COMMON_HEAD, strHeader.mbc_str() );
     web_printf( conn, WEB_STYLE_START);
@@ -748,7 +748,9 @@ static int vscp_interface( struct web_connection *conn, void *cbdata )
 
         // Interface name
         web_printf( conn, "<td>");
-        web_printf( conn, pItem->m_strDeviceName.Left( pItem->m_strDeviceName.Length()-30).mbc_str() );
+        web_printf( conn, 
+                pItem->m_strDeviceName.Left( 
+                    pItem->m_strDeviceName.Length()-30).mbc_str() );
         web_printf( conn, "</td>");
 
         // Start date
