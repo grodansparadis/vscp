@@ -31,13 +31,15 @@
 //                                WEBSOCKETS
 //******************************************************************************
 
+// websocket types
+#define WEBSOCKET_SUBYPE_STANDARD   "vscp-std"      // Original form
+#define WEBSOCKET_SUBTYPE_JSON      "vscp-json"     // JSON format
 
-
-#define MAX_VSCPWS_MESSAGE_QUEUE 512
+#define MAX_VSCPWS_MESSAGE_QUEUE    (512)
 
 // This is the time it takes for an expired websocket session to be 
 // removed by the system.
-#define WEBSOCKET_EXPIRE_TIME   (2*60)
+#define WEBSOCKET_EXPIRE_TIME       (2*60)
 
 // Authentication states
 enum {
@@ -93,12 +95,12 @@ enum {
 
 WX_DECLARE_LIST(vscpEventFilter, TRIGGERLIST);
 
-#define WEBSOCKET_MAINCODE_POSITIVE     "+"
-#define WEBSOCKET_MAINCODE_NEGATIVE     "-"
+#define WEBSOCKET_MAINCODE_POSITIVE         "+"
+#define WEBSOCKET_MAINCODE_NEGATIVE         "-"
 
-#define WEBSOCKET_MAINCODE_COMMAND      "C"
-#define WEBSOCKET_MAINCODE_EVENT        "E"
-#define WEBSOCKET_MAINCODE_VARIABLE     "V"
+#define WEBSOCKET_MAINCODE_COMMAND          "C"
+#define WEBSOCKET_MAINCODE_EVENT            "E"
+#define WEBSOCKET_MAINCODE_VARIABLE         "V"
 
 #define WEBSOCKET_SUBCODE_VARIABLE_CHANGED  "C"
 #define WEBSOCKET_SUBCODE_VARIABLE_CREATED  "N"
@@ -135,10 +137,17 @@ public:
     // Client structure for websocket
     CClientItem *m_pClientItem;
 
-    bool bTrigger;                  // True to activate trigger functionality.
+    // Event triggers
+    //      Used for acknowledge automatisation
+    //      VSCP_TYPE_INFORMATION_ACTION_TRIGGER
+    
+    bool bEventTrigger;             // True to activate event trigger functionality.
     uint32_t triggerTimeout;        // Time out before trig (or error) must occur.
     TRIGGERLIST listTriggerOK;      // List with positive triggers.
     TRIGGERLIST listTriggerERR;     // List with negative triggers.
+    
+    // Variable triggers
+    bool bVariableTrigger;          // True to activate event trigger functionality.
 };
 
 WX_DECLARE_LIST(websock_session, WEBSOCKETSESSIONLIST);

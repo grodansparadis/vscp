@@ -187,8 +187,9 @@ websock_session::websock_session( void )
     m_version = 0;
     lastActiveTime = 0;
     m_pClientItem = NULL;
-    bTrigger = false;
+    bEventTrigger = false;
     triggerTimeout = 0;
+    bVariableTrigger = false;
 };
 
 websock_session::~websock_session( void )
@@ -408,8 +409,9 @@ websock_new_session( const struct web_connection *conn )
     }
     pSession->m_pClientItem->bAuthenticated = false;    // Not authenticated in yet
     vscp_clearVSCPFilter(&pSession->m_pClientItem->m_filterVSCP);    // Clear filter
-    pSession->bTrigger = false;
+    pSession->bEventTrigger = false;
     pSession->triggerTimeout = 0;
+    pSession->bVariableTrigger = false;
     
 
     // This is an active client
