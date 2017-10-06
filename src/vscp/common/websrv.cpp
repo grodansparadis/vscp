@@ -767,12 +767,12 @@ static int vscp_interface( struct web_connection *conn, void *cbdata )
     web_printf( conn, WEB_IFLIST_TABLE_END);
 
     web_printf( conn, 
-            "<br>All interfaces to the daemon is listed here. "
-            "This is drivers as well as clients on one of the daemons "
+            "<br>All interfaces on the VSCP server is listed here. "
+            "This is drivers as well as clients connected to one of the VSCP servers "
             "interfaces. It is possible to see events coming in on a on a "
             "specific interface and send events on just one of the interfaces. "
             "This is mostly used on the driver interfaces but is possible on "
-            "all interfacs<br>");
+            "all interfaces<br>");
 
     web_printf( conn, "<br><b>Interface Types</b><br>" );
     web_printf( conn, 

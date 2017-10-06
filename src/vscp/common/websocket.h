@@ -143,7 +143,10 @@ public:
     TRIGGERLIST listTriggerERR;     // List with negative triggers.
 };
 
-
 WX_DECLARE_LIST(websock_session, WEBSOCKETSESSIONLIST);
+
+// Public functions 
+
+void  websock_post_incomingEvents( void );
 
 #endif

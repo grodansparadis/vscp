@@ -43,7 +43,7 @@
 //   wxTRACE_VSCP_Msg - VSCP message mechanism
 //
 
-#ifdef WIN32
+#if defined(_WIN32) 
 #include <winsock2.h>
 #endif
 
@@ -59,7 +59,7 @@
 #include "wx/app.h"
 #include <wx/xml/xml.h>
 
-#ifdef WIN32
+#if defined(_WIN32) 
 
 #include <winsock2.h>
 #include "canal_win32_ipc.h"
@@ -161,7 +161,7 @@ WX_DEFINE_LIST(VSCPEventList);
 
 extern CControlObject *gpobj;
 
-#ifdef WIN32
+#if defined(_WIN32) 
 
 typedef struct _ASTAT_ {
     ADAPTER_STATUS adapt;
@@ -201,7 +201,7 @@ CControlObject::CControlObject()
     //m_debugFlags1 |= VSCP_DEBUG1_UDP;
     //m_debugFlags1 |= VSCP_DEBUG1_TCP;
     
-#ifdef WIN32
+#if defined(_WIN32) 
     m_rootFolder = wxStandardPaths::Get().GetUserDataDir();
 #else
     m_rootFolder = _("/srv/vscp/");
@@ -1370,6 +1370,9 @@ bool CControlObject::run( void )
                 vscp_deleteVSCPevent(pEvent);
 
             } // Valid pEvent pointer
+            
+            // Send events to websocket clients
+            websock_post_incomingEvents();
 
         } // Event in queue
 
@@ -2303,7 +2306,7 @@ bool CControlObject::getIPAddress( cguid& guid )
 
     char szName[ 128 ];
     gethostname(szName, sizeof( szName));
-#ifdef WIN32
+#if defined(_WIN32) 
     LPHOSTENT lpLocalHostEntry;
 #else
     struct hostent *lpLocalHostEntry;

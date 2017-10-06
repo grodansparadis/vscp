@@ -416,7 +416,7 @@ websock_new_session( const struct web_connection *conn )
     // This is an active client
     pSession->m_pClientItem->m_bOpen = false;
     pSession->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET;
-    pSession->m_pClientItem->m_strDeviceName = _("Internal VSCP Server websocket client. ");
+    pSession->m_pClientItem->m_strDeviceName = _("Internal websocket client. ");
     wxDateTime now = wxDateTime::Now();
     pSession->m_pClientItem->m_strDeviceName += now.FormatISODate();
     pSession->m_pClientItem->m_strDeviceName += _(" ");
@@ -511,6 +511,8 @@ websock_expire_sessions( struct web_connection *conn )
 ///////////////////////////////////////////////////////////////////////////////
 // websock_sendevent
 //
+// Send event to all other clients.
+//
 
 bool
 websock_sendevent( struct web_connection *conn,
@@ -604,7 +606,7 @@ websock_sendevent( struct web_connection *conn,
 
     }
 
-    if (!bSent) {
+    if ( !bSent ) {
 
         // There must be room in the send queue
         if (gpobj->m_maxItemsInClientReceiveQueue >
@@ -644,71 +646,75 @@ websock_sendevent( struct web_connection *conn,
 //
 
 void
-websock_post_incomingEvents( struct web_connection *conn,
-                                websock_session *pSession )
+websock_post_incomingEvents( void )
 {
-    struct mg_connection *nc;
+    gpobj->m_websockSessionMutex.Lock();
     
-    // TODO !!!
+    WEBSOCKETSESSIONLIST::iterator iter;
+    for ( iter = gpobj->m_websocketSessions.begin(); 
+            iter != gpobj->m_websocketSessions.end(); 
+            ++iter ) {
+        
+        websock_session *pSession= *iter;
+        if ( NULL == pSession) continue;
+        
+        // Should be a client item... hmm.... client disconnected 
+        if ( NULL == pSession->m_pClientItem ) {
+            continue;
+        }
+        
+        if ( pSession->m_conn_state < WEBSOCK_CONN_STATE_CONNECTED ) continue;
+        
+        if ( NULL == pSession->m_conn ) continue;
+        
+        if ( pSession->m_pClientItem->m_bOpen &&
+                pSession->m_pClientItem->m_clientInputQueue.GetCount() ) {
 
-    // Iterate over all connections, and push current time message to websocket ones.
-    for ( nc = mg_next( &gmgr, NULL);
-               nc != NULL;
-               nc = mg_next( &gmgr, nc) ) {
+            CLIENTEVENTLIST::compatibility_iterator nodeClient;
+            vscpEvent *pEvent;
 
-        //if ( NULL == conn ) return;   // This should not happen
-
-        if ( nc->flags | MG_F_IS_WEBSOCKET ) {
-
-            websock_session *pSession = (websock_session *)nc->user_data;
-            if ( NULL == pSession) continue;
+            pSession->m_pClientItem->m_mutexClientInputQueue.Lock();    
+            nodeClient = pSession->m_pClientItem->m_clientInputQueue.GetFirst();
             
-            // Should be a client item... hmm.... client disconnected 
-            if ( NULL == pSession->m_pClientItem ) {
-                continue;
-            }
+            if ( NULL == nodeClient )  continue;
+            
+            pEvent = nodeClient->GetData();                             
+            pSession->m_pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
+            pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
 
-            if ( pSession->m_pClientItem->m_bOpen &&
-                    pSession->m_pClientItem->m_clientInputQueue.GetCount() ) {
+            if ( NULL != pEvent ) {
 
-                CLIENTEVENTLIST::compatibility_iterator nodeClient;
-                vscpEvent *pEvent;
+                // Run event through filter
+                if ( vscp_doLevel2Filter( pEvent, 
+                        &pSession->m_pClientItem->m_filterVSCP ) ) {
 
-                pSession->m_pClientItem->m_mutexClientInputQueue.Lock();    // 1
-                nodeClient = pSession->m_pClientItem->m_clientInputQueue.GetFirst();
-                if ( NULL == nodeClient )  continue;
-                pEvent = nodeClient->GetData();                             // 1
-                pSession->m_pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
-                pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
+                    wxString str;
+                    if ( vscp_writeVscpEventToString( pEvent, str ) ) {
 
-                if ( NULL != pEvent ) {
+                        // Write it out
+                        /*char buf[ 512 ];
+                        memset( (char *)buf, 0, sizeof( buf) );
+                        strcpy( (char *)buf, (const char*)"E;");
+                        strcat( (char *)buf, (const char*)str.mbc_str() );*/
+                        str = _("E;") + str;
+                        web_websocket_write( pSession->m_conn, 
+                                                WEB_WEBSOCKET_OPCODE_TEXT, 
+                                                (const char *)str.mbc_str(), 
+                                                str.Length() );
 
-                    if ( vscp_doLevel2Filter( pEvent, 
-                                    &pSession->m_pClientItem->m_filterVSCP)) {
-
-                        wxString str;
-                        if ( vscp_writeVscpEventToString( pEvent, str ) ) {
-
-                            // Write it out
-                            char buf[ 512 ];
-                            memset((char *) buf, 0, sizeof( buf));
-                            strcpy((char *) buf, (const char*) "E;");
-                            strcat((char *) buf, (const char*) str.mb_str(wxConvUTF8));
-                            mg_send_websocket_frame(nc, WEBSOCKET_OP_TEXT, buf, strlen(buf) );
-
-                        }
                     }
+                }
 
-                    // Remove the event
-                    vscp_deleteVSCPevent(pEvent);
+                // Remove the event
+                vscp_deleteVSCPevent(pEvent);
 
-                } // Valid pEvent pointer
+            } // Valid pEvent pointer
                 
-            } // events available
-            
-        } // websocket
-
+        } // events available
+        
     } // for
+    
+    gpobj->m_websockSessionMutex.Unlock();
 
  }
 

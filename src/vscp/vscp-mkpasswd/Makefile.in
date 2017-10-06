@@ -70,6 +70,7 @@ MKPASSWD_OBJECTS =  vscp-mkpasswd.o\
 	../../common/crc.o\
 	../../common/crc8.o\
 	../../common/aes.o\
+	../../common/vscpmd5.c\
 	../../common/fastpbkdf2.o\
 	../../common/vscpbase64.o
 
@@ -80,7 +81,7 @@ ALWAYS_BUILD = ../common/vscphelper.o\
 	../../common/crc.o\
 	../../common/crc8.o\
 	../../common/aes.o \
-
+	../../common/vscpmd5.c\
 
 ### Targets: ###
 

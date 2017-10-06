@@ -15,6 +15,8 @@
         <itemPath>../../common/mongoose.h</itemPath>
         <itemPath>../../common/vscpbase64.c</itemPath>
         <itemPath>../../common/vscpbase64.h</itemPath>
+        <itemPath>../../common/vscpmd5.c</itemPath>
+        <itemPath>../../common/vscpmd5.h</itemPath>
       </logicalFolder>
       <logicalFolder name="vscp" displayName="vscp" projectFiles="true">
         <logicalFolder name="common" displayName="common" projectFiles="true">
@@ -215,31 +217,6 @@
               <Elem>wxUSE_GUI=0</Elem>
             </preprocessorList>
           </cTool>
-          <ccTool>
-            <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-              <pElem>/usr/local/include/wx-3.0</pElem>
-              <pElem>../common</pElem>
-              <pElem>../../common</pElem>
-              <pElem>../../common/lua</pElem>
-              <pElem>../../common/lua/src</pElem>
-            </incDir>
-            <preprocessorList>
-              <Elem>MG_ENABLE_GETADDRINFO</Elem>
-              <Elem>MG_ENABLE_HTTP_CGI</Elem>
-              <Elem>MG_ENABLE_HTTP_SSI</Elem>
-              <Elem>MG_ENABLE_HTTP_SSI_EXEC</Elem>
-              <Elem>MG_ENABLE_HTTP_URL_REWRITES</Elem>
-              <Elem>MG_ENABLE_HTTP_WEBDAV</Elem>
-              <Elem>MG_ENABLE_IPV6</Elem>
-              <Elem>MG_ENABLE_SSL</Elem>
-              <Elem>MG_ENABLE_THREADS</Elem>
-              <Elem>WXUSINGDLL</Elem>
-              <Elem>_FILE_OFFSET_BITS=64</Elem>
-              <Elem>__WXGTK__</Elem>
-              <Elem>wxUSE_GUI=0</Elem>
-            </preprocessorList>
-          </ccTool>
         </makeTool>
         <preBuild>
           <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
@@ -271,6 +248,8 @@
         <cTool flags="1">
         </cTool>
       </item>
+      <item path="../../common/vscpmd5.c" ex="false" tool="1" flavor2="0">
+      </item>
       <item path="../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
@@ -283,11 +262,65 @@
         <ccTool flags="0">
         </ccTool>
       </item>
+      <folder path="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
+            <pElem>../../common/lua</pElem>
+            <pElem>../../common/lua/src</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>MG_ENABLE_GETADDRINFO</Elem>
+            <Elem>MG_ENABLE_HTTP_CGI</Elem>
+            <Elem>MG_ENABLE_HTTP_SSI</Elem>
+            <Elem>MG_ENABLE_HTTP_SSI_EXEC</Elem>
+            <Elem>MG_ENABLE_HTTP_URL_REWRITES</Elem>
+            <Elem>MG_ENABLE_HTTP_WEBDAV</Elem>
+            <Elem>MG_ENABLE_IPV6</Elem>
+            <Elem>MG_ENABLE_SSL</Elem>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>WXUSINGDLL</Elem>
+            <Elem>_FILE_OFFSET_BITS=64</Elem>
+            <Elem>__WXGTK__</Elem>
+            <Elem>wxUSE_GUI=0</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
       <folder path="src">
         <ccTool>
           <incDir>
             <pElem>.</pElem>
           </incDir>
+        </ccTool>
+      </folder>
+      <folder path="src/vscp">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
+            <pElem>../../common/lua</pElem>
+            <pElem>../../common/lua/src</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>MG_ENABLE_GETADDRINFO</Elem>
+            <Elem>MG_ENABLE_HTTP_CGI</Elem>
+            <Elem>MG_ENABLE_HTTP_SSI</Elem>
+            <Elem>MG_ENABLE_HTTP_SSI_EXEC</Elem>
+            <Elem>MG_ENABLE_HTTP_URL_REWRITES</Elem>
+            <Elem>MG_ENABLE_HTTP_WEBDAV</Elem>
+            <Elem>MG_ENABLE_IPV6</Elem>
+            <Elem>MG_ENABLE_SSL</Elem>
+            <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>WXUSINGDLL</Elem>
+            <Elem>_FILE_OFFSET_BITS=64</Elem>
+            <Elem>__WXGTK__</Elem>
+            <Elem>wxUSE_GUI=0</Elem>
+          </preprocessorList>
         </ccTool>
       </folder>
       <item path="vscpcmd.cpp" ex="false" tool="1" flavor2="0">

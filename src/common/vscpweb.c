@@ -4123,9 +4123,9 @@ pthread_cond_timedwait(pthread_cond_t *cv,
 
 FUNCTION_MAY_BE_UNUSED
 static int
-pthread_cond_wait(pthread_cond_t *cv, pthread_mutex_t *mutex)
+pthread_cond_wait( pthread_cond_t *cv, pthread_mutex_t *mutex )
 {
-    return pthread_cond_timedwait(cv, mutex, NULL);
+    return pthread_cond_timedwait( cv, mutex, NULL );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -4139,7 +4139,7 @@ pthread_cond_signal(pthread_cond_t *cv)
     HANDLE wkup = NULL;
     BOOL ok = FALSE;
 
-    EnterCriticalSection(&cv->threadIdSec);
+    EnterCriticalSection( &cv->threadIdSec );
     
     if (cv->waiting_thread) {
         wkup = cv->waiting_thread->pthread_cond_helper_mutex;
@@ -4149,7 +4149,7 @@ pthread_cond_signal(pthread_cond_t *cv)
         assert(ok);
     }
     
-    LeaveCriticalSection(&cv->threadIdSec);
+    LeaveCriticalSection( &cv->threadIdSec );
 
     return ok ? 0 : 1;
 }
@@ -4160,15 +4160,15 @@ pthread_cond_signal(pthread_cond_t *cv)
 
 FUNCTION_MAY_BE_UNUSED
 static int
-pthread_cond_broadcast(pthread_cond_t *cv)
+pthread_cond_broadcast( pthread_cond_t *cv )
 {
-    EnterCriticalSection(&cv->threadIdSec);
+    EnterCriticalSection( &cv->threadIdSec );
     
-    while (cv->waiting_thread) {
+    while ( cv->waiting_thread ) {
         pthread_cond_signal(cv);
     }
     
-    LeaveCriticalSection(&cv->threadIdSec);
+    LeaveCriticalSection( &cv->threadIdSec );
 
     return 0;
 }
@@ -4179,12 +4179,12 @@ pthread_cond_broadcast(pthread_cond_t *cv)
 
 FUNCTION_MAY_BE_UNUSED
 static int
-pthread_cond_destroy(pthread_cond_t *cv)
+pthread_cond_destroy( pthread_cond_t *cv )
 {
-    EnterCriticalSection(&cv->threadIdSec);
-    assert(cv->waiting_thread == NULL);
-    LeaveCriticalSection(&cv->threadIdSec);
-    DeleteCriticalSection(&cv->threadIdSec);
+    EnterCriticalSection( &cv->threadIdSec );
+    assert( NULL == cv->waiting_thread );
+    LeaveCriticalSection( &cv->threadIdSec );
+    DeleteCriticalSection( &cv->threadIdSec );
 
     return 0;
 }
@@ -4433,8 +4433,8 @@ web_stat(const struct web_connection *conn,
 
     path_to_unicode(conn, path, wbuf, ARRAY_SIZE(wbuf));
     
-    if (GetFileAttributesExW(wbuf, GetFileExInfoStandard, &info) != 0) {
-        filep->size = MAKEUQUAD(info.nFileSizeLow, info.nFileSizeHigh);
+    if ( GetFileAttributesExW(wbuf, GetFileExInfoStandard, &info ) != 0 ) {
+        filep->size = MAKEUQUAD( info.nFileSizeLow, info.nFileSizeHigh );
         filep->last_modified =
                 SYS2UNIX_TIME(info.ftLastWriteTime.dwLowDateTime,
                               info.ftLastWriteTime.dwHighDateTime);
@@ -4443,10 +4443,10 @@ web_stat(const struct web_connection *conn,
         // modification time, e.g. when a file is copied.
         // Since the Last-Modified timestamp is used for caching
         // it should be based on the most recent timestamp. 
-        creation_time = SYS2UNIX_TIME(info.ftCreationTime.dwLowDateTime,
-                                      info.ftCreationTime.dwHighDateTime);
+        creation_time = SYS2UNIX_TIME( info.ftCreationTime.dwLowDateTime,
+                                            info.ftCreationTime.dwHighDateTime );
         
-        if (creation_time > filep->last_modified) {
+        if ( creation_time > filep->last_modified ) {
             filep->last_modified = creation_time;
         }
 
@@ -4685,15 +4685,12 @@ web_start_thread(web_thread_func_t f, void *p)
     // Compile-time option to control stack size, e.g.
     // -DUSE_STACK_SIZE=16384
     //
-    return ((_beginthread((void(__cdecl *) (void *))f, USE_STACK_SIZE, p)
-            == ((uintptr_t) (-1L)))
-            ? -1
-            : 0);
+    return ( (_beginthread((void(__cdecl *) (void *))f, USE_STACK_SIZE, p )
+                == ( (uintptr_t)(-1L) ) ) ? -1 : 0);
 #else
     return (
-            (_beginthread((void(__cdecl *) (void *))f, 0, p) == ((uintptr_t) (-1L)))
-            ? -1
-            : 0);
+            (_beginthread((void(__cdecl *) (void *))f, 0, p) 
+                == ( (uintptr_t)(-1L) ) ) ? -1 : 0);
 #endif // defined(USE_STACK_SIZE) && (USE_STACK_SIZE > 1) 
 }
 
@@ -4729,7 +4726,7 @@ web_start_thread_with_id( unsigned(__stdcall *f)(void *),
 //
 
 static int
-web_join_thread(pthread_t threadid)
+web_join_thread( pthread_t threadid )
 {
     int result;
     DWORD dwevent;
@@ -4784,7 +4781,7 @@ dlclose(void *handle)
 {
     int result;
 
-    if (FreeLibrary((HMODULE) handle) != 0) {
+    if ( FreeLibrary( (HMODULE)handle) != 0 ) {
         result = 0;
     }
     else {
@@ -4809,8 +4806,8 @@ dlclose(void *handle)
 static int
 kill(pid_t pid, int sig_num)
 {
-    (void) TerminateProcess((HANDLE) pid, (UINT) sig_num);
-    (void) CloseHandle((HANDLE) pid);
+    (void)TerminateProcess( (HANDLE)pid, (UINT)sig_num );
+    (void)CloseHandle( (HANDLE)pid );
     return 0;
 }
 
@@ -4937,7 +4934,7 @@ spawn_process(struct web_connection *conn,
         
     }
 
-    if (interp[0] != '\0') {
+    if ( interp[0] != '\0' ) {
         GetFullPathNameA(interp, sizeof (full_interp), full_interp, NULL);
         interp = full_interp;
     }
@@ -5024,14 +5021,14 @@ set_non_blocking_mode(SOCKET sock)
     return ioctlsocket(sock, (long)FIONBIO, &non_blocking);
 }
 
-#else
+#else  // not WIN32
 
 ////////////////////////////////////////////////////////////////////////////////
 // web_stat
 //
 
 static int
-web_stat(const struct web_connection *conn,
+web_stat( const struct web_connection *conn,
              const char *path,
              struct web_file_stat *filep)
 {
@@ -5043,7 +5040,7 @@ web_stat(const struct web_connection *conn,
     
     memset(filep, 0, sizeof (*filep));
 
-    if (conn && is_file_in_memory(conn, path)) {
+    if ( conn && is_file_in_memory( conn, path ) ) {
 
         // Quick fix (for 1.9.x): 
         // web_stat must fill all fields, also for files in memory 
@@ -5057,7 +5054,7 @@ web_stat(const struct web_connection *conn,
         return 1;
     }
 
-    if (0 == stat(path, &st)) {
+    if ( 0 == stat( path, &st ) ) {
         filep->size = (uint64_t) (st.st_size);
         filep->last_modified = st.st_mtime;
         filep->is_directory = S_ISDIR(st.st_mode);
@@ -5074,13 +5071,13 @@ web_stat(const struct web_connection *conn,
 static void
 set_close_on_exec(SOCKET fd, struct web_connection *conn /* may be null */)
 {
-    if (fcntl(fd, F_SETFD, FD_CLOEXEC) != 0) {
+    if ( fcntl(fd, F_SETFD, FD_CLOEXEC) != 0 ) {
         
         if (conn) {
-            web_cry(conn,
-                            "%s: fcntl(F_SETFD FD_CLOEXEC) failed: %s",
-                            __func__,
-                            strerror( ERRNO ) );
+            web_cry( conn,
+                        "%s: fcntl(F_SETFD FD_CLOEXEC) failed: %s",
+                        __func__,
+                        strerror( ERRNO ) );
         }
         
     }
@@ -5098,16 +5095,16 @@ web_start_thread( web_thread_func_t func, void *param )
     pthread_attr_t attr;
     int result;
 
-    (void) pthread_attr_init(&attr);
-    (void) pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+    (void)pthread_attr_init( &attr );
+    (void)pthread_attr_setdetachstate( &attr, PTHREAD_CREATE_DETACHED );
 
 #if defined(USE_STACK_SIZE) && (USE_STACK_SIZE > 1)
     // Compile-time option to control stack size,
     // e.g. -DUSE_STACK_SIZE=16384 
-    (void) pthread_attr_setstacksize(&attr, USE_STACK_SIZE);
+    (void) pthread_attr_setstacksize( &attr, USE_STACK_SIZE );
 #endif // defined(USE_STACK_SIZE) && (USE_STACK_SIZE > 1) 
 
-    result = pthread_create(&thread_id, &attr, func, param);
+    result = pthread_create( &thread_id, &attr, func, param );
     pthread_attr_destroy(&attr);
 
     return result;
@@ -5188,30 +5185,30 @@ spawn_process(struct web_connection *conn,
     if ( -1 == (pid = fork()) ) {
         // Parent 
         web_send_http_error( conn,
-                                    500,
-                                    "Error: Creating CGI process\nfork(): %s",
-                                    strerror(ERRNO) );
+                                500,
+                                "Error: Creating CGI process\nfork(): %s",
+                                strerror(ERRNO) );
     }
     else if ( 0 == pid ) {
         // Child 
         if (chdir(dir) != 0) {
             web_cry(conn, "%s: chdir(%s): %s", __func__, dir, strerror(ERRNO));
         }
-        else if (dup2(fdin[0], 0) == -1) {
+        else if ( -1 == dup2(fdin[0], 0 ) ) {
             web_cry(conn,
                         "%s: dup2(%d, 0): %s",
                         __func__,
                         fdin[0],
                         strerror(ERRNO));
         }
-        else if (dup2(fdout[1], 1) == -1) {
+        else if ( -1 == dup2(fdout[1], 1 ) ) {
             web_cry(conn,
                         "%s: dup2(%d, 1): %s",
                         __func__,
                         fdout[1],
                         strerror(ERRNO));
         }
-        else if (dup2(fderr[1], 2) == -1) {
+        else if ( -1 == dup2( fderr[1], 2 ) ) {
             web_cry(conn,
                         "%s: dup2(%d, 2): %s",
                         __func__,
@@ -5273,29 +5270,32 @@ spawn_process(struct web_connection *conn,
 static int
 set_non_blocking_mode(SOCKET sock)
 {
-	int flags = fcntl(sock, F_GETFL, 0);
-	if (flags < 0) {
-		return -1;
-	}
+    int flags = fcntl(sock, F_GETFL, 0);
 
-	if (fcntl(sock, F_SETFL, (flags | O_NONBLOCK)) < 0) {
-		return -1;
-	}
-	return 0;
+    if (flags < 0) {
+	return -1;
+    }
+
+    if (fcntl(sock, F_SETFL, (flags | O_NONBLOCK)) < 0) {
+	return -1;
+    }
+	
+    return 0;
 }
 
 static int
 set_blocking_mode(SOCKET sock)
 {
-	int flags = fcntl(sock, F_GETFL, 0);
-	if (flags < 0) {
-		return -1;
-	}
+    int flags = fcntl(sock, F_GETFL, 0);
+    
+    if (flags < 0) {
+	return -1;
+    }
 
-	if (fcntl(sock, F_SETFL, flags & (~(int)(O_NONBLOCK))) < 0) {
-		return -1;
-	}
-	return 0;
+    if (fcntl(sock, F_SETFL, flags & (~(int)(O_NONBLOCK))) < 0) {
+	return -1;
+    }
+    return 0;
 }
 
 
@@ -21608,16 +21608,16 @@ web_start(const struct web_callbacks *callbacks,
     }
 
 
-    if (timers_init(ctx) != 0) {
-        web_cry(fc(ctx), "Error creating timers");
+    if ( timers_init(ctx) != 0 ) {
+        web_cry( fc(ctx), "Error creating timers" );
         free_context(ctx);
-        pthread_setspecific(sTlsKey, NULL);
+        pthread_setspecific( sTlsKey, NULL );
         return NULL;
     }
 
     // Context has been created - init user libraries 
-    if (ctx->callbacks.init_context) {
-        ctx->callbacks.init_context(ctx);
+    if ( ctx->callbacks.init_context ) {
+        ctx->callbacks.init_context( ctx );
     }
     
     ctx->callbacks.exit_context = exit_callback;

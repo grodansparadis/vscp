@@ -69,6 +69,7 @@ VSCPL1_OBJECTS =  vscpl1.o\
 	../../common/crc.o\
 	../../common/crc8.o\
 	../../common/aes.o\
+	../../common/vscpmd5.c\
 	../../common/mongoose.o\
 	../../common/fastpbkdf2.o\
 	../../common/vscpbase64.o
@@ -79,6 +80,7 @@ PROJOBJS  =  ../common/vscpremotetcpif.o\
 	../../common/crc.o\
 	../../common/crc8.o\
 	../../common/aes.o\
+	../../common/vscpmd5.c\
 	../../common/mongoose.o\
 	../../common/fastpbkdf2.o\
 	../../common/vscpbase64.o

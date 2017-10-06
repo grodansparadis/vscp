@@ -69,6 +69,7 @@ VSCPL2LOGGER_OBJECTS =  ../common/log.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
 	../../../../../common/aes.o\
+	../../../../../common/vscpmd5.c\
 	../../../../../common/mongoose.o\
 	../../../../../common/fastpbkdf2.o\
 	../../../../../common/vscpbase64.o
@@ -80,6 +81,7 @@ PROJOBJS = ../common/log.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
 	../../../../../common/aes.o\
+	../../../../../common/vscpmd5.c\
 	../../../../../common/mongoose.o\
 	../../../../../common/fastpbkdf2.o\
 	../../../../../common/vscpbase64.o
