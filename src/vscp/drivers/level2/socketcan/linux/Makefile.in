@@ -73,7 +73,6 @@ SOCKETCAN_OBJECTS = socketcan.o\
 	../../../../../common/vscpmd5.c\
 	../../../../../common/fastpbkdf2.o\
 	../../../../../common/vscpbase64.o\
-	../../../../../common/vscpmd5.c\
 
 PROJOBJS =  socketcan.o\
 	../../../../common/vscpremotetcpif.o\
@@ -86,7 +85,6 @@ PROJOBJS =  socketcan.o\
 	../../../../../common/vscpmd5.c\
 	../../../../../common/fastpbkdf2.o\
 	../../../../../common/vscpbase64.o\
-	../../../../../common/vscpmd5.c\
 
 ALWAYS_BUILD = ../../../../common/vscpremotetcpif.o\
 	../../../../common/vscphelper.o\
@@ -94,6 +92,7 @@ ALWAYS_BUILD = ../../../../common/vscpremotetcpif.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
 	../../../../../common/aes.o\
+	../../../../../common/vscpmd5.c\
 	../../../../../common/fastpbkdf2.o\
 	../../../../../common/vscpbase64.o
 
