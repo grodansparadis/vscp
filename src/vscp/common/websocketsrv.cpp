@@ -185,7 +185,6 @@ websock_session::websock_session( void )
     memset( m_key, 0, 33 );
     memset( m_sid, 0, 33 );
     m_version = 0;
-    m_referenceCount = 0;
     lastActiveTime = 0;
     m_pClientItem = NULL;
     bTrigger = false;
@@ -426,10 +425,6 @@ websock_new_session( const struct web_connection *conn )
     gpobj->m_wxClientMutex.Lock();
     gpobj->addClient( pSession->m_pClientItem );
     gpobj->m_wxClientMutex.Unlock();
-
-    // Add to linked list
-    pSession->m_referenceCount++;
-    
 
     gpobj->m_websockSessionMutex.Lock();
     gpobj->m_websocketSessions.Append( pSession );
@@ -719,7 +714,52 @@ websock_post_incomingEvents( void )
  }
 
 
+///////////////////////////////////////////////////////////////////////////////
+// websock_post_variableTrigger
+//
+// op = 0 - Variable changed    "V"
+// op = 1 - Variable created    "N"
+// op = 2 - Variable deleted    "D"
+//
 
+void
+websock_post_variableTrigger( uint8_t op, CVSCPVariable* pVar )
+{
+    gpobj->m_websockSessionMutex.Lock();
+    
+    WEBSOCKETSESSIONLIST::iterator iter;
+    for ( iter = gpobj->m_websocketSessions.begin(); 
+            iter != gpobj->m_websocketSessions.end(); 
+            ++iter ) {
+        
+        websock_session *pSession= *iter;
+        if ( NULL == pSession) continue;
+        
+        // Should be a client item... hmm.... client disconnected 
+        if ( NULL == pSession->m_pClientItem ) {
+            continue;
+        }
+        
+        if ( pSession->m_conn_state < WEBSOCK_CONN_STATE_CONNECTED ) continue;
+        
+        if ( NULL == pSession->m_conn ) continue;
+        
+        if ( pSession->m_pClientItem->m_bOpen  ) {
+
+            wxString outstr;
+            outstr = _("V;"); // Variable trigger
+            web_websocket_write( pSession->m_conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT, 
+                                    (const char *)outstr.mbc_str(), 
+                                    outstr.Length() );
+                                              
+        } // open
+        
+    } // for
+    
+    gpobj->m_websockSessionMutex.Unlock();
+
+ }
 
 
 ////////////////////////////////////////////////////////////////////////////////

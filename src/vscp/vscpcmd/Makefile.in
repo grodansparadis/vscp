@@ -71,7 +71,7 @@ VSCPCMD_OBJECTS =  vscpcmd.o\
 	../../common/crc8.o\
 	../common/guid.o\
 	../../common/aes.o \
-	.../../common/vscpmd5.c\
+	../../common/vscpmd5.c\
 	../../common/mongoose.o\
 	../../common/fastpbkdf2.o\
 	../../common/vscpbase64.o

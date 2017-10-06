@@ -93,6 +93,17 @@ enum {
 
 WX_DECLARE_LIST(vscpEventFilter, TRIGGERLIST);
 
+#define WEBSOCKET_MAINCODE_POSITIVE     "+"
+#define WEBSOCKET_MAINCODE_NEGATIVE     "-"
+
+#define WEBSOCKET_MAINCODE_COMMAND      "C"
+#define WEBSOCKET_MAINCODE_EVENT        "E"
+#define WEBSOCKET_MAINCODE_VARIABLE     "V"
+
+#define WEBSOCKET_SUBCODE_VARIABLE_CHANGED  "C"
+#define WEBSOCKET_SUBCODE_VARIABLE_CREATED  "N"
+#define WEBSOCKET_SUBCODE_VARIABLE_DELETED  "D"
+
 class websock_session {
     
 public:    
@@ -105,10 +116,7 @@ public:
     
     // Connection state (see enums above)
     int m_conn_state;  
-    
-    // Authentication states ( see enums above)
-    //int m_auth_state;   
-    
+        
     // Unique ID for this session. 
     char m_key[33];     // Sec-WebSocket-Key
 
@@ -118,22 +126,12 @@ public:
     // Protocol version
     int m_version;      // Sec-WebSocket-Version
 
-    // Reference counter giving the number of connections
-    // currently using this session.
-    unsigned int m_referenceCount;
-
-    // This variable is true when the login process
-    // is valid and the user is logged in.
-    //bool bAuthenticated;
-
     // Time when this session was last active.
     time_t lastActiveTime;
     
     // Concatenated message receive
     wxString m_strConcatenated;
-    
-    wxArrayString MessageList;  // Messages (not events) to client.
-    
+        
     // Client structure for websocket
     CClientItem *m_pClientItem;
 
