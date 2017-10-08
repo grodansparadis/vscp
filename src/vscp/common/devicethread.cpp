@@ -1078,7 +1078,7 @@ void *deviceLevel2ReceiveThread::Entry()
                 m_pMainThreadObj->m_pCtrlObject->m_clientOutputQueue.GetCount()) {
 
             m_pMainThreadObj->m_pCtrlObject->m_mutexClientOutputQueue.Lock();
-            m_pMainThreadObj->m_pCtrlObject->m_clientOutputQueue.Append(pEvent);
+            m_pMainThreadObj->m_pCtrlObject->m_clientOutputQueue.Append( pEvent );
             m_pMainThreadObj->m_pCtrlObject->m_semClientOutputQueue.Post();
             m_pMainThreadObj->m_pCtrlObject->m_mutexClientOutputQueue.Unlock();
 

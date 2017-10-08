@@ -845,25 +845,25 @@ bool vscp_getVSCPMeasurementAsString( const vscpEvent *pEvent,
                 for ( j=7; j>=0; j--) {
 
                     if (pEvent->pdata[ i+offset ] & (1<<j)) {		
-                        strValue += wxT("1");				
+                        strValue += _("1");				
                     } 
                     else {
-                        strValue += wxT("0");
+                        strValue += _("0");
                     }
 
                 }   
-                strValue += wxT(" ");
+                strValue += _(" ");
             }
             break;
 
         case 1: // series of bytes
             for (i = 1; i < (pEvent->sizeData-offset); i++) {
 
-                strValue += wxString::Format( wxT("%d"), 
+                strValue += wxString::Format( _("%d"), 
                                                 pEvent->pdata[ i+offset ]);
         
                 if (i != (pEvent->sizeData - 1 - offset)) {
-                    strValue += wxT(",");
+                    strValue += _(",");
                 }
             }
             break;
@@ -2200,7 +2200,7 @@ bool vscp_getGuidFromString(vscpEvent *pEvent, const wxString& strGUID)
         memset(pEvent->GUID, 0, 16);
     } 
     else {
-        wxStringTokenizer tkz(strGUID, wxT(":"));
+        wxStringTokenizer tkz(strGUID, _(":"));
         for (int i = 0; i < 16; i++) {
             tkz.GetNextToken().ToULong(&val, 16);
             pEvent->GUID[ i ] = (uint8_t) val;
@@ -2229,7 +2229,7 @@ bool vscp_getGuidFromStringEx(vscpEventEx *pEvent, const wxString& strGUID)
         memset(pEvent->GUID, 0, 16);
     } 
     else {
-        wxStringTokenizer tkz(strGUID, wxT(":"));
+        wxStringTokenizer tkz(strGUID, _(":"));
         for (int i = 0; i < 16; i++) {
             tkz.GetNextToken().ToULong(&val, 16);
             pEvent->GUID[ i ] = (uint8_t) val;
@@ -2262,7 +2262,7 @@ bool vscp_getGuidFromStringToArray(unsigned char *pGUID, const wxString& strGUID
     }
 
 
-    wxStringTokenizer tkz(strGUID, wxT(":"));
+    wxStringTokenizer tkz(strGUID, _(":"));
     for (int i = 0; i < 16; i++) {
         tkz.GetNextToken().ToULong(&val, 16);
         pGUID[ i ] = (uint8_t) val;
@@ -3589,7 +3589,7 @@ bool vscp_writeVscpEventToString( const vscpEvent *pEvent, wxString& str)
     vscp_writeGuidToString(pEvent, strGUID);
     str += strGUID;
     if (pEvent->sizeData) {
-        str += wxT(",");
+        str += _(",");
 
         wxString strData;
         vscp_writeVscpDataToString(pEvent, strData);
@@ -4953,7 +4953,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
             case 0x00: // bit format
             {
                 strValue = _("[bit] = ");
-                strValue += wxString::Format(wxT("%X"),
+                strValue += wxString::Format(_("%X"),
                         (long) vscp_getDataCodingBitArray(pEvent->pdata+offset, 
                         pEvent->sizeData-offset));
             }

@@ -344,7 +344,7 @@
 
        <!-- Level II simulation -->
         <driver enable="true">
-            <name>VSCP Level II sim driver</name>
+            <name>VSCP Level II sim driver</name>  <!-- !!! Do not rename !!! will effect demos -->
             <config>1</config>
             <guid>FF:FF:FF:FF:FF:FF:FF:F7:03:00:00:00:00:00:00:00</guid>
             <path>/usr/local/lib/vscpl2drv_sim.so</path>

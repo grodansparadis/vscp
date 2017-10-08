@@ -824,9 +824,7 @@ ws1_closeHandler(const struct web_connection *conn, void *cbdata)
                         DAEMON_LOGTYPE_SECURITY );
     }
     gpobj->m_websockSessionMutex.Unlock();
-    
-    
-            
+               
     web_unlock_context( ctx );
 }
 
