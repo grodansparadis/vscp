@@ -3030,7 +3030,7 @@ web_get_request_link(const struct web_connection *conn, char *buf, size_t buflen
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// skip_quoted
+// web_skip_quoted
 //
 // Skip the characters until one of the delimiters characters found.
 // 0-terminate resulting word. Skip the delimiter and following whitespaces.
@@ -3039,11 +3039,11 @@ web_get_request_link(const struct web_connection *conn, char *buf, size_t buflen
 // Delimiters can be quoted with quotechar. 
 //
 
-static char *
-skip_quoted(char **buf,
-                const char *delimiters,
-                const char *whitespace,
-                char quotechar)
+char *
+web_skip_quoted( char **buf,
+                    const char *delimiters,
+                    const char *whitespace,
+                    char quotechar )
 {
     char *p, *begin_word, *end_word, *end_whitespace;
 
@@ -7454,13 +7454,13 @@ web_parse_auth_header( struct web_connection *conn,
     uint64_t nonce;
 
     if ( !ah || !conn ) {
-        return 0;
+        return WEB_ERROR;
     }
 
     (void) memset(ah, 0, sizeof (*ah));
     if ( ( NULL == ( auth_header = web_get_header(conn, "Authorization") ) ) || 
         vscp_strncasecmp( auth_header, "Digest ", 7) != 0 ) {
-        return 0;
+        return WEB_ERROR;
     }
 
     // Make modifiable copy of the auth header 
@@ -7475,18 +7475,18 @@ web_parse_auth_header( struct web_connection *conn,
             s++;
         }
         
-        name = skip_quoted( &s, "=", " ", 0 );
+        name = web_skip_quoted( &s, "=", " ", 0 );
         
         // Value is either quote-delimited, or ends at first comma or space.
         if (s[0] == '\"') {
             s++;
-            value = skip_quoted(&s, "\"", " ", '\\');
+            value = web_skip_quoted(&s, "\"", " ", '\\');
             if (s[0] == ',') {
                 s++;
             }
         }
         else {
-            value = skip_quoted(&s, ", ", " ", 0); // IE uses commas, FF uses
+            value = web_skip_quoted(&s, ", ", " ", 0); // IE uses commas, FF uses
 			                           // spaces 
         }
         
@@ -7519,14 +7519,14 @@ web_parse_auth_header( struct web_connection *conn,
 
 #ifndef NO_NONCE_CHECK
     // Read the nonce from the response. 
-    if (ah->nonce == NULL) {
-        return 0;
+    if ( NULL == ah->nonce ) {
+        return WEB_ERROR;
     }
     
     s = NULL;
-    nonce = strtoull(ah->nonce, &s, 10);
-    if ((s == NULL) || (*s != 0)) {
-        return 0;
+    nonce = strtoull( ah->nonce, &s, 10 );
+    if ( ( NULL == s ) || ( *s != 0 ) ) {
+        return WEB_ERROR;
     }
 
     // Convert the nonce from the client to a number. 
@@ -7543,13 +7543,13 @@ web_parse_auth_header( struct web_connection *conn,
     if (nonce < (uint64_t) conn->ctx->start_time) {
         // nonce is from a previous start of the server and no longer valid
         // (replay attack?) 
-        return 0;
+        return WEB_ERROR;
     }
     
     // Check if the nonce is too high, so it has not (yet) been used by the
     // server. 
     if ( nonce >= ( (uint64_t)conn->ctx->start_time + conn->ctx->nonce_count ) ) {
-        return 0;
+        return WEB_ERROR;
     }
 #else
     (void)nonce;
@@ -7560,10 +7560,10 @@ web_parse_auth_header( struct web_connection *conn,
         conn->request_info.remote_user = web_strdup( ah->user );
     }
     else {
-        return 0;
+        return WEB_ERROR;
     }
 
-    return 1;
+    return WEB_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -51,7 +51,7 @@
 #include <wx/stdpaths.h>
 
 #include "vscpd.h"
-#include <crc.h>
+//#include <crc.h>
 #include <controlobject.h>
 #include <version.h>
 
@@ -73,7 +73,7 @@ void _sighandler( int sig )
     gpobj->m_bQuit = true;
     gbStopDaemon = true;
     gbRestart = false;
-    syslog(LOG_CRIT, "[vscpd] signal received, forced to stop.: %m");
+    syslog( LOG_CRIT, "[vscpd] signal received, forced to stop.: %m");
     wxLogError(_("[vscpd] signal received, forced to stop."));
     gpobj->logMsg(_("[vscpd] signal received, forced to stop."));
 }

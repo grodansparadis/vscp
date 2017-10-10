@@ -3809,12 +3809,7 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
         var.setValue( gpobj->m_authDomain, true );
         return var.getID();
     }
-    
-    if ( lcname.StartsWith( _("vscp.websrv.authentication.enable") ) ) {
-        var.setValue( gpobj->m_bDisableSecurityWebServer ? true : false );
-        return var.getID();
-    }
-    
+        
     if ( lcname.StartsWith( _("vscp.websrv.root.path") ) ) {
         var.setValue( wxString::FromUTF8( gpobj->m_pathWebRoot ), true );
         return var.getID();
@@ -4921,15 +4916,7 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
         return gpobj->updateConfigurationRecordItem( _("vscpd_Webserver_Address"), 
                                                     strval );
     }
-    
-    if ( lcname.StartsWith( _("vscp.websrv.authentication.enable") ) ) {
-        int val;
-        var.getValue( &val );
-        gpobj->m_bDisableSecurityWebServer = val;
-        return gpobj->updateConfigurationRecordItem( _("vscpd_Webserver_Authentication_enable"), 
-                                                    val ? _("1") : _("0") );
-    }
-    
+        
     if ( lcname.StartsWith( _("vscp.websrv.root.path") ) ) {
         wxString strval;
         strval = var.getValue();

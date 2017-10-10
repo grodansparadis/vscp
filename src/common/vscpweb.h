@@ -67,6 +67,22 @@ char *web_strdup( const char *str );
 #define WEB_OK      1
 #define WEB_ERROR   0
 
+////////////////////////////////////////////////////////////////////////////////
+// skip_quoted
+//
+// Skip the characters until one of the delimiters characters found.
+// 0-terminate resulting word. Skip the delimiter and following whitespaces.
+// Advance pointer to buffer to the next word. Return found 0-terminated
+// word.
+// Delimiters can be quoted with quotechar. 
+//
+
+char *
+web_skip_quoted( char **buf,
+                    const char *delimiters,
+                    const char *whitespace,
+                    char quotechar );
+
 ///////////////////////////////////////////////////////////////////////////////
 // web_init
 //
@@ -1006,7 +1022,7 @@ VSCPWEB_API int web_read( struct web_connection *,
 //   not present, NULL is returned. 
 
 VSCPWEB_API const char *web_get_header( const struct web_connection *,
-                                                const char *name );
+                                            const char *name );
 
 ///////////////////////////////////////////////////////////////////////////////
 // web_get_var
@@ -1214,17 +1230,16 @@ struct web_form_data_handler {
 // web_form_data_handler. 
 //
 
-
 enum {
-	/* Skip this field (neither get nor store it). Continue with the
-     * next field. */
-	WEB_FORM_FIELD_STORAGE_SKIP = 0x0,
-	/* Get the field value. */
-	WEB_FORM_FIELD_STORAGE_GET = 0x1,
-	/* Store the field value into a file. */
-	WEB_FORM_FIELD_STORAGE_STORE = 0x2,
-	/* Stop parsing this request. Skip the remaining fields. */
-	WEB_FORM_FIELD_STORAGE_ABORT = 0x10
+    // Skip this field (neither get nor store it). Continue with the
+    // next field. 
+    WEB_FORM_FIELD_STORAGE_SKIP = 0x0,
+    // Get the field value. 
+    WEB_FORM_FIELD_STORAGE_GET = 0x1,
+    // Store the field value into a file. 
+    WEB_FORM_FIELD_STORAGE_STORE = 0x2,
+    // Stop parsing this request. Skip the remaining fields. 
+    WEB_FORM_FIELD_STORAGE_ABORT = 0x10
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1240,7 +1255,7 @@ enum {
 //
 
 VSCPWEB_API int web_handle_form_request( struct web_connection *conn,
-                                                struct web_form_data_handler *fdh );
+                                            struct web_form_data_handler *fdh );
 
 ///////////////////////////////////////////////////////////////////////////////
 // web_thread_func_t
@@ -1269,7 +1284,7 @@ VSCPWEB_API const char *web_get_builtin_mime_type( const char *file_name );
 
 VSCPWEB_API const char *
 web_get_response_code_text( const struct web_connection *conn, 
-                                    int response_code );
+                                int response_code );
 
 ///////////////////////////////////////////////////////////////////////////////
 // web_version
@@ -1307,19 +1322,6 @@ VSCPWEB_API int web_url_decode( const char *src,
 VSCPWEB_API int web_url_encode( const char *src, 
                                         char *dst, 
                                         size_t dst_len );
-
-///////////////////////////////////////////////////////////////////////////////
-// web_md5
-//
-// MD5 hash given strings.
-//   Buffer 'buf' must be 33 bytes long. Varargs is a NULL terminated list of
-//   ASCIIz strings. When function returns, buf will contain human-readable
-//   MD5 hash. Example:
-//     char buf[33];
-//     web_md5(buf, "aa", "bb", NULL); 
-//
-
-VSCPWEB_API char *web_md5(char buf[33], ...);
 
 ///////////////////////////////////////////////////////////////////////////////
 // web_cry
@@ -1399,10 +1401,10 @@ web_connect_websocket_client( const char *host,
 //
 
 VSCPWEB_API struct web_connection *web_connect_client( const char *host,
-                                                                int port,
-                                                                int use_ssl,
-                                                                char *error_buffer,
-                                                                size_t error_buffer_size );
+                                                            int port,
+                                                            int use_ssl,
+                                                            char *error_buffer,
+                                                            size_t error_buffer_size );
 
 struct web_client_options {
 	const char *host;

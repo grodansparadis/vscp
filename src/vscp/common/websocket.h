@@ -21,11 +21,11 @@
 // Boston, MA 02111-1307, USA.
 //
 
-#if !defined(WEBSERVER_WEBSOCKET_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_)
-#define WEBSERVER_WEBSOCKET_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_
+#if !defined(WEBSOCKET_H__INCLUDED_)
+#define WEBSOCKET_H__INCLUDED_
 
 #include <vscp.h>
-#include <controlobject.h>
+//#include <controlobject.h>
 
 //******************************************************************************
 //                                WEBSOCKETS
@@ -47,14 +47,6 @@ enum {
     WEBSOCK_CONN_STATE_CONNECTED,
     WEBSOCK_CONN_STATE_DATA
 };
-
-// Authentication states
-/*enum {
-    WEBSOCK_AUTH_STATE_START = 0,
-    WEBSOCK_AUTH_STATE_SERVER_HASH,
-    WEBSOCK_AUTH_STATE_CLIENT_HASH
-};*/
-
 
 enum {
     WEBSOCK_ERROR_NO_ERROR = 0,                 // Everything is OK.
@@ -120,7 +112,7 @@ public:
     int m_conn_state;  
         
     // Unique ID for this session. 
-    char m_key[33];     // Sec-WebSocket-Key
+    char m_websocket_key[33];     // Sec-WebSocket-Key 
 
     // 16 byte iv (SID) for this session
     char m_sid[33];

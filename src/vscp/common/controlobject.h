@@ -21,8 +21,8 @@
 // Boston, MA 02111-1307, USA.
 //
 
-#if !defined(CONTROLOBJECT_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_)
-#define CONTROLOBJECT_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_
+#if !defined(CONTROLOBJECT_H__INCLUDED_)
+#define CONTROLOBJECT_H__INCLUDED_
 
 #if defined(_WIN32) 
 #if _MSC_VER > 1000
@@ -33,6 +33,7 @@
 #include "wx/wx.h"
 #include <wx/thread.h>
 #include <wx/filename.h>
+#include <wx/list.h>
 
 #include <mongoose.h>
 #include <sqlite3.h>
@@ -48,6 +49,8 @@
 #include <tcpipsrv.h>
 #include <udpsrv.h>
 #include <multicastsrv.h>
+#include <websrv.h>
+#include <restsrv.h>
 #include <websocket.h>
 #include <daemonworker.h>
 #include <dm.h>
@@ -110,13 +113,11 @@ enum {
 // Replacement for abandon Cesanta version
 //
 
-void vscp_md5( char *digest, const unsigned char *buf, size_t len ) ;
+//void vscp_md5( char *digest, const unsigned char *buf, size_t len ) ;
 
 
 WX_DECLARE_LIST(canalMsg, CanalMsgList);
 WX_DECLARE_LIST(vscpEvent, VSCPEventList);
-
-WX_DECLARE_STRING_HASH_MAP( wxString, HashString );
 
 
 /*!
@@ -706,14 +707,6 @@ public:
     
     // Enable webserver
     bool m_bWebServer;
-    
-    /*!
-        If true web server security is disabled and checks
-        will not be performed on user nor remote address.
-    */
-    bool m_bDisableSecurityWebServer;
-
-    //struct mg_mgr *m_pwebserver;     // Was mg_server
 
     // Path to web root
     char m_pathWebRoot[ MG_MAX_PATH ];
@@ -777,14 +770,23 @@ public:
 
     // Run as user
     wxString m_runAsUserWeb;
+    
+    // Protects the web session object
+    wxMutex m_websrvSessionMutex; 
+    
+    // Linked list of all active sessions. (webserv.h)
+    WEBSRVSESSIONLIST m_web_sessions;
+
+    // Protects the REST session object
+    wxMutex m_restSessionMutex;  
+    
+    // Session structure for REST API
+    RESTSESSIONLIST m_rest_sessions;
 
     // * * Websockets * *
 
-    // websocket authentication is needed  (if true)
-    //bool m_bAuthWebsockets;
-
-    // Protects the session object
-    wxMutex m_websockSessionMutex;   
+    // Protects the websocket session object
+    wxMutex m_websocketSessionMutex;   
     
     // List of active websocket sessions
     WEBSOCKETSESSIONLIST m_websocketSessions;

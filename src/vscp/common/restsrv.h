@@ -21,40 +21,39 @@
 // Boston, MA 02111-1307, USA.
 //
 
-#if !defined(WEBSERVER_REST_H____INCLUDED_)
-#define WEBSERVER_REST_H____INCLUDED_
+#if !defined(REST_H__INCLUDED_)
+#define REST_H__INCLUDED_
 
 
 
 //******************************************************************************
-//                                      REST
+//                                   REST
 //******************************************************************************
 
 
 /**
- * Session varaibles we keep for each user/session/browser.
+ * Session variables we keep for each user/session/browser.
  */
-struct websrv_rest_session
+struct restsrv_session
 {
-    // We keep all sessions in a linked list.
-    struct websrv_rest_session *m_next;
-
     // Unique ID for this session. 
-    char sid[33];
+    char m_sid[33];
 
     // Time when this session was last active.
-    time_t lastActiveTime;
+    time_t m_lastActiveTime;
 
     // Client item for this session
-    CClientItem *pClientItem;
+    CClientItem *m_pClientItem;
 
     // User
-    CUserItem *pUserItem;
+    CUserItem *m_pUserItem;
 
     // Remote IP
-    char remote_ip[48];
+    char m_remote_addr[48];
       
 };
+
+WX_DECLARE_LIST(struct restsrv_session, RESTSESSIONLIST);
 
 enum {
     REST_ERROR_CODE_SUCCESS = 0,
@@ -95,11 +94,11 @@ enum {
     REST_SUCCESS_CODE_COUNT,            // This is data count      message="count"
 };
 
-#define REST_MIME_TYPE_PLAIN        "text/plain"
-#define REST_MIME_TYPE_CSV          "text/csv"
-#define REST_MIME_TYPE_XML          "application/xml"
-#define REST_MIME_TYPE_JSON         "application/json"
-#define REST_MIME_TYPE_JSONP        "application/javascript"
+#define REST_MIME_TYPE_PLAIN                    "text/plain"
+#define REST_MIME_TYPE_CSV                      "text/csv"
+#define REST_MIME_TYPE_XML                      "application/xml"
+#define REST_MIME_TYPE_JSON                     "application/json"
+#define REST_MIME_TYPE_JSONP                    "application/javascript"
 
 // Clear text Error messages
 #define REST_PLAIN_ERROR_SUCCESS                "1 1 Success \r\n\r\nEverything is fine.\r\n"
@@ -143,7 +142,7 @@ enum {
 #define REST_CSV_ERROR_VARIABLE_NOT_DELETE      "success-code,error-code,message,description\r\n0,-18,Variable delete error, Variable could not be deleted."
 
 
-#define XML_HEADER  "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>"
+#define XML_HEADER                              "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>"
 #define REST_XML_ERROR_SUCCESS                  "<vscp-rest success = \"true\" code = \"1\" message = \"Success\" description = \"Success.\" />"
 #define REST_XML_ERROR_GENERAL_FAILURE          "<vscp-rest success = \"false\" code = \"-1\" message = \"Failure\" description = \"General failure.\" />"
 #define REST_XML_ERROR_INVALID_SESSION          "<vscp-rest success = \"false\" code = \"-2\" message = \"Invalid session\" description = \"The session must be opened with 'open' before a session command can be used. It may also be possible that the session has timed out.\" />"
@@ -206,27 +205,7 @@ enum {
 #define REST_JSONP_ERROR_MEMORY                 "typeof handler === 'function' && handler(" REST_JSON_ERROR_MEMORY ");"
 #define REST_JSONP_ERROR_VARIABLE_NOT_DELETE    "typeof handler === 'function' && handler(" REST_JSON_ERROR_VARIABLE_NOT_DELETE  ");"
 
-const char* rest_errors[][REST_FORMAT_COUNT+1] = {
-    { REST_PLAIN_ERROR_SUCCESS,                 REST_CSV_ERROR_SUCCESS,                 REST_XML_ERROR_SUCCESS,                 REST_JSON_ERROR_SUCCESS,                REST_JSONP_ERROR_SUCCESS                    },
-    { REST_PLAIN_ERROR_GENERAL_FAILURE,         REST_CSV_ERROR_GENERAL_FAILURE,         REST_XML_ERROR_GENERAL_FAILURE,         REST_JSON_ERROR_GENERAL_FAILURE,        REST_JSONP_ERROR_GENERAL_FAILURE            },
-    { REST_PLAIN_ERROR_INVALID_SESSION,         REST_CSV_ERROR_INVALID_SESSION,         REST_XML_ERROR_INVALID_SESSION,         REST_JSON_ERROR_INVALID_SESSION,        REST_JSONP_ERROR_INVALID_SESSION            },
-    { REST_PLAIN_ERROR_UNSUPPORTED_FORMAT,      REST_CSV_ERROR_UNSUPPORTED_FORMAT,      REST_XML_ERROR_UNSUPPORTED_FORMAT,      REST_JSON_ERROR_UNSUPPORTED_FORMAT,     REST_JSONP_ERROR_UNSUPPORTED_FORMAT         },
-    { REST_PLAIN_ERROR_COULD_NOT_OPEN_SESSION,  REST_CSV_ERROR_COULD_NOT_OPEN_SESSION,  REST_XML_ERROR_COULD_NOT_OPEN_SESSION,  REST_JSON_ERROR_COULD_NOT_OPEN_SESSION, REST_JSONP_ERROR_COULD_NOT_OPEN_SESSION     },
-    { REST_PLAIN_ERROR_MISSING_DATA,            REST_CSV_ERROR_MISSING_DATA,            REST_XML_ERROR_MISSING_DATA,            REST_JSON_ERROR_MISSING_DATA,           REST_JSONP_ERROR_MISSING_DATA               },
-    { REST_PLAIN_ERROR_INPUT_QUEUE_EMPTY,       REST_CSV_ERROR_INPUT_QUEUE_EMPTY,       REST_XML_ERROR_INPUT_QUEUE_EMPTY,       REST_JSON_ERROR_INPUT_QUEUE_EMPTY,      REST_JSONP_ERROR_INPUT_QUEUE_EMPTY          },
-    { REST_PLAIN_ERROR_VARIABLE_NOT_FOUND,      REST_CSV_ERROR_VARIABLE_NOT_FOUND,      REST_XML_ERROR_VARIABLE_NOT_FOUND,      REST_JSON_ERROR_VARIABLE_NOT_FOUND,     REST_JSONP_ERROR_VARIABLE_NOT_FOUND         },
-    { REST_PLAIN_ERROR_VARIABLE_NOT_CREATED,    REST_CSV_ERROR_VARIABLE_NOT_CREATED,    REST_XML_ERROR_VARIABLE_NOT_CREATED,    REST_JSON_ERROR_VARIABLE_NOT_CREATED,   REST_JSONP_ERROR_VARIABLE_NOT_CREATED       },
-    { REST_PLAIN_ERROR_VARIABLE_FAIL_UPDATE,    REST_CSV_ERROR_VARIABLE_FAIL_UPDATE,    REST_XML_ERROR_VARIABLE_FAIL_UPDATE,    REST_JSON_ERROR_VARIABLE_FAIL_UPDATE,   REST_JSONP_ERROR_VARIABLE_FAIL_UPDATE       },   
-    { REST_PLAIN_ERROR_NO_ROOM,                 REST_CSV_ERROR_NO_ROOM,                 REST_XML_ERROR_NO_ROOM,                 REST_JSON_ERROR_NO_ROOM,                REST_JSONP_ERROR_NO_ROOM                    },
-    { REST_PLAIN_ERROR_TABLE_NOT_FOUND,         REST_CSV_ERROR_TABLE_NOT_FOUND,         REST_XML_ERROR_TABLE_NOT_FOUND,         REST_JSON_ERROR_TABLE_NOT_FOUND,        REST_JSONP_ERROR_TABLE_NOT_FOUND,           },
-    { REST_PLAIN_ERROR_TABLE_NO_DATA,           REST_CSV_ERROR_TABLE_NO_DATA,           REST_XML_ERROR_TABLE_NO_DATA,           REST_JSON_ERROR_TABLE_NO_DATA,          REST_JSONP_ERROR_TABLE_NO_DATA              },
-    { REST_PLAIN_ERROR_TABLE_RANGE,             REST_CSV_ERROR_TABLE_RANGE,             REST_XML_ERROR_TABLE_RANGE,             REST_JSON_ERROR_TABLE_RANGE,            REST_JSONP_ERROR_TABLE_RANGE                },
-    { REST_PLAIN_ERROR_INVALID_USER,            REST_CSV_ERROR_INVALID_USER,            REST_XML_ERROR_INVALID_USER,            REST_JSON_ERROR_INVALID_USER,           REST_JSONP_ERROR_INVALID_USER               },
-    { REST_PLAIN_ERROR_INVALID_ORIGIN,          REST_CSV_ERROR_INVALID_ORIGIN,          REST_XML_ERROR_INVALID_ORIGIN,          REST_JSON_ERROR_INVALID_ORIGIN,         REST_JSONP_ERROR_INVALID_ORIGIN             },
-    { REST_PLAIN_ERROR_INVALID_PASSWORD,        REST_CSV_ERROR_INVALID_PASSWORD,        REST_XML_ERROR_INVALID_PASSWORD,        REST_JSON_ERROR_INVALID_PASSWORD,       REST_JSONP_ERROR_INVALID_PASSWORD           },
-    { REST_PLAIN_ERROR_MEMORY,                  REST_CSV_ERROR_MEMORY,                  REST_XML_ERROR_MEMORY,                  REST_JSON_ERROR_MEMORY,                 REST_JSONP_ERROR_MEMORY                     },
-    { REST_PLAIN_ERROR_VARIABLE_NOT_DELETE,     REST_CSV_ERROR_VARIABLE_NOT_DELETE,     REST_XML_ERROR_VARIABLE_NOT_DELETE,     REST_JSON_ERROR_VARIABLE_NOT_DELETE,    REST_JSONP_ERROR_VARIABLE_NOT_DELETE        },
 
-};
+int websrv_restapi( struct web_connection *conn, void *cbdata );
 
-#endif
+#endif // REST_H__INCLUDED_

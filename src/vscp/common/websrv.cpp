@@ -8,7 +8,7 @@
 // This file is part of the VSCP (http://www.vscp.org)
 //
 // Copyright (C) 2000-2017
-// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com> 
 //
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -52,8 +52,6 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-
-#include <mongoose.h>
 
 #ifdef WIN32
 
@@ -107,30 +105,25 @@
 #include "web_js.h"
 #include "web_template.h"
 
-#include <mongoose.h>
-
 #include <canal_macro.h>
+#include <aes.h>
 #include <vscp.h>
 #include <vscphelper.h>
-#include <vscpeventhelper.h>
 #include <tables.h>
-#include <configfile.h>
-#include <crc.h>
-#include <randpassword.h>
 #include <version.h>
+#include <controlobject.h>
 #include <variablecodes.h>
 #include <actioncodes.h>
 #include <devicelist.h>
 #include <devicethread.h>
 #include <dm.h>
 #include <mdf.h>
-//#include <vscpeventhelper.h>
-#include "websrv.h"
-#include <controlobject.h>
 #include <vscpdb.h>
 #include <vscpmd5.h>
 #include <vscpweb.h>
-#include <websocket.h>
+#include "websrv.h"
+#include "restsrv.h"
+#include "websocket.h"
 
 using namespace std;
 
@@ -173,11 +166,109 @@ static struct mg_serve_http_opts g_http_server_opts;
 // Webserver
 struct mg_mgr gmgr;
 
-// Linked list of all active sessions. (webserv.h)
-static struct websrv_Session *gp_websrv_sessions;
 
-// Session structure for REST API
-struct websrv_rest_session *gp_websrv_rest_sessions;
+///////////////////////////////////////////////////////////////////////////////
+// websrv_sendheader
+//
+
+void websrv_sendheader( struct web_connection *conn, 
+                            int returncode, 
+                            const char *content )
+{
+    char buf[ 2048 ];
+    char date[64];
+    time_t curtime = time(NULL);
+    vscp_getTimeString( date, sizeof(date), &curtime );
+
+    web_printf( conn, 
+                    "HTTP/1.1 %d OK\r\n" 
+                    "Content-Type: %s\r\n"
+                    "Date: %s\r"
+                    "Connection: keep-alive\r\n"
+                    /*"Transfer-Encoding: chunked\r\n"*/
+                    "Cache-Control\r\n" 
+                    "max-age=0, post-check=0,\r\n"
+                    "pre-check=0, no-store, no-cache,"
+                    "must-revalidate\r\n\r\n",
+                    returncode,
+                    content,  
+                    date );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_parseHeader
+//
+
+bool websrv_parseHeader( wxArrayString &valarray, wxString &header ) 
+{
+    char *name, *value, *s;
+    
+    // Make modifiable copy of the auth header 
+    char *pbuf = new char[ header.Length() + 1 ];
+    if ( NULL == pbuf ) return false;
+    (void)vscp_strlcpy( pbuf, 
+                            (const char *)header.mbc_str() + 7, 
+                            sizeof( pbuf ) );
+    s = pbuf;
+
+    // Parse authorization header 
+    for (;;) {
+        
+        // Gobble initial spaces 
+        while ( isspace( *(unsigned char *)s ) ) {
+            s++;
+        }
+        
+        name = web_skip_quoted( &s, "=", " ", 0 );
+        
+        // Value is either quote-delimited, or ends at first comma or space.
+        if ( s[0] == '\"' ) {
+            s++;
+            value = web_skip_quoted( &s, "\"", " ", '\\' );
+            if ( s[0] == ',' ) {
+                s++;
+            }
+        }
+        else {
+            value = web_skip_quoted( &s, ", ", " ", 0 ); // IE uses commas, FF uses
+                                                         // spaces 
+        }
+        
+        if ( *name == '\0' ) {
+            break;
+        }
+
+        valarray.Add( name );
+        valarray.Add( value );
+    }
+    
+    delete [] pbuf;
+    
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_getHeaderElement
+//
+
+bool websrv_getHeaderElement( wxArrayString &valarray, 
+                                const wxString &name,
+                                wxString &value ) 
+{
+    // Must be value/name pairs
+    if ( valarray.size() % 2 ) return false;
+        
+    for ( int i=0; i<valarray.size(); i+=2 ) {
+        if ( name == valarray[i] ) {
+            value = valarray[i+1];
+            return true;
+        }
+    }
+    
+    return true;
+}
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -190,157 +281,168 @@ struct websrv_rest_session *gp_websrv_rest_sessions;
 // websrv_get_session
 //
 
-struct websrv_Session *
-websrv_get_session( struct mg_connection *nc,
-                                            struct http_message *hm )
+struct websrv_session *
+websrv_get_session( struct web_connection *conn )
 {
     char buf[512]; 
-    struct websrv_Session *ret = NULL;
+    const struct websrv_Session *pSession = NULL;
+    struct web_context * ctx;
+    const struct web_request_info *reqinfo;
+    
+    // Check pointers
+    if ( !conn || 
+         !( ctx = web_get_context( conn ) ) ||
+         !( reqinfo = web_get_request_info( conn ) ) ) {
+        return NULL;
+    }
 
     // Get the session cookie
-    struct mg_str *pheader = mg_get_http_header( hm, "cookie" );
+    const char *pheader = web_get_header( conn, "cookie" );
     if ( NULL == pheader ) return NULL;
-    if ( 0 == pheader->len ) return NULL;
 
+    wxArrayString valarray;
+    wxString header = wxString::FromUTF8( pheader );
+    websrv_parseHeader( valarray, header );
+    
     // Get session
-    if ( !mg_http_parse_header( pheader,
+    wxString value;
+    if ( !websrv_getHeaderElement( valarray, 
                                     "session",
-                                    buf,
-                                    sizeof( buf ) ) ) {
+                                    value ) ) {
         return NULL;
     }
 
     // find existing session
-    ret = gp_websrv_sessions;
-    while (NULL != ret) {
-
-        if (0 == strcmp( buf, ret->m_sid ) ) 
-            break;
-            ret = ret->m_next;
-
+    gpobj->m_websrvSessionMutex.Lock();
+    WEBSRVSESSIONLIST::iterator iter;
+    for ( iter = gpobj->m_web_sessions.begin(); 
+            iter != gpobj->m_web_sessions.end(); 
+            ++iter ) {
+        struct websrv_session *pSession = *iter;
+        if ( 0 == strcmp( buf, pSession->m_sid ) ) {
+            pSession->lastActiveTime = time( NULL );
+            gpobj->m_websrvSessionMutex.Unlock();
+            return pSession;
+        }
     }
-
-    if (NULL != ret) {
-        ret->m_referenceCount++;
-        ret->lastActiveTime = time( NULL );
-        return ret;
-    }
-
-    return ret;
+    gpobj->m_websrvSessionMutex.Unlock();
+             
+    return NULL;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// websrv_add_session_cookie
+// websrv_add_session
 //
 
-websrv_Session *
-websrv_add_session_cookie( struct mg_connection *nc,
-                                                    struct http_message *hm )
+websrv_session *
+websrv_add_session( struct web_connection *conn )
 {
     char buf[512];
-    char user[50];
-    struct websrv_Session *ret;
+    wxString user;
+    struct websrv_session *pSession;
+    struct web_context * ctx;
+    const struct web_request_info *reqinfo;
+    
+    // Check pointers
+    if ( !conn || 
+         !( ctx = web_get_context( conn ) ) ||
+         !( reqinfo = web_get_request_info( conn ) )  ) {
+        return 0;
+    }
 
-    // Check pointer
-    if (NULL == nc) return NULL;
-
-    struct mg_str *hdr;
-    memset( user, 0, sizeof( user ) );
     // Parse "Authorization:" header, fail fast on parse error
-    if ( ( hdr = mg_get_http_header(hm, "Authorization")) == NULL ||
-        mg_http_parse_header(hdr, "username", user, sizeof(user)) == 0 ) {
-        return NULL;
-    }
+    const char *pheader = web_get_header( conn, "Authorization" );
+    if ( NULL == pheader ) return NULL;
 
-    // Create fresh session
-    ret = (struct websrv_Session *)calloc( 1, sizeof( struct websrv_Session ) );
-    if  (NULL == ret ) {
-#ifndef WIN32
-        syslog(LOG_ERR, "calloc error: %s\n", strerror(errno));
-#endif
+    wxArrayString valarray;
+    wxString header = wxString::FromUTF8( pheader );
+    websrv_parseHeader( valarray, header );
+    
+    // Get username
+    if ( !websrv_getHeaderElement( valarray, 
+                                    "username",
+                                    user ) ) {
         return NULL;
     }
+        
+    // Create fresh session
+    pSession = new struct websrv_session;
+    if  ( NULL == pSession ) {
+        return NULL;
+    }    
+    memset( pSession, 0, sizeof( websrv_session ) );
 
     // Generate a random session ID
-    time_t t;
-    t = time( NULL );
-    sprintf( buf,
-                "__VSCP__DAEMON_%X%X%X%X_be_hungry_stay_foolish_%X%X%s",
-                (unsigned int)rand(),
-                (unsigned int)rand(),
-                (unsigned int)rand(),
-                (unsigned int)t,
-                (unsigned int)rand(),
-                1337,
-                user );
+    unsigned char iv[16];
+    char hexiv[33];
+    getRandomIV( iv, 16 );  // Generate 16 random bytes
+    memset( hexiv, 0, sizeof(hexiv) );
+    vscp_byteArray2HexStr( hexiv, iv, 16 );
+    
+    memset( pSession->m_sid, 0, sizeof( pSession->m_sid ) );
+    memcpy( pSession->m_sid, hexiv, 32 );
 
-    cs_md5_ctx ctx;
-    cs_md5_init( &ctx );
-    cs_md5_update( &ctx, (const unsigned char *)buf, strlen( buf ) );
-    unsigned char bindigest[16];
-    cs_md5_final( bindigest, &ctx );
-    char digest[33];
-    memset( digest, 0, sizeof( digest ) );
-    cs_to_hex( ret->m_sid, bindigest, 16 );
-
-    char uri[2048];
-    memset( uri, 0, sizeof(uri) );
-    strncpy( uri, hm->uri.p, hm->uri.len );
-    mg_printf( nc,
+    //char uri[2048];
+    //memset( uri, 0, sizeof(uri) );
+    //strncpy( uri, hm->uri.p, hm->uri.len );
+    /*web_printf( conn,
                 "HTTP/1.1 301 Found\r\n"
                 "Set-Cookie: session=%s; max-age=3600; http-only\r\n"
                 "Set-Cookie: user=%s\r\n"
                 "Set-Cookie: original_url=%s; max-age=3600; allow=yes\r\n"
                 "Location: %s\r\n"
                 "Content-Length: 0r\n\r\n",
-                ret->m_sid,
+                pSession->m_sid,
                 user,
                 uri,
-                uri );
+                uri );*/
+    web_printf( conn,
+                "HTTP/1.1 301 Found\r\n"
+                "Set-Cookie: session=%s; max-age=3600; http-only\r\n"
+                "Set-Cookie: user=%s\r\n"
+                "Location: /\r\n"
+                "Content-Length: 0r\n\r\n",
+                pSession->m_sid,
+                (const char *)user.mbc_str() );
 
-    ret->m_pUserItem = gpobj->m_userList.getUser( wxString::FromAscii( user ) );
-
+    pSession->m_pUserItem = gpobj->m_userList.getUser( wxString::FromAscii( user ) );
+    pSession->lastActiveTime = time( NULL );
+    
     // Add to linked list
-    ret->m_referenceCount++;
-    ret->lastActiveTime = time( NULL );
-    ret->m_next = gp_websrv_sessions;
-    gp_websrv_sessions = ret;
+    gpobj->m_websrvSessionMutex.Lock();
+    gpobj->m_web_sessions.Append( pSession );
+    gpobj->m_websrvSessionMutex.Unlock();
 
-    return ret;
+    return pSession;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // websrv_GetCreateSession
 //
 
-struct websrv_Session *
-websrv_GetCreateSession( struct mg_connection *nc,
-                                                struct http_message *hm )
+struct websrv_session *
+websrv_getCreateSession( struct web_connection *conn )
 {
-    struct mg_str *pheader;
-    char user[256];
-    struct websrv_Session *rv = NULL;
+    struct websrv_session *pSession;
+    struct web_context * ctx;
+    const struct web_request_info *reqinfo;
+    
+    // Check pointers
+    if ( !conn || 
+         !( ctx = web_get_context( conn ) ) ||
+         !( reqinfo = web_get_request_info( conn ) )  ) {
+        return NULL;
+    }
 
-    // Check pointer
-    if (NULL == nc) return NULL;
-
-    /*if ( NULL == ( rv =  gpobj->getWebServer()->websrv_get_session( nc, hm ) ) ) {
-
-        if ( NULL == ( pheader = mg_get_http_header( hm, "Authorization") ) ||
-                        ( vscp_strncasecmp( pheader->p, "Digest ", 7 ) != 0 ) ) {
-            return NULL;
-        }
-
-        if (!mg_http_parse_header(pheader, "username", user, sizeof(user))) {
-            return NULL;
-        }
+    if ( NULL == ( pSession = websrv_get_session( conn ) ) ) {
 
         // Add session cookie
-        rv = gpobj->getWebServer()->websrv_add_session_cookie( nc, hm );
-    }*/
+        pSession = websrv_add_session( conn );
+        
+    }
 
-    return rv;
+    return pSession;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -348,41 +450,104 @@ websrv_GetCreateSession( struct mg_connection *nc,
 //
 
 void
-websrv_expire_sessions( struct mg_connection *nc,
-                                                struct http_message *hm )
+websrv_expire_sessions( struct web_connection *conn  )
 {
-    struct websrv_Session *pos;
-    struct websrv_Session *prev;
-    struct websrv_Session *next;
     time_t now;
 
     now = time( NULL );
-    prev = NULL;
-    pos = gp_websrv_sessions;
-
-    while (NULL != pos) {
-
-        next = pos->m_next;
-
-        if (now - pos->lastActiveTime > 60 * 60) {
-
-            // expire sessions after 1h
-            if ( NULL == prev ) {
-                gp_websrv_sessions = pos->m_next;
-            }
-            else {
-                prev->m_next = next;
-            }
-
-            free(pos);
-
+    
+    gpobj->m_websrvSessionMutex.Lock();
+    WEBSRVSESSIONLIST::iterator iter;
+    for ( iter = gpobj->m_web_sessions.begin(); 
+            iter != gpobj->m_web_sessions.end(); 
+            ++iter ) {
+        struct websrv_session *pSession = *iter;
+        if ( ( now - pSession->lastActiveTime ) > ( 60 * 60 ) ) {
+            gpobj->m_web_sessions.DeleteContents( true );
+            gpobj->m_web_sessions.DeleteObject( pSession );
         }
-        else {
-            prev = pos;
-        }
-
-        pos = next;
     }
+    gpobj->m_websrvSessionMutex.Unlock();
+    
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_check_if_authorized 
+//
+
+static int websrv_check_if_authorized( const struct web_connection *conn  ) {
+    
+    CUserItem *pUserItem;
+    bool bValidHost;
+    struct web_context * ctx;
+    const struct web_request_info *reqinfo;
+    
+    // Check pointers
+    if ( !conn || 
+         !( ctx = web_get_context( conn ) ) ||
+         !( reqinfo = web_get_request_info( conn ) )  ) {
+        return 0;
+    }
+    
+    char user[50], cnonce[50], response[40], uri[200], qop[20], nc[20], nonce[50];
+
+    // Parse "Authorization:" header, fail fast on parse error 
+    /*if ( NULL == ( hdr = web_get_header( hm, "Authorization" ) ) ||
+        0 == mg_http_parse_header(hdr, "username", user, sizeof( user ) ) ||
+        0 == mg_http_parse_header(hdr, "cnonce", cnonce, sizeof( cnonce ) ) ||
+        0 == mg_http_parse_header(hdr, "response", response, sizeof( response ) ) ||
+        0 == mg_http_parse_header(hdr, "uri", uri, sizeof( uri ) ) ||
+        0 == mg_http_parse_header(hdr, "qop", qop, sizeof( qop ) ) ||
+        0 == mg_http_parse_header(hdr, "nc", nc, sizeof( nc ) ) ||
+        0 == mg_http_parse_header(hdr, "nonce", nonce, sizeof( nonce ) ) ||
+        0 == vscp_check_nonce( nonce ) ) {
+        return WEB_ERROR;
+    }
+
+    // Check if user is valid
+    pUserItem = pObject->m_userList.getUser( wxString::FromUTF8( user ) );
+    if ( NULL == pUserItem ) return FALSE;
+
+    // Check if remote ip is valid
+    pObject->m_mutexUserList.Lock();
+    bValidHost = 
+            pUserItem->isAllowedToConnect( wxString::FromUTF8( reqinfo->remote_addr ) );
+    pObject->m_mutexUserList.Unlock();
+    if ( !bValidHost ) {
+        // Host wrong
+        wxString strErr =
+                wxString::Format( _( "[Webserver Client] Host [%s] NOT allowed to connect. User [%s]\n" ),
+                                    reqinfo->remote_addr,
+                                    (const char *)pUserItem->m_user.mbc_str() );
+        gpobj->logMsg( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
+        return WEB_ERROR;
+    }
+
+    char method[33];
+    memset( method, 0, sizeof( method ) );
+    strncpy( method, reqinfo->request_method, strlen( reqinfo->request_method ) );
+
+    // Check digest
+    if ( TRUE != websrv_check_password( method,
+                       ( const char * )pUserItem->m_md5Password.mbc_str(),
+                       uri, 
+                       nonce, 
+                       nc, 
+                       cnonce, 
+                       qop, 
+                       response ) ) {
+                                
+            // Username/password wrong
+        wxString strErr =
+                wxString::Format( _( "[Webserver Client] Host [%s] User [%s] NOT allowed to connect.\n" ),
+                        wxString::FromAscii( ( const char * )inet_ntoa( conn->sa.sin.sin_addr ) ).wx_str(),
+                        (const char *)pUserItem->m_user.mbc_str() );
+        gpobj->logMsg( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
+        return 0;
+    }*/
+
+    return WEB_OK;
 }
 
 
@@ -471,23 +636,18 @@ check_admin_authorization( struct web_connection *conn, void *cbdata )
     struct web_context * ctx;
     const struct web_request_info *reqinfo;
     
-    // If security is disabled just allow access
-    if ( gpobj->m_bDisableSecurityWebServer ) {
-        return 1;
-    }
-    
     // Check pointers
     if ( !conn || 
          !( ctx = web_get_context( conn ) ) ||
          !( reqinfo = web_get_request_info( conn ) )  ) {
-        return 0;
+        return WEB_ERROR;
     }
     
     memset( &ah, 0, sizeof( ah ) );
     
     if ( !web_parse_auth_header( conn, buf, sizeof( buf ), &ah ) ) {
         web_send_digest_access_authentication_request( conn, NULL );
-        return 0;
+        return WEB_ERROR;
     }
 
     // Check if user is valid
@@ -505,7 +665,7 @@ check_admin_authorization( struct web_connection *conn, void *cbdata )
                                     reqinfo->remote_addr,
                                     (const char *)pUserItem->getUserName().mbc_str() );
             gpobj->logMsg( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
-            return 0;
+            return WEB_ERROR;
     }
 
     uint8_t salt[16];   // Stored salt
@@ -515,7 +675,7 @@ check_admin_authorization( struct web_connection *conn, void *cbdata )
                                             hash, 
                                             (const char *)pUserItem->getPassword().mbc_str() ) ) {
         web_send_digest_access_authentication_request( conn, NULL );
-        return 0;
+        return WEB_ERROR;
     }
     
     
@@ -541,10 +701,22 @@ check_admin_authorization( struct web_connection *conn, void *cbdata )
                 (const char *)pUserItem->getUserName().mbc_str());
         gpobj->logMsg(strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY);
         web_send_digest_access_authentication_request( conn, NULL );
-        return 0;
+        return WEB_ERROR;
     }
 
-    return 1;
+    return WEB_OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// check_admin_authorization
+//
+// Dummy for REST authentication
+//
+
+static int 
+check_rest_authorization( struct web_connection *conn, void *cbdata ) 
+{
+    return WEB_OK;
 }
 
 
@@ -5017,13 +5189,6 @@ vscp_configure( struct web_connection *conn, void *cbdata )
 
     web_printf( conn, "enabled on interface '");
     web_printf( conn, gpobj->m_strWebServerInterfaceAddress.mbc_str());
-    web_printf( conn,  "<br>&nbsp;&nbsp;&nbsp;&nbsp;<b>Autentication:</b> " );
-    if ( gpobj->m_bDisableSecurityWebServer ) {
-        web_printf( conn,  "turned off." );
-    }
-    else {
-        web_printf( conn,  "turned on." );
-    }
     web_printf( conn, "<br>");
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Rootfolder:</b> ");
     web_printf( conn, wxString::FromUTF8( gpobj->m_pathWebRoot ).mbc_str() );
@@ -7217,6 +7382,7 @@ int init_webserver( void )
     
     // Set authorization handlers
     web_set_auth_handler( gpobj->webctx, "/vscp", check_admin_authorization, NULL );
+    web_set_auth_handler( gpobj->webctx, "/vscp", check_rest_authorization, NULL );
     
     // WS site for the websocket connection 
     web_set_websocket_handler( gpobj->webctx,
@@ -7249,6 +7415,9 @@ int init_webserver( void )
     web_set_request_handler( gpobj->webctx, "/vscp/loglist",    vscp_log_list, 0 );
     web_set_request_handler( gpobj->webctx, "/vscp/logdelete",  vscp_log_delete, 0 );
     web_set_request_handler( gpobj->webctx, "/vscp/logdodelete",vscp_log_do_delete, 0 );
+    
+    // REST
+    web_set_request_handler( gpobj->webctx, "/vscp/rest",       websrv_restapi, 0 );
 }
 
 

@@ -105,14 +105,10 @@
 
 #include <vscp.h>
 #include <vscphelper.h>
-#include <vscpeventhelper.h>
 #include <tables.h>
-#include <configfile.h>
-#include <crc.h>
 #include <aes.h>
-#include <vscpmd5.h>
-#include <randpassword.h>
 #include <version.h>
+#include <controlobject.h> 
 #include <variablecodes.h>
 #include <actioncodes.h>
 #include <devicelist.h>
@@ -121,7 +117,7 @@
 #include <mdf.h>
 #include <websrv.h>
 #include <websocket.h>
-#include <controlobject.h>
+
 
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
@@ -182,7 +178,7 @@ websock_session::websock_session( void )
 {
     m_conn = NULL;
     m_conn_state = WEBSOCK_CONN_STATE_NULL;
-    memset( m_key, 0, 33 );
+    memset( m_websocket_key, 0, 33 );
     memset( m_sid, 0, 33 );
     m_version = 0;
     lastActiveTime = 0;
@@ -394,10 +390,10 @@ websock_new_session( const struct web_connection *conn )
     
     memset( pSession->m_sid, 0, sizeof( pSession->m_sid ) );
     memcpy( pSession->m_sid, hexiv, 32 );    
-    memset( pSession->m_key, 0, sizeof( pSession->m_key ) ); 
+    memset( pSession->m_websocket_key, 0, sizeof( pSession->m_websocket_key ) ); 
 
     // Init.
-    strcpy( pSession->m_key, ws_key );                  // Save key    
+    strcpy( pSession->m_websocket_key, ws_key );                  // Save key    
     pSession->m_conn = (struct web_connection *)conn;
     pSession->m_conn_state = WEBSOCK_CONN_STATE_CONNECTED;
     pSession->m_version = atoi( ws_version );           // Store protocol version
@@ -428,9 +424,9 @@ websock_new_session( const struct web_connection *conn )
     gpobj->addClient( pSession->m_pClientItem );
     gpobj->m_wxClientMutex.Unlock();
 
-    gpobj->m_websockSessionMutex.Lock();
+    gpobj->m_websocketSessionMutex.Lock();
     gpobj->m_websocketSessions.Append( pSession );
-    gpobj->m_websockSessionMutex.Unlock();
+    gpobj->m_websocketSessionMutex.Unlock();
     
     // Use the session object as user data
     web_set_user_connection_data( pSession->m_conn,
@@ -645,7 +641,7 @@ websock_sendevent( struct web_connection *conn,
 void
 websock_post_incomingEvents( void )
 {
-    gpobj->m_websockSessionMutex.Lock();
+    gpobj->m_websocketSessionMutex.Lock();
     
     WEBSOCKETSESSIONLIST::iterator iter;
     for ( iter = gpobj->m_websocketSessions.begin(); 
@@ -711,7 +707,7 @@ websock_post_incomingEvents( void )
         
     } // for
     
-    gpobj->m_websockSessionMutex.Unlock();
+    gpobj->m_websocketSessionMutex.Unlock();
 
  }
 
@@ -727,7 +723,7 @@ websock_post_incomingEvents( void )
 void
 websock_post_variableTrigger( uint8_t op, CVSCPVariable* pVar )
 {
-    gpobj->m_websockSessionMutex.Lock();
+    gpobj->m_websocketSessionMutex.Lock();
     
     WEBSOCKETSESSIONLIST::iterator iter;
     for ( iter = gpobj->m_websocketSessions.begin(); 
@@ -759,7 +755,7 @@ websock_post_variableTrigger( uint8_t op, CVSCPVariable* pVar )
         
     } // for
     
-    gpobj->m_websockSessionMutex.Unlock();
+    gpobj->m_websocketSessionMutex.Unlock();
 
  }
 
@@ -816,14 +812,14 @@ ws1_closeHandler(const struct web_connection *conn, void *cbdata)
     gpobj->m_clientList.removeClient( pSession->m_pClientItem );
     pSession->m_pClientItem = NULL;
     
-    gpobj->m_websockSessionMutex.Lock();
+    gpobj->m_websocketSessionMutex.Lock();
     gpobj->m_websocketSessions.DeleteContents( true ); 
     if ( !gpobj->m_websocketSessions.DeleteObject( pSession )  ) {
         gpobj->logMsg( _("[Websocket] Failed to delete session object."), 
                         DAEMON_LOGMSG_NORMAL, 
                         DAEMON_LOGTYPE_SECURITY );
     }
-    gpobj->m_websockSessionMutex.Unlock();
+    gpobj->m_websocketSessionMutex.Unlock();
                
     web_unlock_context( ctx );
 }

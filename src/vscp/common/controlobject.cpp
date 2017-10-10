@@ -53,7 +53,7 @@
 #ifndef WX_PRECOMP
 #include "wx/wx.h"
 #endif
-
+ 
 #include "wx/wx.h"
 #include "wx/defs.h"
 #include "wx/app.h"
@@ -103,7 +103,8 @@
 #include <wx/wfstream.h>
 #include <wx/fileconf.h>
 #include <wx/tokenzr.h>
-#include <wx/listimpl.cpp>
+//#include <wx/listimpl.cpp>
+#include <wx/list.h>
 #include <wx/xml/xml.h>
 #include <wx/mimetype.h>
 #include <wx/filename.h>
@@ -152,8 +153,9 @@
 
 // Lists
 WX_DEFINE_LIST(WEBSOCKETSESSIONLIST);   // websocket sessions
-WX_DEFINE_LIST(TRIGGERLIST);            // websocket triggers
-
+WX_DEFINE_LIST(RESTSESSIONLIST);        // web server sessions
+WX_DEFINE_LIST(WEBSRVSESSIONLIST);      // web server sessions
+WX_DEFINE_LIST(TRIGGERLIST);            // websocket trigger
 WX_DEFINE_LIST(CanalMsgList); 
 WX_DEFINE_LIST(VSCPEventList);
 
@@ -238,9 +240,6 @@ CControlObject::CControlObject()
     for (i = 0; i < VSCP_MAX_CLIENTS; i++) {
         m_clientMap[ i ] = 0;
     }
-
-    // Web server security should be used.
-    m_bDisableSecurityWebServer = false;
 
     // Local domain
     strcpy( m_authDomain, "mydomain.com" );
@@ -2900,12 +2899,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
         else if (child->GetName() == wxT("webserver")) {
 
             wxString attribute;
-            attribute = child->GetAttribute( wxT( "disableauthentication" ), wxT( "false" ) );
-
-            if ( attribute.IsSameAs( _( "true" ), true ) ) {                        
-                m_bDisableSecurityWebServer = true;
-            }
-
+   
             attribute = child->GetAttribute( wxT("port"), wxT("8080") );
             attribute.Trim();
             attribute.Trim(false);
@@ -3763,7 +3757,6 @@ bool CControlObject::doCreateConfigurationTable( void )
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_VARIABLES_PATH_DB, VSCPDB_CONFIG_DEFAULT_VARIABLES_PATH_DB );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_VARIABLES_PATH_XML, VSCPDB_CONFIG_DEFAULT_VARIABLES_PATH_XML );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_PATH_DB_DATA, VSCPDB_CONFIG_DEFAULT_PATH_DB_DATA );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_DISABLE, VSCPDB_CONFIG_DEFAULT_WEB_AUTHENTICATION_DISABLE );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_PATH_ROOT, VSCPDB_CONFIG_DEFAULT_WEB_PATH_ROOT );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_ADDR, VSCPDB_CONFIG_DEFAULT_WEB_ADDR );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_PATH_CERT, VSCPDB_CONFIG_DEFAULT_WEB_PATH_CERT );
@@ -3987,11 +3980,6 @@ bool CControlObject::dbReadConfiguration( void )
         else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_PATH_DB_DATA )  ) {
             m_path_db_vscp_data.Assign( wxString::FromUTF8( (const char *)pValue ) );
-        }
-        // Disable web server security
-        else if ( !vscp_strcasecmp( (const char * )pName, 
-                        VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_DISABLE )  ) {
-            m_bDisableSecurityWebServer = atoi( (const char *)pValue ) ? true : false;
         }
         // Web server root path
         else if ( !vscp_strcasecmp( (const char * )pName, 
