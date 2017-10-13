@@ -153,3 +153,8 @@ force-conf:
 	$(INSTALL_PROGRAM) -b -m744 config_examples/dm.xml_distro @VSCPDIR@/dm.xml
 	$(INSTALL_PROGRAM) -b -m744 config_examples/simulation/simtempdata.txt @VSCPDIR@/simtempdata.txt
 	cp -rf config_examples/web/* @VSCPDIR@/web/
+
+delete-all:
+	rm -rf @VSCPDIR@/*
+
+clean-conf: delete-all force-conf
