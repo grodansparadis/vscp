@@ -22,7 +22,7 @@ install:
 
 
 before_script:
-  # Check some settings of the build server (operating system, IPv6 availability, directory)
+# Check some settings of the build server (operating system, IPv6 availability, directory)
   - uname -a
   - ifconfig
   - pwd
@@ -31,6 +31,5 @@ before_script:
       apt-cache search gcc | grep "GNU C compiler";
       apt-cache search clang | grep compiler;
     fi
-- if [[ "${BUILD_TYPE}" == "OSX_OPENSSL_1_1" ]]; then brew install openssl@1.1 ;fi
-
+#- if [[ "${BUILD_TYPE}" == "OSX_OPENSSL_1_1" ]]; then brew install openssl@1.1 ;fi
 
